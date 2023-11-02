@@ -69,17 +69,21 @@ generated/sklearn.mixture.GaussianMixture.html>`_.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
 from typing import NoReturn
 
-from numpy import ndarray
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
-from gemseo.mlearning.core.ml_algo import TransformerType
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class GaussianMixture(MLPredictiveClusteringAlgo):

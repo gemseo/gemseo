@@ -21,8 +21,8 @@
 from __future__ import annotations
 
 import logging
-from multiprocessing import RLock
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Generator
 
@@ -31,11 +31,15 @@ import h5py
 from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
 from gemseo.core.cache import AbstractFullCache
 from gemseo.core.cache import CacheEntry
-from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
-from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from multiprocessing import RLock
+
+    from gemseo.core.discipline_data import Data
+    from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
@@ -95,12 +99,12 @@ class HDF5Cache(AbstractFullCache):
 
     def __getstate__(self) -> dict[str, float | str]:
         # Pickle __init__ arguments so to call it when unpickling.
-        return dict(
-            tolerance=self.tolerance,
-            hdf_file_path=self.__hdf_file.hdf_file_path,
-            hdf_node_path=self.__hdf_node_path,
-            name=self.name,
-        )
+        return {
+            "tolerance": self.tolerance,
+            "hdf_file_path": self.__hdf_file.hdf_file_path,
+            "hdf_node_path": self.__hdf_node_path,
+            "name": self.name,
+        }
 
     def __setstate__(self, state) -> None:
         self.__init__(**state)

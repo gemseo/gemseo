@@ -26,17 +26,21 @@ and can be plotted as individual points beyond the whiskers.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
 
 from matplotlib import pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class Boxplot(DatasetPlot):
@@ -151,7 +155,7 @@ class Boxplot(DatasetPlot):
             ],
             sym="*",
             patch_artist=True,
-            flierprops=dict(markeredgecolor=color),
+            flierprops={"markeredgecolor": color},
             **self._param.boxplot_options,
         )
         self.__origin += 1

@@ -21,9 +21,10 @@ from typing import Any
 from typing import Mapping
 
 import pytest
-from gemseo.core.discipline_data import DisciplineData
 from numpy.testing import assert_array_equal
 from pandas import DataFrame
+
+from gemseo.core.discipline_data import DisciplineData
 
 
 def to_df_key(
@@ -74,7 +75,7 @@ def test_deepcopy():
     assert_equal(d, d_copy, False)
 
 
-@pytest.mark.parametrize("with_namespace", (True, False))
+@pytest.mark.parametrize("with_namespace", [True, False])
 def test_copy_keys_namespace(with_namespace):
     """Verify the copy with keys and namespace."""
     data = DisciplineData()
@@ -102,7 +103,7 @@ def assert_getitem(
         d[to_df_key("x", "foo")]
 
 
-@pytest.mark.parametrize("namespace_mapping", ({}, {"z": "ns:z"}))
+@pytest.mark.parametrize("namespace_mapping", [{}, {"z": "ns:z"}])
 def test_getitem(namespace_mapping):
     """Verify __getitem__()."""
     df = DataFrame(data={"a": [0]})

@@ -23,11 +23,13 @@ from gemseo.mlearning.data_formatters.regression_data_formatters import (
 )
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.regression.moe import MOERegressor
     from typing import Any
     from typing import Callable
+
     from numpy import ndarray
+
     from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.regression.moe import MOERegressor
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 

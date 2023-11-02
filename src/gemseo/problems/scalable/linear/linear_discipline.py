@@ -20,7 +20,7 @@ from typing import ClassVar
 from typing import Sequence
 
 from numpy import ones
-from numpy.random import rand
+from numpy.random import default_rng
 from scipy.sparse import rand as sp_rand
 from strenum import LowercaseStrEnum
 
@@ -103,7 +103,9 @@ class LinearDiscipline(MDODiscipline):
         self.matrix_free_jacobian = matrix_free_jacobian
 
         if matrix_format == self.MatrixFormat.DENSE:
-            self.mat = rand(self.size_out, self.size_in) / self.size_in
+            self.mat = (
+                default_rng().random((self.size_out, self.size_in)) / self.size_in
+            )
         else:
             self.mat = (
                 sp_rand(

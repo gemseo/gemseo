@@ -20,7 +20,7 @@ r"""The Van der Pol (VDP) problem describing an oscillator with non-linear dampi
 
 Van der Pol, B. & Van Der Mark, J.
 Frequency Demultiplication.
-Nature 120, 363–364 (1927).
+Nature 120, 363-364 (1927).
 
 The Van der Pol problem is written as follows:
 
@@ -62,11 +62,15 @@ Solutions of the Van Der Pol Oscillator. ZAMM 83, nᵒ 9 (1 septembre 2003)).
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import array
 from numpy import zeros
-from numpy.typing import NDArray
 
 from gemseo.algos.ode.ode_problem import ODEProblem
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class VanDerPol(ODEProblem):
@@ -123,9 +127,7 @@ class VanDerPol(ODEProblem):
             final_time=final_time,
         )
 
-    def __compute_rhs(
-        self, time: float, state: NDArray[float]
-    ) -> NDArray[float]:  # noqa:U100
+    def __compute_rhs(self, time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
         """Compute the right-hand side of the ODE.
 
         Args:

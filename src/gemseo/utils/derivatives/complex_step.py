@@ -19,23 +19,28 @@
 """Gradient approximation by complex step."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Sequence
 
+from numpy import bool_
 from numpy import complex128
+from numpy import dtype
 from numpy import ndarray
 from numpy import where
 from numpy import zeros
 from numpy.linalg import norm
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
 
 
 class ComplexStep(GradientApproximator):
@@ -111,25 +116,22 @@ class ComplexStep(GradientApproximator):
         input_perturbations: ndarray,
         step: float,
         **kwargs: Any,
-    ) -> ndarray:
+    ) -> list[ndarray]:
         self._function_kwargs = kwargs
         functions = [self._wrap_function] * n_perturbations
         parallel_execution = CallableParallelExecution(functions, **self._parallel_args)
 
-        perturbated_inputs = [
+        perturbed_inputs: list[ndarray[Any, dtype[bool_]]] = [
             input_values + input_perturbations[:, perturbation_index]
             for perturbation_index in range(n_perturbations)
         ]
-        perturbated_outputs = parallel_execution.execute(perturbated_inputs)
+        perturbed_outputs = parallel_execution.execute(perturbed_inputs)
 
-        gradient = []
-        for perturbation_index in range(n_perturbations):
-            gradient.append(
-                perturbated_outputs[perturbation_index].imag
-                / input_perturbations[perturbation_index, perturbation_index].imag
-            )
-
-        return gradient
+        return [
+            perturbed_outputs[perturbation_index].imag
+            / input_perturbations[perturbation_index, perturbation_index].imag
+            for perturbation_index in range(n_perturbations)
+        ]
 
     def _compute_grad(
         self,

@@ -28,6 +28,7 @@ from importlib import metadata
 from pathlib import Path
 
 import pytest
+
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
@@ -39,7 +40,7 @@ DATA = Path(__file__).parent / "data/factory"
 
 class MultitonFactory(metaclass=BaseABCMultiton):
     _CLASS = int
-    _MODULE_NAMES = tuple()
+    _MODULE_NAMES = ()
 
 
 def test_multiton():
@@ -47,7 +48,7 @@ def test_multiton():
 
     class MultitonFactory2(metaclass=BaseABCMultiton):
         _CLASS = str
-        _MODULE_NAMES = tuple()
+        _MODULE_NAMES = ()
 
     a = MultitonFactory()
     assert a is MultitonFactory()

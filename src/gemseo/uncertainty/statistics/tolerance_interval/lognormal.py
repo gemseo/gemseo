@@ -61,7 +61,7 @@ class LogNormalToleranceInterval(NormalToleranceInterval):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:B950
+        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
     ) -> NormalToleranceInterval.Bounds:
         lower, upper = super().compute(coverage, confidence, side)
         return self.Bounds(exp(lower) + self.__location, exp(upper) + self.__location)

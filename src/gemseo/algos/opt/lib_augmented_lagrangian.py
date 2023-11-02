@@ -16,14 +16,15 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Mapping
 
+from numpy import Infinity
 from numpy import atleast_1d
 from numpy import concatenate
 from numpy import heaviside
-from numpy import Infinity
 from numpy import ndarray
 from numpy import zeros_like
 from numpy.linalg import norm
@@ -35,8 +36,10 @@ from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_result import OptimizationResult
 
 
 class AugmentedLagrangian(OptimizationLibrary):
@@ -205,10 +208,10 @@ class AugmentedLagrangian(OptimizationLibrary):
             constraint_violation_k = max(norm(vk), norm(hv))
             # update the multipliers.
             for constraint in self.problem.constraints:
-                if constraint.name in mu0.keys():
+                if constraint.name in mu0:
                     mu_1 = mu0[constraint.name] + rho0 * val_opt[constraint.name]
                     mu0[constraint.name] = (mu_1) * heaviside(mu_1, 0.0)
-                elif constraint.name in lambda0.keys():
+                elif constraint.name in lambda0:
                     lambda0[constraint.name] = (
                         lambda0[constraint.name] + rho0 * val_opt[constraint.name]
                     )

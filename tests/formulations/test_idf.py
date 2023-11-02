@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -66,7 +67,7 @@ def test_build_func_from_disc():
 
 
 @pytest.mark.parametrize(
-    "options, expected_feasible",
+    ("options", "expected_feasible"),
     [
         (
             {

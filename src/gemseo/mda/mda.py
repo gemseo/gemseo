@@ -23,7 +23,6 @@ import logging
 from abc import abstractmethod
 from enum import auto
 from multiprocessing import cpu_count
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
@@ -43,12 +42,12 @@ from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import Any
     from typing import ClassVar
     from typing import Collection
@@ -59,6 +58,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from numpy.typing import NDArray
 
+    from gemseo.core.discipline_data import DisciplineData
     from gemseo.core.execution_sequence import LoopExecSequence
     from gemseo.utils.matplotlib_figure import FigSizeType
 
@@ -157,8 +157,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
         INITIAL_RESIDUAL_NORM = auto()
-        r"""The residual is scaled by the norm of the initial residual if it is not null,
-        and not scaled otherwise. The MDA is considered converged when,
+        r"""The residual is scaled by the norm of the initial residual if it is not null
+        , and not scaled otherwise. The MDA is considered converged when,
 
         .. math::
 
@@ -486,7 +486,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                     if coupling in grammar and not grammar.is_array(
                         coupling, numeric_only=True
                     ):
-                        not_arrays.append(coupling)
+                        not_arrays.append(coupling)  # noqa: PERF401
 
         if not_arrays:
             not_arrays = sorted(set(not_arrays))
@@ -512,7 +512,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        all_disc = [self] + self.disciplines
+        all_disc = [self, *self.disciplines]
         graph = DependencyGraph(all_disc)
         res = graph.get_disciplines_couplings()
         for discipline in self.disciplines:
@@ -616,7 +616,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
                     index += coupling_size
 
-            normalized_norms = list()
+            normalized_norms = []
             for current_slice, initial_norm in self._scaling_data:
                 normalized_norms.append(norm(residual[current_slice]) / initial_norm)
 
@@ -660,7 +660,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def check_jacobian(
         self,
         input_data: Mapping[str, ndarray] | None = None,
-        derr_approx: MDODiscipline.ApproximationMode = MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,  # noqa:B950
+        derr_approx: MDODiscipline.ApproximationMode = MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,  # noqa:E501
         step: float = 1e-7,
         threshold: float = 1e-8,
         linearization_mode: str = "auto",
@@ -742,7 +742,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-                If ``None``, consider all the components of all the ``inputs`` and ``outputs``.
+                If ``None``,
+                consider all the components of all the ``inputs`` and ``outputs``.
 
         Returns:
             Whether the passed Jacobian is correct.
@@ -838,7 +839,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         save: bool = True,
         n_iterations: int | None = None,
         logscale: tuple[int, int] | None = None,
-        filename: str | None = None,
+        filename: Path | str = "",
         fig_size: FigSizeType | None = None,
     ) -> Figure:
         """Generate a plot of the residual history.
@@ -853,7 +854,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             logscale: The limits of the *y* axis.
                 If ``None``, do not change the limits of the *y* axis.
             filename: The name of the file to save the figure.
-                If ``None``, use "{mda.name}_residual_history.pdf".
+                If empty, use "{mda.name}_residual_history.pdf".
             fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
 
         Returns:
@@ -899,7 +900,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         if logscale is not None:
             fig_ax.set_ylim(logscale)
 
-        if save and filename is None:
+        if save and not filename:
             filename = f"{self.name}_residual_history.pdf"
 
         save_show_figure(fig, show, filename, fig_size=fig_size)

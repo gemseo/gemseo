@@ -15,28 +15,33 @@
 from __future__ import annotations
 
 import re
-from enum import auto
 from enum import Enum
+from enum import auto
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Union
 
 import pytest
-from _pytest.fixtures import SubRequest
-from gemseo.core.discipline_data import Data
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.pydantic_grammar import ModelType
-from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.utils.testing.helpers import do_not_raise
 from numpy import array
 from numpy import ndarray
 from numpy.typing import NDArray
 from pydantic.fields import ModelField
 
+from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.core.grammars.pydantic_grammar import ModelType
+from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
+from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.utils.testing.helpers import do_not_raise
+
 from .pydantic_models import get_model1
 from .pydantic_models import get_model2
 from .pydantic_models import get_model3
+
+if TYPE_CHECKING:
+    from _pytest.fixtures import SubRequest
+
+    from gemseo.core.discipline_data import Data
 
 DATA_PATH = Path(__file__).parent / "data"
 
@@ -64,13 +69,14 @@ def model(
     This fixture can be optionally parametrized.
     """
     if request.param is None:
-        return
+        return None
 
     if request.param == ModelID.ONE:
         return model1
 
     if request.param == ModelID.TWO:
         return model2
+    return None
 
 
 def test_init_error():
@@ -127,7 +133,7 @@ def test_getitem(model1):
 
 
 @pytest.mark.parametrize(
-    "model,length",
+    ("model", "length"),
     [
         (None, 0),
         (ModelID.ONE, 2),
@@ -141,7 +147,7 @@ def test_len(model, length):
 
 
 @pytest.mark.parametrize(
-    "model,names",
+    ("model", "names"),
     [
         (None, []),
         (ModelID.ONE, ["name1", "name2"]),
@@ -155,7 +161,7 @@ def test_iter(model, names):
 
 
 @pytest.mark.parametrize(
-    "model,names",
+    ("model", "names"),
     [
         (None, []),
         (ModelID.ONE, ["name1", "name2"]),
@@ -183,10 +189,7 @@ def assert_equal_types(field_1: ModelField, obj_2: ModelField | type) -> None:
     Raises:
         AssertionError: If the types are different.
     """
-    if isinstance(obj_2, ModelField):
-        type_2 = obj_2.outer_type_
-    else:
-        type_2 = obj_2
+    type_2 = obj_2.outer_type_ if isinstance(obj_2, ModelField) else obj_2
     assert field_1.outer_type_ == type_2
 
 
@@ -227,10 +230,7 @@ def test_update(model_1, model_2, exclude_names):
 
     g1.update(g2, exclude_names=exclude_names)
 
-    if exclude_names is None:
-        exclude_names = set()
-    else:
-        exclude_names = set(exclude_names)
+    exclude_names = set() if exclude_names is None else set(exclude_names)
 
     assert set(g1) == g1_names_before | (g2.keys() - exclude_names)
     assert set(g1.required_names) == g1_required_names_before | (
@@ -267,7 +267,7 @@ def test_clear(model):
 
 
 @pytest.mark.parametrize(
-    "model,repr_",
+    ("model", "repr_"),
     [
         (
             None,
@@ -300,9 +300,8 @@ def test_repr(model, repr_):
 
 
 @pytest.mark.parametrize(
-    "model,data_sets",
-    (
-        # Empty grammar: everything validates.
+    ("model", "data_sets"),
+    [  # Empty grammar: everything validates.
         (None, ({"name": 0},)),
         (
             ModelID.TWO,
@@ -312,7 +311,7 @@ def test_repr(model, repr_):
                 {"name1": 1, "name2": 0},
             ),
         ),
-    ),
+    ],
     indirect=["model"],
 )
 def test_validate(model, data_sets):
@@ -323,10 +322,11 @@ def test_validate(model, data_sets):
 
 
 @pytest.mark.parametrize(
-    "raise_exception,exception_tester", [(True, pytest.raises), (False, do_not_raise)]
+    ("raise_exception", "exception_tester"),
+    [(True, pytest.raises), (False, do_not_raise)],
 )
 @pytest.mark.parametrize(
-    "data,error_msg",
+    ("data", "error_msg"),
     [
         (
             {},
@@ -354,7 +354,7 @@ name2
 1 validation error for Model
 name2
   value could not be parsed to a NumPy ndarray with dtype <class 'int'>. (type=type_error.ndarray; dtype_info= with dtype <class 'int'>)
-""",  # noqa:B950
+""",  # noqa:E501
         ),
     ],
 )
@@ -411,7 +411,7 @@ def test_update_from_names(model, names):
 
 
 @pytest.mark.parametrize(
-    "data,expected_type",
+    ("data", "expected_type"),
     [
         ({}, None),
         ({"name1": int}, int),
@@ -440,7 +440,7 @@ def test_update_from_types_with_merge(model, data, expected_type):
 
 
 @pytest.mark.parametrize(
-    "data,expected_type",
+    ("data", "expected_type"),
     [
         ({}, None),
         ({"name1": int}, int),
@@ -461,7 +461,7 @@ def test_update_from_types_from_empty(data, expected_type):
 
 
 @pytest.mark.parametrize(
-    "data,expected_type",
+    ("data", "expected_type"),
     [
         ({}, None),
         ({"name1": int}, int),
@@ -490,7 +490,7 @@ def test_update_from_types(model, data, expected_type):
 
 
 @pytest.mark.parametrize(
-    "data,expected_type",
+    ("data", "expected_type"),
     [
         ({}, None),
         ({"name1": 0}, int),
@@ -595,7 +595,7 @@ def test_restrict_to(names, model1):
 
 
 @pytest.mark.parametrize(
-    "model, types",
+    ("model", "types"),
     [
         (None, []),
         (ModelID.ONE, [int, ndarray]),
@@ -626,7 +626,7 @@ def test_convert_to_simple_grammar_warnings(model2, caplog):
 
 
 @pytest.mark.parametrize(
-    "model,names",
+    ("model", "names"),
     [
         (None, set()),
         (ModelID.ONE, {"name1"}),
@@ -641,11 +641,11 @@ def test_required_names(model, names):
 
 @pytest.mark.parametrize(
     "descriptions",
-    (
+    [
         {},
         {"name1": "name1 description"},
         {"name1": "name1 description", "name2": "name2 description"},
-    ),
+    ],
 )
 def test_set_descriptions(descriptions, model2):
     """Verify setting descriptions."""
@@ -660,7 +660,7 @@ def test_set_descriptions(descriptions, model2):
 
 
 @pytest.mark.parametrize(
-    "model,schema",
+    ("model", "schema"),
     [
         (None, {"properties": {}, "title": "Model", "type": "object"}),
         (
@@ -708,11 +708,11 @@ def test_copy():
     g.defaults["name"] = 1.0
     g_copy = g.copy()
     assert g_copy.defaults["name"] is g.defaults["name"]
-    assert list(g_copy.required_names)[0] is list(g.required_names)[0]
+    assert next(iter(g_copy.required_names)) is next(iter(g.required_names))
 
 
 @pytest.mark.parametrize(
-    "model,defaults",
+    ("model", "defaults"),
     [
         (ModelID.ONE, {"name2": array([0])}),
         (ModelID.TWO, {"name2": 0}),

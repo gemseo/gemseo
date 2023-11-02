@@ -14,4 +14,4 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-1 / 0
+1 / 0  # noqa: B018

@@ -25,11 +25,11 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from numpy import ndarray
-
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.algos.opt_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
@@ -116,8 +116,8 @@ class NormFunction(MDOFunction):
         """
         if not self.__orig_func.has_jac:
             raise ValueError(
-                "Selected user gradient but function {} "
-                "has no Jacobian matrix !".format(self.__orig_func)
+                f"Selected user gradient but function {self.__orig_func} "
+                "has no Jacobian matrix !"
             )
         if self.__normalize:
             x_vect = self.__unnormalize_vect(x_vect)

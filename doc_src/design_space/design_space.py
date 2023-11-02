@@ -15,10 +15,11 @@
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 from __future__ import annotations
 
-from gemseo import create_design_space
-from gemseo import read_design_space
 from numpy import array
 from numpy import ones
+
+from gemseo import create_design_space
+from gemseo import read_design_space
 
 design_space = read_design_space("design_space.csv")
 print(design_space)

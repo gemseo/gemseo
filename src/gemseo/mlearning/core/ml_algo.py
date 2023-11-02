@@ -101,6 +101,7 @@ from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Dict
@@ -110,13 +111,11 @@ from typing import MutableMapping
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
-from typing import TYPE_CHECKING
 from typing import Union
 
 from numpy import ndarray
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.resampling.resampler import Resampler
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
@@ -126,6 +125,7 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
+    from gemseo.mlearning.resampling.resampler import Resampler
 
 SavedObjectType = Union[Dataset, Dict[str, Transformer], str, bool, int]
 DataType = Union[ndarray, Mapping[str, ndarray]]

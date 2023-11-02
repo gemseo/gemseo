@@ -21,9 +21,11 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+
 from gemseo import create_discipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -39,16 +41,18 @@ from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.utils.testing.helpers import concretize_classes
 
+if TYPE_CHECKING:
+    from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
+
 DIRNAME = os.path.dirname(__file__)
 
 
-@pytest.fixture
+@pytest.fixture()
 def sellar_mda(sellar_disciplines):
     return MDAGaussSeidel(sellar_disciplines)
 
@@ -181,7 +185,7 @@ def analytic_disciplines_from_desc(descriptions):
 
 
 @pytest.mark.parametrize(
-    "desc, log_message",
+    ("desc", "log_message"),
     [
         (
             (
@@ -299,9 +303,8 @@ def test_not_numeric_couplings():
 
     with pytest.raises(
         TypeError, match=r"The coupling variables \['y\_1'\] must be of type array\."
-    ):
-        with concretize_classes(MDA):
-            MDA([sellar1, sellar2])
+    ), concretize_classes(MDA):
+        MDA([sellar1, sellar2])
 
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])

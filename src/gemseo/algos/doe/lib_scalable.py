@@ -19,6 +19,7 @@
 """Build a diagonal DOE for scalable model construction."""
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Container
 from typing import Optional
 from typing import Union
@@ -37,7 +38,9 @@ OptionType = Optional[Union[str, int, float, bool, Container[str]]]
 class DiagonalDOE(DOELibrary):
     """Class used to create a diagonal DOE."""
 
-    __ALGO_DESC = {"DiagonalDOE": "Diagonal design of experiments"}
+    __ALGO_DESC: ClassVar[dict[str, str]] = {
+        "DiagonalDOE": "Diagonal design of experiments"
+    }
     LIBRARY_NAME = "GEMSEO"
 
     def __init__(self) -> None:  # noqa:D107

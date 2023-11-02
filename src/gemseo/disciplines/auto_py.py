@@ -136,8 +136,8 @@ class AutoPyDiscipline(MDODiscipline):
                         "Two return statements use different variable names; "
                         f"{self.output_names} and {temp_output_names}."
                     )
-                else:
-                    self.output_names = temp_output_names
+
+                self.output_names = temp_output_names
 
         self.output_grammar.update_from_names(self.output_names)
 
@@ -195,12 +195,11 @@ class AutoPyDiscipline(MDODiscipline):
 
             in_to_ns = self.input_grammar.to_namespaced
             self.__input_names_with_namespaces = [
-                in_to_ns[input_name] if input_name in in_to_ns else input_name
-                for input_name in self.input_names
+                in_to_ns.get(input_name, input_name) for input_name in self.input_names
             ]
             out_to_ns = self.output_grammar.to_namespaced
             self.__output_names_with_namespaces = [
-                out_to_ns[output_name] if output_name in out_to_ns else output_name
+                out_to_ns.get(output_name, output_name)
                 for output_name in self.output_names
             ]
             self.__jac_shape = (

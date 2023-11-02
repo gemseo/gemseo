@@ -118,7 +118,7 @@ sc_str = create_scenario(
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This scenario is based on the three previous sub-scenarios and on the
 # Mission and aims to maximize the range (Breguet).
-sub_disciplines = [sc_prop, sc_aero, sc_str] + [mission]
+sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 design_space = deepcopy(design_space).filter("x_shared")
 system_scenario = create_scenario(
     sub_disciplines,

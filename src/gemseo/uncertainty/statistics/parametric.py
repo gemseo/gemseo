@@ -90,7 +90,9 @@ Additional ones are:
 from __future__ import annotations
 
 import logging
+from itertools import starmap
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Dict
 from typing import Iterable
 from typing import Mapping
@@ -99,12 +101,10 @@ from typing import Sequence
 from typing import Union
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 from numpy import array
 from numpy import linspace
 from numpy import ndarray
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
@@ -120,6 +120,11 @@ from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 LOGGER = logging.getLogger(__name__)
 
@@ -258,7 +263,7 @@ class ParametricStatistics(Statistics):
         """
         variables = sorted(self._all_distributions.keys())
         distributions = list(self._all_distributions[variables[0]][0].keys())
-        table = PrettyTable(["Variable"] + distributions + ["Selection"])
+        table = PrettyTable(["Variable", *distributions, "Selection"])
         for variable in variables:
             for index in range(self.dataset.variable_names_to_n_components[variable]):
                 row = (
@@ -419,12 +424,12 @@ class ParametricStatistics(Statistics):
                     best_dist,
                 )
 
-            self.__distributions[variable] = [
-                _Distribution(distribution_name, marginal_distribution)
-                for distribution_name, marginal_distribution in zip(
-                    selected_distribution_names, marginal_distributions
+            self.__distributions[variable] = list(
+                starmap(
+                    _Distribution,
+                    zip(selected_distribution_names, marginal_distributions),
                 )
-            ]
+            )
             if len(marginal_distributions) == 1:
                 distributions[variable] = self.__distributions[variable][0]
             else:
@@ -559,7 +564,7 @@ class ParametricStatistics(Statistics):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:B950
+        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
     ) -> dict[str, list[ToleranceInterval.Bounds]]:
         if not 0.0 <= coverage <= 1.0:
             raise ValueError("The argument 'coverage' must be a number in [0,1].")

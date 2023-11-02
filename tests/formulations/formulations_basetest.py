@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import unittest
+from typing import ClassVar
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
@@ -55,7 +56,7 @@ class FakeDiscipline(MDODiscipline):
 class FormulationsBaseTest(unittest.TestCase):
     """"""
 
-    DV_NAMES = ["x_1", "x_2", "x_3", "x_shared"]
+    DV_NAMES: ClassVar[list[str]] = ["x_1", "x_2", "x_3", "x_shared"]
 
     def build_mdo_scenario(self, formulation="MDF", dtype="complex128", **options):
         """

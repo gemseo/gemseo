@@ -29,24 +29,23 @@ from itertools import combinations
 from itertools import islice
 
 import numpy as np
+from benchmarks.base_benchmark import BaseBenchmark
+from numpy import ones
+from numpy.random import default_rng
+from pyperf import Runner
+
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.mda.mda_chain import MDAChain
-from numpy import ones
-from numpy.random import choice
-from numpy.random import seed
-from pyperf import Runner
 
-from benchmarks.base_benchmark import BaseBenchmark
+rng = default_rng(1)
 
-seed(1)
-
-DEFAULT_ARGS = dict(
-    nb_of_disc=10,
-    nb_of_total_disc_io=1000,
-    nb_of_disc_io=20,
-    data_size=1000,
-)
+DEFAULT_ARGS = {
+    "nb_of_disc": 10,
+    "nb_of_total_disc_io": 1000,
+    "nb_of_disc_io": 20,
+    "data_size": 1000,
+}
 
 ALPHABET = np.array(list(string.ascii_uppercase))
 
@@ -151,10 +150,10 @@ class ManyDisciplinesBenchmark(BaseBenchmark):
         for disc_name in disc_names:
             # Choose inputs among all io
             in_names = [
-                str(i) for i in choice(self.nb_of_total_disc_io, self.nb_of_disc_io)
+                str(i) for i in rng.choice(self.nb_of_total_disc_io, self.nb_of_disc_io)
             ]
             out_names = [
-                str(i) for i in choice(self.nb_of_total_disc_io, self.nb_of_disc_io)
+                str(i) for i in rng.choice(self.nb_of_total_disc_io, self.nb_of_disc_io)
             ]
             disc = MDODiscipline(disc_name)
             disc._run = self.__disc_run

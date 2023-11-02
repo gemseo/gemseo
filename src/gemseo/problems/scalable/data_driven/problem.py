@@ -47,17 +47,18 @@ on the problem dimension.
 from __future__ import annotations
 
 import logging
-import os
 from copy import deepcopy
+from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Sequence
 
 from numpy import array
 from numpy import full
 from numpy import ones
-from numpy import random
 from numpy import where
 from numpy import zeros
+from numpy.random import default_rng
 
 from gemseo import create_design_space
 from gemseo import create_scenario
@@ -65,13 +66,15 @@ from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.scenario import Scenario
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.scenario import Scenario
+    from gemseo.datasets.io_dataset import IODataset
 
 LOGGER = logging.getLogger(__name__)
 
@@ -173,7 +176,7 @@ class ScalableProblem:
         show: bool = False,
         step: float = 0.01,
         varnames: Sequence[str] | None = None,
-        directory: os.PathLike[bytes] | os.PathLike[str] | bytes | str = ".",
+        directory: Path | str = ".",
         png: bool = False,
     ):
         """Plot 1d interpolations.
@@ -188,14 +191,14 @@ class ScalableProblem:
         :param bool png: if True, the file format is PNG. Otherwise, use PDF.
             Default: False.
         """
-        if not os.path.exists(directory):
-            os.mkdir(directory)
-        allfnames = []
+        directory = Path(directory)
+        directory.mkdir(exist_ok=True)
+        file_paths = []
         for scalable_discipline in self.scaled_disciplines:
             func = scalable_discipline.scalable_model.plot_1d_interpolations
-            fnames = func(save, show, step, varnames, directory, png)
-            allfnames += [os.path.join(directory, fname) for fname in fnames]
-        return allfnames
+            file_names = func(save, show, step, varnames, directory, png)
+            file_paths += [directory / file_name for file_name in file_names]
+        return file_paths
 
     def plot_dependencies(
         self, save: bool = True, show: bool = False, directory: str = "."
@@ -309,7 +312,7 @@ class ScalableProblem:
         sub_inputs = []
         for discipline in st_cpl_disciplines:
             cplt_disciplines = list(set(disciplines) - {discipline})
-            sub_disciplines = [discipline] + wk_cpl_disciplines
+            sub_disciplines = [discipline, *wk_cpl_disciplines]
             design_space = DesignSpace()
             inputs = get_all_inputs([discipline])
             all_inputs = get_all_inputs(cplt_disciplines)
@@ -339,7 +342,7 @@ class ScalableProblem:
                 name, self.scaled_sizes[name], "float", 0.0, 1.0, 0.5
             )
         sub_disciplines = sub_scenarios + wk_cpl_disciplines
-        system_scenario = create_scenario(
+        return create_scenario(
             disciplines=sub_disciplines,
             formulation="BiLevel",
             objective_name=obj,
@@ -348,7 +351,6 @@ class ScalableProblem:
             mda_name="MDAJacobi",
             tolerance=1e-8,
         )
-        return system_scenario
 
     def _create_design_space(
         self, disciplines=None, formulation: str = "DisciplinaryOpt"
@@ -417,7 +419,7 @@ class ScalableProblem:
             }
         for constraint, alphai in feasibility_level.items():
             if constraint in list(equilibrium.keys()):
-                sample = random.rand(len(equilibrium[constraint]))
+                sample = default_rng().random(len(equilibrium[constraint]))
                 val = equilibrium[constraint]
                 taui = where(
                     sample < active_probability, val, alphai + (1 - alphai) * val
@@ -455,8 +457,7 @@ class ScalableProblem:
         :rtype: list(int) or int
         """
         disciplines = self.scenario.formulation.get_top_level_disc()
-        n_calls = {discipline.name: discipline.n_calls for discipline in disciplines}
-        return n_calls
+        return {discipline.name: discipline.n_calls for discipline in disciplines}
 
     @property
     def n_calls_linearize_top_level(self):
@@ -466,10 +467,9 @@ class ScalableProblem:
         :rtype: list(int) or int
         """
         disciplines = self.scenario.formulation.get_top_level_disc()
-        n_calls = {
+        return {
             discipline.name: discipline.n_calls_linearize for discipline in disciplines
         }
-        return n_calls
 
     @property
     def n_calls(self):
@@ -478,11 +478,10 @@ class ScalableProblem:
         :return: number of disciplinary calls per discipline
         :rtype: list(int) or int
         """
-        n_calls = {
+        return {
             discipline.name: discipline.n_calls
             for discipline in self.scenario.disciplines
         }
-        return n_calls
 
     @property
     def n_calls_linearize(self):
@@ -491,11 +490,10 @@ class ScalableProblem:
         :return: number of disciplinary calls per discipline
         :rtype: list(int) or int
         """
-        tmp = {
+        return {
             discipline.name: discipline.n_calls_linearize
             for discipline in self.scenario.disciplines
         }
-        return tmp
 
     @property
     def status(self):

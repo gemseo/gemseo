@@ -37,6 +37,7 @@ This module implements the Binh and Korn multi-objective problem:
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import ndarray
@@ -45,7 +46,9 @@ from numpy import zeros
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.utils.matplotlib_figure import FigSizeType
+
+if TYPE_CHECKING:
+    from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 

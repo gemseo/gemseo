@@ -27,8 +27,9 @@ from typing import TYPE_CHECKING
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
     from typing import ClassVar
+
+    from numpy.typing import NDArray
 
 
 class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -97,8 +98,8 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
             and len(self._residuals) >= self._MINIMUM_NUMBER_OF_RESIDUALS
         ):
             return self._compute_transformed_iterate()
-        else:
-            return next_iterate
+
+        return next_iterate
 
     @abstractmethod
     def _compute_transformed_iterate(self) -> NDArray:

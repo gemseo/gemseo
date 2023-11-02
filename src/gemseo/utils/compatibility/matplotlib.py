@@ -19,7 +19,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 from packaging import version
 
-
 if version.parse(matplotlib.__version__) < version.parse("3.5.0"):
 
     def get_color_map(colormap):  # noqa: N802, D103

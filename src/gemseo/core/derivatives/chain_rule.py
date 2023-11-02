@@ -19,14 +19,14 @@
 """The chain rule."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import List
 from typing import Mapping
 from typing import Tuple
-from typing import TYPE_CHECKING
 
-from networkx import edge_bfs
 from networkx import Graph
+from networkx import edge_bfs
 from networkx import reverse_view
 
 if TYPE_CHECKING:

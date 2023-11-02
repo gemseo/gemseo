@@ -24,13 +24,15 @@ Please use the JSON versions with enhanced checks and features.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Iterable
-
-from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.core.utils import SobieskiBase
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
@@ -66,7 +68,7 @@ class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
         )
 
     def _run(self) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):

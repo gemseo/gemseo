@@ -15,15 +15,14 @@
 """Benchmark for comparing the creation of the grammar data description."""
 from __future__ import annotations
 
-from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from grammar_validation import Benchmark as ValidationBenchmark
 from numpy import ndarray  # noqa: F401
 from numpy.typing import NDArray  # noqa: F401
 from pydantic import BaseModel  # noqa: F401
-
 from src.gemseo.utils.string_tools import MultiLineString
 
+from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
+from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 # The above imports must be kept to the exec'd code in the benchmark works.
 

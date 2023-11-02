@@ -25,19 +25,22 @@ proposes different evaluation methods.
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Final
 from typing import Sequence
 
 from numpy import atleast_1d
 from numpy import ndarray
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 
 
 class MLErrorMeasure(MLQualityMeasure):

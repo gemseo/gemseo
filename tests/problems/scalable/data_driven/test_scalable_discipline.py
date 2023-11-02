@@ -28,6 +28,7 @@ from shutil import copy
 
 import numpy as np
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -108,16 +109,14 @@ class ScalableProblem(unittest.TestCase):
             if name in out_d:
                 return out_d[name]
 
-            raise Exception("Unknown data ", name)
-        else:
-            if name == "y_4":
-                return 0.5 * np.ones(1)
-            elif name.startswith("y"):
-                return 0.5 * np.ones(ScalableProblem.size_y)
-            elif name.startswith("x"):
-                return 0.5 * np.ones(ScalableProblem.size_x)
-            else:
-                return 0.5 * np.ones(1)
+            raise ValueError("Unknown data ", name)
+        if name == "y_4":
+            return 0.5 * np.ones(1)
+        if name.startswith("y"):
+            return 0.5 * np.ones(ScalableProblem.size_y)
+        if name.startswith("x"):
+            return 0.5 * np.ones(ScalableProblem.size_x)
+        return 0.5 * np.ones(1)
 
     def set_sizes(self):
         """Set the sizes of the variables (local, global, coupling) according to the

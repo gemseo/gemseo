@@ -28,9 +28,10 @@ including defining a variable as a part of an original one.
 """
 from __future__ import annotations
 
+from numpy import array
+
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.remapping import RemappingDiscipline
-from numpy import array
 
 # %%
 # Let us consider a discipline that sums up the fruits of the market.
@@ -122,4 +123,7 @@ even_clearer_fruit_counting = RemappingDiscipline(
 even_clearer_fruit_counting.execute(
     {"pear": array([4]), "gala": array([3]), "fuji": array([1])}
 )
-even_clearer_fruit_counting.get_input_data(), even_clearer_fruit_counting.get_output_data()
+(
+    even_clearer_fruit_counting.get_input_data(),
+    even_clearer_fruit_counting.get_output_data(),
+)

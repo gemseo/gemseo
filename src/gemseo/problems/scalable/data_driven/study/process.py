@@ -51,15 +51,18 @@ import logging
 import numbers
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 from numpy import inf
 
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
 from gemseo.utils.logging_tools import LoggingContext
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
 
 LOGGER = logging.getLogger(__name__)
 
@@ -168,7 +171,7 @@ class ScalabilityStudy:
         self.__check_proportion(active_probability)
         self.active_probability = active_probability
         if isinstance(feasibility_level, dict):
-            for _, value in feasibility_level.items():
+            for value in feasibility_level.values():
                 self.__check_proportion(value)
         else:
             self.__check_proportion(feasibility_level)
@@ -262,8 +265,7 @@ class ScalabilityStudy:
         :return: list of discipline names
         :rtype: list(str)
         """
-        disc_names = [discipline.name for discipline in self.datasets]
-        return disc_names
+        return [discipline.name for discipline in self.datasets]
 
     def set_input_output_dependency(self, discipline, output, inputs) -> None:
         """Set the dependency between an output and a set of inputs for a given
@@ -352,7 +354,7 @@ class ScalabilityStudy:
                 raise TypeError(
                     "Fill factor should be a float number comprised in 0 and 1 "
                     "or a number equal to -1."
-                )
+                ) from None
 
     @staticmethod
     def __check_proportion(proportion):
@@ -394,9 +396,8 @@ class ScalabilityStudy:
         self.algorithms.append(algo)
         if algo_options is None:
             algo_options = {}
-        else:
-            if not isinstance(algo_options, dict):
-                raise TypeError("algo_options must be a dictionary.")
+        elif not isinstance(algo_options, dict):
+            raise TypeError("algo_options must be a dictionary.")
         algo_options.update({"max_iter": max_iter})
         self.algorithms_options.append(algo_options)
         self.formulations.append(formulation)
@@ -539,7 +540,7 @@ class ScalabilityStudy:
         :param int n_var_scaling: number of scalings
         :param int n_scaling: expected number of scalings
         """
-        assert n_var_scaling in (n_scaling, 1)
+        assert n_var_scaling in {n_scaling, 1}
 
     @staticmethod
     def __check_varsizes_type(varsizes: Sequence[int]):
@@ -553,7 +554,7 @@ class ScalabilityStudy:
             if isinstance(varsizes, list):
                 for size in varsizes:
                     if isinstance(size, dict):
-                        for _, value in size.items():
+                        for value in size.values():
                             assert isinstance(value, int)
                     else:
                         assert isinstance(size, int)
@@ -689,8 +690,7 @@ class ScalabilityStudy:
         name = "_".join([self.prefix] + [str(var) for var in varnames])
         if name[0] == "_":
             name = name[1:]
-        path = self.directory / POSTSCAL_DIRECTORY / name
-        return path
+        return self.directory / POSTSCAL_DIRECTORY / name
 
     def __optview_path(self, algo, formulation, id_scaling, replicate):
         """Path to the directory containing the dependency matrices files.
@@ -716,7 +716,7 @@ class ScalabilityStudy:
         :param dict scaling: scaling.
         :param int seed: seed for random features.
         """
-        problem = ScalableProblem(
+        return ScalableProblem(
             self.datasets,
             self.design_variables,
             self.objective,
@@ -730,7 +730,6 @@ class ScalabilityStudy:
             force_input_dependency=True,
             allow_unused_inputs=False,
         )
-        return problem
 
     def __create_scenario(self, problem, formulation, opt_index) -> None:
         """Create scenario for a given formulation.
@@ -740,10 +739,7 @@ class ScalabilityStudy:
         :param int opt_index: optimization strategy index.
         """
         form_opt = self.formulations_options[opt_index]
-        if not isinstance(form_opt, dict):
-            formulation_options = {}
-        else:
-            formulation_options = form_opt
+        formulation_options = {} if not isinstance(form_opt, dict) else form_opt
         problem.create_scenario(
             formulation,
             "MDO",
@@ -783,7 +779,7 @@ class ScalabilityStudy:
         if self.early_stopping:
             y_prev = inf
             stopidx = 0
-            for _, value in database.items():
+            for value in database.values():
                 pbm = problem.scenario.formulation.opt_problem
                 if y_prev == inf:
                     diff = inf

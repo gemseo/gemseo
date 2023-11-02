@@ -20,16 +20,17 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+from numpy import ones
+from numpy import zeros
+from scipy.optimize import rosen
+
 from gemseo.core.mdofunctions.func_operations import LinearComposition
 from gemseo.core.mdofunctions.func_operations import RestrictedFunction
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
 from gemseo.problems.analytical.rosenbrock import RosenMF
-from numpy import array
-from numpy import ones
-from numpy import zeros
-from scipy.optimize import rosen
 
 
 def test_linear_composition():

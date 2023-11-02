@@ -20,6 +20,8 @@
 from __future__ import annotations
 
 import logging
+from typing import Callable
+from typing import ClassVar
 from typing import Sized
 
 import numpy as np
@@ -36,7 +38,9 @@ class LinearSolver:
     """Solve a linear system Ax=b."""
 
     Solver = LowercaseStrEnum("Solver", "LGMRES")
-    _SOLVER_NAME_TO_FUNCTION = {Solver.LGMRES: scipy_linalg.lgmres}
+    _SOLVER_NAME_TO_FUNCTION: ClassVar[dict[str, Callable]] = {
+        Solver.LGMRES: scipy_linalg.lgmres
+    }
 
     def __init__(self) -> None:
         """Constructor."""

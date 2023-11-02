@@ -23,9 +23,10 @@ This can be useful to finely tune a graph for a presentation or a paper.
 """
 from __future__ import annotations
 
+from matplotlib import pyplot as plt
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
-from matplotlib import pyplot as plt
 
 # %%
 # First,

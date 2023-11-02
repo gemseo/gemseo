@@ -27,6 +27,7 @@ from copy import deepcopy
 from numbers import Number
 from os import PathLike
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -38,17 +39,19 @@ from typing import Mapping
 from typing import Sequence
 from typing import Union
 
-from fastjsonschema import compile as compile_schema
 from fastjsonschema import JsonSchemaException
+from fastjsonschema import compile as compile_schema
 from numpy import generic
 from numpy import ndarray
 
-from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.base_grammar import NamesToTypes
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
+    from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
@@ -173,7 +176,10 @@ class JSONGrammar(BaseGrammar):
             TypeError: If the grammar is not a :class:`JSONGrammar`.
         """  # noqa:D417
         if not isinstance(grammar, JSONGrammar):
-            msg = f"A JSONGrammar cannot be updated from a grammar of type: {type(grammar)}"
+            msg = (
+                "A JSONGrammar cannot be updated from a grammar of type: "
+                f"{type(grammar)}"
+            )
             raise TypeError(msg)
 
         if not grammar:
@@ -238,7 +244,9 @@ class JSONGrammar(BaseGrammar):
                 for element_name, element_type in names_to_types.items()
             }
         except KeyError as error:
-            raise KeyError(f"Unsupported python type for a JSON Grammar: {error}")
+            raise KeyError(
+                f"Unsupported python type for a JSON Grammar: {error}"
+            ) from None
 
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema",
@@ -384,10 +392,7 @@ class JSONGrammar(BaseGrammar):
                 If empty,
                 write to a file named after the grammar and with .json extension.
         """
-        if path is None:
-            path = Path(self.name).with_suffix(".json")
-        else:
-            path = Path(path)
+        path = Path(self.name).with_suffix(".json") if path is None else Path(path)
         path.write_text(self.__schema_builder.to_json(indent=2), encoding="utf-8")
 
     def to_json(self, *args, **kwargs) -> str:
@@ -509,7 +514,7 @@ class JSONGrammar(BaseGrammar):
         """
         if property_json_type == "array" and "items" in property_description:
             property_json_sub_type = property_description["items"].get("type")
-            if property_json_sub_type not in ["number", "integer", None]:
+            if property_json_sub_type not in {"number", "integer", None}:
                 LOGGER.warning(
                     self.__WARNING_TEMPLATE,
                     "type",
@@ -549,7 +554,7 @@ class JSONGrammar(BaseGrammar):
 
     def __getstate__(self) -> SerializedGrammarType:
         # Ensure self.__schema_builder is filled.
-        self.schema
+        self.schema  # noqa: B018
         state = dict(self.__dict__)
         # The validator will be recreated on demand.
         del state[f"_{self.__class__.__name__}__validator"]

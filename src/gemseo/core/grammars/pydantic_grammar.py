@@ -18,17 +18,18 @@ from __future__ import annotations
 import logging
 import sys
 from copy import copy
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Collection
 from typing import Generic
-from typing import get_origin
 from typing import Iterable
 from typing import Iterator
 from typing import Mapping
 from typing import Sequence
 from typing import Type
 from typing import Union
+from typing import get_origin
 
 from numpy import ndarray
 from numpy.typing import NDArray
@@ -36,13 +37,15 @@ from pydantic import BaseModel
 from pydantic import ValidationError
 from pydantic.fields import ModelField
 
-from gemseo.core.discipline_data import MutableData
 from gemseo.core.grammars import _pydantic_utils
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.base_grammar import NamesToTypes
-from gemseo.core.grammars.json_grammar import DictSchemaType
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import MutableData
+    from gemseo.core.grammars.json_grammar import DictSchemaType
+    from gemseo.utils.string_tools import MultiLineString
 
 ModelType = Type[BaseModel]
 
@@ -61,6 +64,7 @@ if sys.version_info < (3, 9):  # pragma: >=3.9 no cover
             return origin
         if type_ is Generic:
             return Generic
+        return None
 
 
 class PydanticGrammar(BaseGrammar):

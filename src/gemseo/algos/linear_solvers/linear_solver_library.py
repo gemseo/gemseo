@@ -22,10 +22,10 @@ from __future__ import annotations
 import logging
 import pickle
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Any
 from uuid import uuid4
 
-from numpy import ndarray
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import spilu
@@ -33,7 +33,11 @@ from scipy.sparse.linalg import spilu
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription
 from gemseo.algos.algorithm_library import AlgorithmLibrary
-from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,6 +61,7 @@ class LinearSolverLibrary(AlgorithmLibrary):
 
     SAVE_WHEN_FAIL = "save_when_fail"
 
+    # TODO: use Path and default to ""
     save_fpath: str | None
     """The file path to save the linear problem."""
 
@@ -82,8 +87,8 @@ class LinearSolverLibrary(AlgorithmLibrary):
         """
         return self.execute(linear_problem, algo_name=algo_name, **options)
 
+    @staticmethod
     def _build_ilu_preconditioner(
-        self,
         lhs: ndarray,
         dtype: str | None = None,
     ) -> LinearOperator:
@@ -170,11 +175,11 @@ class LinearSolverLibrary(AlgorithmLibrary):
             LOGGER.warning(
                 "The linear solver %s did not converge.", self.problem.solver_name
             )
-        if options.get(self.SAVE_WHEN_FAIL, False):
-            if not self.problem.is_converged:
-                f_path = f"linear_system_{uuid4()}.pck"
-                pickle.dump(self.problem, open(f_path, "wb"))
-                LOGGER.warning(
-                    "Linear solver failed, saving problem to file: %s", f_path
-                )
-                self.save_fpath = f_path
+
+        if options.get(self.SAVE_WHEN_FAIL, False) and not self.problem.is_converged:
+            f_path = f"linear_system_{uuid4()}.pck"
+            # TODO: remove noqa
+            with open(f_path, "wb") as stream:  # noqa: PTH123
+                pickle.dump(self.problem, stream)
+            LOGGER.warning("Linear solver failed, saving problem to file: %s", f_path)
+            self.save_fpath = f_path

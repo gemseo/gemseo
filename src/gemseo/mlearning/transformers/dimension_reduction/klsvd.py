@@ -25,6 +25,8 @@ _generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import openturns
 from numpy import array
 from numpy import ndarray
@@ -39,8 +41,10 @@ from openturns import Sample
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 from gemseo.utils.compatibility.openturns import get_eigenvalues
+
+if TYPE_CHECKING:
+    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 
 
 class KLSVD(DimensionReduction):

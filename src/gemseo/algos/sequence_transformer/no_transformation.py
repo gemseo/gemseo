@@ -20,11 +20,13 @@
 """The sequence transformer which does nothing."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from numpy.typing import NDArray
-
 from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTransformer
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class NoTransformation(SequenceTransformer):

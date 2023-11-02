@@ -19,8 +19,12 @@
 """Monitoring mechanism to track |g| execution (update events)."""
 from __future__ import annotations
 
-from gemseo.core.scenario import Scenario
+from typing import TYPE_CHECKING
+
 from gemseo.utils.singleton import SingleInstancePerAttributeId
+
+if TYPE_CHECKING:
+    from gemseo.core.scenario import Scenario
 
 
 class Monitoring(metaclass=SingleInstancePerAttributeId):

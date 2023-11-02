@@ -17,10 +17,10 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sized
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
-from typing import TYPE_CHECKING
 
 from jinja2 import Template
 
@@ -327,15 +327,17 @@ class N2JSON:
                     }
                 )
 
-        for index in range(n_nodes):
-            links.append(
+        links.extend(
+            [
                 {
                     "source": index,
                     "target": index,
                     "value": 1,
                     "description": "",
                 }
-            )
+                for index in range(n_nodes)
+            ]
+        )
 
         return links
 
@@ -392,7 +394,7 @@ class N2JSON:
             self._DEFAULT_GROUP_TEMPLATE.format(group_index)
             for group_index in range(1, n_groups)
         ]
-        group_names = [self._DEFAULT_WEAKLY_COUPLED_DISCIPLINES] + group_names
+        group_names = [self._DEFAULT_WEAKLY_COUPLED_DISCIPLINES, *group_names]
 
         return groups_nodes + disciplines_nodes, group_names
 

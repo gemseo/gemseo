@@ -22,6 +22,7 @@ from __future__ import annotations
 import os
 
 import numpy as np
+
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi

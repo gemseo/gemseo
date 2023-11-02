@@ -58,20 +58,20 @@ fitted from a :class:`.Dataset`.
 """
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Collection
 from typing import Iterable
 from typing import Sequence
-from typing import TYPE_CHECKING
-
-from gemseo.datasets.dataset import Dataset
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
+    from gemseo.datasets.dataset import Dataset
     from gemseo.uncertainty.distributions.distribution import Distribution
-    from gemseo.uncertainty.statistics.statistics import Statistics
     from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+    from gemseo.uncertainty.statistics.statistics import Statistics
 
 
 def get_available_distributions() -> list[str]:

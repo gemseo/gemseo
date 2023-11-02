@@ -23,6 +23,12 @@ import unittest
 from timeit import default_timer as timer
 
 import pytest
+from numpy import array
+from numpy import complex128
+from numpy import equal
+from numpy import ones
+from scipy.optimize import rosen
+
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -36,18 +42,13 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.problems.sellar.sellar import get_inputs
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import X_SHARED
-from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import get_inputs
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
-from numpy import array
-from numpy import complex128
-from numpy import equal
-from numpy import ones
-from scipy.optimize import rosen
 
 
 class CallableWorker:
@@ -60,7 +61,7 @@ class CallableWorker:
 
 def function_raising_exception(counter):
     """Raises an Exception."""
-    raise Exception("This is an Exception")
+    raise RuntimeError("This is an Exception")
 
 
 class TestParallelExecution(unittest.TestCase):
@@ -247,12 +248,11 @@ def f(x: float = 0.0) -> float:
     """A function that raises an exception on certain conditions."""
     if x == 0:
         raise ValueError("Undefined")
-    y = x + 1
-    return y
+    return x + 1
 
 
 @pytest.mark.parametrize(
-    "exceptions,raises_exception",
+    ("exceptions", "raises_exception"),
     [((), False), ((ValueError,), True), ((RuntimeError,), False)],
 )
 def test_re_raise_exceptions(exceptions, raises_exception):
@@ -291,7 +291,7 @@ def reset_default_multiproc_method():
 
 
 @pytest.mark.parametrize(
-    "parallel_class, n_calls_attr, add_diff, expected_n_calls",
+    ("parallel_class", "n_calls_attr", "add_diff", "expected_n_calls"),
     [
         (DiscParallelExecution, "n_calls", False, 2),
         (DiscParallelLinearization, "n_calls_linearize", False, 0),
@@ -322,7 +322,7 @@ def test_multiprocessing_context(
 
     # Just for the test purpose, we consider multithreading as an mp_method
     # and set the boolean ``use_threading`` from this.
-    use_threading = True if mp_method == "threading" else False
+    use_threading = mp_method == "threading"
     if not use_threading:
         CallableParallelExecution.MULTI_PROCESSING_START_METHOD = mp_method
 

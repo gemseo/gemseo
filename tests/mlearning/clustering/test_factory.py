@@ -21,15 +21,20 @@
 """Unit test for ClusteringModelFactory class in gemseo.mlearning.clustering.factory."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.datasets.io_dataset import IODataset
+
 from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 from gemseo.problems.dataset.iris import create_iris_dataset
+
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
 
 N_CLUSTERS = 3
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """The dataset used to train the clustering algorithms."""
     return create_iris_dataset(as_io=True, as_numeric=True)

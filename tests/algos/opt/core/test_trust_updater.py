@@ -22,13 +22,14 @@ from __future__ import annotations
 
 from unittest import TestCase
 
+from numpy import allclose
+from numpy import ones
+from numpy import zeros
+
 from gemseo.algos.opt.core.trust_updater import BoundsUpdater
 from gemseo.algos.opt.core.trust_updater import PenaltyUpdater
 from gemseo.algos.opt.core.trust_updater import RadiusUpdater
 from gemseo.algos.opt.core.trust_updater import TrustUpdater
-from numpy import allclose
-from numpy import ones
-from numpy import zeros
 
 
 class TestTrustUpdater(TestCase):

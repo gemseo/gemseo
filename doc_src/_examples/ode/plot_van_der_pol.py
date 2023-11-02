@@ -22,11 +22,12 @@ Solve an ODE: the Van der Pol problem
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+from numpy import array
+from numpy import zeros
+
 from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
 from gemseo.problems.ode.van_der_pol import VanDerPol
-from numpy import array
-from numpy import zeros
 
 # %%
 # This tutorial describes how to solve an ordinary differential equation (ODE)

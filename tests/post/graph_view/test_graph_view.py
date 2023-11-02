@@ -17,6 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from gemseo.post._graph_view import GraphView
 
 

@@ -22,10 +22,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 
 from numpy import isfinite
-from scipy.optimize import linprog
 from scipy.optimize import OptimizeResult
+from scipy.optimize import linprog
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
@@ -58,7 +59,7 @@ class ScipyLinprog(OptimizationLibrary):
     REDUNDANCY_REMOVAL = "redundancy removal"
     REVISED_SIMPLEX = "REVISED_SIMPLEX"
 
-    OPTIONS_MAP = {
+    OPTIONS_MAP: ClassVar[dict[Any, str]] = {
         OptimizationLibrary.MAX_ITER: "maxiter",
         OptimizationLibrary.VERBOSE: "disp",
         REDUNDANCY_REMOVAL: "rr",
@@ -144,7 +145,7 @@ class ScipyLinprog(OptimizationLibrary):
             The processed options.
         """
         normalize_ds = normalize_design_space
-        options = self._process_options(
+        return self._process_options(
             max_iter=max_iter,
             autoscale=autoscale,
             presolve=presolve,
@@ -154,7 +155,6 @@ class ScipyLinprog(OptimizationLibrary):
             normalize_design_space=normalize_ds,
             **kwargs,
         )
-        return options
 
     def _run(self, **options: Any) -> OptimizationResult:
         """Run the algorithm.
@@ -227,7 +227,7 @@ class ScipyLinprog(OptimizationLibrary):
             key: jac_opt[key] for key in self.problem.get_constraint_names()
         }
         is_feasible = self.problem.is_point_feasible(val_opt)
-        optim_result = OptimizationResult(
+        return OptimizationResult(
             x_0=x_0,
             x_0_as_dict=self.problem.design_space.array_to_dict(x_0),
             x_opt=x_opt,
@@ -244,5 +244,3 @@ class ScipyLinprog(OptimizationLibrary):
             n_constr_call=None,
             is_feasible=is_feasible,
         )
-
-        return optim_result

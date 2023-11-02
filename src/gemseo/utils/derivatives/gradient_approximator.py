@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from numbers import Number
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -26,9 +26,13 @@ from numpy import array
 from numpy import float64
 from numpy import ndarray
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from numbers import Number
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 
 class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):

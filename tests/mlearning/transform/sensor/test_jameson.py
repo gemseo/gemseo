@@ -19,13 +19,14 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transformers.sensor.jameson import JamesonSensor
 from numpy import allclose
 from numpy import arange
 from numpy import ndarray
 
+from gemseo.mlearning.transformers.sensor.jameson import JamesonSensor
 
-@pytest.fixture
+
+@pytest.fixture()
 def data() -> ndarray:
     """Test data."""
     return arange(300).reshape((3, 100))

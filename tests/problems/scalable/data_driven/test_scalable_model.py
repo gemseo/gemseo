@@ -19,10 +19,11 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.scalable.data_driven.model import ScalableModel
 from numpy import array
 from numpy import newaxis
+
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.problems.scalable.data_driven.model import ScalableModel
 
 
 def test_notimplementederror():

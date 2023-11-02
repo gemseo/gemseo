@@ -23,6 +23,9 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from numpy import array
+from numpy import isclose
+
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
@@ -34,8 +37,6 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from numpy import array
-from numpy import isclose
 
 from .test_mda import analytic_disciplines_from_desc
 

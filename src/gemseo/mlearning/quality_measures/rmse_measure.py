@@ -39,12 +39,15 @@ where
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Sequence
 
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MeasureType
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.quality_measures.quality_measure import MeasureType
+    from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 class RMSEMeasure(MSEMeasure):
@@ -139,5 +142,4 @@ class RMSEMeasure(MSEMeasure):
         """
         if isinstance(measure, dict):
             return {k: v**0.5 for k, v in measure.items()}
-        else:
-            return measure**0.5
+        return measure**0.5

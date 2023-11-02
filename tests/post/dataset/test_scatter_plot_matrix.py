@@ -23,10 +23,10 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
 
+from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
+from gemseo.utils.testing.helpers import image_comparison
 
 # the test parameters, it maps a test name to the inputs and references outputs:
 # - the kwargs to be passed to ScatterMatrix._plot
@@ -49,7 +49,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

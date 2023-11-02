@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_repr
@@ -66,7 +67,7 @@ class A:
 
 
 @pytest.mark.parametrize(
-    "obj,delimiter,key_value_separator,sort,expected",
+    ("obj", "delimiter", "key_value_separator", "sort", "expected"),
     [
         (A(), None, None, None, "foo"),
         ({"b": 1, "a": "a"}, None, None, None, "a='a', b=1"),
@@ -91,7 +92,7 @@ def test_pretty_repr(obj, delimiter, expected, sort, key_value_separator):
 
 
 @pytest.mark.parametrize(
-    "obj,delimiter,key_value_separator,sort,expected",
+    ("obj", "delimiter", "key_value_separator", "sort", "expected"),
     [
         (A(), None, None, None, "bar"),
         ({"b": 1, "a": "a"}, None, None, None, "a=a, b=1"),
@@ -127,14 +128,14 @@ def test_replace():
     msg = MultiLineString()
     msg.add("123")
     msg.add("4526")
-    expected = "\n".join(("13", "456"))
+    expected = "13\n456"
     repl = msg.replace("2", "")
     assert str(repl) == expected
 
     msg = MultiLineString()
     msg.add("123")
     repl = msg.replace("5", "9")
-    assert "123" == str(repl)
+    assert str(repl) == "123"
 
 
 def test_add():
@@ -143,7 +144,7 @@ def test_add():
     msg2 = MultiLineString()
     msg2.add("456")
 
-    expected = "\n".join(("123", "456"))
+    expected = "123\n456"
     assert str(msg + msg2) == expected
     assert str(msg + "456") == expected
 
@@ -153,13 +154,13 @@ def test_repr_variable_default_settings():
     assert repr_variable("x", 0) == "x[0]"
 
 
-@pytest.mark.parametrize("size,expected", [(0, "x[0]"), (1, "x"), (2, "x[0]")])
+@pytest.mark.parametrize(("size", "expected"), [(0, "x[0]"), (1, "x"), (2, "x[0]")])
 def test_repr_variable_custom_settings(size, expected):
     """Check repr_variable() with custom settings."""
     assert repr_variable("x", 0, size=size) == expected
 
 
-@pytest.mark.parametrize("index,expected", [(0, "x[0]"), (1, "[1]")])
+@pytest.mark.parametrize(("index", "expected"), [(0, "x[0]"), (1, "[1]")])
 def test_repr_variable_simplify(index, expected):
     """Check repr_variable() with argument simplify."""
     assert repr_variable("x", index, simplify=True) == expected

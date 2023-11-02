@@ -23,14 +23,15 @@ import re
 
 import numpy as np
 import pytest
+from numpy import array
+from numpy import ones
+
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
-from numpy import array
-from numpy import ones
 
 
 def test_update_dict_from_val_arr():

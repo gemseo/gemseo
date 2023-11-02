@@ -20,22 +20,25 @@
 """A scalable discipline."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Mapping
 from typing import NamedTuple
 
 from numpy import eye
 from numpy import zeros
-from numpy.typing import NDArray
 
 from gemseo.problems.scalable.parametric.core.disciplines.base_discipline import (
     BaseDiscipline,
 )
-from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 from gemseo.problems.scalable.parametric.core.variable_names import (
     SHARED_DESIGN_VARIABLE_NAME,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class Coefficients(NamedTuple):
@@ -88,8 +91,8 @@ class ScalableDiscipline(BaseDiscipline):
         index: int,
         a_i: NDArray[float],
         D_i0: NDArray[float],  # noqa: N803
-        D_ii: NDArray[float],
-        C_ij: Mapping[str, NDArray[float]],
+        D_ii: NDArray[float],  # noqa: N803
+        C_ij: Mapping[str, NDArray[float]],  # noqa: N803
         **default_input_values: NDArray[float],
     ) -> None:
         r"""

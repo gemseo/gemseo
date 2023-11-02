@@ -23,13 +23,14 @@ from pathlib import Path
 from re import match
 
 import pytest
+
 from gemseo.utils.directory_creator import DirectoryCreator
 from gemseo.utils.directory_creator import DirectoryNamingMethod
 
 BASE_DIR = Path("resource_dir")
 
 
-@pytest.fixture
+@pytest.fixture()
 def directories(tmp_wd):
     """Generate three directories and a file to test the ``NUMBERED``
     directory_naming_method.
@@ -47,7 +48,7 @@ def directories(tmp_wd):
         f.write("foo")
 
 
-@pytest.fixture
+@pytest.fixture()
 def empty_directory(tmp_wd):
     """Generate an empty directory."""
     Path("empty_resource_dir").mkdir()

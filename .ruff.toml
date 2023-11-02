@@ -1,0 +1,94 @@
+fix = true
+src = ["src"]
+target-version = "py38"
+task-tags = ["TODO"]
+ignore = [
+    # Conflicts with ruff format.
+    "E203",
+    # Checks for undocumented magic method definitions.
+    "D105",
+    # Checks for noqa directives that are no longer applicable.
+    "RUF100",
+    # Checks for long exception messages that are not defined in the exception class itself.
+    "TRY003",
+    # Avoid unexpected behavior with the formatter.
+    "ISC001",
+    # Too many arguments in function definition.
+    "PLR0913",
+    # `subprocess.run` without explicit `check` argument.
+    "PLR2004",
+    # Too many public methods.
+    "PLR0904",
+    # Too many branches.
+    "PLR0912",
+    # Too many statements.
+    "PLR0915",
+    # Too many return statements.
+    "PLR0911",
+    # `for` loop variable `name` overwritten by assignment target.
+    "PLW1510",
+    # Magic value used in comparison.
+    "PLW2901",
+    # Bad or misspelled dunder method name `_repr_html_`.
+    "PLW3201",
+    # Object does not implement `__hash__` method.
+    "PLW1641",
+    # Fixture does not return anything, add leading underscore.
+    "PT004",
+]
+select = [
+    "A",
+    "B",
+    "C4",
+    "E",
+    "F",
+    "G",
+    "I",
+    "Q",
+    "N",
+    "T",
+    "W",
+    "UP",
+    "FLY",
+    "ISC",
+    "LOG",
+    "NPY",
+    "PIE",
+    "PTH",
+    "RET",
+    "RSE",
+    "RUF",
+    "SIM",
+    "T10",
+    "T20",
+    "TCH",
+    "TRY",
+    "YTT",
+    "SLOT",
+    "FURB",
+    "PERF",
+#    "C",
+#    "D",
+#    "S",
+#    "PL",
+#    "BLE",
+#    "FBT",
+    "PT",
+]
+
+[isort]
+force-single-line = true
+
+[format]
+exclude = ["src/gemseo/third_party"]
+
+[pydocstyle]
+convention = "google"
+
+[per-file-ignores]
+"tests/*.py" = ["D", "PT009","PT011", "PT027", "PTH"]
+"doc_src/*.py" = ["T", "D", "B018", "PTH", "E501", "PERF", "A001", "RET504"]
+"src/gemseo/mlearning/*" = ["D"]
+"src/gemseo/utils/testing/opt_lib_test_base.py" = ["D"]
+"src/gemseo/problems/*" = ["D"]
+"src/gemseo/third_party/*" = ["ALL"]

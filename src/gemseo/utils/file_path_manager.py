@@ -19,6 +19,7 @@ import re
 from collections import namedtuple
 from pathlib import Path
 from re import findall
+from typing import ClassVar
 
 from strenum import LowercaseStrEnum
 
@@ -38,7 +39,7 @@ class FilePathManager:
         TEXT = "document"
         WEBPAGE = "page"
 
-    __FILE_TYPE_TO_EXTENSION = {
+    __FILE_TYPE_TO_EXTENSION: ClassVar[dict[FileType, str]] = {
         FileType.FIGURE: "png",
         FileType.SCHEMA: "json",
         FileType.TEXT: "txt",
@@ -183,6 +184,6 @@ class FilePathManager:
             obtained from the file path.
         """
         extension = file_path.suffix
-        file_name = f"{str(file_path.stem)}_{suffix}"
+        file_name = f"{file_path.stem!s}_{suffix}"
         directory_path = file_path.parent
         return (directory_path / file_name).with_suffix(extension)

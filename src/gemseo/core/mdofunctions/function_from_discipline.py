@@ -23,9 +23,9 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Sequence
-from typing import TYPE_CHECKING
 
 from numpy import empty
 
@@ -36,8 +36,8 @@ from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
     from gemseo.core.base_formulation import BaseFormulation
+    from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger(__name__)
 
@@ -139,7 +139,7 @@ class FunctionFromDiscipline(MDOFunction):
             )
         x_of_disc = x_vect[self.__x_mask]
 
-        loc_jac = self.__out_x_func.jac(x_of_disc)  # pylint: disable=E1102
+        loc_jac = self.__out_x_func.jac(x_of_disc)
 
         if len(loc_jac.shape) == 1:
             # This is surprising but there is a duality between the

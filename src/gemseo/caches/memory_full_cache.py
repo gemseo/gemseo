@@ -21,14 +21,17 @@
 from __future__ import annotations
 
 from multiprocessing import RLock
+from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.cache import AbstractFullCache
-from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multiprocessing import get_multi_processing_manager
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
 
 
 class MemoryFullCache(AbstractFullCache):

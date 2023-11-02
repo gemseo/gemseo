@@ -33,11 +33,12 @@ outputs.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from numpy import nonzero
+
 from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
-from matplotlib.lines import Line2D
-from numpy import nonzero
 
 configure_logger()
 

@@ -15,9 +15,12 @@
 """A progress bar not suffixed by metadata."""
 from __future__ import annotations
 
-from numpy import ndarray
+from typing import TYPE_CHECKING
 
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class UnsuffixedProgressBar(ProgressBar):

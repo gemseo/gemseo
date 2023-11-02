@@ -19,16 +19,19 @@
 """Linear equations problem."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from numpy import ndarray
 from numpy.linalg import norm
-from scipy.sparse import spmatrix
 from scipy.sparse.linalg import LinearOperator
 
 from gemseo.algos.base_problem import BaseProblem
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+    from numpy import ndarray
+    from scipy.sparse import spmatrix
 
 
 class LinearProblem(BaseProblem):
@@ -122,7 +125,8 @@ class LinearProblem(BaseProblem):
         Args:
             relative_residuals: If ``True``, return norm(lhs.solution-rhs)/norm(rhs),
                 else return norm(lhs.solution-rhs).
-            store: Whether to store the residuals value in the residuals_history attribute.
+            store: Whether to store the residuals value in the residuals_history
+                attribute.
             current_x: Compute the residuals associated with current_x,
                 If ``None``, compute then from the solution attribute.
 
@@ -130,7 +134,7 @@ class LinearProblem(BaseProblem):
             The residuals value.
 
         Raises:
-            ValueError: If self.solution is None and current_x is None.
+            ValueError: If :attr:`.solution` is ``None`` and ``current_x`` is ``None``.
         """
         if self.rhs is None:
             raise ValueError("Missing RHS.")

@@ -16,11 +16,12 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 
 
 @pytest.mark.parametrize(
-    "name,value",
+    ("name", "value"),
     [
         ("NO_REASON", ""),
         ("EMPTY_DESIGN_SPACE", "the design space is empty"),

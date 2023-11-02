@@ -20,16 +20,19 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 import pytest
-from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
-from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
-from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
 from numpy import allclose
 from numpy import array
 from numpy import inf
-from numpy.random import seed
+
+from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
+from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
+
+if TYPE_CHECKING:
+    from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 @pytest.fixture(scope="module")
@@ -87,7 +90,6 @@ def test_copula(distributions):
 
 
 def test_compute_samples(composed_distribution):
-    seed(0)
     sample = composed_distribution.compute_samples(3)
     assert len(sample.shape) == 2
     assert sample.shape[0] == 3

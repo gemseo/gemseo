@@ -21,11 +21,10 @@
 from __future__ import annotations
 
 import logging
-import traceback
 from abc import abstractmethod
 from dataclasses import dataclass
 from multiprocessing import current_process
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
 from typing import Final
@@ -40,15 +39,19 @@ from numpy import int32
 from numpy import ndarray
 from numpy import savetxt
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.opt_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)
 
@@ -321,10 +324,11 @@ class DOELibrary(DriverLibrary):
             # with the serial exec, so we clean the DB
             database.remove_empty_entries()
 
-        else:  # Sequential execution
+        else:
+            # Sequential execution
             if wait_time_between_samples != 0:
                 LOGGER.warning(
-                    "Wait time between samples option is ignored" " in sequential run."
+                    "Wait time between samples option is ignored in sequential run."
                 )
             for sample in self.samples:
                 try:
@@ -333,14 +337,13 @@ class DOELibrary(DriverLibrary):
                         eval_jac=self.eval_jac,
                         normalize=False,
                     )
-                except ValueError:
-                    LOGGER.error(
+                except ValueError:  # noqa: PERF203
+                    LOGGER.exception(
                         "Problem with evaluation of sample :"
                         "%s result is not taken into account "
                         "in DOE.",
-                        str(sample),
+                        sample,
                     )
-                    LOGGER.error(traceback.format_exc())
 
     def compute_doe(
         self,

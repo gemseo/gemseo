@@ -21,9 +21,8 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from pyperf import Runner
-
 from benchmarks.base_benchmark import BaseBenchmark
+from pyperf import Runner
 
 
 def _compute_graph(nodes):
@@ -36,7 +35,7 @@ def _compute_graph(nodes):
     defaultdict_of_list = defaultdict(list)
 
     for disc_i, (_, outputs_i) in enumerate(nodes):
-        successors_i = list()
+        successors_i = []
         edges_i = edges[disc_i] = defaultdict_of_list
         # find out in which discipline(s) the outputs_i are used
         for disc_j, (inputs_j, _) in enumerate(nodes):
@@ -92,7 +91,8 @@ class ComputeGraphBenchmark(BaseBenchmark):
         super().__init__()
 
     def setup(self):  # noqa: D102
-        self.nodes = pickle.load(open(self.file_path, "rb"))
+        with self.file_path.open("rb") as f:
+            self.nodes = pickle.load(f)
 
     def run(self):  # noqa: D102
         _compute_graph(self.nodes)

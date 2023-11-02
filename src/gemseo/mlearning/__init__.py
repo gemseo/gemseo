@@ -20,10 +20,8 @@ models.
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgo
@@ -32,6 +30,9 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.classification.classification import MLClassificationAlgo
     from gemseo.mlearning.core.ml_algo import TransformerType
 
@@ -145,7 +146,7 @@ minmax_inputs = {IODataset.INPUT_GROUP: MinMaxScaler()}
 def create_regression_model(
     name: str,
     data: IODataset,
-    transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
+    transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
     **parameters,
 ) -> MLRegressionAlgo:
     """Create a regression model from a learning dataset.
@@ -187,7 +188,7 @@ def create_regression_model(
 def create_classification_model(
     name: str,
     data: IODataset,
-    transformer: TransformerType = MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
+    transformer: TransformerType = MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
     **parameters,
 ) -> MLClassificationAlgo:
     """Create a classification model from a learning dataset.
@@ -349,8 +350,8 @@ def get_mlearning_options(
     get_mlearning_models
     import_mlearning_model
     """
-    from gemseo.mlearning.core.factory import MLAlgoFactory
     from gemseo import _get_schema
+    from gemseo.mlearning.core.factory import MLAlgoFactory
 
     return _get_schema(
         MLAlgoFactory().get_options_grammar(model_name),
@@ -378,8 +379,8 @@ def get_regression_options(
     get_regression_models
     import_regression_model
     """
-    from gemseo.mlearning.regression.factory import RegressionModelFactory
     from gemseo import _get_schema
+    from gemseo.mlearning.regression.factory import RegressionModelFactory
 
     return _get_schema(
         RegressionModelFactory().get_options_grammar(model_name),
@@ -407,8 +408,8 @@ def get_classification_options(
     get_classification_models
     import_classification_model
     """
-    from gemseo.mlearning.classification.factory import ClassificationModelFactory
     from gemseo import _get_schema
+    from gemseo.mlearning.classification.factory import ClassificationModelFactory
 
     return _get_schema(
         ClassificationModelFactory().get_options_grammar(model_name),
@@ -436,8 +437,8 @@ def get_clustering_options(
     get_clustering_models
     import_clustering_model
     """
-    from gemseo.mlearning.clustering.factory import ClusteringModelFactory
     from gemseo import _get_schema
+    from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 
     return _get_schema(
         ClusteringModelFactory().get_options_grammar(model_name),

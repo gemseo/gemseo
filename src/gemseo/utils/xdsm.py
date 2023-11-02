@@ -16,17 +16,18 @@
 from __future__ import annotations
 
 import webbrowser
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class XDSM:
     """A XDSM diagram (eXtended Design Structure Matrix)."""
 
-    __XDSM_TEMPLATE: Final[
-        str
-    ] = """
+    __XDSM_TEMPLATE: Final[str] = """
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', () => {{
           const mdo = {};

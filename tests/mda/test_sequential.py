@@ -22,14 +22,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.sequential_mda import MDAGSNewton
 from gemseo.mda.sequential_mda import MDASequential
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import Y_1
 from gemseo.problems.sellar.sellar import Y_2
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
 
 
 def test_sequential_mda_sellar(tmp_wd):

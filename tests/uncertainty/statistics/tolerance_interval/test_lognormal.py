@@ -23,13 +23,14 @@ from __future__ import annotations
 from math import exp
 
 import pytest
+from scipy.special import erfinv
+
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.lognormal import (
     LogNormalToleranceInterval,
 )
-from scipy.special import erfinv
 
 
 def test_lognormal_quantile_both():

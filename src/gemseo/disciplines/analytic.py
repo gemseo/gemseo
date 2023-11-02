@@ -33,8 +33,8 @@ from numpy import heaviside
 from numpy import ndarray
 from numpy import zeros
 from sympy import Expr
-from sympy import lambdify
 from sympy import Symbol
+from sympy import lambdify
 from sympy import symbols
 from sympy.parsing.sympy_parser import parse_expr
 
@@ -140,9 +140,7 @@ class AnalyticDiscipline(MDODiscipline):
 
             self._sympy_exprs[output_name] = output_expression
             all_real_input_symbols.extend(real_input_symbols.values())
-            self.output_names_to_symbols[output_name] = [
-                name for name in real_input_symbols
-            ]
+            self.output_names_to_symbols[output_name] = list(real_input_symbols)
             self._sympy_jac_exprs[output_name] = {
                 input_symbol_name: output_expression_to_derive.diff(input_symbol)
                 for input_symbol_name, input_symbol in real_input_symbols.items()
@@ -242,11 +240,11 @@ class AnalyticDiscipline(MDODiscipline):
             try:
                 output_value = output_expression.evalf(subs=input_data)
                 output_data[output_name] = self.__cast_expression_to_array(output_value)
-            except TypeError:
-                LOGGER.error(
-                    "Failed to evaluate expression : %s", str(output_expression)
+            except TypeError:  # noqa: PERF203
+                LOGGER.exception(
+                    "Failed to evaluate expression : %s", output_expression
                 )
-                LOGGER.error("With inputs : %s", str(self.local_data))
+                LOGGER.exception("With inputs : %s", self.local_data)
                 raise
 
         self.store_local_data(**output_data)

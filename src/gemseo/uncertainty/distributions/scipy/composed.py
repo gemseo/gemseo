@@ -31,15 +31,16 @@ based on the `SciPy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_ lib
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Iterable
 from typing import Sequence
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
-from numpy import array, ndarray
+from numpy import array
+from numpy import ndarray
 
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 

@@ -20,20 +20,22 @@
 """The main discipline."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Iterable
-
-from numpy.typing import NDArray
 
 from gemseo.problems.scalable.parametric.core.disciplines.main_discipline import (
     MainDiscipline as _MainDiscipline,
 )
-from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
 from gemseo.problems.scalable.parametric.core.variable_names import (
     SHARED_DESIGN_VARIABLE_NAME,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
 from gemseo.problems.scalable.parametric.disciplines.base_discipline import (
     BaseDiscipline,
 )
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class MainDiscipline(BaseDiscipline):

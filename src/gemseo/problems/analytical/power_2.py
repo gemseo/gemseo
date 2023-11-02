@@ -145,7 +145,7 @@ class Power2(OptimizationProblem):
         Returns:
             The value of the first inequality constraint.
         """
-        return -x_dv[[0]] ** 3 + 0.5
+        return -(x_dv[[0]] ** 3) + 0.5
 
     @staticmethod
     def ineq_constraint2(x_dv: ndarray) -> ndarray:
@@ -157,7 +157,7 @@ class Power2(OptimizationProblem):
         Returns:
             The value of the second inequality constraint.
         """
-        return -x_dv[[1]] ** 3 + 0.5
+        return -(x_dv[[1]] ** 3) + 0.5
 
     @staticmethod
     def eq_constraint(x_dv: ndarray) -> ndarray:
@@ -169,7 +169,7 @@ class Power2(OptimizationProblem):
         Returns:
             The value of the equality constraint.
         """
-        return -x_dv[[2]] ** 3 + 0.9
+        return -(x_dv[[2]] ** 3) + 0.9
 
     @staticmethod
     def ineq_constraint1_jac(x_dv: ndarray) -> ndarray:

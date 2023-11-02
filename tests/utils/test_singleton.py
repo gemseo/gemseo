@@ -21,6 +21,7 @@ from __future__ import annotations
 from os.path import dirname
 
 import pytest
+
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 

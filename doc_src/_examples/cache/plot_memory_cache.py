@@ -25,9 +25,10 @@ This example shows how to manipulate an :class:`.MemoryFullCache` object.
 """
 from __future__ import annotations
 
+from numpy import array
+
 from gemseo import configure_logger
 from gemseo.caches.memory_full_cache import MemoryFullCache
-from numpy import array
 
 configure_logger()
 
@@ -76,7 +77,7 @@ len(cache)
 # %%
 # We can
 # also display all the cached data so far.
-[entry for entry in cache]
+list(cache)
 
 # %%
 # Get last cached data

@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import ClassVar
 from typing import Sequence
 
 import matplotlib.pyplot as plt
@@ -70,7 +71,7 @@ class PostScalabilityStudy:
     """The PostScalabilityStudy class aims to post-process a list of scalability results
     stored in a directory."""
 
-    NOMENCLATURE = {
+    NOMENCLATURE: ClassVar[dict[str, str]] = {
         "exec_time": "Execution time (s)",
         "original_exec_time": "Pseudo-original execution time",
         "n_calls": "Number of discipline evaluations",
@@ -185,7 +186,7 @@ class PostScalabilityStudy:
             raise TypeError(
                 'The argument "description" must be '
                 "of type string, "
-                "not of type {}".format(description.__class__.__name__)
+                f"not of type {description.__class__.__name__}"
             )
         self.descriptions[keyword] = description
 
@@ -311,10 +312,7 @@ class PostScalabilityStudy:
             coef = polyfit(xvalues, yvalues, 1)
             poly1d_fn = poly1d(coef)
             plt.plot(xvalues, poly1d_fn(xvalues), linestyle=linestyle, color=color)
-            if labels is None:
-                labels = xticks
-            else:
-                labels = xvalues
+            labels = xticks if labels is None else xvalues
             plt.xticks(xticks, labels)
             plt.xlabel(self.descriptions["scaling_strategy"])
             plt.ylabel(self.descriptions[name])
@@ -460,7 +458,7 @@ class PostScalabilityStudy:
         if len(data.shape) == 3:
             data = data[0, :, :]
 
-        if data.dtype == bool:
+        if data.dtype == bool:  # noqa: E721
             # To prevent error when arrays are substracted with recent numpy
             data = data.astype(int)
 
@@ -548,7 +546,7 @@ class PostScalabilityStudy:
         indices = [index for index, is_ok in enumerate(are_ok) if is_ok]
         scaling_levels = self.get_scaling_strategies()
         scaling_levels = [scaling_levels[index] for index in indices]
-        tmp = sorted(list(range(len(scaling_levels))), key=lambda k: scaling_levels[k])
+        tmp = sorted(range(len(scaling_levels)), key=lambda k: scaling_levels[k])
         indices = [indices[index] for index in tmp]
         scaling_levels = [scaling_levels[index] for index in tmp]
         results = [self.scalability_results[index] for index in indices]
@@ -640,9 +638,9 @@ class PostScalabilityStudy:
             formulation = scalability_result.formulation
             if formulation not in self.cost_function:
                 raise ValueError(
-                    "The cost function of {} must be defined "
+                    f"The cost function of {formulation} must be defined "
                     "in order to compute "
-                    "the estimated original time.".format(formulation)
+                    "the estimated original time."
                 )
             result = self.cost_function[formulation](
                 varsizes, n_c, n_cl, n_tl_c, n_tl_cl

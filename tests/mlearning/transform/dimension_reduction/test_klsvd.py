@@ -22,13 +22,14 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transformers.dimension_reduction.klsvd import KLSVD
 from numpy import array
 from numpy import linspace
 from numpy import pi
 from numpy import sin
-from numpy.random import rand
+from numpy.random import default_rng
 from openturns import ResourceMap
+
+from gemseo.mlearning.transformers.dimension_reduction.klsvd import KLSVD
 
 N_SAMPLES = 100
 
@@ -38,26 +39,29 @@ MESH2D = [
     [x_i, x_j] for x_i in linspace(0, 1, MESH_SIZE) for x_j in linspace(0, 1, MESH_SIZE)
 ]
 
+RNG = default_rng()
+
 
 def func(tau, theta):
     """Data generating function."""
     return sin(2 * pi * (tau - theta)) + 1
 
 
-@pytest.fixture
+@pytest.fixture()
 def data():
     """The dataset used to build the transformer, based on a 1D-mesh."""
-    return array([func(array(MESH).flatten(), theta) for theta in rand(N_SAMPLES)])
+    return array(
+        [func(array(MESH).flatten(), theta) for theta in RNG.random(N_SAMPLES)]
+    )
 
 
-@pytest.fixture
+@pytest.fixture()
 def data2d():
     """The dataset used to build the transformer, based on a 2D-mesh."""
     tau = array(MESH2D)
     tau = tau[:, 0] - tau[:, 1]
     tau.flatten()
-    data_ = array([func(tau, theta) for theta in rand(N_SAMPLES)])
-    return data_
+    return array([func(tau, theta) for theta in RNG.random(N_SAMPLES)])
 
 
 def test_constructor():

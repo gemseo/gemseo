@@ -92,7 +92,7 @@ class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
         By default, the ``stderr`` option is set to ``subprocess.STDOUT``.
 
         Args:
-            subprocess_run_options: The options to give to the ``subprocess.run`` method.
+            subprocess_run_options: The options for the ``subprocess.run`` method.
 
         Raises:
             KeyError: When the options ``cwd``, ``args`` or ``shell`` are given.

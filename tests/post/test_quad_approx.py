@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.post.quad_approx import QuadApprox
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -37,7 +38,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "use_standardized_objective, function, baseline_images",
+    ("use_standardized_objective", "function", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

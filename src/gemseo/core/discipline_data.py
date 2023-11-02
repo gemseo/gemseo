@@ -30,8 +30,8 @@ from typing import MutableMapping
 from numpy import ndarray
 from pandas import DataFrame
 
-from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
+from gemseo.core.namespaces import namespaces_separator
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.portable_path import to_os_specific
 
@@ -50,7 +50,8 @@ class DisciplineData(
     as if they were multiple items bound to :class:`numpy.ndarray`.
     Then, an object of this class may be used as if it was a standard dictionary
     containing :class:`numpy.ndarray`,
-    which is the assumption made by the clients of the :class:`.MDODiscipline` subclasses.
+    which is the assumption made by the clients of the
+    :class:`.MDODiscipline` subclasses.
 
     As compared to a standard dictionary,
     the methods of this class may hide the values bound to :class:`pandas.DataFrame`
@@ -142,25 +143,26 @@ class DisciplineData(
         Args:
             data: A dict-like object or a :class:`.DisciplineData` object.
                 If ``None``, an empty dictionary is used.
-            input_to_namespaced: The mapping from input data names to their prefixed names.
-            output_to_namespaced: The mapping from output data names to their prefixed names.
+            input_to_namespaced: The mapping from input data names
+                to their prefixed names.
+            output_to_namespaced: The mapping from output data names
+                to their prefixed names.
         """  # noqa: D205, D212, D415
         if isinstance(data, self.__class__):
             # By construction, data's keys shall have been already checked.
             # We demangle __data to keep it private because this is an implementation
             # detail.
             self.__data = getattr(data, "_DisciplineData__data")  # noqa:B009
+        elif data is None:
+            self.__data = {}
         else:
-            if data is None:
-                self.__data = {}
-            else:
-                if not isinstance(data, MutableMapping):
-                    raise TypeError(
-                        f"Invalid type for data, got {type(data)},"
-                        " while expected a MutableMapping."
-                    )
-                self.__check_keys(*data)
-                self.__data = data
+            if not isinstance(data, MutableMapping):
+                raise TypeError(
+                    f"Invalid type for data, got {type(data)},"
+                    " while expected a MutableMapping."
+                )
+            self.__check_keys(*data)
+            self.__data = data
 
         self.__input_to_namespaced = (
             input_to_namespaced if input_to_namespaced is not None else {}
@@ -174,8 +176,7 @@ class DisciplineData(
             value = self.__data[key]
             if isinstance(value, MutableMapping):
                 return DisciplineData(value)
-            else:
-                return value
+            return value
 
         if self.SEPARATOR in key:
             df_key, column = key.split(self.SEPARATOR)
@@ -235,7 +236,7 @@ class DisciplineData(
         for key, value in self.__data.items():
             if isinstance(value, DataFrame):
                 prefix = key + self.SEPARATOR
-                for name in value.keys():
+                for name in value:
                     yield prefix + name
             else:
                 yield key

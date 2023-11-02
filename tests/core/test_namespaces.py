@@ -33,6 +33,8 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo.core.chain import MDOChain
@@ -46,12 +48,11 @@ from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.namespaces import remove_prefix_from_name
 from gemseo.core.namespaces import split_namespace
 from gemseo.core.namespaces import update_namespaces
-from numpy import array
 
 
 def func_1(x=1.0, u=2.0):
     y = 2.0 * x + u
-    return y
+    return y  # noqa: RET504
 
 
 def dfunc_1(x=1.0, u=2.0):
@@ -60,7 +61,7 @@ def dfunc_1(x=1.0, u=2.0):
 
 def func_2(y=3.0, a=2.0):
     z = 2.0 * y
-    return z
+    return z  # noqa: RET504
 
 
 def func_3(y=2.0):
@@ -289,12 +290,12 @@ def test_simple_grammar_add_namespace():
 
 def a_func(x=1.0):
     y = x + 1
-    return y
+    return y  # noqa: RET504
 
 
 def b_func(y=1.0):
     z = y + 1
-    return z
+    return z  # noqa: RET504
 
 
 def test_namespaces_chain():

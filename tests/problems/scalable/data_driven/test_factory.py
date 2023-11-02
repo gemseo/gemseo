@@ -18,10 +18,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.scalable.data_driven.factory import ScalableModelFactory
 from numpy import array
 from numpy import newaxis
+
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.problems.scalable.data_driven.factory import ScalableModelFactory
 
 
 def test_constructor():

@@ -19,16 +19,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import contextlib
 import unittest
 
 import numpy as np
+from numpy import zeros
+
 from gemseo.algos.driver_library import MaxIterReachedException
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.analytical.rosenbrock import RosenMF
-from numpy import zeros
 
 
 class TestAnalyticalFunctions(unittest.TestCase):
@@ -56,10 +58,8 @@ class TestAnalyticalFunctions(unittest.TestCase):
 
         x_0 = problem.get_x0_normalized()
         for func in problem.get_all_functions():
-            try:
+            with contextlib.suppress(MaxIterReachedException):
                 func.check_grad(x_0, step=1e-9, error_max=1e-4)
-            except MaxIterReachedException:
-                pass
 
     def test_rastrigin(self):
         """"""

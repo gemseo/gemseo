@@ -19,6 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from numpy import pi
+from numpy.random import default_rng
+
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -30,8 +33,6 @@ from gemseo.uncertainty import get_available_sensitivity_analyses
 from gemseo.uncertainty import load_sensitivity_analysis
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
-from numpy import pi
-from numpy.random import normal
 
 
 def test_available_distribution():
@@ -70,8 +71,7 @@ def test_create_sensitivity():
 
 def test_create_statistics():
     n_samples = 100
-    normal_rand = normal(size=n_samples).reshape((-1, 1))
-    dataset = Dataset.from_array(normal_rand)
+    dataset = Dataset.from_array(default_rng().normal(size=(n_samples, 1)))
     stat = create_statistics(dataset)
     assert isinstance(stat, EmpiricalStatistics)
     stat = create_statistics(dataset, tested_distributions=["Normal", "Exponential"])

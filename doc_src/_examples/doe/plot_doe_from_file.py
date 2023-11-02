@@ -23,6 +23,8 @@ Use a design of experiments from a file
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -40,8 +42,7 @@ design_space.add_variable("b", 1, design_space.DesignVariableType.INTEGER, 1, 10
 # %%
 # We want to evaluate this discipline over this design space
 # by using the input samples defined in the file "doe.txt":
-f = open("doe.txt")
-print(f.read())
+print(Path("doe.txt").read_text())
 
 # %%
 # In this file,

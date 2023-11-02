@@ -20,22 +20,24 @@
 """The scalable discipline."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Mapping
-
-from numpy.typing import NDArray
 
 from gemseo.problems.scalable.parametric.core.disciplines.scalable_discipline import (
     ScalableDiscipline as _ScalableDiscipline,
 )
-from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 from gemseo.problems.scalable.parametric.core.variable_names import (
     SHARED_DESIGN_VARIABLE_NAME,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 from gemseo.problems.scalable.parametric.disciplines.base_discipline import (
     BaseDiscipline,
 )
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class ScalableDiscipline(BaseDiscipline):
@@ -58,8 +60,8 @@ class ScalableDiscipline(BaseDiscipline):
         index: int,
         a_i: NDArray,
         D_i0: NDArray,  # noqa: N803
-        D_ii: NDArray,
-        C_ij: Mapping[str, NDArray[float]],
+        D_ii: NDArray,  # noqa: N803
+        C_ij: Mapping[str, NDArray[float]],  # noqa: N803
         **default_input_values: NDArray[float],
     ) -> None:
         r"""

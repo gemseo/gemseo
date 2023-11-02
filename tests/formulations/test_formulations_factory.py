@@ -21,6 +21,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.formulations.mdf import MDF
@@ -28,12 +29,11 @@ from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.utils.testing.helpers import concretize_classes
-
 from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulationFactory
-from tests.formulations.not_mdo_formulations.formulation_A import ANotMDOFormulation
+from tests.formulations.not_mdo_formulations.formulation_a import ANotMDOFormulation
 
 
-@pytest.fixture
+@pytest.fixture()
 def factory(reset_factory) -> MDOFormulationsFactory:
     """The factory of MDOFormulation."""
     return MDOFormulationsFactory()

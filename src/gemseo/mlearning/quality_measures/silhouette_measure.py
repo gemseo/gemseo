@@ -40,17 +40,21 @@ where
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Sequence
 
-from numpy import ndarray
 from sklearn.metrics import silhouette_score
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 from gemseo.mlearning.quality_measures.cluster_measure import (
     MLPredictiveClusteringMeasure,
 )
-from gemseo.mlearning.quality_measures.quality_measure import MeasureType
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
+    from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 
 
 class SilhouetteMeasure(MLPredictiveClusteringMeasure):

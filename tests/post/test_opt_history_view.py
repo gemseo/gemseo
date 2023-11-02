@@ -23,6 +23,8 @@ import sys
 from pathlib import Path
 
 import pytest
+from numpy import array
+
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
@@ -30,7 +32,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import array
 
 DIR_PATH = Path(__file__).parent
 POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
@@ -47,7 +48,7 @@ def test_get_constraints():
 
 
 @pytest.mark.parametrize(
-    "obj_relative,baseline_images",
+    ("obj_relative", "baseline_images"),
     [
         (
             False,
@@ -88,11 +89,11 @@ def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all):
         obj_max=5.0,
         obj_relative=obj_relative,
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 @pytest.mark.parametrize(
-    "problem_path,baseline_images",
+    ("problem_path", "baseline_images"),
     [
         (
             POWER2_NAN_PATH,
@@ -133,7 +134,7 @@ def test_opt_hist_from_database(baseline_images, problem_path, pyplot_close_all)
     post = execute_post(
         problem, "OptHistoryView", variable_names=None, show=False, save=False
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 def test_diag_with_nan(caplog):
@@ -149,7 +150,7 @@ def test_diag_with_nan(caplog):
     execute_post(problem, "OptHistoryView", save=False, show=False)
     log = caplog.text
     assert "Failed to create Hessian approximation." in log
-    assert "ValueError: The approximated Hessian diagonal contains NaN." in log
+    assert "The approximated Hessian diagonal contains NaN." in log
 
 
 TEST_PARAMETERS = {
@@ -179,7 +180,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "use_standardized_objective, baseline_images",
+    ("use_standardized_objective", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
@@ -202,7 +203,7 @@ def test_common_scenario(
     reason="The last version of matplotlib does not support py38",
 )
 @pytest.mark.parametrize(
-    "case,baseline_images",
+    ("case", "baseline_images"),
     [
         (
             1,

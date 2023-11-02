@@ -25,6 +25,10 @@ import unittest
 from itertools import permutations
 
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import ones
+
 from gemseo import MDODiscipline
 from gemseo.core.chain import MDOAdditiveChain
 from gemseo.core.chain import MDOChain
@@ -38,9 +42,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.sobieski.process.mdo_chain import SobieskiChain
-from numpy import allclose
-from numpy import array
-from numpy import ones
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -56,10 +57,7 @@ class Testmdochain(unittest.TestCase):
             SobieskiMission(dtype),
         ]
 
-        diff_order_disc = []
-        for p in perm:
-            diff_order_disc.append(disciplines[p])
-        return diff_order_disc
+        return [disciplines[p] for p in perm]
 
     def test_linearize_sobieski_chain_combinatorial(self):
         """"""
@@ -98,7 +96,7 @@ class Testmdochain(unittest.TestCase):
                 )
                 assert ok
 
-    @pytest.mark.skip_under_windows
+    @pytest.mark.skip_under_windows()
     def test_parallel_chain_combinatorial_mprocess(self):
         # Keep the two first only as MP is slow there
         perms = list(permutations(range(4)))[:2]
@@ -187,7 +185,9 @@ def test_mdo_chain_serialization(tmp_wd):
     chain.execute()
 
 
-@pytest.mark.parametrize("variable_names, expected", [(["y_21"], True), ([], False)])
+@pytest.mark.parametrize(
+    ("variable_names", "expected"), [(["y_21"], True), ([], False)]
+)
 def test_warm_started_mdo_chain(variable_names, expected):
     """Test that the variables are warm-started properly."""
     disciplines = [
@@ -213,7 +213,7 @@ def test_warm_started_mdo_chain_jac():
         chain.check_jacobian()
 
 
-@pytest.mark.parametrize("variable_names", (["y_4", "i_dont_exist"], ["i_dont_exist"]))
+@pytest.mark.parametrize("variable_names", [("y_4", "i_dont_exist"), ("i_dont_exist",)])
 def test_warm_started_mdo_chain_variables(variable_names):
     """Test an exception if a variable that is not in the chain is warm started."""
     with pytest.raises(
@@ -227,7 +227,7 @@ def test_warm_started_mdo_chain_variables(variable_names):
         )
 
 
-@pytest.fixture
+@pytest.fixture()
 def two_virtual_disciplines() -> list[MDODiscipline]:
     """Create two dummy disciplines that have no _run method and can only be executed in
     virtual mode.

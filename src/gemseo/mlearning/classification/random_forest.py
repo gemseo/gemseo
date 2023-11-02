@@ -30,6 +30,7 @@ generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
@@ -39,9 +40,11 @@ from numpy import newaxis
 from numpy import stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
-from gemseo.mlearning.core.ml_algo import TransformerType
+
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class RandomForestClassifier(MLClassificationAlgo):

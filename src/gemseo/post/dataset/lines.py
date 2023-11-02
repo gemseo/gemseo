@@ -20,14 +20,17 @@
 """Connect the observations of variables stored in a :class:`.Dataset` with lines."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Sequence
 
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class Lines(DatasetPlot):

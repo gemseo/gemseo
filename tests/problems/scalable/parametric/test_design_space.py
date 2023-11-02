@@ -16,6 +16,9 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+from numpy.testing import assert_equal
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import RandomVariable
 from gemseo.problems.scalable.parametric.core.scalable_discipline_settings import (
@@ -24,8 +27,6 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
 from gemseo.problems.scalable.parametric.scalable_design_space import (
     ScalableDesignSpace,
 )
-from numpy import array
-from numpy.testing import assert_equal
 
 
 @pytest.fixture(scope="module")

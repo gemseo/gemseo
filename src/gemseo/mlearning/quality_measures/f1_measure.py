@@ -34,12 +34,17 @@ divided by the total number of *true* positives.
 """
 from __future__ import annotations
 
-from numpy import ndarray
+from typing import TYPE_CHECKING
+
 from sklearn.metrics import f1_score
 
-from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MeasureType
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.mlearning.classification.classification import MLClassificationAlgo
+    from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 
 
 class F1Measure(MLErrorMeasure):

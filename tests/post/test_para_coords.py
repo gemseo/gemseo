@@ -21,10 +21,10 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo.post.para_coord import ParallelCoordinates
-from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 
+from gemseo.post.para_coord import ParallelCoordinates
+from gemseo.utils.testing.helpers import image_comparison
 
 TEST_PARAMETERS = {
     "standardized": (True, ["PC_standardized_0", "PC_standardized_1"]),
@@ -33,7 +33,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "use_standardized_objective, baseline_images",
+    ("use_standardized_objective", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

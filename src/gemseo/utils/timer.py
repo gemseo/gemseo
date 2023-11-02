@@ -31,7 +31,10 @@ from __future__ import annotations
 
 import logging
 from time import perf_counter
-from types import TracebackType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from types import TracebackType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,7 +72,7 @@ class Timer:
 
     def __exit__(
         self,
-        type: type[BaseException] | None,
+        _: type[BaseException] | None,
         value: BaseException | None,
         traceback: TracebackType | None,
     ) -> None:

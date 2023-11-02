@@ -21,11 +21,13 @@ from typing import TYPE_CHECKING
 from numpy import eye
 
 if TYPE_CHECKING:
-    from gemseo import MLRegressionAlgo
     from typing import Any
     from typing import Callable
-    from gemseo.mlearning.core.ml_algo import DataType
+
     from numpy import ndarray
+
+    from gemseo import MLRegressionAlgo
+    from gemseo.mlearning.core.ml_algo import DataType
 
 from gemseo.mlearning.data_formatters.supervised_data_formatters import (
     SupervisedDataFormatters,

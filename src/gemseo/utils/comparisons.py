@@ -73,10 +73,7 @@ def compare_dict_of_arrays(
             else:
                 norm_diff = norm(difference)
 
-            if isinstance(value, spmatrix):
-                norm_ref = spnorm(value)
-            else:
-                norm_ref = norm(value)
+            norm_ref = spnorm(value) if isinstance(value, spmatrix) else norm(value)
 
             if norm_diff > tolerance * (1.0 + norm_ref):
                 return False

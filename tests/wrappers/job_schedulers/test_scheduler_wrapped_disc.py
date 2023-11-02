@@ -24,6 +24,7 @@ from pathlib import Path
 from string import Template
 
 import pytest
+
 from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo.utils.comparisons import compare_dict_of_arrays
@@ -32,10 +33,9 @@ from gemseo.wrappers import job_schedulers
 from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
     JobSchedulerDisciplineWrapper,
 )
-from pytest import fixture
 
 
-@fixture
+@pytest.fixture()
 def discipline(tmpdir):
     """Create a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the SLURM template.
@@ -44,7 +44,7 @@ def discipline(tmpdir):
         The wrapped discipline.
     """
     template_path = Path(job_schedulers.__file__).parent / "templates" / "SLURM"
-    disc = JobSchedulerDisciplineWrapper(
+    return JobSchedulerDisciplineWrapper(
         discipline=create_discipline("SobieskiMission"),
         workdir_path=tmpdir,
         scheduler_run_command="sbatch",
@@ -58,10 +58,8 @@ def discipline(tmpdir):
         wall_time="1:0:0",
     )
 
-    return disc
 
-
-@fixture
+@pytest.fixture()
 def discipline_mocked_js(tmpdir) -> JobSchedulerDisciplineWrapper:
     """Creates a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the mock template.

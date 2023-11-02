@@ -83,7 +83,7 @@ def create_sobieski_bilevel_scenario(
         )
 
         sub_scenarios = [sc_str, sc_aero, sc_prop]
-        sub_disciplines = sub_scenarios + [mission]
+        sub_disciplines = [*sub_scenarios, mission]
         for sc in sub_scenarios:
             sc.default_inputs = {"max_iter": 5, "algo": "SLSQP"}
 

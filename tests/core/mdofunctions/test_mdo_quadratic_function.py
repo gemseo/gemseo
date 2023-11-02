@@ -16,10 +16,11 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 from numpy import array
 from numpy.testing import assert_equal
+
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 
 
 @pytest.fixture(scope="module")
@@ -56,7 +57,7 @@ def test_init(coefficients):
 
 
 @pytest.mark.parametrize(
-    ["function", "value", "gradient"],
+    ("function", "value", "gradient"),
     [
         ("quadratic_function", 51.0, [17.0, 27.0]),
         ("quadratic_without_linear_term", 34.0, [12.0, 21.0]),
@@ -70,12 +71,11 @@ def test_values(function, value, gradient, request):
 
 
 @pytest.mark.parametrize(
-    ["function", "expr"],
+    ("function", "expr"),
     [
         (
             "quadratic_function",
-            "[x]'[{} {}][x] + [{}]'[x] + {}\n"
-            "[y] [{} {}][y]   [{}] [y]".format(
+            "[x]'[{} {}][x] + [{}]'[x] + {}\n" "[y] [{} {}][y]   [{}] [y]".format(
                 *(
                     MDOFunction.COEFF_FORMAT_ND.format(coefficient)
                     for coefficient in (1, 2, 5, 7, 3, 4, 6)
@@ -84,8 +84,7 @@ def test_values(function, value, gradient, request):
         ),
         (
             "quadratic_without_linear_term",
-            "[x]'[{} {}][x] + {}\n"
-            "[y] [{} {}][y]".format(
+            "[x]'[{} {}][x] + {}\n" "[y] [{} {}][y]".format(
                 *(
                     MDOFunction.COEFF_FORMAT_ND.format(coefficient)
                     for coefficient in (1, 2, 7, 3, 4)

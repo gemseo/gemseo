@@ -132,16 +132,17 @@ High-level functions
 """
 from __future__ import annotations
 
+import contextlib
 import logging
 import re
 from collections import namedtuple
 from os import PathLike
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
-from typing import TYPE_CHECKING
 
 import pkg_resources as __pkg_resources
 from numpy import ndarray
@@ -150,38 +151,34 @@ from strenum import StrEnum
 from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.dataset_factory import DatasetFactory as __DatasetFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.matplotlib_figure import FigSizeType
 
 # TODO: API: protect these import under TYPE_CHECKING.
 
-try:
+with contextlib.suppress(__pkg_resources.DistributionNotFound):
     __version__ = __pkg_resources.get_distribution("package-name").version
-except __pkg_resources.DistributionNotFound:
-    # package is not installed
-    pass
 
 if TYPE_CHECKING:
     from logging import Logger
-    from gemseo.post.opt_post_processor import OptPostProcessor
-    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.doe.doe_library import DOELibraryOptionType
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.cache import AbstractCache
-    from gemseo.datasets.dataset import Dataset
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
+    from gemseo.datasets.dataset import Dataset
     from gemseo.disciplines.surrogate import SurrogateDiscipline
     from gemseo.mda.mda import MDA
     from gemseo.mlearning.core.ml_algo import TransformerType
-    from gemseo.problems.scalable.data_driven.discipline import (
-        ScalableDiscipline,
-    )
+    from gemseo.post._graph_view import GraphView
+    from gemseo.post.opt_post_processor import OptPostProcessor
+    from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
+    from gemseo.utils.matplotlib_figure import FigSizeType
     from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
         JobSchedulerDisciplineWrapper,
     )
-    from gemseo.post._graph_view import GraphView
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from this root module.
@@ -273,8 +270,7 @@ def generate_coupling_graph(
     coupling_structure = MDOCouplingStructure(disciplines)
     if full:
         return coupling_structure.graph.export_initial_graph(file_path)
-    else:
-        return coupling_structure.graph.export_reduced_graph(file_path)
+    return coupling_structure.graph.export_reduced_graph(file_path)
 
 
 def get_available_formulations() -> list[str]:
@@ -457,8 +453,7 @@ def get_algorithm_options_schema(
         if factory.is_available(algorithm_name):
             algo_lib = factory.create(algorithm_name)
             opts_gram = algo_lib.init_options_grammar(algorithm_name)
-            schema = _get_schema(opts_gram, output_json, pretty_print)
-            return schema
+            return _get_schema(opts_gram, output_json, pretty_print)
     raise ValueError(f"Algorithm named {algorithm_name} is not available.")
 
 
@@ -913,10 +908,7 @@ def _get_schema(
     dict_schema = json_grammar.schema
 
     if pretty_print:
-        if "name" in dict_schema:
-            title = dict_schema["name"].replace("_", " ")
-        else:
-            title = None
+        title = dict_schema["name"].replace("_", " ") if "name" in dict_schema else None
         table = PrettyTable(title=title, max_table_width=150)
         names = []
         descriptions = []
@@ -1115,7 +1107,8 @@ def configure_logger(
         >>> import logging
         >>> configure_logger(level=logging.WARNING)
     """
-    from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
+    from gemseo.utils.logging_tools import MultiLineFileHandler
+    from gemseo.utils.logging_tools import MultiLineStreamHandler
 
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
@@ -1153,7 +1146,7 @@ def create_discipline(
     Returns:
         The disciplines.
 
-    Examples
+    Examples:
         >>> from gemseo import create_discipline
         >>> discipline = create_discipline('Sellar1')
         >>> discipline.execute()
@@ -1212,7 +1205,7 @@ def import_discipline(
 def create_scalable(
     name: str,
     data: Dataset,
-    sizes: Mapping[str, int] = None,
+    sizes: Mapping[str, int] | None = None,
     **parameters: Any,
 ) -> ScalableDiscipline:
     """Create a scalable discipline from a dataset.
@@ -1716,7 +1709,7 @@ def create_dataset(
             variable_names_to_n_components,
             variable_names_to_group_names,
         )
-    elif data == "":
+    elif not data:
         dataset = dataset_class()
     elif isinstance(data, (PathLike, str)):
         data = Path(data)
@@ -2018,8 +2011,8 @@ def wrap_discipline_in_job_scheduler(
         custom ones are not and this will make the submission proess fail.
 
     Examples:
-        This example execute a DOE of 100 points on an MDA, each MDA is executed on 24 CPUS
-        using the SLURM wrapper, on a HPC, and at most 10 points run in parallel,
+        This example execute a DOE of 100 points on an MDA, each MDA is executed on 24
+        CPUS using the SLURM wrapper, on a HPC, and at most 10 points run in parallel,
         everytime a point of the DOE is computed, another one is submitted to the queue.
 
         >>> from gemseo.wrappers.job_schedulers.schedulers_factory import SchedulersFactory
@@ -2053,7 +2046,7 @@ def wrap_discipline_in_job_scheduler(
         >>> scn.formulation.mda.set_cache_policy(MDODiscipline.HDF5_CACHE,
         >>>                                      cache_hdf_file="mda_cache.h5")
         >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes":10})
-    """  # noqa:D205 D212 D415
+    """  # noqa:D205 D212 D415 E501
     from gemseo.wrappers.job_schedulers.schedulers_factory import SchedulersFactory
 
     return SchedulersFactory().wrap_discipline(

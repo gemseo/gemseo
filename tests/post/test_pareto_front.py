@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
@@ -50,7 +51,7 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    ("kwargs", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
@@ -81,7 +82,7 @@ def test_pareto(
         objectives=problem.get_all_function_name(),
         **kwargs,
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 def test_pareto_minimize(
@@ -104,7 +105,10 @@ def test_pareto_incorrect_objective_list():
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
     DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
-    msg = "objective_labels shall have the same dimension as the number of objectives to plot."
+    msg = (
+        "objective_labels shall have the same dimension as the number of objectives "
+        "to plot."
+    )
     with pytest.raises(ValueError, match=msg):
         PostFactory().execute(
             problem,
@@ -135,7 +139,7 @@ def test_pareto_incorrect_objective_names():
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    ("kwargs", "baseline_images"),
     TEST_PARAMETERS_BINHKORN.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS_BINHKORN.keys(),
@@ -166,7 +170,7 @@ def test_pareto_binhkorn(
         objectives=["compute_binhkorn"],
         **kwargs,
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 @image_comparison(["binh_korn_design_variable"])
@@ -187,7 +191,7 @@ def test_pareto_binhkorn_design_variable(pyplot_close_all):
         objectives=["x", "compute_binhkorn"],
         objectives_labels=["xx", "compute_binhkorn1", "compute_binhkorn2"],
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 @image_comparison(["binh_korn_no_obj"])
@@ -206,4 +210,4 @@ def test_pareto_binhkorn_no_obj(pyplot_close_all):
         save=False,
         file_path="binh_korn_no_obj",
     )
-    post.figures
+    post.figures  # noqa: B018

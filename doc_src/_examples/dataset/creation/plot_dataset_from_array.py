@@ -26,13 +26,15 @@ In this example, we will see how to build a :class:`.Dataset` from an NumPy arra
 """
 from __future__ import annotations
 
+from numpy import concatenate
+from numpy.random import default_rng
+
 from gemseo import configure_logger
 from gemseo.datasets.dataset import Dataset
-from numpy import concatenate
-from numpy.random import rand
 
 configure_logger()
 
+rng = default_rng(1)
 
 # %%
 # Let us consider three parameters :math:`x_1`, :math:`x_2` and :math:`x_3`
@@ -44,8 +46,8 @@ configure_logger()
 #
 # and 5 random samples of the outputs:
 n_samples = 5
-inputs = rand(n_samples, 3)
-outputs = rand(n_samples, 3)
+inputs = rng.random((n_samples, 3))
+outputs = rng.random((n_samples, 3))
 data = concatenate((inputs, outputs), 1)
 
 # %%

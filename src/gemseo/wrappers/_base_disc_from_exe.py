@@ -16,11 +16,15 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.discipline_data import Data
-from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.core.discipline_data import Data
+    from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
 
 
 class _BaseDiscFromExe(MDODiscipline):

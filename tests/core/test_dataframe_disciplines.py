@@ -19,6 +19,9 @@ from __future__ import annotations
 import numpy as np
 import numpy.testing
 import pytest
+from numpy import array
+from pandas import DataFrame
+
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
@@ -31,8 +34,6 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDAQuasiNewton
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from numpy import array
-from pandas import DataFrame
 
 from .test_discipline_data import to_df_key
 
@@ -164,10 +165,7 @@ def test_disciplines_comparison(grammar_type, disc_class, df_shares_io):
     with_df = True
     disc_with_df = get_executed_disc(disc_class, with_df, grammar_type, df_shares_io)
 
-    if df_shares_io:
-        output_name = to_df_key("x", "b")
-    else:
-        output_name = to_df_key("y", "b")
+    output_name = to_df_key("x", "b") if df_shares_io else to_df_key("y", "b")
 
     assert len(disc_with_df.local_data) == len(disc.local_data)
     assert disc_with_df.local_data[to_df_key("x", "a")] == disc.local_data["a"]
@@ -252,12 +250,12 @@ def assert_disc_data_equal(dd1, dd2):
 
 
 @pytest.mark.parametrize(
-    "cache_name,cache_options",
+    ("cache_name", "cache_options"),
     [
-        ("SimpleCache", dict()),
-        ("MemoryFullCache", dict()),
-        ("MemoryFullCache", dict(is_memory_shared=False)),
-        ("HDF5Cache", dict(hdf_file_path="dummy.h5", hdf_node_path="DummyCache")),
+        ("SimpleCache", {}),
+        ("MemoryFullCache", {}),
+        ("MemoryFullCache", {"is_memory_shared": False}),
+        ("HDF5Cache", {"hdf_file_path": "dummy.h5", "hdf_node_path": "DummyCache"}),
     ],
 )
 def test_cache(cache_name, cache_options, tmp_wd):

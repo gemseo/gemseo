@@ -20,12 +20,8 @@
 """Tests for the module scalable_discipline_settings."""
 from __future__ import annotations
 
-from gemseo.problems.scalable.parametric.core.default_settings import (
-    DEFAULT_D_I,
-)
-from gemseo.problems.scalable.parametric.core.default_settings import (
-    DEFAULT_P_I,
-)
+from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_I
+from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_P_I
 from gemseo.problems.scalable.parametric.core.scalable_discipline_settings import (
     DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
 )
@@ -47,7 +43,7 @@ def test_scalable_discipline_settings():
 
 def test_default_scalable_discipline_settings():
     """Check the tuple DEFAULT_SCALABLE_DISCIPLINE_SETTINGS."""
-    assert DEFAULT_SCALABLE_DISCIPLINE_SETTINGS == (
+    assert (
         ScalableDisciplineSettings(),
         ScalableDisciplineSettings(),
-    )
+    ) == DEFAULT_SCALABLE_DISCIPLINE_SETTINGS

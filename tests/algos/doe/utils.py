@@ -20,12 +20,15 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+
+if TYPE_CHECKING:
+    from gemseo.algos.doe.doe_library import DOELibrary
 
 
 def get_problem(
@@ -96,11 +99,9 @@ def check_problem_execution(
     samples = doe_library.unit_samples
 
     pb_name = problem.__class__.__name__
-    error_msg = "DOE with {} failed to generate sample on problem {}".format(
-        algo_name, pb_name
-    )
+    error_msg = f"DOE with {algo_name} failed to generate sample on problem {pb_name}"
 
-    if not len(samples.shape) == 2 or samples.shape[0] == 0:
+    if len(samples.shape) != 2 or samples.shape[0] == 0:
         error_msg += f", wrong samples shapes : {samples.shape}"
         return error_msg
 
@@ -111,6 +112,7 @@ def check_problem_execution(
         error_msg += "\n number_samples are not the expected ones : "
         error_msg += f"\n expected : {exp_samples} got : {get_samples}"
         return error_msg
+    return None
 
 
 def create_test_function(
@@ -144,7 +146,7 @@ def create_test_function(
             dim, doe_library, algo_name, get_expected_nsamples, options
         )
         if msg is not None:
-            raise Exception(msg)
+            raise ValueError(msg)
 
     return test_problem_execution
 

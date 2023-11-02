@@ -16,6 +16,9 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+from numpy import zeros
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -24,11 +27,9 @@ from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
 )
 from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from numpy import array
-from numpy import zeros
 
 
-@pytest.fixture
+@pytest.fixture()
 def linear_combination_for_tests():
     """Define a linear combination disciplines for pytests."""
     return LinearCombination(

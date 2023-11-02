@@ -16,16 +16,13 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.problems.scalable.parametric.core.variable_names import (
     CONSTRAINT_VARIABLE_BASE_NAME,
 )
 from gemseo.problems.scalable.parametric.core.variable_names import (
     COUPLING_VARIABLE_BASE_NAME,
 )
-from gemseo.problems.scalable.parametric.core.variable_names import get_constraint_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 from gemseo.problems.scalable.parametric.core.variable_names import (
     LOCAL_DESIGN_VARIABLE_BASE_NAME,
 )
@@ -36,6 +33,10 @@ from gemseo.problems.scalable.parametric.core.variable_names import (
 from gemseo.problems.scalable.parametric.core.variable_names import (
     UNCERTAIN_VARIABLE_BASE_NAME,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import get_constraint_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 
 
 def test_get_u_local_name():
@@ -59,7 +60,7 @@ def test_get_constraint_name():
 
 
 @pytest.mark.parametrize(
-    "variable,value",
+    ("variable", "value"),
     [
         (SHARED_DESIGN_VARIABLE_NAME, "x_0"),
         (OBJECTIVE_NAME, "f"),

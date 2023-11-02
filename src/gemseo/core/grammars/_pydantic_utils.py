@@ -18,8 +18,8 @@ from __future__ import annotations
 from typing import Any
 
 from numpy import can_cast
-from numpy import complex128
 from numpy import complex64
+from numpy import complex128
 from numpy import dtype
 from numpy import ndarray
 from pydantic import BoolError
@@ -42,8 +42,8 @@ def strict_bool_validator(val: Any) -> bool:
     Raises:
         BoolError: If the value is not valid.
     """
-    if val not in (True, False):
-        raise BoolError()
+    if val not in {True, False}:
+        raise BoolError
     return val
 
 
@@ -99,7 +99,7 @@ def strict_complex_validator(val: Any) -> complex:
     """
     if isinstance(val, (float, complex)):
         return val
-    raise ComplexError()
+    raise ComplexError
 
 
 def _type_analysis(self) -> None:

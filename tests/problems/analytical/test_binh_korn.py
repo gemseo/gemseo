@@ -20,8 +20,9 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.problems.analytical.binh_korn import BinhKorn
 from numpy import array
+
+from gemseo.problems.analytical.binh_korn import BinhKorn
 
 
 @pytest.fixture()

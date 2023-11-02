@@ -20,16 +20,9 @@
 """Test linear regression module."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
-from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
-from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from numpy.testing import assert_almost_equal
@@ -37,10 +30,22 @@ from sklearn.linear_model import ElasticNet
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import Ridge
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mlearning import import_regression_model
+from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
+from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
+
 LEARNING_SIZE = 9
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
@@ -53,7 +58,7 @@ def dataset() -> IODataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture
+@pytest.fixture()
 def model(dataset) -> LinearRegressor:
     """A trained LinearRegressor."""
     linreg = LinearRegressor(dataset)
@@ -61,7 +66,7 @@ def model(dataset) -> LinearRegressor:
     return linreg
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_transform(dataset) -> LinearRegressor:
     """A trained LinearRegressor with inputs and outputs scaling."""
     linreg = LinearRegressor(
@@ -80,15 +85,15 @@ def test_constructor(dataset):
 
 
 @pytest.mark.parametrize(
-    "l2_penalty_ratio,type",
+    ("l2_penalty_ratio", "type_"),
     [(0.0, Lasso), (1.0, Ridge), (0.5, ElasticNet)],
 )
-def test_constructor_penalty(dataset, l2_penalty_ratio, type):
+def test_constructor_penalty(dataset, l2_penalty_ratio, type_):
     """Test construction."""
     model_ = LinearRegressor(
         dataset, penalty_level=0.1, l2_penalty_ratio=l2_penalty_ratio
     )
-    assert isinstance(model_.algo, type)
+    assert isinstance(model_.algo, type_)
     model_.learn()
     assert model_._predict(array([[1, 2]])).shape == (1, 2)
 

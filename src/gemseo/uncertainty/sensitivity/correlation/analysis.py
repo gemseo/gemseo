@@ -21,8 +21,8 @@
 """Class for the estimation of various correlation coefficients."""
 from __future__ import annotations
 
-from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import Collection
@@ -34,19 +34,15 @@ from typing import Sequence
 from numpy import array
 from numpy import newaxis
 from numpy import vstack
-from numpy.typing import NDArray
 from openturns import Sample
 from strenum import StrEnum
 
-from gemseo.algos.doe.doe_library import DOELibraryOptionType
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.dataset_plot import VariableType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import OutputsType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.compatibility.openturns import compute_kendall_tau
 from gemseo.utils.compatibility.openturns import compute_pcc
 from gemseo.utils.compatibility.openturns import compute_pearson_correlation
@@ -55,9 +51,18 @@ from gemseo.utils.compatibility.openturns import compute_spearman_correlation
 from gemseo.utils.compatibility.openturns import compute_squared_src
 from gemseo.utils.compatibility.openturns import compute_src
 from gemseo.utils.compatibility.openturns import compute_srrc
-from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from numpy.typing import NDArray
+
+    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.post.dataset.dataset_plot import VariableType
 
 
 class CorrelationAnalysis(SensitivityAnalysis):
@@ -88,7 +93,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         >>>
         >>> analysis = CorrelationAnalysis([discipline], parameter_space, n_samples=1000)
         >>> indices = analysis.compute_indices()
-    """
+    """  # noqa: E501
 
     class Method(StrEnum):
         """The names of the sensitivity methods."""

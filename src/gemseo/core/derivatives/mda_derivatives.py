@@ -28,6 +28,7 @@ from gemseo.core.discipline import MDODiscipline
 
 if TYPE_CHECKING:
     from typing import Iterable
+
     from gemseo.core.derivatives.chain_rule import DisciplineIOMapping
 
 

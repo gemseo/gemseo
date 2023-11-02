@@ -20,16 +20,21 @@
 """Test radial basis function regression module."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.dataset import Dataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.rbf import RBFRegressor
 from numpy import allclose
 from numpy import array
 from scipy.interpolate.rbf import Rbf
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mlearning import import_regression_model
+from gemseo.mlearning.regression.rbf import RBFRegressor
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 LEARNING_SIZE = 9
 
@@ -40,7 +45,7 @@ INPUT_VALUES = {
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline(
@@ -55,7 +60,7 @@ def dataset() -> Dataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture
+@pytest.fixture()
 def model(dataset) -> RBFRegressor:
     """A trained RBFRegressor."""
     rbf = RBFRegressor(dataset)
@@ -63,7 +68,7 @@ def model(dataset) -> RBFRegressor:
     return rbf
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_custom_function(dataset) -> RBFRegressor:
     """A trained RBFRegressor  f(r) = r**2 - 1 as kernel function."""
 
@@ -77,7 +82,7 @@ def model_with_custom_function(dataset) -> RBFRegressor:
     return rbf
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_1d_output(dataset) -> RBFRegressor:
     """A trained RBFRegressor with y_1 as output."""
     rbf = RBFRegressor(dataset, output_names=["y_1"])

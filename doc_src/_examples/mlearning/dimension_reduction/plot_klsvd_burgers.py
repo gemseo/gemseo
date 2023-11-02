@@ -27,6 +27,7 @@ Example using KL-SVD on solutions of the Burgers equation.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+
 from gemseo import configure_logger
 from gemseo.mlearning.transformers.dimension_reduction.klsvd import KLSVD
 from gemseo.problems.dataset.burgers import create_burgers_dataset

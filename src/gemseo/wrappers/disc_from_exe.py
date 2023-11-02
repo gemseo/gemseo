@@ -25,6 +25,7 @@ import re
 from ast import literal_eval
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Mapping
 from typing import MutableSequence
@@ -38,10 +39,12 @@ from strenum import StrEnum
 
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.data_processor import FloatDataProcessor
-from gemseo.core.discipline_data import Data
 from gemseo.utils.directory_creator import DirectoryNamingMethod
 from gemseo.wrappers._base_disc_from_exe import _BaseDiscFromExe
 from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
 
 LOGGER = logging.getLogger(__name__)
 
@@ -137,10 +140,10 @@ class DiscFromExe(_BaseDiscFromExe):
       If a shell is needed, you may override this in a derived class.
     """
 
-    input_template: str
+    input_template: Path
     """The path to the input template file."""
 
-    output_template: str
+    output_template: Path
     """The path to the output template file."""
 
     input_filename: str
@@ -227,8 +230,8 @@ class DiscFromExe(_BaseDiscFromExe):
         )
         super().__init__(executable_runner, name=name)
 
-        self.input_template = input_template
-        self.output_template = output_template
+        self.input_template = Path(input_template)
+        self.output_template = Path(output_template)
         self.input_filename = input_filename
         self.output_filename = output_filename
 
@@ -263,9 +266,9 @@ class DiscFromExe(_BaseDiscFromExe):
 
     def __parse_templates_and_set_grammars(self) -> None:
         """Parse the templates and set the grammar of the discipline."""
-        with open(self.input_template) as infile:
+        with self.input_template.open() as infile:
             self._in_lines = infile.readlines()
-        with open(self.output_template) as outfile:
+        with self.output_template.open() as outfile:
             self._out_lines = outfile.readlines()
 
         self._input_data, self._in_pos = parse_template(self._in_lines, True)
@@ -296,9 +299,9 @@ class DiscFromExe(_BaseDiscFromExe):
 
     def _parse_outputs(self) -> Data:
         """Parse the output file."""
-        with open(
+        with (
             self._executable_runner.last_execution_directory / self.output_filename
-        ) as outfile:
+        ).open() as outfile:
             out_lines = outfile.readlines()
 
         if len(out_lines) != len(self._out_lines):
@@ -389,7 +392,7 @@ def write_input_file(
             cline[:start] + float_format.format(data[input_name]) + cline[end:]
         )
 
-    with open(input_file_path, "w") as infile_o:
+    with Path(input_file_path).open("w") as infile_o:
         infile_o.writelines(f_text)
 
 
@@ -422,8 +425,8 @@ def parse_key_value_file(
             key, value = key_and_value
             try:
                 data[key.strip()] = float(literal_eval(value.strip()))
-            except Exception:
-                raise ValueError(f"Failed to parse value as float {value}.")
+            except BaseException:
+                raise ValueError(f"Failed to parse value as float {value}.") from None
 
     return data
 
@@ -470,7 +473,7 @@ def parse_outfile(
                 found_dot = True
                 continue
             # We found the e in exp notation
-            if char in ("E", "e"):
+            if char in {"E", "e"}:
                 if found_e:
                     break
                 found_e = True

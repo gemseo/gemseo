@@ -22,7 +22,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from numpy import isfinite
 from numpy import ndarray
@@ -31,7 +33,9 @@ from scipy import optimize
 
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_result import OptimizationResult
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_result import OptimizationResult
 
 
 @dataclass
@@ -49,7 +53,7 @@ class ScipyOpt(OptimizationLibrary):
 
     LIB_COMPUTE_GRAD = True
 
-    OPTIONS_MAP = {
+    OPTIONS_MAP: ClassVar[dict[str, str]] = {
         # Available only in the doc !
         OptimizationLibrary.LS_STEP_NB_MAX: "maxls",
         OptimizationLibrary.LS_STEP_SIZE_MAX: "stepmx",
@@ -186,8 +190,7 @@ class ScipyOpt(OptimizationLibrary):
                 If ``None`` this criterion is not activated.
             **kwargs: The other algorithm options.
         """
-        nds = normalize_design_space
-        popts = self._process_options(
+        return self._process_options(
             max_iter=max_iter,
             ftol_rel=ftol_rel,
             ftol_abs=ftol_abs,
@@ -203,7 +206,7 @@ class ScipyOpt(OptimizationLibrary):
             eta=eta,
             factr=factr,
             maxcor=maxcor,
-            normalize_design_space=nds,
+            normalize_design_space=normalize_design_space,
             ineq_tolerance=ineq_tolerance,
             eq_tolerance=eq_tolerance,
             stepmx=stepmx,
@@ -215,7 +218,6 @@ class ScipyOpt(OptimizationLibrary):
             kkt_tol_rel=kkt_tol_rel,
             **kwargs,
         )
-        return popts
 
     def _run(self, **options: Any) -> OptimizationResult:
         """Run the algorithm, to be overloaded by subclasses.

@@ -15,14 +15,17 @@
 """Functions computing first- and second-order Taylor polynomials from a function."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 from numpy import ndarray
 
-from gemseo.core.mdofunctions.mdo_function import ArrayType
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
+
+if TYPE_CHECKING:
+    from gemseo.core.mdofunctions.mdo_function import ArrayType
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 def compute_linear_approximation(

@@ -28,8 +28,9 @@ with respect to some inputs using the finite difference method.
 """
 from __future__ import annotations
 
-from gemseo.disciplines.auto_py import AutoPyDiscipline
 from numpy import array
+
+from gemseo.disciplines.auto_py import AutoPyDiscipline
 
 
 # %%

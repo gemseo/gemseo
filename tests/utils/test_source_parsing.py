@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.utils.source_parsing import get_default_option_values
 from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.source_parsing import parse_google

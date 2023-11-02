@@ -19,16 +19,19 @@
 """The Multi-disciplinary Design Feasible (MDF) formulation."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
-from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.mda.mda import MDA
 from gemseo.mda.mda_factory import MDAFactory
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.execution_sequence import ExecutionSequence
+    from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.mda.mda import MDA
 
 
 class MDF(MDOFormulation):

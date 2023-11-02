@@ -40,5 +40,5 @@ class IshigamiSpace(ParameterSpace):
         super().__init__()
         for index in range(3):
             self.add_random_variable(
-                f"x{index+1}", _DISTRIBUTION_NAME, minimum=-pi, maximum=pi
+                f"x{index + 1}", _DISTRIBUTION_NAME, minimum=-pi, maximum=pi
             )

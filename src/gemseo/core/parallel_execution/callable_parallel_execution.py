@@ -40,7 +40,6 @@ from strenum import StrEnum
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
-
 SUBPROCESS_NAME: Final[str] = "subprocess"
 
 LOGGER = logging.getLogger(__name__)
@@ -60,11 +59,11 @@ def _execute_workers(
         queue_in: The queue with the task index to execute.
         queue_out: The queue object where the outputs of the workers are saved.
     """
-    for task_index, input in iter(queue_in.get, None):
+    for task_index, input_ in iter(queue_in.get, None):
         try:
             sys.stdout.flush()
-            output = task_callables(task_index, input)
-        except Exception as err:
+            output = task_callables(task_index, input_)
+        except BaseException as err:
             traceback.print_exc()
             queue_out.put((task_index, err))
             queue_in.task_done()
@@ -90,7 +89,7 @@ class _TaskCallables:
         """  # noqa: D205, D212, D415
         self.callables = callables
 
-    def __call__(self, task_index: int, input) -> Any:
+    def __call__(self, task_index: int, input_) -> Any:
         """Call a callable.
 
         Args:
@@ -103,7 +102,7 @@ class _TaskCallables:
             callable_ = self.callables[task_index]
         else:
             callable_ = self.callables[0]
-        return callable_(input)
+        return callable_(input_)
 
 
 class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):

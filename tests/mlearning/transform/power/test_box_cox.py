@@ -20,14 +20,15 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transformers.power.boxcox import BoxCox
 from numpy import allclose
 from numpy import arange
 from numpy import ndarray
 from sklearn.preprocessing import PowerTransformer
 
+from gemseo.mlearning.transformers.power.boxcox import BoxCox
 
-@pytest.fixture
+
+@pytest.fixture()
 def data() -> ndarray:
     """Test data."""
     return arange(1.0, 31.0, 1.0).reshape((10, 3))

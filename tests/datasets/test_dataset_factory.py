@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.datasets.dataset_factory import DatasetFactory
 
 

@@ -20,15 +20,19 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 from typing import Mapping
 
 import pytest
-from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.disciplines.auto_py import AutoPyDiscipline
 from numpy import array
 from numpy import ndarray
 from numpy.testing import assert_equal
+
+from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
+from gemseo.disciplines.auto_py import AutoPyDiscipline
+
+if TYPE_CHECKING:
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 INPUT_VECTOR = array([1.0, 1.0])
 
@@ -46,7 +50,7 @@ def create_disciplinary_function(
 
     def my_func(x: float, y: float = 0.0) -> float:
         z = x + y
-        return z
+        return z  # noqa: RET504
 
     def my_jac(x: float, y: float = 0.0) -> ndarray:
         return array([[1.0, 1.0]])
@@ -63,7 +67,7 @@ def create_disciplinary_function(
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def disciplinary_function() -> MDODisciplineAdapter:
     """A disciplinary function."""
     return create_disciplinary_function()

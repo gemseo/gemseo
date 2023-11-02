@@ -27,6 +27,13 @@ from typing import Iterator
 
 import h5py
 import pytest
+from numpy import arange
+from numpy import array
+from numpy import eye
+from numpy import float64
+from numpy import zeros
+from scipy.sparse import eye as speye
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.caches.cache_factory import CacheFactory
@@ -41,12 +48,6 @@ from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from numpy import arange
-from numpy import array
-from numpy import eye
-from numpy import float64
-from numpy import zeros
-from scipy.sparse import eye as speye
 
 DIR_PATH = Path(__file__).parent
 
@@ -56,22 +57,22 @@ def factory():
     return CacheFactory()
 
 
-@pytest.fixture
+@pytest.fixture()
 def simple_cache(factory):
     return factory.create("SimpleCache", tolerance=0.0)
 
 
-@pytest.fixture
+@pytest.fixture()
 def memory_full_cache(factory):
     return factory.create("MemoryFullCache")
 
 
-@pytest.fixture
+@pytest.fixture()
 def memory_full_cache_loc(factory):
     return factory.create("MemoryFullCache", is_memory_shared=False)
 
 
-@pytest.fixture
+@pytest.fixture()
 def hdf5_cache(factory, tmp_wd):
     return factory.create(
         "HDF5Cache", hdf_file_path="dummy.h5", hdf_node_path="DummyCache"
@@ -222,7 +223,7 @@ def test_hash_data_dict():
 
 
 @pytest.mark.parametrize(
-    "input_c,input_f",
+    ("input_c", "input_f"),
     [
         (array([[1, 2], [3, 4]], order="C"), array([[1, 2], [3, 4]], order="F")),
         (
@@ -243,12 +244,11 @@ def test_hash_discontiguous_array(input_c, input_f):
 
 def func(x: int | float) -> int | float:
     """Dummy function to test the cache."""
-    y = x
-    return y
+    return x
 
 
 @pytest.mark.parametrize(
-    "hdf_name,inputs,expected",
+    ("hdf_name", "inputs", "expected"),
     [
         ("int_win.h5", array([1, 2, 3]), array([1, 2, 3])),
         ("int_linux.h5", array([1, 2, 3]), array([1, 2, 3])),
@@ -457,7 +457,7 @@ def test_hash_data_dict_keys():
 CACHE_FILE_NAME = "cache.h5"
 
 
-@pytest.fixture
+@pytest.fixture()
 def h5_file(tmp_wd) -> Iterator[h5py.File]:
     """Provide an empty h5 file object and close it afterward."""
     h5_file = h5py.File(CACHE_FILE_NAME, mode="a")
@@ -554,7 +554,7 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
     hash_tag = HDF5FileSingleton.HASH_TAG
     inputs_group = HDF5Cache._INPUTS_GROUP
     outputs_group = HDF5Cache._OUTPUTS_GROUP
-    with h5py.File(str(cache_path), mode="a") as h5_file:
+    with h5py.File(str(cache_path), mode="a") as h5_file:  # noqa: SIM117
         with h5py.File(str(deprecated_cache_path), mode="a") as deprecated_h5_file:
             assert h5_file.attrs["version"] == file_format_version
             assert deprecated_h5_file.attrs["version"] == file_format_version
@@ -645,21 +645,21 @@ def test_export_to_dataset_and_entries(
     assert simple_cache.last_entry == last_entry
 
     # Check __iter__
-    entries = [entry for entry in simple_cache]
+    entries = list(simple_cache)
     assert len(entries) == 1
     assert entries[0] == last_entry
 
 
 @pytest.mark.parametrize(
     "data",
-    (
+    [
         arange(2),
         [0, 0],
         {
             0: None,
             1: None,
         },
-    ),
+    ],
 )
 def test_names_to_sizes(simple_cache, data):
     """Verify the ``names_to_sizes`` attribute."""

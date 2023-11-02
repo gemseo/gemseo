@@ -23,6 +23,8 @@ from __future__ import annotations
 from unittest import mock
 
 import pytest
+from numpy import array
+
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverDescription
@@ -31,7 +33,6 @@ from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import array
 
 
 class MyDriver(DriverLibrary):
@@ -70,7 +71,7 @@ def test_max_iter_fail(optimization_problem):
     """Check that a ValueError is raised for an invalid `max_iter` input."""
     with concretize_classes(MyDriver):
         MyDriver()._pre_run(optimization_problem, None)
-    with pytest.raises(ValueError, match="max_iter must be >=1, got -1"):
+    with pytest.raises(ValueError, match="max_iter must be >=1, got -1"):  # noqa: SIM117
         with concretize_classes(MyDriver):
             MyDriver().init_iter_observer(max_iter=-1)
 
@@ -81,9 +82,8 @@ def test_no_algo_fail(optimization_problem):
         ValueError,
         match="Algorithm name must be either passed as "
         "argument or set by the attribute 'algo_name'.",
-    ):
-        with concretize_classes(MyDriver):
-            MyDriver().execute(optimization_problem)
+    ), concretize_classes(MyDriver):
+        MyDriver().execute(optimization_problem)
 
 
 def test_grammar_fail():
@@ -95,9 +95,8 @@ def test_grammar_fail():
             "nor the options grammar file .+ for the library 'DriverLibrary' "
             "has been found."
         ),
-    ):
-        with concretize_classes(DriverLibrary):
-            DriverLibrary().init_options_grammar("unknown")
+    ), concretize_classes(DriverLibrary):
+        DriverLibrary().init_options_grammar("unknown")
 
 
 def test_require_grad():

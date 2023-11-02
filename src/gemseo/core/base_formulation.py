@@ -22,31 +22,36 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Iterable
 from typing import Sequence
-from typing import TYPE_CHECKING
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence
-from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.execution_sequence import ExecutionSequence
+    from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
 
-from numpy import arange, copy, empty, in1d, ndarray, zeros
+from numpy import arange
+from numpy import copy
+from numpy import empty
+from numpy import in1d
+from numpy import ndarray
+from numpy import zeros
 
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.disciplines.utils import get_sub_disciplines
 
 LOGGER = logging.getLogger(__name__)
 
@@ -139,11 +144,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                 g_1=0 will be added as a constraint to the optimizer.
             constraint_type: The type of constraint.
         """
-        if isinstance(output_name, list):
-            output_names = output_name
-        else:
-            output_names = [output_name]
-        return output_names
+        # TODO: API: remove useless constraint_type.
+        # TODO: API: find a better method name that matches its intent.
+        return output_name if isinstance(output_name, list) else [output_name]
 
     def add_constraint(
         self,
@@ -259,19 +262,20 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Returns:
             A generator of :class:`.MDOFunction` instances.
+
+        Raises:
+            ValueError: If no discipline is found.
         """
-        if top_level_disc:
-            search_among = self.get_top_level_disc()
-        else:
-            search_among = self.disciplines
+        search_among = self.get_top_level_disc() if top_level_disc else self.disciplines
         for discipline in search_among:
             if discipline.is_all_outputs_existing(output_names):
                 return MDODisciplineAdapterGenerator(
                     discipline, self.design_space.variable_sizes
                 )
+
         raise ValueError(
-            "No discipline known by formulation %s"
-            " has all outputs named %s" % (type(self).__name__, output_names)
+            f"No discipline known by formulation {type(self).__name__}"
+            f" has all outputs named {output_names}"
         )
 
     def _get_generator_with_inputs(
@@ -290,19 +294,20 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Returns:
             A generator of :class:`.MDOFunction` instances.
+
+        Raises:
+            ValueError: If no discipline is found.
         """
-        if top_level_disc:
-            search_among = self.get_top_level_disc()
-        else:
-            search_among = self.disciplines
+        search_among = self.get_top_level_disc() if top_level_disc else self.disciplines
         for discipline in search_among:
             if discipline.is_all_inputs_existing(input_names):
                 return MDODisciplineAdapterGenerator(
                     discipline, self.design_space.variable_sizes
                 )
+
         raise ValueError(
-            "No discipline known by formulation %s"
-            " has all inputs named %s" % (type(self).__name__, input_names)
+            f"No discipline known by formulation {type(self).__name__}"
+            f" has all inputs named {input_names}"
         )
 
     def _get_dv_length(
@@ -394,7 +399,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             raise ValueError(
                 "Inconsistent input array size of values array "
                 "with reference data shape %s" % x_unmask.shape
-            )
+            ) from None
         return x_unmask
 
     def mask_x_swap_order(
@@ -442,8 +447,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             The masked version of the input vector.
 
         Raises:
-            IndexError: when the sizes of variables are inconsistent.
-            ValueError: when the names of variables are inconsistent.
+            ValueError: If the sizes or the sizes of variables are inconsistent.
         """
         design_space = self.opt_problem.design_space
         if all_data_names is None:
@@ -463,10 +467,10 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         except KeyError as err:
             raise ValueError(
                 "Inconsistent inputs of masking. "
-                "Key %s is in masking_data_names %s "
-                "but not in provided all_data_names : %s!"
-                % (err, masking_data_names, all_data_names)
-            )
+                f"Key {err} is in masking_data_names {masking_data_names} "
+                f"but not in provided all_data_names : {all_data_names}!"
+            ) from None
+
         return x_mask
 
     def _remove_unused_variables(self) -> None:
@@ -630,9 +634,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @classmethod
-    def get_default_sub_option_values(
-        cls, **options: str
-    ) -> dict:  # pylint: disable=W0613
+    def get_default_sub_option_values(cls, **options: str) -> dict:
         """Return the default values of the sub-options of the formulation.
 
         When some options of the formulation depend on higher level options,
@@ -647,9 +649,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @classmethod
-    def get_sub_options_grammar(
-        cls, **options: str
-    ) -> JSONGrammar:  # pylint: disable=W0613
+    def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:
         """Get the sub-options grammar.
 
         When some options of the formulation depend on higher level options,

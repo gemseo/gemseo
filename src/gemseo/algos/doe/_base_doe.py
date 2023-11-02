@@ -16,11 +16,13 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Any
 
-from numpy import ndarray
-
 from gemseo.utils.base_multiton import BaseABCMultiton
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class BaseDOE(metaclass=BaseABCMultiton):

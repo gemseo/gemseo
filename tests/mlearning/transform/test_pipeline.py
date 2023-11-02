@@ -19,10 +19,9 @@
 """Test transformer pipeline module."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.mlearning.transformers.pipeline import Pipeline
-from gemseo.mlearning.transformers.scaler.scaler import Scaler
-from gemseo.mlearning.transformers.transformer import Transformer
 from numpy import allclose
 from numpy import arange
 from numpy import array
@@ -30,14 +29,20 @@ from numpy import diag
 from numpy import eye
 from numpy import ndarray
 
+from gemseo.mlearning.transformers.pipeline import Pipeline
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
-@pytest.fixture
+if TYPE_CHECKING:
+    from gemseo.mlearning.transformers.transformer import Transformer
+
+
+@pytest.fixture()
 def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))
 
 
-@pytest.fixture
+@pytest.fixture()
 def transformers() -> list[Transformer]:
     """Transformers for pipeline."""
     return [Scaler(coefficient=2), Scaler(offset=3), Scaler(coefficient=5)]
@@ -49,7 +54,7 @@ OFF_3 = array([0, 10, 100])
 C_3 = array([5, 1, 2])
 
 
-@pytest.fixture
+@pytest.fixture()
 def other_transformers():
     """Transformers for pipeline."""
     return [

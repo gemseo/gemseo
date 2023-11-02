@@ -21,12 +21,14 @@ from __future__ import annotations
 
 import logging
 from sys import platform
+from typing import TYPE_CHECKING
 
 import pytest
+from numpy import array
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
-from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_openturns import OpenTURNS
@@ -36,12 +38,14 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
-from numpy import array
+
+if TYPE_CHECKING:
+    from gemseo.algos.database import Database
 
 FACTORY = DOEFactory()
 
 
-@pytest.fixture
+@pytest.fixture()
 def doe():
     pytest.mark.skipif(
         FACTORY.is_available("PyDOE"), reason="skipped because PyDOE is missing"
@@ -113,7 +117,7 @@ def test_evaluate_samples_multiproc_with_observables(doe):
         scenario_type="DOE",
     )
 
-    samples = array(list([float(i)] for i in range(4)))
+    samples = array([[float(i)] for i in range(4)])
     scenario.add_observable("obs")
     scenario.execute(
         {"algo": "CustomDOE", "algo_options": {"n_processes": 2, "samples": samples}}
@@ -267,12 +271,12 @@ def test_seed(algo_name):
 
 
 @pytest.mark.parametrize(
-    "var_type1,var_type2",
-    (
+    ("var_type1", "var_type2"),
+    [
         ("integer", "integer"),
         ("integer", "float"),
         ("float", "float"),
-    ),
+    ],
 )
 def test_variable_types(doe, var_type1, var_type2):
     """Verify that input data provided to a discipline match the design space types."""

@@ -15,18 +15,21 @@
 """Parallel execution of linearized disciplines."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import Sequence
 
-from numpy import ndarray
-
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.discipline_data import Data
-from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline_data import Data
+    from gemseo.core.discipline_data import DisciplineData
 
 
 class _Functor:
@@ -112,7 +115,7 @@ class DiscParallelLinearization(CallableParallelExecution):
             exec_callback=exec_callback,
             task_submitted_callback=task_submitted_callback,
         )
-        if len(self._disciplines) == 1 or not len(self._disciplines) == len(inputs):
+        if len(self._disciplines) == 1 or len(self._disciplines) != len(inputs):
             if len(self._disciplines) == 1:
                 self.workers[0].local_data = ordered_outputs[0][0]
                 self.workers[0].jac = ordered_outputs[0][1]

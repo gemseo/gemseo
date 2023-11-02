@@ -45,10 +45,13 @@ Otherwise, the model uses default values.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import array
 from numpy import full
 
-from gemseo.datasets.io_dataset import IODataset
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
 
 
 class ScalableModel:

@@ -21,15 +21,18 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Mapping
 from typing import Sequence
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
-from gemseo.datasets.dataset import Dataset
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.datasets.dataset import Dataset
 
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name

@@ -395,10 +395,11 @@ class MDOParallelChain(MDODiscipline):
                 DisciplineData(deepcopy_dict_of_arrays(self.local_data))
                 for _ in range(len(self._disciplines))
             ]
-        else:
-            for value in self.local_data.values():
-                value.flags.writeable = False
-            return [self.local_data] * len(self._disciplines)
+
+        for value in self.local_data.values():
+            value.flags.writeable = False
+
+        return [self.local_data] * len(self._disciplines)
 
     def _run(self) -> None:
         self.parallel_execution.execute(self._get_input_data_copies())
@@ -433,7 +434,7 @@ class MDOParallelChain(MDODiscipline):
 
     def add_differentiated_inputs(  # noqa: D102
         self,
-        inputs: Iterable[str] = None,
+        inputs: Iterable[str] | None = None,
     ) -> None:
         MDODiscipline.add_differentiated_inputs(self, inputs)
         self._set_disciplines_diff_inputs(inputs)
@@ -569,7 +570,7 @@ class MDOAdditiveChain(MDOParallelChain):
 
         # Sum the Jacobians of the required outputs across disciplines
         for output_name in self._outputs_to_sum:
-            self.jac[output_name] = dict()
+            self.jac[output_name] = {}
             for input_name in inputs:
                 disciplinary_jacobians = [
                     discipline.jac[output_name][input_name]
@@ -614,17 +615,18 @@ class MDOWarmStartedChain(MDOChain):
         super().__init__(disciplines=disciplines, name=name, grammar_type=grammar_type)
         self._variable_names_to_warm_start = variable_names_to_warm_start
         self._warm_start_variable_names_to_values = {}
-        if variable_names_to_warm_start:
-            if not self.is_all_outputs_existing(variable_names_to_warm_start):
-                all_output_names = self.get_output_data_names()
-                missing_output_names = set(variable_names_to_warm_start).difference(
-                    all_output_names
-                )
-                raise ValueError(
-                    "The following variable names are not "
-                    f"outputs of the chain: {missing_output_names}."
-                    f" Available outputs are: {all_output_names}."
-                )
+        if variable_names_to_warm_start and not self.is_all_outputs_existing(
+            variable_names_to_warm_start
+        ):
+            all_output_names = self.get_output_data_names()
+            missing_output_names = set(variable_names_to_warm_start).difference(
+                all_output_names
+            )
+            raise ValueError(
+                "The following variable names are not "
+                f"outputs of the chain: {missing_output_names}."
+                f" Available outputs are: {all_output_names}."
+            )
 
     def _compute_jacobian(
         self,

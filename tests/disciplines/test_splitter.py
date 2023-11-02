@@ -15,11 +15,12 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.disciplines.splitter import Splitter
 from numpy import array
 
+from gemseo.disciplines.splitter import Splitter
 
-@pytest.fixture
+
+@pytest.fixture()
 def splitting_discipline_for_test():
     """Define a Slicer discipline for test."""
     return Splitter("E", {"Ep": [0, 1], "Es": [2, 3], "Er": 4})

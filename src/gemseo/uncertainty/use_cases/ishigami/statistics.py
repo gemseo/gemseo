@@ -30,9 +30,7 @@ r"""The expectation of the output.
    \mathbb{E}[Y] = \frac{a}{2}
 """
 
-VARIANCE: Final[float] = (
-    0.5 + __A**2 / 8 + __B**2 * pi**8 / 18 + __B * pi**4 / 5
-)
+VARIANCE: Final[float] = 0.5 + __A**2 / 8 + __B**2 * pi**8 / 18 + __B * pi**4 / 5
 r"""The variance of the output.
 
 .. math::

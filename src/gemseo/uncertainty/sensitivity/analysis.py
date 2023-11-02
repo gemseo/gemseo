@@ -19,11 +19,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Abstract class for the computation and analysis of sensitivity indices.
 
-The purpose of a sensitivity analysis is to qualify or quantify how the model's uncertain
-inputs impact its outputs.
+The purpose of a sensitivity analysis is to qualify or quantify how the model's
+uncertain inputs impact its outputs.
 
 This analysis relies on :class:`.SensitivityAnalysis` computed from a
-:class:`.MDODiscipline` representing the model, a :class:`.ParameterSpace` describing the
+:class:`.MDODiscipline` representing the model,
+a :class:`.ParameterSpace` describing the
 uncertain parameters and options associated with a particular concrete class inheriting
 from :class:`.SensitivityAnalysis` which is an abstract one.
 """
@@ -34,6 +35,7 @@ from abc import abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Collection
@@ -45,34 +47,37 @@ from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-from matplotlib.figure import Figure
 from numpy import array
 from numpy import hstack
 from numpy import linspace
 from numpy import ndarray
 from numpy import newaxis
 from numpy import vstack
-from numpy.typing import NDArray
 from pandas import MultiIndex
-from strenum import StrEnum
 
-from gemseo.algos.doe.doe_library import DOELibraryOptionType
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
-from gemseo.post.dataset.dataset_plot import VariableType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
+    from strenum import StrEnum
+
+    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
+    from gemseo.post.dataset.dataset_plot import VariableType
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
 FirstOrderIndicesType = Dict[str, List[Dict[str, ndarray]]]
@@ -83,8 +88,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Sensitivity analysis.
 
     The :class:`.SensitivityAnalysis` class provides both the values of
-    :attr:`.SensitivityAnalysis.indices` and their graphical representations, from either
-    the :meth:`.SensitivityAnalysis.plot` method, the
+    :attr:`.SensitivityAnalysis.indices` and their graphical representations,
+    from either the :meth:`.SensitivityAnalysis.plot` method, the
     :meth:`.SensitivityAnalysis.plot_radar` method or the
     :meth:`.SensitivityAnalysis.plot_bar` method.
 
@@ -92,8 +97,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     parameters sorted according to :attr:`.SensitivityAnalysis.main_method`. The
     :attr:`.SensitivityAnalysis.main_indices` are indices computed with the latter.
 
-    Lastly, the :meth:`.SensitivityAnalysis.plot_comparison` method allows to compare the
-    current :class:`.SensitivityAnalysis` with another one.
+    Lastly, the :meth:`.SensitivityAnalysis.plot_comparison` method allows to compare
+    the current :class:`.SensitivityAnalysis` with another one.
     """
 
     # TODO: API: rename to default_outputs or default_output_names
@@ -128,7 +133,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     _file_path_manager: FilePathManager
     """The file path manager for the figures."""
 
-    _main_method: Method
+    _main_method: Method  # noqa: F821
     """The name of the main sensitivity analysis method."""
 
     _indices: dict[str, FirstOrderIndicesType]
@@ -171,7 +176,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             algo: The name of the DOE algorithm.
                 If empty, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
-            formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
+            formulation: The name of the :class:`.MDOFormulation`
+                to sample the disciplines.
             **formulation_options: The options of the :class:`.MDOFormulation`.
         """  # noqa: D205, D212, D415
         disciplines = list(disciplines)
@@ -232,7 +238,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             n_samples: A number of samples.
                 If ``None``, the number of samples is computed by the algorithm.
             algo_options: The options for the DOE algorithm.
-            formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
+            formulation: The name of the :class:`.MDOFormulation`
+                to sample the disciplines.
             **formulation_options: The options of the :class:`.MDOFormulation`.
 
         Returns:
@@ -245,7 +252,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             formulation_options,
             parameter_space,
         )
-        algo_options = algo_options or dict()
+        algo_options = algo_options or {}
         algo_options["log_problem"] = False
         scenario.execute(
             {
@@ -269,7 +276,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             disciplines: The disciplines to sample.
             observable_names: The names of the observables.
-            formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
+            formulation: The name of the :class:`.MDOFormulation`
+                to sample the disciplines.
             formulation_options: The options of the :class:`.MDOFormulation`.
             parameter_space: A parameter space.
 
@@ -346,7 +354,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._indices
 
     @property
-    def main_method(self) -> Method:
+    def main_method(self) -> Method:  # noqa: F821
         """The name of the main method.
 
         One of the enum :class:`.Sensitivity.Method`.
@@ -354,7 +362,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._main_method
 
     @main_method.setter
-    def main_method(self, method: Method) -> None:  # noqa: D102
+    def main_method(self, method: Method) -> None:  # noqa: D102, F821
         self._main_method = method
 
     @property
@@ -510,7 +518,8 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If it is a name, its first component is considered.
             mesh: The mesh on which the p-length output
                 is represented. Either a p-length array for a 1D functional output
-                or a (p, 2) array for a 2D one. If ``None``, assume a 1D functional output.
+                or a (p, 2) array for a 2D one. If ``None``,
+                assume a 1D functional output.
             inputs: The uncertain input variables
                 for which to display the sensitivity indices.
                 If empty, display all the uncertain input variables.
@@ -550,11 +559,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         else:
             main_indices = self.main_indices
 
-        data = []
-        for input_name in input_names:
-            data.append(
-                [main_index[input_name] for main_index in main_indices[output_name]]
-            )
+        data = [
+            [main_index[input_name] for main_index in main_indices[output_name]]
+            for input_name in input_names
+        ]
 
         data = array(data)[:, :, 0]
         dataset = Dataset.from_array(data, [output_name], {output_name: data.shape[1]})
@@ -908,7 +916,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             output = (output, 0)
         if isinstance(indices, SensitivityAnalysis):
             indices = [indices]
-        methods = [self] + indices
+        methods = [self, *indices]
         dataset = Dataset()
         input_names = self._sort_and_filter_input_parameters(output, inputs)
         for name in input_names:
@@ -992,7 +1000,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         row_names = []
         for input_name in self.input_names:
             for input_component in range(sizes[input_name]):
-                row_names.append(
+                row_names.append(  # noqa: PERF401
                     repr_variable(
                         input_name,
                         input_component,

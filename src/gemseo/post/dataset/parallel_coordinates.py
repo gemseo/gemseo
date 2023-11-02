@@ -48,13 +48,18 @@ the samples positively classified and one for the others.
 """
 from __future__ import annotations
 
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+from typing import TYPE_CHECKING
+
 from numpy import inf
 from pandas.plotting import parallel_coordinates
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class ParallelCoordinates(DatasetPlot):

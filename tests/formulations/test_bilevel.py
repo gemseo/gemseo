@@ -22,6 +22,7 @@ import logging
 from copy import deepcopy
 
 import pytest
+
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -37,17 +38,16 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-
 from tests.core.test_dependency_graph import create_disciplines_from_desc
 
 
-@pytest.fixture
+@pytest.fixture()
 def sobieski_bilevel_scenario():
     """Fixture from an existing function."""
     return create_sobieski_bilevel_scenario()
 
 
-@pytest.fixture
+@pytest.fixture()
 def dummy_bilevel_scenario() -> MDOScenario:
     """Create a dummy BiLevel scenario.
 
@@ -87,13 +87,12 @@ def dummy_bilevel_scenario() -> MDOScenario:
         design_space=sub_design_space_2,
     )
 
-    scenario = create_scenario(
+    return create_scenario(
         disciplines=[sub_scenario_1, sub_scenario_2],
         formulation="BiLevel",
         objective_name="obj",
         design_space=system_design_space,
     )
-    return scenario
 
 
 def test_execute(sobieski_bilevel_scenario):
@@ -131,7 +130,7 @@ def test_get_sub_options_grammar():
     assert sub_options_schema.name == "MDAJacobi"
 
     sub_option_values = BiLevel.get_default_sub_option_values(main_mda_name="MDAJacobi")
-    assert "acceleration" in sub_option_values.keys()
+    assert "acceleration" in sub_option_values
 
 
 def test_bilevel_aerostructure():
@@ -146,8 +145,8 @@ def test_bilevel_aerostructure():
     }
 
     aero_formulas = {
-        "drag": "0.1*((sweep/360)**2 + 200 + "
-        + "thick_airfoils**2 - thick_airfoils - 4*displ)",
+        "drag": "0.1*((sweep/360)**2 + 200 + thick_airfoils**2 - thick_airfoils - "
+        "4*displ)",
         "forces": "10*sweep + 0.2*thick_airfoils - 0.2*displ",
         "lift": "(sweep + 0.2*thick_airfoils - 2.*displ)/3000.",
     }

@@ -21,20 +21,20 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import import_classification_model
-from gemseo.mlearning.classification.knn import KNNClassifier
-from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
 from numpy import linspace
 from numpy import ndarray
 from numpy import zeros
-from numpy.random import permutation
-from numpy.random import seed
+from numpy.random import default_rng
 
-seed(12345)
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning import import_classification_model
+from gemseo.mlearning.classification.knn import KNNClassifier
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+
+rng = default_rng(12345)
 
 N_INPUTS = 2
 N_OUTPUTS = 3
@@ -48,7 +48,7 @@ INPUT_VALUES = {
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """The dataset used to train the KNNClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
@@ -56,8 +56,8 @@ def dataset() -> IODataset:
     output_data[::4, 0] = 1
     output_data[1::4, 0] = 2
     output_data[2::4, 0] = 3
-    output_data[:, 1] = permutation(output_data[:, 0])
-    output_data[:, 2] = permutation(output_data[:, 0])
+    output_data[:, 1] = rng.permutation(output_data[:, 0])
+    output_data[:, 2] = rng.permutation(output_data[:, 0])
     dataset_ = IODataset()
     dataset_.add_group(
         IODataset.INPUT_GROUP, input_data, ["x_1", "x_2"], {"x_1": 1, "x_2": 1}
@@ -68,7 +68,7 @@ def dataset() -> IODataset:
     return dataset_
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_1d(dataset) -> KNNClassifier:
     """A trained KNNClassifier with y_1 as single output."""
     knn = KNNClassifier(dataset, output_names=["y_1"])
@@ -76,7 +76,7 @@ def model_1d(dataset) -> KNNClassifier:
     return knn
 
 
-@pytest.fixture
+@pytest.fixture()
 def model(dataset) -> KNNClassifier:
     """A trained KNNClassifier with two outputs, y_1 and y_2."""
     knn = KNNClassifier(dataset)
@@ -84,7 +84,7 @@ def model(dataset) -> KNNClassifier:
     return knn
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_transform(dataset) -> KNNClassifier:
     """A trained KNNClassifier using input scaling."""
     knn = KNNClassifier(dataset, transformer={"inputs": MinMaxScaler()})

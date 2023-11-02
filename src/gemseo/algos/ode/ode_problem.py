@@ -19,18 +19,21 @@
 """Ordinary differential equation problem."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 
 from numpy import asarray
 from numpy import empty
 from numpy import ndarray
-from numpy.typing import ArrayLike
-from numpy.typing import NDArray
 
 from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.ode.ode_result import ODEResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+    from numpy.typing import NDArray
 
 
 class ODEProblem(BaseProblem):
@@ -107,9 +110,11 @@ class ODEProblem(BaseProblem):
         Raises:
             ValueError: If the state and time shapes are inconsistent.
         """
-        if self.result.state_vector.size != 0:
-            if self.result.state_vector.shape[1] != self.result.time_vector.size:
-                raise ValueError("Inconsistent state and time shapes.")
+        if (
+            self.result.state_vector.size != 0
+            and self.result.state_vector.shape[1] != self.result.time_vector.size
+        ):
+            raise ValueError("Inconsistent state and time shapes.")
 
     def _func(self, state) -> ndarray:
         return asarray(self.rhs_function(self.result.time_vector, state))

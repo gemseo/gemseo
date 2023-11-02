@@ -22,15 +22,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import h5py
 import pytest
-from gemseo.algos._hdf_database import HDFDatabase
-from gemseo.algos.database import Database
-from gemseo.algos.database import HashableNdarray
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import arange
 from numpy import array
 from numpy import ones
@@ -40,11 +35,20 @@ from numpy.testing import assert_almost_equal
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
+from gemseo.algos._hdf_database import HDFDatabase
+from gemseo.algos.database import Database
+from gemseo.algos.database import HashableNdarray
+from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.problems.analytical.rosenbrock import Rosenbrock
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_result import OptimizationResult
+
 DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail.hdf5"
 
 
-@pytest.fixture
+@pytest.fixture()
 def h5_file(tmp_wd):
     return h5py.File("test.h5", "w")
 
@@ -59,11 +63,10 @@ def rel_err(to_test, ref):
     err = norm(to_test - ref)
     if n_ref > 1e-14:
         return err / n_ref
-    else:
-        return err
+    return err
 
 
-@pytest.fixture
+@pytest.fixture()
 def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
     """The Rosenbrock problem solved with L-BFGS-B and the optimization result."""
     rosenbrock = Rosenbrock()
@@ -71,7 +74,7 @@ def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
     return rosenbrock, result
 
 
-@pytest.fixture
+@pytest.fixture()
 def problem(problem_and_result) -> Rosenbrock:
     """The Rosenbrock problem solved with L-BFGS-B."""
     return problem_and_result[0]
@@ -81,7 +84,7 @@ def test_correct_store_unstore(problem):
     """Test the storage of objective function values and gradient values."""
     database = problem.database
     fname = problem.objective.name
-    for x_var in database.keys():
+    for x_var in database:
         x_var = x_var.unwrap()
         func_value = database.get_function_value(fname, x_var)
         gname = database.get_gradient_name(fname)
@@ -103,7 +106,7 @@ def test_write_read(tmp_wd, problem):
 
     loaded_db = Database.from_hdf(hdf_file)
 
-    for x_var in database.keys():
+    for x_var in database:
         x_var = x_var.unwrap()
         f_ref = database.get_function_value(fname, x_var)
         gname = database.get_gradient_name(fname)
@@ -606,7 +609,7 @@ def test_unwrap():
     x_hash = HashableNdarray(x_array)
     assert x_hash.unwrap() is x_hash.wrapped_array
     x_hash = HashableNdarray(x_array, copy=True)
-    assert not x_hash.unwrap() is x_hash.wrapped_array
+    assert x_hash.unwrap() is not x_hash.wrapped_array
     assert (x_hash.unwrap() == x_array).all()
 
 
@@ -669,7 +672,7 @@ def test_notify_newiter_store_listeners():
     assert database.x_sum == 6
 
 
-@pytest.fixture
+@pytest.fixture()
 def simple_database():
     """A database with a single element."""
     database = Database()

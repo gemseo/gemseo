@@ -710,9 +710,7 @@ class SobieskiStructure(SobieskiDiscipline):
             jacobian["g_1"]["c_2"][6, :] = -jacobian["y_1"]["c_2"][2, :]
 
         # Coupling variables
-        jacobian = self.__set_coupling_jacobian(jacobian)
-
-        return jacobian
+        return self.__set_coupling_jacobian(jacobian)
 
     @staticmethod
     def __set_coupling_jacobian(
@@ -934,10 +932,7 @@ class SobieskiStructure(SobieskiDiscipline):
         Returns:
             The structural constraints from a polynomial approximation.
         """
-        if true_cstr is False:
-            n_g = 7
-        else:
-            n_g = 6
+        n_g = 6 if true_cstr else 7
         jacobian["g_1"]["x_shared"] = zeros((n_g, 6), dtype=self.dtype)
         jacobian["g_1"]["x_1"] = zeros((n_g, 2), dtype=self.dtype)
         jacobian["g_1"]["y_21"] = zeros((n_g, 1), dtype=self.dtype)

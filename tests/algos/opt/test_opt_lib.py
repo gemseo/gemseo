@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -50,7 +51,8 @@ def lib() -> OptimizersFactory:
 
 
 @pytest.mark.parametrize(
-    "name,handle_eq,handle_ineq", [("L-BFGS-B", False, False), ("SLSQP", True, True)]
+    ("name", "handle_eq", "handle_ineq"),
+    [("L-BFGS-B", False, False), ("SLSQP", True, True)],
 )
 def test_algorithm_handles_constraints(lib, name, handle_eq, handle_ineq):
     """Check algorithm_handles_eqcstr() and algorithm_handles_ineqcstr()."""

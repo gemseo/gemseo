@@ -20,7 +20,8 @@
 """This module contains the base classes for clustering algorithms.
 
 The :mod:`~gemseo.mlearning.clustering.clustering` module implements the concept of
-clustering models, a kind of unsupervised machine learning algorithm where the goal is to
+clustering models,
+a kind of unsupervised machine learning algorithm where the goal is to
 group data into clusters. Wherever possible, these methods should be able to predict the
 class of the new data, as well as the probability of belonging to each class.
 
@@ -32,6 +33,7 @@ from the :class:`.MLUnsupervisedAlgo` class, and through the
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
@@ -43,13 +45,15 @@ from numpy import ndarray
 from numpy import unique
 from numpy import zeros
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSavedObjectType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
 

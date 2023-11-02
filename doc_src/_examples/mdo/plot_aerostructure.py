@@ -52,8 +52,7 @@ algo_options = {
 # using the :class:`.AnalyticDiscipline` class.
 
 aero_formulas = {
-    "drag": "0.1*((sweep/360)**2 + 200 + "
-    + "thick_airfoils**2-thick_airfoils -4*displ)",
+    "drag": "0.1*((sweep/360)**2 + 200 + thick_airfoils**2-thick_airfoils -4*displ)",
     "forces": "10*sweep + 0.2*thick_airfoils-0.2*displ",
     "lift": "(sweep + 0.2*thick_airfoils-2.*displ)/3000.",
 }
@@ -61,8 +60,8 @@ aerodynamics = create_discipline(
     "AnalyticDiscipline", name="Aerodynamics", expressions=aero_formulas
 )
 struc_formulas = {
-    "mass": "4000*(sweep/360)**3 + 200000 + " + "100*thick_panels +200.0*forces",
-    "reserve_fact": "-3*sweep " + "-6*thick_panels+0.1*forces+55",
+    "mass": "4000*(sweep/360)**3 + 200000 + 100*thick_panels +200.0*forces",
+    "reserve_fact": "-3*sweep -6*thick_panels+0.1*forces+55",
     "displ": "2*sweep + 3*thick_panels-2.*forces",
 }
 structure = create_discipline(

@@ -25,11 +25,11 @@ if PYTHON_VERSION < (3, 10):  # pragma: >=3.10 no cover
 
     EllipsisType = type(Ellipsis)
 else:  # pragma: <3.10 no cover
+    from types import EllipsisType
     from typing import ParamSpecArgs  # noqa: F401
     from typing import ParamSpecKwargs  # noqa: F401
-    from types import EllipsisType
 
-    EllipsisType
+    EllipsisType  # noqa: B018
 
 if PYTHON_VERSION < (3, 9):  # pragma: >=3.9 no cover
 

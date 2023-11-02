@@ -19,8 +19,9 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.problems.topo_opt.density_filter_disc import DensityFilter
 from numpy import ones
+
+from gemseo.problems.topo_opt.density_filter_disc import DensityFilter
 
 THRESHOLD = 1e-10
 

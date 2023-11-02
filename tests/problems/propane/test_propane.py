@@ -20,12 +20,6 @@ from __future__ import annotations
 
 import unittest
 
-from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.problems.propane.propane import get_design_space
-from gemseo.problems.propane.propane import PropaneComb1
-from gemseo.problems.propane.propane import PropaneComb2
-from gemseo.problems.propane.propane import PropaneComb3
-from gemseo.problems.propane.propane import PropaneReaction
 from numpy import array
 from numpy import complex128
 from numpy import concatenate
@@ -33,6 +27,13 @@ from numpy import float64
 from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
+
+from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.problems.propane.propane import PropaneComb1
+from gemseo.problems.propane.propane import PropaneComb2
+from gemseo.problems.propane.propane import PropaneComb3
+from gemseo.problems.propane.propane import PropaneReaction
+from gemseo.problems.propane.propane import get_design_space
 
 
 class TestPropaneScenario(unittest.TestCase):
@@ -74,13 +75,12 @@ class TestPropaneScenario(unittest.TestCase):
             PropaneReaction(),
         ]
         design_space = get_design_space()
-        scenario = MDOScenario(
+        return MDOScenario(
             disciplines,
             formulation=formulation,
             objective_name="obj",
             design_space=design_space,
         )
-        return scenario
 
     def build_and_run_scenario(self, formulation, algo, lin_method="complex_step"):
         """

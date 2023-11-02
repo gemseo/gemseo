@@ -22,21 +22,23 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Any
-
-from numpy import ndarray
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
+from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
 from gemseo.algos.first_order_stop_criteria import kkt_residual_computation
-from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.stop_criteria import FtolReached
+from gemseo.algos.stop_criteria import XtolReached
 from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
-from gemseo.algos.stop_criteria import XtolReached
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @dataclass
@@ -119,10 +121,11 @@ class OptimizationLibrary(DriverLibrary):
             raise KeyError(
                 f"Algorithm {algo_name} not in library {self.__class__.__name__}."
             )
+
         if eq_constraint:
             return self.descriptions[algo_name].handle_equality_constraints
-        else:
-            return self.descriptions[algo_name].handle_inequality_constraints
+
+        return self.descriptions[algo_name].handle_inequality_constraints
 
     def algorithm_handles_eqcstr(self, algo_name: str) -> bool:
         """Check if an algorithm handles equality constraints.
@@ -287,12 +290,12 @@ class OptimizationLibrary(DriverLibrary):
         if is_f_tol_reached(
             self.problem, self._ftol_rel, self._ftol_abs, self._stop_crit_n_x
         ):
-            raise FtolReached()
+            raise FtolReached
 
         if is_x_tol_reached(
             self.problem, self._xtol_rel, self._xtol_abs, self._stop_crit_n_x
         ):
-            raise XtolReached()
+            raise XtolReached
 
     def _check_kkt_from_database(self, x_vect: ndarray | None = None) -> None:
         """Verify, if required, KKT norm stopping criterion at each database storage.
@@ -302,8 +305,9 @@ class OptimizationLibrary(DriverLibrary):
         """
         check_kkt = True
         function_names = [
-            self.problem.get_objective_name()
-        ] + self.problem.get_constraint_names()
+            self.problem.get_objective_name(),
+            *self.problem.get_constraint_names(),
+        ]
         database = self.problem.database
         for function_name in function_names:
             if (
@@ -327,4 +331,4 @@ class OptimizationLibrary(DriverLibrary):
             ineq_tolerance=self.__ineq_tolerance,
             reference_residual=self.__ref_kkt_norm,
         ):
-            raise KKTReached()
+            raise KKTReached

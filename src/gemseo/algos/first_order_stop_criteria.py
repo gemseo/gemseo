@@ -19,12 +19,17 @@
 """Implementation of the Karush-Kuhn-Tucker residual norm stopping criterion."""
 from __future__ import annotations
 
-from numpy import ndarray
+from typing import TYPE_CHECKING
+
 from numpy.linalg import norm
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.stop_criteria import TerminationCriterion
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 
 class KKTReached(TerminationCriterion):
@@ -90,7 +95,7 @@ def kkt_residual_computation(
         res = lagrange.kkt_residual + lagrange.constraint_violation
         opt_problem.database.store(x_vect, {opt_problem.KKT_RESIDUAL_NORM: res})
         return res
-    else:
-        res = norm(lagrange.get_objective_jacobian(x_vect))
-        opt_problem.database.store(x_vect, {opt_problem.KKT_RESIDUAL_NORM: res})
-        return res
+
+    res = norm(lagrange.get_objective_jacobian(x_vect))
+    opt_problem.database.store(x_vect, {opt_problem.KKT_RESIDUAL_NORM: res})
+    return res

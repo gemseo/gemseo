@@ -156,11 +156,11 @@ class ComposedDistribution(Distribution):
     def __repr__(self) -> str:
         if self.dimension == 1:
             return repr(self.marginals[0])
-        else:
-            return (
-                f"{self.__class__.__name__}({pretty_repr(self.marginals, sort=False)}; "
-                f"{self.__copula_name if self.__copula_name else 'IndependentCopula'})"
-            )
+
+        return (
+            f"{self.__class__.__name__}({pretty_repr(self.marginals, sort=False)}; "
+            f"{self.__copula_name if self.__copula_name else 'IndependentCopula'})"
+        )
 
     def _set_bounds(
         self,

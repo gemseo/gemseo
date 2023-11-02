@@ -77,12 +77,10 @@ def pytest_sessionstart(session) -> None:
 def pytest_sessionfinish(session) -> None:
     """Remove file pollution from fortran code."""
     # take care of pytest_sessionstart side effects
-    for file_ in Path(".").glob("fort.*"):
-        try:
-            file_.unlink()
-        except PermissionError:
+    for file_ in Path().glob("fort.*"):
+        with contextlib.suppress(PermissionError):
             # On windows the file may be opened and not released by another component.
-            pass
+            file_.unlink()
 
 
 @pytest.fixture(autouse=True)
@@ -91,12 +89,13 @@ def skip_under_windows(request) -> None:
 
     Use it like a usual skip marker.
     """
-    if request.node.get_closest_marker("skip_under_windows"):
-        if sys.platform.startswith("win"):
-            pytest.skip("skipped on windows")
+    if request.node.get_closest_marker(
+        "skip_under_windows"
+    ) and sys.platform.startswith("win"):
+        pytest.skip("skipped on windows")
 
 
-@pytest.fixture
+@pytest.fixture()
 def baseline_images(request):
     """Return the baseline_images contents.
 
@@ -105,14 +104,14 @@ def baseline_images(request):
     return request.param
 
 
-@pytest.fixture
+@pytest.fixture()
 def pyplot_close_all() -> None:
     """Fixture that prevents figures aggregation with matplotlib pyplot."""
     if version.parse(matplotlib.__version__) < version.parse("3.6.0"):
         plt.close("all")
 
 
-@pytest.fixture
+@pytest.fixture()
 def reset_factory():
     """Reset the factory cache."""
     BaseFactory.clear_cache()

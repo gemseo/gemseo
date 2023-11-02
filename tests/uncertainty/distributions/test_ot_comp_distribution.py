@@ -19,17 +19,20 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 import pytest
-from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
-from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
-from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 from numpy import allclose
 from numpy import array
 from numpy import inf
-from numpy.random import seed
 from openturns import NormalCopula
+
+from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
+from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
+
+if TYPE_CHECKING:
+    from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 
 @pytest.fixture(scope="module")
@@ -103,7 +106,6 @@ def test_str(composed_distribution):
 
 
 def test_get_sample(composed_distribution):
-    seed(0)
     sample = composed_distribution.compute_samples(3)
     assert len(sample.shape) == 2
     assert sample.shape[0] == 3

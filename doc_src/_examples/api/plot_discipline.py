@@ -24,6 +24,8 @@ Discipline
 """
 from __future__ import annotations
 
+from numpy import array
+
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import generate_coupling_graph
@@ -36,7 +38,6 @@ from gemseo import get_discipline_outputs_schema
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
-from numpy import array
 
 configure_logger()
 

@@ -16,15 +16,19 @@
 from __future__ import annotations
 
 from functools import partial
+from typing import TYPE_CHECKING
 
 import pytest
+
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from numpy import ndarray
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 def build_and_run_idf_scenario_with_constraints(
@@ -108,7 +112,7 @@ def build_and_run_idf_scenario_with_constraints(
     return -obj_opt, is_feasible
 
 
-@pytest.fixture
+@pytest.fixture()
 def generate_idf_scenario():
     """Wrap an :class:`.MDOScenario` with an IDF formulation.
 

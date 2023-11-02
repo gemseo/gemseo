@@ -27,12 +27,6 @@ from pathlib import Path
 import h5py
 import numpy as np
 import pytest
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy import array_equal
 from numpy import inf
@@ -42,6 +36,13 @@ from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
 from numpy.testing import assert_equal
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 CURRENT_DIR = Path(__file__).parent
 TEST_INFILE = CURRENT_DIR / "design_space.csv"
@@ -54,7 +55,7 @@ FLOAT = DesignSpace.DesignVariableType.FLOAT
 INTEGER = DesignSpace.DesignVariableType.INTEGER
 
 
-@pytest.fixture
+@pytest.fixture()
 def design_space():
     """The main design space to be used by the test function.
 
@@ -144,7 +145,7 @@ def test_add_variable_with_nan_value(design_space, arg):
         design_space.add_variable(name="varname", **{arg: float("nan")})
 
 
-@pytest.mark.parametrize("arg,side", [("l_b", "lower"), ("u_b", "upper")])
+@pytest.mark.parametrize(("arg", "side"), [("l_b", "lower"), ("u_b", "upper")])
 def test_add_variable_with_inconsistent_bound_size(design_space, arg, side):
     """Check that using bounds with inconsistent size raises an error."""
     with pytest.raises(
@@ -179,7 +180,7 @@ def test_add_variable_with_2d_object(design_space, arg):
 
 
 @pytest.mark.parametrize(
-    "l_b,u_b, value",
+    ("l_b", "u_b", "value"),
     [
         (1.0, 2.0, 3.0),
         (1.0, 2.0, 0.0),
@@ -192,8 +193,8 @@ def test_add_variable_with_value_out_of_bounds(design_space, l_b, u_b, value):
     variable.
     """
     expected = (
-        "The current value of variable 'varname' ({}) is not "
-        "between the lower bound {} and the upper bound {}.".format(value, l_b, u_b)
+        f"The current value of variable 'varname' ({value}) is not "
+        f"between the lower bound {l_b} and the upper bound {u_b}."
     )
     with pytest.raises(ValueError, match=re.escape(expected)):
         design_space.add_variable(
@@ -258,9 +259,7 @@ def test_set_current_value_with_malformed_opt_arg(design_space):
     an error."""
     with pytest.raises(
         Exception,
-        match="Invalid x_opt, dimension mismatch: {} != 1".format(
-            design_space.dimension
-        ),
+        match=f"Invalid x_opt, dimension mismatch: {design_space.dimension} != 1",
     ):
         design_space.set_current_value(OptimizationResult(x_opt=array([1.0])))
 
@@ -392,7 +391,7 @@ def test_active_bounds():
         design_space.get_active_bounds()
 
 
-@pytest.mark.parametrize("index,expected", [(0, "x"), (1, "z!0"), (2, "z!1")])
+@pytest.mark.parametrize(("index", "expected"), [(0, "x"), (1, "z!0"), (2, "z!1")])
 def test_get_indexed_variable_names(index, expected):
     """Check the variables names obtained with get_indexed_variable_names()."""
     design_space = DesignSpace()
@@ -402,7 +401,7 @@ def test_get_indexed_variable_names(index, expected):
 
 
 @pytest.mark.parametrize(
-    "name,lower_bound,upper_bound",
+    ("name", "lower_bound", "upper_bound"),
     [("x6", -inf, 2.0), ("x7", 0.0, inf)],
 )
 def test_bounds(design_space, name, lower_bound, upper_bound):
@@ -485,7 +484,7 @@ def test_normalize_vect_with_integer(design_space):
 
 
 @pytest.mark.parametrize(
-    "vect,get_item",
+    ("vect", "get_item"),
     [
         (ones(1) * 0, lambda x: x[0]),
         (array([[0.0], [0.0]]), lambda x: x[0][0]),
@@ -758,7 +757,7 @@ def table_template() -> str:
 """.strip()
 
 
-@pytest.fixture
+@pytest.fixture()
 def design_space_2() -> DesignSpace:
     """Return a design space with scalar and vectorial variables."""
     design_space = DesignSpace()
@@ -768,7 +767,7 @@ def design_space_2() -> DesignSpace:
 
 
 @pytest.mark.parametrize(
-    "with_index,indexes", ((True, ("[0]", "[1]")), (False, ("   ", "   ")))
+    ("with_index", "indexes"), [(True, ("[0]", "[1]")), (False, ("   ", "   "))]
 )
 def test_get_pretty_table(table_template, design_space_2, with_index, indexes):
     """Check that a design space is correctly rendered."""
@@ -778,7 +777,7 @@ def test_get_pretty_table(table_template, design_space_2, with_index, indexes):
     )
 
 
-@pytest.mark.parametrize("name", ("", "foo"))
+@pytest.mark.parametrize("name", ["", "foo"])
 def test_str(table_template, design_space_2, name):
     """Check that a design space is correctly rendered."""
     if name:
@@ -792,7 +791,7 @@ def test_str(table_template, design_space_2, name):
 
 
 @pytest.mark.parametrize(
-    "normalized,expected", [(False, [-1, 0.5, 2]), (True, [0, 0.5, 1])]
+    ("normalized", "expected"), [(False, [-1, 0.5, 2]), (True, [0, 0.5, 1])]
 )
 def test_project_into_bounds(design_space, normalized, expected):
     """Tests the projection onto the design space bounds."""
@@ -832,7 +831,7 @@ def test_getitem_with_name_out_of_design_space(design_space):
 
 
 @pytest.mark.parametrize(
-    "names,expected",
+    ("names", "expected"),
     [
         (["x10"], [0, 1, 2]),
         (["x11"], [3, 4]),
@@ -849,7 +848,7 @@ def test_get_variables_indexes(design_space, names, expected):
 
 
 @pytest.mark.parametrize(
-    ["use_design_space_order", "expected"],
+    ("use_design_space_order", "expected"),
     [(True, array([0, 1, 2, 3, 4, 5])), (False, array([3, 4, 0, 1, 2, 5]))],
 )
 def test_get_variables_indexes_in_user_order(
@@ -891,7 +890,7 @@ def test_vartype_passed_as_bytes(design_space):
 
 
 @pytest.mark.parametrize(
-    "name,kind", [("x13", "f"), ("x14", "i"), ("x16", "f"), ("x17", "i")]
+    ("name", "kind"), [("x13", "f"), ("x14", "i"), ("x16", "f"), ("x17", "i")]
 )
 def test_current_x_various_types(design_space, name, kind):
     """Check that set_current_value handles various types of data."""
@@ -940,7 +939,7 @@ def design_space_for_normalize_vect() -> DesignSpace:
 
 @pytest.mark.parametrize("use_out", [False, True])
 @pytest.mark.parametrize(
-    "input_vec, ref",
+    ("input_vec", "ref"),
     [
         (np.array([-10, -20, 5, 5]), np.array([-10, -20, 0.5, 0.5])),
         (np.array([-10.0, -20, 5.0, 5]), np.array([-10, -20, 0.5, 0.5])),
@@ -956,7 +955,7 @@ def test_normalize_vect(design_space_for_normalize_vect, input_vec, ref, use_out
 
 
 @pytest.mark.parametrize(
-    "input_vec, ref",
+    ("input_vec", "ref"),
     [
         (np.array([-10, -20, 0, 1]), np.array([-10, -20, 0, 10])),
         (np.array([-10.0, -20, 0.5, 1]), np.array([-10, -20, 5, 10])),
@@ -996,7 +995,7 @@ def test_iter():
     design_space = DesignSpace()
     design_space.add_variable("x1")
     design_space.add_variable("x2", size=2)
-    assert [name for name in design_space] == ["x1", "x2"]
+    assert list(design_space) == ["x1", "x2"]
 
 
 def test_delitem():
@@ -1078,7 +1077,7 @@ def test_rename_unknown_variable():
 
 
 @pytest.mark.parametrize(
-    "variables,expected",
+    ("variables", "expected"),
     [
         (
             {
@@ -1185,7 +1184,7 @@ def design_space_to_check_membership() -> DesignSpace:
 
 
 @pytest.mark.parametrize(
-    "x_vect,variable_names,error,error_msg",
+    ("x_vect", "variable_names", "error", "error_msg"),
     [
         (
             [0, 0],
@@ -1273,10 +1272,11 @@ def test_check_membership(
 
 
 @pytest.mark.parametrize(
-    "l_b,expected_lb", [(-5, array([-5, -5])), (array([-5, -inf]), array([-5, -inf]))]
+    ("l_b", "expected_lb"),
+    [(-5, array([-5, -5])), (array([-5, -inf]), array([-5, -inf]))],
 )
 @pytest.mark.parametrize(
-    "u_b,expected_ub", [(5, array([5, 5])), (array([5, inf]), array([5, inf]))]
+    ("u_b", "expected_ub"), [(5, array([5, 5])), (array([5, inf]), array([5, inf]))]
 )
 def test_infinity_bounds_for_int(l_b, u_b, expected_lb, expected_ub):
     """Check that integer variables can handle -/+ infinity bounds.
@@ -1355,7 +1355,7 @@ def test_get_current_value_bad_names():
 
 
 @pytest.mark.parametrize(
-    "l_b,u_b,value",
+    ("l_b", "u_b", "value"),
     [
         (None, None, array([0, 0])),
         (array([1, 2]), None, array([1, 2])),

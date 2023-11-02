@@ -69,6 +69,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Dict
 from typing import Iterable
@@ -95,8 +96,10 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
     DimensionReduction,
 )
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+
+if TYPE_CHECKING:
+    from gemseo.mlearning.transformers.transformer import Transformer
 
 SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], Dict[str, ndarray]]
 
@@ -154,11 +157,11 @@ class MLSupervisedAlgo(MLAlgo):
         self._transformed_input_sizes = {}
         self._transformed_output_sizes = {}
         self._input_variables_to_transform = [
-            key for key in self.transformer.keys() if key in self.input_names
+            key for key in self.transformer if key in self.input_names
         ]
         self._transform_input_group = self.learning_set.INPUT_GROUP in self.transformer
         self._output_variables_to_transform = [
-            key for key in self.transformer.keys() if key in self.output_names
+            key for key in self.transformer if key in self.output_names
         ]
         self._transform_output_group = (
             self.learning_set.OUTPUT_GROUP in self.transformer
@@ -298,8 +301,7 @@ class MLSupervisedAlgo(MLAlgo):
         """
         if names:
             return self.__fit_transformer_from_names(input_group, names, indices)
-        else:
-            return self.__fit_transformer_from_group(input_group, indices)
+        return self.__fit_transformer_from_group(input_group, indices)
 
     def __fit_transformer_from_names(
         self, input_group: bool, names: Iterable[str], indices: Ellipsis | Sequence[int]
@@ -348,8 +350,7 @@ class MLSupervisedAlgo(MLAlgo):
         """
         if input_group:
             return self.learning_set.INPUT_GROUP
-        else:
-            return self.learning_set.OUTPUT_GROUP
+        return self.learning_set.OUTPUT_GROUP
 
     def __fit_transformer_from_group(
         self, input_group: bool, indices: Ellipsis | Sequence[int]
@@ -475,8 +476,8 @@ class MLSupervisedAlgo(MLAlgo):
         """
         input_dimension = 0
         output_dimension = 0
-        input_names = self.input_names + [IODataset.INPUT_GROUP]
-        output_names = self.output_names + [IODataset.OUTPUT_GROUP]
+        input_names = [*self.input_names, IODataset.INPUT_GROUP]
+        output_names = [*self.output_names, IODataset.OUTPUT_GROUP]
 
         for key in self.transformer:
             transformer = self.transformer.get(key)

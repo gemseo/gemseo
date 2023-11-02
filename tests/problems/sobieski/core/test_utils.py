@@ -19,12 +19,13 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.problems.sobieski.core.utils import SobieskiBase
 from numpy import array
 from numpy import complex128
 from numpy import eye
 from numpy import float64
 from numpy import zeros
+
+from gemseo.problems.sobieski.core.utils import SobieskiBase
 
 
 def test_init():

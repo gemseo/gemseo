@@ -19,9 +19,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from gemseo.utils.matplotlib_figure import save_show_figure
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
+
+from gemseo.utils.matplotlib_figure import save_show_figure
 
 
 @pytest.mark.parametrize("file_path", [None, "file_name.pdf"])

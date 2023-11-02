@@ -23,7 +23,6 @@ from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
@@ -36,16 +35,16 @@ if TYPE_CHECKING:
     from typing import Final
     from typing import Mapping
     from typing import Sequence
+
     from numpy.typing import NDArray
+
+    from gemseo.core.coupling_structure import MDOCouplingStructure
 
 N_CPUS: Final[int] = cpu_count()
 
 
 class MDARoot(MDA):
     """Abstract class implementing MDAs based on (Quasi-)Newton methods."""
-
-    use_threading: bool
-    """Whether to execute and linearize the disciplines in parallel."""
 
     n_processes: int
     """The maximum number of simultaneous threads,  if :attr:`.use_threading` is True,

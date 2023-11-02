@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 import numpy as np
@@ -30,11 +31,13 @@ from matplotlib.ticker import MaxNLocator
 from numpy import e
 from numpy import ndarray
 
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -73,8 +76,8 @@ class ObjConstrHist(OptPostProcessor):
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         ax1 = fig.add_subplot(grid[0, 0])
         n_iterations = len(self.database)
-        ax1.set_xticks([i for i in range(n_iterations)])
-        ax1.set_xticklabels([i for i in range(1, n_iterations + 1)])
+        ax1.set_xticks(range(n_iterations))
+        ax1.set_xticklabels(range(1, n_iterations + 1))
         mng = plt.get_current_fig_manager()
         mng.resize(700, 1000)
 
@@ -135,15 +138,17 @@ class ObjConstrHist(OptPostProcessor):
         )
         ordinate = (obj_max + obj_min) / 2
         for iteration, i in enumerate(np.argmax(constraint_history, axis=1)):
+            constraint_name = LogFormatterSciNotation().format_data(
+                constraint_values[iteration, i]
+            )
             text = ax1.text(
                 iteration + 0.05,
                 ordinate,
-                f"${constraint_names[i]}="
-                f"{LogFormatterSciNotation().format_data(constraint_values[iteration, i])}$",
+                f"${constraint_names[i]}={constraint_name}$",
                 rotation="vertical",
                 va="center",
             )
-            text.set_bbox(dict(facecolor="white", alpha=0.7, edgecolor="none"))
+            text.set_bbox({"facecolor": "white", "alpha": 0.7, "edgecolor": "none"})
 
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         # 2.d. Add color map.
@@ -178,7 +183,7 @@ class ObjConstrHist(OptPostProcessor):
         constraint_names = []
         for constraint in constraints:
             if all_constraint_names is None or constraint.name in all_constraint_names:
-                constraint_names.append(constraint.name)
+                constraint_names.append(constraint.name)  # noqa: PERF401
 
         if constraint_names:
             constraint_history, constraint_names, _ = self.database.get_history_array(

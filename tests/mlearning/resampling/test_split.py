@@ -16,9 +16,10 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.resampling.split import Split
 from numpy import array
 from numpy.testing import assert_array_equal
+
+from gemseo.mlearning.resampling.split import Split
 
 
 @pytest.fixture(scope="module")

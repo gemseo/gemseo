@@ -16,13 +16,17 @@
 from __future__ import annotations
 
 from logging import getLogger
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.core.discipline import MDODiscipline
 from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
     JobSchedulerDisciplineWrapper,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.core.discipline import MDODiscipline
 
 LOGGER = getLogger(__name__)
 

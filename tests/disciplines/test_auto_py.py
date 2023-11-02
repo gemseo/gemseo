@@ -22,6 +22,12 @@ from __future__ import annotations
 import re
 
 import pytest
+from numpy import array
+from numpy import ones
+from numpy import zeros
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
+
 from gemseo import create_design_space
 from gemseo import create_mda
 from gemseo import create_scenario
@@ -31,11 +37,6 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.auto_py import to_arrays_dict
-from numpy import array
-from numpy import ones
-from numpy import zeros
-from scipy.optimize import rosen
-from scipy.optimize import rosen_der
 
 
 def create_ds(n):
@@ -46,7 +47,7 @@ def create_ds(n):
 
 def f1(y2=1.0, z=2.0):
     y1 = z + y2
-    return y1
+    return y1  # noqa: RET504
 
 
 def f2(y1=2.0, z=2.0):
@@ -58,15 +59,15 @@ def f2(y1=2.0, z=2.0):
 def f3(x=1.0):
     if x > 0:
         y = -x
-        return y
+        return y  # noqa: RET504
     y = 2 * x
-    return y
+    return y  # noqa: RET504
 
 
 def f4(x=1.0):
     if x > 0:
         y = -x
-        return y
+        return y  # noqa: RET504
     y = 2 * x
     return y, x
 
@@ -169,10 +170,10 @@ def test_jac_pb():
         auto_rosen._compute_jacobian()
 
 
-@pytest.mark.parametrize("input", [{"a": [1.0]}, {"a": array([1.0])}])
-def test_to_arrays_dict(input):
+@pytest.mark.parametrize("input_", [{"a": [1.0]}, {"a": array([1.0])}])
+def test_to_arrays_dict(input_):
     """Test the function to_arrays_dict."""
-    output = to_arrays_dict(input)
+    output = to_arrays_dict(input_)
     assert output["a"] == array([1.0])
 
 
@@ -194,7 +195,7 @@ def test_multiprocessing():
 
 
 @pytest.mark.parametrize(
-    "name,expected", [("custom_name", "custom_name"), (None, "f1")]
+    ("name", "expected"), [("custom_name", "custom_name"), (None, "f1")]
 )
 def test_auto_py_name(name, expected):
     """Test that the name of the AutoPyDiscipline is set correctly."""
@@ -204,7 +205,7 @@ def test_auto_py_name(name, expected):
 
 def obj(a=1.0, b=2.0, c=3.0):
     c1 = a + 2.0 * b + 3.0 * c
-    return c1
+    return c1  # noqa: RET504
 
 
 def jac(a=1.0, b=2.0, c=3.0):

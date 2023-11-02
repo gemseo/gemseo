@@ -39,13 +39,14 @@ from __future__ import annotations
 
 from math import exp
 
+from numpy import array
+from numpy import ones
+
 from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from numpy import array
-from numpy import ones
 
 # %%
 # These imports are needed to compute mathematical expressions and to

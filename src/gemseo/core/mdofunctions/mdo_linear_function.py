@@ -51,6 +51,7 @@ class MDOLinearFunction(MDOFunction):
         +
         \begin{bmatrix} b_1 \\ \vdots \\ b_m \end{bmatrix}.
     """
+
     __initial_expression: str | None
     """The initially provided expression.
 
@@ -263,11 +264,14 @@ class MDOLinearFunction(MDOFunction):
             else:
                 strings.append(" " + " ".join([" " * 3] * in_dim) + " ")
             # vector line
-            strings.append(
-                f"[{input_names[i]}]" if i < in_dim else " " * (max_input_name_len + 2)
+            strings.extend(
+                (
+                    f"[{input_names[i]}]"
+                    if i < in_dim
+                    else " " * (max_input_name_len + 2),
+                    " + " if i == 0 else "   ",
+                )
             )
-            # sign
-            strings.append(" + " if i == 0 else "   ")
             # value at zero
             if i < out_dim:
                 strings.append(

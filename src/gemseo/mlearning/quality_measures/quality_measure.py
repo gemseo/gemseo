@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Dict
 from typing import Optional
@@ -33,8 +34,10 @@ from strenum import StrEnum
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from gemseo.mlearning.core.ml_algo import MLAlgo
 
 MeasureType = Union[float, ndarray, Dict[str, ndarray]]
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
@@ -280,8 +283,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         if cls.SMALLER_IS_BETTER:
             return val1 < val2
-        else:
-            return val1 > val2
+        return val1 > val2
 
     def _pre_process(
         self,

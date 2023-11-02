@@ -15,11 +15,15 @@
 """Services for handling Matplotlib figures, e.g. save and show."""
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Tuple
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from matplotlib.figure import Figure
 
 FigSizeType = Tuple[float, float]
 """The type of a figure size."""

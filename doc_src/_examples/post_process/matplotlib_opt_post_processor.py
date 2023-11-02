@@ -24,10 +24,11 @@ This can be useful to finely tune a graph for a presentation or a paper.
 """
 from __future__ import annotations
 
+from matplotlib import pyplot as plt
+
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from matplotlib import pyplot as plt
 
 # %%
 # We consider a minimization problem over the interval :math:`[0,1]`

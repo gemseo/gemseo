@@ -20,14 +20,15 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.yvsx import YvsX
-from gemseo.utils.testing.helpers import concretize_classes
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy import array
+
+from gemseo.datasets.dataset import Dataset
+from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.yvsx import YvsX
+from gemseo.utils.testing.helpers import concretize_classes
 
 
 def test_empty_dataset():
@@ -54,7 +55,7 @@ def test_get_label():
         post._get_label(123)
 
 
-@pytest.fixture
+@pytest.fixture()
 def plot():
     """A simple dataset plot from a dataset with a single value: x=[1]."""
     dataset = Dataset.from_array(
@@ -65,7 +66,7 @@ def plot():
 
 
 @pytest.mark.parametrize(
-    "attribute,default_value",
+    ("attribute", "default_value"),
     [
         ("xlabel", ""),
         ("ylabel", ""),
@@ -81,7 +82,7 @@ def test_property_default_values(plot, attribute, default_value):
 
 
 @pytest.mark.parametrize(
-    "attribute,value",
+    ("attribute", "value"),
     [
         ("xlabel", "dummy_xlabel"),
         ("ylabel", "dummy_ylabel"),

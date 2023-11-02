@@ -19,6 +19,7 @@
 """Build matrices from linear constraints for solvers."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Iterable
 
 from numpy import hstack
@@ -27,8 +28,10 @@ from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+
+if TYPE_CHECKING:
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 def build_constraints_matrices(

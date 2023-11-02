@@ -24,6 +24,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import inf
+from numpy import ndarray
+from numpy.random import RandomState
+from numpy.testing import assert_equal
+from openturns import RandomGenerator
+
 from gemseo.uncertainty.distributions import distribution
 from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
@@ -37,19 +45,11 @@ from gemseo.uncertainty.distributions.openturns.triangular import (
 )
 from gemseo.uncertainty.distributions.openturns.uniform import OTUniformDistribution
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import allclose
-from numpy import array
-from numpy import inf
-from numpy import ndarray
-from numpy.random import randn
-from numpy.random import seed
-from numpy.testing import assert_equal
-from openturns import RandomGenerator
 
 
 def test_composed_distribution():
     """Check the composed distribution associated with a OTDistribution."""
-    assert OTDistribution.COMPOSED_DISTRIBUTION_CLASS == OTComposedDistribution
+    assert OTComposedDistribution == OTDistribution.COMPOSED_DISTRIBUTION_CLASS
 
 
 def test_constructor():
@@ -157,7 +157,7 @@ def test_range():
 
 
 @pytest.mark.parametrize(
-    "kwargs,expected",
+    ("kwargs", "expected"),
     [
         ({"lower_bound": 0.5, "upper_bound": 0.6}, array([0.5, 0.6])),
         ({"lower_bound": 0.5}, array([0.5, 2.0])),
@@ -172,7 +172,7 @@ def test_truncation(kwargs, expected):
 
 
 @pytest.mark.parametrize(
-    "kwargs,expected",
+    ("kwargs", "expected"),
     [
         ({"upper_bound": 1.5}, "u_b is greater than the current upper bound."),
         ({"lower_bound": -0.5}, "l_b is less than the current lower bound."),
@@ -220,7 +220,7 @@ def test_triangular():
 
 
 @pytest.mark.parametrize(
-    "dimension, baseline_images",
+    ("dimension", "baseline_images"),
     [
         (1, ["image_1_0"]),
         (2, ["image_2_0", "image_2_1"]),
@@ -234,7 +234,15 @@ def test_plot_all_show(dimension, baseline_images, pyplot_close_all):
 
 
 @pytest.mark.parametrize(
-    "dimension, index, file_path, directory_path, file_name, file_extension, expected",
+    (
+        "dimension",
+        "index",
+        "file_path",
+        "directory_path",
+        "file_name",
+        "file_extension",
+        "expected",
+    ),
     [
         (1, 0, None, None, None, None, "distribution_x.png"),
         (2, 0, None, None, None, None, "distribution_x_0.png"),
@@ -274,16 +282,16 @@ def test_plot_save(
             assert args[2] == Path(tmp_wd / expected)
 
 
-@pytest.fixture
-def norm_data():
-    seed(1)
-    return randn(100)
+@pytest.fixture()
+def norm_data() -> ndarray:
+    """Normal samples."""
+    return RandomState(1).normal(size=100)
 
 
 def test_otdistfitter_distribution(norm_data):
     factory = OTDistributionFitter("x", norm_data)
+    dist = OTNormalDistribution("x", dimension=2)
     with pytest.raises(TypeError):
-        dist = OTNormalDistribution("x", dimension=2)
         factory.compute_measure(dist, "BIC")
 
 

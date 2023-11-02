@@ -16,12 +16,13 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
-@pytest.fixture
+@pytest.fixture()
 def problem_with_identity() -> OptimizationProblem:
     """An optimization problem whose objective is the identity function."""
     design_space = DesignSpace()

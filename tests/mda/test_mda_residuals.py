@@ -32,15 +32,19 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+from numpy import array
+from numpy import ndarray
+
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.core.discipline import MDODiscipline
-from numpy import array
-from numpy import ndarray
-from pytest import fixture
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 
 def disc_1_expr(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> tuple[float]:
@@ -78,7 +82,7 @@ def disc_1_expr_jac(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> ndarray
             [7, 1, -3],
         ]
     )
-    return d_y_w_r_d_w_y_x
+    return d_y_w_r_d_w_y_x  # noqa: RET504
 
 
 def disc_2_expr(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> tuple[float]:
@@ -117,7 +121,7 @@ def disc_2_expr_jac(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> ndarray
             [5, 1, -2],
         ]
     )
-    return d_y_w_r_d_w_y_x
+    return d_y_w_r_d_w_y_x  # noqa: RET504
 
 
 def disc_3_expr(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> float:
@@ -132,7 +136,7 @@ def disc_3_expr(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> float:
         The objective function.
     """
     obj = y1 + 2 * y2 + 11 * x
-    return obj
+    return obj  # noqa: RET504
 
 
 def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray:
@@ -147,10 +151,10 @@ def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray
         The objective function Jacobian.
     """
     d_obj_d_y1_y2_x = array([[1.0, 2.0, 11.0]])
-    return d_obj_d_y1_y2_x
+    return d_obj_d_y1_y2_x  # noqa: RET504
 
 
-@fixture
+@pytest.fixture()
 def res_disciplines() -> list[MDODiscipline]:
     """Create the three disciplines required to make a MDA with residual variables.
 

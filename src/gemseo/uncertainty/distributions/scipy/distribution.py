@@ -49,12 +49,13 @@ from __future__ import annotations
 
 import logging
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import Generator
 from typing import Iterable
 from typing import Mapping
-from typing import TYPE_CHECKING
 
 import scipy
 import scipy.stats as sp_stats
@@ -69,6 +70,8 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from numpy.random import RandomState
+
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 LOGGER = logging.getLogger(__name__)
@@ -146,8 +149,13 @@ class SPDistribution(Distribution):
     def compute_samples(  # noqa: D102
         self,
         n_samples: int = 1,
+        random_state: None | int | Generator | RandomState = None,
     ) -> ndarray:
-        return vstack([marginal.rvs(n_samples) for marginal in self.marginals]).T
+        """
+        Args:
+            random_state: The SciPy random state.
+        """
+        return vstack([m.rvs(n_samples, random_state) for m in self.marginals]).T
 
     def compute_cdf(  # noqa: D102
         self,
@@ -189,18 +197,20 @@ class SPDistribution(Distribution):
         """
         try:
             create_distribution = getattr(sp_stats, distribution)
-        except Exception:
-            raise ValueError(f"{distribution} is an unknown scipy distribution.")
+        except BaseException:
+            raise ValueError(
+                f"{distribution} is an unknown scipy distribution."
+            ) from None
 
         try:
             parameters = parameters or {}
             create_distribution(**parameters)
             distributions = [create_distribution(**parameters)] * self.dimension
-        except Exception:
+        except BaseException:
             raise ValueError(
                 f"Arguments are wrong in {distribution}({pretty_str(parameters)}); "
                 f"more details on: {SP_WEBSITE}."
-            )
+            ) from None
 
         self.__set_bounds(distributions)
         return distributions

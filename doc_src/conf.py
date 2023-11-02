@@ -33,7 +33,8 @@ os.chdir((Path(__file__).resolve()).parent)
 for directory_name in ("_ext", "templates"):
     sys.path.append(str(Path(directory_name).resolve()))
 
-from gemseo_templator.blocks import features, main_concepts  # noqa: E402
+from gemseo_templator.blocks import features  # noqa: E402
+from gemseo_templator.blocks import main_concepts  # noqa: E402
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -103,7 +104,7 @@ autosummary_generate = True
 # Show the typehints in the description instead of the signature.
 autodoc_typehints = "description"
 
-# Both the class’ and the __init__ method’s docstring are concatenated and inserted.
+# Both the class' and the __init__ method's docstring are concatenated and inserted.
 autoclass_content = "both"
 
 # Show arguments default values.
@@ -130,7 +131,7 @@ autodoc_mock_imports = [
 # Settings for napoleon.
 
 # True to include special members (like __membername__) with docstrings in the documentation.
-# False to fall back to Sphinx’s default behavior.
+# False to fall back to Sphinx's default behavior.
 napoleon_include_special_with_doc = False
 
 ################################################################################
@@ -152,7 +153,7 @@ master_doc = "contents"
 # General information about the project.
 project = "GEMSEO"
 
-copyright = f"{datetime.datetime.now().year}, IRT Saint Exupéry"
+copyright = f"{datetime.datetime.now().year}, IRT Saint Exupéry"  # noqa: A001
 
 pretty_version = release = version = _version("gemseo")
 if "dev" in pretty_version:
@@ -237,7 +238,7 @@ intersphinx_mapping = {
 ################################################################################
 # Setup the multiversion display
 
-html_context = dict()
+html_context = {}
 html_context["pretty_version"] = pretty_version
 
 __VERSION_REGEX = re.compile(r"^(develop|\d+\.\d+\.\d+\.?\w*)$")

@@ -19,11 +19,11 @@ from abc import abstractmethod
 from numbers import Number
 from operator import mul
 from operator import truediv
-from re import compile
 from re import Pattern
+from re import compile
 from re import search
-from typing import Final
 from typing import TYPE_CHECKING
+from typing import Final
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import add as _add
@@ -98,11 +98,9 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
 
             if self._first_operand.input_names and self._second_operand.input_names:
                 input_names = sorted(
-                    list(
-                        set(
-                            self._first_operand.input_names
-                            + self._second_operand.input_names
-                        )
+                    set(
+                        self._first_operand.input_names
+                        + self._second_operand.input_names
                     )
                 )
 
@@ -163,7 +161,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         """
         expr_1 = self._first_operand.expr
         expr_2 = self._second_operand_expr
-        if self._operator_repr in ["*", "/"]:
+        if self._operator_repr in {"*", "/"}:
             expr_1 = self.__rewrite_expression(expr_1)
             expr_2 = self.__rewrite_expression(expr_2)
         elif self._operator_repr == "-":
@@ -307,8 +305,8 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
                 + self._operator_repr
                 + self._first_operand.expr
             )
-        else:
-            return super()._compute_expr()
+
+        return super()._compute_expr()
 
     def _compute_name(self) -> str:
         if self._second_operand_is_number and self._operator == mul:
@@ -317,8 +315,8 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
                 + self._operator_repr
                 + self._first_operand.name
             )
-        else:
-            return super()._compute_name()
+
+        return super()._compute_name()
 
     def _compute_operation_jacobian(self, input_value: ArrayType) -> ArrayType:
         if self._second_operand_is_number:

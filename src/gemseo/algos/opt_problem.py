@@ -63,8 +63,8 @@ import logging
 from copy import deepcopy
 from functools import reduce
 from numbers import Number
-from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -98,7 +98,6 @@ from numpy import number as np_number
 from numpy import where
 from numpy.core import atleast_1d
 from numpy.linalg import norm
-from numpy.typing import NDArray
 from pandas import MultiIndex
 from strenum import StrEnum
 
@@ -128,6 +127,11 @@ from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from numpy.typing import NDArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -377,7 +381,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             Whether the maximum amount of iterations has been reached.
         """
-        if self.max_iter in [None, 0] or self.current_iter in [None, 0]:
+        if self.max_iter in {None, 0} or self.current_iter in {None, 0}:
             return False
         return self.current_iter >= self.max_iter
 
@@ -533,13 +537,13 @@ class OptimizationProblem(BaseProblem):
 
         if cstr_type is not None:
             cstr_func.f_type = cstr_type
-        else:
-            if not cstr_func.is_constraint():
-                msg = (
-                    "Constraint type must be provided, "
-                    "either in the function attributes or to the add_constraint method."
-                )
-                raise ValueError(msg)
+        elif not cstr_func.is_constraint():
+            msg = (
+                "Constraint type must be provided, "
+                "either in the function attributes or to the add_constraint method."
+            )
+            raise ValueError(msg)
+
         cstr_func.special_repr = cstr_repr
         self.constraints.append(cstr_func)
         if not has_default_name:
@@ -665,10 +669,12 @@ class OptimizationProblem(BaseProblem):
 
             l_b\leq x\leq u_b
 
-        Where :math:`H(x)` is the Heaviside function, :math:`o_s` is the ``objective_scale``
+        Where :math:`H(x)` is the Heaviside function,
+        :math:`o_s` is the ``objective_scale``
         parameter and :math:`s` is the scale parameter.
         The solution of the new problem approximate the one of the original problem.
-        Increasing the values of ``objective_scale`` and scale, the solutions are closer but
+        Increasing the values of ``objective_scale`` and scale,
+        the solutions are closer but
         the optimization problem requires more and more iterations to be solved.
 
         Args:
@@ -720,7 +726,8 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             obs_func: An observable to be observed.
-            new_iter: If ``True``, then the observable will be called at each new iterate.
+            new_iter: If ``True``,
+                then the observable will be called at each new iterate.
         """
         name = obs_func.name
         if name in self.__observable_names:
@@ -747,7 +754,7 @@ class OptimizationProblem(BaseProblem):
             """Check if a function is an equality constraint.
 
             Args:
-                A function.
+                func: A function.
 
             Returns:
                 True if the function is an equality constraint.
@@ -769,7 +776,7 @@ class OptimizationProblem(BaseProblem):
             """Check if a function is an inequality constraint.
 
             Args:
-                A function.
+                func: A function.
 
             Returns:
                 True if the function is an inequality constraint.
@@ -869,7 +876,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             All the functions of the optimization problem.
         """
-        return [self.objective] + self.constraints + self.observables
+        return [self.objective, *self.constraints, *self.observables]
 
     def get_all_function_name(self) -> list[str]:
         """Retrieve the names of all the function of the optimization problem.
@@ -1039,7 +1046,7 @@ class OptimizationProblem(BaseProblem):
             if not constraint.dim:
                 raise ValueError(
                     "Constraint dimension not available yet, "
-                    "please call function {} once".format(constraint)
+                    f"please call function {constraint} once"
                 )
             if constraint.f_type == cstr_type:
                 n_cstr += constraint.dim
@@ -1183,8 +1190,8 @@ class OptimizationProblem(BaseProblem):
             for function in functions:
                 try:  # Calling function.evaluate is faster than function()
                     outputs[function.name] = function.evaluate(preprocessed_x_vect)
-                except ValueError:
-                    LOGGER.error("Failed to evaluate function %s", function.name)
+                except ValueError:  # noqa: PERF203
+                    LOGGER.exception("Failed to evaluate function %s", function.name)
                     raise
 
         if not eval_jac and jacobian_names is None:
@@ -1222,8 +1229,8 @@ class OptimizationProblem(BaseProblem):
         for function in functions:
             try:
                 jacobians[function.name] = function.jac(preprocessed_x_vect)
-            except ValueError:
-                LOGGER.error("Failed to evaluate Jacobian of %s.", function.name)
+            except ValueError:  # noqa: PERF203
+                LOGGER.exception("Failed to evaluate Jacobian of %s.", function.name)
                 raise
 
         return outputs, jacobians
@@ -1502,15 +1509,13 @@ class OptimizationProblem(BaseProblem):
         # Build the normalized linear function
         coefficients = multiply(orig_func.coefficients, norm_factors)
         value_at_zero = orig_func(shift)
-        normalized_func = MDOLinearFunction(
+        return MDOLinearFunction(
             coefficients,
             orig_func.name,
             orig_func.f_type,
             orig_func.input_names,
             value_at_zero,
         )
-
-        return normalized_func
 
     def __add_fd_jac(
         self,
@@ -1569,8 +1574,8 @@ class OptimizationProblem(BaseProblem):
             self.check_format(cstr)
             if not cstr.is_constraint():
                 raise ValueError(
-                    "Constraint type is not eq or ineq !, got {}"
-                    " instead ".format(cstr.f_type)
+                    f"Constraint type is not eq or ineq !, got {cstr.f_type}"
+                    " instead "
                 )
         self.check_format(self.objective)
 
@@ -1778,9 +1783,8 @@ class OptimizationProblem(BaseProblem):
             outputs_opt = f_history[best_i]
             x_opt = x_history[best_i]
             f_opt = outputs_opt.get(self.objective.name)
-        if isinstance(f_opt, ndarray):
-            if len(f_opt) == 1:
-                f_opt = f_opt[0]
+        if isinstance(f_opt, ndarray) and len(f_opt) == 1:
+            f_opt = f_opt[0]
 
         return x_opt, f_opt, is_opt_feasible, outputs_opt
 
@@ -1800,7 +1804,7 @@ class OptimizationProblem(BaseProblem):
         """
         msg = (
             "Optimization found no feasible point ! "
-            + " The least infeasible point is selected."
+            " The least infeasible point is selected."
         )
         LOGGER.warning(msg)
         x_opt, f_opt, _, f_history = self.get_best_infeasible_point()
@@ -1852,9 +1856,8 @@ class OptimizationProblem(BaseProblem):
                     c_opt[c_name] = feas_f[i].get(c_name)
                     c_key = Database.get_gradient_name(c_name)
                     c_opt_grad[constraint.name] = feas_f[i].get(c_key)
-        if isinstance(f_opt, ndarray):
-            if len(f_opt) == 1:
-                f_opt = f_opt[0]
+        if isinstance(f_opt, ndarray) and len(f_opt) == 1:
+            f_opt = f_opt[0]
         return x_opt, f_opt, c_opt, c_opt_grad
 
     def get_optimum(self) -> OptimumType:
@@ -2091,7 +2094,7 @@ class OptimizationProblem(BaseProblem):
             if opt_pb.CONSTRAINTS_GROUP in h5file:
                 group = get_hdf5_group(h5file, opt_pb.CONSTRAINTS_GROUP)
 
-                for cstr_name in group.keys():
+                for cstr_name in group:
                     group_data = cls.__h5_group_to_dict(group, cstr_name)
                     attr = MDOFunction.init_from_dict_repr(**group_data)
                     opt_pb.constraints.append(attr)
@@ -2099,7 +2102,7 @@ class OptimizationProblem(BaseProblem):
             if opt_pb.OBSERVABLES_GROUP in h5file:
                 group = get_hdf5_group(h5file, opt_pb.OBSERVABLES_GROUP)
 
-                for observable_name in group.keys():
+                for observable_name in group:
                     group_data = cls.__h5_group_to_dict(group, observable_name)
                     attr = MDOFunction.init_from_dict_repr(**group_data)
                     opt_pb.observables.append(attr)
@@ -2276,8 +2279,8 @@ class OptimizationProblem(BaseProblem):
                 index += 1
 
             return insert(output_history, [index] * (database_size - index), nan, 0)
-        else:
-            return output_history
+
+        return output_history
 
     @staticmethod
     def __h5_group_to_dict(
@@ -2304,14 +2307,11 @@ class OptimizationProblem(BaseProblem):
             value = value[()]
 
             # h5py does not handle bytes natively, it maps it to a numpy generic type
-            if isinstance(value, ndarray) and value.dtype.type in (
+            if isinstance(value, ndarray) and value.dtype.type in {
                 numpy.object_,
                 numpy.string_,
-            ):
-                if value.size == 1:
-                    value = value[0]
-                else:
-                    value = value.tolist()
+            }:
+                value = value[0] if value.size == 1 else value.tolist()
 
             if isinstance(value, bytes):
                 value = value.decode()
@@ -2390,7 +2390,7 @@ class OptimizationProblem(BaseProblem):
             and the values are the functions dimensions.
         """
         if names is None:
-            names = [self.objective.name] + self.get_constraint_names()
+            names = [self.objective.name, *self.get_constraint_names()]
 
         return {name: self.get_function_dimension(name) for name in names}
 
@@ -2476,7 +2476,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             The names of the scalar constraints.
         """
-        constraint_names = list()
+        constraint_names = []
         for constraint in self.constraints:
             dimension = self.get_function_dimension(constraint.name)
             if dimension == 1:

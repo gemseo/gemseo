@@ -21,6 +21,7 @@ Merge or update a JSONGrammar
 """
 from __future__ import annotations
 
+import contextlib
 from copy import deepcopy
 
 from gemseo.core.grammars.errors import InvalidDataError
@@ -55,10 +56,8 @@ grammar_1
 
 # %%
 # On validation, the allowed type is only the one from the second grammar.
-try:
+with contextlib.suppress(InvalidDataError):
     grammar_1.validate({"name2": 0})
-except InvalidDataError:
-    pass
 
 grammar_1.validate({"name2": "a string"})
 

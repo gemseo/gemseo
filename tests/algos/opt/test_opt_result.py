@@ -20,12 +20,13 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from numpy import array
 
 
 def test_from_dict():

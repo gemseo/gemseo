@@ -15,9 +15,10 @@
 from __future__ import annotations
 
 import pytest
+from pandas import DataFrame
+
 from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from pandas import DataFrame
 
 from ..test_discipline_data import to_df_key
 from .test_simple_grammar import exclude_names

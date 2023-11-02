@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import collections
 from copy import deepcopy
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Generator
 from typing import Iterable
@@ -31,7 +32,8 @@ from numpy import array
 from numpy import concatenate
 from numpy import ndarray
 
-from gemseo.core.discipline_data import Data
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
 
 STRING_SEPARATOR = "#&#"
 
@@ -192,10 +194,7 @@ def update_dict_of_arrays_from_array(
     if not isinstance(array, ndarray):
         raise TypeError(f"The array must be a NumPy one, got instead: {type(array)}.")
 
-    if copy:
-        data = deepcopy(dict_of_arrays)
-    else:
-        data = dict_of_arrays
+    data = deepcopy(dict_of_arrays) if copy else dict_of_arrays
 
     if not names:
         return data
@@ -214,28 +213,24 @@ def update_dict_of_arrays_from_array(
 
             data[data_name] = new_data_value
             i_min = i_max
-    except IndexError as err:
+    except IndexError:
         if full_size < i_max:
             raise ValueError(
-                "Inconsistent input array size of values array {} "
-                "with reference data shape {} "
-                "for data named: {}.".format(array, data_value.shape, data_name)
-            )
-        else:
-            raise err
+                f"Inconsistent input array size of values array {array} "
+                f"with reference data shape {data_value.shape} "
+                f"for data named: {data_name}."
+            ) from None
+
+        raise
 
     if i_max != full_size:
+        shapes = [(data_name, dict_of_arrays[data_name].shape) for data_name in names]
         raise ValueError(
             "Inconsistent data shapes: "
-            "could not use the whole data array of shape {} "
-            "(only reached max index = {}), "
-            "while updating data dictionary names {} "
-            "of shapes: {}.".format(
-                array.shape,
-                i_max,
-                names,
-                [(data_name, dict_of_arrays[data_name].shape) for data_name in names],
-            )
+            f"could not use the whole data array of shape {array.shape} "
+            f"(only reached max index = {i_max}), "
+            f"while updating data dictionary names {names} "
+            f"of shapes: {shapes}."
         )
 
     return data
@@ -435,10 +430,7 @@ def __flatten_nested_mapping(
         The new keys and values of the mapping.
     """
     for key, value in nested_mapping.items():
-        if parent_key:
-            new_key = separator.join([parent_key, key])
-        else:
-            new_key = key
+        new_key = separator.join([parent_key, key]) if parent_key else key
 
         if isinstance(value, collections.abc.Mapping):
             yield from flatten_nested_dict(value, new_key, separator=separator).items()

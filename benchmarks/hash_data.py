@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import compare_data
+
 from gemseo.utils.hash import hash_data
 
 

@@ -123,9 +123,11 @@ class ScalabilityResult:
 
         :param str study_directory: study directory name.
         """
-        fname = Path(self.name).with_suffix(".pkl")
-        fpath = Path(study_directory) / RESULTS_DIRECTORY / fname
-        return fpath
+        return (
+            Path(study_directory)
+            / RESULTS_DIRECTORY
+            / Path(self.name).with_suffix(".pkl")
+        )
 
     def to_pickle(self, study_directory) -> Path:
         """Save a scalability result into a pickle file whose name is the name of the

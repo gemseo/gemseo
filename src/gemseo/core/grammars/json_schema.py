@@ -43,7 +43,7 @@ class _MergeRequiredStrategy(Object):
     """
 
     # Do not merge the name and id properties.
-    KEYWORDS = Object.KEYWORDS + ("name", "id")
+    KEYWORDS = (*Object.KEYWORDS, "name", "id")
 
     update: ClassVar[bool] = False
     """Whether to update or merge the schema."""
@@ -132,17 +132,17 @@ class _MultipleMeta(type(abc.Mapping), _MetaSchemaBuilder):
     passed to a class derived from ``SchemaBuilder``.
     """
 
-    def __init__(self, name: str, bases: tuple(type), attrs: dict[str, Any]) -> None:
+    def __init__(cls, name: str, bases: tuple(type), attrs: dict[str, Any]) -> None:
         super().__init__(name, bases, attrs)
-        self.NODE_CLASS = type(
-            "%sSchemaNode" % name, (_SchemaNode,), {"STRATEGIES": self.STRATEGIES}
+        cls.NODE_CLASS = type(
+            "%sSchemaNode" % name, (_SchemaNode,), {"STRATEGIES": cls.STRATEGIES}
         )
 
 
 class _Number(Number):
     """A number strategy that handles numpy data."""
 
-    PYTHON_TYPES = Number.PYTHON_TYPES + (float64, int64)
+    PYTHON_TYPES = (*Number.PYTHON_TYPES, float64, int64)
 
 
 class MutableMappingSchemaBuilder(abc.Mapping, SchemaBuilder, metaclass=_MultipleMeta):

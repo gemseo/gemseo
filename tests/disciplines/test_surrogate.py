@@ -21,6 +21,10 @@ from __future__ import annotations
 import re
 
 import pytest
+from numpy import array
+from numpy import concatenate
+from numpy.testing import assert_allclose
+
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
@@ -28,9 +32,6 @@ from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from numpy import array
-from numpy import concatenate
-from numpy.testing import assert_allclose
 
 
 @pytest.fixture(scope="module")

@@ -82,12 +82,10 @@ def add_toctree_functions(app, pagename, templatename, context, doctree):
         ]
 
         # Now convert our docutils nodes into dicts that Jinja can use
-        nav = [
+        return [
             docutils_node_to_jinja(child, only_pages=True, numbered=numbered)
             for child in toc_items
         ]
-
-        return nav
 
     context["get_nav_object"] = get_nav_object
 

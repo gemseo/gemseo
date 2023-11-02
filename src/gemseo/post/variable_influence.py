@@ -22,10 +22,10 @@ from __future__ import annotations
 
 import itertools
 import logging
+from typing import TYPE_CHECKING
 from typing import Mapping
 
 from matplotlib import pyplot
-from matplotlib.figure import Figure
 from numpy import absolute
 from numpy import argsort
 from numpy import array
@@ -37,6 +37,9 @@ from numpy import stack
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 LOGGER = logging.getLogger(__name__)
 
@@ -215,7 +218,7 @@ class VariableInfluence(OptPostProcessor):
         # x-axis. Since the data history can be edited by the user after the
         # problem was solved, we do not use something like opt_problem.dimension
         # because the problem dimension is not updated when the history is filtered.
-        abscissas = range(len(tuple(names_to_sensitivities.values())[0]))
+        abscissas = range(len(next(iter(names_to_sensitivities.values()))))
 
         font_size = 12
         rotation = 90

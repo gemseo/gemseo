@@ -75,7 +75,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -83,11 +83,9 @@ from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import Tuple
-from typing import TYPE_CHECKING
 from typing import Union
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 from numpy import arange
 from numpy import array
 from numpy import ndarray
@@ -100,6 +98,10 @@ from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from matplotlib.figure import Figure
+
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
 LOGGER = logging.getLogger(__name__)
 
@@ -305,7 +307,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         """The analytical standard deviation of the random variable."""
 
     @property
-    def range(self) -> list[ndarray]:
+    def range(self) -> list[ndarray]:  # noqa: A003
         """The numerical range.
 
         The numerical range is the interval defined by the lower and upper bounds
@@ -315,11 +317,10 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         each component of the random variable, whose first element is the lower bound of
         this component while the second one is its upper bound.
         """
-        value = [
+        return [
             array([l_b, u_b])
             for l_b, u_b in zip(self.num_lower_bound, self.num_upper_bound)
         ]
-        return value
 
     @property
     def support(self) -> list[ndarray]:
@@ -332,11 +333,10 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         each component of the random variable, whose first element is the lower bound of
         this component while the second one is its upper bound.
         """
-        value = [
+        return [
             array([l_b, u_b])
             for l_b, u_b in zip(self.math_lower_bound, self.math_upper_bound)
         ]
-        return value
 
     def plot_all(
         self,
@@ -367,20 +367,18 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The figures.
         """
-        figures = []
-        for index in range(self.dimension):
-            figures.append(
-                self.plot(
-                    index=index,
-                    show=show,
-                    save=save,
-                    file_path=file_path,
-                    file_name=file_name,
-                    file_extension=file_extension,
-                    directory_path=directory_path,
-                )
+        return [
+            self.plot(
+                index=index,
+                show=show,
+                save=save,
+                file_path=file_path,
+                file_name=file_name,
+                file_extension=file_extension,
+                directory_path=directory_path,
             )
-        return figures
+            for index in range(self.dimension)
+        ]
 
     def plot(
         self,

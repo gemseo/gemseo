@@ -25,7 +25,7 @@ from typing import Final
 from typing import Sized
 
 import numpy as np
-from numpy.random import multivariate_normal
+from numpy.random import default_rng
 from strenum import StrEnum
 
 from gemseo.post.core.hessians import BFGSApprox
@@ -212,7 +212,7 @@ class RobustnessQuantifier:
             raise ValueError(
                 "Covariance matrix dimension " + "incompatible with mean dimensions"
             )
-        ran = multivariate_normal(mean=mean, cov=cov, size=n_samples).T
+        ran = default_rng().multivariate_normal(mean, cov, n_samples).T
         vals = np.zeros(n_samples)
         if func is None:
             func = self.compute_function_approximation

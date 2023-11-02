@@ -69,26 +69,24 @@ from __future__ import annotations
 import collections
 import logging
 from copy import deepcopy
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
-from typing import TYPE_CHECKING
-
-from gemseo.third_party.prettytable import PrettyTable
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
+    from gemseo.third_party.prettytable import PrettyTable
+    from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
-from numpy import array, ndarray
+from numpy import array
+from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.uncertainty.distributions.composed import ComposedDistribution
 from gemseo.uncertainty.distributions.factory import DistributionFactory
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    split_array_to_dict_of_arrays,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 RandomVariable = collections.namedtuple(
     "RandomVariable",
@@ -647,13 +645,10 @@ class ParameterSpace(DesignSpace):
                     current_v = distribution.compute_inverse_cdf(val)
                 else:
                     current_v = distribution.compute_cdf(val)
+            elif inverse:
+                current_v = [distribution.compute_inverse_cdf(sample) for sample in val]
             else:
-                if inverse:
-                    current_v = [
-                        distribution.compute_inverse_cdf(sample) for sample in val
-                    ]
-                else:
-                    current_v = [distribution.compute_cdf(sample) for sample in val]
+                current_v = [distribution.compute_cdf(sample) for sample in val]
 
             values[name] = array(current_v)
 
@@ -704,8 +699,10 @@ class ParameterSpace(DesignSpace):
         distribution = []
         for variable in self.variable_names:
             if variable in self.uncertain_variables:
-                for marginal in self.distributions[variable].marginals:
-                    distribution.append(repr(marginal))
+                distribution += [
+                    repr(marginal)
+                    for marginal in self.distributions[variable].marginals
+                ]
             else:
                 distribution.extend([self._BLANK] * self.variable_sizes[variable])
 
@@ -765,8 +762,7 @@ class ParameterSpace(DesignSpace):
         table.add_column(self._STANDARD_DEVIATION, std)
         table.add_column(self._RANGE, rnge)
         table.title = self._PARAMETER_SPACE
-        desc = str(table)
-        return desc
+        return str(table)
 
     def unnormalize_vect(
         self,
@@ -804,7 +800,7 @@ class ParameterSpace(DesignSpace):
         if not use_dist:
             return super().unnormalize_vect(x_vect, no_check=no_check, out=out)
 
-        if x_vect.ndim not in [1, 2]:
+        if x_vect.ndim not in {1, 2}:
             raise ValueError("x_vect must be either a 1D or a 2D NumPy array.")
 
         return self.__unnormalize_vect(x_vect, no_check)
@@ -872,7 +868,7 @@ class ParameterSpace(DesignSpace):
         if not use_dist:
             return super().normalize_vect(x_vect, out=out)
 
-        if x_vect.ndim not in [1, 2]:
+        if x_vect.ndim not in {1, 2}:
             raise ValueError("x_vect must be either a 1D or a 2D NumPy array.")
 
         return self.__normalize_vect(x_vect)
@@ -1032,19 +1028,19 @@ class ParameterSpace(DesignSpace):
                 size=self.get_size(name),
                 parameters=self.__uncertain_variables_to_definitions[name][1],
             )
-        else:
-            try:
-                value = self.get_current_value([name])
-            except KeyError:
-                value = None
 
-            return DesignSpace.DesignVariable(
-                size=self.get_size(name),
-                var_type=self.get_type(name),
-                l_b=self.get_lower_bound(name),
-                u_b=self.get_upper_bound(name),
-                value=value,
-            )
+        try:
+            value = self.get_current_value([name])
+        except KeyError:
+            value = None
+
+        return DesignSpace.DesignVariable(
+            size=self.get_size(name),
+            var_type=self.get_type(name),
+            l_b=self.get_lower_bound(name),
+            u_b=self.get_upper_bound(name),
+            value=value,
+        )
 
     def __setitem__(
         self,

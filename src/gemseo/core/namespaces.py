@@ -96,9 +96,8 @@ def update_namespaces(
             if isinstance(other_ns, str):
                 namespaces[name] = [curr_ns, other_ns]
             else:
-                namespaces[name] = [curr_ns] + other_ns
+                namespaces[name] = [curr_ns, *other_ns]
+        elif isinstance(other_ns, str):
+            namespaces[name].append(other_ns)
         else:
-            if isinstance(other_ns, str):
-                namespaces[name].append(other_ns)
-            else:
-                namespaces[name].extend(other_ns)
+            namespaces[name].extend(other_ns)

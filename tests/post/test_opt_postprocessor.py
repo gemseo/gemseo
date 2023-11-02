@@ -22,6 +22,7 @@ import re
 
 import matplotlib.pyplot as plt
 import pytest
+
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.post.opt_post_processor import OptPostProcessor
@@ -84,6 +85,5 @@ def test_no_option_grammar(problem):
             r"expected: .*post "
             r"or .*NewOptPostProcessorWithoutOptionsGrammar_options\.json"
         ),
-    ):
-        with concretize_classes(NewOptPostProcessorWithoutOptionsGrammar):
-            NewOptPostProcessorWithoutOptionsGrammar(problem)
+    ), concretize_classes(NewOptPostProcessorWithoutOptionsGrammar):
+        NewOptPostProcessorWithoutOptionsGrammar(problem)

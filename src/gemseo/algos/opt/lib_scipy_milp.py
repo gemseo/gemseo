@@ -21,9 +21,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+from typing import ClassVar
 
-from numpy import concatenate
 from numpy import Infinity
+from numpy import concatenate
 from numpy import ones_like
 from scipy.optimize import Bounds
 from scipy.optimize import LinearConstraint
@@ -61,7 +62,7 @@ class ScipyMILP(OptimizationLibrary):
 
     LIB_COMPUTE_GRAD = True
 
-    OPTIONS_MAP = {
+    OPTIONS_MAP: ClassVar[dict[int, str]] = {
         OptimizationLibrary.MAX_ITER: "node_limit",
     }
 
@@ -92,7 +93,7 @@ class ScipyMILP(OptimizationLibrary):
         presolve: bool = True,
         time_limit: int | None = None,
         mip_rel_gap: float = 0.0,
-        **kwargs: Any,
+        **options: Any,
     ) -> dict[str, Any]:
         """Retrieve the options of the library.
 
@@ -111,6 +112,7 @@ class ScipyMILP(OptimizationLibrary):
             mip_rel_gap: The termination criterion for MIP solver: solver will terminate
                 when the gap between the primal objective value and the dual objective
                 bound, scaled by the primal objective value, is <= mip_rel_gap.
+            **options: The options for the algorithm.
 
         Returns:
             The processed options.
@@ -121,7 +123,7 @@ class ScipyMILP(OptimizationLibrary):
             presolve=presolve,
             time_limit=time_limit,
             mip_rel_gap=mip_rel_gap,
-            **kwargs,
+            **options,
         )
 
     def _run(self, **options: Any) -> OptimizationResult:
@@ -178,10 +180,7 @@ class ScipyMILP(OptimizationLibrary):
             ),
         )
         # Gather the optimization results
-        if milp_result.x is not None:
-            x_opt = milp_result.x
-        else:
-            x_opt = x_0
+        x_opt = x_0 if milp_result.x is None else milp_result.x
         # N.B. SciPy tolerance on bounds is higher than the DesignSpace one
         x_opt = self.problem.design_space.project_into_bounds(x_opt)
         val_opt, jac_opt = self.problem.evaluate_functions(

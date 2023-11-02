@@ -15,18 +15,12 @@
 """Tests for the module default_settings."""
 from __future__ import annotations
 
-from gemseo.problems.scalable.parametric.core.default_settings import (
-    DEFAULT_D_0,
-)
-from gemseo.problems.scalable.parametric.core.default_settings import (
-    DEFAULT_D_I,
-)
+from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_0
+from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_I
 from gemseo.problems.scalable.parametric.core.default_settings import (
     DEFAULT_N_DISCIPLINES,
 )
-from gemseo.problems.scalable.parametric.core.default_settings import (
-    DEFAULT_P_I,
-)
+from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_P_I
 
 
 def test_default_n_disciplines():

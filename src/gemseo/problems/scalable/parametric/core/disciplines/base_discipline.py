@@ -21,9 +21,11 @@
 from __future__ import annotations
 
 from abc import ABC
+from typing import TYPE_CHECKING
 from typing import Mapping
 
-from numpy.typing import NDArray
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class BaseDiscipline(ABC):

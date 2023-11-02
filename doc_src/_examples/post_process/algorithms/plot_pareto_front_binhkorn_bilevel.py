@@ -33,12 +33,13 @@ We use a BiLevel formulation in order to only compute the Pareto-optimal points.
 # and to configure the logger.
 from __future__ import annotations
 
+from numpy import array
+
 from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from numpy import array
 
 configure_logger()
 

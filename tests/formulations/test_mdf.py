@@ -18,6 +18,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from numpy.testing import assert_allclose
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.mdf import MDF
@@ -26,7 +28,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.xdsmizer import XDSMizer
-from numpy.testing import assert_allclose
 
 from .formulations_basetest import FormulationsBaseTest
 
@@ -94,11 +95,11 @@ class TestMDFFormulation(FormulationsBaseTest):
         disciplines = [disc1, disc2, disc3, disc4]
         mdf = MDF(disciplines, "y_4", DesignSpace(), inner_mda_name="MDAGaussSeidel")
         wkf = mdf.get_expected_workflow()
-        self.assertEqual(
-            str(wkf),
-            "[MDAChain(None), {MDAGaussSeidel(None), [SobieskiStructure(None), "
+        assert (
+            str(wkf)
+            == "[MDAChain(None), {MDAGaussSeidel(None), [SobieskiStructure(None), "
             "SobieskiPropulsion(None), SobieskiAerodynamics(None), ], }, "
-            "SobieskiMission(None), ]",
+            "SobieskiMission(None), ]"
         )
         mdf.get_expected_dataflow()
 

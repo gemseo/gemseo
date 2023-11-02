@@ -23,15 +23,19 @@ ODE stands for ordinary differential equation.
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import inf
-from numpy.typing import NDArray
 from scipy.integrate import solve_ivp
 
-from gemseo.algos.ode.ode_result import ODEResult
 from gemseo.algos.ode.ode_solver_lib import ODESolverDescription
 from gemseo.algos.ode.ode_solver_lib import ODESolverLib
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from gemseo.algos.ode.ode_result import ODEResult
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,7 +73,7 @@ class ScipyODEAlgos(ODESolverLib):
 
     def _get_options(
         self,
-        first_step: float = None,
+        first_step: float | None = None,
         max_step: float = inf,
         rtol: float | NDArray[float] = 1e-3,
         atol: float | NDArray[float] = 1e-6,

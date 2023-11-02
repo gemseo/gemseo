@@ -21,6 +21,8 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.quality_measures.cluster_measure import MLClusteringMeasure
@@ -32,7 +34,6 @@ from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -77,7 +78,7 @@ def test_factory():
 
 
 @pytest.mark.parametrize(
-    "cls,old,new",
+    ("cls", "old", "new"),
     [
         (MLQualityMeasure, "evaluate_loo", "compute_leave_one_out_measure"),
         (MLErrorMeasure, "evaluate_learn", "compute_learning_measure"),
@@ -96,11 +97,6 @@ def test_factory():
             MLPredictiveClusteringMeasure,
             "evaluate_loo",
             "compute_leave_one_out_measure",
-        ),
-        (
-            MLPredictiveClusteringMeasure,
-            "evaluate_bootstrap",
-            "compute_bootstrap_measure",
         ),
         (
             MLPredictiveClusteringMeasure,

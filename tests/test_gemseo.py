@@ -22,9 +22,18 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+from numpy import array
+from numpy import cos
+from numpy import linspace
+from numpy import newaxis
+from numpy import pi as np_pi
+from numpy import sin
+
 from gemseo import AlgorithmFeatures
+from gemseo import DatasetClassName
 from gemseo import compute_doe
 from gemseo import configure
 from gemseo import create_benchmark_dataset
@@ -37,7 +46,6 @@ from gemseo import create_parameter_space
 from gemseo import create_scalable
 from gemseo import create_scenario
 from gemseo import create_surrogate
-from gemseo import DatasetClassName
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import generate_coupling_graph
@@ -77,7 +85,6 @@ from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
 from gemseo.datasets.io_dataset import IODataset
@@ -88,12 +95,9 @@ from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiMission
-from numpy import array
-from numpy import cos
-from numpy import linspace
-from numpy import newaxis
-from numpy import pi as np_pi
-from numpy import sin
+
+if TYPE_CHECKING:
+    from gemseo.core.mdo_scenario import MDOScenario
 
 
 class Observer:
@@ -232,10 +236,7 @@ def test_execute_post(scenario, obj_type, tmp_wd):
     else:
         file_name = "results.hdf5"
         scenario.save_optimization_history(file_name)
-        if obj_type == str:
-            obj = file_name
-        else:
-            obj = Path(file_name)
+        obj = file_name if obj_type is str else Path(file_name)
 
     post = execute_post(obj, "OptHistoryView", save=False, show=False)
     assert isinstance(post, OptHistoryView)
@@ -259,7 +260,7 @@ def test_create_doe_scenario():
 
 
 @pytest.mark.parametrize(
-    "formulation_name, opts, expected",
+    ("formulation_name", "opts", "expected"),
     [
         (
             "MDF",
@@ -293,7 +294,7 @@ def test_get_formulation_sub_options_schema(formulation_name, opts, expected):
 
 
 @pytest.mark.parametrize(
-    "formulation_name, opts",
+    ("formulation_name", "opts"),
     [
         (
             "MDF",
@@ -654,7 +655,7 @@ def test_get_available_caches():
 
 
 @pytest.mark.parametrize(
-    "dataset_name,expected_n_samples",
+    ("dataset_name", "expected_n_samples"),
     [("BurgersDataset", 30), ("IrisDataset", 150), ("RosenbrockDataset", 100)],
 )
 def test_create_benchmark_dataset(tmp_wd, dataset_name, expected_n_samples):
@@ -707,10 +708,10 @@ def test_print_configuration(capfd):
     for module in gemseo_modules:
         header_patterns = (
             r"\+-+\+$\n"
-            r"\|\s+{}\s+\|$\n"
+            rf"\|\s+{module}\s+\|$\n"
             r"\+-+\+-+\+-+\+$\n"
             r"\|\s+Module\s+\|\s+Is available\?\s+\|\s+Purpose or error "
-            r"message\s+\|$\n".format(module)
+            r"message\s+\|$\n"
         )
 
         expected = re.compile(header_patterns, re.MULTILINE)

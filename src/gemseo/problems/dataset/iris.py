@@ -26,7 +26,7 @@ to be found in the machine learning literature.
 
 It was introduced by the statistician Ronald Fisher
 in his 1936 paper "The use of multiple measurements in taxonomic problems",
-Annals of Eugenics. 7 (2): 179–188.
+Annals of Eugenics. 7 (2): 179-188.
 
 It contains 150 instances of iris plants:
 
@@ -73,10 +73,7 @@ def create_iris_dataset(
         The Iris dataset.
     """
     file_path = Path(__file__).parent / "iris.data"
-    if as_io:
-        cls = IODataset
-    else:
-        cls = Dataset
+    cls = IODataset if as_io else Dataset
     dataset = cls.from_csv(file_path)
     dataset.name = "Iris"
 

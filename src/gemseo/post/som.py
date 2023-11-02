@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 from math import floor
 from math import sqrt
+from typing import TYPE_CHECKING
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -40,10 +41,12 @@ from numpy import nonzero
 from numpy import unique
 from numpy import zeros
 
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.third_party import sompy
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -110,8 +113,9 @@ class SOM(OptPostProcessor):
             annotate: If ``True``, add label of neuron value to SOM plot.
         """  # noqa: D205, D212, D415
         criteria = [
-            self.opt_problem.get_objective_name()
-        ] + self.opt_problem.get_constraint_names()
+            self.opt_problem.get_objective_name(),
+            *self.opt_problem.get_constraint_names(),
+        ]
         all_data = self.database.get_function_names()
         # Ensure that the data is available in the database
         for criterion in criteria:
@@ -190,7 +194,7 @@ class SOM(OptPostProcessor):
         f_hist = array(f_hist_scalar).T.real
         unique_ind = unique(f_hist[2, :])
         average = {}
-        for _, som_id in enumerate(unique_ind):
+        for som_id in unique_ind:
             where_somid = (f_hist[2, :] == som_id).nonzero()[0]
             ranges_of_uniques = f_hist[3, where_somid]
             average[som_id] = mean(ranges_of_uniques)

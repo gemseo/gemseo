@@ -20,12 +20,13 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 
 
-@pytest.fixture
+@pytest.fixture()
 def distribution_factory() -> DistributionFactory:
     """A distribution factory."""
     return DistributionFactory()

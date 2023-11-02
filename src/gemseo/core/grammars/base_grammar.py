@@ -24,21 +24,18 @@ import collections
 import logging
 from abc import abstractmethod
 from copy import copy
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Iterable
 from typing import KeysView
 from typing import Mapping
 from typing import MutableMapping
 from typing import Optional
-from typing import TYPE_CHECKING
 
-from typing_extensions import Self
-
-from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
+from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import update_namespaces
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
@@ -47,6 +44,9 @@ from gemseo.utils.string_tools import pretty_str
 NamesToTypes = Mapping[str, Optional[type]]
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
+    from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 LOGGER = logging.getLogger(__name__)

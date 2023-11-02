@@ -21,9 +21,10 @@ Create a discipline that uses pandas DataFrames
 """
 from __future__ import annotations
 
+from pandas import DataFrame
+
 from gemseo import configure_logger
 from gemseo.core.discipline import MDODiscipline
-from pandas import DataFrame
 
 # %%
 # Import

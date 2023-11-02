@@ -23,13 +23,16 @@ from __future__ import annotations
 
 from abc import ABCMeta
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.algos.base_problem import BaseProblem
-from gemseo.algos.driver_library import DriverLibrary
-from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.base_factory import BaseFactory
+
+if TYPE_CHECKING:
+    from gemseo.algos.base_problem import BaseProblem
+    from gemseo.algos.driver_library import DriverLibrary
+    from gemseo.algos.opt_result import OptimizationResult
 
 
 class _AlgoFactoryMeta(ABCMeta):
@@ -159,8 +162,8 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
             if name not in self.libraries:
                 algorithms = ", ".join(sorted(self.algorithms))
                 raise ImportError(
-                    f"No algorithm or library of algorithms named '{name}' is available; "
-                    f"available algorithms are {algorithms}."
+                    f"No algorithm or library of algorithms named '{name}' is available"
+                    f" ; available algorithms are {algorithms}."
                 )
             lib_name = name
             algo_name = ""

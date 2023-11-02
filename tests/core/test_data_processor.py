@@ -21,16 +21,17 @@ from __future__ import annotations
 
 import unittest
 
-from gemseo.core.data_processor import ComplexDataProcessor
-from gemseo.core.data_processor import FloatDataProcessor
-from gemseo.core.data_processor import NameMapping
-from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.sobieski.disciplines import SobieskiMission
 from numpy import array
 from numpy import complex128
 from numpy import float64
 from numpy import ndarray
 from scipy import linalg
+
+from gemseo.core.data_processor import ComplexDataProcessor
+from gemseo.core.data_processor import FloatDataProcessor
+from gemseo.core.data_processor import NameMapping
+from gemseo.core.discipline import MDODiscipline
+from gemseo.problems.sobieski.disciplines import SobieskiMission
 
 
 class TestDataProcessor(unittest.TestCase):

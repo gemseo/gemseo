@@ -15,6 +15,8 @@
 """A cross-validation tool for resampling and surrogate modeling."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import array_split
 from numpy import concatenate
 from numpy import empty
@@ -22,11 +24,13 @@ from numpy import ndarray
 from numpy import setdiff1d
 from numpy import vstack
 from numpy.random import default_rng
-from numpy.typing import NDArray
 
 from gemseo.mlearning.resampling.resampler import Resampler
 from gemseo.mlearning.resampling.split import Split
 from gemseo.mlearning.resampling.splits import Splits
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class CrossValidation(Resampler):
@@ -97,5 +101,4 @@ class CrossValidation(Resampler):
             final_predictions = empty(output_data_shape)
             final_predictions[self.__shuffled_sample_indices] = function(predictions)
             return final_predictions
-        else:
-            return predictions
+        return predictions

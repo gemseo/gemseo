@@ -20,23 +20,28 @@
 """Test Gaussian process regression algorithm module."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.dataset import Dataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
 from numpy import ndarray
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mlearning import import_regression_model
+from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
+
 LEARNING_SIZE = 9
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
@@ -116,7 +121,9 @@ def test_predict_std_input_array(model):
     assert array_equal(model.predict_std(input_value), prediction_std)
 
 
-@pytest.mark.parametrize("x_1,x_2", [([1.0], [2.0]), ([[1.0], [1.0]], [[2.0], [2.0]])])
+@pytest.mark.parametrize(
+    ("x_1", "x_2"), [([1.0], [2.0]), ([[1.0], [1.0]], [[2.0], [2.0]])]
+)
 def test_predict_std_shape(model, x_1, x_2):
     """Test the shape and content of standard deviation."""
     input_value = {"x_1": array(x_1), "x_2": array(x_2)}
@@ -137,7 +144,7 @@ def test_save_and_load(model, tmp_wd):
 
 
 @pytest.mark.parametrize(
-    "bounds,expected",
+    ("bounds", "expected"),
     [
         (None, [(0.01, 100.0), (0.01, 100.0)]),
         ((0.1, 10), [(0.1, 10), (0.1, 10)]),

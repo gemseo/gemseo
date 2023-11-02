@@ -21,17 +21,12 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Iterable
 from typing import Mapping
 
-from numpy import ndarray
-
 from gemseo.core.discipline import MDODiscipline
-from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
-from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
 from gemseo.mlearning.quality_measures.error_measure_factory import (
     MLErrorMeasureFactory,
 )
@@ -39,6 +34,14 @@ from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+    from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
 
 LOGGER = logging.getLogger(__name__)
 
@@ -110,7 +113,8 @@ class SurrogateDiscipline(MDODiscipline):
             default_inputs: The default values of the inputs.
                 If ``None``, use the center of the learning input space.
             input_names: The names of the input variables.
-                If ``None``, consider all input variables mentioned in the learning dataset.
+                If ``None``,
+                consider all input variables mentioned in the learning dataset.
             output_names: The names of the output variables.
                 If ``None``,
                 consider all input variables mentioned in the learning dataset.

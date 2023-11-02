@@ -26,11 +26,12 @@ import pickle
 import sys
 from collections import defaultdict
 from copy import deepcopy
-from multiprocessing import cpu_count
 from multiprocessing import Manager
 from multiprocessing import Value
+from multiprocessing import cpu_count
 from pathlib import Path
 from timeit import default_timer as timer
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Generator
@@ -39,38 +40,38 @@ from typing import Iterator
 from typing import Mapping
 from typing import MutableMapping
 from typing import NoReturn
-from typing import TYPE_CHECKING
 
 from numpy import concatenate
 from numpy import empty
 from numpy import ndarray
 from numpy import zeros
-from numpy.typing import NDArray
 from scipy.sparse import csr_array
 from strenum import StrEnum
 
 from gemseo.caches.cache_factory import CacheFactory
-from gemseo.core.cache import AbstractCache
-from gemseo.core.data_processor import DataProcessor
 from gemseo.core.derivatives.derivation_modes import DerivationMode
-from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline_data import DisciplineData
-from gemseo.core.grammars.base_grammar import BaseGrammar
-from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.serializable import Serializable
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.derivatives_approx import EPSILON
+from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from gemseo.core.cache import AbstractCache
+    from gemseo.core.data_processor import DataProcessor
+    from gemseo.core.derivatives.jacobian_operator import JacobianOperator
     from gemseo.core.execution_sequence import AtomicExecSequence
+    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.grammars.defaults import Defaults
 
 LOGGER = logging.getLogger(__name__)
 
@@ -389,6 +390,7 @@ class MDODiscipline(Serializable):
         """
         if self.activate_counters:
             return self._n_calls.value
+        return None
 
     @n_calls.setter
     def n_calls(
@@ -411,6 +413,7 @@ class MDODiscipline(Serializable):
         """
         if self.activate_counters:
             return self._exec_time.value
+        return None
 
     @exec_time.setter
     def exec_time(
@@ -433,6 +436,7 @@ class MDODiscipline(Serializable):
         """
         if self.activate_counters:
             return self._n_calls_linearize.value
+        return None
 
     @n_calls_linearize.setter
     def n_calls_linearize(
@@ -764,7 +768,8 @@ class MDODiscipline(Serializable):
         """Return the disciplines that must be shown as blocks in the XDSM.
 
         By default, only the discipline itself is shown.
-        This function can be differently implemented for any type of inherited discipline.
+        This function can be differently implemented for any type of inherited
+        discipline.
 
         Returns:
             The disciplines shown in the XDSM chain.
@@ -803,7 +808,7 @@ class MDODiscipline(Serializable):
 
         To be overloaded by subclasses.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _filter_inputs(
         self,
@@ -825,12 +830,11 @@ class MDODiscipline(Serializable):
 
         if not isinstance(input_data, collections.abc.Mapping):
             raise TypeError(
-                "Input data must be of dict type, "
-                "got {} instead.".format(type(input_data))
+                f"Input data must be of dict type, got {type(input_data)} instead."
             )
 
         full_input_data = DisciplineData({})
-        for input_name in self.input_grammar.keys():
+        for input_name in self.input_grammar:
             input_value = input_data.get(input_name)
             if input_value is not None:
                 full_input_data[input_name] = input_value
@@ -868,13 +872,13 @@ class MDODiscipline(Serializable):
 
         Raises:
             ValueError:
-                When the discipline status and the re-execution policy are no consistent.
+                If the discipline status and the re-execution policy are no consistent.
         """
-        if self.status not in [
+        if self.status not in {
             self.ExecutionStatus.PENDING,
             self.ExecutionStatus.VIRTUAL,
             self.ExecutionStatus.DONE,
-        ] or (
+        } or (
             self.status == self.ExecutionStatus.DONE
             and self.re_exec_policy == self.ReExecutionPolicy.NEVER
         ):
@@ -1195,18 +1199,17 @@ class MDODiscipline(Serializable):
         # If the caching was triggered,
         # check if the jacobian was loaded,
         # or the discipline._run method also linearizes the discipline.
-        if self._cache_was_loaded or self._is_linearized:
-            if self.jac:
-                # For cases when linearization is called twice with different I/O
-                # while cache_was_loaded=True,
-                # the check_jacobian_shape raises a KeyError.
-                try:
-                    self._check_jacobian_shape(inputs, outputs)
-                    return self.jac
-                except KeyError:
-                    # In this case,
-                    # another computation of Jacobian is triggered.
-                    pass
+        if (self._cache_was_loaded or self._is_linearized) and self.jac:
+            # For cases when linearization is called twice with different I/O
+            # while cache_was_loaded=True,
+            # the check_jacobian_shape raises a KeyError.
+            try:
+                self._check_jacobian_shape(inputs, outputs)
+            except KeyError:
+                # In this case, another computation of Jacobian is triggered.
+                pass
+            else:
+                return self.jac
 
         self.status = self.ExecutionStatus.LINEARIZE
         t_0 = timer()
@@ -1542,8 +1545,8 @@ class MDODiscipline(Serializable):
                 the linearization should be performed wrt all inputs.
             outputs: The outputs to be linearized.
                 If ``None``,
-                the linearization should be performed on all outputs declared differentiable.
-                fill_missing_keys: if True, just fill the missing items
+                the linearization should be performed on all outputs declared
+                differentiable.
             init_type: The type used to initialize the Jacobian.
             fill_missing_keys: If ``True``,
                 just fill the missing items with zeros/empty
@@ -1801,10 +1804,7 @@ class MDODiscipline(Serializable):
             Whether all the variables are discipline outputs.
         """
         output_names = self.output_grammar.keys()
-        for data_name in data_names:
-            if data_name not in output_names:
-                return False
-        return True
+        return all(data_name in output_names for data_name in data_names)
 
     def is_all_inputs_existing(
         self,
@@ -1819,10 +1819,7 @@ class MDODiscipline(Serializable):
             Whether all the variables are discipline inputs.
         """
         input_names = self.input_grammar.keys()
-        for data_name in data_names:
-            if data_name not in input_names:
-                return False
-        return True
+        return all(data_name in input_names for data_name in data_names)
 
     def is_input_existing(
         self,
@@ -1860,9 +1857,7 @@ class MDODiscipline(Serializable):
         """
         if not self._is_status_ok_for_run_again(self.status):
             raise ValueError(
-                "Cannot run discipline {} with status {}.".format(
-                    self.name, self.status
-                )
+                f"Cannot run discipline {self.name} with status {self.status}."
             )
         self.status = self.ExecutionStatus.PENDING
 
@@ -1989,7 +1984,9 @@ class MDODiscipline(Serializable):
         try:
             return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(f"Discipline {self.name} has no input named {err}.")
+            raise ValueError(
+                f"Discipline {self.name} has no input named {err}."
+            ) from None
 
     def get_outputs_by_name(
         self,
@@ -2009,7 +2006,9 @@ class MDODiscipline(Serializable):
         try:
             return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(f"Discipline {self.name} has no output named {err}.")
+            raise ValueError(
+                f"Discipline {self.name} has no output named {err}."
+            ) from None
 
     def get_input_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the input variables.
@@ -2023,8 +2022,7 @@ class MDODiscipline(Serializable):
         """
         if with_namespaces:
             return list(self.input_grammar.keys())
-        else:
-            return remove_prefix_from_list(self.input_grammar.keys())
+        return remove_prefix_from_list(self.input_grammar.keys())
 
     def get_output_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the output variables.
@@ -2038,13 +2036,12 @@ class MDODiscipline(Serializable):
         """
         if with_namespaces:
             return list(self.output_grammar.keys())
-        else:
-            return remove_prefix_from_list(self.output_grammar.keys())
+        return remove_prefix_from_list(self.output_grammar.keys())
 
     def get_input_output_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the input and output variables.
 
-         Args:
+        Args:
             with_namespaces: Whether to keep the namespace prefix of the
                 output names, if any.
 
@@ -2054,8 +2051,7 @@ class MDODiscipline(Serializable):
         in_outs = self.output_grammar.keys() | self.input_grammar.keys()
         if with_namespaces:
             return list(in_outs)
-        else:
-            return remove_prefix_from_list(in_outs)
+        return remove_prefix_from_list(in_outs)
 
     def get_all_inputs(self) -> list[Any]:
         """Return the local input data as a list.
@@ -2129,8 +2125,7 @@ class MDODiscipline(Serializable):
         """
         with Path(file_path).open("rb") as file_:
             pickler = pickle.Unpickler(file_)
-            obj = pickler.load()
-        return obj
+            return pickler.load()
 
     def __setstate__(
         self,
@@ -2158,7 +2153,9 @@ class MDODiscipline(Serializable):
         try:
             return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(f"Discipline {self.name} has no local_data named {err}.")
+            raise ValueError(
+                f"Discipline {self.name} has no local_data named {err}."
+            ) from None
 
     @staticmethod
     def is_scenario() -> bool:
