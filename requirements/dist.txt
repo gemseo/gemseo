@@ -14,9 +14,9 @@ certifi==2023.7.22
     # via requests
 cffi==1.16.0
     # via cryptography
-charset-normalizer==3.3.1
+charset-normalizer==3.3.2
     # via requests
-check-wheel-contents==0.5.0
+check-wheel-contents==0.6.0
     # via -r requirements/dist.in
 click==8.1.7
     # via check-wheel-contents
