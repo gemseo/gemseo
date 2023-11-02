@@ -259,7 +259,6 @@ class LagrangeMultipliers:
         act_constraints = self.opt_problem.get_active_ineq_constraints(
             x_vect, ineq_tolerance
         )
-
         dspace = self.opt_problem.design_space
 
         if self.__normalized:

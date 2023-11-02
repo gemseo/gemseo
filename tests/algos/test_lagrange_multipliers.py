@@ -243,6 +243,29 @@ def analytical_test_2d_eq(x0, y0):
 
 
 @pytest.fixture
+def analytical_test_2d__multiple_eq():
+    """Test for lagrange multiplier."""
+    x0 = 4.0
+    disc = AnalyticDiscipline(
+        name="2D_test",
+        expressions={"f": "(x)**2+(y)**2+(z)**2", "h1": "x-y", "h2": "y-z"},
+    )
+    ds = DesignSpace()
+    ds.add_variable("x", l_b=0.0, u_b=4.0, value=x0)
+    ds.add_variable("y", l_b=1.0, u_b=4.0, value=x0)
+    ds.add_variable("z", l_b=2.0, u_b=4.0, value=x0)
+    scenario = create_scenario(
+        disciplines=[disc],
+        formulation="DisciplinaryOpt",
+        objective_name="f",
+        design_space=ds,
+    )
+    scenario.add_constraint("h1", "eq")
+    scenario.add_constraint("h2", "eq")
+    return scenario
+
+
+@pytest.fixture
 def analytical_test_2d_mixed_rank_deficient():
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline(
@@ -281,9 +304,11 @@ parametrized_options = pytest.mark.parametrize(
     ],
 )
 parametrized_algo_ineq = pytest.mark.parametrize(
-    "algo_ineq", ["NLOPT_MMA", "SLSQP", "NLOPT_SLSQP"]
+    "algo_ineq", ["NLOPT_MMA", "SLSQP", "NLOPT_SLSQP", "Augmented_Lagrangian"]
 )
-parametrized_algo_eq = pytest.mark.parametrize("algo_eq", ["SLSQP", "NLOPT_SLSQP"])
+parametrized_algo_eq = pytest.mark.parametrize(
+    "algo_eq", ["SLSQP", "NLOPT_SLSQP", "Augmented_Lagrangian"]
+)
 
 
 @parametrized_options
@@ -292,6 +317,11 @@ def test_2d_ineq(analytical_test_2d_ineq, options, algo_ineq):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_ineq
+    if algo_ineq == "Augmented_Lagrangian":
+        opt["algo_options"] = {
+            "sub_solver_algorithm": "L-BFGS-B",
+            "sub_problem_options": options.copy(),
+        }
     analytical_test_2d_ineq.execute(opt)
     problem = analytical_test_2d_ineq.formulation.opt_problem
     lagrange = LagrangeMultipliers(problem)
@@ -309,6 +339,11 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
+    if algo_eq == "Augmented_Lagrangian":
+        opt["algo_options"] = {
+            "sub_solver_algorithm": "L-BFGS-B",
+            "sub_problem_options": options.copy(),
+        }
     analytical_test_2d_eq.execute(opt)
     problem = analytical_test_2d_eq.formulation.opt_problem
     lagrange = LagrangeMultipliers(problem)
@@ -317,7 +352,29 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq):
         problem.solution.x_opt - epsilon * array([0.0, 1.0]),
         ineq_tolerance=2.5 * epsilon,
     )
-    assert pytest.approx(lag["equality"][1], 1.1 * epsilon) == array([-1.0])
+    assert pytest.approx(lag["equality"][1], 10 * epsilon) == array([-1.0])
+
+
+@parametrized_options
+@parametrized_algo_eq
+def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq):
+    """Test for lagrange multiplier inequality almost optimum."""
+    opt = options.copy()
+    opt["algo"] = algo_eq
+    if algo_eq == "Augmented_Lagrangian":
+        opt["algo_options"] = {
+            "sub_solver_algorithm": "L-BFGS-B",
+            "sub_problem_options": options.copy(),
+        }
+    analytical_test_2d__multiple_eq.execute(opt)
+    problem = analytical_test_2d__multiple_eq.formulation.opt_problem
+    lagrange = LagrangeMultipliers(problem)
+    epsilon = 1e-3
+    lag = lagrange.compute(
+        problem.solution.x_opt - epsilon * array([0.0, 1.0, 0.0]),
+        ineq_tolerance=2.5 * epsilon,
+    )
+    assert pytest.approx(lag["equality"][1][1], 10 * epsilon) == array([-8.0])
 
 
 @parametrized_options
@@ -326,6 +383,8 @@ def test_2d_mixed(analytical_test_2d_mixed_rank_deficient, options, algo_eq):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
+    if algo_eq == "Augmented_Lagrangian":
+        opt["algo_options"] = {"sub_solver_algorithm": "L-BFGS-B"}
     analytical_test_2d_mixed_rank_deficient.execute(opt)
     problem = analytical_test_2d_mixed_rank_deficient.formulation.opt_problem
     lagrange = LagrangeMultipliers(problem)

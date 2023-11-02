@@ -1,7 +1,8 @@
 {
-  "name": "NLOPT_options",
+  "name": "AUGMENTED_LAGRANGIAN_options",
   "required": [
-    "max_iter"
+    "max_iter",
+    "sub_solver_algorithm"
   ],
   "properties": {
     "xtol_rel": {
@@ -20,51 +21,17 @@
       "type": "number",
       "minimum": 0.0
     },
-    "stop_crit_n_x": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "integer",
-          "minimum": 2
-        }
-      ],
-      "default": null
-    },
-    "max_iter": {
-      "type": "integer",
-      "minimum": 1
-    },
     "max_time": {
       "type": "number",
       "minimum": 0.0
     },
-    "stopval": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "ctol_abs": {
+    "pg_tol": {
       "type": "number",
       "minimum": 0.0
     },
-    "eq_tolerance": {
-      "type": "number",
-      "minimum": 0.0
-    },
-    "ineq_tolerance": {
-      "type": "number",
-      "minimum": 0.0
-    },
-    "init_step": {
-      "type": "number",
-      "minimum": 0.0
-    },
-    "inner_maxeval": {
+    "max_iter": {
       "type": "integer",
-      "minimum": 0
+      "minimum": 1
     },
     "kkt_tol_abs": {
       "anyOf": [
@@ -87,9 +54,16 @@
           "minimum": 0.0
         }
       ]
+    },
+    "sub_solver_algorithm": {
+      "type": "string"
+    },
+    "sub_problem_options": {
+      "type": "object"
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,
-  "type": "object"
+  "type": "object",
+  "id": "#AUGMENTED_LAGRANGIAN"
 }
