@@ -173,15 +173,13 @@ class PydanticGrammar(BaseGrammar):
         for name, type_ in names_to_types.items():
             pydantic_type = self.__TYPE_TO_PYDANTIC_TYPE.get(type_, type_)
             if merge and name in fields:
-                field = fields[name]
-                field.outer_type_ = Union[field.outer_type_, pydantic_type]
-            else:
-                fields[name] = ModelField(
-                    name=name,
-                    type_=pydantic_type,
-                    class_validators=None,
-                    model_config=config,
-                )
+                pydantic_type = Union[fields[name].outer_type_, pydantic_type]
+            fields[name] = ModelField(
+                name=name,
+                type_=pydantic_type,
+                class_validators=None,
+                model_config=config,
+            )
 
     def _clear(self) -> None:  # noqa:D102
         class Model(BaseModel):  # noqa: D102

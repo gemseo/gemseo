@@ -420,6 +420,7 @@ def test_update_from_names(model, names):
         ({"name1": bool}, Union[int, bool]),
         ({"name1": ndarray}, Union[int, NDArray]),
         ({"name1": dict}, Union[int, dict]),
+        ({"name2": int}, Union[NDArray[int], int]),
     ],
 )
 @pytest.mark.parametrize(
