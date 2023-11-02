@@ -21,9 +21,12 @@ from __future__ import annotations
 import pickle
 
 import pytest
+from numpy import array
+from numpy import ndarray
+
+from gemseo import MDODiscipline
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo import MDODiscipline
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataError
@@ -38,8 +41,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from numpy import array
-from numpy import ndarray
 
 
 def build_mdo_scenario(
@@ -71,7 +72,7 @@ def build_mdo_scenario(
         ]
 
     design_space = SobieskiDesignSpace()
-    scenario = DOEScenario(
+    return DOEScenario(
         disciplines,
         formulation=formulation,
         objective_name="y_4",
@@ -79,7 +80,6 @@ def build_mdo_scenario(
         grammar_type=grammar_type,
         maximize_objective=True,
     )
-    return scenario
 
 
 @pytest.fixture()
@@ -94,7 +94,7 @@ def mdf_variable_grammar_doe_scenario(request):
 
 
 @pytest.mark.usefixtures("tmp_wd")
-@pytest.mark.skip_under_windows
+@pytest.mark.skip_under_windows()
 def test_parallel_doe_hdf_cache(caplog):
     disciplines = create_discipline(
         [
@@ -178,7 +178,7 @@ def double_discipline():
     return AnalyticDiscipline({"y": "2*x"}, name="func")
 
 
-@pytest.fixture
+@pytest.fixture()
 def doe_scenario(unit_design_space, double_discipline) -> DOEScenario:
     """A simple DOE scenario not yet executed.
 
@@ -219,7 +219,7 @@ def f_sellar_1(x_local: float, y_2: float, x_shared: ndarray) -> float:
         raise ValueError("Undefined")
 
     y_1 = (x_shared[0] ** 2 + x_shared[1] + x_local - 0.2 * y_2) ** 0.5
-    return y_1
+    return y_1  # noqa: RET504
 
 
 @pytest.mark.parametrize("use_threading", [True, False])
@@ -350,7 +350,7 @@ other_doe_scenario = doe_scenario
 
 
 @pytest.mark.parametrize(
-    "samples_1,samples_2,reset_iteration_counters,expected",
+    ("samples_1", "samples_2", "reset_iteration_counters", "expected"),
     [
         (array([[0.5]]), array([[0.25], [0.75]]), True, 3),
         (array([[0.5]]), array([[0.25], [0.75]]), False, 2),

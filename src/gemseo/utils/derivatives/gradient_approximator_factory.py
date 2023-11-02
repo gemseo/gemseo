@@ -15,15 +15,18 @@
 """Factory for classes derived from :class:`GradientApproximator`."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
-from numpy import ndarray
-
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.base_factory import BaseFactory
-from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 
 class GradientApproximatorFactory(BaseFactory):

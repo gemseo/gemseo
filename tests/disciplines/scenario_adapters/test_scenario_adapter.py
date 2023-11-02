@@ -24,6 +24,16 @@ from pathlib import Path
 from typing import Iterable
 
 import pytest
+from numpy import all as np_all
+from numpy import allclose
+from numpy import array
+from numpy import atleast_2d
+from numpy import matmul
+from numpy import ones
+from numpy import ones_like
+from numpy import zeros
+from numpy import zeros_like
+
 from gemseo import create_scenario
 from gemseo.algos.database import Database
 from gemseo.core.chain import MDOChain
@@ -44,15 +54,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
-from numpy import all as np_all
-from numpy import allclose
-from numpy import array
-from numpy import atleast_2d
-from numpy import matmul
-from numpy import ones
-from numpy import ones_like
-from numpy import zeros
-from numpy import zeros_like
 
 
 def create_design_space():
@@ -60,7 +61,7 @@ def create_design_space():
     return SobieskiDesignSpace()
 
 
-@pytest.fixture
+@pytest.fixture()
 def scenario():
     """An MDO scenario solving the Sobieski problem with MDF and L-BFGS-B."""
     disciplines = [
@@ -188,7 +189,7 @@ def test_adapter_set_bounds(scenario):
     assert np_all(ds.get_upper_bounds() == [0.4, 1.25, 1.25, 1.0])
 
     # Execute the adapter with passed bounds
-    input_data = dict()
+    input_data = {}
     lower_bounds = ds.array_to_dict(zeros(4))
     lower_suffix = MDOScenarioAdapter.LOWER_BND_SUFFIX
     upper_bounds = ds.array_to_dict(ones(4))
@@ -595,7 +596,7 @@ def disciplines_fixture(request):
     return request.param
 
 
-@pytest.fixture
+@pytest.fixture()
 def scenario_fixture(disciplines_fixture):
     """Fixture generating a discipline depending only on main design variable.
 

@@ -20,14 +20,18 @@
 """A coupling study analysis generating an N2 from an Excel specification."""
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
-from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.utils.matplotlib_figure import FigSizeType
 
 
 class CouplingStudyAnalysis:
@@ -72,7 +76,7 @@ class CouplingStudyAnalysis:
 
     - the empty lines of the series ``Inputs`` and ``Outputs`` are ignored,
     - the sheet may contain other data, but these will not be taken into account.
-    """  # noqa: B950
+    """  # noqa: E501
 
     _HAS_SCENARIO: ClassVar[bool] = False
     """Whether the Excel file is supposed to have a scenario sheet."""

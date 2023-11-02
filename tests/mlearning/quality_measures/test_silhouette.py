@@ -21,13 +21,14 @@
 from __future__ import annotations
 
 import pytest
+from numpy import arange
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
-from numpy import arange
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     data = arange(60).reshape((20, 3))
@@ -36,7 +37,7 @@ def dataset() -> Dataset:
     return dataset_
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset_test() -> Dataset:
     """The dataset used to test the performance of the clustering algorithms."""
     data = arange(30).reshape((10, 3))
@@ -45,7 +46,7 @@ def dataset_test() -> Dataset:
     return dataset_
 
 
-@pytest.fixture
+@pytest.fixture()
 def measure(dataset) -> SilhouetteMeasure:
     """A silhouette measure."""
     algo = KMeans(dataset, n_clusters=3)
@@ -82,19 +83,16 @@ def test_compute_test_measure(measure, dataset_test):
 def test_compute_leave_one_out_measure(measure):
     """Test evaluate leave one out method."""
     with pytest.raises(NotImplementedError):
-        quality = measure.compute_leave_one_out_measure(multioutput=False)
-        assert quality > 0
+        measure.compute_leave_one_out_measure(multioutput=False)
 
 
 def test_compute_cross_validation_measure(measure):
     """Test evaluate k-folds method."""
     with pytest.raises(NotImplementedError):
-        quality = measure.compute_cross_validation_measure(multioutput=False)
-        assert quality > 0
+        measure.compute_cross_validation_measure(multioutput=False)
 
 
 def test_compute_bootstrap_measure(measure):
     """Test evaluate bootstrap method."""
     with pytest.raises(NotImplementedError):
-        quality = measure.compute_bootstrap_measure(multioutput=False)
-        assert quality > 0
+        measure.compute_bootstrap_measure(multioutput=False)

@@ -21,15 +21,12 @@
 from __future__ import annotations
 
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Mapping
 
-from numpy.typing import NDArray
-
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.problems.scalable.parametric.core.default_settings import (
-    DEFAULT_D_0,
-)
+from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_0
 from gemseo.problems.scalable.parametric.core.scalable_design_space import (
     ScalableDesignSpace as _ScalableDesignSpace,
 )
@@ -40,6 +37,9 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class ScalableDesignSpace(ParameterSpace):

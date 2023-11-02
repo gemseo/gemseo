@@ -20,9 +20,10 @@
 """An MDO study analysis generating N2 and XDSM from an Excel specification."""
 from __future__ import annotations
 
+import contextlib
 import logging
 from ast import literal_eval
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
@@ -30,11 +31,15 @@ from typing import Mapping
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
-from gemseo.utils.xdsm import XDSM
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.mdo_scenario import MDOScenario
+    from gemseo.utils.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
 
@@ -128,7 +133,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     An arbitrary number of levels can be generated this way
     (three, four, ..., n, level formulations).
-    """  # noqa: B950
+    """  # noqa: E501
 
     _HAS_SCENARIO: ClassVar[bool] = True
 
@@ -140,7 +145,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     def __init__(self, xls_study_path: str | Path) -> None:  # noqa: D107
         super().__init__(xls_study_path)
-        self.scenarios = dict()
+        self.scenarios = {}
         self._create_scenarios()
 
     @staticmethod
@@ -169,10 +174,8 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
             option_values = scenario_description[XLSStudyParser.OPTION_VALUES]
             for option_name, option_value in zip(option_names, option_values):
                 if isinstance(option_value, str):
-                    try:
+                    with contextlib.suppress(ValueError):
                         option_value = literal_eval(option_value)
-                    except ValueError:
-                        pass
 
                 options[option_name] = option_value
 
@@ -245,7 +248,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
                 "check for cycling dependencies between scenarios."
             )
 
-        self.disciplines = dict()
+        self.disciplines = {}
         # Preserves the order of disciplines in the original Excel file
         # Important for the N2 generation
         for disc_name in self.study.disciplines:

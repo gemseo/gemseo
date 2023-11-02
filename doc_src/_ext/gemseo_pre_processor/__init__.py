@@ -44,7 +44,7 @@ def builder_inited(app):
     (_modules_path / "modules.rst").unlink(missing_ok=True)
 
     plugins = app.config.html_context["plugins"]
-    names = ["gemseo"] + sorted(plugins)
+    names = ["gemseo", *sorted(plugins)]
 
     with open(_modules_path / "projects.rst", "w") as f:
         f.write(".. _projects:\n\n")

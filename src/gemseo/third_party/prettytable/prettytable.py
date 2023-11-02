@@ -56,8 +56,6 @@ from typing import Optional, Sequence
 PY2 = sys.version_info.major == 2
 
 
-
-
 # hrule styles
 FRAME = 0
 ALL = 1
@@ -86,8 +84,7 @@ def _get_size(text: str):
 
 
 class PrettyTable(object):
-
-    def __init__(self, field_names: Optional[Sequence[str]]=None, **kwargs) -> None:
+    def __init__(self, field_names: Optional[Sequence[str]] = None, **kwargs) -> None:
         """
 
         :param encoding: Unicode encoding scheme used to decode any encoded input
@@ -138,9 +135,11 @@ class PrettyTable(object):
         # Options
         self._options = "title start end fields header border sortby reversesort sort_key attributes format hrules vrules".split()
         self._options.extend(
-            "int_format float_format min_table_width max_table_width padding_width left_padding_width right_padding_width".split())
+            "int_format float_format min_table_width max_table_width padding_width left_padding_width right_padding_width".split()
+        )
         self._options.extend(
-            "vertical_char horizontal_char junction_char header_style valign xhtml print_empty oldsortslice".split())
+            "vertical_char horizontal_char junction_char header_style valign xhtml print_empty oldsortslice".split()
+        )
         self._options.extend("align valign max_width min_width".split())
         for option in self._options:
             if option in kwargs:
@@ -246,7 +245,6 @@ class PrettyTable(object):
                 return (excess // 2) * " " + text + (excess // 2) * " "
 
     def __getattr__(self, name: str):
-
         if name == "rowcount":
             return len(self._rows)
         elif name == "colcount":
@@ -260,7 +258,6 @@ class PrettyTable(object):
             raise AttributeError(name)
 
     def __getitem__(self, index):
-
         new = PrettyTable()
         new.field_names = self.field_names
         for attr in self._options:
@@ -273,8 +270,8 @@ class PrettyTable(object):
             new.add_row(self._rows[index])
         else:
             raise Exception(
-                "Index %s is invalid, must be an integer or slice" %
-                str(index))
+                "Index %s is invalid, must be an integer or slice" % str(index)
+            )
         return new
 
     def __str__(self) -> str:
@@ -304,8 +301,18 @@ class PrettyTable(object):
         """
         if option in "field_names":
             self._validate_field_names(val)
-        elif option in ("start", "end", "max_width", "min_width", "min_table_width", "max_table_width", "padding_width",
-                        "left_padding_width", "right_padding_width", "format"):
+        elif option in (
+            "start",
+            "end",
+            "max_width",
+            "min_width",
+            "min_table_width",
+            "max_table_width",
+            "padding_width",
+            "left_padding_width",
+            "right_padding_width",
+            "format",
+        ):
             self._validate_nonnegative_int(option, val)
         elif option in "sortby":
             self._validate_field_name(option, val)
@@ -317,7 +324,14 @@ class PrettyTable(object):
             self._validate_vrules(option, val)
         elif option in "fields":
             self._validate_all_field_names(option, val)
-        elif option in ("header", "border", "reversesort", "xhtml", "print_empty", "oldsortslice"):
+        elif option in (
+            "header",
+            "border",
+            "reversesort",
+            "xhtml",
+            "print_empty",
+            "oldsortslice",
+        ):
             self._validate_true_or_false(option, val)
         elif option in "header_style":
             self._validate_header_style(val)
@@ -341,14 +355,18 @@ class PrettyTable(object):
             try:
                 assert len(val) == len(self._field_names)
             except AssertionError:
-                raise Exception("Field name list has incorrect number of values, (actual) %d!=%d (expected)" % (
-                    len(val), len(self._field_names)))
+                raise Exception(
+                    "Field name list has incorrect number of values, (actual) %d!=%d (expected)"
+                    % (len(val), len(self._field_names))
+                )
         if self._rows:
             try:
                 assert len(val) == len(self._rows[0])
             except AssertionError:
-                raise Exception("Field name list has incorrect number of values, (actual) %d!=%d (expected)" % (
-                    len(val), len(self._rows[0])))
+                raise Exception(
+                    "Field name list has incorrect number of values, (actual) %d!=%d (expected)"
+                    % (len(val), len(self._rows[0]))
+                )
         # Check for uniqueness
         try:
             assert len(val) == len(set(val))
@@ -365,7 +383,8 @@ class PrettyTable(object):
             assert val in ("cap", "title", "upper", "lower", None)
         except AssertionError:
             raise Exception(
-                "Invalid header style, use cap, title, upper, lower or None!")
+                "Invalid header style, use cap, title, upper, lower or None!"
+            )
 
     def _validate_align(self, val):
         """
@@ -387,9 +406,7 @@ class PrettyTable(object):
         try:
             assert val in ["t", "m", "b", None]
         except AssertionError:
-            raise Exception(
-                "Alignment %s is invalid, use t, m, b or None!" %
-                val)
+            raise Exception("Alignment %s is invalid, use t, m, b or None!" % val)
 
     def _validate_nonnegative_int(self, name: str, val):
         """
@@ -401,9 +418,7 @@ class PrettyTable(object):
         try:
             assert int(val) >= 0
         except AssertionError:
-            raise Exception(
-                "Invalid value for %s: %s!" %
-                (name, self._unicode(val)))
+            raise Exception("Invalid value for %s: %s!" % (name, self._unicode(val)))
 
     def _validate_true_or_false(self, name: str, val):
         """
@@ -415,9 +430,7 @@ class PrettyTable(object):
         try:
             assert val in (True, False)
         except AssertionError:
-            raise Exception(
-                "Invalid value for %s!  Must be True or False." %
-                name)
+            raise Exception("Invalid value for %s!  Must be True or False." % name)
 
     def _validate_int_format(self, name: str, val):
         """
@@ -433,8 +446,8 @@ class PrettyTable(object):
             assert val.isdigit()
         except AssertionError:
             raise Exception(
-                "Invalid value for %s!  Must be an integer format string." %
-                name)
+                "Invalid value for %s!  Must be an integer format string." % name
+            )
 
     def _validate_float_format(self, name: str, val):
         """
@@ -447,7 +460,7 @@ class PrettyTable(object):
         if val == "":
             return
         try:
-            val = val.rsplit('f')[0]
+            val = val.rsplit("f")[0]
             assert type(val) in str_types
             assert "." in val
             bits = val.split(".")
@@ -456,8 +469,8 @@ class PrettyTable(object):
             assert bits[1] == "" or bits[1].isdigit()
         except AssertionError:
             raise Exception(
-                "Invalid value for %s!  Must be a float format string." %
-                name)
+                "Invalid value for %s!  Must be a float format string." % name
+            )
 
     def _validate_function(self, name: str, val):
         """
@@ -469,9 +482,7 @@ class PrettyTable(object):
         try:
             assert hasattr(val, "__call__")
         except AssertionError:
-            raise Exception(
-                "Invalid value for %s!  Must be a function." %
-                name)
+            raise Exception("Invalid value for %s!  Must be a function." % name)
 
     def _validate_hrules(self, name: str, val):
         """
@@ -484,8 +495,8 @@ class PrettyTable(object):
             assert val in (ALL, FRAME, HEADER, NONE)
         except AssertionError:
             raise Exception(
-                "Invalid value for %s!  Must be ALL, FRAME, HEADER or NONE." %
-                name)
+                "Invalid value for %s!  Must be ALL, FRAME, HEADER or NONE." % name
+            )
 
     def _validate_vrules(self, name: str, val):
         """
@@ -498,8 +509,8 @@ class PrettyTable(object):
             assert val in (ALL, FRAME, NONE)
         except AssertionError:
             raise Exception(
-                "Invalid value for %s!  Must be ALL, FRAME, or NONE." %
-                name)
+                "Invalid value for %s!  Must be ALL, FRAME, or NONE." % name
+            )
 
     def _validate_field_name(self, name: str, val):
         """
@@ -537,8 +548,8 @@ class PrettyTable(object):
             assert _str_block_width(val) == 1
         except AssertionError:
             raise Exception(
-                "Invalid value for %s!  Must be a string of length 1." %
-                name)
+                "Invalid value for %s!  Must be a string of length 1." % name
+            )
 
     def _validate_attributes(self, name: str, val):
         """
@@ -550,8 +561,7 @@ class PrettyTable(object):
         try:
             assert isinstance(val, dict)
         except AssertionError:
-            raise Exception(
-                "attributes must be a dictionary of name/value pairs!")
+            raise Exception("attributes must be a dictionary of name/value pairs!")
 
     ##############################
     # ATTRIBUTE MANAGEMENT       #
@@ -680,10 +690,7 @@ class PrettyTable(object):
         result = {
             # minimum column width can't be lesser
             # than header's length
-            name: max(
-                _str_block_width(unicode_(name)),
-                self._min_width.get(name, 0)
-            )
+            name: max(_str_block_width(unicode_(name)), self._min_width.get(name, 0))
             for name in fields
         }
         return result
@@ -1180,8 +1187,7 @@ class PrettyTable(object):
 
     @property
     def oldsortslice(self):
-        """oldsortslice - Slice rows before sorting in the 'old style'
-        """
+        """oldsortslice - Slice rows before sorting in the 'old style'"""
         return self._oldsortslice
 
     @oldsortslice.setter
@@ -1281,8 +1287,7 @@ class PrettyTable(object):
         self.left_padding_width = random.randint(0, 5)
         self.right_padding_width = random.randint(0, 5)
         self.vertical_char = random.choice("~!@#$%^&*()_+|-=\{}[];':\",./;<>?")
-        self.horizontal_char = random.choice(
-            "~!@#$%^&*()_+|-=\{}[];':\",./;<>?")
+        self.horizontal_char = random.choice("~!@#$%^&*()_+|-=\{}[];':\",./;<>?")
         self.junction_char = random.choice("~!@#$%^&*()_+|-=\{}[];':\",./;<>?")
 
     ##############################
@@ -1299,10 +1304,11 @@ class PrettyTable(object):
 
         if self._field_names and len(row) != len(self._field_names):
             raise Exception(
-                "Row has incorrect number of values, (actual) %d!=%d (expected)" % (len(row), len(self._field_names)))
+                "Row has incorrect number of values, (actual) %d!=%d (expected)"
+                % (len(row), len(self._field_names))
+            )
         if not self._field_names:
-            self.field_names = [
-                ("Field %d" % (n + 1)) for n in range(0, len(row))]
+            self.field_names = [("Field %d" % (n + 1)) for n in range(0, len(row))]
         self._rows.append(list(row))
 
     def del_row(self, row_index):
@@ -1314,12 +1320,12 @@ class PrettyTable(object):
 
         if row_index > len(self._rows) - 1:
             raise Exception(
-                "Cant delete row at index %d, table only has %d rows!" %
-                (row_index, len(
-                    self._rows)))
+                "Cant delete row at index %d, table only has %d rows!"
+                % (row_index, len(self._rows))
+            )
         del self._rows[row_index]
 
-    def add_column(self, fieldname: str, column, align: str="c", valign: str="t"):
+    def add_column(self, fieldname: str, column, align: str = "c", valign: str = "t"):
         """Add a column to the table.
 
         :param fieldname: name of the field to contain the new column of data
@@ -1342,9 +1348,9 @@ class PrettyTable(object):
                 self._rows[i].append(column[i])
         else:
             raise Exception(
-                "Column length %d does not match number of rows %d!" %
-                (len(column), len(
-                    self._rows)))
+                "Column length %d does not match number of rows %d!"
+                % (len(column), len(self._rows))
+            )
 
     def clear_rows(self) -> None:
         """Delete all rows from the table but keep the current field names"""
@@ -1380,9 +1386,7 @@ class PrettyTable(object):
         if isinstance(value, int) and field in self._int_format:
             value = self._unicode(("%%%sd" % self._int_format[field]) % value)
         elif isinstance(value, float) and field in self._float_format:
-            value = self._unicode(
-                (self._float_format[field]) %
-                value)
+            value = self._unicode((self._float_format[field]) % value)
         return self._unicode(value)
 
     def _compute_table_width(self, options):
@@ -1395,7 +1399,8 @@ class PrettyTable(object):
         per_col_padding = sum(self._get_padding_widths(options))
         for index, fieldname in enumerate(self.field_names):
             if not options["fields"] or (
-                    options["fields"] and fieldname in options["fields"]):
+                options["fields"] and fieldname in options["fields"]
+            ):
                 table_width += self._widths[index] + per_col_padding
         return table_width
 
@@ -1416,14 +1421,13 @@ class PrettyTable(object):
                 fieldname = self.field_names[index]
                 if fieldname in self.max_width:
                     widths[index] = max(
-                        widths[index], min(
-                            _get_size(value)[0], self.max_width[fieldname]))
+                        widths[index],
+                        min(_get_size(value)[0], self.max_width[fieldname]),
+                    )
                 else:
                     widths[index] = max(widths[index], _get_size(value)[0])
                 if fieldname in self.min_width:
-                    widths[index] = max(
-                        widths[index],
-                        self.min_width[fieldname])
+                    widths[index] = max(widths[index], self.min_width[fieldname])
         self._widths = widths
 
         # Are we exceeding max_table_width?
@@ -1447,9 +1451,9 @@ class PrettyTable(object):
                 nonshrinkable += sum(min_width.values())
 
                 # Shrink widths in proportion
-                scale = float(
-                    self._max_table_width - nonshrinkable) / (table_width -
-                                                              nonshrinkable)
+                scale = float(self._max_table_width - nonshrinkable) / (
+                    table_width - nonshrinkable
+                )
 
                 def calculate_new_width(field_name: str, old_width):
                     """
@@ -1464,18 +1468,15 @@ class PrettyTable(object):
                     # enforce minimum column width as 1 symbol
                     return max(1, width + scaled_part)
 
-                widths = list(map(
-                    calculate_new_width,
-                    self._field_names,
-                    widths
-                ))
+                widths = list(map(calculate_new_width, self._field_names, widths))
                 self._widths = widths
 
         # Are we under min_table_width or title width?
         if self._min_table_width or options["title"]:
             if options["title"]:
-                title_width = len(
-                    options["title"]) + sum(self._get_padding_widths(options))
+                title_width = len(options["title"]) + sum(
+                    self._get_padding_widths(options)
+                )
                 if options["vrules"] in (FRAME, ALL):
                     title_width += 2
             else:
@@ -1514,7 +1515,7 @@ class PrettyTable(object):
         """
 
         if options["oldsortslice"]:
-            rows = copy.deepcopy(self._rows[options["start"]:options["end"]])
+            rows = copy.deepcopy(self._rows[options["start"] : options["end"]])
         else:
             rows = copy.deepcopy(self._rows)
 
@@ -1530,7 +1531,7 @@ class PrettyTable(object):
 
         # Slice if necessary
         if not options["oldsortslice"]:
-            rows = rows[options["start"]:options["end"]]
+            rows = rows[options["start"] : options["end"]]
 
         return rows
 
@@ -1541,8 +1542,10 @@ class PrettyTable(object):
         :param options:
 
         """
-        return [self._format_value(field, value)
-                for (field, value) in zip(self._field_names, row)]
+        return [
+            self._format_value(field, value)
+            for (field, value) in zip(self._field_names, row)
+        ]
 
     def _format_rows(self, rows, options):
         """
@@ -1590,8 +1593,7 @@ class PrettyTable(object):
         # Don't think too hard about an empty table
         # Is this the desired behaviour?  Maybe we should still print the
         # header?
-        if self.rowcount == 0 and (
-                not options["print_empty"] or not options["border"]):
+        if self.rowcount == 0 and (not options["print_empty"] or not options["border"]):
             return ""
 
         # Get the rows we need to print, taking into account slicing, sorting,
@@ -1636,7 +1638,7 @@ class PrettyTable(object):
         if not options["border"]:
             return ""
         lpad, rpad = self._get_padding_widths(options)
-        if options['vrules'] in (ALL, FRAME):
+        if options["vrules"] in (ALL, FRAME):
             bits = [options["junction_char"]]
         else:
             bits = [options["horizontal_char"]]
@@ -1648,7 +1650,7 @@ class PrettyTable(object):
             if options["fields"] and field not in options["fields"]:
                 continue
             bits.append((width + lpad + rpad) * options["horizontal_char"])
-            if options['vrules'] == ALL:
+            if options["vrules"] == ALL:
                 bits.append(options["junction_char"])
             else:
                 bits.append(options["horizontal_char"])
@@ -1675,8 +1677,9 @@ class PrettyTable(object):
             elif options["vrules"] == FRAME:
                 lines.append(self._stringify_hrule(options))
         bits = []
-        endpoint = options["vertical_char"] if options[
-            "vrules"] in (ALL, FRAME) else " "
+        endpoint = (
+            options["vertical_char"] if options["vrules"] in (ALL, FRAME) else " "
+        )
         bits.append(endpoint)
         title = " " * lpad + title + " " * rpad
         bits.append(self._justify(title, len(self._hrule) - 2, "c"))
@@ -1707,7 +1710,10 @@ class PrettyTable(object):
                 bits.append(options["vertical_char"])
             else:
                 bits.append(" ")
-        for field, width, in zip(self._field_names, self._widths):
+        for (
+            field,
+            width,
+        ) in zip(self._field_names, self._widths):
             if options["fields"] and field not in options["fields"]:
                 continue
             if self._header_style == "cap":
@@ -1721,14 +1727,10 @@ class PrettyTable(object):
             else:
                 fieldname = field
             bits.append(
-                " " *
-                lpad +
-                self._justify(
-                    fieldname,
-                    width,
-                    self._align[field]) +
-                " " *
-                rpad)
+                " " * lpad
+                + self._justify(fieldname, width, self._align[field])
+                + " " * rpad
+            )
             if options["border"]:
                 if options["vrules"] == ALL:
                     bits.append(options["vertical_char"])
@@ -1752,8 +1754,12 @@ class PrettyTable(object):
 
         """
 
-        for index, field, value, width, in zip(
-                list(range(0, len(row))), self._field_names, row, self._widths):
+        for (
+            index,
+            field,
+            value,
+            width,
+        ) in zip(list(range(0, len(row))), self._field_names, row, self._widths):
             # Enforce max widths
             lines = value.split("\n")
             new_lines = []
@@ -1781,15 +1787,21 @@ class PrettyTable(object):
                 else:
                     bits[y].append(" ")
 
-        for field, value, width, in zip(self._field_names, row, self._widths):
-
+        for (
+            field,
+            value,
+            width,
+        ) in zip(self._field_names, row, self._widths):
             valign = self._valign[field]
             lines = value.split("\n")
             dHeight = row_height - len(lines)
             if dHeight:
                 if valign == "m":
-                    lines = [
-                        ""] * int(dHeight / 2) + lines + [""] * (dHeight - int(dHeight / 2))
+                    lines = (
+                        [""] * int(dHeight / 2)
+                        + lines
+                        + [""] * (dHeight - int(dHeight / 2))
+                    )
                 elif valign == "b":
                     lines = [""] * dHeight + lines
                 else:
@@ -1801,14 +1813,10 @@ class PrettyTable(object):
                     continue
 
                 bits[y].append(
-                    " " *
-                    lpad +
-                    self._justify(
-                        l,
-                        width,
-                        self._align[field]) +
-                    " " *
-                    rpad)
+                    " " * lpad
+                    + self._justify(l, width, self._align[field])
+                    + " " * rpad
+                )
                 if options["border"]:
                     if options["vrules"] == ALL:
                         bits[y].append(self.vertical_char)
@@ -1832,7 +1840,7 @@ class PrettyTable(object):
 
         return "\n".join(bits)
 
-    def paginate(self, page_length: int=58, **kwargs):
+    def paginate(self, page_length: int = 58, **kwargs):
         """
 
         :param page_length: Default value = 58)
@@ -1904,17 +1912,17 @@ class PrettyTable(object):
         if options["attributes"]:
             for attr_name in options["attributes"]:
                 open_tag.append(
-                    " %s=\"%s\"" %
-                    (attr_name, options["attributes"][attr_name]))
+                    ' %s="%s"' % (attr_name, options["attributes"][attr_name])
+                )
         open_tag.append(">")
         lines.append("".join(open_tag))
 
         # Title
         title = options["title"] or self._title
         if title:
-            cols = len(
-                options["fields"]) if options["fields"] else len(
-                self.field_names)
+            cols = (
+                len(options["fields"]) if options["fields"] else len(self.field_names)
+            )
             lines.append("    <tr>")
             lines.append("        <td colspan=%d>%s</td>" % (cols, title))
             lines.append("    </tr>")
@@ -1926,10 +1934,9 @@ class PrettyTable(object):
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    "        <th style='text-align: left;'>%s</th>" %
-                    escape(field).replace(
-                        "\n",
-                        linebreak))
+                    "        <th style='text-align: left;'>%s</th>"
+                    % escape(field).replace("\n", linebreak)
+                )
             lines.append("    </tr>")
 
         # Data
@@ -1941,10 +1948,8 @@ class PrettyTable(object):
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    "        <td>%s</td>" %
-                    escape(datum).replace(
-                        "\n",
-                        linebreak))
+                    "        <td>%s</td>" % escape(datum).replace("\n", linebreak)
+                )
             lines.append("    </tr>")
 
         lines.append("</table>")
@@ -1969,33 +1974,33 @@ class PrettyTable(object):
         open_tag.append("<table")
         if options["border"]:
             if options["hrules"] == ALL and options["vrules"] == ALL:
-                open_tag.append(" frame=\"box\" rules=\"all\"")
+                open_tag.append(' frame="box" rules="all"')
             elif options["hrules"] == FRAME and options["vrules"] == FRAME:
-                open_tag.append(" frame=\"box\"")
+                open_tag.append(' frame="box"')
             elif options["hrules"] == FRAME and options["vrules"] == ALL:
-                open_tag.append(" frame=\"box\" rules=\"cols\"")
+                open_tag.append(' frame="box" rules="cols"')
             elif options["hrules"] == FRAME:
-                open_tag.append(" frame=\"hsides\"")
+                open_tag.append(' frame="hsides"')
             elif options["hrules"] == ALL:
-                open_tag.append(" frame=\"hsides\" rules=\"rows\"")
+                open_tag.append(' frame="hsides" rules="rows"')
             elif options["vrules"] == FRAME:
-                open_tag.append(" frame=\"vsides\"")
+                open_tag.append(' frame="vsides"')
             elif options["vrules"] == ALL:
-                open_tag.append(" frame=\"vsides\" rules=\"cols\"")
+                open_tag.append(' frame="vsides" rules="cols"')
         if options["attributes"]:
             for attr_name in options["attributes"]:
                 open_tag.append(
-                    " %s=\"%s\"" %
-                    (attr_name, options["attributes"][attr_name]))
+                    ' %s="%s"' % (attr_name, options["attributes"][attr_name])
+                )
         open_tag.append(">")
         lines.append("".join(open_tag))
 
         # Title
         title = options["title"] or self._title
         if title:
-            cols = len(
-                options["fields"]) if options["fields"] else len(
-                self.field_names)
+            cols = (
+                len(options["fields"]) if options["fields"] else len(self.field_names)
+            )
             lines.append("    <tr>")
             lines.append("        <td colspan=%d>%s</td>" % (cols, title))
             lines.append("    </tr>")
@@ -2007,8 +2012,9 @@ class PrettyTable(object):
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    "        <th style=\"padding-left: %dem; padding-right: %dem; text-align: left;\">%s</th>" % (
-                        lpad, rpad, escape(field).replace("\n", linebreak)))
+                    '        <th style="padding-left: %dem; padding-right: %dem; text-align: left;">%s</th>'
+                    % (lpad, rpad, escape(field).replace("\n", linebreak))
+                )
             lines.append("    </tr>")
 
         # Data
@@ -2018,18 +2024,28 @@ class PrettyTable(object):
         valigns = []
         for field in self._field_names:
             aligns.append(
-                {"l": "left", "r": "right", "c": "center"}[self._align[field]])
+                {"l": "left", "r": "right", "c": "center"}[self._align[field]]
+            )
             valigns.append(
-                {"t": "top", "m": "middle", "b": "bottom"}[self._valign[field]])
+                {"t": "top", "m": "middle", "b": "bottom"}[self._valign[field]]
+            )
         for row in formatted_rows:
             lines.append("    <tr>")
             for field, datum, align, valign in zip(
-                    self._field_names, row, aligns, valigns):
+                self._field_names, row, aligns, valigns
+            ):
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    "        <td style=\"padding-left: %dem; padding-right: %dem; text-align: %s; vertical-align: %s\">%s</td>" % (
-                        lpad, rpad, align, valign, escape(datum).replace("\n", linebreak)))
+                    '        <td style="padding-left: %dem; padding-right: %dem; text-align: %s; vertical-align: %s">%s</td>'
+                    % (
+                        lpad,
+                        rpad,
+                        align,
+                        valign,
+                        escape(datum).replace("\n", linebreak),
+                    )
+                )
             lines.append("    </tr>")
         lines.append("</table>")
 
@@ -2040,6 +2056,7 @@ class PrettyTable(object):
 # UNICODE WIDTH FUNCTIONS    #
 ##############################
 
+
 def _char_block_width(char: str):
     """
 
@@ -2049,31 +2066,31 @@ def _char_block_width(char: str):
     # Basic Latin, which is probably the most common case
     # if char in range(0x0021, 0x007e):
     # if char >= 0x0021 and char <= 0x007e:
-    if 0x0021 <= char <= 0x007e:
+    if 0x0021 <= char <= 0x007E:
         return 1
     # Chinese, Japanese, Korean (common)
-    if 0x4e00 <= char <= 0x9fff:
+    if 0x4E00 <= char <= 0x9FFF:
         return 2
     # Hangul
-    if 0xac00 <= char <= 0xd7af:
+    if 0xAC00 <= char <= 0xD7AF:
         return 2
     # Combining?
     if unicodedata.combining(uni_chr(char)):
         return 0
     # Hiragana and Katakana
-    if 0x3040 <= char <= 0x309f or 0x30a0 <= char <= 0x30ff:
+    if 0x3040 <= char <= 0x309F or 0x30A0 <= char <= 0x30FF:
         return 2
     # Full-width Latin characters
-    if 0xff01 <= char <= 0xff60:
+    if 0xFF01 <= char <= 0xFF60:
         return 2
     # CJK punctuation
-    if 0x3000 <= char <= 0x303e:
+    if 0x3000 <= char <= 0x303E:
         return 2
     # Backspace and delete
-    if char in (0x0008, 0x007f):
+    if char in (0x0008, 0x007F):
         return -1
     # Other control characters
-    elif char in (0x0000, 0x000f, 0x001f):
+    elif char in (0x0000, 0x000F, 0x001F):
         return 0
     # Take a guess
     return 1

@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Collection
@@ -42,12 +43,14 @@ from openturns import Sample
 from openturns import SquaredExponential
 from strenum import StrEnum
 
-from gemseo.algos.doe.doe_library import DOELibraryOptionType
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+
+if TYPE_CHECKING:
+    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.discipline import MDODiscipline
 
 
 class HSICAnalysis(SensitivityAnalysis):

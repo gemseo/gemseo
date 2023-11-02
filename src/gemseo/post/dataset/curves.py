@@ -26,13 +26,16 @@ and the mesh as a misc.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Sequence
 
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class Curves(DatasetPlot):
@@ -76,7 +79,7 @@ class Curves(DatasetPlot):
         n_samples = output.shape[1]
 
         self._set_color(n_samples)
-        self._set_linestyle(n_samples, [line for line in lines_gen()])
+        self._set_linestyle(n_samples, list(lines_gen()))
 
         data = (output.T, self.linestyle, self.color, samples)
         mesh = self._param.mesh

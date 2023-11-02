@@ -23,9 +23,10 @@ from os.path import exists
 
 import numpy as np
 import pytest
+from numpy import newaxis
+
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.scalable.data_driven.diagonal import ScalableDiagonalModel
-from numpy import newaxis
 
 
 def f_1(x_1, x_2, x_3):
@@ -36,7 +37,7 @@ def f_2(x_1, x_2, x_3):
     return np.sin(2 * np.pi * x_1) * np.cos(2 * np.pi * x_2) - x_3
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset():
     data = IODataset(dataset_name="sinus")
     x1_val = x2_val = x3_val = np.linspace(0.0, 1.0, 10)[:, newaxis]

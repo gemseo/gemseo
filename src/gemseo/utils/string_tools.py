@@ -70,8 +70,7 @@ def __stringify(
 
     if isinstance(obj, abc.Mapping):
         obj = [
-            f"{str(key)}{key_value_separator}{function(val)}"
-            for key, val in obj.items()
+            f"{key!s}{key_value_separator}{function(val)}" for key, val in obj.items()
         ]
     else:
         obj = [function(val) for val in obj]
@@ -81,8 +80,7 @@ def __stringify(
 
     if use_and and len(obj) > 1:
         return f"{delimiter.join(obj[:-1])} and {obj[-1]}"
-    else:
-        return delimiter.join(obj)
+    return delimiter.join(obj)
 
 
 def pretty_repr(
@@ -146,10 +144,9 @@ def repr_variable(name: str, index: int, size: int = 0, simplify: bool = False) 
     """
     if size == 1:
         return name
-    elif simplify and index != 0:
+    if simplify and index != 0:
         return f"[{index}]"
-    else:
-        return f"{name}[{index}]"
+    return f"{name}[{index}]"
 
 
 class MultiLineString:

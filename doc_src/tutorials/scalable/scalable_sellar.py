@@ -20,9 +20,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from numpy import arange
+
 from gemseo import create_discipline
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from numpy import arange
 
 sellar = create_discipline("Sellar1")
 design_space = SellarDesignSpace()

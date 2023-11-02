@@ -16,11 +16,12 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 
 @pytest.mark.parametrize(
-    "use_original_names,design_variable_name,coupling_variable_name",
+    ("use_original_names", "design_variable_name", "coupling_variable_name"),
     [(True, "x_shared", "y_14"), (False, "t_c", "cl")],
 )
 @pytest.mark.parametrize("copy", [False, True])

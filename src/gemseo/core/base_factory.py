@@ -177,16 +177,13 @@ class BaseFactory(metaclass=BaseABCMultiton):
         if search_paths is None:
             return []
 
-        if ":" in search_paths:
-            paths = search_paths.split(":")
-        else:
-            paths = [search_paths]
+        paths = search_paths.split(":") if ":" in search_paths else [search_paths]
 
         # temporary make the paths visible to the import machinery
         for path in paths:
             sys.path.insert(0, path)
 
-        mod_names = list()
+        mod_names = []
         for _, mod_name, _ in pkgutil.iter_modules(path=paths):
             self.__import_modules_from(mod_name)
             mod_names += [mod_name]
@@ -204,7 +201,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
         """
         try:
             pkg = importlib.import_module(pkg_name)
-        except Exception as error:
+        except BaseException as error:
             self.__record_import_failure(pkg_name, error)
             return
 
@@ -217,7 +214,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
         ):
             try:
                 importlib.import_module(mod_name)
-            except Exception as error:
+            except BaseException as error:  # noqa: PERF203
                 self.__record_import_failure(mod_name, error)
 
     def __record_import_failure(self, name: str, error: Exception | str = "") -> None:
@@ -244,10 +241,8 @@ class BaseFactory(metaclass=BaseABCMultiton):
         """
         all_sub_classes = {}
         for sub_class in cls.__subclasses__():
-            sub_classes = {sub_class.__name__: sub_class}
-            sub_classes.update(self.__get_sub_classes(sub_class))
-            for cls_name, _cls in sub_classes.items():
-                all_sub_classes[cls_name] = _cls
+            all_sub_classes[sub_class.__name__] = sub_class
+            all_sub_classes.update(self.__get_sub_classes(sub_class))
         return all_sub_classes
 
     @staticmethod
@@ -257,17 +252,14 @@ class BaseFactory(metaclass=BaseABCMultiton):
     ) -> bool:
         """Return whether a class belongs to given modules.
 
-         Args:
+        Args:
             module_names: The names of the modules.
             cls: The class.
 
         Returns:
             Whether the class belongs to the modules.
         """
-        for name in module_names:
-            if cls.__module__.startswith(name):
-                return True
-        return False
+        return any(cls.__module__.startswith(name) for name in module_names)
 
     @property
     def class_names(self) -> list[str]:
@@ -339,7 +331,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
         try:
             return cls(*args, **kwargs)
         except TypeError:
-            LOGGER.error(
+            LOGGER.exception(
                 (
                     "Failed to create class %s "
                     "with positional arguments %s "
@@ -470,10 +462,10 @@ class BaseFactory(metaclass=BaseABCMultiton):
             msg = ""
             try:
                 class_docstring_lines = cls.__doc__.split("\n")
-                while class_docstring_lines and msg == "":
+                while class_docstring_lines and not msg:
                     msg = class_docstring_lines[0]
                     del class_docstring_lines[0]
-            except Exception:  # pylint: disable=broad-except
+            except BaseException:
                 pass
 
             class_name = cls.__name__

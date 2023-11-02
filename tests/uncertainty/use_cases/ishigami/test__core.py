@@ -15,10 +15,11 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_gradient
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_output
 from numpy import array
 from numpy.testing import assert_almost_equal
+
+from gemseo.uncertainty.use_cases.ishigami.functions import compute_gradient
+from gemseo.uncertainty.use_cases.ishigami.functions import compute_output
 
 
 def test_compute_output():

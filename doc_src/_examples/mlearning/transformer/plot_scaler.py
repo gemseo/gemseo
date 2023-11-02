@@ -27,16 +27,17 @@ In this example, we will create a scaler to transform data.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo import configure_logger
-from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.mlearning.transformers.scaler.scaler import Scaler
-from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
 from numpy import linspace
 from numpy import max as npmax
 from numpy import mean
 from numpy import min as npmin
 from numpy import sin
 from numpy import std
+
+from gemseo import configure_logger
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
 
 configure_logger()
 

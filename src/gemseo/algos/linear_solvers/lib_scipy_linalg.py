@@ -22,17 +22,18 @@ from __future__ import annotations
 import logging
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Mapping
 
 from numpy import find_common_type
 from numpy import ndarray
 from scipy.sparse import issparse
 from scipy.sparse import spmatrix
+from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import bicg
 from scipy.sparse.linalg import bicgstab
 from scipy.sparse.linalg import gmres
 from scipy.sparse.linalg import lgmres
-from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import qmr
 from scipy.sparse.linalg import splu
 
@@ -53,7 +54,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
     """The mapping between the solver names and the solvers methods in scipy.sparse."""
 
     BASE_INFO_MSG = "scipy linear solver algorithm stop info: "
-    OPTIONS_MAP = {
+    OPTIONS_MAP: ClassVar[dict[str, str]] = {
         "max_iter": "maxiter",
         "preconditioner": "M",
         "store_outer_av": "store_outer_Av",
@@ -69,7 +70,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
 
     __WEBSITE = "https://docs.scipy.org/doc/scipy/reference/generated/{}.html"
     __WEBPAGE = "scipy.sparse.linalg.{}"
-    __WEBPAGES = {
+    __WEBPAGES: ClassVar[dict[str, str]] = {
         "BICG": __WEBPAGE.format("bicg"),
         "GMRES": __WEBPAGE.format("gmres"),
         "LGMRES": __WEBPAGE.format("lgmres"),
@@ -142,7 +143,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
 
         Args:
             max_iter: The maximum number of iterations.
-            preconditioner: The preconditionner, approximation of RHS^-1.
+            preconditioner: The preconditioner, approximation of RHS^-1.
                 If ``None``, no preconditioner is used.
             tol: The relative tolerance for convergence,
                 norm(RHS.dot(sol)) <= max(tol*norm(LHS), atol).
@@ -151,10 +152,10 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
             x0: The initial guess for the solution.
                 M{sparse matrix, dense matrix, LinearOperator}.
                 If ``None``, solvers usually start from the null vector.
-            inner_m int: The number of inner GMRES iterations per outer iteration.
+            inner_m: The number of inner GMRES iterations per outer iteration.
             outer_k: The number of vectors to carry between inner GMRES iterations.
             outer_v:  The data used to augment the Krylov subspace.
-            store_outer_A: Whether LGMRES should store also A*v in
+            store_outer_av: Whether LGMRES should store also A*v in
                 addition to the vectors v in outer_v.
             prepend_outer_v: Whether to put outer_v
                 augmentation vectors before the Krylov iterates.
@@ -286,7 +287,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         # check the dimensions
         if info < 0:
             raise RuntimeError(
-                self.BASE_INFO_MSG + "illegal input or breakdown" ", options = %s",
+                self.BASE_INFO_MSG + "illegal input or breakdown, options = %s",
                 options,
             )
 

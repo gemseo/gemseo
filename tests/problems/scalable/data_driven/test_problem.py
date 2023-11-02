@@ -24,6 +24,7 @@ from os.path import dirname
 from os.path import join
 
 import pytest
+
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
@@ -53,10 +54,9 @@ def scalable_problem():
         HDF5Cache(hdf_file_path=HDF_CACHE_PATH, hdf_node_path=disc).to_dataset()
         for disc in disc_names
     ]
-    scalpbm = ScalableProblem(
+    return ScalableProblem(
         datasets, design_variables, objective_function, eq_constraints, ineq_constraints
     )
-    return scalpbm
 
 
 def test_print(scalable_problem):
@@ -100,7 +100,7 @@ def test_statistics(scalable_problem):
     """"""
     scalable_problem.create_scenario()
     scalable_problem.exec_time()
-    scalable_problem.n_calls
-    scalable_problem.n_calls_linearize
+    scalable_problem.n_calls  # noqa: B018
+    scalable_problem.n_calls_linearize  # noqa: B018
     scalable_problem.scenario.execute({"algo": "SLSQP", "max_iter": 100})
-    scalable_problem.status
+    scalable_problem.status  # noqa: B018

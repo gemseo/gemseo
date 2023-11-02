@@ -20,17 +20,20 @@
 """Caching module to store only one entry."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Generator
 from typing import Mapping
 
-from numpy import ndarray
-
 from gemseo.core.cache import AbstractCache
 from gemseo.core.cache import CacheEntry
-from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.core.discipline_data import Data
 
 
 class SimpleCache(AbstractCache):

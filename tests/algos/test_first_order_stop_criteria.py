@@ -15,13 +15,14 @@
 from __future__ import annotations
 
 import pytest as pytest
+from numpy import array
+from numpy import ones
+from numpy import zeros
+
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from numpy import array
-from numpy import ones
-from numpy import zeros
 
 
 @pytest.mark.parametrize("is_optimum", [False, True])

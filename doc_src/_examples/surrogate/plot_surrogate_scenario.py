@@ -49,15 +49,16 @@ Then, the surrogate discipline can be used as any other discipline in a
 """
 from __future__ import annotations
 
+from numpy import array
+from numpy import hstack
+from numpy import vstack
+
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import create_surrogate
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from numpy import array
-from numpy import hstack
-from numpy import vstack
 
 configure_logger()
 

@@ -39,17 +39,21 @@ where
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import NoReturn
 
-from numpy import ndarray
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 
 from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MeasureType
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.mlearning.quality_measures.quality_measure import MeasureType
+    from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 class R2Measure(MLErrorMeasure):

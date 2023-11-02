@@ -22,6 +22,7 @@ import re
 from pathlib import Path
 
 import pytest
+
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.radar_chart import RadarChart
 from gemseo.utils.testing.helpers import image_comparison
@@ -48,7 +49,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    ("kwargs", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

@@ -24,6 +24,8 @@ from random import shuffle
 from unittest import mock
 
 import pytest
+from numpy import array
+
 from gemseo import create_discipline
 from gemseo.core import coupling_structure
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -32,20 +34,19 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sellar.sellar import C_1
 from gemseo.problems.sellar.sellar import C_2
 from gemseo.problems.sellar.sellar import OBJ
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import Y_1
-from gemseo.problems.sellar.sellar import Y_2
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import array
 
-from .test_dependency_graph import create_disciplines_from_desc
 from .test_dependency_graph import DISC_DESCRIPTIONS
+from .test_dependency_graph import create_disciplines_from_desc
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -187,7 +188,7 @@ def test_strong_couplings_self_coupled():
 
 
 @pytest.mark.parametrize(
-    "show_data_names,descriptions,baseline_images",
+    ("show_data_names", "descriptions", "baseline_images"),
     [
         (
             False,

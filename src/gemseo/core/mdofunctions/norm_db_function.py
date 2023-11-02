@@ -119,7 +119,7 @@ class NormDBFunction(MDOFunction):
 
         if value is None:
             if not database.get(hashed_xu) and self.__is_max_iter_reached():
-                raise MaxIterReachedException()
+                raise MaxIterReachedException
 
             # if not evaluated yet, evaluate
             if normalize:
@@ -165,7 +165,7 @@ class NormDBFunction(MDOFunction):
         )
         if jac_u is None:
             if not database.get(xu_vect) and self.__is_max_iter_reached():
-                raise MaxIterReachedException()
+                raise MaxIterReachedException
 
             # if not evaluated yet, evaluate
             if self.__normalize:
@@ -176,8 +176,7 @@ class NormDBFunction(MDOFunction):
                 jac_n = None
             if np_any(np_isnan(jac_u)) and self.__optimization_problem.stop_if_nan:
                 raise FunctionIsNan(
-                    "Function {}'s Jacobian is NaN "
-                    "for x={}".format(self.name, xu_vect)
+                    f"Function {self.name}'s Jacobian is NaN for x={xu_vect}"
                 )
             func_name_to_value = {Database.get_gradient_name(self.name): jac_u}
             # store (x, j(x)) in database
@@ -187,8 +186,7 @@ class NormDBFunction(MDOFunction):
 
         if self.__normalize:
             return jac_n.real
-        else:
-            return jac_u.real
+        return jac_u.real
 
     @property
     def expects_normalized_inputs(self) -> bool:  # noqa:D102

@@ -51,6 +51,7 @@ linear_model.html>`_.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
@@ -65,13 +66,15 @@ from sklearn.linear_model import LinearRegression as LinReg
 from sklearn.linear_model import Ridge
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import DataType
-from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+
+if TYPE_CHECKING:
+    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class LinearRegressor(MLRegressionAlgo):
@@ -117,29 +120,28 @@ class LinearRegressor(MLRegressionAlgo):
 
         if penalty_level == 0.0:
             self.algo = LinReg(copy_X=False, fit_intercept=fit_intercept, **parameters)
+        elif l2_penalty_ratio == 1.0:
+            self.algo = Ridge(
+                copy_X=False,
+                fit_intercept=fit_intercept,
+                alpha=penalty_level,
+                **parameters,
+            )
+        elif l2_penalty_ratio == 0.0:
+            self.algo = Lasso(
+                copy_X=False,
+                fit_intercept=fit_intercept,
+                alpha=penalty_level,
+                **parameters,
+            )
         else:
-            if l2_penalty_ratio == 1.0:
-                self.algo = Ridge(
-                    copy_X=False,
-                    fit_intercept=fit_intercept,
-                    alpha=penalty_level,
-                    **parameters,
-                )
-            elif l2_penalty_ratio == 0.0:
-                self.algo = Lasso(
-                    copy_X=False,
-                    fit_intercept=fit_intercept,
-                    alpha=penalty_level,
-                    **parameters,
-                )
-            else:
-                self.algo = ElasticNet(
-                    copy_X=False,
-                    fit_intercept=fit_intercept,
-                    alpha=penalty_level,
-                    l1_ratio=1 - l2_penalty_ratio,
-                    **parameters,
-                )
+            self.algo = ElasticNet(
+                copy_X=False,
+                fit_intercept=fit_intercept,
+                alpha=penalty_level,
+                l1_ratio=1 - l2_penalty_ratio,
+                **parameters,
+            )
 
     def _fit(
         self,
@@ -195,10 +197,8 @@ class LinearRegressor(MLRegressionAlgo):
             return coefficients
 
         if any(
-            [
-                isinstance(transformer, DimensionReduction)
-                for _, transformer in self.transformer.items()
-            ]
+            isinstance(transformer, DimensionReduction)
+            for transformer in self.transformer.values()
         ):
             raise ValueError(
                 "Coefficients are only representable in dictionary "
@@ -260,5 +260,4 @@ class LinearRegressor(MLRegressionAlgo):
         ]
         data = [{key: list(val) for key, val in element.items()} for element in data]
         data = split_array_to_dict_of_arrays(array(data), varsizes, self.output_names)
-        data = {key: list(val) for key, val in data.items()}
-        return data
+        return {key: list(val) for key, val in data.items()}

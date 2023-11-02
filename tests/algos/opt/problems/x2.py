@@ -23,12 +23,13 @@ from __future__ import annotations
 import logging
 from typing import Final
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from numpy import array
 from numpy import ndarray
 from numpy import zeros
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ LOGGER = logging.getLogger(__name__)
 class X2(OptimizationProblem):
     """A very basic quadratic analytical :class:`.OptimizationProblem`:
 
-    It is currently used to test the premature termination of some optimization algorithms,
+    It is used to test the premature termination of some optimization algorithms,
     when the criterion ``n_stop_crit_x`` is not properly set (see bug #307).
 
     - Objective to minimize: :math:`x_^2`

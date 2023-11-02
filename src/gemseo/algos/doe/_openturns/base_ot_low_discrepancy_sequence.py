@@ -15,14 +15,17 @@
 """The low-discrepancy sequence algorithm."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
 from numpy import array
 from numpy import ndarray
-from openturns import LowDiscrepancySequenceImplementation
 
 from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
+
+if TYPE_CHECKING:
+    from openturns import LowDiscrepancySequenceImplementation
 
 
 class BaseOTLowDiscrepancySequence(BaseOTDOE):

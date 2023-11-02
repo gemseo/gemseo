@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Mapping
 from typing import Union
@@ -37,9 +38,11 @@ from scipy.optimize import NonlinearConstraint
 
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
-from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
+    from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType
 
 InputType = NDArray[Union[float64, int32]]
 
@@ -120,7 +123,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         eq_tolerance: float = 1e-6,
         ineq_tolerance: float = 1e-6,
         normalize_design_space: bool = True,
-        local_options: Mapping[str, Any] = None,
+        local_options: Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:  # pylint: disable=W0221
         r"""Set the options default values.

@@ -15,9 +15,10 @@
 """Tests for the class OTWeibullDistribution."""
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.openturns.weibull import OTWeibullDistribution
 from openturns import WeibullMax
 from openturns import WeibullMin
+
+from gemseo.uncertainty.distributions.openturns.weibull import OTWeibullDistribution
 
 
 def test_default_distribution():

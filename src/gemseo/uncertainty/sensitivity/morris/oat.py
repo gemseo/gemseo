@@ -48,6 +48,7 @@ From these elementary effects, we can compare their absolute values
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from numpy import atleast_1d
@@ -55,10 +56,12 @@ from numpy import inf
 from numpy import maximum
 from numpy import minimum
 
-from gemseo.algos.database import DatabaseValueType
-from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.doe_scenario import DOEScenario
+
+if TYPE_CHECKING:
+    from gemseo.algos.database import DatabaseValueType
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.doe_scenario import DOEScenario
 
 
 class _OATSensitivity(MDODiscipline):

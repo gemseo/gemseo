@@ -21,11 +21,11 @@ from __future__ import annotations
 from unittest import mock
 
 import pytest
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.lib_scalable import DiagonalDOE
 from numpy import array
 from numpy.testing import assert_equal
-from pytest import approx
+
+from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_scalable import DiagonalDOE
 
 from .utils import check_problem_execution
 from .utils import execute_problem
@@ -61,7 +61,7 @@ def test_diagonal_doe():
     )
     samples = doe_library.unit_samples
     assert samples.shape == (n_samples, dim)
-    assert samples[4, 0] == approx(0.4, rel=0.0, abs=0.1)
+    assert samples[4, 0] == pytest.approx(0.4, rel=0.0, abs=0.1)
 
 
 @pytest.mark.parametrize("dimension", [1, 5])
@@ -97,7 +97,7 @@ def test_compute_doe(variables_space):
 
 
 @pytest.mark.parametrize(
-    ["reverse", "samples"],
+    ("reverse", "samples"),
     [
         (["x"], array([[1.0, 0.0], array([0.5, 0.5]), array([0.0, 1.0])])),
         (["1"], array([[0.0, 1.0], array([0.5, 0.5]), array([1.0, 0.0])])),

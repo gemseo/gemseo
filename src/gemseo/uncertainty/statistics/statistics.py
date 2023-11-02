@@ -94,6 +94,8 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 from typing import Iterable
 from typing import Mapping
@@ -101,13 +103,15 @@ from typing import Mapping
 from numpy import array
 from numpy import ndarray
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 LOGGER = logging.getLogger(__name__)
 
@@ -134,7 +138,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     name: str
     """The name of the object."""
 
-    SYMBOLS = {}
+    SYMBOLS: ClassVar[dict[str, str]] = {}
 
     __QUARTILE_LEVELS: Final[list[float]] = [0.25, 0.5, 0.75]
     __QUARTILE_ORDERS: Final[list[int]] = [1, 2, 3]
@@ -151,7 +155,8 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             variable_names: The names of the variables for which to compute statistics.
                 If empty, consider all the variables of the dataset.
             name: A name for the toolbox computing statistics.
-                If empty, concatenate the names of the dataset and the name of the class.
+                If empty,
+                concatenate the names of the dataset and the name of the class.
         """  # noqa: D205,D212,D415
         class_name = self.__class__.__name__
         self.name = name or f"{class_name}({dataset.name})"
@@ -182,7 +187,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:B950
+        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
     ) -> dict[str, list[ToleranceInterval.Bounds]]:  # noqa: D102
         r"""Compute a :math:`(p,1-\alpha)` tolerance interval :math:`\text{TI}[X]`.
 
@@ -509,16 +514,9 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         else:
             separator = ""
 
-        if show_name:
-            values = []
-            for name in sorted(options):
-                values.append(f"{name}={options[name]}")
-        else:
-            values = []
-            for name in sorted(options):
-                values.append(str(options[name]))
+        values = options if show_name else options.values()
+        value = pretty_str(values)
 
-        value = ", ".join(values)
         if value and not separator:
             separator = "; "
 

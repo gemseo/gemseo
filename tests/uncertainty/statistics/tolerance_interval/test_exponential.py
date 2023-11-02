@@ -23,6 +23,7 @@ from __future__ import annotations
 from math import log
 
 import pytest
+
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )

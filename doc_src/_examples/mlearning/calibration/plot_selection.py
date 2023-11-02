@@ -23,13 +23,16 @@ search over different algorithms and hyperparameter values.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-import numpy as np
+from numpy import linspace
+from numpy import sort
+from numpy.random import default_rng
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 
-np.random.seed(54321)
+rng = default_rng(54321)
 
 # %%
 # Build dataset
@@ -42,8 +45,8 @@ np.random.seed(54321)
 # corrupted by a Gaussian noise :math:`\varepsilon_i`
 # with zero mean and standard deviation :math:`\sigma=0.05`.
 n = 20
-x = np.sort(np.random.random(n))
-y = x**2 + np.random.normal(0, 0.05, n)
+x = sort(rng.random(n))
+y = x**2 + rng.normal(0, 0.05, n)
 
 dataset = IODataset()
 dataset.add_variable("x", x[:, None], dataset.INPUT_GROUP)
@@ -90,7 +93,7 @@ best_algo
 # Plot results
 # ------------
 # Plot the best models from each candidate algorithm
-finex = np.linspace(0, 1, 1000)
+finex = linspace(0, 1, 1000)
 for candidate in selector.candidates:
     algo = candidate[0]
     print(algo)

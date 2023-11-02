@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 from collections import namedtuple
+from typing import TYPE_CHECKING
 from typing import Final
 from typing import Optional
 from typing import Sequence
@@ -29,7 +30,6 @@ from typing import Union
 import openturns
 from numpy import ndarray
 
-from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
 from gemseo.algos.doe._openturns.ot_axial_doe import OTAxialDOE
 from gemseo.algos.doe._openturns.ot_centered_lhs import OTCenteredLHS
 from gemseo.algos.doe._openturns.ot_composite_doe import OTCompositeDOE
@@ -48,6 +48,9 @@ from gemseo.algos.doe._openturns.ot_sobol_sequence import OTSobolSequence
 from gemseo.algos.doe._openturns.ot_standard_lhs import OTStandardLHS
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+
+if TYPE_CHECKING:
+    from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
 
 OptionType = Optional[Union[str, int, float, bool, Sequence[int], ndarray]]
 
@@ -133,8 +136,8 @@ class OpenTURNS(DOELibrary):
         n_samples: int | None = None,
         n_processes: int = 1,
         wait_time_between_samples: float = 0.0,
-        criterion: OTOptimalLHS.SpaceFillingCriterion = OTOptimalLHS.SpaceFillingCriterion.C2,  # noqa: B950
-        temperature: OTOptimalLHS.TemperatureProfile = OTOptimalLHS.TemperatureProfile.GEOMETRIC,  # noqa: B950
+        criterion: OTOptimalLHS.SpaceFillingCriterion = OTOptimalLHS.SpaceFillingCriterion.C2,  # noqa: E501
+        temperature: OTOptimalLHS.TemperatureProfile = OTOptimalLHS.TemperatureProfile.GEOMETRIC,  # noqa: E501
         annealing: bool = True,
         n_replicates: int = 1000,
         seed: int | None = None,

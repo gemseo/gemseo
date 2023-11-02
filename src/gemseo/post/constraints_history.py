@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 from math import ceil
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 from matplotlib import pyplot
@@ -36,10 +37,12 @@ from numpy import interp
 from numpy import max as np_max
 from numpy import sign
 
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 
 class ConstraintsHistory(OptPostProcessor):
@@ -139,8 +142,8 @@ class ConstraintsHistory(OptPostProcessor):
             # prepare the graph
             axe.grid(True)
             axe.set_title(f"{constraint_name} ({constraint_type})")
-            axe.set_xticks([i for i in range(n_iterations)])
-            axe.set_xticklabels([i for i in range(1, n_iterations + 1)])
+            axe.set_xticks(range(n_iterations))
+            axe.set_xticklabels(range(1, n_iterations + 1))
             axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
             axe.axhline(tolerance, color="k", linestyle="--")
             axe.axhline(0.0, color="k")

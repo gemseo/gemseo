@@ -23,13 +23,14 @@ import re
 from typing import Any
 
 import pytest
+from numpy import array_equal
+from numpy import loadtxt
+from numpy.linalg import norm
+
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from numpy import array_equal
-from numpy import loadtxt
-from numpy.linalg import norm
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -93,7 +94,7 @@ def test_lhs_maximin():
 
 
 @pytest.mark.parametrize(
-    "algo_name, options, error",
+    ("algo_name", "options", "error"),
     [
         (
             "ccdesign",
@@ -161,7 +162,7 @@ def test_export_error():
 
 
 @pytest.mark.parametrize(
-    "algo_name,dim,n_samples,options",
+    ("algo_name", "dim", "n_samples", "options"),
     [
         ("ccdesign", 5, 62, {"center_cc": [10, 10]}),
         ("bbdesign", 5, 46, {"center": 1}),
@@ -207,17 +208,15 @@ def get_expected_nsamples(
     """
     if algo == "ff2n":
         return 2**dim
-    if algo == "bbdesign":
-        if dim == 5:
-            return 46
+    if algo == "bbdesign" and dim == 5:
+        return 46
     if algo == "pbdesign":
         if dim == 1:
             return 4
         if dim == 5:
             return 8
-    if algo == "ccdesign":
-        if dim == 5:
-            return 50
+    if algo == "ccdesign" and dim == 5:
+        return 50
     if algo == "fullfact":
         return None
     return n_samples
@@ -236,8 +235,7 @@ def get_options(
     Returns:
         The options of the DOE algorithm.
     """
-    options = {"n_samples": 13}
-    return options
+    return {"n_samples": 13}
 
 
 @pytest.mark.parametrize(

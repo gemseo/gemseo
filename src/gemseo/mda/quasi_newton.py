@@ -24,11 +24,11 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from numpy import array
 from scipy.optimize import root
 
-from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.root import MDARoot
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -38,7 +38,10 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import Mapping
     from typing import Sequence
+
     from numpy.typing import NDArray
+
+    from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline_data import DisciplineData
 
 LOGGER = logging.getLogger(__name__)
@@ -80,7 +83,7 @@ class MDAQuasiNewton(MDARoot):
     DF_SANE = "df-sane"
 
     # TODO: API: use enums.
-    QUASI_NEWTON_METHODS = [
+    QUASI_NEWTON_METHODS: ClassVar[list[str]] = [
         HYBRID,
         LEVENBERG_MARQUARDT,
         BROYDEN1,
@@ -144,7 +147,7 @@ class MDAQuasiNewton(MDARoot):
     def _solver_options(self) -> dict[str, float | int]:
         """Determine options for the solver, based on the resolution method."""
         options = {}
-        if self.method in [
+        if self.method in {
             self.BROYDEN1,
             self.BROYDEN2,
             self.ANDERSON,
@@ -152,16 +155,16 @@ class MDAQuasiNewton(MDARoot):
             self.DIAG_BROYDEN,
             self.EXCITING_MIXING,
             self.KRYLOV,
-        ]:
+        }:
             options["ftol"] = self.tolerance
             options["maxiter"] = self.max_mda_iter
-        elif self.method in [self.LEVENBERG_MARQUARDT]:
+        elif self.method == self.LEVENBERG_MARQUARDT:
             options["xtol"] = self.tolerance
             options["maxiter"] = self.max_mda_iter
-        elif self.method in [self.DF_SANE]:
+        elif self.method == self.DF_SANE:
             options["fatol"] = self.tolerance
             options["maxfev"] = self.max_mda_iter
-        elif self.method in [self.HYBRID]:
+        elif self.method == self.HYBRID:
             options["xtol"] = self.tolerance
             options["maxfev"] = self.max_mda_iter
         return options

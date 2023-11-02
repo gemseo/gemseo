@@ -23,8 +23,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Sequence
 from typing import TYPE_CHECKING
+from typing import Sequence
 
 from numpy import eye
 from numpy import newaxis
@@ -109,7 +109,7 @@ class ConsistencyCstr(MDOFunction):
         Returns:
             The value of the gradient of the consistency constraints.
         """
-        coupl_jac = self.__coupl_func.jac(x_vect)  # pylint: disable=E1102
+        coupl_jac = self.__coupl_func.jac(x_vect)
 
         if len(coupl_jac.shape) > 1:
             # In this case it is harder since a block diagonal

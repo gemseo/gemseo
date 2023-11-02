@@ -29,39 +29,39 @@ repos:
     - id: rst-directive-colons
     - id: rst-inline-touching-normal
 
-- repo: https://github.com/PyCQA/autoflake
-  rev: v2.2.1
-  hooks:
-    - id: autoflake
-      args: [
-        --in-place,
-        --remove-all-unused-imports,
-      ]
+#- repo: https://github.com/PyCQA/autoflake
+#  rev: v2.2.1
+#  hooks:
+#    - id: autoflake
+#      args: [
+#        --in-place,
+#        --remove-all-unused-imports,
+#      ]
 
-- repo: https://github.com/asottile/reorder_python_imports
-  rev: v3.12.0
-  hooks:
-    - id: reorder-python-imports
-      name: reorder python imports in src
-      files: ^src
-      # Prevent pyupgrade from changing the type hint that breaks syntax for python < 3.10
-      exclude: _models?\.py$
-      args: [
-        --application-directories,
-        src,
-        --py38-plus,
-        --add-import,
-        "from __future__ import annotations",
-      ]
-    - id: reorder-python-imports
-      name: reorder python imports out of src
-      # Prevent pyupgrade from changing the type hint that breaks syntax for python < 3.10
-      exclude: (^src|_models?\.py$)
-      args: [
-        --py38-plus,
-        --add-import,
-        "from __future__ import annotations",
-      ]
+#- repo: https://github.com/asottile/reorder_python_imports
+#  rev: v3.12.0
+#  hooks:
+#    - id: reorder-python-imports
+#      name: reorder python imports in src
+#      files: ^src
+#      # Prevent pyupgrade from changing the type hint that breaks syntax for python < 3.10
+#      exclude: _models?\.py$
+#      args: [
+#        --application-directories,
+#        src,
+#        --py38-plus,
+#        --add-import,
+#        "from __future__ import annotations",
+#      ]
+#    - id: reorder-python-imports
+#      name: reorder python imports out of src
+#      # Prevent pyupgrade from changing the type hint that breaks syntax for python < 3.10
+#      exclude: (^src|_models?\.py$)
+#      args: [
+#        --py38-plus,
+#        --add-import,
+#        "from __future__ import annotations",
+#      ]
 
 - repo: https://github.com/myint/docformatter
   rev: v1.7.5
@@ -69,10 +69,7 @@ repos:
     - id: docformatter
       args: [
         --in-place,
-        --wrap-summaries,
-        "88",
-        --wrap-descriptions,
-        "88",
+        --black,
       ]
 
 - repo: https://github.com/asottile/pyupgrade
@@ -81,21 +78,36 @@ repos:
     - id: pyupgrade
       args: [--py38-plus]
 
-- repo: https://github.com/psf/black
-  rev: 23.10.1
-  hooks:
-    - id: black
+#- repo: https://github.com/psf/black
+#  rev: 23.10.1
+#  hooks:
+#    - id: black
 
-- repo: https://github.com/PyCQA/flake8
-  rev: 6.1.0
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.1.3
   hooks:
-    - id: flake8
-      additional_dependencies:
-        - flake8-bugbear==23.9.16
-        - flake8-docstrings==1.7.0
-        - flake8-logging-format==0.9.0
-        - flake8-print==5.0.0
-        - pep8-naming==0.13.3
+    - id: ruff
+      args: [
+        --fix,
+        --preview,
+        --exit-non-zero-on-fix,
+      ]
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.1.3
+  hooks:
+    - id: ruff-format
+
+#- repo: https://github.com/PyCQA/flake8
+#  rev: 6.1.0
+#  hooks:
+#    - id: flake8
+#      additional_dependencies:
+#        - flake8-bugbear==23.9.16
+#        - flake8-docstrings==1.7.0
+#        - flake8-logging-format==0.9.0
+#        - flake8-print==5.0.0
+#        - pep8-naming==0.13.3
 
 - repo: https://github.com/commitizen-tools/commitizen
   rev: 3.12.0

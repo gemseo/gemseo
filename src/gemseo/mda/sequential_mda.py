@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import Mapping
     from typing import Sequence
+
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
 

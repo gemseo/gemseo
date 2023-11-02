@@ -16,13 +16,17 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
 import numpy
 import pytest
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.power_2 import Power2
 from numpy.testing import assert_equal
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.problems.analytical.power_2 import Power2
+
+if TYPE_CHECKING:
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 @pytest.fixture(scope="module")
@@ -75,12 +79,12 @@ def test_constraint_names(problem):
 
 
 @pytest.mark.parametrize(
-    ["function", "name"],
+    ("function", "name"),
     [
-        ["objective", "pow2"],
-        ["inequality_1", "ineq1"],
-        ["inequality_2", "ineq2"],
-        ["equality", "eq"],
+        ("objective", "pow2"),
+        ("inequality_1", "ineq1"),
+        ("inequality_2", "ineq2"),
+        ("equality", "eq"),
     ],
 )
 def test_function_name(request, function, name):
@@ -89,12 +93,12 @@ def test_function_name(request, function, name):
 
 
 @pytest.mark.parametrize(
-    ["function", "type_"],
+    ("function", "type_"),
     [
-        ["objective", "obj"],
-        ["inequality_1", "ineq"],
-        ["inequality_2", "ineq"],
-        ["equality", "eq"],
+        ("objective", "obj"),
+        ("inequality_1", "ineq"),
+        ("inequality_2", "ineq"),
+        ("equality", "eq"),
     ],
 )
 def test_function_type(request, function, type_):
@@ -103,12 +107,12 @@ def test_function_type(request, function, type_):
 
 
 @pytest.mark.parametrize(
-    ["function", "expr", "value"],
+    ("function", "expr", "value"),
     [
-        ["objective", "x[0]**2 + x[1]**2 + x[2]**2", 14],
-        ["inequality_1", "0.5 - x[0]**3", 1.5],
-        ["inequality_2", "0.5 - x[1]**3", 8.5],
-        ["equality", "0.9 - x[2]**3", 27.9],
+        ("objective", "x[0]**2 + x[1]**2 + x[2]**2", 14),
+        ("inequality_1", "0.5 - x[0]**3", 1.5),
+        ("inequality_2", "0.5 - x[1]**3", 8.5),
+        ("equality", "0.9 - x[2]**3", 27.9),
     ],
 )
 def test_function_expression(request, function, expr, value):
@@ -127,12 +131,12 @@ def test_function_input_names(request, function):
 
 
 @pytest.mark.parametrize(
-    ["function", "gradient"],
+    ("function", "gradient"),
     [
-        ["objective", [-2, -4, -6]],
-        ["inequality_1", [-3, 0, 0]],
-        ["inequality_2", [0, -12, 0]],
-        ["equality", [0, 0, -27]],
+        ("objective", [-2, -4, -6]),
+        ("inequality_1", [-3, 0, 0]),
+        ("inequality_2", [0, -12, 0]),
+        ("equality", [0, 0, -27]),
     ],
 )
 def test_function_gradient(request, function, gradient):
@@ -142,7 +146,7 @@ def test_function_gradient(request, function, gradient):
     )
 
 
-@pytest.mark.parametrize(["exception_error", "iter_error"], [[False, 0], [True, 1]])
+@pytest.mark.parametrize(("exception_error", "iter_error"), [(False, 0), (True, 1)])
 def test_iter_error(exception_error, iter_error):
     """Check the `iter_error` attribute."""
     power2 = Power2(exception_error)

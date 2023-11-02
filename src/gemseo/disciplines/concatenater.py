@@ -51,7 +51,7 @@ class Concatenater(MDODiscipline):
         self,
         input_variables: Sequence[str],
         output_variable: str,
-        input_coefficients: dict[str, float] = None,
+        input_coefficients: dict[str, float] | None = None,
     ) -> None:
         """
         Args:
@@ -96,7 +96,7 @@ class Concatenater(MDODiscipline):
         self._init_jacobian(inputs, outputs)
 
         names = self.get_input_data_names()
-        sizes = [input.size for input in self.get_all_inputs()]
+        sizes = [input_.size for input_ in self.get_all_inputs()]
         total_size = self.get_inputs_asarray().size
 
         # Instead of manually accumulating, we use the accumulate() iterator.

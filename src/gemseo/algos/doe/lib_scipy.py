@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import List
@@ -28,10 +29,7 @@ from typing import Union
 import scipy
 from numpy import integer
 from numpy import ndarray
-from numpy.random import Generator
-from numpy.random import RandomState
 from packaging import version
-from packaging.version import Version
 from scipy.stats.qmc import Halton
 from scipy.stats.qmc import LatinHypercube
 from scipy.stats.qmc import PoissonDisk
@@ -41,6 +39,11 @@ from strenum import StrEnum
 
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+
+if TYPE_CHECKING:
+    from numpy.random import Generator
+    from numpy.random import RandomState
+    from packaging.version import Version
 
 OptionType = Optional[Union[str, int, float, bool, List[str], Path, TextIO, ndarray]]
 
@@ -233,7 +236,7 @@ class SciPyDOE(DOELibrary):
             option_name: The name of the option.
             version_name: The version of SciPy which introduced this option.
         """
-        if self.__SCIPY_VERSION < version.parse(version_name):
+        if version.parse(version_name) > self.__SCIPY_VERSION:
             scipy_option_names.remove(option_name)
             LOGGER.warning(
                 "Removed the option %s which is only available from SciPy %s.",

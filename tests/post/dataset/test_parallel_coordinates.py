@@ -21,11 +21,12 @@
 from __future__ import annotations
 
 import pytest
+from matplotlib import pyplot as plt
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -34,10 +35,9 @@ def dataset():
     sample1 = [0.0, 0.5, 1.0]
     sample2 = [0.2, 0.5, 0.8]
     sample3 = [1.0, 0.5, 0.0]
-    dataset = Dataset.from_array(
+    return Dataset.from_array(
         array([sample1, sample2, sample3]), variable_names=["x1", "x2", "x3"]
     )
-    return dataset
 
 
 # the test parameters, it maps a test name to the inputs and references outputs:
@@ -65,7 +65,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

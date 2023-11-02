@@ -19,9 +19,9 @@
 """Test for the :class:`.Concatenater`"""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo import create_discipline
-from gemseo.disciplines.concatenater import Concatenater
 from numpy import array
 from numpy import concatenate
 from numpy import diag
@@ -29,6 +29,11 @@ from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 from numpy.testing import assert_array_equal
+
+from gemseo import create_discipline
+
+if TYPE_CHECKING:
+    from gemseo.disciplines.concatenater import Concatenater
 
 
 @pytest.fixture(params=[None, {"c_1": 1.0, "c_2": -1.0}])

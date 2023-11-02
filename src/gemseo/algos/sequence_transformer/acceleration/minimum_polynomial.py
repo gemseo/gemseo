@@ -29,6 +29,7 @@ from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTrans
 
 if TYPE_CHECKING:
     from typing import ClassVar
+
     from numpy.typing import NDArray
 
 

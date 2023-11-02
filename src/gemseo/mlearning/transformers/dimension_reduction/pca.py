@@ -29,6 +29,8 @@ generated/sklearn.decomposition.PCA.html>`_.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import ndarray
 from numpy import sqrt
 from numpy import tile
@@ -39,7 +41,9 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
 )
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 
 
 class PCA(DimensionReduction):

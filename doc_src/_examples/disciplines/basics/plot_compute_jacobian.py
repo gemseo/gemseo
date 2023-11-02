@@ -28,8 +28,9 @@ with respect to some inputs, based on its analytical derivatives.
 """
 from __future__ import annotations
 
-from gemseo.disciplines.analytic import AnalyticDiscipline
 from numpy import array
+
+from gemseo.disciplines.analytic import AnalyticDiscipline
 
 # %%
 # First,

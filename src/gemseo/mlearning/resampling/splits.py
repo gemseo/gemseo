@@ -16,9 +16,11 @@
 from __future__ import annotations
 
 from collections.abc import Collection
+from typing import TYPE_CHECKING
 from typing import Iterator
 
-from gemseo.mlearning.resampling.split import Split
+if TYPE_CHECKING:
+    from gemseo.mlearning.resampling.split import Split
 
 
 class Splits(Collection):

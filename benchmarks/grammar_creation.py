@@ -15,10 +15,11 @@
 """Benchmark for comparing grammar creation."""
 from __future__ import annotations
 
+from grammar_validation import Benchmark as ValidationBenchmark
+
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from grammar_validation import Benchmark as ValidationBenchmark
 
 
 class Benchmark(ValidationBenchmark):

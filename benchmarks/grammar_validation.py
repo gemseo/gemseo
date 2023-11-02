@@ -15,15 +15,20 @@
 """Benchmark for comparing grammar validation."""
 from __future__ import annotations
 
-from argparse import ArgumentParser
+from typing import TYPE_CHECKING
 from typing import Final
 
 from base_benchmark import BaseBenchmark
 from data_factory import DataFactory
-from gemseo.core.grammars.base_grammar import BaseGrammar
+
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
+
+if TYPE_CHECKING:
+    from argparse import ArgumentParser
+
+    from gemseo.core.grammars.base_grammar import BaseGrammar
 
 
 class Benchmark(BaseBenchmark):

@@ -20,8 +20,8 @@
 from __future__ import annotations
 
 from multiprocessing import cpu_count
-from typing import Final
 from typing import TYPE_CHECKING
+from typing import Final
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
@@ -31,13 +31,14 @@ from gemseo.mda.mda import MDA
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
-    from gemseo.core.coupling_structure import MDOCouplingStructure
-    from gemseo.core.execution_sequence import LoopExecSequence
     from typing import Any
     from typing import Mapping
     from typing import Sequence
 
     from numpy.typing import NDArray
+
+    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.execution_sequence import LoopExecSequence
 
 
 N_CPUS: Final[int] = cpu_count()
@@ -178,11 +179,11 @@ class MDAJacobi(MDA):
         if len(self.coupling_structure.strongly_coupled_disciplines) == len(
             self.disciplines
         ):
-            return super()._compute_input_couplings()
-
-        inputs = self.get_input_data_names()
-        strong_couplings = self.coupling_structure.all_couplings
-        self._input_couplings = sorted(set(strong_couplings) & set(inputs))
+            super()._compute_input_couplings()
+        else:
+            inputs = self.get_input_data_names()
+            strong_couplings = self.coupling_structure.all_couplings
+            self._input_couplings = sorted(set(strong_couplings) & set(inputs))
 
     def execute_all_disciplines(self, input_local_data: Mapping[str, NDArray]) -> None:
         """Execute all the disciplines, possibly in parallel.

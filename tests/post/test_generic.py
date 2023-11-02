@@ -18,11 +18,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from gemseo import execute_post
 
 
 @pytest.mark.parametrize(
-    "class_name,kwargs,indices",
+    ("class_name", "kwargs", "indices"),
     [
         ("OptHistoryView", {}, []),
         ("ObjConstrHist", {}, []),

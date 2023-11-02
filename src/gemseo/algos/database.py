@@ -27,8 +27,7 @@ import sys
 from ast import literal_eval
 from itertools import chain
 from itertools import islice
-from numbers import Number
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 from typing import Iterable
@@ -45,13 +44,18 @@ from numpy import atleast_2d
 from numpy import hstack
 from numpy import ndarray
 from numpy.linalg import norm
-from numpy.typing import NDArray
 
 from gemseo.algos._hdf_database import HDFDatabase
 from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from numbers import Number
+    from pathlib import Path
+
+    from numpy.typing import NDArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -137,7 +141,7 @@ class Database(Mapping):
     """The functions to be called when a new iteration is stored to the database."""
 
     __hdf_database: HDFDatabase
-    """"The handler to export the database to a HDF file."""
+    """The handler to export the database to a HDF file."""
 
     def __init__(self, name: str = "") -> None:
         """
@@ -232,7 +236,7 @@ class Database(Mapping):
             if not outputs:
                 del self.__data[x]
 
-    def filter(self, output_names: Iterable[str]) -> None:
+    def filter(self, output_names: Iterable[str]) -> None:  # noqa: A003
         """Keep only some outputs and remove the other ones.
 
         Args:
@@ -272,7 +276,7 @@ class Database(Mapping):
         Returns:
             The history of the input vector.
         """
-        return [x.wrapped_array for x in self.__data.keys()]
+        return [x.wrapped_array for x in self.__data]
 
     def check_output_history_is_empty(self, output_name: str) -> bool:
         """Check if the history of an output is empty.
@@ -283,10 +287,7 @@ class Database(Mapping):
         Returns:
             Whether the history of the output is empty.
         """
-        for outputs in self.values():
-            if output_name in outputs:
-                return False
-        return True
+        return all(output_name not in outputs for outputs in self.values())
 
     def get_function_history(
         self,
@@ -422,6 +423,8 @@ class Database(Mapping):
             if norm(_db_in_value - x) <= tolerance * norm(_db_in_value):
                 return db_output_names_to_values
 
+        return None
+
     def get_function_value(
         self,
         function_name: str,
@@ -449,6 +452,7 @@ class Database(Mapping):
         outputs = self.__get_output(x_vect_or_iteration, tolerance)
         if outputs:
             return outputs.get(function_name)
+        return None
 
     def store(
         self,
@@ -479,9 +483,8 @@ class Database(Mapping):
 
         # Notify the new iteration after storing x
         # because callbacks may need an updated x
-        if self.__new_iter_listeners:
-            if outputs and current_outputs_is_empty:
-                self.notify_new_iter_listeners(x_vect)
+        if self.__new_iter_listeners and outputs and current_outputs_is_empty:
+            self.notify_new_iter_listeners(x_vect)
 
     def add_store_listener(self, function: Callable) -> None:
         """Add a function to be called when an item is stored to the database.
@@ -567,7 +570,7 @@ class Database(Mapping):
         """
         output_names = set()
         for output_names_to_values in self.__data.values():
-            for outputs in output_names_to_values.keys():
+            for outputs in output_names_to_values:
                 if skip_grad and outputs.startswith(self.GRAD_TAG):
                     continue
                 output_names.add(outputs)

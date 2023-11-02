@@ -15,12 +15,16 @@
 """A progress bar suffixed by metadata."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import ndarray
 
 from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
 from gemseo.algos._progress_bars.custom_tqdm_progress_bar import CustomTqdmProgressBar
 from gemseo.algos._progress_bars.tqdm_to_logger import TqdmToLogger
-from gemseo.algos.opt_problem import OptimizationProblem
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 
 class ProgressBar(BaseProgressBar):

@@ -79,7 +79,7 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
         # Initialize all Synchronized attributes first.
         self._init_shared_memory_attrs()
         for attribute_name, attribute_value in state.items():
-            if attribute_name not in self.__dict__.keys():
+            if attribute_name not in self.__dict__:
                 self.__dict__[attribute_name] = attribute_value
                 # This is needed to handle the case where serialization and
                 # deserialization are not made on the same platform.

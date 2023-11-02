@@ -15,10 +15,13 @@
 """A function evaluating another one with an offset."""
 from __future__ import annotations
 
-from numbers import Number
+from typing import TYPE_CHECKING
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from numbers import Number
 
 
 class Offset(MDOFunction):

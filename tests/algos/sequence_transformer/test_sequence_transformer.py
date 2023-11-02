@@ -14,17 +14,24 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTransformer
-from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
-    SequenceTransformerFactory,
-)
 from numpy import arange
 from numpy import ndarray
 from numpy import ones
 from numpy import sin
 from numpy.linalg import norm
+
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
+    SequenceTransformerFactory,
+)
+
+if TYPE_CHECKING:
+    from gemseo.algos.sequence_transformer.sequence_transformer import (
+        SequenceTransformer,
+    )
 
 A_TOL: float = 1e-6
 DIMENSION: int = 100

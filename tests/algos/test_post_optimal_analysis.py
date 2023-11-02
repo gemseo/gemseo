@@ -20,15 +20,16 @@ from __future__ import annotations
 
 import unittest
 
+from numpy import allclose
+from numpy import array
+from numpy import dot
+from numpy.linalg import norm
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from numpy import allclose
-from numpy import array
-from numpy import dot
-from numpy.linalg import norm
 
 
 class TestPostOptimalAnalysis(unittest.TestCase):
@@ -172,7 +173,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         jac_at_sol = self.get_solution()[2]
         jac_at_sol["f"]["p"] = 1.0
         self.assertRaises(
-            ValueError, post_optimal_analyser.execute, ["f"], ["p"], jac_at_sol
+            TypeError, post_optimal_analyser.execute, ["f"], ["p"], jac_at_sol
         )
 
         # Pass Jacobians with an ill-shaped block:

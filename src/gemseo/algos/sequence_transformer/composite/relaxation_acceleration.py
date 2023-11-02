@@ -20,15 +20,21 @@
 """The over-relaxation method."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.algos.sequence_transformer.composite.composite import (
     CompositeSequenceTransformer,
 )
 from gemseo.algos.sequence_transformer.relaxation.over_relaxation import OverRelaxation
-from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTransformer
 from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
     SequenceTransformerFactory,
 )
+
+if TYPE_CHECKING:
+    from gemseo.algos.sequence_transformer.sequence_transformer import (
+        SequenceTransformer,
+    )
 
 
 class RelaxationAcceleration(CompositeSequenceTransformer):

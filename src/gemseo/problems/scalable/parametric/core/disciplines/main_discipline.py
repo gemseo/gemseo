@@ -20,21 +20,25 @@
 """The main discipline."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import array
 from numpy import eye
 from numpy import newaxis
 from numpy import zeros
-from numpy.typing import NDArray
 
 from gemseo.problems.scalable.parametric.core.disciplines.base_discipline import (
     BaseDiscipline,
 )
-from gemseo.problems.scalable.parametric.core.variable_names import get_constraint_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
 from gemseo.problems.scalable.parametric.core.variable_names import OBJECTIVE_NAME
 from gemseo.problems.scalable.parametric.core.variable_names import (
     SHARED_DESIGN_VARIABLE_NAME,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import get_constraint_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class MainDiscipline(BaseDiscipline):
@@ -141,10 +145,7 @@ class MainDiscipline(BaseDiscipline):
 
         output_names_to_values = {
             OBJECTIVE_NAME: array(
-                [
-                    sum([(__y_i**2).sum() for __y_i in _y_i.values()])
-                    + (x_0**2).sum()
-                ]
+                [sum([(__y_i**2).sum() for __y_i in _y_i.values()]) + (x_0**2).sum()]
             )
         }
         for c_i_name, __y_i, t_i in zip(self.__c_i_names, _y_i.values(), self.__t_i):

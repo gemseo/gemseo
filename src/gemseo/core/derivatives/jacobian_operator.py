@@ -218,14 +218,12 @@ class _SumJacobianOperator(JacobianOperator):
     def _matvec(self, x: ndarray) -> ndarray:
         if self.__array_like:
             return self.__operand_1.matvec(x) + self.__operand_2 @ x
-        else:
-            return self.__operand_1.matvec(x) + self.__operand_2.matvec(x)
+        return self.__operand_1.matvec(x) + self.__operand_2.matvec(x)
 
     def _rmatvec(self, x: ndarray) -> ndarray:
         if self.__array_like:
             return self.__operand_1.rmatvec(x) + self.__operand_2.T @ x
-        else:
-            return self.__operand_1.rmatvec(x) + self.__operand_2.rmatvec(x)
+        return self.__operand_1.rmatvec(x) + self.__operand_2.rmatvec(x)
 
 
 class _SubJacobianOperator(JacobianOperator):
@@ -249,14 +247,12 @@ class _SubJacobianOperator(JacobianOperator):
     def _matvec(self, x: ndarray) -> ndarray:
         if self.__array_like:
             return self.__operand_1.matvec(x) - self.__operand_2 @ x
-        else:
-            return self.__operand_1.matvec(x) - self.__operand_2.matvec(x)
+        return self.__operand_1.matvec(x) - self.__operand_2.matvec(x)
 
     def _rmatvec(self, x: ndarray) -> ndarray:
         if self.__array_like:
             return self.__operand_1.rmatvec(x) - self.__operand_2.T @ x
-        else:
-            return self.__operand_1.rmatvec(x) - self.__operand_2.rmatvec(x)
+        return self.__operand_1.rmatvec(x) - self.__operand_2.rmatvec(x)
 
 
 class _ComposedJacobianOperator(JacobianOperator):
@@ -279,15 +275,11 @@ class _ComposedJacobianOperator(JacobianOperator):
         self.__array_like_2 = isinstance(operand_2, (ndarray, spmatrix))
 
     def _matvec(self, x: ndarray) -> ndarray:
-        if self.__array_like_2:
-            x = self.__operand_2 @ x
-        else:
-            x = self.__operand_2.matvec(x)
+        x = self.__operand_2 @ x if self.__array_like_2 else self.__operand_2.matvec(x)
 
         if self.__array_like_1:
             return self.__operand_1 @ x
-        else:
-            return self.__operand_1.matvec(x)
+        return self.__operand_1.matvec(x)
 
     def _rmatvec(self, x: ndarray) -> ndarray:
         if self.__array_like_1:
@@ -297,5 +289,4 @@ class _ComposedJacobianOperator(JacobianOperator):
 
         if self.__array_like_2:
             return self.__operand_2.T @ x
-        else:
-            return self.__operand_2.rmatvec(x)
+        return self.__operand_2.rmatvec(x)

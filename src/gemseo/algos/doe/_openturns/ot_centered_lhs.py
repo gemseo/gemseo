@@ -15,11 +15,13 @@
 """The centered LHS algorithm."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
-from numpy import ndarray
-
 from gemseo.algos.doe._openturns.ot_standard_lhs import OTStandardLHS
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class OTCenteredLHS(OTStandardLHS):

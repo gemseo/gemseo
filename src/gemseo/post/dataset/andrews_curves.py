@@ -56,13 +56,18 @@ This is useful when the data is labeled.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 from pandas.plotting import andrews_curves
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class AndrewsCurves(DatasetPlot):

@@ -21,17 +21,20 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Mapping
 
 from matplotlib import pyplot
-from matplotlib.figure import Figure
 from numpy import arange
 from numpy import atleast_2d
 from numpy import ndarray
 from numpy import where
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 LOGGER = logging.getLogger(__name__)
 

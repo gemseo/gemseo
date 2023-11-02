@@ -15,9 +15,10 @@
 """Tests for the class SPWeibullDistribution."""
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.scipy.weibull import SPWeibullDistribution
 from scipy.stats import weibull_max
 from scipy.stats import weibull_min
+
+from gemseo.uncertainty.distributions.scipy.weibull import SPWeibullDistribution
 
 
 def test_default_distribution():

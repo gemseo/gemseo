@@ -26,16 +26,20 @@ relies on the Delaunay triangulation of :math:`\{x_i,y_i\}_{1\leq i \leq n}`
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Sequence
 
 import matplotlib.tri as mtri
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import VariableType
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class ZvsXY(DatasetPlot):

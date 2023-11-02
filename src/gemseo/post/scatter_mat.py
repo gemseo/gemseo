@@ -30,7 +30,6 @@ from pandas.plotting import scatter_matrix
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-
 LOGGER = logging.getLogger(__name__)
 
 

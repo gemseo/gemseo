@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from numbers import Number
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Mapping
 from typing import MutableMapping
@@ -30,9 +31,10 @@ from typing import Union
 
 from numpy import ndarray
 
-from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
 
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger(__name__)
 

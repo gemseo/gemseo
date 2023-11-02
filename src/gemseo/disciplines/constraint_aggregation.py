@@ -62,7 +62,7 @@ class ConstraintAggregation(MDODiscipline):
         """The induces exponential function."""
 
         KS = "KS"
-        """The Kreisselmeier–Steinhauser function."""
+        """The Kreisselmeier-Steinhauser function."""
 
         POS_SUM = "POS_SUM"
         """The positive sum squared function."""

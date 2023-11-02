@@ -20,14 +20,19 @@
 r"""Draw a bar plot from a :class:`.Dataset`."""
 from __future__ import annotations
 
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+from typing import TYPE_CHECKING
+
 from numpy import arange
 from numpy import linspace
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.compatibility.matplotlib import get_color_map
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class BarPlot(DatasetPlot):
@@ -83,10 +88,7 @@ class BarPlot(DatasetPlot):
         for rects in subplots:
             for rect in rects:
                 height = rect.get_height()
-                if height > 0:
-                    pos = 3
-                else:
-                    pos = -12
+                pos = 3 if height > 0 else -12
                 axes.annotate(
                     f"{round(height, self._param.n_digits)}",
                     xy=(rect.get_x() + rect.get_width() / 2, height),

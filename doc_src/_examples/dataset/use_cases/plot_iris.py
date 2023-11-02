@@ -30,7 +30,7 @@ to be found in the machine learning literature.
 
 It was introduced by the statistician Ronald Fisher
 in his 1936 paper "The use of multiple measurements in taxonomic problems",
-Annals of Eugenics. 7 (2): 179–188.
+Annals of Eugenics. 7 (2): 179-188.
 
 It contains 150 instances of iris plants:
 
@@ -51,16 +51,18 @@ or classification ones.
 """
 from __future__ import annotations
 
+from numpy.random import default_rng
+
 from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.post.dataset.radviz import Radar
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from numpy.random import choice
 
 configure_logger()
 
+rng = default_rng(1)
 
 # %%
 # Load Iris dataset
@@ -78,7 +80,7 @@ iris
 # Manipulate the dataset
 # ----------------------
 # We randomly select 10 samples to display.
-samples = choice(len(iris), size=10, replace=False)
+samples = rng.choice(len(iris), size=10, replace=False)
 
 # %%
 # We can easily access the 10 samples previously selected,

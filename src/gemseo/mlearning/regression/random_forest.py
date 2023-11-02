@@ -29,16 +29,20 @@ generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
 
-from numpy import ndarray
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class RandomForestRegressor(MLRegressionAlgo):

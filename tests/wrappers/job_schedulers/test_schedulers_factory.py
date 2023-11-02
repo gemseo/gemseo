@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.wrappers.job_schedulers.schedulers_factory import SchedulersFactory
 
 

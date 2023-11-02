@@ -33,11 +33,10 @@ try:
 except ImportError:
     GraphView = None
 
-from networkx import Graph
 from networkx import DiGraph
-from networkx import strongly_connected_components
+from networkx import Graph
 from networkx import condensation
-
+from networkx import strongly_connected_components
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,9 +84,9 @@ class DependencyGraph:
             if not leaves:
                 break
 
-            parallel_tasks = list(
+            parallel_tasks = [
                 tuple(condensed_graph.nodes[node_id]["members"]) for node_id in leaves
-            )
+            ]
             execution_sequence += [parallel_tasks]
             condensed_graph.remove_nodes_from(leaves)
 
@@ -193,7 +192,7 @@ class DependencyGraph:
 
         if len(condensed_discs) == 1:
             # not a scc node in a scc graph
-            return str(list(condensed_discs)[0])
+            return str(next(iter(condensed_discs)))
 
         # scc node
         return "MDA of {}".format(", ".join(map(str, condensed_discs)))
@@ -235,7 +234,7 @@ class DependencyGraph:
                 "Cannot write graph: "
                 "GraphView cannot be imported because graphviz is not installed."
             )
-            return
+            return None
 
         graph_view = GraphView()
 

@@ -22,24 +22,29 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from time import sleep
+from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 import pytest
+from numpy import atleast_2d
+from numpy.core._multiarray_umath import array
+from numpy.core._multiarray_umath import zeros
+from tqdm import tqdm
+
 from gemseo.algos._progress_bars.custom_tqdm_progress_bar import CustomTqdmProgressBar
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from numpy import atleast_2d
-from numpy.core._multiarray_umath import array
-from numpy.core._multiarray_umath import zeros
-from tqdm import tqdm
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_result import OptimizationResult
 
 
-@pytest.fixture
+@pytest.fixture()
 def offsets():
     return [0.0, 0.3, 0.4, 0.5, 0.1, 0.2, -0.3, -0.1, -0.2, -0.4]
 
@@ -57,7 +62,7 @@ class TestDesc(OptimizationAlgorithmDescription):
 
 
 class ProgressOpt(OptimizationLibrary):
-    OPTIONS_MAP = {}
+    OPTIONS_MAP: ClassVar[dict[Any, str]] = {}
     LIBRARY_NAME = "Test"
 
     def __init__(self, offsets, constraints_before_obj):
@@ -111,7 +116,7 @@ def test_progress_bar(
         assert max(count) == 1
 
 
-@pytest.fixture
+@pytest.fixture()
 def objective_and_problem_for_tests(constraints_before_obj):
     f = MDOFunction(
         func=dummy_sleep_function,
@@ -162,7 +167,7 @@ def dummy_sleep_function(x):
 
 
 @pytest.mark.parametrize(
-    "e,r",
+    ("e", "r"),
     [
         (1, " 1.00 it/sec"),
         (60 - 1, " 1.02 it/min"),

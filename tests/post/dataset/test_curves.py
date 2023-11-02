@@ -21,11 +21,12 @@
 from __future__ import annotations
 
 import pytest
+from matplotlib import pyplot as plt
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.curves import Curves
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -67,7 +68,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

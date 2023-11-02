@@ -130,6 +130,7 @@ class DirectoryCreator(metaclass=ABCGoogleDocstringInheritanceMeta):
                 return str(self.__counter.value)
         elif self.__directory_naming_method == DirectoryNamingMethod.UUID:
             return str(uuid4()).split("-")[-1]
+        return None
 
     def __get_initial_counter(self) -> int:
         """Return the initial value of the counter for creating directories.

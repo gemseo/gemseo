@@ -15,9 +15,12 @@
 """A dummy progress bar."""
 from __future__ import annotations
 
-from numpy import ndarray
+from typing import TYPE_CHECKING
 
 from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class DummyProgressBar(BaseProgressBar):

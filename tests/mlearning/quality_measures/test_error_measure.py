@@ -21,6 +21,10 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+from numpy import linspace
+from numpy import newaxis
+
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.quality_measures.error_measure_factory import (
     MLErrorMeasureFactory,
@@ -32,9 +36,6 @@ from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from numpy import array
-from numpy import linspace
-from numpy import newaxis
 
 
 @pytest.mark.parametrize(
@@ -62,7 +63,7 @@ def learning_dataset() -> IODataset:
     return dataset
 
 
-@pytest.fixture
+@pytest.fixture()
 def linear_regressor(learning_dataset) -> LinearRegressor:
     """A linear regressor."""
     algo = LinearRegressor(learning_dataset)
@@ -93,7 +94,8 @@ def test_dataset() -> IODataset:
     ],
 )
 @pytest.mark.parametrize(
-    "measure_cls,expected", [(MSEMeasure, 0.0), (RMSEMeasure, 0.0), (R2Measure, 1.0)]
+    ("measure_cls", "expected"),
+    [(MSEMeasure, 0.0), (RMSEMeasure, 0.0), (R2Measure, 1.0)],
 )
 def test_subset_of_inputs_and_outputs(
     measure_cls,
@@ -144,7 +146,7 @@ def test_no_resampling_result_storage(linear_regressor):
 
 
 @pytest.mark.parametrize(
-    "method,resampler_name,class_name,dimension",
+    ("method", "resampler_name", "class_name", "dimension"),
     [
         ("evaluate_kfolds", "CrossValidation", "CrossValidation", 5),
         ("evaluate_loo", "LeaveOneOut", "CrossValidation", 20),

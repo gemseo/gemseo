@@ -19,13 +19,17 @@
 """A formulation for uncoupled or weakly coupled problems."""
 from __future__ import annotations
 
-from gemseo.algos.design_space import DesignSpace
+from typing import TYPE_CHECKING
+
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
 from gemseo.disciplines.utils import get_all_inputs
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
 
 
 class DisciplinaryOpt(MDOFormulation):

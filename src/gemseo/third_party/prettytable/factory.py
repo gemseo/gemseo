@@ -51,8 +51,16 @@ def from_csv(filepath, field_names=None, **kwargs):
 
     """
     fmtparams = {}
-    for param in ["delimiter", "doublequote", "escapechar", "lineterminator",
-                  "quotechar", "quoting", "skipinitialspace", "strict"]:
+    for param in [
+        "delimiter",
+        "doublequote",
+        "escapechar",
+        "lineterminator",
+        "quotechar",
+        "quoting",
+        "skipinitialspace",
+        "strict",
+    ]:
         if param in kwargs:
             fmtparams[param] = kwargs.pop(param)
     if fmtparams:
@@ -116,7 +124,7 @@ class TableHandler(HTMLParser):
         self.active = tag
         if tag == "th":
             self.is_last_row_header = True
-        for (key, value) in attrs:
+        for key, value in attrs:
             if key == "colspan":
                 self.colspan = int(value)
 
@@ -135,8 +143,7 @@ class TableHandler(HTMLParser):
                 self.colspan = 0
 
         if tag == "tr":
-            self.rows.append(
-                (self.last_row, self.is_last_row_header))
+            self.rows.append((self.last_row, self.is_last_row_header))
             self.max_row_width = max(self.max_row_width, len(self.last_row))
             self.last_row = []
             self.is_last_row_header = False
@@ -215,8 +222,9 @@ def from_html_one(html_code, **kwargs):
     try:
         assert len(tables) == 1
     except AssertionError:
-        raise Exception("More than one <table> in provided HTML code!"
-                        + "  Use from_html instead.")
+        raise Exception(
+            "More than one <table> in provided HTML code!" + "  Use from_html instead."
+        )
     return tables[0]
 
 
@@ -228,13 +236,12 @@ def from_md(markdown, **kwargs):
     :returns: a PrettyTable object.
 
     """
-    rows = markdown.split('\n')
+    rows = markdown.split("\n")
     title_row = rows[0]
     content_rows = rows[2:]
     table = PrettyTable(**kwargs)
     table.field_names = split_md_row(title_row)
-    list(map(table.add_row, list(map(split_md_row,
-                                     [x for x in content_rows if x]))))
+    list(map(table.add_row, list(map(split_md_row, [x for x in content_rows if x]))))
     return table
 
 
@@ -244,7 +251,7 @@ def strip_md_content(markdown):
     :param markdown: a row of markdown table
     :returns: stripped content cell
     """
-    return markdown.strip().strip(':').strip()
+    return markdown.strip().strip(":").strip()
 
 
 def split_md_row(row):
@@ -253,4 +260,4 @@ def split_md_row(row):
     :param row: a row of markdown table
     :returns: Split content list
     """
-    return [strip_md_content(s) for s in row.strip('|').split('|')]
+    return [strip_md_content(s) for s in row.strip("|").split("|")]

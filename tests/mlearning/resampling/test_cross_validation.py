@@ -16,16 +16,17 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.resampling.cross_validation import CrossValidation
-from gemseo.mlearning.resampling.split import Split
-from gemseo.mlearning.resampling.splits import Splits
 from numpy import array
 from numpy import array_equal
 from numpy import linspace
 from numpy import newaxis
 from numpy.testing import assert_equal
+
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.resampling.cross_validation import CrossValidation
+from gemseo.mlearning.resampling.split import Split
+from gemseo.mlearning.resampling.splits import Splits
 
 
 @pytest.fixture(scope="module")
@@ -173,7 +174,9 @@ def test_execution(
         assert len({id(sub_model) for sub_model in sub_models}) == 5
 
 
-@pytest.mark.parametrize("n_folds,name", ([3, "CrossValidation"], [10, "LeaveOneOut"]))
+@pytest.mark.parametrize(
+    ("n_folds", "name"), [(3, "CrossValidation"), (10, "LeaveOneOut")]
+)
 def test_name(sample_indices, n_folds, name):
     """Check the name of the CrossValidation instance."""
     assert CrossValidation(sample_indices, n_folds).name == name

@@ -31,14 +31,14 @@ from gemseo.mda.root import MDARoot
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
+    from typing import Any
+    from typing import Mapping
+    from typing import Sequence
+
     from numpy.typing import NDArray
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline_data import DisciplineData
-
-    from typing import Any
-    from typing import Mapping
-    from typing import Sequence
 
 
 LOGGER = logging.getLogger(__name__)

@@ -62,21 +62,24 @@ which inherits from the :class:`.MLSupervisedAlgo` class.
 from __future__ import annotations
 
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import NoReturn
 
-from numpy import ndarray
-
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import DataType
-from gemseo.mlearning.core.ml_algo import DefaultTransformerType
-from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
-from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.data_formatters.regression_data_formatters import (
     RegressionDataFormatters,
 )
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.ml_algo import DefaultTransformerType
+    from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class MLRegressionAlgo(MLSupervisedAlgo):

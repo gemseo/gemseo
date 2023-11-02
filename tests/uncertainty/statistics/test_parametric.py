@@ -24,6 +24,14 @@ from unittest import mock
 
 import openturns as ot
 import pytest
+from matplotlib.figure import Figure
+from numpy import array
+from numpy import inf
+from numpy import vstack
+from numpy.random import RandomState
+from numpy.testing import assert_allclose
+from numpy.testing import assert_equal
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
@@ -32,36 +40,24 @@ from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
 )
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib.figure import Figure
-from numpy import array
-from numpy import inf
-from numpy import vstack
-from numpy.random import exponential
-from numpy.random import lognormal
-from numpy.random import normal
-from numpy.random import rand
-from numpy.random import seed
-from numpy.random import weibull
-from numpy.testing import assert_allclose
-from numpy.testing import assert_equal
+
+RNG = RandomState(0)
 
 
 @pytest.fixture(scope="module")
 def dataset() -> Dataset:
     """This fixture is a random sample of four random variables distributed according to
     the uniform, normal, weibull and exponential probability distributions."""
-    seed(0)
     n_samples = 100
-    uniform_rand = rand(n_samples)
-    normal_rand = normal(size=n_samples)
-    weibull_rand = weibull(1.5, size=n_samples)
-    exponential_rand = exponential(size=n_samples)
-    data = Dataset.from_array(
+    uniform_rand = RNG.random(n_samples)
+    normal_rand = RNG.normal(size=n_samples)
+    weibull_rand = RNG.weibull(1.5, size=n_samples)
+    exponential_rand = RNG.exponential(size=n_samples)
+    return Dataset.from_array(
         vstack((uniform_rand, normal_rand, weibull_rand, exponential_rand)).T,
         ["x_1", "x_2", "x_3"],
         {"x_1": 1, "x_2": 1, "x_3": 2},
     )
-    return data
 
 
 @pytest.fixture(scope="module")
@@ -113,7 +109,7 @@ def test_n_variables(dataset, statistics):
 
 
 @pytest.mark.parametrize(
-    "kwargs,expected_is_pvalue",
+    ("kwargs", "expected_is_pvalue"),
     [({}, False), ({"fitting_criterion": "Kolmogorov"}, True)],
 )
 def test_get_criteria(
@@ -129,12 +125,12 @@ def test_get_criteria(
 
 
 @pytest.mark.parametrize(
-    [
+    (
         "statistic_estimation",
         "statistic_estimator",
         "statistic_estimator_args",
         "statistic_estimator_kwargs",
-    ],
+    ),
     [
         ([-0.004948, -1.58328, 0.050429, 0.011991], "compute_minimum", (), {}),
         ([0.998018, 2.421654, inf, inf], "compute_maximum", (), {}),
@@ -243,7 +239,7 @@ def test_plot_criteria(tmp_wd, statistics, dataset, tested_distributions):
 
 
 @pytest.mark.parametrize(
-    "baseline_images,fitting_criterion,title",
+    ("baseline_images", "fitting_criterion", "title"),
     [
         (["fitting_BIC.png"], "BIC", None),
         (["fitting_Kolmogorov.png"], "Kolmogorov", None),
@@ -283,18 +279,17 @@ def test_tolerance_interval_wrong_confidence(statistics, dataset, confidence):
 
 
 @pytest.mark.parametrize(
-    "distribution,generate_samples",
+    ("distribution", "generate_samples"),
     [
-        ("Exponential", lambda n: exponential(size=n)),
+        ("Exponential", lambda n: RNG.exponential(size=n)),
         ("WeibullMin", lambda n: array(ot.WeibullMin().getSample(n))),
-        ("LogNormal", lambda n: lognormal(size=n)),
-        ("Uniform", lambda n: rand(n)),
-        ("Normal", lambda n: normal(size=n)),
+        ("LogNormal", lambda n: RNG.lognormal(size=n)),
+        ("Uniform", lambda n: RNG.random(n)),
+        ("Normal", lambda n: RNG.normal(size=n)),
     ],
 )
 def test_tolerance_interval(generate_samples, distribution):
     """Check compute_tolerance_intervals() with different distributions."""
-    seed(0)
     dataset = Dataset.from_array(generate_samples(100).reshape((-1, 1)))
     statistics = ParametricStatistics(dataset, [distribution])
     tolerance_interval = statistics.compute_tolerance_interval(
@@ -324,8 +319,7 @@ def test_tolerance_interval(generate_samples, distribution):
 
 def test_abvalue_normal():
     """Check that A-value is lower than B-value."""
-    seed(0)
-    dataset = Dataset.from_array(normal(size=100).reshape((-1, 1)))
+    dataset = Dataset.from_array(RNG.normal(size=(100, 1)))
     stats = ParametricStatistics(dataset, ["Normal"])
     assert stats.compute_a_value()["x_0"][0] <= stats.compute_b_value()["x_0"][0]
 
@@ -336,7 +330,7 @@ def test_available(statistics):
 
 
 @pytest.mark.parametrize(
-    "name,options,expression",
+    ("name", "options", "expression"),
     [
         (
             "tolerance_interval",
@@ -345,7 +339,7 @@ def test_available(statistics):
                 "tolerance": 0.99,
                 "side": ToleranceInterval.ToleranceIntervalSide.LOWER,
             },
-            "TI[X; 0.9, lower, 0.99]",
+            "TI[X; 0.9, 0.99, lower]",
         ),
         (
             "tolerance_interval",

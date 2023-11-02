@@ -22,12 +22,11 @@ from __future__ import annotations
 import logging
 import pickle
 from multiprocessing import cpu_count
-from numbers import Number
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
 from typing import Sized
-from typing import TYPE_CHECKING
 
 from scipy.sparse import spmatrix
 
@@ -39,27 +38,27 @@ from gemseo.utils.derivatives.gradient_approximator_factory import (
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
+    from numbers import Number
+
+    from matplotlib.pyplot import Figure
+
     from gemseo.core.discipline import MDODiscipline
 
-from matplotlib import pyplot as plt
-from matplotlib.pyplot import Figure
-from numpy import (
-    absolute,
-    allclose,
-    amax,
-    arange,
-    atleast_2d,
-    concatenate,
-    divide,
-    ndarray,
-    zeros,
-)
-
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    split_array_to_dict_of_arrays,
-)
 from pathlib import Path
+
+from matplotlib import pyplot as plt
+from numpy import absolute
+from numpy import allclose
+from numpy import amax
+from numpy import arange
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import divide
+from numpy import ndarray
+from numpy import zeros
+
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 LOGGER = logging.getLogger(__name__)
 
@@ -518,7 +517,7 @@ class DisciplineJacApprox:
         jacobian = analytic_jacobian[next(iter(analytic_jacobian))]
         input_names = list(jacobian.keys())
         input_component_names = [
-            f"{input_name}_{i+1}"
+            f"{input_name}_{i + 1}"
             for input_name in input_names
             for i in range(jacobian[input_name].shape[1])
         ]
@@ -619,7 +618,7 @@ class DisciplineJacApprox:
 
         fig.suptitle(
             "Computed and approximate derivatives. "
-            + " blue = computed, red = approximated derivatives",
+            " blue = computed, red = approximated derivatives",
             fontsize=14,
         )
         save_show_figure(fig, show, file_path)

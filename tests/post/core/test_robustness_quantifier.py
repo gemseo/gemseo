@@ -20,14 +20,20 @@ from __future__ import annotations
 
 import unittest
 
-import numpy as np
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+import pytest
+from numpy import arange
+from numpy import array
+from numpy import eye
+from numpy import ones
 from numpy.linalg import norm
+from numpy.random import default_rng
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 from scipy.optimize import rosen_hess
+
+from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
+from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 
 class TestRobustnessQuantifier(unittest.TestCase):
@@ -37,7 +43,6 @@ class TestRobustnessQuantifier(unittest.TestCase):
     def setUpClass(cls):
         """"""
         cls.build_history(n=2)
-        np.random.seed(1)
 
     @classmethod
     def build_history(cls, n):
@@ -48,7 +53,7 @@ class TestRobustnessQuantifier(unittest.TestCase):
         """
         cls.n = n
         cls.problem = Rosenbrock(n)
-        cls.problem.x_0 = 1.0 - 2 * np.arange(n) / float(n)
+        cls.problem.x_0 = 1.0 - 2 * arange(n) / float(n)
         cls.database = cls.problem.database
         cls.result = OptimizersFactory().execute(cls.problem, "L-BFGS-B", max_iter=200)
 
@@ -81,14 +86,14 @@ class TestRobustnessQuantifier(unittest.TestCase):
         rq = RobustnessQuantifier(self.database, method)
         rq.compute_approximation(funcname="rosen", first_iter=first_iter, last_iter=-1)
 
-        out = rq.compute_function_approximation(x_vars=np.ones(self.n))
+        out = rq.compute_function_approximation(x_vars=ones(self.n))
         assert abs(out) < 1e-8
-        x = 0.99 * np.ones(self.n)
+        x = 0.99 * ones(self.n)
         out = rq.compute_function_approximation(x)
         assert abs(out - rosen(x)) < 0.01
         outg = rq.compute_gradient_approximation(x)
         assert norm(outg - rosen_der(x)) / norm(rosen_der(x)) < 0.15
-        x = np.ones(self.n) + (np.array(list(range(self.n))) + 1) / (10.0 + self.n)
+        x = ones(self.n) + (array(list(range(self.n))) + 1) / (10.0 + self.n)
         out = rq.compute_function_approximation(x)
         assert abs(out - rosen(x)) < 0.04
         outg = rq.compute_gradient_approximation(x)
@@ -98,8 +103,8 @@ class TestRobustnessQuantifier(unittest.TestCase):
         rq = RobustnessQuantifier(self.database)
         rq.compute_approximation(funcname="rosen", last_iter=-1)
         rq.b_mat = None
-        self.assertRaises(Exception, rq.compute_function_approximation, np.ones(self.n))
-        x = np.ones(self.n) + (np.array(list(range(self.n))) + 1) / (10.0 + self.n)
+        self.assertRaises(Exception, rq.compute_function_approximation, ones(self.n))
+        x = ones(self.n) + (array(list(range(self.n))) + 1) / (10.0 + self.n)
         self.assertRaises(Exception, rq.compute_gradient_approximation, x)
 
     def test_sr1_approximation_precision(self):
@@ -114,31 +119,36 @@ class TestRobustnessQuantifier(unittest.TestCase):
         """"""
         rq = RobustnessQuantifier(self.database)
         rq.compute_approximation(funcname="rosen")
-        mu = np.ones(2)
-        cov = 0.0001 * np.eye(2)
+        mu = ones(2)
+        cov = 0.0001 * eye(2)
         rq.montecarlo_average_var(mu, cov)
 
-        cov = 0.0001 * np.eye(3)
+        cov = 0.0001 * eye(3)
         self.assertRaises(Exception, rq.montecarlo_average_var, mu, cov)
 
     def test_compute_expected_value(self):
         """"""
         rq = RobustnessQuantifier(self.database)
         rq.compute_approximation(funcname="rosen")
-        mu = np.ones(2)
-        cov = 0.0001 * np.eye(2)
+        mu = ones(2)
+        cov = 0.0001 * eye(2)
         e = rq.compute_expected_value(mu, cov)
         var = rq.compute_variance(mu, cov)
+        assert e == pytest.approx(0.0501, abs=1e-4)
+        assert var == pytest.approx(0.0050, abs=1e-4)
+
         e_ref, var_ref = rq.montecarlo_average_var(
             mu, cov, func=rosen, n_samples=300000
         )
-        assert abs((e - e_ref) / e_ref) < 0.0026
-        assert abs((var - var_ref) / var_ref) < 0.01
+        input_samples = default_rng().multivariate_normal(mu, cov, 300000).T
+        output_samples = rosen(input_samples)
+        assert output_samples.mean() == pytest.approx(e_ref, abs=1e-3)
+        assert output_samples.var() == pytest.approx(var_ref, abs=1e-4)
 
-        cov = 0.0001 * np.eye(3)
+        cov = 0.0001 * eye(3)
         self.assertRaises(Exception, rq.compute_expected_value, mu, cov)
 
-        cov = 0.0001 * np.eye(2)
+        cov = 0.0001 * eye(2)
         rq.b_mat = None
         self.assertRaises(Exception, rq.compute_expected_value, mu, cov)
 
@@ -146,11 +156,11 @@ class TestRobustnessQuantifier(unittest.TestCase):
         """"""
         rq = RobustnessQuantifier(self.database)
         rq.compute_approximation(funcname="rosen")
-        mu = np.ones(2)
-        cov = 0.0001 * np.eye(3)
+        mu = ones(2)
+        cov = 0.0001 * eye(3)
         self.assertRaises(Exception, rq.compute_variance, mu, cov)
 
-        cov = 0.0001 * np.eye(2)
+        cov = 0.0001 * eye(2)
         rq.b_mat = None
         self.assertRaises(Exception, rq.compute_variance, mu, cov)
 

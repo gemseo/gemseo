@@ -22,15 +22,16 @@ from __future__ import annotations
 
 import pytest
 import sympy
-from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from numpy import array
 from numpy.testing import assert_equal
 from packaging import version
 
+from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
-@pytest.fixture
+
+@pytest.fixture()
 def expressions():
     # string expressions
     expr_dict = {"y_1": "2*x**2", "y_2": "3*x**2+5+z**3"}

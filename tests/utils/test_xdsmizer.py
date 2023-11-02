@@ -22,10 +22,12 @@ import json
 import unittest
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Mapping
 
 import pytest
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
@@ -34,7 +36,6 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.mdo_scenario import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.core.scenario import Scenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -48,11 +49,14 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.xdsmizer import EdgeType
-from gemseo.utils.xdsmizer import expand
 from gemseo.utils.xdsmizer import NodeType
 from gemseo.utils.xdsmizer import XDSMizer
+from gemseo.utils.xdsmizer import expand
 
 from ..mda.test_mda import analytic_disciplines_from_desc
+
+if TYPE_CHECKING:
+    from gemseo.core.scenario import Scenario
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -69,15 +73,15 @@ class TestXDSMizer(unittest.TestCase):
         serial_seq = ExecutionSequenceFactory.serial([]).extend(d1)
         loop_seq = ExecutionSequenceFactory.loop(mda, serial_seq)
 
-        self.assertEqual(expand(loop_seq, to_id), ["mda", ["d1"]])
-        self.assertEqual(expand(ExecutionSequenceFactory.serial([]), to_id), [])
-        self.assertEqual(expand(serial_seq, to_id), ["d1"])
+        assert expand(loop_seq, to_id) == ["mda", ["d1"]]
+        assert expand(ExecutionSequenceFactory.serial([]), to_id) == []
+        assert expand(serial_seq, to_id) == ["d1"]
 
         parallel_seq = ExecutionSequenceFactory.parallel([]).extend(d1)
         parallel_seq.extend(d2)
 
         loop_seq = ExecutionSequenceFactory.loop(mda, parallel_seq)
-        self.assertEqual(expand(loop_seq, to_id), ["mda", [{"parallel": ["d1", "d2"]}]])
+        assert expand(loop_seq, to_id) == ["mda", [{"parallel": ["d1", "d2"]}]]
 
         self.assertRaises(Exception, expand, "a_bad_exec_seq", to_id)
 
@@ -203,7 +207,7 @@ class TestXDSMizer(unittest.TestCase):
         sc_str.add_constraint("g_1", constraint_type="ineq")
         sc_str.default_inputs = sub_sc_opts
 
-        sub_disciplines = [sc_prop, sc_aero, sc_str] + [mission]
+        sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 
         # Maximize range (Breguet)
         design_space = deepcopy(design_space).filter("x_shared")
@@ -539,18 +543,16 @@ def assert_xdsm_file_ok(generated_file: str, ref_file: str) -> None:
     ref_filepath = (current_dir / "data" / ref_file).with_suffix(".json")
 
     assert ref_filepath.exists(), (
-        f"Reference {str(ref_filepath)} not found in data " f"directory."
+        f"Reference {ref_filepath!s} not found in data " f"directory."
     )
 
-    with open(ref_filepath) as ref_file:
-        xdsm_str = ref_file.read()
+    xdsm_str = ref_filepath.read_text()
     expected = json.loads(xdsm_str)
 
     new_filepath = Path(generated_file).with_suffix(".json")
-    assert new_filepath.exists(), f"Generated {str(new_filepath)} not found."
+    assert new_filepath.exists(), f"Generated {new_filepath!s} not found."
 
-    with open(new_filepath) as new_file:
-        xdsm_str = new_file.read()
+    xdsm_str = new_filepath.read_text()
     xdsm_json = json.loads(xdsm_str)
 
     assert_xdsm_equal(expected, xdsm_json)
@@ -588,7 +590,7 @@ def assert_level_xdsm_equal(
                 assert expected_node["name"] == node["name"]
                 assert expected_node["type"] == node["type"]
                 found = True
-        assert found, f"Node {str(expected_node)} not found."
+        assert found, f"Node {expected_node!s} not found."
 
     for expected_edge in expected["edges"]:
         found = False
@@ -601,7 +603,7 @@ def assert_level_xdsm_equal(
                     edge["name"].split(", ")
                 )
                 found = True
-        assert found, f"Edge {str(expected_edge)} not found."
+        assert found, f"Edge {expected_edge!s} not found."
     assert expected["workflow"] == generated["workflow"]
 
 

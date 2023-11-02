@@ -19,11 +19,6 @@
 from __future__ import annotations
 
 import pytest
-from gemseo import create_design_space
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
-from gemseo.problems.analytical.power_2 import Power2
 from numpy import allclose
 from numpy import array
 from numpy import concatenate
@@ -32,8 +27,14 @@ from numpy import ones_like
 from numpy import vstack
 from numpy.testing import assert_equal
 
+from gemseo import create_design_space
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
+from gemseo.problems.analytical.power_2 import Power2
 
-@pytest.fixture
+
+@pytest.fixture()
 def disc_constr():
     """A Sellar problem discipline."""
     problem = Power2()
@@ -41,7 +42,7 @@ def disc_constr():
 
     def cstr(x):
         constr = concatenate([cstr(x) for cstr in constraints])
-        return constr
+        return constr  # noqa: RET504
 
     def jac(x):
         return vstack([cstr.jac(x) for cstr in constraints])
@@ -54,7 +55,7 @@ def disc_constr():
 def obj(x):
     """Dummy sum objective function."""
     obj_f = array([sum(x)])
-    return obj_f
+    return obj_f  # noqa: RET504
 
 
 def test_aggregation_discipline(disc_constr):
@@ -92,7 +93,7 @@ def test_aggregation_discipline(disc_constr):
     assert allclose(sol2.x_opt, ref_sol.x_opt, rtol=1e-2)
 
 
-@pytest.mark.parametrize("indices", (None, array([0]), array([1])))
+@pytest.mark.parametrize("indices", [None, array([0]), array([1])])
 @pytest.mark.parametrize("aggregation_function", ["KS", "IKS", "POS_SUM", "SUM"])
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
 def test_constr_jac(disc_constr, aggregation_function, indices, input_val):
@@ -107,7 +108,7 @@ def test_constr_jac(disc_constr, aggregation_function, indices, input_val):
     assert disc_agg.check_jacobian(threshold=1e-6, step=1e-8)
 
 
-@pytest.mark.parametrize("scale", (1.0, array([2.0, 3.0])))
+@pytest.mark.parametrize("scale", [1.0, array([2.0, 3.0])])
 @pytest.mark.parametrize("aggregation_function", ["KS", "IKS", "POS_SUM", "SUM"])
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
 def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val):

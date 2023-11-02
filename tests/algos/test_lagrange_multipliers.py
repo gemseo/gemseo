@@ -23,6 +23,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from numpy import array
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
@@ -32,7 +34,6 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.derivatives.error_estimators import compute_best_step
-from numpy import array
 
 DS_FILE = Path(__file__).parent / "sobieski_design_space.csv"
 NLOPT_OPTIONS = {
@@ -46,7 +47,7 @@ NLOPT_OPTIONS = {
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def problem() -> Power2:
     """The Power2 optimization problem."""
     return Power2()
@@ -73,7 +74,9 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound):
     assert ("inequality" not in lagrangian) is upper_bound
 
 
-@pytest.mark.parametrize("normalize,eps,tol", [(False, 1e-5, 1e-7), (True, 1e-3, 1e-8)])
+@pytest.mark.parametrize(
+    ("normalize", "eps", "tol"), [(False, 1e-5, 1e-7), (True, 1e-3, 1e-8)]
+)
 def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol):
     options = deepcopy(NLOPT_OPTIONS)
     options["normalize_design_space"] = normalize
@@ -132,9 +135,7 @@ def test_lagrangian_validation_ineq_normalize():
         lagrange = LagrangeMultipliers(problem)
         x_opt = problem.solution.x_opt
         lagrangian = lagrange.compute(x_opt)
-        df_anal = lagrangian["inequality"][1][1]
-
-        return df_anal
+        return lagrangian["inequality"][1][1]
 
     eps = 1e-4
     obj_ref = obj(0.0)
@@ -204,7 +205,7 @@ def y0(request):
     return request.param
 
 
-@pytest.fixture
+@pytest.fixture()
 def analytical_test_2d_ineq(x0, y0):
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline(
@@ -223,7 +224,7 @@ def analytical_test_2d_ineq(x0, y0):
     return scenario
 
 
-@pytest.fixture
+@pytest.fixture()
 def analytical_test_2d_eq(x0, y0):
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline(
@@ -242,7 +243,7 @@ def analytical_test_2d_eq(x0, y0):
     return scenario
 
 
-@pytest.fixture
+@pytest.fixture()
 def analytical_test_2d__multiple_eq():
     """Test for lagrange multiplier."""
     x0 = 4.0
@@ -265,7 +266,7 @@ def analytical_test_2d__multiple_eq():
     return scenario
 
 
-@pytest.fixture
+@pytest.fixture()
 def analytical_test_2d_mixed_rank_deficient():
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline(

@@ -15,14 +15,14 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from numpy import allclose
 from numpy import ndarray
-from numpy.random import randn
-from numpy.random import seed
-from scipy.sparse import rand as sp_randn
+from numpy.random import default_rng
+from scipy.sparse import rand
 
-seed(1)
+from gemseo.core.derivatives.jacobian_operator import JacobianOperator
+
+RNG = default_rng()
 
 RECTANGULAR_SHAPE = (10, 5)
 SQUARE_SHAPE = (5, 5)
@@ -35,7 +35,7 @@ def square_jacobian() -> tuple[ndarray, JacobianOperator]:
     Returns:
         The NumPy array and the JacobianOperator wrapping it.
     """
-    matrix = randn(*SQUARE_SHAPE)
+    matrix = RNG.normal(size=SQUARE_SHAPE)
     operator = JacobianOperator(
         dtype=matrix.dtype,
         shape=matrix.shape,
@@ -60,7 +60,7 @@ def rectangular_jacobian() -> tuple[ndarray, JacobianOperator]:
     Returns:
         The NumPy array and the JacobianOperator wrapping it.
     """
-    matrix = randn(*RECTANGULAR_SHAPE)
+    matrix = RNG.normal(size=RECTANGULAR_SHAPE)
     operator = JacobianOperator(
         dtype=matrix.dtype,
         shape=matrix.shape,
@@ -80,10 +80,10 @@ def rectangular_jacobian() -> tuple[ndarray, JacobianOperator]:
 
 def test_matvec():
     """Tests the matrix-vector product."""
-    matrix = randn(*RECTANGULAR_SHAPE)
+    matrix = RNG.normal(size=RECTANGULAR_SHAPE)
 
     m, n = matrix.shape
-    x, y = randn(n), randn(m)
+    x, y = RNG.normal(size=n), RNG.normal(size=m)
 
     jacobian = JacobianOperator(
         dtype=matrix.dtype,
@@ -108,7 +108,7 @@ def test_copy(rectangular_jacobian):
     _, jacobian = rectangular_jacobian
 
     m, n = jacobian.shape
-    x, y = randn(n), randn(m)
+    x, y = RNG.normal(size=n), RNG.normal(size=m)
 
     jacobian_copy = jacobian.copy()
 
@@ -122,7 +122,7 @@ def test_transpose(rectangular_jacobian):
     _, jacobian = rectangular_jacobian
 
     m, n = jacobian.shape
-    x, y = randn(n), randn(m)
+    x, y = RNG.normal(size=n), RNG.normal(size=m)
 
     jacobian_transposed = jacobian.T
 
@@ -136,7 +136,7 @@ def test_shift_identity(square_jacobian):
     _, jacobian = square_jacobian
 
     m, _ = jacobian.shape
-    x = randn(m)
+    x = RNG.normal(size=m)
 
     jacobian_shifted = jacobian.shift_identity()
 
@@ -153,7 +153,8 @@ def test_matrix_representation(rectangular_jacobian):
 
 
 @pytest.mark.parametrize(
-    "matrix", [randn(*RECTANGULAR_SHAPE), sp_randn(*RECTANGULAR_SHAPE, density=0.25)]
+    "matrix",
+    [RNG.normal(size=RECTANGULAR_SHAPE), rand(*RECTANGULAR_SHAPE, density=0.25)],
 )
 def test_algebra_with_arrays(matrix, rectangular_jacobian):
     """Tests the algebraic operations with array-like objects."""

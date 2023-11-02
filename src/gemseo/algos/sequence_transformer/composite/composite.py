@@ -25,9 +25,10 @@ from typing import TYPE_CHECKING
 from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTransformer
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
     from typing import ClassVar
     from typing import Iterable
+
+    from numpy.typing import NDArray
 
 
 class CompositeSequenceTransformer(SequenceTransformer):

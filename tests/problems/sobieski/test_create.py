@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.problems.sobieski.design_space import create_design_space
 from gemseo.problems.sobieski.disciplines import create_disciplines
 

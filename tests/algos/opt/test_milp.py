@@ -15,13 +15,14 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_scipy_milp import ScipyMILP
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
-from numpy import array
 
 
 @pytest.fixture(params=[True, False])
@@ -29,7 +30,7 @@ def feasible_problem(request):
     return request.param
 
 
-@pytest.fixture
+@pytest.fixture()
 def milp_problem(feasible_problem):
     """Milp problem fixture."""
     design_space = DesignSpace()

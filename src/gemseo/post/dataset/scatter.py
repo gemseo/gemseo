@@ -25,12 +25,16 @@ where the color of points can be heterogeneous.
 """
 from __future__ import annotations
 
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+from typing import TYPE_CHECKING
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import VariableType
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class Scatter(DatasetPlot):

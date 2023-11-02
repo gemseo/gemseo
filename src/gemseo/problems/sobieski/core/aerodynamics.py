@@ -132,9 +132,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             with respect to the Mach number.
         """
         return (
-            (2.0 * mach)
-            * cos(sweep * pi / 180.0)
-            / (4.0 * sqrt(sweep**2 - 1.0) - 2.0)
+            (2.0 * mach) * cos(sweep * pi / 180.0) / (4.0 * sqrt(sweep**2 - 1.0) - 2.0)
         )
 
     def __compute_dadimcf_dcf(
@@ -506,8 +504,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         """
         if altitude.real < 36089.0:
             return 1116.39 * self.math.sqrt(1 - 6.875e-6 * altitude)
-        else:
-            return 968.1
+        return 968.1
 
     def __compute_drho_dh_dv_dh(
         self,

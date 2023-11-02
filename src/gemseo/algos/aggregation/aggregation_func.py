@@ -23,11 +23,10 @@ Transform a constraint vector into one scalar equivalent or quasi equivalent con
 from __future__ import annotations
 
 from functools import wraps
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import Sequence
-
-from numpy import ndarray
 
 from gemseo.algos.aggregation.core import compute_iks_agg
 from gemseo.algos.aggregation.core import compute_ks_agg
@@ -40,6 +39,9 @@ from gemseo.algos.aggregation.core import compute_total_ks_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_positive_agg_jac
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 def check_constraint_type(
@@ -87,9 +89,9 @@ def check_constraint_type(
 
             if constr.f_type != function_type:
                 msg = (
-                    "{} constraint aggregation is only supported"
-                    " for func_type {}, got {}"
-                ).format(func.__name__, function_type, constr.f_type)
+                    f"{func.__name__} constraint aggregation is only supported"
+                    f" for func_type {function_type}, got {constr.f_type}"
+                )
                 raise ValueError(msg)
 
             return func(*args, **kwargs)

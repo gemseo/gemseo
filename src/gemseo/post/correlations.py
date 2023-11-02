@@ -24,17 +24,20 @@ import logging
 import re
 from functools import partial
 from re import fullmatch
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import ticker
-from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
 from numpy import ndarray
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 LOGGER = logging.getLogger(__name__)
 

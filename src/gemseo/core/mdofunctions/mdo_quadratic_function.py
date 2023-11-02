@@ -52,7 +52,7 @@ class MDOQuadraticFunction(MDOFunction):
         quad_coeffs: ArrayType,
         name: str,
         f_type: str | None = None,
-        input_names: Sequence[str] = None,
+        input_names: Sequence[str] | None = None,
         linear_coeffs: ArrayType | None = None,
         value_at_zero: OutputType = 0.0,
     ) -> None:
@@ -207,9 +207,7 @@ class MDOQuadraticFunction(MDOFunction):
                 and (linear_coeffs != zeros_like(linear_coeffs)).any()
             ):
                 expr += " + " if index == 0 else "   "
-                expr += "[{}]".format(
-                    cls.COEFF_FORMAT_ND.format(linear_coeffs[0, index])
-                )
+                expr += f"[{cls.COEFF_FORMAT_ND.format(linear_coeffs[0, index])}]"
                 expr += transpose_str if index == 0 else " "
                 expr += f"[{arg}]"
             # Zero-order expression

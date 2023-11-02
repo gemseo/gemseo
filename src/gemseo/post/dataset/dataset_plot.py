@@ -31,15 +31,14 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections import namedtuple
 from numbers import Number
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
 from typing import Tuple
-from typing import TYPE_CHECKING
 from typing import Union
 
-from matplotlib.axes import Axes
 from numpy import linspace
 
 from gemseo.utils.compatibility.matplotlib import get_color_map
@@ -49,12 +48,14 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
     from gemseo.datasets.dataset import Dataset
 
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-
 from pathlib import Path
+
+import matplotlib.pyplot as plt
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
@@ -393,8 +394,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         if names_to_sizes[name] == 1:
             return name
-        else:
-            return f"{name}({component})"
+        return f"{name}({component})"
 
     def _get_label(
         self,

@@ -20,12 +20,15 @@
 """The base discipline."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.scalable.parametric.core.disciplines.base_discipline import (
-    BaseDiscipline as _BaseDiscipline,
-)
+
+if TYPE_CHECKING:
+    from gemseo.problems.scalable.parametric.core.disciplines.base_discipline import (
+        BaseDiscipline as _BaseDiscipline,
+    )
 
 
 class BaseDiscipline(MDODiscipline):
@@ -37,7 +40,7 @@ class BaseDiscipline(MDODiscipline):
     _CORE_DISCIPLINE_CLASS: type[_BaseDiscipline]
     """The class of the core discipline."""
 
-    _discipline: _CORE_DISCIPLINE_CLASS
+    _discipline: _CORE_DISCIPLINE_CLASS  # noqa: F821
     """The core discipline."""
 
     def __init__(

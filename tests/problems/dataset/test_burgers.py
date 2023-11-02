@@ -19,8 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from gemseo.problems.dataset.burgers import create_burgers_dataset
 from numpy import allclose
+
+from gemseo.problems.dataset.burgers import create_burgers_dataset
 
 
 def test_constructor():

@@ -42,6 +42,7 @@ Notations:
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Generator
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -58,14 +59,15 @@ from numpy import sqrt
 from numpy import tile
 from numpy import trace
 from numpy import zeros
+from numpy.linalg import LinAlgError
 from numpy.linalg import cholesky
 from numpy.linalg import inv
-from numpy.linalg import LinAlgError
 from numpy.linalg import norm
 from scipy.optimize import leastsq
 
-from gemseo.algos.database import Database
-from gemseo.algos.design_space import DesignSpace
+if TYPE_CHECKING:
+    from gemseo.algos.database import Database
+    from gemseo.algos.design_space import DesignSpace
 
 LOGGER = logging.getLogger(__name__)
 
@@ -595,17 +597,17 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             h_mat = h_mat0
             try:
                 b_mat = inv(h_mat)
-            except LinAlgError:
-                raise LinAlgError("The inversion of h_mat failed.")
+            except LinAlgError as error:
+                raise LinAlgError("The inversion of h_mat failed.") from error
 
             if factorize or scaling:
                 try:
                     h_factor = cholesky(h_mat)
                     b_factor = cholesky(b_mat).T
-                except LinAlgError:
+                except LinAlgError as error:
                     raise LinAlgError(
                         "The Cholesky decomposition of h_factor or b_factor failed."
-                    )
+                    ) from error
 
         diag = []
         count = 0

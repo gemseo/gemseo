@@ -22,12 +22,13 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from numpy import arange
 
+from gemseo.datasets.dataset import Dataset
+from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 
-@pytest.fixture
+
+@pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the clustering algorithms."""
     data = arange(30).reshape(10, 3)

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import collections
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Collection
 from typing import Iterable
@@ -25,10 +26,12 @@ from typing import Mapping
 
 from numpy import ndarray
 
-from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.base_grammar import NamesToTypes
-from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
+    from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
@@ -124,7 +127,8 @@ class SimpleGrammar(BaseGrammar):
             of them are required.
 
         Raises:
-            ValueError: When merge is True, since it is not yet supported for SimpleGrammar.
+            ValueError: When merge is True,
+                since it is not yet supported for SimpleGrammar.
         """  # noqa: D205, D212, D415
         if merge:
             raise ValueError("Merge is not supported yet for SimpleGrammar.")

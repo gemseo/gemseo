@@ -29,13 +29,18 @@ generated/sklearn.decomposition.PCA.html>`_.
 """
 from __future__ import annotations
 
-from numpy import ndarray
+from typing import TYPE_CHECKING
+
 from sklearn.decomposition import KernelPCA
 
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 
 
 class KPCA(DimensionReduction):

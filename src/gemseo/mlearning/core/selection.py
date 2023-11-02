@@ -47,19 +47,22 @@ using the class :class:`.MLAlgoCalibration`.
 from __future__ import annotations
 
 from itertools import product
+from typing import TYPE_CHECKING
 from typing import Sequence
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.scenario import ScenarioInputDataType
-from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.quality_measures.quality_measure import (
     OptionType as MeasureOptionType,
 )
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.scenario import ScenarioInputDataType
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.core.ml_algo import MLAlgo
 
 
 class MLAlgoSelection:
@@ -86,7 +89,7 @@ class MLAlgoSelection:
         self,
         dataset: Dataset,
         measure: str | MLQualityMeasure,
-        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: B950
+        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
         samples: Sequence[int] | None = None,
         **measure_options: MeasureOptionType,
     ) -> None:
@@ -163,10 +166,7 @@ class MLAlgoSelection:
         keys, values = option_lists.keys(), option_lists.values()
 
         # Set initial quality to the worst possible value
-        if self.measure.SMALLER_IS_BETTER:
-            quality = float("inf")
-        else:
-            quality = -float("inf")
+        quality = float("inf") if self.measure.SMALLER_IS_BETTER else -float("inf")
 
         for prodvalues in product(*values):
             params = dict(zip(keys, prodvalues))

@@ -14,16 +14,21 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+from numpy import array
+from numpy.testing import assert_equal
+
 from gemseo.problems.scalable.parametric.core.disciplines.main_discipline import (
     MainDiscipline as CoreMainDiscipline,
 )
 from gemseo.problems.scalable.parametric.disciplines.main_discipline import (
     MainDiscipline,
 )
-from numpy import array
-from numpy.testing import assert_equal
-from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 @pytest.fixture(scope="module")
@@ -54,7 +59,7 @@ def core_main_discipline(default_input_values) -> CoreMainDiscipline:
 
 def test_wrapped_discipline(main_discipline):
     """Check that MainDiscipline is composed of a CoreMainDiscipline."""
-    assert main_discipline._CORE_DISCIPLINE_CLASS == CoreMainDiscipline
+    assert CoreMainDiscipline == main_discipline._CORE_DISCIPLINE_CLASS
 
 
 def test_execution(main_discipline, core_main_discipline):

@@ -21,6 +21,14 @@ from __future__ import annotations
 import re
 
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import complex128
+from numpy import concatenate
+from numpy import cos
+from numpy import sin
+from numpy import vstack
+
 from gemseo import execute_algo
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
 from gemseo.algos.aggregation.aggregation_func import aggregate_ks
@@ -29,13 +37,6 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_squ
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
-from numpy import allclose
-from numpy import array
-from numpy import complex128
-from numpy import concatenate
-from numpy import cos
-from numpy import sin
-from numpy import vstack
 
 
 def create_problem():
@@ -46,8 +47,7 @@ def create_problem():
     eq = problem.constraints[2]
 
     def cstr(x):
-        c = concatenate([ineq1(x), ineq2(x)])
-        return c
+        return concatenate([ineq1(x), ineq2(x)])
 
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
@@ -57,7 +57,7 @@ def create_problem():
     return problem
 
 
-@pytest.fixture
+@pytest.fixture()
 def sellar_problem():
     """Sellar problem fixture."""
     return create_problem()
@@ -69,8 +69,7 @@ def create_pb_alleq():
     constraints = problem.constraints
 
     def cstr(x):
-        c = concatenate([cstr(x) for cstr in constraints])
-        return c
+        return concatenate([cstr(x) for cstr in constraints])
 
     def jac(x):
         return vstack([cstr.jac(x) for cstr in constraints])

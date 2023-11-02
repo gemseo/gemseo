@@ -16,12 +16,13 @@
 from __future__ import annotations
 
 import numpy as np
+from scipy import optimize
+
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo import get_available_opt_algorithms
-from scipy import optimize
 
 # PART 1
 
@@ -76,11 +77,7 @@ scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
 scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
 
 opt_results = scenario.optimization_result
-print(
-    "The solution of P is (x*,f(x*)) = ({}, {})".format(
-        opt_results.x_opt, opt_results.f_opt
-    )
-)
+print(f"The solution of P is (x*,f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")
 
 algo_list = get_available_opt_algorithms()
 print("Available algorithms:" + str(algo_list))

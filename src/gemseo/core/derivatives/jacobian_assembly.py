@@ -24,6 +24,7 @@ import itertools
 import logging
 from collections import defaultdict
 from multiprocessing import cpu_count
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -33,7 +34,6 @@ from typing import Iterable
 from typing import Iterator
 from typing import Mapping
 from typing import NamedTuple
-from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from numpy import concatenate
@@ -41,7 +41,6 @@ from numpy import empty
 from numpy import fill_diagonal
 from numpy import ndarray
 from numpy import zeros
-from numpy._typing import NDArray
 from numpy.linalg import norm
 from scipy.sparse import bmat
 from scipy.sparse import csc_matrix
@@ -50,8 +49,8 @@ from scipy.sparse import dok_matrix
 from scipy.sparse import eye
 from scipy.sparse import spmatrix
 from scipy.sparse import vstack
-from scipy.sparse.linalg import factorized
 from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import factorized
 from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
@@ -62,6 +61,8 @@ from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
+    from numpy._typing import NDArray
+
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline import MDODiscipline
 
@@ -224,7 +225,7 @@ class JacobianAssembly:
         self.coupling_structure = coupling_structure
         self.sizes = {}
         self.disciplines = {}
-        self.__last_diff_inouts = tuple()
+        self.__last_diff_inouts = ()
         self.__minimal_couplings = []
         self.coupled_system = CoupledSystem()
         self.__linear_solver_factory = LinearSolversFactory(use_cache=True)
@@ -260,17 +261,16 @@ class JacobianAssembly:
             unknown_dvars -= inputs
 
         if unknown_dvars:
+            inputs = [
+                disc.get_input_data_names()
+                for disc in self.coupling_structure.disciplines
+            ]
             raise ValueError(
                 "Some of the specified variables are not "
-                + "inputs of the disciplines: "
-                + str(unknown_dvars)
-                + " possible inputs are: "
-                + str(
-                    [
-                        disc.get_input_data_names()
-                        for disc in self.coupling_structure.disciplines
-                    ]
-                )
+                "inputs of the disciplines: "
+                f"{unknown_dvars}"
+                " possible inputs are: "
+                f"{inputs}"
             )
 
         if unknown_outs:
@@ -298,8 +298,8 @@ class JacobianAssembly:
         if use_lu_fact and matrix_type == self.JacobianType.LINEAR_OPERATOR:
             raise ValueError(
                 "Unsupported LU factorization for "
-                + "LinearOperators! Please use Sparse matrices"
-                + " instead"
+                "LinearOperators! Please use Sparse matrices"
+                " instead"
             )
 
     def compute_sizes(
@@ -438,11 +438,14 @@ class JacobianAssembly:
 
                 # Yield only if Jacobian exists
                 if jacobian is not None:
-                    yield jacobian.real, self.JacobianPosition(
-                        row_slice=slice(row, row + jacobian.shape[0]),
-                        column_slice=slice(column, column + jacobian.shape[1]),
-                        row_index=row_index,
-                        column_index=column_index,
+                    yield (
+                        jacobian.real,
+                        self.JacobianPosition(
+                            row_slice=slice(row, row + jacobian.shape[0]),
+                            column_slice=slice(column, column + jacobian.shape[1]),
+                            row_index=row_index,
+                            column_index=column_index,
+                        ),
                     )
 
                 column += variable_size
@@ -534,6 +537,8 @@ class JacobianAssembly:
                 self._get_jacobian_generator,
                 is_residual,
             )
+
+        raise ValueError(f"Bad jacobian_type: {jacobian_type}")
 
     def _compute_diff_ios_and_couplings(
         self,
@@ -638,10 +643,7 @@ class JacobianAssembly:
         self.__check_inputs(functions, variables, couplings, matrix_type, use_lu_fact)
 
         # Retrieve states variables and local residuals if provided
-        if residual_variables:
-            states = list(residual_variables.values())
-        else:
-            states = []
+        states = list(residual_variables.values()) if residual_variables else []
 
         couplings_minimal = self._compute_diff_ios_and_couplings(
             variables,
@@ -850,7 +852,7 @@ class JacobianAssembly:
             for discipline in self.coupling_structure.disciplines:
                 # Find associated discipline
                 if name in discipline.get_output_data_names():
-                    residuals.append(
+                    residuals.append(  # noqa: PERF401
                         discipline.get_outputs_by_name(name) - in_data[name]
                     )
 
@@ -895,10 +897,7 @@ class JacobianAssembly:
             outputs_positions[fun] = current_position
             current_position += self.sizes[fun]
 
-            if total_jac is None:
-                total_jac = dfun_dx
-            else:
-                total_jac = vstack((total_jac, dfun_dx))
+            total_jac = dfun_dx if total_jac is None else vstack((total_jac, dfun_dx))
 
         # compute the positions of the inputs
         inputs_positions = {}
@@ -1091,7 +1090,7 @@ class CoupledSystem:
         # function to differentiate
         dy_dx = empty((n_couplings, n_variables))
         self.linear_problem = LinearProblem(dres_dy)
-        if linear_solver in ["DEFAULT", "LGMRES"]:
+        if linear_solver in {"DEFAULT", "LGMRES"}:
             # Reinit outerV, and store it for all RHS
             linear_solver_options["outer_v"] = []
         for var_index in range(n_variables):
@@ -1135,7 +1134,7 @@ class CoupledSystem:
         jac = {}
 
         # adjoint vector for each interest function
-        if linear_solver in ["DEFAULT", "LGMRES"]:
+        if linear_solver in {"DEFAULT", "LGMRES"}:
             # Reinit outerV, and store it for all RHS
             linear_solver_options["outer_v"] = []
 

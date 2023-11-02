@@ -23,6 +23,8 @@ from typing import Any
 from unittest import mock
 
 import pytest
+from numpy import unique
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe._openturns.base_ot_stratified_doe import BaseOTStratifiedDOE
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -30,7 +32,6 @@ from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from numpy import unique
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -39,7 +40,7 @@ from .utils import get_problem
 DOE_LIB_NAME = "OpenTURNS"
 
 
-@pytest.fixture
+@pytest.fixture()
 def identity_problem() -> OptimizationProblem:
     """A problem whose objective is the identity function defined over [0,1]."""
     design_space = DesignSpace()
@@ -58,7 +59,7 @@ def test_library_from_factory():
 
 
 @pytest.mark.parametrize(
-    "levels,exception,msg",
+    ("levels", "exception", "msg"),
     [
         (
             4,
@@ -100,7 +101,7 @@ def test_malformed_levels_with_check_and_cast_levels():
 
 
 @pytest.mark.parametrize(
-    "centers,exception", [([0.5] * (3 + 1), ValueError), (0.5, TypeError)]
+    ("centers", "exception"), [([0.5] * (3 + 1), ValueError), (0.5, TypeError)]
 )
 def test_composite_malformed_centers(centers, exception):
     """Check that passing malformed 'centers' raises an exception for Composite DOE."""
@@ -114,7 +115,7 @@ def test_composite_malformed_centers(centers, exception):
 
 
 @pytest.mark.parametrize(
-    "centers,error,error_message",
+    ("centers", "error", "error_message"),
     [
         (
             1,
@@ -165,7 +166,7 @@ def test_call():
 
 
 @pytest.mark.parametrize(
-    "options,error",
+    ("options", "error"),
     [
         (
             {"criterion": "unknown_criterion"},
@@ -199,7 +200,7 @@ def test_centered_lhs():
 
 
 @pytest.mark.parametrize(
-    "algo_name,dim,n_samples,options",
+    ("algo_name", "dim", "n_samples", "options"),
     [
         ("OT_MONTE_CARLO", 2, 3, {"n_samples": 3}),
         ("OT_RANDOM", 2, 3, {"n_samples": 3}),
@@ -269,9 +270,8 @@ def get_expected_nsamples(
             return 5
         if dim == 5:
             return 65
-    if algo == "OT_FULLFACT":
-        if dim == 5:
-            return 1
+    if algo == "OT_FULLFACT" and dim == 5:
+        return 1
     if algo == "OT_SOBOL_INDICES":
         if dim == 1:
             return 16
@@ -345,7 +345,7 @@ def test_compute_doe(variables_space, name):
 
 
 @pytest.mark.parametrize(
-    ["name", "size"], [("OT_FACTORIAL", 5), ("OT_COMPOSITE", 9), ("OT_AXIAL", 5)]
+    ("name", "size"), [("OT_FACTORIAL", 5), ("OT_COMPOSITE", 9), ("OT_AXIAL", 5)]
 )
 def test_compute_stratified_doe(variables_space, name, size):
     """Check the computation of a stratified DOE out of a design space."""

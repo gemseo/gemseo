@@ -43,13 +43,13 @@ def compute_ks_agg(
 ) -> float:
     """Transform a vector of constraint functions into a KS function.
 
-    The Kreisselmeier–Steinhauser function tends to the maximum operator
-        when the aggregation parameter tends to infinity.
+    The Kreisselmeier-Steinhauser function tends to the maximum operator
+    when the aggregation parameter tends to infinity.
 
     Kreisselmeier G, Steinhauser R (1983)
     Application of Vector Performance Optimization
     to a Robust Control Loop Design for a Fighter Aircraft.
-    International Journal of Control 37(2):251–284,
+    International Journal of Control 37(2):251-284,
     doi:10.1080/00207179.1983.9753066
 
     Graeme J. Kennedy, Jason E. Hicken,

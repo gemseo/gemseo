@@ -23,23 +23,23 @@ import pickle
 from unittest import mock
 
 import pytest
+from numpy import array
+from numpy import linalg
+
 from gemseo import create_mda
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton_raphson import MDANewtonRaphson
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import Y_1
-from gemseo.problems.sellar.sellar import Y_2
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from numpy import array
-from numpy import linalg
-
 
 TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
@@ -279,8 +279,12 @@ def test_weak_and_strong_couplings_two_cycles():
 
 
 @pytest.mark.parametrize(
-    "mda_linear_solver, mda_linear_solver_options, "
-    "newton_linear_solver_name, newton_linear_solver_options",
+    (
+        "mda_linear_solver",
+        "mda_linear_solver_options",
+        "newton_linear_solver_name",
+        "newton_linear_solver_options",
+    ),
     [
         ("DEFAULT", None, "DEFAULT", None),
         ("DEFAULT", {"atol": 1e-6}, "DEFAULT", None),
@@ -333,7 +337,7 @@ def test_pass_dedicated_newton_options(
 
 
 @pytest.mark.parametrize(
-    "newton_linear_solver_name, newton_linear_solver_options",
+    ("newton_linear_solver_name", "newton_linear_solver_options"),
     [
         ("DEFAULT", {"atol": 1e-7}),
         ("DEFAULT", None),

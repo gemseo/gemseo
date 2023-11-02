@@ -22,19 +22,18 @@ from __future__ import annotations
 import inspect
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
 import jinja2
+
 from gemseo import _get_schema
 from gemseo import get_algorithm_features
-from gemseo.algos.base_algo_factory import BaseAlgoFactory
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
@@ -45,6 +44,11 @@ from gemseo.post.post_factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
+
+if TYPE_CHECKING:
+    from gemseo.algos.base_algo_factory import BaseAlgoFactory
+    from gemseo.algos.driver_library import DriverLibrary
+    from gemseo.core.base_factory import BaseFactory
 
 GEN_OPTS_PATH = None
 
@@ -77,9 +81,7 @@ def get_options_schemas(
         else:
             print(
                 Warning(
-                    "Missing description for option {} of algo {}".format(
-                        opt_name, feature_name
-                    )
+                    f"Missing description for option {opt_name} of algo {feature_name}"
                 )
             )
             opt_schema[descr] = ""
@@ -94,9 +96,7 @@ def get_options_schemas(
         else:
             print(
                 Warning(
-                    "Missing object type for option {} of algo {}".format(
-                        opt_name, feature_name
-                    )
+                    f"Missing object type for option {opt_name} of algo {feature_name}"
                 )
             )
             opt_schema[obj_type] = ""
@@ -228,22 +228,21 @@ class AlgoOptionsDoc:
         """The features, if any."""
         if self.get_features is not None:
             return {algo: self.get_features(algo) for algo in self.algos_names}
+        return None
 
     @property
     def websites(self) -> dict[str, str] | None:
         """The websites to get more details about the different algorithms, if any."""
         if self.get_website is None:
             return None
-        else:
-            return {algo: self.get_website(algo) for algo in self.algos_names}
+        return {algo: self.get_website(algo) for algo in self.algos_names}
 
     @property
     def descriptions(self) -> dict[str, str] | None:
         """The descriptions of the different algorithms, if any."""
         if self.get_description is None:
             return None
-        else:
-            return {algo: self.get_description(algo) for algo in self.algos_names}
+        return {algo: self.get_description(algo) for algo in self.algos_names}
 
     @property
     def modules(self) -> dict[str, str]:

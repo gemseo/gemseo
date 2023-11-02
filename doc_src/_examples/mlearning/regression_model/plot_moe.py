@@ -28,9 +28,6 @@ mixture of experts regression model to obtain an approximation.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo import configure_logger
-from gemseo import create_benchmark_dataset
-from gemseo.mlearning import create_regression_model
 from numpy import array
 from numpy import hstack
 from numpy import linspace
@@ -38,6 +35,10 @@ from numpy import meshgrid
 from numpy import nonzero
 from numpy import sqrt
 from numpy import zeros
+
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
+from gemseo.mlearning import create_regression_model
 
 configure_logger()
 

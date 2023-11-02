@@ -21,13 +21,14 @@ from operator import le
 from operator import lt
 
 import pytest
+from numpy import array
+from numpy import ndarray
+
+from gemseo.algos.doe.doe_quality import DOEMeasures
+from gemseo.algos.doe.doe_quality import DOEQuality
 from gemseo.algos.doe.doe_quality import compute_discrepancy
 from gemseo.algos.doe.doe_quality import compute_mindist_criterion
 from gemseo.algos.doe.doe_quality import compute_phip_criterion
-from gemseo.algos.doe.doe_quality import DOEMeasures
-from gemseo.algos.doe.doe_quality import DOEQuality
-from numpy import array
-from numpy import ndarray
 
 
 @pytest.fixture(scope="module")

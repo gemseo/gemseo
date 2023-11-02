@@ -36,12 +36,17 @@ where :math:`\\hat{y}` are the predictions and :math:`y` are the data points.
 """
 from __future__ import annotations
 
-from numpy import ndarray
+from typing import TYPE_CHECKING
+
 from sklearn.metrics import mean_squared_error
 
 from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MeasureType
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.mlearning.quality_measures.quality_measure import MeasureType
+    from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 class MSEMeasure(MLErrorMeasure):

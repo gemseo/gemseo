@@ -49,15 +49,19 @@ labeled.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 from matplotlib import pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 from pandas.plotting import scatter_matrix
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class ScatterMatrix(DatasetPlot):
@@ -116,10 +120,7 @@ class ScatterMatrix(DatasetPlot):
                 f"available ones are: {self.dataset.variable_names}."
             )
 
-        if kde:
-            diagonal = "kde"
-        else:
-            diagonal = "hist"
+        diagonal = "kde" if kde else "hist"
 
         dataframe = self.dataset.get_view(variable_names=variable_names)
         kwargs = {}

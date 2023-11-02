@@ -22,13 +22,15 @@ Minor modifications by Francois Gallard : merge the two methods a comment
 """
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.utils.xdsmizer import XdsmType
 
-from xdsmjs import bundlejs, css
+from pathlib import Path
+
+from xdsmjs import bundlejs
+from xdsmjs import css
 
 HTML_TEMPLATE = """
 <!doctype html>
@@ -79,5 +81,6 @@ def generate_xdsm_html(
         xdsm: The XDSM structure.
         file_path: The name of the path to the output HTML file.
     """
-    with open(str(file_path), "w") as stream:
+    file_path = Path(file_path)
+    with file_path.open("w") as stream:
         stream.write(HTML_TEMPLATE.format(css(), bundlejs(), xdsm))

@@ -20,11 +20,12 @@ from typing import Any
 from typing import Mapping
 
 import pytest
+from numpy import array
+from numpy import ndarray
+
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from numpy import array
-from numpy import ndarray
 
 parametrized_names_to_types = pytest.mark.parametrize(
     "names_to_types",
@@ -35,7 +36,7 @@ parametrized_names_to_types = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.parametrize("names_to_types", (None, {}))
+@pytest.mark.parametrize("names_to_types", [None, {}])
 def test_init_empty(names_to_types):
     """Verify init with empty inputs."""
     g = SimpleGrammar("g", names_to_types=names_to_types)
@@ -45,7 +46,7 @@ def test_init_empty(names_to_types):
     assert not g.defaults
 
 
-@pytest.mark.parametrize("required_names", (None, [], ["name"]))
+@pytest.mark.parametrize("required_names", [None, [], ["name"]])
 def test_init(required_names):
     """Verify init with non-empty inputs."""
     g = SimpleGrammar("g", names_to_types={"name": str}, required_names=required_names)
@@ -117,7 +118,7 @@ def test_getitem_error():
 def test_getitem():
     """Verify getitem."""
     g = SimpleGrammar("g", names_to_types={"name": str})
-    assert g["name"] == str
+    assert g["name"] is str
 
 
 @parametrized_names_to_types
@@ -164,10 +165,7 @@ exclude_names = pytest.mark.parametrize(
 def create_defaults(names_to_types: Mapping[str, type]) -> dict[str, Any]:
     defaults = {}
     for name, type_ in names_to_types.items():
-        if type_ is None:
-            value = None
-        else:
-            value = type_(0)
+        value = None if type_ is None else type_(0)
         defaults[name] = value
     return defaults
 
@@ -195,13 +193,13 @@ def test_update_from_types(names_to_types1, names_to_types2):
 
 @double_names_to_types
 @pytest.mark.parametrize(
-    "required_names1,required_names2",
-    (
+    ("required_names1", "required_names2"),
+    [
         (set(), set()),
         ({"name"}, set()),
         (set(), {"name"}),
         ({"name"}, {"name"}),
-    ),
+    ],
 )
 @exclude_names
 def test_update_with_grammar(
@@ -308,7 +306,7 @@ def test_clear(names_to_types):
 
 
 @pytest.mark.parametrize(
-    "names_to_types,data",
+    ("names_to_types", "data"),
     [
         # Empty grammar: everything validates.
         ({}, {"name": 0}),
@@ -319,7 +317,7 @@ def test_clear(names_to_types):
         ({"name": bool}, {"name": True}),
         ({"name": ndarray}, {"name": array([])}),
         # None values element means any type.
-        ({"name": None}, {"name": dict()}),
+        ({"name": None}, {"name": {}}),
     ],
 )
 def test_validate(names_to_types, data):
@@ -329,7 +327,7 @@ def test_validate(names_to_types, data):
 
 
 @pytest.mark.parametrize(
-    "data,error_msg",
+    ("data", "error_msg"),
     [
         ({}, r"Missing required names: name1."),
         (
@@ -338,7 +336,7 @@ def test_validate(names_to_types, data):
         ),
     ],
 )
-@pytest.mark.parametrize("raise_exception", (True, False))
+@pytest.mark.parametrize("raise_exception", [True, False])
 def test_validate_error(data, error_msg, raise_exception, caplog):
     """Verify that validate raises the expected errors."""
     g = SimpleGrammar(
@@ -355,7 +353,7 @@ def test_validate_error(data, error_msg, raise_exception, caplog):
 
 
 @parametrized_names_to_types
-@pytest.mark.parametrize("required_names", ([], None))
+@pytest.mark.parametrize("required_names", [[], None])
 @pytest.mark.parametrize(
     "data",
     [
@@ -406,7 +404,7 @@ NAMES = [
 
 
 @pytest.mark.parametrize("names", NAMES)
-@pytest.mark.parametrize("required_names", [None] + NAMES)
+@pytest.mark.parametrize("required_names", [None, *NAMES])
 def test_restrict_to(names, required_names):
     """Verify restrict_to."""
     names_to_types = {"name1": None, "name2": int}
@@ -532,4 +530,4 @@ def test_copy():
     g_copy = g.copy()
     assert g_copy["name"] is g["name"]
     assert g_copy.defaults["name"] is g.defaults["name"]
-    assert list(g_copy.required_names)[0] is list(g.required_names)[0]
+    assert next(iter(g_copy.required_names)) is next(iter(g.required_names))

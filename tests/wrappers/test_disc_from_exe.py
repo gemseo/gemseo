@@ -26,16 +26,17 @@ from pathlib import Path
 from subprocess import CalledProcessError
 
 import pytest
+from numpy import array
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.utils.directory_creator import DirectoryNamingMethod
 from gemseo.wrappers.disc_from_exe import DiscFromExe
+from gemseo.wrappers.disc_from_exe import Parser
 from gemseo.wrappers.disc_from_exe import parse_key_value_file
 from gemseo.wrappers.disc_from_exe import parse_outfile
 from gemseo.wrappers.disc_from_exe import parse_template
-from gemseo.wrappers.disc_from_exe import Parser
-from numpy import array
 
 from .cfgobj_exe import execute as exec_cfg
 from .sum_data import execute as exec_sum
@@ -322,7 +323,7 @@ def test_parallel_execution(tmp_wd):
     )
 
     for i in range(nb_process):
-        assert Path(f"{i+1}").is_dir()
+        assert Path(f"{i + 1}").is_dir()
 
 
 def test_last_execution_directory(tmp_wd):

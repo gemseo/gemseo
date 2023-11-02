@@ -17,12 +17,14 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Iterable
 
-from numpy import ndarray
-
 from gemseo.algos.doe._base_doe import BaseDOE
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -71,6 +73,7 @@ class BaseFullFactorialDOE(BaseDOE):
                 levels is used for all the inputs.
                 If ``None``, the number of samples provided in argument ``n_samples``
                 is used in order to deduce the levels.
+            **options: The options of the DOE algorithm.
 
         Returns:
             The values of the DOE.

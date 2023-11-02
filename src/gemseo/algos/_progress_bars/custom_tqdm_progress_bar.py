@@ -15,8 +15,7 @@
 """A custom tqdm progress bar with improved time units."""
 from __future__ import annotations
 
-import io
-from numbers import Real
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -28,6 +27,10 @@ from tqdm.utils import disp_len
 
 from gemseo.algos._progress_bars.tqdm_to_logger import TqdmToLogger
 
+if TYPE_CHECKING:
+    import io
+    from numbers import Real
+
 
 class CustomTqdmProgressBar(tqdm.tqdm):
     """A custom tqdm progress bar with improved time units.
@@ -35,9 +38,10 @@ class CustomTqdmProgressBar(tqdm.tqdm):
     Use minute, hour and day for slower processes.
     """
 
-    _BAR_FORMAT: ClassVar[
-        str
-    ] = "{{desc}} {{percentage:3.0f}}%|{{bar}}| {{n_fmt}}/{{total_fmt}} [{{elapsed}}<{{remaining}}, {rate}{{postfix}}]"  # noqa: B950
+    _BAR_FORMAT: ClassVar[str] = (
+        "{{desc}} {{percentage:3.0f}}%|{{bar}}| {{n_fmt}}/{{total_fmt}} "
+        "[{{elapsed}}<{{remaining}}, {rate}{{postfix}}]"
+    )
     """The bar_format used by tqdm.format_meter."""
 
     __BAR_FORMAT_LABEL: Final[str] = "bar_format"

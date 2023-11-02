@@ -24,6 +24,7 @@ from os.path import join
 
 import numpy as np
 import pytest
+
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.data_driven.diagonal import ScalableDiagonalApproximation

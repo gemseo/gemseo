@@ -27,10 +27,11 @@ Create a discipline from a Python function
 # ------
 from __future__ import annotations
 
-from gemseo import configure_logger
-from gemseo import create_discipline
 from numpy import array
 from numpy import empty
+
+from gemseo import configure_logger
+from gemseo import create_discipline
 
 configure_logger()
 
@@ -42,8 +43,7 @@ configure_logger()
 
 def f(x=0.0, y=0.0):
     """A simple Python function."""
-    z = x + 2 * y
-    return z
+    return x + 2 * y
 
 
 # %%

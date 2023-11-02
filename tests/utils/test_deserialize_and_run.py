@@ -19,6 +19,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+
 from gemseo import create_discipline
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.deserialize_and_run import _parse_inputs
@@ -27,7 +28,7 @@ from gemseo.utils.deserialize_and_run import main
 from gemseo.utils.path_discipline import PathDiscipline
 
 
-@pytest.fixture
+@pytest.fixture()
 def discipline_and_data(tmpdir):
     tmpdir = Path(tmpdir)
     path_to_discipline = tmpdir / "discipline.pckl"
@@ -41,7 +42,7 @@ def discipline_and_data(tmpdir):
     return path_to_discipline, path_to_outputs, path_to_input_data, discipline
 
 
-@pytest.fixture
+@pytest.fixture()
 def sys_argv(discipline_and_data):
     (
         path_to_discipline,
@@ -50,13 +51,12 @@ def sys_argv(discipline_and_data):
         discipline,
     ) = discipline_and_data
     tmpdir = path_to_discipline.parent
-    args = [
+    return [
         str(tmpdir),
         str(path_to_discipline),
         str(path_to_input_data),
         str(path_to_outputs),
     ]
-    return args
 
 
 def test_parse_inputs(discipline_and_data, sys_argv):

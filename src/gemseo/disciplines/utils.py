@@ -16,9 +16,9 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import MutableSequence
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline

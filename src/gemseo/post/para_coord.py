@@ -20,12 +20,12 @@
 """A parallel coordinates plot of functions and x."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 import matplotlib
 import matplotlib as mpl
 from matplotlib import pyplot as plt
-from matplotlib.figure import Figure
 from numpy import array
 from numpy import ndarray
 
@@ -33,6 +33,9 @@ from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 
 class ParallelCoordinates(OptPostProcessor):

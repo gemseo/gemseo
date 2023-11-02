@@ -17,6 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from gemseo.utils.directory_creator import DirectoryNamingMethod
 from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
 
@@ -97,7 +98,10 @@ def test_run_options(tmp_wd):
     ],
 )
 def test_run_options_error(tmp_wd, options):
-    msg = f"{set(options.keys())} must not be defined a second time in subprocess_run_options."
+    msg = (
+        f"{set(options.keys())} must not be defined a second time in "
+        "subprocess_run_options."
+    )
     with pytest.raises(
         KeyError,
         match=msg,

@@ -116,7 +116,7 @@ class XLSStudyParser:
 
     An arbitrary number of levels can be generated this way
     (three, four, ..., n, level formulations).
-    """  # noqa: B950
+    """  # noqa: E501
 
     xls_study_path: str
     """The path to the Excel file."""
@@ -165,12 +165,12 @@ class XLSStudyParser:
                 xls_study_path, sheet_name=None, engine="openpyxl"
             )
         except OSError:
-            LOGGER.error("Failed to open the study file: %s", xls_study_path)
+            LOGGER.exception("Failed to open the study file: %s", xls_study_path)
             raise
 
         self.__log_number_objects_detected(True)
-        self.disciplines = dict()
-        self.scenarios = dict()
+        self.disciplines = {}
+        self.scenarios = {}
         self.inputs = set()
         self.outputs = set()
 
@@ -203,13 +203,17 @@ class XLSStudyParser:
                 inputs = self.__get_series(sheet_value, self.__INPUTS)
                 all_inputs += inputs
             except ValueError:
-                raise ValueError(missing_column_msg.format(sheet_name, self.__INPUTS))
+                raise ValueError(
+                    missing_column_msg.format(sheet_name, self.__INPUTS)
+                ) from None
 
             try:
                 outputs = self.__get_series(sheet_value, self.__OUTPUTS)
                 all_outputs += outputs
             except ValueError:
-                raise ValueError(missing_column_msg.format(sheet_name, self.__OUTPUTS))
+                raise ValueError(
+                    missing_column_msg.format(sheet_name, self.__OUTPUTS)
+                ) from None
 
             discipline = MDODiscipline(sheet_name)
             discipline.input_grammar.update_from_names(inputs)
@@ -251,7 +255,6 @@ class XLSStudyParser:
                 raise ValueError(f"The sheet has no series named '{series_name}'.")
             return []
         # Remove empty data
-        # pylint: disable=comparison-with-itself
         return [val for val in series.tolist() if val == val]
 
     def __set_scenario_descriptions(self) -> None:
@@ -269,7 +272,7 @@ class XLSStudyParser:
                 * if a scenario has more than one formulation,
                 * if a scenario has different number of option values.
         """
-        self.scenarios = dict()
+        self.scenarios = {}
         worksheets = self.__log_number_objects_detected(False)
         missing_column_msg = "Scenario {} has no {} column."
         for frame_name, frame in worksheets.items():
@@ -278,35 +281,35 @@ class XLSStudyParser:
             except ValueError:
                 raise ValueError(
                     missing_column_msg.format(frame_name, self.DISCIPLINES)
-                )
+                ) from None
 
             try:
                 design_variables = self.__get_series(frame, self.DESIGN_VARIABLES)
             except ValueError:
                 raise ValueError(
                     missing_column_msg.format(frame_name, self.DESIGN_VARIABLES)
-                )
+                ) from None
 
             try:
                 objectives = self.__get_series(frame, self.OBJECTIVE_FUNCTION)
             except ValueError:
                 raise ValueError(
                     missing_column_msg.format(frame_name, self.OBJECTIVE_FUNCTION)
-                )
+                ) from None
 
             try:
                 constraints = self.__get_series(frame, self.CONSTRAINTS)
             except ValueError:
                 raise ValueError(
                     missing_column_msg.format(frame_name, self.CONSTRAINTS)
-                )
+                ) from None
 
             try:
                 formulation = self.__get_series(frame, self.FORMULATION)
             except ValueError:
                 raise ValueError(
                     missing_column_msg.format(frame_name, self.FORMULATION)
-                )
+                ) from None
 
             options = self.__get_series(frame, self.OPTIONS, False)
             option_values = self.__get_series(frame, self.OPTION_VALUES, False)
@@ -316,14 +319,13 @@ class XLSStudyParser:
                     "Scenario {} must have one {} value.".format(
                         str(frame_name), self.FORMULATION
                     )
-                )
+                ) from None
 
-            if options is not None:
-                if len(options) != len(option_values):
-                    raise ValueError(
-                        "Options {} and Options values {} "
-                        "must have the same length.".format(options, option_values)
-                    )
+            if options is not None and len(options) != len(option_values):
+                raise ValueError(
+                    f"Options {options} and Options values {option_values} "
+                    "must have the same length."
+                ) from None
 
             scenario_description = {
                 self.DISCIPLINES: disciplines,
@@ -423,11 +425,7 @@ class XLSStudyParser:
                 f"the inputs of any discipline: {missing}."
             )
 
-        missing = (
-            set(disciplines)
-            - set(list(self.disciplines.keys()))
-            - set(list(self.scenarios))
-        )
+        missing = set(disciplines) - set(self.disciplines.keys()) - set(self.scenarios)
         if missing:
             raise ValueError(
                 f"{scenario_name}: some disciplines don't exist: {missing}."

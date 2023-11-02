@@ -22,9 +22,16 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
 import pytest
-from gemseo.datasets.dataset import Dataset
+from numpy import arange
+from numpy import array
+from numpy import array_equal
+from numpy import ndarray
+from numpy.ma.testutils import assert_close
+from numpy.testing import assert_equal
+
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.regression.linreg import LinearRegressor
@@ -33,15 +40,12 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
 )
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import arange
-from numpy import array
-from numpy import array_equal
-from numpy import ndarray
-from numpy.ma.testutils import assert_close
-from numpy.testing import assert_equal
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 
-@pytest.fixture
+@pytest.fixture()
 def io_dataset() -> IODataset:
     """The dataset used to train the supervised machine learning algorithms."""
     data = arange(60).reshape(10, 6)
@@ -66,10 +70,10 @@ def test_constructor(io_dataset):
 
 
 @pytest.mark.parametrize(
-    "in_transformer,n_in", [({}, 3), ({"inputs": PCA(n_components=2)}, 2)]
+    ("in_transformer", "n_in"), [({}, 3), ({"inputs": PCA(n_components=2)}, 2)]
 )
 @pytest.mark.parametrize(
-    "out_transformer,n_out", [({}, 3), ({"outputs": PCA(n_components=1)}, 1)]
+    ("out_transformer", "n_out"), [({}, 3), ({"outputs": PCA(n_components=1)}, 1)]
 )
 def test_get_raw_shapes(io_dataset, in_transformer, n_in, out_transformer, n_out):
     """Verify the raw input and output shapes of the algorithm."""
@@ -219,7 +223,13 @@ class NewSupervisedAlgo(MLSupervisedAlgo):
 
 
 @pytest.mark.parametrize(
-    "transform_inputs,transform_outputs,transform_in_key,transform_out_key,expected",
+    (
+        "transform_inputs",
+        "transform_outputs",
+        "transform_in_key",
+        "transform_out_key",
+        "expected",
+    ),
     [
         (False, False, "inputs", "outputs", array([[0.0, 0.0], [2.0, 2.0]])),
         (False, False, "x1", "outputs", array([[0.0, 0.0], [2.0, 2.0]])),
@@ -310,7 +320,7 @@ def test_fit_transformers_option(dataset, name, fit_transformers):
 
 
 @pytest.mark.parametrize(
-    "name,expected", [("x", {"x": 3, "y": 1}), ("y", {"x": 1, "y": 3})]
+    ("name", "expected"), [("x", {"x": 3, "y": 1}), ("y", {"x": 1, "y": 3})]
 )
 def test_compute_transformed_variable_sizes(dataset, name, expected):
     """Check that the compute_transformed_variable_sizes method works."""

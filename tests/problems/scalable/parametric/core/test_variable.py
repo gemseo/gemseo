@@ -15,8 +15,9 @@
 """Test for the module variable."""
 from __future__ import annotations
 
-from gemseo.problems.scalable.parametric.core.variable import Variable
 from numpy import array
+
+from gemseo.problems.scalable.parametric.core.variable import Variable
 
 
 def test_variable():

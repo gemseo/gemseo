@@ -22,6 +22,9 @@ from __future__ import annotations
 from copy import deepcopy
 
 import pytest
+from numpy import array
+from numpy import isclose
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
@@ -34,8 +37,6 @@ from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import array
-from numpy import isclose
 
 from ..core.test_chain import two_virtual_disciplines  # noqa W0611 F811
 
@@ -165,16 +166,16 @@ def test_expected_workflow_with_adapter():
 
     expected = (
         "{MDAGaussSeidel(None), ["
-        + "{PropulsionScenario(None), [SobieskiPropulsion(None), "
-        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        + "SobieskiMission(None), ], }, "
-        + "{AeroScenario(None), [SobieskiPropulsion(None), "
-        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        + "SobieskiMission(None), ], }, "
-        + "{StructureScenario(None), [SobieskiPropulsion(None), "
-        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        + "SobieskiMission(None), ], }, "
-        + "], }"
+        "{PropulsionScenario(None), [SobieskiPropulsion(None), "
+        "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        "SobieskiMission(None), ], }, "
+        "{AeroScenario(None), [SobieskiPropulsion(None), "
+        "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        "SobieskiMission(None), ], }, "
+        "{StructureScenario(None), [SobieskiPropulsion(None), "
+        "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        "SobieskiMission(None), ], }, "
+        "], }"
     )
     assert str(mda.get_expected_workflow()) == expected
 
@@ -264,7 +265,7 @@ def test_parallel_doe(generate_parallel_doe_data):
 
 
 @pytest.mark.parametrize(
-    "baseline_images,n_iterations,logscale",
+    ("baseline_images", "n_iterations", "logscale"),
     [
         (["all_iter_default_log"], None, None),
         (["all_iter_modified_log"], None, [1e-10, 10.0]),

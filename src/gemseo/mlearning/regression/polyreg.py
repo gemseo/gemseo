@@ -78,6 +78,7 @@ from __future__ import annotations
 
 import pickle
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Iterable
 
@@ -87,11 +88,13 @@ from numpy import newaxis
 from numpy import zeros
 from sklearn.preprocessing import PolynomialFeatures
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import DataType
-from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.utils.compatibility.sklearn import get_n_input_features_
+
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class PolynomialRegressor(LinearRegressor):
@@ -221,7 +224,8 @@ class PolynomialRegressor(LinearRegressor):
         """Return the regression coefficients of the linear model.
 
         Args:
-            as_dict: If ``True``, return the coefficients as a dictionary of Numpy arrays
+            as_dict: If ``True``,
+                return the coefficients as a dictionary of Numpy arrays
                 indexed by the names of the coefficients.
                 Otherwise, return the coefficients as a Numpy array.
                 For now the only valid value is False.

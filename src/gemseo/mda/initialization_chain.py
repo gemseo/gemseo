@@ -23,6 +23,7 @@ from typing import Iterable
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.string_tools import pretty_str
 
 
 def order_disciplines_from_default_inputs(
@@ -74,13 +75,16 @@ def order_disciplines_from_default_inputs(
                     for in_name in disc.get_input_data_names()
                 }.difference(available_data_names)
             )
+
             if raise_error:
                 raise ValueError(
-                    f"Cannot compute the inputs {', '.join(missing_inputs)}, "
-                    f"for the following disciplines {', '.join(disc_names)}."
+                    "Cannot compute the inputs "
+                    f"{pretty_str(missing_inputs, sort=False)}, "
+                    "for the following disciplines "
+                    f"{pretty_str(disc_names, sort=False)}."
                 )
-            else:
-                return missing_inputs
+
+            return missing_inputs
 
         ordered_discs.extend(removed_discs)
         for disc in removed_discs:

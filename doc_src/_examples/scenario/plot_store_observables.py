@@ -42,12 +42,13 @@ Store observables
 # All the imports needed for the tutorials are performed here.
 from __future__ import annotations
 
+from numpy import array
+from numpy import ones
+
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from numpy import array
-from numpy import ones
 
 configure_logger()
 

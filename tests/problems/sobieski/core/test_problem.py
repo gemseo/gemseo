@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from numpy import array
 from numpy import complex128
 from numpy import float64
@@ -27,6 +26,8 @@ from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
 from numpy.testing import assert_equal
+
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 
 @pytest.fixture(scope="module")
@@ -68,7 +69,7 @@ def test_normalize(problem):
 
 
 @pytest.mark.parametrize(
-    "dtype,expected", [("complex128", complex128), ("float64", float64)]
+    ("dtype", "expected"), [("complex128", complex128), ("float64", float64)]
 )
 def test_design_space(dtype, expected):
     design_space = SobieskiProblem(dtype).design_space
@@ -512,7 +513,7 @@ def test_x0_optimum(problem, dtype):
 
 
 @pytest.mark.parametrize(
-    "design_variables,physical_design_variables,use_original_order",
+    ("design_variables", "physical_design_variables", "use_original_order"),
     [
         (
             ["x_shared", "x_1", "x_2", "x_3"],
@@ -554,7 +555,8 @@ def test_original_design_variables_order(
     """Check the design space with original variables order."""
     problem = SobieskiProblem()
     problem.USE_ORIGINAL_DESIGN_VARIABLES_ORDER = use_original_order
-    variable_names = design_variables + [
+    variable_names = [
+        *design_variables,
         "y_14",
         "y_32",
         "y_31",
@@ -565,7 +567,8 @@ def test_original_design_variables_order(
         "y_12",
     ]
     assert problem.design_space.variable_names == variable_names
-    variable_names = physical_design_variables + [
+    variable_names = [
+        *physical_design_variables,
         "t_w_4",
         "f_w",
         "esf",

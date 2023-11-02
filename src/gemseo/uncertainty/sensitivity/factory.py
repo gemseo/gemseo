@@ -21,16 +21,19 @@
 from __future__ import annotations
 
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Collection
 from typing import Iterable
 from typing import Mapping
 
-from gemseo.algos.doe.doe_library import DOELibraryOptionType
-from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.base_factory import BaseFactory
-from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+
+if TYPE_CHECKING:
+    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.discipline import MDODiscipline
 
 
 class SensitivityAnalysisFactory(BaseFactory):

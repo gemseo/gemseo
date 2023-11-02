@@ -22,6 +22,7 @@ from __future__ import annotations
 from unittest import mock
 
 import pytest
+
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.uncertainty.sensitivity.correlation import analysis
@@ -30,7 +31,7 @@ from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.testing.helpers import image_comparison
 
 
-@pytest.fixture
+@pytest.fixture()
 def correlation() -> CorrelationAnalysis:
     """A correlation analysis."""
     discipline = create_discipline(

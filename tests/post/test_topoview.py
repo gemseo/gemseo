@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo import create_scenario
 from gemseo.problems.topo_opt.topopt_initialize import (
     initialize_design_space_and_discipline_to,

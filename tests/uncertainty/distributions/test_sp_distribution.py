@@ -20,22 +20,23 @@
 from __future__ import annotations
 
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import inf
+from numpy import ndarray
+from numpy.random import RandomState
+
 from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 from gemseo.uncertainty.distributions.scipy.exponential import SPExponentialDistribution
 from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
 from gemseo.uncertainty.distributions.scipy.triangular import SPTriangularDistribution
 from gemseo.uncertainty.distributions.scipy.uniform import SPUniformDistribution
-from numpy import allclose
-from numpy import array
-from numpy import inf
-from numpy import ndarray
-from numpy.random import seed
 
 
 def test_composed_distribution():
     """Check the composed distribution associated with a SPDistribution."""
-    assert SPDistribution.COMPOSED_DISTRIBUTION_CLASS == SPComposedDistribution
+    assert SPComposedDistribution == SPDistribution.COMPOSED_DISTRIBUTION_CLASS
 
 
 def test_constructor():
@@ -72,9 +73,9 @@ def test_str():
 
 
 def test_compute_samples():
-    seed(0)
+    random_state = RandomState(0)
     distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2})
-    sample = distribution.compute_samples(3)
+    sample = distribution.compute_samples(3, random_state)
     assert isinstance(sample, ndarray)
     assert len(sample.shape) == 2
     assert sample.shape[0] == 3
@@ -82,7 +83,7 @@ def test_compute_samples():
     expectation = array([[3.528105], [0.800314], [1.957476]])
     assert allclose(sample, expectation, 1e-3)
     distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 4)
-    sample = distribution.compute_samples(3)
+    sample = distribution.compute_samples(3, random_state)
     expectation = array(
         [
             [4.481786, 1.900177, 0.821197, 1.522075],

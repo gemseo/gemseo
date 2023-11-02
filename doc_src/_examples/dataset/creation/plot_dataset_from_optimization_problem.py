@@ -30,7 +30,6 @@ from __future__ import annotations
 from gemseo import execute_algo
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
-
 # %%
 # Let us solve the :class:`.Rosenbrock` optimization problem
 # with the SLSQP algorithm and 10 iterations:

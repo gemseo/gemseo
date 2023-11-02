@@ -17,8 +17,10 @@ from __future__ import annotations
 
 from abc import ABC
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 
-from numpy import ndarray
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class BaseProgressBar(ABC):

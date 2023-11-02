@@ -15,6 +15,9 @@
 """Tests for the module design_space."""
 from __future__ import annotations
 
+from numpy import array
+from numpy.testing import assert_equal
+
 from gemseo.problems.scalable.parametric.core.scalable_design_space import (
     ScalableDesignSpace,
 )
@@ -22,8 +25,6 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.variable import Variable
-from numpy import array
-from numpy.testing import assert_equal
 
 
 def test_default():

@@ -22,6 +22,11 @@ from __future__ import annotations
 from unittest import TestCase
 
 import pytest
+from numpy import array
+from numpy import inf
+from scipy.optimize.optimize import rosen
+from scipy.optimize.optimize import rosen_der
+
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_nlopt import Nlopt
@@ -31,10 +36,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
-from numpy import array
-from numpy import inf
-from scipy.optimize.optimize import rosen
-from scipy.optimize.optimize import rosen_der
 
 from .problems.x2 import X2
 
@@ -175,7 +176,7 @@ def test_library_name():
     assert Nlopt.LIBRARY_NAME == "NLopt"
 
 
-@pytest.fixture
+@pytest.fixture()
 def x2_problem() -> X2:
     """Instantiate a :class:`.X2` test problem.
 

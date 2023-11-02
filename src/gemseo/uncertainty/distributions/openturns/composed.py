@@ -20,17 +20,18 @@
 """The OpenTURNS-based joint probability distribution."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Iterable
 from typing import Sequence
-from typing import TYPE_CHECKING
 
 import openturns as ots
 
 if TYPE_CHECKING:
     from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
-from numpy import array, ndarray
+from numpy import array
+from numpy import ndarray
 
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 

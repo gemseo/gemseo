@@ -24,6 +24,8 @@ import unittest
 
 import numpy as np
 import pytest
+from numpy.linalg import norm
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
@@ -36,7 +38,6 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy.linalg import norm
 
 
 class TestMDOFormulation(unittest.TestCase):
@@ -137,14 +138,14 @@ class TestMDOFormulation(unittest.TestCase):
     def test_get_values_array_from_dict(self):
         """"""
         a = concatenate_dict_of_arrays_to_array({}, [])
-        self.assertIsInstance(a, type(np.array([])))
+        assert isinstance(a, type(np.array([])))
 
     def test_get_mask_from_datanames(self):
         """"""
         a = MDOFormulation._get_mask_from_datanames(["y_1", "y_2", "y_3"], ["y_2"])[0][
             0
         ]
-        self.assertEqual(a, 1)
+        assert a == 1
 
     def test_x_mask(self):
         """"""
@@ -177,7 +178,7 @@ class TestMDOFormulation(unittest.TestCase):
         assert x_values_dict == {"x_shared": (0, 4, 4), "y_14": (4, 8, 4)}
 
         with pytest.raises(KeyError):
-            f.mask_x_swap_order(dvs + ["toto"], x)
+            f.mask_x_swap_order([*dvs, "toto"], x)
 
         ff = f.mask_x_swap_order(
             ["x_shared"],
@@ -254,7 +255,7 @@ def test_remove_unused_variable_logger(caplog):
 
 
 @pytest.mark.parametrize(
-    "recursive, expected", [(False, {"d1", "chain2"}), (True, {"d1", "d2", "d3"})]
+    ("recursive", "expected"), [(False, {"d1", "chain2"}), (True, {"d1", "d2", "d3"})]
 )
 def test_get_sub_disciplines_recursive(recursive, expected):
     """Test the recursive option of get_sub_disciplines.

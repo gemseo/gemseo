@@ -34,6 +34,7 @@ from logging import getLevelName
 from time import sleep
 
 import pytest
+
 from gemseo.utils.timer import Timer
 
 

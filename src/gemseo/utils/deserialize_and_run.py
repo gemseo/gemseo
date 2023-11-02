@@ -20,10 +20,12 @@ import os
 import pickle
 import traceback
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Iterable
 
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.discipline_data import DisciplineData
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline_data import DisciplineData
 
 
 def _parse_inputs(args: Iterable[str] | None = None) -> tuple[Path, Path, Path, Path]:
@@ -99,7 +101,7 @@ def _run_discipline_save_outputs(
 
     try:
         outputs = discipline.execute(input_data)
-    except Exception as error:
+    except BaseException as error:
         trace = traceback.format_exc()
         outputs = (error, trace)
         return_code = 1

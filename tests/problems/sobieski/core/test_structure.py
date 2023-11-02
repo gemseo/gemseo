@@ -19,11 +19,12 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.core.structure import SobieskiStructure as CoreStructure
 from gemseo.problems.sobieski.core.utils import SobieskiBase
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from numpy import array
 
 THRESHOLD = 1e-12
 

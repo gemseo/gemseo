@@ -43,11 +43,15 @@ Warnings:
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import ndarray
 from numpy import where
 
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 
 
 class MinMaxScaler(Scaler):

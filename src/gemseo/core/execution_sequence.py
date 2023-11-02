@@ -164,11 +164,9 @@ class AtomicExecSequence(ExecutionSequence):
         """  # noqa: D205, D212, D415
         super().__init__()
         if not isinstance(discipline, MDODiscipline):
-            raise Exception(
-                "Atomic sequence shall be a discipline"
-                + ", got "
-                + str(type(discipline))
-                + " instead !"
+            raise TypeError(
+                "Atomic sequence shall be a discipline, got "
+                f"{type(discipline)} instead !"
             )
         self.discipline = discipline
         self.uuid_to_disc = {self.uuid: discipline}
@@ -230,10 +228,7 @@ class AtomicExecSequence(ExecutionSequence):
         """
         if self._enabled and self.status != discipline.status:
             self.status = discipline.status or _ExecutionStatus.PENDING
-            if (
-                self.status == _ExecutionStatus.DONE
-                or self.status == _ExecutionStatus.FAILED
-            ):
+            if self.status in {_ExecutionStatus.DONE, _ExecutionStatus.FAILED}:
                 self.disable()
             if self._parent:
                 self._parent.update_child_status(self)
@@ -510,7 +505,7 @@ class SerialExecSequence(ExtendableExecSequence):
         if self.sequences:
             self.sequences[self.exec_index].enable()
         else:
-            raise Exception("Serial execution is empty")
+            raise ValueError("Serial execution is empty")
 
     def _update_child_done_status(self, child) -> None:
         """Activate next child to given child execution sequence.
@@ -550,9 +545,7 @@ class ParallelExecSequence(ExtendableExecSequence):
         for sequence in self.sequences:
             sequence.enable()
 
-    def _update_child_done_status(
-        self, child
-    ) -> None:  # pylint: disable=unused-argument
+    def _update_child_done_status(self, child) -> None:
         """Disable itself when all children done.
 
         Args:
@@ -585,14 +578,14 @@ class LoopExecSequence(CompositeExecSequence):
         if isinstance(controller, AtomicExecSequence):
             control = controller
         elif not isinstance(controller, MDODiscipline):
-            raise Exception(
+            raise TypeError(
                 "Controller of a loop shall be a discipline, "
                 f"got {type(controller)} instead."
             )
         else:
             control = AtomicExecSequence(controller)
         if not isinstance(sequence, CompositeExecSequence):
-            raise Exception(
+            raise TypeError(
                 "Sequence of a loop shall be a composite execution sequence, "
                 f"got {type(sequence)} instead."
             )
@@ -637,10 +630,9 @@ class LoopExecSequence(CompositeExecSequence):
             elif self.status == _ExecutionStatus.DONE:
                 self.disable()
                 self.force_statuses(_ExecutionStatus.DONE)
-        if child == self.iteration_sequence:
-            if child.status == _ExecutionStatus.DONE:
-                self.iteration_count += 1
-                self.iteration_sequence.enable()
+        if child == self.iteration_sequence and child.status == _ExecutionStatus.DONE:
+            self.iteration_count += 1
+            self.iteration_sequence.enable()
         if child.status == _ExecutionStatus.FAILED:
             self.status = _ExecutionStatus.FAILED
 

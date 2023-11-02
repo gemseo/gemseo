@@ -38,8 +38,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Union
 
 import nlopt
@@ -50,10 +52,12 @@ from numpy import ndarray
 
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.opt_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)
 
@@ -119,12 +123,12 @@ class Nlopt(OptimizationLibrary):
     FORCED_STOP = (
         "NLOPT_FORCED_STOP: Halted because of a forced "
         "termination: the user called nlopt_force_stop"
-        "(opt) on the optimization’s nlopt_opt"
-        " object opt from the user’s objective "
+        "(opt) on the optimization's nlopt_opt"
+        " object opt from the user's objective "
         "function or constraints."
     )
 
-    NLOPT_MESSAGES = {
+    NLOPT_MESSAGES: ClassVar[dict[int, str]] = {
         1: SUCCESS,
         2: STOPVAL_REACHED,
         3: FTOL_REACHED,
@@ -250,7 +254,8 @@ class Nlopt(OptimizationLibrary):
         Args:
             ftol_abs: The absolute tolerance on the objective function.
             xtol_abs: The absolute tolerance on the design parameters.
-            max_time: The maximum runtime in seconds. The value 0 means no runtime limit.
+            max_time: The maximum runtime in seconds.
+                The value 0 means no runtime limit.
             max_iter: The maximum number of iterations.
             ftol_rel: The relative tolerance on the objective function.
             xtol_rel: The relative tolerance on the design parameters.
@@ -263,7 +268,8 @@ class Nlopt(OptimizationLibrary):
                 If ``None`` this criterion is not activated.
             kkt_tol_rel: The relative tolerance on the KKT residual norm.
                 If ``None`` this criterion is not activated.
-            normalize_design_space: If ``True``, normalize the design variables between 0 and 1.
+            normalize_design_space: If ``True``,
+                normalize the design variables between 0 and 1.
             eq_tolerance: The tolerance on the equality constraints.
             ineq_tolerance: The tolerance on the inequality constraints.
             init_step: The initial step size :math:`r` for derivative-free algorithms.
@@ -289,7 +295,7 @@ class Nlopt(OptimizationLibrary):
             The NLopt library options with their values.
         """
         nds = normalize_design_space
-        popts = self._process_options(
+        return self._process_options(
             ftol_rel=ftol_rel,
             ftol_abs=ftol_abs,
             xtol_rel=xtol_rel,
@@ -307,8 +313,6 @@ class Nlopt(OptimizationLibrary):
             kkt_tol_rel=kkt_tol_rel,
             **kwargs,
         )
-
-        return popts
 
     def __opt_objective_grad_nlopt(
         self,
@@ -364,10 +368,9 @@ class Nlopt(OptimizationLibrary):
             Returns:
                 The result of evaluating the function for a given constraint.
             """
-            if self.descriptions[self.algo_name].require_gradient:
-                if grad.size > 0:
-                    cstr_jac = jac(xn_vect)
-                    grad[:] = atleast_2d(cstr_jac)[index_cstr,]
+            if self.descriptions[self.algo_name].require_gradient and grad.size > 0:
+                cstr_jac = jac(xn_vect)
+                grad[:] = atleast_2d(cstr_jac)[index_cstr,]
             return atleast_1d(func(xn_vect).real)[index_cstr]
 
         return cstr_fun_grad
@@ -493,12 +496,12 @@ class Nlopt(OptimizationLibrary):
         try:
             nlopt_problem.optimize(x_0.real)
         except (RoundoffLimited, RuntimeError) as err:
-            LOGGER.error(
+            LOGGER.exception(
                 "NLopt run failed: %s, %s",
                 str(err.args[0]),
                 str(err.__class__.__name__),
             )
-            raise TerminationCriterion()
+            raise TerminationCriterion from None
         message = self.NLOPT_MESSAGES[nlopt_problem.last_optimize_result()]
         status = nlopt_problem.last_optimize_result()
         return self.get_optimum_from_database(message, status)

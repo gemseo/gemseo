@@ -80,12 +80,15 @@ The Jacobian of the right-hand side of this ODE is:
 from __future__ import annotations
 
 from math import sqrt
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import zeros
-from numpy.typing import NDArray
 
 from gemseo.algos.ode.ode_problem import ODEProblem
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 def _compute_rhs(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
@@ -99,9 +102,7 @@ def _compute_rhs(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:
     return array([f1, f2, f3, f4])
 
 
-def _compute_rhs_jacobian(
-    time: float, state: NDArray[float]
-) -> NDArray[float]:  # noqa:U100
+def _compute_rhs_jacobian(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
     """Compute the Jacobian of the right-hand side of the ODE."""
     x, y, vx, vy = state
     jac = zeros((4, 4))

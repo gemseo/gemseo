@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 

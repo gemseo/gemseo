@@ -20,6 +20,7 @@
 """A factory to instantiate MDA from their class names."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Optional
 from typing import Sequence
@@ -27,8 +28,10 @@ from typing import Union
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda import MDA
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 MDAOptionType = Optional[
     Union[float, int, bool, str, Iterable[MDOCouplingStructure], Sequence[MDA]]

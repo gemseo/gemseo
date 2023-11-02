@@ -59,7 +59,8 @@ class FininiteElementAnalysis(MDODiscipline):
             n_x: The number of elements in the x-direction.
             n_y: The number of elements in the y-direction.
             f_node: The indices of the nodes where the forces are applied.
-            f_direction: The force direction for each ``f_node``, either 0 for x or 1 for y.
+            f_direction: The force direction for each ``f_node``,
+                either 0 for x or 1 for y.
             f_amplitude: The force amplitude for each pair ``(f_node, f_direction)``.
             fixed_nodes: The indices of the nodes where the structure is clamped.
                 If ``None``, a default value is used.
@@ -150,7 +151,7 @@ class FininiteElementAnalysis(MDODiscipline):
         self.jK = kron(edof_mat, ones((1, 8))).flatten()
 
         # Free DOFs
-        alldofs = array(range(0, 2 * self.N_nodes))
+        alldofs = array(range(2 * self.N_nodes))
         fixeddofs = 2 * self.fixednodes + self.fixed_dir
         self.freedofs = setdiff1d(alldofs, fixeddofs)
 

@@ -22,11 +22,10 @@
 """A database of function calls and design variables."""
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import List
 from typing import Mapping
 from typing import Tuple
-from typing import TYPE_CHECKING
 from typing import Union
 
 import h5py
@@ -34,14 +33,17 @@ from numpy import array
 from numpy import float64
 from numpy import ndarray
 from numpy import string_
-from numpy.typing import ArrayLike
 
-from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.utils.hdf5 import get_hdf5_group
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from numpy.typing import ArrayLike
+
     from gemseo.algos.database import Database
     from gemseo.algos.database import DatabaseValueType
+    from gemseo.algos.hashable_ndarray import HashableNdarray
 
 ReturnedHdfMissingOutputType = Tuple[
     Mapping[str, Union[float, ndarray, List[int]]], Mapping[str, int]

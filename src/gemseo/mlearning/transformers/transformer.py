@@ -32,7 +32,7 @@ and possibly :meth:`.Transformer.inverse_transform` methods.
 from __future__ import annotations
 
 from abc import abstractmethod
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import NoReturn
@@ -40,11 +40,15 @@ from typing import Union
 
 from numpy import ndarray
 from numpy import newaxis
-from typing_extensions import ParamSpecArgs
-from typing_extensions import ParamSpecKwargs
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from typing_extensions import ParamSpecArgs
+    from typing_extensions import ParamSpecKwargs
 
 ParameterType = Union[bool, int, float, ndarray, str, None]
 TransformerFitOptionType = Union[float, int, str]

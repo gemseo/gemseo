@@ -86,8 +86,7 @@ class RestrictedFunction(MDOFunction):
         """
         x_full = insert(x_vect, self._restriction_indices, self.restriction_values)
         jac = self._orig_function.jac(x_full)
-        jac = delete(jac, self._restriction_indices, axis=0)
-        return jac
+        return delete(jac, self._restriction_indices, axis=0)
 
 
 class LinearComposition(MDOFunction):

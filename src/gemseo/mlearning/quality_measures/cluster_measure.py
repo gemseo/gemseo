@@ -25,17 +25,20 @@ The concept of clustering quality measure is implemented with the
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Sequence
 
-from numpy import ndarray
-
-from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
-from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
+    from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 
 
 class MLClusteringMeasure(MLQualityMeasure):

@@ -21,16 +21,20 @@ from __future__ import annotations
 
 from numbers import Number
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
-from gemseo.core.discipline_data import Data
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from numpy import array
 from numpy import float64
 from numpy import int64
 from numpy import ndarray
+
+from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.grammars.simple_grammar import SimpleGrammar
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
 
 DATA_PATH = Path(__file__).parent / "data"
 
@@ -123,11 +127,11 @@ def test_getitem_error():
 def test_getitem():
     """Verify getting an item."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
-    assert g["name1"]._active_strategies[0].PYTHON_TYPES == (int, float, float64, int64)
+    assert (int, float, float64, int64) == g["name1"]._active_strategies[0].PYTHON_TYPES
 
 
 @pytest.mark.parametrize(
-    "file_path,length",
+    ("file_path", "length"),
     [
         (None, 0),
         (DATA_PATH / "grammar_2.json", 2),
@@ -140,7 +144,7 @@ def test_len(file_path, length):
 
 
 @pytest.mark.parametrize(
-    "file_path,names",
+    ("file_path", "names"),
     [
         (None, []),
         (DATA_PATH / "grammar_2.json", ["name1", "name2"]),
@@ -153,7 +157,7 @@ def test_iter(file_path, names):
 
 
 @pytest.mark.parametrize(
-    "file_path,names",
+    ("file_path", "names"),
     [
         (None, []),
         (DATA_PATH / "grammar_2.json", ["name1", "name2"]),
@@ -212,10 +216,7 @@ def test_update_and_update_from_file(
     else:
         g1.update_from_file(file_path2)
 
-    if not method_is_update:
-        exclude_names = set()
-    else:
-        exclude_names = set(exclude_names)
+    exclude_names = set() if not method_is_update else set(exclude_names)
 
     assert g1.defaults.keys() == g2.defaults.keys() - exclude_names
 
@@ -252,7 +253,7 @@ def test_clear(file_path):
 
 
 @pytest.mark.parametrize(
-    "file_path,repr_",
+    ("file_path", "repr_"),
     [
         (
             None,
@@ -288,8 +289,8 @@ def test_repr(file_path, repr_):
 
 
 @pytest.mark.parametrize(
-    "file_path,data_sets",
-    (
+    ("file_path", "data_sets"),
+    [
         # Empty grammar: everything validates.
         (None, ({"name": 0},)),
         (
@@ -300,7 +301,7 @@ def test_repr(file_path, repr_):
                 {"name1": 1, "name2": 0},
             ),
         ),
-    ),
+    ],
 )
 def test_validate(file_path, data_sets):
     """Verify validate."""
@@ -311,7 +312,7 @@ def test_validate(file_path, data_sets):
 
 @pytest.mark.parametrize("raise_exception", [True, False])
 @pytest.mark.parametrize(
-    "data,error_msg",
+    ("data", "error_msg"),
     [
         ({}, r"Missing required names: name1."),
         (
@@ -349,7 +350,7 @@ def test_validate_error(raise_exception, data, error_msg, caplog):
         ["name2"],
     ],
 )
-@pytest.mark.parametrize("merge", (True, False))
+@pytest.mark.parametrize("merge", [True, False])
 def test_update_from_names(file_path, names, merge):
     """Verify update with names."""
     g = new_grammar(file_path)
@@ -366,25 +367,25 @@ def test_update_from_names(file_path, names, merge):
         return
 
     name = names[0]
-    property = g.schema["properties"][name]
+    property_ = g.schema["properties"][name]
 
     if name == "name1" and file_path:
         if merge:
-            assert property == {
+            assert property_ == {
                 "anyOf": [
                     {"type": "integer"},
                     {"type": "array", "items": {"type": "number"}},
                 ]
             }
         else:
-            assert property == {"type": "array", "items": {"type": "number"}}
+            assert property_ == {"type": "array", "items": {"type": "number"}}
 
     if name == "name2" or not file_path:
-        assert property == {"type": "array", "items": {"type": "number"}}
+        assert property_ == {"type": "array", "items": {"type": "number"}}
 
 
 @pytest.mark.parametrize(
-    "data,expected_type",
+    ("data", "expected_type"),
     [
         ({}, "integer"),
         ({"name1": 0}, "integer"),
@@ -395,7 +396,7 @@ def test_update_from_names(file_path, names, merge):
         ({"name1": {"name2": 0}}, "object"),
     ],
 )
-@pytest.mark.parametrize("merge", (True, False))
+@pytest.mark.parametrize("merge", [True, False])
 def test_update_from_data_with_empty(data, expected_type, merge):
     """Verify update_from_data from an empty grammar."""
     g = _test_update_from_data(None, data, merge)
@@ -407,7 +408,7 @@ def test_update_from_data_with_empty(data, expected_type, merge):
 
 
 @pytest.mark.parametrize(
-    "data,expected_type",
+    ("data", "expected_type"),
     [
         ({}, "integer"),
         ({"name1": 0}, "integer"),
@@ -418,7 +419,7 @@ def test_update_from_data_with_empty(data, expected_type, merge):
         ({"name1": {"name2": 0}}, "object"),
     ],
 )
-@pytest.mark.parametrize("merge", (True, False))
+@pytest.mark.parametrize("merge", [True, False])
 def test_update_from_data_with_non_empty(data, expected_type, merge):
     """Verify update_from_data from a non empty grammar."""
     g = _test_update_from_data(DATA_PATH / "grammar_2.json", data, merge)
@@ -565,7 +566,7 @@ def test_convert_to_simple_grammar_warnings(caplog):
 
 
 @pytest.mark.parametrize(
-    "file_path,names",
+    ("file_path", "names"),
     [
         (None, set()),
         (DATA_PATH / "grammar_2.json", {"name1"}),
@@ -579,11 +580,11 @@ def test_required_names(file_path, names):
 
 @pytest.mark.parametrize(
     "descriptions",
-    (
+    [
         {},
         {"name1": "name1 description"},
         {"name1": "name1 description", "name2": "name2 description"},
-    ),
+    ],
 )
 def test_set_descriptions(descriptions):
     """Verify setting descriptions."""
@@ -606,7 +607,7 @@ def test_set_descriptions(descriptions):
 
 
 @pytest.mark.parametrize(
-    "file_path,schema",
+    ("file_path", "schema"),
     [
         (None, {"$schema": "http://json-schema.org/schema#"}),
         (
@@ -647,7 +648,7 @@ EXPECTED_JSON = """
 """.strip()
 
 
-@pytest.mark.parametrize("path", (None, "g.json"))
+@pytest.mark.parametrize("path", [None, "g.json"])
 def test_write(path, tmp_wd):
     """Verify write."""
     g = JSONGrammar("g", file_path=DATA_PATH / "grammar_1.json")
@@ -688,7 +689,7 @@ def test_update_from_error():
 
 
 @pytest.mark.parametrize(
-    "var, check_is_numeric_array, expected",
+    ("var", "check_is_numeric_array", "expected"),
     [
         pytest.param(
             "IDONTEXIST",
@@ -722,16 +723,16 @@ def test_copy():
     # Contrary to the simple grammar, the items values are not shared because the
     # schema builder is deeply copied.
     assert g_copy.defaults["name"] is g.defaults["name"]
-    assert list(g_copy.required_names)[0] is list(g.required_names)[0]
+    assert next(iter(g_copy.required_names)) is next(iter(g.required_names))
 
 
 @pytest.mark.parametrize(
     "data",
     [
-        [1.0, "s"],
-        [[1, 2], ["a", "b"], (1, 2), ("a", "b")],
-        [array([1, 2]), [1.0, 2.0]],
-        [False, True, 1],
+        (1.0, "s"),
+        ([1, 2], ["a", "b"], (1, 2), ("a", "b")),
+        (array([1, 2]), [1.0, 2.0]),
+        (False, True, 1),
     ],
 )
 def test_update_from_types(data):
@@ -762,15 +763,15 @@ def test_empty_types():
 
 
 @pytest.mark.parametrize(
-    "py_type, json_type",
+    ("py_type", "json_type"),
     [
-        [int, "integer"],
-        [float, "number"],
-        [ndarray, "array"],
-        [list, "array"],
-        [str, "string"],
-        [bool, "boolean"],
-        [Number, "number"],
+        (int, "integer"),
+        (float, "number"),
+        (ndarray, "array"),
+        (list, "array"),
+        (str, "string"),
+        (bool, "boolean"),
+        (Number, "number"),
     ],
 )
 def test_update_from_types_basic(py_type, json_type):

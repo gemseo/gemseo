@@ -19,10 +19,11 @@ from __future__ import annotations
 from typing import Iterable
 
 import pytest
-from gemseo.core.discipline import MDODiscipline
-from gemseo.disciplines.remapping import RemappingDiscipline
 from numpy import array
 from numpy.testing import assert_equal
+
+from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.remapping import RemappingDiscipline
 
 
 class NewDiscipline(MDODiscipline):
@@ -138,12 +139,12 @@ def test_linearize(discipline):
 
 
 @pytest.mark.parametrize(
-    "mapping,expected",
+    ("mapping", "expected"),
     [
         ({"new_in_1": "x"}, {"new_in_1": ("x", slice(None))}),
         ({"new_in_1": ("x", 1)}, {"new_in_1": ("x", slice(1, 2))}),
         ({"new_in_1": ("x", [0, 2])}, {"new_in_1": ("x", [0, 2])}),
-        ({"new_in_1": ("x", range(0, 2))}, {"new_in_1": ("x", range(0, 2))}),
+        ({"new_in_1": ("x", range(2))}, {"new_in_1": ("x", range(2))}),
     ],
 )
 def test_format_mapping(mapping, expected):

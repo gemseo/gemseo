@@ -15,10 +15,11 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -39,7 +40,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

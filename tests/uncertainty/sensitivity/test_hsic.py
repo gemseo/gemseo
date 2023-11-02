@@ -20,16 +20,21 @@
 """Tests for the class HSICAnalysis."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo import create_discipline
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
-from gemseo.uncertainty.sensitivity.hsic.analysis import HSICAnalysis
 from numpy import newaxis
 from openturns import HSICEstimatorGlobalSensitivity
 from openturns import HSICUStat
 from openturns import Sample
 from openturns import SquaredExponential
+
+from gemseo import create_discipline
+from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.uncertainty.sensitivity.hsic.analysis import HSICAnalysis
+
+if TYPE_CHECKING:
+    from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 
 
 @pytest.fixture(scope="module")
@@ -119,9 +124,7 @@ def openturns_hsic_indices(
         "y2": [{"x1": y2_r2hsic_indices[0], "x2": y2_r2hsic_indices[1]}],
     }
 
-    indices = {"HSIC": hsic_indices, "R2-HSIC": r2_hsic_indices}
-
-    return indices
+    return {"HSIC": hsic_indices, "R2-HSIC": r2_hsic_indices}
 
 
 @pytest.mark.parametrize("outputs", [{}, {"outputs": ["y1", "y2"]}, {"outputs": "y2"}])

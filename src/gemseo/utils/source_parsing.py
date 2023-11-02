@@ -87,11 +87,10 @@ def parse_rest(
     param_re = re.compile(pattern, re.S)
     strings = param_re.findall(docstring)
     parsed_doc = {txt[0]: txt[1].replace(" " * 4, "").rstrip("\n") for txt in strings}
-    parsed_doc = {
+    return {
         name: description.replace("  ", " ").replace("\n", " ").replace("  ", "\n\n")
         for name, description in parsed_doc.items()
     }
-    return parsed_doc
 
 
 # regex pattern for finding the arguments section of a Google docstring
@@ -113,7 +112,8 @@ def parse_google(docstring: str) -> dict[str, str]:
         docstring: The docstring to be parsed.
 
     Returns:
-        The parsed docstring with the function arguments names bound to their descriptions.
+        The parsed docstring with the function arguments names bound to their
+        descriptions.
     """
     args_sections = RE_PATTERN_ARGS_SECTION.findall(docstring)
 

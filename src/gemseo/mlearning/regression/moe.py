@@ -57,6 +57,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Dict
 from typing import Final
@@ -73,32 +74,34 @@ from numpy import unique
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
-from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.selection import MLAlgoSelection
-from gemseo.mlearning.core.supervised import SavedObjectType
+from gemseo.mlearning.core.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.data_formatters.moe_data_formatters import MOEDataFormatters
 from gemseo.mlearning.quality_measures.f1_measure import F1Measure
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
-from gemseo.mlearning.quality_measures.quality_measure import (
-    OptionType as EvalOptionType,
-)
 from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.string_tools import MultiLineString
 
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.classification.classification import MLClassificationAlgo
+    from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
+    from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+    from gemseo.mlearning.quality_measures.quality_measure import (
+        OptionType as EvalOptionType,
+    )
+
 LOGGER = logging.getLogger(__name__)
 
-SavedObjectType = Union[SavedObjectType, str, Dict]
+SavedObjectType = Union[_SavedObjectType, str, Dict]
 
 MLAlgoType = Dict[
     str,
@@ -595,8 +598,7 @@ class MOERegressor(MLRegressionAlgo):
         probas = self.classifier.predict_proba(input_data, hard=self.hard)
         local_outputs = self._predict_all(input_data)
         contributions = probas * local_outputs
-        global_outputs = contributions.sum(axis=1)
-        return global_outputs
+        return contributions.sum(axis=1)
 
     def _predict_jacobian(
         self,

@@ -46,7 +46,7 @@ from __future__ import annotations
 
 from operator import ge
 from operator import le
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 from typing import Mapping
@@ -70,6 +70,9 @@ from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.lines import Lines
 from gemseo.uncertainty.statistics.statistics import Statistics
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class EmpiricalStatistics(Statistics):

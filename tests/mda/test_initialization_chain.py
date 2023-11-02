@@ -18,13 +18,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.core.discipline import MDODiscipline
+
 from gemseo.mda.initialization_chain import MDOInitializationChain
 from gemseo.mda.initialization_chain import order_disciplines_from_default_inputs
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 DISC_DESCR_1 = [
     ("B", ["d", "c"], ["e"]),

@@ -28,7 +28,7 @@ from __future__ import annotations
 import cmath
 import logging
 import math
-from types import ModuleType
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 from numpy import array
@@ -39,6 +39,9 @@ from numpy import concatenate
 from numpy import float64
 from numpy import ndarray
 from strenum import StrEnum
+
+if TYPE_CHECKING:
+    from types import ModuleType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -327,12 +330,9 @@ class SobieskiBase:
             Derivatives of normalized value.
         """
         s_norm = s_new.real / s_ref.real
-        if s_norm > 1.25:
-            return 0.0
-        elif s_norm < 0.75:
-            return 0.0
-        else:
+        if 0.75 <= s_norm <= 1.25:
             return 1.0 / s_ref
+        return 0.0
 
     def derive_polynomial_approximation(
         self,

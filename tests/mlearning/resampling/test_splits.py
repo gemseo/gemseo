@@ -18,9 +18,10 @@ from __future__ import annotations
 from collections.abc import Collection
 
 import pytest
+from numpy import array
+
 from gemseo.mlearning.resampling.split import Split
 from gemseo.mlearning.resampling.splits import Splits
-from numpy import array
 
 
 @pytest.fixture(scope="module")

@@ -88,7 +88,7 @@ class BaseBenchmark(abc.ABC):
     def _setup(self) -> None:
         """Prepare the data for the benchmark."""
         self._data = self.DATA_CLASS(
-            **{k: getattr(self._args, k) for k in self._data_defaults.keys()}
+            **{k: getattr(self._args, k) for k in self._data_defaults}
         )
 
     def _parse_args(self) -> None:

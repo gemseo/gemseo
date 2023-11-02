@@ -26,9 +26,10 @@ In this example, we will see how to use :class:`.HDF5Cache`.
 """
 from __future__ import annotations
 
+from numpy import array
+
 from gemseo import configure_logger
 from gemseo.caches.hdf5_cache import HDF5Cache
-from numpy import array
 
 configure_logger()
 
@@ -84,7 +85,7 @@ len(cache)
 # %%
 # We can
 # also display all the cached data so far.
-[entry for entry in cache]
+list(cache)
 
 # %%
 # Get last cached data

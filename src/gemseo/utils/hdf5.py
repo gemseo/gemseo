@@ -15,7 +15,10 @@
 """Helper functions for hdf5 data."""
 from __future__ import annotations
 
-import h5py
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import h5py
 
 
 def get_hdf5_group(
@@ -39,4 +42,6 @@ def get_hdf5_group(
     try:
         return h5py_data[name]
     except KeyError as err:
-        raise KeyError(f"In HDF5 file {h5py_data.file}: no such group {err.args[0]}.")
+        raise KeyError(
+            f"In HDF5 file {h5py_data.file}: no such group {err.args[0]}."
+        ) from None

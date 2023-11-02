@@ -21,11 +21,12 @@
 from __future__ import annotations
 
 import pytest
+from matplotlib import pyplot as plt
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-from numpy import array
 
 pytestmark = [pytest.mark.xfail(reason="fail with Python3 and coverage")]
 
@@ -37,10 +38,9 @@ def dataset():
     sample2 = [1.0, 1.0, -1.0, 2]
     sample3 = [2.0, 2.0, -2.0, 2]
     sample4 = [3.0, 3.0, -3.0, 1]
-    dataset = Dataset.from_array(
+    return Dataset.from_array(
         array([sample1, sample2, sample3, sample4]), ["x", "y", "z", "c"]
     )
-    return dataset
 
 
 # the test parameters, it maps a test name to the inputs and references outputs:
@@ -61,7 +61,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

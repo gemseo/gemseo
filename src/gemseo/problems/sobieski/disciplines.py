@@ -216,7 +216,7 @@ class SobieskiStructure(SobieskiDiscipline):
                 "t_w_2": ("y_12", 0),
                 "f_w": ("y_14", 1),
                 "twist": ("y_12", 1),
-                "stress": ("g_1", range(0, 5)),
+                "stress": ("g_1", range(5)),
                 "twist_c": ("g_1", range(5, 7)),
             },
         )
@@ -328,7 +328,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
                 "y_3": "y_3",
                 "sfc": ("y_3", 0),
                 "e_w": ("y_3", 1),
-                "esf_c": ("g_3", range(0, 2)),
+                "esf_c": ("g_3", range(2)),
                 "esf": "y_32",
                 "throttle_c": ("g_3", 2),
                 "temperature": ("g_3", 3),

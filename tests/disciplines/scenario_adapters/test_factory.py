@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.disciplines.scenario_adapters.factory import ScenarioAdapterFactory
 
 

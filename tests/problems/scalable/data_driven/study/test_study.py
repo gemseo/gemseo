@@ -21,17 +21,18 @@ from __future__ import annotations
 import os
 
 import pytest
+
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.problems.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.scalable.data_driven.study.process import ScalabilityStudy
 from gemseo.problems.sellar.sellar import OBJ
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar import X_LOCAL
 from gemseo.problems.sellar.sellar import X_SHARED
 from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 

@@ -35,7 +35,9 @@ def parse_cfgobj(infile):
                 try:
                     data[key] = float(literal_eval(spl[1].strip()))
                 except Exception:
-                    raise ValueError("Failed to parse value as float " + str(spl[1]))
+                    raise ValueError(
+                        "Failed to parse value as float " + str(spl[1])
+                    ) from None
     return data
 
 

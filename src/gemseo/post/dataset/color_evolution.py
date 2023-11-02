@@ -19,17 +19,21 @@
 """Evolution of the variables by means of a color scale."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Iterable
 
-from matplotlib.axes import Axes
 from matplotlib.colors import SymLogNorm
-from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
 from numpy import e
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class ColorEvolution(DatasetPlot):

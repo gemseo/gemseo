@@ -28,13 +28,16 @@ sklearn.preprocessing.PowerTransformer.html>`_.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from numpy import ndarray
 from sklearn.preprocessing import PowerTransformer
 
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class Power(Transformer):

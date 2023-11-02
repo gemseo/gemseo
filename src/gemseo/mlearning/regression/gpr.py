@@ -97,6 +97,7 @@ generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 from typing import Final
@@ -109,13 +110,16 @@ from numpy import atleast_2d
 from numpy import ndarray
 from numpy import newaxis
 from numpy import repeat
-from sklearn.gaussian_process.kernels import Kernel
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import DataType
-from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+
+if TYPE_CHECKING:
+    from sklearn.gaussian_process.kernels import Kernel
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 __Bounds = Tuple[float, float]
 
@@ -190,8 +194,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         """The kernel used for prediction."""
         if self.is_trained:
             return self.algo.kernel_
-        else:
-            return self.algo.kernel
+        return self.algo.kernel
 
     def __compute_parameter_length_scale_bounds(
         self,

@@ -23,12 +23,13 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy import vstack
 
-from gemseo.mlearning.resampling.splits import Splits
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.core.ml_algo import MLAlgo
     from numpy.typing import NDArray
+
+    from gemseo.mlearning.core.ml_algo import MLAlgo
+    from gemseo.mlearning.resampling.splits import Splits
 
 
 class Resampler(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -190,5 +191,4 @@ class Resampler(metaclass=ABCGoogleDocstringInheritanceMeta):
         if stack_predictions:
             function = concatenate if len(output_data_shape) == 1 else vstack
             return function(predictions)
-        else:
-            return predictions
+        return predictions

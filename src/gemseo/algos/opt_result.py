@@ -21,6 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import field
 from dataclasses import fields
+from typing import ClassVar
 from typing import Mapping
 from typing import Union
 
@@ -89,7 +90,7 @@ class OptimizationResult:
     __C_TAG_LEN = len(__C_TAG)
     __CONSTRAINTS_VALUES = "constraint_values"
     __CONSTRAINTS_GRAD = "constraints_grad"
-    __NOT_DICT_KEYS = [__CONSTRAINTS_VALUES, __CONSTRAINTS_GRAD]
+    __NOT_DICT_KEYS: ClassVar[list[str]] = [__CONSTRAINTS_VALUES, __CONSTRAINTS_GRAD]
 
     @property
     def __string_representation(self) -> MultiLineString:

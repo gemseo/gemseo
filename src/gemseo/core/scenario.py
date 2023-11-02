@@ -23,10 +23,8 @@ from __future__ import annotations
 import logging
 import timeit
 from datetime import timedelta
-from os import remove
-from os.path import basename
-from os.path import exists
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Mapping
 from typing import Sequence
@@ -37,23 +35,25 @@ from numpy import complex128
 from numpy import float64
 from numpy import ndarray
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
-from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.post.post_factory import PostFactory
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
-from gemseo.utils.xdsm import XDSM
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.core.formulation import MDOFormulation
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.post.opt_post_processor import OptPostProcessor
+    from gemseo.post.opt_post_processor import OptPostProcessorOptionType
+    from gemseo.utils.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
 
@@ -101,6 +101,7 @@ class Scenario(MDODiscipline):
     ALGO_OPTIONS = "algo_options"
     activate_input_data_check = True
     activate_output_data_check = True
+    _opt_hist_backup_path: Path
 
     def __init__(
         self,
@@ -134,7 +135,6 @@ class Scenario(MDODiscipline):
         self.formulation_name = None
         self.optimization_result = None
         self._algo_factory = None
-        self._opt_hist_backup_path = None
         self._gen_opt_backup_plot = False
         self._algo_name = None
         self._lib = None
@@ -254,13 +254,14 @@ class Scenario(MDODiscipline):
                 a single discipline must provide all outputs.
             constraint_type: The type of constraint.
             constraint_name: The name of the constraint to be stored.
-                If ``None``, the name of the constraint is generated from the output name.
+                If ``None``,
+                the name of the constraint is generated from the output name.
             value: The value for which the constraint is active.
                 If ``None``, this value is 0.
             positive: If ``True``, the inequality constraint is positive.
 
         Raises:
-            ValueError: If the constraint type is neither 'eq' or 'ineq'.
+            ValueError: If the constraint type is neither 'eq' nor 'ineq'.
         """
         self.formulation.add_constraint(
             output_name,
@@ -385,10 +386,10 @@ class Scenario(MDODiscipline):
             ValueError: If both erase and pre_load are ``True``.
         """
         opt_pb = self.formulation.opt_problem
-        self._opt_hist_backup_path = file_path
+        self._opt_hist_backup_path = Path(file_path)
         self._gen_opt_backup_plot = generate_opt_plot
 
-        if exists(self._opt_hist_backup_path):
+        if self._opt_hist_backup_path.exists():
             if erase and pre_load:
                 raise ValueError(
                     "Conflicting options for history backup, "
@@ -399,7 +400,7 @@ class Scenario(MDODiscipline):
                     "Erasing optimization history in %s",
                     self._opt_hist_backup_path,
                 )
-                remove(self._opt_hist_backup_path)
+                self._opt_hist_backup_path.unlink()
             elif pre_load:
                 opt_pb.database.update_from_hdf(self._opt_hist_backup_path)
                 max_iteration = len(opt_pb.database)
@@ -422,9 +423,11 @@ class Scenario(MDODiscipline):
         """
         self.save_optimization_history(self._opt_hist_backup_path, append=True)
         if self._gen_opt_backup_plot and self.formulation.opt_problem.database:
-            basepath = basename(self._opt_hist_backup_path).split(".")[0]
             self.post_process(
-                "OptHistoryView", save=True, show=False, file_path=basepath
+                "OptHistoryView",
+                save=True,
+                show=False,
+                file_path=self._opt_hist_backup_path.stem,
             )
 
     @property
@@ -466,7 +469,7 @@ class Scenario(MDODiscipline):
 
     def _run_algorithm(self) -> OptimizationResult:
         """Run the driver algorithm."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __repr__(self) -> str:
         msg = MultiLineString()
@@ -554,15 +557,16 @@ class Scenario(MDODiscipline):
             XDSMizer(self).monitor(
                 directory_path=directory_path, log_workflow_status=log_workflow_status
             )
-        else:
-            return XDSMizer(self).run(
-                directory_path=directory_path,
-                save_pdf=save_pdf,
-                show_html=show_html,
-                save_html=save_html,
-                save_json=save_json,
-                file_name=file_name,
-            )
+            return None
+
+        return XDSMizer(self).run(
+            directory_path=directory_path,
+            save_pdf=save_pdf,
+            show_html=show_html,
+            save_html=save_html,
+            save_json=save_json,
+            file_name=file_name,
+        )
 
     def get_expected_dataflow(  # noqa:D102
         self,
@@ -575,7 +579,7 @@ class Scenario(MDODiscipline):
 
     def _init_algo_factory(self) -> None:
         """Initialize the factory of algorithms."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_available_driver_names(self) -> list[str]:
         """The available drivers."""

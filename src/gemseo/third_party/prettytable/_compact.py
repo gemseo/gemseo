@@ -43,7 +43,7 @@ import sys
 py3k = sys.version_info[0] >= 3
 
 if py3k:
-    str_types = (str, )
+    str_types = (str,)
     unicode_ = str
     basestring_ = str
     itermap = map
@@ -56,6 +56,7 @@ else:
     basestring_ = basestring
     str_types = (unicode, str)
     import itertools
+
     itermap = itertools.imap
     iterzip = itertools.izip
     uni_chr = unichr

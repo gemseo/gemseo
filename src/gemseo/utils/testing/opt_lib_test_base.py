@@ -20,6 +20,8 @@
 """Common tools for testing opt libraries."""
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -112,19 +114,18 @@ class OptLibraryTestBase:
 
         if x_err > 1e-2 or f_err > 1e-2:
             pb_name = problem.__class__.__name__
-            error_msg = (
+            return (
                 "Optimization with "
                 + algo_name
-                + " failed to find solution"
-                + " of problem "
+                + " failed to find solution of problem "
                 + pb_name
                 + " after n calls = "
                 + str(len(problem.database))
             )
-            return error_msg
         return None
 
-    def create_test(self, problem, opt_library, algo_name, options):
+    @staticmethod
+    def create_test(problem, opt_library, algo_name, options):
         """
 
         :param problem: param opt_library:
@@ -140,25 +141,29 @@ class OptLibraryTestBase:
                 problem, opt_library, algo_name, **options
             )
             if msg is not None:
-                raise Exception(msg)
+                raise RuntimeError(msg)
             return msg
 
         return test_algo
 
-    def get_pb_instance(self, pb_name, pb_options=None):
+    @staticmethod
+    def get_pb_instance(
+        pb_name: str,
+        pb_options: dict[str, Any] | None = None,
+    ) -> tuple[Rosenbrock, Power2, Rastrigin]:
         """
         :param pb_name: the name of the optimization problem
         :param pb_options: the options to be passed to the optimization problem
         """
         if pb_options is None:
             pb_options = {}
-
         if pb_name == "Rosenbrock":
             return Rosenbrock(2, **pb_options)
-        elif pb_name == "Power2":
+        if pb_name == "Power2":
             return Power2(**pb_options)
         if pb_name == "Rastrigin":
             return Rastrigin(**pb_options)
+        raise ValueError(f"Bad pb_name argument: {pb_name}")
 
     def generate_test(self, opt_lib_name, get_options=None, get_problem_options=None):
         """Generates the tests for an opt library Filters algorithms adapted to the

@@ -69,6 +69,7 @@ class do_not_raise(nullcontext):  # noqa: N801
         """
         Args:
             *args: The arguments to match the signature of :func:`pytest.raises`.
-            **kwargs: The keyword arguments to match the signature of :func:`pytest.raises`.
+            **kwargs: The keyword arguments to match the signature of
+                :func:`pytest.raises`.
         """  # noqa:D205 D212 D415
         super().__init__()

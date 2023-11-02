@@ -17,6 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo.algos.opt_problem import OptimizationProblem

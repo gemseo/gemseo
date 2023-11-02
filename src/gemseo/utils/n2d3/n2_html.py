@@ -17,14 +17,15 @@ from __future__ import annotations
 
 import json
 import webbrowser
-from typing import Sequence
 from typing import TYPE_CHECKING
+from typing import Sequence
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import DependencyGraph
 
-from gemseo.utils.n2d3.n2_json import N2JSON
 from pathlib import Path
+
+from gemseo.utils.n2d3.n2_json import N2JSON
 
 
 class N2HTML:

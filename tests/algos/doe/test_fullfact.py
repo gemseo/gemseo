@@ -17,6 +17,11 @@ from __future__ import annotations
 import logging
 
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
+from numpy import atleast_2d
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
 from gemseo.algos.doe.lib_openturns import OpenTURNS
@@ -25,10 +30,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import allclose
-from numpy import array
-from numpy import array_equal
-from numpy import atleast_2d
 
 
 @pytest.fixture()
@@ -41,7 +42,8 @@ def doe_problem_dim_2():
 
 
 @pytest.mark.parametrize(
-    "doe_library_class,algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+    ("doe_library_class", "algo_name"),
+    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
     "expected",
@@ -49,8 +51,6 @@ def doe_problem_dim_2():
         array([[1.0]]),
         array([[0.0], [2.0]]),
         array([[0.0], [1.0], [2.0]]),
-        array([[1.0, 1.0]]),
-        array([[1.0, 1.0]]),
         array([[1.0, 1.0]]),
         array([[0.0, 0.0], [2.0, 0.0], [0.0, 2.0], [2.0, 2.0]]),
     ],
@@ -71,7 +71,8 @@ def test_fullfact_values(doe_library_class, algo_name, expected):
 
 
 @pytest.mark.parametrize(
-    "doe_library_class,algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+    ("doe_library_class", "algo_name"),
+    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize("n_samples", [1, 100])
 @pytest.mark.parametrize("size", [2, 5])
@@ -99,10 +100,11 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size):
 
 
 @pytest.mark.parametrize(
-    "doe_library_class, algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+    ("doe_library_class", "algo_name"),
+    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
-    "options, expected",
+    ("options", "expected"),
     [
         (
             {"levels": [2, 3]},
@@ -126,10 +128,11 @@ def test_fullfact_levels(
 
 
 @pytest.mark.parametrize(
-    "doe_library_class, algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+    ("doe_library_class", "algo_name"),
+    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
-    "options, exception, error_msg",
+    ("options", "exception", "error_msg"),
     [
         (
             {},

@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.topo_opt.topopt_initialize import (

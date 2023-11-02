@@ -24,10 +24,10 @@ Fitting a distribution from data based on OpenTURNS
 """
 from __future__ import annotations
 
+from numpy.random import default_rng
+
 from gemseo import configure_logger
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
-from numpy.random import randn
-from numpy.random import seed
 
 configure_logger()
 
@@ -38,8 +38,8 @@ configure_logger()
 # we consider a synthetic dataset made of 100 realizations of *'X'*,
 # a random variable distributed according to the standard normal distribution.
 # These samples are generated from the NumPy library.
-seed(1)
-data = randn(100)
+rng = default_rng(1)
+data = rng.normal(size=100)
 variable_name = "X"
 
 # %%

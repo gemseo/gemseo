@@ -39,6 +39,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from time import time
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
@@ -51,14 +52,12 @@ from numpy import where
 from numpy import zeros
 from strenum import StrEnum
 
-from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
 from gemseo.algos._progress_bars.dummy_progress_bar import DummyProgressBar
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
 from gemseo.algos._progress_bars.unsuffixed_progress_bar import UnsuffixedProgressBar
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription
 from gemseo.algos.algorithm_library import AlgorithmLibrary
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
@@ -73,6 +72,10 @@ from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
+    from gemseo.algos.design_space import DesignSpace
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
 LOGGER = logging.getLogger(__name__)
@@ -234,9 +237,8 @@ class DriverLibrary(AlgorithmLibrary):
         self.__progress_bar.set_objective_value(None, True)
         self.__iter += 1
         self.problem.current_iter = self.__iter
-        if self._max_time > 0:
-            if time() - self._start_time > self._max_time:
-                raise MaxTimeReached()
+        if 0 < self._max_time < time() - self._start_time:
+            raise MaxTimeReached
 
         self.__progress_bar.set_objective_value(x_vect)
 
@@ -344,11 +346,11 @@ class DriverLibrary(AlgorithmLibrary):
                     "Execution may be forced setting the 'skip_int_check' "
                     "argument to 'True'.".format(self.algo_name)
                 )
-            else:
-                LOGGER.warning(
-                    "Forcing the execution of an algorithm that does not handle "
-                    "integer variables."
-                )
+
+            LOGGER.warning(
+                "Forcing the execution of an algorithm that does not handle "
+                "integer variables."
+            )
 
     def execute(
         self,

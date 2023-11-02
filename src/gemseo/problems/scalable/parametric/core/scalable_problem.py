@@ -20,6 +20,7 @@
 """The scalable problem."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import Sequence
@@ -33,9 +34,7 @@ from numpy import quantile
 from numpy import vstack
 from numpy import zeros
 from numpy.linalg import inv
-from numpy.random import rand
-from numpy.random import seed as np_seed
-from numpy.typing import NDArray
+from numpy.random import default_rng
 
 from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_0
 from gemseo.problems.scalable.parametric.core.disciplines.main_discipline import (
@@ -56,14 +55,17 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
 from gemseo.problems.scalable.parametric.core.scalable_discipline_settings import (
     ScalableDisciplineSettings,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import (
+    SHARED_DESIGN_VARIABLE_NAME,
+)
 from gemseo.problems.scalable.parametric.core.variable_names import get_constraint_name
 from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
 from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
 from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
-from gemseo.problems.scalable.parametric.core.variable_names import (
-    SHARED_DESIGN_VARIABLE_NAME,
-)
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class ScalableProblem:
@@ -123,7 +125,7 @@ class ScalableProblem:
             alpha: The proportion of feasible design points.
             seed: The seed for reproducibility.
         """
-        np_seed(seed)
+        rng = default_rng(seed)
 
         # The output sizes of the scalable disciplines.
         p_i = [d.p_i for d in discipline_settings]
@@ -147,18 +149,17 @@ class ScalableProblem:
         for i, i_th_disc_settings in enumerate(discipline_settings):
             other_discipline_indices = all_discipline_indices - {i}
             _p_i = i_th_disc_settings.p_i
-            D_i0.append(rand(_p_i, d_0))
-            D_ii.append(rand(_p_i, i_th_disc_settings.d_i))
+            D_i0.append(rng.random((_p_i, d_0)))
+            D_ii.append(rng.random((_p_i, i_th_disc_settings.d_i)))
             C_ij.append(
                 {
-                    get_coupling_name(j + 1): rand(
-                        _p_i,
-                        discipline_settings[j].p_i,
+                    get_coupling_name(j + 1): rng.random(
+                        (_p_i, discipline_settings[j].p_i)
                     )
                     for j in other_discipline_indices
                 }
             )
-            a_i.append(rand(_p_i))
+            a_i.append(rng.random(_p_i))
 
         # Define the matrix C and compute its inverse.
         C = eye(self._p)  # noqa: N806
@@ -195,7 +196,10 @@ class ScalableProblem:
         self.__beta = -self._inv_C @ D
 
         q = quantile(
-            [self.compute_y(x).min() for x in rand(self.__N_SAMPLES, sum(d_i) + d_0)],
+            [
+                self.compute_y(x).min()
+                for x in rng.random((self.__N_SAMPLES, sum(d_i) + d_0))
+            ],
             1 - alpha,
         )
         t_i = [[q] * n for n in p_i]
@@ -205,7 +209,7 @@ class ScalableProblem:
         # c = 2*\beta^T\alpha
         # d = \alpha^T\alpha
         # b = [-\beta,\diag(d),-\diag(d)]
-        Q_x0 = zeros((d, d))  # noqa: 806
+        Q_x0 = zeros((d, d))  # noqa: N806
         Q_x0[0:d_0, 0:d_0] = eye(d_0)
         self.qp_problem = QuadraticProgrammingProblem(
             2 * (Q_x0 + self.__beta.T @ self.__beta),

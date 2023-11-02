@@ -23,18 +23,19 @@ import unittest
 
 import numpy as np
 import pytest
+
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.sellar.sellar import C_1
 from gemseo.problems.sellar.sellar import C_2
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar import X_LOCAL
 from gemseo.problems.sellar.sellar import X_SHARED
 from gemseo.problems.sellar.sellar import Y_1
 from gemseo.problems.sellar.sellar import Y_2
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 
@@ -165,12 +166,11 @@ class TestSellarScenarios(unittest.TestCase):
     @staticmethod
     def create_functional_disciplines():
         """"""
-        disciplines = [
+        return [
             Sellar1(),
             Sellar2(),
             SellarSystem(),
         ]
-        return disciplines
 
     @staticmethod
     def build_scenario(disciplines, formulation="MDF"):
@@ -180,13 +180,12 @@ class TestSellarScenarios(unittest.TestCase):
         :param formulation: name of the formulation (Default value = 'MDF')
         """
         design_space = SellarDesignSpace()
-        scenario = MDOScenario(
+        return MDOScenario(
             disciplines,
             formulation=formulation,
             objective_name="obj",
             design_space=design_space,
         )
-        return scenario
 
     @staticmethod
     def build_and_run_scenario(formulation, algo, lin_method="complex_step"):

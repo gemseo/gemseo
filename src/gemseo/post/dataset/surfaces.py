@@ -26,15 +26,19 @@ Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Sequence
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class Surfaces(DatasetPlot):
@@ -48,7 +52,7 @@ class Surfaces(DatasetPlot):
         samples: Sequence[int] | None = None,
         add_points: bool = False,
         fill: bool = True,
-        levels: int | Sequence[int] = None,
+        levels: int | Sequence[int] | None = None,
     ) -> None:
         """
         Args:
@@ -83,10 +87,7 @@ class Surfaces(DatasetPlot):
         y_data = self.dataset.misc[mesh][:, 1]
         data = self.dataset.get_view(variable_names=variable).to_numpy()
 
-        if samples is not None:
-            samples = data[samples, :]
-        else:
-            samples = data
+        samples = data if samples is None else data[samples, :]
 
         options = {"cmap": self.colormap}
         levels = self._param.levels

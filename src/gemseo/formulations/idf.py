@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Sequence
 
@@ -32,7 +33,6 @@ from numpy import newaxis
 from numpy import ones_like
 from numpy import zeros
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
@@ -43,6 +43,9 @@ from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.mda.mda_chain import MDAChain
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
 
 LOGGER = logging.getLogger(__name__)
 
@@ -132,10 +135,10 @@ class IDF(MDOFormulation):
         for name in self.all_couplings:
             value = res[name]
             LOGGER.info(
-                "IDF: changing the initial value of %s " "from %s to %s (equilibrium)",
+                "IDF: changing the initial value of %s from %s to %s (equilibrium)",
                 name,
-                str(current_x[name]),
-                str(value),
+                current_x[name],
+                value,
             )
             self.design_space.set_current_variable(name, value)
 

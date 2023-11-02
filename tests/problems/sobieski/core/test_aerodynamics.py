@@ -19,9 +19,10 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from numpy import array
 
 THRESHOLD = 1e-12
 

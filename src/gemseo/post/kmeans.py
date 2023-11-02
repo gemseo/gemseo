@@ -20,14 +20,18 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from numpy import array
 from sklearn import cluster
 from sklearn.preprocessing import StandardScaler
 
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.matplotlib_figure import FigSizeType
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 

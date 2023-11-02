@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
@@ -24,10 +25,12 @@ from numpy import array
 from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ndarray
-from openturns import StratifiedExperiment
 
 from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from openturns import StratifiedExperiment
 
 LOGGER = logging.getLogger(__name__)
 

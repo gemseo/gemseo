@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Mapping
 
 import numpy as np
+
 from gemseo.wrappers._base_disc_from_exe import _BaseDiscFromExe
 from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
 

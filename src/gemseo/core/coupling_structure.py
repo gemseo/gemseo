@@ -24,24 +24,25 @@ from __future__ import annotations
 import itertools
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Dict
 from typing import List
 from typing import Sequence
 from typing import Set
 from typing import Tuple
-from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Axes
-from matplotlib.figure import Figure
-from matplotlib.text import Text
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.disciplines.utils import check_disciplines_consistency
-from gemseo.utils.matplotlib_figure import FigSizeType
 
 if TYPE_CHECKING:
+    from matplotlib.figure import Axes
+    from matplotlib.figure import Figure
+    from matplotlib.text import Text
+
     from gemseo.core.discipline import MDODiscipline
+    from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.n2d3.n2_html import N2HTML
 
 LOGGER = logging.getLogger(__name__)
@@ -133,7 +134,8 @@ class MDOCouplingStructure:
         Args:
             add_self_coupled: Whether to add the disciplines that are self-coupled
                 to the list of strongly coupled disciplines.
-            by_group: If ``True``, returns a list of lists of strongly coupled disciplines
+            by_group: If ``True``,
+                returns a list of lists of strongly coupled disciplines
                 where the sublist contains the groups of disciplines that
                 are strongly coupled together.
                 If ``False``, returns a single list.
@@ -180,7 +182,7 @@ class MDOCouplingStructure:
             for component in parallel_tasks:
                 # find single disciplines
                 if len(component) == 1 and not self.is_self_coupled(component[0]):
-                    weak_disciplines.append(component[0])
+                    weak_disciplines.append(component[0])  # noqa: PERF401
         self._weakly_coupled_disc = weak_disciplines
 
     @property
@@ -260,16 +262,14 @@ class MDOCouplingStructure:
 
         Args:
             discipline: The discipline.
-            strong: If ``True``, consider the strong couplings. Otherwise, the weak ones.
+            strong: If ``True``,
+                consider the strong couplings. Otherwise, the weak ones.
 
         Returns:
             The names of the output coupling variables.
         """
         output_names = discipline.get_output_data_names()
-        if strong:
-            couplings = self.strong_couplings
-        else:
-            couplings = self.all_couplings
+        couplings = self.strong_couplings if strong else self.all_couplings
         return sorted(name for name in output_names if name in couplings)
 
     def get_input_couplings(
@@ -281,16 +281,14 @@ class MDOCouplingStructure:
 
         Args:
             discipline: The discipline.
-            strong: If ``True``, consider the strong couplings. Otherwise, the weak ones.
+            strong: If ``True``,
+                consider the strong couplings. Otherwise, the weak ones.
 
         Returns:
             The names of the input coupling variables.
         """
         input_names = discipline.get_input_data_names()
-        if strong:
-            couplings = self.strong_couplings
-        else:
-            couplings = self.all_couplings
+        couplings = self.strong_couplings if strong else self.all_couplings
         return sorted(name for name in input_names if name in couplings)
 
     def find_discipline(
@@ -378,7 +376,7 @@ class MDOCouplingStructure:
             discipline_name = plt.text(
                 discipline_index + 0.5,
                 n_disciplines - discipline_index - 0.5,
-                "\n\n".join([discipline.name] + self_coupling_variables),
+                "\n\n".join([discipline.name, *self_coupling_variables]),
                 verticalalignment="center",
                 horizontalalignment="center",
             )

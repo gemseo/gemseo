@@ -32,7 +32,7 @@ class TopologyView(OptPostProcessor):
         self,
         n_x: int,
         n_y: int,
-        observable: str = None,
+        observable: str | None = None,
         iterations: int | Iterable[int] | None = None,
     ) -> None:
         """Plot the design variable or an observable field patch plot.

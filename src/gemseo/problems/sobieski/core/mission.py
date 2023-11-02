@@ -228,8 +228,7 @@ class SobieskiMission(SobieskiDiscipline):
         """
         if altitude < 36089.0:
             return -0.000006875
-        else:
-            return 0.0
+        return 0.0
 
     def __compute_sqrt_theta(self, altitude: float) -> float:
         """Compute the square root of the air temperature.
@@ -242,8 +241,7 @@ class SobieskiMission(SobieskiDiscipline):
         """
         if altitude < 36089.0:
             return self.math.sqrt(1 - 0.000006875 * altitude)
-        else:
-            return self.math.sqrt(0.7519)
+        return self.math.sqrt(0.7519)
 
     def execute(
         self,

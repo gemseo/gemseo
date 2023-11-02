@@ -21,6 +21,11 @@ from __future__ import annotations
 import re
 
 import pytest
+from numpy import array
+from numpy import array_equal
+from numpy import ndarray
+from scipy.sparse import csr_matrix
+
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import array_to_dict
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -32,20 +37,16 @@ from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.data_conversion import nest_flat_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
-from numpy import array
-from numpy import array_equal
-from numpy import ndarray
-from scipy.sparse import csr_matrix
 
 
-@pytest.fixture
+@pytest.fixture()
 def dict_to_be_updated() -> dict[str, ndarray]:
     """A dictionary to be updated."""
     return {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])}
 
 
 @pytest.mark.parametrize(
-    "values_array,cast_complex,expected",
+    ("values_array", "cast_complex", "expected"),
     [
         (
             array([0.5, 1.0, 2.0]),
@@ -123,7 +124,8 @@ def test_update_dict_of_arrays_from_array_too_long(dict_to_be_updated):
             r"Inconsistent data shapes: "
             r"could not use the whole data array of shape \(2L?,\) "
             r"\(only reached max index = 1\), "
-            r"while updating data dictionary names y of shapes: \[\(u?'y', \(1L?,\)\)\]\."
+            r"while updating data dictionary names y of shapes: "
+            r"\[\(u?'y', \(1L?,\)\)\]\."
         ),
     ):
         update_dict_of_arrays_from_array(dict_to_be_updated, "y", array([0.5, 1.5]))
@@ -168,8 +170,7 @@ def possibly_nested_xy_dict(
     """A NumPy array with values for x and y."""
     if request.param:
         return {"x": {"x_1": array([1.0])}, "y": array([2.0, 3.0])}
-    else:
-        return {"x": array([1.0]), "y": array([2.0, 3.0])}
+    return {"x": array([1.0]), "y": array([2.0, 3.0])}
 
 
 @pytest.fixture(scope="module")
@@ -179,7 +180,7 @@ def xy_array() -> ndarray:
 
 
 @pytest.mark.parametrize(
-    "names,expected",
+    ("names", "expected"),
     [
         ("x", array([1.0])),
         ("y", array([2.0, 3.0])),
@@ -194,7 +195,7 @@ def test_concatenate_dict_of_arrays_to_array(xy_dict, names, expected):
 
 
 @pytest.mark.parametrize(
-    "names,expected",
+    ("names", "expected"),
     [
         (["x", "y"], {"x": array([1.0]), "y": array([2.0, 3.0])}),
         (["y", "x"], {"x": array([3.0]), "y": array([1.0, 2.0])}),
@@ -214,9 +215,9 @@ def test_split_array_to_dict_of_arrays_with_inconsistency_check(xy_array, y_size
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The total size of the elements ({}) "
-            "and the size of the last dimension of the array ({}) "
-            "are different.".format(1 + y_size, xy_array.shape[-1])
+            f"The total size of the elements ({1 + y_size}) "
+            f"and the size of the last dimension of the array ({xy_array.shape[-1]}) "
+            "are different."
         ),
     ):
         split_array_to_dict_of_arrays(
@@ -318,7 +319,7 @@ def test_deepcopy_dict_of_arrays(possibly_nested_xy_dict, names):
 
 
 @pytest.mark.parametrize(
-    "d_1,d_2,d_3,d_4,d_5",
+    ("d_1", "d_2", "d_3", "d_4", "d_5"),
     [
         (
             {"x": array([1.0]), "y": array([1, 2])},

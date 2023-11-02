@@ -38,6 +38,7 @@ The RBF model relies on the Rbf class of the
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 from typing import Final
@@ -55,12 +56,14 @@ from numpy.linalg import norm
 from scipy.interpolate import Rbf
 from strenum import StrEnum
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.core.supervised import SavedObjectType
+from gemseo.mlearning.core.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
-SavedObjectType = Union[SavedObjectType, float, Callable]
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
+
+SavedObjectType = Union[_SavedObjectType, float, Callable]
 
 
 class RBFRegressor(MLRegressionAlgo):
@@ -68,6 +71,7 @@ class RBFRegressor(MLRegressionAlgo):
 
     This model relies on the SciPy class :class:`scipy.interpolate.Rbf`.
     """
+
     der_function: Callable[[ndarray], ndarray]
     """The derivative of the radial basis function."""
 
@@ -327,7 +331,7 @@ class RBFRegressor(MLRegressionAlgo):
     ) -> None:
         self.y_average = average(output_data, axis=0)
         output_data -= self.y_average
-        args = list(input_data.T) + [output_data]
+        args = [*list(input_data.T), output_data]
         self.algo = Rbf(
             *args,
             mode="N-D",

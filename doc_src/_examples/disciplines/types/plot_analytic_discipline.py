@@ -24,9 +24,10 @@ Create a discipline from analytical expressions
 """
 from __future__ import annotations
 
+from numpy import array
+
 from gemseo import configure_logger
 from gemseo import create_discipline
-from numpy import array
 
 # %%
 # Import

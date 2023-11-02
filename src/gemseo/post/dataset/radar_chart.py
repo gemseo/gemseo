@@ -20,16 +20,21 @@
 r"""Draw a radar chart from a :class:`.Dataset`."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 from numpy import linspace
 from numpy import pi
 from numpy import rad2deg
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.compatibility.matplotlib import get_color_map
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class RadarChart(DatasetPlot):

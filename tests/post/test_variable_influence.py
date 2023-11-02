@@ -21,6 +21,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.post_factory import PostFactory
@@ -122,7 +123,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "use_standardized_objective, baseline_images",
+    ("use_standardized_objective", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

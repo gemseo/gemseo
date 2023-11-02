@@ -29,14 +29,17 @@ generated/sklearn.cross_decomposition.PLSRegression.html>`_.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Final
 
-from numpy import ndarray
 from sklearn.cross_decomposition import PLSRegression
 
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class PLS(DimensionReduction):
@@ -64,7 +67,7 @@ class PLS(DimensionReduction):
             The data to be fitted.
         """
         if self.algo.n_components is None:
-            self.algo.n_components = min(min(data.shape), min(other_data.shape))
+            self.algo.n_components = min(*data.shape, *other_data.shape)
 
         self.algo.fit(data, other_data)
         self.parameters["n_components"] = self.algo.n_components

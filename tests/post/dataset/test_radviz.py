@@ -21,11 +21,11 @@
 from __future__ import annotations
 
 import pytest
+from matplotlib import pyplot as plt
+
 from gemseo.post.dataset.radviz import Radar
 from gemseo.problems.dataset.iris import create_iris_dataset
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-
 
 # the test parameters, it maps a test name to the inputs and references outputs:
 # - the kwargs to be passed to Radar._plot
@@ -45,7 +45,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

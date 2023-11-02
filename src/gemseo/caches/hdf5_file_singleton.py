@@ -20,12 +20,13 @@
 """HDF5 file singleton used by the HDF5 cache."""
 from __future__ import annotations
 
-from genericpath import exists
 from multiprocessing import RLock
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 import h5py
+from genericpath import exists
 from numpy import append
 from numpy import bytes_
 from numpy import ndarray
@@ -36,10 +37,12 @@ from scipy.sparse import spmatrix
 from strenum import StrEnum
 
 from gemseo.core.cache import AbstractFullCache
-from gemseo.core.cache import Data
 from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
 
 
 class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
@@ -68,7 +71,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     _INPUTS_GROUP: ClassVar[str] = AbstractFullCache._INPUTS_GROUP
     """The label for the input variables."""
 
-    class __SparseMatricesAttributes(StrEnum):
+    class __SparseMatricesAttributes(StrEnum):  # noqa: N801
         """Attribute names required to store sparse matrices in CSR format."""
 
         SPARSE = "sparse"
@@ -150,7 +153,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 index,
                 group,
                 self.hdf_file_path,
-            )
+            ) from None
 
         if h5_open_file is None:
             h5_file.close()
@@ -355,7 +358,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     def __check_file_format_version(self) -> None:
         """Make sure the file can be handled.
 
-        Raises
+        Raises:
             ValueError: If the version of the file format is missing or
                 greater than the current one.
         """

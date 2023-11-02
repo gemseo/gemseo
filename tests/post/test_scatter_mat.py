@@ -21,6 +21,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from numpy import array
+from numpy import ones
+from numpy import power
+
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -31,9 +35,6 @@ from gemseo.post.post_factory import PostFactory
 from gemseo.post.scatter_mat import ScatterPlotMatrix
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import array
-from numpy import ones
-from numpy import power
 
 CURRENT_DIR = Path(__file__).parent
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
@@ -109,7 +110,7 @@ def test_non_existent_var(tmp_wd):
 
 
 @pytest.mark.parametrize(
-    "variables, baseline_images",
+    ("variables", "baseline_images"),
     [
         ([], ["empty_list"]),
         (["x_shared", "obj"], ["subset_2components"]),
@@ -138,7 +139,7 @@ def test_scatter_plot(baseline_images, variables, pyplot_close_all):
         file_extension="png",
         variable_names=variables,
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 def test_maximized_func(tmp_wd, pyplot_close_all):
@@ -182,7 +183,7 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
 
 
 @pytest.mark.parametrize(
-    "filter_non_feasible, baseline_images",
+    ("filter_non_feasible", "baseline_images"),
     [(True, ["power_2_filtered"]), (False, ["power_2_not_filtered"])],
 )
 @image_comparison(None)
@@ -223,7 +224,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images, pyplot_close_
         filter_non_feasible=filter_non_feasible,
         variable_names=["x"],
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 def test_filter_non_feasible_exception():
@@ -253,7 +254,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "use_standardized_objective, baseline_images",
+    ("use_standardized_objective", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

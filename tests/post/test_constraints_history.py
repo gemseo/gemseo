@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.post.constraints_history import ConstraintsHistory
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -43,7 +44,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "baseline_images,options",
+    ("baseline_images", "options"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

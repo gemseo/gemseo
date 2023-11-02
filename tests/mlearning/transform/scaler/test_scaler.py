@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from numpy import allclose
 from numpy import arange
 from numpy import array
@@ -29,8 +28,10 @@ from numpy import eye
 from numpy import ndarray
 from numpy import ones
 
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
-@pytest.fixture
+
+@pytest.fixture()
 def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))

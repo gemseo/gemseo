@@ -62,10 +62,8 @@ from numpy import sqrt
 from numpy import vstack
 from numpy import where
 from numpy import zeros
-from numpy.random import choice
-from numpy.random import rand
-from numpy.random import randint
-from numpy.random import seed as npseed
+from numpy.random import Generator
+from numpy.random import default_rng
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from gemseo.problems.scalable.data_driven.model import ScalableModel
@@ -77,6 +75,9 @@ class ScalableDiagonalModel(ScalableModel):
     """Scalable diagonal model."""
 
     ABBR = "sdm"
+
+    __rng: Generator
+    """The random number generator."""
 
     def __init__(
         self,
@@ -129,6 +130,7 @@ class ScalableDiagonalModel(ScalableModel):
             "seed": seed,
             "group_dep": group_dep,
         }
+        self.__rng = default_rng(seed)
         super().__init__(data, sizes, **parameters)
         self.t_scaled, self.f_scaled = self.__build_scalable_functions()
 
@@ -178,10 +180,7 @@ class ScalableDiagonalModel(ScalableModel):
         """
         comp_dep, inpt_dep = self.__build_dependencies()
         seed = self.parameters["seed"]
-        scalable_approximation = ScalableDiagonalApproximation(
-            self.sizes, comp_dep, inpt_dep, seed
-        )
-        return scalable_approximation
+        return ScalableDiagonalApproximation(self.sizes, comp_dep, inpt_dep, seed)
 
     def __build_scalable_functions(self):
         """Builds all the required functions from the original dataset."""
@@ -278,9 +277,7 @@ class ScalableDiagonalModel(ScalableModel):
                     axes.text(j, i, val, ha="center", va="center", color=col)
         if save:
             extension = "png" if png else "pdf"
-            file_path = Path(directory) / "{}_dependency.{}".format(
-                self.name, extension
-            )
+            file_path = Path(directory) / f"{self.name}_dependency.{extension}"
         else:
             file_path = None
         save_show_figure(fig, show, file_path)
@@ -372,7 +369,6 @@ class ScalableDiagonalModel(ScalableModel):
         :return: output component dependency and input-output dependency
         :rtype: dict(int), dict(dict(ndarray))
         """
-        npseed(self.parameters["seed"])
         io_dependency = self.parameters["group_dep"] or {}
         for function_name in self.output_names:
             input_names = io_dependency.get(function_name, self.input_names)
@@ -428,13 +424,13 @@ class ScalableDiagonalModel(ScalableModel):
                 input_size = self.sizes.get(input_name)
                 if input_name in io_dependency[function_name]:
                     if 0 <= fill_factor <= 1:
-                        rand_dep = choice(
+                        rand_dep = self.__rng.choice(
                             2,
                             (function_size, input_size),
                             p=[1.0 - fill_factor, fill_factor],
                         )
                     else:
-                        rand_dep = rand(function_size, input_size)
+                        rand_dep = self.__rng.random((function_size, input_size))
                     r_io_dependency[function_name][input_name] = rand_dep
                 else:
                     zeros_dep = zeros((function_size, input_size))
@@ -452,7 +448,9 @@ class ScalableDiagonalModel(ScalableModel):
         for function_name in self.output_names:
             original_function_size = self.original_sizes.get(function_name)
             function_size = self.sizes.get(function_name)
-            out_map[function_name] = randint(original_function_size, size=function_size)
+            out_map[function_name] = self.__rng.integers(
+                original_function_size, size=function_size
+            )
         return out_map
 
     def __complete_random_dep(self, r_io_dep, dataname: str, index, io_dep) -> None:
@@ -480,11 +478,12 @@ class ScalableDiagonalModel(ScalableModel):
         else:
             varnames = io_dep[dataname]
             inpt_dep_mat = hstack([r_io_dep[dataname][varname] for varname in varnames])
+
         if sum(inpt_dep_mat[index, :]) == 0:
             prob = [self.sizes.get(varname, 1) for varname in varnames]
             prob = [float(x) / sum(prob) for x in prob]
-            id_var = choice(len(varnames), p=prob)
-            id_comp = randint(0, self.sizes.get(varnames[id_var], 1))
+            id_var = self.__rng.choice(len(varnames), p=prob)
+            id_comp = self.__rng.integers(0, self.sizes.get(varnames[id_var], 1))
             if is_input:
                 varname = varnames[id_var]
                 r_io_dep[varname][dataname][id_comp, index] = 1
@@ -523,8 +522,6 @@ class ScalableDiagonalApproximation:
         self.interpolators_dict = {}
         self.scalable_functions = {}
         self.scalable_dfunctions = {}
-        # seed for random generator
-        npseed(seed)
 
     def build_scalable_function(
         self, function_name: str, dataset, input_names: Iterable[str], degree: int = 3

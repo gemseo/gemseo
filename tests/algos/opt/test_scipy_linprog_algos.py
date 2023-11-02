@@ -20,6 +20,9 @@ from __future__ import annotations
 
 from unittest.case import TestCase
 
+from numpy import allclose
+from numpy import array
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_scipy_linprog import ScipyLinprog
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -27,8 +30,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from numpy import allclose
-from numpy import array
 
 
 class TestScipyLinprog(TestCase):
@@ -75,7 +76,7 @@ class TestScipyLinprog(TestCase):
 
     def test_linprog_algorithms(self):
         library = OptimizersFactory().create(self.OPT_LIB_NAME)
-        for algo_name in library.descriptions.keys():
+        for algo_name in library.descriptions:
             self.check_algorithm(algo_name)
 
     def check_algorithm(self, algo_name):

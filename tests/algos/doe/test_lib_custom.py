@@ -23,9 +23,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from numpy import array
+
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_custom import CustomDOE
-from numpy import array
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -69,7 +70,7 @@ def test_read_file_error():
 
 
 @pytest.mark.parametrize(
-    "n_samples,options",
+    ("n_samples", "options"),
     [
         (2, {"samples": array([[1.0, 2.0, 1.0], [1.0, 2.0, 0.0]])}),
         (
@@ -136,8 +137,9 @@ def get_expected_nsamples(
     """
     if dim == 1:
         return 9
-    elif dim == 5:
+    if dim == 5:
         return 2
+    return None
 
 
 def get_options(
@@ -153,12 +155,11 @@ def get_options(
     Returns:
         The options of the DOE algorithm.
     """
-    options = {
+    return {
         "n_samples": 13,
         "doe_file": str(Path(__file__).parent / f"dim_{dim}.csv"),
         "dim": dim,
     }
-    return options
 
 
 @pytest.mark.parametrize(

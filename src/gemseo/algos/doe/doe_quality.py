@@ -16,20 +16,23 @@
 from __future__ import annotations
 
 from collections import namedtuple
-from collections.abc import Callable
-from numbers import Real
 from operator import ge
 from operator import gt
 from operator import le
 from operator import lt
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 from typing import Literal
 
-from numpy import ndarray
 from scipy.spatial import distance
 from scipy.stats import qmc
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from numbers import Real
+
+    from numpy import ndarray
 
 __EUCLIDEAN: Final[str] = "euclidean"
 _DEFAULT_DISCREPANCY_TYPE_NAME: Final[str] = "CD"

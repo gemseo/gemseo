@@ -25,6 +25,14 @@ from math import log10
 from math import sin
 
 import pytest
+from numpy import array
+from numpy import complex128
+from numpy import float64
+from numpy import zeros
+from numpy.linalg import norm
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
+
 from gemseo import create_discipline
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -40,13 +48,6 @@ from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 from gemseo.utils.derivatives.gradient_approximator_factory import (
     GradientApproximatorFactory,
 )
-from numpy import array
-from numpy import complex128
-from numpy import float64
-from numpy import zeros
-from numpy.linalg import norm
-from scipy.optimize import rosen
-from scipy.optimize import rosen_der
 
 
 def test_init_first_order_fd():
@@ -182,7 +183,7 @@ def test_opt_step():
 
 
 @pytest.mark.parametrize(
-    "indices,expected_sequence,expected_variable_indices",
+    ("indices", "expected_sequence", "expected_variable_indices"),
     [
         ({"y": None}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
         ({"y": Ellipsis}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
@@ -329,7 +330,7 @@ def test_factory():
 
 
 @pytest.mark.parametrize(
-    "normalize,lower_bound,upper_bound",
+    ("normalize", "lower_bound", "upper_bound"),
     [
         (False, -2, 2),
         (True, -2, 2),

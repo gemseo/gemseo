@@ -20,11 +20,12 @@
 from __future__ import annotations
 
 import pytest
+from matplotlib import pyplot as plt
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -35,12 +36,11 @@ def dataset():
     sample3 = [1.0, 1.0, 0.75, 0.0]
     data_array = array([sample1, sample2, sample3])
     variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
-    dataset = Dataset.from_array(
+    return Dataset.from_array(
         data_array,
         variable_names=["x", "y", "z"],
         variable_names_to_n_components=variable_names_to_n_components,
     )
-    return dataset
 
 
 TEST_PARAMETERS = {
@@ -74,7 +74,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

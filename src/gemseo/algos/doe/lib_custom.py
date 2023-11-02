@@ -172,7 +172,7 @@ class CustomDOE(DOELibrary):
             ):
                 samples = samples.T
         except ValueError:
-            LOGGER.error("Failed to load DOE input file: %s", doe_file)
+            LOGGER.exception("Failed to load DOE input file: %s", doe_file)
             raise
 
         return samples
@@ -203,9 +203,8 @@ class CustomDOE(DOELibrary):
                 delimiter=options[self.DELIMITER_KEYWORD],
                 skiprows=options[self.SKIPROWS_KEYWORD],
             )
-        else:
-            if options.get(self.DOE_FILE) is not None:
-                raise ValueError(error_message)
+        elif options.get(self.DOE_FILE) is not None:
+            raise ValueError(error_message)
 
         if samples.shape[1] != self.problem.dimension:
             raise ValueError(

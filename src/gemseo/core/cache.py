@@ -28,6 +28,7 @@ from collections.abc import Sized
 from itertools import chain
 from multiprocessing import RLock
 from multiprocessing import Value
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Generator
 from typing import Iterable
@@ -49,7 +50,6 @@ from numpy import vstack
 from pandas import MultiIndex
 from xxhash import xxh3_64_hexdigest
 
-from gemseo.core.discipline_data import Data
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.utils.comparisons import compare_dict_of_arrays
@@ -59,6 +59,9 @@ from gemseo.utils.locks import synchronized
 from gemseo.utils.locks import synchronized_hashes
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
 
 LOGGER = logging.getLogger(__name__)
 
@@ -537,9 +540,8 @@ class AbstractFullCache(AbstractCache):
         """
         if self.__ensure_input_data_exists(input_data, hash_data_dict(input_data)):
             self._write_data(input_data, self._INPUTS_GROUP, self._max_index.value)
-        else:
-            if self._has_group(self._last_accessed_index.value, group):
-                return True
+        elif self._has_group(self._last_accessed_index.value, group):
+            return True
 
         return False
 
@@ -834,15 +836,14 @@ def hash_data_dict(
     Returns:
         The hash value of the data.
 
-    Examples
-    --------
-    >>> from gemseo.core.cache import hash_data_dict
-    >>> from numpy import array
-    >>> data = {'x':array([1.,2.]),'y':array([3.])}
-    >>> hash_data_dict(data)
-    13252388834746642440
-    >>> hash_data_dict(data,'x')
-    4006190450215859422
+    Examples:
+        >>> from gemseo.core.cache import hash_data_dict
+        >>> from numpy import array
+        >>> data = {'x':array([1.,2.]),'y':array([3.])}
+        >>> hash_data_dict(data)
+        13252388834746642440
+        >>> hash_data_dict(data,'x')
+        4006190450215859422
     """
     names_with_hashed_values = []
 
