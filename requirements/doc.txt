@@ -89,7 +89,7 @@ pandas==2.1.1
     # via gemseo (pyproject.toml)
 pbr==5.11.1
     # via sphinxcontrib-apidoc
-pillow==10.0.0
+pillow==10.0.1
     # via
     #   gemseo (pyproject.toml)
     #   matplotlib
