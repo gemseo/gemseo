@@ -57,6 +57,9 @@ class AugmentedLagrangian(OptimizationLibrary):
     RHO_0: ClassVar[float] = 10
     """The initial penalty."""
 
+    RHO_MAX: ClassVar[float] = 10000
+    """The max penalty value."""
+
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
         self.descriptions = {
@@ -194,15 +197,17 @@ class AugmentedLagrangian(OptimizationLibrary):
                 vk = concatenate(vk)
             if hv:
                 hv = concatenate(hv)
+            if iteration == 0 and max(norm(vk), norm(hv)) > 1e-9:
+                rho0 *= val_opt[self.problem.objective.name] / max(norm(vk), norm(hv))
             if max(norm(vk), norm(hv)) > self.TAU * constraint_violation_k:
                 rho0 *= self.GAMMA
+                rho0 = min(rho0, self.RHO_MAX)
             constraint_violation_k = max(norm(vk), norm(hv))
             # update the multipliers.
             for constraint in self.problem.constraints:
                 if constraint.name in mu0.keys():
-                    mu0[constraint.name] = heaviside(
-                        mu0[constraint.name] + rho0 * val_opt[constraint.name], 0.0
-                    )
+                    mu_1 = mu0[constraint.name] + rho0 * val_opt[constraint.name]
+                    mu0[constraint.name] = (mu_1) * heaviside(mu_1, 0.0)
                 elif constraint.name in lambda0.keys():
                     lambda0[constraint.name] = (
                         lambda0[constraint.name] + rho0 * val_opt[constraint.name]
