@@ -43,7 +43,8 @@ configure_logger()
 
 def f(x=0.0, y=0.0):
     """A simple Python function."""
-    return x + 2 * y
+    z = x + 2 * y
+    return z
 
 
 # %%
