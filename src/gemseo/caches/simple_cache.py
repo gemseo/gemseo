@@ -69,18 +69,6 @@ class SimpleCache(AbstractCache):
     def __len__(self) -> int:
         return 1 if self.__inputs else 0
 
-    def __cache_inputs(self, input_data: Data) -> None:
-        """Cache the input data.
-
-        Args:
-            input_data: The input data to cache.
-        """
-        cached_input_data = deepcopy_dict_of_arrays(input_data)
-        if not self.__is_cached(cached_input_data):
-            self.__inputs = cached_input_data
-            self.__outputs = {}
-            self.__jacobian = {}
-
     def __is_cached(
         self,
         input_data: Data,
@@ -94,17 +82,24 @@ class SimpleCache(AbstractCache):
             Whether the input data is cached.
         """
         cached_input_data = self.__inputs
-        if not cached_input_data:
-            return False
-        return compare_dict_of_arrays(input_data, cached_input_data, self.tolerance)
+        return cached_input_data and compare_dict_of_arrays(
+            input_data, cached_input_data, self.tolerance
+        )
 
     def cache_outputs(  # noqa:D102
         self,
         input_data: Data,
         output_data: Data,
     ) -> None:
-        self.__cache_inputs(input_data)
+        if self.__is_cached(input_data):
+            if not self.__outputs:
+                self.__outputs = deepcopy_dict_of_arrays(output_data)
+            return
+
+        self.__inputs = deepcopy_dict_of_arrays(input_data)
         self.__outputs = deepcopy_dict_of_arrays(output_data)
+        self.__jacobian = {}
+
         if not self._output_names:
             self._output_names = sorted(output_data.keys())
 
@@ -121,8 +116,14 @@ class SimpleCache(AbstractCache):
         input_data: Data,
         jacobian_data: JacobianData,
     ) -> None:
-        self.__cache_inputs(input_data)
+        if self.__is_cached(input_data):
+            if not self.__jacobian:
+                self.__jacobian = jacobian_data
+            return
+
+        self.__inputs = deepcopy_dict_of_arrays(input_data)
         self.__jacobian = jacobian_data
+        self.__outputs = {}
 
     @property
     def last_entry(self) -> CacheEntry:  # noqa:D102
