@@ -541,7 +541,6 @@ class AbstractFullCache(AbstractCache):
             self._write_data(input_data, self._INPUTS_GROUP, self._max_index.value)
         elif self._has_group(self._last_accessed_index.value, group):
             return True
-
         return False
 
     @synchronized
