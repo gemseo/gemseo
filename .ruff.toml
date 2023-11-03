@@ -1,6 +1,8 @@
 fix = true
-src = ["src"]
+unsafe-fixes = true
+preview = true
 target-version = "py38"
+src = ["src"]
 task-tags = ["TODO"]
 ignore = [
     # Conflicts with ruff format.
@@ -49,6 +51,7 @@ select = [
     "T",
     "W",
     "UP",
+    "PT",
     "FLY",
     "ISC",
     "LOG",
@@ -73,8 +76,10 @@ select = [
 #    "PL",
 #    "BLE",
 #    "FBT",
-    "PT",
 ]
+
+[flake8-type-checking]
+runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
 [isort]
 force-single-line = true

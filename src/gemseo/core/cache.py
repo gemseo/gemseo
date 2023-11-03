@@ -261,8 +261,7 @@ class AbstractCache(ABCMapping):
     def __getitem__(
         self,
         input_data: Data,
-    ) -> CacheEntry:
-        ...
+    ) -> CacheEntry: ...
 
     @abc.abstractmethod
     def cache_outputs(

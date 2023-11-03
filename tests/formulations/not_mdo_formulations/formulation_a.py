@@ -17,5 +17,4 @@ from __future__ import annotations
 from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulation
 
 
-class ANotMDOFormulation(NotMDOFormulation):
-    ...
+class ANotMDOFormulation(NotMDOFormulation): ...
