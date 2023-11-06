@@ -143,13 +143,18 @@ class AugmentedLagrangian(OptimizationLibrary):
         # Initialize the penalty and the multipliers.
         constraint_violation_k = Infinity
         x0 = self.problem.design_space.get_current_value()
+        normalize = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS)
         rho0 = self.RHO_0
         lambda0 = {
-            h.name: zeros_like(h(self.problem.design_space.get_current_value()))
+            h.name: zeros_like(
+                h(self.problem.design_space.get_current_value(normalize=normalize))
+            )
             for h in self.problem.get_eq_constraints()
         }
         mu0 = {
-            g.name: zeros_like(g(self.problem.design_space.get_current_value()))
+            g.name: zeros_like(
+                g(self.problem.design_space.get_current_value(normalize=normalize))
+            )
             for g in self.problem.get_ineq_constraints()
         }
         x_old = x0
@@ -167,7 +172,7 @@ class AugmentedLagrangian(OptimizationLibrary):
             dspace.set_current_value(x_old)
             sub_problem = OptimizationProblem(dspace)
             sub_problem.objective = lagrangian
-            sub_problem.preprocess_functions()
+            sub_problem.preprocess_functions(is_function_input_normalized=normalize)
             # Solve the sub-problem.
             opt = OptimizersFactory().execute(
                 sub_problem,
@@ -193,7 +198,7 @@ class AugmentedLagrangian(OptimizationLibrary):
                 for constr in self.problem.get_ineq_constraints()
             ]
             vk = [
-                -g_i if -g_i <= mu / rho0 else mu / rho0
+                -g_i * (-g_i <= mu / rho0) + mu / rho0 * (-g_i > mu / rho0)
                 for g_i, mu in zip(gv, mu_vector)
             ]
             if vk:
@@ -210,7 +215,7 @@ class AugmentedLagrangian(OptimizationLibrary):
             for constraint in self.problem.constraints:
                 if constraint.name in mu0:
                     mu_1 = mu0[constraint.name] + rho0 * val_opt[constraint.name]
-                    mu0[constraint.name] = (mu_1) * heaviside(mu_1, 0.0)
+                    mu0[constraint.name] = (mu_1) * heaviside(mu_1.real, 0.0)
                 elif constraint.name in lambda0:
                     lambda0[constraint.name] = (
                         lambda0[constraint.name] + rho0 * val_opt[constraint.name]
