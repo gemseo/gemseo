@@ -822,7 +822,7 @@ that shall be in the directory relative
 to the root of the git clone of gemseo:
 
 - On Linux and MacOS: :file:`.tox/check/bin/ruff`.
-- On Windows: :file:`.tox\check\Scripts\ruff.exe`.
+- On Windows: :file:`.tox\\check\\Scripts\\ruff.exe`.
 
 Environment variables
 +++++++++++++++++++++
