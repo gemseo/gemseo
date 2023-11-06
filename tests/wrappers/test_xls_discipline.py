@@ -150,7 +150,8 @@ def f_sellar_1(
     x_shared_2: float = 3.0,
 ) -> float:
     """Function for discipline sellar 1."""
-    return (x_shared_1**2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
+    y_1 = (x_shared_1**2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
+    return y_1  # noqa: RET504
 
 
 def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable):
