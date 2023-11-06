@@ -212,7 +212,7 @@ class RobustnessQuantifier:
             raise ValueError(
                 "Covariance matrix dimension " + "incompatible with mean dimensions"
             )
-        ran = default_rng().multivariate_normal(mean, cov, n_samples).T
+        ran = default_rng(1).multivariate_normal(mean, cov, n_samples).T
         vals = np.zeros(n_samples)
         if func is None:
             func = self.compute_function_approximation
