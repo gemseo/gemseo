@@ -583,12 +583,15 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Initialize the top level disciplines from the design space."""
         if not self.opt_problem.design_space.has_current_value():
             return
+
         current_x = self.opt_problem.design_space.get_current_value(as_dict=True)
+
         for discipline in self.get_top_level_disc():
             input_names = discipline.get_input_data_names()
+            to_value = discipline.input_grammar.data_converter.convert_array_to_value
             discipline.default_inputs.update(
                 {
-                    name: value
+                    name: to_value(name, value)
                     for name, value in current_x.items()
                     if name in input_names
                 }

@@ -23,6 +23,7 @@ import logging
 import re
 import shutil
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Iterator
 
 import h5py
@@ -44,10 +45,11 @@ from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
 from gemseo.core.chain import MDOParallelChain
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.comparisons import compare_dict_of_arrays
+
+if TYPE_CHECKING:
+    from gemseo.caches.memory_full_cache import MemoryFullCache
 
 DIR_PATH = Path(__file__).parent
 
@@ -242,9 +244,10 @@ def test_hash_discontiguous_array(input_c, input_f):
     assert hash_data_dict({"i": input_c}) == hash_data_dict({"i": input_f})
 
 
-def func(x: int | float) -> int | float:
+def func(x):
     """Dummy function to test the cache."""
-    return x
+    y = x
+    return y  # noqa: RET504
 
 
 @pytest.mark.parametrize(
@@ -387,30 +390,34 @@ def test_duplicate_from_scratch(memory_full_cache, hdf5_cache):
     memory_full_cache._copy_empty_cache()
 
 
-def test_multithreading(memory_full_cache, memory_full_cache_loc):
-    caches = (memory_full_cache, memory_full_cache_loc)
-    for c_1, c_2 in zip(caches, caches):
-        s_s = SellarSystem()
-        s_1 = Sellar1()
-        s_1.cache = c_1
-        s_s.cache = c_2
-        assert len(c_1) == 0
-        assert len(c_2) == 0
-        par = MDOParallelChain([s_1, s_s])
-        ds = SellarDesignSpace("float64")
-        scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
+@pytest.fixture(params=range(2))
+def memory_cache(memory_full_cache, memory_full_cache_loc, request) -> MemoryFullCache:
+    """A parametrized fixture to iterate over memory_full_cache and
+    memory_full_cache_loc."""
+    return (memory_full_cache, memory_full_cache_loc)[request.param]
 
-        options = {"algo": "fullfact", "n_samples": 10, "n_processes": 4}
-        scen.execute(options)
 
-        nexec_1 = s_1.n_calls
-        nexec_2 = s_s.n_calls
+def test_multithreading(memory_cache, sellar_disciplines):
+    s_1 = sellar_disciplines.sellar1
+    s_s = sellar_disciplines.sellar_system
+    s_1.cache = memory_cache
+    s_s.cache = memory_cache
+    assert len(memory_cache) == 0
+    par = MDOParallelChain([s_1, s_s])
+    ds = SellarDesignSpace("float64")
+    scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
 
-        scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
-        scen.execute(options)
+    options = {"algo": "fullfact", "n_samples": 10, "n_processes": 4}
+    scen.execute(options)
 
-        assert nexec_1 == s_1.n_calls
-        assert nexec_2 == s_s.n_calls
+    nexec_1 = s_1.n_calls
+    nexec_2 = s_s.n_calls
+
+    scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
+    scen.execute(options)
+
+    assert nexec_1 == s_1.n_calls
+    assert nexec_2 == s_s.n_calls
 
 
 def test_copy(memory_full_cache):

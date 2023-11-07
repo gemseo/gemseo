@@ -304,12 +304,8 @@ class MDOCouplingStructure:
             The discipline producing this output, if it exists.
 
         Raises:
-            TypeError: If the name of the output is not a string.
             ValueError: If the output is not an output of the discipline.
         """
-        if not isinstance(output, str):
-            raise TypeError("Output shall be a string")
-
         for discipline in self.disciplines:
             if discipline.is_output_existing(output):
                 return discipline

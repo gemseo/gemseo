@@ -21,14 +21,14 @@ from __future__ import annotations
 
 from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
-from gemseo.mda.mda import MDA
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.mda.base_mda_solver import BaseMDASolver
 
 if TYPE_CHECKING:
     from typing import Any
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 N_CPUS: Final[int] = cpu_count()
 
 
-class MDAJacobi(MDA):
+class MDAJacobi(BaseMDASolver):
     r"""Perform an MDA using the Jacobi algorithm.
 
     This algorithm is a fixed point iteration method to solve systems of non-linear
@@ -80,8 +80,8 @@ class MDAJacobi(MDA):
     """
 
     # TODO: API: Remove the class attributes.
-    SECANT_ACCELERATION = "secant"
-    M2D_ACCELERATION = "m2d"
+    SECANT_ACCELERATION: ClassVar[str] = "secant"
+    M2D_ACCELERATION: ClassVar[str] = "m2d"
 
     # TODO: API: Remove the compatibility mapping.
     __ACCELERATION_COMPATIBILITY: Final[dict[str, AccelerationMethod | None]] = {
@@ -179,11 +179,14 @@ class MDAJacobi(MDA):
         if len(self.coupling_structure.strongly_coupled_disciplines) == len(
             self.disciplines
         ):
-            super()._compute_input_couplings()
-        else:
-            inputs = self.get_input_data_names()
-            strong_couplings = self.coupling_structure.all_couplings
-            self._input_couplings = sorted(set(strong_couplings) & set(inputs))
+            return super()._compute_input_couplings()
+
+        self._input_couplings = sorted(
+            set(self.coupling_structure.all_couplings).intersection(
+                self.get_input_data_names()
+            )
+        )
+        return None
 
     def execute_all_disciplines(self, input_local_data: Mapping[str, NDArray]) -> None:
         """Execute all the disciplines, possibly in parallel.
@@ -214,15 +217,9 @@ class MDAJacobi(MDA):
         return ExecutionSequenceFactory.loop(self, sub_workflow)
 
     def _run(self) -> None:
-        self._compute_coupling_sizes()
-
-        if self.warm_start:
-            self._couplings_warm_start()
-
+        super()._run()
         current_couplings = self._current_working_couplings()
 
-        self._sequence_transformer.clear()
-        # Perform fixed point iterations
         while True:
             self.execute_all_disciplines(self.local_data)
 
@@ -230,19 +227,9 @@ class MDAJacobi(MDA):
                 current_couplings, self._current_working_couplings()
             )
 
-            self.local_data.update(
-                split_array_to_dict_of_arrays(
-                    new_couplings, self._coupling_sizes, self._input_couplings
-                )
+            current_couplings, stop_iterating = self._end_iteration(
+                current_couplings, new_couplings
             )
 
-            self._compute_residual(
-                current_couplings,
-                new_couplings,
-                log_normed_residual=self._log_convergence,
-            )
-
-            if self._stop_criterion_is_reached:
+            if stop_iterating:
                 break
-
-            current_couplings = new_couplings

@@ -41,7 +41,6 @@ from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
 from gemseo import create_design_space
-from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.database import Database
@@ -1695,16 +1694,18 @@ def test_constraint_names_with_aggregation():
             assert problem.constraint_names[name] == [name]
 
 
-def test_observables_normalization():
+def test_observables_normalization(sellar_disciplines):
     """Test that the observables are called at each iteration."""
-    disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
     design_space = DesignSpace()
     design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
     design_space.add_variable(
         "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
     )
     scenario = create_scenario(
-        disciplines, formulation="MDF", objective_name="obj", design_space=design_space
+        sellar_disciplines,
+        formulation="MDF",
+        objective_name="obj",
+        design_space=design_space,
     )
     scenario.add_constraint("c_1", "ineq")
     scenario.add_constraint("c_2", "ineq")

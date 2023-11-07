@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 from sys import platform
 from typing import TYPE_CHECKING
+from typing import Tuple
 
 import pytest
 from numpy import array
@@ -87,7 +88,7 @@ def test_evaluate_samples_multiproc(doe):
         assert (grad_ref == grad_sample).all()
 
 
-def compute_obj_and_obs(x: float = 0.0) -> tuple[float, float]:
+def compute_obj_and_obs(x: float = 0.0) -> Tuple[float, float]:  # noqa: UP006
     """Compute the objective and observable variables.
 
     Args:

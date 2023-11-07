@@ -247,8 +247,7 @@ class MDOChain(MDODiscipline):
                     del output_jacobian[input_name]
 
         # Add differentiations that should be there,
-        # because inputs inputs of the chain but not
-        # of all disciplines
+        # because inputs of the chain but not of all disciplines.
         for output_name in outputs:
             output_size = len(self.get_outputs_by_name(output_name))
             output_jacobian = self.jac.setdefault(output_name, {})

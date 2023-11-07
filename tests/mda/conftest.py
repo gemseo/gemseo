@@ -16,19 +16,12 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING
 
 import pytest
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-
-if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
 
 
 def generate_parallel_doe(
@@ -84,15 +77,3 @@ def generate_parallel_doe_data():
             given as an argument.
     """
     return partial(generate_parallel_doe)
-
-
-@pytest.fixture()
-def sellar_disciplines() -> list[MDODiscipline]:
-    """The disciplines of the Sellar problem.
-
-    Returns:
-        * A Sellar1 discipline.
-        * A Sellar2 discipline.
-        * A SellarSystem discipline.
-    """
-    return [Sellar1(), Sellar2(), SellarSystem()]

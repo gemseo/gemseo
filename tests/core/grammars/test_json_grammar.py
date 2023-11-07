@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -470,7 +469,7 @@ def _test_update_from_data(file_path: Path | None, data: Data, merge):
 
 
 def test_is_array_error():
-    """Verify that is_array error."""
+    """Verify is_array error."""
     g = JSONGrammar("g")
     msg = "The name foo is not in the grammar."
     with pytest.raises(KeyError, match=msg):
@@ -480,11 +479,33 @@ def test_is_array_error():
 def test_is_array():
     """Verify is_array."""
     g = new_grammar(DATA_PATH / "grammar_4.json")
-    assert not g.is_array("name1")
-    assert g.is_array("name2")
-    assert g.is_array("name2", numeric_only=True)
-    assert g.is_array("name3")
-    assert not g.is_array("name3", numeric_only=True)
+
+    for name in ("a_number", "an_int", "a_bool", "a_string"):
+        assert not g.is_array(name)
+
+    for name in (
+        "a_number_array",
+        "an_int_array",
+        "a_bool_array",
+        "a_number_nested_array",
+        "an_int_nested_array",
+        "a_bool_nested_array",
+    ):
+        assert g.is_array(name)
+
+    for name in (
+        "a_number_array",
+        "an_int_array",
+        "a_number_nested_array",
+        "an_int_nested_array",
+    ):
+        assert g.is_array(name, numeric_only=True)
+
+    for name in (
+        "a_bool_array",
+        "a_bool_nested_array",
+    ):
+        assert not g.is_array(name, numeric_only=True)
 
 
 def test_restrict_to_error():
@@ -688,32 +709,6 @@ def test_update_from_error():
         g.update(g2)
 
 
-@pytest.mark.parametrize(
-    ("var", "check_is_numeric_array", "expected"),
-    [
-        pytest.param(
-            "IDONTEXIST",
-            False,
-            None,
-            marks=pytest.mark.xfail(raises=KeyError, math="is not in the grammar"),
-        ),
-        ("not_array_var", False, False),
-        ("array_number_var", False, True),
-        ("array_str_var", False, True),
-        ("not_array_var", True, False),
-        ("array_number_var", True, True),
-        ("array_wo_type", True, True),
-        ("array_str_var", True, False),
-        ("array_array_number_var", True, True),
-        ("array_array_str_var", True, False),
-    ],
-)
-def test_is_type_array_errors(var, check_is_numeric_array, expected):
-    fpath = DATA_PATH / "grammar_test6.json"
-    gram = JSONGrammar(name="toto", file_path=fpath)
-    assert gram.is_array(var, check_is_numeric_array) == expected
-
-
 def test_copy():
     """Verify copy."""
     g = JSONGrammar("g")
@@ -771,7 +766,7 @@ def test_empty_types():
         (list, "array"),
         (str, "string"),
         (bool, "boolean"),
-        (Number, "number"),
+        (complex, "number"),
     ],
 )
 def test_update_from_types_basic(py_type, json_type):
@@ -788,9 +783,9 @@ def test_update_from_types_basic(py_type, json_type):
 def test_from_types_unsupported():
     grammar = JSONGrammar("test")
     with pytest.raises(
-        KeyError, match="Unsupported python type for a JSON Grammar: <class 'complex'>"
+        KeyError, match="Unsupported python type for a JSON Grammar: None"
     ):
-        grammar.update_from_types({"x": complex})
+        grammar.update_from_types({"x": None})
 
 
 @pytest.mark.parametrize("file_path", ["bar", Path("bar")])

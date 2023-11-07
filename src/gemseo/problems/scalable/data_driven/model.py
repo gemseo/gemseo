@@ -46,30 +46,37 @@ Otherwise, the model uses default values.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Mapping
 
 from numpy import array
 from numpy import full
+from numpy import ndarray
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
 
 
 class ScalableModel:
-    """Scalable model."""
+    """A scalable model."""
 
     ABBR = "sm"
 
     data: IODataset
     """The learning dataset."""
 
-    def __init__(self, data: IODataset, sizes=None, **parameters) -> None:
-        """Constructor.
-
-        :param Dataset data: learning dataset.
-        :param dict sizes: sizes of input and output variables.
-            If ``None``, use the original sizes.
-            Default: None.
-        :param parameters: model parameters
+    def __init__(
+        self,
+        data: IODataset,
+        sizes: Mapping[str, int] | None = None,
+        **parameters: Any,
+    ) -> None:
+        """
+        Args:
+            data: The learning dataset.
+            sizes: The sizes of the input and output variables.
+                If ``None``, use the original sizes.
+            **parameters: The parameters of the model.
         """
         sizes = sizes or {}
         self.name = self.ABBR + "_" + data.name
@@ -82,39 +89,41 @@ class ScalableModel:
         self.default_inputs = self._set_default_inputs()
         self.model = self.build_model()
 
-    def _set_default_inputs(self):
-        """Sets the default values of inputs from the model.
+    def _set_default_inputs(self) -> dict[str, ndarray]:
+        """Set the default values of the inputs from the model.
 
-        :return: default inputs.
-        :rtype: dict
+        Returns:
+            The default inputs.
         """
         return {name: full(self.sizes[name], 0.5) for name in self.input_names}
 
     def scalable_function(self, input_value=None):
         """Evaluate the scalable function.
 
-        :param dict input_value: input values. If ``None``, use default inputs. Default:
-            None.
-        :return: evaluation of the scalable function.
-        :rtype: dict
+        Args:
+            input_value: The input values. If ``None``, use the default inputs.
+
+        Returns:
+            The evaluations of the scalable function.
         """
         raise NotImplementedError
 
     def scalable_derivatives(self, input_value=None):
         """Evaluate the scalable derivatives.
 
-        :param dict input_value: input values. If ``None``, use default inputs. Default:
-            None
-        :return: evaluation of the scalable derivatives.
-        :rtype: dict
+        Args:
+            input_value: The input values. If ``None``, use the default inputs.
+
+        Returns:
+            The evaluations of the scalable derivatives.
         """
         raise NotImplementedError
 
-    def compute_bounds(self):
+    def compute_bounds(self) -> tuple[dict[str, int], dict[str, int]]:
         """Compute lower and upper bounds of both input and output variables.
 
-        :return: lower bounds, upper bounds.
-        :rtype: dict, dict
+        Returns:
+             The lower and upper bounds.
         """
         inputs = self.data.get_view(group_names=self.data.INPUT_GROUP).to_dict("list")
         outputs = self.data.get_view(group_names=self.data.OUTPUT_GROUP).to_dict("list")
@@ -134,46 +143,36 @@ class ScalableModel:
         return lower_bounds, upper_bounds
 
     def normalize_data(self) -> None:
-        """Normalize dataset from lower and upper bounds."""
+        """Normalize the dataset from lower and upper bounds."""
         self.data = self.data.get_normalized()
 
-    def build_model(self):
+    def build_model(self) -> None:
         """Build model with original sizes for input and output variables."""
         raise NotImplementedError
 
     @property
-    def original_sizes(self):
-        """Original sizes of variables.
-
-        :return: original sizes of variables.
-        :rtype: dict
-        """
+    def original_sizes(self) -> Mapping[str, int]:
+        """The original sizes of variables."""
         return self.data.variable_names_to_n_components
 
     @property
-    def output_names(self):
-        """Outputs names.
-
-        :return: names of the outputs.
-        :rtype: list(str)
-        """
+    def output_names(self) -> list[str]:
+        """The output names."""
         return self.data.get_variable_names(self.data.OUTPUT_GROUP)
 
     @property
-    def input_names(self):
-        """Inputs names.
-
-        :return: names of the inputs.
-        :rtype: list(str)
-        """
+    def input_names(self) -> list[str]:
+        """The input names."""
         return self.data.get_variable_names(self.data.INPUT_GROUP)
 
-    def _set_sizes(self, sizes):
+    def _set_sizes(self, sizes: Mapping[str, int]) -> Mapping[str, int]:
         """Set the new sizes of input and output variables.
 
-        :param sizes: new sizes of some variables.
-        :return: new sizes of all variables.
-        :rtype: dict
+        Args:
+            sizes: The sizes of some of the variables.
+
+        Returns:
+            The new sizes of all the variables.
         """
         for group in [self.data.INPUT_GROUP, self.data.OUTPUT_GROUP]:
             for name in self.data.get_variable_names(group):

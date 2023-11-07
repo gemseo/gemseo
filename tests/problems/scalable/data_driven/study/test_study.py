@@ -30,9 +30,6 @@ from gemseo.problems.sellar.sellar import OBJ
 from gemseo.problems.sellar.sellar import X_LOCAL
 from gemseo.problems.sellar.sellar import X_SHARED
 from gemseo.problems.sellar.sellar import Y_1
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 
@@ -53,13 +50,12 @@ def idf_cost(varsizes, n_c, n_lc, n_tl_c, n_tl_lc):
 
 
 @pytest.fixture()
-def sellar_use_case(tmp_wd):
+def sellar_use_case(tmp_wd, sellar_disciplines):
     n_samples = 20
     os.mkdir("data")
     file_name = "data/sellar.h5"
     discipline_names = []
-    for discipline_class in [Sellar1, Sellar2, SellarSystem]:
-        discipline = discipline_class()
+    for discipline in sellar_disciplines:
         discipline.set_cache_policy(discipline.CacheType.HDF5, cache_hdf_file=file_name)
         discipline_names.append(discipline.name)
         objective_name = next(iter(discipline.output_grammar.keys()))

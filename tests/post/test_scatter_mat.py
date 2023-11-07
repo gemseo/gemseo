@@ -26,7 +26,6 @@ from numpy import ones
 from numpy import power
 
 from gemseo import create_design_space
-from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -142,7 +141,7 @@ def test_scatter_plot(baseline_images, variables, pyplot_close_all):
     post.figures  # noqa: B018
 
 
-def test_maximized_func(tmp_wd, pyplot_close_all):
+def test_maximized_func(tmp_wd, pyplot_close_all, sellar_disciplines):
     """Test if the method identifies maximized objectives properly.
 
     Args:
@@ -150,7 +149,6 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
     design_space = create_design_space()
     design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
     design_space.add_variable(
@@ -159,7 +157,7 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
     design_space.add_variable("y_0", l_b=-100.0, u_b=100.0, value=ones(1))
     design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
     scenario = create_scenario(
-        disciplines,
+        sellar_disciplines,
         "MDF",
         objective_name="obj",
         design_space=design_space,

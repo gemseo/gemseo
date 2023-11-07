@@ -28,7 +28,6 @@ from typing import TYPE_CHECKING
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.root import MDARoot
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
     from typing import Any
@@ -63,6 +62,7 @@ class MDANewtonRaphson(MDARoot):
     where :math:`J_f(x_k)` denotes the Jacobian of :math:`f` at :math:`x_k`.
     """
 
+    # TODO: API: use a strenum
     __newton_linear_solver_name: str
     """The name of the linear solver for the Newton method.
 
@@ -100,7 +100,8 @@ class MDANewtonRaphson(MDARoot):
     ) -> None:
         """
         Args:
-            newton_linear_solver: The name of the linear solver for the Newton method.
+            newton_linear_solver_name: The name of the linear solver for the Newton
+                method.
             newton_linear_solver_options: The options for the Newton linear solver.
 
         Raises:
@@ -181,7 +182,7 @@ class MDANewtonRaphson(MDARoot):
         """
         newton_step, is_converged = self.assembly.compute_newton_step(
             input_data,
-            self.strong_couplings,
+            self._resolved_coupling_names,
             self.__newton_linear_solver_name,
             matrix_type=self.matrix_type,
             residuals=residuals,
@@ -198,24 +199,20 @@ class MDANewtonRaphson(MDARoot):
         return newton_step
 
     def _run(self) -> None:
-        self._compute_coupling_sizes()
-
-        if self.warm_start:
-            self._couplings_warm_start()
-
+        super()._run()
         current_couplings = self._current_working_couplings()
 
         first_iteration = True
 
-        self._sequence_transformer.clear()
-        # Perform fixed point iterations
         while True:
             current_input_data = self.local_data.copy()
 
             self.execute_all_disciplines(current_input_data)
 
             if first_iteration:
-                self.assembly.set_newton_differentiated_ios(self.strong_couplings)
+                self.assembly.set_newton_differentiated_ios(
+                    self._resolved_coupling_names
+                )
                 first_iteration = False
 
             self.linearize_all_disciplines(current_input_data, execute=False)
@@ -227,19 +224,9 @@ class MDANewtonRaphson(MDARoot):
                 current_couplings - self._newton_step(current_input_data, residuals),
             )
 
-            self.local_data.update(
-                split_array_to_dict_of_arrays(
-                    new_couplings, self._coupling_sizes, self.strong_couplings
-                )
+            current_couplings, stop_iterating = self._end_iteration(
+                current_couplings, new_couplings
             )
 
-            self._compute_residual(
-                current_couplings,
-                new_couplings,
-                log_normed_residual=self.log_convergence,
-            )
-
-            if self._stop_criterion_is_reached:
+            if stop_iterating:
                 break
-
-            current_couplings = new_couplings

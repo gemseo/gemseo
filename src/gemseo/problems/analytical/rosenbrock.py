@@ -25,7 +25,6 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
 from numpy import ones
@@ -123,7 +122,7 @@ class RosenMF(MDODiscipline):
             dimension: The dimension of the design space.
         """
         super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = {"x": zeros(dimension), "fidelity": array([1.0])}
+        self.default_inputs = {"x": zeros(dimension), "fidelity": 1.0}
 
     def _run(self) -> None:
         fidelity = self.local_data["fidelity"]

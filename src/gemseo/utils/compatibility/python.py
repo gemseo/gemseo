@@ -39,7 +39,15 @@ if PYTHON_VERSION < (3, 9):  # pragma: >=3.9 no cover
 
         return string
 
+    from typing_extensions import get_args  # noqa: F401
+    from typing_extensions import get_origin  # noqa: F401
+    from typing_extensions import get_type_hints  # noqa: F401
+
 else:  # pragma: <3.9 no cover
 
     def remove_suffix(string: str, suffix: str) -> str:  # noqa: D103
         return string.removesuffix(suffix)
+
+    from typing import get_args  # noqa: F401
+    from typing import get_origin  # noqa: F401
+    from typing import get_type_hints  # noqa: F401

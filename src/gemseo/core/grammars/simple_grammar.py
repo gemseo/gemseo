@@ -19,6 +19,7 @@ import collections
 import logging
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Collection
 from typing import Iterable
 from typing import Iterator
@@ -44,8 +45,10 @@ class SimpleGrammar(BaseGrammar):
     always valid.
     """
 
+    DATA_CONVERTER_CLASS: ClassVar[str] = "SimpleGrammarDataConverter"
+
     __names_to_types: dict[str, type | None]
-    """The binding from element names to element types."""
+    """The mapping from element names to element types."""
 
     __required_names: set[str]
     """The required names."""
@@ -205,11 +208,11 @@ class SimpleGrammar(BaseGrammar):
         numeric_only: bool = False,
     ) -> bool:
         self._check_name(name)
+        if numeric_only:
+            return self.data_converter.is_numeric(name)
         element_type = self.__names_to_types[name]
         if element_type is None:
             return False
-        if numeric_only:
-            return issubclass(element_type, ndarray)
         return issubclass(element_type, Collection)
 
     def _restrict_to(  # noqa: D102

@@ -34,6 +34,7 @@ from timeit import default_timer as timer
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 from typing import Generator
 from typing import Iterable
 from typing import Iterator
@@ -49,6 +50,7 @@ from scipy.sparse import csr_array
 from strenum import StrEnum
 
 from gemseo.caches.cache_factory import CacheFactory
+from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.factory import GrammarFactory
@@ -175,7 +177,9 @@ class MDODiscipline(Serializable):
     run_solves_residuals: bool
     """Whether the run method shall solve the residuals."""
 
-    jac: dict[str, dict[str, ndarray | csr_array | JacobianOperator]]
+    jac: MutableMapping[
+        str, MutableMapping[str, ndarray | csr_array | JacobianOperator]
+    ]
     """The Jacobians of the outputs wrt inputs.
 
     The structure is ``{output: {input: matrix}}``.
@@ -213,14 +217,17 @@ class MDODiscipline(Serializable):
     """Whether to skip the :meth:`._run` method during execution and return the
     :attr:`.default_outputs`, whatever the inputs."""
 
-    N_CPUS = cpu_count()
+    N_CPUS: Final[int] = cpu_count()
+    """The number of available CPUs."""
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {
         "_status_observers",
     }
 
-    __mp_manager: Manager = None
-    time_stamps = None
+    __mp_manager: Manager | None = None
+
+    time_stamps: ClassVar[dict[str, float] | None] = None
+    """The mapping from discipline name to their execution time."""
 
     def __init__(
         self,
@@ -548,7 +555,7 @@ class MDODiscipline(Serializable):
             ValueError: When the inputs wrt which differentiate the discipline
                 are not inputs of the latter.
         """
-        if (inputs is not None) and (not self.is_all_inputs_existing(inputs)):
+        if (inputs is not None) and not self.is_all_inputs_existing(inputs):
             raise ValueError(
                 f"Cannot differentiate the discipline {self.name} w.r.t. the inputs "
                 "that are not among the discipline inputs: "
@@ -558,12 +565,11 @@ class MDODiscipline(Serializable):
         if inputs is None:
             inputs = self.get_input_data_names()
 
-        inputs = [
-            input_ for input_ in inputs if self.input_grammar.is_array(input_, True)
-        ]
-
-        in_diff = self._differentiated_inputs
-        self._differentiated_inputs = list(set(in_diff).union(inputs))
+        self._differentiated_inputs = list(
+            set(self._differentiated_inputs).union(
+                filter(self.input_grammar.data_converter.is_numeric, inputs)
+            )
+        )
 
     def add_differentiated_outputs(
         self,
@@ -587,22 +593,21 @@ class MDODiscipline(Serializable):
         Raises:
             ValueError: When the outputs to differentiate are not discipline outputs.
         """
-        if (outputs is not None) and (not self.is_all_outputs_existing(outputs)):
+        if not (outputs is None or self.is_all_outputs_existing(outputs)):
             raise ValueError(
                 f"Cannot differentiate the discipline {self.name} w.r.t. the outputs "
                 "that are not among the discipline outputs: "
                 f"{self.get_output_data_names()}."
             )
 
-        out_diff = self._differentiated_outputs
         if outputs is None:
             outputs = self.get_output_data_names()
 
-        outputs = [
-            output for output in outputs if self.output_grammar.is_array(output, True)
-        ]
-
-        self._differentiated_outputs = list(set(out_diff).union(outputs))
+        self._differentiated_outputs = list(
+            set(self._differentiated_outputs).union(
+                filter(self.output_grammar.data_converter.is_numeric, outputs)
+            )
+        )
 
     def __create_new_cache(
         self,
@@ -887,31 +892,35 @@ class MDODiscipline(Serializable):
                 f"while re_exec_policy is {self.re_exec_policy}."
             )
 
-    def __get_input_data_for_cache(
+    def __create_input_data_for_cache(
         self,
         input_data: DisciplineData,
-        in_names: Iterable[str],
     ) -> DisciplineData:
         """Prepare the input data for caching.
 
         Args:
             input_data: The values of the inputs.
-            in_names: The names of the inputs.
 
         Returns:
             The input data to be cached.
         """
-        in_and_out = set(in_names) & set(self.get_output_data_names())
+        in_and_out = set(self.get_input_data_names()).intersection(
+            self.get_output_data_names()
+        )
 
-        cached_inputs = input_data.copy()
+        input_data_ = input_data.copy()
 
         for key in in_and_out:
             val = input_data.get(key)
             if val is not None:
-                # If also an output, keeps a copy of the original input value
-                cached_inputs[key] = deepcopy(val)
+                # If also an output, use a copy of the original input value
+                input_data_[key] = deepcopy(val)
 
-        return cached_inputs
+        to_array = self.input_grammar.data_converter.convert_value_to_array
+        for name, value in input_data_.items():
+            input_data_[name] = to_array(name, value)
+
+        return input_data_
 
     def execute(
         self,
@@ -955,23 +964,18 @@ class MDODiscipline(Serializable):
             raise RuntimeError(
                 "Disciplines that do not solve their residuals are not supported yet."
             )
+
         # Load the default_inputs if the user did not provide all required data
         input_data = self._filter_inputs(input_data)
 
-        if self.cache is not None:
-            # Check if the cache already contains the outputs associated to these inputs
-            in_names = self.get_input_data_names()
-            _, out_cached, out_jac = self.cache[input_data]
-            if out_cached:
-                self.__update_local_data_from_cache(input_data, out_cached, out_jac)
-                return self._local_data
+        cached_local_data = self.__get_cache_data(input_data)
+        if cached_local_data is not None:
+            return cached_local_data
+
+        inputs_for_cache = self.__create_input_data_for_cache(input_data)
 
         # Cache was not loaded, see self.linearize
         self._cache_was_loaded = False
-
-        if self.cache is not None:
-            # Save the state of the inputs
-            cached_inputs = self.__get_input_data_for_cache(input_data, in_names)
 
         if self.activate_input_data_check:
             self.check_input_data(input_data)
@@ -1020,20 +1024,66 @@ class MDODiscipline(Serializable):
         if self.activate_output_data_check:
             self.check_output_data()
 
-        if self.cache is not None:
-            # Caches output data in case the discipline is called twice in a row
-            # with the same inputs
-            out_names = self.get_output_data_names()
-            if out_names:
-                self.cache.cache_outputs(
-                    cached_inputs, self._local_data.copy(keys=out_names)
-                )
-            # Some disciplines are always linearized during execution, cache the
-            # jac in this case
-            if self._is_linearized:
-                self.cache.cache_jacobian(cached_inputs, self.jac)
+        self.__cache_outputs(inputs_for_cache)
 
         return self._local_data
+
+    def __get_cache_data(self, input_data: DisciplineData) -> DisciplineData | None:
+        """Return the cached local data if cached.
+
+        Args:
+            input_data: The input data bound to the cached output data.
+
+        Returns:
+            The cached local data if cached, ``None`` otherwise.
+        """
+        if self.cache is None:
+            return None
+
+        # Check if the cache already contains the outputs associated to these inputs.
+        _, out_cached, out_jac = self.cache[input_data]
+
+        if not out_cached:
+            return None
+
+        # Non simple caches require NumPy arrays.
+        if not isinstance(self.cache, SimpleCache):
+            # Do not modify the cache entry which is mutable.
+            out_cached = out_cached.copy()
+            to_value = self.output_grammar.data_converter.convert_array_to_value
+            for name, value in out_cached.items():
+                out_cached[name] = to_value(name, value)
+
+        self.__update_local_data_from_cache(input_data, out_cached, out_jac)
+
+        return self._local_data
+
+    def __cache_outputs(self, input_data: DisciplineData) -> None:
+        """Store the output data in the cache.
+
+        Args:
+            input_data: The input data bound to the output data.
+        """
+        if self.cache is None:
+            return
+
+        out_names = self.get_output_data_names()
+
+        if out_names:
+            outputs_for_cache = self._local_data.copy(keys=out_names)
+
+            # Non simple caches require NumPy arrays.
+            if not isinstance(self.cache, SimpleCache):
+                to_array = self.output_grammar.data_converter.convert_value_to_array
+                for name, value in outputs_for_cache.items():
+                    outputs_for_cache[name] = to_array(name, value)
+
+            self.cache.cache_outputs(input_data, outputs_for_cache)
+
+        # Some disciplines are always linearized during execution, cache the
+        # jac in this case
+        if self._is_linearized:
+            self.cache.cache_jacobian(input_data, self.jac)
 
     def __update_local_data_from_cache(
         self,
@@ -1137,7 +1187,7 @@ class MDODiscipline(Serializable):
         input_data: Mapping[str, Any] | None = None,
         compute_all_jacobians: bool = False,
         execute: bool = True,
-    ) -> dict[str, dict[str, NDArray[float]]]:
+    ) -> Mapping[str, Mapping[str, NDArray[float]]]:
         """Compute the Jacobians of some outputs with respect to some inputs.
 
         Args:
@@ -1168,33 +1218,26 @@ class MDODiscipline(Serializable):
                 for which to differentiate the outputs
                 or the outputs to differentiate are missing.
         """
-        # TODO: remove the execution when no option exec_before_lin
-        # is set to True
-        inputs, outputs = self._retrieve_diff_inouts(compute_all_jacobians)
-        if not outputs or not inputs:
-            input_data = self._filter_inputs(input_data)
-            _, out_cached, out_jac = self.cache[input_data]
-            if out_cached:
-                self.jac = out_jac
-            else:
-                self.jac = {}
-            # self.jac.clear()  # this aint work
-            # self.jac = {}  # this aint work
-            # return {}#this aint work
-            return self.jac  # this aint work
+        # TODO: remove the execution when no option exec_before_lin is set to True.
+        input_data = self._filter_inputs(input_data)
 
-        full_input_data = self._filter_inputs(input_data)
+        inputs, outputs = self._retrieve_diff_inouts(compute_all_jacobians)
+
+        if self.cache is not None and (not outputs or not inputs):
+            self.jac = self.cache[input_data].jacobian
+            return self.jac
+
         if execute:
             self.reset_statuses_for_run()
             self.exec_for_lin = True
-            self.execute(full_input_data)
+            self.execute(input_data)
             self.exec_for_lin = False
 
         # The local_data shall be reset to their original values
         # in case an input is also an output,
         # if we don't want to keep the computed state (as in MDAs).
         if not self._linearize_on_last_state:
-            self._local_data.update(full_input_data)
+            self._local_data.update(input_data)
 
         # If the caching was triggered,
         # check if the jacobian was loaded,
@@ -1213,6 +1256,7 @@ class MDODiscipline(Serializable):
 
         self.status = self.ExecutionStatus.LINEARIZE
         t_0 = timer()
+
         if self._linearization_mode in set(self.ApproximationMode):
             # Time already counted in execute()
             self.jac = self._jac_approx.compute_approx_jac(outputs, inputs)
@@ -1235,8 +1279,9 @@ class MDODiscipline(Serializable):
                             del jac[input_name]
 
         self._check_jacobian_shape(inputs, outputs)
+
         if self.cache is not None:
-            self.cache.cache_jacobian(full_input_data, self.jac)
+            self.cache.cache_jacobian(input_data, self.jac)
 
         self.status = self.ExecutionStatus.DONE
         return self.jac
@@ -1272,7 +1317,7 @@ class MDODiscipline(Serializable):
             jac_approx_wait_time: The time waited between two forks
                 of the process / thread.
         """
-        appx = DisciplineJacApprox(
+        self._jac_approx = DisciplineJacApprox(
             self,
             approx_method=jac_approx_type,
             step=jax_approx_step,
@@ -1281,7 +1326,6 @@ class MDODiscipline(Serializable):
             use_threading=jac_approx_use_threading,
             wait_time_between_fork=jac_approx_wait_time,
         )
-        self._jac_approx = appx
         self.linearization_mode = jac_approx_type
 
     def set_optimal_fd_step(
@@ -1354,75 +1398,76 @@ class MDODiscipline(Serializable):
             outputs, inputs, print_errors, numerical_error=numerical_error
         )
 
-    @staticmethod
-    def __get_len(container) -> int:
-        """Measure the length of a container."""
-        if container is None:
-            return -1
-        try:
-            return len(container)
-        except TypeError:
-            return 1
-
     def _check_jacobian_shape(
         self,
-        inputs: Iterable[str],
-        outputs: Iterable[str],
+        input_names: Iterable[str],
+        output_names: Iterable[str],
     ) -> None:
         """Check that the Jacobian is a dictionary of dictionaries of 2D NumPy arrays.
 
         Args:
-            inputs: The inputs wrt the outputs are linearized.
-            outputs: The outputs to be linearized.
+            input_names: The input names wrt the output names are linearized.
+            output_names: The output names to be linearized.
 
         Raises:
             ValueError:
                 When the discipline was not linearized.
                 When the Jacobian is not of the right shape.
             KeyError:
-                When outputs are missing in the Jacobian of the discipline.
-                When inputs are missing for an output in the Jacobian of the discipline.
+                When output names are missing in the Jacobian of the discipline.
+                When input names are missing for an output in the Jacobian of the
+                discipline.
         """
         if not self.jac:
             raise ValueError(f"The discipline {self.name} was not linearized.")
-        out_set = set(outputs)
-        in_set = set(inputs)
-        out_jac_set = self.jac.keys()
 
-        if not out_set.issubset(out_jac_set):
-            msg = "Missing outputs in Jacobian of discipline {}: {}."
-            missing_outputs = out_set.difference(out_jac_set)
-            raise KeyError(msg.format(self.name, missing_outputs))
+        unique_output_names = set(output_names)
+        unique_input_names = set(input_names)
+        jac_output_names = self.jac.keys()
 
-        for j_o in outputs:
-            j_out = self.jac[j_o]
-            out_dv_set = j_out.keys()
-            output_vals = self._local_data.get(j_o)
-            n_out_j = self.__get_len(output_vals)
+        if not unique_output_names.issubset(jac_output_names):
+            msg = (
+                f"Missing output names in Jacobian of discipline {self.name}: "
+                f"{unique_output_names.difference(jac_output_names)}."
+            )
+            raise KeyError(msg)
 
-            if not in_set.issubset(out_dv_set):
-                msg = "Missing inputs {} in Jacobian of discipline {}, for output: {}."
-                missing_inputs = in_set.difference(out_dv_set)
-                raise KeyError(msg.format(missing_inputs, self.name, j_o))
+        get_input_size = self.input_grammar.data_converter.get_value_size
+        get_output_size = self.output_grammar.data_converter.get_value_size
 
-            for j_i in inputs:
-                input_vals = self._local_data.get(j_i)
-                n_in_j = self.__get_len(input_vals)
-                j_mat = j_out[j_i]
-                expected_shape = (n_out_j, n_in_j)
+        for output_name in output_names:
+            jac_output = self.jac[output_name]
 
-                if -1 in expected_shape:
-                    # At least one of the dimensions is unknown
-                    # Don't check shape
+            if not unique_input_names.issubset(jac_output.keys()):
+                msg = (
+                    f"Missing input names {unique_input_names.difference(jac_output)} "
+                    f"in Jacobian of discipline {self.name}, "
+                    f"for output: {output_name}."
+                )
+                raise KeyError(msg)
+
+            output_value = self._local_data.get(output_name)
+            if output_value is None:
+                # Unknown dimension, don't check the shape.
+                continue
+
+            output_size = get_output_size(output_name, output_value)
+
+            for input_name in input_names:
+                input_value = self._local_data.get(input_name)
+                if input_value is None:
+                    # Unknown dimension, don't check the shape.
                     continue
 
-                if j_mat.shape != expected_shape:
+                input_size = get_input_size(input_name, input_value)
+
+                if jac_output[input_name].shape != (output_size, input_size):
                     raise ValueError(
-                        f"The shape {j_mat.shape} "
-                        f"of the Jacobian matrix d{j_o}/d{j_i} "
+                        f"The shape {jac_output[input_name].shape} "
+                        f"of the Jacobian matrix d{output_name}/d{input_name} "
                         f"of the discipline {self.name} "
                         "does not match "
-                        f"(output_size, input_size)=({n_out_j}, {n_in_j})."
+                        f"(output_size, input_size)=({output_size}, {input_size})."
                     )
 
         # Discard imaginary part of Jacobian
@@ -1557,11 +1602,6 @@ class MDODiscipline(Serializable):
             against which to differentiate the output ones,
             and these output variables.
         """
-        output_names = self._differentiated_outputs if outputs is None else outputs
-        output_values = [self.get_outputs_by_name(name) for name in output_names]
-        input_names = self._differentiated_inputs if inputs is None else inputs
-        input_values = [self.get_inputs_by_name(name) for name in input_names]
-
         if init_type == self.InitJacobianType.EMPTY:
             default_matrix = empty
         elif init_type == self.InitJacobianType.DENSE:
@@ -1569,31 +1609,41 @@ class MDODiscipline(Serializable):
         elif init_type == self.InitJacobianType.SPARSE:
             default_matrix = csr_array
         else:
-            # Cast the argument so that the enum class raise an explicit error
+            # Cast the argument so that the enum class raise an explicit error.
             self.InitJacobianType(init_type)
+
+        input_names = self._differentiated_inputs if inputs is None else inputs
+        input_names_to_sizes = self.input_grammar.data_converter.compute_names_to_sizes(
+            input_names,
+            self._local_data,
+        )
+
+        output_names = self._differentiated_outputs if outputs is None else outputs
+        output_names_to_sizes = (
+            self.output_grammar.data_converter.compute_names_to_sizes(
+                output_names,
+                self._local_data,
+            )
+        )
 
         if fill_missing_keys:
             jac = self.jac
             # Only fill the missing sub jacobians
-            for output_name, output_value in zip(output_names, output_values):
+            for output_name, output_size in output_names_to_sizes.items():
                 jac_loc = jac.setdefault(output_name, defaultdict(None))
-                for input_name, input_value in zip(input_names, input_values):
+                for input_name, input_size in input_names_to_sizes.items():
                     sub_jac = jac_loc.get(input_name)
                     if sub_jac is None:
-                        jac_loc[input_name] = default_matrix(
-                            (len(output_value), len(input_value))
-                        )
+                        jac_loc[input_name] = default_matrix((output_size, input_size))
         else:
             # When a key is not in the default dict, ie a function is not in
             # the Jacobian; return an empty defaultdict(None)
             jac = defaultdict(default_dict_factory)
             if input_names:
-                for output_name, output_value in zip(output_names, output_values):
+                for output_name, output_size in output_names_to_sizes.items():
                     jac_loc = jac[output_name]
-                    for input_name, input_value in zip(input_names, input_values):
-                        jac_loc[input_name] = default_matrix(
-                            (len(output_value), len(input_value))
-                        )
+                    for input_name, input_size in input_names_to_sizes.items():
+                        jac_loc[input_name] = default_matrix((output_size, input_size))
             self.jac = jac
 
         return input_names, output_names
@@ -1722,6 +1772,7 @@ class MDODiscipline(Serializable):
             use_threading,
             wait_time_between_fork,
         )
+
         if inputs is None:
             inputs = self.get_input_data_names()
         if outputs is None:
@@ -1966,6 +2017,8 @@ class MDODiscipline(Serializable):
         """
         return concatenate(list(self.get_all_inputs()))
 
+    # TODO: API: remove and replace with get_data_list_from_dict with a default for the
+    # the second argument such that it uses self._local_data
     def get_inputs_by_name(
         self,
         data_names: Iterable[str],
@@ -1988,6 +2041,8 @@ class MDODiscipline(Serializable):
                 f"Discipline {self.name} has no input named {err}."
             ) from None
 
+    # TODO: API: remove and replace with get_data_list_from_dict with a default for the
+    # the second argument such that it uses self._local_data
     def get_outputs_by_name(
         self,
         data_names: Iterator[str],
@@ -2162,9 +2217,11 @@ class MDODiscipline(Serializable):
         """Whether the discipline is a scenario."""
         return False
 
+    # TODO: API: let the second argument have None as default value such that
+    # self._local_data is used as data_dict.
     @staticmethod
     def get_data_list_from_dict(
-        keys: str | Iterable,
+        keys: str | Iterable[str],
         data_dict: dict[str, Any],
     ) -> Any | Iterator[Any]:
         """Filter the dict from a list of keys or a single key.

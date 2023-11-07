@@ -28,17 +28,20 @@ import sys
 from abc import abstractmethod
 from importlib import metadata
 from inspect import isabstract
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Iterable
 from typing import NamedTuple
 
-from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.base_multiton import BaseABCMultiton
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from gemseo.utils.source_parsing import get_default_option_values
+from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
+
+if TYPE_CHECKING:
+    from gemseo.core.grammars.json_grammar import JSONGrammar
 
 LOGGER = logging.getLogger(__name__)
 
@@ -365,7 +368,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
         Returns:
             The mapping from the argument names to their default values.
         """
-        return get_default_option_values(self.get_class(name))
+        return get_callable_argument_defaults(self.get_class(name).__init__)
 
     def get_options_grammar(
         self,
@@ -397,6 +400,10 @@ class BaseFactory(metaclass=BaseABCMultiton):
             for option_name, option_description in self.get_options_doc(name).items()
             if option_name in default_option_values
         }
+
+        # Import locally to avoid a cyclic import.
+        from gemseo.core.grammars.json_grammar import JSONGrammar
+
         grammar = JSONGrammar(name)
         grammar.update_from_data(default_option_values)
         grammar.set_descriptions(option_descriptions)

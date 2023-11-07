@@ -380,13 +380,24 @@ def test_update_from_data(names_to_types, required_names, data):
 
 def test_is_array():
     """Verify is_array."""
-    g = SimpleGrammar("g", names_to_types={"name1": None, "name2": ndarray})
+    g = SimpleGrammar(
+        "g",
+        names_to_types={
+            "a_none": None,
+            "a_float": float,
+            "a_ndarray": ndarray,
+            "a_list": list,
+        },
+    )
 
-    with pytest.raises(KeyError, match="foo"):
-        g.is_array("foo")
+    for name in ("a_none", "a_float"):
+        assert not g.is_array(name)
 
-    assert not g.is_array("name1")
-    assert g.is_array("name2")
+    for name in ("a_ndarray", "a_list"):
+        assert g.is_array(name)
+
+    assert g.is_array("a_ndarray", numeric_only=True)
+    assert not g.is_array("a_list", numeric_only=True)
 
 
 def test_is_array_error():
@@ -493,8 +504,8 @@ def test_serialization():
     serialized_grammar = pickle.dumps(g)
     deserialized_grammar = pickle.loads(serialized_grammar)
 
-    for k, v in g.__dict__.items():
-        assert deserialized_grammar.__dict__[k] == v
+    for k, v in g.items():
+        assert deserialized_grammar[k] == v
 
 
 def test_rename():

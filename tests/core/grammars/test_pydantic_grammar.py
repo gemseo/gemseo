@@ -45,6 +45,8 @@ if TYPE_CHECKING:
 
 DATA_PATH = Path(__file__).parent / "data"
 
+_ArrayType = NDArray[Union[int, float, complex]]
+
 
 class ModelID(Enum):
     """Enumeration for selecting test models."""
@@ -418,7 +420,7 @@ def test_update_from_names(model, names):
         ({"name1": float}, Union[int, float]),
         ({"name1": str}, Union[int, str]),
         ({"name1": bool}, Union[int, bool]),
-        ({"name1": ndarray}, Union[int, NDArray]),
+        ({"name1": ndarray}, Union[int, _ArrayType]),
         ({"name1": dict}, Union[int, dict]),
         ({"name2": int}, Union[NDArray[int], int]),
     ],
@@ -447,7 +449,7 @@ def test_update_from_types_with_merge(model, data, expected_type):
         ({"name1": float}, float),
         ({"name1": str}, str),
         ({"name1": bool}, bool),
-        ({"name1": ndarray}, NDArray),
+        ({"name1": ndarray}, _ArrayType),
         ({"name1": dict}, dict),
     ],
 )
@@ -468,7 +470,7 @@ def test_update_from_types_from_empty(data, expected_type):
         ({"name1": float}, float),
         ({"name1": str}, str),
         ({"name1": bool}, bool),
-        ({"name1": ndarray}, NDArray),
+        ({"name1": ndarray}, _ArrayType),
         ({"name1": dict}, dict),
     ],
 )
@@ -497,7 +499,7 @@ def test_update_from_types(model, data, expected_type):
         ({"name1": 0.0}, float),
         ({"name1": ""}, str),
         ({"name1": True}, bool),
-        ({"name1": ndarray([0])}, NDArray),
+        ({"name1": ndarray([0])}, _ArrayType),
         ({"name1": {"name2": 0}}, dict),
     ],
 )
@@ -557,11 +559,33 @@ def test_is_array_error():
 def test_is_array(model3):
     """Verify is_array."""
     g = PydanticGrammar("g", model=model3)
-    assert not g.is_array("name1")
-    assert g.is_array("name2")
-    assert g.is_array("name2", numeric_only=True)
-    assert g.is_array("name3")
-    assert not g.is_array("name3", numeric_only=True)
+
+    for name in ("an_int", "a_float", "a_bool"):
+        assert not g.is_array(name)
+
+    for name in (
+        "an_int_ndarray",
+        "a_float_ndarray",
+        "a_bool_ndarray",
+        "an_int_list",
+        "a_float_list",
+        "a_bool_list",
+    ):
+        assert g.is_array(name)
+
+    for name in (
+        "an_int_ndarray",
+        "a_float_ndarray",
+    ):
+        assert g.is_array(name, numeric_only=True)
+
+    for name in (
+        "an_int_list",
+        "a_float_list",
+        "a_bool_ndarray",
+        "a_bool_list",
+    ):
+        assert not g.is_array(name, numeric_only=True)
 
 
 def test_restrict_to_error():

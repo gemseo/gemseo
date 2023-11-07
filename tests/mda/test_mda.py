@@ -34,6 +34,7 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mda.base_mda_solver import BaseMDASolver
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda import MDA
@@ -44,6 +45,7 @@ from gemseo.problems.scalable.linear.disciplines_generator import (
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import get_inputs
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
@@ -60,11 +62,7 @@ def sellar_mda(sellar_disciplines):
 @pytest.fixture(scope="module")
 def sellar_inputs():
     """Build dictionary with initial solution."""
-    x_local = np.array([0.0], dtype=np.float64)
-    x_shared = np.array([1.0, 0.0], dtype=np.float64)
-    y_0 = np.ones(1, dtype=np.complex128)
-    y_1 = np.ones(1, dtype=np.complex128)
-    return {"x_local": x_local, "x_shared": x_shared, "y_0": y_0, "y_1": y_1}
+    return get_inputs()
 
 
 def test_reset(sellar_mda, sellar_inputs):
@@ -80,12 +78,12 @@ def test_reset(sellar_mda, sellar_inputs):
 
 
 def test_input_couplings():
-    with concretize_classes(MDA):
-        mda = MDA([Sellar1()])
+    with concretize_classes(BaseMDASolver):
+        mda = BaseMDASolver([Sellar1()])
     assert len(mda._current_working_couplings()) == 0
 
-    with concretize_classes(MDA):
-        mda = MDA(
+    with concretize_classes(BaseMDASolver):
+        mda = BaseMDASolver(
             create_discipline(
                 [
                     "SobieskiPropulsion",
@@ -232,13 +230,10 @@ def test_array_couplings(mda_class, grammar_type):
     with pytest.raises(InvalidDataError):
         a_disc.execute({"x": 2.0})
 
-    with pytest.raises(TypeError, match="must be of type array"):
-        mda_class(disciplines, grammar_type=grammar_type)
-
 
 def test_convergence_warning(caplog):
-    with concretize_classes(MDA):
-        mda = MDA([Sellar1()])
+    with concretize_classes(BaseMDASolver):
+        mda = BaseMDASolver([Sellar1()])
     mda.tolerance = 1.0
     mda.normed_residual = 2.0
     mda.max_mda_iter = 1
@@ -247,12 +242,13 @@ def test_convergence_warning(caplog):
     assert not residual_is_small
     assert not max_iter_is_reached
 
-    mda.scaling = MDA.ResidualScaling.NO_SCALING
+    mda.scaling = BaseMDASolver.ResidualScaling.NO_SCALING
     mda._compute_residual(np.array([1, 2]), np.array([10, 10]))
     mda._warn_convergence_criteria()
     assert len(caplog.records) == 1
     assert (
-        "MDA has reached its maximum number of iterations" in caplog.records[0].message
+        "BaseMDASolver has reached its maximum number of iterations"
+        in caplog.records[0].message
     )
 
     mda.normed_residual = 1e-14
@@ -271,8 +267,8 @@ def test_coupling_structure(sellar_disciplines):
 
 def test_log_convergence(caplog):
     """Check that the boolean log_convergence is correctly set."""
-    with concretize_classes(MDA):
-        mda = MDA([Sellar1(), Sellar2(), SellarSystem()])
+    with concretize_classes(BaseMDASolver):
+        mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
     assert not mda.log_convergence
 
     mda.log_convergence = True
@@ -281,28 +277,33 @@ def test_log_convergence(caplog):
     caplog.set_level(logging.INFO)
 
     mda._compute_residual(np.array([1, 2]), np.array([2, 1]), store_it=False)
-    assert "MDA running... Normed residual = 1.00e+00 (iter. 0)" not in caplog.text
+    assert (
+        "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)"
+        not in caplog.text
+    )
 
     mda._compute_residual(np.array([1, 2]), np.array([2, 1]), log_normed_residual=True)
-    assert "MDA running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
+    assert (
+        "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
+    )
 
 
 def test_not_numeric_couplings():
     """Test that an exception is raised if strings are used as couplings in MDA."""
     sellar1 = Sellar1()
-    # Tweak the ouput grammar and set y_1 as an array of string
+    # Tweak the output grammar and set y_1 as an array of string
     prop = sellar1.output_grammar.schema.get("properties").get("y_1")
-    sub_prop = prop.get("items")
+    sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
     # Tweak the input grammar and set y_1 as an array of string
     sellar2 = Sellar2()
     prop = sellar2.input_grammar.schema.get("properties").get("y_1")
-    sub_prop = prop.get("items")
+    sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
     with pytest.raises(
-        TypeError, match=r"The coupling variables \['y\_1'\] must be of type array\."
+        TypeError, match=r"The coupling variables \['y\_1'\] must be numeric\."
     ), concretize_classes(MDA):
         MDA([sellar1, sellar2])
 

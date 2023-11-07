@@ -67,7 +67,6 @@ class TestCouplingStructure(unittest.TestCase):
         assert input_coupl == [Y_1]
         input_coupl = coupling_structure.get_input_couplings(disciplines[2])
         assert input_coupl == [Y_1, Y_2]
-        self.assertRaises(TypeError, coupling_structure.find_discipline, self)
 
         self.assertRaises(ValueError, coupling_structure.find_discipline, "self")
 

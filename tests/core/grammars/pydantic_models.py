@@ -49,9 +49,15 @@ def get_model3() -> ModelType:
     """Return a pydantic model."""
 
     class Model(BaseModel):
-        name1: int
-        name2: NDArray[int]
-        name3: List[int]
+        an_int: int
+        a_float: float
+        a_bool: bool
+        an_int_ndarray: NDArray[int]
+        a_float_ndarray: NDArray[float]
+        a_bool_ndarray: NDArray[bool]
+        an_int_list: List[int]
+        a_float_list: List[float]
+        a_bool_list: List[bool]
 
     return Model
 

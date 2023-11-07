@@ -20,14 +20,19 @@
 from __future__ import annotations
 
 import re
+from typing import Tuple
 
 import pytest
 from numpy import array
+from numpy import atleast_1d
+from numpy import ndarray
 from numpy import ones
+from numpy import sqrt
 from numpy import zeros
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
+from gemseo import MDODiscipline
 from gemseo import create_design_space
 from gemseo import create_mda
 from gemseo import create_scenario
@@ -37,11 +42,17 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.auto_py import to_arrays_dict
+from gemseo.problems.sellar.sellar import get_inputs
+
+X_DIM = 4
 
 
-def create_ds(n):
+@pytest.fixture()
+def design_space():
     design_space = create_design_space()
-    design_space.add_variable("x", n, l_b=-2 * ones(n), u_b=2 * ones(n), value=zeros(n))
+    design_space.add_variable(
+        "x", X_DIM, l_b=-2 * ones(X_DIM), u_b=2 * ones(X_DIM), value=zeros(X_DIM)
+    )
     return design_space
 
 
@@ -118,21 +129,14 @@ def test_use_arrays():
     assert d1.local_data["y1"] == f1()
 
 
-def test_mda():
-    """Test a MDA of AutoPyDisciplines."""
-    d1 = AutoPyDiscipline(f1)
-    d2 = AutoPyDiscipline(f2)
-    mda = create_mda("MDAGaussSeidel", [d1, d2])
-    mda.execute()
-
-
 def test_fail_wrongly_formatted_function():
     """Test that a wrongly formatted function cannot be used."""
     AutoPyDiscipline(f3)
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Two return statements use different variable names; ['y', 'x'] and ['y']."
+            "Two return statements use different variable names; ['y', 'x'] and ["
+            "'y']."
         ),
     ):
         AutoPyDiscipline(f4)
@@ -145,26 +149,28 @@ def test_fail_not_a_python_function():
         AutoPyDiscipline(not_a_function)
 
 
-def test_jac_pb():
+def test_jac_pb(design_space):
     """Test the AutoPyDiscipline with Jacobian provided."""
     max_iter = 100
-    n = 4
     algo = "L-BFGS-B"
 
-    design_space = create_ds(n)
     pb = OptimizationProblem(design_space)
     pb.objective = MDOFunction(rosen, "rosen", jac=rosen_der)
     execute_algo(pb, algo, max_iter=max_iter)
     fopt_ref = pb.solution.f_opt
 
-    design_space = create_ds(n)
-    auto_rosen = AutoPyDiscipline(rosen, rosen_der)
-    scn = create_scenario(auto_rosen, "DisciplinaryOpt", "r", design_space)
+    scn = create_scenario(
+        AutoPyDiscipline(rosen, rosen_der),
+        "DisciplinaryOpt",
+        "r",
+        design_space,
+    )
     scn.execute({"algo": algo, "max_iter": max_iter})
-    scn_opt = scn.optimization_result.f_opt
 
-    assert fopt_ref == scn_opt
+    assert fopt_ref == scn.optimization_result.f_opt
 
+
+def test_missing_jacobian():
     auto_rosen = AutoPyDiscipline(rosen)
     with pytest.raises(RuntimeError, match="The analytic Jacobian is missing."):
         auto_rosen._compute_jacobian()
@@ -250,3 +256,227 @@ def test_multiline_return():
         "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
         "zzzzzzzzzzzzzzzzz",
     ]
+
+
+def f6(x: int) -> int:
+    z = 0
+    return z  # noqa: RET504
+
+
+def f6_with_defaults(x: int = 0) -> int:
+    z = 0
+    return z  # noqa: RET504
+
+
+def f6_no_return(x: int):
+    z = 0
+    return z  # noqa: RET504
+
+
+def f6_missing_type(x: int, y):
+    z = 0
+    return z  # noqa: RET504
+
+
+def f6_multiple_returns(x: int) -> Tuple[int, float]:  # noqa: UP006
+    z = 0
+    zz = 0
+    return z, zz
+
+
+def f6_missing_return_tuple(x: int) -> int:
+    z = 0
+    zz = 0
+    return z, zz
+
+
+def f6_bad_multiple_returns(x: int) -> Tuple[int]:  # noqa: UP006
+    z = 0
+    zz = 0
+    return z, zz
+
+
+@pytest.mark.parametrize(
+    ("func", "warnings", "input_names_to_types", "output_names_to_types"),
+    [
+        (f6, [], {"x": int}, {"z": int}),
+        (f6_with_defaults, [], {"x": int}, {"z": int}),
+        (
+            f6_no_return,
+            [
+                "Discipline f6_no_return: py_func has inconsistent type "
+                "hints: either both "
+                "the signature arguments and the return values shall have "
+                "type hints or none. "
+                "The grammars will not use the type hints at all."
+            ],
+            {"x": ndarray},
+            {"z": ndarray},
+        ),
+        (
+            f6_missing_type,
+            [
+                "Discipline f6_missing_type: py_func has missing type hints "
+                "for the arguments: y.",
+                "Discipline f6_missing_type: py_func has inconsistent type "
+                "hints: either both "
+                "the signature arguments and the return values shall have "
+                "type hints or none. "
+                "The grammars will not use the type hints at all.",
+            ],
+            {"x": ndarray, "y": ndarray},
+            {"z": ndarray},
+        ),
+        (f6_multiple_returns, [], {"x": int}, {"z": int, "zz": float}),
+        (
+            f6_missing_return_tuple,
+            [
+                "Discipline f6_missing_return_tuple: py_func has bad return "
+                "type hints: expecting "
+                "a tuple of types, got <class 'int'>.",
+                "Discipline f6_missing_return_tuple: py_func has inconsistent "
+                "type hints: "
+                "either both the signature arguments and the return values "
+                "shall have type "
+                "hints or none. The grammars will not use the type hints at "
+                "all.",
+            ],
+            {"x": ndarray},
+            {"z": ndarray, "zz": ndarray},
+        ),
+        (
+            f6_bad_multiple_returns,
+            [
+                "Discipline f6_bad_multiple_returns: py_func has bad return "
+                "type hints: the number "
+                "of return values and return types shall be equal: 2 return "
+                "values but 1 "
+                "return type hints.",
+                "Discipline f6_bad_multiple_returns: py_func has inconsistent "
+                "type hints: "
+                "either both the signature arguments and the return values "
+                "shall have type "
+                "hints or none. The grammars will not use the type hints at "
+                "all.",
+            ],
+            {"x": ndarray},
+            {"z": ndarray, "zz": ndarray},
+        ),
+    ],
+)
+def test_type_hints_for_grammars(
+    func,
+    warnings,
+    input_names_to_types,
+    output_names_to_types,
+    caplog,
+):
+    """Verify the type hints handling."""
+    d = AutoPyDiscipline(func, grammar_type=MDODiscipline.GrammarType.SIMPLE)
+    assert d.input_grammar == input_names_to_types
+    assert d.output_grammar == output_names_to_types
+    assert caplog.messages == warnings
+    if caplog.records:
+        assert caplog.records[0].levelname == "WARNING"
+
+
+def compute_y_1(
+    x_local: ndarray,
+    x_shared: ndarray,
+    y_2: ndarray,
+) -> float:
+    """Evaluate the first coupling equation in functional form.
+
+    Args:
+        x_local: The design variables local to first discipline.
+        x_shared: The shared design variables.
+        y_2: The coupling variable coming from the second discipline.
+
+    Returns:
+        The value of the coupling variable :math:`y_1`.
+    """
+    if x_shared.ndim != 1:
+        # This handles running the test suite for checking data conversion.
+        x_shared = x_shared.flatten()
+    y_1 = float(sqrt(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0]))
+    return y_1  # noqa: RET504
+
+
+def compute_jacobian_1(
+    x_local: ndarray,
+    x_shared: ndarray,
+    y_2: ndarray,
+) -> ndarray:
+    jac = ones((1, 4))
+    if x_shared.ndim != 1:
+        # This handles running the test suite for checking data conversion.
+        x_shared = x_shared.flatten()
+    inv_denom = 1.0 / compute_y_1(x_local, x_shared, y_2)
+    jac[0][0] = 0.5 * inv_denom
+    jac[0][1] = x_shared[0] * inv_denom
+    jac[0][2] = 0.5 * inv_denom
+    jac[0][-1] = -0.1 * inv_denom
+    return jac
+
+
+def compute_y_2(
+    x_shared: ndarray,
+    y_1: float,
+) -> ndarray:
+    """Evaluate the second coupling equation in functional form.
+
+    Args:
+        x_shared: The shared design variables.
+        y_1: The coupling variable coming from the first discipline.
+
+    Returns:
+        The value of the coupling variable :math:`y_2`.
+    """
+    if x_shared.ndim != 1:
+        # This handles running the test suite for checking data conversion.
+        x_shared = x_shared.flatten()
+    out = x_shared[0] + x_shared[1]
+    y_2 = array([y_1 + out])
+    return y_2  # noqa: RET504
+
+
+def compute_jacobian_2(
+    x_shared: ndarray,
+    y_1: float,
+) -> ndarray:
+    return ones((1, 3))
+
+
+@pytest.mark.parametrize("x_local", range(3))
+@pytest.mark.parametrize(
+    "mda_name", ["MDAGaussSeidel", "MDAJacobi", "MDANewtonRaphson", "MDAQuasiNewton"]
+)
+def test_mda(x_local, mda_name, sellar_disciplines):
+    """Verify MDA."""
+    input_data_ref = get_inputs()
+    mda_ref = create_mda(mda_name, sellar_disciplines[:-1])
+    output_ref = mda_ref.execute(input_data_ref)
+
+    input_data = input_data_ref.copy()
+    for name, value in input_data.items():
+        input_data[name] = atleast_1d(value)
+    input_data["y_1"] = 1.0
+
+    sellar_1 = AutoPyDiscipline(compute_y_1, py_jac=compute_jacobian_1)
+    sellar_2 = AutoPyDiscipline(compute_y_2, py_jac=compute_jacobian_2)
+    mda = create_mda(mda_name, [sellar_1, sellar_2])
+    outputs = mda.execute(input_data)
+
+    assert outputs["y_1"] == output_ref["y_1"]
+    assert outputs["y_2"] == output_ref["y_2"]
+
+    if mda_name != "MDAGaussSeidel":
+        # No need to test more of the check jacobian.
+        return
+
+    del input_data["y_1"]
+    mda.default_inputs = input_data
+
+    assert mda.check_jacobian(
+        input_data=input_data, inputs=["x_local", "x_shared"], outputs=["y_1", "y_2"]
+    )

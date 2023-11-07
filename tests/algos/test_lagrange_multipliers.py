@@ -25,7 +25,6 @@ import numpy as np
 import pytest
 from numpy import array
 
-from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
@@ -149,15 +148,12 @@ def test_lagrangian_validation_ineq_normalize():
 
 
 @pytest.mark.parametrize("constraint_type", ["eq", "ineq"])
-def test_lagrangian_constraint(constraint_type):
-    disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-
-    design_space = SellarDesignSpace()
+def test_lagrangian_constraint(constraint_type, sellar_disciplines):
     scenario = create_scenario(
-        disciplines,
+        sellar_disciplines,
         formulation="MDF",
         objective_name="obj",
-        design_space=design_space,
+        design_space=SellarDesignSpace(),
     )
 
     scenario.add_constraint("c_1", constraint_type)

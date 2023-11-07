@@ -33,6 +33,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Tuple
 
 import pytest
 from numpy import array
@@ -47,7 +48,9 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
 
 
-def disc_1_expr(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> tuple[float]:
+def disc_1_expr(
+    w1: float = 0.0, y2: float = 2.0, x: float = 3.0
+) -> Tuple[float, float, float]:  # noqa: UP006
     """A linear function with residuals. First toy discipline.
 
     Args:
@@ -85,7 +88,9 @@ def disc_1_expr_jac(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> ndarray
     return d_y_w_r_d_w_y_x  # noqa: RET504
 
 
-def disc_2_expr(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> tuple[float]:
+def disc_2_expr(
+    w2: float = 3.0, y1: float = 1.0, x: float = 2.0
+) -> Tuple[float, float, float]:  # noqa: UP006
     """A linear function with residuals. Second toy discipline.
 
     Args:

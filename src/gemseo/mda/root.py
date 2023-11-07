@@ -28,7 +28,7 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.mda.mda import MDA
+from gemseo.mda.base_mda_solver import BaseMDASolver
 
 if TYPE_CHECKING:
     from typing import Any
@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 N_CPUS: Final[int] = cpu_count()
 
 
-class MDARoot(MDA):
+class MDARoot(BaseMDASolver):
     """Abstract class implementing MDAs based on (Quasi-)Newton methods."""
 
     n_processes: int
@@ -81,7 +81,7 @@ class MDARoot(MDA):
             use_threading: Whether to use threads instead of processes to parallelize
                 the execution. Processes will copy (serialize) all the disciplines,
                 while threads will share all the memory. If one wants to execute the
-                same discipline multiple times then multiprocessing should be prefered.
+                same discipline multiple times then multiprocessing should be preferred.
         """  # noqa:D205 D212 D415
         self.use_threading = use_threading
         self.n_processes = n_processes
@@ -160,6 +160,5 @@ class MDARoot(MDA):
 
     def _update_local_data_from_disciplines(self) -> None:
         """Update the local data from disciplines."""
-        outputs = (discipline.get_output_data() for discipline in self.disciplines)
-        for data in outputs:
-            self.local_data.update(data)
+        for discipline in self.disciplines:
+            self.local_data.update(discipline.get_output_data())

@@ -21,7 +21,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pytest
 from numpy import array
 from numpy import isclose
@@ -37,6 +36,7 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
+from gemseo.problems.sellar.sellar import get_inputs
 
 from .test_mda import analytic_disciplines_from_desc
 
@@ -117,12 +117,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplin
     linear_solver_options = {"tol": 1e-6}
     mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
     mda_chain.linear_solver_options = linear_solver_options
-    input_data = {
-        "x_local": np.array([0.7]),
-        "x_shared": np.array([1.97763897, 0.2]),
-        "y_0": np.array([1.0]),
-        "y_1": np.array([1.0]),
-    }
+    input_data = get_inputs()
     inputs = ["x_local", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     mda_chain.add_differentiated_inputs(inputs)
@@ -138,12 +133,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplin
 def test_sellar(tmp_wd, sellar_disciplines):
     """"""
     mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
-    input_data = {
-        "x_local": np.array([0.7]),
-        "x_shared": np.array([1.97763897, 0.2]),
-        "y_0": np.array([1.0]),
-        "y_1": np.array([1.0]),
-    }
+    input_data = get_inputs()
     inputs = ["x_local", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     assert mda_chain.check_jacobian(
@@ -169,14 +159,13 @@ def test_sellar_chain_linearize(sellar_disciplines):
         warm_start=True,
     )
 
-    ok = mda_chain.check_jacobian(
+    assert mda_chain.check_jacobian(
         derr_approx=MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,
         inputs=inputs,
         outputs=outputs,
         step=1e-6,
         threshold=1e-5,
     )
-    assert ok
 
     assert mda_chain.local_data[mda_chain.RESIDUALS_NORM][0] < 1e-13
 

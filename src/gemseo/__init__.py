@@ -140,6 +140,7 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Collection
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -990,7 +991,7 @@ def get_mda_options_schema(
 
 
 def create_scenario(
-    disciplines: Sequence[MDODiscipline],
+    disciplines: Sequence[MDODiscipline] | MDODiscipline,
     formulation: str,
     objective_name: str,
     design_space: DesignSpace | str | Path,
@@ -1040,7 +1041,7 @@ def create_scenario(
     from gemseo.core.doe_scenario import DOEScenario
     from gemseo.core.mdo_scenario import MDOScenario
 
-    if not isinstance(disciplines, list):
+    if not isinstance(disciplines, Collection):
         disciplines = [disciplines]
 
     if isinstance(design_space, (str, Path)):
@@ -1135,7 +1136,7 @@ def configure_logger(
 def create_discipline(
     discipline_name: str | Iterable[str],
     **options: Any,
-):
+) -> MDODiscipline | list[MDODiscipline]:
     """Instantiate one or more disciplines.
 
     Args:

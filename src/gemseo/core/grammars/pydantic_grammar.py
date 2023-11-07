@@ -16,20 +16,17 @@
 from __future__ import annotations
 
 import logging
-import sys
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Collection
-from typing import Generic
 from typing import Iterable
 from typing import Iterator
 from typing import Mapping
 from typing import Sequence
 from typing import Type
 from typing import Union
-from typing import get_origin
 
 from numpy import ndarray
 from numpy.typing import NDArray
@@ -41,6 +38,8 @@ from gemseo.core.grammars import _pydantic_utils
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.base_grammar import NamesToTypes
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.utils.compatibility.python import PYTHON_VERSION
+from gemseo.utils.compatibility.python import get_origin
 
 if TYPE_CHECKING:
     from gemseo.core.discipline_data import MutableData
@@ -54,19 +53,6 @@ LOGGER = logging.getLogger(__name__)
 _pydantic_utils.patch_pydantic()
 
 
-if sys.version_info < (3, 9):  # pragma: >=3.9 no cover
-
-    def get_origin(type_: type) -> type | None:  # noqa:F811,D103
-        # The origin of an NDArray is not properly determined in the standard
-        # library, see the source code for the changes.
-        origin = getattr(type_, "__origin__", None)
-        if origin is not None:
-            return origin
-        if type_ is Generic:
-            return Generic
-        return None
-
-
 class PydanticGrammar(BaseGrammar):
     """A grammar based on a pydantic model.
 
@@ -74,11 +60,13 @@ class PydanticGrammar(BaseGrammar):
     Currently, changing the defaults will not update the model.
     """
 
+    DATA_CONVERTER_CLASS: ClassVar[str] = "PydanticGrammarDataConverter"
+
     __model: ModelType
     """The pydantic model."""
 
     __TYPE_TO_PYDANTIC_TYPE: ClassVar[dict[type, type]] = {
-        ndarray: NDArray,
+        ndarray: NDArray[Union[int, float, complex]],
     }
     """The mapping from standard types to pydantic specific types."""
 
@@ -213,12 +201,20 @@ class PydanticGrammar(BaseGrammar):
         numeric_only: bool = False,
     ) -> bool:
         self._check_name(name)
-        type_ = get_origin(self.__model.__fields__[name].outer_type_)
-        if type_ is None:
-            return False
         if numeric_only:
-            return issubclass(type_, ndarray)
-        return issubclass(type_, Collection)
+            return self.data_converter.is_numeric(name)
+        outer_type_ = self.__model.__fields__[name].outer_type_
+        type_origin = get_origin(outer_type_)
+        if type_origin is None:
+            if PYTHON_VERSION < (3, 9):  # pragma: >=3.9 no cover
+                # Workaround for ndarray in particular,
+                # see get_origin of Python 3.9+.
+                type_origin = getattr(outer_type_, "__origin__", None)
+            if type_origin is None:
+                # This is a container with no information on the type of its contents.
+                # This is the case of a type just declared as ndarray for instance.
+                return False
+        return issubclass(type_origin, Collection)
 
     def _restrict_to(  # noqa:D102
         self,
@@ -240,11 +236,19 @@ class PydanticGrammar(BaseGrammar):
             pydantic_type = outer_type_ if origin is None else origin
             simple_type = self.__PYDANTIC_TYPE_TO_SIMPLE_TYPE.get(pydantic_type)
             if simple_type is None:
-                message = (
-                    "Unsupported type '%s' in PydanticGrammar '%s' "
-                    "for field '%s' in conversion to SimpleGrammar."
-                )
-                LOGGER.warning(message, origin, self.name, name)
+                if PYTHON_VERSION < (3, 9):  # pragma: >=3.9 no cover
+                    # Workaround for ndarray in particular,
+                    # see get_origin of Python 3.9+.
+                    simple_type = self.__PYDANTIC_TYPE_TO_SIMPLE_TYPE.get(
+                        getattr(outer_type_, "__origin__", None)
+                    )
+                if simple_type is None:
+                    message = (
+                        "Unsupported type '%s' in PydanticGrammar '%s' "
+                        "for field '%s' in conversion to SimpleGrammar."
+                    )
+                    LOGGER.warning(message, origin, self.name, name)
+
             names_to_types[name] = simple_type
 
         return SimpleGrammar(

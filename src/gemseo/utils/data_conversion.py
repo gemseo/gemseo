@@ -33,13 +33,15 @@ from numpy import concatenate
 from numpy import ndarray
 
 if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+
     from gemseo.core.discipline_data import Data
 
 STRING_SEPARATOR = "#&#"
 
 
 def concatenate_dict_of_arrays_to_array(
-    dict_of_arrays: Mapping[str, ndarray],
+    dict_of_arrays: Mapping[str, ArrayLike],
     names: Iterable[str],
 ) -> ndarray:
     """Concatenate some values of a dictionary of NumPy arrays.
@@ -64,9 +66,10 @@ def concatenate_dict_of_arrays_to_array(
     if not names:
         return array([])
 
-    return concatenate([dict_of_arrays[key] for key in names], -1)
+    return concatenate([dict_of_arrays[key] for key in names], axis=-1)
 
 
+# TODO: API: remove?
 dict_to_array = concatenate_dict_of_arrays_to_array
 
 
@@ -146,9 +149,11 @@ def split_array_to_dict_of_arrays(
     return result
 
 
+# TODO: API: remove?
 array_to_dict = split_array_to_dict_of_arrays
 
 
+# TODO: API: no longer used, remove.
 def update_dict_of_arrays_from_array(
     dict_of_arrays: Mapping[str, ndarray],
     names: Iterable[str],
@@ -206,7 +211,7 @@ def update_dict_of_arrays_from_array(
         for data_name in names:
             data_value = dict_of_arrays[data_name]
             i_max = i_min + data_value.size
-            new_data_value = array[range(i_min, i_max)]
+            new_data_value = array[slice(i_min, i_max)]
             is_complex = new_data_value.dtype.kind == "c"
             if not is_complex or (is_complex and cast_complex):
                 new_data_value = new_data_value.astype(data_value.dtype)
