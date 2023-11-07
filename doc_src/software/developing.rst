@@ -818,11 +818,17 @@ and searching in ``Plugins > Marketplace``.
 Then,
 activate all the options and
 provide the path to the ``ruff`` executable
-that shall be in the directory relative
+that shall be in the following directory relative
 to the root of the git clone of gemseo:
 
 - On Linux and MacOS: :file:`.tox/check/bin/ruff`.
 - On Windows: :file:`.tox\\check\\Scripts\\ruff.exe`.
+
+.. warning::
+
+    For :class:`.AutoPyDiscipline` functions,
+    ``ruff`` will refactor the ``return`` line in an incompatible manner.
+    You shall append ``# noqa: RET504`` to the ``return`` line.
 
 Environment variables
 +++++++++++++++++++++
