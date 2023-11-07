@@ -150,7 +150,9 @@ Making a new release
 
 #. Create a release branch named release-X.Y.Z.
 #. For plugins only:
+
    #. Update the required gemseo version in :file:`pyproject.toml`.
+
 #. Update the changelog.
 #. Push the branch.
 #. Create a MR to master.

@@ -12,12 +12,7 @@
       "type": "array"
     },
     "fidelity": {
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1,
-      "type": "array"
+      "type": "number"
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",

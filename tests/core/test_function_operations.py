@@ -35,8 +35,8 @@ from gemseo.problems.analytical.rosenbrock import RosenMF
 
 def test_linear_composition():
     fg = MDODisciplineAdapterGenerator(RosenMF(3))
-    f1 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": array([0])})
-    f2 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": array([1])})
+    f1 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": 0})
+    f2 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": 1})
 
     x = zeros(3)
     assert f1(x) == 0.0

@@ -233,6 +233,7 @@ intersphinx_mapping = {
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "sympy": ("https://docs.sympy.org/latest/", None),
+    "openturns": ("https://openturns.github.io/openturns/latest", None),
 }
 
 ################################################################################

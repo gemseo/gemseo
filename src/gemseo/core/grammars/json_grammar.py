@@ -24,12 +24,12 @@ import json
 import logging
 from copy import copy
 from copy import deepcopy
-from numbers import Number
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Dict
 from typing import Final
 from typing import Iterable
@@ -72,6 +72,8 @@ class JSONGrammar(BaseGrammar):
     In that case, the resulting grammar will allow any of the values.
     """
 
+    DATA_CONVERTER_CLASS: ClassVar[str] = "JSONGrammarDataConverter"
+
     __validator: Callable[[Mapping[str, Any]], None] | None
     """The schema validator."""
 
@@ -86,10 +88,9 @@ class JSONGrammar(BaseGrammar):
         "string": str,
         "integer": int,
         "boolean": bool,
-        "number": Number,
-        "float": Number,
+        "number": complex,
     }
-    """The binding from JSON types to Python types."""
+    """The mapping from JSON types to Python types."""
 
     __PYTHON_TO_JSON_TYPES: Final[dict[type, str]] = {
         ndarray: "array",
@@ -98,18 +99,16 @@ class JSONGrammar(BaseGrammar):
         str: "string",
         int: "integer",
         bool: "boolean",
-        Number: "number",
+        complex: "number",
         float: "number",
     }
-    """The binding from Python types to JSON types."""
+    """The mapping from Python types to JSON types."""
 
     __WARNING_TEMPLATE: Final[str] = (
         "Unsupported %s '%s' in JSONGrammar '%s' "
         "for property '%s' in conversion to SimpleGrammar."
     )
     """The logging warning template for conversion to SimpleGrammar."""
-
-    __NUMERIC_TYPE_NAMES: Final[tuple[str]] = ("number", "float", "integer")
 
     def __init__(
         self,
@@ -306,33 +305,9 @@ class JSONGrammar(BaseGrammar):
         numeric_only: bool = False,
     ) -> bool:
         self._check_name(name)
-        prop = self.schema.get("properties").get(name)
-        if prop.get("type") != "array":
-            return False
         if numeric_only:
-            return self.__is_array_of_numeric_value(prop)
-        return True
-
-    @classmethod
-    def __is_array_of_numeric_value(cls, prop: Any) -> bool:
-        """Whether the array (which can be nested) contains numeric values at the end.
-
-        This method is recursive in order to be able to take into account nested arrays.
-
-        Args:
-            prop: The grammar property.
-
-        Returns:
-            Whether the property contains numeric values at the end.
-        """
-        sub_prop = prop.get("items")
-        # If the sub_prob is not defined, we assume that it is a numeric value
-        if sub_prop is None:
-            return True
-        sub_prop_type = sub_prop.get("type")
-        if sub_prop_type == "array":
-            return cls.__is_array_of_numeric_value(sub_prop)
-        return sub_prop.get("type") in cls.__NUMERIC_TYPE_NAMES
+            return self.data_converter.is_numeric(name)
+        return self.schema.get("properties").get(name).get("type") == "array"
 
     def _restrict_to(  # noqa: D102
         self,
@@ -456,6 +431,8 @@ class JSONGrammar(BaseGrammar):
         """
         _data_dict = dict(data)
         for key, value in data.items():
+            if isinstance(value, complex):
+                _data_dict[key] = value.real
             if isinstance(value, (ndarray, generic)):
                 _data_dict[key] = value.real.tolist()
             elif isinstance(value, PathLike):

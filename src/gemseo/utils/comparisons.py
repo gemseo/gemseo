@@ -29,13 +29,15 @@ from scipy.sparse.linalg import norm as spnorm
 
 from gemseo.utils.data_conversion import flatten_nested_dict
 
-ArrayLike = Union[ndarray, spmatrix]
+ExtendedArrayLike = Union[ndarray, spmatrix]
+DataToCompare = Union[
+    Mapping[str, ExtendedArrayLike], Mapping[str, Mapping[str, ExtendedArrayLike]]
+]
 
 
 def compare_dict_of_arrays(
-    dict_of_arrays: Mapping[str, ArrayLike] | Mapping[str, Mapping[str, ArrayLike]],
-    other_dict_of_arrays: Mapping[str, ArrayLike]
-    | Mapping[str, Mapping[str, ArrayLike]],
+    dict_of_arrays: DataToCompare,
+    other_dict_of_arrays: DataToCompare,
     tolerance: float = 0.0,
 ) -> bool:
     """Check if two dictionaries of NumPy arrays and/or SciPy sparse matrices are equal.
@@ -54,7 +56,7 @@ def compare_dict_of_arrays(
     Returns:
         Whether the dictionaries are equal.
     """
-    # Flatten the dictionnaries if nested
+    # Flatten the dictionaries if nested
     if any(isinstance(value, Mapping) for value in dict_of_arrays.values()):
         dict_of_arrays = flatten_nested_dict(dict_of_arrays)
         other_dict_of_arrays = flatten_nested_dict(other_dict_of_arrays)

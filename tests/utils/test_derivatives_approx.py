@@ -26,14 +26,12 @@ from math import sin
 
 import pytest
 from numpy import array
-from numpy import complex128
-from numpy import float64
+from numpy import ndarray
 from numpy import zeros
 from numpy.linalg import norm
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
-from gemseo import create_discipline
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -67,7 +65,8 @@ def test_init_complex_step():
         cplx.f_gradient(zeros(3) + 1j)
 
 
-def get_x_tests():
+@pytest.fixture()
+def x():
     """"""
     return [
         [0.0, 0.0],
@@ -92,24 +91,24 @@ def run_tests(xs, fd_app):
         assert err < 1e-4
 
 
-def test_approx_first_order_fd():
-    run_tests(get_x_tests(), FirstOrderFD(rosen, 1e-8))
+def test_approx_first_order_fd(x):
+    run_tests(x, FirstOrderFD(rosen, 1e-8))
 
 
-def test_approx_complex_step():
-    run_tests(get_x_tests(), ComplexStep(rosen))
+def test_approx_complex_step(x):
+    run_tests(x, ComplexStep(rosen))
 
 
-def test_approx_complex_step_diff_steps_e60():
-    run_tests(get_x_tests(), ComplexStep(rosen, 1e-60))
+def test_approx_complex_step_diff_steps_e60(x):
+    run_tests(x, ComplexStep(rosen, 1e-60))
 
 
-def test_approx_complex_step_diff_steps_e200():
-    run_tests(get_x_tests(), ComplexStep(rosen, 1e-200))
+def test_approx_complex_step_diff_steps_e200(x):
+    run_tests(x, ComplexStep(rosen, 1e-200))
 
 
-def test_approx_complex_step_diff_steps_e30():
-    run_tests(get_x_tests(), ComplexStep(rosen, 1e-30))
+def test_approx_complex_step_diff_steps_e30(x):
+    run_tests(x, ComplexStep(rosen, 1e-30))
 
 
 def test_abs_der():
@@ -143,18 +142,15 @@ def test_complex_fail():
         )
 
 
-@pytest.mark.parametrize("discipline_name", ["Sellar1", "Sellar2"])
 @pytest.mark.parametrize("parallel", [True, False])
-def test_auto_step(discipline_name, parallel):
-    discipline = create_discipline(discipline_name)
-
-    ok = discipline.check_jacobian(
-        auto_set_step=True,
-        threshold=1e-2,
-        step=1e-7,
-        parallel=parallel,
-    )
-    assert ok
+def test_auto_step(parallel, sellar_disciplines):
+    for discipline in sellar_disciplines:
+        assert discipline.check_jacobian(
+            auto_set_step=True,
+            threshold=1e-2,
+            step=1e-7,
+            parallel=parallel,
+        )
 
 
 def test_opt_step():
@@ -233,12 +229,12 @@ def test_load_and_dump(tmp_wd):
 
 
 class ToyDiscipline(MDODiscipline):
-    def __init__(self, dtype=float64):
-        super().__init__()
-        self.input_grammar.update_from_names(["x1", "x2"])
-        self.output_grammar.update_from_names(["y1", "y2"])
+    def __init__(self, dtype):
+        super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
+        self.input_grammar.update_from_types({"x1": dtype, "x2": ndarray})
+        self.output_grammar.update_from_types({"y1": dtype, "y2": ndarray})
         self.default_inputs = {
-            "x1": array([1.0], dtype=dtype),
+            "x1": dtype(1.0),
             "x2": array([1.0, 1.0], dtype=dtype),
         }
         self.dtype = dtype
@@ -247,10 +243,10 @@ class ToyDiscipline(MDODiscipline):
         self.local_data["y1"] = self.local_data["x1"] + 2 * self.local_data["x2"][0]
         self.local_data["y2"] = array(
             [
-                self.local_data["x1"][0]
+                self.local_data["x1"]
                 + 2 * self.local_data["x2"][0]
                 + 3 * self.local_data["x2"][1],
-                2 * self.local_data["x1"][0]
+                2 * self.local_data["x1"]
                 + 4 * self.local_data["x2"][0]
                 + 6 * self.local_data["x2"][1],
             ]
@@ -282,7 +278,7 @@ class ToyDiscipline(MDODiscipline):
         {"x2": 1, "y2": [0, 1]},
     ],
 )
-@pytest.mark.parametrize("dtype", [float64, complex128])
+@pytest.mark.parametrize("dtype", [float, complex])
 def test_indices(inputs, outputs, indices, dtype):
     """Test the option to check the Jacobian by indices.
 
@@ -291,7 +287,7 @@ def test_indices(inputs, outputs, indices, dtype):
         outputs: The output variables to be checked.
         dtype: The data type of the variables for the test discipline.
     """
-    discipline = ToyDiscipline(dtype=dtype)
+    discipline = ToyDiscipline(dtype)
     discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline)
     assert apprx.check_jacobian(
@@ -299,14 +295,14 @@ def test_indices(inputs, outputs, indices, dtype):
     )
 
 
-@pytest.mark.parametrize("dtype", [float64, complex128])
+@pytest.mark.parametrize("dtype", [float, complex])
 def test_wrong_step(dtype):
-    """Test that an exception is raised if the step size length does not math inputs.
+    """Test that an exception is raised if the step size length does not match inputs.
 
     Args:
         dtype: The data type of the variables for the test discipline.
     """
-    discipline = ToyDiscipline(dtype=dtype)
+    discipline = ToyDiscipline(dtype)
     discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7])
     with pytest.raises(ValueError, match="Inconsistent step size, expected 3 got 2."):

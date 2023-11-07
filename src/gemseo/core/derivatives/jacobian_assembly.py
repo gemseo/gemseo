@@ -321,8 +321,7 @@ class JacobianAssembly:
         Raises:
             ValueError: When the size of some variables could not be determined.
         """
-        # search for the functions/variables/couplings in the
-        # Jacobians of the disciplines
+        # search for functions/variables/couplings in the Jacobians of the disciplines
         if residual_variables:
             outputs = itertools.chain(
                 functions,
@@ -338,7 +337,11 @@ class JacobianAssembly:
             discipline = self.coupling_structure.find_discipline(output)
             self.disciplines[output] = discipline
             # get an arbitrary Jacobian and compute the number of rows
-            self.sizes[output] = discipline.local_data[output].shape[0]
+            self.sizes[
+                output
+            ] = discipline.output_grammar.data_converter.get_value_size(
+                output, discipline.local_data[output]
+            )
 
         # variables
         for variable in variables:
@@ -356,9 +359,15 @@ class JacobianAssembly:
                     f"Failed to determine the size of input variable {variable}"
                 )
 
+    # TODO: API: give a better name like get_derivation_mode for instance.
     @classmethod
-    def _check_mode(cls, mode: str, n_variables: int, n_functions: int) -> str:
-        """Check the differentiation mode (direct or adjoint).
+    def _check_mode(
+        cls,
+        mode: DerivationMode,
+        n_variables: int,
+        n_functions: int,
+    ) -> DerivationMode:
+        """Check the differentiation mode.
 
         Args:
             mode: The differentiation mode.
@@ -366,14 +375,13 @@ class JacobianAssembly:
             n_functions: The number of functions.
 
         Returns:
-            The linearization mode.
+            The differentiation mode.
         """
-        if mode == cls.DerivationMode.AUTO:
-            if n_variables <= n_functions:
-                mode = cls.DerivationMode.DIRECT
-            else:
-                mode = cls.DerivationMode.ADJOINT
-        return mode
+        if mode != cls.DerivationMode.AUTO:
+            return mode
+        if n_variables <= n_functions:
+            return cls.DerivationMode.DIRECT
+        return cls.DerivationMode.ADJOINT
 
     def compute_dimension(self, names: Iterable[str]) -> int:
         """Compute the total number of functions/variables/couplings of the full system.
@@ -850,11 +858,13 @@ class JacobianAssembly:
         # Build rows blocks
         for name in var_names:
             for discipline in self.coupling_structure.disciplines:
-                # Find associated discipline
-                if name in discipline.get_output_data_names():
-                    residuals.append(  # noqa: PERF401
-                        discipline.get_outputs_by_name(name) - in_data[name]
+                if name in discipline.output_grammar:
+                    to_array = (
+                        discipline.output_grammar.data_converter.convert_value_to_array
                     )
+                    local_data_array = to_array(name, discipline.local_data[name])
+                    in_data_array = to_array(name, in_data[name])
+                    residuals.append(local_data_array - in_data_array)
 
         return concatenate(residuals)
 

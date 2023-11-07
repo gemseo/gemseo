@@ -137,8 +137,9 @@ def test_update_dict_of_arrays_from_array_too_short(dict_to_be_updated):
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Inconsistent input array size of values array [0.5] "
-            "with reference data shape (2,) for data named: z."
+            "Inconsistent data shapes: could not use the whole data array of "
+            "shape (1,) (only reached max index = 2), while updating data "
+            "dictionary names z of shapes: [('z', (2,))]."
         ),
     ):
         update_dict_of_arrays_from_array(dict_to_be_updated, "z", array([0.5]))

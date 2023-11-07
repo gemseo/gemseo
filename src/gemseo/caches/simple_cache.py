@@ -24,10 +24,10 @@ from typing import TYPE_CHECKING
 from typing import Generator
 from typing import Mapping
 
+from gemseo.core.cache import DATA_COMPARATOR
 from gemseo.core.cache import AbstractCache
 from gemseo.core.cache import CacheEntry
 from gemseo.core.cache import JacobianData
-from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -81,9 +81,8 @@ class SimpleCache(AbstractCache):
         Returns:
             Whether the input data is cached.
         """
-        cached_input_data = self.__inputs
-        return cached_input_data and compare_dict_of_arrays(
-            input_data, cached_input_data, self.tolerance
+        return self.__inputs and DATA_COMPARATOR(
+            input_data, self.__inputs, self.tolerance
         )
 
     def cache_outputs(  # noqa:D102

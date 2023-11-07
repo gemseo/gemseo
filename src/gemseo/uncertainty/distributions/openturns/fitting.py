@@ -129,7 +129,7 @@ def _get_distribution_factories() -> dict[str, ots.DistributionFactory]:
     """Return the distribution factories.
 
     Returns:
-        The bindings from the distributions to their factories.
+        The mapping from the distributions to their factories.
     """
     dist_to_factory_class = {}
     for factory in ots.DistributionFactory.GetContinuousUniVariateFactories():

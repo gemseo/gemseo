@@ -465,7 +465,6 @@ class MDAChain(MDA):
             return
         self.input_grammar = self.mdo_chain.input_grammar.copy()
         self.output_grammar = self.mdo_chain.output_grammar.copy()
-        self._add_residuals_norm_to_output_grammar()
 
     def _check_consistency(self) -> None:
         """Check if there is no more than 1 equation per variable.
@@ -488,8 +487,7 @@ class MDAChain(MDA):
         return super().execute(input_data=input_data)
 
     def _run(self) -> None:
-        if self.warm_start:
-            self._couplings_warm_start()
+        super()._run()
 
         self.local_data = self.mdo_chain.execute(self.local_data)
 

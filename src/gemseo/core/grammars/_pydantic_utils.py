@@ -141,7 +141,7 @@ TYPE_TO_VALIDATOR_DEFS: dict[type, list[Any]] = {
     str: [validators.strict_str_validator],
     bool: [strict_bool_validator],
 }
-"""The binding from type to validator definitions as expected in pydantic internals."""
+"""The mapping from type to validator definitions as expected in pydantic internals."""
 
 NEW_TYPE_TO_VALIDATOR_DEFS: dict[type, list[Any]] = {
     complex: [strict_complex_validator],

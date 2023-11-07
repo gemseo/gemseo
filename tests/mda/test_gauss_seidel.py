@@ -301,7 +301,7 @@ def test_plot_residual_history(
 
 
 def test_virtual_exe_mda(two_virtual_disciplines):  # noqa F811
-    """Test a MDA with disciplines in virtual execution mode."""
+    """Test an MDA with disciplines in virtual execution mode."""
     chain = MDAGaussSeidel(two_virtual_disciplines)
     chain.execute()
     assert chain.local_data["x"] == 1.0

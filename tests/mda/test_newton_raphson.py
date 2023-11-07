@@ -32,14 +32,15 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.problems.sellar.sellar import Y_1
-from gemseo.problems.sellar.sellar import Y_2
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import get_y_opt
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+
+from ..core.test_dataframe_disciplines import assert_disc_data_equal
 
 TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
@@ -159,8 +160,7 @@ def test_raphson_sellar_sparse_complex():
 
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
@@ -192,9 +192,7 @@ def test_raphson_sellar(parallel):
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-6
-
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 def test_sellar_linop():
@@ -366,9 +364,7 @@ def test_mda_newton_convergence_passing_dedicated_newton_options(
     )
     mda.execute()
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
-
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 def test_mda_newton_serialization(tmp_wd):
@@ -386,9 +382,8 @@ def test_mda_newton_serialization(tmp_wd):
 
     with open(out_file, "rb") as file:
         mda_d = pickle.load(file)
-    for k, v in out.items():
-        assert k in mda_d.local_data
-        assert (v == mda_d.local_data[k]).all()
+
+    assert_disc_data_equal(mda_d.local_data, out)
 
 
 def test_mda_newton_weak_couplings():

@@ -94,7 +94,7 @@ class RemappingDiscipline(MDODiscipline):
             value: The value to be cast.
 
         Returns:
-            The casted value.
+            The cast value.
 
         Raises:
             ValueError: When the value is neither a string nor a tuple

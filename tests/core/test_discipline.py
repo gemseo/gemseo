@@ -1045,7 +1045,7 @@ def test_get_sub_disciplines_recursive(recursive, expected):
             {"y": 1, "out_path": "another_string"},
             MDODiscipline.GrammarType.SIMPLE,
             ["x"],
-            [],
+            ["y"],
         ),
         (
             {"x": array([1.0]), "in_path": array(["some_string"])},
@@ -1066,7 +1066,7 @@ def test_get_sub_disciplines_recursive(recursive, expected):
             {"y": 1, "out_path": "another_string"},
             MDODiscipline.GrammarType.JSON,
             ["x"],
-            [],
+            ["y"],
         ),
     ],
 )

@@ -223,20 +223,18 @@ def f_sellar_1(x_local: float, y_2: float, x_shared: ndarray) -> float:
 
 
 @pytest.mark.parametrize("use_threading", [True, False])
-def test_exception_mda_jacobi(caplog, use_threading):
+def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines):
     """Check that a DOE scenario does not crash with a ValueError and MDAJacobi.
 
     Args:
         caplog: Fixture to access and control log capturing.
         use_threading: Whether to use threading in the MDAJacobi.
     """
-    sellar1 = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
-    sellar2 = create_discipline("Sellar2")
-    sellarsystem = create_discipline("SellarSystem")
-    disciplines = [sellar1, sellar2, sellarsystem]
+    sellar_disciplines = list(sellar_disciplines)
+    sellar_disciplines[0] = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
 
     scenario = DOEScenario(
-        disciplines,
+        sellar_disciplines,
         "MDF",
         "obj",
         main_mda_name="MDAChain",
@@ -252,7 +250,7 @@ def test_exception_mda_jacobi(caplog, use_threading):
         }
     )
 
-    assert sellarsystem.n_calls == 0
+    assert sellar_disciplines[2].n_calls == 0
     assert "Undefined" in caplog.text
 
 

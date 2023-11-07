@@ -1,0 +1,2 @@
+The argument ``use_shell`` of the discipline ``DiscFromExe`` is no longer taken into account,
+executable are now always executed without shell.

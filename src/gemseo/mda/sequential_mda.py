@@ -83,8 +83,7 @@ class MDASequential(MDA):
             mda.log_convergence = value
 
     def _run(self) -> None:
-        """Run the MDAs in a sequential way."""
-        self._couplings_warm_start()
+        super()._run()
 
         if self.reset_history_each_run:
             self.residual_history = []

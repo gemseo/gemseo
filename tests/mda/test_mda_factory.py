@@ -23,19 +23,13 @@ from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda_factory import MDAFactory
 
 
-def test_jacobi_sobieski(sellar_disciplines):
-    """Test the execution of Jacobi on Sobieski."""
+def test_create(sellar_disciplines):
+    """Test the factory create."""
     mda = MDAFactory().create("MDAJacobi", sellar_disciplines, max_mda_iter=2)
-    mda.execute()
-
-    mda2 = MDAJacobi(sellar_disciplines, max_mda_iter=2)
-    mda2.execute()
-
-    for k, v in mda2.local_data.items():
-        assert (v == mda.local_data[k]).all()
+    assert isinstance(mda, MDAJacobi)
 
 
-def test_available_mdas():
+def test_is_available():
     factory = MDAFactory()
     avail = factory.mdas
     assert len(avail) > 2
