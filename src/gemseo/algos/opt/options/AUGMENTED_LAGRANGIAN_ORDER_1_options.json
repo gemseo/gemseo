@@ -1,5 +1,5 @@
 {
-  "name": "AUGMENTED_LAGRANGIAN_options",
+  "name": "AUGMENTED_LAGRANGIAN_ORDER_1_options",
   "required": [
     "max_iter",
     "sub_solver_algorithm"
@@ -65,5 +65,5 @@
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,
   "type": "object",
-  "id": "#AUGMENTED_LAGRANGIAN"
+  "id": "#AUGMENTED_LAGRANGIAN_ORDER_1"
 }

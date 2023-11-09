@@ -64,17 +64,19 @@ def test_is_kkt_norm_tol_reached_power2(is_optimum):
     )
 
 
-@pytest.mark.parametrize("algorithm", ["NLOPT_SLSQP", "SLSQP", "Augmented_Lagrangian"])
+@pytest.mark.parametrize(
+    "algorithm", ["NLOPT_SLSQP", "SLSQP", "Augmented_Lagrangian_order_1"]
+)
 @pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
 def test_kkt_norm_correctly_stored(algorithm, problem):
     """Test that kkt norm is stored at each iteration requiring gradient."""
     problem.preprocess_functions()
     options = {
         "normalize_design_space": True,
-        "kkt_tol_abs": 1e-2,
-        "kkt_tol_rel": 1e-2,
+        "kkt_tol_abs": 1e-3,
+        "kkt_tol_rel": 1e-3,
     }
-    if algorithm == "Augmented_Lagrangian":
+    if "Augmented_Lagrangian" in algorithm:
         options["sub_solver_algorithm"] = "L-BFGS-B"
     problem.reset()
     OptimizersFactory().execute(problem, algorithm, **options)

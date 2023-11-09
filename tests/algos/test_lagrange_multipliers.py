@@ -70,7 +70,7 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound):
     assert ("upper_bounds" in lagrangian) is upper_bound
     assert "lower_bounds" in lagrangian
     assert "equality" in lagrangian
-    assert ("inequality" not in lagrangian) is upper_bound
+    assert "inequality" in lagrangian
 
 
 @pytest.mark.parametrize(
@@ -301,10 +301,23 @@ parametrized_options = pytest.mark.parametrize(
     ],
 )
 parametrized_algo_ineq = pytest.mark.parametrize(
-    "algo_ineq", ["NLOPT_MMA", "SLSQP", "NLOPT_SLSQP", "Augmented_Lagrangian"]
+    "algo_ineq",
+    [
+        "NLOPT_MMA",
+        "SLSQP",
+        "NLOPT_SLSQP",
+        "Augmented_Lagrangian_order_0",
+        "Augmented_Lagrangian_order_1",
+    ],
 )
 parametrized_algo_eq = pytest.mark.parametrize(
-    "algo_eq", ["SLSQP", "NLOPT_SLSQP", "Augmented_Lagrangian"]
+    "algo_eq",
+    [
+        "SLSQP",
+        "NLOPT_SLSQP",
+        "Augmented_Lagrangian_order_0",
+        "Augmented_Lagrangian_order_1",
+    ],
 )
 
 
@@ -314,7 +327,7 @@ def test_2d_ineq(analytical_test_2d_ineq, options, algo_ineq):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_ineq
-    if algo_ineq == "Augmented_Lagrangian":
+    if "Augmented_Lagrangian" in algo_ineq:
         opt["algo_options"] = {
             "sub_solver_algorithm": "L-BFGS-B",
             "sub_problem_options": options.copy(),
@@ -336,7 +349,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
-    if algo_eq == "Augmented_Lagrangian":
+    if "Augmented_Lagrangian" in algo_eq:
         opt["algo_options"] = {
             "sub_solver_algorithm": "L-BFGS-B",
             "sub_problem_options": options.copy(),
@@ -358,7 +371,7 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
-    if algo_eq == "Augmented_Lagrangian":
+    if "Augmented_Lagrangian" in algo_eq:
         opt["algo_options"] = {
             "sub_solver_algorithm": "L-BFGS-B",
             "sub_problem_options": options.copy(),
@@ -380,7 +393,7 @@ def test_2d_mixed(analytical_test_2d_mixed_rank_deficient, options, algo_eq):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
-    if algo_eq == "Augmented_Lagrangian":
+    if "Augmented_Lagrangian" in algo_eq:
         opt["algo_options"] = {"sub_solver_algorithm": "L-BFGS-B"}
     analytical_test_2d_mixed_rank_deficient.execute(opt)
     problem = analytical_test_2d_mixed_rank_deficient.formulation.opt_problem
