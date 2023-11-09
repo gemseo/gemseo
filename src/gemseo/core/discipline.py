@@ -916,9 +916,11 @@ class MDODiscipline(Serializable):
                 # If also an output, use a copy of the original input value
                 input_data_[key] = deepcopy(val)
 
-        to_array = self.input_grammar.data_converter.convert_value_to_array
-        for name, value in input_data_.items():
-            input_data_[name] = to_array(name, value)
+        # Non simple caches require NumPy arrays.
+        if not isinstance(self.cache, SimpleCache):
+            to_array = self.input_grammar.data_converter.convert_value_to_array
+            for name, value in input_data_.items():
+                input_data_[name] = to_array(name, value)
 
         return input_data_
 
@@ -972,13 +974,14 @@ class MDODiscipline(Serializable):
         if cached_local_data is not None:
             return cached_local_data
 
-        inputs_for_cache = self.__create_input_data_for_cache(input_data)
-
         # Cache was not loaded, see self.linearize
         self._cache_was_loaded = False
 
         if self.activate_input_data_check:
             self.check_input_data(input_data)
+
+        # Keep a pristine copy of the inputs before it is eventually changed.
+        inputs_for_cache = self.__create_input_data_for_cache(input_data)
 
         processor = self.data_processor
         if processor is not None:
