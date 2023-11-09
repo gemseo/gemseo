@@ -26,10 +26,12 @@ from __future__ import annotations
 
 import pprint
 
+from gemseo import configure_logger
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
 from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 
+configure_logger()
 # %%
 # In this example,
 # we consider the Ishigami function :cite:`ishigami1990`
