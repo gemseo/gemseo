@@ -1072,7 +1072,7 @@ class OptimizationProblem(BaseProblem):
             x_vect = self.design_space.normalize_vect(x_vect)
 
         return {
-            func: atleast_1d(np_abs(func(x_vect)) <= tol)
+            func: atleast_1d((func(x_vect)) >= -tol)
             for func in self.get_ineq_constraints()
         }
 

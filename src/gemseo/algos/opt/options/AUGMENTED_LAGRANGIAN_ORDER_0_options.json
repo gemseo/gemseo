@@ -1,0 +1,69 @@
+{
+  "name": "AUGMENTED_LAGRANGIAN_order_0_options",
+  "required": [
+    "max_iter",
+    "sub_solver_algorithm"
+  ],
+  "properties": {
+    "xtol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "pg_tol": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "kkt_tol_abs": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number",
+          "minimum": 0.0
+        }
+      ]
+    },
+    "kkt_tol_rel": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number",
+          "minimum": 0.0
+        }
+      ]
+    },
+    "sub_solver_algorithm": {
+      "type": "string"
+    },
+    "sub_problem_options": {
+      "type": "object"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "id": "#AUGMENTED_LAGRANGIAN_ORDER_0"
+}

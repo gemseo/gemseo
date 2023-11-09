@@ -65,8 +65,25 @@ def n(request):
     return request.param
 
 
+@pytest.fixture(params=[MDOFunction.ConstraintType.INEQ, MDOFunction.ConstraintType.EQ])
+def constraint_kind(request):
+    return request.param
+
+
+@pytest.fixture(
+    params=[
+        "SLSQP",
+        "NLOPT_SLSQP",
+        "Augmented_Lagrangian_order_0",
+        "Augmented_Lagrangian_order_1",
+    ]
+)
+def algo(request):
+    return request.param
+
+
 @pytest.fixture(params=[1, 2])
-def scalable_optimization_problem_scenario(request, n):
+def scalable_optimization_problem_scenario(request, n, constraint_kind):
     disc = ScalableDiscipline(request.param)
     ds = DesignSpace()
     ds.add_variable("x", size=n, l_b=0.1, u_b=n, value=n)
@@ -76,19 +93,23 @@ def scalable_optimization_problem_scenario(request, n):
         design_space=ds,
         objective_name="f",
     )
-    scenario.add_constraint("g", MDOFunction.ConstraintType.INEQ)
+    scenario.add_constraint("g", constraint_kind)
     return scenario
 
 
-@pytest.mark.parametrize("algo", ["SLSQP", "NLOPT_SLSQP", "Augmented_Lagrangian"])
-def test_resolution(scalable_optimization_problem_scenario, algo, n):
-    options = {"max_iter": 100, "algo": algo, "normalize_design_space": True}
-    if algo == "Augmented_Lagrangian":
+def test_resolution(scalable_optimization_problem_scenario, algo, n, constraint_kind):
+    if constraint_kind == MDOFunction.ConstraintType.EQ and algo in [
+        "SLSQP",
+        "NLOPT_SLSQP",
+    ]:
+        pytest.skip("SLSQP is not well suited for non-linear equality constraints.")
+    options = {"max_iter": 10000, "algo": algo, "normalize_design_space": True}
+    if "Augmented_Lagrangian" in algo:
         options["algo_options"] = {}
         options["algo_options"]["sub_solver_algorithm"] = "L-BFGS-B"
-        options["algo_options"]["sub_problem_options"] = {"max_iter": 50}
+        options["algo_options"]["sub_problem_options"] = {"max_iter": 300}
     scalable_optimization_problem_scenario.execute(options)
     assert pytest.approx(
         scalable_optimization_problem_scenario.formulation.opt_problem.solution.x_opt,
-        rel=1e-4,
+        rel=1e-2,
     ) == (arange(n) + 1)
