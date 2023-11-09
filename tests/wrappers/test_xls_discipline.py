@@ -135,7 +135,7 @@ def test_multithreading(skip_if_xlwings_is_not_usable):
 
 def f_sellar_system(
     x_local: float = 1.0, x_shared_2: float = 3.0, y_1: float = 1.0, y_2: float = 1.0
-) -> tuple[float, float, float]:
+):
     """Objective function for the sellar problem."""
     obj = x_local**2 + x_shared_2 + y_1**2 + exp(-y_2)
     c_1 = 3.16 - y_1**2
@@ -148,7 +148,7 @@ def f_sellar_1(
     y_2: float = 1.0,
     x_shared_1: float = 1.0,
     x_shared_2: float = 3.0,
-) -> float:
+):
     """Function for discipline sellar 1."""
     y_1 = (x_shared_1**2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
     return y_1  # noqa: RET504
