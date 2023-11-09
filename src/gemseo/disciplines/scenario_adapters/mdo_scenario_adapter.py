@@ -26,6 +26,7 @@ import logging
 from copy import copy
 from copy import deepcopy
 from typing import TYPE_CHECKING
+from typing import Final
 from typing import Iterable
 from typing import Sequence
 
@@ -39,6 +40,7 @@ from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
+from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import LoggingContext
 
 if TYPE_CHECKING:
@@ -48,7 +50,7 @@ if TYPE_CHECKING:
     from gemseo.core.execution_sequence import LoopExecSequence
     from gemseo.core.scenario import Scenario
 
-LOGGER = logging.getLogger(__name__)
+LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 
 
 class MDOScenarioAdapter(MDODiscipline):
@@ -320,7 +322,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
     def _run(self) -> None:
         self._pre_run()
-        with LoggingContext(level=self.__scenario_log_level):
+        with LoggingContext(LOGGING_SETTINGS.logger, level=self.__scenario_log_level):
             self.scenario.execute()
         self._post_run()
 

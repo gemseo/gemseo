@@ -24,6 +24,7 @@ BiLevel-based MDO on the Sobieski SSBJ test case
 from __future__ import annotations
 
 from copy import deepcopy
+from logging import WARNING
 
 from gemseo import configure_logger
 from gemseo import create_discipline
@@ -136,6 +137,7 @@ system_scenario = create_scenario(
     tolerance=1e-14,
     max_mda_iter=30,
     maximize_objective=True,
+    sub_scenarios_log_level=WARNING,
 )
 system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
 

@@ -152,6 +152,9 @@ from strenum import StrEnum
 from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.dataset_factory import DatasetFactory as __DatasetFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
+from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
+from gemseo.utils.logging_tools import LOGGING_SETTINGS
 
 # TODO: API: protect these import under TYPE_CHECKING.
 
@@ -1079,8 +1082,8 @@ def create_scenario(
 def configure_logger(
     logger_name: str | None = None,
     level: str | int = logging.INFO,
-    date_format: str = "%H:%M:%S",
-    message_format: str = "%(levelname)8s - %(asctime)s: %(message)s",
+    date_format: str = DEFAULT_DATE_FORMAT,
+    message_format: str = DEFAULT_MESSAGE_FORMAT,
     filename: str | Path | None = None,
     filemode: str = "a",
 ) -> Logger:
@@ -1088,7 +1091,7 @@ def configure_logger(
 
     Args:
         logger_name: The name of the logger to configure.
-            If ``None``, return the root logger.
+            If ``None``, configure the root logger.
         level: The numerical value or name of the logging level,
             as defined in :py:mod:`logging`.
             Values can either be
@@ -1103,6 +1106,9 @@ def configure_logger(
         filename: The path to the log file, if outputs must be written in a file.
         filemode: The logging output file mode,
             either 'w' (overwrite) or 'a' (append).
+
+    Returns:
+        The configured logger.
 
     Examples:
         >>> import logging
@@ -1130,6 +1136,9 @@ def configure_logger(
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
+    LOGGING_SETTINGS.message_format = message_format
+    LOGGING_SETTINGS.date_format = date_format
+    LOGGING_SETTINGS.logger = logger
     return logger
 
 

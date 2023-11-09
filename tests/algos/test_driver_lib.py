@@ -35,6 +35,17 @@ from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.testing.helpers import concretize_classes
 
 
+@pytest.fixture(scope="module")
+def power_2() -> Power2:
+    """The power-2 problem."""
+    problem = Power2()
+    problem.database.store(
+        array([0.79499653, 0.20792012, 0.96630481]),
+        {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
+    )
+    return problem
+
+
 class MyDriver(DriverLibrary):
     def __init__(self):
         super().__init__()
@@ -120,36 +131,19 @@ def test_require_grad():
         assert MyDriver().requires_gradient("SLSQP")
 
 
-def test_new_iteration_callback_xvect(caplog):
-    """Test the new iteration callback when no x_vect is given.
-
-    Args:
-        caplog: Fixture to access and control log capturing.
-    """
-    problem = Power2()
-    problem.database.store(
-        array([0.79499653, 0.20792012, 0.96630481]),
-        {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
-    )
-
+@pytest.mark.parametrize(
+    ("kwargs", "expected"), [({}, "...  50%|"), ({"message": "foo"}, "foo  50%|")]
+)
+def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected):
+    """Test the new iteration callback."""
     with concretize_classes(DriverLibrary):
         test_driver = DriverLibrary()
-    test_driver.problem = problem
+    test_driver.problem = power_2
     test_driver._max_time = 0
-    test_driver.init_iter_observer(max_iter=2)
+    test_driver.init_iter_observer(max_iter=2, **kwargs)
     test_driver.new_iteration_callback()
-    assert "...   0%|" in caplog.text
-
-
-def test_init_iter_observer_message(caplog):
-    """Check the iteration prefix in init_iter_observer."""
-    with concretize_classes(DriverLibrary):
-        test_driver = DriverLibrary()
-    test_driver.problem = Power2()
-    test_driver.init_iter_observer(max_iter=2)
-    assert "...   0%|" in caplog.text
-    test_driver.init_iter_observer(max_iter=2, message="foo")
-    assert "foo   0%|" in caplog.text
+    test_driver.new_iteration_callback()
+    assert expected in caplog.text
 
 
 @pytest.mark.parametrize("activate_progress_bar", [False, True])

@@ -254,11 +254,12 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         )
         algo_options = algo_options or {}
         algo_options["log_problem"] = False
+        algo_options["use_one_line_progress_bar"] = True
         scenario.execute(
             {
-                "algo": self._algo_name,
-                "n_samples": n_samples,
-                "algo_options": algo_options,
+                scenario.ALGO: self._algo_name,
+                scenario.N_SAMPLES: n_samples,
+                scenario.ALGO_OPTIONS: algo_options,
             }
         )
         return scenario

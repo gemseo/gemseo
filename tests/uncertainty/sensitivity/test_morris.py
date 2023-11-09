@@ -437,7 +437,6 @@ MorrisAnalysisSamplingPhase
    Disciplines: _OATSensitivity
    MDO formulation: MDF
 Running the algorithm lhs:
-\.\.\.   0%\|          \| 0\/5 \[00:00<\?, \? it\/sec\]
 \.\.\.  20%\|██        \| 1\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
 \.\.\.  40%\|████      \| 2\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
 \.\.\.  60%\|██████    \| 3\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]

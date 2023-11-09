@@ -20,13 +20,17 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
+
+import pytest
 
 from gemseo.utils.logging_tools import LoggingContext
+from gemseo.utils.logging_tools import OneLineLogging
 
 
 def test_default():
     """Check the default configuration of the LoggingContext."""
-    context = LoggingContext()
+    context = LoggingContext(logging.root)
     assert context.logger == logging.root
     assert context.level == logging.WARNING
     assert context.handler is None
@@ -36,12 +40,31 @@ def test_default():
 def test_custom():
     """Check the default configuration of the LoggingContext."""
     context = LoggingContext(
-        level=logging.ERROR, logger=logging.getLogger("foo"), close=False, handler="bar"
+        logging.getLogger("foo"), level=logging.ERROR, close=False, handler="bar"
     )
     assert context.level == logging.ERROR
     assert context.logger.name == "foo"
     assert context.handler == "bar"
     assert not context.close
+
+
+@pytest.mark.parametrize("close", [False, True])
+def test_handler(tmp_wd, close):
+    """Check the use of a handler."""
+    file_path = Path("log.txt")
+    handler = logging.FileHandler(file_path)
+    handler.set_name("handler_name")
+    logger = logging.getLogger()
+    with LoggingContext(logger, handler=handler, close=close):
+        logger.info("foo")
+        logger.warning("bar")
+
+    with file_path.open("r") as f:
+        log = f.read()
+
+    assert "foo" not in log
+    assert "bar" in log
+    assert (handler.name in logging._handlers) is not close
 
 
 def test_selective_logging(caplog):
@@ -53,16 +76,16 @@ def test_selective_logging(caplog):
     caplog.set_level(logging.INFO)
     logger = logging.getLogger()
     logger.info("1. This should appear.")
-    with LoggingContext():
+    with LoggingContext(logging.root):
         logger.warning("2. This should appear.")
         logger.info("3. This should not appear.")
 
     logger.info("4. This should appear.")
-    with LoggingContext(level=logging.ERROR):
+    with LoggingContext(logging.root, level=logging.ERROR):
         logger.warning("5. This should not appear.")
         logger.error("6. This should appear.")
 
-    with LoggingContext(level=None):
+    with LoggingContext(logging.root, level=None):
         logger.info("7. This should appear.")
 
     assert "1. This should appear." in caplog.text
@@ -72,3 +95,23 @@ def test_selective_logging(caplog):
     assert "5. This should not appear." not in caplog.text
     assert "6. This should appear." in caplog.text
     assert "7. This should appear." in caplog.text
+
+
+@pytest.mark.parametrize(("propagate", "name"), [(False, "foo"), (True, "root")])
+def test_propagate(propagate, name):
+    """Check that the while-loop breaks when logger.propagate is False."""
+    logger = logging.getLogger("foo")
+    logger.propagate = propagate
+    logger.handlers = []
+    context = OneLineLogging(logger)
+    with context:
+        pass
+
+    assert context._OneLineLogging__logger.name == name
+
+
+def test_while_false():
+    """Check that the while-loop stops when logger.parent is None."""
+    context = OneLineLogging(logging.root)
+    with context:
+        pass

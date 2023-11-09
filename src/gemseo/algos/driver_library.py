@@ -36,6 +36,7 @@ and :class:`.OptimizationLibrary`.
 from __future__ import annotations
 
 import logging
+from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
 from time import time
@@ -54,6 +55,7 @@ from strenum import StrEnum
 
 from gemseo.algos._progress_bars.dummy_progress_bar import DummyProgressBar
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
+from gemseo.algos._progress_bars.tqdm_to_logger import LOGGER as TQDM_LOGGER
 from gemseo.algos._progress_bars.unsuffixed_progress_bar import UnsuffixedProgressBar
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription
@@ -71,6 +73,7 @@ from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
+from gemseo.utils.logging_tools import OneLineLogging
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
@@ -126,6 +129,12 @@ class DriverLibrary(AlgorithmLibrary):
     EVAL_OBS_JAC_OPTION = "eval_obs_jac"
     MAX_DS_SIZE_PRINT = 40
 
+    __USE_ONE_LINE_PROGRESS_BAR: Final[str] = "use_one_line_progress_bar"
+    """The name of the option to use a one line progress bar."""
+
+    USE_ONE_LINE_PROGRESS_BAR: ClassVar[bool] = False
+    """Whether to use a one line progress bar."""
+
     _ACTIVATE_PROGRESS_BAR_OPTION_NAME = "activate_progress_bar"
     """The name of the option to activate the progress bar in the optimization log."""
 
@@ -144,9 +153,6 @@ class DriverLibrary(AlgorithmLibrary):
     activate_progress_bar: ClassVar[bool] = True
     """Whether to activate the progress bar in the optimization log."""
 
-    __iter: int
-    """The current iteration."""
-
     # TODO: API: use 0.0 instead of None
     _max_time: float | None
     """The maximum duration of the execution."""
@@ -155,11 +161,17 @@ class DriverLibrary(AlgorithmLibrary):
     _start_time: float | None
     """The time at which the execution begins."""
 
+    __iter: int
+    """The current iteration."""
+
     __log_problem: bool
     """Whether to log the definition and result of the problem."""
 
     __max_iter: int
     """The maximum number of iterations."""
+
+    __one_line_progress_bar: bool
+    """Whether to log the progress bar on a single line."""
 
     __progress_bar: BaseProgressBar
     """The progress bar used during the execution."""
@@ -178,6 +190,7 @@ class DriverLibrary(AlgorithmLibrary):
         self._max_time = None
         self.__reset_iteration_counters = True
         self.__log_problem = True
+        self.__one_line_progress_bar = False
 
     @classmethod
     def _get_unsuitability_reason(
@@ -217,7 +230,12 @@ class DriverLibrary(AlgorithmLibrary):
         )
         if self.__activate_progress_bar:
             cls = ProgressBar if self.__log_problem else UnsuffixedProgressBar
-            self.__progress_bar = cls(max_iter, self.__iter, self.problem, message)
+            self.__progress_bar = cls(
+                max_iter,
+                self.__iter,
+                self.problem,
+                message,
+            )
         else:
             self.deactivate_progress_bar()
 
@@ -263,20 +281,6 @@ class DriverLibrary(AlgorithmLibrary):
                 see the associated JSON file.
         """
         self._max_time = options.get(self.MAX_TIME, 0.0)
-        if self.__log_problem:
-            LOGGER.info("%s", problem)
-            if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
-                log = MultiLineString()
-                log.indent()
-                log.add("over the design space:")
-                for line in str(problem.design_space).split("\n")[1:]:
-                    log.add(line)
-                LOGGER.info("%s", log)
-                LOGGER.info(
-                    "Solving optimization problem with algorithm %s:", algo_name
-                )
-        else:
-            LOGGER.info("Running the algorithm %s:", algo_name)
 
     def _post_run(
         self,
@@ -397,6 +401,10 @@ class DriverLibrary(AlgorithmLibrary):
         if activate_progress_bar is not None:
             self.__activate_progress_bar = activate_progress_bar
 
+        use_one_line_progress_bar = options.pop(
+            self.__USE_ONE_LINE_PROGRESS_BAR, self.USE_ONE_LINE_PROGRESS_BAR
+        )
+
         self.__reset_iteration_counters = options.pop(
             self.__RESET_ITERATION_COUNTERS_OPTION, True
         )
@@ -418,17 +426,37 @@ class DriverLibrary(AlgorithmLibrary):
         )
         problem.database.add_new_iter_listener(problem.execute_observables_callback)
         problem.database.add_new_iter_listener(self.new_iteration_callback)
-        try:  # Term criteria such as max iter or max_time can be triggered in pre_run
-            self._pre_run(problem, self.algo_name, **options)
-            result = self._run(**options)
-        except TerminationCriterion as error:
-            result = self._termination_criterion_raised(error)
+        if self.__log_problem:
+            LOGGER.info("%s", problem)
+            if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+                log = MultiLineString()
+                log.indent()
+                log.add("over the design space:")
+                for line in str(problem.design_space).split("\n")[1:]:
+                    log.add(line)
+                LOGGER.info("%s", log)
+                LOGGER.info(
+                    "Solving optimization problem with algorithm %s:",
+                    self.algo_name,
+                )
+        else:
+            LOGGER.info("Running the algorithm %s:", self.algo_name)
+
+        with OneLineLogging(
+            TQDM_LOGGER
+        ) if use_one_line_progress_bar else nullcontext():
+            # Term criteria such as max iter or max_time can be triggered in pre_run
+            try:
+                self._pre_run(problem, self.algo_name, **options)
+                result = self._run(**options)
+            except TerminationCriterion as error:
+                result = self._termination_criterion_raised(error)
 
         result.objective_name = problem.objective.name
         result.design_space = problem.design_space
         self.finalize_iter_observer()
         problem.database.clear_listeners()
-        self._post_run(problem, algo_name, result, **options)
+        self._post_run(problem, self.algo_name, result, **options)
         return result
 
     def _process_specific_option(self, options, option_key: str) -> None:

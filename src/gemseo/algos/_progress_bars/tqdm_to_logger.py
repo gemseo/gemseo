@@ -33,4 +33,7 @@ class TqdmToLogger(io.StringIO):
         """
         buffer_ = buffer_.strip(string.whitespace)
         if buffer_:
+            if " 0%|" in buffer_:
+                # Do not log the initialization of the progress bar.
+                return
             LOGGER.info(buffer_)

@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -36,6 +37,7 @@ from gemseo import AlgorithmFeatures
 from gemseo import DatasetClassName
 from gemseo import compute_doe
 from gemseo import configure
+from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo import create_cache
 from gemseo import create_dataset
@@ -95,6 +97,8 @@ from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.utils.logging_tools import LOGGING_SETTINGS
+from gemseo.utils.logging_tools import MultiLineStreamHandler
 
 if TYPE_CHECKING:
     from gemseo.core.mdo_scenario import MDOScenario
@@ -889,3 +893,55 @@ def test_create_dataset_without_name():
 def test_create_dataset_class_name():
     """Check create_dataset with class_name set from the enum DatasetClassName."""
     isinstance(create_dataset(class_name=DatasetClassName.IODataset), IODataset)
+
+
+def test_configure_logger():
+    """Check configure_logger() with default argument values."""
+    logger = configure_logger()
+    assert logger == logging.root
+    assert logger.level == logging.INFO
+
+
+def test_configure_logger_name():
+    """Check configure_logger() with custom name."""
+    logger = configure_logger(logger_name="foo")
+    assert logger.name == "foo"
+
+
+def test_configure_logger_level():
+    """Check configure_logger() with custom level."""
+    logger = configure_logger(level=logging.WARNING)
+    assert logger.level == logging.WARNING
+
+
+def test_configure_logger_format(caplog):
+    """Check configure_logger() with custom message and date formats."""
+    date_format = "foo"
+    message_format = "%(levelname)8s / %(asctime)s: %(message)s"
+    logger = configure_logger(
+        logger_name="bar", date_format=date_format, message_format=message_format
+    )
+    logger.info("baz")
+    assert LOGGING_SETTINGS.date_format == date_format
+    assert LOGGING_SETTINGS.message_format == message_format
+    assert re.match(r"INFO     bar:test_gemseo\.py:\d+\d+\d+ baz\n", caplog.text)
+
+
+def test_configure_logger_file(tmp_wd):
+    """Check configure_logger() with custom file."""
+    logger = configure_logger(filename="foo.txt")
+    stream_handler = logger.handlers[0]
+    assert isinstance(stream_handler, MultiLineStreamHandler)
+    assert len(logger.handlers) == 2
+    file_handler = logger.handlers[-1]
+    assert Path(file_handler.baseFilename) == tmp_wd / "foo.txt"
+    assert file_handler.mode == "a"
+    assert file_handler.delay
+    assert file_handler.encoding == "utf-8"
+    assert file_handler.formatter == stream_handler.formatter
+
+
+def test_configure_logger_file_mode(tmp_wd):
+    """Check configure_logger() with custom file and file mode."""
+    logger = configure_logger(filename="foo.txt", filemode="w")
+    assert logger.handlers[-1].mode == "w"
