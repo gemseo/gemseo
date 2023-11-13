@@ -1,0 +1,5 @@
+The following methods now have an option ``as_dict`` to request the return values as dictionaries of NumPy arrays instead of straight NumPy arrays:
+``DesignSpace.get_lower_bounds``,
+``DesignSpace.get_upper_bounds``,
+``OptimizationProblem.get_x0_normalized`` and
+``DriverLibrary.get_x0_and_bounds_vects``.

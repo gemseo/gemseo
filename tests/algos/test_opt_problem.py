@@ -1614,11 +1614,22 @@ def problem_with_complex_value() -> OptimizationProblem:
     return OptimizationProblem(design_space)
 
 
-@pytest.mark.parametrize("cast", [False, True])
-def test_get_x0_normalized_no_complex(problem_with_complex_value, cast):
-    """Check that the complex value of a float variable is converted to float."""
-    normalized_x0 = problem_with_complex_value.get_x0_normalized(cast_to_real=cast)
-    assert (normalized_x0.dtype.kind == "c") is not cast
+@pytest.mark.parametrize(
+    ("cast_to_real", "as_dict", "x0"),
+    [
+        (False, False, [1.0 + 0j]),
+        (False, True, {"x": 1.0 + 0j}),
+        (True, False, [1.0]),
+        (True, True, {"x": [1.0]}),
+    ],
+)
+def test_get_x0_normalized_complex(
+    problem_with_complex_value, cast_to_real, as_dict, x0
+):
+    """Check the getting of a normalized complex initial value."""
+    assert_equal(
+        problem_with_complex_value.get_x0_normalized(cast_to_real, as_dict), x0
+    )
 
 
 def test_objective_name():

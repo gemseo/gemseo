@@ -169,3 +169,45 @@ def test_common_options():
         DriverLibrary._DriverLibrary__RESET_ITERATION_COUNTERS_OPTION,
     }
     assert not driver.opt_grammar.required_names
+
+
+@pytest.fixture()
+def driver_library() -> DriverLibrary:
+    """A driver library."""
+    with concretize_classes(DriverLibrary):
+        driver_library = DriverLibrary()
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", 1, "float", -2, 3, 1)
+    driver_library.problem = OptimizationProblem(design_space)
+    return driver_library
+
+
+@pytest.mark.parametrize(
+    ("as_dict", "x0", "lower_bounds", "upper_bounds"),
+    [(False, 0.6, 0, 1), (True, {"x": 0.6}, {"x": 0}, {"x": 1})],
+)
+def test_get_x0_and_bounds_vects_normalized_as_ndarrays(
+    driver_library, as_dict, x0, lower_bounds, upper_bounds
+):
+    """Check the getting of the normalized initial values and bounds."""
+    assert driver_library.get_x0_and_bounds_vects(True, as_dict) == (
+        pytest.approx(x0),
+        lower_bounds,
+        upper_bounds,
+    )
+
+
+@pytest.mark.parametrize(
+    ("as_dict", "x0", "lower_bounds", "upper_bounds"),
+    [(False, 1, -2, 3), (True, {"x": 1}, {"x": -2}, {"x": 3})],
+)
+def test_get_x0_and_bounds_vects_non_normalized(
+    driver_library, as_dict, x0, lower_bounds, upper_bounds
+):
+    """Check the getting of the non-normalized initial values and bounds."""
+    assert driver_library.get_x0_and_bounds_vects(False, as_dict) == (
+        x0,
+        lower_bounds,
+        upper_bounds,
+    )
