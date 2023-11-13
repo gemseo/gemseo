@@ -958,21 +958,22 @@ class OptimizationProblem(BaseProblem):
         """
         return len(self.get_ineq_constraints()) > 0
 
-    def get_x0_normalized(self, cast_to_real: bool = False) -> ndarray:
-        """Return the current values of the design variables after normalization.
+    def get_x0_normalized(
+        self, cast_to_real: bool = False, as_dict: bool = False
+    ) -> ndarray | dict[str, ndarray]:
+        """Return the initial values of the design variables after normalization.
 
         Args:
-            cast_to_real: Whether to cast the return value to real.
+            cast_to_real: Whether to return the real part of the initial values.
+            as_dict: Whether to return the values
+                as a dictionary of the form ``{variable_name: variable_value}``.
+
 
         Returns:
             The current values of the design variables
             normalized between 0 and 1 from their lower and upper bounds.
         """
-        dspace = self.design_space
-        normalized_x0 = dspace.normalize_vect(dspace.get_current_value())
-        if cast_to_real:
-            return normalized_x0.real
-        return normalized_x0
+        return self.design_space.get_current_value(None, cast_to_real, as_dict, True)
 
     def get_dimension(self) -> int:
         """Retrieve the total number of design variables.

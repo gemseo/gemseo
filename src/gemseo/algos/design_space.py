@@ -48,9 +48,11 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Iterable
+from typing import Literal
 from typing import Mapping
 from typing import NamedTuple
 from typing import Sequence
+from typing import overload
 
 import h5py
 from numpy import abs as np_abs
@@ -1643,41 +1645,123 @@ class DesignSpace(collections.abc.MutableMapping):
         """
         return self._upper_bounds.get(name)
 
+    @overload
     def get_lower_bounds(
         self,
         variable_names: Sequence[str] | None = None,
-    ) -> ndarray:
-        """Generate an array of the variables' lower bounds.
+        as_dict: Literal[False] = False,
+    ) -> ndarray: ...
+
+    @overload
+    def get_lower_bounds(
+        self,
+        variable_names: Sequence[str] | None = None,
+        as_dict: Literal[True] = False,
+    ) -> dict[str, ndarray]: ...
+
+    def get_lower_bounds(
+        self,
+        variable_names: Sequence[str] | None = None,
+        as_dict: bool = False,
+    ) -> ndarray | dict[str, ndarray]:
+        """Return the lower bounds of design variables.
 
         Args:
-            variable_names: The names of the variables
-                of which the lower bounds are required.
-                If ``None``, use the variables of the design space.
+            variable_names: The names of the design variables.
+                If ``None``, the lower bounds of all the design variables are returned.
+            as_dict: Whether to return the lower bounds
+                as a dictionary of the form ``{variable_name: variable_lower_bound}``.
 
         Returns:
-            The lower bounds of the variables.
+            The lower bounds of the design variables.
         """
-        if self.__norm_data_is_computed and variable_names is None:
-            return self.__lower_bounds_array
-        return self.dict_to_array(self._lower_bounds, variable_names=variable_names)
+        return self.__get_values(
+            variable_names, as_dict, self._lower_bounds, self.__lower_bounds_array
+        )
+
+    @overload
+    def get_upper_bounds(
+        self,
+        variable_names: Sequence[str] | None = None,
+        as_dict: Literal[False] = False,
+    ) -> ndarray: ...
+
+    @overload
+    def get_upper_bounds(
+        self,
+        variable_names: Sequence[str] | None = None,
+        as_dict: Literal[True] = False,
+    ) -> dict[str, ndarray]: ...
 
     def get_upper_bounds(
         self,
         variable_names: Sequence[str] | None = None,
-    ) -> ndarray:
-        """Generate an array of the variables' upper bounds.
+        as_dict: bool = False,
+    ) -> ndarray | dict[str, ndarray]:
+        """Return the upper bounds of design variables.
 
         Args:
-            variable_names: The names of the variables
-                of which the upper bounds are required.
-                If ``None``, use the variables of the design space.
+            variable_names: The names of the design variables.
+                If ``None``, the upper bounds of all the design variables are returned.
+            as_dict: Whether to return the upper bounds
+                as a dictionary of the form ``{variable_name: variable_upper_bound}``.
 
         Returns:
-            The upper bounds of the variables.
+            The upper bounds of the design variables.
         """
-        if self.__norm_data_is_computed and variable_names is None:
-            return self.__upper_bounds_array
-        return self.dict_to_array(self._upper_bounds, variable_names=variable_names)
+        return self.__get_values(
+            variable_names, as_dict, self._upper_bounds, self.__upper_bounds_array
+        )
+
+    @overload
+    def __get_values(
+        self,
+        variable_names: Sequence[str] | None,
+        as_dict: Literal[False],
+        value_as_dict: dict[str, ndarray],
+        value_as_array: ndarray,
+    ) -> ndarray: ...
+
+    @overload
+    def __get_values(
+        self,
+        variable_names: Sequence[str] | None,
+        as_dict: Literal[True],
+        value_as_dict: dict[str, ndarray],
+        value_as_array: ndarray,
+    ) -> dict[str, ndarray]: ...
+
+    def __get_values(
+        self,
+        variable_names: Sequence[str] | None,
+        as_dict: bool,
+        value_as_dict: dict[str, ndarray],
+        value_as_array: ndarray,
+    ) -> ndarray | dict[str, ndarray]:
+        """Return the (lower or upper) bounds of design variables.
+
+        Args:
+            variable_names: The names of the design variables.
+                If ``None``, then the values of all the design variables are returned.
+            as_dict: Whether to return the value
+                as a dictionary of the form ``{variable_name: variable_value}``.
+            value_as_dict: A dictionary of the values of all the design variables.
+            value_as_array: The NumPy array of the values of all the design variables
+
+        Returns:
+            The bounds of the design variables.
+        """
+        if self.__norm_data_is_computed and variable_names is None and not as_dict:
+            # The array of all the bounds is up to date
+            return value_as_array
+
+        if not as_dict:
+            return self.dict_to_array(value_as_dict, variable_names=variable_names)
+
+        if variable_names is None:
+            return value_as_dict
+
+        return {name: value_as_dict[name] for name in variable_names}
 
     def set_lower_bound(
         self,

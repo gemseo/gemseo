@@ -45,12 +45,11 @@ from typing import Any
 from typing import ClassVar
 from typing import Final
 from typing import List
+from typing import Literal
 from typing import Union
+from typing import overload
 
 from numpy import ndarray
-from numpy import ones
-from numpy import where
-from numpy import zeros
 from strenum import StrEnum
 
 from gemseo.algos._progress_bars.dummy_progress_bar import DummyProgressBar
@@ -570,33 +569,54 @@ class DriverLibrary(AlgorithmLibrary):
 
         return self.descriptions[driver_name].require_gradient
 
-    def get_x0_and_bounds_vects(self, normalize_ds):
-        """Return x0 and bounds.
+    @overload
+    def get_x0_and_bounds_vects(
+        self, normalize_ds: bool, as_dict: Literal[False] = False
+    ) -> tuple[ndarray, ndarray, ndarray]: ...
+
+    @overload
+    def get_x0_and_bounds_vects(
+        self, normalize_ds: bool, as_dict: Literal[True] = False
+    ) -> tuple[dict[str, ndarray], dict[str, ndarray], dict[str, ndarray]]: ...
+
+    # TODO: API: remove "_vects" from the following method name
+    # TODO: return the design space to be used by the solver instead of a tuple
+    def get_x0_and_bounds_vects(
+        self, normalize_ds: bool, as_dict: bool = False
+    ) -> (
+        tuple[ndarray, ndarray, ndarray]
+        | tuple[dict[str, ndarray], dict[str, ndarray], dict[str, ndarray]]
+    ):
+        """Return the initial design variable values and their lower and upper bounds.
 
         Args:
-            normalize_ds: Whether to normalize the input variables
-                that are not integers,
-                according to the normalization policy of the design space.
+            normalize_ds: Whether to normalize the design variables.
+            as_dict: Whether to return dictionaries instead of NumPy arrays.
 
         Returns:
-            The current value, the lower bounds and the upper bounds.
+            The initial values of the design variables,
+            their lower bounds,
+            and their upper bounds.
         """
-        design_space = self.problem.design_space
-        l_b = design_space.get_lower_bounds()
-        u_b = design_space.get_upper_bounds()
-
-        # remove normalization from options for algo
-        if normalize_ds:
-            norm_array = design_space.dict_to_array(design_space.normalize)
-            l_b = where(norm_array, zeros(norm_array.shape), l_b)
-            u_b = where(norm_array, ones(norm_array.shape), u_b)
-            current_x = self.problem.get_x0_normalized(cast_to_real=True)
-        else:
-            current_x = self.problem.design_space.get_current_value(
-                complex_to_real=True
+        space = self.problem.design_space
+        if not normalize_ds:
+            return (
+                space.get_current_value(None, True, as_dict),
+                space.get_lower_bounds(None, as_dict),
+                space.get_upper_bounds(None, as_dict),
             )
 
-        return current_x, l_b, u_b
+        current_value = self.problem.get_x0_normalized(True, as_dict)
+        lower_bounds = space.normalize_vect(space.get_lower_bounds())
+        upper_bounds = space.normalize_vect(space.get_upper_bounds())
+        if not as_dict:
+            return current_value, lower_bounds, upper_bounds
+
+        return (
+            current_value,
+            space.array_to_dict(lower_bounds),
+            space.array_to_dict(upper_bounds),
+        )
 
     def ensure_bounds(self, orig_func, normalize: bool = True):
         """Project the design vector onto the design space before execution.
