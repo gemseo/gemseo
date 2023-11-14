@@ -7,17 +7,18 @@ RUN  dnf -y update \
                     python38 \
                     python39 \
                     python310 \
+                    python311 \
                     git \
                     graphviz \
                     jq \
-                    https://gitlab.com/gitlab-org/cli/-/releases/v1.33.0/downloads/glab_1.33.0_Linux_x86_64.rpm \
+                    https://gitlab.com/gitlab-org/cli/-/releases/v1.35.0/downloads/glab_1.35.0_Linux_x86_64.rpm \
   && dnf clean all
 
 RUN  pipx install 'tox<4' \
   && pipx install 'tox<4' --suffix 3 \
   && pipx install 'tox<5' --suffix 4
 
-RUN  curl -Os https://uploader.codecov.io/latest/linux/codecov  \
+RUN  curl -Os https://cli.codecov.io/latest/linux/codecov \
   && chmod +x codecov \
   && mv codecov /usr/bin
 
