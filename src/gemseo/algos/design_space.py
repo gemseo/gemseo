@@ -1866,24 +1866,29 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def dict_to_array(
         self,
-        design_values: dict[str, ndarray],
+        design_values: Mapping[str, ndarray],
         variable_names: Iterable[str] | None = None,
     ) -> ndarray:
-        """Convert a point as dictionary into an array.
+        """Convert a mapping of design values into a NumPy array.
 
         Args:
-            design_values: The design point to be converted.
-            variable_names: The variables to be considered.
-                If ``None``, use the variables of the design space.
+            design_values: The mapping of design values.
+            variable_names: The design variables to be considered.
+                If ``None``, consider all the design variables.
 
         Returns:
-            The point as an array.
+            The design values as a NumPy array.
+
+        Notes:
+            The data type of the returned NumPy array is the most general data type
+            of the values of the mapping ``design_values`` corresponding to
+            the keys iterable from ``variables_names``.
         """
         if variable_names is None:
             variable_names = self.variable_names
 
-        data = [design_values[name] for name in variable_names]
-        return hstack(data).astype(self.__get_common_dtype(design_values))
+        data = {name: design_values[name] for name in variable_names}
+        return hstack(list(data.values())).astype(self.__get_common_dtype(data))
 
     def get_pretty_table(
         self,
