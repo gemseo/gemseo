@@ -13,18 +13,52 @@
       ]
     },
     "samples": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": "array",
-        "items": {
-          "type": "number",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 1
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 1
+                },
+                "minProperties": 1
+              }
+            ]
+          },
           "minItems": 1
         },
-        "minItems": 1
-      }
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 1
+            },
+            "minItems": 1
+          },
+          "minProperties": 1
+        }
+      ]
     },
     "delimiter": {
       "type": "string"

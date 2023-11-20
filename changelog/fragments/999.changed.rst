@@ -1,0 +1,6 @@
+The ``samples`` option of the algorithm ``CustomDOE`` can be
+a 2D-array shaped as ``(n_samples, total_variable_size)``,
+a dictionary shaped as ``{variable_name: variable_samples, ...}``
+where ``variable_samples`` is a 2D-array shaped as ``(n_samples, variable_size)``
+or an ``n_samples``-length list shaped as ``[{variable_name: variable_sample, ...}, ...]``
+where ``variable_sample`` is a 1D-array shaped as ``(variable_size, )``.

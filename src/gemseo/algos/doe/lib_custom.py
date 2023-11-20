@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from pathlib import Path
 from typing import ClassVar
 from typing import List
@@ -35,6 +36,7 @@ from numpy import apply_along_axis
 from numpy import atleast_2d
 from numpy import loadtxt
 from numpy import ndarray
+from numpy import vstack
 
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
@@ -93,7 +95,7 @@ class CustomDOE(DOELibrary):
     def _get_options(
         self,
         doe_file: str | Path | None = None,
-        samples: ndarray | None = None,
+        samples: ndarray | dict[str, ndarray] | list[dict[str, ndarray]] | None = None,
         delimiter: str | None = ",",
         comments: str | Sequence[str] | None = "#",
         skiprows: int = 0,
@@ -109,7 +111,9 @@ class CustomDOE(DOELibrary):
             doe_file: The path to the file containing the input samples.
                 If ``None``, use ``samples``.
             samples: The input samples.
-                They must be at least a 2D-array.
+                They must be at least a 2D-array,
+                a dictionary of 2D-arrays
+                or a list of dictionaries of 1D-arrays.
                 If ``None``, use ``doe_file``.
             delimiter: The character used to separate values.
                 If ``None``, use whitespace.
@@ -207,10 +211,17 @@ class CustomDOE(DOELibrary):
         elif options.get(self.DOE_FILE) is not None:
             raise ValueError(error_message)
 
+        if isinstance(samples, Mapping):
+            samples = self.problem.design_space.dict_to_array(samples)
+        elif not isinstance(samples, ndarray):
+            samples = vstack(
+                [self.problem.design_space.dict_to_array(sample) for sample in samples]
+            )
+
         if samples.shape[1] != self.problem.dimension:
             raise ValueError(
-                "Dimension mismatch between the problem ({}) and "
-                " the samples ({}).".format(self.problem.dimension, samples.shape[1])
+                f"Dimension mismatch between the problem ({self.problem.dimension}) "
+                f"and the samples ({samples.shape[1]})."
             )
 
         return apply_along_axis(
