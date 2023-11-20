@@ -227,7 +227,7 @@ def test_qp_problem(default_scalable_problem):
         decimal=3,
     )
     assert_almost_equal(problem.c, array([[-3.712], [-4.893], [-1.462]]), decimal=3)
-    assert_almost_equal(problem.d, 3.148, decimal=3)
+    assert_almost_equal(problem.d, 3.148, decimal=3)  # noqa: FURB152
     assert_almost_equal(
         problem.A,
         array(

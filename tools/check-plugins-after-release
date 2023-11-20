@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 """A script to check the plugins against a new gemseo release."""
+
 from __future__ import annotations
 
 from pathlib import Path

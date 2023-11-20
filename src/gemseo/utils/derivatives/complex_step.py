@@ -17,6 +17,7 @@
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Gradient approximation by complex step."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

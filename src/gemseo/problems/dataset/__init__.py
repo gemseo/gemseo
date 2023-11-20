@@ -30,4 +30,5 @@ to illustrate its capabilities:
   initially introduced to illustrate dimension reduction methods,
   e.g. :class:`.PCA` or :class:`.KLSVD`.
 """
+
 from __future__ import annotations

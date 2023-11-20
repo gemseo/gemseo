@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A scenario whose driver is a design of experiments."""
+
 from __future__ import annotations
 
 import logging

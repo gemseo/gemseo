@@ -17,6 +17,7 @@
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An MDODiscipline to aggregate constraints."""
+
 from __future__ import annotations
 
 from typing import Any

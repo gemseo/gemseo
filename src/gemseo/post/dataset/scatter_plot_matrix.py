@@ -47,6 +47,7 @@ by means of the ``classifier`` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

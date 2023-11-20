@@ -25,6 +25,7 @@ Gaussian Mixtures
 
 Load Iris dataset and create clusters.
 """
+
 from __future__ import annotations
 
 from numpy import array

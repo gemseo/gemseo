@@ -24,6 +24,7 @@ MDAChain with independent parallel MDAs
 This example illustrates the possibility to parallelize MDAs in an MDAChain,
 given that these MDA are independent and can be run in parallel.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

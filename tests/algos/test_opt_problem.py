@@ -1279,14 +1279,14 @@ def test_reset(rosenbrock_lhs):
 
 def test_reset_database(rosenbrock_lhs):
     """Check OptimizationProblem.reset without database reset."""
-    problem, start_point = rosenbrock_lhs
+    problem, _ = rosenbrock_lhs
     problem.reset(database=False)
     assert len(problem.database) == 3
 
 
 def test_reset_current_iter(rosenbrock_lhs):
     """Check OptimizationProblem.reset without current_iter reset."""
-    problem, start_point = rosenbrock_lhs
+    problem, _ = rosenbrock_lhs
     problem.reset(current_iter=False)
     assert len(problem.database) == 0
 
@@ -1301,7 +1301,7 @@ def test_reset_design_space(rosenbrock_lhs):
 
 def test_reset_functions(rosenbrock_lhs):
     """Check OptimizationProblem.reset without reset the number of function calls."""
-    problem, start_point = rosenbrock_lhs
+    problem, _ = rosenbrock_lhs
     problem.reset(function_calls=False)
     assert problem.objective.n_calls == 3
 
@@ -1319,7 +1319,7 @@ def test_reset_wo_current_value():
 
 def test_reset_preprocess(rosenbrock_lhs):
     """Check OptimizationProblem.reset without functions pre-processing reset."""
-    problem, start_point = rosenbrock_lhs
+    problem, _ = rosenbrock_lhs
     problem.reset(preprocessing=False)
     assert problem._OptimizationProblem__functions_are_preprocessed
     functions = [

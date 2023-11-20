@@ -26,6 +26,7 @@ See Also:
     :class:`.IshigamiFunction`
     :class:`.IshigamiSpace`
 """
+
 from __future__ import annotations
 
 from gemseo.algos.opt_problem import OptimizationProblem

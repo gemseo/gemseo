@@ -29,6 +29,7 @@ based on the `SciPy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_ lib
    if you want to introduce dependency between random variables,
    please consider :class:`.OTComposedDistribution`.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

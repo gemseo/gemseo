@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Implementations of the singleton design pattern."""
+
 from __future__ import annotations
 
 from os.path import realpath

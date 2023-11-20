@@ -41,6 +41,7 @@ Warnings:
     When :math:`\text{min}(z)=\text{max}(z)=0`,
     we use :math:`\bar{z}=z+0.5`.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

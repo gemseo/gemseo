@@ -18,6 +18,7 @@
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests TrustUpdater."""
+
 from __future__ import annotations
 
 from unittest import TestCase

@@ -23,6 +23,7 @@ This module contains a factory to instantiate an :class:`.MLClusteringAlgo` from
 class name. It also provides a list of available clustering models and allows testing if
 a clustering model type is available.
 """
+
 from __future__ import annotations
 
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo

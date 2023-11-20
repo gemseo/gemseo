@@ -24,6 +24,7 @@ PCA on Burgers equation
 
 Example using PCA on solutions of the Burgers equation.
 """
+
 from __future__ import annotations
 
 import matplotlib.pyplot as plt

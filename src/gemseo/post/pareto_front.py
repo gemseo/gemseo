@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Pareto Front."""
+
 from __future__ import annotations
 
 import logging

@@ -17,6 +17,7 @@
 #       :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Provide routines for XDSM and tikz."""
+
 from __future__ import annotations
 
 from pathlib import Path

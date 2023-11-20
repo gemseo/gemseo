@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Excel file parser for the study analyses."""
+
 from __future__ import annotations
 
 import logging

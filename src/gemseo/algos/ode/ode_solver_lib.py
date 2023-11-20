@@ -17,6 +17,7 @@
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base wrapper for all ODE solvers."""
+
 from __future__ import annotations
 
 import logging

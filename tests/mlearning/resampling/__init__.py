@@ -13,4 +13,5 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test for the package sampling."""
+
 from __future__ import annotations

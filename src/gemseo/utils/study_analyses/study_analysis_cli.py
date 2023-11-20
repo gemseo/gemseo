@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """CLI for |g| study."""
+
 from __future__ import annotations
 
 import argparse

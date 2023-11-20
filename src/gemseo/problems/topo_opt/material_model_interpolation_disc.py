@@ -16,6 +16,7 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline for topology optimization material model interpolation."""
+
 from __future__ import annotations
 
 from typing import Sequence

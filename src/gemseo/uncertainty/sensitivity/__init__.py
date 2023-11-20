@@ -27,4 +27,5 @@ This package contains:
   - :class:`.SobolAnalysis` (based on OpenTURNS capabilities),
   - :class:`.HSICAnalysis` (based on OpenTURNS capabilities).
 """
+
 from __future__ import annotations

@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """PyDOE algorithms wrapper."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

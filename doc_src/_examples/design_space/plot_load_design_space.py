@@ -25,6 +25,7 @@ DesignSpace import and export from disk
 In this example, we will see how to read, filter, and export a design space
 from the disk.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

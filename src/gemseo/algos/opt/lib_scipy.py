@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """scipy.optimize optimization library wrapper."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

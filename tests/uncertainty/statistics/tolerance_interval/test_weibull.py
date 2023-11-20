@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the tolerance interval for weibull distributions."""
+
 from __future__ import annotations
 
 from math import log
@@ -47,7 +48,7 @@ def test_weibull_quantile_lower():
     tolerance_interval = WeibullToleranceInterval(
         1000000, shape=1.0, scale=1.0, location=0.0
     )
-    lower, upper = tolerance_interval.compute(
+    lower, _ = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert pytest.approx(lower, 0.01) == 1.0 * (-log(1 - 0.025)) ** (1.0 / 1.0)
@@ -58,7 +59,7 @@ def test_weibull_quantile_upper():
     tolerance_interval = WeibullToleranceInterval(
         1000000, shape=1.0, scale=1.0, location=0.0
     )
-    lower, upper = tolerance_interval.compute(
+    _, upper = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.UPPER
     )
     assert pytest.approx(upper, 0.01) == 1.0 * (-log(1 - 0.975)) ** (1.0 / 1.0)

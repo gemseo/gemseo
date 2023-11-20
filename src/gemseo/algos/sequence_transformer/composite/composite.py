@@ -18,6 +18,7 @@
 #        :author: Sebastien Bocquet, Alexandre Scotto Di Perrotolo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A composite of sequence transformers applied sequentially."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

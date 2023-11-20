@@ -17,6 +17,7 @@
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Monitoring mechanism to track |g| execution (update events)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

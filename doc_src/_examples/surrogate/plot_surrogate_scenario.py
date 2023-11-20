@@ -47,6 +47,7 @@ a text file using the :meth:`.Dataset.from_array` and
 Then, the surrogate discipline can be used as any other discipline in a
 :class:`.MDOScenario`, a :class:`.DOEScenario`, or an :class:`.MDA`.
 """
+
 from __future__ import annotations
 
 from numpy import array

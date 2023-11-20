@@ -25,6 +25,7 @@ Constraints history
 In this example, we illustrate the use of the :class:`.ConstraintsHistory` plot
 on the Sobieski's SSBJ problem.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

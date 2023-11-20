@@ -31,4 +31,5 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Interfaces to job schedulers."""
+
 from __future__ import annotations

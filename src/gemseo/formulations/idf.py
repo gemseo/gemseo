@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Individual Discipline Feasible (IDF) formulation."""
+
 from __future__ import annotations
 
 import logging

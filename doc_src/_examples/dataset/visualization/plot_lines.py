@@ -23,6 +23,7 @@ Lines
 =====
 
 """
+
 from __future__ import annotations
 
 from numpy import cos

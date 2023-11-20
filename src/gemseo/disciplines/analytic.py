@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline based on analytic expressions."""
+
 from __future__ import annotations
 
 import logging

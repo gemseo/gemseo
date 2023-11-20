@@ -18,6 +18,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Measuring the quality of a machine learning algorithm."""
+
 from __future__ import annotations
 
 from abc import abstractmethod

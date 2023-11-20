@@ -57,6 +57,7 @@ various getters and setters are available,
 as well as methods to export the :class:`.Database`
 to an HDF file or to a :class:`.Dataset` for future post-processing.
 """
+
 from __future__ import annotations
 
 import logging
@@ -2310,7 +2311,7 @@ class OptimizationProblem(BaseProblem):
             # h5py does not handle bytes natively, it maps it to a numpy generic type
             if isinstance(value, ndarray) and value.dtype.type in {
                 numpy.object_,
-                numpy.string_,
+                bytes_,
             }:
                 value = value[0] if value.size == 1 else value.tolist()
 

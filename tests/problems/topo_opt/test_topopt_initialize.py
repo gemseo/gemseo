@@ -47,7 +47,7 @@ def test_initialize_design_space_and_discipline_to(problem):
 
 def test_not_implemented():
     with pytest.raises(NotImplementedError):
-        ds, disciplines = initialize_design_space_and_discipline_to(
+        initialize_design_space_and_discipline_to(
             problem="test",
             n_x=10,
             n_y=10,

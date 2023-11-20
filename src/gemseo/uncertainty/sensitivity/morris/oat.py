@@ -46,6 +46,7 @@ from an initial point
 From these elementary effects, we can compare their absolute values
 :math:`|df_1|,\ldots,|df_d|` and sort :math:`X_1,\ldots,X_d` accordingly.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

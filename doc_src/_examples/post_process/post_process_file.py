@@ -22,6 +22,7 @@
 Post-process an HDF5 file
 =========================
 """
+
 from __future__ import annotations
 
 from gemseo import execute_post

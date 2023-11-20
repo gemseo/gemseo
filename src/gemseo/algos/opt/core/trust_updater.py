@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoît Pauwels - refactoring
 """Updates a trust parameter according to a decreases' ratio."""
+
 from __future__ import annotations
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta

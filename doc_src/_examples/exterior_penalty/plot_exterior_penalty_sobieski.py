@@ -17,6 +17,7 @@
 Example for exterior penalty applied to the Sobieski test case.
 ===============================================================
 """
+
 # %%
 # This section describes how to set up and solve the MDO problem relative to the
 # :ref:`Sobieski test case <sobieski_problem>` with |g| applying external penalty.

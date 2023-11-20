@@ -21,6 +21,7 @@
 Application: Sobieski's Super-Sonic Business Jet (MDO)
 ======================================================
 """
+
 # %%
 # This section describes how to setup and solve the MDO problem relative to the
 # :ref:`Sobieski test case <sobieski_problem>` with |g|.

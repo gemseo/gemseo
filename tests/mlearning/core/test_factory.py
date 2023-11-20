@@ -18,6 +18,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for MLAlgoFactory class in gemseo.mlearning.core.factory."""
+
 from __future__ import annotations
 
 import pytest

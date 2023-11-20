@@ -17,6 +17,7 @@
 #        :author: Charlie Vanaret, Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Parallel execution of disciplines and functions using multiprocessing."""
+
 from __future__ import annotations
 
 import logging

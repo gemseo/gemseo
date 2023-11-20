@@ -90,6 +90,7 @@ for the different variables:
       the B-value, which is the lower bound of the left-sided tolerance interval
       associated with a coverage level equal to 90% and a confidence level equal to 95%,
 """
+
 from __future__ import annotations
 
 import logging

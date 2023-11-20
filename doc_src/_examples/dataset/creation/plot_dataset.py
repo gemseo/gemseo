@@ -38,6 +38,7 @@ From a software point of view,
 a :class:`.Dataset` is a particular `pandas DataFrame
 <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`__.
 """
+
 from __future__ import annotations
 
 from numpy import array

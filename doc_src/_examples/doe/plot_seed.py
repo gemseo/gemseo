@@ -35,6 +35,7 @@ In this example,
 we will see how |g| uses the random seed
 and how the user can change its value.
 """
+
 from __future__ import annotations
 
 from gemseo import create_design_space

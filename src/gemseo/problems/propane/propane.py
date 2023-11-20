@@ -92,6 +92,7 @@ and Discipline 3 computes :math:`(x_5, x_9, x_{11})` by solving:
    x_{11} - \sum_{j=1}^{10} x_j &=& 0. \\
    \end{aligned}
 """
+
 from __future__ import annotations
 
 from cmath import sqrt

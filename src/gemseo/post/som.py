@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Self Organizing Maps to display high dimensional design spaces."""
+
 from __future__ import annotations
 
 import logging

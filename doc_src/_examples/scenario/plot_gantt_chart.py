@@ -25,6 +25,7 @@ Gantt Chart
 In this example, we illustrate the use of the Gantt chart plot
 on the Sobieski's SSBJ problem.
 """
+
 # %%
 # Import
 # ------

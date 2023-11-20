@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A mock for the job scheduler executable."""
+
 from __future__ import annotations
 
 from subprocess import run

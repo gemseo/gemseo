@@ -22,6 +22,7 @@
 The :class:`.Pipeline` class chains a sequence of tranformers, and provides global
 fit(), transform(), fit_transform() and inverse_transform() methods.
 """
+
 from __future__ import annotations
 
 from typing import Sequence

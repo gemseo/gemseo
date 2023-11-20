@@ -27,6 +27,7 @@ related to MDAs, which are the |g|' objects dedicated to the
 feasibility of the multidisciplinary coupling. All classes
 implementing MDAs inherit from :class:`.MDA` which is an abstract class.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

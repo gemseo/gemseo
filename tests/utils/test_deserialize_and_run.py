@@ -48,7 +48,7 @@ def sys_argv(discipline_and_data):
         path_to_discipline,
         path_to_outputs,
         path_to_input_data,
-        discipline,
+        _,
     ) = discipline_and_data
     tmpdir = path_to_discipline.parent
     return [
@@ -65,7 +65,7 @@ def test_parse_inputs(discipline_and_data, sys_argv):
         path_to_discipline,
         path_to_outputs,
         path_to_input_data,
-        discipline,
+        _,
     ) = discipline_and_data
     tmpdir = path_to_discipline.parent
     workir_path, serialized_disc_path, input_data_path, outputs_path = _parse_inputs(
@@ -103,8 +103,8 @@ def test_run_discipline_save_outputs(discipline_and_data):
     """Test the run and save outputs."""
     (
         path_to_discipline,
-        path_to_outputs,
-        path_to_input_data,
+        _,
+        _,
         discipline,
     ) = discipline_and_data
     workir_path = path_to_discipline.parent
@@ -127,8 +127,8 @@ def test_run_discipline_save_outputs_errors(discipline_and_data):
 
     (
         path_to_discipline,
-        path_to_outputs,
-        path_to_input_data,
+        _,
+        _,
         discipline,
     ) = discipline_and_data
     discipline._run = _run_and_fail

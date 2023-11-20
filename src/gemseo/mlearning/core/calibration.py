@@ -39,6 +39,7 @@ which is a discipline (:class:`.MDODiscipline`) built from a machine learning al
 measure and the machine learning algorithm. The inputs of this discipline are hyper-
 parameters of the machine learning algorithm while the output is the quality criterion.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

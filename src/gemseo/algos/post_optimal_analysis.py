@@ -17,6 +17,7 @@
 #       :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Post-optimal analysis."""
+
 from __future__ import annotations
 
 import logging

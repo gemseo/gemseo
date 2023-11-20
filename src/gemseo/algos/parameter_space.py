@@ -64,6 +64,7 @@ The :class:`.ParameterSpace` also provides the following methods:
 - :meth:`.is_uncertain`: checks if a parameter is uncertain,
 - :meth:`.is_deterministic`: checks if a parameter is deterministic.
 """
+
 from __future__ import annotations
 
 import collections

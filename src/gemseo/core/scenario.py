@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The base class for the scenarios."""
+
 from __future__ import annotations
 
 import logging

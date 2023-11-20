@@ -21,6 +21,7 @@
 IDF-based MDO on the Sobieski SSBJ test case
 ============================================
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

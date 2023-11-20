@@ -27,6 +27,7 @@ design space, which is a key element to represent the space of parameters on
 which a scenario will evaluate a list of disciplines.
 
 """
+
 from __future__ import annotations
 
 from numpy import array

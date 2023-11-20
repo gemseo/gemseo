@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the tolerance interval for lognormal distributions."""
+
 from __future__ import annotations
 
 from math import exp
@@ -48,7 +49,7 @@ def test_lognormal_quantile_lower():
     tolerance_interval = LogNormalToleranceInterval(
         1000000, mean=0.0, std=1.0, location=0.5
     )
-    lower, upper = tolerance_interval.compute(
+    lower, _ = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert pytest.approx(lower, 0.01) == exp(2**0.5 * erfinv(2 * 0.025 - 1)) + 0.5
@@ -59,7 +60,7 @@ def test_lognormal_quantile_upper():
     tolerance_interval = LogNormalToleranceInterval(
         1000000, mean=0.0, std=1.0, location=0.5
     )
-    lower, upper = tolerance_interval.compute(
+    _, upper = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.UPPER
     )
     assert pytest.approx(upper, 0.01) == exp(2**0.5 * erfinv(2 * 0.975 - 1)) + 0.5

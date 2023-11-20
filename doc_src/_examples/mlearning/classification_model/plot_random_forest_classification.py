@@ -24,6 +24,7 @@ Random forest classification
 
 We want to classify the Iris dataset using a Random Forest classifier.
 """
+
 # %%
 # Import
 # ------

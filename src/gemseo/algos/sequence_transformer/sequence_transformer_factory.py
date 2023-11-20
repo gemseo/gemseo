@@ -17,6 +17,7 @@
 #                           documentation
 #        :author: Bocquet Sebastien, Scotto Di Perrotolo Alexandre.
 """A factory to instantiate SequenceTransformer from their class names."""
+
 from __future__ import annotations
 
 from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTransformer

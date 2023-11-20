@@ -16,6 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Simone Coniglio
 """Make an animated GIF from an :class:`.OptPostProcessor`."""
+
 from __future__ import annotations
 
 from copy import deepcopy

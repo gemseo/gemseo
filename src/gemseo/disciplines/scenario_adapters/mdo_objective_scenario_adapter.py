@@ -20,6 +20,7 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A scenario adapter overwriting the local data with the optimal objective."""
+
 from __future__ import annotations
 
 from typing import Sequence

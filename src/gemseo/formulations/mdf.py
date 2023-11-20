@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Multi-disciplinary Design Feasible (MDF) formulation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

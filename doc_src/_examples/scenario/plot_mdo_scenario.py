@@ -23,6 +23,7 @@ Create an MDO Scenario
 ======================
 
 """
+
 from __future__ import annotations
 
 from numpy import ones

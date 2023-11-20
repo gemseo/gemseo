@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The default settings of the scalable problem."""
+
 from __future__ import annotations
 
 from typing import Final

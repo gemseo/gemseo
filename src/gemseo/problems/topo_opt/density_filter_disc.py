@@ -16,6 +16,7 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline for topology optimization density filter."""
+
 from __future__ import annotations
 
 from numpy import ceil

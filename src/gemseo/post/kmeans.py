@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A k-means classification of the optimization history."""
+
 from __future__ import annotations
 
 import logging

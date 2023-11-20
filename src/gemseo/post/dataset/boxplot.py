@@ -24,6 +24,7 @@ variability outside the inter quartile domain can be represented with lines, cal
 *whiskers*. The numerical data that are significantly different are called *outliers*
 and can be plotted as individual points beyond the whiskers.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

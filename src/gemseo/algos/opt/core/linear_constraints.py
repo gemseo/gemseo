@@ -17,6 +17,7 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """Build matrices from linear constraints for solvers."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

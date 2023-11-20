@@ -23,6 +23,7 @@ Scatter
 =======
 
 """
+
 from __future__ import annotations
 
 from numpy import linspace

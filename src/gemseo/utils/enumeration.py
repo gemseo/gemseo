@@ -18,6 +18,7 @@
 #        :author:  Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Enumerations tools."""
+
 from __future__ import annotations
 
 import inspect

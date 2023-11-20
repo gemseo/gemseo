@@ -25,6 +25,7 @@ Convert a cache to a dataset
 In this example,
 we will see how to convert a cache to a :class:`.Dataset`.
 """
+
 from __future__ import annotations
 
 from numpy import array

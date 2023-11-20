@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Abstraction of processes."""
+
 from __future__ import annotations
 
 import collections

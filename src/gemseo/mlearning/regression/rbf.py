@@ -36,6 +36,7 @@ The RBF model relies on the Rbf class of the
 `scipy library
 <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -20,6 +20,7 @@
 
 `Newton-Raphson <https://en.wikipedia.org/wiki/Newton%27s_method>`__
 """
+
 from __future__ import annotations
 
 import logging

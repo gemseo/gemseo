@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for optimization history post-processing."""
+
 from __future__ import annotations
 
 import inspect

@@ -17,6 +17,7 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test of the Binh-Korn problem."""
+
 from __future__ import annotations
 
 import pytest

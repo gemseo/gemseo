@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to store only one entry."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

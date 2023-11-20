@@ -25,6 +25,7 @@ API
 Here are some examples of the machine learning API
 applied to regression models.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

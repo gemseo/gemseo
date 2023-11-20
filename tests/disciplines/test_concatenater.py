@@ -17,6 +17,7 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test for the :class:`.Concatenater`"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

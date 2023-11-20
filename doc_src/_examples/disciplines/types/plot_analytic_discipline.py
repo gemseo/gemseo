@@ -22,6 +22,7 @@
 Create a discipline from analytical expressions
 ===============================================
 """
+
 from __future__ import annotations
 
 from numpy import array

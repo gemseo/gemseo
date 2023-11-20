@@ -45,6 +45,7 @@ the concept of scalability study:
    of course, scalability results by means of a dedicated class:
    :class:`.ScalabilityResult`.
 """
+
 from __future__ import annotations
 
 import logging

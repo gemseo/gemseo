@@ -33,6 +33,7 @@ as relevant as possible in order to reach as soon as possible the optimum.
 These families are implemented in :class:`.DOELibrary`
 and :class:`.OptimizationLibrary`.
 """
+
 from __future__ import annotations
 
 import logging

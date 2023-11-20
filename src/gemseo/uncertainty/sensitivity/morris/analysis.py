@@ -67,6 +67,7 @@ where :math:`\mu_i = \frac{1}{r}\sum_{j=1}^rdf_i^{(j)}`.
 
 This methodology relies on the :class:`.MorrisAnalysis` class.
 """
+
 from __future__ import annotations
 
 from types import MappingProxyType

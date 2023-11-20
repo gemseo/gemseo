@@ -16,4 +16,5 @@
 
 The main class is :class:`.MorrisAnalysis`, which relies on :class:`.OATSensitivity`.
 """
+
 from __future__ import annotations

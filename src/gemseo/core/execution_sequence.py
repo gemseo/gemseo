@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Abstraction for workflow."""
+
 from __future__ import annotations
 
 import logging

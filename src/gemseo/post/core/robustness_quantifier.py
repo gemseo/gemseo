@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Quantification of robustness of the optimum to variables perturbations."""
+
 from __future__ import annotations
 
 from typing import Callable

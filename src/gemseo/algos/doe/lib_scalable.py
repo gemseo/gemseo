@@ -17,6 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 """Build a diagonal DOE for scalable model construction."""
+
 from __future__ import annotations
 
 from typing import ClassVar

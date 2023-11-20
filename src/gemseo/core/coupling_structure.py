@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #          Arthur Piat: greatly improve the N2 layout
 """Graph-based analysis of the weak and strong couplings between several disciplines."""
+
 from __future__ import annotations
 
 import itertools

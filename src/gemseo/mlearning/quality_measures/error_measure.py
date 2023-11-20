@@ -22,6 +22,7 @@
 The concept of error measure is implemented with the :class:`.MLErrorMeasure` class and
 proposes different evaluation methods.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod

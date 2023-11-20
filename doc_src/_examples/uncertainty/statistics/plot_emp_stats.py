@@ -30,6 +30,7 @@ For simplification,
 we use uniform distributions for the discipline inputs
 based on the bounds of the design parameters.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

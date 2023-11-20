@@ -74,6 +74,7 @@ modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_ classes of
 the `scikit-learn library <https://scikit-learn.org/stable/modules/
 linear_model.html>`_.
 """
+
 from __future__ import annotations
 
 import pickle

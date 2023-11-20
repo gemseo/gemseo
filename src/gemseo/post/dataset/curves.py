@@ -24,6 +24,7 @@ A :class:`.Curves` plot represents samples of a functional variable
 and mesh are stored in a :class:`.Dataset`, :math:`y` as a parameter
 and the mesh as a misc.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

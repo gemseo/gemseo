@@ -24,6 +24,7 @@ of a functional variable :math:`z(x,y)` discretized over a 2D mesh.
 Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
 :math:`z` as a parameter and the mesh as a misc.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

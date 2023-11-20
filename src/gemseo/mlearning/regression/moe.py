@@ -53,6 +53,7 @@ where
 that :math:`x` belongs to cluster :math:`k` and
 :math:`f_k(x)` is the local regression model on cluster :math:`k`.
 """
+
 from __future__ import annotations
 
 import logging

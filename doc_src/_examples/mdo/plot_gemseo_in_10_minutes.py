@@ -22,6 +22,7 @@
 GEMSEO in 10 minutes
 ====================
 """
+
 # %%
 #
 # Introduction

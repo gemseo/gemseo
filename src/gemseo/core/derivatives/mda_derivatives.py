@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Graph algorithms to solve the Jacobian accumulation problem for MDOChain and MDA."""
+
 from __future__ import annotations
 
 import uuid

@@ -19,6 +19,7 @@
 Solve an ODE: the Van der Pol problem
 =====================================
 """
+
 from __future__ import annotations
 
 import matplotlib.pyplot as plt

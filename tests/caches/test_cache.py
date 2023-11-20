@@ -108,7 +108,7 @@ def test_jac_and_outputs_caching(
         assert compare_dict_of_arrays(jac, jac_loaded)
 
         cache.tolerance = 1e-6
-        _, out_tol, jac_tol = cache[input_data]
+        cache[input_data]
         assert out_loaded is not None
         assert compare_dict_of_arrays(jac, jac_loaded)
 

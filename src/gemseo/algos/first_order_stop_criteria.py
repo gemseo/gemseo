@@ -17,6 +17,7 @@
 #       :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Implementation of the Karush-Kuhn-Tucker residual norm stopping criterion."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

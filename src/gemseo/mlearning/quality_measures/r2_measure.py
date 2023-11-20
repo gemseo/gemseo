@@ -37,6 +37,7 @@ where
 :math:`y` are the data points and
 :math:`\\bar{y}` is the mean of :math:`y`.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

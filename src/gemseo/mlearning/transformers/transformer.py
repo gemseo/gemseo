@@ -29,6 +29,7 @@ and possibly :meth:`.Transformer.inverse_transform` methods.
    :mod:`~gemseo.mlearning.transformers.scaler.scaler`
    :mod:`~gemseo.mlearning.transformers.dimension_reduction.dimension_reduction`
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod

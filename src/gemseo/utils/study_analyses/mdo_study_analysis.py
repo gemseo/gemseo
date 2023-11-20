@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An MDO study analysis generating N2 and XDSM from an Excel specification."""
+
 from __future__ import annotations
 
 import contextlib

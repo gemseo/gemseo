@@ -16,4 +16,5 @@
 
 Contains wrappers to algorithm libraries.
 """
+
 from __future__ import annotations

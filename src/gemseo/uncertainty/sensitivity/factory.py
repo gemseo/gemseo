@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Module with a factory to create an instance of :class:`.SensitivityAnalysis`."""
+
 from __future__ import annotations
 
 from types import MappingProxyType

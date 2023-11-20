@@ -20,6 +20,7 @@ Distributed under the Apache 2.0 license
 
 Minor modifications by Francois Gallard : merge the two methods a comment
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

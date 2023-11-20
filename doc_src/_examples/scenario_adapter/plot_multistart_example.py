@@ -26,6 +26,7 @@ Runs simple optimization problem with multiple starting points
 Nests an :class:`.MDOScenario` in a :class:`.DOEScenario`
 using an :class:`.MDOScenarioAdapter`.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

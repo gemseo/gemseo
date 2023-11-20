@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Generator of the HTML file containing a D3.js version of the N2 chart."""
+
 from __future__ import annotations
 
 import json

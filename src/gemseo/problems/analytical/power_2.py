@@ -21,6 +21,7 @@
 A quadratic analytical problem
 ******************************
 """
+
 from __future__ import annotations
 
 import logging

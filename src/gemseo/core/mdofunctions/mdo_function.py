@@ -19,6 +19,7 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class to describe a function."""
+
 from __future__ import annotations
 
 import logging

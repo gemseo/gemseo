@@ -20,6 +20,7 @@
 Solve a 2D short cantilever topology optimization problem
 =========================================================
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

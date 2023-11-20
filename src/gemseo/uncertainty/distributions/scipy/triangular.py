@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The SciPy-based triangular distribution."""
+
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution

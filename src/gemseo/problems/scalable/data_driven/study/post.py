@@ -40,6 +40,7 @@ of the true problem.
    that satisfies this budget, or even saves us time. Thus, it is important
    to carefully define these cost functions.
 """
+
 from __future__ import annotations
 
 import logging

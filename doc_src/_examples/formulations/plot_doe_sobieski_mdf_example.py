@@ -21,6 +21,7 @@
 MDF-based DOE on the Sobieski SSBJ test case
 ============================================
 """
+
 from __future__ import annotations
 
 from os import name as os_name

@@ -17,6 +17,7 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """History of the maximum constraint and objective value."""
+
 from __future__ import annotations
 
 import logging

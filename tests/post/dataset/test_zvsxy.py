@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class ZvsXY plotting a variable z versus two variables x and y."""
+
 from __future__ import annotations
 
 import pytest

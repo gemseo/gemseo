@@ -17,6 +17,7 @@
 #        :author: Charlie Vanaret, Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base module for Newton algorithm variants for solving MDAs."""
+
 from __future__ import annotations
 
 from multiprocessing import cpu_count

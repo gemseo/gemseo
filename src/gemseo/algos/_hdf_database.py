@@ -20,6 +20,7 @@
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
 """A database of function calls and design variables."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -30,9 +31,9 @@ from typing import Union
 
 import h5py
 from numpy import array
+from numpy import bytes_
 from numpy import float64
 from numpy import ndarray
-from numpy import string_
 
 from gemseo.utils.hdf5 import get_hdf5_group
 
@@ -210,7 +211,7 @@ class HDFDatabase:
             keys: The names that must be added.
         """
         name = str(index_dataset)
-        keys = array(keys, dtype=string_)
+        keys = array(keys, dtype=bytes_)
         if name not in keys_group:
             keys_group.create_dataset(
                 name, data=keys, maxshape=(None,), dtype=h5py.string_dtype()

@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A class to create :class:`.MDOFunction` objects from an :class:`.MDODiscipline`."""
+
 from __future__ import annotations
 
 import logging

@@ -81,6 +81,7 @@ Dependence
 ----------
 The PCE model relies on the OpenTURNS class `FunctionalChaosAlgorithm`_.
 """  # noqa: E501
+
 from __future__ import annotations
 
 import logging

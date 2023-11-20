@@ -15,6 +15,7 @@
 # Contributors:
 #     Matthias De Lozzo
 """A discipline whose inputs and outputs map to those of another."""
+
 from __future__ import annotations
 
 from functools import singledispatchmethod

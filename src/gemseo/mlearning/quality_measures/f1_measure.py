@@ -32,6 +32,7 @@ divided by the total number of *predicted* positives
 and :math:`\\mathit{recall}` is the number of correctly predicted positives
 divided by the total number of *true* positives.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

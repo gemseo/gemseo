@@ -22,6 +22,7 @@
 The concept of clustering quality measure is implemented with the
 :class:`.MLClusteringMeasure` class and proposes different evaluation methods.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod

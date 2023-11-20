@@ -34,6 +34,7 @@ Warnings:
     the user of |g| shall provide objective and constraint functions
     that return values of type ``float`` and ``NDArray[float]``.
 """
+
 from __future__ import annotations
 
 import logging

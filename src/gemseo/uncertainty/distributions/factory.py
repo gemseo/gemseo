@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Module containing a factory to create an instance of :class:`.Distribution`."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

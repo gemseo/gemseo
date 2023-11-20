@@ -25,6 +25,7 @@ Classification API
 Here are some examples of the machine learning API
 applied to classification models.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

@@ -17,6 +17,7 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Linear solvers' wrapper."""
+
 from __future__ import annotations
 
 import logging

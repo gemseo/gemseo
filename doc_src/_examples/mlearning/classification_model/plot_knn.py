@@ -24,6 +24,7 @@ K nearest neighbors classification
 
 We want to classify the Iris dataset using a KNN classifier.
 """
+
 from __future__ import annotations
 
 from numpy import array

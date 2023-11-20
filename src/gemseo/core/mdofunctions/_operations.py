@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Some helpers for simple operations with functions."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -209,7 +210,6 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The Jacobian of the operation.
         """
-        ...
 
     @staticmethod
     def get_string_representation(

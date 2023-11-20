@@ -17,6 +17,7 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the constraints on a radar chart at a given database index."""
+
 from __future__ import annotations
 
 import logging

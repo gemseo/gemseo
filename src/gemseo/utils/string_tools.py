@@ -19,6 +19,7 @@
 #        :author: Antoine Dechaume
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Pretty string utils."""
+
 from __future__ import annotations
 
 from collections import abc

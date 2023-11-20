@@ -17,6 +17,7 @@
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the SciPy ODE solver wrapper."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

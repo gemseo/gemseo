@@ -24,6 +24,7 @@ Dataset from a NumPy array
 
 In this example, we will see how to build a :class:`.Dataset` from an NumPy array.
 """
+
 from __future__ import annotations
 
 from numpy import concatenate

@@ -95,6 +95,7 @@ The GPR model relies on the GaussianProcessRegressor class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

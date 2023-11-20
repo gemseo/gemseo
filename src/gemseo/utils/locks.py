@@ -17,6 +17,7 @@
 #       :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Decorators to lock and protect critical code sections."""
+
 from __future__ import annotations
 
 import functools

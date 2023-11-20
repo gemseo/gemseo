@@ -17,6 +17,7 @@
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Ordinary differential equation problem."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

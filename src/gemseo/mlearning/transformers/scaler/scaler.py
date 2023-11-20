@@ -41,6 +41,7 @@ This method has to be overloaded.
    :mod:`~gemseo.mlearning.transformers.scaler.min_max_scaler`
    :mod:`~gemseo.mlearning.transformers.scaler.standard_scaler`
 """
+
 from __future__ import annotations
 
 import logging

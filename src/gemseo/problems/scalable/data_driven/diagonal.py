@@ -39,6 +39,7 @@ which is composed of a :class:`.ScalableDiagonalApproximation`.
 With regard to the diagonal DOE, |g| proposes the
 :class:`.DiagonalDOE` class.
 """
+
 from __future__ import annotations
 
 from numbers import Number

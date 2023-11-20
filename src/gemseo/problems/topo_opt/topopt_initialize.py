@@ -17,6 +17,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generation of the design space and disciplines of the topology optimization
 problems."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -18,6 +18,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test R2 error measure module."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

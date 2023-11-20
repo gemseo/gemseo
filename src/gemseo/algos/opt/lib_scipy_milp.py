@@ -17,14 +17,15 @@
 #                           documentation
 #        :author: Simone Coniglio
 """SciPy linear programming library wrapper."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
 from typing import ClassVar
 
-from numpy import Infinity
 from numpy import concatenate
+from numpy import inf
 from numpy import ones_like
 from scipy.optimize import Bounds
 from scipy.optimize import LinearConstraint
@@ -147,7 +148,7 @@ class ScipyMILP(OptimizationLibrary):
             lq_constraints.append(
                 LinearConstraint(
                     ineq_lhs,
-                    -Infinity * ones_like(ineq_rhs),
+                    -inf * ones_like(ineq_rhs),
                     ineq_rhs,
                     keep_feasible=True,
                 )

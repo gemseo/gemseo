@@ -22,6 +22,7 @@
 Advanced mixture of experts
 ===========================
 """
+
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset

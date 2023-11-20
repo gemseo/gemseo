@@ -24,6 +24,7 @@ A :class:`.ZvsXY` plot represents the variable :math:`z` with respect to
 :points :math:`\{x_i,y_i,z_i\}_{1\leq i \leq n}`. This interpolation is
 relies on the Delaunay triangulation of :math:`\{x_i,y_i\}_{1\leq i \leq n}`
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

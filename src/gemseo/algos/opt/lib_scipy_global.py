@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A wrapper for the global optimization algorithms of the SciPy library."""
+
 from __future__ import annotations
 
 import sys

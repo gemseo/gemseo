@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A parallel coordinates plot of functions and x."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -58,7 +59,7 @@ class ParallelCoordinates(OptPostProcessor):
             color_criteria: The values of same length as `y_data`
                 to colorize the lines.
         """
-        n_x, n_cols = y_data.shape
+        _, n_cols = y_data.shape
         expected_shape = (len(color_criteria), len(x_names))
         if y_data.shape != expected_shape:
             raise ValueError(

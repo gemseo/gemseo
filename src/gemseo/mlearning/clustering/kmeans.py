@@ -68,6 +68,7 @@ This clustering algorithm relies on the KMeans class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.cluster.KMeans.html>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

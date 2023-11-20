@@ -17,6 +17,7 @@
 
 @author: matthias.delozzo
 """
+
 from __future__ import annotations
 
 from numpy import array

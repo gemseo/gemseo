@@ -17,6 +17,7 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A chain of MDAs to build hybrids of MDA algorithms sequentially."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

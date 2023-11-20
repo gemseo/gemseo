@@ -29,6 +29,7 @@ of available scalable models
 and to check is a type of scalable model is available
 (see :meth:`.ScalableModelFactory.is_available` method)
 """
+
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory

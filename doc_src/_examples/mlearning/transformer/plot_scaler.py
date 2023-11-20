@@ -24,6 +24,7 @@ Scaler example
 
 In this example, we will create a scaler to transform data.
 """
+
 from __future__ import annotations
 
 import matplotlib.pyplot as plt

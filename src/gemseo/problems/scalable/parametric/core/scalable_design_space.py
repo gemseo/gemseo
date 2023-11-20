@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The design space."""
+
 from __future__ import annotations
 
 from types import MappingProxyType

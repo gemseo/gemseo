@@ -19,6 +19,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test dimension reduction with Karhunen-Loeve singular value decomposition."""
+
 from __future__ import annotations
 
 import pytest

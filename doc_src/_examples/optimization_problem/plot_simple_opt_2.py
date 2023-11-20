@@ -19,6 +19,7 @@
 Analytical test case # 2
 ========================
 """
+
 # %%
 # In this example, we consider a simple optimization problem to illustrate
 # algorithms interfaces and optimization libraries integration.

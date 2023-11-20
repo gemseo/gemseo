@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A 1D Jameson sensor."""
+
 from __future__ import annotations
 
 from numpy import abs as np_abs

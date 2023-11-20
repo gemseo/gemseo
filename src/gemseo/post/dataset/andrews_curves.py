@@ -54,6 +54,7 @@ by means of the ``classifier`` keyword
 in order to color the curves according to the value of the variable name.
 This is useful when the data is labeled.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -97,7 +98,7 @@ class AndrewsCurves(DatasetPlot):
             )
 
         dataframe = self.dataset
-        label, varname = self._get_label(classifier)
+        _, varname = self._get_label(classifier)
         fig, axes = self._get_figure_and_axes(fig, axes)
         andrews_curves(dataframe, varname, ax=axes)
         plt.xlabel(self.xlabel)

@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Wrappers for SciPy's linear solvers."""
+
 from __future__ import annotations
 
 import logging
@@ -25,8 +26,8 @@ from typing import Callable
 from typing import ClassVar
 from typing import Mapping
 
-from numpy import find_common_type
 from numpy import ndarray
+from numpy import promote_types
 from scipy.sparse import issparse
 from scipy.sparse import spmatrix
 from scipy.sparse.linalg import LinearOperator
@@ -222,7 +223,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         c_dtype = None
 
         if rhs.dtype != lhs.dtype and not isinstance(lhs, LinearOperator):
-            c_dtype = find_common_type([rhs.dtype, lhs.dtype], [])
+            c_dtype = promote_types(rhs.dtype, lhs.dtype)
             if lhs.dtype != c_dtype:
                 lhs = lhs.astype(c_dtype)
             if rhs.dtype != c_dtype:

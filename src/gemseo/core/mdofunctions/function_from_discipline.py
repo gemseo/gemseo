@@ -20,6 +20,7 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """The MDOFunction subclass to create a function from an MDODiscipline."""
+
 from __future__ import annotations
 
 import logging

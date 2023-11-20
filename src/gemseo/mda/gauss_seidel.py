@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Gauss Seidel algorithm for solving MDAs."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

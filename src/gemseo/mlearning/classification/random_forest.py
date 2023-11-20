@@ -28,6 +28,7 @@ The classifier relies on the RandomForestClassifier class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

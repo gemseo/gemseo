@@ -31,6 +31,7 @@ A. B. Lambe and J. R. R. A. Martins, “Extensions to the Design Structure Matri
 the Description of Multidisciplinary Design, Analysis, and Optimization Processes”,
 Structural and Multidisciplinary Optimization, vol. 46, no. 2, p. 273-284, 2012.
 """
+
 from __future__ import annotations
 
 import logging

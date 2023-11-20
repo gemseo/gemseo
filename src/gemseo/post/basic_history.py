@@ -17,6 +17,7 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A constraints plot."""
+
 from __future__ import annotations
 
 import logging

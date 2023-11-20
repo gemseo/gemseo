@@ -23,6 +23,7 @@ A :class:`.YvsX` plot represents samples of a couple :math:`(x,y)` as a set of p
 whose values are stored in a :class:`.Dataset`. The user can select the style of line or
 markers, as well as the color.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

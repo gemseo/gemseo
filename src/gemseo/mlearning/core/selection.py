@@ -44,6 +44,7 @@ using the class :class:`.MLAlgoCalibration`.
    :mod:`~gemseo.mlearning.core.ml_algo`
    :mod:`~gemseo.mlearning.core.calibration`
 """
+
 from __future__ import annotations
 
 from itertools import product

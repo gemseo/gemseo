@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Grammar based on JSON schema."""
+
 from __future__ import annotations
 
 import json

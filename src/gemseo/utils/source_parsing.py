@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Parse source code to extract information."""
+
 from __future__ import annotations
 
 import inspect

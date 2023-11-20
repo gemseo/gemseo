@@ -34,6 +34,7 @@ distributed in the following way:
 
 These samples are generated from the NumPy library.
 """
+
 from __future__ import annotations
 
 from numpy import vstack

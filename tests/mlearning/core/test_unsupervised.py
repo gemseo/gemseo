@@ -18,6 +18,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test unsupervised machine learning algorithm module."""
+
 from __future__ import annotations
 
 import pytest

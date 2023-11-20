@@ -20,6 +20,7 @@
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
 """A database of function calls and design variables."""
+
 from __future__ import annotations
 
 import logging

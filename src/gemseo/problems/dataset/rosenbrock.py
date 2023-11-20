@@ -37,6 +37,7 @@ design of experiments.
 `More information about the Rosenbrock function
 <https://en.wikipedia.org/wiki/Rosenbrock_function>`_
 """
+
 from __future__ import annotations
 
 from numpy import hstack

@@ -26,6 +26,7 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 """Custom color maps for plots."""
+
 from __future__ import annotations
 
 import matplotlib as mpl

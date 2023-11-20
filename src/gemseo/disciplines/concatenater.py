@@ -17,6 +17,7 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The concatenation of several input variables into a single one."""
+
 from __future__ import annotations
 
 from itertools import accumulate

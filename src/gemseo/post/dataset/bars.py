@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Draw a bar plot from a :class:`.Dataset`."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

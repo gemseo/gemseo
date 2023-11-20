@@ -19,6 +19,7 @@
 Create a discipline that uses pandas DataFrames
 ===============================================
 """
+
 from __future__ import annotations
 
 from pandas import DataFrame

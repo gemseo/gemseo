@@ -62,4 +62,5 @@ The class :class:`.OTDistributionFitter` offers the possibility
 to fit an :class:`.OTDistribution` from ``numpy.array`` data,
 based on the OpenTURNS capabilities.
 """
+
 from __future__ import annotations

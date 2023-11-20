@@ -22,6 +22,7 @@
 Create a discipline from a Python function
 ==========================================
 """
+
 # %%
 # Import
 # ------

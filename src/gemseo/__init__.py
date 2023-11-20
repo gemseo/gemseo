@@ -130,6 +130,7 @@ Surrogates
 High-level functions
 ********************
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -1142,6 +1143,7 @@ def configure_logger(
     return logger
 
 
+# TODO: rename to create_disciplines (plural)
 def create_discipline(
     discipline_name: str | Iterable[str],
     **options: Any,

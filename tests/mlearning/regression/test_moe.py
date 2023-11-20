@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mixture of experts regression module."""
+
 from __future__ import annotations
 
 import pytest

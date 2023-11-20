@@ -23,6 +23,7 @@ Memory full cache
 =================
 This example shows how to manipulate an :class:`.MemoryFullCache` object.
 """
+
 from __future__ import annotations
 
 from numpy import array

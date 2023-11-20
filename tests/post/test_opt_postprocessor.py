@@ -49,8 +49,6 @@ class NewOptPostProcessor(OptPostProcessor):
 class NewOptPostProcessorWithoutOptionsGrammar(OptPostProcessor):
     """A new optimization post processor without options grammar."""
 
-    ...
-
 
 def test_fig_size(problem):
     """Check the effect of fig_size."""

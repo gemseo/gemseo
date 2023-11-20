@@ -18,6 +18,7 @@
 #        :author: Antoine Dechaume
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Logging tools."""
+
 from __future__ import annotations
 
 import types

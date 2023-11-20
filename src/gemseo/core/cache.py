@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to avoid multiple evaluations of a discipline."""
+
 from __future__ import annotations
 
 import logging

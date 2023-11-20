@@ -18,6 +18,7 @@
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the class SensitivityAnalysis."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -17,6 +17,7 @@
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Export data to the XML file format needed by GGOBI."""
+
 from __future__ import annotations
 
 from pathlib import Path
