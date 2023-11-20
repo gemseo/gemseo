@@ -226,7 +226,7 @@ class JSONGrammar(BaseGrammar):
         """  # noqa: D205, D212, D415
         if not data:
             return
-        self.__schema_builder.add_object(self.__cast_data(data), not merge)
+        self.__schema_builder.add_object(self.__cast_data_mapping(data), not merge)
         self.__init_dependencies()
 
     def update_from_types(  # noqa: D102
@@ -291,7 +291,7 @@ class JSONGrammar(BaseGrammar):
             self._create_validator()
 
         try:
-            self.__validator(self.__cast_data(data))
+            self.__validator(self.__cast_data_mapping(data))
         except JsonSchemaException as error:
             if not error.args[0].startswith("data must contain"):
                 error_message.add(f"error: {error.args[0]}")
@@ -418,28 +418,47 @@ class JSONGrammar(BaseGrammar):
         self.__init_dependencies()
 
     @classmethod
-    def __cast_data(cls, data: Data) -> DictSchemaType:
-        """Cast the NumPy arrays to lists and Path to str for dictionary values.
+    def __cast_data_mapping(cls, data: Data) -> DictSchemaType:
+        """Cast a data mapping into a JSON-interpretable object.
 
         Args:
             data: The data mapping.
 
         Returns:
-            The original mapping cast to a dictionary
-            where NumPy arrays have been replaced with lists
-            and Path objects with str ones.
+            The original mapping cast to a JSON-interpretable object.
         """
         _data_dict = dict(data)
         for key, value in data.items():
-            if isinstance(value, complex):
-                _data_dict[key] = value.real
-            if isinstance(value, (ndarray, generic)):
-                _data_dict[key] = value.real.tolist()
-            elif isinstance(value, PathLike):
-                _data_dict[key] = str(value)
-            elif isinstance(value, Mapping):
-                _data_dict[key] = cls.__cast_data(value)
+            _data_dict[key] = cls.__cast_value(value)
+
         return _data_dict
+
+    @classmethod
+    def __cast_value(cls, value: Any):
+        """Cast a value to into an JSON-interpretable one.
+
+        Args:
+            value: The value.
+
+        Returns:
+            The original value cast to a JSON-interpretable object.
+        """
+        if isinstance(value, complex):
+            return value.real
+
+        if isinstance(value, (ndarray, generic)):
+            return value.real.tolist()
+
+        if isinstance(value, PathLike):
+            return str(value)
+
+        if isinstance(value, Mapping):
+            return cls.__cast_data_mapping(value)
+
+        if isinstance(value, Iterable) and not isinstance(value, str):
+            return [cls.__cast_value(item) for item in value]
+
+        return value
 
     def __get_names_to_types(self) -> NamesToTypes:
         """Create the mapping from element names to elements types.

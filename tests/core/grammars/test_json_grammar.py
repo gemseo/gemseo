@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import complex128
 from numpy import float64
 from numpy import int64
 from numpy import ndarray
@@ -36,6 +37,12 @@ if TYPE_CHECKING:
     from gemseo.core.discipline_data import Data
 
 DATA_PATH = Path(__file__).parent / "data"
+
+
+@pytest.fixture(scope="module")
+def grammar_5() -> JSONGrammar:
+    """A JSON grammar using grammar_5.json."""
+    return JSONGrammar("g", file_path=DATA_PATH / "grammar_5.json")
 
 
 def new_grammar(file_path: Path | None) -> JSONGrammar:
@@ -287,26 +294,36 @@ def test_repr(file_path, repr_):
     assert repr(g) == repr_.strip()
 
 
+def test_validate_empty_grammar():
+    """Check that an empty grammar can validate everything."""
+    JSONGrammar("g").validate({"name": 0})
+
+
 @pytest.mark.parametrize(
-    ("file_path", "data_sets"),
+    "data",
     [
-        # Empty grammar: everything validates.
-        (None, ({"name": 0},)),
-        (
-            DATA_PATH / "grammar_3.json",
-            (
-                {"name1": 1},
-                {"name1": 1, "name2": "bar"},
-                {"name1": 1, "name2": 0},
-            ),
-        ),
+        {"number": 1.1},
+        {"number": 1},
+        {"number": 1 + 1j},
+        {"number": complex128(3)},
+        {"string": "foo"},
+        {"string": Path("foo")},
+        {"1d_array": array([1, 2])},
+        {"2d_array": array([[1, 2]])},
+        {"2d_array": array([[1, 2], [3, 4]])},
+        {
+            "list_of_dict_of_1D_arrays": [
+                {"x": array([1.0, 2.0, 1.0])},
+                {"x": array([1.0, 2.0, 0.0])},
+            ]
+        },
+        {"dict_of_2d_arrays": {"x": array([[1.0, 2.0, 1.0], [1.0, 2.0, 0.0]])}},
     ],
 )
-def test_validate(file_path, data_sets):
+def test_validate(grammar_5, data):
     """Verify validate."""
-    g = JSONGrammar("g", file_path=file_path)
-    for data in data_sets:
-        g.validate(data)
+    data["mandatory"] = True
+    grammar_5.validate(data)
 
 
 @pytest.mark.parametrize("raise_exception", [True, False])
@@ -788,8 +805,25 @@ def test_from_types_unsupported():
         grammar.update_from_types({"x": None})
 
 
-@pytest.mark.parametrize("file_path", ["bar", Path("bar")])
-def test_pathlike(file_path):
-    """Check that a JSONGrammar can use PathLike."""
-    grammar = JSONGrammar("foo", DATA_PATH / "grammar_pathlike.json")
-    grammar.validate({"file_path": file_path})
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("foo", "foo"),
+        (Path("foo"), "foo"),
+        (3 + 1j, 3),
+        (array([1, 2]), [1, 2]),
+        (array([[1, 2], [3, 4]]), [[1, 2], [3, 4]]),
+        (complex128(3), 3),
+        (
+            [1, array([1, 2]), "foo", [3, array([3, 4])]],
+            [1, [1, 2], "foo", [3, [3, 4]]],
+        ),
+        (
+            {"x": array([1, 2]), "y": ["foo", {"z": array([2, 3])}]},
+            {"x": [1, 2], "y": ["foo", {"z": [2, 3]}]},
+        ),
+    ],
+)
+def test_cast(value, expected):
+    """Check the method casting any value to a JSON-interpretable one."""
+    assert JSONGrammar._JSONGrammar__cast_value(value) == expected

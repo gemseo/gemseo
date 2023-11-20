@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "name": "grammar_5",
+  "properties": {
+    "mandatory": {
+      "type": "boolean"
+    },
+    "1d_array": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1
+    },
+    "2d_array": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 1
+      },
+      "minItems": 1
+    },
+    "number": {
+      "type": "number"
+    },
+    "string": {
+      "type": "string"
+    },
+    "list_of_dict_of_1D_arrays": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1
+        },
+        "minProperties": 1
+      },
+      "minItems": 1
+    },
+    "dict_of_2d_arrays": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1
+        },
+        "minItems": 1
+      },
+      "minProperties": 1
+    }
+  },
+  "required": [
+    "mandatory"
+  ],
+  "additionalProperties": false
+}

@@ -48,7 +48,7 @@ def test_check_dimension_inconsistency():
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Dimension mismatch between the problem (4) and  the samples (3)."
+            "Dimension mismatch between the problem (4) and the samples (3)."
         ),
     ):
         execute_problem(
@@ -73,6 +73,11 @@ def test_read_file_error():
     ("n_samples", "options"),
     [
         (2, {"samples": array([[1.0, 2.0, 1.0], [1.0, 2.0, 0.0]])}),
+        (2, {"samples": {"x": array([[1.0, 2.0, 1.0], [1.0, 2.0, 0.0]])}}),
+        (
+            2,
+            {"samples": [{"x": array([1.0, 2.0, 1.0])}, {"x": array([1.0, 2.0, 0.0])}]},
+        ),
         (
             30,
             {
