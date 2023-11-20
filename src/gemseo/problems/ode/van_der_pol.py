@@ -60,6 +60,7 @@ There is no exact solution to the Van der Pol oscillator problem in terms of
 known tabulated functions (see Panayotounakos *et al.*, On the Lack of Analytic
 Solutions of the Van Der Pol Oscillator. ZAMM 83, nᵒ 9 (1 septembre 2003)).
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

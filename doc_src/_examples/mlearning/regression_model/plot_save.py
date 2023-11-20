@@ -32,6 +32,7 @@ with two inputs and two outputs:
 
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
 """
+
 from __future__ import annotations
 
 from numpy import array

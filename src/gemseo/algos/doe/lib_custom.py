@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Francois Gallard
 """Design of experiments from custom data."""
+
 from __future__ import annotations
 
 import logging

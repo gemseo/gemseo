@@ -85,6 +85,7 @@ or for all marginals (:meth:`.ComposedDistribution.plot_all`).
 Lastly, we can compute realizations of the random variable
 by means of the :meth:`.ComposedDistribution.compute_samples` method.
 """
+
 from __future__ import annotations
 
 import logging

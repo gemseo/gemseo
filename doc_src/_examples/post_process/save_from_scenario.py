@@ -23,6 +23,7 @@ Save a scenario for post-processing
 ===================================
 
 """
+
 from __future__ import annotations
 
 from gemseo import create_design_space

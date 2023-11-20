@@ -23,6 +23,7 @@ This module contains a factory to instantiate an :class:`.MLAlgo` from its class
 This factory also provides a list of available machine learning algorithms and allows
 testing if a machine learning algorithm is available.
 """
+
 from __future__ import annotations
 
 import pickle

@@ -65,6 +65,7 @@ from over-fitting, typically some norm of its argument.
 The :mod:`~gemseo.mlearning.core.supervised` module implements this concept
 through the :class:`.MLSupervisedAlgo` class based on an :class:`.IODataset`.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod

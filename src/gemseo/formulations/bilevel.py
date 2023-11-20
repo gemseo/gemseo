@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Bi-level formulation."""
+
 from __future__ import annotations
 
 import logging

@@ -19,6 +19,7 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Basic display of optimization history: functions and x."""
+
 from __future__ import annotations
 
 import logging

@@ -25,6 +25,7 @@ The :class:`.DimensionReduction` class implements the concept of dimension reduc
 
    :mod:`~gemseo.mlearning.transformers.dimension_reduction.pca`
 """
+
 from __future__ import annotations
 
 from gemseo.mlearning.transformers.transformer import Transformer

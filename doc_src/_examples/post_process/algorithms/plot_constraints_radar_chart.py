@@ -26,6 +26,7 @@ In this example, we illustrate the use of the
 :class:`.RadarChart` plot
 on the Sobieski's SSBJ problem.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

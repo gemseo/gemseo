@@ -16,6 +16,7 @@ Examples:
 Section breaks are created by resuming un-indented text.
 Section breaks are also implicitly created anytime a new section starts.
 """
+
 from __future__ import annotations
 
 from typing import ClassVar

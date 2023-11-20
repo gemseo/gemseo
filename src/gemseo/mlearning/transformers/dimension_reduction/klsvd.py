@@ -23,6 +23,7 @@ The :class:`.KLSVD` class wraps the ``KarhunenLoeveSVDAlgorithm``
 `from OpenTURNS <https://openturns.github.io/openturns/latest/user_manual/
 _generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

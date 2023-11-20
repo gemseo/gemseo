@@ -18,6 +18,7 @@
 #        :author: Nicolas Roussouly
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Platform utilities."""
+
 from __future__ import annotations
 
 import platform

@@ -95,6 +95,7 @@ The user can select the algorithm to estimate the Sobol' indices.
 The computation relies on
 `OpenTURNS capabilities <https://openturns.github.io/www/>`_.
 """
+
 from __future__ import annotations
 
 from types import MappingProxyType

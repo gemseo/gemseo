@@ -23,6 +23,7 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Structure discipline for the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
 import logging
@@ -635,7 +636,7 @@ class SobieskiStructure(SobieskiDiscipline):
             c_2=c_2,
         )
 
-        y_1, y_11 = self.__poly_structure(
+        y_1, _ = self.__poly_structure(
             tc_ratio,
             aspect_ratio,
             sweep,

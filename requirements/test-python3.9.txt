@@ -4,7 +4,7 @@
 #
 #    pip-compile --extra=all --extra=test --output-file=requirements/test-python3.9.txt
 #
-certifi==2023.7.22
+certifi==2023.11.17
     # via requests
 charset-normalizer==3.3.2
     # via requests
@@ -30,7 +30,7 @@ execnet==2.0.2
     # via pytest-xdist
 fastjsonschema==2.18.1
     # via gemseo (pyproject.toml)
-fonttools==4.44.0
+fonttools==4.44.3
     # via matplotlib
 genson==1.2.2
     # via gemseo (pyproject.toml)

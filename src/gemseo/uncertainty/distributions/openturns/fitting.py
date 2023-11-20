@@ -99,6 +99,7 @@ associated with the criterion and a criterion selection:
 - 'first': Select the first distribution for which the criterion is
   greater (or lower, depending on the criterion) than the level.
 """
+
 from __future__ import annotations
 
 import logging

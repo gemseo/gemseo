@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class Curves plotting samples of a 1D variable with curves."""
+
 from __future__ import annotations
 
 import pytest

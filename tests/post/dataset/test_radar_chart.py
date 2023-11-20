@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class RadarChart plotting samples on a radar chart."""
+
 from __future__ import annotations
 
 import pytest

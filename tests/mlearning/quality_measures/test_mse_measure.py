@@ -18,6 +18,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mean squared error measure."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

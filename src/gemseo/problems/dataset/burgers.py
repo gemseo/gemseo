@@ -46,6 +46,7 @@ while each feature corresponds to a given spatial point :math:`x`.
 `More information about Burgers' equation
 <https://en.wikipedia.org/wiki/Burgers%27_equation>`_
 """
+
 from __future__ import annotations
 
 from numpy import exp

@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A linear function defined from coefficients and offset matrices."""
+
 from __future__ import annotations
 
 from numbers import Number

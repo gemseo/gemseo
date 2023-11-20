@@ -17,6 +17,7 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """Build matrices from linear constraints for solvers."""
+
 from __future__ import annotations
 
 import pytest
@@ -97,7 +98,7 @@ def get_eq_constraints():
 
 def test_constraint_check():
     """Test the checking of the constraints."""
-    ineq_cstr_1, ineq_cstr_2 = get_ineq_constraints()
+    ineq_cstr_1, _ = get_ineq_constraints()
     # Check function type
     nonlinear_ineq_cstr = MDOFunction(lambda x: x**2, "square", f_type="ineq")
     with pytest.raises(TypeError):

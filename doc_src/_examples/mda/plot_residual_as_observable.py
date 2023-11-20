@@ -39,6 +39,7 @@ or can simply be retrieved as a scenario observable.
 It is a simple way to determine
 whether a given solution has a feasible design (MDA convergence) or not.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

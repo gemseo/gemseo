@@ -18,6 +18,7 @@
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Factory for the trust updater."""
+
 from __future__ import annotations
 
 from typing import ClassVar

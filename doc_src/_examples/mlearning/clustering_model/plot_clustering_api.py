@@ -26,6 +26,7 @@ API
 Here are some examples of the machine learning API
 applied to clustering models.
 """
+
 # %%
 # Import
 # ------

@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test linear regression module."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

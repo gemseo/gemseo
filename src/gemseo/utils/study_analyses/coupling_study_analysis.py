@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A coupling study analysis generating an N2 from an Excel specification."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

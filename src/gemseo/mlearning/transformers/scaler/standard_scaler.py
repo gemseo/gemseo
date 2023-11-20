@@ -42,6 +42,7 @@ Warnings:
     When :math:`\text{std}(z)=0` and :math:`\text{mean}(z)=0`,
     we use :math:`\bar{z}=z`.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

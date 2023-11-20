@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Deprecated module for progress bar."""
+
 from __future__ import annotations
 
 from gemseo.algos._progress_bars.custom_tqdm_progress_bar import (  # noqa: F401

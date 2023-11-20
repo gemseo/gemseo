@@ -20,6 +20,7 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A scenario whose driver is an optimization algorithm."""
+
 from __future__ import annotations
 
 import logging

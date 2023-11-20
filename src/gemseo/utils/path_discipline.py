@@ -15,6 +15,7 @@
 # Contributors:
 # François Gallard
 """A dummy discipline for tests."""
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -24,6 +24,7 @@ HDF5 cache
 
 In this example, we will see how to use :class:`.HDF5Cache`.
 """
+
 from __future__ import annotations
 
 from numpy import array

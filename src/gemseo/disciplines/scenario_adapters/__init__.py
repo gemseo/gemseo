@@ -39,4 +39,5 @@ variables :math:`x_1` and another :class:`.MDOScenario` considers this
 natures, e.g. :math:`x_1` is discrete and :math:`x_2` is continuous, and that dedicated
 algorithms exist.
 """
+
 from __future__ import annotations

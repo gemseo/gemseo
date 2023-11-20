@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create or execute a post-processor from its class name."""
+
 from __future__ import annotations
 
 import logging

@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the partial sensitivity of the functions."""
+
 from __future__ import annotations
 
 import itertools

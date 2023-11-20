@@ -21,6 +21,7 @@
 Use a design of experiments from an array
 =========================================
 """
+
 from __future__ import annotations
 
 import numpy as np

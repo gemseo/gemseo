@@ -87,6 +87,7 @@ Additional ones are:
 - :meth:`.plot_criteria`:
   this method plots the criterion values for a given variable.
 """
+
 from __future__ import annotations
 
 import logging

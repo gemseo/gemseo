@@ -25,6 +25,7 @@ class name.
 It also provides a list of available classification models and allows testing if a
 classification model type is available.
 """
+
 from __future__ import annotations
 
 from gemseo.mlearning.classification.classification import MLClassificationAlgo

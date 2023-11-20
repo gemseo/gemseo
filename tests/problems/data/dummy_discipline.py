@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Dummy."""
+
 from __future__ import annotations
 
 from gemseo.core.discipline import MDODiscipline

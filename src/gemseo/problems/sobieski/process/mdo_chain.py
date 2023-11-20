@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Some chains of SSBJ disciplines."""
+
 from __future__ import annotations
 
 import logging

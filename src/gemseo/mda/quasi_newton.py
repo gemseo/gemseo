@@ -20,6 +20,7 @@
 
 `quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
 """
+
 from __future__ import annotations
 
 import logging

@@ -67,6 +67,7 @@ This clustering algorithm relies on the GaussianMixture class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.mixture.GaussianMixture.html>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

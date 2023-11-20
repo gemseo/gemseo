@@ -26,6 +26,7 @@ In this example,
 we illustrate the computation of a Pareto front plot for the Binh and Korn problem.
 We use a BiLevel formulation in order to only compute the Pareto-optimal points.
 """
+
 # %%
 # Import
 # ------

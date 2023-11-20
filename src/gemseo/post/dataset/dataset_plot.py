@@ -26,6 +26,7 @@ The :mod:`~gemseo.post.dataset.dataset_plot` module implements the abstract
 This abstract class has to be overloaded by concrete ones implementing at least method
 :meth:`!DatasetPlot._run`.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod

@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Correlations in the optimization database."""
+
 from __future__ import annotations
 
 import logging

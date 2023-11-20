@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """HDF5 file singleton used by the HDF5 cache."""
+
 from __future__ import annotations
 
 from multiprocessing import RLock
@@ -30,7 +31,7 @@ from genericpath import exists
 from numpy import append
 from numpy import bytes_
 from numpy import ndarray
-from numpy import unicode_
+from numpy import str_
 from numpy.core.multiarray import array
 from scipy.sparse import csr_array
 from scipy.sparse import spmatrix
@@ -137,7 +138,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             for name, value in data.items():
                 value = data.get(name)
                 if value is not None:
-                    if value.dtype.type is unicode_:
+                    if value.dtype.type is str_:
                         group.create_dataset(name, data=value.astype("bytes"))
                     elif isinstance(value, spmatrix):
                         self.__write_sparse_array(group, name, value)
@@ -234,7 +235,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
         for name, value in data.items():
             if value.dtype.type is bytes_:
-                data[name] = value.astype(unicode_)
+                data[name] = value.astype(str_)
 
         return data, hash_
 

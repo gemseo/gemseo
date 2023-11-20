@@ -18,6 +18,7 @@
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for algorithm libraries."""
+
 from __future__ import annotations
 
 import inspect

@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for validating data structures."""
+
 from __future__ import annotations
 
 import collections

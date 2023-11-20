@@ -20,6 +20,7 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A discipline running a scenario."""
+
 from __future__ import annotations
 
 import logging

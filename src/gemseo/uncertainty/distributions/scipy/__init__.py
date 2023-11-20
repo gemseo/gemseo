@@ -55,4 +55,5 @@ based on the SciPy library and from a copula name.
    between random variables from their cumulative density functions.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
 """
+
 from __future__ import annotations

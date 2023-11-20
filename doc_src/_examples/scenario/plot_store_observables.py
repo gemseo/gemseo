@@ -21,6 +21,7 @@
 Store observables
 =================
 """
+
 # %%
 # Introduction
 # ------------

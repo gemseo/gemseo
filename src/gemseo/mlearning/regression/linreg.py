@@ -49,6 +49,7 @@ The linear model relies on the ``LinearRegression``,
 classes of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 linear_model.html>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

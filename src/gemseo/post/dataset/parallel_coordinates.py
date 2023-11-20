@@ -46,6 +46,7 @@ arguments
 In the latter case, the color scale is composed of only two values: one for
 the samples positively classified and one for the others.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

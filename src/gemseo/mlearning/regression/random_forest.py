@@ -27,6 +27,7 @@ The regression model relies on the ``RandomForestRegressor`` class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

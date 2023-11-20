@@ -18,6 +18,7 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A set of functions to convert data structures."""
+
 from __future__ import annotations
 
 import collections

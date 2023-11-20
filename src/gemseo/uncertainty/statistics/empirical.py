@@ -42,6 +42,7 @@ By default,
 this name is the concatenation of 'EmpiricalStatistics'
 and the name of the :class:`.Dataset`.
 """
+
 from __future__ import annotations
 
 from operator import ge

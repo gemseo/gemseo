@@ -22,6 +22,7 @@
 Fitting a distribution from data based on OpenTURNS
 ===================================================
 """
+
 from __future__ import annotations
 
 from numpy.random import default_rng

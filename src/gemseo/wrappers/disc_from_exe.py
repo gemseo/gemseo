@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Make a discipline from an executable."""
+
 from __future__ import annotations
 
 import logging

@@ -20,6 +20,7 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """The MDOFunction consistency constraint subclass to support formulations."""
+
 from __future__ import annotations
 
 import logging

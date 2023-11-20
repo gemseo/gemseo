@@ -75,6 +75,7 @@ constraints and objective:
   this :class:`.MDODiscipline` computes both objective and constraints
   from :math:`y_1`, :math:`y_2`, :math:`x_{local}` and :math:`x_{shared,2}`.
 """
+
 from __future__ import annotations
 
 from cmath import exp

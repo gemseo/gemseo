@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Various termination criteria for drivers."""
+
 from __future__ import annotations
 
 from numpy import all

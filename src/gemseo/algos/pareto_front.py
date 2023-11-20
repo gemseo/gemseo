@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Compute and display a Pareto Front."""
+
 from __future__ import annotations
 
 from itertools import combinations

@@ -23,6 +23,7 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """The Sobieski's SSBJ problem."""
+
 from __future__ import annotations
 
 import cmath

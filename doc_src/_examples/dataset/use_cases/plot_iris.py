@@ -49,6 +49,7 @@ This dataset can be used for either clustering purposes
 or classification ones.
 
 """
+
 from __future__ import annotations
 
 from numpy.random import default_rng

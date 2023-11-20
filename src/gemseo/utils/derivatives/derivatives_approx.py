@@ -17,6 +17,7 @@
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Finite differences approximation."""
+
 from __future__ import annotations
 
 import logging
@@ -402,7 +403,7 @@ class DisciplineJacApprox:
                 output_name: output_jacobian[next(iter(output_jacobian))].shape[0]
                 for output_name, output_jacobian in approximated_jacobian.items()
             }
-            output_indices, output_names_to_indices = self._compute_variable_indices(
+            _, output_names_to_indices = self._compute_variable_indices(
                 indices, outputs, output_sizes
             )
 

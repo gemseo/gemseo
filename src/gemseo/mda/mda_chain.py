@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Jean-Christophe Giret
 """An advanced MDA splitting algorithm based on graphs."""
+
 from __future__ import annotations
 
 import logging

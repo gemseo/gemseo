@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A set of functions to handle OS dependent path operations."""
+
 from __future__ import annotations
 
 from pathlib import Path

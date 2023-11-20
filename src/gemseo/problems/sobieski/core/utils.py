@@ -23,6 +23,7 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Sobieski's SSBJ base class."""
+
 from __future__ import annotations
 
 import cmath

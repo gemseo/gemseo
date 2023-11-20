@@ -77,6 +77,7 @@ The Jacobian of the right-hand side of this ODE is:
         0 & 1 & 0 & 0
     \end{pmatrix}.
 """
+
 from __future__ import annotations
 
 from math import sqrt
@@ -104,7 +105,7 @@ def _compute_rhs(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:
 
 def _compute_rhs_jacobian(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
     """Compute the Jacobian of the right-hand side of the ODE."""
-    x, y, vx, vy = state
+    x, y, _, _ = state
     jac = zeros((4, 4))
     jac[0, 2] = (2 * x * x - y * y) / (x * x + y * y) ** (5 / 2)
     jac[0, 3] = (3 * x * y) / (x * x + y * y) ** (5 / 2)

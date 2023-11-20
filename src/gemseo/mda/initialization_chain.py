@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """MDA input data initialization."""
+
 from __future__ import annotations
 
 from typing import Iterable

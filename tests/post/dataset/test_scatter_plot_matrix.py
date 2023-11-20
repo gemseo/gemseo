@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class ScatterMatrix plotting variables versus themselves."""
+
 from __future__ import annotations
 
 import re

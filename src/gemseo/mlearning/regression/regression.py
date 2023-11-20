@@ -59,6 +59,7 @@ the Jacobian prediction method of the regression algorithm should return the mat
 This concept is implemented through the :class:`.MLRegressionAlgo` class
 which inherits from the :class:`.MLSupervisedAlgo` class.
 """
+
 from __future__ import annotations
 
 from types import MappingProxyType

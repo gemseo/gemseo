@@ -17,6 +17,7 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for all Multi-disciplinary Design Analyses (MDA)."""
+
 from __future__ import annotations
 
 import logging

@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline interfacing a Python function."""
+
 from __future__ import annotations
 
 import ast

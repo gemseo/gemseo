@@ -19,6 +19,7 @@
 Use a data converter
 ====================
 """
+
 from gemseo.core.data_converters.json import JSONGrammarDataConverter
 from gemseo.core.grammars.json_grammar import JSONGrammar
 

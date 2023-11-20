@@ -27,6 +27,7 @@ of a mixture of experts (MoE) and a random forest algorithm under different
 circumstances. We will consider two different datasets: A 1D function, and the
 Rosenbrock dataset (two inputs and one output).
 """
+
 # %%
 # Import
 # ------

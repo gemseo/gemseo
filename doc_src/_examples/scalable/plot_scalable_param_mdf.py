@@ -32,6 +32,7 @@ and a coupling variable of size 4.
 
 We would like to solve this MDO problem by means of an MDF formulation.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

@@ -19,6 +19,7 @@
 Merge or update a JSONGrammar
 =============================
 """
+
 from __future__ import annotations
 
 import contextlib

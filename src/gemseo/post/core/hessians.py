@@ -39,6 +39,7 @@ Notations:
 - :math:`B_k`: the approximation of the Hessian of :math:`f` at :math:`x_k`,
 - :math:`H_k`: the inverse of :math:`B_k`.
 """
+
 from __future__ import annotations
 
 import logging

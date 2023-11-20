@@ -30,6 +30,7 @@ wherever possible.
 This concept is implemented through the :class:`.MLClassificationAlgo` class
 which inherits from the :class:`.MLSupervisedAlgo` class.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod

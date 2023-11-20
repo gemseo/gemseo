@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The base class for all MDO formulations."""
+
 from __future__ import annotations
 
 from gemseo.core.base_formulation import BaseFormulation

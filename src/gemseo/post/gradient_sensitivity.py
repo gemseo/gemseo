@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the derivatives of the functions."""
+
 from __future__ import annotations
 
 import logging

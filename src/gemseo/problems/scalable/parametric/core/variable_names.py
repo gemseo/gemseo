@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The functions to define the names of the variables used in the scalable problem."""
+
 from __future__ import annotations
 
 from typing import Final

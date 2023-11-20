@@ -17,6 +17,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test standard scaler module."""
+
 from __future__ import annotations
 
 import pytest

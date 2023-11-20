@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Factory base class."""
+
 from __future__ import annotations
 
 import importlib

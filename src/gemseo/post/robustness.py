@@ -19,6 +19,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Boxplots to quantify the robustness of the optimum."""
+
 from __future__ import annotations
 
 import logging

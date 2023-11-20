@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The base discipline."""
+
 from __future__ import annotations
 
 from abc import ABC

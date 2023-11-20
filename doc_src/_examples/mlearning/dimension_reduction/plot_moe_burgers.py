@@ -26,6 +26,7 @@ In this demo, we apply a mixture of experts regression model to the Burgers
 dataset. In order to reduce the output dimension, we apply a PCA to the
 outputs.
 """
+
 # %%
 # Imports
 # -------

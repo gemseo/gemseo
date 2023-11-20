@@ -25,6 +25,7 @@ Probability distributions based on OpenTURNS
 In this example,
 we seek to create a probability distribution based on the OpenTURNS library.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

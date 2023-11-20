@@ -22,6 +22,7 @@
 Multidisciplinary coupling graph
 ================================
 """
+
 from __future__ import annotations
 
 from numpy import ones

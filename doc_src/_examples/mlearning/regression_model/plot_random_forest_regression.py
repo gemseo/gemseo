@@ -29,6 +29,7 @@ We want to approximate a discipline with two inputs and two outputs:
 
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
 """
+
 # %%
 # Import
 # ------

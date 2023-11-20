@@ -15,6 +15,7 @@
 # Contributors:
 # Antoine DECHAUME
 """Provide a dict-like class for storing disciplines data."""
+
 from __future__ import annotations
 
 from copy import copy

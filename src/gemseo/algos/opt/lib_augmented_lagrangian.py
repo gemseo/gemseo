@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """An implementation of the augmented lagrangian algorithm."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -22,10 +23,10 @@ from typing import Any
 from typing import ClassVar
 from typing import Mapping
 
-from numpy import Infinity
 from numpy import atleast_1d
 from numpy import concatenate
 from numpy import heaviside
+from numpy import inf
 from numpy import ndarray
 from numpy import zeros_like
 from numpy.linalg import norm
@@ -142,7 +143,7 @@ class AugmentedLagrangian(OptimizationLibrary):
 
     def _run(self, **options: Any) -> OptimizationResult:
         # Initialize the penalty and the multipliers.
-        constraint_violation_k = Infinity
+        constraint_violation_k = inf
         x0 = self.problem.design_space.get_current_value()
         normalize = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS)
         lambda0 = {
@@ -181,7 +182,7 @@ class AugmentedLagrangian(OptimizationLibrary):
             )
             x_opt = opt.x_opt
             self.problem.design_space.set_current_value(x_opt)
-            self._function_outputs, jac_opt = self.problem.evaluate_functions(
+            self._function_outputs, _ = self.problem.evaluate_functions(
                 eval_jac=True,
                 eval_obj=True,
             )

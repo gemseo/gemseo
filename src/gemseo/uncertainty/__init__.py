@@ -56,6 +56,7 @@ fitted from a :class:`.Dataset`.
     :class:`.EmpiricalStatistics`
     :class:`.ParametricStatistics`
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

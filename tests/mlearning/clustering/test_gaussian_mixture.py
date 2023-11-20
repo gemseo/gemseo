@@ -18,6 +18,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test Gaussian Mixture clustering model."""
+
 from __future__ import annotations
 
 import pytest

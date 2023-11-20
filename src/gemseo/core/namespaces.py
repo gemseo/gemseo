@@ -22,6 +22,7 @@
 The namespaces implementation itself is mainly in :mod:`~gemseo.core.grammars` and
 :mod:`~gemseo.core.discipline`
 """
+
 from __future__ import annotations
 
 from typing import Iterable

@@ -17,6 +17,7 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A matrix of constraint history plots."""
+
 from __future__ import annotations
 
 from math import ceil

@@ -20,6 +20,7 @@
 
 Transform a constraint vector into one scalar equivalent or quasi equivalent constraint.
 """
+
 from __future__ import annotations
 
 from functools import wraps

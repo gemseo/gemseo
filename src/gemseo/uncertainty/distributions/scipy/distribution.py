@@ -45,6 +45,7 @@ The constructor has also optional arguments:
 - a standard representation of these parameters
   (default: use ``parameters``).
 """
+
 from __future__ import annotations
 
 import logging

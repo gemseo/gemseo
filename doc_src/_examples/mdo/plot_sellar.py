@@ -22,6 +22,7 @@ A from scratch example on the Sellar problem
 ============================================
 .. _sellar_from_scratch:
 """
+
 # %%
 # Introduction
 # ------------

@@ -17,6 +17,7 @@
 Examples for constraint aggregation
 ===================================
 """
+
 from __future__ import annotations
 
 from copy import deepcopy

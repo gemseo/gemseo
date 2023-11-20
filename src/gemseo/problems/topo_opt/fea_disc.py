@@ -16,6 +16,7 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Finite element analysis (FEA) for 2D topology optimization problems."""
+
 from __future__ import annotations
 
 from typing import Sequence

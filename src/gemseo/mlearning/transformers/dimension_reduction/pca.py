@@ -27,6 +27,7 @@ This dimension reduction algorithm relies on the PCA class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.decomposition.PCA.html>`_.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -31,6 +31,7 @@ For that, we can use a 20-length :class:`.DiagonalDOE`
 and test different sizes of variables or different settings
 for the scalable diagonal discipline.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

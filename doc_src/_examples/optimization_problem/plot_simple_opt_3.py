@@ -21,6 +21,7 @@
 Analytical test case # 3
 ========================
 """
+
 # %%
 # In this example, we consider a simple optimization problem to illustrate
 # algorithms interfaces and DOE libraries integration.

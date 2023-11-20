@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the tolerance interval for exponential distributions."""
+
 from __future__ import annotations
 
 from math import log
@@ -43,7 +44,7 @@ def test_exponential_quantile_both():
 def test_exponential_quantile_lower():
     """Check the bounds of lower-sided TI for the standard exponential distribution."""
     tolerance_interval = ExponentialToleranceInterval(1000000, rate=1.0, location=0.0)
-    lower, upper = tolerance_interval.compute(
+    lower, _ = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert pytest.approx(lower, 0.01) == 1.0
@@ -52,7 +53,7 @@ def test_exponential_quantile_lower():
 def test_exponential_quantile_upper():
     """Check the bounds of upper-sided TI for the standard exponential distribution."""
     tolerance_interval = ExponentialToleranceInterval(1000000, rate=1.0, location=0.0)
-    lower, upper = tolerance_interval.compute(
+    _, upper = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.UPPER
     )
     assert pytest.approx(upper, 0.01) == -log(0.025)

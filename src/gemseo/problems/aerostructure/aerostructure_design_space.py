@@ -20,6 +20,7 @@
 Aerostructure MDO problem's Design Space
 ****************************************
 """
+
 from __future__ import annotations
 
 import numpy as np

@@ -50,6 +50,7 @@ The user only needs to provide:
 The :class:`.ScalableModel` parameters can also be filled in,
 otherwise the model uses default values.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

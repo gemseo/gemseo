@@ -16,4 +16,5 @@
 
 Contains the source code of algorithms developed with |g|.
 """
+
 from __future__ import annotations

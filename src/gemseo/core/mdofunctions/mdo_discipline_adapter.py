@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A function computing some outputs of a discipline from some of its inputs."""
+
 from __future__ import annotations
 
 from numbers import Number

@@ -36,6 +36,7 @@ property.
 
 Lastly, an instance of :class:`.DesignSpace` can be stored in a txt or HDF file.
 """
+
 from __future__ import annotations
 
 import collections
@@ -58,6 +59,7 @@ import h5py
 from numpy import abs as np_abs
 from numpy import array
 from numpy import atleast_1d
+from numpy import bytes_
 from numpy import complex128
 from numpy import concatenate
 from numpy import dtype
@@ -77,7 +79,6 @@ from numpy import mod
 from numpy import ndarray
 from numpy import ones_like
 from numpy import round
-from numpy import string_
 from numpy import vectorize
 from numpy import where
 from numpy import zeros_like
@@ -1956,7 +1957,7 @@ class DesignSpace(collections.abc.MutableMapping):
         with h5py.File(file_path, mode) as h5file:
             design_vars_grp = h5file.require_group(self.DESIGN_SPACE_GROUP)
             design_vars_grp.create_dataset(
-                self.NAMES_GROUP, data=array(self.variable_names, dtype=string_)
+                self.NAMES_GROUP, data=array(self.variable_names, dtype=bytes_)
             )
 
             for name in self.variable_names:

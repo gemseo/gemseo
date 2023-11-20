@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the module scalable_discipline_settings."""
+
 from __future__ import annotations
 
 from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_I

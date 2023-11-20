@@ -34,6 +34,7 @@ This module implements the Binh and Korn multi-objective problem:
    & 0 \leq y \leq 3.0
    \end{aligned}
 """
+
 from __future__ import annotations
 
 import logging

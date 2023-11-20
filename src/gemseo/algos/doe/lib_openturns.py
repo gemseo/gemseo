@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """OpenTURNS DOE algorithms."""
+
 from __future__ import annotations
 
 from collections import namedtuple

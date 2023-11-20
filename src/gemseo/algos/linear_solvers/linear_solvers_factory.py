@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate linear solvers from their class names."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

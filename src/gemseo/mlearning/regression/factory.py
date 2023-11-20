@@ -23,6 +23,7 @@ This module contains a factory to instantiate an :class:`.MLRegressionAlgo` from
 class name. It also provides the available regression models and allows testing if a
 regression model type is available.
 """
+
 from __future__ import annotations
 
 from gemseo.mlearning.core.factory import MLAlgoFactory

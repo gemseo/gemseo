@@ -18,6 +18,7 @@
 #        :author: Charlie Vanaret, Benoit Pauwels, Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Sequence transformer methods."""
+
 from __future__ import annotations
 
 from abc import abstractmethod

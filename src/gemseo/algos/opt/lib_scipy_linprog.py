@@ -17,6 +17,7 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """SciPy linear programming library wrapper."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

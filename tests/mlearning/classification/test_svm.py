@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test svmClassifier."""
+
 from __future__ import annotations
 
 import pytest

@@ -18,6 +18,7 @@
 #        :author:  Olivier Sapin
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the class HSICAnalysis."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

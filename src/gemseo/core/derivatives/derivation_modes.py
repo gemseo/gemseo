@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Derivation modes for the GEMSEO processes."""
+
 from __future__ import annotations
 
 from strenum import StrEnum

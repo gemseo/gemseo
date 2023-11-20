@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Excel based discipline."""
+
 from __future__ import annotations
 
 import atexit

@@ -17,6 +17,7 @@
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Constraints aggregation core functions."""
+
 from __future__ import annotations
 
 from math import log

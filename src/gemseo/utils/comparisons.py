@@ -16,6 +16,7 @@
 # Matthias De Lozzo
 # Antoine DECHAUME
 """Data comparison tools."""
+
 from __future__ import annotations
 
 from typing import Mapping

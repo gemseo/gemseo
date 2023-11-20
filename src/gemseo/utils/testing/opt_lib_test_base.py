@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Common tools for testing opt libraries."""
+
 from __future__ import annotations
 
 from typing import Any

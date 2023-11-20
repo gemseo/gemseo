@@ -51,6 +51,7 @@ The constructor has also optional arguments:
   (`more details <http://openturns.github.io/openturns/latest/user_manual/
   _generated/openturns.TruncatedDistribution.html>`_).
 """
+
 from __future__ import annotations
 
 import logging

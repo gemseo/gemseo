@@ -23,6 +23,7 @@ A :class:`.Scatter` plot represents a set of points
 :math:`\{x_i,y_i\}_{1\leq i \leq n}` as markers on a classical plot
 where the color of points can be heterogeneous.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

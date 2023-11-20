@@ -18,6 +18,7 @@
 #        :author: Reda El Amri
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The OpenTURNS-based Dirac distribution."""
+
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution

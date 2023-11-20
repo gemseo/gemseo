@@ -18,6 +18,7 @@
 #        :author: Sebastien Bocquet, Alexandre Scotto Di Perrotolo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Aitken's acceleration method."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

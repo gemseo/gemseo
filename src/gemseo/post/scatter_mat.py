@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A scatter plot matrix to display optimization history."""
+
 from __future__ import annotations
 
 import logging

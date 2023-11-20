@@ -29,6 +29,7 @@ The MDA of the generated disciplines will always converge because all the output
 are in [0, 1] if the inputs are in [0, 1].
 The analytic Jacobian is provided.
 """
+
 from __future__ import annotations
 
 import string

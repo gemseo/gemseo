@@ -19,6 +19,7 @@
 #        :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Optimization library wrappers base class."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -19,6 +19,7 @@
 #       :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Implementation of the Lagrange multipliers."""
+
 from __future__ import annotations
 
 import logging

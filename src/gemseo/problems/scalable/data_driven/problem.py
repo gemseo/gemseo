@@ -44,6 +44,7 @@ on the problem dimension.
 .. seealso:: :class:`.MDODiscipline`, :class:`.ScalableDiscipline`
    and :class:`.Scenario`
 """
+
 from __future__ import annotations
 
 import logging

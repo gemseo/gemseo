@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The design space of the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

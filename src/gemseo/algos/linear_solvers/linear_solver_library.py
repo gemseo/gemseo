@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base wrapper for all linear solvers."""
+
 from __future__ import annotations
 
 import logging

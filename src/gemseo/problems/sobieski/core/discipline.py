@@ -23,6 +23,7 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Aerodynamics computation for the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
 import logging

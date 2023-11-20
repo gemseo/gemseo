@@ -24,6 +24,7 @@ Parameter space
 
 In this example, we will see the basics of :class:`.ParameterSpace`.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

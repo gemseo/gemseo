@@ -17,6 +17,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test transformer module."""
+
 from __future__ import annotations
 
 from unittest import mock

@@ -17,6 +17,7 @@
 #                         documentation
 #        :author: Charlie Vanaret
 """Graphs of the disciplines dependencies and couplings."""
+
 from __future__ import annotations
 
 import logging

@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate a derived class of :class:`.BaseGrammar`."""
+
 from __future__ import annotations
 
 import logging

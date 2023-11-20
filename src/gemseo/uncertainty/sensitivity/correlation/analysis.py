@@ -19,6 +19,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Class for the estimation of various correlation coefficients."""
+
 from __future__ import annotations
 
 from types import MappingProxyType

@@ -38,6 +38,7 @@ where
 - :math:`C_k` are the indices of the points belonging to the cluster :math:`k`,
 - :math:`|C_k|` is the size of :math:`C_k`.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -18,6 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to execute DOE algorithms from their class names."""
+
 from __future__ import annotations
 
 from gemseo.algos.base_algo_factory import BaseAlgoFactory

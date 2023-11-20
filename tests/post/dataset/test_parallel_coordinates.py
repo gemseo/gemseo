@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class ParallelCoordinates plotting samples with True/False lines."""
+
 from __future__ import annotations
 
 import pytest

@@ -17,6 +17,7 @@
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Result of an ODE problem."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

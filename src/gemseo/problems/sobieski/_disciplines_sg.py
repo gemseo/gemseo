@@ -22,6 +22,7 @@
 This disciplines use simple grammars rather than JSON ones mainly for proof of concept.
 Please use the JSON versions with enhanced checks and features.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -26,6 +26,7 @@ Root finding methods include:
 Each of these methods is implemented by a class in this module.
 All inherit from the common abstract MDARoot.
 """
+
 from __future__ import annotations
 
 from gemseo.mda.newton_raphson import MDANewtonRaphson  # noqa: F401

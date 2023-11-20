@@ -43,6 +43,7 @@ Otherwise, the model uses default values.
 
    The :class:`.ScalableDiagonalModel` class overloads :class:`.ScalableModel`.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

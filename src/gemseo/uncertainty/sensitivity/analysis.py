@@ -28,6 +28,7 @@ a :class:`.ParameterSpace` describing the
 uncertain parameters and options associated with a particular concrete class inheriting
 from :class:`.SensitivityAnalysis` which is an abstract one.
 """
+
 from __future__ import annotations
 
 import pickle

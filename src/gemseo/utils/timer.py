@@ -27,6 +27,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A timer to measure the time spent within a ``with`` statement."""
+
 from __future__ import annotations
 
 import logging

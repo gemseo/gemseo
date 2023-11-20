@@ -21,6 +21,7 @@
 Analytical test case # 1
 ========================
 """
+
 # %%
 # In this example, we consider a simple optimization problem to illustrate
 # algorithms interfaces and :class:`.MDOFunction`.

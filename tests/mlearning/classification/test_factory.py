@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for ClassificationModelFactory class in
 gemseo.mlearning.classification.factory."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -19,6 +19,7 @@
 #        :author: Olivier Sapin
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Sensitivity analysis based on the Hilbert-Schmidt independence criterion (HSIC)."""
+
 from __future__ import annotations
 
 from types import MappingProxyType

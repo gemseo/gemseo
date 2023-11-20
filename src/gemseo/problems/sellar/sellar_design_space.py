@@ -22,6 +22,7 @@ Sellar, R., Batill, S., & Renaud, J. (1996). Response surface based, concurrent 
 optimization for multidisciplinary system design. In 34th aerospace sciences meeting and
 exhibit (p. 714).
 """
+
 from __future__ import annotations
 
 from numpy import array

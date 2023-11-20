@@ -27,6 +27,7 @@ namely :attr:`~.IODataset.INPUT_GROUP` and :attr:`~.IODataset.OUTPUT_GROUP`.
 This particular :class:`.Dataset` is useful
 for supervised machine learning and sensitivity analysis.
 """
+
 from __future__ import annotations
 
 from gemseo.datasets.io_dataset import IODataset

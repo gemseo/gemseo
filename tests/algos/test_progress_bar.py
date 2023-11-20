@@ -84,7 +84,7 @@ class ProgressOpt(OptimizationLibrary):
 
     def _run(self, **options: Any) -> OptimizationResult:
         """"""
-        x_0, l_b, u_b = self.get_x0_and_bounds_vects(True)
+        x_0, _, _ = self.get_x0_and_bounds_vects(True)
         for off in self.offsets:
             if self.constraints_before_obj:
                 self.problem.constraints[0].func(x_0 + off)
@@ -148,7 +148,7 @@ def objective_and_problem_for_tests(constraints_before_obj):
 
 def test_parallel_doe(caplog, offsets, objective_and_problem_for_tests):
     with caplog.at_level(logging.INFO):
-        f, problem = objective_and_problem_for_tests
+        _, problem = objective_and_problem_for_tests
         custom_doe = CustomDOE()
 
         i_k_0 = atleast_2d(array([offsets]) * 10 + 5).T

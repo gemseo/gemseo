@@ -25,6 +25,7 @@ unsupervised machine learning models, where the data has no notion of input or o
 This concept is implemented through the :class:`.MLUnsupervisedAlgo` class, which
 inherits from the :class:`.MLAlgo` class.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod

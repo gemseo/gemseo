@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Settings of a scalable discipline."""
+
 from __future__ import annotations
 
 from typing import NamedTuple

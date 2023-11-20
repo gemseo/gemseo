@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generate a gantt chart with processes execution time data."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

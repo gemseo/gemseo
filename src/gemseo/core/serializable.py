@@ -18,6 +18,7 @@
 #        :author: Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The baseclass for serializable |g| objects."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
