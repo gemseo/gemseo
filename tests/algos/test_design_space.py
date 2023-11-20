@@ -29,6 +29,7 @@ import numpy as np
 import pytest
 from numpy import array
 from numpy import array_equal
+from numpy import float64
 from numpy import inf
 from numpy import int32
 from numpy import ndarray
@@ -840,6 +841,15 @@ def test_dict_to_array():
 
     with pytest.raises(KeyError, match="'y'"):
         design_space.dict_to_array({"x": array([1.0])})
+
+
+@pytest.mark.parametrize(("name", "dtype"), [("x1", float64), ("x3", int32)])
+def test_dict_to_array_dtype(design_space, name, dtype):
+    """Check the data type of the array returned by ``DesignSpace.dict_to_array``."""
+    assert (
+        design_space.dict_to_array({"x1": array([1.0]), "x3": array([1])}, [name]).dtype
+        == dtype
+    )
 
 
 def check_ds(ref_ds, read_ds, f_path):
