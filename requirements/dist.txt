@@ -59,7 +59,7 @@ pydantic==2.5.1
     # via check-wheel-contents
 pydantic-core==2.14.3
     # via pydantic
-pygments==2.17.1
+pygments==2.17.2
     # via
     #   readme-renderer
     #   rich
