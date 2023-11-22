@@ -1,0 +1,31 @@
+{
+  "name": "HIGHS_INTERIOR_POINT_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "disp": {
+      "type": "boolean"
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "dual_feasibility_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "primal_feasibility_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ipm_optimality_tolerance": {
+      "type": "number",
+      "minimum": 1e-12
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "id": "#HIGHS_INTERIOR_POINT"
+}
