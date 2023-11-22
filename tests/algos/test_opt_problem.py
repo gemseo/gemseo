@@ -1926,3 +1926,21 @@ def test_minimize_objective(pow2_problem, minimize):
         assert f_0 == f_1
     else:
         assert f_0 == -f_1
+
+
+def test_reformulate_with_slack_variables(constrained_problem):
+    """Test the reformulation of the optimization problem with slack variables."""
+    reformulated_problem = (
+        constrained_problem.get_reformulated_problem_with_slack_variables()
+    )
+    assert reformulated_problem.get_ineq_constraints_number() == 0
+    assert (
+        reformulated_problem.dimension
+        == constrained_problem.dimension
+        + constrained_problem.get_ineq_constraints()[0].dim
+    )
+    assert (
+        reformulated_problem.get_eq_constraints_number()
+        == constrained_problem.get_eq_constraints_number()
+        + constrained_problem.get_ineq_constraints_number()
+    )

@@ -32,6 +32,7 @@ from numpy import arange
 from numpy import array
 from numpy import atleast_2d
 from numpy import concatenate
+from numpy import isinf
 from numpy import ndarray
 from numpy import zeros
 from numpy.linalg import matrix_rank
@@ -241,6 +242,7 @@ class LagrangeMultipliers:
 
         if self.__normalized:
             norm_factor = dspace.get_upper_bounds() - dspace.get_lower_bounds()
+            norm_factor[isinf(norm_factor)] = 1.0
             act_jac = norm_factor[act_array]
         else:
             act_jac = 1.0

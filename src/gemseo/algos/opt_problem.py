@@ -87,6 +87,7 @@ from numpy import argmin
 from numpy import array
 from numpy import array_equal
 from numpy import bytes_
+from numpy import eye as np_eye
 from numpy import hstack
 from numpy import inf
 from numpy import insert
@@ -97,6 +98,7 @@ from numpy import nan
 from numpy import ndarray
 from numpy import number as np_number
 from numpy import where
+from numpy import zeros
 from numpy.core import atleast_1d
 from numpy.linalg import norm
 from pandas import MultiIndex
@@ -111,6 +113,7 @@ from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.mdofunctions.func_operations import LinearComposition
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
@@ -697,6 +700,103 @@ class OptimizationProblem(BaseProblem):
             self.add_observable(constr)
         self.objective = penalized_objective
         self.constraints = []
+
+    def get_reformulated_problem_with_slack_variables(self) -> OptimizationProblem:
+        r"""Add slack variables and replace inequality constraints with equality
+        constraints.
+
+        Given the original optimization problem,
+
+        .. math::
+
+            min_x f(x)
+
+            s.t.
+
+            g(x)\leq 0
+
+            h(x)=0
+
+            l_b\leq x\leq u_b
+
+        Slack variables are introduced for all inequality constraints that are
+        non-positive. An equality constraint for each slack variable is then defined.
+
+        .. math::
+
+            min_{x,s} F(x,s) = f(x)
+
+            s.t.
+
+            H(x,s) = h(x)=0
+
+            G(x,s) = g(x)-s=0
+
+            l_b\leq x\leq u_b
+
+            s\leq 0
+
+        Returns:
+            An optimization problem without inequality constraints.
+        """
+        # Copy the original design space
+        problem = OptimizationProblem(deepcopy(self.design_space))
+
+        # Evaluate the MDOFunctions.
+        self.evaluate_functions()
+
+        # Add a slack variable to the copied design space for each
+        # inequality constraint.
+        for constr in self.get_ineq_constraints():
+            problem.design_space.add_variable(
+                name=f"slack_variable_{constr.name}",
+                size=constr.dim,
+                value=0,
+                u_b=0,
+            )
+
+        # Compute a restriction operator that goes from the new design space to the old
+        # design space variables.
+        restriction_operator = hstack(
+            (
+                np_eye(self.dimension),
+                zeros((self.dimension, problem.dimension - self.dimension)),
+            )
+        )
+        # Get the new problem objective function composing the initial objective
+        # function with the restriction operator.
+        problem.objective = LinearComposition(self.objective, restriction_operator)
+
+        # Each constraint is passed to the new problem. Each inequality constraints is
+        # modified first composing the initial constraint with the restriction operator
+        # then subtracting s. Where s is the constraint slack variable previously built.
+        # Each equality constraint is added composing the initial constraint with the
+        # restriction operator.
+        for constr in self.constraints:
+            new_function = LinearComposition(constr, restriction_operator)
+            if constr.f_type == MDOFunction.ConstraintType.EQ:
+                problem.add_eq_constraint(new_function)
+                continue
+
+            coefficients = where(
+                [
+                    i
+                    in problem.design_space.get_variables_indexes(
+                        f"slack_variable_{constr.name}"
+                    )
+                    for i in range(problem.dimension)
+                ],
+                -1,
+                0,
+            )
+            correction_term = MDOLinearFunction(
+                coefficients=coefficients,
+                name=f"offset_{constr.name}",
+                input_names=problem.design_space.get_indexed_variable_names(),
+            )
+            problem.add_eq_constraint(new_function + correction_term)
+
+        return problem
 
     def add_observable(
         self,

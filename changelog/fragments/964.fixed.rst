@@ -1,0 +1,1 @@
+Fixed bug on ``LagrangeMultipliers`` evaluation when bound constraints are activated on variables which have only one bound.
