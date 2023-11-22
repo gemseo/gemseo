@@ -74,7 +74,9 @@ def test_aggregation_discipline(disc_constr):
     ref_sol = scenario.formulation.opt_problem.solution
 
     disc_agg = create_discipline(
-        "ConstraintAggregation", constraint_names=["constr"], aggregation_function="KS"
+        "ConstraintAggregation",
+        constraint_names=["constr"],
+        aggregation_function="lower_bound_KS",
     )
     disc_agg.default_inputs = {"constr": array([1.0, 2.0])}
     assert disc_agg.check_jacobian(input_data={"constr": array([1.0, 2.0])})
@@ -85,7 +87,7 @@ def test_aggregation_discipline(disc_constr):
     scenario_agg = create_scenario(
         disciplines, "DisciplinaryOpt", "obj_f", design_space
     )
-    scenario_agg.add_constraint("KS_constr", "ineq")
+    scenario_agg.add_constraint("lower_bound_KS_constr", "ineq")
 
     scenario_agg.execute({"algo": "SLSQP", "max_iter": 50})
     sol2 = scenario_agg.formulation.opt_problem.solution
@@ -94,7 +96,10 @@ def test_aggregation_discipline(disc_constr):
 
 
 @pytest.mark.parametrize("indices", [None, array([0]), array([1])])
-@pytest.mark.parametrize("aggregation_function", ["KS", "IKS", "POS_SUM", "SUM"])
+@pytest.mark.parametrize(
+    "aggregation_function",
+    ["lower_bound_KS", "upper_bound_KS", "IKS", "POS_SUM", "SUM"],
+)
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
 def test_constr_jac(disc_constr, aggregation_function, indices, input_val):
     """Checks the Jacobian of the AggregationDiscipline."""
@@ -109,7 +114,10 @@ def test_constr_jac(disc_constr, aggregation_function, indices, input_val):
 
 
 @pytest.mark.parametrize("scale", [1.0, array([2.0, 3.0])])
-@pytest.mark.parametrize("aggregation_function", ["KS", "IKS", "POS_SUM", "SUM"])
+@pytest.mark.parametrize(
+    "aggregation_function",
+    ["lower_bound_KS", "upper_bound_KS", "IKS", "POS_SUM", "SUM"],
+)
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
 def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val):
     """Checks the Jacobian of the AggregationDiscipline with scale effect."""
@@ -123,12 +131,19 @@ def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val):
     assert disc_agg.check_jacobian(threshold=1e-6, step=1e-8)
 
 
-def test_evaluation_function_as_enum():
+@pytest.mark.parametrize(
+    "aggregation_attribute_value",
+    [
+        (ConstraintAggregation.EvaluationFunction.LOWER_BOUND_KS, "lower_bound_KS"),
+        (ConstraintAggregation.EvaluationFunction.UPPER_BOUND_KS, "upper_bound_KS"),
+    ],
+)
+def test_evaluation_function_as_enum(aggregation_attribute_value):
     """Check the use of EvaluationFunction."""
     discipline = create_discipline(
         "ConstraintAggregation",
         constraint_names=["constr"],
-        aggregation_function=ConstraintAggregation.EvaluationFunction.KS,
+        aggregation_function=aggregation_attribute_value[0],
     )
     discipline.default_inputs = {"constr": array([1.0, 2.0])}
     discipline.execute()
@@ -137,7 +152,7 @@ def test_evaluation_function_as_enum():
     discipline = create_discipline(
         "ConstraintAggregation",
         constraint_names=["constr"],
-        aggregation_function="KS",
+        aggregation_function=aggregation_attribute_value[1],
     )
     discipline.default_inputs = {"constr": array([1.0, 2.0])}
     discipline.execute()
