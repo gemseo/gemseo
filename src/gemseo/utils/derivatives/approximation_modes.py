@@ -29,3 +29,7 @@ class ApproximationMode(StrEnum):
     FINITE_DIFFERENCES = "finite_differences"
     """The finite differences method used to approximate the Jacobians by perturbing
     each variable with a small real number."""
+
+    CENTERED_DIFFERENCES = "centered_differences"
+    """The centered differences method used to approximate the Jacobians by perturbing
+    each variable with a small real number."""

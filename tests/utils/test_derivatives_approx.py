@@ -39,6 +39,8 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.centered_differences import CenteredDifferences
 from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.error_estimators import compute_best_step
@@ -51,6 +53,11 @@ from gemseo.utils.derivatives.gradient_approximator_factory import (
 def test_init_first_order_fd():
     """"""
     FirstOrderFD(rosen)
+
+
+def test_init_centred_differences():
+    """"""
+    CenteredDifferences(rosen)
 
 
 def test_init_complex_step():
@@ -93,6 +100,10 @@ def run_tests(xs, fd_app):
 
 def test_approx_first_order_fd(x):
     run_tests(x, FirstOrderFD(rosen, 1e-8))
+
+
+def test_approx_centred_differences(x):
+    run_tests(x, CenteredDifferences(rosen, 1e-8))
 
 
 def test_approx_complex_step(x):
@@ -143,13 +154,18 @@ def test_complex_fail():
 
 
 @pytest.mark.parametrize("parallel", [True, False])
-def test_auto_step(parallel, sellar_disciplines):
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+def test_auto_step(parallel, method, sellar_disciplines):
     for discipline in sellar_disciplines:
         assert discipline.check_jacobian(
             auto_set_step=True,
             threshold=1e-2,
             step=1e-7,
             parallel=parallel,
+            derr_approx=method,
         )
 
 
@@ -201,11 +217,15 @@ def test_compute_io_indices(indices, expected_sequence, expected_variable_indice
     assert variable_indices == expected_variable_indices
 
 
-def test_load_and_dump(tmp_wd):
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+def test_load_and_dump(tmp_wd, method):
     """Check the loading and dumping of a reference Jacobian."""
     discipline = AnalyticDiscipline({"y": "x", "z": "x"})
     discipline.execute()
-    apprx = DisciplineJacApprox(discipline)
+    apprx = DisciplineJacApprox(discipline, approx_method=method)
     apprx.compute_approx_jac(["z"], ["x"])
     discipline.linearize()
     discipline.jac["z"]["x"] = array([[2.0]])
@@ -279,7 +299,11 @@ class ToyDiscipline(MDODiscipline):
     ],
 )
 @pytest.mark.parametrize("dtype", [float, complex])
-def test_indices(inputs, outputs, indices, dtype):
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+def test_indices(inputs, outputs, indices, dtype, method):
     """Test the option to check the Jacobian by indices.
 
     Args:
@@ -289,14 +313,18 @@ def test_indices(inputs, outputs, indices, dtype):
     """
     discipline = ToyDiscipline(dtype)
     discipline.linearize(compute_all_jacobians=True)
-    apprx = DisciplineJacApprox(discipline)
+    apprx = DisciplineJacApprox(discipline, approx_method=method)
     assert apprx.check_jacobian(
         discipline.jac, outputs, inputs, discipline, indices=indices
     )
 
 
 @pytest.mark.parametrize("dtype", [float, complex])
-def test_wrong_step(dtype):
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+def test_wrong_step(dtype, method):
     """Test that an exception is raised if the step size length does not match inputs.
 
     Args:
@@ -304,7 +332,7 @@ def test_wrong_step(dtype):
     """
     discipline = ToyDiscipline(dtype)
     discipline.linearize(compute_all_jacobians=True)
-    apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7])
+    apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7], approx_method=method)
     with pytest.raises(ValueError, match="Inconsistent step size, expected 3 got 2."):
         apprx.compute_approx_jac(outputs=["y1", "y2"], inputs=["x1", "x2"])
 
@@ -313,6 +341,8 @@ def test_factory():
     factory = GradientApproximatorFactory()
     assert "ComplexStep" in factory.gradient_approximators
     assert factory.is_available("ComplexStep")
+    assert "CenteredDifferences" in factory.gradient_approximators
+    assert factory.is_available("CenteredDifferences")
 
     def function(x):
         return 2 * x
@@ -323,6 +353,9 @@ def test_factory():
         factory.create("finite_differences", function, step=1e-3), FirstOrderFD
     )
     assert isinstance(factory.create("complex_step", function), ComplexStep)
+    assert isinstance(
+        factory.create("centered_differences", function), CenteredDifferences
+    )
 
 
 @pytest.mark.parametrize(
@@ -336,14 +369,18 @@ def test_factory():
         (True, None, 2),
     ],
 )
-def test_derivatives_on_design_boundaries(caplog, normalize, lower_bound, upper_bound):
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+def test_derivatives_on_design_boundaries(
+    caplog, normalize, lower_bound, upper_bound, method
+):
     """Check that finite differences on the design boundaries use a backward step."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=lower_bound, u_b=upper_bound, value=2.0)
 
-    problem = OptimizationProblem(
-        design_space, differentiation_method="finite_differences"
-    )
+    problem = OptimizationProblem(design_space, differentiation_method=method)
     problem.objective = MDOFunction(lambda x: x**2, "my_objective")
 
     OptimizersFactory().execute(
@@ -351,7 +388,7 @@ def test_derivatives_on_design_boundaries(caplog, normalize, lower_bound, upper_
     )
 
     grad = problem.database.get_gradient_history("my_objective")[0, 0]
-    if upper_bound is None:
+    if upper_bound is None and (method != ApproximationMode.CENTERED_DIFFERENCES):
         assert grad > 4.0
     else:
         assert grad < 4.0

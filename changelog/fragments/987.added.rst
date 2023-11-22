@@ -1,0 +1,4 @@
+``CenteredDifferences`` Approximation mode is now supported for jacobian computation.
+This can be used to calculate ``MDODiscipline`` and ``MDOFunctions`` jacobians setting the jacobian approximation mode as for the Finite Differences and the Complex Step schemes.
+This is a second order approach that employs twice points but as a second order accuracy with respect to the Finite Difference scheme.
+When calculating a Centered Difference on one of the two bounds of the Design Space, the Finite Difference scheme is used instead.
