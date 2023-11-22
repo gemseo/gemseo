@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Gradient approximation by finite differences."""
+"""Gradient approximation by centered differences."""
 
 from __future__ import annotations
 
@@ -24,11 +24,13 @@ from typing import Any
 from typing import ClassVar
 
 from numpy import argmax
+from numpy import concatenate
 from numpy import full
 from numpy import ndarray
 from numpy import tile
 from numpy import where
 from numpy import zeros
+from numpy.linalg import norm
 
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
@@ -39,15 +41,15 @@ from gemseo.utils.derivatives.error_estimators import compute_best_step
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 
-class FirstOrderFD(GradientApproximator):
-    r"""First-order finite differences approximator.
+class CenteredDifferences(GradientApproximator):
+    r"""Centered differences approximator.
 
     .. math::
 
-        \frac{df(x)}{dx}\approx\frac{f(x+\\delta x)-f(x)}{\\delta x}
+        \frac{df(x)}{dx}\approx\frac{f(x+\\delta x)-f(x-\\delta x)}{2\\delta x}
     """
 
-    _APPROXIMATION_MODE = ApproximationMode.FINITE_DIFFERENCES
+    _APPROXIMATION_MODE = ApproximationMode.CENTERED_DIFFERENCES
 
     _DEFAULT_STEP: ClassVar[float] = 1.0e-6
 
@@ -59,29 +61,28 @@ class FirstOrderFD(GradientApproximator):
         step: float | ndarray,
         **kwargs: Any,
     ) -> ndarray:
-        if step is None:
-            step = self.step
-
-        if not isinstance(step, ndarray):
-            step = full(n_perturbations, step)
-
         self._function_kwargs = kwargs
-        functions = [self._wrap_function] * (n_perturbations + 1)
+        functions = [self._wrap_function] * (n_perturbations)
         parallel_execution = CallableParallelExecution(functions, **self._parallel_args)
 
         perturbated_inputs = [
             input_perturbations[:, perturbation_index]
             for perturbation_index in range(n_perturbations)
         ]
-        initial_and_perturbated_outputs = parallel_execution.execute(
-            [input_values, *perturbated_inputs]
-        )
+        initial_and_perturbated_outputs = parallel_execution.execute(perturbated_inputs)
 
         gradient = []
-        initial_output = initial_and_perturbated_outputs[0]
-        for perturbation_index in range(n_perturbations):
-            perturbated_output = initial_and_perturbated_outputs[perturbation_index + 1]
-            g_approx = (perturbated_output - initial_output) / step[perturbation_index]
+        for perturbation_index in range(int(n_perturbations / 2)):
+            perturbated_output_plus = initial_and_perturbated_outputs[
+                perturbation_index
+            ]
+            perturbated_output_minus = initial_and_perturbated_outputs[
+                int(n_perturbations / 2) + perturbation_index
+            ]
+            g_approx = (perturbated_output_plus - perturbated_output_minus) / norm(
+                perturbated_inputs[perturbation_index]
+                - perturbated_inputs[int(n_perturbations / 2) + perturbation_index]
+            )
             gradient.append(g_approx.real)
 
         return gradient
@@ -94,21 +95,20 @@ class FirstOrderFD(GradientApproximator):
         step: float | ndarray,
         **kwargs: Any,
     ) -> ndarray:
-        if step is None:
-            step = self.step
-
-        if not isinstance(step, ndarray):
-            step = full(n_perturbations, step)
-
         gradient = []
-        initial_output = self.f_pointer(input_values, **kwargs)
-        for perturbation_index in range(n_perturbations):
-            perturbated_output = self.f_pointer(
+        for perturbation_index in range(int(n_perturbations / 2)):
+            perturbated_output_plus = self.f_pointer(
                 input_perturbations[:, perturbation_index], **kwargs
             )
-            g_approx = (perturbated_output - initial_output) / step[perturbation_index]
+            perturbated_output_minus = self.f_pointer(
+                input_perturbations[:, int(n_perturbations / 2) + perturbation_index],
+                **kwargs,
+            )
+            g_approx = (perturbated_output_plus - perturbated_output_minus) / norm(
+                input_perturbations[:, perturbation_index]
+                - input_perturbations[:, int(n_perturbations / 2) + perturbation_index]
+            )
             gradient.append(g_approx.real)
-
         return gradient
 
     def _get_opt_step(
@@ -167,7 +167,7 @@ class FirstOrderFD(GradientApproximator):
         self,
         x_vect: ndarray,
         numerical_error: float = EPSILON,
-        **kwargs,
+        **kwargs: Any,
     ) -> tuple[ndarray, ndarray]:
         r"""Compute the gradient by real step.
 
@@ -232,24 +232,42 @@ class FirstOrderFD(GradientApproximator):
         input_dimension = len(input_values)
         n_indices = len(input_indices)
         input_perturbations = (
-            tile(input_values, n_indices).reshape((n_indices, input_dimension)).T
+            tile(input_values, 2 * n_indices)
+            .reshape((2 * n_indices, input_dimension))
+            .T
         )
         if self._design_space is None:
             input_perturbations[input_indices, range(n_indices)] += step
+            input_perturbations[
+                input_indices, [i + n_indices for i in range(n_indices)]
+            ] -= step
             return input_perturbations, step
 
         if self._normalize:
             upper_bounds = self._design_space.normalize_vect(
                 self._design_space.get_upper_bounds()
             )
+            lower_bounds = self._design_space.normalize_vect(
+                self._design_space.get_lower_bounds()
+            )
         else:
             upper_bounds = self._design_space.get_upper_bounds()
+            lower_bounds = self._design_space.get_lower_bounds()
 
-        steps = where(
+        steps_plus = where(
             input_perturbations[input_indices, range(n_indices)] >= upper_bounds,
-            -step,
+            0,
             step,
         )
-        input_perturbations[input_indices, range(n_indices)] += steps
+        steps_minus = where(
+            input_perturbations[
+                input_indices, [i + n_indices for i in range(n_indices)]
+            ]
+            <= lower_bounds,
+            0,
+            -step,
+        )
+        steps = concatenate([steps_plus, steps_minus], axis=-1)
+        input_perturbations[input_indices, range(2 * n_indices)] += steps
 
         return input_perturbations, steps
