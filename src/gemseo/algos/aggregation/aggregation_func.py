@@ -30,7 +30,7 @@ from typing import Callable
 from typing import Sequence
 
 from gemseo.algos.aggregation.core import compute_iks_agg
-from gemseo.algos.aggregation.core import compute_ks_agg
+from gemseo.algos.aggregation.core import compute_lower_bound_ks_agg
 from gemseo.algos.aggregation.core import compute_max_agg
 from gemseo.algos.aggregation.core import compute_max_agg_jac
 from gemseo.algos.aggregation.core import compute_sum_positive_square_agg
@@ -253,7 +253,7 @@ def aggregate_iks(
 
 
 @check_constraint_type("ineq")
-def aggregate_ks(
+def aggregate_lower_bound_ks(
     constr_fct: MDOFunction,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
@@ -275,7 +275,9 @@ def aggregate_ks(
     """
 
     def compute(x):
-        return compute_ks_agg(constr_fct(x), indices=indices, rho=rho, scale=scale)
+        return compute_lower_bound_ks_agg(
+            constr_fct(x), indices=indices, rho=rho, scale=scale
+        )
 
     def compute_jac(x):
         return compute_total_ks_agg_jac(
@@ -286,9 +288,51 @@ def aggregate_ks(
         constr_fct,
         compute,
         compute_jac,
-        f"KS({constr_fct.name})",
-        f"KS({constr_fct.expr})",
-        "KS",
+        f"lower_bound_KS({constr_fct.name})",
+        f"lower_bound_KS({constr_fct.expr})",
+        "lower_bound_KS",
+    )
+
+
+@check_constraint_type("ineq")
+def aggregate_upper_bound_ks(
+    constr_fct: MDOFunction,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> MDOFunction:
+    """Aggregate constraints for inequality constraints.
+
+    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
+
+    Args:
+        constr_fct: The initial constraint function.
+        indices: The indices to generate a subset of the outputs to aggregate.
+            If ``None``, aggregate all the outputs.
+        scale: The scaling factor for multiplying the constraints.
+        rho: The multiplicative parameter in the exponential.
+
+    Returns:
+        The aggregated function.
+    """
+
+    def compute(x):
+        return compute_lower_bound_ks_agg(
+            constr_fct(x), indices=indices, rho=rho, scale=scale
+        )
+
+    def compute_jac(x):
+        return compute_total_ks_agg_jac(
+            constr_fct(x), constr_fct.jac(x), indices=indices, rho=rho, scale=scale
+        )
+
+    return _create_mdofunc(
+        constr_fct,
+        compute,
+        compute_jac,
+        f"upper_bound_KS({constr_fct.name})",
+        f"upper_bound_KS({constr_fct.expr})",
+        "upper_bound_KS",
     )
 
 

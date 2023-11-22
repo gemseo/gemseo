@@ -105,10 +105,11 @@ from pandas import MultiIndex
 from strenum import StrEnum
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
-from gemseo.algos.aggregation.aggregation_func import aggregate_ks
+from gemseo.algos.aggregation.aggregation_func import aggregate_lower_bound_ks
 from gemseo.algos.aggregation.aggregation_func import aggregate_max
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
+from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
 from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
@@ -244,7 +245,8 @@ class OptimizationProblem(BaseProblem):
 
     _AGGREGATION_FUNCTION_MAP: Final[str] = {
         AggregationFunction.IKS: aggregate_iks,
-        AggregationFunction.KS: aggregate_ks,
+        AggregationFunction.LOWER_BOUND_KS: aggregate_lower_bound_ks,
+        AggregationFunction.UPPER_BOUND_KS: aggregate_upper_bound_ks,
         AggregationFunction.POS_SUM: aggregate_positive_sum_square,
         AggregationFunction.MAX: aggregate_max,
         AggregationFunction.SUM: aggregate_sum_square,
@@ -605,7 +607,8 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             constraint_index: The index of the constraint in :attr:`.constraints`.
-            method: The aggregation method, e.g. ``"max"``, ``"KS"`` or ``"IKS"``.
+            method: The aggregation method, e.g. ``"max"``, ``"lower_bound_KS"``,
+                ``"upper_bound_KS"``or ``"IKS"``.
             groups: The groups of components of the constraint to aggregate
                 to produce one aggregation constraint per group of components;
                 if ``None``, a single aggregation constraint is produced.
