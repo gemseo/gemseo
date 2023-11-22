@@ -1,0 +1,30 @@
+{
+  "name": "HIGHS_DUAL_SIMPLEX_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "disp": {
+      "type": "boolean"
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "dual_feasibility_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "primal_feasibility_tolerance": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "simplex_dual_edge_weight_strategy": {
+      "type": "null"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "id": "#HIGHS_DUAL_SIMPLEX"
+}

@@ -77,6 +77,7 @@ class ScipyLinprog(OptimizationLibrary):
         super().__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/"
 
+        # TODO: Remove legacy methods "interior-point", "revised simplex" and "simplex".
         self.descriptions = {
             "LINEAR_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
                 algorithm_name="Linear interior point",
@@ -104,6 +105,30 @@ class ScipyLinprog(OptimizationLibrary):
                 ),
                 internal_algorithm_name="simplex",
                 website=f"{doc}optimize.linprog-simplex.html",
+            ),
+            "HIGHS_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
+                algorithm_name="Interior point method",
+                description=(
+                    "Linear programming using the HiGHS interior point solver."
+                ),
+                internal_algorithm_name="highs-ipm",
+                website=f"{doc}optimize.linprog-highs-ipm.html",
+            ),
+            "HIGHS_DUAL_SIMPLEX": ScipyLinProgAlgorithmDescription(
+                algorithm_name="Dual simplex",
+                description=("Linear programming using the HiGHS dual simplex solver."),
+                internal_algorithm_name="highs-ds",
+                website=f"{doc}optimize.linprog-highs-ds.html",
+            ),
+            "HIGHS": ScipyLinProgAlgorithmDescription(
+                algorithm_name="HiGHS",
+                description=(
+                    "Linear programming using the HiGHS solvers. "
+                    "A choice is automatically made between the dual simplex "
+                    "and the interior-point method."
+                ),
+                internal_algorithm_name="highs",
+                website=f"{doc}optimize.linprog-highs.html",
             ),
         }
 
@@ -145,7 +170,6 @@ class ScipyLinprog(OptimizationLibrary):
         Returns:
             The processed options.
         """
-        normalize_ds = normalize_design_space
         return self._process_options(
             max_iter=max_iter,
             autoscale=autoscale,
@@ -153,7 +177,8 @@ class ScipyLinprog(OptimizationLibrary):
             redundancy_removal=redundancy_removal,
             verbose=verbose,
             callback=callback,
-            normalize_design_space=normalize_ds,
+            normalize_design_space=normalize_design_space,
+            disp=disp,
             **kwargs,
         )
 
@@ -198,6 +223,8 @@ class ScipyLinprog(OptimizationLibrary):
         # Here the passed initial guess is always ignored.
         # (A BFS will be automatically looked for during the first phase of the simplex
         # algorithm.)
+        # TODO: interface the option ``integrality`` of HiGHS solvers
+        # to support mixed-integer linear programming
         linprog_result = linprog(
             c=obj_coeff,
             A_ub=ineq_lhs,
