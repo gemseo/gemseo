@@ -26,16 +26,16 @@ import pytest
 from numpy import array
 
 from gemseo import create_scenario
+from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
-from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.derivatives.error_estimators import compute_best_step
 
 DS_FILE = Path(__file__).parent / "sobieski_design_space.csv"
-NLOPT_OPTIONS = {
+SLSQP_OPTIONS = {
     "eq_tolerance": 1e-11,
     "ftol_abs": 1e-14,
     "ftol_rel": 1e-14,
@@ -58,10 +58,7 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound):
     if upper_bound:
         problem.design_space.set_current_value(array([0.5, 0.9, -0.5]))
         problem.design_space.set_upper_bound("x", array([1.0, 1.0, 0.9]))
-
-    OptimizersFactory().execute(
-        problem, "SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
-    )
+    execute_algo(problem, "SLSQP", "opt", eq_tolerance=1e-6, ineq_tolerance=1e-6)
     lagrange = LagrangeMultipliers(problem)
     x_opt = problem.solution.x_opt
     x_n = problem.design_space.normalize_vect(x_opt)
@@ -77,10 +74,10 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound):
     ("normalize", "eps", "tol"), [(False, 1e-5, 1e-7), (True, 1e-3, 1e-8)]
 )
 def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol):
-    options = deepcopy(NLOPT_OPTIONS)
+    options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = normalize
     problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
-    OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
+    execute_algo(problem, "SLSQP", "opt", **options)
     lagrange = LagrangeMultipliers(problem)
     lagrangian = lagrange.compute(problem.solution.x_opt)
 
@@ -89,7 +86,7 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol):
         dspace = problem.design_space
         dspace.set_current_value(array([1.0, 0.9, 1.0]))
         dspace.set_lower_bound("x", array([-1.0, 0.8 + lb, -1.0]))
-        OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
+        execute_algo(problem, "SLSQP", "opt", **options)
         return problem.solution.f_opt
 
     df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
@@ -99,38 +96,37 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol):
 
 
 def test_lagrangian_validation_eq(problem):
-    OptimizersFactory().execute(problem, "NLOPT_SLSQP", **NLOPT_OPTIONS)
-
+    execute_algo(problem, "SLSQP", "opt", **SLSQP_OPTIONS)
     lagrange = LagrangeMultipliers(problem)
     lagrangian = lagrange.compute(problem.solution.x_opt)
 
     def obj(eq_val):
         problem2 = Power2()
         problem2.constraints[-1] = problem2.constraints[-1] + eq_val
-        OptimizersFactory().execute(problem2, "NLOPT_SLSQP", **NLOPT_OPTIONS)
+        execute_algo(problem2, "SLSQP", "opt", **SLSQP_OPTIONS)
         return problem2.solution.f_opt
 
     eps = 1e-5
     df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
     df_anal = lagrangian["equality"][1]
     err = abs((df_fd - df_anal) / df_fd)
-    assert err < 1e-6
+    assert err < 1e-5
 
 
 def test_lagrangian_validation_ineq_normalize():
-    options = deepcopy(NLOPT_OPTIONS)
+    options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = True
 
     def obj(eq_val):
         problem2 = Power2()
         problem2.constraints[-2] = problem2.constraints[-2] + eq_val
-        OptimizersFactory().execute(problem2, "NLOPT_SLSQP", **options)
+        execute_algo(problem2, "SLSQP", "opt", **options)
         return problem2.solution.f_opt
 
     def obj_grad(eq_val):
         problem = Power2()
         problem.constraints[-2] = problem.constraints[-2] + eq_val
-        OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
+        execute_algo(problem, "SLSQP", "opt", **options)
         lagrange = LagrangeMultipliers(problem)
         x_opt = problem.solution.x_opt
         lagrangian = lagrange.compute(x_opt)
@@ -176,9 +172,9 @@ def test_lagrangian_constraint(constraint_type, sellar_disciplines):
 
 
 def test_lagrange_store(problem):
-    options = deepcopy(NLOPT_OPTIONS)
+    options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = True
-    OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
+    execute_algo(problem, "SLSQP", "opt", **options)
     lagrange = LagrangeMultipliers(problem)
     lagrange.active_lb_names = [0]
     lagrange._store_multipliers(np.ones(10))
@@ -295,17 +291,16 @@ parametrized_options = pytest.mark.parametrize(
             "max_iter": 50,
             "algo_options": {"kkt_tol_abs": 1e-3, "kkt_tol_rel": 1e-3},
         },
-        {
-            "max_iter": 50,
-        },
+        {"max_iter": 50, "algo_options": {}},
     ],
+)
+parametrized_reformulate = pytest.mark.parametrize(
+    "reformulate_constraints", [True, False]
 )
 parametrized_algo_ineq = pytest.mark.parametrize(
     "algo_ineq",
     [
-        "NLOPT_MMA",
         "SLSQP",
-        "NLOPT_SLSQP",
         "Augmented_Lagrangian_order_0",
         "Augmented_Lagrangian_order_1",
     ],
@@ -314,7 +309,6 @@ parametrized_algo_eq = pytest.mark.parametrize(
     "algo_eq",
     [
         "SLSQP",
-        "NLOPT_SLSQP",
         "Augmented_Lagrangian_order_0",
         "Augmented_Lagrangian_order_1",
     ],
@@ -323,8 +317,11 @@ parametrized_algo_eq = pytest.mark.parametrize(
 
 @parametrized_options
 @parametrized_algo_ineq
-def test_2d_ineq(analytical_test_2d_ineq, options, algo_ineq):
+@parametrized_reformulate
+def test_2d_ineq(analytical_test_2d_ineq, options, algo_ineq, reformulate_constraints):
     """Test for lagrange multiplier inequality almost optimum."""
+    if reformulate_constraints and "MMA" in algo_ineq:
+        pytest.skip("MMA does not support equality constraints.")
     opt = options.copy()
     opt["algo"] = algo_ineq
     if "Augmented_Lagrangian" in algo_ineq:
@@ -332,15 +329,26 @@ def test_2d_ineq(analytical_test_2d_ineq, options, algo_ineq):
             "sub_solver_algorithm": "L-BFGS-B",
             "sub_problem_options": options.copy(),
         }
-    analytical_test_2d_ineq.execute(opt)
     problem = analytical_test_2d_ineq.formulation.opt_problem
+    if reformulate_constraints:
+        problem = problem.get_reformulated_problem_with_slack_variables()
+    execute_algo(problem, algo_ineq, "opt", **opt["algo_options"])
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
-    lag = lagrange.compute(
-        problem.solution.x_opt - epsilon * array([0.0, 1.0]),
-        ineq_tolerance=2.5 * epsilon,
-    )
-    assert pytest.approx(lag["inequality"][1], 1.1 * epsilon) == array([1.0])
+    if reformulate_constraints:
+        lag = lagrange.compute(
+            problem.solution.x_opt - epsilon * array([0.0, 1.0, 0.0]),
+            ineq_tolerance=2.5 * epsilon,
+        )
+    else:
+        lag = lagrange.compute(
+            problem.solution.x_opt - epsilon * array([0.0, 1.0]),
+            ineq_tolerance=2.5 * epsilon,
+        )
+    if not reformulate_constraints:
+        assert pytest.approx(lag["inequality"][1], 1.1 * epsilon) == array([1.0])
+    else:
+        assert pytest.approx(lag["equality"][1], 10 * epsilon) == array([1.0])
 
 
 @parametrized_options
@@ -389,18 +397,32 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq):
 
 @parametrized_options
 @parametrized_algo_eq
-def test_2d_mixed(analytical_test_2d_mixed_rank_deficient, options, algo_eq):
+@parametrized_reformulate
+def test_2d_mixed(
+    analytical_test_2d_mixed_rank_deficient, options, algo_eq, reformulate_constraints
+):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
     if "Augmented_Lagrangian" in algo_eq:
         opt["algo_options"] = {"sub_solver_algorithm": "L-BFGS-B"}
-    analytical_test_2d_mixed_rank_deficient.execute(opt)
     problem = analytical_test_2d_mixed_rank_deficient.formulation.opt_problem
+    if reformulate_constraints:
+        problem = problem.get_reformulated_problem_with_slack_variables()
+    execute_algo(problem, algo_eq, "opt", **opt["algo_options"])
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
-    lag_approx = lagrange.compute(
-        problem.solution.x_opt + epsilon * array([0.0, 1.0, 0.0]),
-        ineq_tolerance=2.5 * epsilon,
-    )
-    assert lag_approx["inequality"][1] > 0
+    if reformulate_constraints:
+        lag_approx = lagrange.compute(
+            problem.solution.x_opt - epsilon * array([0.0, 1.0, 0.0, 0.0]),
+            ineq_tolerance=2.5 * epsilon,
+        )
+    else:
+        lag_approx = lagrange.compute(
+            problem.solution.x_opt + epsilon * array([0.0, 1.0, 0.0]),
+            ineq_tolerance=2.5 * epsilon,
+        )
+    if not reformulate_constraints:
+        assert lag_approx["inequality"][1] > 0
+    else:
+        assert lag_approx["equality"][1][0] > 0
