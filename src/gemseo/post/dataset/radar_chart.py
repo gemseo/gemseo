@@ -23,23 +23,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import matplotlib.pyplot as plt
 from numpy import linspace
 from numpy import pi
-from numpy import rad2deg
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.utils.compatibility.matplotlib import get_color_map
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
 
     from gemseo.datasets.dataset import Dataset
 
 
 class RadarChart(DatasetPlot):
-    """Radar Chart visualization."""
+    """Radar chart visualization."""
 
     def __init__(
         self,
@@ -68,114 +64,19 @@ class RadarChart(DatasetPlot):
             scientific_notation=scientific_notation,
         )
 
-    def _plot(
-        self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        linestyle = "-o" if self._param.connect else "o"
-
-        if not fig or not axes:
-            fig = plt.figure(figsize=self.fig_size)
-            axes = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
-
-        axes.grid(True, color="k", linewidth=0.3, linestyle=":")
-        axes.tick_params(labelsize=self.font_size)
-
-        all_data = self.dataset.to_numpy()
-        sizes = self.dataset.variable_names_to_n_components
-        variable_names = self.dataset.get_columns()
-        if self.rmin is None:
-            self.rmin = all_data.min()
-
-        if self.rmax is None:
-            self.rmax = all_data.max()
-
-        dimension = sum(sizes.values())
-
-        # computes angles
+    def _create_specific_data_from_dataset(self) -> tuple[NDArray[float], list[float]]:
+        """
+        Returns:
+            The values of the series on the y-axis (one series per row),
+            the values of the series on the r-axis.
+        """  # noqa: D205 D212 D415
+        self._n_items = len(self.dataset)
+        self.linestyle = "-o" if self._specific_settings.connect else "o"
+        y_values = self.dataset.to_numpy()
+        self.rmin = y_values.min()
+        self.rmax = y_values.max()
+        self._set_color(self._n_items)
+        dimension = self.dataset.shape[1]
         theta = (2 * pi * linspace(0, 1 - 1.0 / dimension, dimension)).tolist()
         theta.append(theta[0])
-
-        series_names = self.dataset.index
-        if not self.color:
-            color_map = get_color_map(self.colormap)
-            self.color = [color_map(color) for color in linspace(0, 1, len(all_data))]
-
-        if not self.linestyle:
-            self.linestyle = [linestyle] * len(series_names)
-
-        for data, name, linestyle, color in zip(
-            all_data, series_names, self.linestyle, self.color
-        ):
-            data = data.tolist()
-            data.append(data[0])
-            axes.plot(
-                theta,
-                data,
-                linestyle,
-                color=color,
-                lw=1,
-                label=name,
-            )
-
-        if self._param.display_zero and self.rmin < 0:
-            circle = plt.Circle(
-                (0, 0),
-                abs(self.rmin),
-                transform=axes.transData._b,
-                fill=False,
-                edgecolor="black",
-                linewidth=1,
-                zorder=10,
-            )
-            plt.gca().add_artist(circle)
-
-        theta_degree = rad2deg(theta[:-1])
-        axes.set_thetagrids(theta_degree, variable_names)
-        if self._param.radial_ticks:
-            labels = []
-            for label, angle in zip(axes.get_xticklabels(), theta_degree):
-                x, y = label.get_position()
-                lab = axes.text(
-                    x,
-                    y,
-                    label.get_text(),
-                    transform=label.get_transform(),
-                    ha=label.get_ha(),
-                    va=label.get_va(),
-                )
-                if 90 < angle <= 180:
-                    angle = 360 - (180 - angle)
-
-                if 180 < angle < 270:
-                    angle -= 180
-
-                lab.set_rotation(angle)
-                labels.append(lab)
-
-            axes.set_xticklabels([])
-
-        axes.set_rlim([self.rmin, self.rmax])
-        rticks = linspace(self.rmin, self.rmax, self._param.n_levels)
-        if self._param.scientific_notation:
-            rticks_labels = [f"{value:.2e}" for value in rticks]
-        else:
-            rticks_labels = rticks
-
-        axes.set_rticks(rticks)
-        axes.set_yticklabels(rticks_labels)
-        axes.legend(
-            loc="upper left", fontsize=self.font_size, bbox_to_anchor=(1.05, 1.0)
-        )
-        axes.set_title(self.title, fontsize=self.font_size * 1.2)
-        box = axes.get_position()
-        axes.set_position(
-            [box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9]
-        )
-        axes.legend(
-            loc="upper center",
-            bbox_to_anchor=(0.5, -0.05),
-            ncol=5,
-        )
-        return [fig]
+        return y_values, theta

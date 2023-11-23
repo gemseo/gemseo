@@ -30,7 +30,7 @@ FileDefinition = namedtuple("FileDefinition", ["name", "extension"])
 
 
 class FilePathManager:
-    """A factory of file paths for a given type of file and with default settings."""
+    """A manager of file paths for a given type of file and with default settings."""
 
     class FileType(LowercaseStrEnum):
         """The type of file, defined by its default name and format."""

@@ -7,7 +7,7 @@ repos:
   hooks:
     - id: trailing-whitespace
     - id: end-of-file-fixer
-      exclude: (LICENSES/headers|tests/core/data/factory/.*\.json)
+      exclude: LICENSES/headers
     - id: check-yaml
       # !reference is specific to gitlab
       exclude: \.gitlab-ci.yml

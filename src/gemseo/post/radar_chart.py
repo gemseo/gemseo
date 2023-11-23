@@ -109,13 +109,13 @@ class RadarChart(OptPostProcessor):
         if iteration < 0:
             iteration = n_iterations + iteration
 
-        radar = RadarChartPost(dataset)
+        radar = RadarChartPost(
+            dataset, display_zero=False, radial_ticks=show_names_radially
+        )
         radar.linestyle = ["-", "--"]
         radar.color = ["k", "r"]
         radar.title = f"Constraints at iteration {iteration}{title_suffix}"
 
-        figures = radar.execute(
-            save=False, display_zero=False, radial_ticks=show_names_radially
-        )
+        figures = radar.execute(save=False)
         for figure in figures:
             self._add_figure(figure)

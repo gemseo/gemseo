@@ -35,7 +35,11 @@ def dataset() -> Dataset:
 
 TEST_PARAMETERS = {
     "default": ({}, {}, ["BarPlot"]),
-    "xtick_rotation": ({}, {"xtick_rotation": 45}, ["BarPlot_xtick_rotation"]),
+    "xtick_rotation": (
+        {},
+        {"xtick_rotation": 45, "color": ["red", "blue", "yellow", "black", "green"]},
+        ["BarPlot_xtick_rotation"],
+    ),
 }
 
 
@@ -49,4 +53,6 @@ TEST_PARAMETERS = {
 def test_bars_plot(tmp_path, kwargs, properties, dataset, baseline_images):
     """Test that bar plot generates the expected plot."""
     plot = BarPlot(dataset)
-    plot.execute(save=False, properties=properties)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+    plot.execute(save=False)

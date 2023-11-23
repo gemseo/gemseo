@@ -360,6 +360,7 @@ ONE_D_FIELD_TEST_PARAMETERS = {
         ["1d_field_inputs_standardize"],
         "out",
     ),
+    "properties": ({"properties": {"xlabel": "foo"}}, ["1d_field_properties"], "out"),
 }
 
 

@@ -50,16 +50,14 @@ the samples positively classified and one for the others.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import inf
-from pandas.plotting import parallel_coordinates
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
-
     from gemseo.datasets.dataset import Dataset
 
 
@@ -72,7 +70,7 @@ class ParallelCoordinates(DatasetPlot):
         classifier: str,
         lower: float = -inf,
         upper: float = inf,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """
         Args:
@@ -84,24 +82,32 @@ class ParallelCoordinates(DatasetPlot):
             dataset, classifier=classifier, lower=lower, upper=upper, kwargs=kwargs
         )
 
-    def _plot(
+    def _create_specific_data_from_dataset(
         self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        classifier = self._param.classifier
-        upper = self._param.upper
-        lower = self._param.lower
-        kwargs = self._param.kwargs
+    ) -> tuple[
+        Dataset,
+        tuple[str, str, int],
+        list[tuple[str, str, int]],
+        float,
+        float,
+        dict[str, Any],
+    ]:
+        """
+        Returns:
+            The dataset to be used,
+            the identifier of the cluster.
+        """  # noqa: D205, D212, D415
+        classifier = self._specific_settings.classifier
+        upper = self._specific_settings.upper
+        lower = self._specific_settings.lower
         if classifier not in self.dataset.variable_names:
             raise ValueError(
                 "Classifier must be one of these names: "
-                + ", ".join(self.dataset.variable_names)
+                f"{pretty_str(self.dataset.variable_names, use_and=True)}."
             )
         label, varname = self._get_label(classifier)
         dataframe = self.dataset.copy()
         cluster = varname
-        columns = self.dataset.get_columns(as_tuple=True)
 
         def is_btw(row):
             return lower < row.loc[varname] < upper
@@ -110,16 +116,9 @@ class ParallelCoordinates(DatasetPlot):
             cluster = ("classifiers", f"{lower} < {label} < {upper}", "0")
             dataframe[cluster] = dataframe.apply(is_btw, axis=1)
 
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        axes = parallel_coordinates(dataframe, cluster, cols=columns, ax=axes, **kwargs)
-        axes.set_xticklabels(self._get_variable_names(columns))
         if lower != -inf or upper != inf:
             default_title = f"Cobweb plot based on the classifier: {cluster[1]}"
         else:
             default_title = None
-            axes.get_legend().remove()
-
-        axes.set_xlabel(self.xlabel)
-        axes.set_ylabel(self.ylabel)
-        axes.set_title(self.title or default_title)
-        return [fig]
+        self.title = self.title or default_title
+        return dataframe, cluster

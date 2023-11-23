@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
@@ -81,4 +83,15 @@ def test_plot(
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
-    plot.execute(save=False, fig=fig, axes=axes, properties=properties)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+    plot.execute(save=False, fig=fig, axes=axes)
+
+
+def test_wrong_classifier_name(dataset):
+    """Check that the message of the error raised when the classifier name is wrong."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Classifier must be one of these names: x1, x2 and x3."),
+    ):
+        ParallelCoordinates(dataset, classifier="foo")
