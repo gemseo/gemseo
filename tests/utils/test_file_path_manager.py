@@ -104,3 +104,17 @@ def test_add_suffix():
     file_path = Path("directory") / "filename.pdf"
     expected_file_path = Path("directory") / "filename_suffix.pdf"
     assert FilePathManager.add_suffix(file_path, "suffix") == expected_file_path
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected"),
+    [
+        ({}, "png"),
+        ({"default_extension": "png"}, "png"),
+        ({"default_extension": "jpg"}, "jpg"),
+    ],
+)
+def test_default_extension(kwargs, expected):
+    """Check the default extension."""
+    manager = FilePathManager(FilePathManager.FileType.FIGURE, **kwargs)
+    assert manager._FilePathManager__default_extension == expected

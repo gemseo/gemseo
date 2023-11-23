@@ -258,18 +258,11 @@ def test_plot_cdf(statistics, pyplot_close_all):
 
 def test_plot_cdf_args(statistics):
     """Check the arguments passed to Lines by the method plot_cdf()."""
-    with mock.patch.object(Lines, "__init__", return_value=None) as __init__:  # noqa: SIM117
-        with mock.patch.object(Lines, "execute") as execute:
-            statistics.plot_cdf(
-                save=1, show=2, directory_path=3, file_format=4, kwarg=5
-            )
+    with mock.patch.object(Lines, "execute") as execute:
+        statistics.plot_cdf(
+            save=1, show=2, directory_path=3, file_format=4, plot_abscissa_variable=True
+        )
 
-    args = __init__.call_args.args
-    assert len(args) == 3
-    assert args[0].variable_names == ["CDF", "x_2"]
-    assert args[1] == ["CDF"]
-    assert args[2] == "x_2"
-    assert __init__.call_args.kwargs == {"kwarg": 5}
     assert execute.call_args.kwargs == {
         "save": 1,
         "show": 2,
@@ -289,18 +282,10 @@ def test_plot_pdf(statistics, pyplot_close_all):
 
 def test_plot_pdf_args(statistics):
     """Check the arguments passed to Lines by the method plot_pdf()."""
-    with mock.patch.object(Lines, "__init__", return_value=None) as __init__:  # noqa: SIM117
-        with mock.patch.object(Lines, "execute") as execute:
-            statistics.plot_pdf(
-                save=1, show=2, directory_path=3, file_format=4, kwarg=5
-            )
-
-    args = __init__.call_args.args
-    assert len(args) == 3
-    assert args[0].variable_names == ["PDF", "x_2"]
-    assert args[1] == ["PDF"]
-    assert args[2] == "x_2"
-    assert __init__.call_args.kwargs == {"kwarg": 5}
+    with mock.patch.object(Lines, "execute") as execute:
+        statistics.plot_pdf(
+            save=1, show=2, directory_path=3, file_format=4, plot_abscissa_variable=True
+        )
     assert execute.call_args.kwargs == {
         "save": 1,
         "show": 2,

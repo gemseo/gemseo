@@ -70,7 +70,9 @@ def test_plot(
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
-    plot.execute(save=False, properties=properties, fig=fig, axes=axes)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+    plot.execute(save=False, fig=fig, axes=axes)
 
 
 def test_plot_error(dataset):
@@ -83,4 +85,4 @@ def test_plot_error(dataset):
             "available ones are: ['c', 'x', 'y', 'z']."
         ),
     ):
-        ScatterMatrix(dataset, classifier="wrong_name")._plot()
+        ScatterMatrix(dataset, classifier="wrong_name").execute(save=False)

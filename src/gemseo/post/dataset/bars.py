@@ -23,15 +23,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from numpy import arange
-from numpy import linspace
-
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.utils.compatibility.matplotlib import get_color_map
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
 
     from gemseo.datasets.dataset import Dataset
 
@@ -50,61 +45,19 @@ class BarPlot(DatasetPlot):
         """  # noqa: D205, D212, D415
         super().__init__(dataset, n_digits=n_digits)
 
-    def _plot(
-        self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        # radar solid grid lines
-        all_data = self.dataset.to_numpy()
-        feature_names = self.dataset.get_columns()
-        n_series, n_features = all_data.shape
-        series_names = self.dataset.index
-        if not self.color:
-            color_map = get_color_map(self.colormap)
-            self.color = [color_map(color) for color in linspace(0, 1, n_series)]
+    def _create_specific_data_from_dataset(self) -> tuple[NDArray[float], list[str]]:
+        """
+        Returns:
+            The data,
+            the names of the columns.
+        """  # noqa: D205, D212, D415
+        data = self.dataset.to_numpy()
+        self._n_items = len(data)
+        self.colormap = self.colormap
+        return data, self.dataset.get_columns()
 
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        axes.tick_params(labelsize=self.font_size)
-        first_series_positions = arange(n_features)
-        width = 0.75 / n_series
-        subplots = []
-        positions = [
-            first_series_positions + index * width + width / 2
-            for index in range(n_series)
-        ]
-        for feature_positions, series_name, series_data, series_color in zip(
-            positions, series_names, all_data, self.color
-        ):
-            subplots.append(
-                axes.bar(
-                    feature_positions,
-                    series_data.tolist(),
-                    width,
-                    label=series_name,
-                    color=series_color,
-                )
-            )
-
-        for rects in subplots:
-            for rect in rects:
-                height = rect.get_height()
-                pos = 3 if height > 0 else -12
-                axes.annotate(
-                    f"{round(height, self._param.n_digits)}",
-                    xy=(rect.get_x() + rect.get_width() / 2, height),
-                    xytext=(0, pos),  # 3 points vertical offset
-                    textcoords="offset points",
-                    ha="center",
-                    va="bottom",
-                )
-
-        axes.set_xticks([position + 0.375 for position in first_series_positions])
-        axes.set_xticklabels(feature_names)
-        axes.set_xlabel(self.xlabel)
-        axes.set_ylabel(self.ylabel)
-        axes.set_title(self.title, fontsize=self.font_size * 1.2)
-        axes.legend(fontsize=self.font_size)
-        axes.set_axisbelow(True)
-        axes.grid()
-        return [fig]
+    @DatasetPlot.colormap.setter
+    def colormap(self, value: str) -> None:  # noqa: D102
+        self._common_settings.colormap = value
+        self._common_settings.color = ""
+        self._set_color(self._n_items)

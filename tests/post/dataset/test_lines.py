@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
@@ -45,12 +47,23 @@ def dataset():
 
 TEST_PARAMETERS = {
     "default": ({}, {}, ["Lines"]),
+    "xticks": ({"set_xticks_from_data": True}, {}, ["Lines_xticks"]),
     "markers": ({"add_markers": True}, {}, ["Lines_markers"]),
     "variables": ({"variables": ["y"]}, {}, ["Lines_variables"]),
     "abscissa": (
-        {"variables": ["y"], "abscissa_variable": "x"},
+        {"abscissa_variable": "x"},
         {},
         ["Lines_abscissa"],
+    ),
+    "plot_abscissa_variable_1": (
+        {"abscissa_variable": "x", "plot_abscissa_variable": True},
+        {},
+        ["Lines_plot_abscissa_variable_1"],
+    ),
+    "plot_abscissa_variable_2": (
+        {"abscissa_variable": "x", "plot_abscissa_variable": True, "variables": ["y"]},
+        {},
+        ["Lines_plot_abscissa_variable_2"],
     ),
     "with_properties": (
         {"add_markers": True},
@@ -89,4 +102,10 @@ def test_plot(
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
-    plot.execute(save=False, fig=fig, axes=axes, properties=properties)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+
+    figure = plot.execute(save=False, show=False, file_format="html")[0]
+    ref = (Path(__file__).parent / "plotly" / baseline_images[0]).read_text()
+    assert figure.to_json() == ref.strip()
+    plot.execute(save=False, fig=fig, axes=axes)

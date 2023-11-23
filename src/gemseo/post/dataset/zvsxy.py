@@ -31,14 +31,11 @@ from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Sequence
 
-import matplotlib.tri as mtri
-
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import VariableType
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
 
     from gemseo.datasets.dataset import Dataset
 
@@ -88,71 +85,36 @@ class ZvsXY(DatasetPlot):
             levels=levels,
         )
 
-    def _plot(
+    def _create_specific_data_from_dataset(
         self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        other_datasets = self._param.other_datasets
-        x, x_comp = self._param.x
-        y, y_comp = self._param.y
-        z, z_comp = self._param.z
-
-        n_series = 1
-        if other_datasets:
-            n_series += len(other_datasets)
-
-        self._set_color(n_series)
-
-        x_data = self.dataset.get_view(variable_names=x).to_numpy()[:, x_comp]
-        y_data = self.dataset.get_view(variable_names=y).to_numpy()[:, y_comp]
-        z_data = self.dataset.get_view(variable_names=z).to_numpy()[:, z_comp]
-
-        fig, axes = self._get_figure_and_axes(fig, axes)
-
-        grid = mtri.Triangulation(x_data, y_data)
-
-        levels = self._param.levels
-        options = {"cmap": self.colormap}
-
-        if levels is not None:
-            options["levels"] = levels
-
-        if self._param.fill:
-            tcf = axes.tricontourf(grid, z_data, **options)
-        else:
-            tcf = axes.tricontour(grid, z_data, **options)
-
-        if self._param.add_points:
-            axes.scatter(x_data, y_data, color=self.color[0])
-
-        if other_datasets:
-            for index, dataset in enumerate(other_datasets):
-                x_data = dataset.get_view(variable_names=x).to_numpy()[:, x_comp]
-                y_data = dataset.get_view(variable_names=y).to_numpy()[:, y_comp]
-                axes.scatter(x_data, y_data, color=self.color[index + 1])
-
-        if not self.xlabel:
-            self.xlabel = self._get_component_name(
-                x, x_comp, self.dataset.variable_names_to_n_components
-            )
-
-        if not self.ylabel:
-            self.ylabel = self._get_component_name(
-                y, y_comp, self.dataset.variable_names_to_n_components
-            )
-
-        if not self.zlabel:
-            self.zlabel = self._get_component_name(
-                z, z_comp, self.dataset.variable_names_to_n_components
-            )
-
-        if not self.title:
-            self.title = self.zlabel
-
-        axes.set_xlabel(self.xlabel)
-        axes.set_ylabel(self.ylabel)
-        axes.set_title(self.title)
-
-        fig.colorbar(tcf, ax=axes)
-        return [fig]
+    ) -> tuple[NDArray[float], NDArray[float], NDArray[float], Iterable[Dataset]]:
+        """
+        Returns:
+            The values of the points on the x-axis,
+            the values of the points on the y-axis,
+            the values of the points on the z-axis,
+            and possibly other datasets.
+        """  # noqa: D205, D212, D415
+        other_datasets = self._specific_settings.other_datasets or []
+        self._n_items = 1 + len(other_datasets)
+        self._set_color(self._n_items)
+        x, x_comp = self._specific_settings.x
+        y, y_comp = self._specific_settings.y
+        z, z_comp = self._specific_settings.z
+        self.xlabel = self.xlabel or self._get_component_name(
+            x, x_comp, self.dataset.variable_names_to_n_components
+        )
+        self.ylabel = self.ylabel or self._get_component_name(
+            y, y_comp, self.dataset.variable_names_to_n_components
+        )
+        self.zlabel = self.zlabel or self._get_component_name(
+            z, z_comp, self.dataset.variable_names_to_n_components
+        )
+        self.title = self.title or self.zlabel
+        get_view = self.dataset.get_view
+        return (
+            get_view(variable_names=x, components=x_comp).to_numpy().ravel(),
+            get_view(variable_names=y, components=y_comp).to_numpy().ravel(),
+            get_view(variable_names=z, components=z_comp).to_numpy().ravel(),
+            other_datasets,
+        )

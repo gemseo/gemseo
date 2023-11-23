@@ -23,16 +23,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Iterable
 
-from matplotlib.colors import SymLogNorm
-from matplotlib.ticker import LogFormatterSciNotation
-from numpy import arange
-from numpy import e
-
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
 
     from gemseo.datasets.dataset import Dataset
 
@@ -75,37 +69,16 @@ class ColorEvolution(DatasetPlot):
             options=options_,
         )
 
-    def _plot(
-        self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        variables = self._param.variables or self.dataset.variable_names
-        data = self.dataset.get_view(variable_names=variables).to_numpy().T
-
-        if self._param.use_log:
-            maximum = abs(data).max()
-            norm = SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0, base=e)
-        else:
-            norm = None
-
-        fig, axes = self._get_figure_and_axes(fig=fig, axes=axes)
-        img_ = axes.imshow(
-            data,
-            cmap=self.colormap,
-            norm=norm,
-            alpha=self._param.opacity,
-            **self._param.options,
+    def _create_specific_data_from_dataset(self) -> tuple[NDArray[float], list[str]]:
+        """
+        Returns:
+            The data to be plotted,
+            the names of the variables.
+        """  # noqa: D205, D212, D415
+        variable_names = (
+            self._specific_settings.variables or self.dataset.variable_names
         )
-        names = self.dataset.get_columns(variables)
-        axes.set_yticks(arange(len(names)))
-        axes.set_yticklabels(names)
-        axes.set_xlabel(self.xlabel)
-        axes.set_ylabel(self.ylabel)
-        axes.set_title(self.title)
-        fig.colorbar(
-            img_,
-            ax=axes,
-            format=LogFormatterSciNotation() if self._param.use_log else None,
+        return (
+            self.dataset.get_view(variable_names=variable_names).to_numpy().T,
+            variable_names,
         )
-        return [fig]

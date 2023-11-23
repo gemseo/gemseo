@@ -32,8 +32,7 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import VariableType
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
 
     from gemseo.datasets.dataset import Dataset
 
@@ -62,30 +61,27 @@ class Scatter(DatasetPlot):
             y=self._force_variable_to_tuple(y),
         )
 
-    def _plot(
-        self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        x, x_comp = self._param.x
-        y, y_comp = self._param.y
-        color = self.color or "blue"
-        x_data = self.dataset.get_view(variable_names=x).to_numpy()[:, x_comp]
-        y_data = self.dataset.get_view(variable_names=y).to_numpy()[:, y_comp]
-
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        axes.scatter(x_data, y_data, color=color)
-
+    def _create_specific_data_from_dataset(
+        self
+    ) -> tuple[NDArray[float], NDArray[float]]:
+        """
+        Returns:
+            The values of the points on the x-axis,
+            the values of the points on the y-axis.
+        """  # noqa: D205, D212, D415
+        x, x_comp = self._specific_settings.x
+        y, y_comp = self._specific_settings.y
+        self.color = self.color or "blue"
+        x_values = self.dataset.get_view(variable_names=x, components=x_comp).to_numpy()
+        y_values = self.dataset.get_view(variable_names=y, components=y_comp).to_numpy()
         if self.dataset.variable_names_to_n_components[x] == 1:
-            axes.set_xlabel(self.xlabel or x)
+            self.xlabel = self.xlabel or x
         else:
-            axes.set_xlabel(self.xlabel or f"{x}({x_comp})")
+            self.xlabel = self.xlabel or f"{x}({x_comp})"
 
         if self.dataset.variable_names_to_n_components[y] == 1:
-            axes.set_ylabel(self.ylabel or y)
+            self.ylabel = self.ylabel or y
         else:
-            axes.set_ylabel(self.ylabel or f"{y}({y_comp})")
+            self.ylabel = self.ylabel or f"{y}({y_comp})"
 
-        axes.set_title(self.title)
-
-        return [fig]
+        return x_values, y_values

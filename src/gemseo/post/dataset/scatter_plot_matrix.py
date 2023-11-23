@@ -53,15 +53,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Sequence
 
-from matplotlib import pyplot as plt
-from pandas.plotting import scatter_matrix
-
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
-
     from gemseo.datasets.dataset import Dataset
 
 
@@ -101,19 +95,16 @@ class ScatterMatrix(DatasetPlot):
             plot_upper=plot_upper,
         )
 
-    def _plot(
-        self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        variable_names = self._param.variable_names
-        classifier = self._param.classifier
-        kde = self._param.kde
-        size = self._param.size
-        marker = self._param.marker
-        if variable_names is None:
-            variable_names = self.dataset.variable_names
+    def _create_specific_data_from_dataset(self) -> tuple[tuple[str, str, int] | None]:
+        """
+        Returns:
+            The column of the dataset associated with the classifier
+            if the classifier is not ``None``.
 
+        Raises:
+            ValueError: When the classifier does not exist.
+        """  # noqa: D205, D212, D415
+        classifier = self._specific_settings.classifier
         if classifier is not None and classifier not in self.dataset.variable_names:
             raise ValueError(
                 f"{classifier} cannot be used as a classifier "
@@ -121,58 +112,7 @@ class ScatterMatrix(DatasetPlot):
                 f"available ones are: {self.dataset.variable_names}."
             )
 
-        diagonal = "kde" if kde else "hist"
+        if self._specific_settings.classifier is not None:
+            return (self._get_label(self._specific_settings.classifier)[1],)
 
-        dataframe = self.dataset.get_view(variable_names=variable_names)
-        kwargs = {}
-        if classifier is not None:
-            palette = dict(enumerate("bgrcmyk"))
-            groups = self.dataset.get_view(variable_names=[classifier]).to_numpy()[
-                :, 0:1
-            ]
-            kwargs["color"] = [palette[group[0] % len(palette)] for group in groups]
-            _, variable_name = self._get_label(classifier)
-            dataframe = dataframe.drop(labels=variable_name, axis=1)
-
-        dataframe.columns = self._get_variable_names(dataframe)
-        n_cols = n_rows = dataframe.shape[1] if axes is None else 1
-        fig, axes = self._get_figure_and_axes(
-            fig, axes, self.fig_size, n_rows=n_rows, n_cols=n_cols
-        )
-        sub_axes = scatter_matrix(
-            dataframe,
-            diagonal=diagonal,
-            s=size,
-            marker=marker,
-            figsize=self.fig_size,
-            ax=axes,
-            **kwargs,
-        )
-
-        n_cols = sub_axes.shape[0]
-        if not (self._param.plot_lower and self._param.plot_upper):
-            for i in range(n_cols):
-                for j in range(n_cols):
-                    sub_axes[i, j].get_xaxis().set_visible(False)
-                    sub_axes[i, j].get_yaxis().set_visible(False)
-
-        if not self._param.plot_lower:
-            for i in range(n_cols):
-                for j in range(i):
-                    sub_axes[i, j].set_visible(False)
-
-            for i in range(n_cols):
-                sub_axes[i, i].get_xaxis().set_visible(True)
-                sub_axes[i, i].get_yaxis().set_visible(True)
-
-        if not self._param.plot_upper:
-            for i in range(n_cols):
-                for j in range(i + 1, n_cols):
-                    sub_axes[i, j].set_visible(False)
-
-            for i in range(n_cols):
-                sub_axes[-1, i].get_xaxis().set_visible(True)
-                sub_axes[i, 0].get_yaxis().set_visible(True)
-
-        plt.suptitle(self.title)
-        return [fig]
+        return (None,)

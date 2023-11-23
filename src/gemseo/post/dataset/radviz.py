@@ -54,14 +54,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pandas.plotting import radviz
-
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
-
     from gemseo.datasets.dataset import Dataset
 
 
@@ -79,31 +75,27 @@ class Radar(DatasetPlot):
         """  # noqa: D205, D212, D415
         super().__init__(dataset, classifier=classifier)
 
-    def _plot(
-        self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        classifier = self._param.classifier
+    def _create_specific_data_from_dataset(self) -> tuple[Dataset, str]:
+        """
+        Returns:
+            The dataset with decoded values,
+            the name of the classifier.
+        """  # noqa: D205, D212, D415
+        classifier = self._specific_settings.classifier
         if classifier not in self.dataset.variable_names:
             raise ValueError(
-                "Classifier must be one of these names: "
-                + ", ".join(self.dataset.variable_names)
+                f"The classifier ({classifier}) is not stored in the dataset; "
+                "available variables are "
+                f"{pretty_str(self.dataset.variable_names, use_and=True)}."
             )
 
-        dataframe = self.dataset
-        label, _ = self._get_label(classifier)
+        dataset = self.dataset
+        label = self._get_label(classifier)[0]
         str_encoder = self.dataset.misc.get("labels", {})
         if len(str_encoder):
             for variable, meaning in str_encoder.items():
                 data = self.dataset.get_view(variable_names=variable).to_numpy()
                 self.dataset.update_data(meaning[data.ravel()], variable_names=variable)
 
-        dataframe.columns = self._get_variable_names(dataframe)
-        dataframe = dataframe.reindex(sorted(dataframe.columns), axis=1)
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        radviz(dataframe, label, ax=axes)
-        axes.set_xlabel(self.xlabel)
-        axes.set_ylabel(self.ylabel)
-        axes.set_title(self.title)
-        return [fig]
+        dataset.columns = self._get_variable_names(dataset)
+        return dataset.reindex(sorted(dataset.columns), axis=1), label

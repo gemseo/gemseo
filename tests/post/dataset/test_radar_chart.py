@@ -52,8 +52,19 @@ TEST_PARAMETERS = {
     "with_n_levels": ({"n_levels": 3}, {}, ["RadarChart_n_levels"]),
     "with_properties": (
         {},
-        {"title": "The title"},
+        {
+            "title": "The title",
+            "linestyle": ["-", "--"],
+            "rmin": -1,
+            "rmax": 4,
+            "color": "red",
+        },
         ["RadarChart_properties"],
+    ),
+    "with_scientific_notation": (
+        {"scientific_notation": False},
+        {},
+        ["RadarChart_scientific_notation"],
     ),
 }
 
@@ -77,4 +88,6 @@ def test_plot(
     else:
         fig, axes = (None, None)
 
-    plot.execute(save=False, fig=fig, axes=axes, properties=properties)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+    plot.execute(save=False, fig=fig, axes=axes)
