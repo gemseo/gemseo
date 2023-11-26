@@ -38,7 +38,7 @@ graphviz==0.20.1
     # via gemseo (pyproject.toml)
 h5py==3.10.0
     # via gemseo (pyproject.toml)
-idna==3.5
+idna==3.6
     # via requests
 iniconfig==2.0.0
     # via pytest
