@@ -24,6 +24,7 @@ from __future__ import annotations
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
+from scipy.interpolate import Rbf
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
@@ -102,3 +103,19 @@ def test_plot(
     for k, v in properties.items():
         setattr(plot, k, v)
     plot.execute(save=False, fig=fig, axes=axes)
+
+
+@pytest.mark.parametrize(
+    ("trend", "baseline_images"),
+    [
+        ("linear", ["Scatter_linear_trend"]),
+        ("quadratic", ["Scatter_quadratic_trend"]),
+        ("cubic", ["Scatter_cubic_trend"]),
+        ("rbf", ["Scatter_rbf_trend"]),
+        (lambda x, y: Rbf(x, y), ["Scatter_custom_trend"]),
+    ],
+)
+@image_comparison(None)
+def test_trend(trend, quadratic_dataset, baseline_images, pyplot_close_all):
+    """Check the use of a trend."""
+    Scatter(quadratic_dataset, "x", "y", trend=trend).execute(save=False)

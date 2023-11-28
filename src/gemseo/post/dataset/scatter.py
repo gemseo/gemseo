@@ -29,22 +29,29 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import VariableType
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from gemseo.datasets.dataset import Dataset
+    from gemseo.post.dataset.dataset_plot import VariableType
+
+from gemseo.post.dataset._trend import Trend as _Trend
+from gemseo.post.dataset._trend import TrendFunctionCreator
 
 
 class Scatter(DatasetPlot):
     """Plot curve y versus x."""
+
+    Trend = _Trend
+    """The type of trend."""
 
     def __init__(
         self,
         dataset: Dataset,
         x: VariableType,
         y: VariableType,
+        trend: Trend | TrendFunctionCreator = Trend.NONE,
     ) -> None:
         """
         Args:
@@ -54,11 +61,14 @@ class Scatter(DatasetPlot):
             y: The name of the variable on the y-axis,
                 with its optional component if not ``0``,
                 e.g. ``("bar", 3)`` for the fourth component of the variable ``"bar"``.
+            trend: The trend function to be added on the scatter plots
+                or a function creating a trend function from a set of *xy*-points.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
             x=self._force_variable_to_tuple(x),
             y=self._force_variable_to_tuple(y),
+            trend=trend,
         )
 
     def _create_specific_data_from_dataset(

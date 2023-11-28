@@ -45,7 +45,9 @@ from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
+from typing import Literal
 from typing import Union
+from typing import overload
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import arange
@@ -837,9 +839,19 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         dataset._reindex()
         return dataset
 
+    @overload
+    def get_columns(
+        self, variable_names: Iterable[str] = (), as_tuple: Literal[False] = False
+    ) -> list[str]: ...
+
+    @overload
+    def get_columns(
+        self, variable_names: Iterable[str] = (), as_tuple: Literal[True] = True
+    ) -> list[tuple[str, str, int]]: ...
+
     def get_columns(
         self, variable_names: Iterable[str] = (), as_tuple: bool = False
-    ) -> list[str]:
+    ) -> list[str | tuple[str, str, int]]:
         """Return the columns based on variable names.
 
         Args:
