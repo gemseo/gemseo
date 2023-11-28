@@ -51,30 +51,44 @@ labeled.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Iterable
 from typing import Sequence
-
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from typing import Union
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
+
+from gemseo.post.dataset._trend import Trend as _Trend
+from gemseo.post.dataset._trend import TrendFunctionCreator
+from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+ScatterMatrixOption = Union[bool, int, str, None, Sequence[str]]
 
 
 class ScatterMatrix(DatasetPlot):
     """Scatter plot matrix."""
 
+    Trend = _Trend
+    """The type of trend."""
+
     def __init__(
         self,
         dataset: Dataset,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Iterable[str] | None = None,
         classifier: str | None = None,
         kde: bool = False,
         size: int = 25,
         marker: str = "o",
         plot_lower: bool = True,
         plot_upper: bool = True,
+        trend: Trend | TrendFunctionCreator = Trend.NONE,
+        **options: Any,
     ) -> None:
         """
         Args:
+            variable_names: The names of the variables to consider.
+                If ``None``, consider all the variables of the dataset.
             classifier: The name of the variable to build the cluster.
             kde: The type of the distribution representation.
                 If ``True``, plot kernel-density estimator on the diagonal.
@@ -83,6 +97,9 @@ class ScatterMatrix(DatasetPlot):
             marker: The marker for the points.
             plot_lower: Whether to plot the lower part.
             plot_upper: Whether to plot the upper part.
+            trend: The trend function to be added on the scatter plots
+                or a function creating a trend function from a set of *xy*-points.
+            **options: The options of the underlying pandas scatter matrix.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
@@ -93,6 +110,8 @@ class ScatterMatrix(DatasetPlot):
             marker=marker,
             plot_lower=plot_lower,
             plot_upper=plot_upper,
+            trend=trend,
+            options=options,
         )
 
     def _create_specific_data_from_dataset(self) -> tuple[tuple[str, str, int] | None]:

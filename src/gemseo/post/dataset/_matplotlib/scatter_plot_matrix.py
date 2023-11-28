@@ -17,11 +17,14 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Callable
 
 from matplotlib import pyplot as plt
 from pandas.plotting import scatter_matrix
 
 from gemseo.post.dataset._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset._trend import TREND_FUNCTIONS
+from gemseo.post.dataset._trend import Trend
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -68,7 +71,30 @@ class ScatterMatrix(MatplotlibPlot):
             figsize=self._common_settings.fig_size,
             ax=axes,
             **kwargs,
+            **self._specific_settings.options,
         )
+
+        trend_function_creator = self._specific_settings.trend
+        if trend_function_creator != Trend.NONE:
+            if not isinstance(trend_function_creator, Callable):
+                trend_function_creator = TREND_FUNCTIONS[trend_function_creator]
+
+            for i_row, row in enumerate(sub_axes):
+                for i_col, ax in enumerate(row):
+                    if i_col == i_row:
+                        continue
+
+                    collection = ax.collections[0]
+                    collection.set_zorder(3)
+                    data = collection.get_offsets()
+                    x_data = data[:, 0]
+                    trend_function = trend_function_creator(x_data, data[:, 1])
+                    ax.plot(
+                        x_data,
+                        trend_function(x_data),
+                        color="gray",
+                        linestyle="--",
+                    )
 
         n_cols = sub_axes.shape[0]
         if not (

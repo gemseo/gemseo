@@ -17,13 +17,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Callable
 
 from gemseo.post.dataset._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset._trend import TREND_FUNCTIONS
+from gemseo.post.dataset._trend import Trend
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
-    from numpy._typing import ArrayLike
+    from numpy.typing import ArrayLike
 
 
 class Scatter(MatplotlibPlot):
@@ -42,7 +45,21 @@ class Scatter(MatplotlibPlot):
             y_values: The values of the points on the y-axis.
         """  # noqa: D205, D212, D415
         fig, axes = self._get_figure_and_axes(fig, axes)
-        axes.scatter(x_values, y_values, color=self._common_settings.color)
+        scatter = axes.scatter(x_values, y_values, color=self._common_settings.color)
+        scatter.set_zorder(3)
+        trend_function_creator = self._specific_settings.trend
+        if trend_function_creator != Trend.NONE:
+            if not isinstance(trend_function_creator, Callable):
+                trend_function_creator = TREND_FUNCTIONS[trend_function_creator]
+
+            trend_function = trend_function_creator(x_values[:, 0], y_values[:, 0])
+            axes.plot(
+                x_values,
+                trend_function(x_values),
+                color="gray",
+                linestyle="--",
+            )
+
         axes.set_xlabel(self._common_settings.xlabel)
         axes.set_ylabel(self._common_settings.ylabel)
         axes.set_title(self._common_settings.title)
