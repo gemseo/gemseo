@@ -171,7 +171,7 @@ class MDODiscipline(Serializable):
     data_processor: DataProcessor
     """A tool to pre- and post-process discipline data."""
 
-    residual_variables: Mapping[str, str]
+    residual_variables: dict[str, str]
     """The output variables mapping to their inputs, to be considered as residuals; they
     shall be equal to zero."""
 
@@ -958,16 +958,7 @@ class MDODiscipline(Serializable):
 
         Returns:
             The discipline local data after execution.
-
-        Raises:
-            RuntimeError: When residual_variables are declared but
-                self.run_solves_residuals is False. This is not supported yet.
         """
-        if self.residual_variables and not self.run_solves_residuals:
-            raise RuntimeError(
-                "Disciplines that do not solve their residuals are not supported yet."
-            )
-
         # Load the default_inputs if the user did not provide all required data
         input_data = self._filter_inputs(input_data)
 

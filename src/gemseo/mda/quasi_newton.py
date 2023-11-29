@@ -190,7 +190,7 @@ class MDAQuasiNewton(MDARoot):
         if not self.use_gradient:
             return None
 
-        self.assembly.set_newton_differentiated_ios(self._resolved_coupling_names)
+        self.assembly.set_newton_differentiated_ios(self._resolved_variable_names)
 
         def compute_jacobian(
             x_vect: ndarray,
@@ -210,15 +210,15 @@ class MDAQuasiNewton(MDARoot):
                 discipline.linearize(self._local_data)
 
             self.assembly.compute_sizes(
-                self._resolved_coupling_names,
-                self._resolved_coupling_names,
-                self._resolved_coupling_names,
+                self._resolved_variable_names,
+                self._resolved_variable_names,
+                self._resolved_variable_names,
             )
 
             return (
                 self.assembly.assemble_jacobian(
-                    self._resolved_coupling_names,
-                    self._resolved_coupling_names,
+                    self._resolved_variable_names,
+                    self._resolved_variable_names,
                     is_residual=True,
                 )
                 .toarray()
@@ -242,7 +242,7 @@ class MDAQuasiNewton(MDARoot):
                 new_couplings: The new coupling variables.
                 _: ignored
             """
-            self._compute_residual(self.__current_couplings, new_couplings)
+            self._compute_residual()
             self.__current_couplings = new_couplings
 
         return callback
@@ -267,7 +267,8 @@ class MDAQuasiNewton(MDARoot):
         self._local_data = local_data_copy
         self.reset_disciplines_statuses()
         self.execute_all_disciplines(input_data)
-        return self.assembly.residuals(input_data, self._resolved_coupling_names).real
+        self._update_residuals(input_data)
+        return self.assembly.residuals(input_data, self._resolved_variable_names).real
 
     def _run(self) -> DisciplineData:
         super()._run()
@@ -290,7 +291,7 @@ class MDAQuasiNewton(MDARoot):
             self.residual_history = []
 
         # initial solution
-        self.__current_couplings = self._current_working_couplings().real
+        self.__current_couplings = self.get_current_resolved_variables_vector().real
 
         # solve the system
         y_opt = root(

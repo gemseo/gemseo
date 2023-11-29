@@ -106,7 +106,7 @@ class MDARoot(BaseMDASolver):
         )
 
         self._compute_input_couplings()
-        self._resolved_coupling_names = self.strong_couplings
+        self._set_resolved_variables(self.strong_couplings)
 
     def linearize_all_disciplines(
         self, input_data: Mapping[str, NDArray], execute: bool = True
@@ -145,21 +145,16 @@ class MDARoot(BaseMDASolver):
             update_local_data: Whether to update the local data from the disciplines.
         """
         if self.parallel:
-            disciplines = self.coupling_structure.disciplines
             parallel_execution = DiscParallelExecution(
-                disciplines,
+                self.disciplines,
                 self.n_processes,
                 use_threading=self.use_threading,
             )
-            parallel_execution.execute([input_local_data] * len(disciplines))
+            parallel_execution.execute([input_local_data] * len(self.disciplines))
         else:
             for discipline in self.disciplines:
                 discipline.execute(input_local_data)
 
         if update_local_data:
-            self._update_local_data_from_disciplines()
-
-    def _update_local_data_from_disciplines(self) -> None:
-        """Update the local data from disciplines."""
-        for discipline in self.disciplines:
-            self.local_data.update(discipline.get_output_data())
+            for discipline in self.disciplines:
+                self.local_data.update(discipline.get_output_data())

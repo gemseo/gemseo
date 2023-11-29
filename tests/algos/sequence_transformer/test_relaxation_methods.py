@@ -54,11 +54,11 @@ def test_overrelaxation(factor):
     transformer = SequenceTransformerFactory().create("OverRelaxation", factor=factor)
 
     x_1 = g(x_0)
-    new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
+    new_iterate = transformer.compute_transformed_iterate(x_1, x_1 - x_0)
     assert allclose(new_iterate, x_1)
 
     x_2 = g(x_1)
-    new_iterate = transformer.compute_transformed_iterate(x_1, x_2)
+    new_iterate = transformer.compute_transformed_iterate(x_2, x_2 - x_1)
 
     gxn_1, gxn = x_1, x_2
     new_iterate_ref = factor * gxn + (1.0 - factor) * gxn_1

@@ -60,21 +60,24 @@ class CompositeSequenceTransformer(SequenceTransformer):
 
     def compute_transformed_iterate(
         self,
-        current_iterate: NDArray,
-        next_iterate: NDArray,
+        iterate: NDArray,
+        residual: NDArray,
     ) -> NDArray:
         """Compute the next transformed iterate.
 
         Args:
-            current_iterate: The current iterate :math:`x_n`.
-            next_iterate: The new iterate :math:`G(x_n)`.
+            iterate: The iterate :math:`G(x_n)`.
+            residual: The associated residual :math:`G(x_n) - x_n`.
 
         Returns:
             The next transformed iterate :math:`x_{n+1}`.
         """
+        current_iterate = (iterate - residual).copy()
+        next_iterate = iterate.copy()
+
         for transformer in self._sequence_transformers:
             next_iterate = transformer.compute_transformed_iterate(
-                current_iterate, next_iterate
+                next_iterate, next_iterate - current_iterate
             )
 
         return next_iterate

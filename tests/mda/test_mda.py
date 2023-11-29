@@ -21,10 +21,15 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING
 
-import numpy as np
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import eye
+from numpy import ndarray
+from numpy import ones
+from numpy.random import default_rng
+from scipy.linalg import solve
 
 from gemseo import create_discipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
@@ -42,14 +47,13 @@ from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
+from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar import get_inputs
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.testing.helpers import concretize_classes
-
-if TYPE_CHECKING:
-    from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -80,7 +84,9 @@ def test_reset(sellar_mda, sellar_inputs):
 def test_input_couplings():
     with concretize_classes(BaseMDASolver):
         mda = BaseMDASolver([Sellar1()])
-    assert len(mda._current_working_couplings()) == 0
+        mda._set_resolved_variables([])
+
+    assert len(mda.get_current_resolved_variables_vector()) == 0
 
     with concretize_classes(BaseMDASolver):
         mda = BaseMDASolver(
@@ -109,17 +115,16 @@ def test_resolved_couplings():
     )
 
     mda = MDAJacobi(disciplines)
-    assert set(mda._resolved_coupling_names) == set(mda._input_couplings)
+    assert set(mda._resolved_variable_names) == set(mda._input_couplings)
 
     mda = MDAGaussSeidel(disciplines)
-    assert set(mda._resolved_coupling_names) == set(mda.strong_couplings)
+    assert set(mda._resolved_variable_names) == set(mda.strong_couplings)
 
     with pytest.raises(
-        RuntimeError,
-        match="The resolved coupling names have already been set, any changes could "
-        "make the MDA solution inconsistent.",
+        AttributeError,
+        match="can't set attribute",
     ):
-        mda._resolved_coupling_names = "a"
+        mda._resolved_variable_names = "a"
 
 
 def test_jacobian(sellar_mda, sellar_inputs):
@@ -233,17 +238,23 @@ def test_array_couplings(mda_class, grammar_type):
 
 def test_convergence_warning(caplog):
     with concretize_classes(BaseMDASolver):
-        mda = BaseMDASolver([Sellar1()])
+        mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
     mda.tolerance = 1.0
     mda.normed_residual = 2.0
     mda.max_mda_iter = 1
     caplog.clear()
+
     residual_is_small, max_iter_is_reached = mda._warn_convergence_criteria()
     assert not residual_is_small
     assert not max_iter_is_reached
 
     mda.scaling = BaseMDASolver.ResidualScaling.NO_SCALING
-    mda._compute_residual(np.array([1, 2]), np.array([10, 10]))
+
+    mda._set_resolved_variables(mda.strong_couplings)
+    mda.local_data.update({"y_1": array([1.0]), "y_2": array([1.0])})
+    mda._update_residuals({"y_1": array([2.0]), "y_2": array([2.0])})
+
+    mda._compute_residual()
     mda._warn_convergence_criteria()
     assert len(caplog.records) == 1
     assert (
@@ -276,13 +287,17 @@ def test_log_convergence(caplog):
 
     caplog.set_level(logging.INFO)
 
-    mda._compute_residual(np.array([1, 2]), np.array([2, 1]), store_it=False)
+    mda._set_resolved_variables(mda.strong_couplings)
+    mda.local_data.update({"y_1": array([1.0]), "y_2": array([1.0])})
+    mda._update_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
+
+    mda._compute_residual(store_it=False)
     assert (
         "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)"
         not in caplog.text
     )
 
-    mda._compute_residual(np.array([1, 2]), np.array([2, 1]), log_normed_residual=True)
+    mda._compute_residual(log_normed_residual=True)
     assert (
         "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
     )
@@ -344,7 +359,7 @@ def disciplines() -> list[LinearDiscipline]:
 
 
 @pytest.fixture(scope="module")
-def reference_mda_jacobian(disciplines) -> dict[str, dict[str, np.ndarray]]:
+def reference_mda_jacobian(disciplines) -> dict[str, dict[str, ndarray]]:
     """Compute the Jacobian of the MDA to serve as a reference."""
     mda = MDANewtonRaphson(
         disciplines,
@@ -385,4 +400,66 @@ def test_matrix_free_linearization(
             in caplog.text
         )
 
-    assert np.allclose(reference_mda_jacobian["y"]["x"], mda.jac["y"]["x"], atol=1e-12)
+    assert allclose(reference_mda_jacobian["y"]["x"], mda.jac["y"]["x"], atol=1e-12)
+
+
+class LinearImplicitDiscipline(MDODiscipline):
+    def __init__(self, name, input_names, output_names, size=1):
+        super().__init__(name=name)
+        self.size = size
+
+        self.input_grammar.update_from_names(input_names)
+        self.output_grammar.update_from_names(output_names)
+
+        self.residual_variables = {"r": "w"}
+
+        self.run_solves_residuals = False
+        self.mat = default_rng().standard_normal((size, size))
+
+        self.default_inputs = {k: 0.5 * ones(size) for k in input_names}
+
+    def _run(self) -> None:
+        if self.run_solves_residuals:
+            self.local_data["w"] = solve(self.mat, self.local_data["a"])
+
+        self.local_data["r"] = self.mat.dot(self.local_data["w"]) - self.local_data["a"]
+
+    def _compute_jacobian(self, inputs, outputs) -> None:
+        self._init_jacobian(inputs, outputs, fill_missing_keys=True)
+
+        self.jac["r"]["w"] = self.mat
+        self.jac["r"]["a"] = -eye(self.size)
+        self.jac["w"]["a"] = solve(self.mat, eye(self.size))
+
+
+@pytest.fixture(scope="module")
+def coupled_disciplines():
+    return [
+        LinearDiscipline("A", ["x", "w", "c"], ["a"], inputs_size=10, outputs_size=10),
+        LinearImplicitDiscipline("B", ["a", "w"], ["w", "r"], size=10),
+        LinearDiscipline("C", ["a"], ["c"], inputs_size=10, outputs_size=10),
+    ]
+
+
+def test_mda_with_residuals(coupled_disciplines):
+    coupled_disciplines[1].run_solves_residuals = True
+    mda = MDANewtonRaphson(
+        coupled_disciplines,
+        tolerance=1e-14,
+        max_mda_iter=100,
+        acceleration_method=AccelerationMethod.SECANT,
+        over_relaxation_factor=1.0,
+    )
+    output = mda.execute()
+
+    coupled_disciplines[1].run_solves_residuals = False
+    mda = MDANewtonRaphson(
+        coupled_disciplines,
+        tolerance=1e-14,
+        max_mda_iter=100,
+        acceleration_method=AccelerationMethod.SECANT,
+        over_relaxation_factor=1.0,
+    )
+    output_ref = mda.execute()
+
+    assert compare_dict_of_arrays(output, output_ref, tolerance=1e-12)

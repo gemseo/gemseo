@@ -122,7 +122,7 @@ class MDAGaussSeidel(BaseMDASolver):
         )
 
         self._compute_input_couplings()
-        self._resolved_coupling_names = self.strong_couplings
+        self._set_resolved_variables(self.strong_couplings)
 
     # TODO: API: Remove the property and its setter.
     @property
@@ -151,18 +151,21 @@ class MDAGaussSeidel(BaseMDASolver):
     def _run(self) -> None:
         super()._run()
         self.execute_all_disciplines()
-        current_couplings = self._current_working_couplings()
 
         while True:
+            input_data = self.local_data.copy()
+
             self.execute_all_disciplines()
+            self._update_residuals(input_data)
 
             new_couplings = self._sequence_transformer.compute_transformed_iterate(
-                current_couplings, self._current_working_couplings()
+                self.get_current_resolved_variables_vector(),
+                self.get_current_resolved_residual_vector(),
             )
 
-            current_couplings, stop_iterating = self._end_iteration(
-                current_couplings, new_couplings
-            )
+            self._update_local_data(new_couplings)
+            self._update_residuals(input_data)
+            self._compute_residual(log_normed_residual=self._log_convergence)
 
-            if stop_iterating:
+            if self._stop_criterion_is_reached:
                 break

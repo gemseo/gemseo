@@ -960,15 +960,15 @@ def test_get_grammar_file_path(grammar_directory, comp_dir, in_or_out, expected)
     Sellar1.GRAMMAR_DIRECTORY = original_grammar_directory
 
 
-def test_residuals_fail():
-    """Tests the check of residual variables with run_solves_residuals=False."""
-    disc = SobieskiMission()
-    disc.residual_variables = {"y_4": "x_shared"}
-    with pytest.raises(
-        RuntimeError,
-        match="Disciplines that do not solve their residuals are not supported yet.",
-    ):
-        disc.execute()
+# def test_residuals_fail():
+#     """Tests the check of residual variables with run_solves_residuals=False."""
+#     disc = SobieskiMission()
+#     disc.residual_variables = {"y_4": "x_shared"}
+#     with pytest.raises(
+#         RuntimeError,
+#         match="Disciplines that do not solve their residuals are not supported yet.",
+#     ):
+#         disc.execute()
 
 
 def test_activate_checks():
