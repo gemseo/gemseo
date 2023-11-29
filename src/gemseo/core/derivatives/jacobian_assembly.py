@@ -800,6 +800,7 @@ class JacobianAssembly:
         linear_solver: str = "DEFAULT",
         matrix_type: JacobianType = JacobianType.MATRIX,
         residuals: ndarray | None = None,
+        resolved_residual_names: Collection[str] = (),
         **linear_solver_options: Any,
     ) -> tuple[ndarray, bool]:
         """Compute the Newton step for the coupled system of disciplines residuals.
@@ -811,6 +812,7 @@ class JacobianAssembly:
             matrix_type: The representation of the matrix ∂R/∂y (sparse or
                 linear operator).
             residuals: The residuals vector, if ``None`` use :attr:`.residuals`.
+            resolved_residual_names: The names of residual variables.
             **linear_solver_options: The options passed to the linear solver factory.
 
         Returns:
@@ -818,13 +820,20 @@ class JacobianAssembly:
             for which the order is given by the `couplings` argument.
             Whether the linear solver converged.
         """
+        residual_names = (
+            resolved_residual_names if resolved_residual_names else couplings
+        )
+
+        self.compute_sizes(residual_names, couplings, couplings)
+
         # compute the partial derivatives of the residuals
         dres_dy = self.assemble_jacobian(
-            couplings,
+            residual_names,
             couplings,
             is_residual=True,
             jacobian_type=matrix_type,
         )
+
         # form the residuals
         if residuals is None:
             residuals = self.residuals(in_data, couplings)

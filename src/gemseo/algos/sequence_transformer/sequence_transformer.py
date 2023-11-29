@@ -77,21 +77,21 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def compute_transformed_iterate(
         self,
-        current_iterate: NDArray,
-        next_iterate: NDArray,
+        iterate: NDArray,
+        residual: NDArray,
     ) -> NDArray:
         """Compute the next transformed iterate.
 
         Args:
-            current_iterate: The current iterate :math:`x_n`.
-            next_iterate: The new iterate :math:`G(x_n)`.
+            iterate: The iterate :math:`G(x_n)`.
+            residual: The associated residual :math:`G(x_n) - x_n`.
 
         Returns:
             The next transformed iterate :math:`x_{n+1}`.
         """
         # Store iterates and residuals
-        self._iterates.append(next_iterate.copy())
-        self._residuals.append(next_iterate - current_iterate)
+        self._iterates.append(iterate.copy())
+        self._residuals.append(residual.copy())
 
         # Compute the transformed iterate only if sufficient material at hand
         if (
@@ -100,7 +100,7 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         ):
             return self._compute_transformed_iterate()
 
-        return next_iterate
+        return iterate
 
     @abstractmethod
     def _compute_transformed_iterate(self) -> NDArray:

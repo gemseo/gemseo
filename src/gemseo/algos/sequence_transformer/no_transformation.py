@@ -40,6 +40,6 @@ class NoTransformation(SequenceTransformer):
         pass
 
     def compute_transformed_iterate(  # noqa: D102
-        self, current_iterate: NDArray, next_iterate: NDArray
+        self, iterate: NDArray, residual: NDArray
     ) -> NDArray:
-        return next_iterate
+        return iterate

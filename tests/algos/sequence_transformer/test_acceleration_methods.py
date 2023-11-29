@@ -55,7 +55,7 @@ def test_no_acceleration():
     transformer = factory.create(AccelerationMethod.NONE)
 
     x_1 = g(x_0)
-    new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
+    new_iterate = transformer.compute_transformed_iterate(x_1, x_1 - x_0)
     assert new_iterate is x_1
 
 
@@ -65,15 +65,15 @@ def test_alternate_2_delta():
     transformer = factory.create(AccelerationMethod.ALTERNATE_2_DELTA)
 
     x_1 = g(x_0)
-    new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
+    new_iterate = transformer.compute_transformed_iterate(x_1, x_1 - x_0)
     assert allclose(new_iterate, x_1)
 
     x_2 = g(x_1)
-    new_iterate = transformer.compute_transformed_iterate(x_1, x_2)
+    new_iterate = transformer.compute_transformed_iterate(x_2, x_2 - x_1)
     assert allclose(new_iterate, x_2)
 
     x_3 = g(x_2)
-    new_iterate = transformer.compute_transformed_iterate(x_2, x_3)
+    new_iterate = transformer.compute_transformed_iterate(x_3, x_3 - x_2)
 
     dxn_2, dxn_1, dxn = x_1 - x_0, x_2 - x_1, x_3 - x_2
     gxn_2, gxn_1, gxn = x_1, x_2, x_3
@@ -90,15 +90,15 @@ def test_alternate_delta_squared():
     transformer = factory.create(AccelerationMethod.ALTERNATE_DELTA_SQUARED)
 
     x_1 = g(x_0)
-    new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
+    new_iterate = transformer.compute_transformed_iterate(x_1, x_1 - x_0)
     assert allclose(new_iterate, x_1)
 
     x_2 = g(x_1)
-    new_iterate = transformer.compute_transformed_iterate(x_1, x_2)
+    new_iterate = transformer.compute_transformed_iterate(x_2, x_2 - x_1)
     assert allclose(new_iterate, x_2)
 
     x_3 = g(x_2)
-    new_iterate = transformer.compute_transformed_iterate(x_2, x_3)
+    new_iterate = transformer.compute_transformed_iterate(x_3, x_3 - x_2)
 
     dxn_2, dxn_1, dxn = x_1 - x_0, x_2 - x_1, x_3 - x_2
     gxn_2, gxn_1, gxn = x_1, x_2, x_3
@@ -116,11 +116,11 @@ def test_secant():
     transformer = factory.create(AccelerationMethod.SECANT)
 
     x_1 = g(x_0)
-    new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
+    new_iterate = transformer.compute_transformed_iterate(x_1, x_1 - x_0)
     assert allclose(new_iterate, x_1)
 
     x_2 = g(x_1)
-    new_iterate = transformer.compute_transformed_iterate(x_1, x_2)
+    new_iterate = transformer.compute_transformed_iterate(x_2, x_2 - x_1)
 
     dxn_1, dxn = x_1 - x_0, x_2 - x_1
     gxn_1, gxn = x_1, x_2
@@ -138,11 +138,11 @@ def test_aitken():
     transformer = factory.create(AccelerationMethod.AITKEN)
 
     x_1 = g(x_0)
-    new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
+    new_iterate = transformer.compute_transformed_iterate(x_1, x_1 - x_0)
     assert allclose(new_iterate, x_1)
 
     x_2 = g(x_1)
-    new_iterate = transformer.compute_transformed_iterate(x_1, x_2)
+    new_iterate = transformer.compute_transformed_iterate(x_2, x_2 - x_1)
 
     dxn_1, dxn = x_1 - x_0, x_2 - x_1
     gxn = x_2

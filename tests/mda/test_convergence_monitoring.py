@@ -83,7 +83,7 @@ def get_jacobi_reference_residuals(
 
     initial_residual = {}
     for coupling in ["a", "b", "y"]:
-        initial_residual[coupling] = input_[coupling] - output[coupling]
+        initial_residual[coupling] = output[coupling] - input_[coupling]
 
     mda.scaling = MDA.ResidualScaling.NO_SCALING
     mda.execute()
@@ -96,7 +96,7 @@ def get_jacobi_reference_residuals(
 
     final_residual = {}
     for coupling in ["a", "b", "y"]:
-        final_residual[coupling] = input_[coupling] - output[coupling]
+        final_residual[coupling] = output[coupling] - input_[coupling]
 
     return initial_residual, final_residual
 
@@ -182,8 +182,8 @@ def get_gauss_seidel_reference_residuals(
     _b = [value.outputs["b"] for value in disciplines[1].cache]
     _y = [value.outputs["y"] for value in disciplines[2].cache]
 
-    initial_residual = {"b": _b[0] - _b[1], "y": _y[0] - _y[1]}
-    final_residual = {"b": _b[-2] - _b[-1], "y": _y[-2] - _y[-1]}
+    initial_residual = {"b": _b[1] - _b[0], "y": _y[1] - _y[0]}
+    final_residual = {"b": _b[-1] - _b[-2], "y": _y[-1] - _y[-2]}
 
     for discipline in disciplines:
         discipline.cache.clear()
