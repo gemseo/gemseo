@@ -326,7 +326,8 @@ def test_parallel_execution(tmp_wd):
         assert Path(f"{i + 1}").is_dir()
 
 
-def test_last_execution_directory(tmp_wd):
+@pytest.mark.parametrize("clean_after_execution", [True, False])
+def test_last_execution_directory(tmp_wd, clean_after_execution: bool):
     """Test the property: ``last_execution_directory``."""
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
@@ -340,6 +341,7 @@ def test_last_execution_directory(tmp_wd):
         parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
+        clean_after_execution=clean_after_execution,
     )
 
     indata = {
@@ -349,5 +351,9 @@ def test_last_execution_directory(tmp_wd):
     }
     assert disc.last_execution_directory is None
     disc.execute(indata)
-    assert disc.last_execution_directory.is_dir()
     assert disc.last_execution_directory == tmp_wd / "1"
+
+    if clean_after_execution:
+        assert not disc.last_execution_directory.is_dir()
+    else:
+        assert disc.last_execution_directory.is_dir()

@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from shutil import rmtree
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import MDODiscipline
@@ -34,6 +35,9 @@ class _BaseDiscFromExe(MDODiscipline):
     _executable_runner: _BaseExecutableRunner
     """The executable runner."""
 
+    __clean_after_execution: bool
+    """Whether to clean the working directory after execution."""
+
     def __init__(
         self,
         executable_runner: _BaseExecutableRunner,
@@ -44,10 +48,13 @@ class _BaseDiscFromExe(MDODiscipline):
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         cache_type: MDODiscipline.CacheType = MDODiscipline.CacheType.SIMPLE,
         cache_file_path: str | Path | None = None,
+        clean_after_execution: bool = False,
     ) -> None:
         """
         Args:
             executable_runner: The attached executable runner.
+            clean_after_execution: Whether to clean the working directory after
+                execution.
         """  # noqa: D205, D212, D415
         super().__init__(
             name,
@@ -59,6 +66,7 @@ class _BaseDiscFromExe(MDODiscipline):
             cache_file_path,
         )
         self._executable_runner = executable_runner
+        self.__clean_after_execution = clean_after_execution
 
     @abstractmethod
     def _create_inputs(self) -> None:
@@ -77,6 +85,9 @@ class _BaseDiscFromExe(MDODiscipline):
         self._create_inputs()
         self._executable_runner.execute()
         self.store_local_data(**self._parse_outputs())
+
+        if self.__clean_after_execution:
+            rmtree(self.last_execution_directory)
 
     @property
     def last_execution_directory(self) -> Path | None:

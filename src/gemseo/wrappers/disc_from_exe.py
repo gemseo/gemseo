@@ -180,6 +180,7 @@ class DiscFromExe(_BaseDiscFromExe):
         write_input_file_method: InputWriter | None = None,
         parse_out_separator: str = "=",
         use_shell: bool = True,
+        clean_after_execution: bool = False,
     ) -> None:
         """
         Args:
@@ -229,7 +230,9 @@ class DiscFromExe(_BaseDiscFromExe):
             command_line=executable_command,
             directory_naming_method=folders_iter,
         )
-        super().__init__(executable_runner, name=name)
+        super().__init__(
+            executable_runner, name=name, clean_after_execution=clean_after_execution
+        )
 
         self.input_template = Path(input_template)
         self.output_template = Path(output_template)
