@@ -516,12 +516,12 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def labels(self) -> Mapping[str, str]:
-        """The labels of the variables."""
-        return self.__names_to_labels
+        """The labels for the variables."""
+        return self._common_settings.labels
 
     @labels.setter
     def labels(self, names_to_labels: Mapping[str, str]) -> None:
-        self.__names_to_labels = names_to_labels
+        self._common_settings.labels = names_to_labels
 
     @staticmethod
     def _force_variable_to_tuple(variable: VariableType) -> tuple[str, int]:
