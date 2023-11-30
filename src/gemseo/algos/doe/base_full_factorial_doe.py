@@ -129,6 +129,14 @@ class BaseFullFactorialDOE(BaseDOE):
             The number of levels per input dimension.
         """
         n_samples_dir = int(n_samples ** (1.0 / dimension))
+
+        # Check for numerical precision issues,
+        # e.g. int(10000**(1/3)) = int(9.999999999...) = 9 instead of 10
+        # and correct if necessary.
+        n_samples_dir_plus_one = n_samples_dir + 1
+        if n_samples_dir_plus_one**dimension == n_samples:
+            n_samples_dir = n_samples_dir_plus_one
+
         final_n_samples = n_samples_dir**dimension
         if final_n_samples != n_samples:
             LOGGER.warning(

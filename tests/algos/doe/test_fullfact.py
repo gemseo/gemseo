@@ -177,3 +177,12 @@ def test__compute_fullfact_levels(caplog):
     _, log_level, log_message = caplog.record_tuples[0]
     assert log_level == logging.WARNING
     assert message in log_message
+
+
+def test_numerical_precision_issue():
+    """Check that the number of samples is robust to numerical precision."""
+    with concretize_classes(BaseFullFactorialDOE):
+        levels = BaseFullFactorialDOE()._compute_fullfact_levels(1000, 3)
+
+    # In the issue #1028, the result was wrong: [9, 9, 9].
+    assert levels == [10, 10, 10]
