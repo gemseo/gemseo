@@ -23,6 +23,7 @@ from numpy import linspace
 from numpy import newaxis
 from numpy.testing import assert_equal
 
+from gemseo import SEED
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
@@ -40,7 +41,7 @@ def test_default_properties(sample_indices):
     """Check the default values of the properties."""
     cross_validation = CrossValidation(sample_indices)
     assert_equal(cross_validation.sample_indices, sample_indices)
-    assert cross_validation.seed is None
+    assert cross_validation.seed == SEED
     assert cross_validation.n_folds == 5
     assert cross_validation.randomize is False
     assert array_equal(cross_validation.shuffled_sample_indices, sample_indices)
@@ -84,10 +85,13 @@ def test_properties_with_randomize(sample_indices):
     assert not array_equal(next(iter(cross_validation.splits)).test, array([1, 2]))
 
 
-def test_properties_with_random_default_seed(sample_indices):
-    """Check that the default seed is random (two instances give different folds)."""
-    first_cross_validation = CrossValidation(sample_indices, randomize=True)
-    second_cross_validation = CrossValidation(sample_indices, randomize=True)
+def test_properties_with_none_seed(sample_indices):
+    """Check that setting the seed at None makes the cross-validation random.
+
+    i.e. two instances give different folds.
+    """
+    first_cross_validation = CrossValidation(sample_indices, randomize=True, seed=None)
+    second_cross_validation = CrossValidation(sample_indices, randomize=True, seed=None)
     assert not array_equal(
         first_cross_validation.shuffled_sample_indices,
         second_cross_validation.shuffled_sample_indices,
@@ -96,7 +100,7 @@ def test_properties_with_random_default_seed(sample_indices):
 
 def test_properties_with_custom_seed(sample_indices):
     """Check that fixing the seed makes the cross-validation deterministic."""
-    first_cross_validation = CrossValidation(sample_indices, randomize=True, seed=1)
+    first_cross_validation = CrossValidation(sample_indices, randomize=True)
     second_cross_validation = CrossValidation(sample_indices, randomize=True, seed=2)
     third_cross_validation = CrossValidation(sample_indices, randomize=True, seed=2)
     assert not array_equal(

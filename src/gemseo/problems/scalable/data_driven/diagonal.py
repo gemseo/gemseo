@@ -67,6 +67,7 @@ from numpy.random import Generator
 from numpy.random import default_rng
 from scipy.interpolate import InterpolatedUnivariateSpline
 
+from gemseo import SEED
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -89,7 +90,7 @@ class ScalableDiagonalModel(ScalableModel):
         inpt_dep=None,
         force_input_dependency: bool = False,
         allow_unused_inputs: bool = True,
-        seed: int = 1,
+        seed: int = SEED,
         group_dep=None,
     ) -> None:
         """Constructor.
@@ -501,7 +502,9 @@ class ScalableDiagonalApproximation:
     all inputs and outputs have the same names; only their dimensions vary.
     """
 
-    def __init__(self, sizes, output_dependency, io_dependency, seed: int = 0) -> None:
+    def __init__(
+        self, sizes, output_dependency, io_dependency, seed: int = SEED
+    ) -> None:
         """
         Constructor:
 

@@ -20,6 +20,7 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
+from gemseo import SEED
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 
 
@@ -32,7 +33,7 @@ def bootstrap(sample_indices) -> Bootstrap:
 def test_default_properties(bootstrap, sample_indices):
     """Check the default values of the properties."""
     assert_equal(bootstrap.sample_indices, sample_indices)
-    assert bootstrap.seed is None
+    assert bootstrap.seed == SEED
     assert bootstrap.n_replicates == 100
     assert len(bootstrap.splits) == 100
 

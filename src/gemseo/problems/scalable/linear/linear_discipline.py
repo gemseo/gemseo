@@ -25,6 +25,7 @@ from numpy.random import default_rng
 from scipy.sparse import rand as sp_rand
 from strenum import LowercaseStrEnum
 
+from gemseo import SEED
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -105,7 +106,7 @@ class LinearDiscipline(MDODiscipline):
 
         if matrix_format == self.MatrixFormat.DENSE:
             self.mat = (
-                default_rng().random((self.size_out, self.size_in)) / self.size_in
+                default_rng(SEED).random((self.size_out, self.size_in)) / self.size_in
             )
         else:
             self.mat = (

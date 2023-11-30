@@ -61,6 +61,7 @@ from numpy import where
 from numpy import zeros
 from numpy.random import default_rng
 
+from gemseo import SEED
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import generate_coupling_graph
@@ -420,7 +421,7 @@ class ScalableProblem:
             }
         for constraint, alphai in feasibility_level.items():
             if constraint in list(equilibrium.keys()):
-                sample = default_rng().random(len(equilibrium[constraint]))
+                sample = default_rng(SEED).random(len(equilibrium[constraint]))
                 val = equilibrium[constraint]
                 taui = where(
                     sample < active_probability, val, alphai + (1 - alphai) * val

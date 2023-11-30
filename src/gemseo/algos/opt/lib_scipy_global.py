@@ -37,6 +37,7 @@ from numpy.typing import NDArray
 from scipy import optimize
 from scipy.optimize import NonlinearConstraint
 
+from gemseo import SEED
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 
@@ -118,7 +119,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         sampling_method: str = "simplicial",
         niters: int = 1,
         n: int = 100,
-        seed: int = 1,
+        seed: int = SEED,
         polish: bool = True,
         iters: int = 1,
         eq_tolerance: float = 1e-6,

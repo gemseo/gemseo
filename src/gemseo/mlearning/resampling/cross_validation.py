@@ -26,6 +26,7 @@ from numpy import setdiff1d
 from numpy import vstack
 from numpy.random import default_rng
 
+from gemseo import SEED
 from gemseo.mlearning.resampling.resampler import Resampler
 from gemseo.mlearning.resampling.split import Split
 from gemseo.mlearning.resampling.splits import Splits
@@ -48,7 +49,7 @@ class CrossValidation(Resampler):
         sample_indices: NDArray[int],
         n_folds: int = 5,
         randomize: bool = False,
-        seed: int | None = None,
+        seed: int | None = SEED,
     ) -> None:
         """
         Args:

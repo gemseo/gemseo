@@ -37,6 +37,7 @@ from numpy import zeros
 from numpy.linalg import inv
 from numpy.random import default_rng
 
+from gemseo import SEED
 from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_0
 from gemseo.problems.scalable.parametric.core.disciplines.main_discipline import (
     MainDiscipline,
@@ -114,7 +115,7 @@ class ScalableProblem:
         d_0: int = DEFAULT_D_0,
         add_random_variables: bool = False,
         alpha: float = 0.50,
-        seed: int = 1,
+        seed: int = SEED,
     ) -> None:
         r"""
         Args:

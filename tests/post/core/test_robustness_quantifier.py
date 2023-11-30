@@ -30,6 +30,7 @@ from numpy.random import default_rng
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
+from gemseo import SEED
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
@@ -123,7 +124,7 @@ def test_compute_expected_value(database):
     assert var == pytest.approx(0.0050, abs=1e-4)
 
     e_ref, var_ref = rq.montecarlo_average_var(mu, cov, func=rosen, n_samples=300000)
-    input_samples = default_rng(1).multivariate_normal(mu, cov, 300000).T
+    input_samples = default_rng(SEED).multivariate_normal(mu, cov, 300000).T
     output_samples = rosen(input_samples)
     assert output_samples.mean() == e_ref
     assert output_samples.var() == var_ref

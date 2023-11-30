@@ -40,6 +40,7 @@ from numpy import int32
 from numpy import ndarray
 from numpy import savetxt
 
+from gemseo import SEED
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
@@ -115,7 +116,7 @@ class DOELibrary(DriverLibrary):
         super().__init__()
         self.unit_samples = array([])
         self.samples = array([])
-        self.seed = 0
+        self.seed = SEED
         self.eval_jac = False
 
     def _pre_run(

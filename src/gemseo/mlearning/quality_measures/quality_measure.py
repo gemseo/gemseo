@@ -33,6 +33,7 @@ from numpy import array
 from numpy import ndarray
 from strenum import StrEnum
 
+from gemseo import SEED
 from gemseo.core.base_factory import BaseFactory
 from gemseo.datasets.dataset import Dataset
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -127,7 +128,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         self.algo = algo
         self._fit_transformers = fit_transformers
-        self.__default_seed = 0
+        self.__default_seed = SEED
 
     @abstractmethod
     def compute_learning_measure(
@@ -289,7 +290,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _pre_process(
         self,
         samples: Sequence[int] | None,
-        seed: int | None = None,
+        seed: int | None = SEED,
         update_seed: bool = False,
     ):
         """Pre-process the data required for the evaluation of the quality measure.
