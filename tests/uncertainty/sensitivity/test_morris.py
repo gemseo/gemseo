@@ -437,10 +437,10 @@ MorrisAnalysisSamplingPhase
    Disciplines: _OATSensitivity
    MDO formulation: MDF
 Running the algorithm lhs:
-\.\.\.  20%\|██        \| 1\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\.\.\.  40%\|████      \| 2\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\.\.\.  60%\|██████    \| 3\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\.\.\.  80%\|████████  \| 4\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\.\.\. 100%\|██████████\| 5\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\*\*\* End MorrisAnalysisSamplingPhase execution \(time: 0:00:00\.\d+\) \*\*\*$"""
+\.\.\.  20%\|██        \| 1\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+\.\.\.  40%\|████      \| 2\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+\.\.\.  60%\|██████    \| 3\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+\.\.\.  80%\|████████  \| 4\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+\.\.\. 100%\|██████████\| 5\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+\*\*\* End MorrisAnalysisSamplingPhase execution \(time: \d+:\d+:\d+\.\d+\) \*\*\*$"""
     assert re.match(pattern, result)
