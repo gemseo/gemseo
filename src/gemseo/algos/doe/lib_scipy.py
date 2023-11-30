@@ -38,6 +38,7 @@ from scipy.stats.qmc import QMCEngine
 from scipy.stats.qmc import Sobol
 from strenum import StrEnum
 
+from gemseo import SEED
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
 
@@ -55,7 +56,7 @@ class _MonteCarlo(QMCEngine):
     """Monte Carlo sampling."""
 
     def __init__(
-        self, d: int, seed: int | integer | Generator | RandomState | None = None
+        self, d: int, seed: int | integer | Generator | RandomState | None = SEED
     ) -> None:
         super().__init__(d=d, seed=seed)
 

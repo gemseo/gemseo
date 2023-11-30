@@ -194,6 +194,9 @@ LOGGER = logging.getLogger(__name__)
 # by default no logging is produced
 LOGGER.addHandler(logging.NullHandler())
 
+SEED: int = 0
+"""The default seed for random number generators."""
+
 
 def generate_n2_plot(
     disciplines: Sequence[MDODiscipline],

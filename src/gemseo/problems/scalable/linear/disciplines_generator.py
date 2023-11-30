@@ -43,6 +43,7 @@ from numpy import setdiff1d
 from numpy import unique
 from numpy.random import default_rng
 
+from gemseo import SEED
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 
@@ -186,7 +187,7 @@ def create_disciplines_from_sizes(
     used_outputs = []
     used_inputs = []
 
-    rng = default_rng()
+    rng = default_rng(SEED)
     for disc_name in disc_names:
         if no_strong_couplings:
             input_names = setdiff1d(input_names, used_outputs, True)

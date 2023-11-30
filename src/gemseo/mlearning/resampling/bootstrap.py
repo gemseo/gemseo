@@ -22,6 +22,7 @@ from numpy import setdiff1d
 from numpy import unique
 from numpy.random import default_rng
 
+from gemseo import SEED
 from gemseo.mlearning.resampling.resampler import Resampler
 from gemseo.mlearning.resampling.split import Split
 from gemseo.mlearning.resampling.splits import Splits
@@ -37,7 +38,7 @@ class Bootstrap(Resampler):
         self,
         sample_indices: NDArray[int],
         n_replicates: int = 100,
-        seed: int | None = None,
+        seed: int | None = SEED,
     ) -> None:
         """
         Args:

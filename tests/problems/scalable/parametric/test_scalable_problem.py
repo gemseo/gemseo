@@ -119,8 +119,8 @@ def test_create_quadratic_optimization_problem(scalable_problem):
         ),
     )
     x = array([1.0, 2.0, 3.0])
-    assert_almost_equal(qp_problem.objective(x), array(11.769), decimal=3)
-    assert_almost_equal(qp_problem.constraints[0](x), array([2.041, 2.894]), decimal=3)
+    assert_almost_equal(qp_problem.objective(x), array(15.784), decimal=3)
+    assert_almost_equal(qp_problem.constraints[0](x), array([0.79, 3.097]), decimal=3)
 
     scenario = scalable_problem.create_scenario()
     scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
@@ -146,17 +146,17 @@ def test_create_quadratic_optimization_problem_uncertainty_default(scalable_prob
         covariance_matrices=(array([[1]]), array([[1.25]]))
     )
     x = array([1.0, 2.0, 3.0])
-    assert_almost_equal(qp_problem.objective(x), array(15.587), decimal=3)
-    assert_almost_equal(qp_problem.constraints[0](x), array([4.342, 6.053]), decimal=3)
+    assert_almost_equal(qp_problem.objective(x), array(18.539), decimal=3)
+    assert_almost_equal(qp_problem.constraints[0](x), array([2.843, 5.706]), decimal=3)
 
 
 @pytest.mark.parametrize(
     ("options", "expected"),
     [
-        ({}, [4.342, 6.053]),
-        ({"margin_factor": 3.0}, [5.492, 7.633]),
-        ({"use_margin": False}, [4.717, 6.569]),
-        ({"use_margin": False, "tolerance": 0.1}, [3.515, 4.919]),
+        ({}, [2.843, 5.706]),
+        ({"margin_factor": 3.0}, [3.869, 7.01]),
+        ({"use_margin": False}, [3.178, 6.132]),
+        ({"use_margin": False, "tolerance": 0.1}, [2.105, 4.769]),
     ],
 )
 def test_robust_quadratic_optimization(scalable_problem, options, expected):
@@ -165,16 +165,16 @@ def test_robust_quadratic_optimization(scalable_problem, options, expected):
         covariance_matrices=(array([[1]]), array([[1.25]])), **options
     )
     x = array([1.0, 2.0, 3.0])
-    assert_almost_equal(qp_problem.objective(x), array(15.587), decimal=3)
+    assert_almost_equal(qp_problem.objective(x), array(18.539), decimal=3)
     assert_almost_equal(qp_problem.constraints[0](x), array(expected), decimal=3)
 
 
 def test_compute_y(scalable_problem):
     """Check the method compute_y."""
     assert_almost_equal(
-        scalable_problem.compute_y(array([1, 2, 3])), array([-1.8544139, -2.7075148])
+        scalable_problem.compute_y(array([1, 2, 3])), array([-1.3081518, -3.6156121])
     )
     assert_almost_equal(
         scalable_problem.compute_y(array([1, 2, 3]), array([0.1, 0.2])),
-        array([-1.7081268, -2.3864326]),
+        array([-1.1971993, -3.3483043]),
     )

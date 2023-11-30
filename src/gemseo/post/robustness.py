@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 from numpy import zeros
 from numpy.random import default_rng
 
+from gemseo import SEED
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.string_tools import repr_variable
@@ -111,7 +112,7 @@ class Robustness(OptPostProcessor):
                 variance = robustness.compute_variance(x_ref, cov)
                 if variance > 0:  # Otherwise normal doesn't work
                     function_samples.append(
-                        default_rng(0).normal(mean, sqrt(variance), 500)
+                        default_rng(SEED).normal(mean, sqrt(variance), 500)
                     )
                     function_names.append(repr_variable(func_name, func_index, dim))
 

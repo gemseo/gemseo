@@ -29,6 +29,7 @@ import numpy as np
 from numpy.random import default_rng
 from strenum import StrEnum
 
+from gemseo import SEED
 from gemseo.post.core.hessians import BFGSApprox
 from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
@@ -213,7 +214,7 @@ class RobustnessQuantifier:
             raise ValueError(
                 "Covariance matrix dimension " + "incompatible with mean dimensions"
             )
-        ran = default_rng(1).multivariate_normal(mean, cov, n_samples).T
+        ran = default_rng(SEED).multivariate_normal(mean, cov, n_samples).T
         vals = np.zeros(n_samples)
         if func is None:
             func = self.compute_function_approximation

@@ -20,6 +20,7 @@ from numpy.random import default_rng
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 
+from gemseo import SEED
 from gemseo.problems.scalable.parametric.core.scalable_discipline_settings import (
     ScalableDisciplineSettings,
 )
@@ -178,7 +179,7 @@ def test_scalable_disciplines(default_scalable_problem):
 
 def test_scalable_discipline_coefficients(default_scalable_problem):
     """Check the coefficients of the scalable disciplines."""
-    rng = default_rng(1)
+    rng = default_rng(SEED)
     for scalable_discipline, coupling_name in zip(
         default_scalable_problem.scalable_disciplines, ["y_2", "y_1"]
     ):
@@ -192,12 +193,12 @@ def test_scalable_discipline_coefficients(default_scalable_problem):
 def test_main_discipline_coefficients(default_scalable_problem):
     """Check the coefficients of the main disciplines."""
     coefficients = default_scalable_problem.main_discipline._MainDiscipline__t_i
-    assert_almost_equal(coefficients, array([[0.187], [0.187]]), decimal=3)
+    assert_almost_equal(coefficients, array([[-0.519], [-0.519]]), decimal=3)
 
 
 def test_coefficients_custom(custom_scalable_problem):
     """Check the coefficients."""
-    rng = default_rng(1)
+    rng = default_rng(SEED)
     for p_i, d_i, scalable_discipline, couplings in zip(
         [3, 2, 1],
         [1, 2, 3],
@@ -213,9 +214,9 @@ def test_coefficients_custom(custom_scalable_problem):
         assert_equal(coefficients.a_i, rng.random(p_i))
 
     coefficients = custom_scalable_problem.main_discipline._MainDiscipline__t_i
-    assert_almost_equal(coefficients[0], array([-0.056, -0.056, -0.056]), decimal=3)
-    assert_almost_equal(coefficients[1], array([-0.056, -0.056]), decimal=3)
-    assert_almost_equal(coefficients[2], array([-0.056]), decimal=3)
+    assert_almost_equal(coefficients[0], array([-0.59, -0.59, -0.59]), decimal=3)
+    assert_almost_equal(coefficients[1], array([-0.59, -0.59]), decimal=3)
+    assert_almost_equal(coefficients[2], array([-0.59]), decimal=3)
 
 
 def test_qp_problem(default_scalable_problem):
@@ -223,17 +224,17 @@ def test_qp_problem(default_scalable_problem):
     problem = default_scalable_problem.qp_problem
     assert_almost_equal(
         problem.Q,
-        array([[4.194, 2.857, 0.89], [2.857, 3.925, 1.008], [0.89, 1.008, 0.472]]),
+        array([[5.972, 0.793, 2.356], [0.793, 0.209, 0.335], [2.356, 0.335, 1.755]]),
         decimal=3,
     )
-    assert_almost_equal(problem.c, array([[-3.712], [-4.893], [-1.462]]), decimal=3)
-    assert_almost_equal(problem.d, 3.148, decimal=3)  # noqa: FURB152
+    assert_almost_equal(problem.c, array([[-1.931], [-0.281], [-1.423]]), decimal=3)
+    assert_almost_equal(problem.d, 0.577, decimal=3)  # noqa: FURB152
     assert_almost_equal(
         problem.A,
         array(
             [
-                [0.6322114, 1.07924, 0.06929494],
-                [0.83511447, 0.89328975, 0.48068205],
+                [0.687, 0.277, 0.038],
+                [1.23, 0.168, 0.936],
                 [1.0, 0.0, 0.0],
                 [0.0, 1.0, 0.0],
                 [0.0, 0.0, 1.0],
@@ -246,7 +247,7 @@ def test_qp_problem(default_scalable_problem):
     )
     assert_almost_equal(
         problem.b,
-        array([0.957, 1.169, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0]),
+        array([0.566, 1.277, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0]),
         decimal=3,
     )
 

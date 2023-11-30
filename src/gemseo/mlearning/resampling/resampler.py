@@ -24,6 +24,7 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy import vstack
 
+from gemseo import SEED
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
@@ -66,7 +67,7 @@ class Resampler(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         sample_indices: NDArray[int],
         n_splits: int,
-        seed: int | None = None,
+        seed: int | None = SEED,
     ) -> None:
         """
         Args:
