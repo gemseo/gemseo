@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from sys import platform
 from typing import TYPE_CHECKING
 from typing import Tuple
@@ -34,6 +35,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
+from gemseo.algos.doe.lib_scipy import SciPyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
@@ -313,3 +315,41 @@ def test_variable_types(doe, var_type1, var_type2):
     )
 
     scenario.execute({"algo": "lhs", "n_samples": 1})
+
+
+@pytest.mark.parametrize(("l_b", "u_b"), [(None, None), (1, None), (None, 1)])
+def test_uunormalized_components(l_b, u_b):
+    """Check that an error is raised when the design space is unbounded."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, l_b=1, u_b=3)
+    design_space.add_variable("y", 3, l_b=l_b, u_b=u_b)
+    design_space.add_variable("z", l_b=0, u_b=1)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: sum(x), "f")
+
+    library = SciPyDOE()
+    library.algo_name = "MC"
+    error_message = "The components {2, 3, 4} of the design space are unbounded."
+    with pytest.raises(ValueError, match=re.escape(error_message)):
+        library.compute_doe(design_space, 3)
+
+    with pytest.raises(ValueError, match=re.escape(error_message)):
+        library.execute(problem, n_samples=3)
+
+
+def test_uunormalized_components_with_parameter_space():
+    """Check that an error is not raised when the design space is a parameter space."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", "OTNormalDistribution")
+
+    # The parameter space is unbounded.
+    assert not parameter_space.normalize["x"]
+
+    problem = OptimizationProblem(parameter_space)
+    problem.objective = MDOFunction(lambda x: sum(x), "f")
+
+    library = SciPyDOE()
+    library.algo_name = "MC"
+    library.compute_doe(parameter_space, 3)
+    library.execute(problem, n_samples=3)
