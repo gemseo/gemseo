@@ -23,6 +23,7 @@ from typing import Any
 from unittest import mock
 
 import pytest
+from numpy import array
 from numpy import unique
 
 from gemseo.algos.design_space import DesignSpace
@@ -318,6 +319,7 @@ def variables_space():
     design_space.variable_sizes = {"x": 2}
     design_space.dimension = 2
     design_space.untransform_vect = lambda doe, no_check: doe
+    design_space.normalize = {"x": array([True, True])}
     return design_space
 
 

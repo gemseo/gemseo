@@ -26,6 +26,7 @@ import logging
 from collections.abc import Mapping
 from pathlib import Path
 from typing import ClassVar
+from typing import Final
 from typing import List
 from typing import Optional
 from typing import Sequence
@@ -56,22 +57,24 @@ class CustomDOE(DOELibrary):
     does not.
     """
 
-    COMMENTS_KEYWORD: ClassVar[str] = "comments"
+    COMMENTS_KEYWORD: Final[str] = "comments"
     """The name given to the string indicating a comment line."""
 
-    DELIMITER_KEYWORD: ClassVar[str] = "delimiter"
+    DELIMITER_KEYWORD: Final[str] = "delimiter"
     """The name given to the string separating two fields."""
 
-    DOE_FILE: ClassVar[str] = "doe_file"
+    DOE_FILE: Final[str] = "doe_file"
     """The name given to the DOE file."""
 
-    SAMPLES: ClassVar[str] = "samples"
+    SAMPLES: Final[str] = "samples"
     """The name given to the samples."""
 
-    SKIPROWS_KEYWORD: ClassVar[str] = "skiprows"
+    SKIPROWS_KEYWORD: Final[str] = "skiprows"
     """The name given to the number of skipped rows in the DOE file."""
 
-    LIBRARY_NAME = "GEMSEO"
+    LIBRARY_NAME: ClassVar[str] = "GEMSEO"
+
+    _USE_UNIT_HYPERCUBE: ClassVar[bool] = False
 
     def __init__(self) -> None:  # noqa:D107
         super().__init__()

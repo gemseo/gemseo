@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from multiprocessing import current_process
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Dict
 from typing import Final
 from typing import List
@@ -36,13 +37,16 @@ from typing import Union
 
 from numpy import array
 from numpy import dtype
+from numpy import hstack
 from numpy import int32
 from numpy import ndarray
 from numpy import savetxt
+from numpy import where
 
 from gemseo import SEED
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
+from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
@@ -111,8 +115,10 @@ class DOELibrary(DriverLibrary):
         "integer": int32,
     }
 
+    _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
+    """Whether the algorithms use a unit hypercube to generate the input samples."""
+
     def __init__(self) -> None:
-        """Constructor Abstract class."""
         super().__init__()
         self.unit_samples = array([])
         self.samples = array([])
@@ -125,6 +131,7 @@ class DOELibrary(DriverLibrary):
         algo_name: str,
         **options: DOELibraryOptionType,
     ) -> None:
+        self.__check_unnormalization_capability(self.problem.design_space)
         super()._pre_run(problem, algo_name, **options)
         problem.stop_if_nan = False
         options[self.DIMENSION] = self.problem.dimension
@@ -347,6 +354,25 @@ class DOELibrary(DriverLibrary):
                         sample,
                     )
 
+    @classmethod
+    def __check_unnormalization_capability(cls, design_space) -> None:
+        """Check if a point of the unit hypercube can be unnormalized.
+
+        Args:
+            design_space: The design space to unnormalize the point.
+
+        Raises:
+            ValueError: When some components of the design space are unbounded.
+        """
+        if not cls._USE_UNIT_HYPERCUBE or isinstance(design_space, ParameterSpace):
+            return
+
+        components = set(where(hstack(list(design_space.normalize.values())) == 0)[0])
+        if components:
+            raise ValueError(
+                f"The components {components} of the design space are unbounded."
+            )
+
     def compute_doe(
         self,
         variables_space: DesignSpace,
@@ -367,6 +393,9 @@ class DOELibrary(DriverLibrary):
             The design of experiments
             whose rows are the samples and columns the variables.
         """
+        if not unit_sampling:
+            self.__check_unnormalization_capability(variables_space)
+
         options = self.__get_algorithm_options(options, size, variables_space.dimension)
         options[self._VARIABLE_NAMES] = variables_space.variable_names
         options[self._VARIABLE_SIZES] = variables_space.variable_sizes

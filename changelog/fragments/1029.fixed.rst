@@ -1,0 +1,2 @@
+- ``DOELibrary.execute`` raises a ``ValueError`` when a component of the ``DesignSpace`` is unbounded and the ``DesignSpace`` is not a ``ParameterSpace``.
+- ``DOELibrary.compute_doe`` raises a ``ValueError`` when ``unit_sampling`` is ``False``, a component of the design space is unbounded and the ``DesignSpace`` is not a ``ParameterSpace``.
