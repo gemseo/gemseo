@@ -94,7 +94,6 @@ from numpy import ndarray
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
-from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
@@ -229,12 +228,6 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
             FilePathManager.FileType.FIGURE,
             default_name=f"distribution_{self.variable_name}",
         )
-        msg = MultiLineString()
-        msg.add("Define the random variable: {}", variable)
-        msg.indent()
-        msg.add("Distribution: {}", self)
-        msg.add("Dimension: {}", dimension)
-        LOGGER.debug("%s", msg)
 
     def _get_empty_parameter_set(self) -> dict:
         """Return an empty parameter set."""
