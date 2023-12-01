@@ -1805,50 +1805,66 @@ class OptimizationProblem(BaseProblem):
                 f_history.append(out_val)
         return x_history, f_history
 
+    # TODO: API: rename to check_design_point_is_feasible
     def get_violation_criteria(
         self,
         x_vect: ndarray,
     ) -> tuple[bool, float]:
-        """Compute a violation measure associated to an iteration.
+        r"""Check if a design point is feasible and measure its constraint violation.
 
-        For each constraint,
-        when it is violated,
-        add the absolute distance to zero,
-        in L2 norm.
+        The constraint violation measure at a design point :math:`x` is
 
-        If 0, all constraints are satisfied
+        .. math::
+
+           \lVert\max(g(x)-\varepsilon_{\text{ineq}},0)\rVert_2^2
+           +\lVert|\max(|h(x)|-\varepsilon_{\text{eq}},0)\rVert_2^2
+
+        where :math:`\|.\|_2` is the Euclidean norm,
+        :math:`g(x)` is the inequality constraint vector,
+        :math:`h(x)` is the equality constraint vector,
+        :math:`\varepsilon_{\text{ineq}}` is the tolerance
+        for the inequality constraints
+        and
+        :math:`\varepsilon_{\text{eq}}` is the tolerance for the equality constraints.
+
+        If the design point is feasible, the constraint violation measure is 0.
 
         Args:
-            x_vect: The vector of the design variables values.
+            x_vect: The design point :math:`x`.
 
         Returns:
-            The feasibility of the point and the violation measure.
+            Whether the design point is feasible,
+            and its constraint violation measure.
         """
-        f_violation = 0.0
-        is_pt_feasible = True
-        constraints = self.get_ineq_constraints() + self.get_eq_constraints()
-        out_val = self.database.get(x_vect)
-        for constraint in constraints:
-            # look for the evaluation of the constraint
-            eval_cstr = out_val.get(constraint.name, None)
-            # if evaluation exists, check if it is satisfied
-            if eval_cstr is None:
+        violation = 0.0
+        x_vect_is_feasible = True
+        output_names_to_values = self.database.get(x_vect)
+        for constraint in self.constraints:
+            constraint_value = output_names_to_values.get(constraint.name)
+            if constraint_value is None:
                 break
-            if not self._satisfied_constraint(constraint.f_type, eval_cstr):
-                if isnan(eval_cstr).any():
-                    return False, inf
-                is_pt_feasible = False
-                if constraint.f_type == MDOFunction.ConstraintType.INEQ:
-                    if isinstance(eval_cstr, ndarray):
-                        viol_inds = (eval_cstr > self.ineq_tolerance).nonzero()
-                        f_violation += (
-                            norm(eval_cstr[viol_inds] - self.ineq_tolerance) ** 2
-                        )
-                    else:
-                        f_violation += (eval_cstr - self.ineq_tolerance) ** 2
-                else:
-                    f_violation += norm(abs(eval_cstr) - self.eq_tolerance) ** 2
-        return is_pt_feasible, f_violation
+
+            f_type = constraint.f_type
+            if self._satisfied_constraint(f_type, constraint_value):
+                continue
+
+            x_vect_is_feasible = False
+            if isnan(constraint_value).any():
+                return x_vect_is_feasible, inf
+
+            if f_type == MDOFunction.ConstraintType.INEQ:
+                tolerance = self.ineq_tolerance
+            else:
+                tolerance = self.eq_tolerance
+                constraint_value = abs(constraint_value)
+
+            if isinstance(constraint_value, ndarray):
+                violated_components = (constraint_value > tolerance).nonzero()
+                constraint_value = constraint_value[violated_components]
+
+            violation += norm(constraint_value - tolerance) ** 2
+
+        return x_vect_is_feasible, violation
 
     def get_best_infeasible_point(
         self,
