@@ -30,7 +30,7 @@ execnet==2.0.2
     # via pytest-xdist
 fastjsonschema==2.18.1
     # via gemseo (pyproject.toml)
-fonttools==4.45.1
+fonttools==4.46.0
     # via matplotlib
 genson==1.2.2
     # via gemseo (pyproject.toml)
