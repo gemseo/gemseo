@@ -16,6 +16,11 @@
 
 from __future__ import annotations
 
+import logging
+import string
+import sys
+from io import StringIO
+from io import TextIOWrapper
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
@@ -23,14 +28,25 @@ from typing import ClassVar
 from typing import Final
 
 import tqdm
-from tqdm.utils import _unicode
-from tqdm.utils import disp_len
-
-from gemseo.algos._progress_bars.tqdm_to_logger import TqdmToLogger
 
 if TYPE_CHECKING:
-    import io
     from numbers import Real
+
+LOGGER = logging.getLogger(__name__)
+
+
+def _log_status(status: str) -> None:
+    """Log the tqdm progress bar status.
+
+    Args:
+        status: The progress bar status.
+    """
+    if " 0%|" in status:
+        return
+    status = status.strip(string.whitespace)
+    if not status:
+        return
+    LOGGER.info("%s", status)
 
 
 class CustomTqdmProgressBar(tqdm.tqdm):
@@ -45,14 +61,22 @@ class CustomTqdmProgressBar(tqdm.tqdm):
     )
     """The bar_format used by tqdm.format_meter."""
 
+    _INITIAL_RATE: ClassVar[str] = "? it/sec"
+
+    _RATE_TEMPLATE: ClassVar[str] = "{:5.2f} it/{}"
+
     __BAR_FORMAT_LABEL: Final[str] = "bar_format"
     __DAY_LABEL: Final[str] = "day"
-    __FP_LABEL: Final[str] = "fp"
     __HOUR_LABEL: Final[str] = "hour"
-    _INITIAL_RATE: ClassVar[str] = "? it/sec"
     __MIN_LABEL: Final[str] = "min"
-    _RATE_TEMPLATE: ClassVar[str] = "{:5.2f} it/{}"
     __SEC_LABEL: Final[str] = "sec"
+
+    def __init__(self, *args, **kwargs) -> None:  # noqa: D102
+        # Use a file stream to prevent tqdm from trying to adapt the progress bar
+        # to the current terminal because its rendering will vary and because it is
+        # not needed since the progress bar goes to a logger.
+        kwargs["file"] = StringIO()
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def format_meter(  # noqa: D102
@@ -91,33 +115,27 @@ class CustomTqdmProgressBar(tqdm.tqdm):
 
         return cls._RATE_TEMPLATE.format(rate * 24, cls.__DAY_LABEL)
 
-    def status_printer(
-        self, file: io.TextIOWrapper | io.StringIO
-    ) -> Callable[[str], None]:
-        """Overload the status_printer method to avoid the use of closures.
+    @staticmethod
+    def status_printer(file: TextIOWrapper | StringIO) -> Callable[[str], None]:
+        """Create the function logging the progress bar statuses.
 
         Args:
-            file: Specifies where to output the progress messages.
+            file: The output stream.
+                This argument defined in the parent class is not used.
+                Use ``logging`` instead.
 
         Returns:
-            The function to print the status in the progress bar.
+            The function logging the progress bar statuses.
         """
-        self._last_len = [0]
-        return self._print_status
-
-    def _print_status(self, s: str) -> None:
-        s_length = disp_len(s)
-        self.fp.write(_unicode(f"\r{s}{' ' * max(self._last_len[0] - s_length, 0)}"))
-        self.fp.flush()
-        self._last_len[0] = s_length
+        return _log_status
 
     def __getstate__(self) -> dict[str, Any]:
         state = self.__dict__.copy()
         # A file-like stream cannot be pickled.
-        del state[self.__FP_LABEL]
+        del state["fp"]
         return state
 
     def __setstate__(self, state) -> None:
         self.__dict__.update(state)
         # Set back the file-like stream to its state as done in tqdm.__init__.
-        self.fp = tqdm.utils.DisableOnWriteError(TqdmToLogger(), tqdm_instance=self)
+        self.fp = tqdm.utils.DisableOnWriteError(sys.stderr, tqdm_instance=self)
