@@ -98,16 +98,9 @@ scenario.execute({"max_iter": 200, "algo": "NLOPT_MMA"})
 # -------
 # Post-process the optimization history:
 scenario.post_process(
-    "BasicHistory",
-    variable_names=["compliance"],
-    file_name=f"{problem_name}_history.png",
+    "BasicHistory", variable_names=["compliance"], show=True, save=False
 )
 
 # %%
 # Plot the solution
-scenario.post_process(
-    "TopologyView",
-    n_x=n_x,
-    n_y=n_y,
-    file_name=f"{problem_name}_solution.png",
-)
+scenario.post_process("TopologyView", n_x=n_x, n_y=n_y, show=True, save=False)
