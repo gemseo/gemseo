@@ -24,7 +24,6 @@ from __future__ import annotations
 import atexit
 import os
 import shutil
-import sys
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -35,9 +34,6 @@ from numpy import array
 
 from gemseo.core.discipline import MDODiscipline
 
-if sys.platform == "win32":
-    import pythoncom
-
 cwd = Path.cwd()
 try:
     import xlwings
@@ -45,6 +41,9 @@ except ImportError:
     # error will be reported if the discipline is used
     os.chdir(str(cwd))
     xlwings = None
+
+if xlwings is not None:
+    import pythoncom
 
 
 class XLSDiscipline(MDODiscipline):

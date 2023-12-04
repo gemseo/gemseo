@@ -94,10 +94,10 @@ TEST_PARAMETERS = {
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
-def test_plot(
+def test_plot_matplotlib(
     kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
 ):
-    """Test images created by Lines.execute against references."""
+    """Test images created by Lines.execute against references for matplotlib."""
     plot = Lines(dataset, **kwargs)
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
@@ -105,7 +105,22 @@ def test_plot(
     for k, v in properties.items():
         setattr(plot, k, v)
 
+    plot.execute(save=False, fig=fig, axes=axes)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "properties", "baseline_images"),
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+def test_plot_plotly(kwargs, properties, baseline_images, dataset):
+    """Test images created by Lines.execute against references for plotly."""
+    pytest.importorskip("plotly")
+    plot = Lines(dataset, **kwargs)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+
     figure = plot.execute(save=False, show=False, file_format="html")[0]
     ref = (Path(__file__).parent / "plotly" / baseline_images[0]).read_text()
     assert figure.to_json() == ref.strip()
-    plot.execute(save=False, fig=fig, axes=axes)

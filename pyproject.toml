@@ -37,7 +37,6 @@ dependencies = [
     "typing-extensions >=4,<5",
     "xdsmjs >=1.0.0,<=2.0.0",
     "xxhash >=3.0.0,<=3.4.1",
-    "plotly==5.18.0"
 ]
 
 [project.optional-dependencies]
@@ -53,6 +52,7 @@ all = [
     "sympy >=1.5,<=1.12",
     "xlwings >=0.27.0,<=0.30.12 ; platform_system=='Windows'",
     "pillow >=9.5.0,<=10.1.0",
+    "plotly >=5.7.0,<=5.18.0"
 ]
 test = [
     "covdefaults",
