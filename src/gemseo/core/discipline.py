@@ -124,6 +124,7 @@ class MDODiscipline(Serializable):
 
         JSON = "JSONGrammar"
         SIMPLE = "SimpleGrammar"
+        SIMPLER = "SimplerGrammar"
         PYDANTIC = "PydanticGrammar"
 
     class CacheType(StrEnum):

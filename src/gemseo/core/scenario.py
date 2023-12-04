@@ -87,8 +87,8 @@ class Scenario(MDODiscipline):
     formulation_name: str
     """The name of the MDO formulation."""
 
-    optimization_result: OptimizationResult
-    """The optimization result."""
+    optimization_result: OptimizationResult | None
+    """The optimization result if any."""
 
     post_factory: PostFactory | None
     """The factory for post-processors if any."""
@@ -129,11 +129,10 @@ class Scenario(MDODiscipline):
                 e.g. :class:`.IDF` with the coupling variables).
             name: The name to be given to this scenario.
                 If ``None``, use the name of the class.
+            grammar_type: The grammar for the scenario and the MDO formulation.
             maximize_objective: Whether to maximize the objective.
             **formulation_options: The options of the :class:`.MDOFormulation`.
         """  # noqa: D205, D212, D415
-        self.formulation = None
-        self.formulation_name = None
         self.optimization_result = None
         self._algo_factory = None
         self._gen_opt_backup_plot = False
