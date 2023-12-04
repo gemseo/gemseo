@@ -16,9 +16,13 @@
 
 from __future__ import annotations
 
-import sys
+from sys import version_info
+from typing import Final
 
-PYTHON_VERSION = sys.version_info
+from typing_extensions import get_args  # noqa: F401
+from typing_extensions import get_origin  # noqa: F401
+
+PYTHON_VERSION: Final[tuple[int, int, int]] = version_info
 
 if PYTHON_VERSION < (3, 10):  # pragma: >=3.10 no cover
     from typing_extensions import ParamSpecArgs  # noqa: F401
@@ -37,18 +41,25 @@ if PYTHON_VERSION < (3, 9):  # pragma: >=3.9 no cover
     def remove_suffix(string: str, suffix: str) -> str:  # noqa: D103
         if string.endswith(suffix):
             return string[: -len(suffix)]
-
         return string
 
-    from typing_extensions import get_args  # noqa: F401
-    from typing_extensions import get_origin  # noqa: F401
-    from typing_extensions import get_type_hints  # noqa: F401
+    _get_origin = get_origin
+
+    def get_origin(tp) -> type:
+        origin = _get_origin(tp)
+        if origin is None:
+            return getattr(tp, "__origin__", None)
+        return origin
+
+    _get_args = get_args
+
+    def get_args(tp) -> tuple:
+        args = _get_args(tp)
+        if not args:
+            return getattr(tp, "__args__", None)
+        return args
 
 else:  # pragma: <3.9 no cover
 
     def remove_suffix(string: str, suffix: str) -> str:  # noqa: D103
         return string.removesuffix(suffix)
-
-    from typing import get_args  # noqa: F401
-    from typing import get_origin  # noqa: F401
-    from typing import get_type_hints  # noqa: F401

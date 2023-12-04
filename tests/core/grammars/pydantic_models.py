@@ -24,12 +24,13 @@ from pydantic import BaseModel
 from pydantic import Field
 
 from gemseo.core.grammars.pydantic_grammar import ModelType
+from gemseo.core.grammars.pydantic_ndarray import BaseModelWithNDArray
 
 
 def get_model1() -> ModelType:
     """Return a pydantic model."""
 
-    class Model(BaseModel):
+    class Model(BaseModelWithNDArray):
         name1: int
         name2: NDArray[int] = Field(default_factory=lambda: array([0]))
 
@@ -49,7 +50,7 @@ def get_model2() -> ModelType:
 def get_model3() -> ModelType:
     """Return a pydantic model."""
 
-    class Model(BaseModel):
+    class Model(BaseModelWithNDArray):
         an_int: int
         a_float: float
         a_bool: bool
@@ -66,7 +67,7 @@ def get_model3() -> ModelType:
 def get_model4() -> ModelType:
     """Return a pydantic model."""
 
-    class Model(BaseModel):
+    class Model(BaseModelWithNDArray):
         name1: NDArray[int]
         name2: NDArray
         name3: ndarray

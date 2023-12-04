@@ -22,27 +22,35 @@ Use a pydantic grammar
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import array
 from numpy import ndarray
-from numpy._typing import NDArray
-from pydantic import BaseModel
 from pydantic import Field
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
+from gemseo.core.grammars.pydantic_ndarray import BaseModelWithNDArray
+
+if TYPE_CHECKING:
+    from numpy._typing import NDArray
 
 # %%
 # Create the pydantic model
 # -------------------------
 #
-# The pydantic model is a class that describes the names and types of data to be
-# validated.
+# The pydantic model is a class deriving from ``pydantic.BaseModel``
+# that describes the names and types of the data to be validated.
 # Descriptions are defined with docstrings, default values can be defined naturally.
 # Mind that default values with a mutable object must be defined with the
 # ``default_factory`` of a ``Field``.
+# By default,
+# pydantic does not handle the typing of the NumPy arrays.
+# To support it,
+# a pydantic model shall derive from GEMSEO's :class:`.BaseModelWithNDArray` class.
 
 
-class Model(BaseModel):
+class Model(BaseModelWithNDArray):
     """The description of the model."""
 
     a_int: int
