@@ -53,9 +53,9 @@ from typing import overload
 from numpy import ndarray
 from strenum import StrEnum
 
+from gemseo.algos._progress_bars.custom_tqdm_progress_bar import LOGGER as TQDM_LOGGER
 from gemseo.algos._progress_bars.dummy_progress_bar import DummyProgressBar
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
-from gemseo.algos._progress_bars.tqdm_to_logger import LOGGER as TQDM_LOGGER
 from gemseo.algos._progress_bars.unsuffixed_progress_bar import UnsuffixedProgressBar
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription

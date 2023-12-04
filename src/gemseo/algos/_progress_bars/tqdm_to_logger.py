@@ -20,6 +20,8 @@ import io
 import logging
 import string
 
+# TODO: API: remove this module in gemseo 6.0.0.
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -33,8 +35,6 @@ class TqdmToLogger(io.StringIO):
             buffer_: The buffer.
         """
         buffer_ = buffer_.strip(string.whitespace)
-        if buffer_:
-            if " 0%|" in buffer_:
-                # Do not log the initialization of the progress bar.
-                return
+        # Do not log the initialization of the progress bar.
+        if buffer_ and " 0%|" not in buffer_:
             LOGGER.info(buffer_)

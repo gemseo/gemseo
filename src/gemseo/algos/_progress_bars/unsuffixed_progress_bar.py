@@ -29,4 +29,4 @@ class UnsuffixedProgressBar(ProgressBar):
 
     def _set_objective_value(self, x_vect: ndarray | None) -> None:
         self._tqdm_progress_bar.n += 1
-        self._tqdm_progress_bar.set_postfix(refresh=True)
+        self._tqdm_progress_bar.set_postfix()
