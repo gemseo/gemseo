@@ -1006,7 +1006,7 @@ def create_scenario(
     scenario_type: str = "MDO",
     grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     maximize_objective: bool = False,
-    **options: Any,
+    **formulation_options: Any,
 ) -> Scenario:
     """Initialize a scenario.
 
@@ -1024,19 +1024,18 @@ def create_scenario(
         name: The name to be given to this scenario.
             If ``None``, use the name of the class.
         scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
-        grammar_type: The type of grammar to declare the input and output variables
-            either :attr:`~.MDODiscipline.JSON_GRAMMAR_TYPE`
-            or :attr:`~.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
+        grammar_type: The grammar for the scenario and the MDO formulation.
         maximize_objective: Whether to maximize the objective.
-        **options: The options of the :class:`.MDOFormulation`.
+        **formulation_options: The options of the :class:`.MDOFormulation`.
 
     Examples:
         >>> from gemseo import create_discipline, create_scenario
         >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
         >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
         >>> design_space = SellarDesignSpace()
-        >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
-        'SellarMDFScenario')
+        >>> scenario = create_scenario(
+        >>>     disciplines, 'MDF', 'obj', design_space, 'SellarMDFScenario'
+        >>> )
 
     See Also:
         monitor_scenario
@@ -1055,31 +1054,23 @@ def create_scenario(
         design_space = read_design_space(design_space)
 
     if scenario_type == "MDO":
-        return MDOScenario(
-            disciplines,
-            formulation,
-            objective_name,
-            design_space,
-            name=name,
-            grammar_type=grammar_type,
-            maximize_objective=maximize_objective,
-            **options,
+        cls = MDOScenario
+    elif scenario_type == "DOE":
+        cls = DOEScenario
+    else:
+        raise ValueError(
+            f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
         )
 
-    if scenario_type == "DOE":
-        return DOEScenario(
-            disciplines,
-            formulation,
-            objective_name,
-            design_space,
-            name,
-            grammar_type=grammar_type,
-            maximize_objective=maximize_objective,
-            **options,
-        )
-
-    raise ValueError(
-        f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
+    return cls(
+        disciplines,
+        formulation,
+        objective_name,
+        design_space,
+        name=name,
+        grammar_type=grammar_type,
+        maximize_objective=maximize_objective,
+        **formulation_options,
     )
 
 
