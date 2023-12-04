@@ -26,7 +26,8 @@ import pytest
 from numpy import array
 from numpy import ndarray
 from numpy.typing import NDArray
-from pydantic.fields import ModelField
+from pydantic import BaseModel
+from pydantic.fields import FieldInfo
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import ModelType
@@ -44,8 +45,6 @@ if TYPE_CHECKING:
     from gemseo.core.discipline_data import Data
 
 DATA_PATH = Path(__file__).parent / "data"
-
-_ArrayType = NDArray[Union[int, float, complex]]
 
 
 class ModelID(Enum):
@@ -181,18 +180,18 @@ model_1 = model
 model_2 = model
 
 
-def assert_equal_types(field_1: ModelField, obj_2: ModelField | type) -> None:
+def assert_equal_types(field_1: FieldInfo, obj_2: FieldInfo | type) -> None:
     """Assert that 2 pydantic fields have the same types.
 
     Args:
-        field_1: A fields.
-        obj_2: Another fields or type.
+        field_1: A field.
+        obj_2: Another field or type.
 
     Raises:
         AssertionError: If the types are different.
     """
-    type_2 = obj_2.outer_type_ if isinstance(obj_2, ModelField) else obj_2
-    assert field_1.outer_type_ == type_2
+    type_2 = obj_2.annotation if isinstance(obj_2, FieldInfo) else obj_2
+    assert field_1.annotation == type_2
 
 
 @pytest.mark.parametrize(
@@ -323,6 +322,39 @@ def test_validate(model, data_sets):
         g.validate(data)
 
 
+def test_validate_with_rebuild(model1):
+    """Verify validate with rebuild."""
+    g = PydanticGrammar("g", model=model1)
+    data = {"name1": 1}
+
+    # Deleting.
+    del g["name2"]
+    g.validate(data)
+
+    # Renaming.
+    g.rename_element("name1", "name")
+    g.validate({"name": 1})
+
+    # Updating.
+    class Model(BaseModel):
+        foo: str
+
+    g.update(PydanticGrammar("foo", model=Model))
+    g.validate({"name": 1, "foo": ""})
+
+    # Updating from names.
+    g.update_from_names(["bar"])
+    g.validate({"name": 1, "foo": "", "bar": array([])})
+
+    # Updating from types.
+    g.update_from_types({"baz": bool})
+    g.validate({"name": 1, "foo": "", "bar": array([]), "baz": True})
+
+    # Restricting.
+    g.restrict_to(["name"])
+    g.validate({"name": 1})
+
+
 @pytest.mark.parametrize(
     ("raise_exception", "exception_tester"),
     [(True, pytest.raises), (False, do_not_raise)],
@@ -339,23 +371,23 @@ def test_validate(model, data_sets):
             """
 1 validation error for Model
 name1
-  value is not a valid integer (type=type_error.integer)
-""",
+  Input should be a valid integer [type=int_type, input_value=0.1, input_type=float]
+""",  # noqa:E501
         ),
         (
             {"name1": 0, "name2": True},
             """
 1 validation error for Model
 name2
-  value could not be parsed to a NumPy ndarray. (type=type_error.ndarray; dtype_info=)
-""",
+  Input should be an instance of ndarray [type=is_instance_of, input_value=True, input_type=bool]
+""",  # noqa:E501
         ),
         (
             {"name1": 0, "name2": array([0.0])},
             """
 1 validation error for Model
 name2
-  value could not be parsed to a NumPy ndarray with dtype <class 'int'>. (type=type_error.ndarray; dtype_info= with dtype <class 'int'>)
+  Value error, Input dtype should be <class 'int'>: got the dtype <class 'numpy.float64'>
 """,  # noqa:E501
         ),
     ],
@@ -370,7 +402,7 @@ def test_validate_error(
         g.validate(data, raise_exception=raise_exception)
 
     assert caplog.records[0].levelname == "ERROR"
-    assert caplog.text.strip().endswith(error_msg.strip())
+    assert error_msg.strip() in caplog.text.strip()
 
 
 @pytest.mark.parametrize(
@@ -407,7 +439,7 @@ def test_update_from_names(model, names):
 
     for name, type_ in g.items():
         if name in names:
-            assert_equal_types(type_, NDArray)
+            assert_equal_types(type_, ndarray)
         else:
             assert_equal_types(type_, g_before[name])
 
@@ -420,7 +452,7 @@ def test_update_from_names(model, names):
         ({"name1": float}, Union[int, float]),
         ({"name1": str}, Union[int, str]),
         ({"name1": bool}, Union[int, bool]),
-        ({"name1": ndarray}, Union[int, _ArrayType]),
+        ({"name1": ndarray}, Union[int, ndarray]),
         ({"name1": dict}, Union[int, dict]),
         ({"name2": int}, Union[NDArray[int], int]),
     ],
@@ -449,7 +481,7 @@ def test_update_from_types_with_merge(model, data, expected_type):
         ({"name1": float}, float),
         ({"name1": str}, str),
         ({"name1": bool}, bool),
-        ({"name1": ndarray}, _ArrayType),
+        ({"name1": ndarray}, ndarray),
         ({"name1": dict}, dict),
     ],
 )
@@ -470,7 +502,7 @@ def test_update_from_types_from_empty(data, expected_type):
         ({"name1": float}, float),
         ({"name1": str}, str),
         ({"name1": bool}, bool),
-        ({"name1": ndarray}, _ArrayType),
+        ({"name1": ndarray}, ndarray),
         ({"name1": dict}, dict),
     ],
 )
@@ -499,7 +531,7 @@ def test_update_from_types(model, data, expected_type):
         ({"name1": 0.0}, float),
         ({"name1": ""}, str),
         ({"name1": True}, bool),
-        ({"name1": ndarray([0])}, _ArrayType),
+        ({"name1": ndarray([0])}, ndarray),
         ({"name1": {"name2": 0}}, dict),
     ],
 )
@@ -681,6 +713,13 @@ def test_set_descriptions(descriptions, model2):
             assert g.schema["properties"][name]["description"] == descriptions[name]
         else:
             assert "description" not in g.schema["properties"][name]
+
+
+def test_set_descriptions_no_rebuild(model2):
+    """Verify setting descriptions that does nothing."""
+    g = PydanticGrammar("g", model=model2)
+    g.set_descriptions({"dummy": "description"})
+    assert "dummy" not in g
 
 
 @pytest.mark.parametrize(

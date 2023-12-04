@@ -39,7 +39,10 @@ class Benchmark(ValidationBenchmark):
         if self.grammar_class == PydanticGrammar:
             code.add("class model(BaseModel):")
             code.indent()
-            for name, field in self.grammar._PydanticGrammar__model.__fields__.items():
+            for (
+                name,
+                field,
+            ) in self.grammar._PydanticGrammar__model.model_fields.items():
                 code.add(f"{name}: {field.outer_type_.__name__}")
         elif self.grammar_class == SimpleGrammar:
             self.args = dict(self.grammar)

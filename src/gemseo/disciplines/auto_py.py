@@ -34,12 +34,12 @@ from typing import Union
 from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
+from typing_extensions import get_type_hints
 
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.compatibility.python import get_args
 from gemseo.utils.compatibility.python import get_origin
-from gemseo.utils.compatibility.python import get_type_hints
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.source_parsing import get_callable_argument_defaults
 
