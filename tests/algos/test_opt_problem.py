@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from copy import deepcopy
 from functools import partial
 from math import sqrt
 from pathlib import Path
@@ -180,7 +181,7 @@ def test_add_constraints(pow2_problem):
         problem.check()
 
 
-def test_wrong_linear_problem_setting():
+def test_linear_problem_type_switch():
     n = 3
     design_space = DesignSpace()
     design_space.add_variable("x", n, l_b=-1.0, u_b=1.0)
@@ -189,18 +190,11 @@ def test_wrong_linear_problem_setting():
         design_space, pb_type=OptimizationProblem.ProblemType.LINEAR
     )
     f = MDOFunction(Power2.ineq_constraint1, name="f")
-    with pytest.raises(
-        TypeError,
-        match="The objective of a linear optimization problem "
-        "must be an MDOLinearFunction.",
-    ):
-        problem.objective = f
-    with pytest.raises(
-        TypeError,
-        match="The constraint of a linear optimization problem "
-        "must be an MDOLinearFunction.",
-    ):
-        problem.add_constraint(f)
+    problem_c = deepcopy(problem)
+    problem.objective = f
+    assert problem.pb_type == OptimizationProblem.ProblemType.NON_LINEAR
+    problem_c.add_constraint(f, cstr_type=MDOFunction.ConstraintType.INEQ)
+    assert problem_c.pb_type == OptimizationProblem.ProblemType.NON_LINEAR
 
 
 def test_getmsg_ineq_constraints(pow2_problem):

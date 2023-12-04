@@ -192,6 +192,12 @@ class MDODiscipline(Serializable):
     name: str
     """The name of the discipline."""
 
+    __linear_relationships: Mapping[str, Iterable[str]]
+    """The linear relationships between discipline inputs and outputs.
+
+    For each output define one or many inputs that in linear relationship with it.
+    """
+
     cache: AbstractCache | None
     """The cache containing one or several executions of the discipline according to the
     cache policy."""
@@ -341,9 +347,35 @@ class MDODiscipline(Serializable):
             self._init_shared_memory_attrs()
 
         self._status_observers = []
+        self.__linear_relationships = {}
 
     def __str__(self) -> str:
         return self.name
+
+    @property
+    def linear_relationships(self) -> Mapping[str, Iterable[str]]:
+        """The linear relationships between inputs and outputs."""
+        return self.__linear_relationships
+
+    def set_linear_relationships(
+        self,
+        outputs: Iterable[str] = (),
+        inputs: Iterable[str] = (),
+    ) -> None:
+        """Set linear relationships between discipline inputs and outputs.
+
+        Args:
+            outputs: The discipline output(s) in a linear relation with the input(s).
+                If empty, all discipline outputs are considered.
+            inputs: The discipline input(s) in a linear relation with the output(s).
+                If empty, all discipline inputs are considered.
+        """
+        if not outputs:
+            outputs = self.get_output_data_names()
+        if not inputs:
+            inputs = self.get_input_data_names()
+        for out in outputs:
+            self.__linear_relationships[out] = inputs
 
     @property
     def _string_representation(self) -> MultiLineString:

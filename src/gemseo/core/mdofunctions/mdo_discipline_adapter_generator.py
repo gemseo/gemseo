@@ -131,11 +131,35 @@ class MDODisciplineAdapterGenerator:
         if differentiable:
             self.discipline.add_differentiated_inputs(input_names)
             self.discipline.add_differentiated_outputs(output_names)
-
         return MDODisciplineAdapter(
             input_names,
             output_names,
             default_inputs,
             self.discipline,
             self.__names_to_sizes,
+            linear_candidate=self.__is_linear(input_names, output_names),
         )
+
+    def __is_linear(
+        self, input_names: Sequence[str], output_names: Sequence[str]
+    ) -> bool:
+        """Check if the MDOFunction should be linear.
+
+        Args:
+            input_names: The names of the inputs of the discipline
+                to be inputs of the function.
+            output_names: The names of outputs of the discipline
+                to be returned by the function.
+
+        Returns:
+            Whether the function should be linear.
+        """
+        input_names = set(input_names)
+        for output_name in output_names:
+            linear_input_names = self.discipline.linear_relationships.get(output_name)
+            if linear_input_names is not None:
+                if not input_names.issubset(linear_input_names):
+                    return False
+            else:
+                return False
+        return True

@@ -33,18 +33,24 @@ from numpy import array
 from numpy import empty
 from numpy import ndarray
 
-from gemseo.core.mdofunctions.mdo_function import ArrayType
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
 
 if TYPE_CHECKING:
     from gemseo import MDODiscipline
+    from gemseo.core.mdofunctions.mdo_function import ArrayType
 
 OperandType = Union[ndarray, Number]
 OperatorType = Callable[[OperandType, OperandType], OperandType]
 
 
-class MDODisciplineAdapter(MDOFunction):
+class MDODisciplineAdapter(LinearCandidateFunction):
     """An :class:`.MDOFunction` executing a discipline for some inputs and outputs."""
+
+    __linear_candidate: bool
+    """Whether the final MDOFunction could be linear."""
+
+    __input_dimension: int | None
+    """The input variable dimension, needed for linear candidates."""
 
     def __init__(
         self,
@@ -53,6 +59,7 @@ class MDODisciplineAdapter(MDOFunction):
         default_inputs: Mapping[str, ndarray] | None,
         discipline: MDODiscipline,
         names_to_sizes: MutableMapping[str, int] | None = None,
+        linear_candidate: bool = False,
     ) -> None:
         """
         Args:
@@ -67,6 +74,7 @@ class MDODisciplineAdapter(MDOFunction):
             names_to_sizes: The sizes of the input variables.
                 If ``None``, determine them from the default inputs and local data
                 of the discipline :class:`.MDODiscipline`.
+            linear_candidate: Whether the final MDOFunction could be linear.
         """  # noqa: D205, D212, D415
         self.__input_names = input_names
         self.__output_names = output_names
@@ -79,6 +87,10 @@ class MDODisciplineAdapter(MDOFunction):
         self.__input_names_to_sizes = (
             names_to_sizes if names_to_sizes is not None else {}
         )
+        self.__linear_candidate = linear_candidate
+        self.__input_dimension = self.__compute_input_dimension(
+            default_inputs, discipline, input_names
+        )
         super().__init__(
             self._func_to_wrap,
             jac=self._jac_to_wrap,
@@ -86,6 +98,59 @@ class MDODisciplineAdapter(MDOFunction):
             input_names=self.__input_names,
             output_names=self.__output_names,
         )
+
+    @property
+    def linear_candidate(self) -> bool:
+        return self.__linear_candidate
+
+    @property
+    def input_dimension(self) -> int | None:
+        return self.__input_dimension
+
+    def __compute_input_dimension(
+        self,
+        default_inputs: Mapping[str, ndarray] | None,
+        discipline: MDODiscipline,
+        input_names: Sequence[str],
+    ) -> int | None:
+        """Compute the input dimension.
+
+        Args:
+            default_inputs: : The default input values
+                to overload the ones of the discipline
+                at each evaluation of the outputs with :meth:`._fun`
+                or their derivatives with :meth:`._jac`.
+                If ``None``, do not overload them.
+            discipline: The discipline to be adapted.
+            input_names: The names of the inputs.
+
+        Returns:
+            The input dimension.
+        """
+        if default_inputs and all(inpt in default_inputs for inpt in input_names):
+            return sum(
+                [
+                    len(default_inputs[inpt])
+                    if isinstance(default_inputs[inpt], ndarray)
+                    else 1
+                    for inpt in input_names
+                ]
+            )
+
+        if len(self.__input_names_to_sizes) > 0:
+            return sum(self.__input_names_to_sizes.values())
+
+        if all(inpt in discipline.default_inputs for inpt in input_names):
+            return sum(
+                [
+                    len(discipline.default_inputs[inpt])
+                    if isinstance(discipline.default_inputs[inpt], ndarray)
+                    else 1
+                    for inpt in input_names
+                ]
+            )
+
+        return None
 
     def __create_output_names_to_slices(self) -> int:
         """Compute the indices of the input variables in the Jacobian array.
