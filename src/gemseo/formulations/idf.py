@@ -24,14 +24,10 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from typing import Iterable
-from typing import Sequence
 
 from numpy import abs as np_abs
 from numpy import concatenate
-from numpy import eye
 from numpy import ndarray
-from numpy import newaxis
-from numpy import ones_like
 from numpy import zeros
 
 from gemseo.core.chain import MDOParallelChain
@@ -41,8 +37,7 @@ from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
-from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
 from gemseo.mda.mda_chain import MDAChain
 
 if TYPE_CHECKING:
@@ -182,106 +177,6 @@ class IDF(MDOFormulation):
             norm_fact.append(np_abs(u_b - l_b))
         return concatenate(norm_fact)
 
-    def _generate_consistency_cstr(
-        self,
-        output_couplings: Sequence[str],
-    ) -> MDOFunction:
-        """Generate the consistency constraints for a discipline.
-
-        Args:
-            output_couplings: The names of the output couplings.
-
-        Returns:
-            A function computing the consistency constraints.
-        """
-        coupl_func = FunctionFromDiscipline(output_couplings, self)
-        dv_names_of_disc = coupl_func.args
-
-        if self.normalize_constraints:
-            norm_fact = self._get_normalization_factor(output_couplings)
-        else:
-            norm_fact = 1.0
-
-        def coupl_min_x(
-            x_vec: ndarray,
-        ) -> ndarray:
-            """Function to compute the consistency constraints.
-
-            Args:
-                x_vect: The design variable vector.
-
-            Returns:
-                The value of the consistency constraints.
-                Equal to zero if the disciplines are at equilibrium.
-            """
-            x_sw = self.mask_x_swap_order(output_couplings, x_vec)
-            coupl = coupl_func(x_vec)
-            if self.normalize_constraints:
-                return (coupl - x_sw) / norm_fact
-            return coupl - x_sw
-
-        def coupl_min_x_jac(
-            x_vec: ndarray,
-        ) -> ndarray:
-            """Function to compute the gradient of the consistency constraints.
-
-            Args:
-                x_vect: The design variable vector.
-
-            Returns:
-                The value of the gradient of the consistency constraints.
-            """
-            coupl_jac = coupl_func.jac(x_vec)  # pylint: disable=E1102
-
-            if len(coupl_jac.shape) > 1:
-                # IN this case it is harder since a block diagonal
-                # matrix with -Id should be placed for each output
-                # coupling, at the right place
-                n_outs = coupl_jac.shape[0]
-                x_jac_2d = zeros((n_outs, len(x_vec)), dtype=x_vec.dtype)
-                x_names = self.get_optim_variable_names()
-                o_min = 0
-                o_max = 0
-                for out in output_couplings:
-                    # self._reference_input_data[out].size
-                    o_len = self._get_dv_length(out)
-                    i_min = 0
-                    i_max = 0
-                    o_max += o_len
-                    for x_i in x_names:
-                        # self._reference_input_data[x_i].size
-                        x_len = self._get_dv_length(x_i)
-                        i_max += x_len
-                        if x_i == out:
-                            x_jac_2d[o_min:o_max, i_min:i_max] = eye(x_len)
-                        i_min = i_max
-                    o_min = o_max
-                x_jac = x_jac_2d
-            else:
-                # This is surprising but there is a duality between the masking
-                # operation in the function inputs and the unmasking of its
-                # outputs
-                x_jac = self.unmask_x_swap_order(output_couplings, ones_like(x_vec))
-            if self.normalize_constraints:
-                return (coupl_jac - x_jac) / norm_fact[:, newaxis]
-            return coupl_jac - x_jac
-
-        expr = ""
-        for out_c in output_couplings:
-            expr += out_c + "(" + ", ".join(dv_names_of_disc) + ") - "
-            expr += str(out_c) + "" + "\n"
-
-        name = coupl_func.name
-        return MDOFunction(
-            coupl_min_x,
-            name,
-            input_names=dv_names_of_disc,
-            expr=expr,
-            jac=coupl_min_x_jac,
-            output_names=coupl_func.output_names,
-            f_type=MDOFunction.ConstraintType.EQ,
-        )
-
     def _build_constraints(self) -> None:
         """Build the constraints.
 
@@ -295,6 +190,10 @@ class IDF(MDOFormulation):
             )
             if couplings:
                 cstr = ConsistencyCstr(couplings, self)
+                if cstr.linear_candidate:
+                    cstr = compute_linear_approximation(
+                        cstr, zeros(cstr.input_dimension)
+                    )
                 self.opt_problem.add_eq_constraint(cstr)
 
     def get_expected_workflow(  # noqa:D102

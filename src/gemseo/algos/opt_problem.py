@@ -310,7 +310,7 @@ class OptimizationProblem(BaseProblem):
     def __init__(
         self,
         design_space: DesignSpace,
-        pb_type: ProblemType = ProblemType.NON_LINEAR,
+        pb_type: ProblemType = ProblemType.LINEAR,
         input_database: str | Path | Database | None = None,
         differentiation_method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
         fd_step: float = 1e-7,
@@ -437,10 +437,7 @@ class OptimizationProblem(BaseProblem):
         if self.pb_type == self.ProblemType.LINEAR and not isinstance(
             func, MDOLinearFunction
         ):
-            raise TypeError(
-                "The objective of a linear optimization problem "
-                "must be an MDOLinearFunction."
-            )
+            self.pb_type = self.ProblemType.NON_LINEAR
         self._objective = func
 
     @property
@@ -530,10 +527,7 @@ class OptimizationProblem(BaseProblem):
         if self.pb_type == OptimizationProblem.ProblemType.LINEAR and not isinstance(
             cstr_func, MDOLinearFunction
         ):
-            raise TypeError(
-                "The constraint of a linear optimization problem "
-                "must be an MDOLinearFunction."
-            )
+            self.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
         ctype = cstr_type or cstr_func.f_type
         cstr_repr = self.repr_constraint(cstr_func, ctype, value, positive)
         if value is not None:
@@ -620,6 +614,7 @@ class OptimizationProblem(BaseProblem):
                 or when the constraint aggregation method is unknown.
         """
         n_constraints = len(self.constraints)
+        self.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
         if constraint_index >= n_constraints:
             raise KeyError(
                 f"The index of the constraint ({constraint_index}) must be lower "
@@ -689,6 +684,7 @@ class OptimizationProblem(BaseProblem):
             objective_scale: The objective scaling constant.
             scale_inequality: The inequality constraint scaling constant.
         """
+        self.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
         penalized_objective = self.objective / objective_scale
         self.add_observable(self.objective)
         for constr in self.constraints:

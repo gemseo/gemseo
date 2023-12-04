@@ -31,6 +31,7 @@ from typing import Sequence
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
@@ -179,6 +180,10 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         output_names = self._check_add_cstr_input(output_name, constraint_type)
         constraint = FunctionFromDiscipline(output_names, self)
+        if constraint.linear_candidate:
+            constraint = compute_linear_approximation(
+                constraint, zeros(constraint.input_dimension)
+            )
         constraint.f_type = constraint_type
         if constraint_name is None:
             constraint.has_default_name = True
@@ -518,6 +523,11 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         obj_mdo_fun = FunctionFromDiscipline(
             objective_name, self, discipline, top_level_disc
         )
+        if obj_mdo_fun.linear_candidate:
+            obj_mdo_fun = compute_linear_approximation(
+                obj_mdo_fun, zeros(obj_mdo_fun.input_dimension)
+            )
+
         obj_mdo_fun.f_type = MDOFunction.FunctionType.OBJ
         self.opt_problem.objective = obj_mdo_fun
         if self._maximize_objective:

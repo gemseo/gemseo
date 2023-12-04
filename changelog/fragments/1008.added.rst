@@ -1,0 +1,3 @@
+The ``MDODiscipline`` can  flag linear relationships between inputs and outputs.
+This enables the ``FunctionFromDiscipline`` generated from these ``MDODiscipline`` to be instances of ``LinearMDOFunction``.
+An ``OptimizationProblem`` is now by default a linear problem unless a non-linear objective or constraint is added to the optimization problem.

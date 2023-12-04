@@ -30,6 +30,7 @@ from typing import Sequence
 
 from numpy import empty
 
+from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
@@ -43,7 +44,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class FunctionFromDiscipline(MDOFunction):
+class FunctionFromDiscipline(LinearCandidateFunction):
     """An :class:`.MDOFunction` object from an :class:`.MDODiscipline`."""
 
     def __init__(
@@ -109,6 +110,14 @@ class FunctionFromDiscipline(MDOFunction):
             dim=self.__out_x_func.dim,
             output_names=self.__out_x_func.output_names,
         )
+
+    @property
+    def linear_candidate(self) -> bool:
+        return self.__out_x_func.linear_candidate
+
+    @property
+    def input_dimension(self) -> int | None:
+        return self.__out_x_func.input_dimension
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the outputs.

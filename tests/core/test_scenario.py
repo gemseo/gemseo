@@ -33,14 +33,17 @@ from numpy import int64
 from numpy.linalg import norm
 from numpy.testing import assert_equal
 
+from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
@@ -856,3 +859,44 @@ def test_lib_serialization(tmp_wd, mdf_scenario):
     pickled_scenario.execute({"algo": "SLSQP", "max_iter": 1})
 
     assert pickled_scenario._lib.internal_algo_name == "SLSQP"
+
+
+@pytest.fixture(params=[True, False])
+def full_linear(request):
+    """Whether the generated problem should be linear."""
+    return request.param
+
+
+@pytest.fixture()
+def scenario_for_linear_check(full_linear):
+    """MDOScenario for linear check."""
+    my_disc = AnalyticDiscipline({"f": "x1+ x2**2"})
+    my_disc.default_inputs = {"x1": array([0.5]), "x2": array([0.5])}
+    my_disc.set_linear_relationships(["f"], ["x1"])
+    ds = DesignSpace()
+    ds.add_variable("x1", 1, l_b=0.0, u_b=1.0, value=0.5)
+    if not full_linear:
+        ds.add_variable("x2", 1, l_b=0.0, u_b=1.0, value=0.5)
+    return create_scenario(my_disc, "DisciplinaryOpt", "f", design_space=ds)
+
+
+def test_function_problem_type(scenario_for_linear_check, full_linear):
+    """Test that function and problem are consistent with declaration."""
+    if not full_linear:
+        assert isinstance(
+            scenario_for_linear_check.formulation.opt_problem.objective,
+            FunctionFromDiscipline,
+        )
+        assert (
+            scenario_for_linear_check.formulation.opt_problem.pb_type
+            == scenario_for_linear_check.formulation.opt_problem.ProblemType.NON_LINEAR
+        )
+    else:
+        assert isinstance(
+            scenario_for_linear_check.formulation.opt_problem.objective,
+            MDOLinearFunction,
+        )
+        assert (
+            scenario_for_linear_check.formulation.opt_problem.pb_type
+            == scenario_for_linear_check.formulation.opt_problem.ProblemType.LINEAR
+        )
