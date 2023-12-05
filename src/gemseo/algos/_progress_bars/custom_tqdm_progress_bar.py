@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import logging
 import string
-import sys
 from io import StringIO
 from io import TextIOWrapper
 from typing import TYPE_CHECKING
@@ -71,11 +70,14 @@ class CustomTqdmProgressBar(tqdm.tqdm):
     __MIN_LABEL: Final[str] = "min"
     __SEC_LABEL: Final[str] = "sec"
 
+    __FILE_STREAM_CLASS: Final[type] = StringIO
+    """The class used to create the dummy file stream for tqdm."""
+
     def __init__(self, *args, **kwargs) -> None:  # noqa: D102
         # Use a file stream to prevent tqdm from trying to adapt the progress bar
         # to the current terminal because its rendering will vary and because it is
         # not needed since the progress bar goes to a logger.
-        kwargs["file"] = StringIO()
+        kwargs["file"] = self.__FILE_STREAM_CLASS()
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -138,4 +140,6 @@ class CustomTqdmProgressBar(tqdm.tqdm):
     def __setstate__(self, state) -> None:
         self.__dict__.update(state)
         # Set back the file-like stream to its state as done in tqdm.__init__.
-        self.fp = tqdm.utils.DisableOnWriteError(sys.stderr, tqdm_instance=self)
+        self.fp = tqdm.utils.DisableOnWriteError(
+            self.__FILE_STREAM_CLASS(), tqdm_instance=self
+        )

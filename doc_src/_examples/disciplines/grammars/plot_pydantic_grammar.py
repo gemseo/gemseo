@@ -22,18 +22,14 @@ Use a pydantic grammar
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from numpy import array
 from numpy import ndarray
+from numpy._typing import NDArray
 from pydantic import Field
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.core.grammars.pydantic_ndarray import BaseModelWithNDArray
-
-if TYPE_CHECKING:
-    from numpy._typing import NDArray
 
 # %%
 # Create the pydantic model
