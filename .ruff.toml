@@ -79,7 +79,10 @@ select = [
 ]
 
 [flake8-type-checking]
-runtime-evaluated-base-classes = ["pydantic.BaseModel"]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "gemseo.core.grammars.pydantic_ndarray.BaseModelWithNDArray",
+]
 
 [isort]
 force-single-line = true
