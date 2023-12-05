@@ -43,7 +43,7 @@ all_distributions
 # %%
 # and filter the ones based on the SciPy library
 # (their names start with the acronym 'SP'):
-sp_distributions = [dist for dist in all_distributions if dist.startswith("SP")]
+sp_distributions = get_available_distributions("SPDistribution")
 sp_distributions
 
 # %%

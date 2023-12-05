@@ -17,6 +17,8 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Test for the class DistributionFactory."""
+
 from __future__ import annotations
 
 import pytest
