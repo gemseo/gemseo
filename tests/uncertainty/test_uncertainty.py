@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import pytest
 from numpy import pi
 from numpy.random import default_rng
 
@@ -35,9 +36,23 @@ from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 
 
-def test_available_distribution():
-    distributions = get_available_distributions()
-    assert "OTNormalDistribution" in distributions
+@pytest.mark.parametrize(
+    "kwargs",
+    [{}, {"base_class_name": "OTDistribution"}, {"base_class_name": "SPDistribution"}],
+)
+def test_available_distributions(kwargs):
+    """Check the function get_available_distributions."""
+    distributions = get_available_distributions(**kwargs)
+    base_class_name = kwargs.get("base_class_name")
+    if base_class_name == "OTDistribution":
+        assert "OTNormalDistribution" in distributions
+        assert "SPNormalDistribution" not in distributions
+    elif base_class_name == "SPDistribution":
+        assert "OTNormalDistribution" not in distributions
+        assert "SPNormalDistribution" in distributions
+    else:
+        assert "OTNormalDistribution" in distributions
+        assert "SPNormalDistribution" in distributions
 
 
 def test_create_distribution():

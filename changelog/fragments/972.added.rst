@@ -1,0 +1,3 @@
+- ``OTDistributionFactory`` is a ``DistributionFactory`` limited to ``OTDistribution`` objects.
+- ``SPDistributionFactory`` is a ``DistributionFactory`` limited to ``SPDistribution`` objects.
+- The ``base_class_name`` attribute of ``get_available_distributions`` can limit the probability distributions to a specific library, e.g. ``"OTDistribution"`` for OpenTURNS and ``"SPDistribution"`` for SciPy.

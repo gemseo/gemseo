@@ -75,12 +75,29 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.statistics.statistics import Statistics
 
 
-def get_available_distributions() -> list[str]:
-    """Get the available distributions."""
+def get_available_distributions(base_class_name: str = "Distribution") -> list[str]:
+    """Get the available probability distributions.
+
+    Args:
+        base_class_name: The name of the base class of the probability distributions,
+            e.g. ``"Distribution"``, ``"OTDistribution"`` or ``"SPDistribution"``.
+
+    Returns:
+        The names of the available probability distributions.
+    """
     from gemseo.uncertainty.distributions.factory import DistributionFactory
 
     factory = DistributionFactory()
-    return factory.available_distributions
+    class_names = factory.class_names
+    if base_class_name == "Distribution":
+        return class_names
+
+    return [
+        class_name
+        for class_name in class_names
+        if base_class_name
+        in [cls.__name__ for cls in factory.get_class(class_name).mro()]
+    ]
 
 
 def create_distribution(

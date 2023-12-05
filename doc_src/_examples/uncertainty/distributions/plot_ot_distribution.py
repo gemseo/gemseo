@@ -43,7 +43,7 @@ all_distributions
 # %%
 # and filter the ones based on the OpenTURNS library
 # (their names start with the acronym 'OT'):
-ot_distributions = [dist for dist in all_distributions if dist.startswith("OT")]
+ot_distributions = get_available_distributions("OTDistribution")
 ot_distributions
 
 # %%
