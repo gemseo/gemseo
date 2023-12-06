@@ -297,7 +297,7 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
             "Capability to calibrate GEMSEO disciplines from data",
             False,
         ),
-        "gemseo-fmu": ("GEMSEO plugin for FMU dynamic models", False),
+        "gemseo-fmu": ("GEMSEO plugin for FMU dynamic models", True),
         "gemseo-matlab": ("GEMSEO plugin for MATLAB.", False),
         "gemseo-mlearning": ("Miscellaneous machine learning capabilities", False),
         "gemseo-mma": (
