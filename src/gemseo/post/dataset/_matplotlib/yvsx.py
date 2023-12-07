@@ -23,7 +23,7 @@ from gemseo.post.dataset._matplotlib.plot import MatplotlibPlot
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
-    from numpy._typing import ArrayLike
+    from numpy.typing import ArrayLike
 
 
 class YvsX(MatplotlibPlot):
