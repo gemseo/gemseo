@@ -557,7 +557,8 @@ class JSONGrammar(BaseGrammar):
         del state[f"_{self.__class__.__name__}__validator"]
         # The schema builder cannot be pickled.
         del state[f"_{self.__class__.__name__}__schema_builder"]
-        # The defaults cannot be pickled because it also depends on the schema builder.
+        # The defaults cannot be pickled as is because it also depends on the schema
+        # builder. So we convert it into a raw dictionary.
         state["defaults"] = dict(state.pop("_defaults"))
         return state
 
