@@ -1,0 +1,1 @@
+``DisciplineData`` with nested dictionary can now be serialized with ``json``.

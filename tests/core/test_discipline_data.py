@@ -16,6 +16,7 @@
 # Antoine DECHAUME
 from __future__ import annotations
 
+import json
 from copy import deepcopy
 from typing import Any
 from typing import Mapping
@@ -115,10 +116,6 @@ def test_getitem(namespace_mapping):
     )
 
     assert_getitem(d, df)
-
-    # With nested dictionary.
-    data.update({"z": data.copy()})
-    assert_getitem(d["z"], df)
 
 
 def test_len():
@@ -278,7 +275,12 @@ def test_restrict():
 
 
 def test_wrong_data_type():
-    """Tests that the type of the initial data is well checked."""
+    """Verify that the type of the initial data is well checked."""
     data = ("a",)
     with pytest.raises(TypeError, match=f"Invalid type for data, got {type(data)}."):
         DisciplineData(data)
+
+
+def test_serialization():
+    """Verify serialization of nested data."""
+    assert json.dumps(dict(DisciplineData({"a": {"b": "c"}}))) == '{"a": {"b": "c"}}'
