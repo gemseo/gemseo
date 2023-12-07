@@ -635,6 +635,7 @@ class MDOFunction(Serializable):
             output_names=self.output_names,
             expr=expr,
             original_name=self.original_name,
+            special_repr=f"-({self.special_repr})" if self.special_repr else "",
         )
 
     def __truediv__(self, other: MDOFunction | Number) -> MDOFunction:
@@ -692,6 +693,9 @@ class MDOFunction(Serializable):
         )
         function.expr = _OperationFunctionMaker.get_string_representation(
             self.expr or name, operator, second_operand
+        )
+        function.special_repr = _OperationFunctionMaker.get_string_representation(
+            self.special_repr or name, operator, second_operand
         )
         return function
 

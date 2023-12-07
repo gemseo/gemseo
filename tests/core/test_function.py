@@ -407,26 +407,49 @@ def test_linear_approximation():
 
 @pytest.fixture()
 def function():
-    return MDOFunction(lambda x: x, "n", expr="e")
+    return MDOFunction(lambda x: x, "n", expr="e", special_repr="a_special_repr")
 
 
 @pytest.mark.parametrize(
-    ("neg", "neg_after", "value", "expected_n", "expected_e"),
+    ("neg", "neg_after", "value", "expected_n", "expected_e", "expected_sr"),
     [
-        (False, True, 1.0, "[n+1.0]", "e+1.0"),
-        (True, True, 1.0, "-[n+1.0]", "-(e+1.0)"),
-        (False, True, -1.0, "[n-1.0]", "e-1.0"),
-        (True, True, -1.0, "-[n-1.0]", "-(e-1.0)"),
-        (False, False, 1.0, "[n+1.0]", "e+1.0"),
-        (True, False, 1.0, "[-n+1.0]", "-(e)+1.0"),
-        (False, False, -1.0, "[n-1.0]", "e-1.0"),
-        (True, False, -1.0, "[-n-1.0]", "-(e)-1.0"),
-        (False, False, array([1.0, 1.0]), "[n+offset]", "e+offset"),
-        (True, False, array([1.0, 1.0]), "[-n+offset]", "-(e)+offset"),
-        (True, True, array([1.0, 1.0]), "-[n+offset]", "-(e+offset)"),
+        (False, True, 1.0, "[n+1.0]", "e+1.0", "a_special_repr+1.0"),
+        (True, True, 1.0, "-[n+1.0]", "-(e+1.0)", "-(a_special_repr+1.0)"),
+        (False, True, -1.0, "[n-1.0]", "e-1.0", "a_special_repr-1.0"),
+        (True, True, -1.0, "-[n-1.0]", "-(e-1.0)", "-(a_special_repr-1.0)"),
+        (False, False, 1.0, "[n+1.0]", "e+1.0", "a_special_repr+1.0"),
+        (True, False, 1.0, "[-n+1.0]", "-(e)+1.0", "-(a_special_repr)+1.0"),
+        (False, False, -1.0, "[n-1.0]", "e-1.0", "a_special_repr-1.0"),
+        (True, False, -1.0, "[-n-1.0]", "-(e)-1.0", "-(a_special_repr)-1.0"),
+        (
+            False,
+            False,
+            array([1.0, 1.0]),
+            "[n+offset]",
+            "e+offset",
+            "a_special_repr+offset",
+        ),
+        (
+            True,
+            False,
+            array([1.0, 1.0]),
+            "[-n+offset]",
+            "-(e)+offset",
+            "-(a_special_repr)+offset",
+        ),
+        (
+            True,
+            True,
+            array([1.0, 1.0]),
+            "-[n+offset]",
+            "-(e+offset)",
+            "-(a_special_repr+offset)",
+        ),
     ],
 )
-def test_offset_name_and_expr(function, neg, neg_after, value, expected_n, expected_e):
+def test_offset_name_and_expr(
+    function, neg, neg_after, value, expected_n, expected_e, expected_sr
+):
     """Check the name and expression of a function after 1) __neg__ and 2) offset."""
     if neg_after:
         function = function.offset(value)
@@ -441,6 +464,7 @@ def test_offset_name_and_expr(function, neg, neg_after, value, expected_n, expec
 
     assert function.name == expected_n
     assert function.expr == expected_e
+    assert function.special_repr == expected_sr
 
 
 def test_expects_normalized_inputs(function):
