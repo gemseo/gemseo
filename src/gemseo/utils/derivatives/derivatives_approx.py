@@ -24,14 +24,17 @@ import logging
 import pickle
 from contextlib import contextmanager
 from multiprocessing import cpu_count
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
 from typing import Sized
 
+from scipy.sparse import hstack as sparse_hstack
 from scipy.sparse import spmatrix
 
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.derivatives.gradient_approximator_factory import (
@@ -46,8 +49,8 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.discipline_data import DisciplineData
+    from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
-from pathlib import Path
 
 from matplotlib import pyplot as plt
 from numpy import absolute
@@ -60,8 +63,6 @@ from numpy import divide
 from numpy import ndarray
 from numpy import zeros
 
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -69,6 +70,9 @@ class DisciplineJacApprox:
     """Approximates a discipline Jacobian using finite differences or Complex step."""
 
     N_CPUS = cpu_count()
+
+    approximator: GradientApproximator | None
+    """The gradient approximation method."""
 
     def __init__(
         self,
@@ -571,16 +575,31 @@ class DisciplineJacApprox:
                 ],
                 axis=1,
             )
-            _output_analytic_jacobian = concatenate(
-                [
-                    analytic_jacobian[output_name][input_name]
-                    for input_name in input_names
-                ],
-                axis=1,
+
+            analytic_jacobian_out = analytic_jacobian[output_name]
+            contains_sparse = any(
+                isinstance(analytic_jacobian_out[input_name], spmatrix)
+                for input_name in input_names
             )
-            n_f, _ = _output_approx_jacobian.shape
+
+            if contains_sparse:
+                _output_analytic_jacobian = sparse_hstack(
+                    [analytic_jacobian_out[input_name] for input_name in input_names],
+                ).tocsr()
+            else:
+                _output_analytic_jacobian = concatenate(
+                    [analytic_jacobian_out[input_name] for input_name in input_names],
+                    axis=1,
+                )
+
+            n_f = len(_output_approx_jacobian)
+
             if n_f == 1:
                 _approx_jacobian[output_name] = _output_approx_jacobian.flatten()
+
+                if contains_sparse:
+                    _output_analytic_jacobian = _output_analytic_jacobian.toarray()
+
                 _analytic_jacobian[output_name] = _output_analytic_jacobian.flatten()
             else:
                 for i in range(n_f):
@@ -629,6 +648,8 @@ class DisciplineJacApprox:
         n_subplots = len(axes) * len(axes[0])
         abscissa = arange(len(x_labels))
         for func, grad in sorted(comp_grad.items()):
+            if isinstance(grad, spmatrix):
+                grad = grad.toarray().flatten()
             j += 1
             if j == ncols:
                 j = 0

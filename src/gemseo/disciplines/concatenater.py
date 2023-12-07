@@ -64,15 +64,17 @@ class Concatenater(MDODiscipline):
         super().__init__()
         self.input_grammar.update_from_names(input_variables)
         self.output_grammar.update_from_names([output_variable])
-        self.__output_variable = output_variable
+
         self.__coefficients = dict.fromkeys(input_variables, 1.0)
         if input_coefficients:
             self.__coefficients.update(input_coefficients)
 
+        self.__output_name = output_variable
+
     def _run(self) -> None:
         """Run the discipline."""
         input_data = self.get_input_data()
-        self.local_data[self.__output_variable] = concatenate(
+        self.local_data[self.__output_name] = concatenate(
             [
                 self.__coefficients[input_name] * input_data[input_name]
                 for input_name in self.get_input_data_names()
@@ -94,18 +96,21 @@ class Concatenater(MDODiscipline):
                 If ``None``, linearization should be performed
                 on all outputs (Default value = None)
         """
-        self._init_jacobian(inputs, outputs)
+        self._init_jacobian(inputs, outputs, init_type=self.InitJacobianType.SPARSE)
 
-        names = self.get_input_data_names()
-        sizes = [input_.size for input_ in self.get_all_inputs()]
-        total_size = self.get_inputs_asarray().size
+        input_names = self.get_input_data_names()
+        input_sizes = [input_.size for input_ in self.get_all_inputs()]
+        total_size = sum(input_sizes)
 
         # Instead of manually accumulating, we use the accumulate() iterator.
-        jac = self.jac[self.__output_variable]
-        for name, size, start in zip(names, sizes, accumulate(sizes, initial=0)):
-            row = range(start, start + size)
-            col = range(size)
+        jac = self.jac[self.__output_name]
+        for name, size, start in zip(
+            input_names, input_sizes, accumulate(input_sizes, initial=0)
+        ):
             jac[name] = csr_array(
-                ([self.__coefficients[name]] * size, (row, col)),
+                (
+                    [self.__coefficients[name]] * size,
+                    (range(start, start + size), range(size)),
+                ),
                 shape=(total_size, size),
             )

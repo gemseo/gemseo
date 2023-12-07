@@ -389,6 +389,8 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         indices = self._get_dv_indices(all_data_names)
         variable_sizes = self.opt_problem.design_space.variable_sizes
         total_size = sum(variable_sizes[var] for var in all_data_names)
+
+        # TODO: The support of sparse Jacobians requires modifications here.
         if x_full is None:
             x_unmask = zeros(total_size, dtype=x_masked.dtype)
         else:

@@ -86,8 +86,8 @@ class MaterialModelInterpolation(MDODiscipline):
         )
         dyoung_modulus_dxphys[self.empty_elements] = 0
         dyoung_modulus_dxphys[self.full_elements] = 0
-        self.jac["E"] = {"xPhys": diags(dyoung_modulus_dxphys).toarray()}
+        self.jac["E"] = {"xPhys": diags(dyoung_modulus_dxphys).tocsr()}
         drho_dxphys = ones_like(xphys)
         drho_dxphys[self.empty_elements] = 0
         drho_dxphys[self.full_elements] = 0
-        self.jac["rho"] = {"xPhys": diags(drho_dxphys).toarray()}
+        self.jac["rho"] = {"xPhys": diags(drho_dxphys).tocsr()}

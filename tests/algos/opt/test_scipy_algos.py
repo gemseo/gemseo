@@ -20,9 +20,13 @@ from __future__ import annotations
 
 from unittest import TestCase
 
+import pytest
+from numpy import allclose
+from numpy import array
 from numpy import inf
 from scipy.optimize.optimize import rosen
 from scipy.optimize.optimize import rosen_der
+from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_scipy import ScipyOpt
@@ -30,6 +34,7 @@ from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 
@@ -209,3 +214,55 @@ for test_method in suite_tests.generate_test("SCIPY"):
 def test_library_name():
     """Check the library name."""
     assert ScipyOpt.LIBRARY_NAME == "SciPy"
+
+
+@pytest.fixture(params=[True, False])
+def jacobians_are_sparse(request) -> bool:
+    """Whether the Jacobians of MDO Functions are sparse or not."""
+    return request.param
+
+
+@pytest.fixture()
+def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
+    """A linear optimization problem.
+
+    Args:
+        sparse_jacobian: Whether the objective and constraints Jacobians are sparse.
+
+    Returns:
+        The linear optimization problem.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=1.0)
+    design_space.add_variable("y", l_b=0.0, u_b=5.0, value=5)
+    design_space.add_variable("z", l_b=0.0, u_b=5.0, value=0)
+
+    problem = OptimizationProblem(design_space)
+
+    array_ = csr_array if jacobians_are_sparse else array
+    input_names = ["x", "y", "z"]
+
+    problem.objective = MDOLinearFunction(
+        array_([1.0, 1.0, -1]), "f", MDOFunction.FunctionType.OBJ, input_names, -1.0
+    )
+    problem.add_ineq_constraint(
+        MDOLinearFunction(array_([0, 0.5, -0.25]), "g", input_names=input_names),
+        0.333,
+        True,
+    )
+    problem.add_eq_constraint(
+        MDOLinearFunction(array_([-2.0, 1.0, 1.0]), "h", input_names=input_names)
+    )
+
+    return problem
+
+
+def test_recasting_sparse_jacobians(opt_problem):
+    """Test that sparse Jacobians are recasted as dense arrays.
+
+    The SLSQP algorithm from SciPy does not support sparse Jacobians. The fact that the
+    optimizer can be executed and converges implies that the MDOFunctions' Jacobians are
+    indeed recast as dense NumPy arrays before being sent to SciPy.
+    """
+    optimization_result = OptimizersFactory().execute(opt_problem, "SLSQP", atol=1e-10)
+    assert allclose(optimization_result.f_opt, -0.001, atol=1e-10)

@@ -38,6 +38,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.centered_differences import CenteredDifferences
@@ -396,3 +397,16 @@ def test_derivatives_on_design_boundaries(
     assert grad == pytest.approx(4.0, abs=1e-6)
 
     assert "All components of the normalized vector " not in caplog.text
+
+
+@pytest.mark.parametrize("output_size", [1, 10])
+def test_derivatives_with_sparse_jacobians(tmp_wd, output_size):
+    """Test check Jacobians with sparse Jacobians."""
+    discipline = LinearDiscipline(
+        "A", ["x"], ["y"], inputs_size=10, outputs_size=output_size, matrix_format="csr"
+    )
+    discipline.linearize(compute_all_jacobians=True)
+
+    assert DisciplineJacApprox(discipline).check_jacobian(
+        {"y": {"x": discipline.mat}}, ["y"], ["x"], discipline, plot_result=True
+    )

@@ -18,10 +18,12 @@
 #        :author: Benoit Pauwels
 from __future__ import annotations
 
-from unittest.case import TestCase
+import re
 
+import pytest
 from numpy import allclose
 from numpy import array
+from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_scipy_linprog import ScipyLinprog
@@ -32,72 +34,97 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 
-class TestScipyLinprog(TestCase):
-    """"""
-
-    OPT_LIB_NAME = "ScipyLinprog"
-
-    @staticmethod
-    def get_problem():
-        # Design space
-        design_space = DesignSpace()
-        design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-        design_space.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
-
-        # Optimization functions
-        input_names = ["x", "y"]
-        problem = OptimizationProblem(
-            design_space, OptimizationProblem.ProblemType.LINEAR
-        )
-        problem.objective = MDOLinearFunction(
-            array([1.0, 1.0]), "f", MDOFunction.FunctionType.OBJ, input_names, -1.0
-        )
-        ineq_constraint = MDOLinearFunction(
-            array([1.0, 1.0]), "g", input_names=input_names
-        )
-        problem.add_constraint(ineq_constraint, 1.0, MDOFunction.ConstraintType.INEQ)
-        eq_constraint = MDOLinearFunction(
-            array([-2.0, 1.0]), "h", input_names=input_names
-        )
-        problem.add_constraint(eq_constraint, 0.0, MDOFunction.ConstraintType.EQ)
-
-        return problem
-
-    def test_init(self):
-        factory = OptimizersFactory()
-        if factory.is_available(self.OPT_LIB_NAME):
-            factory.create(self.OPT_LIB_NAME)
-
-    def test_nonlinear_pb(self):
-        problem = Rosenbrock()
-        library = OptimizersFactory().create(self.OPT_LIB_NAME)
-        adapted_algorithms = library.filter_adapted_algorithms(problem)
-        assert not adapted_algorithms
-
-    def test_linprog_algorithms(self):
-        library = OptimizersFactory().create(self.OPT_LIB_NAME)
-        for algo_name in library.descriptions:
-            self.check_algorithm(algo_name)
-
-    def check_algorithm(self, algo_name):
-        # Check that the problem must be linear
-        problem = Rosenbrock()
-        self.assertRaises(ValueError, OptimizersFactory().execute, problem, algo_name)
-
-        # Test on a linear minimization problem
-        problem = self.get_problem()
-        optim_result = OptimizersFactory().execute(problem, algo_name)
-        assert allclose(optim_result.x_opt, array([0.0, 0.0]))
-        self.assertAlmostEqual(optim_result.f_opt, -1.0)
-
-        # Test on a linear maximization problem
-        problem = self.get_problem()
-        problem.change_objective_sign()
-        optim_result = OptimizersFactory().execute(problem, algo_name)
-        assert allclose(optim_result.x_opt, array([1.0, 2.0]) / 3.0)
-        self.assertAlmostEqual(optim_result.f_opt, 0.0)
+@pytest.fixture(scope="module")
+def library() -> ScipyLinprog:
+    """The SciPyLinprog library."""
+    return OptimizersFactory().create("ScipyLinprog")
 
 
 def test_library_name():
-    """Check the library name."""
+    """Tests the library name."""
     assert ScipyLinprog.LIBRARY_NAME == "SciPy"
+
+
+def test_factory(library):
+    """Tests creation of library from factory."""
+    assert isinstance(library, ScipyLinprog)
+
+
+def test_nonlinear_optimization_problem(library):
+    """Tests that library does not support non-linear problems."""
+    problem = Rosenbrock()
+    assert not library.filter_adapted_algorithms(problem)
+    for algo_name in library.algorithms:
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                f"The algorithm {algo_name} is not adapted to the problem because it "
+                "does not handle non-linear problems."
+            ),
+        ):
+            library.execute(problem, algo_name)
+
+
+def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
+    """Construct a linear optimization problem.
+
+    Args:
+        sparse_jacobian: Whether the objective and constraints Jacobians are sparse.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
+
+    input_names = ["x", "y"]
+    array_ = csr_array if sparse_jacobian else array
+
+    problem = OptimizationProblem(design_space, OptimizationProblem.ProblemType.LINEAR)
+    problem.objective = MDOLinearFunction(
+        array_([1.0, 1.0]),
+        "f",
+        MDOFunction.FunctionType.OBJ,
+        input_names,
+        array([-1.0]),
+    )
+    problem.add_ineq_constraint(
+        MDOLinearFunction(array_([1.0, 1.0]), "g", input_names=input_names), 1.0
+    )
+    problem.add_eq_constraint(
+        MDOLinearFunction(array_([-2.0, 1.0]), "h", input_names=input_names)
+    )
+    return problem
+
+
+@pytest.mark.parametrize(
+    ("minimization", "x_opt", "f_opt"),
+    [(True, array([0.0, 0.0]), -1.0), (False, array([1 / 3, 2 / 3]), 0.0)],
+)
+def test_linprog_algorithms(minimization, x_opt, f_opt, library):
+    """Tests algorithms on linear optimization problems."""
+    for algo_name in library.algorithms:
+        linprog_problem = get_opt_problem()
+        if not minimization:
+            linprog_problem.change_objective_sign()
+
+        optimization_result = library.execute(linprog_problem, algo_name)
+
+        assert allclose(optimization_result.x_opt, x_opt)
+        assert allclose(optimization_result.f_opt, f_opt)
+
+
+@pytest.mark.parametrize(
+    ("minimization", "x_opt", "f_opt"),
+    [(True, array([0.0, 0.0]), -1.0), (False, array([1 / 3, 2 / 3]), 0.0)],
+)
+@pytest.mark.parametrize(
+    "algo_name", ["HIGHS", "HIGHS_DUAL_SIMPLEX", "HIGHS_INTERIOR_POINT"]
+)
+def test_sparse_linprog_algorithms(minimization, x_opt, f_opt, algo_name, library):
+    """Tests algorithms on linear optimization problems with sparse Jacobians."""
+    linprog_problem = get_opt_problem(sparse_jacobian=True)
+    if not minimization:
+        linprog_problem.change_objective_sign()
+
+    optimization_result = library.execute(linprog_problem, algo_name)
+    assert allclose(optimization_result.x_opt, x_opt)
+    assert allclose(optimization_result.f_opt, f_opt)

@@ -28,7 +28,6 @@ from typing import Iterable
 from typing import Sequence
 
 from numpy import ndarray
-from numpy import zeros
 from scipy.sparse import spmatrix
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
@@ -52,6 +51,7 @@ from gemseo.utils.enumeration import merge_enums
 LOGGER = logging.getLogger(__name__)
 
 
+# TODO: One class per module.
 class MDOChain(MDODiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
@@ -249,13 +249,12 @@ class MDOChain(MDODiscipline):
 
         # Add differentiations that should be there,
         # because inputs of the chain but not of all disciplines.
-        for output_name in outputs:
-            output_size = len(self.get_outputs_by_name(output_name))
-            output_jacobian = self.jac.setdefault(output_name, {})
-            for input_name in inputs:
-                if input_name not in output_jacobian:
-                    input_size = len(self.get_inputs_by_name(input_name))
-                    output_jacobian[input_name] = zeros((output_size, input_size))
+        self._init_jacobian(
+            inputs,
+            outputs,
+            fill_missing_keys=True,
+            init_type=MDODiscipline.InitJacobianType.SPARSE,
+        )
 
     @staticmethod
     def copy_jacs(
@@ -430,7 +429,13 @@ class MDOParallelChain(MDODiscipline):
                     chain_jacobian = {}
                     self.jac[output_name] = chain_jacobian
                 chain_jacobian.update(output_jacobian)
-        self._init_jacobian(inputs, outputs, fill_missing_keys=True)
+
+        self._init_jacobian(
+            inputs,
+            outputs,
+            fill_missing_keys=True,
+            init_type=self.InitJacobianType.SPARSE,
+        )
 
     def add_differentiated_inputs(  # noqa: D102
         self,

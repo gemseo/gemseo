@@ -70,6 +70,7 @@ from numpy import float64
 from numpy import full
 from numpy import genfromtxt
 from numpy import hstack
+from numpy import in1d
 from numpy import inf
 from numpy import int32
 from numpy import isinf
@@ -82,6 +83,7 @@ from numpy import round
 from numpy import vectorize
 from numpy import where
 from numpy import zeros_like
+from scipy.sparse import spmatrix
 from strenum import StrEnum
 
 from gemseo.algos.opt_result import OptimizationResult
@@ -1240,10 +1242,10 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def normalize_vect(
         self,
-        x_vect: ndarray,
+        x_vect: ndarray | spmatrix,
         minus_lb: bool = True,
         out: ndarray | None = None,
-    ) -> ndarray:
+    ) -> ndarray | spmatrix:
         r"""Normalize a vector of the design space.
 
         If `minus_lb` is True:
@@ -1297,7 +1299,13 @@ class DesignSpace(collections.abc.MutableMapping):
         if minus_lb:
             out[..., norm_inds] -= self.__lower_bounds_array[norm_inds]
 
-        out[..., norm_inds] *= self._norm_factor_inv[norm_inds]
+        if isinstance(out, spmatrix):
+            # Construct a mask to only scale the required columns
+            column_mask = in1d(out.indices, norm_inds)
+            # Scale the corresponding coefficients
+            out.data[column_mask] *= self._norm_factor_inv[out.indices][column_mask]
+        else:
+            out[..., norm_inds] *= self._norm_factor_inv[norm_inds]
 
         # In case lb=ub, put value to 0.
         to_zero = self.__to_zero
@@ -1308,8 +1316,8 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def normalize_grad(
         self,
-        g_vect: ndarray,
-    ) -> ndarray:
+        g_vect: ndarray | spmatrix,
+    ) -> ndarray | spmatrix:
         r"""Normalize an unnormalized gradient.
 
         This method is based on the chain rule:
@@ -1344,8 +1352,8 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def unnormalize_grad(
         self,
-        g_vect: ndarray,
-    ) -> ndarray:
+        g_vect: ndarray | spmatrix,
+    ) -> ndarray | spmatrix:
         r"""Unnormalize a normalized gradient.
 
         This method is based on the chain rule:
@@ -1373,11 +1381,11 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def unnormalize_vect(
         self,
-        x_vect: ndarray,
+        x_vect: ndarray | spmatrix,
         minus_lb: bool = True,
         no_check: bool = False,
         out: ndarray | None = None,
-    ) -> ndarray:
+    ) -> ndarray | spmatrix:
         """Unnormalize a normalized vector of the design space.
 
         If `minus_lb` is True:
@@ -1446,7 +1454,14 @@ class DesignSpace(collections.abc.MutableMapping):
         if out.dtype != current_x_dtype:
             out = out.astype(current_x_dtype, copy=False)
 
-        out[..., norm_inds] *= self._norm_factor[norm_inds]
+        if isinstance(out, spmatrix):
+            # Construct a mask to only scale the required columns
+            column_mask = in1d(out.indices, norm_inds)
+            # Scale the corresponding coefficients
+            out.data[column_mask] *= self._norm_factor[out.indices][column_mask]
+        else:
+            out[..., norm_inds] *= self._norm_factor[norm_inds]
+
         if minus_lb:
             out[..., norm_inds] += lower_bounds[norm_inds]
 

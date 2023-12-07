@@ -32,6 +32,7 @@ from typing import Union
 from numpy import array
 from numpy import empty
 from numpy import ndarray
+from scipy.sparse import spmatrix
 
 from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
 
@@ -218,14 +219,30 @@ class MDODisciplineAdapter(LinearCandidateFunction):
             jac_output = self.__discipline.jac[output_name]
             for input_name in self.__input_names:
                 input_slice = self.__input_names_to_slices[input_name]
-                self.__jacobian[input_slice] = jac_output[input_name][0, :]
+                jac = jac_output[input_name]
+                # TODO: This precaution is meant to disappear when sparse 1-D array will
+                # be available. This is also mandatory since self.__jacobian is
+                # initialized as a dense array.
+                if isinstance(jac, spmatrix):
+                    first_row = jac.getrow(0).todense().flatten()
+                else:
+                    first_row = jac[0, :]
+
+                self.__jacobian[input_slice] = first_row
         else:
             for output_name in self.__output_names:
                 output_slice = self.__output_names_to_slices[output_name]
                 jac_output = self.__discipline.jac[output_name]
                 for input_name in self.__input_names:
                     input_slice = self.__input_names_to_slices[input_name]
-                    self.__jacobian[output_slice, input_slice] = jac_output[input_name]
+                    jac = jac_output[input_name]
+                    # TODO: This is mandatory since self.__jacobian is initialized as a
+                    # dense array. Performance improvement could be obtained if one is
+                    # able to infer the type of jac.
+                    if isinstance(jac, spmatrix):
+                        jac = jac.toarray()
+
+                    self.__jacobian[output_slice, input_slice] = jac
 
         return self.__jacobian
 

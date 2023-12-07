@@ -19,7 +19,6 @@ from __future__ import annotations
 from typing import Iterable
 
 from numpy import ndarray
-from scipy.sparse import csc_array
 from scipy.sparse import eye
 
 from gemseo.core.discipline import MDODiscipline
@@ -70,9 +69,7 @@ class Splitter(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        self._init_jacobian()
-        self.jac = {}
-        identity = csc_array(eye(self.local_data[self.__input_name].size))
+        self._init_jacobian(init_type=self.InitJacobianType.SPARSE)
+        identity = eye(self.local_data[self.__input_name].size, format="csr")
         for output_name, input_indices in self.__slicing_structure.items():
-            self.jac[output_name] = {}
             self.jac[output_name][self.__input_name] = identity[input_indices, :]
