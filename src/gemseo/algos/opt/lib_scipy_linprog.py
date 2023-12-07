@@ -28,6 +28,7 @@ from typing import ClassVar
 from numpy import isfinite
 from scipy.optimize import OptimizeResult
 from scipy.optimize import linprog
+from scipy.sparse import spmatrix
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
@@ -41,9 +42,9 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of a linear optimization algorithm from the SciPy library."""
 
-    problem_type: OptimizationProblem.ProblemType = (
-        OptimizationProblem.ProblemType.LINEAR
-    )
+    problem_type: (
+        OptimizationProblem.ProblemType
+    ) = OptimizationProblem.ProblemType.LINEAR
     handle_equality_constraints: bool = True
     handle_inequality_constraints: bool = True
     library_name: str = "SciPy"
@@ -58,6 +59,7 @@ class ScipyLinprog(OptimizationLibrary):
     LIB_COMPUTE_GRAD = True
 
     REDUNDANCY_REMOVAL = "redundancy removal"
+
     REVISED_SIMPLEX = "REVISED_SIMPLEX"
 
     OPTIONS_MAP: ClassVar[dict[Any, str]] = {
@@ -67,6 +69,9 @@ class ScipyLinprog(OptimizationLibrary):
     }
 
     LIBRARY_NAME = "SciPy"
+
+    _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = True
+    """Whether the library supports sparse Jacobians."""
 
     def __init__(self) -> None:
         """Constructor.
@@ -203,7 +208,11 @@ class ScipyLinprog(OptimizationLibrary):
 
         # Build the functions matrices
         # N.B. use the non-processed functions to access the coefficients
-        obj_coeff = self.problem.nonproc_objective.coefficients[0, :].real
+        coefficients = self.problem.nonproc_objective.coefficients
+        if isinstance(coefficients, spmatrix):
+            obj_coeff = coefficients.getrow(0).todense().flatten()
+        else:
+            obj_coeff = coefficients[0, :]
         constraints = self.problem.nonproc_constraints
         ineq_lhs, ineq_rhs = build_constraints_matrices(
             constraints, MDOLinearFunction.ConstraintType.INEQ
@@ -226,7 +235,7 @@ class ScipyLinprog(OptimizationLibrary):
         # TODO: interface the option ``integrality`` of HiGHS solvers
         # to support mixed-integer linear programming
         linprog_result = linprog(
-            c=obj_coeff,
+            c=obj_coeff.real,
             A_ub=ineq_lhs,
             b_ub=ineq_rhs,
             A_eq=eq_lhs,

@@ -30,6 +30,7 @@ from numpy import ones_like
 from scipy.optimize import Bounds
 from scipy.optimize import LinearConstraint
 from scipy.optimize import milp
+from scipy.sparse import spmatrix
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
@@ -43,9 +44,9 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 class ScipyMILPAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of a MILP optimization algorithm from the SciPy library."""
 
-    problem_type: OptimizationProblem.ProblemType = (
-        OptimizationProblem.ProblemType.LINEAR
-    )
+    problem_type: (
+        OptimizationProblem.ProblemType
+    ) = OptimizationProblem.ProblemType.LINEAR
     handle_equality_constraints: bool = True
     handle_inequality_constraints: bool = True
     library_name: str = "SciPy"
@@ -68,6 +69,9 @@ class ScipyMILP(OptimizationLibrary):
     }
 
     LIBRARY_NAME = "SciPy"
+
+    _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = True
+    """Whether the library support sparse Jacobians."""
 
     def __init__(self) -> None:
         """Constructor.
@@ -138,7 +142,12 @@ class ScipyMILP(OptimizationLibrary):
 
         # Build the functions matrices
         # N.B. use the non-processed functions to access the coefficients
-        obj_coeff = self.problem.nonproc_objective.coefficients[0, :].real
+        coefficients = self.problem.nonproc_objective.coefficients
+        if isinstance(coefficients, spmatrix):
+            obj_coeff = coefficients.getrow(0).todense().flatten()
+        else:
+            obj_coeff = coefficients[0, :]
+
         constraints = self.problem.nonproc_constraints
         ineq_lhs, ineq_rhs = build_constraints_matrices(
             constraints, MDOLinearFunction.ConstraintType.INEQ
@@ -168,7 +177,7 @@ class ScipyMILP(OptimizationLibrary):
             )
         # Pass the MILP to Scipy
         milp_result = milp(
-            c=obj_coeff,
+            c=obj_coeff.real,
             bounds=bounds,
             constraints=lq_constraints,
             options=options,

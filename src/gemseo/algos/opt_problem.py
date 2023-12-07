@@ -86,6 +86,7 @@ from numpy import any as np_any
 from numpy import argmin
 from numpy import array
 from numpy import array_equal
+from numpy import atleast_1d
 from numpy import bytes_
 from numpy import eye as np_eye
 from numpy import hstack
@@ -99,9 +100,9 @@ from numpy import ndarray
 from numpy import number as np_number
 from numpy import where
 from numpy import zeros
-from numpy.core import atleast_1d
 from numpy.linalg import norm
 from pandas import MultiIndex
+from scipy.sparse import spmatrix
 from strenum import StrEnum
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
@@ -114,6 +115,7 @@ from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.mdofunctions.dense_jacobian_function import DenseJacobianFunction
 from gemseo.core.mdofunctions.func_operations import LinearComposition
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
@@ -1434,6 +1436,7 @@ class OptimizationProblem(BaseProblem):
         use_database: bool = True,
         round_ints: bool = True,
         eval_obs_jac: bool = False,
+        support_sparse_jacobian: bool = False,
     ) -> None:
         """Pre-process all the functions and eventually the gradient.
 
@@ -1446,6 +1449,7 @@ class OptimizationProblem(BaseProblem):
             use_database: Whether to wrap the functions in the database.
             round_ints: Whether to round the integer variables.
             eval_obs_jac: Whether to evaluate the Jacobian of the observables.
+            support_sparse_jacobian: Whether the driver support sparse Jacobian.
         """
         if round_ints:
             # Keep the rounding option only if there is an integer design variable
@@ -1469,6 +1473,7 @@ class OptimizationProblem(BaseProblem):
                     is_function_input_normalized=is_function_input_normalized,
                     use_database=use_database,
                     round_ints=round_ints,
+                    support_sparse_jacobian=support_sparse_jacobian,
                 )
                 p_cstr.special_repr = cstr.special_repr
                 self.constraints[icstr] = p_cstr
@@ -1482,6 +1487,7 @@ class OptimizationProblem(BaseProblem):
                     use_database=use_database,
                     round_ints=round_ints,
                     is_observable=True,
+                    support_sparse_jacobian=support_sparse_jacobian,
                 )
                 p_obs.special_repr = obs.special_repr
                 self.observables[iobs] = p_obs
@@ -1494,6 +1500,7 @@ class OptimizationProblem(BaseProblem):
                     use_database=use_database,
                     round_ints=round_ints,
                     is_observable=True,
+                    support_sparse_jacobian=support_sparse_jacobian,
                 )
 
                 p_obs.special_repr = obs.special_repr
@@ -1506,6 +1513,7 @@ class OptimizationProblem(BaseProblem):
                 is_function_input_normalized=is_function_input_normalized,
                 use_database=use_database,
                 round_ints=round_ints,
+                support_sparse_jacobian=support_sparse_jacobian,
             )
             self.objective.special_repr = self.objective.special_repr
             self.objective.f_type = MDOFunction.FunctionType.OBJ
@@ -1536,6 +1544,7 @@ class OptimizationProblem(BaseProblem):
         use_database: bool = True,
         round_ints: bool = True,
         is_observable: bool = False,
+        support_sparse_jacobian: bool = False,
     ) -> MDOFunction:
         """Wrap the function to differentiate it and store its call in the database.
 
@@ -1550,6 +1559,7 @@ class OptimizationProblem(BaseProblem):
             round_ints: If ``True``, then round the integer variables.
             is_observable: If ``True``, new_iter_listeners are not called
                 when function is called (avoid recursive call)
+            support_sparse_jacobian: Whether the driver support sparse Jacobian.
 
         Returns:
             The pre-processed function.
@@ -1560,6 +1570,9 @@ class OptimizationProblem(BaseProblem):
         # way round
         # Also, store non normalized values in the database for further
         # exploitation
+        # Convert Jacobian in dense format if needed
+        if not support_sparse_jacobian:
+            func = DenseJacobianFunction(func)
         if (
             isinstance(func, MDOLinearFunction)
             and not round_ints
@@ -1577,6 +1590,7 @@ class OptimizationProblem(BaseProblem):
             func = NormDBFunction(
                 func, is_function_input_normalized, is_observable, self
             )
+
         return func
 
     def __normalize_linear_function(
@@ -1608,7 +1622,12 @@ class OptimizationProblem(BaseProblem):
         shift = where(norm_policies, design_space.get_lower_bounds(), 0.0)
 
         # Build the normalized linear function
-        coefficients = multiply(orig_func.coefficients, norm_factors)
+        if isinstance(orig_func.coefficients, spmatrix):
+            coefficients = deepcopy(orig_func.coefficients)
+            coefficients.data *= norm_factors[coefficients.indices]
+        else:
+            coefficients = multiply(orig_func.coefficients, norm_factors)
+
         value_at_zero = orig_func(shift)
         return MDOLinearFunction(
             coefficients,

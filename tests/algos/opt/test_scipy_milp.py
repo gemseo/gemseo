@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import pytest
 from numpy import array
+from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.lib_scipy_milp import ScipyMILP
@@ -26,13 +27,29 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 
 
 @pytest.fixture(params=[True, False])
-def feasible_problem(request):
+def problem_is_feasible(request) -> bool:
+    """Whether to construct a feasible optimization problem."""
+    return request.param
+
+
+@pytest.fixture(params=[True, False])
+def jacobians_are_sparse(request) -> bool:
+    """Whether the Jacobians of MDO Functions are sparse."""
     return request.param
 
 
 @pytest.fixture()
-def milp_problem(feasible_problem):
-    """Milp problem fixture."""
+def milp_problem(
+    problem_is_feasible: bool, jacobians_are_sparse: bool
+) -> OptimizationProblem:
+    """A MILP problem.
+
+    Args:
+        feasible_problem: Whether the optimization problem is feasible.
+        sparse_jacobian: Whether the objective and constraints Jacobians are sparse.
+    """
+    array_ = csr_array if jacobians_are_sparse else array
+
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=1.0)
     design_space.add_variable(
@@ -42,20 +59,20 @@ def milp_problem(feasible_problem):
         "z", l_b=0.0, u_b=5.0, value=0, var_type=design_space.DesignVariableType.INTEGER
     )
 
-    # Optimization functions
     args = ["x", "y", "z"]
     problem = OptimizationProblem(design_space, OptimizationProblem.ProblemType.LINEAR)
+
     problem.objective = MDOLinearFunction(
-        array([1.0, 1.0, -1]), "f", MDOFunction.FunctionType.OBJ, args, -1.0
+        array_([1.0, 1.0, -1]), "f", MDOFunction.FunctionType.OBJ, args, -1.0
     )
-    ineq_constraint = MDOLinearFunction(array([0, 0.5, -0.25]), "g", input_names=args)
-    problem.add_constraint(
-        ineq_constraint, 0.333, MDOFunction.ConstraintType.INEQ, positive=True
+    ineq_constraint = MDOLinearFunction(array_([0, 0.5, -0.25]), "g", input_names=args)
+    problem.add_ineq_constraint(ineq_constraint, 0.333, True)
+    if not problem_is_feasible:
+        problem.add_ineq_constraint(ineq_constraint, 0.0, False)
+
+    problem.add_eq_constraint(
+        MDOLinearFunction(array_([-2.0, 1.0, 1.0]), "h", input_names=args)
     )
-    if not feasible_problem:
-        problem.add_constraint(ineq_constraint, 0.0, MDOFunction.ConstraintType.INEQ)
-    eq_constraint = MDOLinearFunction(array([-2.0, 1.0, 1.0]), "h", input_names=args)
-    problem.add_constraint(eq_constraint, 0.0, MDOFunction.ConstraintType.EQ)
     return problem
 
 
@@ -78,14 +95,14 @@ def test_init():
         {"eq_tolerance": 1e-6},
     ],
 )
-def test_solve_milp(milp_problem, feasible_problem, algo_options):
+def test_solve_milp(milp_problem, problem_is_feasible, algo_options):
     """Test Scipy MILP solver."""
     optim_result = OptimizersFactory().execute(
         milp_problem, "Scipy_MILP", **algo_options
     )
     time_limit = algo_options.get("time_limit", 1)
     tolerance = algo_options.get("eq_tolerance", 1e-2)
-    if feasible_problem and time_limit >= 1:
+    if problem_is_feasible and time_limit >= 1:
         assert pytest.approx(array([0.5, 1, 0.0]), abs=tolerance) == optim_result.x_opt
         assert pytest.approx(optim_result.f_opt, abs=tolerance) == 0.5
     else:

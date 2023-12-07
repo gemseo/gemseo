@@ -37,6 +37,7 @@ from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
 from numpy.testing import assert_equal
+from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -1056,6 +1057,25 @@ def test_gradient_unnormalization(design_space):
         design_space.normalize_vect(x_vect, minus_lb=False),
         design_space.unnormalize_grad(x_vect),
     )
+
+
+def test_sparse_normalization():
+    """Tests (de)normalization of sparse Jacobians."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    design_space.add_variable("y", l_b=1.0, u_b=3.0)
+
+    jac = array([[1.0, 1.0], [1.0, 2.0]])
+    sparse_jac = csr_array(jac)
+
+    assert (
+        design_space.normalize_grad(jac)
+        == design_space.normalize_grad(sparse_jac).toarray()
+    ).all()
+    assert (
+        design_space.unnormalize_grad(jac)
+        == design_space.unnormalize_grad(sparse_jac).toarray()
+    ).all()
 
 
 def test_vartype_passed_as_bytes(design_space):

@@ -29,8 +29,10 @@ from numpy import atleast_1d
 from numpy import hstack
 from numpy import ndarray
 from numpy import vstack
-from numpy import zeros_like
+from numpy import zeros
 from numpy.linalg.linalg import norm
+from scipy.sparse import spmatrix
+from scipy.sparse import vstack as spvstack
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 
@@ -280,7 +282,7 @@ class PostOptimalAnalysis:
                         f"Jacobian of {output_name} "
                         f"with respect to {input_name} is missing."
                     )
-                if not isinstance(jac_block, ndarray):
+                if not isinstance(jac_block, (ndarray, spmatrix)):
                     raise TypeError(
                         f"Jacobian of {output_name} "
                         f"with respect to {input_name} must be of type ndarray."
@@ -324,7 +326,7 @@ class PostOptimalAnalysis:
         for input_name in inputs:
             # Contribution of the objective
             jac_obj_arr = functions_jac[self.output_names[0]][input_name]
-            jac_cstr_arr = zeros_like(jac_obj_arr)
+            jac_cstr_arr = zeros(jac_obj_arr.shape)
 
             # Contributions of the inequality constraints
             jac_ineq_arr = act_ineq_jac.get(input_name)
@@ -366,8 +368,13 @@ class PostOptimalAnalysis:
                 for constraint, components_are_active in active_ineq_constraints.items()
                 if True in components_are_active
             ]
+
+            contains_sparse = any(isinstance(jac, spmatrix) for jac in jacobians)
+
             if jacobians:
-                input_names_to_jacobians[input_name] = vstack(jacobians)
+                input_names_to_jacobians[input_name] = (
+                    spvstack(jacobians) if contains_sparse else vstack(jacobians)
+                )
 
         return input_names_to_jacobians
 

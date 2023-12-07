@@ -96,7 +96,7 @@ class DriverDescription(AlgorithmDescription):
 
 
 class DriverLibrary(AlgorithmLibrary):
-    """Abstract class for library interfaces.
+    """Abstract class for driver library interfaces.
 
     Lists available methods in the library for the proposed problem to be solved.
 
@@ -128,6 +128,9 @@ class DriverLibrary(AlgorithmLibrary):
     ROUND_INTS_OPTION = "round_ints"
     EVAL_OBS_JAC_OPTION = "eval_obs_jac"
     MAX_DS_SIZE_PRINT = 40
+
+    _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = False
+    """Whether the library support sparse Jacobians."""
 
     __USE_ONE_LINE_PROGRESS_BAR: Final[str] = "use_one_line_progress_bar"
     """The name of the option to use a one line progress bar."""
@@ -179,6 +182,9 @@ class DriverLibrary(AlgorithmLibrary):
     __reset_iteration_counters: bool
     """Whether to reset the iteration counters of the OptimizationProblem before each
     execution."""
+
+    problem: OptimizationProblem
+    """The optimization problem the driver library is bonded to."""
 
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
@@ -423,6 +429,7 @@ class DriverLibrary(AlgorithmLibrary):
             use_database=options.get(self.USE_DATABASE_OPTION, True),
             round_ints=options.get(self.ROUND_INTS_OPTION, True),
             eval_obs_jac=eval_obs_jac,
+            support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
         )
         problem.database.add_new_iter_listener(problem.execute_observables_callback)
         problem.database.add_new_iter_listener(self.new_iteration_callback)

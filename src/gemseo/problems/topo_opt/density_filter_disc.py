@@ -103,5 +103,4 @@ class DensityFilter(MDODiscipline):
         h_mat = csr_array(
             (sh, (ih, jh)), shape=(self.n_x * self.n_y, self.n_x * self.n_y)
         )
-        hs_mat = diags(1 / h_mat.sum(1))
-        self.filter_matrix = hs_mat @ h_mat
+        self.filter_matrix = diags(1 / h_mat.sum(1)).tocsr() @ h_mat

@@ -160,6 +160,7 @@ class FunctionFromDiscipline(LinearCandidateFunction):
             )
         else:
             n_outs = loc_jac.shape[0]
+            # TODO: The support of sparse Jacobians requires modifications here.
             jac = empty((n_outs, x_vect.size), dtype=x_vect.dtype)
             for func_ind in range(n_outs):
                 gr_u = self.__mdo_formulation.unmask_x_swap_order(
