@@ -33,7 +33,6 @@ from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import Iterable
-from typing import Mapping
 from typing import Sequence
 from typing import Sized
 from typing import Union
@@ -391,14 +390,6 @@ class MDOFunction(Serializable):
         """
         with Path(file_path).open("rb") as file_:
             return pickle.Unpickler(file_).load()
-
-    def __setstate__(
-        self,
-        state: Mapping[str, Any],
-    ) -> None:
-        super().__setstate__(state)
-        # If at some point this class includes attributes that are not serializable
-        # nor Synchronized, they shall be set last.
 
     def _init_shared_memory_attrs(self) -> None:
         """Initialize the shared attributes in multiprocessing."""

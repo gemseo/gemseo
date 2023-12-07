@@ -355,7 +355,6 @@ class DisciplineData(
                 # This is needed to handle the case where serialization and
                 # deserialization are not made on the same platform.
                 state_data[item_name] = to_os_specific(item_value)
-
         return state
 
     def __setstate__(
