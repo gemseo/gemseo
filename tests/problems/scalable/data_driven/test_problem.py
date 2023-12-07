@@ -20,20 +20,16 @@
 from __future__ import annotations
 
 import os
-from os.path import dirname
-from os.path import join
+import pickle
+from pathlib import Path
 
 import pytest
 
-from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-
-DIRNAME = dirname(__file__)
-HDF_CACHE_PATH = join(DIRNAME, "dataset.hdf5")
 
 N_SAMPLES = 10
 
@@ -50,10 +46,11 @@ def scalable_problem():
     mission = SobieskiMission()
     disciplines = [aero, propu, struct, mission]
     disc_names = [disc.name for disc in disciplines]
-    datasets = [
-        HDF5Cache(hdf_file_path=HDF_CACHE_PATH, hdf_node_path=disc).to_dataset()
-        for disc in disc_names
-    ]
+    datasets = []
+    for name in disc_names:
+        with (Path(__file__).parent / f"{name}.pkl").open("rb") as f:
+            pickler = pickle.Unpickler(f)
+            datasets.append(pickler.load())
     return ScalableProblem(
         datasets, design_variables, objective_function, eq_constraints, ineq_constraints
     )

@@ -19,19 +19,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from os.path import dirname
-from os.path import join
+import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.data_driven.diagonal import ScalableDiagonalApproximation
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-
-HDF_CACHE_PATH = join(dirname(__file__), "dataset.hdf5")
 
 
 @pytest.fixture()
@@ -50,10 +47,9 @@ def test_build_model(sobieski_aerodynamics):
     for k, value in sobieski_aerodynamics.default_inputs.items():
         sizes[k] = len(value)
 
-    hdf_cache = HDF5Cache(
-        hdf_file_path=HDF_CACHE_PATH, hdf_node_path=sobieski_aerodynamics.name
-    )
-    dataset = hdf_cache.to_dataset()
+    with (Path(__file__).parent / "SobieskiAerodynamics.pkl").open("rb") as f:
+        pickler = pickle.Unpickler(f)
+        dataset = pickler.load()
 
     scd = ScalableDiscipline("ScalableDiagonalModel", dataset, sizes, fill_factor=0.7)
     comp_dep, in_dep = scd.scalable_model.generate_random_dependency()

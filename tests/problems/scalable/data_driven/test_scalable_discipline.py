@@ -19,18 +19,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import os
+import pickle
 import unittest
-from os.path import dirname
 from os.path import exists
-from os.path import join
-from shutil import copy
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
@@ -39,10 +36,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-
-DIRNAME = dirname(__file__)
-HDF_CACHE_PATH = join(DIRNAME, "dataset.hdf5")
-COPIED_CACHE_PATH = join(DIRNAME, "dataset_discipline.hdf5")
 
 N_SAMPLES = 10
 
@@ -57,16 +50,6 @@ class ScalableProblem(unittest.TestCase):
     original_disciplines = None
     scalable_disciplines = None
     scalable_model = "ScalableDiagonalModel"
-
-    @classmethod
-    def setUpClass(cls):
-        """Create a copy of the cache file in order to avoid issues when using
-        mutliprocessing."""
-        copy(HDF_CACHE_PATH, COPIED_CACHE_PATH)
-
-    @classmethod
-    def tearDownClass(cls):
-        os.remove(COPIED_CACHE_PATH)
 
     def setUp(self):
         """At creation of unittest, initiate a Sobieski problem class."""
@@ -148,15 +131,14 @@ class ScalableProblem(unittest.TestCase):
                     var_lb[input_name] = l_bnds
                     var_ub[input_name] = u_bnds
 
-                hdf_node_path = discipline.name
                 sizes = ScalableProblem.sizes
                 fill_factor = ScalableProblem.fill_factor
-                data = HDF5Cache(
-                    hdf_file_path=HDF_CACHE_PATH, hdf_node_path=hdf_node_path
-                ).to_dataset()
+                with (Path(__file__).parent / f"{discipline.name}.pkl").open("rb") as f:
+                    pickler = pickle.Unpickler(f)
+                    dataset = pickler.load()
                 scal_disc = ScalableDiscipline(
                     ScalableProblem.scalable_model,
-                    data=data,
+                    data=dataset,
                     sizes=sizes,
                     fill_factor=fill_factor,
                 )
@@ -244,11 +226,12 @@ class ScalableProblem(unittest.TestCase):
 
     def test_group_dep(self):
         hdf_node_path = ScalableProblem.original_disciplines[3].name
+        with (Path(__file__).parent / f"{hdf_node_path}.pkl").open("rb") as f:
+            pickler = pickle.Unpickler(f)
+            dataset = pickler.load()
         ScalableDiscipline(
             ScalableProblem.scalable_model,
-            data=HDF5Cache(
-                hdf_file_path=HDF_CACHE_PATH, hdf_node_path=hdf_node_path
-            ).to_dataset(),
+            data=dataset,
             sizes=ScalableProblem.sizes,
             fill_factor=ScalableProblem.fill_factor,
             group_dep={"y_4": []},

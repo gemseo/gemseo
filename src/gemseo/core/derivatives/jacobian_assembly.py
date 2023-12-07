@@ -62,7 +62,7 @@ from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
-    from numpy._typing import NDArray
+    from numpy.typing import NDArray
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline import MDODiscipline

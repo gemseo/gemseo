@@ -566,8 +566,8 @@ class JSONGrammar(BaseGrammar):
         state: SerializedGrammarType,
     ) -> None:
         # That will create the missing attributes.
-        self.__dict__.update(state)
         self.clear()
+        self.__dict__.update(state)
         self.__schema_builder.add_schema(
             state[f"_{self.__class__.__name__}__schema"], True
         )

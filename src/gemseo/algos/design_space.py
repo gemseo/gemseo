@@ -96,7 +96,7 @@ from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from numpy._typing import NDArray
+    from numpy.typing import NDArray
 
 LOGGER = logging.getLogger(__name__)
 
