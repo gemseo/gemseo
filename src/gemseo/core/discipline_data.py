@@ -78,6 +78,8 @@ class DisciplineData(
 
     Nested dictionaries are also supported.
 
+    .. warning:: Nested DataFrame (i.e. in a nested dictionary) are not supported.
+
     Examples:
         >>> from gemseo.core.discipline_data import DisciplineData
         >>> import numpy as np
@@ -174,10 +176,7 @@ class DisciplineData(
 
     def __getitem__(self, key: str) -> Any:
         if key in self.__data:
-            value = self.__data[key]
-            if isinstance(value, MutableMapping):
-                return DisciplineData(value)
-            return value
+            return self.__data[key]
 
         if self.SEPARATOR in key:
             df_key, column = key.split(self.SEPARATOR)
