@@ -22,6 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import field
 from dataclasses import fields
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Mapping
 from typing import Union
@@ -30,9 +31,13 @@ from numpy import ndarray
 
 from gemseo.utils.string_tools import MultiLineString
 
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
+
 Value = Union[str, int, bool, ndarray]
 
 
+# TODO: API: Rename the module to optimization_result.
 @dataclass
 class OptimizationResult:
     """The result of an optimization."""
@@ -82,7 +87,7 @@ class OptimizationResult:
     constraint_values: Mapping[str, ndarray] | None = None
     """The values of the constraints at the optimum."""
 
-    constraints_grad: Mapping[str, ndarray] | None = None
+    constraints_grad: Mapping[str, ndarray | None] | None = None
     """The values of the gradients of the constraints at the optimum."""
 
     __CGRAD_TAG = "constr_grad:"
@@ -214,3 +219,54 @@ class OptimizationResult:
             cls.__CONSTRAINTS_GRAD: cstr_grad or None,
         })
         return cls(**optimization_result)
+
+    @classmethod
+    def from_optimization_problem(
+        cls, problem: OptimizationProblem, **fields_
+    ) -> OptimizationResult:
+        """Create an optimization result from an optimization problem.
+
+        Args:
+            problem: The optimization problem.
+            **fields_: The fields of the :class:`.OptimizationResult`
+                that cannot be deduced from the optimization problem;
+                e.g. ``"optimizer_name"``.
+
+        Returns:
+            The optimization result associated with the optimization problem.
+        """
+        if not problem.database:
+            return cls(n_obj_call=0, **fields_)
+
+        x_0 = problem.database.get_x_vect(1)
+        # compute the best feasible or infeasible point
+        f_opt, x_opt, is_feas, c_opt, c_opt_grad = problem.get_optimum()
+        if (
+            f_opt is not None
+            and not problem.minimize_objective
+            and not problem.use_standardized_objective
+        ):
+            f_opt = -f_opt
+            objective_name = problem.objective.original_name
+        else:
+            objective_name = problem.objective.name
+
+        if x_opt is None:
+            optimum_index = None
+        else:
+            optimum_index = problem.database.get_iteration(x_opt) - 1
+
+        fields_["objective_name"] = objective_name
+        return cls(
+            x_0=x_0,
+            x_0_as_dict=problem.design_space.array_to_dict(x_0),
+            x_opt=x_opt,
+            x_opt_as_dict=problem.design_space.array_to_dict(x_opt),
+            f_opt=f_opt,
+            n_obj_call=problem.objective.n_calls,
+            is_feasible=is_feas,
+            constraint_values=c_opt,
+            constraints_grad=c_opt_grad,
+            optimum_index=optimum_index,
+            **fields_,
+        )

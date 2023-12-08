@@ -23,6 +23,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 
@@ -35,6 +36,9 @@ from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.mda_factory import MDAFactory
+from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
+    BiLevelScenarioResult,
+)
 
 if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
@@ -61,6 +65,8 @@ class BiLevel(MDOFormulation):
     2. several disciplinary optimizations on the local design variables in parallel,
     3. a second MDA to update the coupling variables.
     """
+
+    DEFAULT_SCENARIO_RESULT_CLASS_NAME: ClassVar[str] = BiLevelScenarioResult.__name__
 
     SYSTEM_LEVEL = "system"
     SUBSCENARIOS_LEVEL = "sub-scenarios"

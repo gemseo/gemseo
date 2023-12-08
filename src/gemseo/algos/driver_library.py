@@ -519,48 +519,9 @@ class DriverLibrary(AlgorithmLibrary):
     def get_optimum_from_database(
         self, message=None, status=None
     ) -> OptimizationResult:
-        """Retrieve the optimum from the database and build an optimization."""
-        problem = self.problem
-        if len(problem.database) == 0:
-            return OptimizationResult(
-                optimizer_name=self.algo_name,
-                message=message,
-                status=status,
-                n_obj_call=0,
-            )
-        x_0 = problem.database.get_x_vect(1)
-        # compute the best feasible or infeasible point
-        f_opt, x_opt, is_feas, c_opt, c_opt_grad = problem.get_optimum()
-        if (
-            f_opt is not None
-            and not problem.minimize_objective
-            and not problem.use_standardized_objective
-        ):
-            f_opt = -f_opt
-            objective_name = problem.objective.original_name
-        else:
-            objective_name = problem.objective.name
-
-        if x_opt is None:
-            optimum_index = None
-        else:
-            optimum_index = problem.database.get_iteration(x_opt) - 1
-
-        return OptimizationResult(
-            x_0=x_0,
-            x_0_as_dict=problem.design_space.array_to_dict(x_0),
-            x_opt=x_opt,
-            x_opt_as_dict=problem.design_space.array_to_dict(x_opt),
-            f_opt=f_opt,
-            objective_name=objective_name,
-            optimizer_name=self.algo_name,
-            message=message,
-            status=status,
-            n_obj_call=problem.objective.n_calls,
-            is_feasible=is_feas,
-            constraint_values=c_opt,
-            constraints_grad=c_opt_grad,
-            optimum_index=optimum_index,
+        """Return the optimization result from the database."""
+        return OptimizationResult.from_optimization_problem(
+            self.problem, message=message, status=status, optimizer_name=self.algo_name
         )
 
     def requires_gradient(self, driver_name: str) -> bool:

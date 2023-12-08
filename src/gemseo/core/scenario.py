@@ -36,6 +36,7 @@ from numpy import complex128
 from numpy import float64
 from numpy import ndarray
 
+from gemseo import create_scenario_result
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -43,7 +44,7 @@ from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-from gemseo.post.post_factory import PostFactory
+from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -54,7 +55,9 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.post.opt_post_processor import OptPostProcessorOptionType
+    from gemseo.post.post_factory import PostFactory
     from gemseo.utils.xdsm import XDSM
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -88,7 +91,7 @@ class Scenario(MDODiscipline):
     """The name of the MDO formulation."""
 
     optimization_result: OptimizationResult | None
-    """The optimization result if any."""
+    """The optimization result if the scenario has been executed; otherwise ``None``."""
 
     post_factory: PostFactory | None
     """The factory for post-processors if any."""
@@ -156,7 +159,6 @@ class Scenario(MDODiscipline):
             **formulation_options,
         )
         self.formulation.opt_problem.database.name = self.name
-        self.__post_factory = None
         self._update_input_grammar()
         self.clear_history_before_run = False
 
@@ -173,12 +175,9 @@ class Scenario(MDODiscipline):
         self.formulation.opt_problem.use_standardized_objective = value
 
     @property
-    def post_factory(self) -> PostFactory | None:
+    def post_factory(self) -> PostFactory:
         """The factory of post-processors."""
-        if self.__post_factory is None:
-            self.__post_factory = PostFactory()
-
-        return self.__post_factory
+        return ScenarioResult.POST_FACTORY
 
     @property
     def _formulation_factory(self) -> MDOFormulationsFactory:
@@ -446,6 +445,9 @@ class Scenario(MDODiscipline):
             post_name: The name of the post-processor,
                 i.e. the name of a class inheriting from :class:`.OptPostProcessor`.
             **options: The options for the post-processor.
+
+        Returns:
+            The post-processing instance related to the optimization scenario.
         """
         return self.post_factory.execute(
             self.formulation.opt_problem, post_name, **options
@@ -649,3 +651,16 @@ class Scenario(MDODiscipline):
             opt_naming=opt_naming,
             export_gradients=export_gradients,
         )
+
+    def get_result(self, name: str = "", **options: Any) -> ScenarioResult:
+        """Return the result of the scenario execution.
+
+        Args:
+            name: The class name of the :class:`.ScenarioResult`.
+                If empty, use a default one (see :func:`create_scenario_result`).
+            **options: The options of the :class:`.ScenarioResult`.
+
+        Returns:
+            The result of the scenario execution.
+        """
+        return create_scenario_result(self, name, **options)
