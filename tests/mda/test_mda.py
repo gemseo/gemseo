@@ -31,6 +31,7 @@ from numpy import ones
 from numpy.random import default_rng
 from scipy.linalg import solve
 
+from gemseo import SEED
 from gemseo import create_discipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -408,7 +409,7 @@ class LinearImplicitDiscipline(MDODiscipline):
         self.residual_variables = {"r": "w"}
 
         self.run_solves_residuals = False
-        self.mat = default_rng().standard_normal((size, size))
+        self.mat = default_rng(SEED).standard_normal((size, size))
 
         self.default_inputs = {k: 0.5 * ones(size) for k in input_names}
 
