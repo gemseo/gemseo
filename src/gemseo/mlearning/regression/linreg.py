@@ -66,6 +66,7 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression as LinReg
 from sklearn.linear_model import Ridge
 
+from gemseo import SEED
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
@@ -93,6 +94,7 @@ class LinearRegressor(MLRegressionAlgo):
         fit_intercept: bool = True,
         penalty_level: float = 0.0,
         l2_penalty_ratio: float = 1.0,
+        random_state: int | None = SEED,
         **parameters: float | int | str | bool | None,
     ) -> None:
         """
@@ -104,6 +106,9 @@ class LinearRegressor(MLRegressionAlgo):
                 If 1, use the Ridge penalty.
                 If 0, use the Lasso penalty.
                 Between 0 and 1, use the ElasticNet penalty.
+            random_state: The random state passed to the random number generator
+                when there is a penalty.
+                Use an integer for reproducible results.
             **parameters: The parameters of the machine learning algorithm.
         """
         super().__init__(
@@ -114,6 +119,7 @@ class LinearRegressor(MLRegressionAlgo):
             fit_intercept=fit_intercept,
             penalty_level=penalty_level,
             l2_penalty_ratio=l2_penalty_ratio,
+            random_state=random_state,
             **parameters,
         )
         if "degree" in parameters:
@@ -126,6 +132,7 @@ class LinearRegressor(MLRegressionAlgo):
                 copy_X=False,
                 fit_intercept=fit_intercept,
                 alpha=penalty_level,
+                random_state=random_state,
                 **parameters,
             )
         elif l2_penalty_ratio == 0.0:
@@ -133,6 +140,7 @@ class LinearRegressor(MLRegressionAlgo):
                 copy_X=False,
                 fit_intercept=fit_intercept,
                 alpha=penalty_level,
+                random_state=random_state,
                 **parameters,
             )
         else:
@@ -141,6 +149,7 @@ class LinearRegressor(MLRegressionAlgo):
                 fit_intercept=fit_intercept,
                 alpha=penalty_level,
                 l1_ratio=1 - l2_penalty_ratio,
+                random_state=random_state,
                 **parameters,
             )
 

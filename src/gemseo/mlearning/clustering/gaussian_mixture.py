@@ -78,6 +78,7 @@ from typing import NoReturn
 
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 
+from gemseo import SEED
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 
 if TYPE_CHECKING:
@@ -99,20 +100,26 @@ class GaussianMixture(MLPredictiveClusteringAlgo):
         transformer: TransformerType = MLPredictiveClusteringAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         n_components: int = 5,
+        random_state: int | None = SEED,
         **parameters: int | float | str | bool | None,
     ) -> None:
         """
         Args:
             n_components: The number of components of the Gaussian mixture.
+            random_state: The random state passed to the random number generator.
+                Use an integer for reproducible results.
         """
         super().__init__(
             data,
             transformer=transformer,
             var_names=var_names,
             n_components=n_components,
+            random_state=random_state,
             **parameters,
         )
-        self.algo = SKLGaussianMixture(n_components, **parameters)
+        self.algo = SKLGaussianMixture(
+            n_components, random_state=random_state, **parameters
+        )
 
     def _fit(
         self,

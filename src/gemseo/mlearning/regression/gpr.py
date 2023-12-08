@@ -112,6 +112,7 @@ from numpy import ndarray
 from numpy import newaxis
 from numpy import repeat
 
+from gemseo import SEED
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -143,7 +144,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         alpha: float | ndarray = 1e-10,
         optimizer: str | Callable = "fmin_l_bfgs_b",
         n_restarts_optimizer: int = 10,
-        random_state: int | None = None,
+        random_state: int | None = SEED,
     ) -> None:
         """
         Args:
@@ -158,9 +159,8 @@ class GaussianProcessRegressor(MLRegressionAlgo):
             alpha: The nugget effect to regularize the model.
             optimizer: The optimization algorithm to find the parameter length scales.
             n_restarts_optimizer: The number of restarts of the optimizer.
-            random_state: The seed used to initialize the centers.
-                If ``None``, the random number generator is the RandomState instance
-                used by `numpy.random`.
+            random_state: The random state passed to the random number generator.
+                Use an integer for reproducible results.
         """
         super().__init__(
             data,
