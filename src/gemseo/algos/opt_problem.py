@@ -2008,6 +2008,9 @@ class OptimizationProblem(BaseProblem):
             - the indicator of feasibility of the optimal solution,
             - the value of the constraints,
             - the value of the gradients of the constraints.
+
+        Raises:
+            ValueError: When the optimization database is empty.
         """
         if not self.database:
             raise ValueError("Optimization history is empty")
@@ -2020,6 +2023,36 @@ class OptimizationProblem(BaseProblem):
             is_feas = True
             x_opt, f_opt, c_opt, c_opt_d = self.__get_optimum_feas(feas_x, feas_f)
         return f_opt, x_opt, is_feas, c_opt, c_opt_d
+
+    def get_last_point(self) -> OptimumType:
+        """Return the last design point.
+
+        Returns:
+            The last point result,
+            defined by:
+
+            - the value of the objective function,
+            - the value of the design variables,
+            - the indicator of feasibility of the last point,
+            - the value of the constraints,
+            - the value of the gradients of the constraints.
+
+        Raises:
+            ValueError: When the optimization database is empty.
+        """
+        if not self.database:
+            raise ValueError("Optimization history is empty")
+        x_last = self.database.get_x_vect(-1)
+        f_last = self.database.get_function_value(self.objective.name, -1)
+        is_feas = self.is_point_feasible(self.database[x_last], self.constraints)
+        c_last = {}
+        c_last_grad = {}
+        for constraint in self.constraints:
+            c_last[constraint.name] = self.database[x_last].get(constraint.name)
+            f_key = Database.get_gradient_name(constraint.name)
+            c_last_grad[constraint.name] = self.database[x_last].get(f_key)
+
+        return f_last, x_last, is_feas, c_last, c_last_grad
 
     @property
     def __string_representation(self) -> MultiLineString:

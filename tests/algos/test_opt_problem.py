@@ -453,12 +453,20 @@ def test_get_best_infeasible_point():
     assert x_opt is not None
     assert f_opt is not None
     assert len(opt_fd) > 0
+    f_last, x_last, is_feas, _, _ = problem.get_last_point()
+    assert allclose(x_last, array([0.0, -1.0, 0.0]))
+    assert f_last == problem.objective(x_2)
+    assert is_feas == problem.is_point_feasible(
+        problem.evaluate_functions(x_2)[0], problem.constraints
+    )
 
 
 def test_feasible_optimum_points():
     problem = Power2()
     with pytest.raises(ValueError):
         problem.get_optimum()
+    with pytest.raises(ValueError):
+        problem.get_last_point()
 
     OptimizersFactory().execute(
         problem, "SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
