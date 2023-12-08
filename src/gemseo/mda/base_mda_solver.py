@@ -192,7 +192,7 @@ class BaseMDASolver(MDA):
             if value in residuals:
                 residuals[residuals.index(value)] = key
 
-        self.__resolved_residual_names = tuple(sorted(residuals))
+        self.__resolved_residual_names = tuple(residuals)
 
     def __compute_names_to_slices(self) -> None:
         """Compute the mapping of variable names to slices for converting data to array.
