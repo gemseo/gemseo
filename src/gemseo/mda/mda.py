@@ -140,7 +140,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """The scaling method applied to MDA residuals for convergence monitoring."""
 
         NO_SCALING = auto()
-        r"""The residual is not scaled and the MDA is considered converged when,
+        r"""The residual vector is not scaled. The MDA is considered converged when its
+        Euclidean norm satisfies,
 
         .. math::
 
@@ -148,8 +149,9 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
         INITIAL_RESIDUAL_NORM = auto()
-        r"""The residual is scaled by the norm of the initial residual if it is not null
-        , and not scaled otherwise. The MDA is considered converged when,
+        r"""The :math:k`-th residual vector is scaled by the Euclidean norm of the
+        initial residual (if not null, else it is not scaled). The MDA is considered
+        converged when its Euclidean norm satisfies,
 
         .. math::
 
@@ -157,8 +159,10 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
         INITIAL_SUBRESIDUAL_NORM = auto()
-        r"""The residual is scaled by considering the convergence of each sub-residual
-        individually. The MDA is considered converged when,
+        r"""The :math:k`-th residual vector is scaled discipline-wise. The sub-residual
+        associated wich each discipline is scaled by the Euclidean norm of the initial
+        sub-residual (if not null, else it is not scaled). The MDA is considered
+        converged when the Euclidean norm of each sub-residual satisfies,
 
         .. math::
 
@@ -166,17 +170,17 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
         N_COUPLING_VARIABLES = auto()
-        r"""The residual is scaled by the number of coupling variables. The MDA is
-        considered converged when,
-
+        r"""The :math:k`-th residual vector is scaled using the number of coupling
+        variables. The MDA is considered converged when its Euclidean norm satisfies,
         .. math::
 
             \frac{ \|R_k\|_2 }{ \sqrt{n_\text{coupl.}} } \leq \text{tol}.
         """
 
         INITIAL_RESIDUAL_COMPONENT = auto()
-        r"""The residual is scaled component-wise with the initial residual if not null,
-        and not scaled otherwise. The MDA is considered converged when,
+        r"""The :math:k`-th residual is scaled component-wise. Each component is scaled
+        by the corresponding component of the initial residual (if not null, else it is
+        not scaled). The MDA is considered converged when each component satisfies,
 
         .. math::
 
@@ -184,7 +188,10 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
         SCALED_INITIAL_RESIDUAL_COMPONENT = auto()
-        r"""The residual is not scaled and the MDA is considered converged when.
+        r"""The :math:k`-th residual vector is scaled component-wise and by the number
+        coupling variables. If :math:`\div` denotes the component-wise division between
+        two vectors, then the MDA is considered converged when the residual vector
+        satisfies,
 
         .. math::
 
