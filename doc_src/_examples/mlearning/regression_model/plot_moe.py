@@ -169,9 +169,10 @@ plt.show()
 for i in range(model.n_clusters):
     plt.figure()
     plt.imshow(
-        model.predict_local_model(fine_input, i)["rosen"].reshape(
-            (refinement, refinement)
-        )
+        model.predict_local_model(fine_input, i)["rosen"].reshape((
+            refinement,
+            refinement,
+        ))
     )
     plt.colorbar()
     plt.title(f"Local model {i}")

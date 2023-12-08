@@ -42,14 +42,12 @@ configure_logger()
 # :class:`.SobieskiAerodynamics`,
 # :class:`.SobieskiMission`
 # and :class:`.SobieskiStructure`.
-propu, aero, mission, struct = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+propu, aero, mission, struct = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 
 # %%
 # Build, execute and post-process the scenario
@@ -175,13 +173,11 @@ system_scenario.xdsmize(save_html=False)
 #    available for multiprocessing on Windows.
 #    As an alternative, we recommend the method
 #    :meth:`.DOEScenario.set_optimization_history_backup`.
-system_scenario.execute(
-    {
-        "n_samples": 30,
-        "algo": "lhs",
-        "algo_options": {"n_processes": 1 if os_name == "nt" else 4},
-    }
-)
+system_scenario.execute({
+    "n_samples": 30,
+    "algo": "lhs",
+    "algo_options": {"n_processes": 1 if os_name == "nt" else 4},
+})
 
 system_scenario.print_execution_metrics()
 

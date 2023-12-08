@@ -56,14 +56,12 @@ configure_logger()
 # At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # :class:`.SobieskiPropulsion`, :class:`.SobieskiAerodynamics`,
 # :class:`.SobieskiStructure` and :class:`.SobieskiMission`.
-disciplines = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiStructure",
-        "SobieskiMission",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiStructure",
+    "SobieskiMission",
+])
 
 # %%
 # Create design space

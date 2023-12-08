@@ -303,9 +303,10 @@ class DisciplineJacApprox:
         if x_indices is None:
             flat_jac_complete = flat_jac
         else:
-            flat_jac_complete = zeros(
-                [sum(data_names_to_sizes.values()), sum(input_names_to_sizes.values())]
-            )
+            flat_jac_complete = zeros([
+                sum(data_names_to_sizes.values()),
+                sum(input_names_to_sizes.values()),
+            ])
             flat_jac_complete[:, x_indices] = flat_jac
 
         data_names_to_sizes.update(input_names_to_sizes)

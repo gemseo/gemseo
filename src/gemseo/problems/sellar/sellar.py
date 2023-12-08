@@ -178,9 +178,12 @@ class SellarSystem(MDODiscipline):
         self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
-        x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(
-            [X_LOCAL, X_SHARED, Y_1, Y_2]
-        )
+        x_local, x_shared, y_1, y_2 = self.get_inputs_by_name([
+            X_LOCAL,
+            X_SHARED,
+            Y_1,
+            Y_2,
+        ])
         if WITH_2D_ARRAY:
             x_shared = x_shared[0]
         obj = array([self.compute_obj(x_local, x_shared, y_1, y_2)], dtype=complex128)

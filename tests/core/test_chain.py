@@ -154,14 +154,12 @@ def test_get_sub_disciplines():
 
 def test_get_sub_disciplines_parallel():
     """Test the get_sub_disciplines method with an MDOParallelChain."""
-    parallel_chain = MDOParallelChain(
-        [
-            SobieskiStructure(),
-            SobieskiMission(),
-            SobieskiAerodynamics(),
-            SobieskiPropulsion(),
-        ]
-    )
+    parallel_chain = MDOParallelChain([
+        SobieskiStructure(),
+        SobieskiMission(),
+        SobieskiAerodynamics(),
+        SobieskiPropulsion(),
+    ])
     assert parallel_chain.get_sub_disciplines() == parallel_chain.disciplines
 
 

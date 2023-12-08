@@ -86,9 +86,9 @@ class LinearCombination(MDODiscipline):
         self.output_grammar.update_from_names([output_name])
 
         default_size = 1 if input_size is None else input_size
-        self.default_inputs.update(
-            {input_name: zeros(default_size) for input_name in input_names}
-        )
+        self.default_inputs.update({
+            input_name: zeros(default_size) for input_name in input_names
+        })
 
         self.__coefficients = {input_name: 1.0 for input_name in input_names}
         if input_coefficients:

@@ -126,9 +126,12 @@ class Mission(MDODiscipline):
         self.lift_val = lift_val
 
     def _run(self) -> None:
-        lift, mass, drag, reserve_fact = self.get_inputs_by_name(
-            ["lift", "mass", "drag", "reserve_fact"]
-        )
+        lift, mass, drag, reserve_fact = self.get_inputs_by_name([
+            "lift",
+            "mass",
+            "drag",
+            "reserve_fact",
+        ])
         obj = array([self.compute_range(lift, mass, drag)], dtype=complex128)
         c_lift = array([self.c_lift(lift, self.lift_val)], dtype=complex128)
         c_rf = array([self.c_rf(reserve_fact)], dtype=complex128)
@@ -203,9 +206,11 @@ class Aerodynamics(MDODiscipline):
         self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
-        sweep, thick_airfoils, displ = self.get_inputs_by_name(
-            ["sweep", "thick_airfoils", "displ"]
-        )
+        sweep, thick_airfoils, displ = self.get_inputs_by_name([
+            "sweep",
+            "thick_airfoils",
+            "displ",
+        ])
         drag_out = array([self.compute_drag(sweep, thick_airfoils, displ)])
         lift_out = array([self.compute_lift(sweep, thick_airfoils, displ)])
         forces_out = array([self.compute_forces(sweep, thick_airfoils, displ)])
@@ -298,9 +303,11 @@ class Structure(MDODiscipline):
         self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
-        sweep, thick_panels, forces = self.get_inputs_by_name(
-            ["sweep", "thick_panels", "forces"]
-        )
+        sweep, thick_panels, forces = self.get_inputs_by_name([
+            "sweep",
+            "thick_panels",
+            "forces",
+        ])
         mass_out = array([self.compute_mass(sweep, thick_panels, forces)])
         rf_out = array([self.compute_rf(sweep, thick_panels, forces)])
         displ_out = array([self.compute_displ(sweep, thick_panels, forces)])

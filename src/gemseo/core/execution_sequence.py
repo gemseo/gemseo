@@ -422,9 +422,9 @@ class ExtendableExecSequence(CompositeExecSequence):
         """
         sequences = [AtomicExecSequence(discipline) for discipline in disciplines]
         self.sequences.extend(sequences)
-        self.uuid_to_disc.update(
-            {sequence.uuid: sequence.discipline for sequence in sequences}
-        )
+        self.uuid_to_disc.update({
+            sequence.uuid: sequence.discipline for sequence in sequences
+        })
 
     def _extend_with_atomic_sequence(self, sequence: ExecutionSequence) -> None:
         """Extend by a list of AtomicExecutionSequence.

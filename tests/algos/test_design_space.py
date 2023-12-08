@@ -366,9 +366,11 @@ def test_active_bounds():
     design_space.add_variable("x", l_b=0.0, u_b=2.0)
     design_space.add_variable("y", l_b=-2.0, u_b=2.0)
     design_space.add_variable("z")
-    lb_1, ub_1 = design_space.get_active_bounds(
-        {"x": array([0.0]), "y": array([2.0]), "z": array([2.0])}
-    )
+    lb_1, ub_1 = design_space.get_active_bounds({
+        "x": array([0.0]),
+        "y": array([2.0]),
+        "z": array([2.0]),
+    })
 
     lb_2, ub_2 = design_space.get_active_bounds(array([1e-12, 2.0 - 1e-12, 1e-12]))
 
@@ -1089,29 +1091,25 @@ def test_vartype_passed_as_bytes(design_space):
 def test_current_x_various_types(design_space, name, kind):
     """Check that set_current_value handles various types of data."""
     design_space.filter(["x13", "x14", "x15", "x16", "x17"])
-    design_space.set_current_value(
-        {
-            "x13": array([0.5]),
-            "x14": array([2.0]),
-            "x15": None,
-            "x16": array([1.0, 2.0]),
-            "x17": array([1, 2]),
-        }
-    )
+    design_space.set_current_value({
+        "x13": array([0.5]),
+        "x14": array([2.0]),
+        "x15": None,
+        "x16": array([1.0, 2.0]),
+        "x17": array([1, 2]),
+    })
     assert design_space._current_value[name].dtype.kind == kind
 
 
 def test_current_x_with_missing_variable(design_space):
     design_space.filter(["x13", "x14", "x15", "x16", "x17"])
-    design_space.set_current_value(
-        {
-            "x13": array([0.5]),
-            "x14": array([2.0]),
-            "x15": None,
-            "x16": array([1.0, 2.0]),
-            "x17": array([1, 2]),
-        }
-    )
+    design_space.set_current_value({
+        "x13": array([0.5]),
+        "x14": array([2.0]),
+        "x15": None,
+        "x16": array([1.0, 2.0]),
+        "x17": array([1, 2]),
+    })
     assert design_space._current_value["x15"] is None
 
 

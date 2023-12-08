@@ -58,13 +58,11 @@ class TestMDFFormulation(FormulationsBaseTest):
         scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
-        scenario.execute(
-            {
-                "max_iter": 100,
-                "algo": algo,
-                "algo_options": {"ftol_rel": 1e-10, "ineq_tolerance": 1e-3},
-            }
-        )
+        scenario.execute({
+            "max_iter": 100,
+            "algo": algo,
+            "algo_options": {"ftol_rel": 1e-10, "ineq_tolerance": 1e-3},
+        })
         scenario.print_execution_metrics()
         return scenario.optimization_result.f_opt
 

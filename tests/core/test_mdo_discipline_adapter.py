@@ -93,17 +93,17 @@ def test_error(disciplinary_function):
 
 def test_discipline_local_data(disciplinary_function):
     """Check that input sizes can be guessed from the discipline's local data."""
-    disciplinary_function._MDODisciplineAdapter__discipline.local_data.update(
-        {"x": array([1.0])}
-    )
+    disciplinary_function._MDODisciplineAdapter__discipline.local_data.update({
+        "x": array([1.0])
+    })
     check_func_and_jac_evaluation(disciplinary_function)
 
 
 def test_discipline_default_inputs(disciplinary_function):
     """Check that input sizes can be guessed from the discipline's default inputs."""
-    disciplinary_function._MDODisciplineAdapter__discipline.default_inputs.update(
-        {"x": array([1.0])}
-    )
+    disciplinary_function._MDODisciplineAdapter__discipline.default_inputs.update({
+        "x": array([1.0])
+    })
     check_func_and_jac_evaluation(disciplinary_function)
 
 

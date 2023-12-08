@@ -162,17 +162,17 @@ class SPDistribution(Distribution):
         self,
         vector: Iterable[float],
     ) -> ndarray:
-        return array(
-            [self.marginals[index].cdf(value) for index, value in enumerate(vector)]
-        )
+        return array([
+            self.marginals[index].cdf(value) for index, value in enumerate(vector)
+        ])
 
     def compute_inverse_cdf(  # noqa: D102
         self,
         vector: Iterable[float],
     ) -> ndarray:
-        return array(
-            [self.marginals[index].ppf(value) for index, value in enumerate(vector)]
-        )
+        return array([
+            self.marginals[index].ppf(value) for index, value in enumerate(vector)
+        ])
 
     @property
     def mean(self) -> ndarray:  # noqa: D102

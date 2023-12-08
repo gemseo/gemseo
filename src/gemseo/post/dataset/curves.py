@@ -83,7 +83,7 @@ class Curves(DatasetPlot):
         return y_values, [self.dataset.index[sample] for sample in samples]
 
     def __get_line_style_generator(
-        self
+        self,
     ) -> Generator[str | tuple[int, tuple[int, int, int, int]], None, None]:
         """A line style generator.
 

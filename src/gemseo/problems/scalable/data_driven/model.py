@@ -131,15 +131,15 @@ class ScalableModel:
         lower_bounds = {
             column[1]: array(value).min(0) for column, value in inputs.items()
         }
-        lower_bounds.update(
-            {column[1]: array(value).min(0) for column, value in outputs.items()}
-        )
+        lower_bounds.update({
+            column[1]: array(value).min(0) for column, value in outputs.items()
+        })
         upper_bounds = {
             column[1]: array(value).max(0) for column, value in inputs.items()
         }
-        upper_bounds.update(
-            {column[1]: array(value).max(0) for column, value in outputs.items()}
-        )
+        upper_bounds.update({
+            column[1]: array(value).max(0) for column, value in outputs.items()
+        })
 
         return lower_bounds, upper_bounds
 

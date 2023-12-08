@@ -73,9 +73,10 @@ class FirstOrderFD(GradientApproximator):
             input_perturbations[:, perturbation_index]
             for perturbation_index in range(n_perturbations)
         ]
-        initial_and_perturbated_outputs = parallel_execution.execute(
-            [input_values, *perturbated_inputs]
-        )
+        initial_and_perturbated_outputs = parallel_execution.execute([
+            input_values,
+            *perturbated_inputs,
+        ])
 
         gradient = []
         initial_output = initial_and_perturbated_outputs[0]

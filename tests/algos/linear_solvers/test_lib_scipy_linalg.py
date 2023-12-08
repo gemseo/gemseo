@@ -82,15 +82,13 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond):
         )
     if algo == "lgmres":
         v = rng.random(n)
-        options.update(
-            {
-                "inner_m": 10,
-                "outer_k": 10,
-                "outer_v": [(v, problem.lhs.dot(v))],
-                "store_outer_av": True,
-                "prepend_outer_v": True,
-            }
-        )
+        options.update({
+            "inner_m": 10,
+            "outer_k": 10,
+            "outer_v": [(v, problem.lhs.dot(v))],
+            "store_outer_av": True,
+            "prepend_outer_v": True,
+        })
     factory.execute(problem, algo, **options)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL

@@ -105,12 +105,10 @@ class ConstraintsHistory(OptPostProcessor):
         # harmonization of tables format because constraints can be vectorial
         # or scalars. *vals.shape[0] = iteration, *vals.shape[1] = cstr values
         constraint_histories = atleast_3d(constraint_histories)
-        constraint_histories = constraint_histories.reshape(
-            (
-                constraint_histories.shape[0],
-                constraint_histories.shape[1] * constraint_histories.shape[2],
-            )
-        )
+        constraint_histories = constraint_histories.reshape((
+            constraint_histories.shape[0],
+            constraint_histories.shape[1] * constraint_histories.shape[2],
+        ))
 
         # prepare the main window
         fig, axes = pyplot.subplots(

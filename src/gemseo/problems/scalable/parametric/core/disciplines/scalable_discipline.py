@@ -172,12 +172,10 @@ class ScalableDiscipline(BaseDiscipline):
             jacobian = {}
             for output_name in self.output_names:
                 jacobian[output_name] = {
-                    input_name: zeros(
-                        (
-                            self.names_to_sizes[output_name],
-                            self.names_to_sizes[input_name],
-                        )
-                    )
+                    input_name: zeros((
+                        self.names_to_sizes[output_name],
+                        self.names_to_sizes[input_name],
+                    ))
                     for input_name in self.input_names
                 }
             coupling_size = self.names_to_sizes[self.__y_i_name]

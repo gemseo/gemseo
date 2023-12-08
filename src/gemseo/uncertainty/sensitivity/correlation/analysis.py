@@ -367,14 +367,10 @@ class CorrelationAnalysis(SensitivityAnalysis):
             # in a 2D NumPy array shaped as (n_indices, input_dimension).
             dataset.add_variable(
                 input_name,
-                vstack(
-                    [
-                        getattr(self, method.lower())[output_name][output_index][
-                            input_name
-                        ]
-                        for method in all_indices
-                    ]
-                ),
+                vstack([
+                    getattr(self, method.lower())[output_name][output_index][input_name]
+                    for method in all_indices
+                ]),
             )
 
         dataset.index = all_indices

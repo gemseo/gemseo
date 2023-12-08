@@ -1231,12 +1231,10 @@ class DesignSpace(collections.abc.MutableMapping):
         norm_factor_is_zero = self._norm_factor == 0.0
         self.__to_zero = norm_factor_is_zero.nonzero()[0]
         self._norm_factor_inv = 1 / where(norm_factor_is_zero, 1, self._norm_factor)
-        self.__integer_components = concatenate(
-            [
-                self.variable_types[variable_name] == self.DesignVariableType.INTEGER
-                for variable_name in self.variable_names
-            ]
-        )
+        self.__integer_components = concatenate([
+            self.variable_types[variable_name] == self.DesignVariableType.INTEGER
+            for variable_name in self.variable_names
+        ])
         self.__no_integer = not self.__integer_components.any()
         self.__norm_data_is_computed = True
 

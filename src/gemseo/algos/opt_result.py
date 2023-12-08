@@ -209,10 +209,8 @@ class OptimizationResult:
         optimization_result = {
             key.name: dict_[key.name] for key in fields(cls) if key.name in dict_
         }
-        optimization_result.update(
-            {
-                cls.__CONSTRAINTS_VALUES: cstr or None,
-                cls.__CONSTRAINTS_GRAD: cstr_grad or None,
-            }
-        )
+        optimization_result.update({
+            cls.__CONSTRAINTS_VALUES: cstr or None,
+            cls.__CONSTRAINTS_GRAD: cstr_grad or None,
+        })
         return cls(**optimization_result)

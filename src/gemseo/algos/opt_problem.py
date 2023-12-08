@@ -758,12 +758,10 @@ class OptimizationProblem(BaseProblem):
 
         # Compute a restriction operator that goes from the new design space to the old
         # design space variables.
-        restriction_operator = hstack(
-            (
-                np_eye(self.dimension),
-                zeros((self.dimension, problem.dimension - self.dimension)),
-            )
-        )
+        restriction_operator = hstack((
+            np_eye(self.dimension),
+            zeros((self.dimension, problem.dimension - self.dimension)),
+        ))
         # Get the new problem objective function composing the initial objective
         # function with the restriction operator.
         problem.objective = LinearComposition(self.objective, restriction_operator)
@@ -2651,9 +2649,9 @@ class OptimizationProblem(BaseProblem):
             if dimension == 1:
                 constraint_names.append(constraint.name)
             else:
-                constraint_names.extend(
-                    [constraint.get_indexed_name(index) for index in range(dimension)]
-                )
+                constraint_names.extend([
+                    constraint.get_indexed_name(index) for index in range(dimension)
+                ])
         return constraint_names
 
     def reset(

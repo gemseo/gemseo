@@ -18,14 +18,12 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scenario
 
-disciplines = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 
 scenario = create_scenario(
     disciplines,

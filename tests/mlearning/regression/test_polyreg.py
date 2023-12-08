@@ -91,13 +91,11 @@ def dataset() -> IODataset:
 @pytest.fixture()
 def dataset_from_cache() -> IODataset:
     """The dataset used to train the regression algorithms."""
-    discipline = AnalyticDiscipline(
-        {
-            "y_1": "1 + x_1 + x_2**2",
-            "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
-            "y_3": "10*x_1*x_2**2 + 7*x_2**5",
-        }
-    )
+    discipline = AnalyticDiscipline({
+        "y_1": "1 + x_1 + x_2**2",
+        "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
+        "y_3": "10*x_1*x_2**2 + 7*x_2**5",
+    })
     discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_2", l_b=-1, u_b=2)

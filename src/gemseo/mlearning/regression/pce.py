@@ -304,14 +304,12 @@ class PCERegressor(MLRegressionAlgo):
         self.__cleaning = cleaning_options
         self.__hyperbolic_parameter = hyperbolic_parameter
         self.__degree = degree
-        self.__composed_distribution = ComposedDistribution(
-            [
-                marginal
-                for input_name in self.input_names
-                for distribution in distributions[input_name].marginals
-                for marginal in distribution.marginals
-            ]
-        )
+        self.__composed_distribution = ComposedDistribution([
+            marginal
+            for input_name in self.input_names
+            for distribution in distributions[input_name].marginals
+            for marginal in distribution.marginals
+        ])
 
         if use_quadrature:
             if discipline is not None:
@@ -493,27 +491,25 @@ class PCERegressor(MLRegressionAlgo):
         self._second_order_sobol_indices = [
             {
                 first_name: {
-                    second_name: self.__simplify_sobol_indices(
+                    second_name: self.__simplify_sobol_indices([
                         [
-                            [
-                                (
-                                    ot_sobol_indices.getSobolGroupedIndex(
-                                        [first_index, second_index], output_index
-                                    )
-                                    - ot_sobol_indices.getSobolIndex(
-                                        first_index, output_index
-                                    )
-                                    - ot_sobol_indices.getSobolIndex(
-                                        second_index, output_index
-                                    )
+                            (
+                                ot_sobol_indices.getSobolGroupedIndex(
+                                    [first_index, second_index], output_index
                                 )
-                                if first_index != second_index
-                                else 0
-                                for second_index in names_to_positions[second_name]
-                            ]
-                            for first_index in names_to_positions[first_name]
+                                - ot_sobol_indices.getSobolIndex(
+                                    first_index, output_index
+                                )
+                                - ot_sobol_indices.getSobolIndex(
+                                    second_index, output_index
+                                )
+                            )
+                            if first_index != second_index
+                            else 0
+                            for second_index in names_to_positions[second_name]
                         ]
-                    )
+                        for first_index in names_to_positions[first_name]
+                    ])
                     for second_name in self.input_names
                 }
                 for first_name in self.input_names
@@ -546,12 +542,10 @@ class PCERegressor(MLRegressionAlgo):
         )
         indices = [
             {
-                input_name: self.__simplify_sobol_indices(
-                    [
-                        method(input_index, output_index)
-                        for input_index in names_to_positions[input_name]
-                    ]
-                )
+                input_name: self.__simplify_sobol_indices([
+                    method(input_index, output_index)
+                    for input_index in names_to_positions[input_name]
+                ])
                 for input_name in self.input_names
             }
             for output_index in range(self.output_dimension)

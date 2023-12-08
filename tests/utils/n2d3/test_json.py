@@ -117,23 +117,19 @@ def expected_nodes(n2_json):
     children = [[4], [2, 3]]
     nodes = []
     desc = n2_json._create_group_html(0, disciplines, n_groups, children)
-    nodes.append(
-        {
-            "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(0),
-            "is_group": True,
-            "group": 0,
-            "description": desc,
-        }
-    )
+    nodes.append({
+        "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(0),
+        "is_group": True,
+        "group": 0,
+        "description": desc,
+    })
     desc = n2_json._create_group_html(1, disciplines, n_groups, children)
-    nodes.append(
-        {
-            "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(1),
-            "is_group": True,
-            "group": 1,
-            "description": desc,
-        }
-    )
+    nodes.append({
+        "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(1),
+        "is_group": True,
+        "group": 1,
+        "description": desc,
+    })
 
     disciplines = list(n2_json._graph.disciplines)
     for discipline in [disciplines[index] for index in [2, 0, 1]]:
@@ -141,14 +137,12 @@ def expected_nodes(n2_json):
             discipline,
             {"y12a": 4, "y12b": 3, "y21": "n/a"},
         )
-        nodes.append(
-            {
-                "name": discipline.name,
-                "is_group": False,
-                "group": 0 if discipline.name == "D3" else 1,
-                "description": desc,
-            }
-        )
+        nodes.append({
+            "name": discipline.name,
+            "is_group": False,
+            "group": 0 if discipline.name == "D3" else 1,
+            "description": desc,
+        })
     return nodes
 
 

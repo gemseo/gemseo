@@ -162,9 +162,11 @@ class QuadApprox(OptPostProcessor):
         fig.colorbar(
             img,
             cax=fig.add_subplot(grid[0, 1]),
-            ticks=np.concatenate(
-                (np.sort(-positive_levels), array([0]), positive_levels)
-            ),
+            ticks=np.concatenate((
+                np.sort(-positive_levels),
+                array([0]),
+                positive_levels,
+            )),
             format=LogFormatterSciNotation(),
         )
         fig.suptitle(f"Hessian matrix SR1 approximation of {function}")

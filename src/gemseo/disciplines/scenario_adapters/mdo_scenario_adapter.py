@@ -262,25 +262,19 @@ class MDOScenarioAdapter(MDODiscipline):
         problem = self.scenario.formulation.opt_problem
         # bound-constraints multipliers
         current_x = problem.design_space.get_current_value(as_dict=True)
-        base_dict.update(
-            {
-                self.get_bnd_mult_name(var_name, False): val
-                for var_name, val in current_x.items()
-            }
-        )
-        base_dict.update(
-            {
-                self.get_bnd_mult_name(var_name, True): val
-                for var_name, val in current_x.items()
-            }
-        )
+        base_dict.update({
+            self.get_bnd_mult_name(var_name, False): val
+            for var_name, val in current_x.items()
+        })
+        base_dict.update({
+            self.get_bnd_mult_name(var_name, True): val
+            for var_name, val in current_x.items()
+        })
         # equality- and inequality-constraints multipliers
-        base_dict.update(
-            {
-                self.get_cstr_mult_name(cstr_name): zeros(1)
-                for cstr_name in problem.get_constraint_names()
-            }
-        )
+        base_dict.update({
+            self.get_cstr_mult_name(cstr_name): zeros(1)
+            for cstr_name in problem.get_constraint_names()
+        })
 
         # Update the output grammar
         multipliers_grammar = JSONGrammar("multipliers")
@@ -433,30 +427,22 @@ class MDOScenarioAdapter(MDODiscipline):
 
         # Store the Lagrange multipliers in the local data
         multipliers = lagrange.get_multipliers_arrays()
-        self.local_data.update(
-            {
-                self.get_bnd_mult_name(name, False): mult
-                for name, mult in multipliers[lagrange.LOWER_BOUNDS].items()
-            }
-        )
-        self.local_data.update(
-            {
-                self.get_bnd_mult_name(name, True): mult
-                for name, mult in multipliers[lagrange.UPPER_BOUNDS].items()
-            }
-        )
-        self.local_data.update(
-            {
-                self.get_cstr_mult_name(name): mult
-                for name, mult in multipliers[lagrange.EQUALITY].items()
-            }
-        )
-        self.local_data.update(
-            {
-                self.get_cstr_mult_name(name): mult
-                for name, mult in multipliers[lagrange.INEQUALITY].items()
-            }
-        )
+        self.local_data.update({
+            self.get_bnd_mult_name(name, False): mult
+            for name, mult in multipliers[lagrange.LOWER_BOUNDS].items()
+        })
+        self.local_data.update({
+            self.get_bnd_mult_name(name, True): mult
+            for name, mult in multipliers[lagrange.UPPER_BOUNDS].items()
+        })
+        self.local_data.update({
+            self.get_cstr_mult_name(name): mult
+            for name, mult in multipliers[lagrange.EQUALITY].items()
+        })
+        self.local_data.update({
+            self.get_cstr_mult_name(name): mult
+            for name, mult in multipliers[lagrange.INEQUALITY].items()
+        })
 
     def get_expected_workflow(self) -> LoopExecSequence:  # noqa: D102
         return self.scenario.get_expected_workflow()

@@ -134,18 +134,16 @@ class FininiteElementAnalysis(MDODiscipline):
                 el = ely + elx * self.n_y
                 n1 = (self.n_y + 1) * elx + ely
                 n2 = (self.n_y + 1) * (elx + 1) + ely
-                edof_mat[el, :] = array(
-                    [
-                        2 * n1 + 2,
-                        2 * n1 + 3,
-                        2 * n2 + 2,
-                        2 * n2 + 3,
-                        2 * n2,
-                        2 * n2 + 1,
-                        2 * n1,
-                        2 * n1 + 1,
-                    ]
-                )
+                edof_mat[el, :] = array([
+                    2 * n1 + 2,
+                    2 * n1 + 3,
+                    2 * n2 + 2,
+                    2 * n2 + 3,
+                    2 * n2,
+                    2 * n2 + 1,
+                    2 * n1,
+                    2 * n1 + 1,
+                ])
         self.edofMat = edof_mat
         # Construct the index pointers for the coo format
         self.iK = kron(edof_mat, ones((8, 1))).flatten()
@@ -161,31 +159,27 @@ class FininiteElementAnalysis(MDODiscipline):
     ) -> None:  # noqa: D205,D212,D415
         """Compute the elementary stiffness matrix of 1x1 quadrilateral elements."""
         em = 1.0
-        k = array(
-            [
-                1 / 2 - self.nu / 6,
-                1 / 8 + self.nu / 8,
-                -1 / 4 - self.nu / 12,
-                -1 / 8 + 3 * self.nu / 8,
-                -1 / 4 + self.nu / 12,
-                -1 / 8 - self.nu / 8,
-                self.nu / 6,
-                1 / 8 - 3 * self.nu / 8,
-            ]
-        )
+        k = array([
+            1 / 2 - self.nu / 6,
+            1 / 8 + self.nu / 8,
+            -1 / 4 - self.nu / 12,
+            -1 / 8 + 3 * self.nu / 8,
+            -1 / 4 + self.nu / 12,
+            -1 / 8 - self.nu / 8,
+            self.nu / 6,
+            1 / 8 - 3 * self.nu / 8,
+        ])
         return (
             em
             / (1 - self.nu**2)
-            * array(
-                [
-                    [k[0], k[1], k[2], k[3], k[4], k[5], k[6], k[7]],
-                    [k[1], k[0], k[7], k[6], k[5], k[4], k[3], k[2]],
-                    [k[2], k[7], k[0], k[5], k[6], k[3], k[4], k[1]],
-                    [k[3], k[6], k[5], k[0], k[7], k[2], k[1], k[4]],
-                    [k[4], k[5], k[6], k[7], k[0], k[1], k[2], k[3]],
-                    [k[5], k[4], k[3], k[2], k[1], k[0], k[7], k[6]],
-                    [k[6], k[3], k[4], k[1], k[2], k[7], k[0], k[5]],
-                    [k[7], k[2], k[1], k[4], k[3], k[6], k[5], k[0]],
-                ]
-            )
+            * array([
+                [k[0], k[1], k[2], k[3], k[4], k[5], k[6], k[7]],
+                [k[1], k[0], k[7], k[6], k[5], k[4], k[3], k[2]],
+                [k[2], k[7], k[0], k[5], k[6], k[3], k[4], k[1]],
+                [k[3], k[6], k[5], k[0], k[7], k[2], k[1], k[4]],
+                [k[4], k[5], k[6], k[7], k[0], k[1], k[2], k[3]],
+                [k[5], k[4], k[3], k[2], k[1], k[0], k[7], k[6]],
+                [k[6], k[3], k[4], k[1], k[2], k[7], k[0], k[5]],
+                [k[7], k[2], k[1], k[4], k[3], k[6], k[5], k[0]],
+            ])
         )

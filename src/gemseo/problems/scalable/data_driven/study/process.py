@@ -239,18 +239,14 @@ class ScalabilityStudy:
         self.datasets.append(data)
         for output_name in data.get_variable_names(data.OUTPUT_GROUP):
             self.set_fill_factor(data.name, output_name, self._default_fill_factor)
-        inputs = ", ".join(
-            [
-                f"{name}({data.variable_names_to_n_components[name]})"
-                for name in data.get_variable_names(data.INPUT_GROUP)
-            ]
-        )
-        outputs = ", ".join(
-            [
-                f"{name}({data.variable_names_to_n_components[name]})"
-                for name in data.get_variable_names(data.OUTPUT_GROUP)
-            ]
-        )
+        inputs = ", ".join([
+            f"{name}({data.variable_names_to_n_components[name]})"
+            for name in data.get_variable_names(data.INPUT_GROUP)
+        ])
+        outputs = ", ".join([
+            f"{name}({data.variable_names_to_n_components[name]})"
+            for name in data.get_variable_names(data.OUTPUT_GROUP)
+        ])
         msg = MultiLineString()
         msg.add("Add scalable discipline # {}", len(self.datasets))
         msg.indent()
@@ -406,13 +402,13 @@ class ScalabilityStudy:
         self.formulations_options.append(formulation_options)
         self.top_level_diff.append(top_level_diff)
         if algo_options is not None:
-            algo_options = ", ".join(
-                [f"{name}({value})" for name, value in algo_options.items()]
-            )
+            algo_options = ", ".join([
+                f"{name}({value})" for name, value in algo_options.items()
+            ])
         if formulation_options is not None:
-            formulation_options = ", ".join(
-                [f"{name}({value})" for name, value in formulation_options.items()]
-            )
+            formulation_options = ", ".join([
+                f"{name}({value})" for name, value in formulation_options.items()
+            ])
         msg = MultiLineString()
         msg.add("Add optimization strategy # {}", len(self.formulations))
         msg.indent()
@@ -490,9 +486,9 @@ class ScalabilityStudy:
         msg.add("Number of strategies: {}", n_scaling)
         for idx in range(n_scaling):
             if variables[idx] is not None:
-                var_str = ", ".join(
-                    [f"{name}({size})" for name, size in variables[idx].items()]
-                )
+                var_str = ", ".join([
+                    f"{name}({size})" for name, size in variables[idx].items()
+                ])
             else:
                 var_str = None
             msg.add("Strategy # {}", idx + 1)
@@ -764,9 +760,11 @@ class ScalabilityStudy:
         algo_options = deepcopy(self.algorithms_options[opt_index])
         max_iter = algo_options["max_iter"]
         del algo_options["max_iter"]
-        problem.scenario.execute(
-            {"algo": algo, "max_iter": max_iter, "algo_options": algo_options}
-        )
+        problem.scenario.execute({
+            "algo": algo,
+            "max_iter": max_iter,
+            "algo_options": algo_options,
+        })
         return algo_options
 
     def __get_stop_index(self, problem):

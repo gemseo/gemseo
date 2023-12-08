@@ -94,13 +94,11 @@ def test_compute_samples():
     assert allclose(sample, expectation, 1e-3)
     distribution = OTDistribution("x", "Normal", (0, 2), 4)
     sample = distribution.compute_samples(3)
-    expectation = array(
-        [
-            [2.410956, -0.710014, 1.586312, -4.580124],
-            [-4.36277, 2.874499, -0.941051, -2.565771],
-            [0.700084, 1.621336, 0.522036, -2.623562],
-        ]
-    )
+    expectation = array([
+        [2.410956, -0.710014, 1.586312, -4.580124],
+        [-4.36277, 2.874499, -0.941051, -2.565771],
+        [0.700084, 1.621336, 0.522036, -2.623562],
+    ])
     assert allclose(sample, expectation, 1e-3)
 
 

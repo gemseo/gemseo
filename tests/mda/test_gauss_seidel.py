@@ -127,14 +127,12 @@ def test_expected_workflow():
 
 
 def test_expected_workflow_with_adapter():
-    discs = create_discipline(
-        [
-            "SobieskiPropulsion",
-            "SobieskiStructure",
-            "SobieskiAerodynamics",
-            "SobieskiMission",
-        ]
-    )
+    discs = create_discipline([
+        "SobieskiPropulsion",
+        "SobieskiStructure",
+        "SobieskiAerodynamics",
+        "SobieskiMission",
+    ])
     design_space = SobieskiDesignSpace()
     scn_propu = create_scenario(
         discs,
@@ -199,14 +197,12 @@ def test_self_coupled():
 
 @pytest.mark.parametrize("over_relax_factor", [1.0, 0.8, 1.1, 1.2, 1.5])
 def test_over_relaxation(over_relax_factor):
-    discs = create_discipline(
-        [
-            "SobieskiPropulsion",
-            "SobieskiStructure",
-            "SobieskiAerodynamics",
-            "SobieskiMission",
-        ]
-    )
+    discs = create_discipline([
+        "SobieskiPropulsion",
+        "SobieskiStructure",
+        "SobieskiAerodynamics",
+        "SobieskiMission",
+    ])
     tolerance = 1e-14
     mda = MDAGaussSeidel(
         discs,

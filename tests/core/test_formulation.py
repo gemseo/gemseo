@@ -161,18 +161,16 @@ class TestMDOFormulation(unittest.TestCase):
 
         x = np.concatenate([rid[n] for n in dvs])
         c = f.mask_x_swap_order(dvs, x, dvs)
-        expected = np.array(
-            [
-                0.05,
-                4.5e04,
-                1.6,
-                5.5,
-                55.0,
-                1000.0,
-                50606.9741711000024,
-                7306.20262123999964,
-            ]
-        )
+        expected = np.array([
+            0.05,
+            4.5e04,
+            1.6,
+            5.5,
+            55.0,
+            1000.0,
+            50606.9741711000024,
+            7306.20262123999964,
+        ])
         assert norm(c - expected) < 1e-14
         x_values_dict = f._get_dv_indices(dvs)
         assert x_values_dict == {"x_shared": (0, 4, 4), "y_14": (4, 8, 4)}

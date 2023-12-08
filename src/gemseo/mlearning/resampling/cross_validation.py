@@ -65,17 +65,15 @@ class CrossValidation(Resampler):
             self.name = "LeaveOneOut"
 
     def _create_splits(self) -> Splits:
-        return Splits(
-            *[
-                Split(
-                    setdiff1d(self.__shuffled_sample_indices, test_indices),
-                    test_indices,
-                )
-                for test_indices in array_split(
-                    self.__shuffled_sample_indices, self._n_splits
-                )
-            ]
-        )
+        return Splits(*[
+            Split(
+                setdiff1d(self.__shuffled_sample_indices, test_indices),
+                test_indices,
+            )
+            for test_indices in array_split(
+                self.__shuffled_sample_indices, self._n_splits
+            )
+        ])
 
     @property
     def shuffled_sample_indices(self) -> NDArray[int]:

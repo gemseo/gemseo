@@ -177,14 +177,12 @@ def test_coupling(factor, mda):
     input_data = compute_input_data(
         design_space.get_current_value(as_dict=True), factor
     )
-    original_mda = MDAGaussSeidel(
-        [
-            SobieskiAerodynamics(),
-            SobieskiStructure(),
-            SobieskiPropulsion(),
-            SobieskiMission(),
-        ]
-    )
+    original_mda = MDAGaussSeidel([
+        SobieskiAerodynamics(),
+        SobieskiStructure(),
+        SobieskiPropulsion(),
+        SobieskiMission(),
+    ])
     original_mda.execute(input_data)
     assert_allclose(original_mda.local_data["y_1"], y_1, rtol=1e-2)
     assert_allclose(original_mda.local_data["y_2"], y_2, rtol=1e-2)

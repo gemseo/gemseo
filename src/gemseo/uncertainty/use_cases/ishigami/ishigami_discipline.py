@@ -39,9 +39,9 @@ class IshigamiDiscipline(MDODiscipline):
         super().__init__()
         self.input_grammar.update_from_names(["x1", "x2", "x3"])
         self.output_grammar.update_from_names(["y"])
-        self.default_inputs.update(
-            {name: array([0.0]) for name in self.input_grammar.names}
-        )
+        self.default_inputs.update({
+            name: array([0.0]) for name in self.input_grammar.names
+        })
 
     def _run(self) -> None:
         self.store_local_data(y=array([compute_output(self.get_inputs_asarray())]))

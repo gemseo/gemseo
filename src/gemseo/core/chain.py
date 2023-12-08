@@ -405,12 +405,10 @@ class MDOParallelChain(MDODiscipline):
 
         # Update data according to input order of priority
         for discipline in self.disciplines:
-            self.local_data.update(
-                {
-                    output_name: discipline.local_data[output_name]
-                    for output_name in discipline.get_output_data_names()
-                }
-            )
+            self.local_data.update({
+                output_name: discipline.local_data[output_name]
+                for output_name in discipline.get_output_data_names()
+            })
 
     def _compute_jacobian(
         self,

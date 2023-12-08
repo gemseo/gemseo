@@ -90,14 +90,12 @@ def test_input_couplings():
 
     with concretize_classes(BaseMDASolver):
         mda = BaseMDASolver(
-            create_discipline(
-                [
-                    "SobieskiPropulsion",
-                    "SobieskiAerodynamics",
-                    "SobieskiMission",
-                    "SobieskiStructure",
-                ]
-            )
+            create_discipline([
+                "SobieskiPropulsion",
+                "SobieskiAerodynamics",
+                "SobieskiMission",
+                "SobieskiStructure",
+            ])
         )
         mda._compute_input_couplings()
         sorted_c = ["y_12", "y_21", "y_23", "y_31", "y_32"]
@@ -168,14 +166,12 @@ def test_warm_start():
 
 def test_weak_strong_coupling_mda_jac():
     """Tests a particular coupling structure jacobian."""
-    disciplines = analytic_disciplines_from_desc(
-        (
-            {"y1": "x"},
-            {"c1": "y1+x+0.2*c2"},
-            {"c2": "y1+x+1.-0.3*c1"},
-            {"obj": "x+c1+c2"},
-        )
-    )
+    disciplines = analytic_disciplines_from_desc((
+        {"y1": "x"},
+        {"c1": "y1+x+0.2*c2"},
+        {"c2": "y1+x+1.-0.3*c1"},
+        {"obj": "x+c1+c2"},
+    ))
     mda = MDAGaussSeidel(disciplines)
 
     assert mda.check_jacobian(inputs=["x"], outputs=["obj"])
@@ -349,13 +345,11 @@ def test_sequence_transformers_setters(sellar_mda):
 
 @pytest.fixture(scope="module")
 def disciplines() -> list[LinearDiscipline]:
-    return create_disciplines_from_desc(
-        [
-            ("A", ["x", "b"], ["a"]),
-            ("B", ["a", "b", "y"], ["b"]),
-            ("C", ["b"], ["y"]),
-        ]
-    )
+    return create_disciplines_from_desc([
+        ("A", ["x", "b"], ["a"]),
+        ("B", ["a", "b", "y"], ["b"]),
+        ("C", ["b"], ["y"]),
+    ])
 
 
 @pytest.fixture(scope="module")

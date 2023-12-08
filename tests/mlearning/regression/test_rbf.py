@@ -49,9 +49,11 @@ INPUT_VALUES = {
 @pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
-    discipline = AnalyticDiscipline(
-        {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2", "y_3": "3"}
-    )
+    discipline = AnalyticDiscipline({
+        "y_1": "1+2*x_1+3*x_2",
+        "y_2": "-1-2*x_1-3*x_2",
+        "y_3": "3",
+    })
     discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)

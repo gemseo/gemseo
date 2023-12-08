@@ -77,9 +77,9 @@ class TestDataProcessor(unittest.TestCase):
 
         sm = SobieskiMission("float64")
         sm.data_processor = dp
-        sm.execute(
-            {"x_shared": array(sm.default_inputs["x_shared"], dtype="complex128")}
-        )
+        sm.execute({
+            "x_shared": array(sm.default_inputs["x_shared"], dtype="complex128")
+        })
 
         assert sm.local_data["y_4"].dtype == complex128
 

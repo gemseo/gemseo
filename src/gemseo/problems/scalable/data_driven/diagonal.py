@@ -474,9 +474,9 @@ class ScalableDiagonalModel(ScalableModel):
             for function_name, inputs in io_dep.items():
                 if dataname in inputs:
                     varnames.append(function_name)
-            inpt_dep_mat = hstack(
-                [r_io_dep[varname][dataname].T for varname in varnames]
-            )
+            inpt_dep_mat = hstack([
+                r_io_dep[varname][dataname].T for varname in varnames
+            ])
         else:
             varnames = io_dep[dataname]
             inpt_dep_mat = hstack([r_io_dep[dataname][varname] for varname in varnames])
@@ -698,12 +698,10 @@ class ScalableDiagonalApproximation:
             for output_index in range(output_size):
                 func = interpolated_dfun_1d[outputs_to_original_ones[output_index]]
                 coefficients = io_dependency[output_index]
-                result[output_index, :] = array(
-                    [
-                        coefficient * func(input_value)
-                        for coefficient, input_value in zip(coefficients, input_data)
-                    ]
-                ) / sum(coefficients)
+                result[output_index, :] = array([
+                    coefficient * func(input_value)
+                    for coefficient, input_value in zip(coefficients, input_data)
+                ]) / sum(coefficients)
 
             return result
 

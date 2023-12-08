@@ -238,13 +238,11 @@ class N2JSON:
                 disciplines[discipline_index - n_groups]
                 for discipline_index in disciplines_indices
             ]
-            data.append(
-                {
-                    "disciplines": sorted(discipline_names),
-                    "group_index": group_index,
-                    "group_name": groups[group_index],
-                }
-            )
+            data.append({
+                "disciplines": sorted(discipline_names),
+                "group_index": group_index,
+                "group_name": groups[group_index],
+            })
         return Template(
             "    <ul class='collapsible'>"
             "        <li>"
@@ -317,28 +315,24 @@ class N2JSON:
             if variables:
                 source_index = n_groups + disciplines.index(source.name)
                 target_index = n_groups + disciplines.index(target.name)
-                links.append(
-                    {
-                        "source": source_index,
-                        "target": target_index,
-                        "value": len(variables),
-                        "description": self._create_coupling_html(
-                            source.name, target.name, variables, variable_sizes
-                        ),
-                    }
-                )
+                links.append({
+                    "source": source_index,
+                    "target": target_index,
+                    "value": len(variables),
+                    "description": self._create_coupling_html(
+                        source.name, target.name, variables, variable_sizes
+                    ),
+                })
 
-        links.extend(
-            [
-                {
-                    "source": index,
-                    "target": index,
-                    "value": 1,
-                    "description": "",
-                }
-                for index in range(n_nodes)
-            ]
-        )
+        links.extend([
+            {
+                "source": index,
+                "target": index,
+                "value": 1,
+                "description": "",
+            }
+            for index in range(n_nodes)
+        ])
 
         return links
 

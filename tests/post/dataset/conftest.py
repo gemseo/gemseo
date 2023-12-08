@@ -27,14 +27,12 @@ from gemseo.datasets.io_dataset import IODataset
 def dataset() -> Dataset:
     """Dataset: A dataset containing 4 samples of variables x, y and z and cluster c."""
     return Dataset.from_array(
-        array(
-            [
-                [0.0, 0.0, 0.0, 1],
-                [1.0, 1.0, -1.0, 2],
-                [2.0, 2.0, -2.0, 2],
-                [3.0, 3.0, -3.0, 1],
-            ]
-        ),
+        array([
+            [0.0, 0.0, 0.0, 1],
+            [1.0, 1.0, -1.0, 2],
+            [2.0, 2.0, -2.0, 2],
+            [3.0, 3.0, -3.0, 1],
+        ]),
         ["x", "y", "z", "c"],
     )
 

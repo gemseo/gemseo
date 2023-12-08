@@ -129,12 +129,10 @@ def test_parallel_execute(linear_discipline, dataset):
     parallel_execution = DiscParallelExecution(
         [linear_discipline, other_linear_discipline], n_processes=2
     )
-    parallel_execution.execute(
-        [
-            {"x_1": array([0.5]), "x_2": array([0.5])},
-            {"x_1": array([1.0]), "x_2": array([1.0])},
-        ]
-    )
+    parallel_execution.execute([
+        {"x_1": array([0.5]), "x_2": array([0.5])},
+        {"x_1": array([1.0]), "x_2": array([1.0])},
+    ])
 
     assert_allclose(
         concatenate(list(linear_discipline.get_outputs_by_name(["y_1", "y_2"]))),

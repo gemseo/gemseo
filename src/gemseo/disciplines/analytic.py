@@ -66,12 +66,10 @@ class AnalyticDiscipline(MDODiscipline):
     input_names: list[str]
     """The names of the inputs."""
 
-    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
-        [
-            "_sympy_funcs",
-            "_sympy_jac_funcs",
-        ]
-    )
+    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union([
+        "_sympy_funcs",
+        "_sympy_jac_funcs",
+    ])
 
     # TODO: API: remove fast_evaluation (see the docstring of sympy.lambdify)
     def __init__(

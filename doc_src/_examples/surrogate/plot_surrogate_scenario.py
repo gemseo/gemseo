@@ -80,12 +80,10 @@ configure_logger()
 variables = ["x", "y"]
 sizes = {"x": 1, "y": 1}
 groups = {"x": "inputs", "y": "outputs"}
-data = vstack(
-    (
-        hstack((array([1.0]), array([1.0]))),
-        hstack((array([2.0]), array([2.0]))),
-    )
-)
+data = vstack((
+    hstack((array([1.0]), array([1.0]))),
+    hstack((array([2.0]), array([2.0]))),
+))
 synthetic_dataset = IODataset.from_array(data, variables, sizes, groups)
 
 # %%

@@ -131,12 +131,10 @@ class KLSVD(DimensionReduction):
 
     @DimensionReduction._use_2d_array
     def inverse_transform(self, data: ndarray) -> ndarray:
-        return array(
-            [
-                list(self.algo.liftAsSample(Point(list(coefficients))))
-                for coefficients in data
-            ]
-        )[:, :, 0]
+        return array([
+            list(self.algo.liftAsSample(Point(list(coefficients))))
+            for coefficients in data
+        ])[:, :, 0]
 
     @property
     def output_dimension(self) -> int:

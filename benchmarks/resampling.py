@@ -34,12 +34,10 @@ def _execute_doe_scenario(scenario: DOEScenario) -> None:
         scenario: The scenario to be executed.
     """
     scenario.formulation.opt_problem.reset()
-    scenario.execute(
-        {
-            "algo": "OT_MONTE_CARLO",
-            "n_samples": 10,
-        }
-    )
+    scenario.execute({
+        "algo": "OT_MONTE_CARLO",
+        "n_samples": 10,
+    })
 
 
 class ResamplingBenchmark(BaseBenchmark):

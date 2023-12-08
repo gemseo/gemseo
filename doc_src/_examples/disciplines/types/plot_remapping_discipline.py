@@ -121,9 +121,11 @@ even_clearer_fruit_counting = RemappingDiscipline(
 
 # %%
 # and count the number of fruits:
-even_clearer_fruit_counting.execute(
-    {"pear": array([4]), "gala": array([3]), "fuji": array([1])}
-)
+even_clearer_fruit_counting.execute({
+    "pear": array([4]),
+    "gala": array([3]),
+    "fuji": array([1]),
+})
 (
     even_clearer_fruit_counting.get_input_data(),
     even_clearer_fruit_counting.get_output_data(),

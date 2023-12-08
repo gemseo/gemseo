@@ -92,14 +92,12 @@ def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
          Tuple containing a Sobieski MDOChain instance
              and the defaults inputs of the chain.
     """
-    chain = MDOChain(
-        [
-            SobieskiStructure(),
-            SobieskiAerodynamics(),
-            SobieskiPropulsion(),
-            SobieskiMission(),
-        ]
-    )
+    chain = MDOChain([
+        SobieskiStructure(),
+        SobieskiAerodynamics(),
+        SobieskiPropulsion(),
+        SobieskiMission(),
+    ])
     chain_inputs = chain.input_grammar.keys()
     indata = SobieskiProblem().get_default_inputs(names=chain_inputs)
     return chain, indata
@@ -107,14 +105,12 @@ def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
 
 def test_set_statuses(tmp_wd):
     """Test the setting of the statuses."""
-    chain = MDOChain(
-        [
-            SobieskiAerodynamics(),
-            SobieskiPropulsion(),
-            SobieskiStructure(),
-            SobieskiMission(),
-        ]
-    )
+    chain = MDOChain([
+        SobieskiAerodynamics(),
+        SobieskiPropulsion(),
+        SobieskiStructure(),
+        SobieskiMission(),
+    ])
     chain.set_disciplines_statuses("FAILED")
     assert chain.disciplines[0].status == "FAILED"
 

@@ -67,9 +67,9 @@ class Sellar1(MDODiscipline):
 
     def _run(self):
         x, z, y_1 = self.get_inputs_by_name(["x", "z", "y_1"])
-        self.local_data["y_0"] = array(
-            [(z[0] ** 2 + z[1] + x[0] - 0.2 * y_1[0]) ** 0.5]
-        )
+        self.local_data["y_0"] = array([
+            (z[0] ** 2 + z[1] + x[0] - 0.2 * y_1[0]) ** 0.5
+        ])
 
 
 class Sellar2(MDODiscipline):

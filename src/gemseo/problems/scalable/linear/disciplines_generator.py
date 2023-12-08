@@ -223,13 +223,11 @@ def create_disciplines_from_sizes(
 
         # Only create the discipline if it has at least 1 input and 1 output
         if disc_in_names.size and disc_out_names.size:
-            disc_descriptions.append(
-                (
-                    disc_name,
-                    array(disc_in_names, dtype="str").tolist(),
-                    array(disc_out_names, dtype="str").tolist(),
-                )
-            )
+            disc_descriptions.append((
+                disc_name,
+                array(disc_in_names, dtype="str").tolist(),
+                array(disc_out_names, dtype="str").tolist(),
+            ))
 
     return create_disciplines_from_desc(
         disc_descriptions,

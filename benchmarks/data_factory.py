@@ -58,15 +58,13 @@ class DataFactory:
         }
 
         if not self.with_only_ndarrays:
-            data_atom_.update(
-                {
-                    "float": 0.0,
-                    "int": 0,
-                    "bool": True,
-                    "string": "0" * self.items_nb,
-                    "list": [0] * self.items_nb,
-                }
-            )
+            data_atom_.update({
+                "float": 0.0,
+                "int": 0,
+                "bool": True,
+                "string": "0" * self.items_nb,
+                "list": [0] * self.items_nb,
+            })
             # data_atom_["list_list"] = [data_atom_["list"]] * self.items_nb
             # data_atom_["dict_list"] = [data_atom_.copy()] * self.items_nb
             # data_atom_["dataframe"] = DataFrame(data_atom_["ndarray"])

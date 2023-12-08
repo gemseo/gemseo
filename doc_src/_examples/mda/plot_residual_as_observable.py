@@ -57,14 +57,12 @@ configure_logger()
 #
 # Here, we could have replaced :class:`.MDAGaussSeidel` by any other MDA.
 
-disciplines = create_discipline(
-    [
-        "SobieskiStructure",
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiStructure",
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+])
 mda = create_mda("MDAGaussSeidel", disciplines)
 output_data = mda.execute()
 

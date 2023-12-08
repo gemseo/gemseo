@@ -173,20 +173,16 @@ class OTDistribution(Distribution):
         return array(self.distribution.getSample(n_samples))
 
     def compute_cdf(self, vector: Iterable[float]) -> ndarray:  # noqa: D102
-        return array(
-            [
-                self.marginals[index].computeCDF(ot.Point([value]))
-                for index, value in enumerate(vector)
-            ]
-        )
+        return array([
+            self.marginals[index].computeCDF(ot.Point([value]))
+            for index, value in enumerate(vector)
+        ])
 
     def compute_inverse_cdf(self, vector: Iterable[float]) -> ndarray:  # noqa: D102
-        return array(
-            [
-                self.marginals[index].computeQuantile(value)[0]
-                for index, value in enumerate(vector)
-            ]
-        )
+        return array([
+            self.marginals[index].computeQuantile(value)[0]
+            for index, value in enumerate(vector)
+        ])
 
     def _pdf(self, index: int) -> Callable:  # noqa: D102
         def pdf(point: float) -> float:

@@ -182,7 +182,7 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _use_2d_array(
-        f: Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any]
+        f: Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any],
     ) -> Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any]:
         """Force the NumPy array passed to a function as first argument to be a 2D one.
 

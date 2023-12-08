@@ -28,9 +28,9 @@ def splitting_discipline_for_test():
 
 def test_splitting_discipline_execution(splitting_discipline_for_test):
     """Test the Splitter execution."""
-    output_data = splitting_discipline_for_test.execute(
-        {"E": array([1.0, 2.0, 3.0, 4.0, 5.0])}
-    )
+    output_data = splitting_discipline_for_test.execute({
+        "E": array([1.0, 2.0, 3.0, 4.0, 5.0])
+    })
     assert (output_data["Ep"] == array([1.0, 2.0])).all
     assert (output_data["Es"] == array([3.0, 4.0])).all
     assert (output_data["Er"] == array([5.0])).all

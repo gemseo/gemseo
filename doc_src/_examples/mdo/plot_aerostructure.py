@@ -154,7 +154,9 @@ system_scenario = create_scenario(
 )
 system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)
 system_scenario.add_constraint("lift", "eq", value=0.5)
-system_scenario.execute(
-    {"algo": "NLOPT_COBYLA", "max_iter": 7, "algo_options": algo_options}
-)
+system_scenario.execute({
+    "algo": "NLOPT_COBYLA",
+    "max_iter": 7,
+    "algo_options": algo_options,
+})
 system_scenario.post_process("OptHistoryView", save=False, show=True)

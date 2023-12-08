@@ -204,9 +204,11 @@ def test_bilevel_aerostructure():
     )
     system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)
     system_scenario.add_constraint("lift", "eq", value=0.5)
-    system_scenario.execute(
-        {"algo": "NLOPT_COBYLA", "max_iter": 5, "algo_options": algo_options}
-    )
+    system_scenario.execute({
+        "algo": "NLOPT_COBYLA",
+        "max_iter": 5,
+        "algo_options": algo_options,
+    })
 
 
 def test_grammar_type():

@@ -122,9 +122,9 @@ class MLSupervisedAlgo(MLAlgo):
     """The names of the output variables."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "MLSupervisedAlgo"
-    DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType(
-        {IODataset.INPUT_GROUP: MinMaxScaler()}
-    )
+    DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType({
+        IODataset.INPUT_GROUP: MinMaxScaler()
+    })
 
     DataFormatters = SupervisedDataFormatters
 

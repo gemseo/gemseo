@@ -84,13 +84,11 @@ def test_compute_samples():
     assert allclose(sample, expectation, 1e-3)
     distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 4)
     sample = distribution.compute_samples(3, random_state)
-    expectation = array(
-        [
-            [4.481786, 1.900177, 0.821197, 1.522075],
-            [3.735116, -0.302714, 0.288087, 0.24335],
-            [-1.954556, -0.206438, 2.908547, 0.887726],
-        ]
-    )
+    expectation = array([
+        [4.481786, 1.900177, 0.821197, 1.522075],
+        [3.735116, -0.302714, 0.288087, 0.24335],
+        [-1.954556, -0.206438, 2.908547, 0.887726],
+    ])
     assert allclose(sample, expectation, 1e-3)
 
 

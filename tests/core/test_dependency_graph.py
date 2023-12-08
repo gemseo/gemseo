@@ -198,13 +198,11 @@ class DisciplineEncoder(json.JSONEncoder):
 @pytest.fixture(scope="module")
 def graph_with_self_coupling() -> DependencyGraph:
     """Dependency graph with a self-coupled discipline."""
-    return DependencyGraph(
-        [
-            AnalyticDiscipline({"y0": "x0+y10+y2"}, name="D0"),
-            AnalyticDiscipline({"y10": "x0+x1+y2", "y11": "x0-x1+2*y11"}, name="D1"),
-            AnalyticDiscipline({"y2": "x0+x2+y10"}, name="D2"),
-        ]
-    )
+    return DependencyGraph([
+        AnalyticDiscipline({"y0": "x0+y10+y2"}, name="D0"),
+        AnalyticDiscipline({"y10": "x0+x1+y2", "y11": "x0-x1+2*y11"}, name="D1"),
+        AnalyticDiscipline({"y2": "x0+x2+y10"}, name="D2"),
+    ])
 
 
 @pytest.mark.parametrize(

@@ -89,9 +89,17 @@ def dataset() -> Dataset:
 @pytest.fixture()
 def classification_data() -> tuple[ndarray, list[str], dict[str, str]]:
     """The dataset used to train the classification algorithms."""
-    data = array(
-        [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
-    )
+    data = array([
+        [0, 0],
+        [0, 1],
+        [0, 2],
+        [1, 0],
+        [1, 1],
+        [1, 2],
+        [2, 0],
+        [2, 1],
+        [2, 2],
+    ])
     data = hstack((data, atleast_2d(arange(9)).T))
     variables = ["x_1", "x_2", "class"]
     groups = {"class": "outputs", "x_1": "inputs", "x_2": "inputs"}
@@ -101,9 +109,17 @@ def classification_data() -> tuple[ndarray, list[str], dict[str, str]]:
 @pytest.fixture()
 def cluster_data() -> tuple[ndarray, list[str]]:
     """The dataset used to train the clustering algorithms."""
-    data = array(
-        [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
-    )
+    data = array([
+        [0, 0],
+        [0, 1],
+        [0, 2],
+        [1, 0],
+        [1, 1],
+        [1, 2],
+        [2, 0],
+        [2, 1],
+        [2, 2],
+    ])
     return data, ["x_1", "x_2"]
 
 

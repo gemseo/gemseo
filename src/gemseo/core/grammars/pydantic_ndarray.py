@@ -106,14 +106,12 @@ class _NDArrayAnnotation:
         _source_type: Any,
         _handler: GetCoreSchemaHandler,
     ) -> CoreSchema:
-        return core_schema.chain_schema(
-            [
-                core_schema.is_instance_schema(ndarray),
-                core_schema.no_info_plain_validator_function(
-                    cls.__get_validator(_source_type)
-                ),
-            ]
-        )
+        return core_schema.chain_schema([
+            core_schema.is_instance_schema(ndarray),
+            core_schema.no_info_plain_validator_function(
+                cls.__get_validator(_source_type)
+            ),
+        ])
 
     @staticmethod
     def __get_validator(

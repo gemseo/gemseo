@@ -91,12 +91,10 @@ class MLRegressionAlgo(MLSupervisedAlgo):
     :meth:`!MLRegressionAlgo._predict_jacobian` method if possible.
     """
 
-    DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType(
-        {
-            IODataset.INPUT_GROUP: MinMaxScaler(),
-            IODataset.OUTPUT_GROUP: MinMaxScaler(),
-        }
-    )
+    DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType({
+        IODataset.INPUT_GROUP: MinMaxScaler(),
+        IODataset.OUTPUT_GROUP: MinMaxScaler(),
+    })
 
     DataFormatters = RegressionDataFormatters
 

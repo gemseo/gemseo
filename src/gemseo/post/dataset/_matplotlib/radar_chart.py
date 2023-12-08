@@ -126,9 +126,12 @@ class RadarChart(MatplotlibPlot):
             self._common_settings.title, fontsize=self._common_settings.font_size * 1.2
         )
         box = axes.get_position()
-        axes.set_position(
-            [box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9]
-        )
+        axes.set_position([
+            box.x0,
+            box.y0 + box.height * 0.1,
+            box.width,
+            box.height * 0.9,
+        ])
         axes.legend(
             loc="upper center",
             bbox_to_anchor=(0.5, -0.05),

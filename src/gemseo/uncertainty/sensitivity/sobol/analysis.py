@@ -554,15 +554,13 @@ class SobolAnalysis(SensitivityAnalysis):
                 names_to_upper_bounds = split_array_to_dict_of_arrays(
                     array(interval.getUpperBound()), names_to_sizes, self._input_names
                 )
-                intervals[output_name].append(
-                    {
-                        input_name: (
-                            names_to_lower_bounds[input_name],
-                            names_to_upper_bounds[input_name],
-                        )
-                        for input_name in self._input_names
-                    }
-                )
+                intervals[output_name].append({
+                    input_name: (
+                        names_to_lower_bounds[input_name],
+                        names_to_upper_bounds[input_name],
+                    )
+                    for input_name in self._input_names
+                })
 
         return intervals
 
@@ -635,25 +633,23 @@ class SobolAnalysis(SensitivityAnalysis):
             for name in names
             for index in range(names_to_sizes[name])
         ]
-        yerr = array(
+        yerr = array([
             [
-                [
-                    first_order_indices[name][index] - intervals[name][0][index],
-                    intervals[name][1][index] - first_order_indices[name][index],
-                ]
-                for name in names
-                for index in range(names_to_sizes[name])
+                first_order_indices[name][index] - intervals[name][0][index],
+                intervals[name][1][index] - first_order_indices[name][index],
             ]
-        ).T
+            for name in names
+            for index in range(names_to_sizes[name])
+        ]).T
         x_labels = []
         for name in names:
             if names_to_sizes[name] == 1:
                 x_labels.append(name)
             else:
                 size = names_to_sizes[name]
-                x_labels.extend(
-                    [repr_variable(name, index, size) for index in range(size)]
-                )
+                x_labels.extend([
+                    repr_variable(name, index, size) for index in range(size)
+                ])
 
         ax.errorbar(
             x_labels,
@@ -670,16 +666,14 @@ class SobolAnalysis(SensitivityAnalysis):
             for name in names
             for index in range(names_to_sizes[name])
         ]
-        yerr = array(
+        yerr = array([
             [
-                [
-                    total_order_indices[name][index] - intervals[name][0][index],
-                    intervals[name][1][index] - total_order_indices[name][index],
-                ]
-                for name in names
-                for index in range(names_to_sizes[name])
+                total_order_indices[name][index] - intervals[name][0][index],
+                intervals[name][1][index] - total_order_indices[name][index],
             ]
-        ).T
+            for name in names
+            for index in range(names_to_sizes[name])
+        ]).T
         ax.errorbar(
             x_labels,
             values,

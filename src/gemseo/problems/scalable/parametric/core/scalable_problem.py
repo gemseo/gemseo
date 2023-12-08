@@ -153,14 +153,10 @@ class ScalableProblem:
             _p_i = i_th_disc_settings.p_i
             D_i0.append(rng.random((_p_i, d_0)))
             D_ii.append(rng.random((_p_i, i_th_disc_settings.d_i)))
-            C_ij.append(
-                {
-                    get_coupling_name(j + 1): rng.random(
-                        (_p_i, discipline_settings[j].p_i)
-                    )
-                    for j in other_discipline_indices
-                }
-            )
+            C_ij.append({
+                get_coupling_name(j + 1): rng.random((_p_i, discipline_settings[j].p_i))
+                for j in other_discipline_indices
+            })
             a_i.append(rng.random(_p_i))
 
         # Define the matrix C and compute its inverse.
@@ -245,13 +241,11 @@ class ScalableProblem:
         # Instantiate the scalable disciplines
         for discipline_index in range(1, N + 1):
             names = [SHARED_DESIGN_VARIABLE_NAME, get_x_local_name(discipline_index)]
-            names.extend(
-                [
-                    get_coupling_name(other_discipline_index)
-                    for other_discipline_index in range(1, N + 1)
-                    if other_discipline_index != discipline_index
-                ]
-            )
+            names.extend([
+                get_coupling_name(other_discipline_index)
+                for other_discipline_index in range(1, N + 1)
+                if other_discipline_index != discipline_index
+            ])
             if add_random_variables:
                 names.append(get_u_local_name(discipline_index))
 

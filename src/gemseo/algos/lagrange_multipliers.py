@@ -515,49 +515,41 @@ class LagrangeMultipliers:
         mult_arrays[self.UPPER_BOUNDS] = {}
         for name in design_space.variable_names:
             indexed_varnames = design_space.get_indexed_variable_names()
-            var_low_mult = array(
-                [
-                    multipliers_init[self.LOWER_BOUNDS][comp_name]
-                    for comp_name in indexed_varnames
-                ]
-            )
+            var_low_mult = array([
+                multipliers_init[self.LOWER_BOUNDS][comp_name]
+                for comp_name in indexed_varnames
+            ])
             mult_arrays[self.LOWER_BOUNDS][name] = var_low_mult
-            var_upp_mult = array(
-                [
-                    multipliers_init[self.UPPER_BOUNDS][comp_name]
-                    for comp_name in indexed_varnames
-                ]
-            )
+            var_upp_mult = array([
+                multipliers_init[self.UPPER_BOUNDS][comp_name]
+                for comp_name in indexed_varnames
+            ])
             mult_arrays[self.UPPER_BOUNDS][name] = var_upp_mult
         # Inequality-constraints multipliers
         ineq_mult = multipliers_init[self.INEQUALITY]
         mult_arrays[self.INEQUALITY] = {}
         for func in problem.get_ineq_constraints():
-            func_mult = array(
-                [
-                    ineq_mult[
-                        func.name
-                        if func.dim == 1
-                        else self._get_component_name(func.name, index)
-                    ]
-                    for index in range(func.dim)
+            func_mult = array([
+                ineq_mult[
+                    func.name
+                    if func.dim == 1
+                    else self._get_component_name(func.name, index)
                 ]
-            )
+                for index in range(func.dim)
+            ])
             mult_arrays[self.INEQUALITY][func.name] = func_mult
         # Equality-constraints multipliers
         eq_mult = multipliers_init[self.EQUALITY]
         mult_arrays[self.EQUALITY] = {}
         for func in problem.get_eq_constraints():
-            func_mult = array(
-                [
-                    eq_mult[
-                        func.name
-                        if func.dim == 1
-                        else self._get_component_name(func.name, index)
-                    ]
-                    for index in range(func.dim)
+            func_mult = array([
+                eq_mult[
+                    func.name
+                    if func.dim == 1
+                    else self._get_component_name(func.name, index)
                 ]
-            )
+                for index in range(func.dim)
+            ])
             mult_arrays[self.EQUALITY][func.name] = func_mult
 
         return mult_arrays
@@ -577,9 +569,11 @@ class LagrangeMultipliers:
 
     def _get_pretty_table(self) -> PrettyTable:
         """Display the Lagrange Multipliers."""
-        table = PrettyTable(
-            ["Constraint type", "Constraint name", "Lagrange Multiplier"]
-        )
+        table = PrettyTable([
+            "Constraint type",
+            "Constraint name",
+            "Lagrange Multiplier",
+        ])
 
         for cstr_type, nam_val in self.lagrange_multipliers.items():
             for name, value in zip(nam_val[0], nam_val[1]):

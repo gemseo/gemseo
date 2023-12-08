@@ -131,14 +131,12 @@ def test_generate_n2_plot(tmp_wd):
     Args:
         tmp_wd: Fixture to move into a temporary directory.
     """
-    disciplines = create_discipline(
-        [
-            "SobieskiMission",
-            "SobieskiAerodynamics",
-            "SobieskiStructure",
-            "SobieskiPropulsion",
-        ]
-    )
+    disciplines = create_discipline([
+        "SobieskiMission",
+        "SobieskiAerodynamics",
+        "SobieskiStructure",
+        "SobieskiPropulsion",
+    ])
     file_path = "n2.png"
     generate_n2_plot(disciplines, file_path, fig_size=(5, 5))
     assert Path(file_path).exists()
@@ -148,14 +146,12 @@ def test_generate_n2_plot(tmp_wd):
 def test_generate_coupling_graph(tmp_wd, full):
     """Test the coupling graph with the Sobieski problem."""
     # TODO: reuse data and checks from test_dependency_graph
-    disciplines = create_discipline(
-        [
-            "SobieskiMission",
-            "SobieskiAerodynamics",
-            "SobieskiStructure",
-            "SobieskiPropulsion",
-        ]
-    )
+    disciplines = create_discipline([
+        "SobieskiMission",
+        "SobieskiAerodynamics",
+        "SobieskiStructure",
+        "SobieskiPropulsion",
+    ])
     file_path = "coupl.pdf"
     assert isinstance(generate_coupling_graph(disciplines, file_path, full), GraphView)
     assert Path(file_path).exists()
@@ -498,14 +494,12 @@ def test_create_scalable():
 
 def test_create_mda():
     """Test the creation of an MDA from the Sobieski disciplines."""
-    disciplines = create_discipline(
-        [
-            "SobieskiAerodynamics",
-            "SobieskiPropulsion",
-            "SobieskiStructure",
-            "SobieskiMission",
-        ]
-    )
+    disciplines = create_discipline([
+        "SobieskiAerodynamics",
+        "SobieskiPropulsion",
+        "SobieskiStructure",
+        "SobieskiMission",
+    ])
     mda = create_mda("MDAGaussSeidel", disciplines)
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
