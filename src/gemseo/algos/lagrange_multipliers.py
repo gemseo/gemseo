@@ -35,9 +35,7 @@ from numpy import concatenate
 from numpy import isinf
 from numpy import ndarray
 from numpy import zeros
-from numpy.linalg import matrix_rank
 from numpy.linalg import norm
-from scipy.optimize import linprog
 from scipy.optimize import lsq_linear
 from scipy.optimize import nnls
 
@@ -164,25 +162,10 @@ class LagrangeMultipliers:
             return self.lagrange_multipliers
         lhs = jac_act.T
         act_constr_nb = lhs.shape[1]
-        rank = matrix_rank(lhs)
-        LOGGER.info("Found %s active constraints", str(act_constr_nb))
-        LOGGER.info("Rank of jacobian = %s", str(rank))
-        if act_constr_nb > rank:
-            LOGGER.warning("Number of active constraints > rank !")
-
         # Compute the Lagrange multipliers as a feasible solution of a
         # linear optimization problem
         act_eq_constr_nb = len(self.active_eq_names)
-        bounds = [(0, None)] * (act_constr_nb - act_eq_constr_nb) + [
-            (None, None)
-        ] * act_eq_constr_nb
-        optim_result = linprog(zeros(act_constr_nb), A_eq=lhs, b_eq=rhs, bounds=bounds)
-        if optim_result.status == 2:
-            LOGGER.warning("The optimum does not satisfy exactly KKT conditions.")
-        if optim_result.success and act_constr_nb <= rank:
-            mul = optim_result.x
-            self.kkt_residual = 0.0
-        elif act_eq_constr_nb == 0:
+        if act_eq_constr_nb == 0:
             # If the linear optimization failed then obtain the Lagrange
             # multipliers as a solution of a least-square problem
             mul, residuals = nnls(lhs, rhs)

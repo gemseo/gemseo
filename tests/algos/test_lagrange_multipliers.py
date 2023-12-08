@@ -27,9 +27,7 @@ from numpy import array
 
 from gemseo import create_scenario
 from gemseo import execute_algo
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
-from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.derivatives.error_estimators import compute_best_step
@@ -187,103 +185,6 @@ def test_lagrange_store(problem):
     lagrange._store_multipliers(-1 * np.ones(10))
 
 
-@pytest.fixture(params=[0.0, 0.1, 1.0])
-def x0(request):
-    return request.param
-
-
-@pytest.fixture(params=[0.0, 0.1, 1.0])
-def y0(request):
-    return request.param
-
-
-@pytest.fixture()
-def analytical_test_2d_ineq(x0, y0):
-    """Test for lagrange multiplier."""
-    disc = AnalyticDiscipline(
-        name="2D_test", expressions={"f": "(x-1)**2+(y-1)**2", "g": "x+y-1"}
-    )
-    ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=1.0, value=x0)
-    ds.add_variable("y", l_b=0.0, u_b=1.0, value=y0)
-    scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=ds,
-    )
-    scenario.add_constraint("g", "ineq")
-    return scenario
-
-
-@pytest.fixture()
-def analytical_test_2d_eq(x0, y0):
-    """Test for lagrange multiplier."""
-    disc = AnalyticDiscipline(
-        name="2D_test", expressions={"f": "(x)**2+(y)**2", "g": "x+y-1"}
-    )
-    ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=1.0, value=x0)
-    ds.add_variable("y", l_b=0.0, u_b=1.0, value=y0)
-    scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=ds,
-    )
-    scenario.add_constraint("g", "eq")
-    return scenario
-
-
-@pytest.fixture()
-def analytical_test_2d__multiple_eq():
-    """Test for lagrange multiplier."""
-    x0 = 4.0
-    disc = AnalyticDiscipline(
-        name="2D_test",
-        expressions={"f": "(x)**2+(y)**2+(z)**2", "h1": "x-y", "h2": "y-z"},
-    )
-    ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=4.0, value=x0)
-    ds.add_variable("y", l_b=1.0, u_b=4.0, value=x0)
-    ds.add_variable("z", l_b=2.0, u_b=4.0, value=x0)
-    scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=ds,
-    )
-    scenario.add_constraint("h1", "eq")
-    scenario.add_constraint("h2", "eq")
-    return scenario
-
-
-@pytest.fixture()
-def analytical_test_2d_mixed_rank_deficient():
-    """Test for lagrange multiplier."""
-    disc = AnalyticDiscipline(
-        name="2D_test",
-        expressions={
-            "f": "x**2+y**2+z**2",
-            "g": "x+y+z-1",
-            "h": "(x-1.)**2+(y-1)**2+(z-1)**2-4./3.",
-        },
-    )
-    ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    ds.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
-    ds.add_variable("z", l_b=0.0, u_b=1.0, value=0.5)
-    scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=ds,
-    )
-    scenario.add_constraint("g", "ineq")
-    scenario.add_constraint("h", "eq")
-    return scenario
-
-
 parametrized_options = pytest.mark.parametrize(
     "options",
     [
@@ -301,16 +202,12 @@ parametrized_algo_ineq = pytest.mark.parametrize(
     "algo_ineq",
     [
         "SLSQP",
-        "Augmented_Lagrangian_order_0",
-        "Augmented_Lagrangian_order_1",
     ],
 )
 parametrized_algo_eq = pytest.mark.parametrize(
     "algo_eq",
     [
         "SLSQP",
-        "Augmented_Lagrangian_order_0",
-        "Augmented_Lagrangian_order_1",
     ],
 )
 
@@ -320,15 +217,8 @@ parametrized_algo_eq = pytest.mark.parametrize(
 @parametrized_reformulate
 def test_2d_ineq(analytical_test_2d_ineq, options, algo_ineq, reformulate_constraints):
     """Test for lagrange multiplier inequality almost optimum."""
-    if reformulate_constraints and "MMA" in algo_ineq:
-        pytest.skip("MMA does not support equality constraints.")
     opt = options.copy()
     opt["algo"] = algo_ineq
-    if "Augmented_Lagrangian" in algo_ineq:
-        opt["algo_options"] = {
-            "sub_solver_algorithm": "L-BFGS-B",
-            "sub_problem_options": options.copy(),
-        }
     problem = analytical_test_2d_ineq.formulation.opt_problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()
@@ -357,11 +247,6 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
-    if "Augmented_Lagrangian" in algo_eq:
-        opt["algo_options"] = {
-            "sub_solver_algorithm": "L-BFGS-B",
-            "sub_problem_options": options.copy(),
-        }
     analytical_test_2d_eq.execute(opt)
     problem = analytical_test_2d_eq.formulation.opt_problem
     lagrange = LagrangeMultipliers(problem)
@@ -379,11 +264,6 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq):
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
-    if "Augmented_Lagrangian" in algo_eq:
-        opt["algo_options"] = {
-            "sub_solver_algorithm": "L-BFGS-B",
-            "sub_problem_options": options.copy(),
-        }
     analytical_test_2d__multiple_eq.execute(opt)
     problem = analytical_test_2d__multiple_eq.formulation.opt_problem
     lagrange = LagrangeMultipliers(problem)
@@ -395,17 +275,30 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq):
     assert pytest.approx(lag["equality"][1][1], 10 * epsilon) == array([-8.0])
 
 
+@pytest.mark.parametrize(
+    "subsolver_constraints",
+    [
+        (),
+        ["g"],
+        ["h"],
+        ["g", "h"],
+    ],
+)
 @parametrized_options
 @parametrized_algo_eq
 @parametrized_reformulate
 def test_2d_mixed(
-    analytical_test_2d_mixed_rank_deficient, options, algo_eq, reformulate_constraints
+    analytical_test_2d_mixed_rank_deficient,
+    options,
+    algo_eq,
+    reformulate_constraints,
+    subsolver_constraints,
 ):
     """Test for lagrange multiplier inequality almost optimum."""
+    if subsolver_constraints:
+        pytest.skip(f"{algo_eq} does not have subsolver_constraints option.")
     opt = options.copy()
     opt["algo"] = algo_eq
-    if "Augmented_Lagrangian" in algo_eq:
-        opt["algo_options"] = {"sub_solver_algorithm": "L-BFGS-B"}
     problem = analytical_test_2d_mixed_rank_deficient.formulation.opt_problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()

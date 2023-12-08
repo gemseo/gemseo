@@ -40,7 +40,7 @@ class ScalableDiscipline(MDODiscipline):
 
     def _run(self) -> None:
         x = self.local_data["x"]
-        self.local_data["f"] = array([np_mean(x)])
+        self.local_data["f"] = array([np_mean(x)]) / (len(x) + 1) * 2 * 100
         self.local_data["g"] = ((arange(len(x)) + 1) / x) ** self.p - 1.0
 
     def _compute_jacobian(
@@ -50,7 +50,7 @@ class ScalableDiscipline(MDODiscipline):
     ) -> None:
         x = self.local_data["x"]
         self._init_jacobian()
-        self.jac["f"]["x"] = atleast_2d(ones_like(x)) / len(x)
+        self.jac["f"]["x"] = atleast_2d(ones_like(x)) / len(x) / (len(x) + 1) * 2 * 100
         self.jac["g"]["x"] = atleast_2d(
             diag(
                 self.p
@@ -102,10 +102,14 @@ def test_resolution(scalable_optimization_problem_scenario, algo, n, constraint_
         "SLSQP",
         "NLOPT_SLSQP",
     ]:
-        pytest.skip("SLSQP is not well suited for non-linear equality constraints.")
-    options = {"max_iter": 10000, "algo": algo, "normalize_design_space": True}
+        pytest.skip("SLSQP is not well suited for non-linear equality constraints. ")
+    options = {
+        "max_iter": 1000,
+        "algo": algo,
+        "normalize_design_space": True,
+        "algo_options": {"stop_crit_n_x": 2, "ftol_rel": 1e-6},
+    }
     if "Augmented_Lagrangian" in algo:
-        options["algo_options"] = {}
         options["algo_options"]["sub_solver_algorithm"] = "L-BFGS-B"
         options["algo_options"]["sub_problem_options"] = {"max_iter": 300}
     scalable_optimization_problem_scenario.execute(options)
