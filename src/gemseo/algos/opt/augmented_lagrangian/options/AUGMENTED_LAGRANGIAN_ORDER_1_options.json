@@ -1,7 +1,6 @@
 {
   "name": "AUGMENTED_LAGRANGIAN_ORDER_1_options",
   "required": [
-    "max_iter",
     "sub_solver_algorithm"
   ],
   "properties": {
@@ -10,6 +9,22 @@
       "minimum": 0.0
     },
     "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "initial_rho": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_rho": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "tau": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "gamma": {
       "type": "number",
       "minimum": 0.0
     },
@@ -22,10 +37,6 @@
       "minimum": 0.0
     },
     "max_time": {
-      "type": "number",
-      "minimum": 0.0
-    },
-    "pg_tol": {
       "type": "number",
       "minimum": 0.0
     },
@@ -60,6 +71,20 @@
     },
     "sub_problem_options": {
       "type": "object"
+    },
+    "sub_problem_constraints": {
+      "type": "array"
+    },
+    "stop_crit_n_x": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 2
+        }
+      ]
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",
