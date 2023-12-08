@@ -1,0 +1,1 @@
+Add ``OptimizationProblem.get_last_point`` method to get the last point of an optimization problem.
