@@ -180,6 +180,7 @@ if TYPE_CHECKING:
     from gemseo.post._graph_view import GraphView
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
+    from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
     from gemseo.utils.matplotlib_figure import FigSizeType
     from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
         JobSchedulerDisciplineWrapper,
@@ -2059,5 +2060,35 @@ def wrap_discipline_in_job_scheduler(
         discipline=discipline,
         scheduler_name=scheduler_name,
         workdir_path=workdir_path,
+        **options,
+    )
+
+
+def create_scenario_result(
+    scenario: Scenario | str | Path, name: str = "", **options: Any
+) -> ScenarioResult | None:
+    """Create the result of a scenario execution.
+
+    Args:
+        scenario: The scenario to post-process or its path to its HDF5 file.
+        name: The class name of the :class:`.ScenarioResult`.
+            If empty,
+            use the :attr:`~.BaseFormulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME`
+            of the :class:`.MDOFormulation` attached to the :class:`.Scenario`.
+        **options: The options of the :class:`.ScenarioResult`.
+
+    Returns:
+        The result of a scenario execution or ``None`` if not yet executed`.
+    """
+    if scenario.optimization_result is None:
+        return None
+
+    from gemseo.scenarios.scenario_results.scenario_result_factory import (
+        ScenarioResultFactory,
+    )
+
+    return ScenarioResultFactory().create(
+        name or scenario.formulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME,
+        scenario=scenario,
         **options,
     )

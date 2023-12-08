@@ -222,8 +222,8 @@ class OptimizationProblem(BaseProblem):
     database: Database
     """The database to store the optimization problem data."""
 
-    solution: OptimizationResult
-    """The solution of the optimization problem."""
+    solution: OptimizationResult | None
+    """The solution of the optimization problem if solved; otherwise ``None``."""
 
     design_space: DesignSpace
     """The design space on which the optimization problem is solved."""
@@ -362,7 +362,6 @@ class OptimizationProblem(BaseProblem):
         else:
             self.database = Database.from_hdf(input_database)
         self.solution = None
-        # TODO: API: initialize with OptimizationResult()
         self.design_space = design_space
         self.__initial_current_x = deepcopy(
             design_space.get_current_value(as_dict=True)
@@ -2194,7 +2193,7 @@ class OptimizationProblem(BaseProblem):
                         self.__store_attr_h5data(observable, o_subgroup)
 
                 if hasattr(self.solution, "to_dict"):
-                    # TODO: API: initialize with OptimizationResult() and avoid hasattr
+                    # TODO: replace by "if self.solution is None"
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 

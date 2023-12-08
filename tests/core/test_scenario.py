@@ -859,6 +859,20 @@ def test_lib_serialization(tmp_wd, mdf_scenario):
     assert pickled_scenario._lib.internal_algo_name == "SLSQP"
 
 
+def test_get_result(mdf_scenario):
+    """Check get_result."""
+    assert mdf_scenario.get_result() is None
+
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert mdf_scenario.get_result().design_variable_names_to_values
+
+    with pytest.raises(
+        ImportError,
+        match="The class foo is not available; the available ones are: .*",
+    ):
+        mdf_scenario.get_result("foo")
+
+
 @pytest.fixture(params=[True, False])
 def full_linear(request):
     """Whether the generated problem should be linear."""
