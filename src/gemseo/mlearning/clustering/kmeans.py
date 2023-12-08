@@ -82,6 +82,7 @@ from numpy import newaxis
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
 
+from gemseo import SEED
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 
 if TYPE_CHECKING:
@@ -103,15 +104,15 @@ class KMeans(MLPredictiveClusteringAlgo):
         transformer: TransformerType = MLPredictiveClusteringAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         n_clusters: int = 5,
-        random_state: int | None = 0,
+        random_state: int | None = SEED,
         **parameters: int | float | bool | str | None,
     ) -> None:
         """
         Args:
             n_clusters: The number of clusters of the K-means algorithm.
-            random_state: If ``None``, use a random generation of the initial centroids.
-                Otherwise,
-                the integer is used to make the initialization deterministic.
+            random_state: The random state passed to the method
+                generating the initial centroids
+                Use an integer for reproducible results.
         """
         n_init = parameters.pop("n_init", "auto")
         super().__init__(

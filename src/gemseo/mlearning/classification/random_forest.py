@@ -41,6 +41,7 @@ from numpy import newaxis
 from numpy import stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
+from gemseo import SEED
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 
 if TYPE_CHECKING:
@@ -61,11 +62,14 @@ class RandomForestClassifier(MLClassificationAlgo):
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         n_estimators: int = 100,
+        random_state: int | None = SEED,
         **parameters: int | float | bool | str | None,
     ) -> None:
         """
         Args:
             n_estimators: The number of trees in the forest.
+            random_state: The random state passed to the random number generator.
+                Use an integer for reproducible results.
         """
         super().__init__(
             data,
@@ -73,9 +77,12 @@ class RandomForestClassifier(MLClassificationAlgo):
             input_names=input_names,
             output_names=output_names,
             n_estimators=n_estimators,
+            random_state=random_state,
             **parameters,
         )
-        self.algo = SKLRandForest(n_estimators=n_estimators, **parameters)
+        self.algo = SKLRandForest(
+            n_estimators=n_estimators, random_state=random_state, **parameters
+        )
 
     def _fit(
         self,

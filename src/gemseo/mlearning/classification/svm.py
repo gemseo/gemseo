@@ -41,6 +41,7 @@ from typing import Iterable
 
 from sklearn.svm import SVC
 
+from gemseo import SEED
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 
 if TYPE_CHECKING:
@@ -65,6 +66,7 @@ class SVMClassifier(MLClassificationAlgo):
         C: float = 1.0,  # noqa: N803
         kernel: str | Callable | None = "rbf",
         probability: bool = False,
+        random_state: int | None = SEED,
         **parameters: int | float | bool | str | None,
     ) -> None:
         """
@@ -76,6 +78,8 @@ class SVMClassifier(MLClassificationAlgo):
                 or a callable.
             probability: Whether to enable the probability estimates.
                 The algorithm is faster if set to False.
+            random_state: The random state passed to the random number generator.
+                Use an integer for reproducible results.
         """  # noqa: D205, D212, D415
         super().__init__(
             data,
@@ -85,9 +89,16 @@ class SVMClassifier(MLClassificationAlgo):
             C=C,
             kernel=kernel,
             probability=probability,
+            random_state=random_state,
             **parameters,
         )
-        self.algo = SVC(C=C, kernel=kernel, probability=probability, **parameters)
+        self.algo = SVC(
+            C=C,
+            kernel=kernel,
+            probability=probability,
+            random_state=random_state,
+            **parameters,
+        )
 
     def _fit(
         self,

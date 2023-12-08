@@ -226,9 +226,9 @@ def test_repr_str_(model):
       KNNClassifier(n_neighbors=5)
    Regression
       Local model 0
-         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)
+         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0, random_state=0)
       Local model 1
-         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)"""
+         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0, random_state=0)"""  # noqa: E501
     assert repr(model) == str(model) == expected
 
 
@@ -253,13 +253,13 @@ def test_repr_html(model):
         "<li>Local model 0"
         "<ul>"
         "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, "
-        "penalty_level=0.0)</li>"
+        "penalty_level=0.0, random_state=0)</li>"
         "</ul>"
         "</li>"
         "<li>Local model 1"
         "<ul>"
         "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, "
-        "penalty_level=0.0)</li>"
+        "penalty_level=0.0, random_state=0)</li>"
         "</ul>"
         "</li>"
         "</ul>"
