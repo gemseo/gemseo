@@ -90,17 +90,21 @@ except InvalidDataError as error:
 # Validating data with bad type will raise an error shows the bad elements,
 # here the first elements shall be an int and the third one shall be a ndarray of int.
 try:
-    grammar.validate(
-        {"a_int": 0.0, "an_ndarray": array([1]), "an_ndarray_of_int": array([1.0])}
-    )
+    grammar.validate({
+        "a_int": 0.0,
+        "an_ndarray": array([1]),
+        "an_ndarray_of_int": array([1.0]),
+    })
 except InvalidDataError as error:
     print(error)
 
 # %%
 # Validating compliant data.
-grammar.validate(
-    {"a_int": 0, "an_ndarray": array([1]), "an_ndarray_of_int": array([1])}
-)
+grammar.validate({
+    "a_int": 0,
+    "an_ndarray": array([1]),
+    "an_ndarray_of_int": array([1]),
+})
 
 # %%
 # Grammar defaults

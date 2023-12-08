@@ -279,12 +279,10 @@ class JacobianAssembly:
                 "Some outputs are not computed by the disciplines:"
                 + str(unknown_outs)
                 + " available outputs are: "
-                + str(
-                    [
-                        disc.get_output_data_names()
-                        for disc in self.coupling_structure.disciplines
-                    ]
-                )
+                + str([
+                    disc.get_output_data_names()
+                    for disc in self.coupling_structure.disciplines
+                ])
             )
 
         for coupling in set(couplings) & set(variables):

@@ -127,9 +127,12 @@ class SOM(OptPostProcessor):
         subplot_number = 0
         self.__compute(n_x, n_y)
         for criterion in criteria:
-            f_hist, _ = self.database.get_history(
-                ["SOM_i", "SOM_j", "SOM_indx", criterion]
-            )
+            f_hist, _ = self.database.get_history([
+                "SOM_i",
+                "SOM_j",
+                "SOM_indx",
+                criterion,
+            ])
             if isinstance(f_hist[0][3], ndarray):
                 dim_val = f_hist[0][3].size
                 for _ in range(dim_val):
@@ -145,9 +148,12 @@ class SOM(OptPostProcessor):
 
         index = 0
         for criterion in criteria:
-            f_hist, _ = self.database.get_history(
-                ["SOM_i", "SOM_j", "SOM_indx", criterion]
-            )
+            f_hist, _ = self.database.get_history([
+                "SOM_i",
+                "SOM_j",
+                "SOM_indx",
+                criterion,
+            ])
             if isinstance(f_hist[0][3], ndarray):
                 for k in range(f_hist[0][3].size):
                     self.__plot_som_from_scalar_data(

@@ -265,14 +265,10 @@ class MDOLinearFunction(MDOFunction):
             else:
                 strings.append(" " + " ".join([" " * 3] * in_dim) + " ")
             # vector line
-            strings.extend(
-                (
-                    f"[{input_names[i]}]"
-                    if i < in_dim
-                    else " " * (max_input_name_len + 2),
-                    " + " if i == 0 else "   ",
-                )
-            )
+            strings.extend((
+                f"[{input_names[i]}]" if i < in_dim else " " * (max_input_name_len + 2),
+                " + " if i == 0 else "   ",
+            ))
             # value at zero
             if i < out_dim:
                 strings.append(
@@ -319,13 +315,11 @@ class MDOLinearFunction(MDOFunction):
             raise ValueError(
                 "Arrays of frozen indexes and values must have same shape."
             )
-        active_indexes = array(
-            [
-                index
-                for index in range(self.coefficients.shape[1])
-                if index not in frozen_indexes
-            ]
-        )
+        active_indexes = array([
+            index
+            for index in range(self.coefficients.shape[1])
+            if index not in frozen_indexes
+        ])
         frozen_coefficients = self.coefficients[:, frozen_indexes]
         new_value_at_zero = frozen_coefficients @ frozen_values + self._value_at_zero
         new_coefficients = self.coefficients[:, active_indexes]

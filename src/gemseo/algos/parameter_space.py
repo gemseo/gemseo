@@ -281,12 +281,10 @@ class ParameterSpace(DesignSpace):
             for name, value in parameters.items()
         }
         if parameters_as_tuple:
-            interfaced_distribution_parameters = tuple(
-                [
-                    self.__get_random_vector_parameter_value(size, value)
-                    for value in interfaced_distribution_parameters
-                ]
-            )
+            interfaced_distribution_parameters = tuple([
+                self.__get_random_vector_parameter_value(size, value)
+                for value in interfaced_distribution_parameters
+            ])
         else:
             interfaced_distribution_parameters = {
                 name: self.__get_random_vector_parameter_value(size, value)
@@ -324,9 +322,9 @@ class ParameterSpace(DesignSpace):
             if interfaced_distribution:
                 kwargs["interfaced_distribution"] = interfaced_distribution
                 if parameters_as_tuple:
-                    kwargs["parameters"] = tuple(
-                        [v[i] for v in interfaced_distribution_parameters]
-                    )
+                    kwargs["parameters"] = tuple([
+                        v[i] for v in interfaced_distribution_parameters
+                    ])
                 else:
                     kwargs["parameters"] = {
                         k: v[i] for k, v in interfaced_distribution_parameters.items()
@@ -494,16 +492,16 @@ class ParameterSpace(DesignSpace):
             kwargs["interfaced_distribution"] = interfaced_distribution
             if interfaced_distribution_parameters:
                 if isinstance(interfaced_distribution_parameters, tuple):
-                    formatted_parameters = tuple(
-                        [[v] for v in interfaced_distribution_parameters]
-                    )
+                    formatted_parameters = tuple([
+                        [v] for v in interfaced_distribution_parameters
+                    ])
                 else:
                     formatted_parameters = {
                         k: [v] for k, v in interfaced_distribution_parameters.items()
                     }
-                kwargs.update(
-                    {"interfaced_distribution_parameters": formatted_parameters}
-                )
+                kwargs.update({
+                    "interfaced_distribution_parameters": formatted_parameters
+                })
 
         self.add_random_vector(
             name,

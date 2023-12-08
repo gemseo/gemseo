@@ -588,16 +588,14 @@ class Scenario(MDODiscipline):
     def _update_input_grammar(self) -> None:
         """Update the input grammar from the names of available drivers."""
         if self.grammar_type == MDODiscipline.GrammarType.JSON:
-            self.input_grammar.update_from_schema(
-                {
-                    "properties": {
-                        "algo": {
-                            "type": "string",
-                            "enum": self.get_available_driver_names(),
-                        }
+            self.input_grammar.update_from_schema({
+                "properties": {
+                    "algo": {
+                        "type": "string",
+                        "enum": self.get_available_driver_names(),
                     }
                 }
-            )
+            })
         else:
             self.input_grammar.update_from_types({"algo": str})
         self.input_grammar.required_names.add("algo")

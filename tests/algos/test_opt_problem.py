@@ -909,43 +909,41 @@ def test_observable(pow2_problem):
             True,
             True,
             {
-                "x": array(
-                    [[1.0, 1.0, np.power(0.9, 1 / 3)], [0.9, 0.9, np.power(0.9, 1 / 3)]]
-                )
+                "x": array([
+                    [1.0, 1.0, np.power(0.9, 1 / 3)],
+                    [0.9, 0.9, np.power(0.9, 1 / 3)],
+                ])
             },
         ),
         (
             True,
             False,
-            np.array(
-                [[1.0, 1.0, np.power(0.9, 1 / 3)], [0.9, 0.9, np.power(0.9, 1 / 3)]]
-            ),
+            np.array([
+                [1.0, 1.0, np.power(0.9, 1 / 3)],
+                [0.9, 0.9, np.power(0.9, 1 / 3)],
+            ]),
         ),
         (
             False,
             True,
             {
-                "x": array(
-                    [
-                        [1.0, 1.0, np.power(0.9, 1 / 3)],
-                        [0.9, 0.9, np.power(0.9, 1 / 3)],
-                        [0.0, 0.0, 0.0],
-                        [0.5, 0.5, 0.5],
-                    ]
-                )
+                "x": array([
+                    [1.0, 1.0, np.power(0.9, 1 / 3)],
+                    [0.9, 0.9, np.power(0.9, 1 / 3)],
+                    [0.0, 0.0, 0.0],
+                    [0.5, 0.5, 0.5],
+                ])
             },
         ),
         (
             False,
             False,
-            np.array(
-                [
-                    [1.0, 1.0, np.power(0.9, 1 / 3)],
-                    [0.9, 0.9, np.power(0.9, 1 / 3)],
-                    [0.0, 0.0, 0.0],
-                    [0.5, 0.5, 0.5],
-                ]
-            ),
+            np.array([
+                [1.0, 1.0, np.power(0.9, 1 / 3)],
+                [0.9, 0.9, np.power(0.9, 1 / 3)],
+                [0.0, 0.0, 0.0],
+                [0.5, 0.5, 0.5],
+            ]),
         ),
     ],
 )
@@ -1838,9 +1836,10 @@ def test_get_violation_criteria(cstr_type, is_feasible, violation, cstr):
 
     x_vect = array([1.0])
     problem.database.store(x_vect, {"obj": array([1]), "cstr": array(cstr)})
-    assert problem.get_violation_criteria(x_vect) == pytest.approx(
-        (is_feasible, violation)
-    )
+    assert problem.get_violation_criteria(x_vect) == pytest.approx((
+        is_feasible,
+        violation,
+    ))
 
 
 def test_is_multi_objective():

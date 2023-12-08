@@ -189,12 +189,10 @@ def test_multiprocessing():
     d2 = AutoPyDiscipline(f2)
 
     parallel_execution = DiscParallelExecution([d1, d2], n_processes=2)
-    parallel_execution.execute(
-        [
-            {"y2": array([2.0]), "z": array([1.0])},
-            {"y1": array([5.0]), "z": array([3.0])},
-        ]
-    )
+    parallel_execution.execute([
+        {"y2": array([2.0]), "z": array([1.0])},
+        {"y1": array([5.0]), "z": array([3.0])},
+    ])
 
     assert d1.local_data["y1"] == f1(2.0, 1.0)
     assert d2.local_data["y2"] == f2(5.0, 3.0)[0]

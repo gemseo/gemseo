@@ -362,9 +362,9 @@ class AbstractCache(ABCMapping):
 
                 new_data = vstack(cache_entries)
                 data.append(new_data)
-                columns.extend(
-                    [(group_name, variable_name, i) for i in range(new_data.shape[1])]
-                )
+                columns.extend([
+                    (group_name, variable_name, i) for i in range(new_data.shape[1])
+                ])
 
         return dataset_class(
             hstack(data),
@@ -769,21 +769,16 @@ class AbstractFullCache(AbstractCache):
             else:
                 variable_names += [f"{data_name}_{i + 1}" for i in range(data_size)]
 
-        cache_as_array = vstack(
-            [
-                concatenate(
-                    [
-                        all_input_data[index][name].flatten()
-                        for name in shared_input_names
-                    ]
-                    + [
-                        all_output_data[index][name].flatten()
-                        for name in shared_output_names
-                    ]
-                )
-                for index in range(len(all_input_data))
-            ]
-        )
+        cache_as_array = vstack([
+            concatenate(
+                [all_input_data[index][name].flatten() for name in shared_input_names]
+                + [
+                    all_output_data[index][name].flatten()
+                    for name in shared_output_names
+                ]
+            )
+            for index in range(len(all_input_data))
+        ])
         save_data_arrays_to_xml(variable_names, cache_as_array, file_path)
 
     def update(

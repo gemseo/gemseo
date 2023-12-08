@@ -71,14 +71,12 @@ def display_result(res, mda_name):
 # of the MDA will be used and computed from the
 # Default inputs of the disciplines
 
-disciplines = create_discipline(
-    [
-        "SobieskiStructure",
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiStructure",
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+])
 mda = create_mda("MDAQuasiNewton", disciplines, method="broyden1")
 res = mda.execute()
 display_result(res, mda.name)

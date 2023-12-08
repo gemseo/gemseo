@@ -90,9 +90,11 @@ class TestAerostructure(unittest.TestCase):
         """Evaluate discipline Struct."""
         struct = Structure()
         struct.execute()
-        mass, reserve_fact, displ = struct.get_outputs_by_name(
-            ["mass", "reserve_fact", "displ"]
-        )
+        mass, reserve_fact, displ = struct.get_outputs_by_name([
+            "mass",
+            "reserve_fact",
+            "displ",
+        ])
         self.assertAlmostEqual(mass[0], 200300.00008573389, 10)
         self.assertAlmostEqual(reserve_fact[0], 46.1, 10)
         self.assertAlmostEqual(displ[0], 3.0, 10)

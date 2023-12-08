@@ -357,14 +357,12 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         design_variable_sizes = self.opt_problem.design_space.variable_sizes
         for variable in variables:
             design_variable_size = design_variable_sizes[variable]
-            design_variable_names.extend(
-                [
-                    repr_variable(
-                        variable, index, size=design_variable_size, simplify=simplify
-                    )
-                    for index in range(design_variable_size)
-                ]
-            )
+            design_variable_names.extend([
+                repr_variable(
+                    variable, index, size=design_variable_size, simplify=simplify
+                )
+                for index in range(design_variable_size)
+            ])
 
         return design_variable_names
 

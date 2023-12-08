@@ -750,12 +750,10 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         for variable in variable_names:
             group = variable_to_group.get(variable, cls.DEFAULT_GROUP)
             n_components = variable_to_n_component.get(variable, 1)
-            columns.extend(
-                [
-                    (group, variable, component)
-                    for component in arange(n_components, dtype=np_int64)
-                ]
-            )
+            columns.extend([
+                (group, variable, component)
+                for component in arange(n_components, dtype=np_int64)
+            ])
 
         index = MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES)
         dataset = cls(data, columns=index)

@@ -54,7 +54,7 @@ def py_func() -> Callable[[ndarray, ndarray], tuple[ndarray, ndarray]]:
 
 @pytest.fixture(scope="module")
 def discipline(
-    py_func: Callable[[ndarray, ndarray], tuple[ndarray, ndarray]]
+    py_func: Callable[[ndarray, ndarray], tuple[ndarray, ndarray]],
 ) -> AutoPyDiscipline:
     """The discipline of interest."""
     return AutoPyDiscipline(py_func=py_func, use_arrays=True)

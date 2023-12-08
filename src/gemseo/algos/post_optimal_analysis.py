@@ -395,8 +395,8 @@ class PostOptimalAnalysis:
         jacobian = {}
         if eq_constraints:
             for input_name in inputs:
-                jacobian[input_name] = vstack(
-                    [jacobians[func.name][input_name] for func in eq_constraints]
-                )
+                jacobian[input_name] = vstack([
+                    jacobians[func.name][input_name] for func in eq_constraints
+                ])
 
         return jacobian

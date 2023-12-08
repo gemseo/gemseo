@@ -177,18 +177,22 @@ class ComposedDistribution(Distribution):
         self.num_lower_bound = array([])
         self.num_upper_bound = array([])
         for dist in distributions:
-            self.math_lower_bound = concatenate(
-                (self.math_lower_bound, dist.math_lower_bound)
-            )
-            self.num_lower_bound = concatenate(
-                (self.num_lower_bound, dist.num_lower_bound)
-            )
-            self.math_upper_bound = concatenate(
-                (self.math_upper_bound, dist.math_upper_bound)
-            )
-            self.num_upper_bound = concatenate(
-                (self.num_upper_bound, dist.num_upper_bound)
-            )
+            self.math_lower_bound = concatenate((
+                self.math_lower_bound,
+                dist.math_lower_bound,
+            ))
+            self.num_lower_bound = concatenate((
+                self.num_lower_bound,
+                dist.num_lower_bound,
+            ))
+            self.math_upper_bound = concatenate((
+                self.math_upper_bound,
+                dist.math_upper_bound,
+            ))
+            self.num_upper_bound = concatenate((
+                self.num_upper_bound,
+                dist.num_upper_bound,
+            ))
 
     @property
     def mean(self) -> ndarray:  # noqa: D102

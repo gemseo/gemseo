@@ -128,12 +128,10 @@ class MainDiscipline(BaseDiscipline):
             jacobian = {}
             for output_name in self.output_names:
                 jacobian[output_name] = {
-                    input_name: zeros(
-                        (
-                            self.names_to_sizes[output_name],
-                            self.names_to_sizes[input_name],
-                        )
-                    )
+                    input_name: zeros((
+                        self.names_to_sizes[output_name],
+                        self.names_to_sizes[input_name],
+                    ))
                     for input_name in self.input_names
                 }
 
@@ -145,9 +143,9 @@ class MainDiscipline(BaseDiscipline):
             return jacobian
 
         output_names_to_values = {
-            OBJECTIVE_NAME: array(
-                [sum([(__y_i**2).sum() for __y_i in _y_i.values()]) + (x_0**2).sum()]
-            )
+            OBJECTIVE_NAME: array([
+                sum([(__y_i**2).sum() for __y_i in _y_i.values()]) + (x_0**2).sum()
+            ])
         }
         for c_i_name, __y_i, t_i in zip(self.__c_i_names, _y_i.values(), self.__t_i):
             output_names_to_values[c_i_name] = t_i - __y_i

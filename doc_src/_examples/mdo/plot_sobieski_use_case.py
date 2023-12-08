@@ -77,14 +77,12 @@ configure_logger()
 # disciplines themselves have already been
 # developed and interfaced with |g| (see :ref:`benchmark_problems`).
 
-disciplines = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 
 # %%
 # .. tip::

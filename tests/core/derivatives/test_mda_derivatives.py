@@ -107,18 +107,16 @@ def test_chain_jac_self_coupled(descriptions):
 
 
 def test_double_mda():
-    disciplines = analytic_disciplines_from_desc(
-        (
-            {"a": "x"},
-            {"y1": "x1", "b": "a+1"},
-            {"x1": "1.-0.3*y1"},
-            {"y2": "x2", "c": "a+2"},
-            {"x2": "1.-0.3*y2"},
-            {"obj1": "x1+x2"},
-            {"obj2": "b+c"},
-            {"obj": "obj1+obj2"},
-        )
-    )
+    disciplines = analytic_disciplines_from_desc((
+        {"a": "x"},
+        {"y1": "x1", "b": "a+1"},
+        {"x1": "1.-0.3*y1"},
+        {"y2": "x2", "c": "a+2"},
+        {"x2": "1.-0.3*y2"},
+        {"obj1": "x1+x2"},
+        {"obj2": "b+c"},
+        {"obj": "obj1+obj2"},
+    ))
     mdachain = MDAChain(disciplines)
     assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])
 

@@ -55,29 +55,25 @@ _MISC_WEIGHT = 25000.0
 _MAXIMUM_LOAD_FACTOR = 6.0
 _REFERENCE_ENGINE_WEIGHT = 4360.0
 _MINIMUM_DRAG_COEFFICIENT = 0.01375
-_CONSTANTS = array(
-    [
-        _MINIMUM_FUEL_WEIGHT,
-        _MISC_WEIGHT,
-        _MAXIMUM_LOAD_FACTOR,
-        _REFERENCE_ENGINE_WEIGHT,
-        _MINIMUM_DRAG_COEFFICIENT,
-    ]
-)
-_DESIGN_BOUNDS = array(
-    [
-        (0.1, 0.4),
-        (0.75, 1.25),
-        (0.75, 1.25),
-        (0.1, 1),
-        (0.01, 0.09),
-        (30000.0, 60000.0),
-        (1.4, 1.8),
-        (2.5, 8.5),
-        (40.0, 70.0),
-        (500.0, 1500.0),
-    ]
-)
+_CONSTANTS = array([
+    _MINIMUM_FUEL_WEIGHT,
+    _MISC_WEIGHT,
+    _MAXIMUM_LOAD_FACTOR,
+    _REFERENCE_ENGINE_WEIGHT,
+    _MINIMUM_DRAG_COEFFICIENT,
+])
+_DESIGN_BOUNDS = array([
+    (0.1, 0.4),
+    (0.75, 1.25),
+    (0.75, 1.25),
+    (0.1, 1),
+    (0.01, 0.09),
+    (30000.0, 60000.0),
+    (1.4, 1.8),
+    (2.5, 8.5),
+    (40.0, 70.0),
+    (500.0, 1500.0),
+])
 _NAMES_TO_BOUNDS = {
     "x_1": _DESIGN_BOUNDS[0:2],
     "x_2": _DESIGN_BOUNDS[2],

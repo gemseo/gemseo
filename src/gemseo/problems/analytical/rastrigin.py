@@ -121,9 +121,7 @@ class Rastrigin(OptimizationProblem):
             The analytical gradient vector of Rastrigin function.
         """
         a_c = 10.0
-        return array(
-            [
-                2 * x_dv[0] + 2 * pi * a_c * sin(2 * pi * x_dv[0]),
-                2 * x_dv[1] + 2 * pi * a_c * sin(2 * pi * x_dv[1]),
-            ]
-        ).real
+        return array([
+            2 * x_dv[0] + 2 * pi * a_c * sin(2 * pi * x_dv[0]),
+            2 * x_dv[1] + 2 * pi * a_c * sin(2 * pi * x_dv[1]),
+        ]).real

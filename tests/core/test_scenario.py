@@ -546,13 +546,11 @@ def complex_step_scenario() -> MDOScenario:
 @pytest.mark.parametrize("normalize_design_space", [False, True])
 def test_complex_step(complex_step_scenario, normalize_design_space):
     """Check that complex step approximation works correctly."""
-    complex_step_scenario.execute(
-        {
-            "algo": "SLSQP",
-            "max_iter": 10,
-            "algo_options": {"normalize_design_space": normalize_design_space},
-        }
-    )
+    complex_step_scenario.execute({
+        "algo": "SLSQP",
+        "max_iter": 10,
+        "algo_options": {"normalize_design_space": normalize_design_space},
+    })
 
     assert complex_step_scenario.optimization_result.x_opt[0] == 0.0
 

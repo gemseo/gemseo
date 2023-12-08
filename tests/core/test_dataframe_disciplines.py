@@ -232,9 +232,10 @@ def test_mdo_function_array_dispatch():
 def test_discipline_outputs():
     """Compare discipline outputs of data frames against NumPy arrays."""
     res = A2(False).execute({"a": np.array([1.0]), "c": np.array([2.0])})
-    res_with_df = A2(True).execute(
-        {to_df_key("x", "a"): np.array([1.0]), to_df_key("x", "c"): np.array([2.0])}
-    )
+    res_with_df = A2(True).execute({
+        to_df_key("x", "a"): np.array([1.0]),
+        to_df_key("x", "c"): np.array([2.0]),
+    })
 
     assert res_with_df[to_df_key("x", "a")] == res["a"]
     assert res_with_df[to_df_key("x", "c")] == res["c"]

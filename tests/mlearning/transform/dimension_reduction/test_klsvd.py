@@ -51,9 +51,9 @@ def func(tau, theta):
 @pytest.fixture()
 def data():
     """The dataset used to build the transformer, based on a 1D-mesh."""
-    return array(
-        [func(array(MESH).flatten(), theta) for theta in RNG.random(N_SAMPLES)]
-    )
+    return array([
+        func(array(MESH).flatten(), theta) for theta in RNG.random(N_SAMPLES)
+    ])
 
 
 @pytest.fixture()

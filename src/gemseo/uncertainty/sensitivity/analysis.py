@@ -256,13 +256,11 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         algo_options = algo_options or {}
         algo_options["log_problem"] = False
         algo_options["use_one_line_progress_bar"] = True
-        scenario.execute(
-            {
-                scenario.ALGO: self._algo_name,
-                scenario.N_SAMPLES: n_samples,
-                scenario.ALGO_OPTIONS: algo_options,
-            }
-        )
+        scenario.execute({
+            scenario.ALGO: self._algo_name,
+            scenario.N_SAMPLES: n_samples,
+            scenario.ALGO_OPTIONS: algo_options,
+        })
         return scenario
 
     def _create_scenario(
@@ -929,12 +927,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         input_names = self._sort_and_filter_input_parameters(output, inputs)
         for name in input_names:
             data = abs(
-                array(
-                    [
-                        method.main_indices[output[0]][output[1]][name]
-                        for method in methods
-                    ]
-                )
+                array([
+                    method.main_indices[output[0]][output[1]][name]
+                    for method in methods
+                ])
             )
             dataset.add_variable(name, data)
         data = dataset.get_view(group_names=dataset.PARAMETER_GROUP).to_numpy()

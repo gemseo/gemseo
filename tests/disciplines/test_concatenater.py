@@ -70,12 +70,9 @@ def test_concatenation_discipline_execution(
         coefficients = {"c_1": 1.0, "c_2": 1.0}
     output_data = concatenation_disc.execute(input_data)
     input_names = concatenation_disc.get_input_data_names()
-    expected = concatenate(
-        [
-            input_data[input_name] * coefficients[input_name]
-            for input_name in input_names
-        ]
-    )
+    expected = concatenate([
+        input_data[input_name] * coefficients[input_name] for input_name in input_names
+    ])
     assert_array_equal(output_data["c"], expected)
 
 

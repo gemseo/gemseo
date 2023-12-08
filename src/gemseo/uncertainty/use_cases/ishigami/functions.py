@@ -43,10 +43,8 @@ def compute_gradient(x: ndarray) -> ndarray:
     Returns:
         The value of the gradient of the Ishigami function.
     """
-    return array(
-        [
-            cos(x[0]) * (1 + 0.1 * x[2] ** 4),
-            14 * sin(x[1]) * cos(x[1]),
-            0.4 * sin(x[0]) * x[2] ** 3,
-        ]
-    )
+    return array([
+        cos(x[0]) * (1 + 0.1 * x[2] ** 4),
+        14 * sin(x[1]) * cos(x[1]),
+        0.4 * sin(x[0]) * x[2] ** 3,
+    ])

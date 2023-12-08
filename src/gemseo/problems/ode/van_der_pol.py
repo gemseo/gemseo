@@ -109,15 +109,13 @@ class VanDerPol(ODEProblem):
             state_vector = zeros(2)
         self.state_vect = state_vector
 
-        initial_state = array(
-            [
-                2 + self.state_vect[0],
-                -2 / 3
-                + 10 / (81 * self._mu)
-                - 292 / (2187 * self._mu * self._mu)
-                + self.state_vect[1],
-            ]
-        )
+        initial_state = array([
+            2 + self.state_vect[0],
+            -2 / 3
+            + 10 / (81 * self._mu)
+            - 292 / (2187 * self._mu * self._mu)
+            + self.state_vect[1],
+        ])
 
         jac = self.__compute_rhs_jacobian if use_jacobian else None
         super().__init__(

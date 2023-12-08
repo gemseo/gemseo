@@ -262,16 +262,14 @@ class ToyDiscipline(MDODiscipline):
 
     def _run(self):
         self.local_data["y1"] = self.local_data["x1"] + 2 * self.local_data["x2"][0]
-        self.local_data["y2"] = array(
-            [
-                self.local_data["x1"]
-                + 2 * self.local_data["x2"][0]
-                + 3 * self.local_data["x2"][1],
-                2 * self.local_data["x1"]
-                + 4 * self.local_data["x2"][0]
-                + 6 * self.local_data["x2"][1],
-            ]
-        )
+        self.local_data["y2"] = array([
+            self.local_data["x1"]
+            + 2 * self.local_data["x2"][0]
+            + 3 * self.local_data["x2"][1],
+            2 * self.local_data["x1"]
+            + 4 * self.local_data["x2"][0]
+            + 6 * self.local_data["x2"][1],
+        ])
 
     def _compute_jacobian(self, inputs=None, outputs=None):
         self.jac = {

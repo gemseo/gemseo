@@ -43,14 +43,12 @@ configure_logger()
 # :class:`.SobieskiAerodynamics`,
 # :class:`.SobieskiMission`
 # and :class:`.SobieskiStructure`.
-propu, aero, mission, struct = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+propu, aero, mission, struct = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 
 # %%
 # Build, execute and post-process the scenario
@@ -155,9 +153,11 @@ system_scenario.xdsmize(save_html=False)
 # %%
 # Execute the main scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.execute(
-    {"max_iter": 50, "algo": "NLOPT_COBYLA", "algo_options": algo_options}
-)
+system_scenario.execute({
+    "max_iter": 50,
+    "algo": "NLOPT_COBYLA",
+    "algo_options": algo_options,
+})
 
 # %%
 # Plot the history of the MDA residuals

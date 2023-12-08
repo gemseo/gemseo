@@ -96,14 +96,12 @@ def mdf_variable_grammar_doe_scenario(request):
 @pytest.mark.usefixtures("tmp_wd")
 @pytest.mark.skip_under_windows()
 def test_parallel_doe_hdf_cache(caplog):
-    disciplines = create_discipline(
-        [
-            "SobieskiStructure",
-            "SobieskiPropulsion",
-            "SobieskiAerodynamics",
-            "SobieskiMission",
-        ]
-    )
+    disciplines = create_discipline([
+        "SobieskiStructure",
+        "SobieskiPropulsion",
+        "SobieskiAerodynamics",
+        "SobieskiMission",
+    ])
     path = "cache.h5"
     for disc in disciplines:
         disc.set_cache_policy(disc.CacheType.HDF5, cache_hdf_file=path)
@@ -202,12 +200,10 @@ def test_warning_when_missing_option(caplog, doe_scenario):
     Args:
         doe_scenario: A simple DOE scenario.
     """
-    doe_scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {"samples": array([[1.0]]), "unknown_option": 1},
-        }
-    )
+    doe_scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"samples": array([[1.0]]), "unknown_option": 1},
+    })
     expected_log = "Driver CustomDOE has no option {}, option is ignored."
     assert expected_log.format("n_samples") not in caplog.text
     assert expected_log.format("unknown_option") in caplog.text
@@ -243,12 +239,10 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines):
         n_processes=2,
         design_space=SellarDesignSpace("float64"),
     )
-    scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {"samples": array([[0.0, -10.0, 0.0]])},
-        }
-    )
+    scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"samples": array([[0.0, -10.0, 0.0]])},
+    })
 
     assert sellar_disciplines[2].n_calls == 0
     assert "Undefined" in caplog.text
@@ -267,14 +261,12 @@ def test_other_exceptions_caught(caplog):
         [discipline], "MDF", "y", design_space, main_mda_name="MDAJacobi"
     )
     with pytest.raises(InvalidDataError):
-        scenario.execute(
-            {
-                "algo": "CustomDOE",
-                "algo_options": {
-                    "samples": array([[0.0]]),
-                },
-            }
-        )
+        scenario.execute({
+            "algo": "CustomDOE",
+            "algo_options": {
+                "samples": array([[0.0]]),
+            },
+        })
     assert "0.0 cannot be raised to a negative power" in caplog.text
 
 
@@ -311,12 +303,10 @@ def test_lib_serialization(tmp_wd, doe_scenario):
         tmp_wd: Fixture to move into a temporary work directory.
         doe_scenario: A simple DOE scenario.
     """
-    doe_scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {"samples": array([[1.0]])},
-        }
-    )
+    doe_scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"samples": array([[1.0]])},
+    })
 
     doe_scenario.formulation.opt_problem.reset(database=False, design_space=False)
 
@@ -328,12 +318,10 @@ def test_lib_serialization(tmp_wd, doe_scenario):
 
     assert pickled_scenario._lib is None
 
-    pickled_scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {"samples": array([[0.5]])},
-        }
-    )
+    pickled_scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"samples": array([[0.5]])},
+    })
 
     assert pickled_scenario._lib.internal_algo_name == "CustomDOE"
     assert pickled_scenario.formulation.opt_problem.database.get_function_value(
@@ -381,15 +369,13 @@ def test_partial_execution_from_backup(
     doe_scenario.set_optimization_history_backup("backup.h5")
     doe_scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples_1}})
     other_doe_scenario.set_optimization_history_backup("backup.h5", pre_load=True)
-    other_doe_scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {
-                "samples": samples_2,
-                "reset_iteration_counters": reset_iteration_counters,
-            },
-        }
-    )
+    other_doe_scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {
+            "samples": samples_2,
+            "reset_iteration_counters": reset_iteration_counters,
+        },
+    })
     assert len(other_doe_scenario.formulation.opt_problem.database) == expected
 
 

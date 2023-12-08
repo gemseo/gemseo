@@ -330,12 +330,10 @@ class ScipyGlobalOpt(OptimizationLibrary):
             for constr in self.problem.get_eq_constraints()
         ]
         ineq_tolerance = self.problem.ineq_tolerance
-        constraints.extend(
-            [
-                NonlinearConstraint(constr, -np_inf, ineq_tolerance, jac=constr.jac)
-                for constr in self.problem.get_ineq_constraints()
-            ]
-        )
+        constraints.extend([
+            NonlinearConstraint(constr, -np_inf, ineq_tolerance, jac=constr.jac)
+            for constr in self.problem.get_ineq_constraints()
+        ])
         return tuple(constraints)
 
     def __get_constraints_as_scipy_dictionary(

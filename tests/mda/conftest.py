@@ -43,14 +43,12 @@ def generate_parallel_doe(
     """
     design_space = SobieskiDesignSpace()
     scenario = create_scenario(
-        create_discipline(
-            [
-                "SobieskiPropulsion",
-                "SobieskiStructure",
-                "SobieskiAerodynamics",
-                "SobieskiMission",
-            ]
-        ),
+        create_discipline([
+            "SobieskiPropulsion",
+            "SobieskiStructure",
+            "SobieskiAerodynamics",
+            "SobieskiMission",
+        ]),
         "MDF",
         objective_name="y_4",
         design_space=design_space,
@@ -59,13 +57,11 @@ def generate_parallel_doe(
         main_mda_name=main_mda_name,
         inner_mda_name=inner_mda_name,
     )
-    scenario.execute(
-        {
-            "algo": "DiagonalDOE",
-            "n_samples": n_samples,
-            "algo_options": {"n_processes": 2},
-        }
-    )
+    scenario.execute({
+        "algo": "DiagonalDOE",
+        "n_samples": n_samples,
+        "algo_options": {"n_processes": 2},
+    })
     return scenario.optimization_result.f_opt
 
 

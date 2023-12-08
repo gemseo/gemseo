@@ -69,9 +69,9 @@ if TYPE_CHECKING:
 class ScalableDiscipline(MDODiscipline):
     """A scalable discipline."""
 
-    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
-        ["scalable_model"]
-    )
+    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union([
+        "scalable_model"
+    ])
 
     def __init__(
         self,

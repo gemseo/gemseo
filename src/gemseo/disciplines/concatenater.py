@@ -74,12 +74,10 @@ class Concatenater(MDODiscipline):
     def _run(self) -> None:
         """Run the discipline."""
         input_data = self.get_input_data()
-        self.local_data[self.__output_name] = concatenate(
-            [
-                self.__coefficients[input_name] * input_data[input_name]
-                for input_name in self.get_input_data_names()
-            ]
-        )
+        self.local_data[self.__output_name] = concatenate([
+            self.__coefficients[input_name] * input_data[input_name]
+            for input_name in self.get_input_data_names()
+        ])
 
     def _compute_jacobian(
         self,

@@ -118,9 +118,10 @@ class MDOScenario(Scenario):
     def _update_input_grammar(self) -> None:
         super()._update_input_grammar()
         if self.grammar_type != self.GrammarType.JSON:
-            self.input_grammar.update_from_types(
-                {"max_iter": int, "algo_options": dict}
-            )
+            self.input_grammar.update_from_types({
+                "max_iter": int,
+                "algo_options": dict,
+            })
             self.input_grammar.required_names.remove("algo_options")
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:

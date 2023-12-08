@@ -331,12 +331,10 @@ def test_compute_newton_step(compute_residuals, size):
     for disc in disciplines:
         disc.linearize(inputs, compute_all_jacobians=True)
     if compute_residuals:
-        residuals = concatenate(
-            [
-                disciplines[0].local_data["a"] - inputs["a"],
-                disciplines[1].local_data["b"] - inputs["b"],
-            ]
-        )
+        residuals = concatenate([
+            disciplines[0].local_data["a"] - inputs["a"],
+            disciplines[1].local_data["b"] - inputs["b"],
+        ])
     else:
         residuals = None
     assembly = JacobianAssembly(MDOCouplingStructure(disciplines))

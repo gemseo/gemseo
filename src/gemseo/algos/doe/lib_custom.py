@@ -217,9 +217,9 @@ class CustomDOE(DOELibrary):
         if isinstance(samples, Mapping):
             samples = self.problem.design_space.dict_to_array(samples)
         elif not isinstance(samples, ndarray):
-            samples = vstack(
-                [self.problem.design_space.dict_to_array(sample) for sample in samples]
-            )
+            samples = vstack([
+                self.problem.design_space.dict_to_array(sample) for sample in samples
+            ])
 
         if samples.shape[1] != self.problem.dimension:
             raise ValueError(

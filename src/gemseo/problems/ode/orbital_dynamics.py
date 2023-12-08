@@ -138,14 +138,12 @@ class OrbitalDynamics(ODEProblem):
             state_vector = zeros(2)
         self.state_vector = state_vector
 
-        initial_state = array(
-            [
-                1 - eccentricity,
-                0,
-                0,
-                sqrt((1 + eccentricity) / (1 - eccentricity)),
-            ]
-        )
+        initial_state = array([
+            1 - eccentricity,
+            0,
+            0,
+            sqrt((1 + eccentricity) / (1 - eccentricity)),
+        ])
 
         jac = _compute_rhs_jacobian if use_jacobian else None
         super().__init__(

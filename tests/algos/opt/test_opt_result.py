@@ -64,17 +64,15 @@ def optimization_result() -> OptimizationResult:
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
     design_space.add_variable("z", size=2, l_b=0.0, u_b=1.0, value=0.5)
-    disc = AnalyticDiscipline(
-        {
-            "y": "x",
-            "eq_1": "x",
-            "eq_2": "x",
-            "ineq_p_1": "x",
-            "ineq_p_2": "x",
-            "ineq_n_1": "x",
-            "ineq_n_2": "x",
-        }
-    )
+    disc = AnalyticDiscipline({
+        "y": "x",
+        "eq_1": "x",
+        "eq_2": "x",
+        "ineq_p_1": "x",
+        "ineq_p_2": "x",
+        "ineq_n_1": "x",
+        "ineq_n_2": "x",
+    })
     scenario = DOEScenario([disc], "DisciplinaryOpt", "y", design_space)
     scenario.add_constraint("eq_1", constraint_type="eq")
     scenario.add_constraint("eq_2", constraint_type="eq", value=0.25)

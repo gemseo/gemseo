@@ -57,7 +57,7 @@ class YvsX(DatasetPlot):
         )
 
     def _create_specific_data_from_dataset(
-        self
+        self,
     ) -> tuple[NDArray[float], NDArray[float]]:
         """
         Returns:

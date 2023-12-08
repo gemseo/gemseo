@@ -180,16 +180,21 @@ def test_chain_disc_ns_twice(grammar_type, chain_type):
     assert sorted(chain.get_input_data_names()) == sorted(["ns2:x", "ns1:x", "u"])
     assert sorted(chain.get_output_data_names()) == sorted(["ns2:y", "ns1:y"])
 
-    assert sorted(chain.get_input_data_names(with_namespaces=False)) == sorted(
-        ["x", "x", "u"]
-    )
-    assert sorted(chain.get_output_data_names(with_namespaces=False)) == sorted(
-        ["y", "y"]
-    )
+    assert sorted(chain.get_input_data_names(with_namespaces=False)) == sorted([
+        "x",
+        "x",
+        "u",
+    ])
+    assert sorted(chain.get_output_data_names(with_namespaces=False)) == sorted([
+        "y",
+        "y",
+    ])
 
-    out = chain.execute(
-        {"ns1:x": array([5.0]), "ns2:x": array([3.0]), "u": array([4.0])}
-    )
+    out = chain.execute({
+        "ns1:x": array([5.0]),
+        "ns2:x": array([3.0]),
+        "u": array([4.0]),
+    })
     assert out["ns1:y"] == array([14.0])
     assert out["ns2:y"] == array([10.0])
 

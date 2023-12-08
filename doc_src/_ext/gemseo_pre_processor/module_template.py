@@ -188,13 +188,11 @@ def create_tree_file(modules_path, dct, parents, root):
 
 
 def main(modules_path, name):
-    tree = initialize_file_tree(
-        [
-            f.name
-            for f in modules_path.iterdir()
-            if f.is_file() and f.name != "modules.rst"
-        ]
-    )
+    tree = initialize_file_tree([
+        f.name
+        for f in modules_path.iterdir()
+        if f.is_file() and f.name != "modules.rst"
+    ])
 
     file_path = modules_path / Path(name).with_suffix(".rst")
     with open(file_path, "w") as f:

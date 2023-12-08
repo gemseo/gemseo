@@ -35,9 +35,9 @@ def volume_fraction() -> VolumeFraction:
 
 def test_run(volume_fraction):
     """"""
-    output_data = volume_fraction.execute(
-        {"rho": ones(volume_fraction.n_x * volume_fraction.n_y)}
-    )
+    output_data = volume_fraction.execute({
+        "rho": ones(volume_fraction.n_x * volume_fraction.n_y)
+    })
     assert output_data["volume fraction"] == array([1])
 
 

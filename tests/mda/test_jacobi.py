@@ -163,14 +163,12 @@ def test_expected_workflow():
 
 
 def test_expected_workflow_with_adapter():
-    discs = create_discipline(
-        [
-            "SobieskiPropulsion",
-            "SobieskiStructure",
-            "SobieskiAerodynamics",
-            "SobieskiMission",
-        ]
-    )
+    discs = create_discipline([
+        "SobieskiPropulsion",
+        "SobieskiStructure",
+        "SobieskiAerodynamics",
+        "SobieskiMission",
+    ])
     design_space = SobieskiDesignSpace()
     scn_propu = create_scenario(
         discs,

@@ -222,9 +222,12 @@ def test_weak_and_strong_couplings():
     disc4 = AnalyticDiscipline(expressions={"obj": "i+j"}, name="obj=f(i,j) disc")
     disciplines = [disc1, disc2, disc3, disc4]
     mda = MDAChain(disciplines, inner_mda_name="MDANewtonRaphson")
-    mda.execute(
-        {"z": array([0.0]), "i": array([0.0]), "j": array([0.0]), "x": array([0.0])}
-    )
+    mda.execute({
+        "z": array([0.0]),
+        "i": array([0.0]),
+        "j": array([0.0]),
+        "x": array([0.0]),
+    })
     assert mda.inner_mdas[0].residual_history[-1] < TRESHOLD_MDA_TOL
     assert mda.local_data[mda.RESIDUALS_NORM][0] < TRESHOLD_MDA_TOL
     assert mda.local_data["obj"] == pytest.approx(array([2.0 / 1.3]))

@@ -77,13 +77,11 @@ def test_predict(io_dataset):
 @pytest.fixture(scope="module")
 def dataset_for_jacobian() -> IODataset:
     """The dataset used to check the Jacobian computation."""
-    samples = array(
-        [
-            [1.0, 2.0, 3.0, 6.0, -6.0],
-            [2.0, 3.0, 4.0, 9.0, -9.0],
-            [3.0, 4.0, 5.0, 12.0, -12.0],
-        ]
-    )
+    samples = array([
+        [1.0, 2.0, 3.0, 6.0, -6.0],
+        [2.0, 3.0, 4.0, 9.0, -9.0],
+        [3.0, 4.0, 5.0, 12.0, -12.0],
+    ])
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 2}
     groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}

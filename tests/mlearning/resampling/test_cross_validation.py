@@ -47,15 +47,13 @@ def test_default_properties(sample_indices):
     assert array_equal(cross_validation.shuffled_sample_indices, sample_indices)
     assert_equal(
         cross_validation.splits,
-        Splits(
-            *[
-                Split(array([2, 3, 4, 5, 6, 7, 8, 9]), array([0, 1])),
-                Split(array([0, 1, 4, 5, 6, 7, 8, 9]), array([2, 3])),
-                Split(array([0, 1, 2, 3, 6, 7, 8, 9]), array([4, 5])),
-                Split(array([0, 1, 2, 3, 4, 5, 8, 9]), array([6, 7])),
-                Split(array([0, 1, 2, 3, 4, 5, 6, 7]), array([8, 9])),
-            ]
-        ),
+        Splits(*[
+            Split(array([2, 3, 4, 5, 6, 7, 8, 9]), array([0, 1])),
+            Split(array([0, 1, 4, 5, 6, 7, 8, 9]), array([2, 3])),
+            Split(array([0, 1, 2, 3, 6, 7, 8, 9]), array([4, 5])),
+            Split(array([0, 1, 2, 3, 4, 5, 8, 9]), array([6, 7])),
+            Split(array([0, 1, 2, 3, 4, 5, 6, 7]), array([8, 9])),
+        ]),
     )
 
 
@@ -65,12 +63,10 @@ def test_properties_with_n_folds(sample_indices):
     assert cross_validation.n_folds == 2
     assert_equal(
         cross_validation.splits,
-        Splits(
-            *[
-                Split(array([5, 6, 7, 8, 9]), array([0, 1, 2, 3, 4])),
-                Split(array([0, 1, 2, 3, 4]), array([5, 6, 7, 8, 9])),
-            ]
-        ),
+        Splits(*[
+            Split(array([5, 6, 7, 8, 9]), array([0, 1, 2, 3, 4])),
+            Split(array([0, 1, 2, 3, 4]), array([5, 6, 7, 8, 9])),
+        ]),
     )
 
 

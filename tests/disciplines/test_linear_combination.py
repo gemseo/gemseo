@@ -43,21 +43,21 @@ def linear_combination_for_tests():
 
 def test_linear_combination_execution(linear_combination_for_tests):
     """Test  linear combination discipline execution."""
-    output_data = linear_combination_for_tests.execute(
-        {"alpha": array([1.0]), "beta": array([1.0]), "gamma": array([1.0])}
-    )
+    output_data = linear_combination_for_tests.execute({
+        "alpha": array([1.0]),
+        "beta": array([1.0]),
+        "gamma": array([1.0]),
+    })
     assert all(output_data["delta"] == array([0.0]))
 
 
 def test_linear_combination_execution2points(linear_combination_for_tests):
     """Test  linear combination discipline execution."""
-    output_data = linear_combination_for_tests.execute(
-        {
-            "alpha": array([1.0, 0.0]),
-            "beta": array([1.0, -1.0]),
-            "gamma": array([1.0, 0.0]),
-        }
-    )
+    output_data = linear_combination_for_tests.execute({
+        "alpha": array([1.0, 0.0]),
+        "beta": array([1.0, -1.0]),
+        "gamma": array([1.0, 0.0]),
+    })
     assert all(output_data["delta"] == array([0.0, 0.0]))
 
 

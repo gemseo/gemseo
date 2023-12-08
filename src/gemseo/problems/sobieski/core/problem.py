@@ -563,26 +563,23 @@ class SobieskiProblem:
             according to ``true_cstr``.
         """
         if true_cstr:
-            return concatenate(
-                (g_1[0:5], array((g_1[5], g_2[0], g_3[0], g_3[2], g_3[1])))
-            )
+            return concatenate((
+                g_1[0:5],
+                array((g_1[5], g_2[0], g_3[0], g_3[2], g_3[1])),
+            ))
 
-        return concatenate(
-            (
-                g_1[0:5] - self.STRESS_LIMIT,
-                array(
-                    (
-                        g_1[5] - self.TWIST_UPPER_LIMIT,
-                        self.TWIST_LOWER_LIMIT - g_1[5],
-                        g_2[0] - self.PRESSURE_GRADIENT_LIMIT,
-                        g_3[0] - self.ESF_UPPER_LIMIT,
-                        self.ESF_LOWER_LIMIT - g_3[0],
-                        g_3[2],
-                        g_3[1] - self.TEMPERATURE_LIMIT,
-                    )
-                ),
-            )
-        )
+        return concatenate((
+            g_1[0:5] - self.STRESS_LIMIT,
+            array((
+                g_1[5] - self.TWIST_UPPER_LIMIT,
+                self.TWIST_LOWER_LIMIT - g_1[5],
+                g_2[0] - self.PRESSURE_GRADIENT_LIMIT,
+                g_3[0] - self.ESF_UPPER_LIMIT,
+                self.ESF_LOWER_LIMIT - g_3[0],
+                g_3[2],
+                g_3[1] - self.TEMPERATURE_LIMIT,
+            )),
+        ))
 
     def normalize_inputs(
         self,

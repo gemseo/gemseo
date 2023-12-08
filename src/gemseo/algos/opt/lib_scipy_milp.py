@@ -181,13 +181,11 @@ class ScipyMILP(OptimizationLibrary):
             bounds=bounds,
             constraints=lq_constraints,
             options=options,
-            integrality=concatenate(
-                [
-                    self.problem.design_space.variable_types[variable_name]
-                    == self.problem.design_space.DesignVariableType.INTEGER
-                    for variable_name in self.problem.design_space.variable_names
-                ]
-            ),
+            integrality=concatenate([
+                self.problem.design_space.variable_types[variable_name]
+                == self.problem.design_space.DesignVariableType.INTEGER
+                for variable_name in self.problem.design_space.variable_names
+            ]),
         )
         # Gather the optimization results
         x_opt = x_0 if milp_result.x is None else milp_result.x

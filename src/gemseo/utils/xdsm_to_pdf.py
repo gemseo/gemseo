@@ -156,9 +156,9 @@ class XDSMToPDFConverter:
     def __add_nodes(self, numbers: Sequence[int], nodes) -> None:
         """Add the different nodes, called 'systems', in the XDSM."""
         for node in nodes:
-            name = ",".join(
-                [str(current) for current in numbers[node["id"]]["current"]]
-            )
+            name = ",".join([
+                str(current) for current in numbers[node["id"]]["current"]
+            ])
 
             name_1 = name + ",{}-{}:".format(
                 str(numbers[node["id"]]["end"]), str(numbers[node["id"]]["next"])

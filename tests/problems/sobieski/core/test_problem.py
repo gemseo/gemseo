@@ -127,20 +127,18 @@ def test_get_bounds(problem):
 
 def test_get_bounds_tuple(problem):
     """"""
-    bounds = array(
-        [
-            (0.1, 0.4),
-            (0.75, 1.25),
-            (0.75, 1.25),
-            (0.1, 1),
-            (0.01, 0.09),
-            (30000.0, 60000.0),
-            (1.4, 1.8),
-            (2.5, 8.5),
-            (40.0, 70.0),
-            (500.0, 1500.0),
-        ]
-    )
+    bounds = array([
+        (0.1, 0.4),
+        (0.75, 1.25),
+        (0.75, 1.25),
+        (0.1, 1),
+        (0.01, 0.09),
+        (30000.0, 60000.0),
+        (1.4, 1.8),
+        (2.5, 8.5),
+        (40.0, 70.0),
+        (500.0, 1500.0),
+    ])
     lower, upper = problem.design_bounds
     assert_equal(lower, bounds[:, 0])
     assert_equal(upper, bounds[:, 1])

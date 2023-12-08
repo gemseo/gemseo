@@ -577,13 +577,11 @@ class MOERegressor(MLRegressionAlgo):
         """
         # dim(input_data)  = (n_samples, n_inputs)
         # dim(output_data) = (n_samples, n_clusters, n_outputs)
-        output_data = zeros(
-            (
-                input_data.shape[0],
-                self.n_clusters,
-                self.regress_models[0].output_dimension,
-            )
-        )
+        output_data = zeros((
+            input_data.shape[0],
+            self.n_clusters,
+            self.regress_models[0].output_dimension,
+        ))
         for i in range(self.n_clusters):
             output_data[:, i] = self.regress_models[i].predict(input_data)
         return output_data
@@ -626,13 +624,11 @@ class MOERegressor(MLRegressionAlgo):
         """
         classes = self.classifier.predict(input_data)[..., 0]
         first_regression_model = self.regress_models[0]
-        jacobians = zeros(
-            (
-                len(input_data),
-                first_regression_model.output_dimension,
-                first_regression_model.input_dimension,
-            )
-        )
+        jacobians = zeros((
+            len(input_data),
+            first_regression_model.output_dimension,
+            first_regression_model.input_dimension,
+        ))
         for klass in unique(classes):
             inds_kls = (classes == klass).nonzero()[0]
             jacobians[inds_kls] = self.regress_models[klass].predict_jacobian(

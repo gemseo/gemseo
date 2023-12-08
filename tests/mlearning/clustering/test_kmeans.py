@@ -39,13 +39,11 @@ from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])
 
 # Cluster covariance matrices
-SCALES = array(
-    [
-        [[0.10, 0.00], [0.00, 0.05]],
-        [[0.05, 0.01], [0.01, 0.10]],
-        [[0.10, 0.05], [0.05, 0.10]],
-    ]
-)
+SCALES = array([
+    [[0.10, 0.00], [0.00, 0.05]],
+    [[0.05, 0.01], [0.01, 0.10]],
+    [[0.10, 0.05], [0.05, 0.10]],
+])
 
 # Number of samples in each cluster
 N_SAMPLES = [50, 50, 50]

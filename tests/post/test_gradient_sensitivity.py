@@ -101,13 +101,11 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
     inputs = [name for name in disc.get_input_data_names() if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
-    doe_scenario.execute(
-        {
-            "algo": "DiagonalDOE",
-            "n_samples": 10,
-            "algo_options": {"eval_jac": True},
-        }
-    )
+    doe_scenario.execute({
+        "algo": "DiagonalDOE",
+        "n_samples": 10,
+        "algo_options": {"eval_jac": True},
+    })
     doe_scenario.post_process(
         "GradientSensitivity",
         scale_gradients=scale_gradients,
@@ -115,13 +113,11 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
         save=True,
     )
     doe_scenario2 = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
-    doe_scenario2.execute(
-        {
-            "algo": "DiagonalDOE",
-            "n_samples": 10,
-            "algo_options": {"eval_jac": False},
-        }
-    )
+    doe_scenario2.execute({
+        "algo": "DiagonalDOE",
+        "n_samples": 10,
+        "algo_options": {"eval_jac": False},
+    })
 
     with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
         doe_scenario2.post_process(

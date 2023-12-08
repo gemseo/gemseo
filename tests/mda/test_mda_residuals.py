@@ -78,13 +78,11 @@ def disc_1_expr_jac(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> ndarray
     Returns:
         The couplings1, state1 and residuals1 Jacobian.
     """
-    d_y_w_r_d_w_y_x = array(
-        [
-            [5.0, 3.0, 1.0],
-            [0.0, -1.0 / 7, 3.0 / 7],
-            [7, 1, -3],
-        ]
-    )
+    d_y_w_r_d_w_y_x = array([
+        [5.0, 3.0, 1.0],
+        [0.0, -1.0 / 7, 3.0 / 7],
+        [7, 1, -3],
+    ])
     return d_y_w_r_d_w_y_x  # noqa: RET504
 
 
@@ -119,13 +117,11 @@ def disc_2_expr_jac(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> ndarray
     Returns:
         The couplings2, state2 and residuals2 Jacobian.
     """
-    d_y_w_r_d_w_y_x = array(
-        [
-            [13.0, 2.0, 1.0],
-            [0.0, -1.0 / 5.0, 2 / 5],
-            [5, 1, -2],
-        ]
-    )
+    d_y_w_r_d_w_y_x = array([
+        [13.0, 2.0, 1.0],
+        [0.0, -1.0 / 5.0, 2 / 5],
+        [5, 1, -2],
+    ])
     return d_y_w_r_d_w_y_x  # noqa: RET504
 
 

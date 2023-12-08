@@ -272,16 +272,15 @@ def test_xdsmize_nested_chain(tmp_wd, elementary_discipline):
     def get_name(x: int) -> str:
         return f"x_{x}"
 
-    deep_chain = MDOChain(
-        [
-            elementary_discipline(get_name(1), get_name(2)),
-            elementary_discipline(get_name(2), get_name(3)),
-        ]
-    )
+    deep_chain = MDOChain([
+        elementary_discipline(get_name(1), get_name(2)),
+        elementary_discipline(get_name(2), get_name(3)),
+    ])
 
-    inter_chain = MDOChain(
-        [deep_chain, elementary_discipline(get_name(3), get_name(4))]
-    )
+    inter_chain = MDOChain([
+        deep_chain,
+        elementary_discipline(get_name(3), get_name(4)),
+    ])
 
     main_chain = [inter_chain, elementary_discipline(get_name(4), get_name(5))]
 
@@ -310,25 +309,23 @@ def test_xdsmize_nested_mda(tmp_wd):
     Here, we build a 2-levels nested mda with Jacobi and GaussSeidel.
     """
 
-    disciplines = create_disciplines_from_desc(
-        [
-            (
-                "D1",
-                ["y2", "y3", "x0"],
-                ["y1"],
-            ),
-            (
-                "D2",
-                ["y1", "y3", "x0"],
-                ["y2", "y2_bis"],
-            ),
-            (
-                "D3",
-                ["y2_bis", "x0"],
-                ["y3"],
-            ),
-        ]
-    )
+    disciplines = create_disciplines_from_desc([
+        (
+            "D1",
+            ["y2", "y3", "x0"],
+            ["y1"],
+        ),
+        (
+            "D2",
+            ["y1", "y3", "x0"],
+            ["y2", "y2_bis"],
+        ),
+        (
+            "D3",
+            ["y2_bis", "x0"],
+            ["y3"],
+        ),
+    ])
 
     inner_mda = MDAGaussSeidel([disciplines[0], disciplines[1]])
 
@@ -357,14 +354,12 @@ def test_xdsmize_nested_adapter(tmp_wd):
     Here, we build a 4-levels nested adapter.
     """
 
-    disciplines = create_disciplines_from_desc(
-        [
-            ("D1", ["x0", "x1"], ["z1", "y1"]),
-            ("D2", ["x0", "x2", "y3", "y1"], ["z2", "y2"]),
-            ("D3", ["x0", "x3", "y2", "z4"], ["y3", "z3"]),
-            ("D4", ["x0", "x4", "x3"], ["z4"]),
-        ]
-    )
+    disciplines = create_disciplines_from_desc([
+        ("D1", ["x0", "x1"], ["z1", "y1"]),
+        ("D2", ["x0", "x2", "y3", "y1"], ["z2", "y2"]),
+        ("D3", ["x0", "x3", "y2", "z4"], ["y3", "z3"]),
+        ("D4", ["x0", "x4", "x3"], ["z4"]),
+    ])
 
     # -- level 3
     ds_depth3 = DesignSpace()
@@ -437,12 +432,10 @@ def test_xdsmize_disciplinary_opt_with_adapter(tmp_wd):
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0)
 
-    disciplines = create_disciplines_from_desc(
-        [
-            ("D1", ["x", "n"], ["y"]),
-            ("D2", ["y"], ["z"]),
-        ]
-    )
+    disciplines = create_disciplines_from_desc([
+        ("D1", ["x", "n"], ["y"]),
+        ("D2", ["y"], ["z"]),
+    ])
 
     scenario = create_scenario(
         disciplines=disciplines,
@@ -488,16 +481,15 @@ def test_xdsmize_nested_parallel_chain(tmp_wd, elementary_discipline):
 
     beg_chain = elementary_discipline(get_name(1), get_name(2))
 
-    deep_chain = MDOParallelChain(
-        [
-            elementary_discipline(get_name(2), get_name(3)),
-            elementary_discipline(get_name(2), get_name(4)),
-        ]
-    )
+    deep_chain = MDOParallelChain([
+        elementary_discipline(get_name(2), get_name(3)),
+        elementary_discipline(get_name(2), get_name(4)),
+    ])
 
-    inter_chain = MDOParallelChain(
-        [deep_chain, elementary_discipline(get_name(4), get_name(5))]
-    )
+    inter_chain = MDOParallelChain([
+        deep_chain,
+        elementary_discipline(get_name(4), get_name(5)),
+    ])
 
     design_space = DesignSpace()
     design_space.add_variable(get_name(1))
@@ -612,15 +604,13 @@ def test_xdsmize_mdf_mdoparallelchain(tmp_wd):
 
     In this case, the two MDAGaussSeidel created in the MDAChain must be parallel
     """
-    disciplines = analytic_disciplines_from_desc(
-        (
-            {"a": "x"},
-            {"y1": "x1", "b": "a+1"},
-            {"x1": "1.-0.3*y1"},
-            {"y2": "x2", "c": "a+2"},
-            {"x2": "1.-0.3*y2"},
-        )
-    )
+    disciplines = analytic_disciplines_from_desc((
+        {"a": "x"},
+        {"y1": "x1", "b": "a+1"},
+        {"x1": "1.-0.3*y1"},
+        {"y2": "x2", "c": "a+2"},
+        {"x2": "1.-0.3*y2"},
+    ))
     design_space = DesignSpace()
     design_space.add_variable("x")
     mdachain_parallel_options = {"use_threading": True, "n_processes": 2}

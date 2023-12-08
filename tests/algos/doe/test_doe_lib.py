@@ -122,9 +122,10 @@ def test_evaluate_samples_multiproc_with_observables(doe):
 
     samples = array([[float(i)] for i in range(4)])
     scenario.add_observable("obs")
-    scenario.execute(
-        {"algo": "CustomDOE", "algo_options": {"n_processes": 2, "samples": samples}}
-    )
+    scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"n_processes": 2, "samples": samples},
+    })
 
     database = scenario.formulation.opt_problem.database
     for i, (x, data) in enumerate(database.items()):

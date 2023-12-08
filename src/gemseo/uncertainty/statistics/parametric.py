@@ -498,34 +498,28 @@ class ParametricStatistics(Statistics):
 
     def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution.value.math_upper_bound[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.math_upper_bound[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution.value.mean[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.mean[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution.value.math_lower_bound[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.math_lower_bound[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
@@ -547,12 +541,10 @@ class ParametricStatistics(Statistics):
                 new_thresh[name] = value
 
         return {
-            name: array(
-                [
-                    func(distribution.value.compute_cdf([new_thresh[name][index]])[0])
-                    for index, distribution in enumerate(self.__distributions[name])
-                ]
-            )
+            name: array([
+                func(distribution.value.compute_cdf([new_thresh[name][index]])[0])
+                for index, distribution in enumerate(self.__distributions[name])
+            ])
             for name in self.names
         }
 
@@ -588,57 +580,47 @@ class ParametricStatistics(Statistics):
     def compute_quantile(self, prob: float) -> dict[str, ndarray]:  # noqa: D102
         prob = array([prob])
         return {
-            name: array(
-                [
-                    distribution.value.compute_inverse_cdf(prob)[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.compute_inverse_cdf(prob)[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_standard_deviation(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution.value.standard_deviation[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.standard_deviation[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution.value.standard_deviation[0] ** 2
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.standard_deviation[0] ** 2
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_moment(self, order: int) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution.value.distribution.getMoment(order)[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.distribution.getMoment(order)[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution.value.math_upper_bound[0]
-                    - distribution.value.math_lower_bound[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.math_upper_bound[0]
+                - distribution.value.math_lower_bound[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 

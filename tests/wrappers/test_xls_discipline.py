@@ -101,9 +101,10 @@ def test_multiprocessing(skip_if_xlwings_is_not_usable):
     xlsd_2 = XLSDiscipline(DIR_PATH / "test_excel.xlsx", copy_xls_at_setstate=True)
 
     parallel_execution = DiscParallelExecution([xlsd, xlsd_2], n_processes=2)
-    parallel_execution.execute(
-        [{"a": array([2.0]), "b": array([1.0])}, {"a": array([5.0]), "b": array([3.0])}]
-    )
+    parallel_execution.execute([
+        {"a": array([2.0]), "b": array([1.0])},
+        {"a": array([5.0]), "b": array([3.0])},
+    ])
     assert xlsd.get_output_data() == {"c": array([3.0])}
     assert xlsd_2.get_output_data() == {"c": array([8.0])}
 
@@ -125,9 +126,10 @@ def test_multithreading(skip_if_xlwings_is_not_usable):
     parallel_execution = DiscParallelExecution(
         [xlsd, xlsd_2], use_threading=True, n_processes=2
     )
-    parallel_execution.execute(
-        [{"a": array([2.0]), "b": array([1.0])}, {"a": array([5.0]), "b": array([3.0])}]
-    )
+    parallel_execution.execute([
+        {"a": array([2.0]), "b": array([1.0])},
+        {"a": array([5.0]), "b": array([3.0])},
+    ])
 
     assert xlsd.get_output_data() == {"c": array([3.0])}
     assert xlsd_2.get_output_data() == {"c": array([8.0])}
