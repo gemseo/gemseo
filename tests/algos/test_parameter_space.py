@@ -707,7 +707,7 @@ def test_string_representation():
     parameter_space.add_random_vector("d", "OTUniformDistribution", maximum=[2, 3, 4])
     expected = """Parameter space:
 +------+-------------+-------+-------------+-------+-------------------------------+
-| name | lower_bound | value | upper_bound | type  |          Distribution         |
+| Name | Lower bound | Value | Upper bound | Type  |          Distribution         |
 +------+-------------+-------+-------------+-------+-------------------------------+
 | a    |     -inf    |  None |     inf     | float |                               |
 | b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
@@ -719,10 +719,26 @@ def test_string_representation():
 +------+-------------+-------+-------------+-------+-------------------------------+"""  # noqa: E501
     assert str(parameter_space) == repr(parameter_space) == expected
 
+    expected = """+------+-------------+-------+-------------+-------+-------------------------------+
+| name | lower_bound | value | upper_bound | type  |          distribution         |
++------+-------------+-------+-------------+-------+-------------------------------+
+| a    |     -inf    |  None |     inf     | float |                               |
+| b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[1] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
+| d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
+| d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
++------+-------------+-------+-------------+-------+-------------------------------+"""  # noqa: E501
+    assert (
+        str(parameter_space.get_pretty_table(with_index=True, capitalize=False))
+        == expected
+    )
+
     parameter_space.remove_variable("a")
     expected = """Parameter space:
 +------+-------------+-------+-------------+-------+-------------------------------+
-| name | lower_bound | value | upper_bound | type  |          Distribution         |
+| Name | Lower bound | Value | Upper bound | Type  |          Distribution         |
 +------+-------------+-------+-------------+-------+-------------------------------+
 | b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
 | c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
@@ -735,7 +751,7 @@ def test_string_representation():
 
     expected = """Uncertain space:
 +------+-------------------------------+
-| name |          Distribution         |
+| Name |          Distribution         |
 +------+-------------------------------+
 |  b   | Uniform(lower=0.0, upper=1.0) |
 | c[0] | Uniform(lower=0.0, upper=1.0) |
@@ -751,7 +767,7 @@ def test_string_representation():
     )
     expected = """Uncertain space:
 +------+-------------------------------+--------------------+
-| name |      Initial distribution     | Transformation(x)= |
+| Name |      Initial distribution     | Transformation(x)= |
 +------+-------------------------------+--------------------+
 |  b   | Uniform(lower=0.0, upper=1.0) |         x          |
 | c[0] | Uniform(lower=0.0, upper=1.0) |         x          |
