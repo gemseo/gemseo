@@ -697,9 +697,11 @@ class ParameterSpace(DesignSpace):
         simplify: bool = False,
     ) -> PrettyTable:
         if not simplify or self.deterministic_variables or fields is not None:
-            table = super().get_pretty_table(fields=fields, with_index=with_index)
+            table = super().get_pretty_table(
+                fields=fields, capitalize=capitalize, with_index=with_index
+            )
         else:
-            table = PrettyTable(["name" if capitalize else "Name"])
+            table = PrettyTable(["Name" if capitalize else "name"])
             table.float_format = "%.16g"
             for name in self.variable_names:
                 size = self.variable_sizes[name]
@@ -735,10 +737,18 @@ class ParameterSpace(DesignSpace):
                     break
 
             if add_transformation:
-                table.add_column(self._INITIAL_DISTRIBUTION, distributions)
-                table.add_column("Transformation(x)=", transformations)
+                table.add_column(
+                    "Initial distribution" if capitalize else "initial distribution",
+                    distributions,
+                )
+                table.add_column(
+                    "Transformation(x)=" if capitalize else "transformation(x)=",
+                    transformations,
+                )
             else:
-                table.add_column("Distribution", distributions)
+                table.add_column(
+                    "Distribution" if capitalize else "distribution", distributions
+                )
 
         return table
 
