@@ -46,7 +46,7 @@ class CenteredDifferences(GradientApproximator):
 
     .. math::
 
-        \frac{df(x)}{dx}\approx\frac{f(x+\\delta x)-f(x-\\delta x)}{2\\delta x}
+        \frac{df(x)}{dx}\approx\frac{f(x+\delta x)-f(x-\delta x)}{2\delta x}
     """
 
     _APPROXIMATION_MODE = ApproximationMode.CENTERED_DIFFERENCES
