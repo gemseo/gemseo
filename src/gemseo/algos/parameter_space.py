@@ -78,13 +78,13 @@ from typing import Sequence
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
-    from gemseo.third_party.prettytable import PrettyTable
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 from numpy import array
 from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.third_party.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -693,20 +693,58 @@ class ParameterSpace(DesignSpace):
         self,
         fields: Sequence[str] | None = None,
         with_index: bool = False,
+        capitalize: bool = False,
+        simplify: bool = False,
     ) -> PrettyTable:
-        table = super().get_pretty_table(fields=fields, with_index=with_index)
-        distribution = []
+        if not simplify or self.deterministic_variables or fields is not None:
+            table = super().get_pretty_table(fields=fields, with_index=with_index)
+        else:
+            table = PrettyTable(["name" if capitalize else "Name"])
+            table.float_format = "%.16g"
+            for name in self.variable_names:
+                size = self.variable_sizes[name]
+                name_template = "{name}"
+                if with_index and size > 1:
+                    name_template += "[{index}]"
+
+                for i in range(size):
+                    table.add_row([name_template.format(name=name, index=i)])
+
+        distributions = []
+        transformations = []
         for variable in self.variable_names:
             if variable in self.uncertain_variables:
-                distribution += [
-                    repr(marginal)
-                    for marginal in self.distributions[variable].marginals
-                ]
+                for marginal in self.distributions[variable].marginals:
+                    distributions.append(repr(marginal))
+                    transformations.append(marginal.transformation)
             else:
-                distribution.extend([self._BLANK] * self.variable_sizes[variable])
+                empty = [self._BLANK] * self.variable_sizes[variable]
+                distributions.extend(empty)
+                transformations.extend(empty)
 
-        table.add_column(self._INITIAL_DISTRIBUTION, distribution)
+        if self.uncertain_variables:
+            default_variable_name = (
+                self.distributions[self.uncertain_variables[0]]
+                .marginals[0]
+                .DEFAULT_VARIABLE_NAME
+            )
+            add_transformation = False
+            for transformation in transformations:
+                if transformation not in [default_variable_name, self._BLANK]:
+                    add_transformation = True
+                    break
+
+            if add_transformation:
+                table.add_column(self._INITIAL_DISTRIBUTION, distributions)
+                table.add_column("Transformation(x)=", transformations)
+            else:
+                table.add_column("Distribution", distributions)
+
         return table
+
+    def __str__(self) -> str:
+        title = "" if self.deterministic_variables else "Uncertain space"
+        return self._get_string_representation(False, simplify=True, title=title)
 
     def get_tabular_view(
         self,

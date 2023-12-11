@@ -923,6 +923,21 @@ def test_fail_import():
 
 @pytest.fixture(scope="module")
 def table_template() -> str:
+    """Table template with capitalization of field names."""
+    return """
++------+-------------+-------+-------------+-------+
+| Name | Lower bound | Value | Upper bound | Type  |
++------+-------------+-------+-------------+-------+
+| x    |     -inf    |  None |     inf     | float |
+| y{index_0} |     -inf    |  None |     inf     | float |
+| y{index_1} |     -inf    |  None |     inf     | float |
++------+-------------+-------+-------------+-------+
+""".strip()
+
+
+@pytest.fixture(scope="module")
+def table_template_2() -> str:
+    """Table template without capitalization of field names."""
     return """
 +------+-------------+-------+-------------+-------+
 | name | lower_bound | value | upper_bound | type  |
@@ -946,10 +961,10 @@ def design_space_2() -> DesignSpace:
 @pytest.mark.parametrize(
     ("with_index", "indexes"), [(True, ("[0]", "[1]")), (False, ("   ", "   "))]
 )
-def test_get_pretty_table(table_template, design_space_2, with_index, indexes):
+def test_get_pretty_table(table_template_2, design_space_2, with_index, indexes):
     """Check that a design space is correctly rendered."""
     assert (
-        table_template.format(index_0=indexes[0], index_1=indexes[1])
+        table_template_2.format(index_0=indexes[0], index_1=indexes[1])
         == design_space_2.get_pretty_table(with_index=with_index).get_string()
     )
 
@@ -1593,11 +1608,11 @@ def test_repr_html(design_space_2):
     assert design_space_2._repr_html_() == REPR_HTML_WRAPPER.format(
         """Design space:<br/><table>
     <tr>
-        <th style='text-align: left;'>name</th>
-        <th style='text-align: left;'>lower_bound</th>
-        <th style='text-align: left;'>value</th>
-        <th style='text-align: left;'>upper_bound</th>
-        <th style='text-align: left;'>type</th>
+        <th style='text-align: left;'>Name</th>
+        <th style='text-align: left;'>Lower bound</th>
+        <th style='text-align: left;'>Value</th>
+        <th style='text-align: left;'>Upper bound</th>
+        <th style='text-align: left;'>Type</th>
     </tr>
     <tr>
         <td>x</td>

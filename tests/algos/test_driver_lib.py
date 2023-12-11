@@ -133,7 +133,7 @@ def test_require_grad():
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "expected"), [({}, "...  50%|"), ({"message": "foo"}, "foo  50%|")]
+    ("kwargs", "expected"), [({}, "    50%|"), ({"message": "foo"}, "foo  50%|")]
 )
 def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected):
     """Test the new iteration callback."""

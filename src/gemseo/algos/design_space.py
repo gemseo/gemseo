@@ -48,6 +48,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Literal
 from typing import Mapping
@@ -188,6 +189,9 @@ class DesignSpace(collections.abc.MutableMapping):
 
     __DEFAULT_COMMON_DTYPE = __FLOAT_DTYPE
     """The default NumPy data type of the variables."""
+
+    __CAMEL_CASE_REGEX: Final[re.Pattern] = re.compile("[A-Z][^A-Z]*")
+    """A regular expression to decompose a CamelCase string."""
 
     __current_value_array: ndarray
     """The current value stored as a concatenated array."""
@@ -1909,6 +1913,8 @@ class DesignSpace(collections.abc.MutableMapping):
         self,
         fields: Sequence[str] | None = None,
         with_index: bool = False,
+        capitalize: bool = False,
+        simplify: bool = False,
     ) -> PrettyTable:
         """Build a tabular view of the design space.
 
@@ -1917,13 +1923,22 @@ class DesignSpace(collections.abc.MutableMapping):
                 If ``None``, export all the fields.
             with_index: Whether to show index of names for arrays.
                 This is ignored for scalars.
+            capitalize: Whether to capitalize the field names
+                and replace ``"_"`` by ``" "``.
+            simplify: Whether to return a simplified tabular view.
 
         Returns:
             A tabular view of the design space.
         """
         if fields is None:
             fields = self.TABLE_NAMES
-        table = PrettyTable(fields)
+
+        if capitalize:
+            field_names = [field.capitalize().replace("_", " ") for field in fields]
+        else:
+            field_names = fields
+
+        table = PrettyTable(field_names)
         table.float_format = "%.16g"
         for name in self.variable_names:
             size = self.variable_sizes[name]
@@ -1957,8 +1972,8 @@ class DesignSpace(collections.abc.MutableMapping):
                     data["value"] = value
                 table.add_row([data[key] for key in fields])
 
-        table.align["name"] = "l"
-        table.align["type"] = "l"
+        for name in ("Name", "Type") if capitalize else ("name", "type"):
+            table.align[name] = "l"
         return table
 
     def to_hdf(
@@ -2211,29 +2226,43 @@ class DesignSpace(collections.abc.MutableMapping):
         design_space.check()
         return design_space
 
-    def __get_string_representation(self, use_html: bool) -> str:
+    def _get_string_representation(
+        self, use_html: bool, title: str = "", simplify: bool = False
+    ) -> str:
         """Return the string representation of the design space.
 
         Args:
             use_html: Whether the string representation is HTML code.
+            title: The title of the table.
+                If empty, use the name of the class.
+            simplify: Whether to return a simplified string representation.
 
         Returns:
             The string representation of the design space.
         """
-        prefix = " " if self.name else ""
-        suffix = "<br/>" if use_html else "\n"
-        method_name = "get_html_string" if use_html else "get_string"
-        title = " ".join(re.findall("[A-Z][^A-Z]*", self.__class__.__name__)).lower()
-        return (
-            f"{title.capitalize()}:{prefix}{self.name}{suffix}"
-            + getattr(self.get_pretty_table(with_index=True), method_name)()
+        if not title:
+            title = " ".join(
+                self.__CAMEL_CASE_REGEX.findall(self.__class__.__name__)
+            ).lower()
+
+        title = title.capitalize()
+        post_title = ": " if self.name else ":"
+        new_line = "<br/>" if use_html else "\n"
+        pretty_table = self.get_pretty_table(
+            with_index=True, capitalize=True, simplify=simplify
         )
+        pretty_table_method = "get_html_string" if use_html else "get_string"
+        table = getattr(pretty_table, pretty_table_method)()
+        return f"{title}{post_title}{self.name}{new_line}{table}"
 
     def __repr__(self) -> str:
-        return self.__get_string_representation(False)
+        return self._get_string_representation(False)
+
+    def __str__(self) -> str:
+        return self._get_string_representation(False, simplify=True)
 
     def _repr_html_(self) -> str:
-        return REPR_HTML_WRAPPER.format(self.__get_string_representation(True))
+        return REPR_HTML_WRAPPER.format(self._get_string_representation(True))
 
     def project_into_bounds(
         self,
