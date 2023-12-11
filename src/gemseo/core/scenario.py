@@ -45,6 +45,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
+from gemseo.utils.compatibility.python import PYTHON_VERSION
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -177,7 +178,9 @@ class Scenario(MDODiscipline):
     @property
     def post_factory(self) -> PostFactory:
         """The factory of post-processors."""
-        return ScenarioResult.POST_FACTORY
+        if PYTHON_VERSION >= (3, 9):  # pragma: <3.9 no cover
+            return ScenarioResult.POST_FACTORY
+        return ScenarioResult.get_post_factory()  # pragma: >=3.9 no cover
 
     @property
     def _formulation_factory(self) -> MDOFormulationsFactory:
