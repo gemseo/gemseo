@@ -215,7 +215,7 @@ class DriverLibrary(AlgorithmLibrary):
     def init_iter_observer(
         self,
         max_iter: int,
-        message: str = "...",
+        message: str = "",
     ) -> None:
         """Initialize the iteration observer.
 
@@ -223,7 +223,7 @@ class DriverLibrary(AlgorithmLibrary):
 
         Args:
             max_iter: The maximum number of iterations.
-            message: The message to display at the beginning.
+            message: The message to display at the beginning of the progress bar status.
 
         Raises:
             ValueError: If ``max_iter`` is lower than one.
@@ -321,8 +321,11 @@ class DriverLibrary(AlgorithmLibrary):
                 log = MultiLineString()
                 log.indent()
                 log.indent()
-                for line in str(problem.design_space).split("\n"):
+                log.add("Design space:")
+                log.indent()
+                for line in str(problem.design_space).split("\n")[1:]:
                     log.add(line)
+                log.dedent()
                 LOGGER.info("%s", log)
 
     def _check_integer_handling(
@@ -439,8 +442,10 @@ class DriverLibrary(AlgorithmLibrary):
                 log = MultiLineString()
                 log.indent()
                 log.add("over the design space:")
+                log.indent()
                 for line in str(problem.design_space).split("\n")[1:]:
                     log.add(line)
+                log.dedent()
                 LOGGER.info("%s", log)
                 LOGGER.info(
                     "Solving optimization problem with algorithm %s:",

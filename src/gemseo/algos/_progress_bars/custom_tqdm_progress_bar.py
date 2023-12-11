@@ -42,10 +42,10 @@ def _log_status(status: str) -> None:
     """
     if " 0%|" in status:
         return
-    status = status.strip(string.whitespace)
-    if not status:
-        return
-    LOGGER.info("%s", status)
+
+    status = status.rstrip(string.whitespace)
+    if status:
+        LOGGER.info("  %s", status)
 
 
 class CustomTqdmProgressBar(tqdm.tqdm):

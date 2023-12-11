@@ -698,7 +698,7 @@ def test_random_variable_interfaced_distribution(
     assert marginal.parameters == interfaced_distribution_parameters
 
 
-def test_str():
+def test_string_representation():
     """Check the string representation of a parameter space."""
     parameter_space = ParameterSpace()
     parameter_space.add_variable("a")
@@ -707,7 +707,7 @@ def test_str():
     parameter_space.add_random_vector("d", "OTUniformDistribution", maximum=[2, 3, 4])
     expected = """Parameter space:
 +------+-------------+-------+-------------+-------+-------------------------------+
-| name | lower_bound | value | upper_bound | type  |      Initial distribution     |
+| name | lower_bound | value | upper_bound | type  |          Distribution         |
 +------+-------------+-------+-------------+-------+-------------------------------+
 | a    |     -inf    |  None |     inf     | float |                               |
 | b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
@@ -716,8 +716,52 @@ def test_str():
 | d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
 | d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
 | d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
++------+-------------+-------+-------------+-------+-------------------------------+"""  # noqa: E501
+    assert str(parameter_space) == repr(parameter_space) == expected
+
+    parameter_space.remove_variable("a")
+    expected = """Parameter space:
++------+-------------+-------+-------------+-------+-------------------------------+
+| name | lower_bound | value | upper_bound | type  |          Distribution         |
++------+-------------+-------+-------------+-------+-------------------------------+
+| b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[1] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
+| d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
+| d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
 +------+-------------+-------+-------------+-------+-------------------------------+"""
     assert repr(parameter_space) == expected
+
+    expected = """Uncertain space:
++------+-------------------------------+
+| name |          Distribution         |
++------+-------------------------------+
+|  b   | Uniform(lower=0.0, upper=1.0) |
+| c[0] | Uniform(lower=0.0, upper=1.0) |
+| c[1] | Uniform(lower=0.0, upper=1.0) |
+| d[0] |  Uniform(lower=0.0, upper=2)  |
+| d[1] |  Uniform(lower=0.0, upper=3)  |
+| d[2] |  Uniform(lower=0.0, upper=4)  |
++------+-------------------------------+"""
+    assert str(parameter_space) == expected
+
+    parameter_space.add_random_variable(
+        "e", "OTNormalDistribution", transformation="x+2"
+    )
+    expected = """Uncertain space:
++------+-------------------------------+--------------------+
+| name |      Initial distribution     | Transformation(x)= |
++------+-------------------------------+--------------------+
+|  b   | Uniform(lower=0.0, upper=1.0) |         x          |
+| c[0] | Uniform(lower=0.0, upper=1.0) |         x          |
+| c[1] | Uniform(lower=0.0, upper=1.0) |         x          |
+| d[0] |  Uniform(lower=0.0, upper=2)  |         x          |
+| d[1] |  Uniform(lower=0.0, upper=3)  |         x          |
+| d[2] |  Uniform(lower=0.0, upper=4)  |         x          |
+|  e   |   Normal(mu=0.0, sigma=1.0)   |       (x)+2        |
++------+-------------------------------+--------------------+"""  # noqa: E501
+    assert str(parameter_space) == expected
 
 
 def test_existing_variable():
