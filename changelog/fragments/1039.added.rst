@@ -1,0 +1,2 @@
+An example on the usage of the ``MDODiscipline.check_jacobian`` method was added to the documentation.
+Three derivative approximation methods are discussed: finite differences, centered differences and complex step.

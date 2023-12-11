@@ -95,10 +95,18 @@ jacobian_data = discipline.linearize(compute_all_jacobians=True)
 jacobian_data
 
 # %%
-# Lastly,
 # we can change the approximation type to complex step and compare the results:
 discipline.set_jacobian_approximation(
     jac_approx_type=discipline.ApproximationMode.COMPLEX_STEP
 )
-jacobian_data = discipline.linearize(compute_all_jacobians=True)
-jacobian_data
+jacobian_data_complex_step = discipline.linearize(compute_all_jacobians=True)
+jacobian_data_complex_step
+
+# %%
+# Lastly,
+# We can change the approximation type to centered differences and compare the results:
+discipline.set_jacobian_approximation(
+    jac_approx_type=discipline.ApproximationMode.CENTERED_DIFFERENCES
+)
+jacobian_data_centered_differences = discipline.linearize(compute_all_jacobians=True)
+jacobian_data_centered_differences
