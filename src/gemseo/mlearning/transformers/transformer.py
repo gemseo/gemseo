@@ -69,7 +69,7 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             name: A name for this transformer.
             **parameters: The parameters of the transformer.
-        """
+        """  # noqa: D205 D212
         self.name = name or self.__class__.__name__
         self.__parameters = parameters
         self.__is_fitted = False
@@ -111,6 +111,7 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             data: The data to be fitted, shaped as ``(n_observations, n_features)``.
+            *args: The options for the transformer.
         """
 
     @abstractmethod
@@ -195,6 +196,8 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
             Args:
                 data: A 1D or 2D NumPy array.
+                *args: The positional arguments.
+                **kwargs: The optional arguments.
 
             Returns:
                 Any kind of output;

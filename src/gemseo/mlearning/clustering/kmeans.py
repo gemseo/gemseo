@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The k-means algorithm for clustering.
+r"""The k-means algorithm for clustering.
 
 The k-means algorithm groups the data into clusters,
 where the number of clusters :math:`k` is fixed.
@@ -113,7 +113,7 @@ class KMeans(MLPredictiveClusteringAlgo):
             random_state: The random state passed to the method
                 generating the initial centroids
                 Use an integer for reproducible results.
-        """
+        """  # noqa: D205 D212
         n_init = parameters.pop("n_init", "auto")
         super().__init__(
             data,

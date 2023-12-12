@@ -101,6 +101,7 @@ class MDANewtonRaphson(MDARoot):
     ) -> None:
         """
         Args:
+            relax_factor: The relaxation factor.
             newton_linear_solver_name: The name of the linear solver for the Newton
                 method.
             newton_linear_solver_options: The options for the Newton linear solver.

@@ -73,7 +73,7 @@ class ScalableDesignSpace:
                 disciplines.
             d_0: The size of the shared design variable :math:`x_0`.
             names_to_default_values: The default values of the variables.
-        """
+        """  # noqa: D205 D212
         self.variables = []
         name = SHARED_DESIGN_VARIABLE_NAME
         self.__add_variable(name, d_0, names_to_default_values.get(name))

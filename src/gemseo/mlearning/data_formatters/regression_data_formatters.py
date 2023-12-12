@@ -45,8 +45,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
         cls,
         func: Callable[[MLRegressionAlgo, ndarray, Any, ...], ndarray],
     ) -> Callable[[MLRegressionAlgo, DataType, Any, ...], DataType]:
-        """Wrap an array-based function to make it callable with a dictionary of NumPy
-        arrays.
+        """Make an array-based function callable with a dictionary of NumPy arrays.
 
         Args:
             func: The function to be called;

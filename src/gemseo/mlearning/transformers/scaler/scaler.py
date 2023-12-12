@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Scaling a variable with a linear transformation.
+r"""Scaling a variable with a linear transformation.
 
 The :class:`.Scaler` class implements the default scaling method
 applying to some parameter :math:`z`:
@@ -76,7 +76,7 @@ class Scaler(Transformer):
             name: A name for this transformer.
             offset: The offset of the linear transformation.
             coefficient: The coefficient of the linear transformation.
-        """
+        """  # noqa: D205 D212
         super().__init__(name)
         self.offset = offset
         self.coefficient = coefficient
@@ -120,17 +120,17 @@ class Scaler(Transformer):
         )
 
     @Transformer._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return data @ diag(self.coefficient) + self.offset
 
     @Transformer._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return (data - self.offset) @ diag(1 / self.coefficient)
 
     @Transformer._use_2d_array
-    def compute_jacobian(self, data: ndarray) -> ndarray:
+    def compute_jacobian(self, data: ndarray) -> ndarray:  # noqa: D102
         return tile(diag(self.coefficient), (len(data), 1, 1))
 
     @Transformer._use_2d_array
-    def compute_jacobian_inverse(self, data: ndarray) -> ndarray:
+    def compute_jacobian_inverse(self, data: ndarray) -> ndarray:  # noqa: D102
         return tile(diag(1 / self.coefficient), (len(data), 1, 1))

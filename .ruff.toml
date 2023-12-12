@@ -37,11 +37,14 @@ ignore = [
     "PLW1641",
     # Fixture does not return anything, add leading underscore.
     "PT004",
+    # Missing argument description in the docstring.
+    "D417",
 ]
 select = [
     "A",
     "B",
     "C4",
+    "D",
     "E",
     "F",
     "G",
@@ -71,7 +74,6 @@ select = [
     "FURB",
     "PERF",
 #    "C",
-#    "D",
 #    "S",
 #    "PL",
 #    "BLE",
@@ -96,7 +98,6 @@ convention = "google"
 [per-file-ignores]
 "tests/*.py" = ["D", "PT009","PT011", "PT027", "PTH"]
 "doc_src/*.py" = ["T", "D", "B018", "PTH", "E501", "PERF", "A001", "RET504"]
-"src/gemseo/mlearning/*" = ["D"]
 "src/gemseo/utils/testing/opt_lib_test_base.py" = ["D"]
-"src/gemseo/problems/*" = ["D"]
+"src/gemseo/problems/scalable/data_driven/*" = ["D"]
 "src/gemseo/third_party/*" = ["ALL"]

@@ -183,7 +183,7 @@ class MOERegressor(MLRegressionAlgo):
         """
         Args:
             hard: Whether clustering/classification should be hard or soft.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,
@@ -661,7 +661,7 @@ class MOERegressor(MLRegressionAlgo):
         for i, local_model in enumerate(self.regress_models):
             local_model.to_pickle(directory / f"local_model_{i}")
 
-    def load_algo(
+    def load_algo(  # noqa: D102
         self,
         directory: str | Path,
     ) -> None:

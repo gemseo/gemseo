@@ -48,7 +48,7 @@ class DimensionReduction(Transformer):
                 use the maximum number allowed by the technique,
                 typically ``min(n_samples, n_features)``.
             **parameters: The parameters of the transformer.
-        """
+        """  # noqa: D205 D212
         super().__init__(name, n_components=n_components, **parameters)
 
     @property

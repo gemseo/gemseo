@@ -48,7 +48,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     PRESSURE_GRADIENT_LIMIT = 1.04
 
-    def __init__(self, sobieski_base: SobieskiBase) -> None:
+    def __init__(self, sobieski_base: SobieskiBase) -> None:  # noqa: D107
         super().__init__(sobieski_base)
         self.__flag1 = array([1, 1], dtype=self.dtype)
         self.__bound1 = array([0.25, 0.25], dtype=self.dtype)
@@ -140,8 +140,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         self,
         c_f: float,
     ) -> float:
-        """Derive the adimensional friction coefficient with respect to the friction
-        coefficient.
+        """Derive the adimensional friction coefficient wrt the friction coefficient.
 
         Args:
             c_f: The skin friction coefficient.
@@ -423,7 +422,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         return -self.__lift_coeff / wing_area
 
     def __compute_rhov2(self) -> float:
-        """Compute :math:`\rho v^2` (2*dynamic pressure).
+        r"""Compute :math:`\rho v^2` (2*dynamic pressure).
 
         Returns:
             :math:`\rho v^2`.
@@ -436,7 +435,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         altitude: float,
         mach: float,
     ) -> float:
-        """Derive :math:`\rho v^2` with respect to the altitude.
+        r"""Derive :math:`\rho v^2` with respect to the altitude.
 
         Args:
             altitude: The altitude.
@@ -455,7 +454,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         self,
         altitude: float,
     ) -> float:
-        """Derive :math:`\rho v^2` with respect to the Mach number.
+        r"""Derive :math:`\rho v^2` with respect to the Mach number.
 
         Args:
             altitude: The altitude.

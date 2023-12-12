@@ -68,7 +68,7 @@ class RandomForestRegressor(MLRegressionAlgo):
             n_estimators: The number of trees in the forest.
             random_state: The random state passed to the random number generator.
                 Use an integer for reproducible results.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,

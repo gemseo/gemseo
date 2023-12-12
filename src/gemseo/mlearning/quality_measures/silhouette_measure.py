@@ -71,10 +71,10 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         """
         Args:
             algo: A clustering algorithm.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def compute_test_measure(
+    def compute_test_measure(  # noqa: D102
         self,
         test_data: Dataset,
         samples: Sequence[int] | None = None,
@@ -82,7 +82,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     ) -> MeasureType:
         raise NotImplementedError
 
-    def compute_cross_validation_measure(
+    def compute_cross_validation_measure(  # noqa: D102
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -92,7 +92,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     ) -> MeasureType:
         raise NotImplementedError
 
-    def compute_bootstrap_measure(
+    def compute_bootstrap_measure(  # noqa: D102
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,

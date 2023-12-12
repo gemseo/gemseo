@@ -77,6 +77,7 @@ class ParallelCoordinates(DatasetPlot):
             classifier: The name of the variable to group the data.
             lower: The lower bound of the cluster.
             upper: The upper bound of the cluster.
+            **kwargs: The options to pass to pandas.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset, classifier=classifier, lower=lower, upper=upper, kwargs=kwargs

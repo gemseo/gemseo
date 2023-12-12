@@ -408,6 +408,8 @@ class MorrisAnalysis(SensitivityAnalysis):
         plot :math:`\mu_i^*` in function of :math:`\sigma_i`.
 
         Args:
+            directory_path: The path to the directory where to save the plots.
+            file_name: The name of the file.
             offset: The offset to display the inputs names,
                 expressed as a percentage applied to both x-range and y-range.
             lower_mu: The lower bound for :math:`\mu`.

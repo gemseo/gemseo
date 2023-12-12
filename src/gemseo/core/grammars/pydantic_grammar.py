@@ -170,8 +170,8 @@ class PydanticGrammar(BaseGrammar):
         self.__model = Model
         self.__rebuild_model = False
 
-    def _update_grammar_repr(self, _repr: MultiLineString, properties: Any) -> None:
-        _repr.add(f"Type: {properties.annotation}")
+    def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
+        repr_.add(f"Type: {properties.annotation}")
 
     def _validate(  # noqa: D102
         self,

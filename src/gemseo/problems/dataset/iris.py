@@ -17,9 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Iris dataset
-============
+"""Iris dataset.
 
 This is one of the best known :class:`.Dataset`
 to be found in the machine learning literature.
@@ -46,7 +44,6 @@ or classification ones.
 
 `More information about the Iris dataset
 <https://en.wikipedia.org/wiki/Iris_flower_data_set>`_
-
 """
 
 from __future__ import annotations

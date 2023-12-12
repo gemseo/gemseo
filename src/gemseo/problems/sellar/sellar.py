@@ -152,12 +152,12 @@ if WITH_2D_ARRAY:
     class DataConverter(JSONGrammarDataConverter):
         """A data converter where ``x_shared`` is not a ndarray."""
 
-        def convert_value_to_array(self, name: str, value: Any) -> ndarray:
+        def convert_value_to_array(self, name: str, value: Any) -> ndarray:  # noqa: D102
             if name == X_SHARED:
                 return value[0]
             return super().convert_value_to_array(name, value)
 
-        def convert_array_to_value(self, name: str, array_: Any) -> Any:
+        def convert_array_to_value(self, name: str, array_: Any) -> Any:  # noqa: D102
             if name == X_SHARED:
                 return array([array_])
             return super().convert_array_to_value(name, array_)
@@ -169,7 +169,7 @@ else:
 class SellarSystem(MDODiscipline):
     """The discipline to compute the objective and constraints of the Sellar problem."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__()
         input_data = get_inputs()
         self.input_grammar.update_from_data(input_data)
@@ -257,7 +257,7 @@ class SellarSystem(MDODiscipline):
 class Sellar1(MDODiscipline):
     """The discipline to compute the coupling variable :math:`y_1`."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__()
         input_data = get_inputs((X_LOCAL, X_SHARED, Y_2))
         self.input_grammar.update_from_data(input_data)
@@ -313,7 +313,7 @@ class Sellar1(MDODiscipline):
 class Sellar2(MDODiscipline):
     """The discipline to compute the coupling variable :math:`y_2`."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__()
         input_data = get_inputs((X_SHARED, Y_1))
         self.input_grammar.update_from_data(input_data)

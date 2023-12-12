@@ -56,7 +56,7 @@ class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
         """
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
-        """
+        """  # noqa: D205 D212
         super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
         self.sobieski_problem = SobieskiProblem(dtype=dtype)
         self.init_values = {}

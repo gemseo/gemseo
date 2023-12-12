@@ -140,7 +140,7 @@ class MLAlgoAssessor(MDODiscipline):
 
         Raises:
             ValueError: If the measure option "multioutput" is True.
-        """
+        """  # noqa: D205 D212
         super().__init__()
         self.input_grammar.update_from_names(parameters)
         self.output_grammar.update_from_names([self.CRITERION, self.LEARNING])
@@ -251,7 +251,7 @@ class MLAlgoCalibration:
                 to all the variables of this group.
                 If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
             **algo_options: The options of the machine learning algorithm.
-        """
+        """  # noqa: D205 D212
         disc = MLAlgoAssessor(
             algo,
             dataset,

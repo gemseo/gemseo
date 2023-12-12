@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The k-nearest neighbors for classification.
+r"""The k-nearest neighbors for classification.
 
 The k-nearest neighbor classification algorithm is an approach
 to predict the output class of a new input point
@@ -126,7 +126,7 @@ class KNNClassifier(MLClassificationAlgo):
         """
         Args:
             n_neighbors: The number of neighbors.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,

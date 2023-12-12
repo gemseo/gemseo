@@ -135,7 +135,6 @@ class BaseAugmentedLagrangian(
                 which means that the sub-problem is unconstrained.
             initial_rho: The initial value of the penalty.
         """  # noqa: D205, D212, D415
-
         if sub_problem_options is None:
             sub_problem_options = {}
         return self._process_options(
@@ -399,6 +398,7 @@ class BaseAugmentedLagrangian(
             constraint_violation_previous_iteration: The maximum constraint violation at
                 the previous iteration.
             current_penalty: The penalty value at the current iteration.
+            iteration: The iteration number.
             **options: The other options of the update penalty method.
 
         Returns:

@@ -129,7 +129,7 @@ class PolynomialRegressor(LinearRegressor):
 
         Raises:
             ValueError: If the degree is lower than one.
-        """
+        """  # noqa: D205 D212
         if degree < 1:
             raise ValueError("Degree must be >= 1.")
         super().__init__(
@@ -252,7 +252,7 @@ class PolynomialRegressor(LinearRegressor):
         with (directory / "poly.pkl").open("wb") as handle:
             pickle.dump(self._poly, handle)
 
-    def load_algo(
+    def load_algo(  # noqa: D102
         self,
         directory: str | Path,
     ) -> None:

@@ -17,9 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Benchmark MDO formulations based on scalable disciplines
-========================================================
+"""Benchmark MDO formulations based on scalable disciplines.
 
 The :mod:`~gemseo.problems.scalable.study` package implements several classes
 to benchmark MDO formulations based on scalable disciplines.

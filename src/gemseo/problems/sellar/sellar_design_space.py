@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The design space for the MDO problem proposed by Sellar *et al.*
+"""The design space for the MDO problem proposed by Sellar *et al.*.
 
 Sellar, R., Batill, S., & Renaud, J. (1996). Response surface based, concurrent subspace
 optimization for multidisciplinary system design. In 34th aerospace sciences meeting and
@@ -61,7 +61,7 @@ class SellarDesignSpace(DesignSpace):
         """
         Args:
             dtype: The type of the variables defined in the design space.
-        """
+        """  # noqa: D205 D212
         super().__init__()
 
         x_local, x_shared, y_1, y_2 = self.__get_initial_solution(dtype)

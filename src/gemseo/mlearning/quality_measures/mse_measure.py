@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The mean squared error to measure the quality of a regression algorithm.
+r"""The mean squared error to measure the quality of a regression algorithm.
 
 The :mod:`~gemseo.mlearning.quality_measures.mse_measure` module
 implements the concept of mean squared error measures
@@ -61,7 +61,7 @@ class MSEMeasure(MLErrorMeasure):
         """
         Args:
             algo: A machine learning algorithm for regression.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
     def _compute_measure(

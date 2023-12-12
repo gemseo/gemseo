@@ -17,9 +17,7 @@
 #                  initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scalable model
-==============
+"""Scalable model.
 
 This module implements the abstract concept of scalable model
 which is used by scalable disciplines. A scalable model is built
@@ -78,7 +76,7 @@ class ScalableModel:
             sizes: The sizes of the input and output variables.
                 If ``None``, use the original sizes.
             **parameters: The parameters of the model.
-        """
+        """  # noqa: D205 D212
         sizes = sizes or {}
         self.name = self.ABBR + "_" + data.name
         self.data = data

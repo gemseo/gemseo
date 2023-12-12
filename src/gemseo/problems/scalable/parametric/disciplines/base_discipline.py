@@ -55,7 +55,7 @@ class BaseDiscipline(MDODiscipline):
                 to instantiate the core discipline
                 as ``CoreDiscipline(*core_discipline_parameters)``.
             **default_input_values: The default values of the input variables.
-        """
+        """  # noqa: D205 D212
         self._discipline = self._CORE_DISCIPLINE_CLASS(
             *core_discipline_parameters, **default_input_values
         )

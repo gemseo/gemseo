@@ -49,7 +49,7 @@ class PlotlyPlot(BasePlot):
     def __init__(
         self,
         dataset: Dataset,
-        basic_settings: PlotSettings,
+        common_settings: PlotSettings,
         specific_settings: NamedTuple,
         *specific_data: Any,
     ) -> None:
@@ -57,7 +57,7 @@ class PlotlyPlot(BasePlot):
         Args:
             *args: The data to be plotted.
         """  # noqa: D205 D212 D415
-        super().__init__(dataset, basic_settings, specific_settings)
+        super().__init__(dataset, common_settings, specific_settings)
         self.__figure = self._create_figure(*specific_data)
 
     @abstractmethod

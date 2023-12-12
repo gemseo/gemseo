@@ -53,7 +53,7 @@ class SobieskiDesignSpace(DesignSpace):
                 the order of the design variables will be
                 ``"x_1"``, ``"x_2"``, ``"x_3"`` and ``"x_shared"``.
                 Otherwise, ``"x_shared"``, ``"x_1"``, ``"x_2"`` and ``"x_3"``.
-        """
+        """  # noqa: D205 D212
         super().__init__()
         part_a = "original_" if use_original_design_variables_order else ""
         if use_original_names:

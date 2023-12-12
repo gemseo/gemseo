@@ -63,7 +63,7 @@ class MainDiscipline(BaseDiscipline):
         Args:
             *t_i: The threshold vectors :math:`t_1,\ldots,t_N`.
             **default_input_values: The default values of the input variables.
-        """
+        """  # noqa: D205 D212
         self.__n_scalable_disciplines = len(t_i)
         self.__y_i_names = [
             get_coupling_name(index) for index in range(1, len(t_i) + 1)

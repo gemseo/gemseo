@@ -69,8 +69,7 @@ class FininiteElementAnalysis(MDODiscipline):
                 If ``None``, a default value is used.
             name: The name of the discipline.
                 If ``None``, use the class name.
-        """
-
+        """  # noqa: D205 D212
         super().__init__(name=name)
         if fixed_nodes is None:
             fixed_nodes = tile(arange(101), 2)

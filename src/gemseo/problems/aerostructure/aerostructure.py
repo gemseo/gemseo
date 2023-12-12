@@ -17,9 +17,7 @@
 #    initial documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-The aerostructure MDO problem
-*****************************
+r"""The aerostructure MDO problem.
 
 The **aerostructure** module implements all :class:`.MDODiscipline`
 included in the Aerostructure problem:
@@ -118,7 +116,7 @@ class Mission(MDODiscipline):
         Args:
             r_val: The threshold to compute the reserve factor constraint.
             lift_val: The threshold to compute the lift constraint.
-        """
+        """  # noqa: D205 D212
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs("lift", "mass", "drag", "reserve_fact")
         self.re_exec_policy = self.ReExecutionPolicy.DONE
@@ -139,7 +137,7 @@ class Mission(MDODiscipline):
 
     @staticmethod
     def compute_range(lift, mass, drag) -> float:
-        """Compute the objective function: :math:`range=8.10^{11}*lift/(mass*drag)`
+        """Compute the objective function: :math:`range=8.10^{11}*lift/(mass*drag)`.
 
         Args:
             lift: The lift.
@@ -153,7 +151,7 @@ class Mission(MDODiscipline):
 
     @staticmethod
     def c_lift(lift, lift_val: float = 0.5):
-        """Compute the lift constraint: :math:`lift-0.5`
+        """Compute the lift constraint: :math:`lift-0.5`.
 
         Args:
             lift: The lift.
@@ -166,7 +164,7 @@ class Mission(MDODiscipline):
 
     @staticmethod
     def c_rf(reserve_fact, rf_val: float = 0.5):
-        """Compute the reserve factor constraint: :math:`rf-0.5`
+        """Compute the reserve factor constraint: :math:`rf-0.5`.
 
         Args:
             reserve_fact: The reserve factor.
@@ -200,7 +198,7 @@ class Aerodynamics(MDODiscipline):
     Evaluate: ``[drag, forces, lift] = f(sweep, thick_airfoils, displ)``.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs("sweep", "thick_airfoils", "displ")
         self.re_exec_policy = self.ReExecutionPolicy.DONE
@@ -257,8 +255,9 @@ class Aerodynamics(MDODiscipline):
 
     @staticmethod
     def compute_lift(sweep, thick_airfoils, displ):
-        r"""Compute the coupling :math:`lift=(sweep +
-        0.2*thick\\_airfoils-2.*displ)/3000.`
+        r"""Compute the lift.
+
+        :math:`lift=(sweep + 0.2*thick\\_airfoils-2.*displ)/3000.`.
 
         Args:
             sweep: The sweep.
@@ -297,7 +296,7 @@ class Structure(MDODiscipline):
     Evaluate: ``[mass, rf, displ] = f(sweep, thick_panels, forces)``.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs("sweep", "forces", "thick_panels")
         self.re_exec_policy = self.ReExecutionPolicy.DONE
@@ -315,9 +314,9 @@ class Structure(MDODiscipline):
 
     @staticmethod
     def compute_mass(sweep, thick_panels, forces):
-        r"""Compute the coupling
-        :math:`mass=4000*(sweep/360)^3 + 200000 + 100*thick\\_panels
-        + 200.0*forces`
+        r"""Compute the mass.
+
+        :math:`mass=4000*(sweep/360)^3 + 200000 + 100*thick\\_panels + 200.0*forces`.
 
         Args:
              sweep: The sweep.
@@ -372,14 +371,17 @@ class Structure(MDODiscipline):
         # Initialize all matrices to zeros
         self._init_jacobian(inputs, outputs)
         sweep = self.get_inputs_by_name("sweep")
-        self.jac["mass"]["sweep"] = atleast_2d(
-            array([4000.0 * 3.0 * sweep[0] ** 2 / 360.0**3])
-        )
-        self.jac["mass"]["thick_panels"] = atleast_2d(array([100.0]))
-        self.jac["mass"]["forces"] = atleast_2d(array([200.0]))
-        self.jac["reserve_fact"]["sweep"] = atleast_2d(array([-3.0]))
-        self.jac["reserve_fact"]["thick_panels"] = atleast_2d(array([-6.0]))
-        self.jac["reserve_fact"]["forces"] = atleast_2d(array([0.1]))
-        self.jac["displ"]["sweep"] = atleast_2d(array([2.0]))
-        self.jac["displ"]["thick_panels"] = atleast_2d([3.0])
-        self.jac["displ"]["forces"] = atleast_2d(array([-2.0]))
+        jac = self.jac["mass"]
+        jac["sweep"] = atleast_2d(array([4000.0 * 3.0 * sweep[0] ** 2 / 360.0**3]))
+        jac["thick_panels"] = atleast_2d(array([100.0]))
+        jac["forces"] = atleast_2d(array([200.0]))
+
+        jac = self.jac["reserve_fact"]
+        jac["sweep"] = atleast_2d(array([-3.0]))
+        jac["thick_panels"] = atleast_2d(array([-6.0]))
+        jac["forces"] = atleast_2d(array([0.1]))
+
+        jac = self.jac["displ"]
+        jac["sweep"] = atleast_2d(array([2.0]))
+        jac["thick_panels"] = atleast_2d([3.0])
+        jac["forces"] = atleast_2d(array([-2.0]))

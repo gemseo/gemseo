@@ -182,6 +182,11 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         """
         Args:
+            data: See :class:`.DataFrame`.
+            index: See :class:`.DataFrame`.
+            columns:See :class:`.DataFrame`.
+            dtype: See :class:`.DataFrame`.
+            copy: See :class:`.DataFrame`.
             dataset_name: The name of the dataset.
         """  # noqa: D205, D212, D415
         if data is None and index is None and columns is None:

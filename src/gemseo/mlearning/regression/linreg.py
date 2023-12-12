@@ -110,7 +110,7 @@ class LinearRegressor(MLRegressionAlgo):
                 when there is a penalty.
                 Use an integer for reproducible results.
             **parameters: The parameters of the machine learning algorithm.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,

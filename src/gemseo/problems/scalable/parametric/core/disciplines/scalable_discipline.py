@@ -109,7 +109,7 @@ class ScalableDiscipline(BaseDiscipline):
                 where :math:`C_{i,j}` is used
                 to multiply the coupling variable :math:`y_j`.
             **default_input_values: The default values of the input variables.
-        """
+        """  # noqa: D205 D212
         self.name = f"{self.__class__.__name__}[{index}]"
         self.index = index
         self.input_names_to_default_values = default_input_values

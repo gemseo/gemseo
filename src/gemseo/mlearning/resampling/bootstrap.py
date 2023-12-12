@@ -43,7 +43,7 @@ class Bootstrap(Resampler):
         """
         Args:
             n_replicates: The number of bootstrap replicates.
-        """
+        """  # noqa: D205 D212
         super().__init__(sample_indices, n_splits=n_replicates, seed=seed)
 
     def _create_splits(self) -> Splits:

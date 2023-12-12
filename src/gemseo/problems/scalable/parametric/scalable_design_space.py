@@ -59,8 +59,7 @@ class ScalableDesignSpace(ParameterSpace):
         names_to_default_values: Mapping[str, NDArray[float]] = MappingProxyType({}),
         add_uncertain_variables: bool = False,
     ) -> None:
-        r"""
-        Args:
+        r"""Args:
             discipline_settings: The configurations of the different disciplines.
                 If ``None``,
                 use a single discipline
@@ -79,7 +78,7 @@ class ScalableDesignSpace(ParameterSpace):
             ``n_local[i]`` (resp. ``n_coupling[i]``)
             is the number of local design variables (resp. coupling variables)
             of the *i*-th scalable discipline.
-        """
+        """  # noqa: D205 D212
         super().__init__()
         design_space = _ScalableDesignSpace(
             scalable_discipline_settings=discipline_settings,

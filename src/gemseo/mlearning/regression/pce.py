@@ -148,9 +148,7 @@ class CleaningOptions:
 class PCERegressor(MLRegressionAlgo):
     """Polynomial chaos expansion model.
 
-    See Also:
-
-    API documentation of the OpenTURNS class `FunctionalChaosAlgorithm`_.
+    See Also: API documentation of the OpenTURNS class `FunctionalChaosAlgorithm`_.
     """
 
     SHORT_ALGO_NAME: ClassVar[str] = "PCE"
@@ -216,7 +214,7 @@ class PCERegressor(MLRegressionAlgo):
                 of an input variable,
                 when an input variable has a data transformer
                 or when a probability distribution is not an :class:`.OTDistribution`.
-        """
+        """  # noqa: D205 D212
         if cleaning_options is None:
             cleaning_options = CleaningOptions()
 

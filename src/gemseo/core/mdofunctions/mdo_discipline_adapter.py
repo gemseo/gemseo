@@ -101,11 +101,11 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         )
 
     @property
-    def linear_candidate(self) -> bool:
+    def linear_candidate(self) -> bool:  # noqa: D102
         return self.__linear_candidate
 
     @property
-    def input_dimension(self) -> int | None:
+    def input_dimension(self) -> int | None:  # noqa: D102
         return self.__input_dimension
 
     def __compute_input_dimension(

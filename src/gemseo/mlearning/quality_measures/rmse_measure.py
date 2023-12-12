@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The root mean squared error to measure the quality of a regression algorithm.
+r"""The root mean squared error to measure the quality of a regression algorithm.
 
 The :mod:`~gemseo.mlearning.quality_measures.mse_measure` module
 implements the concept of root mean squared error measures
@@ -62,10 +62,10 @@ class RMSEMeasure(MSEMeasure):
         """
         Args:
             algo: A machine learning algorithm for regression.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def compute_learning_measure(
+    def compute_learning_measure(  # noqa: D102
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -77,7 +77,7 @@ class RMSEMeasure(MSEMeasure):
             )
         )
 
-    def compute_test_measure(
+    def compute_test_measure(  # noqa: D102
         self,
         test_data: IODataset,
         samples: Sequence[int] | None = None,
@@ -90,7 +90,7 @@ class RMSEMeasure(MSEMeasure):
             )
         )
 
-    def compute_cross_validation_measure(
+    def compute_cross_validation_measure(  # noqa: D102
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -112,7 +112,7 @@ class RMSEMeasure(MSEMeasure):
             )
         )
 
-    def compute_bootstrap_measure(
+    def compute_bootstrap_measure(  # noqa: D102
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,

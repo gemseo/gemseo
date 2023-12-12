@@ -43,5 +43,5 @@ class SobieskiChain(MDOChain):
         """
         Args:
             dtype: The NumPy type for data arrays, either "float64" or "complex128".
-        """
+        """  # noqa: D205 D212
         super().__init__(create_disciplines(dtype), "SobieskiChain")

@@ -112,11 +112,11 @@ class FunctionFromDiscipline(LinearCandidateFunction):
         )
 
     @property
-    def linear_candidate(self) -> bool:
+    def linear_candidate(self) -> bool:  # noqa: D102
         return self.__out_x_func.linear_candidate
 
     @property
-    def input_dimension(self) -> int | None:
+    def input_dimension(self) -> int | None:  # noqa: D102
         return self.__out_x_func.input_dimension
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:

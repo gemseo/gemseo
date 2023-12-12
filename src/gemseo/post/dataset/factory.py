@@ -57,7 +57,7 @@ class DatasetPlotFactory(BaseFactory):
         Args:
             plot_name: The name of a plot method for dataset (its class name).
             dataset: The dataset to visualize.
-            options: The additional options specific to this plot method.
+            **options: The additional options specific to this plot method.
 
         Returns:
             A plot method built from the provided dataset.
