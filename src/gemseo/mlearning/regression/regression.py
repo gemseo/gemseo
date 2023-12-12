@@ -18,7 +18,7 @@
 #        :author: Matthias De Lozzo
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""This module contains the baseclass for regression algorithms.
+r"""This module contains the baseclass for regression algorithms.
 
 The :mod:`~gemseo.mlearning.regression.regression` module
 implements regression algorithms,
@@ -98,7 +98,7 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     DataFormatters = RegressionDataFormatters
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         data: IODataset,
         transformer: TransformerType = MLSupervisedAlgo.IDENTITY,

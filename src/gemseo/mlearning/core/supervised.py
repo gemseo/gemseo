@@ -18,7 +18,7 @@
 #        :author: Matthias De Lozzo
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""This module contains the base class for the supervised machine learning algorithms.
+r"""This module contains the base class for the supervised machine learning algorithms.
 
 Supervised machine learning is a task of learning relationships
 between input and output variables based on an input-output dataset.
@@ -142,7 +142,7 @@ class MLSupervisedAlgo(MLAlgo):
                 If ``None``, consider all the input variables of the learning dataset.
             output_names: The names of the output variables.
                 If ``None``, consider all the output variables of the learning dataset.
-        """
+        """  # noqa: D205 D212
         super().__init__(data, transformer=transformer, **parameters)
         self.input_names = input_names or data.get_variable_names(data.INPUT_GROUP)
         self.output_names = output_names or data.get_variable_names(data.OUTPUT_GROUP)
@@ -207,7 +207,7 @@ class MLSupervisedAlgo(MLAlgo):
 
         Returns:
             The transformed data.
-        """
+        """  # noqa: D205 D212
         if inverse:
             function = self.transformer[name].inverse_transform
         else:

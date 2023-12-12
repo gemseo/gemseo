@@ -55,7 +55,7 @@ class CrossValidation(Resampler):
         Args:
             n_folds: The number of folds.
             randomize: Whether the sample indices are shuffled before splitting.
-        """
+        """  # noqa: D205 D212
         self.__randomize = randomize
         self.__shuffled_sample_indices = sample_indices.copy()
         if randomize:

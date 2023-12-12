@@ -79,7 +79,7 @@ class KLSVD(DimensionReduction):
                 if ``None``, use the default value implemented by OpenTURNS.
             use_halko2010: Whether to use the *halko2010* algorithm
                 or the *halko2011* one.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             name,
             mesh=mesh,
@@ -126,11 +126,11 @@ class KLSVD(DimensionReduction):
         )
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return array(self.algo.project(self._get_process_sample(data)))
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return array([
             list(self.algo.liftAsSample(Point(list(coefficients))))
             for coefficients in data

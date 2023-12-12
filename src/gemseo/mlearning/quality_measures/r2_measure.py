@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The R2 to measure the quality of a regression algorithm.
+r"""The R2 to measure the quality of a regression algorithm.
 
 The :mod:`~gemseo.mlearning.quality_measures.r2_measure` module
 implements the concept of R2 measures for machine learning algorithms.
@@ -70,7 +70,7 @@ class R2Measure(MLErrorMeasure):
         """
         Args:
             algo: A machine learning algorithm for regression.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers)
 
     def _compute_measure(
@@ -85,7 +85,7 @@ class R2Measure(MLErrorMeasure):
             multioutput=self._GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT[multioutput],
         )
 
-    def compute_cross_validation_measure(
+    def compute_cross_validation_measure(  # noqa: D102
         self,
         n_folds: int = 5,
         samples: list[int] | None = None,
@@ -171,7 +171,7 @@ class R2Measure(MLErrorMeasure):
 
         return self._post_process_measure(1 - mse / var, multioutput, as_dict)
 
-    def compute_bootstrap_measure(
+    def compute_bootstrap_measure(  # noqa: D102
         self,
         n_replicates: int = 100,
         samples: list[int] | None = None,

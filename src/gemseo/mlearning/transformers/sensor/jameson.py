@@ -47,7 +47,7 @@ class JamesonSensor(Transformer):
             removing_part: The level of the signal to
                 remove in order to avoid leading and trailing edge effects.
             dimension: The dimension of the mesh.
-        """
+        """  # noqa: D205 D212
         super().__init__(name)
         self.threshold = threshold
         self.removing_part = removing_part
@@ -57,7 +57,7 @@ class JamesonSensor(Transformer):
         self.threshold *= amax(data)
 
     @Transformer._use_2d_array
-    def transform(
+    def transform(  # noqa: D102
         self,
         data: ndarray,
     ) -> ndarray:

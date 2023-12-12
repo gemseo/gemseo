@@ -118,7 +118,7 @@ class DOELibrary(DriverLibrary):
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
     """Whether the algorithms use a unit hypercube to generate the input samples."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__()
         self.unit_samples = array([])
         self.samples = array([])

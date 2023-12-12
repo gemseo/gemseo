@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Augmented Lagrangian of order 1."""
 
 from __future__ import annotations
 
@@ -29,10 +30,10 @@ if TYPE_CHECKING:
 
 
 class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
-    """An Augmented Lagrangian algorithm where Lagrange multipliers are updated using
-    gradient information.
+    """An augmented Lagrangian algorithm of order 1.
 
-    The Lagrange multipliers are computed using the :class:`LagrangeMultipliers` class.
+    The Lagrange multipliers are updated using gradient information
+    computed using the :class:`.LagrangeMultipliers` class.
     """
 
     __lagrange_multiplier_calculator: LagrangeMultipliers

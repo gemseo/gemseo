@@ -126,9 +126,13 @@ class MDAGSNewton(MDASequential):
     ) -> None:
         """
         Args:
+            relax_factor: The relaxation factor.
             max_mda_iter_gs: The maximum number of iterations of the Gauss-Seidel MDA.
             newton_linear_solver: The name of the linear solver for the Newton method.
             newton_linear_solver_options: The options for the Newton linear solver.
+            log_convergence: Whether to log the MDA convergence,
+                expressed in terms of normed residuals.
+            **newton_mda_options: The options for the Newton MDA.
         """  # noqa:D205 D212 D415
         mda_gauss_seidel = MDAGaussSeidel(
             disciplines,

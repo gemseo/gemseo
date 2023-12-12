@@ -15,8 +15,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Generation of the design space and disciplines of the topology optimization
-problems."""
+"""Design space and disciplines of the topology optimization problems."""
 
 from __future__ import annotations
 
@@ -68,7 +67,6 @@ def initialize_design_space_and_discipline_to(
             imposed in the topology optimization solution.
 
     Returns:
-
         - The design space.
         - The disciplines.
     """

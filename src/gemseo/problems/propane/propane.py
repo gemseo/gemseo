@@ -19,9 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 # from Tedford2010
 # Propane combustion, p12
-r"""
-The propane combustion MDO problem
-**********************************
+r"""The propane combustion MDO problem.
 
 The Propane MDO problem can be found in :cite:`Padula1996`
 and :cite:`TedfordMartins2006`. It represents the chemical equilibrium
@@ -133,7 +131,7 @@ class PropaneReaction(MDODiscipline):
         for which discipline analyses are not computable.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {
             "x_shared": ones(4, dtype=complex128),
@@ -238,7 +236,7 @@ class PropaneComb1(MDODiscipline):
     This discipline is characterized by two coupling equations in functional form.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.ReExecutionPolicy.DONE
@@ -281,7 +279,7 @@ class PropaneComb2(MDODiscipline):
     This discipline is characterized by two coupling equations in functional form.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.ReExecutionPolicy.DONE
@@ -327,7 +325,7 @@ class PropaneComb3(MDODiscipline):
     This discipline is characterized by three coupling equations in functional form.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.ReExecutionPolicy.DONE

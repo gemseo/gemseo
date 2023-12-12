@@ -34,7 +34,7 @@ class Splits(Collection):
         """
         Args:
             *splits: The train-test splits.
-        """
+        """  # noqa: D205 D212
         self.__splits = splits
 
     def __contains__(self, item: Split) -> bool:

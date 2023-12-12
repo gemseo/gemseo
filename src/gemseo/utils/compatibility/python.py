@@ -45,7 +45,7 @@ if PYTHON_VERSION < (3, 9):  # pragma: >=3.9 no cover
 
     _get_origin = get_origin
 
-    def get_origin(tp) -> type:
+    def get_origin(tp) -> type:  # noqa: D103
         origin = _get_origin(tp)
         if origin is None:
             return getattr(tp, "__origin__", None)
@@ -53,7 +53,7 @@ if PYTHON_VERSION < (3, 9):  # pragma: >=3.9 no cover
 
     _get_args = get_args
 
-    def get_args(tp) -> tuple:
+    def get_args(tp) -> tuple:  # noqa: D103
         args = _get_args(tp)
         if not args:
             return getattr(tp, "__args__", None)

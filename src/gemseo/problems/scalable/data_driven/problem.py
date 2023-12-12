@@ -17,9 +17,7 @@
 #         documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scalable MDO problem
-====================
+"""Scalable MDO problem.
 
 This module implements the concept of scalable problem by means of the
 :class:`.ScalableProblem` class.

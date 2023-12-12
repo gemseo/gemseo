@@ -354,6 +354,11 @@ class CorrelationAnalysis(SensitivityAnalysis):
         file_name: str = "",
         file_format: str = "",
     ) -> None:
+        """
+        Args:
+            directory_path: The path to the directory where to save the plots.
+            file_name: The name of the file.
+        """  # noqa: D212, D205
         if isinstance(output, str):
             output_name, output_index = output, 0
         else:

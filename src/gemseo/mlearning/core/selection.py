@@ -110,7 +110,7 @@ class MLAlgoSelection:
 
         Raises:
             ValueError: If the unsupported "multioutput" option is enabled.
-        """
+        """  # noqa: D205 D212
         self.dataset = dataset
         if isinstance(measure, str):
             self.measure = MLQualityMeasureFactory().get_class(measure)

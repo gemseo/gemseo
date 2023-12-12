@@ -71,7 +71,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     n_classes: int
     """The number of classes."""
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         data: IODataset,
         transformer: TransformerType = MLSupervisedAlgo.IDENTITY,

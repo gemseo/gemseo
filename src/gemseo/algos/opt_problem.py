@@ -702,8 +702,7 @@ class OptimizationProblem(BaseProblem):
         self.constraints = []
 
     def get_reformulated_problem_with_slack_variables(self) -> OptimizationProblem:
-        r"""Add slack variables and replace inequality constraints with equality
-        constraints.
+        r"""Add slack variables and replace inequality constraints with equality ones.
 
         Given the original optimization problem,
 

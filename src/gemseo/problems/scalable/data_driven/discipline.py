@@ -17,9 +17,7 @@
 #                  initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scalable discipline
-===================
+"""Scalable discipline.
 
 The :mod:`~gemseo.problems.scalable.data_driven.discipline`
 implements the concept of scalable discipline.
@@ -87,7 +85,7 @@ class ScalableDiscipline(MDODiscipline):
             sizes: The sizes of the input and output variables.
                 If ``None``, use the original sizes.
             **parameters: The parameters for the model.
-        """
+        """  # noqa: D205 D212
         self.scalable_model = ScalableModelFactory().create(
             name, data=data, sizes=sizes, **parameters
         )

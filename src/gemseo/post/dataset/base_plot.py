@@ -132,7 +132,14 @@ class BasePlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def _save(self, file_path: str | Path) -> tuple[str]:
-        """Save the plot on the disk."""
+        """Save the plot or sub-plots on the disk.
+
+        Args:
+            file_path: The path to the file to save.
+
+        Returns:
+            The path to the files.
+        """
 
     @classmethod
     def _stringify_color(cls, color: str | tuple[float, float, float, float]) -> str:

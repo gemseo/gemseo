@@ -17,9 +17,7 @@
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-Burgers dataset
-===============
+r"""Burgers dataset.
 
 This :class:`.Dataset` contains solutions to the Burgers' equation with
 periodic boundary conditions on the interval :math:`[0, 2\pi]` for different
@@ -56,15 +54,7 @@ from numpy import newaxis
 from numpy import pi
 from numpy import square
 
-from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.io_dataset import IODataset
-
-
-class BurgersDiscipline(MDODiscipline):
-    def __init__(self) -> None:
-        super().__init__()
-        self.input_grammar.initialize_from_data_names(["x", "z"])
-        self.output_grammar.initialize_from_data_names(["f", "g"])
 
 
 def create_burgers_dataset(

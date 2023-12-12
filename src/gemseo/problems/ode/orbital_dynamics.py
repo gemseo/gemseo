@@ -117,8 +117,7 @@ def _compute_rhs_jacobian(time: float, state: NDArray[float]) -> NDArray[float]:
 
 
 class OrbitalDynamics(ODEProblem):
-    """Equations of motion of a massive point particle under the influence of a central
-    force."""
+    """Equations of motion of a massive point particle under a central force."""
 
     def __init__(
         self,
@@ -133,7 +132,7 @@ class OrbitalDynamics(ODEProblem):
             state_vector: The state vector
                 :math:`s(t)=(x(t), y(t), \dot{x(t)}, \dot{y(t)})`
                 of the system.
-        """
+        """  # noqa: D205 D212
         if state_vector is None:
             state_vector = zeros(2)
         self.state_vector = state_vector

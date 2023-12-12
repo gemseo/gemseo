@@ -61,7 +61,7 @@ class PCA(DimensionReduction):
         Args:
             scale: Whether to scale the data before applying the PCA.
             **parameters: The optional parameters for sklearn PCA constructor.
-        """
+        """  # noqa: D205 D212
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = SKLPCA(n_components, **parameters)
         self.__scaler = StandardScaler() if scale else Scaler()
@@ -72,21 +72,21 @@ class PCA(DimensionReduction):
         self.parameters["n_components"] = self.algo.n_components_
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.algo.transform(self.__scaler.transform(data))
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.__scaler.inverse_transform(self.algo.inverse_transform(data))
 
     @DimensionReduction._use_2d_array
-    def compute_jacobian(self, data: ndarray) -> ndarray:
+    def compute_jacobian(self, data: ndarray) -> ndarray:  # noqa: D102
         return tile(
             self.algo.components_, (len(data), 1, 1)
         ) @ self.__scaler.compute_jacobian(data)
 
     @DimensionReduction._use_2d_array
-    def compute_jacobian_inverse(self, data: ndarray) -> ndarray:
+    def compute_jacobian_inverse(self, data: ndarray) -> ndarray:  # noqa: D102
         _data = self.algo.inverse_transform(data)
         return self.__scaler.compute_jacobian_inverse(_data) @ tile(
             self.algo.components_.T, (len(data), 1, 1)

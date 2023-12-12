@@ -36,7 +36,6 @@ such that in the scaled space,
 the original data have zero mean and unit standard deviation.
 
 Warnings:
-
     When :math:`\text{std}(z)=0` and :math:`\text{mean}(z)\neq 0`,
     we use :math:`\bar{z}=\frac{z}{\text{mean}(z)}-1`.
     When :math:`\text{std}(z)=0` and :math:`\text{mean}(z)=0`,
@@ -70,7 +69,7 @@ class StandardScaler(Scaler):
             name: A name for this transformer.
             offset: The offset of the linear transformation.
             coefficient: The coefficient of the linear transformation.
-        """
+        """  # noqa: D205 D212
         super().__init__(name, offset, coefficient)
 
     def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:

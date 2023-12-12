@@ -71,7 +71,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
     n_clusters: int
     """The number of clusters."""
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         data: Dataset,
         transformer: TransformerType = MLUnsupervisedAlgo.IDENTITY,
@@ -247,7 +247,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         """Predict the probability of belonging to each cluster.
 
         Args:
-            The input data with shape (n_samples, n_inputs).
+            data: The input data with shape (n_samples, n_inputs).
 
         Returns:
             The probability of belonging to each cluster

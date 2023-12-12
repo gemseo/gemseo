@@ -589,6 +589,8 @@ class SobolAnalysis(SensitivityAnalysis):
         of the output of interest.
 
         Args:
+            directory_path: The path to the directory where to save the plots.
+            file_name: The name of the file.
             title: The title of the plot.
                 If empty, use a default one.
             sort: Whether to sort the uncertain variables by decreasing order.

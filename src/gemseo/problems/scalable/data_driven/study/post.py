@@ -69,8 +69,7 @@ POSTSTUDY_DIRECTORY = POST_DIRECTORY / "scalability_study"
 
 
 class PostScalabilityStudy:
-    """The PostScalabilityStudy class aims to post-process a list of scalability results
-    stored in a directory."""
+    """Post-processing of scalability results."""
 
     NOMENCLATURE: ClassVar[dict[str, str]] = {
         "exec_time": "Execution time (s)",

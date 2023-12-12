@@ -161,7 +161,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
             n_restarts_optimizer: The number of restarts of the optimizer.
             random_state: The random state passed to the random number generator.
                 Use an integer for reproducible results.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,

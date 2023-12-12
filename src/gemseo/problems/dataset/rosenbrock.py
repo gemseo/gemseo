@@ -17,9 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Rosenbrock dataset
-==================
+"""Rosenbrock dataset.
 
 This :class:`.Dataset` contains 100 evaluations
 of the well-known Rosenbrock function:

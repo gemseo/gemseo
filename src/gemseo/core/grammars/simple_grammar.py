@@ -181,8 +181,8 @@ class SimpleGrammar(BaseGrammar):
         self.__names_to_types = {}
         self.__required_names = set()
 
-    def _update_grammar_repr(self, _repr: MultiLineString, properties: Any) -> None:
-        _repr.add(f"Type: {properties}")
+    def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
+        repr_.add(f"Type: {properties}")
 
     def _validate(  # noqa: D102
         self,

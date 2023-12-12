@@ -17,10 +17,7 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-The Rastrigin analytic problem
-******************************
-"""
+"""The Rastrigin analytic problem."""
 
 from __future__ import annotations
 
@@ -41,7 +38,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Rastrigin(OptimizationProblem):
-    r"""**Rastrigin** :class:`.OptimizationProblem`.
+    r"""The Rastrigin optimization problem.
 
     It uses the Rastrigin objective function
     with the :class:`.DesignSpace` :math:`[-0.1,0.1]^2`
@@ -70,7 +67,7 @@ class Rastrigin(OptimizationProblem):
     Parallel Computing, 17, pages 619-632, 1991.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         design_space = DesignSpace()
         design_space.add_variable("x", 2, l_b=-0.1, u_b=0.1)
         design_space.set_current_value(full(2, 0.01))

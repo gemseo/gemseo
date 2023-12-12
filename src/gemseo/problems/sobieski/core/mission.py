@@ -350,7 +350,6 @@ class SobieskiMission(SobieskiDiscipline):
         Returns:
             The Jacobian of the discipline.
         """
-
         jacobian = self.__initialize_jacobian()
         sqrt_theta = self.__compute_sqrt_theta(altitude)
         dtheta_dh = self.__compute_dtheta_dh(altitude)

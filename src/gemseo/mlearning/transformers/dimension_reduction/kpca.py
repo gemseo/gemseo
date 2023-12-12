@@ -62,7 +62,7 @@ class KPCA(DimensionReduction):
             kernel: The name of the kernel,
                 either 'linear', 'poly', 'rbf', 'sigmoid', 'cosine' or 'precomputed'.
             **parameters: The optional parameters for sklearn KPCA constructor.
-        """
+        """  # noqa: D205 D212
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = KernelPCA(
             n_components,
@@ -76,9 +76,9 @@ class KPCA(DimensionReduction):
         self.parameters["n_components"] = len(self.algo.eigenvalues_)
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.algo.transform(data)
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.algo.inverse_transform(data)

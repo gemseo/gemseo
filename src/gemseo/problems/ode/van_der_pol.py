@@ -102,7 +102,7 @@ class VanDerPol(ODEProblem):
             use_jacobian: Whether to use the analytical expression of the Jacobian.
                 If false, use finite differences to estimate the Jacobian.
             state_vector: The state vector of the system.
-        """
+        """  # noqa: D205 D212
         self._mu = mu
 
         if state_vector is None:

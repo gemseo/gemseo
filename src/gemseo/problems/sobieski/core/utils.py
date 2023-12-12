@@ -117,7 +117,7 @@ class SobieskiBase:
         """
         Args:
             dtype: The NumPy data type.
-        """
+        """  # noqa: D205 D212
         if dtype == self.DataType.COMPLEX:
             self.math = cmath
             self.dtype = complex128

@@ -17,17 +17,13 @@
 #                         documentation
 #        :author: François Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Dummy linear discipline generator
-=================================
+"""Dummy linear discipline generator.
 
-A utility that generates dummy disciplines from a specification.
-The inputs and output names are specified by the user.
-A linear random dependency between the inputs and outputs is created.
-The size of the inputs and outputs can be parametrized by the user.
-The MDA of the generated disciplines will always converge because all the outputs
-are in [0, 1] if the inputs are in [0, 1].
-The analytic Jacobian is provided.
+A utility that generates dummy disciplines from a specification. The inputs and output
+names are specified by the user. A linear random dependency between the inputs and
+outputs is created. The size of the inputs and outputs can be parametrized by the user.
+The MDA of the generated disciplines will always converge because all the outputs are in
+[0, 1] if the inputs are in [0, 1]. The analytic Jacobian is provided.
 """
 
 from __future__ import annotations

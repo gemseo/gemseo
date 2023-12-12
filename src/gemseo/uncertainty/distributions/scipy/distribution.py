@@ -155,7 +155,7 @@ class SPDistribution(Distribution):
         """
         Args:
             random_state: The SciPy random state.
-        """
+        """  # noqa: D205, D212
         return vstack([m.rvs(n_samples, random_state) for m in self.marginals]).T
 
     def compute_cdf(  # noqa: D102

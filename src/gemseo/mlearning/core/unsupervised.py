@@ -68,7 +68,7 @@ class MLUnsupervisedAlgo(MLAlgo):
         Args:
             var_names: The names of the variables.
                 If ``None``, consider all variables mentioned in the learning dataset.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data, transformer=transformer, var_names=var_names, **parameters
         )

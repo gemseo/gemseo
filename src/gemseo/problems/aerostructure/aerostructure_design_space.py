@@ -16,10 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Aerostructure MDO problem's Design Space
-****************************************
-"""
+"""The design space for the aero-structure MDO problem."""
 
 from __future__ import annotations
 
@@ -29,9 +26,7 @@ from gemseo.algos.design_space import DesignSpace
 
 
 class AerostructureDesignSpace(DesignSpace):
-    """**AerostructureDesignSpace** creates the :class:`.DesignSpace` of the
-    Aerostructure problem whose :class:`.MDODiscipline` are :class:`.Aerodynamics`,
-    :class:`.Structure` and :class:`.Mission`.
+    """The design space for the aero-structure MDO problem.
 
     - thick_airfoils belongs to [5., 25.], with initial value equal to 15.
     - thick_panels belongs to [1., 20.], with initial value equal to 3.

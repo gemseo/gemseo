@@ -56,7 +56,7 @@ class Power(Transformer):
             name: A name for this transformer. If ``None``, use the class name.
             standardize: Whether to apply zero-mean, unit-variance
                 normalization to the transformed output.
-        """
+        """  # noqa: D205 D212
         super().__init__(name, standardize=standardize)
         self.__power_transformer = PowerTransformer(
             method=self._TRANSFORMER_NAME,
@@ -68,9 +68,9 @@ class Power(Transformer):
         self.lambdas_ = self.__power_transformer.lambdas_
 
     @Transformer._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.__power_transformer.transform(data)
 
     @Transformer._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.__power_transformer.inverse_transform(data)

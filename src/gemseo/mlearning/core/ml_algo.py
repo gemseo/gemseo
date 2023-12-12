@@ -228,7 +228,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         Raises:
             ValueError: When both the variable and the group it belongs to
                 have a transformer.
-        """
+        """  # noqa: D205 D212
         self.resampling_results = {}
         self.learning_set = data
         self.parameters = parameters

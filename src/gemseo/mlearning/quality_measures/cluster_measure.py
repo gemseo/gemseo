@@ -55,10 +55,10 @@ class MLClusteringMeasure(MLQualityMeasure):
         """
         Args:
             algo: A machine learning algorithm for clustering.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def compute_learning_measure(
+    def compute_learning_measure(  # noqa: D102
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -116,10 +116,10 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         """
         Args:
             algo: A machine learning algorithm for predictive clustering.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def compute_test_measure(
+    def compute_test_measure(  # noqa: D102
         self,
         test_data: Dataset,
         samples: Sequence[int] | None = None,
@@ -129,7 +129,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         data = test_data.get_view(variable_names=self.algo.var_names).to_numpy()
         return self._compute_measure(data, self.algo.predict(data), multioutput)
 
-    def compute_cross_validation_measure(
+    def compute_cross_validation_measure(  # noqa: D102
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -153,7 +153,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         )
         return self._compute_measure(data, predictions, multioutput)
 
-    def compute_bootstrap_measure(
+    def compute_bootstrap_measure(  # noqa: D102
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,

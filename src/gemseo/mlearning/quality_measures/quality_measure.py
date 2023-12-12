@@ -125,7 +125,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If ``False``,
                 use the transformers of the algorithm fitted
                 from the whole learning dataset.
-        """
+        """  # noqa: D205 D212
         self.algo = algo
         self._fit_transformers = fit_transformers
         self.__default_seed = SEED

@@ -556,33 +556,33 @@ class MDOFunction(Serializable):
             self._jac, NotImplementedCallable
         )
 
-    def __add__(self, other_f: MDOFunction) -> MDOFunction:
+    def __add__(self, other: MDOFunction) -> MDOFunction:
         """Operator defining the sum of the function and another one.
 
         This operator supports automatic differentiation
         if both functions have an implemented Jacobian function.
 
         Args:
-            other_f: The other function.
+            other: The other function.
 
         Returns:
             The sum of the function and the other one.
         """
-        return _AdditionFunctionMaker(MDOFunction, self, other_f).function
+        return _AdditionFunctionMaker(MDOFunction, self, other).function
 
-    def __sub__(self, other_f: MDOFunction) -> MDOFunction:
+    def __sub__(self, other: MDOFunction) -> MDOFunction:
         """Operator defining the difference of the function and another one.
 
         This operator supports automatic differentiation
         if both functions have an implemented Jacobian function.
 
         Args:
-            other_f: The other function.
+            other: The other function.
 
         Returns:
             The difference of the function and the other one.
         """
-        return _AdditionFunctionMaker(MDOFunction, self, other_f, inverse=True).function
+        return _AdditionFunctionMaker(MDOFunction, self, other, inverse=True).function
 
     def _min_pt(self, x_vect: ArrayType) -> ArrayType:
         """Evaluate the function and return its opposite value.

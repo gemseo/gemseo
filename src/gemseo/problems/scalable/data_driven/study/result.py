@@ -17,10 +17,7 @@
 #         documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scalability study - Result
-==========================
-"""
+"""Scalability study - Result."""
 
 from __future__ import annotations
 

@@ -150,7 +150,7 @@ class RBFRegressor(MLRegressionAlgo):
                 <https://docs.scipy.org/doc/scipy/reference/generated/
                 scipy.spatial.distance.cdist.html>`_
                 or a function that computes the distance between two points.
-        """
+        """  # noqa: D205 D212 D415
         super().__init__(
             data,
             transformer=transformer,
@@ -185,7 +185,7 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative of  :math:`f(r) = \sqrt{r^2 + 1}` wrt :math:`x`.
+            r"""Compute derivative of :math:`f(r) = \sqrt{r^2 + 1}` w.r.t. :math:`x`.
 
             Args:
                 input_data: The 1D input data.
@@ -204,8 +204,7 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative w.r.t. :math:`x` of the function :math:`f(r) =
-            1/\sqrt{r^2 + 1}`.
+            r"""Compute derivative of :math:`f(r)=1/\sqrt{r^2 + 1}` w.r.t. :math:`x`.
 
             Args:
                 input_data: The 1D input data.
@@ -224,8 +223,7 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative w.r.t. :math:`x` of the function :math:`f(r) =
-            \exp(-r^2)`.
+            r"""Compute derivative of :math:`f(r)=\exp(-r^2)` w.r.t. :math:`x`.
 
             Args:
                 input_data: The 1D input data.
@@ -244,8 +242,9 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            """Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r`. If
-            :math:`x=0`, return 0 (determined up to a tolerance).
+            """Compute derivative of :math:`f(r)=r` w.r.t. :math:`x`.
+
+            If :math:`x=0`, return 0 (determined up to a tolerance).
 
             Args:
                 input_data: The 1D input data.
@@ -307,8 +306,9 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r^2
-            \log(r)`. If :math:`x=0`, return 0 (determined up to a tolerance).
+            r"""Compute derivative of :math:`f(r) = r^2\log(r)` w.r.t. :math:`x`.
+
+            If :math:`x=0`, return 0 (determined up to a tolerance).
 
             Args:
                 input_data: The 1D input data.

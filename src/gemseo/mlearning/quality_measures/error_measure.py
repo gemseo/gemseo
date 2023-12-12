@@ -66,7 +66,7 @@ class MLErrorMeasure(MLQualityMeasure):
         """
         Args:
             algo: A machine learning algorithm for supervised learning.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
     def compute_learning_measure(
@@ -83,7 +83,7 @@ class MLErrorMeasure(MLQualityMeasure):
                 the full quality measure as an array
                 stacking these quality measures
                 according to the order of ``algo.output_names``.
-        """
+        """  # noqa: D205 D212
         self._pre_process(samples)
         return self._post_process_measure(
             self._compute_measure(
@@ -110,7 +110,7 @@ class MLErrorMeasure(MLQualityMeasure):
                 the full quality measure as an array
                 stacking these quality measures
                 according to the order of ``algo.output_names``.
-        """
+        """  # noqa: D205 D212
         self._pre_process(samples)
         return self._post_process_measure(
             self._compute_measure(
@@ -138,13 +138,14 @@ class MLErrorMeasure(MLQualityMeasure):
         store_resampling_result: bool = False,
     ) -> MeasureType:
         """
-        as_dict: Whether the full quality measure is returned
-            as a mapping from ``algo.output names`` to quality measures.
-            Otherwise,
-            the full quality measure as an array
-            stacking these quality measures
-            according to the order of ``algo.output_names``.
-        """
+        Args:
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
+        """  # noqa: D205 D212
         return self.compute_cross_validation_measure(
             samples=samples,
             n_folds=self.algo.learning_set.n_samples,
@@ -165,13 +166,14 @@ class MLErrorMeasure(MLQualityMeasure):
         store_resampling_result: bool = False,
     ) -> MeasureType:
         """
-        as_dict: Whether the full quality measure is returned
-            as a mapping from ``algo.output names`` to quality measures.
-            Otherwise,
-            the full quality measure as an array
-            stacking these quality measures
-            according to the order of ``algo.output_names``.
-        """
+        Args:
+            as_dict: Whether the full quality measure is returned
+                as a mapping from ``algo.output names`` to quality measures.
+                Otherwise,
+                the full quality measure as an array
+                stacking these quality measures
+                according to the order of ``algo.output_names``.
+        """  # noqa: D205 D212
         samples, seed = self._pre_process(samples, seed, randomize)
         cross_validation = CrossValidation(samples, n_folds, randomize, seed)
         output_data = self.algo.output_data
@@ -208,7 +210,7 @@ class MLErrorMeasure(MLQualityMeasure):
                 the full quality measure as an array
                 stacking these quality measures
                 according to the order of ``algo.output_names``.
-        """
+        """  # noqa: D205 D212
         samples, seed = self._pre_process(samples, seed, True)
         bootstrap = Bootstrap(samples, n_replicates, seed)
         output_data = self.algo.output_data

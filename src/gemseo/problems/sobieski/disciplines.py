@@ -61,7 +61,7 @@ class SobieskiDiscipline(MDODiscipline):
         """
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
-        """
+        """  # noqa: D205 D212
         super().__init__(auto_detect_grammar_files=True)
         self.dtype = dtype
         self.sobieski_problem = SobieskiProblem(dtype=dtype)
@@ -82,7 +82,7 @@ class SobieskiDiscipline(MDODiscipline):
         """
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
-        """
+        """  # noqa: D205 D212
         raise NotImplementedError
 
 
@@ -109,7 +109,7 @@ class SobieskiMission(SobieskiDiscipline):
             enable_delay: If ``True``, wait one second before computation.
                 If a positive number, wait the corresponding number of seconds.
                 If ``False``, compute directly.
-        """
+        """  # noqa: D205 D212
         super().__init__(dtype=dtype)
         self.enable_delay = enable_delay
 
@@ -145,7 +145,7 @@ class SobieskiMission(SobieskiDiscipline):
             enable_delay: If ``True``, wait one second before computation.
                 If a positive number, wait the corresponding number of seconds.
                 If ``False``, compute directly.
-        """
+        """  # noqa: D205 D212
         return RemappingDiscipline(
             cls(dtype=dtype, enable_delay=enable_delay),
             {
@@ -163,7 +163,7 @@ class SobieskiMission(SobieskiDiscipline):
 class SobieskiStructure(SobieskiDiscipline):
     """Structure discipline of the Sobieski's SSBJ use case."""
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
@@ -192,7 +192,7 @@ class SobieskiStructure(SobieskiDiscipline):
         )
 
     @classmethod
-    def create_with_physical_naming(
+    def create_with_physical_naming(  # noqa: D102
         cls, dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT
     ) -> RemappingDiscipline:
         return RemappingDiscipline(
@@ -226,7 +226,7 @@ class SobieskiStructure(SobieskiDiscipline):
 class SobieskiAerodynamics(SobieskiDiscipline):
     """Aerodynamics discipline for the Sobieski's SSBJ use case."""
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
@@ -253,7 +253,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         )
 
     @classmethod
-    def create_with_physical_naming(
+    def create_with_physical_naming(  # noqa: D102
         cls,
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> RemappingDiscipline:
@@ -284,7 +284,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 class SobieskiPropulsion(SobieskiDiscipline):
     """Propulsion discipline of the Sobieski's SSBJ use case."""
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
@@ -312,7 +312,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         )
 
     @classmethod
-    def create_with_physical_naming(
+    def create_with_physical_naming(  # noqa: D102
         cls,
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> RemappingDiscipline:

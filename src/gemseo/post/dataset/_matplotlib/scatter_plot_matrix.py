@@ -40,6 +40,10 @@ class ScatterMatrix(MatplotlibPlot):
         axes: Axes | None,
         classifier_column: tuple[str, str, int],
     ) -> list[Figure]:
+        """
+        Args:
+            classifier_column: The column of the dataset used for classification.
+        """  # noqa: D212, D205
         variable_names = self._specific_settings.variable_names
         classifier = self._specific_settings.classifier
         kde = self._specific_settings.kde

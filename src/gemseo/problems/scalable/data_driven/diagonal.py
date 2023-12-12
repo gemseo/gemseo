@@ -17,9 +17,7 @@
 #                  initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scalable diagonal model
-=======================
+"""Scalable diagonal model.
 
 This module implements the concept of scalable diagonal model,
 which is a particular scalable model built from an input-output
@@ -505,8 +503,7 @@ class ScalableDiagonalApproximation:
     def __init__(
         self, sizes, output_dependency, io_dependency, seed: int = SEED
     ) -> None:
-        """
-        Constructor:
+        """Constructor:
 
         :param sizes: sizes of both input and output variables.
         :type sizes: dict
@@ -580,7 +577,7 @@ class ScalableDiagonalApproximation:
 
     @staticmethod
     def scale_samples(samples):
-        """Scale samples of array into [0, 1]
+        """Scale samples of array into [0, 1].
 
         :param samples: samples of multivariate array
         :type samples: list(ndarray)

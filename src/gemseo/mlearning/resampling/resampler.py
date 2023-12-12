@@ -76,7 +76,7 @@ class Resampler(metaclass=ABCGoogleDocstringInheritanceMeta):
             seed: The seed to initialize the random generator.
                 If ``None``,
                 then fresh, unpredictable entropy will be pulled from the OS.
-        """
+        """  # noqa: D205 D212
         self._n_splits = n_splits
         self._seed = seed
         self._sample_indices = sample_indices

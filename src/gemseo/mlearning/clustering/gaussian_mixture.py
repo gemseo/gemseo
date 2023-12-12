@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The Gaussian mixture algorithm for clustering.
+r"""The Gaussian mixture algorithm for clustering.
 
 The Gaussian mixture algorithm groups the data into clusters.
 The number of clusters is fixed.
@@ -108,7 +108,7 @@ class GaussianMixture(MLPredictiveClusteringAlgo):
             n_components: The number of components of the Gaussian mixture.
             random_state: The random state passed to the random number generator.
                 Use an integer for reproducible results.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,

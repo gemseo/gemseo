@@ -129,6 +129,7 @@ class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return array(grad, dtype=float64).T
 
+    # TODO: API: remove useless n_perturbations
     @abstractmethod
     def _compute_parallel_grad(
         self,
@@ -143,6 +144,7 @@ class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             input_values: The input values.
             n_perturbations: The number of perturbations.
+            input_perturbations: The perturbations of the input.
             step: The differentiation step,
                 either one global step or one step by input component.
             **kwargs: The optional arguments for the function.

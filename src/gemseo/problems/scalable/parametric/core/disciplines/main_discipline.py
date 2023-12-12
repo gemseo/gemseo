@@ -70,7 +70,7 @@ class MainDiscipline(BaseDiscipline):
         Args:
             *t_i: The threshold vectors :math:`t_1,\ldots,t_N`.
             **default_input_values: The default values of the input variables.
-        """
+        """  # noqa: D205 D212
         self.name = self.__class__.__name__
         self.input_names_to_default_values = default_input_values
         self.__n_scalable_disciplines = len(t_i)

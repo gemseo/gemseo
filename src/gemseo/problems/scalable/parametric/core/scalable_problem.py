@@ -126,7 +126,7 @@ class ScalableProblem:
                 on the output of the :math:`i`-th scalable discipline.
             alpha: The proportion of feasible design points.
             seed: The seed for reproducibility.
-        """
+        """  # noqa: D205 D212
         rng = default_rng(seed)
 
         # The output sizes of the scalable disciplines.

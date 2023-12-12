@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""An MDA using the Jacobi algorithm for the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -22,7 +24,7 @@ from gemseo.problems.sobieski.disciplines import create_disciplines
 
 
 class SobieskiMDAJacobi(MDAJacobi):
-    """A Jacobi MDA for the Sobieski's SSBJ use case."""
+    """An :class:`.MDAJacobi` for the Sobieski's SSBJ use case."""
 
     def __init__(
         self,
@@ -37,7 +39,7 @@ class SobieskiMDAJacobi(MDAJacobi):
                 used to parallelize the execution.
             dtype: The NumPy type for data arrays, either "float64" or "complex128".
             **mda_options: The options of the MDA.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             create_disciplines(dtype), n_processes=n_processes, **mda_options
         )

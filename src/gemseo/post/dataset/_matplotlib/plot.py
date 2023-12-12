@@ -46,7 +46,7 @@ class MatplotlibPlot(BasePlot):
     def __init__(
         self,
         dataset: Dataset,
-        basic_settings: PlotSettings,
+        common_settings: PlotSettings,
         specific_settings: NamedTuple,
         *specific_data: Any,
         fig: Figure | None = None,
@@ -59,7 +59,9 @@ class MatplotlibPlot(BasePlot):
             axes: The axes.
                 If ``None``, create new ones.
         """  # noqa: D205 D212 D415
-        super().__init__(dataset, basic_settings, specific_settings, fig=fig, axes=axes)
+        super().__init__(
+            dataset, common_settings, specific_settings, fig=fig, axes=axes
+        )
         self.__figures = self._create_figures(fig, axes, *specific_data)
         xtick_rotation = self._common_settings.xtick_rotation
         if xtick_rotation:

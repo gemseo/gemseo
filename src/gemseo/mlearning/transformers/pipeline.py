@@ -53,7 +53,7 @@ class Pipeline(Transformer):
                 the list, i.e. the first transformer is applied first. If
                 transformers is an empty list or None, then the pipeline
                 transformer behaves like an identity transformer.
-        """
+        """  # noqa: D205 D212
         super().__init__(name)
         self.transformers = transformers or []
 

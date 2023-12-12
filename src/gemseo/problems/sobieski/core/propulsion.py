@@ -49,7 +49,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
     ESF_LOWER_LIMIT = 0.5
     TEMPERATURE_LIMIT = 1.02
 
-    def __init__(self, sobieski_base: SobieskiBase) -> None:
+    def __init__(self, sobieski_base: SobieskiBase) -> None:  # noqa: D107
         super().__init__(sobieski_base)
         # Surface fit to engine deck with the least square method
         # Polynomial coefficients for SFC computation
@@ -663,7 +663,6 @@ class SobieskiPropulsion(SobieskiDiscipline):
         Returns:
             The Jacobian of the discipline.
         """
-
         c_3 = ref_weight or self.constants[3]
 
         # Jacobian matrix as a dictionary

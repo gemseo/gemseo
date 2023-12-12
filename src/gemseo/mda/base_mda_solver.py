@@ -19,7 +19,10 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Iterable
+from typing import Mapping
+from typing import Sequence
 
 from numpy import abs
 from numpy import array
@@ -27,9 +30,12 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy.linalg import norm
 
+from gemseo import MDODiscipline
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.mda.mda import MDA
 
 if TYPE_CHECKING:
+    from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.core.discipline_data import DisciplineData
 
@@ -72,8 +78,39 @@ class BaseMDASolver(MDA):
     _current_residuals: dict[str, ndarray]
     """The mapping from residual names to current value."""
 
-    def __init__(self, *args, **kwargs):  # noqa:D107
-        super().__init__(*args, **kwargs)
+    def __init__(  # noqa: D107
+        self,
+        disciplines: Sequence[MDODiscipline],
+        max_mda_iter: int = 10,
+        name: str | None = None,
+        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        coupling_structure: MDOCouplingStructure | None = None,
+        log_convergence: bool = False,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] | None = None,
+        acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
+        over_relaxation_factor: float = 1.0,
+    ) -> None:
+        super().__init__(
+            disciplines,
+            max_mda_iter,
+            name,
+            grammar_type,
+            tolerance,
+            linear_solver_tolerance,
+            warm_start,
+            use_lu_fact,
+            coupling_structure,
+            log_convergence,
+            linear_solver,
+            linear_solver_options,
+            acceleration_method,
+            over_relaxation_factor,
+        )
         self.__resolved_variable_names_to_slices = {}
         self.__resolved_variable_names = ()
 

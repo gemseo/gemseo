@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The F1 to measure the quality of a classification algorithm.
+r"""The F1 to measure the quality of a classification algorithm.
 
 The F1 is defined by
 
@@ -63,7 +63,7 @@ class F1Measure(MLErrorMeasure):
         """
         Args:
             algo: A machine learning algorithm for classification.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
     def _compute_measure(

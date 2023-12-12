@@ -225,7 +225,7 @@ class SobieskiProblem:
         """
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
-        """
+        """  # noqa: D205 D212
         if dtype == SobieskiBase.DataType.COMPLEX:
             self.__dtype = complex128
             self.__math = cmath

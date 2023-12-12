@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Augmented Lagrangian penalty update scheme."""
 
 from __future__ import annotations
 
@@ -72,8 +73,7 @@ class AugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian):
             tau: The threshold for the penalty term increase.
             gamma: The increase of the penalty term.
             max_rho: The max penalty value.
-        """
-
+        """  # noqa: D205, D212
         if sub_problem_options is None:
             sub_problem_options = {}
         return self._process_options(

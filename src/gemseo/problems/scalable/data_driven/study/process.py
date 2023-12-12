@@ -17,9 +17,7 @@
 #         documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scalability study - Process
-===========================
+"""Scalability study - Process.
 
 The :class:`.ScalabilityStudy` class implements
 the concept of scalability study:
@@ -94,8 +92,7 @@ class ScalabilityStudy:
         early_stopping: bool = True,
         coupling_variables=None,
     ) -> None:
-        """
-        The constructor of the ScalabilityStudy class requires two mandatory
+        """The constructor of the ScalabilityStudy class requires two mandatory
         arguments:
 
         - the ``'objective'`` name,
@@ -130,6 +127,7 @@ class ScalabilityStudy:
         - the post-processing of the optimization database to get results
           earlier than final step ``early_stopping``.
 
+        Args:
         :param str objective: name of the objective
         :param list(str) design_variables: names of the design variables
         :param str directory: working directory of the study. Default: 'study'.
@@ -279,8 +277,7 @@ class ScalabilityStudy:
         self._group_dep[discipline][output] = inputs
 
     def set_fill_factor(self, discipline, output, fill_factor) -> None:
-        """
-        :param str discipline: name of the discipline
+        """:param str discipline: name of the discipline
         :param str output: name of the output function
         :param float fill_factor: fill factor
         """

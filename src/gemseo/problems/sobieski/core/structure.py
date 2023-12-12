@@ -48,7 +48,7 @@ class SobieskiStructure(SobieskiDiscipline):
     TWIST_UPPER_LIMIT = 1.04
     TWIST_LOWER_LIMIT = 0.8
 
-    def __init__(self, sobieski_base: SobieskiBase) -> None:
+    def __init__(self, sobieski_base: SobieskiBase) -> None:  # noqa: D107
         super().__init__(sobieski_base)
         self.__ao_coeff_secthick = zeros(1, dtype=self.dtype)
         self.__ai_coeff_secthick = zeros(1, dtype=self.dtype)
@@ -612,7 +612,6 @@ class SobieskiStructure(SobieskiDiscipline):
         Returns:
             The derivatives of the structural outputs and the structural constraints.
         """
-
         c_0 = c_0 or self.constants[0]
         c_1 = c_1 or self.constants[1]
         c_2 = c_2 or self.constants[2]

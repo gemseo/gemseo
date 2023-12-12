@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Augmented Lagrangian of order 0."""
 
 from __future__ import annotations
 
@@ -25,8 +26,11 @@ from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescripti
 
 
 class AugmentedLagrangianOrder0(AugmentedLagrangianPenaltyHeuristic):
-    """An Augmented Lagrangian algorithm where the Lagrange multipiers are updated
-    thanks to the constraint values solely (no gradient used)."""
+    """An augmented Lagrangian algorithm of order 0.
+
+    The Lagrange multipliers are updated thanks to the constraint values solely (no
+    gradient used).
+    """
 
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
