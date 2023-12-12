@@ -31,7 +31,7 @@ dependencies = [
     "pyxdsm >=2.1.0,<=2.3.0",
     "pydantic >=2.1,<2.6",
     "requests",
-    "scipy >=1.4,<=1.10.1",
+    "scipy >=1.4,<=1.11.4",
     "strenum >=0.4.9,<=0.4.15",
     "tqdm >=4.41,<=4.66.1",
     "typing-extensions >=4,<5",
