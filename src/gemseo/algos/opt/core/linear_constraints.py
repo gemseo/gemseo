@@ -28,10 +28,10 @@ from numpy import isfinite
 from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
-from scipy.sparse import spmatrix
 from scipy.sparse import vstack as sparse_vstack
 
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -66,7 +66,7 @@ def build_constraints_matrices(
 
     contains_sparse = False
     for constraint in constraints:
-        if isinstance(constraint.coefficients, spmatrix):
+        if isinstance(constraint.coefficients, sparse_classes):
             contains_sparse = True
             break
 

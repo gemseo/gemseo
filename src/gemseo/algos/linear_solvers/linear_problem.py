@@ -32,7 +32,9 @@ from gemseo.algos.base_problem import BaseProblem
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from numpy import ndarray
-    from scipy.sparse import spmatrix
+
+    from gemseo.utils.compatibility.scipy import ArrayType
+    from gemseo.utils.compatibility.scipy import SparseArrayType
 
 
 class LinearProblem(BaseProblem):
@@ -45,7 +47,7 @@ class LinearProblem(BaseProblem):
     rhs: ndarray
     """The right-hand side of the equation."""
 
-    lhs: ndarray | LinearOperator | spmatrix
+    lhs: LinearOperator | SparseArrayType
     """The left-hand side of the equation.
 
     If ``None``, the problem can't be solved and the user has to set it after init.
@@ -80,7 +82,7 @@ class LinearProblem(BaseProblem):
 
     def __init__(
         self,
-        lhs: ndarray | spmatrix | LinearOperator,
+        lhs: ArrayType | LinearOperator,
         rhs: ndarray | None = None,
         solution: ndarray | None = None,
         is_symmetric: bool = False,

@@ -102,7 +102,6 @@ from numpy import where
 from numpy import zeros
 from numpy.linalg import norm
 from pandas import MultiIndex
-from scipy.sparse import spmatrix
 from strenum import StrEnum
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
@@ -126,6 +125,7 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator_factory import (
     GradientApproximatorFactory,
@@ -1618,7 +1618,7 @@ class OptimizationProblem(BaseProblem):
         shift = where(norm_policies, design_space.get_lower_bounds(), 0.0)
 
         # Build the normalized linear function
-        if isinstance(orig_func.coefficients, spmatrix):
+        if isinstance(orig_func.coefficients, sparse_classes):
             coefficients = deepcopy(orig_func.coefficients)
             coefficients.data *= norm_factors[coefficients.indices]
         else:

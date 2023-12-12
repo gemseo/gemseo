@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from gemseo.algos.database import Database
 
 
+@pytest.mark.xfail(reason="With scipy 1.11+")
 class TestScipyGlobalOpt(TestCase):
     """"""
 

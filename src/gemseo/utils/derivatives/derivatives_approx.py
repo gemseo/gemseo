@@ -32,8 +32,8 @@ from typing import Sequence
 from typing import Sized
 
 from scipy.sparse import hstack as sparse_hstack
-from scipy.sparse import spmatrix
 
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.error_estimators import EPSILON
@@ -443,8 +443,9 @@ class DisciplineJacApprox:
                     )
                     LOGGER.error(msg)
                 else:
-                    if isinstance(computed_jac, spmatrix):
+                    if isinstance(computed_jac, sparse_classes):
                         computed_jac = computed_jac.toarray()
+
                     success_loc = allclose(
                         computed_jac, approx_jac, atol=threshold, rtol=threshold
                     )
@@ -579,7 +580,7 @@ class DisciplineJacApprox:
 
             analytic_jacobian_out = analytic_jacobian[output_name]
             contains_sparse = any(
-                isinstance(analytic_jacobian_out[input_name], spmatrix)
+                isinstance(analytic_jacobian_out[input_name], sparse_classes)
                 for input_name in input_names
             )
 
@@ -649,7 +650,7 @@ class DisciplineJacApprox:
         n_subplots = len(axes) * len(axes[0])
         abscissa = arange(len(x_labels))
         for func, grad in sorted(comp_grad.items()):
-            if isinstance(grad, spmatrix):
+            if isinstance(grad, sparse_classes):
                 grad = grad.toarray().flatten()
             j += 1
             if j == ncols:

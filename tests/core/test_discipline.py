@@ -36,7 +36,6 @@ from numpy import complex128
 from numpy import ndarray
 from numpy import ones
 from numpy.linalg import norm
-from scipy.sparse import spmatrix
 
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.simple_cache import SimpleCache
@@ -56,6 +55,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 
@@ -831,7 +831,7 @@ def test_init_jacobian(init_method, fill_missing_keys):
         assert isinstance(disc.jac["z"]["x"], ndarray)
         assert norm(disc.jac["z"]["x"]) == 0.0
     elif init_method == "sparse":
-        assert isinstance(disc.jac["z"]["x"], spmatrix)
+        assert isinstance(disc.jac["z"]["x"], sparse_classes)
         assert disc.jac["z"]["x"].size == 0
 
 

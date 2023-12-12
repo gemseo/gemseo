@@ -28,7 +28,6 @@ from typing import ClassVar
 from numpy import isfinite
 from scipy.optimize import OptimizeResult
 from scipy.optimize import linprog
-from scipy.sparse import spmatrix
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
@@ -36,6 +35,7 @@ from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.utils.compatibility.scipy import sparse_classes
 
 
 @dataclass
@@ -209,7 +209,7 @@ class ScipyLinprog(OptimizationLibrary):
         # Build the functions matrices
         # N.B. use the non-processed functions to access the coefficients
         coefficients = self.problem.nonproc_objective.coefficients
-        if isinstance(coefficients, spmatrix):
+        if isinstance(coefficients, sparse_classes):
             obj_coeff = coefficients.getrow(0).todense().flatten()
         else:
             obj_coeff = coefficients[0, :]

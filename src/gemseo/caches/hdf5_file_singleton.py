@@ -34,12 +34,13 @@ from numpy import ndarray
 from numpy import str_
 from numpy.core.multiarray import array
 from scipy.sparse import csr_array
-from scipy.sparse import spmatrix
 from strenum import StrEnum
 
 from gemseo.core.cache import AbstractFullCache
 from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
+from gemseo.utils.compatibility.scipy import SparseArrayType
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 if TYPE_CHECKING:
@@ -140,7 +141,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 if value is not None:
                     if value.dtype.type is str_:
                         group.create_dataset(name, data=value.astype("bytes"))
-                    elif isinstance(value, spmatrix):
+                    elif isinstance(value, sparse_classes):
                         self.__write_sparse_array(group, name, value)
                     else:
                         group.create_dataset(name, data=to_real(value))
@@ -160,7 +161,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             h5_file.close()
 
     def __write_sparse_array(
-        self, group: h5py.Group, dataset_name: str, value: spmatrix
+        self, group: h5py.Group, dataset_name: str, value: SparseArrayType
     ) -> None:
         """Store sparse array in HDF5 group.
 

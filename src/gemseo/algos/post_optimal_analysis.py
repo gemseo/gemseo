@@ -31,10 +31,11 @@ from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
 from numpy.linalg.linalg import norm
-from scipy.sparse import spmatrix
 from scipy.sparse import vstack as spvstack
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
+from gemseo.utils.compatibility.scipy import array_classes
+from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from gemseo.algos.opt_problem import OptimizationProblem
@@ -282,7 +283,7 @@ class PostOptimalAnalysis:
                         f"Jacobian of {output_name} "
                         f"with respect to {input_name} is missing."
                     )
-                if not isinstance(jac_block, (ndarray, spmatrix)):
+                if not isinstance(jac_block, array_classes):
                     raise TypeError(
                         f"Jacobian of {output_name} "
                         f"with respect to {input_name} must be of type ndarray."
@@ -369,7 +370,7 @@ class PostOptimalAnalysis:
                 if True in components_are_active
             ]
 
-            contains_sparse = any(isinstance(jac, spmatrix) for jac in jacobians)
+            contains_sparse = any(isinstance(jac, sparse_classes) for jac in jacobians)
 
             if jacobians:
                 input_names_to_jacobians[input_name] = (

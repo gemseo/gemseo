@@ -29,7 +29,6 @@ from typing import Mapping
 from numpy import ndarray
 from numpy import promote_types
 from scipy.sparse import issparse
-from scipy.sparse import spmatrix
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import bicg
 from scipy.sparse.linalg import bicgstab
@@ -40,6 +39,8 @@ from scipy.sparse.linalg import splu
 
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverDescription
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
+from gemseo.utils.compatibility.scipy import ArrayType
+from gemseo.utils.compatibility.scipy import array_classes
 
 LOGGER = logging.getLogger(__name__)
 
@@ -296,7 +297,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
 
     def _run_default_solver(
         self,
-        lhs: ndarray | spmatrix | LinearOperator,
+        lhs: ArrayType | LinearOperator,
         rhs: ndarray,
         **options: Any,
     ) -> tuple[ndarray, int]:
@@ -344,7 +345,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         self.problem.is_converged = False
 
         # Attempt direct solver when possible
-        if isinstance(lhs, (ndarray, spmatrix)):
+        if isinstance(lhs, array_classes):
             a_fact = splu(lhs)
             sol = a_fact.solve(rhs)
             res = self.problem.compute_residuals(True, current_x=sol)

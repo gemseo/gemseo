@@ -32,9 +32,9 @@ from typing import Union
 from numpy import array
 from numpy import empty
 from numpy import ndarray
-from scipy.sparse import spmatrix
 
 from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
+from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from gemseo import MDODiscipline
@@ -219,7 +219,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
                 # TODO: This precaution is meant to disappear when sparse 1-D array will
                 # be available. This is also mandatory since self.__jacobian is
                 # initialized as a dense array.
-                if isinstance(jac, spmatrix):
+                if isinstance(jac, sparse_classes):
                     first_row = jac.getrow(0).todense().flatten()
                 else:
                     first_row = jac[0, :]
@@ -235,7 +235,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
                     # TODO: This is mandatory since self.__jacobian is initialized as a
                     # dense array. Performance improvement could be obtained if one is
                     # able to infer the type of jac.
-                    if isinstance(jac, spmatrix):
+                    if isinstance(jac, sparse_classes):
                         jac = jac.toarray()
 
                     self.__jacobian[output_slice, input_slice] = jac

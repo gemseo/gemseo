@@ -48,7 +48,6 @@ from scipy.sparse import csc_matrix
 from scipy.sparse import csr_matrix
 from scipy.sparse import dok_matrix
 from scipy.sparse import eye
-from scipy.sparse import spmatrix
 from scipy.sparse import vstack
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import factorized
@@ -59,6 +58,7 @@ from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFact
 from gemseo.core.derivatives import derivation_modes
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
@@ -432,7 +432,7 @@ class JacobianAssembly:
                         if isinstance(jacobian_copy, ndarray):
                             fill_diagonal(jacobian_copy, jacobian.diagonal() - 1)
 
-                        elif isinstance(jacobian_copy, spmatrix):
+                        elif isinstance(jacobian_copy, sparse_classes):
                             jacobian_copy.setdiag(jacobian.diagonal() - 1)
 
                         elif isinstance(jacobian_copy, JacobianOperator):

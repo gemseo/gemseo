@@ -24,11 +24,10 @@ Can be both sequential or parallel execution processes.
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Iterable
 from typing import Sequence
 
-from numpy import ndarray
-from scipy.sparse import spmatrix
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
 
@@ -44,9 +43,13 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
+from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -276,7 +279,7 @@ class MDOChain(MDODiscipline):
                 jacobian_copy[output_name] = output_jacobian_copy
                 for input_name, derivatives in output_jacobian.items():
                     output_jacobian_copy[input_name] = derivatives.copy()
-            elif isinstance(output_jacobian, (ndarray, spmatrix, JacobianOperator)):
+            elif isinstance(output_jacobian, (array_classes, JacobianOperator)):
                 jacobian_copy[output_name] = output_jacobian.copy()
 
         return jacobian_copy
