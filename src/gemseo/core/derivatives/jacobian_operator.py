@@ -22,9 +22,10 @@ from copy import copy
 from numpy import dtype
 from numpy import eye
 from numpy import ndarray
-from scipy.sparse import spmatrix
 from scipy.sparse.linalg import LinearOperator
 
+from gemseo.utils.compatibility.scipy import ArrayType
+from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.metaclasses import GoogleDocstringInheritanceMeta
 
 LOGGER = logging.getLogger(__name__)
@@ -45,30 +46,26 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
         """  # noqa: D205 D212 D415
         super().__init__(dtype, shape)
 
-    def __add__(
-        self, other: JacobianOperator | ndarray | spmatrix
-    ) -> _SumJacobianOperator:
+    def __add__(self, other: JacobianOperator | ArrayType) -> _SumJacobianOperator:
         """
         Raises:
             TypeError: if the operand has type different from JacobianOperator, NumPy
                 ndarray or SciPy spmatrix.
         """  # noqa: D205 D212 D415
-        if not isinstance(other, (JacobianOperator, ndarray, spmatrix)):
+        if not isinstance(other, (JacobianOperator, array_classes)):
             raise TypeError(
                 f"Adding a JacobianOperator with {type(other)} is not supported."
             )
 
         return _SumJacobianOperator(self, other)
 
-    def __sub__(
-        self, other: JacobianOperator | ndarray | spmatrix
-    ) -> _SubJacobianOperator:
+    def __sub__(self, other: JacobianOperator | ArrayType) -> _SubJacobianOperator:
         """
         Raises:
             TypeError: if the operand has type different from JacobianOperator, NumPy
                 ndarray or SciPy spmatrix.
         """  # noqa: D205 D212 D415
-        if not isinstance(other, (JacobianOperator, ndarray, spmatrix)):
+        if not isinstance(other, (JacobianOperator, array_classes)):
             raise TypeError(
                 f"Substracting a JacobianOperator with {type(other)} is not supported."
             )
@@ -76,14 +73,14 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
         return _SubJacobianOperator(self, other)
 
     def __matmul__(
-        self, other: JacobianOperator | ndarray | spmatrix
+        self, other: JacobianOperator | ArrayType
     ) -> _ComposedJacobianOperator:
         """
         Raises:
             TypeError: if the operand has type different from JacobianOperator, NumPy
                 ndarray or SciPy spmatrix.
         """  # noqa: D205 D212 D415
-        if not isinstance(other, (JacobianOperator, ndarray, spmatrix)):
+        if not isinstance(other, (JacobianOperator, array_classes)):
             raise TypeError(
                 f"Multiplying a JacobianOperator with {type(other)} is not supported."
             )
@@ -91,14 +88,14 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
         return _ComposedJacobianOperator(self, other)
 
     def __rmatmul__(
-        self, other: JacobianOperator | ndarray | spmatrix
+        self, other: JacobianOperator | ArrayType
     ) -> _ComposedJacobianOperator:
         """
         Raises:
             TypeError: if the operand has type different from JacobianOperator, NumPy
                 ndarray or SciPy spmatrix.
         """  # noqa: D205 D212 D415
-        if not isinstance(other, (JacobianOperator, ndarray, spmatrix)):
+        if not isinstance(other, (JacobianOperator, array_classes)):
             raise TypeError(
                 f"Multiplying a JacobianOperator with {type(other)} is not supported."
             )
@@ -202,7 +199,7 @@ class _SumJacobianOperator(JacobianOperator):
     def __init__(
         self,
         operand_1: JacobianOperator,
-        operand_2: JacobianOperator | ndarray | spmatrix,
+        operand_2: JacobianOperator | ArrayType,
     ):
         """
         Args:
@@ -214,7 +211,7 @@ class _SumJacobianOperator(JacobianOperator):
         self.__operand_1 = operand_1
         self.__operand_2 = operand_2
 
-        self.__array_like = isinstance(operand_2, (ndarray, spmatrix))
+        self.__array_like = isinstance(operand_2, array_classes)
 
     def _matvec(self, x: ndarray) -> ndarray:
         if self.__array_like:
@@ -231,7 +228,7 @@ class _SubJacobianOperator(JacobianOperator):
     def __init__(
         self,
         operand_1: JacobianOperator,
-        operand_2: JacobianOperator | ndarray | spmatrix,
+        operand_2: JacobianOperator | ArrayType,
     ):
         """
         Args:
@@ -243,7 +240,7 @@ class _SubJacobianOperator(JacobianOperator):
         self.__operand_1 = operand_1
         self.__operand_2 = operand_2
 
-        self.__array_like = isinstance(operand_2, (ndarray, spmatrix))
+        self.__array_like = isinstance(operand_2, array_classes)
 
     def _matvec(self, x: ndarray) -> ndarray:
         if self.__array_like:
@@ -259,8 +256,8 @@ class _SubJacobianOperator(JacobianOperator):
 class _ComposedJacobianOperator(JacobianOperator):
     def __init__(
         self,
-        operand_1: JacobianOperator | ndarray | spmatrix,
-        operand_2: JacobianOperator | ndarray | spmatrix,
+        operand_1: JacobianOperator | ArrayType,
+        operand_2: JacobianOperator | ArrayType,
     ):
         """
         Args:
@@ -272,8 +269,8 @@ class _ComposedJacobianOperator(JacobianOperator):
         self.__operand_1 = operand_1
         self.__operand_2 = operand_2
 
-        self.__array_like_1 = isinstance(operand_1, (ndarray, spmatrix))
-        self.__array_like_2 = isinstance(operand_2, (ndarray, spmatrix))
+        self.__array_like_1 = isinstance(operand_1, array_classes)
+        self.__array_like_2 = isinstance(operand_2, array_classes)
 
     def _matvec(self, x: ndarray) -> ndarray:
         x = self.__operand_2 @ x if self.__array_like_2 else self.__operand_2.matvec(x)

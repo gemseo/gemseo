@@ -23,11 +23,12 @@ from typing import Sequence
 from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
-from scipy.sparse import spmatrix
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import OutputType
+from gemseo.utils.compatibility.scipy import array_classes
+from gemseo.utils.compatibility.scipy import sparse_classes
 
 
 class MDOLinearFunction(MDOFunction):
@@ -84,7 +85,7 @@ class MDOLinearFunction(MDOFunction):
             expr: The expression of the linear function.
         """  # noqa: D205, D212, D415
         # Format the passed coefficients and value at zero
-        if isinstance(coefficients, spmatrix):
+        if isinstance(coefficients, sparse_classes):
             coefficients = coefficients.tocsr()
         self.coefficients = coefficients
         output_dim, input_dim = self._coefficients.shape
@@ -157,9 +158,9 @@ class MDOLinearFunction(MDOFunction):
     def coefficients(self, coefficients: Number | ArrayType) -> None:
         if isinstance(coefficients, Number):
             self._coefficients = atleast_2d(coefficients)
-        elif isinstance(coefficients, (ndarray, spmatrix)) and coefficients.ndim == 2:
+        elif isinstance(coefficients, array_classes) and coefficients.ndim == 2:
             self._coefficients = coefficients
-        elif isinstance(coefficients, (ndarray, spmatrix)) and coefficients.ndim == 1:
+        elif isinstance(coefficients, array_classes) and coefficients.ndim == 1:
             self._coefficients = coefficients.reshape((1, -1))
         else:
             raise ValueError(

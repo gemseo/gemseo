@@ -60,16 +60,15 @@ class _MonteCarlo(QMCEngine):
     ) -> None:
         super().__init__(d=d, seed=seed)
 
-    def _random(self, n: int = 1, *, workers: int = 1) -> ndarray:
-        return self.rng.random((n, self.d))
+    if version.parse(scipy.__version__) < version.parse("1.10"):
 
-    def reset(self) -> _MonteCarlo:
-        super().__init__(d=self.d, seed=self.rng_seed)
-        return self
+        def random(self, n: int = 1) -> ndarray:
+            self.num_generated += n
+            return self.rng.random((n, self.d))
+    else:
 
-    def fast_forward(self, n: int) -> _MonteCarlo:
-        self.random(n)
-        return self
+        def _random(self, n: int = 1, *, workers: int = 1) -> ndarray:
+            return self.rng.random((n, self.d))
 
 
 class SciPyDOE(DOELibrary):

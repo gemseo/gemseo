@@ -23,17 +23,14 @@ from typing import Mapping
 from typing import Union
 
 from numpy import asarray
-from numpy import ndarray
 from numpy.linalg import norm
-from scipy.sparse import spmatrix
 from scipy.sparse.linalg import norm as spnorm
 
+from gemseo.utils.compatibility.scipy import ArrayType
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import flatten_nested_dict
 
-ExtendedArrayLike = Union[ndarray, spmatrix]
-DataToCompare = Union[
-    Mapping[str, ExtendedArrayLike], Mapping[str, Mapping[str, ExtendedArrayLike]]
-]
+DataToCompare = Union[Mapping[str, ArrayType], Mapping[str, Mapping[str, ArrayType]]]
 
 
 def compare_dict_of_arrays(
@@ -71,12 +68,14 @@ def compare_dict_of_arrays(
         for key, value in dict_of_arrays.items():
             difference = other_dict_of_arrays[key] - value
 
-            if isinstance(difference, spmatrix):
+            if isinstance(difference, sparse_classes):
                 norm_diff = spnorm(difference)
             else:
                 norm_diff = norm(difference)
 
-            norm_ref = spnorm(value) if isinstance(value, spmatrix) else norm(value)
+            norm_ref = (
+                spnorm(value) if isinstance(value, sparse_classes) else norm(value)
+            )
 
             if norm_diff > tolerance * (1.0 + norm_ref):
                 return False
@@ -84,7 +83,7 @@ def compare_dict_of_arrays(
         for key, value in dict_of_arrays.items():
             is_different = other_dict_of_arrays[key] != value
 
-            if isinstance(is_different, spmatrix):
+            if isinstance(is_different, sparse_classes):
                 is_different = is_different.data
 
             if asarray(is_different).any():

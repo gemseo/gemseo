@@ -122,8 +122,6 @@ def test_generate_samples(library, algo_name, version, seed, caplog):
 def test_monte_carlo():
     """Check that the class _MonteCarlo works properly."""
     monte_carlo = _MonteCarlo(3, 4)
-    assert monte_carlo.rng_seed == 4
-
     samples = monte_carlo.random(2)
     assert samples.shape == (2, 3)
 
@@ -135,6 +133,11 @@ def test_monte_carlo():
     monte_carlo.fast_forward(1)
     new_samples = monte_carlo.random(1)
     assert_equal(new_samples, samples[[1]])
+
+    monte_carlo = _MonteCarlo(3, 5)
+    new_samples = monte_carlo.random(2)
+    with pytest.raises(AssertionError):
+        assert_equal(samples, new_samples)
 
 
 @pytest.mark.parametrize(

@@ -24,11 +24,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Callable
 
-from scipy.sparse import spmatrix
-
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import OutputType
+from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -89,7 +88,7 @@ class DenseJacobianFunction(MDOFunction):
             )
 
         original_jacobian = self.__original_function.jac(x_vect)
-        if isinstance(original_jacobian, spmatrix):
+        if isinstance(original_jacobian, sparse_classes):
             return original_jacobian.todense()
 
         return original_jacobian
