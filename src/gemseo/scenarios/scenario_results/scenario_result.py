@@ -118,6 +118,10 @@ class ScenarioResult:
         Returns:
             The post-processing of the result.
         """
-        return self.POST_FACTORY.execute(
+        if PYTHON_VERSION >= (3, 9):  # pragma: <3.9 no cover
+            return self.POST_FACTORY.execute(
+                self.__obj_to_be_post_processed, name, **options
+            )
+        return self.get_post_factory().execute(
             self.__obj_to_be_post_processed, name, **options
         )
