@@ -29,7 +29,7 @@ End user API
   - ``gemseo.wrappers.template_grammar_editor`` has been moved to `gemseo-template-editor-gui <https://gitlab.com/gemseo/dev/gemseo-template-editor-gui>`_, a GUI to create input and output file templates for ``DiscFromExe``.
 
 Surrogate models
----------------
+----------------
 
 - The high-level functions defined in ``gemseo.mlearning.api`` have been moved to ``gemseo.mlearning``.
 - ``stieltjes`` and ``strategy`` are no longer arguments of ``PCERegressor``.

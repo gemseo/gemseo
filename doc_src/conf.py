@@ -330,3 +330,8 @@ inheritance_edge_attrs = {
     "dir": '"both"',
     "style": '"setlinewidth(0.5)"',
 }
+
+###############################################################################
+# bibtex
+
+bibtex_bibfiles = ["references.bib"]
