@@ -11,6 +11,7 @@
           :author: Matthias De Lozzo
 
 :parenttoc: True
+
 .. _surrogates:
 
 Surrogate models
