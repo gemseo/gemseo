@@ -1,0 +1,1 @@
+``BaseAlgoFactory.create`` initializes the grammar of algorithm options when it is called with an algorithm name.
