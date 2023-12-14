@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import Final
 
-REPR_HTML_WRAPPER: Final[
-    str
-] = "<div style='background-color: #fafae2; padding: 10px;'>{}</div>"
+REPR_HTML_WRAPPER: Final[str] = (
+    "<div style='background-color: #fafae2; padding: 10px;'>{}</div>"
+)
 """The wrapper of the HTML representation of an object."""

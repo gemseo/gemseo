@@ -336,10 +336,10 @@ class JacobianAssembly:
             discipline = self.coupling_structure.find_discipline(output)
             self.disciplines[output] = discipline
             # get an arbitrary Jacobian and compute the number of rows
-            self.sizes[
-                output
-            ] = discipline.output_grammar.data_converter.get_value_size(
-                output, discipline.local_data[output]
+            self.sizes[output] = (
+                discipline.output_grammar.data_converter.get_value_size(
+                    output, discipline.local_data[output]
+                )
             )
 
         # variables

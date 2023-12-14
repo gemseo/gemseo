@@ -99,9 +99,9 @@ class OTDistribution(Distribution):
         Exponential(3, 2)
     """
 
-    COMPOSED_DISTRIBUTION_CLASS: ClassVar[
-        type[ComposedDistribution] | None
-    ] = OTComposedDistribution
+    COMPOSED_DISTRIBUTION_CLASS: ClassVar[type[ComposedDistribution] | None] = (
+        OTComposedDistribution
+    )
 
     marginals: list[ot.Distribution]
     distribution: ot.ComposedDistribution

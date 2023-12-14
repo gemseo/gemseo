@@ -152,9 +152,9 @@ class JSONGrammar(BaseGrammar):
         grammar.__validator = copy(self.__validator)
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
-        self.__schema_builder.properties[
-            new_name
-        ] = self.__schema_builder.properties.pop(current_name)
+        self.__schema_builder.properties[new_name] = (
+            self.__schema_builder.properties.pop(current_name)
+        )
         required = self.__schema_builder.required
         if current_name in required:
             required.remove(current_name)

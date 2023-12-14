@@ -291,9 +291,9 @@ class BaseMDASolver(MDA):
                     residual = self.__resolved_residual_names[
                         self.__resolved_variable_names.index(name)
                     ]
-                    self.__resolved_residual_names_to_slices[converter][
-                        residual
-                    ] = slice_
+                    self.__resolved_residual_names_to_slices[converter][residual] = (
+                        slice_
+                    )
 
     def _update_local_data(self, array_: ndarray) -> None:
         """Update the local data from an array.

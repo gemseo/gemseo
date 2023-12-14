@@ -102,9 +102,9 @@ class SPDistribution(Distribution):
         expon(loc=3, scale=0.5)
     """
 
-    COMPOSED_DISTRIBUTION_CLASS: ClassVar[
-        type[ComposedDistribution] | None
-    ] = SPComposedDistribution
+    COMPOSED_DISTRIBUTION_CLASS: ClassVar[type[ComposedDistribution] | None] = (
+        SPComposedDistribution
+    )
 
     def __init__(  # noqa: D107
         self,
