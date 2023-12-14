@@ -174,6 +174,7 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
     from gemseo.datasets.dataset import Dataset
+    from gemseo.datasets.io_dataset import IODataset
     from gemseo.disciplines.surrogate import SurrogateDiscipline
     from gemseo.mda.mda import MDA
     from gemseo.mlearning.core.ml_algo import TransformerType
@@ -1235,7 +1236,7 @@ def create_scalable(
 
 def create_surrogate(
     surrogate: str | MLRegressionAlgo,
-    data: Dataset | None = None,
+    data: IODataset | None = None,
     transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,
     disc_name: str | None = None,
     default_inputs: dict[str, ndarray] | None = None,
