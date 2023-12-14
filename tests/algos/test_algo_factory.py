@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
@@ -29,10 +31,21 @@ def test_is_available_error():
     assert not OptimizersFactory().is_available("None")
 
 
-def test_init_library_error():
-    OptimizersFactory().create("L-BFGS-B")
+def test_create_ok():
+    """Verify that an existing algorithm can be created."""
+    algo = OptimizersFactory().create("L-BFGS-B")
+    assert algo.algo_name == "L-BFGS-B"
+    assert "max_iter" in algo.opt_grammar
+
+
+def test_create_ko():
+    """Verify that an error is raised when trying to create an unknown algorithm."""
     with pytest.raises(
-        ImportError, match="No algorithm or library of algorithms named "
+        ImportError,
+        match=re.escape(
+            "No algorithm or library of algorithms named 'idontexist' is available; "
+            "available algorithms are"
+        ),
     ):
         OptimizersFactory().create("idontexist")
 

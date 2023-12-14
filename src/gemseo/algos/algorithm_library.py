@@ -96,6 +96,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     problem: Any | None
     """The problem to be solved."""
 
+    # TODO: API: rename to grammar or option_grammar
     opt_grammar: JSONGrammar | None
     """The grammar defining the options of the current algorithm."""
 

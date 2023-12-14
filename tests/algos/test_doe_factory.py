@@ -73,7 +73,7 @@ def test_create_from_unknown_name(factory):
         ImportError,
         match=(
             "No algorithm or library of algorithms named 'unknown_name' "
-            "is available ; available algorithms are .+"
+            "is available; available algorithms are .+"
         ),
     ):
         factory.create("unknown_name")
