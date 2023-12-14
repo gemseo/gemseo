@@ -40,7 +40,7 @@ from gemseo.utils.string_tools import pretty_str
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.datasets.dataset import Dataset
+    from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
     from gemseo.mlearning.core.ml_algo import TransformerType
     from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
@@ -82,7 +82,7 @@ class SurrogateDiscipline(MDODiscipline):
     def __init__(
         self,
         surrogate: str | MLRegressionAlgo,
-        data: Dataset | None = None,
+        data: IODataset | None = None,
         transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,
         disc_name: str | None = None,
         default_inputs: dict[str, ndarray] | None = None,
