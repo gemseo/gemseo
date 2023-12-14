@@ -110,9 +110,9 @@ class VariableInfluence(OptPostProcessor):
                     sensitivity *= (f_opt - f_0)[i] / sensitivity.sum()
                     if absolute_value:
                         sensitivity = absolute(sensitivity)
-                    names_to_sensitivities[
-                        repr_variable(function_name, i)
-                    ] = sensitivity
+                    names_to_sensitivities[repr_variable(function_name, i)] = (
+                        sensitivity
+                    )
 
         self._add_figure(
             self.__generate_subplots(

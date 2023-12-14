@@ -44,9 +44,9 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 class ScipyMILPAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of a MILP optimization algorithm from the SciPy library."""
 
-    problem_type: (
-        OptimizationProblem.ProblemType
-    ) = OptimizationProblem.ProblemType.LINEAR
+    problem_type: OptimizationProblem.ProblemType = (
+        OptimizationProblem.ProblemType.LINEAR
+    )
     handle_equality_constraints: bool = True
     handle_inequality_constraints: bool = True
     library_name: str = "SciPy"
