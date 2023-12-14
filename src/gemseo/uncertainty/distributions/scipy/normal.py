@@ -29,9 +29,9 @@ class SPNormalDistribution(SPDistribution):
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.normal import (
-        ...     SPNormalDistribution
+        ...     SPNormalDistribution,
         ... )
-        >>> distribution = SPNormalDistribution('x', -1, 2)
+        >>> distribution = SPNormalDistribution("x", -1, 2)
         >>> print(distribution)
         norm(mu=-1, sigma=2)
     """

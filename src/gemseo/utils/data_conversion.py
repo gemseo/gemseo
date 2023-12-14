@@ -52,7 +52,8 @@ def concatenate_dict_of_arrays_to_array(
 
     Examples:
         >>> result = concatenate_dict_of_arrays_to_array(
-        ...     {'x': array([1.]), 'y': array([2.]), 'z': array([3., 4.])}, ['x', 'z']
+        ...     {"x": array([1.0]), "y": array([2.0]), "z": array([3.0, 4.0])},
+        ...     ["x", "z"],
         ... )
         >>> print(result)
         array([1., 3., 4.])
@@ -84,7 +85,7 @@ def split_array_to_dict_of_arrays(
 
     Examples:
         >>> result_1 = split_array_to_dict_of_arrays(
-        ...     array([1., 2., 3.]), {"x": 1, "y": 2}, ["x", "y"]
+        ...     array([1.0, 2.0, 3.0]), {"x": 1, "y": 2}, ["x", "y"]
         ... )
         >>> print(result_1)
         {'x': array([1.]), 'y': array([2., 3.])}
@@ -92,7 +93,7 @@ def split_array_to_dict_of_arrays(
         ...     array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]),
         ...     {"y1": 1, "y2": 2, "x2": 2, "x1": 1},
         ...     ["y1", "y2"],
-        ...     ["x1", "x2"]
+        ...     ["x1", "x2"],
         ... )
         >>> print(result_2)
         {
@@ -172,7 +173,7 @@ def update_dict_of_arrays_from_array(
         >>> result = update_dict_of_arrays_from_array(
         ...     {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])},
         ...     ["y", "z"],
-        ...     array([0.5, 1.0, 2.0])
+        ...     array([0.5, 1.0, 2.0]),
         ... )
         >>> print(result)
         {"x": array([0.0, 1.0]), "y": array([0.5]), "z": array([1, 2])}
@@ -253,10 +254,10 @@ def deepcopy_dict_of_arrays(
 
     Examples:
         >>> result = deepcopy_dict_of_arrays(
-        ...     {"x": array([1.]), "y": array([2.])}, ["x"]
+        ...     {"x": array([1.0]), "y": array([2.0])}, ["x"]
         ... )
         >>> print(result)
-        >>> {"x": array([1.])}
+        >>> {"x": array([1.0])}
 
     Args:
         dict_of_arrays: The dictionary of NumPy arrays to be copied.

@@ -4,6 +4,8 @@ preview = true
 target-version = "py38"
 src = ["src"]
 task-tags = ["TODO"]
+
+[lint]
 ignore = [
     # Conflicts with ruff format.
     "E203",
@@ -80,24 +82,27 @@ select = [
 #    "FBT",
 ]
 
-[flake8-type-checking]
+[lint.flake8-type-checking]
 runtime-evaluated-base-classes = [
     "pydantic.BaseModel",
     "gemseo.core.grammars.pydantic_ndarray.BaseModelWithNDArray",
 ]
 
-[isort]
+[lint.isort]
 force-single-line = true
+#required-imports = ["from __future__ import annotations"]
 
-[format]
-exclude = ["src/gemseo/third_party"]
-
-[pydocstyle]
+[lint.pydocstyle]
 convention = "google"
 
-[per-file-ignores]
+[lint.per-file-ignores]
 "tests/*.py" = ["D", "PT009","PT011", "PT027", "PTH"]
 "doc_src/*.py" = ["T", "D", "B018", "PTH", "E501", "PERF", "A001", "RET504"]
 "src/gemseo/utils/testing/opt_lib_test_base.py" = ["D"]
 "src/gemseo/problems/scalable/data_driven/*" = ["D"]
 "src/gemseo/third_party/*" = ["ALL"]
+
+[format]
+exclude = ["src/gemseo/third_party"]
+docstring-code-format = true
+docstring-code-line-length = 75

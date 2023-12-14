@@ -55,7 +55,7 @@ class SensitivityAnalysisFactory(BaseFactory):
         >>> from numpy import pi
         >>> from gemseo import create_discipline, create_parameter_space
         >>> from gemseo.uncertainty.sensitivity.factory import (
-        ...     SensitivityAnalysisFactory
+        ...     SensitivityAnalysisFactory,
         ... )
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}

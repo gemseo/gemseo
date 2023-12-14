@@ -31,7 +31,7 @@ class OTNormalDistribution(OTDistribution):
         >>> from gemseo.uncertainty.distributions.openturns.normal import (
         ...     OTNormalDistribution
         >>> )
-        >>> distribution = OTNormalDistribution('x', -1, 2)
+        >>> distribution = OTNormalDistribution("x", -1, 2)
         >>> print(distribution)
         Normal(mu=-1, sigma=2)
     """

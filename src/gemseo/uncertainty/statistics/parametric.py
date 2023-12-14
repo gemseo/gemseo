@@ -157,7 +157,7 @@ class ParametricStatistics(Statistics):
         >>> from gemseo import (
         ...     create_discipline,
         ...     create_parameter_space,
-        ...     create_scenario
+        ...     create_scenario,
         ... )
         >>> from gemseo.uncertainty.statistics.parametric import ParametricStatistics
         >>>
@@ -177,14 +177,16 @@ class ParametricStatistics(Statistics):
         >>> scenario = create_scenario(
         ...     [discipline],
         ...     "DisciplinaryOpt",
-        ...     "y1", parameter_space, scenario_type="DOE"
+        ...     "y1",
+        ...     parameter_space,
+        ...     scenario_type="DOE",
         ... )
-        >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
+        >>> scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
         >>>
         >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>
         >>> statistics = ParametricStatistics(
-        ...     dataset, ['Normal', 'Uniform', 'Triangular']
+        ...     dataset, ["Normal", "Uniform", "Triangular"]
         ... )
         >>> fitting_matrix = statistics.get_fitting_matrix()
         >>> mean = statistics.compute_mean()

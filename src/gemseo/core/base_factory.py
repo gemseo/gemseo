@@ -68,8 +68,10 @@ class BaseFactory(metaclass=BaseABCMultiton):
 
         class AFactory(BaseFactory):
             _CLASS = ABaseClass
-            _MODULE_NAMES = ("first.module.fully.qualified.name",
-                             "second.module.fully.qualified.name")
+            _MODULE_NAMES = (
+                "first.module.fully.qualified.name",
+                "second.module.fully.qualified.name",
+            )
 
     There are 3 sources of modules that can be searched:
 

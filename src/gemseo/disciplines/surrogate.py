@@ -58,8 +58,8 @@ class SurrogateDiscipline(MDODiscipline):
         >>>
         >>> # Create an input-output dataset.
         >>> dataset = IODataset()
-        >>> dataset.add_input_variable("x", np.array([[1.], [2.], [3.]]))
-        >>> dataset.add_output_variable("y", np.array([[3.], [5.], [6.]]))
+        >>> dataset.add_input_variable("x", np.array([[1.0], [2.0], [3.0]]))
+        >>> dataset.add_output_variable("y", np.array([[3.0], [5.0], [6.0]]))
         >>>
         >>> # Build a surrogate discipline relying on a linear regression model.
         >>> surrogate_discipline = SurrogateDiscipline("LinearRegressor", dataset)

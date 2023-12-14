@@ -37,6 +37,7 @@
 Pretty table factory
 ********************
 """
+
 import csv
 
 from ._compact import HTMLParser

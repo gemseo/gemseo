@@ -74,10 +74,7 @@ def example_function(
         The ``Returns`` section supports any reStructuredText formatting,
         including literal blocks::
 
-            {
-                'arg1': arg1,
-                'arg2': arg2
-            }
+            {"arg1": arg1, "arg2": arg2}
 
     Raises:
         AnError: The ``Raises`` section is a list of all exceptions

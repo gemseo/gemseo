@@ -250,8 +250,8 @@ def create_disciplines_from_desc(
     .. code-block:: python
 
         [
-        ("Disc_name1", ["in1"], ["out1", "out2"]),
-        ("Disc_name2", ["in2", "out1"], ["out3", "out2"]),
+            ("Disc_name1", ["in1"], ["out1", "out2"]),
+            ("Disc_name2", ["in2", "out1"], ["out3", "out2"]),
         ]
 
     This will generate two disciplines:

@@ -53,7 +53,7 @@ class AnalyticDiscipline(MDODiscipline):
 
     Examples:
         >>> from gemseo.disciplines.analytic import AnalyticDiscipline
-        >>> discipline = AnalyticDiscipline({'y_1': '2*x**2', 'y_2': '4*x**2+5+z**3'})
+        >>> discipline = AnalyticDiscipline({"y_1": "2*x**2", "y_2": "4*x**2+5+z**3"})
     """
 
     expressions: Mapping[str, str | Expr]

@@ -31,7 +31,7 @@ class OTUniformDistribution(OTDistribution):
         >>> from gemseo.uncertainty.distributions.openturns.uniform import (
         ...     OTUniformDistribution
         >>> )
-        >>> distribution = OTUniformDistribution('x', -1, 1)
+        >>> distribution = OTUniformDistribution("x", -1, 1)
         >>> print(distribution)
         Uniform(lower=-1, upper=1)
     """

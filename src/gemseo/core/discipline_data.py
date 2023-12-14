@@ -85,33 +85,33 @@ class DisciplineData(
         >>> import numpy as np
         >>> import pandas as pd
         >>> data = {
-        ...         'x': 0,
-        ...         'y': pd.DataFrame(data={'a': np.array([0])}),
-        ...     }
+        ...     "x": 0,
+        ...     "y": pd.DataFrame(data={"a": np.array([0])}),
+        ... }
         >>> disc_data = DisciplineData(data)
-        >>> disc_data['x']
+        >>> disc_data["x"]
         0
-        >>> disc_data['y']
+        >>> disc_data["y"]
            a
         0  0
         >>> # DataFrame content can be accessed with the ~ separator.
-        >>> disc_data['y~a']
+        >>> disc_data["y~a"]
         array([0])
         >>> # New columns can be inserted into a DataFrame with the ~ separator.
-        >>> disc_data['y~b'] = np.array([1])
-        >>> data['y']['b']
+        >>> disc_data["y~b"] = np.array([1])
+        >>> data["y"]["b"]
         0    1
         Name: b, dtype: int64
         >>> # New DataFrame can be added.
-        >>> disc_data['z~c'] = np.array([2])
-        >>> data['z']
+        >>> disc_data["z~c"] = np.array([2])
+        >>> data["z"]
            c
         0  2
-        >>> type(data['z'])
+        >>> type(data["z"])
         <class 'pandas.core.frame.DataFrame'>
         >>> # DataFrame's columns can be deleted.
-        >>> del disc_data['z~c']
-        >>> data['z']
+        >>> del disc_data["z~c"]
+        >>> data["z"]
         Empty DataFrame
         Columns: []
         Index: [0]
