@@ -20,6 +20,8 @@ Use a data converter
 ====================
 """
 
+from __future__ import annotations
+
 from gemseo.core.data_converters.json import JSONGrammarDataConverter
 from gemseo.core.grammars.json_grammar import JSONGrammar
 

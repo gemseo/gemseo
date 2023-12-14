@@ -236,7 +236,7 @@ def generate_n2_plot(
 
     Examples:
         >>> from gemseo import create_discipline, generate_n2_plot
-        >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> generate_n2_plot(disciplines)
 
     See Also:
@@ -268,7 +268,7 @@ def generate_coupling_graph(
 
     Examples:
         >>> from gemseo import create_discipline, generate_coupling_graph
-        >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> generate_coupling_graph(disciplines)
 
     See Also:
@@ -446,7 +446,7 @@ def get_algorithm_options_schema(
 
     Examples:
         >>> from gemseo import get_algorithm_options_schema
-        >>> schema = get_algorithm_options_schema('NLOPT_SLSQP', pretty_print=True)
+        >>> schema = get_algorithm_options_schema("NLOPT_SLSQP", pretty_print=True)
 
     See Also:
         create_scenario
@@ -483,7 +483,7 @@ def get_discipline_inputs_schema(
 
     Examples:
         >>> from gemseo import create_discipline, get_discipline_inputs_schema
-        >>> discipline = create_discipline('Sellar1')
+        >>> discipline = create_discipline("Sellar1")
         >>> schema = get_discipline_inputs_schema(discipline, pretty_print=True)
 
     See Also:
@@ -514,7 +514,7 @@ def get_discipline_outputs_schema(
 
     Examples:
         >>> from gemseo import get_discipline_outputs_schema, create_discipline
-        >>> discipline = create_discipline('Sellar1')
+        >>> discipline = create_discipline("Sellar1")
         >>> get_discipline_outputs_schema(discipline, pretty_print=True)
 
     See Also:
@@ -603,7 +603,7 @@ def get_formulation_options_schema(
 
     Examples:
         >>> from gemseo import get_formulation_options_schema
-        >>> schema = get_formulation_options_schema('MDF', pretty_print=True)
+        >>> schema = get_formulation_options_schema("MDF", pretty_print=True)
 
     See Also:
         create_scenario
@@ -703,7 +703,7 @@ def get_formulations_options_defaults(
 
     Examples:
         >>> from gemseo import get_formulations_options_defaults
-        >>> get_formulations_options_defaults('MDF')
+        >>> get_formulations_options_defaults("MDF")
         {'main_mda_name': 'MDAChain',
          'maximize_objective': False,
          'inner_mda_name': 'MDAJacobi'}
@@ -737,7 +737,7 @@ def get_discipline_options_schema(
 
     Examples:
         >>> from gemseo import get_discipline_options_schema
-        >>> schema = get_discipline_options_schema('Sellar1', pretty_print=True)
+        >>> schema = get_discipline_options_schema("Sellar1", pretty_print=True)
 
     See Also:
         create_discipline
@@ -771,7 +771,7 @@ def get_scenario_options_schema(
 
     Examples:
         >>> from gemseo import get_scenario_options_schema
-        >>> get_scenario_options_schema('MDO')
+        >>> get_scenario_options_schema("MDO")
 
     See Also:
         create_scenario
@@ -807,7 +807,7 @@ def get_scenario_inputs_schema(
         get_scenario_inputs_schema
         >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
         >>> design_space = SellarDesignSpace()
-        >>> disciplines = create_discipline(['Sellar1','Sellar2','SellarSystem'])
+        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
         'my_scenario', 'MDO')
         >>> get_scenario_inputs_schema(scenario)
@@ -835,7 +835,7 @@ def get_discipline_options_defaults(
 
     Examples:
         >>> from gemseo import get_discipline_options_defaults
-        >>> get_discipline_options_defaults('Sellar1')
+        >>> get_discipline_options_defaults("Sellar1")
 
     See Also:
         create_discipline
@@ -986,7 +986,7 @@ def get_mda_options_schema(
 
     Examples:
         >>> from gemseo import get_mda_options_schema
-        >>> get_mda_options_schema('MDAJacobi')
+        >>> get_mda_options_schema("MDAJacobi")
 
     See Also:
         create_mda
@@ -1032,7 +1032,7 @@ def create_scenario(
     Examples:
         >>> from gemseo import create_discipline, create_scenario
         >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-        >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> design_space = SellarDesignSpace()
         >>> scenario = create_scenario(
         >>>     disciplines, 'MDF', 'obj', design_space, 'SellarMDFScenario'
@@ -1155,7 +1155,7 @@ def create_discipline(
 
     Examples:
         >>> from gemseo import create_discipline
-        >>> discipline = create_discipline('Sellar1')
+        >>> discipline = create_discipline("Sellar1")
         >>> discipline.execute()
         {'x_local': array([0.+0.j]),
          'x_shared': array([1.+0.j, 0.+0.j]),
@@ -1307,8 +1307,8 @@ def create_mda(
 
     Examples:
         >>> from gemseo import create_discipline, create_mda
-        >>> disciplines = create_discipline(['Sellar1', 'Sellar2'])
-        >>> mda = create_mda('MDAGaussSeidel', disciplines)
+        >>> disciplines = create_discipline(["Sellar1", "Sellar2"])
+        >>> mda = create_mda("MDAGaussSeidel", disciplines)
         >>> mda.execute()
         {'x_local': array([0.+0.j]),
          'x_shared': array([1.+0.j, 0.+0.j]),
@@ -1347,12 +1347,12 @@ def execute_post(
     Examples:
         >>> from gemseo import create_discipline, create_scenario, execute_post
         >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-        >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> design_space = SellarDesignSpace()
         >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
         'SellarMDFScenario')
-        >>> scenario.execute({'algo': 'NLOPT_SLSQP', 'max_iter': 100})
-        >>> execute_post(scenario, 'OptHistoryView', show=False, save=True)
+        >>> scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
+        >>> execute_post(scenario, "OptHistoryView", show=False, save=True)
 
     See Also:
         get_available_post_processings
@@ -1392,7 +1392,7 @@ def execute_algo(
         >>> from gemseo import execute_algo
         >>> from gemseo.problems.analytical.rosenbrock import Rosenbrock
         >>> opt_problem = Rosenbrock()
-        >>> opt_result = execute_algo(opt_problem, 'SLSQP')
+        >>> opt_result = execute_algo(opt_problem, "SLSQP")
         >>> opt_result
         Optimization result:
         |_ Design variables: [0.99999787 0.99999581]
@@ -1508,9 +1508,9 @@ def read_design_space(
         >>> from gemseo import (create_design_space, write_design_space,
         >>>     read_design_space)
         >>> original_design_space = create_design_space()
-        >>> original_design_space.add_variable('x', l_b=-1, value=0., u_b=1.)
-        >>> write_design_space(original_design_space, 'file.csv')
-        >>> design_space = read_design_space('file.csv')
+        >>> original_design_space.add_variable("x", l_b=-1, value=0.0, u_b=1.0)
+        >>> write_design_space(original_design_space, "file.csv")
+        >>> design_space = read_design_space("file.csv")
         >>> print(design_space)
         Design Space:
         +------+-------------+-------+-------------+-------+
@@ -1550,8 +1550,8 @@ def write_design_space(
     Examples:
         >>> from gemseo import create_design_space, write_design_space
         >>> design_space = create_design_space()
-        >>> design_space.add_variable('x', l_b=-1, u_b=1, value=0.)
-        >>> write_design_space(design_space, 'file.csv')
+        >>> design_space.add_variable("x", l_b=-1, u_b=1, value=0.0)
+        >>> write_design_space(design_space, "file.csv")
 
     See Also:
         read_design_space
@@ -1571,7 +1571,7 @@ def create_design_space() -> DesignSpace:
     Examples:
         >>> from gemseo import create_design_space
         >>> design_space = create_design_space()
-        >>> design_space.add_variable('x', l_b=-1, u_b=1, value=0.)
+        >>> design_space.add_variable("x", l_b=-1, u_b=1, value=0.0)
         >>> print(design_space)
         Design Space:
         +------+-------------+-------+-------------+-------+
@@ -1640,7 +1640,7 @@ def create_cache(
 
     Examples:
         >>> from gemseo import create_cache
-        >>> cache = create_cache('MemoryFullCache')
+        >>> cache = create_cache("MemoryFullCache")
         >>> print(cache)
         +--------------------------------+
         |        MemoryFullCache         |
@@ -2022,17 +2022,19 @@ def wrap_discipline_in_job_scheduler(
         CPUS using the SLURM wrapper, on a HPC, and at most 10 points run in parallel,
         everytime a point of the DOE is computed, another one is submitted to the queue.
 
-        >>> from gemseo.wrappers.job_schedulers.schedulers_factory import SchedulersFactory
+        >>> from gemseo.wrappers.job_schedulers.schedulers_factory import (
+        ...     SchedulersFactory,
+        ... )
         >>> from gemseo import create_discipline, create_scenario, create_mda
         >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-        >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> mda = create_mda(disciplines)
         >>> wrapped_mda= wrap_discipline_in_job_scheduler(mda, scheduler_name="SLURM",
         >>>                                               workdir_path="workdir",
         >>>                                               cpus_per_task=24)
         >>> scn=create_scenario(mda, "DisciplinaryOpt", "obj", SellarDesignSpace(),
         >>>                     scenario_type="DOE")
-        >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes":10})
+        >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes": 10})
 
         In this variant, each discipline is wrapped independently in the job scheduler,
         which allows to parallelize more the process because each discipline will run on
@@ -2042,7 +2044,7 @@ def wrap_discipline_in_job_scheduler(
         Each wrapped discipline can also be cached using a HDF cache.
 
         >>> from gemseo.core.discipline import MDODiscipline
-        >>> disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> wrapped_discs=[wrap_discipline_in_job_scheduler(disc,
         >>>                                                 workdir_path="workdir",
         >>>                                                 cpus_per_task=24,
@@ -2052,7 +2054,7 @@ def wrap_discipline_in_job_scheduler(
         >>>                     scenario_type="DOE")
         >>> scn.formulation.mda.set_cache_policy(MDODiscipline.HDF5_CACHE,
         >>>                                      cache_hdf_file="mda_cache.h5")
-        >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes":10})
+        >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes": 10})
     """  # noqa:D205 D212 D415 E501
     from gemseo.wrappers.job_schedulers.schedulers_factory import SchedulersFactory
 

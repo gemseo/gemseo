@@ -213,6 +213,7 @@
 Self Organizing Maps
 ********************
 """
+
 import itertools
 import logging
 import os

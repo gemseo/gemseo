@@ -993,10 +993,15 @@ class DesignSpace(collections.abc.MutableMapping):
 
             .. code-block:: python
 
-                   ({'x': array(are_x_lower_bounds_active),
-                     'y': array(are_y_lower_bounds_active)},
-                    {'x': array(are_x_upper_bounds_active),
-                     'y': array(are_y_upper_bounds_active)}
+                   (
+                       {
+                           "x": array(are_x_lower_bounds_active),
+                           "y": array(are_y_lower_bounds_active),
+                       },
+                       {
+                           "x": array(are_x_upper_bounds_active),
+                           "y": array(are_y_upper_bounds_active),
+                       },
                    )
 
             where:

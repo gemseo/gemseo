@@ -95,9 +95,9 @@ class SPDistribution(Distribution):
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.distribution import (
-        ...    SPDistribution
+        ...     SPDistribution,
         ... )
-        >>> distribution = SPDistribution('x', 'expon', {'loc': 3, 'scale': 1/2.})
+        >>> distribution = SPDistribution("x", "expon", {"loc": 3, "scale": 1 / 2.0})
         >>> print(distribution)
         expon(loc=3, scale=0.5)
     """

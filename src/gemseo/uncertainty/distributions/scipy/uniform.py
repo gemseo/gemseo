@@ -29,9 +29,9 @@ class SPUniformDistribution(SPDistribution):
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.uniform import (
-        ...     SPUniformDistribution
+        ...     SPUniformDistribution,
         ... )
-        >>> distribution = SPUniformDistribution('x', -1, 1)
+        >>> distribution = SPUniformDistribution("x", -1, 1)
         >>> print(distribution)
         uniform(lower=-1, upper=1)
     """

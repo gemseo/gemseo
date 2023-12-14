@@ -187,7 +187,7 @@ def create_statistics(
         >>> from gemseo import (
         ...     create_discipline,
         ...     create_parameter_space,
-        ...     create_scenario
+        ...     create_scenario,
         ... )
         >>> from gemseo.uncertainty import create_statistics
         >>>
@@ -209,9 +209,9 @@ def create_statistics(
         ...     "DisciplinaryOpt",
         ...     "y1",
         ...     parameter_space,
-        ...     scenario_type="DOE"
+        ...     scenario_type="DOE",
         ... )
-        >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
+        >>> scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
         >>>
         >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>

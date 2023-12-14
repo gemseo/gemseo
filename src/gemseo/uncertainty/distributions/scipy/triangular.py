@@ -29,9 +29,9 @@ class SPTriangularDistribution(SPDistribution):
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.triangular import (
-        ...     SPTriangularDistribution
+        ...     SPTriangularDistribution,
         ... )
-        >>> distribution = SPTriangularDistribution('x', -1, 0, 1)
+        >>> distribution = SPTriangularDistribution("x", -1, 0, 1)
         >>> print(distribution)
         triang(lower=-1, mode=0, upper=1)
     """

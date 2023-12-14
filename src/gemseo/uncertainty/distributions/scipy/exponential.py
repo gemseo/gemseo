@@ -29,9 +29,9 @@ class SPExponentialDistribution(SPDistribution):
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.exponential import (
-        ...     SPExponentialDistribution
+        ...     SPExponentialDistribution,
         ... )
-        >>> distribution = SPExponentialDistribution('x', 2, 3)
+        >>> distribution = SPExponentialDistribution("x", 2, 3)
         >>> print(distribution)
         expon(loc=3, scale=0.5)
     """

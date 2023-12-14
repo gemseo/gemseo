@@ -73,7 +73,7 @@ class AutoPyDiscipline(MDODiscipline):
         >>> discipline = AutoPyDiscipline(my_function)
         >>> discipline.execute()
         {'x': array([0.]), 'y': array([0.]), 'z1': array([0.]), 'z2': array([1.])}
-        >>> discipline.execute({'x': array([1.]), 'y':array([-3.2])})
+        >>> discipline.execute({"x": array([1.0]), "y": array([-3.2])})
         {'x': array([1.]), 'y': array([-3.2]), 'z1': array([-5.4]), 'z2': array([-4.4])}
     """
 

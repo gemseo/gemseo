@@ -37,6 +37,7 @@
 The pretty table core
 *********************
 """
+
 import copy
 import math
 import random

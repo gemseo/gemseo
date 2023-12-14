@@ -73,7 +73,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         >>> from numpy import pi
         >>> from gemseo import create_discipline, create_parameter_space
         >>> from gemseo.uncertainty.sensitivity.correlation.analysis import (
-        ...     CorrelationAnalysis
+        ...     CorrelationAnalysis,
         ... )
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
@@ -92,7 +92,9 @@ class CorrelationAnalysis(SensitivityAnalysis):
         ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
         ... )
         >>>
-        >>> analysis = CorrelationAnalysis([discipline], parameter_space, n_samples=1000)
+        >>> analysis = CorrelationAnalysis(
+        ...     [discipline], parameter_space, n_samples=1000
+        ... )
         >>> indices = analysis.compute_indices()
     """  # noqa: E501
 

@@ -60,14 +60,12 @@ class HSICAnalysis(SensitivityAnalysis):
     Examples:
         >>> from numpy import pi
         >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty.sensitivity.hsic.analysis import (
-        ...     HSICAnalysis
-        ... )
+        >>> from gemseo.uncertainty.sensitivity.hsic.analysis import HSICAnalysis
         >>> from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import (
-        ...     IshigamiDiscipline
+        ...     IshigamiDiscipline,
         ... )
         >>> from gemseo.uncertainty.use_cases.ishigami.ishigami_space import (
-        ...     IshigamiSpace
+        ...     IshigamiSpace,
         ... )
         >>>
         >>> discipline = IshigamiDiscipline()

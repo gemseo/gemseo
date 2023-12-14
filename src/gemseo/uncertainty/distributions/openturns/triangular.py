@@ -29,9 +29,9 @@ class OTTriangularDistribution(OTDistribution):
 
     Examples:
         >>> from gemseo.uncertainty.distributions.openturns.triangular import (
-        ...     OTTriangularDistribution
+        ...     OTTriangularDistribution,
         ... )
-        >>> distribution = OTTriangularDistribution('x', -1, 0, 1)
+        >>> distribution = OTTriangularDistribution("x", -1, 0, 1)
         >>> print(distribution)
         Triangular(lower=-1, mode=0, upper=1)
     """

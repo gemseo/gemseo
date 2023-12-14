@@ -116,9 +116,9 @@ class AbstractCache(ABCMapping):
         - the output data: :math:`(1., 2.)`,
         - the Jacobian data: :math:`(2., 6.)^T`.
 
-        >>> input_data = {"x": array([1.])}
-        >>> output_data = {"y": array([1., 2.])}
-        >>> jacobian_data = {"y": {"x": array([[2.], [6.]])}}
+        >>> input_data = {"x": array([1.0])}
+        >>> output_data = {"y": array([1.0, 2.0])}
+        >>> jacobian_data = {"y": {"x": array([[2.0], [6.0]])}}
 
         For this ``input_data``,
         one can cache the output data:
@@ -831,10 +831,10 @@ def hash_data_dict(
     Examples:
         >>> from gemseo.core.cache import hash_data_dict
         >>> from numpy import array
-        >>> data = {'x':array([1.,2.]),'y':array([3.])}
+        >>> data = {"x": array([1.0, 2.0]), "y": array([3.0])}
         >>> hash_data_dict(data)
         13252388834746642440
-        >>> hash_data_dict(data,'x')
+        >>> hash_data_dict(data, "x")
         4006190450215859422
     """
     names_with_hashed_values = []

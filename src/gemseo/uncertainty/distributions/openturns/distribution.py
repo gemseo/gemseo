@@ -92,9 +92,9 @@ class OTDistribution(Distribution):
 
     Examples:
         >>> from gemseo.uncertainty.distributions.openturns.distribution import (
-        ...     OTDistribution
+        ...     OTDistribution,
         ... )
-        >>> distribution = OTDistribution('x', 'Exponential', (3, 2))
+        >>> distribution = OTDistribution("x", "Exponential", (3, 2))
         >>> print(distribution)
         Exponential(3, 2)
     """

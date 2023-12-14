@@ -91,7 +91,8 @@ class EmpiricalStatistics(Statistics):
         >>> from gemseo import (
         ...     create_discipline,
         ...     create_parameter_space,
-        ...     create_scenario)
+        ...     create_scenario,
+        ... )
         >>> from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
@@ -112,9 +113,9 @@ class EmpiricalStatistics(Statistics):
         ...     "DisciplinaryOpt",
         ...     "y1",
         ...     parameter_space,
-        ...     scenario_type="DOE"
+        ...     scenario_type="DOE",
         ... )
-        >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
+        >>> scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
         >>>
         >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>

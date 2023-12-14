@@ -24,7 +24,7 @@ class SPWeibullDistribution(SPDistribution):
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.weibull import (
-        ...     SPWeibullDistribution
+        ...     SPWeibullDistribution,
         ... )
         >>> distribution = SPWeibullDistribution("u", 0.5, 1.0, 2.0)
         >>> print(distribution)
