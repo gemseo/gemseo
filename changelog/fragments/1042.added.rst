@@ -1,0 +1,1 @@
+The ``TaylorDiscipline`` class can be used to create the first-order Taylor polynomial of an ``MDODiscipline`` at a specific expansion point.
