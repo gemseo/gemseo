@@ -52,6 +52,9 @@ class Scatter(MatplotlibPlot):
             if not isinstance(trend_function_creator, Callable):
                 trend_function_creator = TREND_FUNCTIONS[trend_function_creator]
 
+            indices = x_values[:, 0].argsort()
+            x_values = x_values[indices]
+            y_values = y_values[indices]
             trend_function = trend_function_creator(x_values[:, 0], y_values[:, 0])
             axes.plot(
                 x_values,

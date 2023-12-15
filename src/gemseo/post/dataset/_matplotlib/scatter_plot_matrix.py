@@ -91,6 +91,7 @@ class ScatterMatrix(MatplotlibPlot):
                     collection = ax.collections[0]
                     collection.set_zorder(3)
                     data = collection.get_offsets()
+                    data = data[data[:, 0].argsort()]
                     x_data = data[:, 0]
                     trend_function = trend_function_creator(x_data, data[:, 1])
                     ax.plot(

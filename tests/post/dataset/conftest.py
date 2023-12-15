@@ -41,6 +41,8 @@ def dataset() -> Dataset:
 def quadratic_dataset() -> IODataset:
     """A dataset containing 10 equispaced evaluations of f(x)=x**2 over [0,1]."""
     x = linspace(0, 1, 10)[:, newaxis]
+    # Mix the components to test the robustness of the tested features
+    x = x[[2, 0, 4, 1, 9, 7, 6, 5, 3, 8]]
     dataset = IODataset()
     dataset.add_input_group(x, "x")
     dataset.add_output_group(x**2, "y")
