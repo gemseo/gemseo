@@ -50,10 +50,12 @@ class BasicHistory(OptPostProcessor):
     def _plot(
         self,
         variable_names: Sequence[str],
+        normalize: bool = False,
     ) -> None:
         """
         Args:
             variable_names: The names of the variables.
+            normalize: Whether to normalize the data.
         """  # noqa: D205, D212, D415
         problem = self.opt_problem
         dataset = problem.to_dataset(opt_naming=False)
@@ -68,6 +70,9 @@ class BasicHistory(OptPostProcessor):
             if self._change_obj:
                 dataset.transform_data(lambda x: -x, variable_names=self._neg_obj_name)
                 dataset.rename_variable(self._neg_obj_name, self._obj_name)
+
+        if normalize:
+            dataset = dataset.get_normalized()
 
         plot = Lines(
             dataset,
