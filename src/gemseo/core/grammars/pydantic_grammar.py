@@ -32,11 +32,13 @@ from typing import Union
 from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import ValidationError
+from pydantic import create_model
 from pydantic.fields import FieldInfo
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.base_grammar import NamesToTypes
-from gemseo.core.grammars.pydantic_ndarray import BaseModelWithNDArray
+from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
+from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.utils.compatibility.python import get_origin
 
@@ -62,7 +64,7 @@ class PydanticGrammar(BaseGrammar):
     __model: ModelType
     """The pydantic model."""
 
-    __rebuild_model: bool
+    __model_needs_rebuild: bool
     """Whether to rebuild the model before validation when it had runtime changes.
 
     This is necessary because the pydantic schema is built at model creation but it does
@@ -70,7 +72,7 @@ class PydanticGrammar(BaseGrammar):
     """
 
     __SIMPLE_TYPES: ClassVar[tuple[type]] = {
-        ndarray,
+        _NDArrayPydantic,
         list,
         tuple,
         dict,
@@ -113,15 +115,16 @@ class PydanticGrammar(BaseGrammar):
 
     def _delitem(self, name: str) -> None:  # noqa:D102
         del self.__model.model_fields[name]
-        self.__rebuild_model = True
+        self.__model_needs_rebuild = True
 
     def _copy(self, grammar: PydanticGrammar) -> None:  # noqa:D102
         grammar.__model = copy(self.__model)
+        grammar.__model_needs_rebuild = self.__model_needs_rebuild
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa:D102
         fields = self.__model.model_fields
         fields[new_name] = fields.pop(current_name)
-        self.__rebuild_model = True
+        self.__model_needs_rebuild = True
 
     def update(  # noqa:D102
         self,
@@ -135,7 +138,7 @@ class PydanticGrammar(BaseGrammar):
             if field_name in exclude_names:
                 continue
             fields[field_name] = copy(field)
-            self.__rebuild_model = True
+            self.__model_needs_rebuild = True
         super().update(grammar, exclude_names)
 
     def update_from_names(  # noqa:D102
@@ -146,29 +149,34 @@ class PydanticGrammar(BaseGrammar):
             return
         fields = self.__model.model_fields
         for name in names:
-            fields[name] = FieldInfo(name=name, annotation=ndarray)
-        self.__rebuild_model = True
+            fields[name] = FieldInfo(name=name, annotation=NDArrayPydantic)
+        self.__model_needs_rebuild = True
 
     def update_from_types(  # noqa:D102
         self,
         names_to_types: NamesToTypes,
         merge: bool = False,
     ) -> None:
+        """Update the grammar from names bound to types.
+
+        The updated elements are required.
+        For convenience, when a type is exactly ``ndarray``,
+        it is automatically converted to ``NDArrayPydantic``.
+        """
         if not names_to_types:
             return
         fields = self.__model.model_fields
         for name, annotation in names_to_types.items():
+            if annotation is ndarray:
+                annotation = _NDArrayPydantic
             if merge and name in fields:
                 annotation = Union[fields[name].annotation, annotation]
             fields[name] = FieldInfo(name=name, annotation=annotation)
-        self.__rebuild_model = True
+        self.__model_needs_rebuild = True
 
     def _clear(self) -> None:  # noqa:D102
-        class Model(BaseModelWithNDArray):  # noqa: D102
-            pass
-
-        self.__model = Model
-        self.__rebuild_model = False
+        self.__model = create_model("Model")
+        self.__model_needs_rebuild = False
 
     def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
         repr_.add(f"Type: {properties.annotation}")
@@ -178,10 +186,7 @@ class PydanticGrammar(BaseGrammar):
         data: MutableData,
         error_message: MultiLineString,
     ) -> bool:
-        if self.__rebuild_model:
-            self.__model.model_rebuild(force=True)
-            self.__rebuild_model = False
-
+        self.__rebuild_model()
         try:
             # The grammars shall be strict on typing and not coerce the data.
             self.__model.model_validate(data, strict=True)
@@ -213,7 +218,7 @@ class PydanticGrammar(BaseGrammar):
     ) -> None:
         for name in self.keys() - names:
             del self.__model.model_fields[name]
-            self.__rebuild_model = True
+            self.__model_needs_rebuild = True
 
     def to_simple_grammar(self) -> SimpleGrammar:
         """
@@ -269,18 +274,22 @@ class PydanticGrammar(BaseGrammar):
 
         # The rebuild cannot be postponed for descriptions because these seem to be
         # stored in the schema.
-        rebuild = False
         for name, field in self.__model.model_fields.items():
             description = descriptions.get(name)
             if description:
                 field.description = description
-                rebuild = True
+                self.__model_needs_rebuild = True
 
-        if rebuild:
-            self.__model.model_rebuild(force=True)
+        self.__rebuild_model()
 
     def _check_name(self, *names: str) -> None:
         fields = self.__model.model_fields
         for name in names:
             if name not in fields:
                 raise KeyError(f"The name {name} is not in the grammar.")
+
+    def __rebuild_model(self) -> None:
+        """Rebuild the model if needed."""
+        if self.__model_needs_rebuild:
+            self.__model.model_rebuild(force=True)
+            self.__model_needs_rebuild = False

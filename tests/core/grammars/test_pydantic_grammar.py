@@ -25,13 +25,14 @@ from typing import Union
 import pytest
 from numpy import array
 from numpy import ndarray
-from numpy.typing import NDArray
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import ModelType
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
+from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
+from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.utils.testing.helpers import do_not_raise
 
@@ -287,9 +288,9 @@ Grammar name: g
          Type: <class 'int'>
    Optional elements:
       name2:
-         Type: numpy.ndarray[typing.Any, numpy.dtype[int]]
+         Type: gemseo.core.grammars.pydantic_ndarray._NDArrayPydantic[typing.Any, numpy.dtype[int]]
          Default: [0]
-""",
+""",  # noqa: E501
         ),
     ],
     indirect=["model"],
@@ -439,7 +440,7 @@ def test_update_from_names(model, names):
 
     for name, type_ in g.items():
         if name in names:
-            assert_equal_types(type_, ndarray)
+            assert_equal_types(type_, NDArrayPydantic)
         else:
             assert_equal_types(type_, g_before[name])
 
@@ -452,9 +453,9 @@ def test_update_from_names(model, names):
         ({"name1": float}, Union[int, float]),
         ({"name1": str}, Union[int, str]),
         ({"name1": bool}, Union[int, bool]),
-        ({"name1": ndarray}, Union[int, ndarray]),
+        ({"name1": NDArrayPydantic}, Union[int, NDArrayPydantic]),
         ({"name1": dict}, Union[int, dict]),
-        ({"name2": int}, Union[NDArray[int], int]),
+        ({"name2": int}, Union[NDArrayPydantic[int], int]),
     ],
 )
 @pytest.mark.parametrize(
@@ -481,7 +482,7 @@ def test_update_from_types_with_merge(model, data, expected_type):
         ({"name1": float}, float),
         ({"name1": str}, str),
         ({"name1": bool}, bool),
-        ({"name1": ndarray}, ndarray),
+        ({"name1": NDArrayPydantic}, NDArrayPydantic),
         ({"name1": dict}, dict),
     ],
 )
@@ -502,7 +503,7 @@ def test_update_from_types_from_empty(data, expected_type):
         ({"name1": float}, float),
         ({"name1": str}, str),
         ({"name1": bool}, bool),
-        ({"name1": ndarray}, ndarray),
+        ({"name1": NDArrayPydantic}, NDArrayPydantic),
         ({"name1": dict}, dict),
     ],
 )
@@ -531,7 +532,7 @@ def test_update_from_types(model, data, expected_type):
         ({"name1": 0.0}, float),
         ({"name1": ""}, str),
         ({"name1": True}, bool),
-        ({"name1": ndarray([0])}, ndarray),
+        ({"name1": ndarray([0])}, _NDArrayPydantic),
         ({"name1": {"name2": 0}}, dict),
     ],
 )
@@ -654,7 +655,7 @@ def test_restrict_to(names, model1):
     ("model", "types"),
     [
         (None, []),
-        (ModelID.ONE, [int, ndarray]),
+        (ModelID.ONE, [int, _NDArrayPydantic]),
         (ModelID.TWO, [int, None]),
     ],
     indirect=["model"],

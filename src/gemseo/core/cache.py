@@ -90,6 +90,7 @@ class CacheEntry(NamedTuple):
     """The Jacobian data."""
 
 
+# TODO: API: rename to BaseCache
 class AbstractCache(ABCMapping):
     """An abstract base class for caches with a dictionary-like interface.
 
@@ -376,6 +377,7 @@ class AbstractCache(ABCMapping):
         )
 
 
+# TODO: API: rename to BaseFullCache
 class AbstractFullCache(AbstractCache):
     """Abstract cache to store all the data, either in memory or on the disk.
 

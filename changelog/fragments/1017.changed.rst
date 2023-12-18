@@ -1,0 +1,3 @@
+``PydanticGrammar`` have been updated to support pydantic v2.
+For such grammars, NumPy ndarrays shall be typed with ``gemseo.core.grammars.pydantic_ndarray.NDArrayPydantic``
+instead of the standard ``ndarray`` or ``NDArray`` based of annotations.

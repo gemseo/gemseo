@@ -214,6 +214,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
     def _clear(self) -> None:
         """Empty the grammar but the defaults and namespace mappings."""
 
+    # TODO: API: rename exclude_names (starts with verb like method) to excluded_names.
     @abstractmethod
     def update(
         self,
