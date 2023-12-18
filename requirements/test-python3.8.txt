@@ -22,7 +22,7 @@ cycler==0.12.1
     # via matplotlib
 dill==0.3.7
     # via openturns
-docstring-inheritance==2.1.1
+docstring-inheritance==2.1.2
     # via gemseo (pyproject.toml)
 et-xmlfile==1.1.0
     # via openpyxl
@@ -78,7 +78,7 @@ openpyxl==3.1.2
     # via gemseo (pyproject.toml)
 openturns==1.21
     # via gemseo (pyproject.toml)
-packaging==23.1
+packaging==23.2
     # via
     #   gemseo (pyproject.toml)
     #   matplotlib
