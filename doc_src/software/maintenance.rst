@@ -84,6 +84,10 @@ update the requirements for the testing and ``doc`` environments of ``tox``:
 
     tox -e update-deps-test-py38,update-deps-test-py39,update-deps-test-py310,update-deps-doc
 
+.. warning::
+
+   This shall be run on linux only otherwise windows specific packages will be included!
+
 The dependencies for the ``check`` and ``dist`` environments of ``tox``
 are defined in:
 

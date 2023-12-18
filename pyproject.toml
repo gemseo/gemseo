@@ -18,7 +18,7 @@ classifiers = [
 dynamic = ["version"]
 requires-python = ">=3.8, <3.11"
 dependencies = [
-    "docstring-inheritance >=1.0.0,<=2.1.1",
+    "docstring-inheritance >=1.0.0,<=2.1.2",
     "fastjsonschema >=2.14.5,<=2.19.0",
     "genson ==1.2.2",
     "h5py >=3.0.0,<=3.10.0",
@@ -26,7 +26,7 @@ dependencies = [
     "matplotlib >=3.3.0,<=3.8.2",
     "networkx >=2.2,<=3.2.1",
     "numpy >=1.21,<=1.26.2",
-    "packaging <=23.1",
+    "packaging <=23.2",
     "pandas >=1.1.0,<=2.1.4",
     "pyxdsm >=2.1.0,<=2.3.0",
     "pydantic >=2.1,<2.6",
