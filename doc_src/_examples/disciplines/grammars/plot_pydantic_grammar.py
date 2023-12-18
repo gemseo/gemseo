@@ -23,13 +23,12 @@ Use a pydantic grammar
 from __future__ import annotations
 
 from numpy import array
-from numpy import ndarray
-from numpy._typing import NDArray
+from pydantic import BaseModel
 from pydantic import Field
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
-from gemseo.core.grammars.pydantic_ndarray import BaseModelWithNDArray
+from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
 
 # %%
 # Create the pydantic model
@@ -41,28 +40,30 @@ from gemseo.core.grammars.pydantic_ndarray import BaseModelWithNDArray
 # Mind that default values with a mutable object must be defined with the
 # ``default_factory`` of a ``Field``.
 # By default,
-# pydantic does not handle the typing of the NumPy arrays.
+# pydantic does not handle the typing of NumPy arrays.
 # To support it,
-# a pydantic model shall derive from GEMSEO's :class:`.BaseModelWithNDArray` class.
+# a special type shall be used, ``NDArrayPydantic``.
+# Like the standard NumPy type for ``ndarray``, ``NDArray``,
+# this type can be specialized with the dtype like ``NDArrayPydantic[int]``.
 
 
-class Model(BaseModelWithNDArray):
+class Model(BaseModel):
     """The description of the model."""
 
     a_int: int
-    """The description of a_int."""
+    """The description of an integer."""
 
-    an_ndarray: ndarray
-    """The description of an_ndarray."""
+    an_ndarray: NDArrayPydantic
+    """The description of an ndarray."""
 
-    an_ndarray_of_int: NDArray[int]
-    """The description of an_ndarray_of_int."""
+    an_ndarray_of_int: NDArrayPydantic[int]
+    """The description of an ndarray of integers."""
 
-    an_ndarray_with_default: ndarray = Field(default_factory=lambda: array([0]))
-    """The description of an_ndarray_with_default."""
+    an_ndarray_with_default: NDArrayPydantic = Field(default_factory=lambda: array([0]))
+    """The description of an ndarray with a default value."""
 
     a_str_with_default: str = "default"
-    """The description of a_str."""
+    """The description of a string with a default value."""
 
 
 # %%
@@ -124,7 +125,7 @@ grammar.defaults
 class Model2(Model):
     """A model that inherits from a parent model."""
 
-    an_ndarray: NDArray[float] = Field(default_factory=lambda: array([1.0]))
+    an_ndarray: NDArrayPydantic[float] = Field(default_factory=lambda: array([1.0]))
     """The new description of an_ndarray."""
 
     a_bool: bool = True

@@ -14,20 +14,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
 from typing import Any
+from typing import Callable
 from typing import NamedTuple
+from typing import Union
 
 import pytest
 from numpy import array
-from numpy import ndarray
-from numpy.typing import NDArray
-from pydantic import BaseModel
 from pydantic import ValidationError
 from pydantic import create_model
 
-from gemseo.core.grammars.pydantic_ndarray import BaseModelWithNDArray
-from gemseo.core.grammars.pydantic_ndarray import annotate
+from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
+from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
 
 
 class Data(NamedTuple):
@@ -39,17 +37,35 @@ class Data(NamedTuple):
 
 # Test data with type annotations bound to valid and invalid data.
 TYPES_TO_VALUES = {
-    ndarray: Data(array([0]), (0, 0.0, "0", False)),
-    NDArray: Data(array([0]), (0, 0.0, "0", False)),
-    NDArray[Any]: Data(array([0]), (0, 0.0, "0", False)),
-    NDArray[int]: Data(
+    _NDArrayPydantic: Data(array([0]), (0, 0.0, "0", False)),
+    NDArrayPydantic: Data(array([0]), (0, 0.0, "0", False)),
+    NDArrayPydantic[Any]: Data(array([0]), (0, 0.0, "0", False)),
+    NDArrayPydantic[int]: Data(
         array([0]),
         (
             array([0.0]),
             array([False]),
         ),
     ),
-    NDArray[float]: Data(
+    NDArrayPydantic[float]: Data(
+        array([0.0]),
+        (
+            array([0]),
+            array([False]),
+        ),
+    ),
+    # The following verifies Unions, Callable is just not a type of the data item.
+    Union[_NDArrayPydantic, Callable]: Data(array([0]), (0, 0.0, "0", False)),
+    Union[NDArrayPydantic, Callable]: Data(array([0]), (0, 0.0, "0", False)),
+    Union[NDArrayPydantic[Any], Callable]: Data(array([0]), (0, 0.0, "0", False)),
+    Union[NDArrayPydantic[int], Callable]: Data(
+        array([0]),
+        (
+            array([0.0]),
+            array([False]),
+        ),
+    ),
+    Union[NDArrayPydantic[float], Callable]: Data(
         array([0.0]),
         (
             array([0]),
@@ -59,44 +75,17 @@ TYPES_TO_VALUES = {
 }
 
 
-def test_annotate_error():
-    """Verify annotate error."""
-    match = (
-        "Unable to generate a schema for <class 'int'>. "
-        "It shall be a NDArray based type"
-    )
-
-    with pytest.raises(TypeError, match=re.escape(match)):
-        annotate(int)
-
-
 @pytest.mark.parametrize(("type_", "data"), TYPES_TO_VALUES.items())
-@pytest.mark.parametrize(
-    ("base", "annotate"), [(BaseModel, annotate), (BaseModelWithNDArray, lambda x: x)]
-)
-def test_valid_data(base, annotate, type_, data):
+def test_valid_data(type_, data):
     """Verify valid models built from annotate or the base class."""
-    model = create_model(
-        "Model",
-        __base__=base,
-        name=(annotate(type_), ...),
-    )
-
+    model = create_model("Model", name=(type_, ...))
     model(name=data.valid)
 
 
 @pytest.mark.parametrize(("type_", "data"), TYPES_TO_VALUES.items())
-@pytest.mark.parametrize(
-    ("base", "annotate"), [(BaseModel, annotate), (BaseModelWithNDArray, lambda x: x)]
-)
-def test_invalid_data(base, annotate, type_, data):
+def test_invalid_data(type_, data):
     """Verify invalid models built from annotate or the base class."""
-    model = create_model(
-        "Model",
-        __base__=base,
-        name=(annotate(type_), ...),
-    )
-
+    model = create_model("Model", name=(type_, ...))
     for invalid_data in data.invalid:
         with pytest.raises(ValidationError):
             model(name=invalid_data)

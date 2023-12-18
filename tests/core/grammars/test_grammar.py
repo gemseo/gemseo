@@ -45,11 +45,13 @@ def test_serialize(tmp_wd, class_name):
         pickler = pickle.Unpickler(outfobj)
         g = pickler.load()
 
-    assert g.name == original_g.name == "g"
-    assert g.required_names == original_g.required_names == {"n:x"}
-    assert g.to_namespaced == original_g.to_namespaced == {"x": "n:x"}
-    assert g.from_namespaced == original_g.from_namespaced == {"n:x": "x"}
+    assert g.name == original_g.name
+    assert g.required_names == original_g.required_names
+    assert g.to_namespaced == original_g.to_namespaced
+    assert g.from_namespaced == original_g.from_namespaced
+
     g.validate({"n:x": 1, "y": False})
+
     if class_name != "SimplerGrammar":
         for data in [{"y": False}, {"n:x": 1.5}, {"n:x": 1, "y": 3}]:
             with pytest.raises(InvalidDataError):

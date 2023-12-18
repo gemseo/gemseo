@@ -16,14 +16,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
-
-from numpy import ndarray
 
 from gemseo.core.data_converters.base import _NUMERIC_TYPES
 from gemseo.core.data_converters.base import BaseDataConverter
+from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
 from gemseo.utils.compatibility.python import get_args
 from gemseo.utils.compatibility.python import get_origin
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class PydanticGrammarDataConverter(BaseDataConverter):
@@ -35,12 +38,12 @@ class PydanticGrammarDataConverter(BaseDataConverter):
     ) -> bool:
         annotation = self._grammar[name].annotation
 
-        if annotation in _NUMERIC_TYPES or annotation is ndarray:
+        if annotation in _NUMERIC_TYPES or annotation is _NDArrayPydantic:
             return True
 
         type_origin = get_origin(annotation)
 
-        if type_origin is not ndarray:
+        if type_origin is not _NDArrayPydantic:
             return False
 
         # This is X in NDArray[X].
