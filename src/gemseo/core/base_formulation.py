@@ -26,8 +26,6 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Iterable
-from typing import Sequence
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
@@ -36,6 +34,9 @@ from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.execution_sequence import ExecutionSequence
     from gemseo.core.grammars.json_grammar import JSONGrammar

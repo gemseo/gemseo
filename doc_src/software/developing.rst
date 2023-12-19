@@ -641,7 +641,7 @@ run the tests with:
 
    tox -e py39
 
-Replace py39 by py38 for testing with Python 3.8.
+Replace py39 by py310 for testing with Python 3.10.
 With `tox`_,
 you can pass options to `pytest`_ after ``--``,
 for instance:
@@ -654,7 +654,7 @@ Run the tests for several Python versions with for instance (on Linux):
 
 .. code-block:: console
 
-   tox -e py38,py39
+   tox -e py39,py310,py311
 
 Tests coverage
 ++++++++++++++

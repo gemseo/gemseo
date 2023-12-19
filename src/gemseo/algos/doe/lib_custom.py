@@ -24,12 +24,11 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
+from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar
 from typing import Final
-from typing import List
 from typing import Optional
-from typing import Sequence
 from typing import TextIO
 from typing import Union
 
@@ -42,7 +41,7 @@ from numpy import vstack
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
 
-OptionType = Optional[Union[str, int, float, bool, List[str], Path, TextIO, ndarray]]
+OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, ndarray]]
 
 LOGGER = logging.getLogger(__name__)
 

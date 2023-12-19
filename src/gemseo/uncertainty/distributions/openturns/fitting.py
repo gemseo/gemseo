@@ -103,13 +103,12 @@ associated with the criterion and a criterion selection:
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
+from collections.abc import MutableSequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
-from typing import Mapping
-from typing import MutableSequence
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 import openturns as ots
@@ -123,7 +122,7 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-MeasureType = Union[Tuple[bool, Mapping[str, float]], float]
+MeasureType = Union[tuple[bool, Mapping[str, float]], float]
 
 
 def _get_distribution_factories() -> dict[str, ots.DistributionFactory]:

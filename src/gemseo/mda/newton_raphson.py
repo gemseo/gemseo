@@ -31,9 +31,9 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.root import MDARoot
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Mapping
-    from typing import Sequence
 
     from numpy.typing import NDArray
 

@@ -22,7 +22,6 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 
 import numpy as np
 import pytest
@@ -41,6 +40,8 @@ from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.algos.opt_result import OptimizationResult
 
 MDF_HIST_PATH = Path(__file__).parent / "mdf_history.h5"

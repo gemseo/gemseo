@@ -98,8 +98,6 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Mapping
 
 from numpy import array
 from numpy import ndarray
@@ -112,6 +110,9 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from gemseo.datasets.dataset import Dataset
 
 LOGGER = logging.getLogger(__name__)

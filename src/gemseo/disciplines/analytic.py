@@ -22,9 +22,8 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
-from typing import Mapping
 
 import numpy
 from numpy import array
@@ -40,6 +39,10 @@ from sympy import symbols
 from sympy.parsing.sympy_parser import parse_expr
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
 
 LOGGER = logging.getLogger(__name__)
 

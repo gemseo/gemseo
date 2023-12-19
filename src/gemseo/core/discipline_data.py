@@ -18,15 +18,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Generator
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import MutableMapping
 from copy import copy
 from copy import deepcopy
 from pathlib import Path
 from pathlib import PurePath
 from typing import Any
-from typing import Generator
-from typing import Iterable
-from typing import Mapping
-from typing import MutableMapping
 
 from numpy import ndarray
 from pandas import DataFrame

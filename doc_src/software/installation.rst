@@ -40,7 +40,7 @@ We may not support newer version of Python when a dependency of |g|
 does not provide support for it.
 We may support an old version of Python from its end-of-life date
 until a major release of |g|.
-The currently supported versions of Python are 3.8, 3.9 and 3.10.
+The currently supported versions of Python are 3.9, 3.10 and 3.11.
 
 To install |g|,
 you should use a Python environment.
@@ -82,7 +82,7 @@ in an anaconda environment named *gemseo* for Python 3.9 with
 
     conda create -c conda-forge -n gemseo python=3.9 gemseo
 
-You can change the Python version to 3.8 or 3.10.
+You can change the Python version to 3.10 or 3.11.
 
 Install without internet access
 *******************************

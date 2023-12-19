@@ -22,8 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Generator
-from typing import Mapping
 
 from gemseo.core.cache import DATA_COMPARATOR
 from gemseo.core.cache import AbstractCache
@@ -32,6 +30,9 @@ from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+    from collections.abc import Mapping
+
     from numpy import ndarray
 
     from gemseo.core.discipline_data import Data

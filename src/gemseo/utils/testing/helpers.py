@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import contextlib
-import sys
 from contextlib import nullcontext
 from typing import Any
 from typing import Final
@@ -37,9 +36,6 @@ def image_comparison(*args: Any, **kwargs: Any) -> None:
         kwargs["style"] = "default"
     if "extensions" not in kwargs:
         kwargs["extensions"] = ["png"]
-    tol_py38 = kwargs.pop("tol_py38", None)
-    if tol_py38 is not None and sys.version_info < (3, 9):
-        kwargs["tol"] = tol_py38
     return mpl_image_comparison(*args, **kwargs)
 
 

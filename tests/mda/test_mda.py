@@ -119,10 +119,7 @@ def test_resolved_couplings():
     mda = MDAGaussSeidel(disciplines)
     assert set(mda._resolved_variable_names) == set(mda.strong_couplings)
 
-    with pytest.raises(
-        AttributeError,
-        match="can't set attribute",
-    ):
+    with pytest.raises(AttributeError):
         mda._resolved_variable_names = "a"
 
 

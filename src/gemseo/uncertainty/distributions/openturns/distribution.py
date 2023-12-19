@@ -59,7 +59,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Iterable
 
 import openturns as ot
 from numpy import array
@@ -74,6 +73,8 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 OT_WEBSITE = (

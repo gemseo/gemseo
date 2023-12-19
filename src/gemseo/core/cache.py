@@ -24,6 +24,9 @@ from __future__ import annotations
 import logging
 import sys
 from abc import abstractmethod
+from collections.abc import Generator
+from collections.abc import Iterable
+from collections.abc import Mapping
 from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
 from itertools import chain
@@ -32,9 +35,6 @@ from multiprocessing import Value
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
-from typing import Generator
-from typing import Iterable
-from typing import Mapping
 from typing import NamedTuple
 
 from numpy import append

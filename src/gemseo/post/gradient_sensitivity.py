@@ -23,8 +23,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Mapping
 
 from matplotlib import pyplot
 from numpy import arange
@@ -35,6 +33,9 @@ from numpy import where
 from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from matplotlib.figure import Figure
 
 LOGGER = logging.getLogger(__name__)

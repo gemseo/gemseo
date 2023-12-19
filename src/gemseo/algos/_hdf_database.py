@@ -23,10 +23,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
-from typing import List
-from typing import Mapping
-from typing import Tuple
 from typing import Union
 
 import h5py
@@ -46,8 +44,8 @@ if TYPE_CHECKING:
     from gemseo.algos.database import DatabaseValueType
     from gemseo.algos.hashable_ndarray import HashableNdarray
 
-ReturnedHdfMissingOutputType = Tuple[
-    Mapping[str, Union[float, ndarray, List[int]]], Mapping[str, int]
+ReturnedHdfMissingOutputType = tuple[
+    Mapping[str, Union[float, ndarray, list[int]]], Mapping[str, int]
 ]
 
 

@@ -17,8 +17,8 @@
 from __future__ import annotations
 
 from numbers import Number
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Sequence
 
 from numpy import array
 from numpy import atleast_2d
@@ -29,6 +29,9 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import OutputType
 from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.compatibility.scipy import sparse_classes
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class MDOLinearFunction(MDOFunction):

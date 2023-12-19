@@ -17,8 +17,8 @@
 from __future__ import annotations
 
 from collections.abc import Collection
+from collections.abc import Iterator
 from typing import TYPE_CHECKING
-from typing import Iterator
 
 if TYPE_CHECKING:
     from gemseo.mlearning.resampling.split import Split

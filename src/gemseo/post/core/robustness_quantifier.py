@@ -21,9 +21,9 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Final
-from typing import Sized
 
 import numpy as np
 from numpy.random import default_rng
@@ -33,6 +33,9 @@ from gemseo import SEED
 from gemseo.post.core.hessians import BFGSApprox
 from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
+
+if TYPE_CHECKING:
+    from collections.abc import Sized
 
 
 class RobustnessQuantifier:

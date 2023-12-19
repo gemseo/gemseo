@@ -18,13 +18,13 @@ from __future__ import annotations
 
 import collections
 import logging
+from collections.abc import Collection
+from collections.abc import Iterable
+from collections.abc import Iterator
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Collection
-from typing import Iterable
-from typing import Iterator
-from typing import Mapping
 
 from numpy import ndarray
 

@@ -23,9 +23,10 @@ from __future__ import annotations
 
 from abc import ABC
 from typing import TYPE_CHECKING
-from typing import Mapping
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from numpy.typing import NDArray
 
 

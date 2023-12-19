@@ -21,19 +21,18 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import List
-from typing import Mapping
-from typing import Tuple
 
 from networkx import Graph
 from networkx import edge_bfs
 from networkx import reverse_view
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from gemseo.core.discipline import MDODiscipline
 
-    DisciplineIOMapping = Mapping[MDODiscipline, Tuple[List[str], List[str]]]
+    DisciplineIOMapping = Mapping[MDODiscipline, tuple[list[str], list[str]]]
 
 
 def _initialize_add_diff_io(

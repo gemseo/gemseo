@@ -54,9 +54,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Generator
-from typing import Iterable
-from typing import Mapping
 
 import scipy
 import scipy.stats as sp_stats
@@ -71,6 +68,10 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from numpy.random import RandomState
 
     from gemseo.uncertainty.distributions.composed import ComposedDistribution

@@ -26,13 +26,14 @@ Please use the JSON versions with enhanced checks and features.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Iterable
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.core.utils import SobieskiBase
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy import ndarray
 
 

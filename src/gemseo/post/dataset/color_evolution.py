@@ -21,11 +21,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Iterable
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy.typing import NDArray
 
     from gemseo.datasets.dataset import Dataset

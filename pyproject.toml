@@ -11,12 +11,12 @@ classifiers = [
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 dynamic = ["version"]
-requires-python = ">=3.8, <3.11"
+requires-python = ">=3.9, <3.12"
 dependencies = [
     "docstring-inheritance >=1.0.0,<=2.1.2",
     "fastjsonschema >=2.14.5,<=2.19.0",
@@ -100,6 +100,3 @@ license-files = [
     "LICENSE.txt",
     "CREDITS.rst",
 ]
-
-[tool.black]
-target-version = ['py38']

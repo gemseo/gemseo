@@ -19,11 +19,12 @@ from __future__ import annotations
 from copy import deepcopy
 from types import MappingProxyType
 from typing import TYPE_CHECKING
-from typing import Mapping
 
 from gemseo.core.discipline import MDODiscipline
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from numpy.typing import NDArray
 
 

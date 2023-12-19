@@ -60,10 +60,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Dict
 from typing import Final
-from typing import Iterable
-from typing import List
 from typing import NoReturn
 from typing import Optional
 from typing import Union
@@ -92,6 +89,8 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.classification.classification import MLClassificationAlgo
     from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
@@ -102,12 +101,12 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-SavedObjectType = Union[_SavedObjectType, str, Dict]
+SavedObjectType = Union[_SavedObjectType, str, dict]
 
-MLAlgoType = Dict[
+MLAlgoType = dict[
     str,
     Optional[
-        Union[str, DesignSpace, Dict[str, Union[str, int]], List[MLAlgoParameterType]]
+        Union[str, DesignSpace, dict[str, Union[str, int]], list[MLAlgoParameterType]]
     ],
 ]
 

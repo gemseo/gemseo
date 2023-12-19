@@ -23,13 +23,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Sequence
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 

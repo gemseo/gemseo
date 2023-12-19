@@ -89,9 +89,8 @@ by means of the :meth:`.ComposedDistribution.compute_samples` method.
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
-from typing import Sequence
 
 from numpy import array
 from numpy import concatenate
@@ -100,6 +99,10 @@ from numpy import ndarray
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_repr
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
 
 LOGGER = logging.getLogger(__name__)
 

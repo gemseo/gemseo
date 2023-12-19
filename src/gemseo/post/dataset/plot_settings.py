@@ -17,9 +17,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from types import MappingProxyType
+from dataclasses import field
 from typing import TYPE_CHECKING
-from typing import Mapping
 
 if TYPE_CHECKING:
     from gemseo.utils.matplotlib_figure import FigSizeType
@@ -122,5 +121,5 @@ class PlotSettings:
     If ``None``, compute it from data.
     """
 
-    labels: Mapping[str, str] = MappingProxyType({})
+    labels: dict[str, str] = field(default_factory=dict)
     """The labels for the variables."""

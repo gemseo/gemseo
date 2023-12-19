@@ -26,8 +26,6 @@ import logging
 from ast import literal_eval
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Iterable
-from typing import Mapping
 
 from gemseo import create_design_space
 from gemseo import create_scenario
@@ -36,6 +34,8 @@ from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAna
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
     from pathlib import Path
 
     from gemseo.core.discipline import MDODiscipline

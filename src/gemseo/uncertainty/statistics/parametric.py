@@ -94,11 +94,7 @@ import logging
 from itertools import starmap
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Dict
-from typing import Iterable
-from typing import Mapping
 from typing import NamedTuple
-from typing import Sequence
 from typing import Union
 
 import matplotlib.pyplot as plt
@@ -123,13 +119,17 @@ from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
     from matplotlib.figure import Figure
 
     from gemseo.datasets.dataset import Dataset
 
 LOGGER = logging.getLogger(__name__)
 
-DistributionType = Dict[str, Union[str, OTDistribution]]
+DistributionType = dict[str, Union[str, OTDistribution]]
 
 
 class _Distribution(NamedTuple):

@@ -21,11 +21,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
-from typing import Mapping
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
 
 
 class FilteringDiscipline(MDODiscipline):

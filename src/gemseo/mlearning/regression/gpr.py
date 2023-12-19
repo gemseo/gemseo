@@ -98,13 +98,12 @@ generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Mapping
-from typing import Tuple
 
 import sklearn.gaussian_process
 from numpy import atleast_2d
@@ -123,7 +122,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import DataType
     from gemseo.mlearning.core.ml_algo import TransformerType
 
-__Bounds = Tuple[float, float]
+__Bounds = tuple[float, float]
 
 
 class GaussianProcessRegressor(MLRegressionAlgo):

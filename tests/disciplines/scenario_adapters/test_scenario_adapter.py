@@ -21,7 +21,7 @@ from __future__ import annotations
 import pickle
 from copy import deepcopy
 from pathlib import Path
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import all as np_all
@@ -54,6 +54,9 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 def create_design_space():

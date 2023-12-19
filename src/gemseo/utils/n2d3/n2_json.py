@@ -17,11 +17,11 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from collections.abc import Sized
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 
 from jinja2 import Template
 

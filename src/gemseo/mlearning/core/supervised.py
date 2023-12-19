@@ -69,14 +69,13 @@ through the :class:`.MLSupervisedAlgo` class based on an :class:`.IODataset`.
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Dict
-from typing import Iterable
-from typing import Mapping
 from typing import NoReturn
-from typing import Sequence
 from typing import Union
 
 from numpy import array
@@ -102,7 +101,7 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 if TYPE_CHECKING:
     from gemseo.mlearning.transformers.transformer import Transformer
 
-SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], Dict[str, ndarray]]
+SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], dict[str, ndarray]]
 
 
 class MLSupervisedAlgo(MLAlgo):

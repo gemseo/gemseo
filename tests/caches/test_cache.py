@@ -24,7 +24,6 @@ import re
 import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Iterator
 
 import h5py
 import pytest
@@ -49,6 +48,8 @@ from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from gemseo.caches.memory_full_cache import MemoryFullCache
 
 DIR_PATH = Path(__file__).parent

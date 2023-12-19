@@ -24,6 +24,9 @@ from __future__ import annotations
 
 import logging
 import pickle
+from collections.abc import Iterable
+from collections.abc import Sequence
+from collections.abc import Sized
 from multiprocessing import Value
 from numbers import Number
 from pathlib import Path
@@ -32,9 +35,6 @@ from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Sequence
-from typing import Sized
 from typing import Union
 
 from numpy import abs as np_abs

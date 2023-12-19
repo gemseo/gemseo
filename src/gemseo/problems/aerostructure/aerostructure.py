@@ -70,7 +70,7 @@ and
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import atleast_2d
@@ -78,6 +78,9 @@ from numpy import complex128
 from numpy import ones
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 def get_inputs(*names: str):

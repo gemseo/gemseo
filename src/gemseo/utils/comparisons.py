@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Mapping
+from collections.abc import Mapping
 from typing import Union
 
 from numpy import asarray

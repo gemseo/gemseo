@@ -16,12 +16,15 @@
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from matplotlib import colors
 from matplotlib import pyplot as plt
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class TopologyView(OptPostProcessor):

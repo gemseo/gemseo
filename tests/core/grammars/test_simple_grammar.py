@@ -16,8 +16,8 @@ from __future__ import annotations
 
 import collections
 import pickle
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 
 import pytest
 from numpy import array
@@ -27,6 +27,9 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.grammars.simpler_grammar import SimplerGrammar
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 parametrized_names_to_types = pytest.mark.parametrize(
     "names_to_types",

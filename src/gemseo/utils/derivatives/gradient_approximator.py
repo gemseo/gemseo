@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Sequence
 
 from numpy import array
 from numpy import float64
@@ -30,6 +29,7 @@ from numpy import ndarray
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from numbers import Number
 
     from gemseo.algos.design_space import DesignSpace

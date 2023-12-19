@@ -18,14 +18,17 @@ from __future__ import annotations
 
 import json
 from copy import deepcopy
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 
 import pytest
 from numpy.testing import assert_array_equal
 from pandas import DataFrame
 
 from gemseo.core.discipline_data import DisciplineData
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 def to_df_key(

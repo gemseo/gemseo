@@ -24,7 +24,6 @@ from typing import Final
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
-from gemseo.utils.compatibility.python import PYTHON_VERSION
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -77,23 +76,13 @@ class ScenarioResult:
             self._MAIN_PROBLEM_LABEL: optimization_result
         }
 
-    if PYTHON_VERSION >= (3, 9):  # pragma: <3.9 no cover
-
-        @classmethod
-        @property
-        def POST_FACTORY(cls) -> PostFactory:  # noqa: N802
-            """The factory of post-processors."""
-            if cls._POST_FACTORY is None:
-                cls._POST_FACTORY = PostFactory()
-            return cls._POST_FACTORY
-    else:  # pragma: >=3.9 no cover
-
-        @classmethod
-        def get_post_factory(cls) -> PostFactory:  # noqa: N802
-            """The factory of post-processors."""
-            if cls._POST_FACTORY is None:
-                cls._POST_FACTORY = PostFactory()
-            return cls._POST_FACTORY
+    @classmethod
+    @property
+    def POST_FACTORY(cls) -> PostFactory:  # noqa: N802
+        """The factory of post-processors."""
+        if cls._POST_FACTORY is None:
+            cls._POST_FACTORY = PostFactory()
+        return cls._POST_FACTORY
 
     @property
     def optimization_result(self) -> OptimizationResult:
@@ -118,10 +107,6 @@ class ScenarioResult:
         Returns:
             The post-processing of the result.
         """
-        if PYTHON_VERSION >= (3, 9):  # pragma: <3.9 no cover
-            return self.POST_FACTORY.execute(
-                self.__obj_to_be_post_processed, name, **options
-            )
-        return self.get_post_factory().execute(
+        return self.POST_FACTORY.execute(
             self.__obj_to_be_post_processed, name, **options
         )

@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from math import ceil
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 from matplotlib import pyplot
 from matplotlib.colors import SymLogNorm
@@ -43,6 +42,8 @@ from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.opt_problem import OptimizationProblem
 
 

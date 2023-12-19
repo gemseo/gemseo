@@ -27,7 +27,6 @@ from functools import wraps
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Sequence
 
 from gemseo.algos.aggregation.core import compute_iks_agg
 from gemseo.algos.aggregation.core import compute_lower_bound_ks_agg
@@ -42,6 +41,8 @@ from gemseo.algos.aggregation.core import compute_total_sum_square_positive_agg_
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from numpy import ndarray
 
 

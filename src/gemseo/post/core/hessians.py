@@ -44,7 +44,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Generator
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
@@ -67,6 +66,8 @@ from numpy.linalg import norm
 from scipy.optimize import leastsq
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
 

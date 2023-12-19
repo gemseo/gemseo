@@ -64,7 +64,6 @@ from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
-from typing import Iterable
 from typing import NoReturn
 
 from gemseo.datasets.io_dataset import IODataset
@@ -75,6 +74,8 @@ from gemseo.mlearning.data_formatters.regression_data_formatters import (
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy import ndarray
 
     from gemseo.mlearning.core.ml_algo import DataType

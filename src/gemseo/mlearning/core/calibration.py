@@ -43,7 +43,6 @@ parameters of the machine learning algorithm while the output is the quality cri
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Iterable
 
 from numpy import argmin
 from numpy import array
@@ -61,6 +60,8 @@ from gemseo.mlearning.quality_measures.quality_measure import MeasureOptionsType
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.scenario import Scenario
     from gemseo.core.scenario import ScenarioInputDataType

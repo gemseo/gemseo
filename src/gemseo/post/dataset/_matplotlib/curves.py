@@ -17,11 +17,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Iterable
 
 from gemseo.post.dataset._matplotlib.plot import MatplotlibPlot
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
     from numpy.typing import ArrayLike

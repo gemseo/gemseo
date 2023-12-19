@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import atleast_2d
 from numpy import ndarray
@@ -34,6 +34,9 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class Rosenbrock(OptimizationProblem):

@@ -82,7 +82,6 @@ from cmath import exp
 from cmath import sqrt
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
 
 from numpy import array
 from numpy import atleast_2d
@@ -95,6 +94,8 @@ from gemseo.core.data_converters.json import JSONGrammarDataConverter
 from gemseo.core.discipline import MDODiscipline
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.mda.mda import MDA
 
 Y_1 = "y_1"

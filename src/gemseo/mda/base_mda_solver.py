@@ -20,9 +20,6 @@ import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 
 from numpy import abs
 from numpy import array
@@ -35,6 +32,10 @@ from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.mda.mda import MDA
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.core.discipline_data import DisciplineData

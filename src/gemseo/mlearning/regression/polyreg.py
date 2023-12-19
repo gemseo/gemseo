@@ -81,7 +81,6 @@ import pickle
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Iterable
 
 from numpy import concatenate
 from numpy import ndarray
@@ -93,6 +92,8 @@ from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.utils.compatibility.sklearn import get_n_input_features_
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.ml_algo import DataType
     from gemseo.mlearning.core.ml_algo import TransformerType

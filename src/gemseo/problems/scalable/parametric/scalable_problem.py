@@ -24,7 +24,6 @@ from __future__ import annotations
 from statistics import NormalDist
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
 
 from numpy import diag
 from numpy import trace
@@ -50,6 +49,8 @@ from gemseo.problems.scalable.parametric.scalable_design_space import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy.typing import NDArray
 
     from gemseo.core.scenario import Scenario

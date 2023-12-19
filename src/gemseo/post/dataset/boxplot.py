@@ -32,8 +32,8 @@ from typing import TYPE_CHECKING
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Sequence
 
     from gemseo.datasets.dataset import Dataset
 

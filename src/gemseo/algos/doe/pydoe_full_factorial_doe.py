@@ -16,13 +16,16 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import pyDOE2
 from numpy import array
 from numpy import ndarray
 
 from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class PyDOEFullFactorialDOE(BaseFullFactorialDOE):

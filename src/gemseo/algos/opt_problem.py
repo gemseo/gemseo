@@ -61,6 +61,9 @@ to an HDF file or to a :class:`.Dataset` for future post-processing.
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from copy import deepcopy
 from functools import reduce
 from numbers import Number
@@ -69,13 +72,8 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Dict
 from typing import Final
-from typing import Iterable
-from typing import Mapping
 from typing import Optional
-from typing import Sequence
-from typing import Tuple
 
 import h5py
 import numpy
@@ -142,12 +140,12 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-BestInfeasiblePointType = Tuple[
-    Optional[ndarray], Optional[ndarray], bool, Dict[str, ndarray]
+BestInfeasiblePointType = tuple[
+    Optional[ndarray], Optional[ndarray], bool, dict[str, ndarray]
 ]
-OptimumType = Tuple[ndarray, ndarray, bool, Dict[str, ndarray], Dict[str, ndarray]]
-OptimumSolutionType = Tuple[
-    Optional[Sequence[ndarray]], ndarray, Dict[str, ndarray], Dict[str, ndarray]
+OptimumType = tuple[ndarray, ndarray, bool, dict[str, ndarray], dict[str, ndarray]]
+OptimumSolutionType = tuple[
+    Optional[Sequence[ndarray]], ndarray, dict[str, ndarray], dict[str, ndarray]
 ]
 
 

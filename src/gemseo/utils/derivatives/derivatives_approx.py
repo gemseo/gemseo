@@ -22,14 +22,14 @@ from __future__ import annotations
 
 import logging
 import pickle
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
+from collections.abc import Sized
 from contextlib import contextmanager
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
-from typing import Sized
 
 from scipy.sparse import hstack as sparse_hstack
 

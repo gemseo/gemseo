@@ -22,16 +22,13 @@ from __future__ import annotations
 
 import inspect
 from abc import abstractmethod
+from collections.abc import Iterable
+from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Dict
-from typing import Iterable
-from typing import List
 from typing import Optional
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from matplotlib.figure import Figure
@@ -53,8 +50,8 @@ if TYPE_CHECKING:
     from gemseo.algos.opt_problem import OptimizationProblem
 
 OptPostProcessorOptionType = Union[int, float, str, bool, Sequence[str], FigSizeType]
-PlotOutputType = List[
-    Tuple[Optional[str], Union[Figure, DatasetPlot], Optional[Dict[str, Sequence[str]]]]
+PlotOutputType = list[
+    tuple[Optional[str], Union[Figure, DatasetPlot], Optional[dict[str, Sequence[str]]]]
 ]
 
 

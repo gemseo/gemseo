@@ -46,13 +46,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 
 from numpy import array
 from numpy import full
 from numpy import ndarray
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.datasets.io_dataset import IODataset
 
 

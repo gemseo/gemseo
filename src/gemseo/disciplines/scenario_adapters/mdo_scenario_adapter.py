@@ -28,8 +28,6 @@ from copy import copy
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Final
-from typing import Iterable
-from typing import Sequence
 
 from numpy import zeros
 from numpy.linalg import norm
@@ -45,6 +43,9 @@ from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import LoggingContext
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
     from numpy.core.multiarray import ndarray
 
     from gemseo.algos.database import Database

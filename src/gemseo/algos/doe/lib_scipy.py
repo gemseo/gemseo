@@ -21,7 +21,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import List
 from typing import Literal
 from typing import Optional
 from typing import TextIO
@@ -47,7 +46,7 @@ if TYPE_CHECKING:
     from numpy.random import RandomState
     from packaging.version import Version
 
-OptionType = Optional[Union[str, int, float, bool, List[str], Path, TextIO, ndarray]]
+OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, ndarray]]
 
 LOGGER = logging.getLogger(__name__)
 

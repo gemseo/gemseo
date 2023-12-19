@@ -25,23 +25,26 @@ import ast
 import logging
 from inspect import getfullargspec
 from inspect import getsource
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Final
-from typing import Iterable
-from typing import Sequence
 from typing import Union
+from typing import get_type_hints
 
 from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
-from typing_extensions import get_type_hints
+from typing_extensions import get_args
+from typing_extensions import get_origin
 
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.compatibility.python import get_args
-from gemseo.utils.compatibility.python import get_origin
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.source_parsing import get_callable_argument_defaults
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
 
 DataType = Union[float, ndarray]
 

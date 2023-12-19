@@ -28,11 +28,11 @@ import threading as th
 import time
 import traceback
 from multiprocessing import get_context
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Sequence
 from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -40,6 +40,9 @@ from strenum import StrEnum
 
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 SUBPROCESS_NAME: Final[str] = "subprocess"
 

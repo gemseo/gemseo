@@ -72,11 +72,12 @@ import logging
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
     from gemseo.datasets.dataset import Dataset
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
 

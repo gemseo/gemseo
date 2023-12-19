@@ -49,11 +49,8 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 from typing import Literal
-from typing import Mapping
 from typing import NamedTuple
-from typing import Sequence
 from typing import overload
 
 import h5py
@@ -98,6 +95,10 @@ from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
     from numpy.typing import NDArray
 
 LOGGER = logging.getLogger(__name__)

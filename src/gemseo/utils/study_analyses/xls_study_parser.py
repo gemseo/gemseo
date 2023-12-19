@@ -22,8 +22,8 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Final
-from typing import Iterable
 
 from pandas import DataFrame
 from pandas import read_excel
@@ -32,6 +32,9 @@ from gemseo import get_available_formulations
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 LOGGER = logging.getLogger(__name__)
 

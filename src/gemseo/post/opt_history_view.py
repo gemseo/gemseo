@@ -27,9 +27,6 @@ import sys
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import MutableSequence
-from typing import Sequence
 
 from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
@@ -63,6 +60,10 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import MutableSequence
+    from collections.abc import Sequence
+
     from matplotlib.figure import Figure
 
     from gemseo.algos.database import Database

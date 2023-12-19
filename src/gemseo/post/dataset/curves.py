@@ -33,7 +33,7 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
     from collections.abc import Generator
-    from typing import Sequence
+    from collections.abc import Sequence
 
     from numpy.typing import NDArray
 

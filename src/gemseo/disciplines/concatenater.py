@@ -21,12 +21,15 @@
 from __future__ import annotations
 
 from itertools import accumulate
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import concatenate
 from scipy.sparse import csr_array
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class Concatenater(MDODiscipline):

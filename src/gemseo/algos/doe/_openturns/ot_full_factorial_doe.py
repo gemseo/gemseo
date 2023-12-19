@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import full
@@ -24,6 +24,9 @@ from numpy import ndarray
 from openturns import Box
 
 from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class OTFullFactorialDOE(BaseFullFactorialDOE):

@@ -21,10 +21,10 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Mapping
 
 from numpy import ndarray
 from numpy import promote_types
@@ -41,6 +41,9 @@ from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverDescri
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
 from gemseo.utils.compatibility.scipy import ArrayType
 from gemseo.utils.compatibility.scipy import array_classes
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 LOGGER = logging.getLogger(__name__)
 

@@ -18,11 +18,9 @@ from __future__ import annotations
 
 from collections import abc
 from contextlib import contextmanager
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Iterable
-from typing import Iterator
-from typing import Mapping
 
 from genson import SchemaBuilder
 from genson import SchemaNode
@@ -31,6 +29,11 @@ from genson.schema.strategies import Number
 from genson.schema.strategies import Object
 from numpy import float64
 from numpy import int64
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Mapping
 
 
 class _MergeRequiredStrategy(Object):

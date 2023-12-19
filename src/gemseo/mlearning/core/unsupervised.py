@@ -31,9 +31,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Iterable
 from typing import NoReturn
-from typing import Sequence
 
 from numpy import hstack
 from numpy import ndarray
@@ -43,6 +41,9 @@ from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
     from gemseo.datasets.dataset import Dataset
 
 

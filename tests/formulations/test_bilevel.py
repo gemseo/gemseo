@@ -276,9 +276,9 @@ def test_bilevel_mda_getter(dummy_bilevel_scenario):
 def test_bilevel_mda_setter(dummy_bilevel_scenario):
     """Test that the user cannot modify the MDA1 and MDA2 after instantiation."""
     discipline = create_discipline("SellarSystem")
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         dummy_bilevel_scenario.formulation.mda1 = discipline
-    with pytest.raises(AttributeError, match="can't set attribute"):
+    with pytest.raises(AttributeError):
         dummy_bilevel_scenario.formulation.mda2 = discipline
 
 

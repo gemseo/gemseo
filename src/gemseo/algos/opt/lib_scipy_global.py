@@ -25,7 +25,6 @@ import sys
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 from typing import Union
 
 from numpy import float64
@@ -42,6 +41,8 @@ from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescripti
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
     from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType

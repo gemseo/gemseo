@@ -19,9 +19,10 @@ from __future__ import annotations
 import json
 import webbrowser
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.core.coupling_structure import DependencyGraph
 
 from pathlib import Path

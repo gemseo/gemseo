@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
@@ -198,10 +197,6 @@ def test_common_scenario(
     opt.execute(save=False)
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 9),
-    reason="The last version of matplotlib does not support py38",
-)
 @pytest.mark.parametrize(
     ("case", "baseline_images"),
     [

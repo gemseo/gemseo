@@ -22,7 +22,6 @@ import pickle
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Sequence
 from unittest.mock import patch
 
 import pytest
@@ -57,6 +56,8 @@ from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.datasets.dataset import Dataset
 
 

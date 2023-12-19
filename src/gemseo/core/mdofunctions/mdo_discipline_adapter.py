@@ -24,9 +24,6 @@ from __future__ import annotations
 from numbers import Number
 from typing import TYPE_CHECKING
 from typing import Callable
-from typing import Mapping
-from typing import MutableMapping
-from typing import Sequence
 from typing import Union
 
 from numpy import array
@@ -37,6 +34,10 @@ from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFu
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import MutableMapping
+    from collections.abc import Sequence
+
     from gemseo import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import ArrayType
 

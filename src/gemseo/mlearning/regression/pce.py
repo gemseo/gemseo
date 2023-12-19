@@ -89,8 +89,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Mapping
 
 from numpy import array
 from numpy import atleast_1d
@@ -122,6 +120,9 @@ from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistri
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
     from gemseo.mlearning.core.ml_algo import TransformerType

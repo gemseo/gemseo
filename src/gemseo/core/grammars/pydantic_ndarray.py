@@ -27,8 +27,7 @@ from numpy import ndarray
 from numpy.typing import NDArray
 from pydantic_core import CoreSchema
 from pydantic_core import core_schema
-
-from gemseo.utils.compatibility.python import get_args
+from typing_extensions import get_args
 
 if TYPE_CHECKING:
     from pydantic import GetCoreSchemaHandler

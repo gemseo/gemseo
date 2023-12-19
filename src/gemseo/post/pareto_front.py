@@ -22,13 +22,16 @@
 from __future__ import annotations
 
 import logging
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import full
 from numpy import ndarray
 
 from gemseo.algos.pareto_front import generate_pareto_plots
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 LOGGER = logging.getLogger(__name__)
 

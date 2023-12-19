@@ -21,11 +21,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Optional
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 import pyDOE2 as pyDOE
@@ -41,7 +40,7 @@ if TYPE_CHECKING:
     from gemseo.algos.opt_problem import OptimizationProblem
 
 OptionType = Optional[
-    Union[str, int, float, bool, Sequence[int], Tuple[int, int], ndarray]
+    Union[str, int, float, bool, Sequence[int], tuple[int, int], ndarray]
 ]
 
 

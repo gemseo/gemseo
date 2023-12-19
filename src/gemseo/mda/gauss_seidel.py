@@ -27,9 +27,9 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda_solver import BaseMDASolver
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Mapping
-    from typing import Sequence
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
 

@@ -23,13 +23,16 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 
 from gemseo.core import discipline
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 class DisciplinesFactory(BaseFactory):

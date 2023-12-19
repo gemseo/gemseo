@@ -23,8 +23,6 @@ from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Mapping
 
 from numpy import full
 from numpy import ndarray
@@ -46,6 +44,9 @@ from gemseo.problems.scalable.parametric.core.variable_names import get_coupling
 from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from numpy.typing import NDArray
 
 

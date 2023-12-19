@@ -19,13 +19,16 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import ones
 from numpy import ones_like
 from scipy.sparse import diags
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class MaterialModelInterpolation(MDODiscipline):

@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 from numpy import eye
 from numpy import newaxis
@@ -38,6 +37,8 @@ from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.core.formulation import MDOFormulation
 
 LOGGER = logging.getLogger(__name__)

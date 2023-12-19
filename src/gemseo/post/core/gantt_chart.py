@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 
@@ -32,6 +31,7 @@ from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from pathlib import Path
 
 DEFAULT_NAME = "gantt_chart"

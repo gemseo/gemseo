@@ -1,7 +1,7 @@
 fix = true
 unsafe-fixes = true
 preview = true
-target-version = "py38"
+target-version = "py39"
 src = ["src"]
 task-tags = ["TODO"]
 

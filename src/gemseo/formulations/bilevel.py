@@ -24,8 +24,6 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Iterable
-from typing import Mapping
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
@@ -41,6 +39,9 @@ from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.execution_sequence import ExecutionSequence
     from gemseo.core.grammars.json_grammar import JSONGrammar

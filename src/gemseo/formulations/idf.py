@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Iterable
 
 from numpy import abs as np_abs
 from numpy import concatenate
@@ -41,6 +40,8 @@ from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approxima
 from gemseo.mda.mda_chain import MDAChain
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.algos.design_space import DesignSpace
 
 LOGGER = logging.getLogger(__name__)

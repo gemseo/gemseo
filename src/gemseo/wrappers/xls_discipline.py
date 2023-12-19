@@ -26,13 +26,16 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 from uuid import uuid4
 
 from numpy import array
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 cwd = Path.cwd()
 try:

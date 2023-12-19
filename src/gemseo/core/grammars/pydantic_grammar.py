@@ -17,16 +17,15 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Collection
+from collections.abc import Iterable
+from collections.abc import Iterator
+from collections.abc import Mapping
+from collections.abc import Sequence
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Collection
-from typing import Iterable
-from typing import Iterator
-from typing import Mapping
-from typing import Sequence
-from typing import Type
 from typing import Union
 
 from numpy import ndarray
@@ -34,20 +33,20 @@ from pydantic import BaseModel
 from pydantic import ValidationError
 from pydantic import create_model
 from pydantic.fields import FieldInfo
+from typing_extensions import get_origin
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.base_grammar import NamesToTypes
 from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
 from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.utils.compatibility.python import get_origin
 
 if TYPE_CHECKING:
     from gemseo.core.discipline_data import MutableData
     from gemseo.core.grammars.json_grammar import DictSchemaType
     from gemseo.utils.string_tools import MultiLineString
 
-ModelType = Type[BaseModel]
+ModelType = type[BaseModel]
 
 LOGGER = logging.getLogger(__name__)
 

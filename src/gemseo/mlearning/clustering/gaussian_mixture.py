@@ -73,7 +73,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 from typing import NoReturn
 
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
@@ -82,6 +81,8 @@ from gemseo import SEED
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy import ndarray
 
     from gemseo.datasets.dataset import Dataset
