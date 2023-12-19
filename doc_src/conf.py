@@ -22,8 +22,7 @@ import sys
 from dataclasses import asdict
 from importlib.metadata import version as _version
 from pathlib import Path
-from typing import Iterable
-from typing import Mapping
+from typing import TYPE_CHECKING
 
 import requests
 from sphinx_gallery.sorting import ExampleTitleSortKey
@@ -33,8 +32,13 @@ os.chdir((Path(__file__).resolve()).parent)
 for directory_name in ("_ext", "templates"):
     sys.path.append(str(Path(directory_name).resolve()))
 
+
 from gemseo_templator.blocks import features  # noqa: E402
 from gemseo_templator.blocks import main_concepts  # noqa: E402
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
 
 extensions = [
     "sphinx.ext.autodoc",

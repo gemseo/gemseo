@@ -29,15 +29,14 @@ This abstract class has to be overloaded by concrete ones implementing at least 
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from inspect import getfullargspec
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Iterable
-from typing import Mapping
 from typing import NamedTuple
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from numpy import linspace
@@ -60,7 +59,7 @@ if TYPE_CHECKING:
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
-VariableType = Union[str, Tuple[str, int]]
+VariableType = Union[str, tuple[str, int]]
 
 
 class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):

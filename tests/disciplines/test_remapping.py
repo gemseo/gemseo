@@ -16,7 +16,7 @@
 #     Matthias De Lozzo
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
@@ -24,6 +24,9 @@ from numpy.testing import assert_equal
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.remapping import RemappingDiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class NewDiscipline(MDODiscipline):

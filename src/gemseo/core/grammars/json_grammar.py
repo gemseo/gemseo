@@ -23,6 +23,10 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Iterable
+from collections.abc import Iterator
+from collections.abc import Mapping
+from collections.abc import Sequence
 from copy import copy
 from copy import deepcopy
 from os import PathLike
@@ -31,13 +35,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Dict
 from typing import Final
-from typing import Iterable
-from typing import Iterator
-from typing import List
-from typing import Mapping
-from typing import Sequence
 from typing import Union
 
 from fastjsonschema import JsonSchemaException
@@ -57,9 +55,9 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 ElementType = Union[str, float, bool, Sequence[Union[str, float, bool]]]
-DictSchemaType = Mapping[str, Union[ElementType, List[ElementType], "DictSchemaType"]]
-SerializedGrammarType = Dict[
-    str, Union[ElementType, List[ElementType], "SerializedGrammarType"]
+DictSchemaType = Mapping[str, Union[ElementType, list[ElementType], "DictSchemaType"]]
+SerializedGrammarType = dict[
+    str, Union[ElementType, list[ElementType], "SerializedGrammarType"]
 ]
 
 

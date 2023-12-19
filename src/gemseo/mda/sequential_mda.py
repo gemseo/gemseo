@@ -28,9 +28,9 @@ from gemseo.mda.mda import MDA
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Mapping
-    from typing import Sequence
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
 

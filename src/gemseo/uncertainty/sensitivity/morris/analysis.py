@@ -73,10 +73,6 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Collection
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 from numpy import abs as np_abs
@@ -92,6 +88,10 @@ from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from pathlib import Path
 
     from gemseo.algos.doe.doe_library import DOELibraryOptionType

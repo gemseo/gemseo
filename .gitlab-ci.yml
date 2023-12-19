@@ -1,2 +1,2 @@
 include:
-  - remote: "https://gitlab.com/gemseo/dev/ci-includes/-/raw/main/gemseo.yml"
+  - remote: "https://gitlab.com/gemseo/dev/ci-includes/-/raw/py311/gemseo.yml"

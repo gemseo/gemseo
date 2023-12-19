@@ -30,7 +30,6 @@ import cmath
 import logging
 import math
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 from numpy import array
 from numpy import atleast_2d
@@ -42,6 +41,7 @@ from numpy import ndarray
 from strenum import StrEnum
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from types import ModuleType
 
 LOGGER = logging.getLogger(__name__)

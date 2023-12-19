@@ -60,11 +60,11 @@ fitted from a :class:`.Dataset`.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Collection
-from typing import Iterable
-from typing import Sequence
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Sequence
     from pathlib import Path
 
     from gemseo.algos.parameter_space import ParameterSpace

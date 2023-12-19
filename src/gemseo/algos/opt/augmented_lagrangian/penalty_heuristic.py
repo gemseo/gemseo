@@ -19,12 +19,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
-from typing import Iterable
-from typing import Mapping
 
 from gemseo.algos.opt.augmented_lagrangian.base import BaseAugmentedLagrangian
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from numpy import ndarray
 
 

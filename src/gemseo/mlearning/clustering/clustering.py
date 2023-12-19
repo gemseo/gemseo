@@ -34,11 +34,11 @@ from the :class:`.MLUnsupervisedAlgo` class, and through the
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Mapping
 from typing import NoReturn
-from typing import Sequence
 from typing import Union
 
 from numpy import atleast_2d

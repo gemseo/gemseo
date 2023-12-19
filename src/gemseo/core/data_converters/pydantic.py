@@ -19,11 +19,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
+from typing_extensions import get_args
+from typing_extensions import get_origin
+
 from gemseo.core.data_converters.base import _NUMERIC_TYPES
 from gemseo.core.data_converters.base import BaseDataConverter
 from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
-from gemseo.utils.compatibility.python import get_args
-from gemseo.utils.compatibility.python import get_origin
 
 if TYPE_CHECKING:
     from numpy import ndarray

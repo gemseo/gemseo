@@ -23,7 +23,6 @@ from __future__ import annotations
 
 from itertools import combinations
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -35,6 +34,8 @@ from numpy import ndarray
 from numpy import vstack
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 

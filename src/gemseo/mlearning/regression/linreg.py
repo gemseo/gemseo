@@ -55,7 +55,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
 from numpy import array
 from numpy import ndarray
@@ -75,6 +74,8 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.mlearning.core.ml_algo import DataType
     from gemseo.mlearning.core.ml_algo import TransformerType
 

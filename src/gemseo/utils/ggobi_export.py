@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Sequence
 from xml.dom import minidom
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Comment
@@ -30,6 +29,8 @@ from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import SubElement
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from numpy import ndarray
 
 

@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -37,6 +36,8 @@ from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 

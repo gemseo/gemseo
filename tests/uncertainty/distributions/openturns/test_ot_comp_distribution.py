@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 import pytest
 from numpy import allclose
@@ -32,6 +31,8 @@ from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistri
 from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 

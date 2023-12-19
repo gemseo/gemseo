@@ -22,8 +22,8 @@ import os
 import sys
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Generator
 
 import matplotlib.pyplot as plt
 import matplotlib.testing.decorators
@@ -31,6 +31,9 @@ import pytest
 from packaging import version
 
 from gemseo.core.base_factory import BaseFactory
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 def __tmp_wd(tmp_path):

@@ -14,7 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test models creators."""
 
-from typing import List
 from typing import Union
 
 from numpy import array
@@ -55,9 +54,9 @@ def get_model3() -> ModelType:
         an_int_ndarray: NDArrayPydantic[int]
         a_float_ndarray: NDArrayPydantic[float]
         a_bool_ndarray: NDArrayPydantic[bool]
-        an_int_list: List[int]
-        a_float_list: List[float]
-        a_bool_list: List[bool]
+        an_int_list: list[int]
+        a_float_list: list[float]
+        a_bool_list: list[bool]
 
     return Model
 

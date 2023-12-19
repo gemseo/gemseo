@@ -42,7 +42,6 @@ where
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 from sklearn.metrics import silhouette_score
 
@@ -51,6 +50,8 @@ from gemseo.mlearning.quality_measures.cluster_measure import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from numpy import ndarray
 
     from gemseo.datasets.dataset import Dataset

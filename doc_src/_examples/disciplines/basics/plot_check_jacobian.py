@@ -23,13 +23,16 @@ the Jacobian of an :class:`.MDODiscipline` is checked by derivative approximatio
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import exp
 
 from gemseo import configure_logger
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 configure_logger()
 

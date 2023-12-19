@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import re
-from typing import Tuple
 
 import pytest
 from numpy import array
@@ -276,7 +275,7 @@ def f6_missing_type(x: int, y):
     return z  # noqa: RET504
 
 
-def f6_multiple_returns(x: int) -> Tuple[int, float]:  # noqa: UP006
+def f6_multiple_returns(x: int) -> tuple[int, float]:
     z = 0
     zz = 0
     return z, zz
@@ -288,7 +287,7 @@ def f6_missing_return_tuple(x: int) -> int:
     return z, zz
 
 
-def f6_bad_multiple_returns(x: int) -> Tuple[int]:  # noqa: UP006
+def f6_bad_multiple_returns(x: int) -> tuple[int]:
     z = 0
     zz = 0
     return z, zz

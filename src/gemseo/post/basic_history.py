@@ -21,8 +21,8 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Final
-from typing import Sequence
 
 from matplotlib.ticker import MaxNLocator
 from numpy import arange
@@ -30,6 +30,9 @@ from numpy import newaxis
 
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 LOGGER = logging.getLogger(__name__)
 

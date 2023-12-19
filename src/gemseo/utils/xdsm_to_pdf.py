@@ -21,9 +21,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from pyxdsm.XDSM import XDSM
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class XDSMToPDFConverter:

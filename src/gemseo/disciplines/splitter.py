@@ -16,12 +16,15 @@
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import ndarray
 from scipy.sparse import eye
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class Splitter(MDODiscipline):

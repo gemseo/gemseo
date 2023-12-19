@@ -19,11 +19,14 @@ Section breaks are also implicitly created anytime a new section starts.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Generator
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 MODULE_LEVEL_VARIABLE: Final[int] = 98765
 """Module level constant variable documented inline.

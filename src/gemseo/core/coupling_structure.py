@@ -26,11 +26,6 @@ import itertools
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Dict
-from typing import List
-from typing import Sequence
-from typing import Set
-from typing import Tuple
 
 import matplotlib.pyplot as plt
 
@@ -38,6 +33,8 @@ from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.disciplines.utils import check_disciplines_consistency
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from matplotlib.figure import Axes
     from matplotlib.figure import Figure
     from matplotlib.text import Text
@@ -48,10 +45,10 @@ from gemseo.utils.n2d3.n2_html import N2HTML
 
 LOGGER = logging.getLogger(__name__)
 
-NodeType = Tuple[List[str], List[str]]
-EdgesType = Dict[int, Dict[int, List[str]]]
-GraphType = Dict[int, Set[int]]
-ComponentType = Tuple[int]
+NodeType = tuple[list[str], list[str]]
+EdgesType = dict[int, dict[int, list[str]]]
+GraphType = dict[int, set[int]]
+ComponentType = tuple[int]
 
 
 class MDOCouplingStructure:

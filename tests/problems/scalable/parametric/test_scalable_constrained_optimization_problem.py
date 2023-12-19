@@ -15,7 +15,7 @@
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import arange
@@ -29,6 +29,9 @@ from gemseo import MDODiscipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class ScalableDiscipline(MDODiscipline):

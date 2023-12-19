@@ -25,15 +25,16 @@ import collections
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Generator
-from typing import Iterable
-from typing import Mapping
 
 from numpy import array
 from numpy import concatenate
 from numpy import ndarray
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from numpy.typing import ArrayLike
 
     from gemseo.core.discipline_data import Data

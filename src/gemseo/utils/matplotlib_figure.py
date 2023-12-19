@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Tuple
 
 import matplotlib.pyplot as plt
 
@@ -26,7 +25,7 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-FigSizeType = Tuple[float, float]
+FigSizeType = tuple[float, float]
 """The type of a figure size."""
 
 

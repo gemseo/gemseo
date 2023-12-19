@@ -20,7 +20,6 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
 from typing import NamedTuple
 
 from gemseo.utils.file_path_manager import FilePathManager
@@ -28,6 +27,8 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.datasets.dataset import Dataset
     from gemseo.post.dataset.plot_settings import PlotSettings
 

@@ -33,7 +33,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
@@ -41,6 +40,8 @@ from gemseo import SEED
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy import ndarray
 
     from gemseo.datasets.io_dataset import IODataset

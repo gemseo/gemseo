@@ -51,7 +51,6 @@ import numbers
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 from numpy import inf
 
@@ -62,6 +61,8 @@ from gemseo.utils.logging_tools import LoggingContext
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.datasets.io_dataset import IODataset
 
 LOGGER = logging.getLogger(__name__)

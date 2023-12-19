@@ -21,8 +21,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Iterable
-from typing import Iterator
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.string_tools import pretty_str
@@ -34,10 +32,16 @@ try:
 except ImportError:
     GraphView = None
 
+from typing import TYPE_CHECKING
+
 from networkx import DiGraph
 from networkx import Graph
 from networkx import condensation
 from networkx import strongly_connected_components
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
 
 LOGGER = logging.getLogger(__name__)
 

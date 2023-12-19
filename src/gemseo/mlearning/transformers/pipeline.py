@@ -25,13 +25,16 @@ fit(), transform(), fit_transform() and inverse_transform() methods.
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import eye
 from numpy import ndarray
 
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class Pipeline(Transformer):

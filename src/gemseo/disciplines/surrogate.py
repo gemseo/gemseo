@@ -24,8 +24,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
-from typing import Mapping
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mlearning.quality_measures.error_measure_factory import (
@@ -38,6 +36,9 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from numpy import ndarray
 
     from gemseo.datasets.io_dataset import IODataset

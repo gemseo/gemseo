@@ -42,8 +42,7 @@ from __future__ import annotations
 
 from numbers import Number
 from pathlib import Path
-from typing import Iterable
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from numpy import arange
@@ -69,6 +68,10 @@ from gemseo import SEED
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
 
 
 class ScalableDiagonalModel(ScalableModel):

@@ -49,7 +49,6 @@ from __future__ import annotations
 
 from itertools import product
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
@@ -60,6 +59,8 @@ from gemseo.mlearning.quality_measures.quality_measure import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.scenario import ScenarioInputDataType
     from gemseo.datasets.dataset import Dataset

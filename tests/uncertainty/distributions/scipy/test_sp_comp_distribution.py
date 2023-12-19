@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 import pytest
 from numpy import allclose
@@ -32,6 +31,8 @@ from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistributi
 from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 

@@ -137,14 +137,14 @@ import contextlib
 import logging
 import re
 from collections import namedtuple
+from collections.abc import Collection
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Collection
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 
 import pkg_resources as __pkg_resources
 from numpy import ndarray

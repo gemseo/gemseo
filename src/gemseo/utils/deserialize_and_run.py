@@ -22,9 +22,10 @@ import pickle
 import traceback
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Iterable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.discipline_data import DisciplineData
 

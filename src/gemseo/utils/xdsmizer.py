@@ -41,9 +41,6 @@ from pathlib import Path
 from tempfile import mkdtemp
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Mapping
 from typing import Union
 
 from gemseo.core.discipline import MDODiscipline
@@ -63,6 +60,8 @@ from gemseo.utils.xdsm import XDSM
 from gemseo.utils.xdsm_to_pdf import xdsm_data_to_pdf
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.core.scenario import Scenario
 
 LOGGER = logging.getLogger(__name__)
@@ -70,8 +69,8 @@ LOGGER = logging.getLogger(__name__)
 OPT_NAME = OPT_ID = "Opt"
 USER_NAME = USER_ID = "_U_"
 
-EdgeType = Dict[str, Union[MDODiscipline, List[str]]]
-NodeType = Dict[str, str]
+EdgeType = dict[str, Union[MDODiscipline, list[str]]]
+NodeType = dict[str, str]
 IdsType = Any
 
 

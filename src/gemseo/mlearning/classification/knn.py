@@ -94,7 +94,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
 from numpy import ndarray
 from numpy import newaxis
@@ -104,6 +103,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.ml_algo import TransformerType
 

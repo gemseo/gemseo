@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import scipy
 from numpy import arange
@@ -33,6 +33,9 @@ from numpy import tile
 from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class FininiteElementAnalysis(MDODiscipline):

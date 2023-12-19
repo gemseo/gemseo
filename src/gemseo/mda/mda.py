@@ -24,7 +24,6 @@ import logging
 from abc import abstractmethod
 from enum import auto
 from typing import TYPE_CHECKING
-from typing import Iterator
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -44,13 +43,14 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from pathlib import Path
     from typing import Any
     from typing import ClassVar
-    from typing import Collection
-    from typing import Iterable
-    from typing import Mapping
-    from typing import Sequence
 
     from matplotlib.figure import Figure
     from numpy import ndarray

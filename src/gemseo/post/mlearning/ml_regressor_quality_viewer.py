@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
@@ -28,6 +27,8 @@ from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrixOption
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy import ndarray
 
     from gemseo.mlearning.regression.regression import MLRegressionAlgo

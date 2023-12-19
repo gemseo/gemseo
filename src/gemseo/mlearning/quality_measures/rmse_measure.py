@@ -41,11 +41,12 @@ where
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.quality_measures.quality_measure import MeasureType
     from gemseo.mlearning.regression.regression import MLRegressionAlgo

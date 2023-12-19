@@ -49,8 +49,6 @@ import logging
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Sequence
 
 from numpy import array
 from numpy import full
@@ -72,6 +70,9 @@ from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.scenario import Scenario
     from gemseo.datasets.io_dataset import IODataset

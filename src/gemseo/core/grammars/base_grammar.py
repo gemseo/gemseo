@@ -24,14 +24,14 @@ from __future__ import annotations
 import collections
 import logging
 from abc import abstractmethod
+from collections.abc import Iterable
+from collections.abc import KeysView
+from collections.abc import Mapping
+from collections.abc import MutableMapping
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Iterable
-from typing import KeysView
-from typing import Mapping
-from typing import MutableMapping
 from typing import Optional
 
 from gemseo.core.data_converters.factory import DataConverterFactory

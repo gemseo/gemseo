@@ -20,13 +20,16 @@ import logging
 import subprocess
 from pathlib import Path
 from shutil import copy2
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
-from typing import Mapping
 
 from gemseo.utils.directory_creator import DirectoryCreator
 from gemseo.utils.directory_creator import DirectoryNamingMethod
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
 
 LOGGER = logging.getLogger(__name__)
 

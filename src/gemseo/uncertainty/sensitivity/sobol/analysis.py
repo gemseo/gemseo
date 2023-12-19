@@ -98,15 +98,15 @@ The computation relies on
 
 from __future__ import annotations
 
+from collections.abc import Collection
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Collection
 from typing import Final
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D

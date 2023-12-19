@@ -21,8 +21,6 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
-from typing import Iterable
-from typing import Mapping
 
 from numpy import atleast_1d
 from numpy import concatenate
@@ -41,6 +39,9 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 

@@ -33,19 +33,16 @@ from __future__ import annotations
 
 import pickle
 from abc import abstractmethod
+from collections.abc import Collection
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Collection
-from typing import Dict
-from typing import Iterable
-from typing import List
-from typing import Mapping
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from numpy import array
@@ -80,9 +77,9 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
     from gemseo.post.dataset.dataset_plot import VariableType
 
-OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
-FirstOrderIndicesType = Dict[str, List[Dict[str, ndarray]]]
-SecondOrderIndicesType = Dict[str, List[Dict[str, Dict[str, ndarray]]]]
+OutputsType = Union[str, tuple[str, int], Sequence[Union[str, tuple[str, int]]]]
+FirstOrderIndicesType = dict[str, list[dict[str, ndarray]]]
+SecondOrderIndicesType = dict[str, list[dict[str, dict[str, ndarray]]]]
 
 
 class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):

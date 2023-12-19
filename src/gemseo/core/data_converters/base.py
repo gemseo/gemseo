@@ -21,8 +21,6 @@ from abc import abstractmethod
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
-from typing import Iterable
-from typing import Mapping
 from typing import Union
 
 from numpy import array as np_array
@@ -30,6 +28,9 @@ from numpy import concatenate
 from numpy import ndarray
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.base_grammar import BaseGrammar
 

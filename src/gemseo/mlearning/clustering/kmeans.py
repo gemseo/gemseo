@@ -74,7 +74,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
 from numpy import finfo
 from numpy import ndarray
@@ -86,6 +85,8 @@ from gemseo import SEED
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.core.ml_algo import TransformerType
 

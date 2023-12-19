@@ -21,9 +21,9 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
-from typing import Sized
 
 import numpy as np
 import scipy.sparse.linalg as scipy_linalg
@@ -31,6 +31,9 @@ from scipy.sparse import issparse
 from scipy.sparse.linalg import bicgstab
 from scipy.sparse.linalg import cgs
 from strenum import LowercaseStrEnum
+
+if TYPE_CHECKING:
+    from collections.abc import Sized
 
 LOGGER = logging.getLogger(__name__)
 

@@ -32,7 +32,6 @@ from inspect import isabstract
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Iterable
 from typing import NamedTuple
 
 from gemseo.third_party.prettytable import PrettyTable
@@ -42,6 +41,8 @@ from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.core.grammars.json_grammar import JSONGrammar
 
 LOGGER = logging.getLogger(__name__)

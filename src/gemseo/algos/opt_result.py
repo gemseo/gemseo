@@ -24,7 +24,6 @@ from dataclasses import field
 from dataclasses import fields
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Mapping
 from typing import Union
 
 from numpy import ndarray
@@ -32,6 +31,8 @@ from numpy import ndarray
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.algos.opt_problem import OptimizationProblem
 
 Value = Union[str, int, bool, ndarray]

@@ -26,11 +26,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Collection
 from typing import Final
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 
 from numpy import array
 from numpy import newaxis
@@ -56,6 +52,10 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from pathlib import Path
 
     from numpy.typing import NDArray

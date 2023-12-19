@@ -19,13 +19,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Sequence
 
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from numpy import ndarray
 
     from gemseo.core.discipline import MDODiscipline

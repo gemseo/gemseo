@@ -32,10 +32,9 @@ import math
 import random
 from collections import namedtuple
 from random import uniform
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Sequence
 
 from numpy import array
 from numpy import complex128
@@ -50,6 +49,10 @@ from gemseo.problems.sobieski.core.mission import SobieskiMission
 from gemseo.problems.sobieski.core.propulsion import SobieskiPropulsion
 from gemseo.problems.sobieski.core.structure import SobieskiStructure
 from gemseo.problems.sobieski.core.utils import SobieskiBase
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
 
 LOGGER = logging.getLogger(__name__)
 

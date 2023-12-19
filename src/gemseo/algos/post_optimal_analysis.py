@@ -22,8 +22,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Mapping
 
 from numpy import atleast_1d
 from numpy import hstack
@@ -38,6 +36,9 @@ from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from gemseo.algos.opt_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)

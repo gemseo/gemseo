@@ -29,11 +29,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Collection
 from typing import Final
-from typing import Iterable
-from typing import Iterator
-from typing import Mapping
 from typing import NamedTuple
 
 import matplotlib.pyplot as plt
@@ -62,6 +58,11 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Mapping
+
     from numpy.typing import NDArray
 
     from gemseo.core.coupling_structure import MDOCouplingStructure

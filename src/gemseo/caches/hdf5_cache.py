@@ -25,7 +25,6 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Generator
 
 import h5py
 
@@ -37,6 +36,7 @@ from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
     from multiprocessing import RLock
 
     from gemseo.core.discipline_data import Data

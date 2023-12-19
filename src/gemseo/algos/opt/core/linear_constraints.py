@@ -21,7 +21,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Iterable
 
 from numpy import hstack
 from numpy import isfinite
@@ -34,6 +33,8 @@ from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 

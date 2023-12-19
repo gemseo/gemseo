@@ -25,8 +25,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Sequence
 
 from numpy import empty
 
@@ -38,6 +36,9 @@ from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
     from gemseo.core.base_formulation import BaseFormulation
     from gemseo.core.discipline import MDODiscipline
 

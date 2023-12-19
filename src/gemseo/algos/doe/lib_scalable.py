@@ -20,8 +20,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Container
 from typing import ClassVar
-from typing import Container
 from typing import Optional
 from typing import Union
 

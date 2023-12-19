@@ -24,7 +24,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Sequence
 
 from numpy import bool_
 from numpy import complex128
@@ -41,6 +40,8 @@ from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.design_space import DesignSpace
 
 

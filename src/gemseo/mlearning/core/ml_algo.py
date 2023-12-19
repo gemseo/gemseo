@@ -99,19 +99,17 @@ from __future__ import annotations
 import inspect
 import pickle
 from abc import abstractmethod
+from collections.abc import Mapping
+from collections.abc import MutableMapping
+from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Dict
 from typing import Final
-from typing import Mapping
-from typing import MutableMapping
 from typing import Optional
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from numpy import ndarray
@@ -128,10 +126,10 @@ if TYPE_CHECKING:
     from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
     from gemseo.mlearning.resampling.resampler import Resampler
 
-SavedObjectType = Union[Dataset, Dict[str, Transformer], str, bool, int]
+SavedObjectType = Union[Dataset, dict[str, Transformer], str, bool, int]
 DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
-SubTransformerType = Union[str, Tuple[str, Mapping[str, Any]], Transformer]
+SubTransformerType = Union[str, tuple[str, Mapping[str, Any]], Transformer]
 TransformerType = MutableMapping[str, SubTransformerType]
 DefaultTransformerType = ClassVar[Mapping[str, TransformerType]]
 

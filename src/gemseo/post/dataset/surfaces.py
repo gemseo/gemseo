@@ -28,11 +28,12 @@ Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.datasets.dataset import Dataset
 
 

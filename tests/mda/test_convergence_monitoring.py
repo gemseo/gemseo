@@ -15,8 +15,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Mapping
-from typing import Sequence
 
 import pytest
 from numpy import concatenate
@@ -32,6 +30,9 @@ from gemseo.problems.scalable.linear.disciplines_generator import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
     from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 
 

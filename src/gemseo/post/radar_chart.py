@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import vstack
 from numpy import zeros
@@ -29,6 +29,9 @@ from numpy import zeros
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 LOGGER = logging.getLogger(__name__)
 

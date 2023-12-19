@@ -76,14 +76,13 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from collections.abc import Iterable
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Mapping
-from typing import Tuple
 from typing import Union
 
 import matplotlib.pyplot as plt
@@ -106,7 +105,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 StandardParametersType = Mapping[str, Union[str, int, float]]
-ParametersType = Union[Tuple[str, int, float], StandardParametersType]
+ParametersType = Union[tuple[str, int, float], StandardParametersType]
 
 
 class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):

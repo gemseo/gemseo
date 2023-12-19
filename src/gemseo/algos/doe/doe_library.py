@@ -28,11 +28,7 @@ from multiprocessing import current_process
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Dict
 from typing import Final
-from typing import List
-from typing import MutableMapping
-from typing import Tuple
 from typing import Union
 
 from numpy import array
@@ -53,6 +49,7 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import MutableMapping
     from pathlib import Path
 
     from gemseo.algos.design_space import DesignSpace
@@ -61,8 +58,8 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-DOELibraryOptionType = Union[str, float, int, bool, List[str], ndarray]
-DOELibraryOutputType = Tuple[Dict[str, Union[float, ndarray]], Dict[str, ndarray]]
+DOELibraryOptionType = Union[str, float, int, bool, list[str], ndarray]
+DOELibraryOutputType = tuple[dict[str, Union[float, ndarray]], dict[str, ndarray]]
 
 
 @dataclass

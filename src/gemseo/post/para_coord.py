@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Sequence
 
 import matplotlib
 import matplotlib as mpl
@@ -36,6 +35,8 @@ from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from matplotlib.figure import Figure
 
 

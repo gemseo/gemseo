@@ -32,9 +32,9 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.mda.base_mda_solver import BaseMDASolver
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Mapping
-    from typing import Sequence
 
     from numpy.typing import NDArray
 

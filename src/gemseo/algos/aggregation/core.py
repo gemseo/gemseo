@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 from math import log
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import argmax as np_argmax
 from numpy import array
@@ -34,6 +34,9 @@ from numpy import multiply
 from numpy import ndarray
 from numpy import sum as np_sum
 from numpy import zeros
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def compute_lower_bound_ks_agg(

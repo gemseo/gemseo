@@ -50,7 +50,6 @@ from operator import le
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
-from typing import Mapping
 
 from numpy import all as np_all
 from numpy import cumsum
@@ -73,6 +72,7 @@ from gemseo.uncertainty.statistics.statistics import Statistics
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from pathlib import Path
 
 

@@ -43,7 +43,6 @@ from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 from typing import Union
 
 from numpy import average
@@ -61,6 +60,8 @@ from gemseo.mlearning.core.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.ml_algo import TransformerType
 

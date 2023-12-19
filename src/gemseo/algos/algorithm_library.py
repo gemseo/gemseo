@@ -29,8 +29,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Mapping
-from typing import MutableMapping
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
@@ -41,6 +39,9 @@ from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import MutableMapping
+
     from numpy import ndarray
 
     from gemseo.algos.base_problem import BaseProblem

@@ -38,13 +38,13 @@ and :meth:`.OptimizationProblem.to_dataset`.
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from numbers import Number
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 from typing import Literal
 from typing import Union
 from typing import overload

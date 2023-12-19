@@ -37,7 +37,6 @@ from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
 from sklearn.svm import SVC
 
@@ -45,6 +44,8 @@ from gemseo import SEED
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy import ndarray
 
     from gemseo.datasets.io_dataset import IODataset

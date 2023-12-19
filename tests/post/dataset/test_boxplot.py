@@ -86,7 +86,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
-@image_comparison(None, tol_py38=0.5)
+@image_comparison(None)
 def test_plot(
     kwargs,
     datasets,

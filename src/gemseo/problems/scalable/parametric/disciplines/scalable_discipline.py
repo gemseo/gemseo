@@ -22,8 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Mapping
 
 from gemseo.problems.scalable.parametric.core.disciplines.scalable_discipline import (
     ScalableDiscipline as _ScalableDiscipline,
@@ -38,6 +36,9 @@ from gemseo.problems.scalable.parametric.disciplines.base_discipline import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from numpy.typing import NDArray
 
 

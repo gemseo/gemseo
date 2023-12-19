@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import atleast_2d
@@ -29,6 +29,9 @@ from numpy import ones_like
 from numpy import size
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class VolumeFraction(MDODiscipline):

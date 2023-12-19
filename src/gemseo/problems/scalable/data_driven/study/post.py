@@ -45,8 +45,8 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -58,6 +58,9 @@ from numpy import polyfit
 
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 LOGGER = logging.getLogger(__name__)
 

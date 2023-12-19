@@ -45,7 +45,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
-from typing import List
 from typing import Literal
 from typing import Union
 from typing import overload
@@ -80,7 +79,7 @@ if TYPE_CHECKING:
     from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
     from gemseo.algos.design_space import DesignSpace
 
-DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
+DriverLibOptionType = Union[str, float, int, bool, list[str], ndarray]
 LOGGER = logging.getLogger(__name__)
 
 

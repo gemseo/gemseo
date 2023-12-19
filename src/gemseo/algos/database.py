@@ -26,16 +26,14 @@ from __future__ import annotations
 import logging
 import sys
 from ast import literal_eval
+from collections.abc import Iterable
+from collections.abc import Iterator
+from collections.abc import Mapping
 from itertools import chain
 from itertools import islice
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
-from typing import Iterable
-from typing import Iterator
-from typing import List
-from typing import Mapping
-from typing import Tuple
 from typing import Union
 from xml.etree.ElementTree import parse as parse_element
 
@@ -62,9 +60,9 @@ LOGGER = logging.getLogger(__name__)
 
 # Type of the values associated to the keys (values of input variables) in the database
 DatabaseKeyType = Union[ndarray, HashableNdarray]
-FunctionOutputValueType = Union[float, ndarray, List[int]]
+FunctionOutputValueType = Union[float, ndarray, list[int]]
 DatabaseValueType = Mapping[str, FunctionOutputValueType]
-ReturnedHdfMissingOutputType = Tuple[
+ReturnedHdfMissingOutputType = tuple[
     Mapping[str, FunctionOutputValueType], Union[None, Mapping[str, int]]
 ]
 

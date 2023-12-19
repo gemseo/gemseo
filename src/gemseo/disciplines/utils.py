@@ -18,10 +18,11 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import MutableSequence
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import MutableSequence
+
     from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger(__name__)

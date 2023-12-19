@@ -24,7 +24,6 @@ from __future__ import annotations
 import itertools
 import logging
 from typing import TYPE_CHECKING
-from typing import Mapping
 
 from matplotlib import pyplot
 from numpy import absolute
@@ -40,6 +39,8 @@ from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from matplotlib.figure import Figure
 
 LOGGER = logging.getLogger(__name__)

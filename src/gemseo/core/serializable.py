@@ -26,13 +26,16 @@ from multiprocessing.sharedctypes import Synchronized
 from pathlib import Path
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Mapping
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.utils.portable_path import to_os_specific
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 class Serializable(metaclass=GoogleDocstringInheritanceMeta):

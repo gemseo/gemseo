@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING
-from typing import Mapping
 
 import pytest
 from numpy import array
@@ -32,6 +31,8 @@ from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 INPUT_VECTOR = array([1.0, 1.0])

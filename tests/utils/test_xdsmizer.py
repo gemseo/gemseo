@@ -24,7 +24,6 @@ from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 
 import pytest
 
@@ -56,6 +55,8 @@ from gemseo.utils.xdsmizer import expand
 from ..mda.test_mda import analytic_disciplines_from_desc
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.core.scenario import Scenario
 
 

@@ -38,10 +38,10 @@ from gemseo.mda.initialization_chain import MDOInitializationChain
 from gemseo.mda.mda import MDA
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Iterable
-    from typing import Mapping
-    from typing import Sequence
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline_data import DisciplineData

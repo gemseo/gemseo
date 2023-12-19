@@ -25,8 +25,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Iterable
-from typing import Sequence
 
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
@@ -49,6 +47,9 @@ from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
     from numpy import ndarray
 
 LOGGER = logging.getLogger(__name__)

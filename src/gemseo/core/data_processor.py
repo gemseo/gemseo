@@ -24,7 +24,6 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
-from typing import Mapping
 
 from numpy import array
 from numpy import complex128
@@ -32,6 +31,8 @@ from numpy import complex128
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.core.discipline_data import Data
 
 LOGGER = logging.getLogger(__name__)

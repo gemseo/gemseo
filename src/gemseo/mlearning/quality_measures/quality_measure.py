@@ -22,11 +22,10 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Dict
 from typing import Optional
-from typing import Sequence
 from typing import Union
 
 from numpy import array
@@ -41,9 +40,9 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import MLAlgo
 
-MeasureType = Union[float, ndarray, Dict[str, ndarray]]
+MeasureType = Union[float, ndarray, dict[str, ndarray]]
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
-MeasureOptionsType = Dict[str, OptionType]
+MeasureOptionsType = dict[str, OptionType]
 
 
 class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):

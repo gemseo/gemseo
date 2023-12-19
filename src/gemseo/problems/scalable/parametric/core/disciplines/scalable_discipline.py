@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Mapping
 from typing import NamedTuple
 
 from numpy import eye
@@ -39,6 +38,8 @@ from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_
 from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from numpy.typing import NDArray
 
 

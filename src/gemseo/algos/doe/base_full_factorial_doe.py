@@ -20,11 +20,12 @@ import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
 
 from gemseo.algos.doe._base_doe import BaseDOE
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy import ndarray
 
 LOGGER = logging.getLogger(__name__)

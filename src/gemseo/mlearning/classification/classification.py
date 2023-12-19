@@ -34,10 +34,9 @@ which inherits from the :class:`.MLSupervisedAlgo` class.
 from __future__ import annotations
 
 from abc import abstractmethod
+from collections.abc import Iterable
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
-from typing import Dict
-from typing import Iterable
-from typing import Sequence
 from typing import Union
 
 from numpy import ndarray
@@ -56,7 +55,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import TransformerType
 
 SavedObjectType = Union[
-    MLSupervisedAlgoSavedObjectType, Sequence[str], Dict[str, ndarray], int
+    MLSupervisedAlgoSavedObjectType, Sequence[str], dict[str, ndarray], int
 ]
 
 

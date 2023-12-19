@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import ndarray
@@ -27,6 +27,9 @@ from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import OutputType
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class MDOQuadraticFunction(MDOFunction):
