@@ -160,5 +160,5 @@ system_scenario.xdsmize()
 run_inputs = {"n_samples": 50, "algo": "fullfact"}
 system_scenario.execute(run_inputs)
 system_scenario.post_process(
-    "ParetoFront", objectives=["obj1", "obj2"], save=True, show=True
+    "ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
 )
