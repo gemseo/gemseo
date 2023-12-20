@@ -1,3 +1,0 @@
-- Setting ``file_format="html"`` in ``DatasetPlot.execute`` saves on the disk and/or displays in a web browser a plotly-based interactive plot.
-- ``DatasetPlot.DEFAULT_PLOT_ENGINE`` is set to ``PlotEngine.MATPLOTLIB``; this is the default plot engine used by ``DatasetPlot``.
-- ``DatasetPlot.FILE_FORMATS_TO_PLOT_ENGINES`` maps the file formats to the plot engines to override the default plot engine.

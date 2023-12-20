@@ -1,9 +1,0 @@
-``ScenarioResult`` is a new concept attached to a ``Scenario``. This concept enables to post-process more specifically the results of a given scenario. In particular, the ``ScenarioResult`` can be derived in order to implement dedicated post-treatments depending on the formulation.
-
-- ``OptimizationResult.from_optimization_problem`` creates an ``OptimizationResult`` from an ``OptimizationProblem``.
-- ``BaseFormulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME`` is the name of the default ``OptimizationResult`` class to be used with the given formulation.
-- ``ScenarioResult`` stores the result of a ``Scenario`` from a ``Scenario`` or an HDF5 file.
-- ``BiLevelScenarioResult`` is a ``ScenarioResult`` to store the result of a ``Scenario`` using a ``BiLevel`` formulation.
-- ``ScenarioResultFactory`` is a factory of ``ScenarioResult``.
-- ``Scenario.get_result`` returns the result of the execution of the ``Scenario`` as a ``ScenarioResult``.
-- ``create_scenario_result`` stores the result of a ``Scenario`` from a ``Scenario`` or an HDF5 file.

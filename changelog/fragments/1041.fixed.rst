@@ -1,1 +1,0 @@
-A ``JSONGrammar`` using namespaces can be serialized correctly.

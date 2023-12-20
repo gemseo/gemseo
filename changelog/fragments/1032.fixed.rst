@@ -1,1 +1,0 @@
-``OptimizationProblem.get_violation_criteria`` no longer considers the non-violated components of the equality constraints when calculating the violation measure.

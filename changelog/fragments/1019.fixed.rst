@@ -1,4 +1,0 @@
-``DesignSpace.dict_to_array`` returns an ``ndarray``
-whose attribute ``dtype`` matches the "common ``dtype``" of the values of its ``dict`` argument ``design_values``
-corresponding to the keys passed in its argument ``variables_names``.
-So far, the ``dtype`` was erroneously based on all the values of ``design_values``.

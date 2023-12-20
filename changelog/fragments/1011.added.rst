@@ -1,1 +1,0 @@
-``gemseo.SEED`` is the default seed used by GEMSEO for random number generators.

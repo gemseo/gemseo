@@ -1,1 +1,0 @@
-The ``SimplerGrammar`` is a grammar based on element names only. ``SimplerGrammar` is even simpler than ``SimpleGrammar`` which considers both names and types.

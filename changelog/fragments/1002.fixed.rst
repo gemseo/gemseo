@@ -1,1 +1,0 @@
-The normalization methods of ``DesignSpace`` do no longer emit a ``RuntimeWarning`` about a division by zero when the lower and upper bounds are equal.

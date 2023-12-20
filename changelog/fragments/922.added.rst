@@ -1,1 +1,0 @@
-Add diagrams in the documentation to illustrate the architecture and usage of ODEProblem.

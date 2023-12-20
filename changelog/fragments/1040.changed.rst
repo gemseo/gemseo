@@ -1,2 +1,0 @@
-The example on how to do a Pareto Front on the Binh Korn problem now uses a ``BiLevel`` formulation instead of
-an ``MDOScenarioAdapter`` manually embedded into a ``DOEScenario``.

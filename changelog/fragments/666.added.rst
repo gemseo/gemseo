@@ -1,3 +1,0 @@
-- ``MLRegressorQualityViewer`` proposes various methods to plot the quality of an :class:`.MLRegressionAlgo``.
-- ``DatasetPlot.execute`` can use a file name suffix.
-- ``SurrogateDiscipline.get_quality_viewer`` returns a ``MLRegressorQualityViewer``.

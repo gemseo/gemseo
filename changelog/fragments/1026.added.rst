@@ -1,1 +1,0 @@
-Augmented Lagrangian can now pass some of the constraints to the sub-problem and deal with the rest of them thanks to the ``sub_problem_constraints`` option.

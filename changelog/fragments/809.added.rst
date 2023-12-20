@@ -1,1 +1,0 @@
-The ``LinearCombination`` discipline now has a sparse Jacobian.

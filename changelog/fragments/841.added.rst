@@ -1,1 +1,0 @@
-The ``normalize`` option of ``BasicHistory`` scales the data between 0 and 1 before plotting them.

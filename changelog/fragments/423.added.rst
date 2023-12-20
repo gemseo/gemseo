@@ -1,1 +1,0 @@
-The disciplines ``Concatenater``, ``LinearCombination`` and ``Splitter`` now have sparse Jacobians.
