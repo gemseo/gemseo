@@ -30,25 +30,25 @@ Core features
 The required dependencies provide the core features of |g|,
 these are:
 
-    - docstring-inheritance >=1.0.0,<=2.0.0
-    - fastjsonschema >=2.14.5,<=2.18.0
+    - docstring-inheritance >=1.0.0,<=2.1.2
+    - fastjsonschema >=2.14.5,<=2.19.0
     - genson ==1.2.2
-    - h5py >=3.0.0,<=3.9.0
+    - h5py >=3.0.0,<=3.10.0
     - jinja2 >=3.0.0,<=3.1.2
-    - matplotlib >=3.3.0,<=3.8.0
-    - networkx >=2.2,<=3.1
-    - numpy >=1.21,<=1.26.0
-    - packaging <=23.1
-    - pandas >=1.1.0,<=2.1.1
+    - matplotlib >=3.3.0,<=3.8.2
+    - networkx >=2.2,<=3.2.1
+    - numpy >=1.21,<=1.26.2
+    - packaging <=23.2
+    - pandas >=1.1.0,<=2.1.4
     - pyxdsm >=2.1.0,<=2.3.0
-    - pydantic >=1.10.8,<2
+    - pydantic >=2.1,<2.6
     - requests
-    - scipy >=1.4,<=1.10.1
+    - scipy >=1.4,<=1.11.4
     - strenum >=0.4.9,<=0.4.15
     - tqdm >=4.41,<=4.66.1
     - typing-extensions >=4,<5
     - xdsmjs >=1.0.0,<=2.0.0
-    - xxhash >=3.0.0,<=3.3.0
+    - xxhash >=3.0.0,<=3.4.1
 
 The minimal dependencies will allow to execute
 :ref:`MDO processes <mdo_formulations>`
@@ -75,7 +75,8 @@ All these tools are open source with non-viral licenses
    - openpyxl <=3.1.2: Excel reading with pandas
    - openturns >=1.16,<=1.21: designs of experiments, machine learning, uncertainty quantification
    - pydoe2 >=1.0.2,<=1.3.0: design of experiments
-   - scikit-learn >=0.18,<=1.3.1: machine learning
+   - scikit-learn >=0.18,<=1.3.2: machine learning
    - sympy >=1.5,<=1.12: symbolic calculations for analytic disciplines
-   - xlwings >=0.27.0,<=0.27.15: Excel reading on Windows
-   - pillow >=9.5.0,<=10.0.0: Image animations.
+   - xlwings >=0.27.0,<=0.30.13: Excel reading on Windows
+   - pillow >=9.5.0,<=10.1.0: image animations.
+   - plotly >=5.7.0,<=5.18.0: plottings
