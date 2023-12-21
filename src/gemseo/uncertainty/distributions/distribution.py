@@ -71,23 +71,21 @@ or for all marginals (:meth:`.Distribution.plot_all`).
 Lastly, we can compute realizations of the random variable
 by means of the :meth:`.Distribution.compute_samples` method.
 """
+
 from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from pathlib import Path
+from collections.abc import Iterable
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Mapping
-from typing import Tuple
-from typing import TYPE_CHECKING
 from typing import Union
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 from numpy import arange
 from numpy import array
 from numpy import ndarray
@@ -95,15 +93,19 @@ from numpy import ndarray
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
-from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from matplotlib.figure import Figure
+
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
 LOGGER = logging.getLogger(__name__)
 
 StandardParametersType = Mapping[str, Union[str, int, float]]
-ParametersType = Union[Tuple[str, int, float], StandardParametersType]
+ParametersType = Union[tuple[str, int, float], StandardParametersType]
 
 
 class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -146,13 +148,16 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The standard representation of the parameters of the distribution, used for its
     string representation."""
 
-    _MU = "mu"
-    _SIGMA = "sigma"
-    _LOWER = "lower"
-    _UPPER = "upper"
-    _MODE = "mode"
-    _RATE = "rate"
-    _LOC = "loc"
+    _LOC: Final[str] = "loc"
+    _LOWER: Final[str] = "lower"
+    _MODE: Final[str] = "mode"
+    _MU: Final[str] = "mu"
+    _RATE: Final[str] = "rate"
+    _SCALE: Final[str] = "scale"
+    _SHAPE: Final[str] = "shape"
+    _LOCATION: Final[str] = "location"
+    _SIGMA: Final[str] = "sigma"
+    _UPPER: Final[str] = "upper"
 
     DEFAULT_VARIABLE_NAME: Final[str] = "x"
     """The default name of the variable."""
@@ -222,12 +227,6 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
             FilePathManager.FileType.FIGURE,
             default_name=f"distribution_{self.variable_name}",
         )
-        msg = MultiLineString()
-        msg.add("Define the random variable: {}", variable)
-        msg.indent()
-        msg.add("Distribution: {}", self)
-        msg.add("Dimension: {}", dimension)
-        LOGGER.debug("%s", msg)
 
     def _get_empty_parameter_set(self) -> dict:
         """Return an empty parameter set."""
@@ -301,7 +300,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         """The analytical standard deviation of the random variable."""
 
     @property
-    def range(self) -> list[ndarray]:
+    def range(self) -> list[ndarray]:  # noqa: A003
         """The numerical range.
 
         The numerical range is the interval defined by the lower and upper bounds
@@ -311,11 +310,10 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         each component of the random variable, whose first element is the lower bound of
         this component while the second one is its upper bound.
         """
-        value = [
+        return [
             array([l_b, u_b])
             for l_b, u_b in zip(self.num_lower_bound, self.num_upper_bound)
         ]
-        return value
 
     @property
     def support(self) -> list[ndarray]:
@@ -328,11 +326,10 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         each component of the random variable, whose first element is the lower bound of
         this component while the second one is its upper bound.
         """
-        value = [
+        return [
             array([l_b, u_b])
             for l_b, u_b in zip(self.math_lower_bound, self.math_upper_bound)
         ]
-        return value
 
     def plot_all(
         self,
@@ -363,20 +360,18 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The figures.
         """
-        figures = []
-        for index in range(self.dimension):
-            figures.append(
-                self.plot(
-                    index=index,
-                    show=show,
-                    save=save,
-                    file_path=file_path,
-                    file_name=file_name,
-                    file_extension=file_extension,
-                    directory_path=directory_path,
-                )
+        return [
+            self.plot(
+                index=index,
+                show=show,
+                save=save,
+                file_path=file_path,
+                file_name=file_name,
+                file_extension=file_extension,
+                directory_path=directory_path,
             )
-        return figures
+            for index in range(self.dimension)
+        ]
 
     def plot(
         self,
@@ -409,10 +404,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The figure.
         """
-        variable_name = self.variable_name
-        if self.dimension > 1:
-            variable_name = f"{variable_name}[{index}]"
-
+        variable_name = repr_variable(self.variable_name, index, self.dimension)
         l_b = self.num_lower_bound[index]
         u_b = self.num_upper_bound[index]
         x_values = arange(l_b, u_b, (u_b - l_b) / 100)

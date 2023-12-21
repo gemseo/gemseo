@@ -51,7 +51,7 @@ class TestMonitoring(unittest.TestCase):
 
     def _assert_update_status(self, disc, expected):
         disc.status = expected
-        self.assertEqual(expected, self._statuses[self._updated_uuid])
+        assert expected == self._statuses[self._updated_uuid]
 
     def test_singleton(self):
         self.info = None
@@ -73,11 +73,11 @@ class TestMonitoring(unittest.TestCase):
     def test_remove_observer(self):
         self.monitor.remove_observer(self)
         self.sc.disc1.status = MDODiscipline.ExecutionStatus.RUNNING
-        self.assertEqual(None, self._updated_uuid)  # no update received
+        assert None is self._updated_uuid  # no update received
         # check second remove works
         self.monitor.remove_observer(self)
 
     def test_remove_observers(self):
         self.monitor.remove_all_observers()
         self.sc.disc1.status = MDODiscipline.ExecutionStatus.RUNNING
-        self.assertEqual(None, self._updated_uuid)  # no update received
+        assert None is self._updated_uuid  # no update received

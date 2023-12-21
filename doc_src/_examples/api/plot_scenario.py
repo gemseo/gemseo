@@ -22,6 +22,7 @@
 Scenario
 ========
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

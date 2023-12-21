@@ -30,12 +30,13 @@ For simplification,
 we use uniform distributions for the discipline inputs
 based on the bounds of the design parameters.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.uncertainty import create_statistics
 
 configure_logger()
@@ -54,10 +55,10 @@ discipline = create_discipline("SobieskiMission")
 # %%
 # Then,
 # we load the design space of the Sobieski's SSBJ problem
-# by means of the property :meth:`.SobieskiProblem.design_space`
+# by means of the class :meth:`.SobieskiDesignSpace`
 # and :meth:`.DesignSpace.filter` the inputs of the
 # discipline :class:`~gems.problems.sobieski.disciplines.SobieskiMission`.
-parameter_space = SobieskiProblem().design_space
+parameter_space = SobieskiDesignSpace()
 parameter_space.filter(discipline.get_input_data_names())
 
 # %%
@@ -149,8 +150,9 @@ analysis.compute_quantile(0.8)
 # Here are the probability
 # to respectively be greater and lower than the default output value:
 default_output = discipline.execute()
-analysis.compute_probability(default_output), analysis.compute_probability(
-    default_output, greater=False
+(
+    analysis.compute_probability(default_output),
+    analysis.compute_probability(default_output, greater=False),
 )
 
 # %%
@@ -170,3 +172,17 @@ analysis.compute_percentile(50)
 # ~~~~~~~~~~
 # Here is the median:
 analysis.compute_median()
+
+# %%
+# Plot the distribution
+# ~~~~~~~~~~~~~~~~~~~~~
+# We can use a boxplot to visualize the data distribution:
+analysis.plot_boxplot()
+
+# %%
+# draw the empirical cumulative distribution function:
+analysis.plot_cdf()
+
+# %%
+# or draw the empirical probability density function:
+analysis.plot_pdf()

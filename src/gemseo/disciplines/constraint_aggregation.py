@@ -17,18 +17,19 @@
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An MDODiscipline to aggregate constraints."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import Final
-from typing import Sequence
 
 from numpy import atleast_1d
 from strenum import StrEnum
 
 from gemseo.algos.aggregation.core import compute_iks_agg
-from gemseo.algos.aggregation.core import compute_ks_agg
+from gemseo.algos.aggregation.core import compute_lower_bound_ks_agg
 from gemseo.algos.aggregation.core import compute_max_agg
 from gemseo.algos.aggregation.core import compute_max_agg_jac
 from gemseo.algos.aggregation.core import compute_partial_iks_agg_jac
@@ -37,9 +38,13 @@ from gemseo.algos.aggregation.core import compute_partial_sum_positive_square_ag
 from gemseo.algos.aggregation.core import compute_partial_sum_square_agg_jac
 from gemseo.algos.aggregation.core import compute_sum_positive_square_agg
 from gemseo.algos.aggregation.core import compute_sum_square_agg
+from gemseo.algos.aggregation.core import compute_upper_bound_ks_agg
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class ConstraintAggregation(MDODiscipline):
@@ -61,8 +66,11 @@ class ConstraintAggregation(MDODiscipline):
         IKS = "IKS"
         """The induces exponential function."""
 
-        KS = "KS"
-        """The Kreisselmeier–Steinhauser function."""
+        LOWER_BOUND_KS = "lower_bound_KS"
+        """The lower bound Kreisselmeier-Steinhauser function."""
+
+        UPPER_BOUND_KS = "upper_bound_KS"
+        """The upper bound Kreisselmeier-Steinhauser function."""
 
         POS_SUM = "POS_SUM"
         """The positive sum squared function."""
@@ -75,7 +83,8 @@ class ConstraintAggregation(MDODiscipline):
 
     _EVALUATION_FUNCTION_MAP: Final[EvaluationFunction, Callable] = {
         EvaluationFunction.IKS: compute_iks_agg,
-        EvaluationFunction.KS: compute_ks_agg,
+        EvaluationFunction.LOWER_BOUND_KS: compute_lower_bound_ks_agg,
+        EvaluationFunction.UPPER_BOUND_KS: compute_upper_bound_ks_agg,
         EvaluationFunction.POS_SUM: compute_sum_positive_square_agg,
         EvaluationFunction.MAX: compute_max_agg,
         EvaluationFunction.SUM: compute_sum_square_agg,
@@ -83,7 +92,8 @@ class ConstraintAggregation(MDODiscipline):
 
     _JACOBIAN_EVALUATION_FUNCTION_MAP: Final[EvaluationFunction, Callable] = {
         EvaluationFunction.IKS: compute_partial_iks_agg_jac,
-        EvaluationFunction.KS: compute_partial_ks_agg_jac,
+        EvaluationFunction.LOWER_BOUND_KS: compute_partial_ks_agg_jac,
+        EvaluationFunction.UPPER_BOUND_KS: compute_partial_ks_agg_jac,
         EvaluationFunction.POS_SUM: compute_partial_sum_positive_square_agg_jac,
         EvaluationFunction.MAX: compute_max_agg_jac,
         EvaluationFunction.SUM: compute_partial_sum_square_agg_jac,
@@ -101,7 +111,7 @@ class ConstraintAggregation(MDODiscipline):
             constraint_names: The names of the constraints to aggregate,
                 which must be discipline outputs.
             aggregation_function: The aggregation function or its name,
-                e.g. IKS, KS, POS_SUM and SUM.
+                e.g. IKS, lower_bound_KS,upper_bound_KS, POS_SUM and SUM.
             name: The name of the discipline.
             **options: The options for the aggregation method.
 
@@ -112,12 +122,10 @@ class ConstraintAggregation(MDODiscipline):
         self.__method_name = aggregation_function
         self.__meth_options = options
         self.input_grammar.update_from_names(constraint_names)
-        self.output_grammar.update_from_names(
-            [
-                f"{aggregation_function}_{constraint_name}"
-                for constraint_name in constraint_names
-            ]
-        )
+        self.output_grammar.update_from_names([
+            f"{aggregation_function}_{constraint_name}"
+            for constraint_name in constraint_names
+        ])
         self.__data_sizes = {}
 
     def _run(self) -> None:

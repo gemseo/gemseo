@@ -19,17 +19,22 @@
 from __future__ import annotations
 
 import re
+from unittest import mock
 
 import pytest
-from gemseo.datasets.dataset import Dataset
-from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
-from gemseo.uncertainty.statistics.statistics import Statistics
-from gemseo.utils.testing.helpers import concretize_classes
 from numpy import array
 from numpy import concatenate
 from numpy import linspace
 from numpy import newaxis
 from numpy.testing import assert_allclose
+
+from gemseo.datasets.dataset import Dataset
+from gemseo.post.dataset.boxplot import Boxplot
+from gemseo.post.dataset.lines import Lines
+from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+from gemseo.uncertainty.statistics.statistics import Statistics
+from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -38,7 +43,7 @@ def dataset():
     data = Dataset()
     column = linspace(1.0, 10.0, 10)[:, newaxis]
     data.add_variable("x_1", column)
-    data.add_variable("x_2", concatenate((column, column), 1))
+    data.add_variable("x_2", concatenate((-column, column), 1))
     return data
 
 
@@ -80,60 +85,60 @@ def test_variables_x_1(x_1_statistics):
 
 
 @pytest.mark.parametrize(
-    [
+    (
         "statistic_estimation",
         "statistic_estimator",
         "statistic_estimator_args",
         "statistic_estimator_kwargs",
-    ],
+    ),
     [
-        (1.0, "compute_minimum", (), {}),
-        (10.0, "compute_maximum", (), {}),
-        (9.0, "compute_range", (), {}),
-        (5.5, "compute_mean", (), {}),
-        (2.872281, "compute_standard_deviation", (), {}),
-        (8.25, "compute_variance", (), {}),
+        ([1.0, -10.0, 1.0], "compute_minimum", (), {}),
+        ([10.0, -1.0, 10.0], "compute_maximum", (), {}),
+        ([9.0, 9.0, 9.0], "compute_range", (), {}),
+        ([5.5, -5.5, 5.5], "compute_mean", (), {}),
+        ([2.872281, 2.872281, 2.872281], "compute_standard_deviation", (), {}),
+        ([8.25, 8.25, 8.25], "compute_variance", (), {}),
         (
-            0.8,
+            [0.8, 0.3, 0.8],
             "compute_probability",
             (
                 # thresh
                 {
                     "x_1": array([3.0]),
-                    "x_2": array([3.0, 3.0]),
+                    "x_2": array([-3.0, 3.0]),
                 },
             ),
             {},
         ),
         (
-            0.3,
+            [0.3, 0.8, 0.3],
             "compute_probability",
             (
                 # thresh
                 {
                     "x_1": array([3.0]),
-                    "x_2": array([3.0, 3.0]),
+                    "x_2": array([-3.0, 3.0]),
                 },
             ),
             {"greater": False},
         ),
         (
-            0.8,
+            [0.8, 0.3, 0.8],
             "compute_probability",
             (
                 # thresh
                 {
                     "x_1": array([3.0]),
-                    "x_2": array([3.0, 3.0]),
+                    "x_2": array([-3.0, 3.0]),
                 },
             ),
             {"greater": True},
         ),
-        (5.5, "compute_quantile", (0.5,), {}),
-        (5.5, "compute_quartile", (2,), {}),
-        (5.5, "compute_percentile", (50,), {}),
-        (5.5, "compute_median", (), {}),
-        (0.0, "compute_moment", (1,), {}),
+        ([5.5, -5.5, 5.5], "compute_quantile", (0.5,), {}),
+        ([5.5, -5.5, 5.5], "compute_quartile", (2,), {}),
+        ([5.5, -5.5, 5.5], "compute_percentile", (50,), {}),
+        ([5.5, -5.5, 5.5], "compute_median", (), {}),
+        ([0.0, 0.0, 0.0], "compute_moment", (1,), {}),
     ],
 )
 def test_statistics(
@@ -150,15 +155,15 @@ def test_statistics(
     )
     result_1 = result["x_1"]
     result_2 = result["x_2"]
-    assert_allclose(result_1, array([statistic_estimation]), atol=1e-6)
-    assert_allclose(result_2, array([statistic_estimation] * 2), atol=1e-6)
+    assert_allclose(result_1, array(statistic_estimation[0:1]), atol=1e-6)
+    assert_allclose(result_2, array(statistic_estimation[1:3]), atol=1e-6)
     assert result_1.shape == (1,)
     assert result_2.shape == (2,)
 
     result = getattr(x_1_statistics, statistic_estimator)(
         *statistic_estimator_args, **statistic_estimator_kwargs
     )
-    assert_allclose(result["x_1"], array([statistic_estimation]), atol=1e-6)
+    assert_allclose(result["x_1"], array(statistic_estimation[0:1]), atol=1e-6)
     assert "x_2" not in result
 
 
@@ -180,21 +185,26 @@ def test_percentile_error(statistics, order):
 
 
 @pytest.mark.parametrize(
-    "value,kwargs", [(0.8, {}), (0.3, {"greater": False}), (0.8, {"greater": True})]
+    ("value", "kwargs"),
+    [
+        ([0.8, 0.1], {}),
+        ([0.3, 0.1], {"greater": False}),
+        ([0.8, 0.1], {"greater": True}),
+    ],
 )
 def test_compute_joint_probability(statistics, value, kwargs):
     """Check compute_joint_probability()."""
     result = statistics.compute_joint_probability(
         {
             "x_1": array([3.0]),
-            "x_2": array([3.0, 3.0]),
+            "x_2": array([-3.0, 3.0]),
         },
         **kwargs,
     )
     result_1 = result["x_1"]
     result_2 = result["x_2"]
-    assert_allclose(result_1, value, atol=1e-6)
-    assert_allclose(result_2, value, atol=1e-6)
+    assert_allclose(result_1, value[0], atol=1e-6)
+    assert_allclose(result_2, value[1], atol=1e-6)
     assert isinstance(result_1, float)
     assert isinstance(result_2, float)
 
@@ -208,3 +218,77 @@ def test_variation_coefficient():
 
     with concretize_classes(NewStatistics):
         assert NewStatistics(Dataset()).compute_variation_coefficient() == {"x": 3}
+
+
+@image_comparison(["boxplot_x_1", "boxplot_x_2"])
+def test_plot_boxplot(statistics, pyplot_close_all):
+    """Check the visualizations generated by the method plot_boxplot()."""
+    graphs = statistics.plot_boxplot(show=False)
+    assert len(graphs) == 2
+    for graph in graphs.values():
+        assert isinstance(graph, Boxplot)
+
+
+def test_plot_boxplot_args(statistics):
+    """Check the arguments passed to Boxplot by the method plot_boxplot()."""
+    with mock.patch.object(Boxplot, "__init__", return_value=None) as __init__:  # noqa: SIM117
+        with mock.patch.object(Boxplot, "execute") as execute:
+            statistics.plot_boxplot(
+                save=1, show=2, directory_path=3, file_format=4, kwarg=5
+            )
+
+    assert __init__.call_args.args == (statistics.dataset,)
+    assert __init__.call_args.kwargs == {"kwarg": 5, "variables": ["x_2"]}
+    assert execute.call_args.kwargs == {
+        "save": 1,
+        "show": 2,
+        "directory_path": 3,
+        "file_format": 4,
+    }
+
+
+@image_comparison(["cdf_x_1", "cdf_x_2_0", "cdf_x_2_1"])
+def test_plot_cdf(statistics, pyplot_close_all):
+    """Check the visualizations generated by the method plot_cdf()."""
+    graphs = statistics.plot_cdf(show=False)
+    assert len(graphs) == 3
+    for graph in graphs.values():
+        assert isinstance(graph, Lines)
+
+
+def test_plot_cdf_args(statistics):
+    """Check the arguments passed to Lines by the method plot_cdf()."""
+    with mock.patch.object(Lines, "execute") as execute:
+        statistics.plot_cdf(
+            save=1, show=2, directory_path=3, file_format=4, plot_abscissa_variable=True
+        )
+
+    assert execute.call_args.kwargs == {
+        "save": 1,
+        "show": 2,
+        "directory_path": 3,
+        "file_format": 4,
+    }
+
+
+@image_comparison(["pdf_x_1", "pdf_x_2_0", "pdf_x_2_1"])
+def test_plot_pdf(statistics, pyplot_close_all):
+    """Check the visualizations generated by the method plot_pdf()."""
+    graphs = statistics.plot_pdf(show=False)
+    assert len(graphs) == 3
+    for graph in graphs.values():
+        assert isinstance(graph, Lines)
+
+
+def test_plot_pdf_args(statistics):
+    """Check the arguments passed to Lines by the method plot_pdf()."""
+    with mock.patch.object(Lines, "execute") as execute:
+        statistics.plot_pdf(
+            save=1, show=2, directory_path=3, file_format=4, plot_abscissa_variable=True
+        )
+    assert execute.call_args.kwargs == {
+        "save": 1,
+        "show": 2,
+        "directory_path": 3,
+        "file_format": 4,
+    }

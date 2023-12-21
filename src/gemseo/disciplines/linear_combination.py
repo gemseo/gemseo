@@ -13,14 +13,18 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Discipline computing a linear combination of its inputs."""
+
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
-from numpy import eye
 from numpy import zeros
+from scipy.sparse import eye
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class LinearCombination(MDODiscipline):
@@ -68,6 +72,7 @@ class LinearCombination(MDODiscipline):
         output_name: str,
         input_coefficients: dict[str, float] | None = None,
         offset: float = 0.0,
+        input_size: int | None = None,
     ) -> None:
         """
         Args:
@@ -76,14 +81,22 @@ class LinearCombination(MDODiscipline):
             input_coefficients: The coefficients related to the input variables.
                 If ``None``, use 1 for all the input variables.
             offset: The output value when all the input variables are equal to zero.
+            input_size: The size of the inputs.
+                If ``None``, the default inputs are initialized with size 1 arrays.
         """  # noqa: D205, D212, D415
         super().__init__()
         self.input_grammar.update_from_names(input_names)
         self.output_grammar.update_from_names([output_name])
-        self.default_inputs.update({input_name: zeros(1) for input_name in input_names})
+
+        default_size = 1 if input_size is None else input_size
+        self.default_inputs.update({
+            input_name: zeros(default_size) for input_name in input_names
+        })
+
         self.__coefficients = {input_name: 1.0 for input_name in input_names}
         if input_coefficients:
             self.__coefficients.update(input_coefficients)
+
         self.__offset = offset
         self.__output_name = output_name
 
@@ -99,9 +112,9 @@ class LinearCombination(MDODiscipline):
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        self._init_jacobian()
-        self.jac = {}
-        jac = self.jac[self.__output_name] = {}
-        one_matrix = eye(self.local_data[self.__output_name].size)
+        self._init_jacobian(inputs, outputs, init_type=self.InitJacobianType.SPARSE)
+        identity = eye(self.local_data[self.__output_name].size, format="csr")
+
+        jac = self.jac[self.__output_name]
         for input_name in self.get_input_data_names():
-            jac[input_name] = self.__coefficients[input_name] * one_matrix
+            jac[input_name] = self.__coefficients[input_name] * identity

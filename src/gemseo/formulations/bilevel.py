@@ -17,27 +17,36 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Bi-level formulation."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
-from typing import Mapping
+from typing import ClassVar
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.chain import MDOWarmStartedChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
-from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.scenario import Scenario
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.mda.mda import MDA
 from gemseo.mda.mda_factory import MDAFactory
+from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
+    BiLevelScenarioResult,
+)
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.execution_sequence import ExecutionSequence
+    from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.core.scenario import Scenario
+    from gemseo.mda.mda import MDA
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,6 +66,8 @@ class BiLevel(MDOFormulation):
     2. several disciplinary optimizations on the local design variables in parallel,
     3. a second MDA to update the coupling variables.
     """
+
+    DEFAULT_SCENARIO_RESULT_CLASS_NAME: ClassVar[str] = BiLevelScenarioResult.__name__
 
     SYSTEM_LEVEL = "system"
     SUBSCENARIOS_LEVEL = "sub-scenarios"
@@ -164,7 +175,8 @@ class BiLevel(MDOFormulation):
         This is used to build the self.chain.
 
         Args:
-            output_functions: Whether to add the optimization functions in the adapter outputs.
+            output_functions: Whether to add the optimization functions in the adapter
+                outputs.
             use_non_shared_vars: Whether the non-shared design variables are inputs
                 of the scenarios adapters.
             adapter_class: The class of the adapters.
@@ -200,7 +212,8 @@ class BiLevel(MDOFormulation):
 
         Args:
              scenario: A sub-scenario.
-             output_functions: Whether to add the objective and constraints in the outputs.
+             output_functions: Whether to add the objective and constraints in the
+                 outputs.
 
         Returns:
             The output variables of the adapter.
@@ -222,8 +235,7 @@ class BiLevel(MDOFormulation):
             sc_out_coupl = list(set(top_outputs) & set(couplings + mda2_inputs))
 
         # Add private variables from disciplinary scenario design space
-        adapter_outputs = sc_out_coupl + scenario.design_space.variable_names
-        return adapter_outputs
+        return sc_out_coupl + scenario.design_space.variable_names
 
     def _compute_adapter_inputs(
         self,
@@ -249,8 +261,7 @@ class BiLevel(MDOFormulation):
         # All couplings of the scenarios are taken from the MDA
         adapter_inputs = list(
             # Add shared variables from system scenario driver
-            set(top_inputs)
-            & set(set(couplings) | shared_dv | set(mda1_outputs))
+            set(top_inputs) & (set(couplings) | shared_dv | set(mda1_outputs))
         )
         if use_non_shared_vars:
             nonshared_var = scenario.design_space.variable_names
@@ -560,8 +571,8 @@ class BiLevel(MDOFormulation):
                 added = True
         if not added:
             raise ValueError(
-                "No sub scenario has an output named {} "
-                "cannot create such a constraint.".format(output_name)
+                f"No sub scenario has an output named {output_name} "
+                "cannot create such a constraint."
             )
 
     @staticmethod

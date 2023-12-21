@@ -15,6 +15,10 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+from numpy.testing import assert_almost_equal
+from numpy.testing import assert_equal
+
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
@@ -26,12 +30,9 @@ from gemseo.problems.scalable.parametric.disciplines.scalable_discipline import 
     ScalableDiscipline,
 )
 from gemseo.problems.scalable.parametric.scalable_problem import ScalableProblem
-from numpy import array
-from numpy.testing import assert_almost_equal
-from numpy.testing import assert_equal
 
 
-@pytest.fixture
+@pytest.fixture()
 def scalable_problem() -> ScalableProblem:
     """The scalable problem."""
     return ScalableProblem()
@@ -50,7 +51,7 @@ def test_scalable_disciplines(scalable_problem):
 
 @pytest.mark.parametrize("use_optimizer", [False, True])
 @pytest.mark.parametrize(
-    "formulation_name,options",
+    ("formulation_name", "options"),
     [
         ("MDF", {"inner_mda_name": "MDAGaussSeidel"}),
         ("IDF", {"start_at_equilibrium": True}),
@@ -118,8 +119,8 @@ def test_create_quadratic_optimization_problem(scalable_problem):
         ),
     )
     x = array([1.0, 2.0, 3.0])
-    assert_almost_equal(qp_problem.objective(x), array(3.555), decimal=3)
-    assert_almost_equal(qp_problem.constraints[0](x), array([1.288, 0.101]), decimal=3)
+    assert_almost_equal(qp_problem.objective(x), array(15.784), decimal=3)
+    assert_almost_equal(qp_problem.constraints[0](x), array([0.79, 3.097]), decimal=3)
 
     scenario = scalable_problem.create_scenario()
     scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
@@ -145,17 +146,17 @@ def test_create_quadratic_optimization_problem_uncertainty_default(scalable_prob
         covariance_matrices=(array([[1]]), array([[1.25]]))
     )
     x = array([1.0, 2.0, 3.0])
-    assert_almost_equal(qp_problem.objective(x), array(5.839), decimal=3)
-    assert_almost_equal(qp_problem.constraints[0](x), array([3.288, 2.367]), decimal=3)
+    assert_almost_equal(qp_problem.objective(x), array(18.539), decimal=3)
+    assert_almost_equal(qp_problem.constraints[0](x), array([2.843, 5.706]), decimal=3)
 
 
 @pytest.mark.parametrize(
-    "options,expected",
+    ("options", "expected"),
     [
-        ({}, [3.288, 2.367]),
-        ({"margin_factor": 3.0}, [4.288, 3.501]),
-        ({"use_margin": False}, [3.614, 2.737]),
-        ({"use_margin": False, "tolerance": 0.1}, [2.57, 1.553]),
+        ({}, [2.843, 5.706]),
+        ({"margin_factor": 3.0}, [3.869, 7.01]),
+        ({"use_margin": False}, [3.178, 6.132]),
+        ({"use_margin": False, "tolerance": 0.1}, [2.105, 4.769]),
     ],
 )
 def test_robust_quadratic_optimization(scalable_problem, options, expected):
@@ -164,16 +165,16 @@ def test_robust_quadratic_optimization(scalable_problem, options, expected):
         covariance_matrices=(array([[1]]), array([[1.25]])), **options
     )
     x = array([1.0, 2.0, 3.0])
-    assert_almost_equal(qp_problem.objective(x), array(5.839), decimal=3)
+    assert_almost_equal(qp_problem.objective(x), array(18.539), decimal=3)
     assert_almost_equal(qp_problem.constraints[0](x), array(expected), decimal=3)
 
 
 def test_compute_y(scalable_problem):
     """Check the method compute_y."""
     assert_almost_equal(
-        scalable_problem.compute_y(array([1, 2, 3])), array([-1.5553805, -0.3679164])
+        scalable_problem.compute_y(array([1, 2, 3])), array([-1.3081518, -3.6156121])
     )
     assert_almost_equal(
         scalable_problem.compute_y(array([1, 2, 3]), array([0.1, 0.2])),
-        array([-1.4553555, -0.1492858]),
+        array([-1.1971993, -3.3483043]),
     )

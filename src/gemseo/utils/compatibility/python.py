@@ -13,18 +13,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Python versions compatibility layer."""
+
 from __future__ import annotations
 
-import sys
+from sys import version_info
+from typing import Final
 
-if sys.version_info < (3, 10):  # pragma: >=3.10 no cover
+PYTHON_VERSION: Final[tuple[int, int, int]] = version_info
+
+if PYTHON_VERSION < (3, 10):  # pragma: >=3.10 no cover
     from typing_extensions import ParamSpecArgs  # noqa: F401
     from typing_extensions import ParamSpecKwargs  # noqa: F401
 
     EllipsisType = type(Ellipsis)
 else:  # pragma: <3.10 no cover
+    from types import EllipsisType
     from typing import ParamSpecArgs  # noqa: F401
     from typing import ParamSpecKwargs  # noqa: F401
-    from types import EllipsisType
 
-    EllipsisType
+    EllipsisType  # noqa: B018

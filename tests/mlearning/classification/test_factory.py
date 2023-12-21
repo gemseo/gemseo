@@ -19,19 +19,24 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for ClassificationModelFactory class in
 gemseo.mlearning.classification.factory."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.datasets.io_dataset import IODataset
+
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.problems.dataset.iris import create_iris_dataset
 
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
 
-@pytest.fixture
+
+@pytest.fixture()
 def dataset() -> IODataset:
     """The Iris dataset used to train the classification algorithms."""
-    iris = create_iris_dataset(as_io=True)
-    return iris
+    return create_iris_dataset(as_io=True)
 
 
 def test_constructor():

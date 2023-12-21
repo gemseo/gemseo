@@ -18,11 +18,15 @@
 #        :author:  Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Enumerations tools."""
+
 from __future__ import annotations
 
 import inspect
-from enum import Enum
 from itertools import chain
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from enum import Enum
 
 
 def merge_enums(
@@ -50,7 +54,7 @@ def merge_enums(
     caller_f_locals = inspect.stack()[1][0].f_locals
     new_enum = base_enum_class(
         name,
-        chain(*map(lambda e: e.__members__.items(), enums)),
+        chain(*(e.__members__.items() for e in enums)),
         module=caller_f_locals["__module__"],
         qualname=caller_f_locals["__qualname__"] + f".{name}",
     )

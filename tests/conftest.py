@@ -13,10 +13,23 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test helpers."""
+
 from __future__ import annotations
 
+from collections import namedtuple
+from typing import TYPE_CHECKING
+
 import pytest
+
+from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.problems.sellar.sellar import DataConverter
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
+
+if TYPE_CHECKING:
+    from gemseo import MDODiscipline
 
 MARK = "doc_examples"
 
@@ -30,3 +43,21 @@ def pytest_collection_modifyitems(
         for item in items:
             if MARK in item.keywords:
                 item.add_marker(skip_me)
+
+
+SellarDisciplines = namedtuple("SellarDisciplines", "sellar1, sellar2, sellar_system")
+
+
+@pytest.fixture()
+def sellar_disciplines() -> SellarDisciplines[MDODiscipline]:
+    """The disciplines of the Sellar problem.
+
+    Returns:
+        * A Sellar1 discipline.
+        * A Sellar2 discipline.
+        * A SellarSystem discipline.
+    """
+    # This handles running the test suite for checking data conversion.
+    JSONGrammar.DATA_CONVERTER_CLASS = DataConverter
+    yield SellarDisciplines(Sellar1(), Sellar2(), SellarSystem())
+    JSONGrammar.DATA_CONVERTER_CLASS = "JSONGrammarDataConverter"

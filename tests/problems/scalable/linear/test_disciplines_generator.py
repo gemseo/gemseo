@@ -21,8 +21,14 @@
 from __future__ import annotations
 
 import pytest
+from numpy import ndarray
+
 from gemseo import create_mda
 from gemseo.core.discipline import MDODiscipline
+from gemseo.problems.scalable.linear.disciplines_generator import DESC_3_DISC_WEAK
+from gemseo.problems.scalable.linear.disciplines_generator import DESC_4_DISC_WEAK
+from gemseo.problems.scalable.linear.disciplines_generator import DESC_16_DISC
+from gemseo.problems.scalable.linear.disciplines_generator import DESC_DISC_REPEATED
 from gemseo.problems.scalable.linear.disciplines_generator import _get_disc_names
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
@@ -30,12 +36,7 @@ from gemseo.problems.scalable.linear.disciplines_generator import (
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
-from gemseo.problems.scalable.linear.disciplines_generator import DESC_16_DISC
-from gemseo.problems.scalable.linear.disciplines_generator import DESC_3_DISC_WEAK
-from gemseo.problems.scalable.linear.disciplines_generator import DESC_4_DISC_WEAK
-from gemseo.problems.scalable.linear.disciplines_generator import DESC_DISC_REPEATED
 from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
-from numpy import ndarray
 
 DESCRIPTIONS = [
     DESC_3_DISC_WEAK,
@@ -62,9 +63,7 @@ def test_creation(descriptions):
     for disc, description in zip(disciplines, descriptions):
         assert disc.name == description[0]
         out = disc.execute()
-        assert sorted(list(out.keys())) == sorted(
-            list(description[2]) + list(description[1])
-        )
+        assert sorted(out.keys()) == sorted(list(description[2]) + list(description[1]))
 
 
 @pytest.mark.parametrize("desc", DESCRIPTIONS[:-1])
@@ -124,11 +123,11 @@ def test_create_disciplines_from_sizes(grammar_type):
 
 
 @pytest.mark.parametrize(
-    "nb_of_disc_inputs, nb_of_disc_outputs, kind",
-    (
+    ("nb_of_disc_inputs", "nb_of_disc_outputs", "kind"),
+    [
         (3, 1, "inputs"),
         (1, 3, "outputs"),
-    ),
+    ],
 )
 def test_sizes_errors(nb_of_disc_inputs, nb_of_disc_outputs, kind):
     """Test that the inputs consistency errors."""

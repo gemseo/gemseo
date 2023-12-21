@@ -20,6 +20,7 @@
 
 `Newton-Raphson <https://en.wikipedia.org/wiki/Newton%27s_method>`__
 """
+
 from __future__ import annotations
 
 import logging
@@ -28,17 +29,16 @@ from typing import TYPE_CHECKING
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.root import MDARoot
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+    from typing import Any
+
     from numpy.typing import NDArray
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline_data import DisciplineData
-
-    from typing import Any
-    from typing import Mapping
-    from typing import Sequence
 
 
 LOGGER = logging.getLogger(__name__)
@@ -63,6 +63,7 @@ class MDANewtonRaphson(MDARoot):
     where :math:`J_f(x_k)` denotes the Jacobian of :math:`f` at :math:`x_k`.
     """
 
+    # TODO: API: use a strenum
     __newton_linear_solver_name: str
     """The name of the linear solver for the Newton method.
 
@@ -100,7 +101,9 @@ class MDANewtonRaphson(MDARoot):
     ) -> None:
         """
         Args:
-            newton_linear_solver: The name of the linear solver for the Newton method.
+            relax_factor: The relaxation factor.
+            newton_linear_solver_name: The name of the linear solver for the Newton
+                method.
             newton_linear_solver_options: The options for the Newton linear solver.
 
         Raises:
@@ -153,6 +156,8 @@ class MDANewtonRaphson(MDARoot):
                 "the option inner_mda_name='MDANewtonRaphson'."
             )
 
+        self.__set_differentiated_ios()
+
     # TODO: API: Remove the property and its setter.
     @property
     def relax_factor(self) -> float:
@@ -163,9 +168,41 @@ class MDANewtonRaphson(MDARoot):
     def relax_factor(self, relax_factor: float) -> None:
         self.over_relaxation_factor = relax_factor
 
+    def __set_differentiated_ios(self) -> None:
+        """Set the differentiated inputs and outputs for the Newton algorithm.
+
+        Also ensures that :attr:`.JacobianAssembly.sizes` contains the sizes of all
+        the coupling sizes needed for Newton.
+
+        Args:
+            couplings: The coupling variables.
+            residual_variables: a mapping of residuals of disciplines to their
+                respective state variables.
+        """
+        for discipline in self.disciplines:
+            inputs_to_linearize = set(discipline.get_input_data_names()).intersection(
+                self._resolved_variable_names
+            )
+            outputs_to_linearize = set(discipline.get_output_data_names()).intersection(
+                self._resolved_variable_names
+            )
+
+            if (
+                set(discipline.residual_variables.values())
+                & set(self._resolved_variable_names)
+                != set()
+            ):
+                outputs_to_linearize |= discipline.residual_variables.keys()
+
+            # If outputs and inputs to linearize not empty, then linearize
+            if inputs_to_linearize and outputs_to_linearize:
+                discipline.add_differentiated_inputs(inputs_to_linearize)
+                discipline.add_differentiated_outputs(outputs_to_linearize)
+
     # TODO: API: prepend with verb.
     def _newton_step(
-        self, input_data: dict[str, Any] | DisciplineData, residuals: NDArray
+        self,
+        input_data: dict[str, Any] | DisciplineData,
     ) -> NDArray:
         """Compute the full Newton step without relaxation.
 
@@ -181,10 +218,11 @@ class MDANewtonRaphson(MDARoot):
         """
         newton_step, is_converged = self.assembly.compute_newton_step(
             input_data,
-            self.strong_couplings,
+            self._resolved_variable_names,
             self.__newton_linear_solver_name,
             matrix_type=self.matrix_type,
-            residuals=residuals,
+            residuals=self.get_current_resolved_residual_vector(),
+            resolved_residual_names=self._resolved_residual_names,
             **self.__newton_linear_solver_options,
         )
 
@@ -198,48 +236,25 @@ class MDANewtonRaphson(MDARoot):
         return newton_step
 
     def _run(self) -> None:
-        self._compute_coupling_sizes()
+        super()._run()
 
-        if self.warm_start:
-            self._couplings_warm_start()
-
-        current_couplings = self._current_working_couplings()
-
-        first_iteration = True
-
-        self._sequence_transformer.clear()
-        # Perform fixed point iterations
         while True:
-            current_input_data = self.local_data.copy()
+            input_data = self.local_data.copy()
+            input_couplings = self.get_current_resolved_variables_vector()
 
-            self.execute_all_disciplines(current_input_data)
+            self.execute_all_disciplines(self.local_data)
+            self.linearize_all_disciplines(input_data, execute=False)
 
-            if first_iteration:
-                self.assembly.set_newton_differentiated_ios(self.strong_couplings)
-                first_iteration = False
-
-            self.linearize_all_disciplines(current_input_data, execute=False)
-
-            residuals = (current_couplings - self._current_working_couplings()).real
+            self._update_residuals(input_data)
+            newton_step = self._newton_step(input_data)
 
             new_couplings = self._sequence_transformer.compute_transformed_iterate(
-                current_couplings,
-                current_couplings - self._newton_step(current_input_data, residuals),
+                input_couplings + newton_step,
+                newton_step,
             )
 
-            self.local_data.update(
-                split_array_to_dict_of_arrays(
-                    new_couplings, self._coupling_sizes, self.strong_couplings
-                )
-            )
-
-            self._compute_residual(
-                current_couplings,
-                new_couplings,
-                log_normed_residual=self.log_convergence,
-            )
+            self._update_local_data(new_couplings)
+            self._compute_residual(log_normed_residual=self._log_convergence)
 
             if self._stop_criterion_is_reached:
                 break
-
-            current_couplings = new_couplings

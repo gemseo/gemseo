@@ -34,9 +34,11 @@ This module implements the Binh and Korn multi-objective problem:
    & 0 \leq y \leq 3.0
    \end{aligned}
 """
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import ndarray
@@ -45,7 +47,9 @@ from numpy import zeros
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.utils.matplotlib_figure import FigSizeType
+
+if TYPE_CHECKING:
+    from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -61,7 +65,7 @@ class BinhKorn(OptimizationProblem):
         """
         Args:
             initial_values: Initial value of the design variables.
-        """
+        """  # noqa: D205 D212
         design_space = DesignSpace()
         design_space.add_variable("x", l_b=0.0, u_b=5.0, value=initial_values[0])
         design_space.add_variable("y", l_b=0.0, u_b=3.0, value=initial_values[1])

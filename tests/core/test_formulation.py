@@ -24,6 +24,8 @@ import unittest
 
 import numpy as np
 import pytest
+from numpy.linalg import norm
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
@@ -31,11 +33,11 @@ from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy.linalg import norm
 
 
 class TestMDOFormulation(unittest.TestCase):
@@ -44,7 +46,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_get_generator(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().design_space
+        ds = SobieskiDesignSpace()
         with concretize_classes(MDOFormulation):
             f = MDOFormulation([sm], "y_4", ds)
         args = ["toto"]
@@ -55,7 +57,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_cstrs(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().design_space
+        ds = SobieskiDesignSpace()
         with concretize_classes(MDOFormulation):
             f = MDOFormulation([sm], "y_4", ds)
         prob = f.opt_problem
@@ -110,9 +112,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_get_x0(self):
         """"""
         with concretize_classes(MDOFormulation):
-            _ = MDOFormulation(
-                [SobieskiMission()], "y_4", SobieskiProblem().design_space
-            )
+            _ = MDOFormulation([SobieskiMission()], "y_4", SobieskiDesignSpace())
 
     def test_add_user_defined_constraint_error(self):
         """Check that an error is raised when adding a constraint with wrong type."""
@@ -138,14 +138,14 @@ class TestMDOFormulation(unittest.TestCase):
     def test_get_values_array_from_dict(self):
         """"""
         a = concatenate_dict_of_arrays_to_array({}, [])
-        self.assertIsInstance(a, type(np.array([])))
+        assert isinstance(a, type(np.array([])))
 
     def test_get_mask_from_datanames(self):
         """"""
         a = MDOFormulation._get_mask_from_datanames(["y_1", "y_2", "y_3"], ["y_2"])[0][
             0
         ]
-        self.assertEqual(a, 1)
+        assert a == 1
 
     def test_x_mask(self):
         """"""
@@ -161,24 +161,22 @@ class TestMDOFormulation(unittest.TestCase):
 
         x = np.concatenate([rid[n] for n in dvs])
         c = f.mask_x_swap_order(dvs, x, dvs)
-        expected = np.array(
-            [
-                0.05,
-                4.5e04,
-                1.6,
-                5.5,
-                55.0,
-                1000.0,
-                50606.9741711000024,
-                7306.20262123999964,
-            ]
-        )
+        expected = np.array([
+            0.05,
+            4.5e04,
+            1.6,
+            5.5,
+            55.0,
+            1000.0,
+            50606.9741711000024,
+            7306.20262123999964,
+        ])
         assert norm(c - expected) < 1e-14
         x_values_dict = f._get_dv_indices(dvs)
         assert x_values_dict == {"x_shared": (0, 4, 4), "y_14": (4, 8, 4)}
 
         with pytest.raises(KeyError):
-            f.mask_x_swap_order(dvs + ["toto"], x)
+            f.mask_x_swap_order([*dvs, "toto"], x)
 
         ff = f.mask_x_swap_order(
             ["x_shared"],
@@ -255,7 +253,7 @@ def test_remove_unused_variable_logger(caplog):
 
 
 @pytest.mark.parametrize(
-    "recursive, expected", [(False, {"d1", "chain2"}), (True, {"d1", "d2", "d3"})]
+    ("recursive", "expected"), [(False, {"d1", "chain2"}), (True, {"d1", "d2", "d3"})]
 )
 def test_get_sub_disciplines_recursive(recursive, expected):
     """Test the recursive option of get_sub_disciplines.

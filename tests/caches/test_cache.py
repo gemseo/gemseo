@@ -23,10 +23,17 @@ import logging
 import re
 import shutil
 from pathlib import Path
-from typing import Iterator
+from typing import TYPE_CHECKING
 
 import h5py
 import pytest
+from numpy import arange
+from numpy import array
+from numpy import eye
+from numpy import float64
+from numpy import zeros
+from scipy.sparse import eye as speye
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.caches.cache_factory import CacheFactory
@@ -37,16 +44,13 @@ from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
 from gemseo.core.chain import MDOParallelChain
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from numpy import arange
-from numpy import array
-from numpy import eye
-from numpy import float64
-from numpy import zeros
-from scipy.sparse import eye as speye
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from gemseo.caches.memory_full_cache import MemoryFullCache
 
 DIR_PATH = Path(__file__).parent
 
@@ -56,22 +60,22 @@ def factory():
     return CacheFactory()
 
 
-@pytest.fixture
+@pytest.fixture()
 def simple_cache(factory):
     return factory.create("SimpleCache", tolerance=0.0)
 
 
-@pytest.fixture
+@pytest.fixture()
 def memory_full_cache(factory):
     return factory.create("MemoryFullCache")
 
 
-@pytest.fixture
+@pytest.fixture()
 def memory_full_cache_loc(factory):
     return factory.create("MemoryFullCache", is_memory_shared=False)
 
 
-@pytest.fixture
+@pytest.fixture()
 def hdf5_cache(factory, tmp_wd):
     return factory.create(
         "HDF5Cache", hdf_file_path="dummy.h5", hdf_node_path="DummyCache"
@@ -105,7 +109,7 @@ def test_jac_and_outputs_caching(
         assert compare_dict_of_arrays(jac, jac_loaded)
 
         cache.tolerance = 1e-6
-        _, out_tol, jac_tol = cache[input_data]
+        cache[input_data]
         assert out_loaded is not None
         assert compare_dict_of_arrays(jac, jac_loaded)
 
@@ -222,7 +226,7 @@ def test_hash_data_dict():
 
 
 @pytest.mark.parametrize(
-    "input_c,input_f",
+    ("input_c", "input_f"),
     [
         (array([[1, 2], [3, 4]], order="C"), array([[1, 2], [3, 4]], order="F")),
         (
@@ -241,14 +245,14 @@ def test_hash_discontiguous_array(input_c, input_f):
     assert hash_data_dict({"i": input_c}) == hash_data_dict({"i": input_f})
 
 
-def func(x: int | float) -> int | float:
+def func(x):
     """Dummy function to test the cache."""
     y = x
-    return y
+    return y  # noqa: RET504
 
 
 @pytest.mark.parametrize(
-    "hdf_name,inputs,expected",
+    ("hdf_name", "inputs", "expected"),
     [
         ("int_win.h5", array([1, 2, 3]), array([1, 2, 3])),
         ("int_linux.h5", array([1, 2, 3]), array([1, 2, 3])),
@@ -387,30 +391,34 @@ def test_duplicate_from_scratch(memory_full_cache, hdf5_cache):
     memory_full_cache._copy_empty_cache()
 
 
-def test_multithreading(memory_full_cache, memory_full_cache_loc):
-    caches = (memory_full_cache, memory_full_cache_loc)
-    for c_1, c_2 in zip(caches, caches):
-        s_s = SellarSystem()
-        s_1 = Sellar1()
-        s_1.cache = c_1
-        s_s.cache = c_2
-        assert len(c_1) == 0
-        assert len(c_2) == 0
-        par = MDOParallelChain([s_1, s_s])
-        ds = SellarDesignSpace("float64")
-        scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
+@pytest.fixture(params=range(2))
+def memory_cache(memory_full_cache, memory_full_cache_loc, request) -> MemoryFullCache:
+    """A parametrized fixture to iterate over memory_full_cache and
+    memory_full_cache_loc."""
+    return (memory_full_cache, memory_full_cache_loc)[request.param]
 
-        options = {"algo": "fullfact", "n_samples": 10, "n_processes": 4}
-        scen.execute(options)
 
-        nexec_1 = s_1.n_calls
-        nexec_2 = s_s.n_calls
+def test_multithreading(memory_cache, sellar_disciplines):
+    s_1 = sellar_disciplines.sellar1
+    s_s = sellar_disciplines.sellar_system
+    s_1.cache = memory_cache
+    s_s.cache = memory_cache
+    assert len(memory_cache) == 0
+    par = MDOParallelChain([s_1, s_s])
+    ds = SellarDesignSpace("float64")
+    scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
 
-        scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
-        scen.execute(options)
+    options = {"algo": "fullfact", "n_samples": 10, "n_processes": 4}
+    scen.execute(options)
 
-        assert nexec_1 == s_1.n_calls
-        assert nexec_2 == s_s.n_calls
+    nexec_1 = s_1.n_calls
+    nexec_2 = s_s.n_calls
+
+    scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
+    scen.execute(options)
+
+    assert nexec_1 == s_1.n_calls
+    assert nexec_2 == s_s.n_calls
 
 
 def test_copy(memory_full_cache):
@@ -457,7 +465,7 @@ def test_hash_data_dict_keys():
 CACHE_FILE_NAME = "cache.h5"
 
 
-@pytest.fixture
+@pytest.fixture()
 def h5_file(tmp_wd) -> Iterator[h5py.File]:
     """Provide an empty h5 file object and close it afterward."""
     h5_file = h5py.File(CACHE_FILE_NAME, mode="a")
@@ -554,7 +562,7 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
     hash_tag = HDF5FileSingleton.HASH_TAG
     inputs_group = HDF5Cache._INPUTS_GROUP
     outputs_group = HDF5Cache._OUTPUTS_GROUP
-    with h5py.File(str(cache_path), mode="a") as h5_file:
+    with h5py.File(str(cache_path), mode="a") as h5_file:  # noqa: SIM117
         with h5py.File(str(deprecated_cache_path), mode="a") as deprecated_h5_file:
             assert h5_file.attrs["version"] == file_format_version
             assert deprecated_h5_file.attrs["version"] == file_format_version
@@ -645,21 +653,21 @@ def test_export_to_dataset_and_entries(
     assert simple_cache.last_entry == last_entry
 
     # Check __iter__
-    entries = [entry for entry in simple_cache]
+    entries = list(simple_cache)
     assert len(entries) == 1
     assert entries[0] == last_entry
 
 
 @pytest.mark.parametrize(
     "data",
-    (
+    [
         arange(2),
         [0, 0],
         {
             0: None,
             1: None,
         },
-    ),
+    ],
 )
 def test_names_to_sizes(simple_cache, data):
     """Verify the ``names_to_sizes`` attribute."""

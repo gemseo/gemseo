@@ -18,10 +18,11 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Pareto Front."""
+
 from __future__ import annotations
 
 import logging
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import full
 from numpy import ndarray
@@ -29,14 +30,17 @@ from numpy import ndarray
 from gemseo.algos.pareto_front import generate_pareto_plots
 from gemseo.post.opt_post_processor import OptPostProcessor
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
 LOGGER = logging.getLogger(__name__)
 
 
 class ParetoFront(OptPostProcessor):
     """Compute the Pareto front for a multi-objective problem.
 
-    The Pareto front of an optimization problem is the set of ``non-dominated`` points of
-    the design space for which there is no other point that improves an objective
+    The Pareto front of an optimization problem is the set of ``non-dominated`` points
+    of the design space for which there is no other point that improves an objective
     without damaging another.
 
     This post-processing computes the Pareto front and generates a matrix of plots,

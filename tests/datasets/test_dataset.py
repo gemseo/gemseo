@@ -13,16 +13,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the class Dataset."""
+
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
-from gemseo import create_dataset
-from gemseo.datasets.dataset import Dataset
-from gemseo.problems.dataset.iris import create_iris_dataset
 from numpy import allclose
 from numpy import arange
 from numpy import array
@@ -33,16 +32,22 @@ from numpy import savetxt
 from numpy import unique
 from numpy import vstack
 from numpy.testing import assert_equal
-from numpy.typing import NDArray
 from packaging import version
-from pandas import __version__ as pandas_version
-from pandas import concat
 from pandas import DataFrame
 from pandas import MultiIndex
+from pandas import __version__ as pandas_version
+from pandas import concat
 from pandas.testing import assert_frame_equal
 
+from gemseo import create_dataset
+from gemseo.datasets.dataset import Dataset
+from gemseo.problems.dataset.iris import create_iris_dataset
 
-@pytest.fixture
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+
+@pytest.fixture()
 def dataset(data: NDArray[np_int]) -> Dataset:
     """A dataset built from ``data``.
 
@@ -53,7 +58,7 @@ def dataset(data: NDArray[np_int]) -> Dataset:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def small_dataset(small_data: NDArray[np_int]) -> Dataset:
     """A small view of ``dataset``."""
     return Dataset.from_array(
@@ -61,13 +66,13 @@ def small_dataset(small_data: NDArray[np_int]) -> Dataset:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def io_data() -> ndarray:
     """Input-output data."""
     return concatenate([arange(50).reshape(10, 5), arange(20).reshape(10, 2)], axis=1)
 
 
-@pytest.fixture
+@pytest.fixture()
 def io_dataset(io_data) -> Dataset:
     """An input-output dataset.
 
@@ -88,7 +93,7 @@ def io_dataset(io_data) -> Dataset:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def small_file_dataset(tmp_wd, small_data) -> str:
     """The generation of a small file.txt containing ``small_data``."""
     filename = "dataset.txt"
@@ -96,11 +101,11 @@ def small_file_dataset(tmp_wd, small_data) -> str:
     return filename
 
 
-@pytest.fixture
+@pytest.fixture()
 def file_dataset(
     tmp_wd,
     io_dataset,
-) -> tuple[str, NDArray[np.int], list[str], dict[str, int], dict[str, str]]:
+) -> tuple[str, NDArray[int], list[str], dict[str, int], dict[str, str]]:
     """The information to build a dataset from a file."""
     data = io_dataset.to_numpy()
     variables = io_dataset.variable_names
@@ -114,7 +119,14 @@ def file_dataset(
 
 
 @pytest.mark.parametrize(
-    "update,group_names,variable_names,components,indices,expected_array",
+    (
+        "update",
+        "group_names",
+        "variable_names",
+        "components",
+        "indices",
+        "expected_array",
+    ),
     [
         (
             1,
@@ -451,7 +463,14 @@ def test_transform_data():
 
 
 @pytest.mark.parametrize(
-    "group_name,data,variables,variable_names_to_n_components,expected_variable,expected_components",
+    (
+        "group_name",
+        "data",
+        "variables",
+        "variable_names_to_n_components",
+        "expected_variable",
+        "expected_components",
+    ),
     [
         ("Toto", [[4], [4], [8]], "my_var", None, ["my_var"], {"my_var": 1}),
         ("parameters", [[5, 5, 5]], (), None, ["x"], {"x": 3}),
@@ -465,7 +484,6 @@ def test_transform_data():
         ),
         ("parameters", [[5, 5, 5]], (), {"y_1": 2, "y_2": 1}, ["x"], {"x": 3}),
         ("", [[5, 5, 5]], (), {"y_1": 2, "y_2": 1}, ["x"], {"x": 3}),
-        ("parameters", [[5, 5, 5]], (), None, ["x"], {"x": 3}),
     ],
 )
 def test_add_groups(
@@ -533,7 +551,7 @@ def test_from_txt(
 
 
 @pytest.mark.parametrize(
-    "variables,as_tuple,expected_output",
+    ("variables", "as_tuple", "expected_output"),
     [
         ((), False, ["i1[0]", "i1[1]", "i2[0]", "i2[1]", "i2[2]", "o1[0]", "o1[1]"]),
         ("o1", False, ["o1[0]", "o1[1]"]),
@@ -691,7 +709,7 @@ def test_concat(dataset, data):
 
 
 @pytest.mark.parametrize(
-    "group_names,variable_names,components,indices,expected_array",
+    ("group_names", "variable_names", "components", "indices", "expected_array"),
     [
         (
             (),

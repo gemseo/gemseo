@@ -19,21 +19,25 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 
 import pytest
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
-from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
-from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
-from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import ndarray
 from numpy import pi
 from numpy import sin
 from numpy.testing import assert_almost_equal
+
+from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.testing.helpers import image_comparison
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 
 
 @pytest.fixture(scope="module")
@@ -50,7 +54,7 @@ def py_func() -> Callable[[ndarray, ndarray], tuple[ndarray, ndarray]]:
 
 @pytest.fixture(scope="module")
 def discipline(
-    py_func: Callable[[ndarray, ndarray], tuple[ndarray, ndarray]]
+    py_func: Callable[[ndarray, ndarray], tuple[ndarray, ndarray]],
 ) -> AutoPyDiscipline:
     """The discipline of interest."""
     return AutoPyDiscipline(py_func=py_func, use_arrays=True)
@@ -114,7 +118,7 @@ def test_method(sobol, method):
 
 
 @pytest.mark.parametrize(
-    "name,bound,expected",
+    ("name", "bound", "expected"),
     [
         ("x1", 0, [-0.3]),
         ("x23", 0, [-0.3, -1.3]),
@@ -130,7 +134,7 @@ def test_first_intervals(first_intervals, name, bound, expected):
 
 
 @pytest.mark.parametrize(
-    "name,bound,expected",
+    ("name", "bound", "expected"),
     [
         ("x1", 0, [0.1]),
         ("x23", 0, [0.3, -0.2]),
@@ -146,7 +150,7 @@ def test_total_intervals(total_intervals, name, bound, expected):
 
 
 @pytest.mark.parametrize(
-    "name,sort,sort_by_total,kwargs,baseline_images",
+    ("name", "sort", "sort_by_total", "kwargs", "baseline_images"),
     [
         ("y", False, False, {}, ["plot"]),
         ("y", False, False, {"title": "foo"}, ["plot_title"]),
@@ -165,7 +169,7 @@ def test_plot(
 
 
 @pytest.mark.parametrize(
-    "order,reference",
+    ("order", "reference"),
     [
         (
             "first",

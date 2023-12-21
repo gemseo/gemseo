@@ -13,16 +13,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A function searching for the output and Jacobian values in a database."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.algos.database import Database
-from gemseo.algos.design_space import DesignSpace
-
 if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.algos.database import Database
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.core.mdofunctions.mdo_function import ArrayType
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 class SetPtFromDatabase:
@@ -42,7 +42,8 @@ class SetPtFromDatabase:
             database: The database to read.
             design_space: The design space used for normalization.
             mdo_function: The function where the data from the database will be set.
-            normalize: If ``True``, the values of the inputs are unnormalized before call.
+            normalize: If ``True``,
+                the values of the inputs are unnormalized before call.
             jac: If ``True``, a Jacobian pointer is also generated.
             x_tolerance: The tolerance on the distance between inputs.
         """  # noqa: D205, D212, D415
@@ -73,16 +74,13 @@ class SetPtFromDatabase:
         Raises:
             ValueError: If the input value is not in the database.
         """
-        if self.__normalize:
-            x_db = self.__design_space.unnormalize_vect(x_n)
-        else:
-            x_db = x_n
+        x_db = self.__design_space.unnormalize_vect(x_n) if self.__normalize else x_n
         val = self.__database.get_function_value(fname, x_db, self.__x_tolerance)
         if val is None:
             msg = (
-                "Function {} evaluation relies only on the database, "
-                "and {}( x ) is not in the database for x={}."
-            ).format(fname, fname, x_db)
+                f"Function {fname} evaluation relies only on the database, "
+                f"and {fname}( x ) is not in the database for x={x_db}."
+            )
             raise ValueError(msg)
         return val
 

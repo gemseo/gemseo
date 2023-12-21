@@ -21,9 +21,12 @@ from __future__ import annotations
 import pickle
 
 import pytest
+from numpy import array
+from numpy import ndarray
+
+from gemseo import MDODiscipline
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo import MDODiscipline
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataError
@@ -33,13 +36,11 @@ from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from numpy import array
-from numpy import ndarray
 
 
 def build_mdo_scenario(
@@ -70,8 +71,8 @@ def build_mdo_scenario(
             SobieskiStructureSG(),
         ]
 
-    design_space = SobieskiProblem().design_space
-    scenario = DOEScenario(
+    design_space = SobieskiDesignSpace()
+    return DOEScenario(
         disciplines,
         formulation=formulation,
         objective_name="y_4",
@@ -79,7 +80,6 @@ def build_mdo_scenario(
         grammar_type=grammar_type,
         maximize_objective=True,
     )
-    return scenario
 
 
 @pytest.fixture()
@@ -94,16 +94,14 @@ def mdf_variable_grammar_doe_scenario(request):
 
 
 @pytest.mark.usefixtures("tmp_wd")
-@pytest.mark.skip_under_windows
+@pytest.mark.skip_under_windows()
 def test_parallel_doe_hdf_cache(caplog):
-    disciplines = create_discipline(
-        [
-            "SobieskiStructure",
-            "SobieskiPropulsion",
-            "SobieskiAerodynamics",
-            "SobieskiMission",
-        ]
-    )
+    disciplines = create_discipline([
+        "SobieskiStructure",
+        "SobieskiPropulsion",
+        "SobieskiAerodynamics",
+        "SobieskiMission",
+    ])
     path = "cache.h5"
     for disc in disciplines:
         disc.set_cache_policy(disc.CacheType.HDF5, cache_hdf_file=path)
@@ -112,7 +110,7 @@ def test_parallel_doe_hdf_cache(caplog):
         disciplines,
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
         maximize_objective=True,
         scenario_type="DOE",
     )
@@ -178,7 +176,7 @@ def double_discipline():
     return AnalyticDiscipline({"y": "2*x"}, name="func")
 
 
-@pytest.fixture
+@pytest.fixture()
 def doe_scenario(unit_design_space, double_discipline) -> DOEScenario:
     """A simple DOE scenario not yet executed.
 
@@ -202,12 +200,10 @@ def test_warning_when_missing_option(caplog, doe_scenario):
     Args:
         doe_scenario: A simple DOE scenario.
     """
-    doe_scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {"samples": array([[1.0]]), "unknown_option": 1},
-        }
-    )
+    doe_scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"samples": array([[1.0]]), "unknown_option": 1},
+    })
     expected_log = "Driver CustomDOE has no option {}, option is ignored."
     assert expected_log.format("n_samples") not in caplog.text
     assert expected_log.format("unknown_option") in caplog.text
@@ -219,24 +215,22 @@ def f_sellar_1(x_local: float, y_2: float, x_shared: ndarray) -> float:
         raise ValueError("Undefined")
 
     y_1 = (x_shared[0] ** 2 + x_shared[1] + x_local - 0.2 * y_2) ** 0.5
-    return y_1
+    return y_1  # noqa: RET504
 
 
 @pytest.mark.parametrize("use_threading", [True, False])
-def test_exception_mda_jacobi(caplog, use_threading):
+def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines):
     """Check that a DOE scenario does not crash with a ValueError and MDAJacobi.
 
     Args:
         caplog: Fixture to access and control log capturing.
         use_threading: Whether to use threading in the MDAJacobi.
     """
-    sellar1 = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
-    sellar2 = create_discipline("Sellar2")
-    sellarsystem = create_discipline("SellarSystem")
-    disciplines = [sellar1, sellar2, sellarsystem]
+    sellar_disciplines = list(sellar_disciplines)
+    sellar_disciplines[0] = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
 
     scenario = DOEScenario(
-        disciplines,
+        sellar_disciplines,
         "MDF",
         "obj",
         main_mda_name="MDAChain",
@@ -245,14 +239,12 @@ def test_exception_mda_jacobi(caplog, use_threading):
         n_processes=2,
         design_space=SellarDesignSpace("float64"),
     )
-    scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {"samples": array([[0.0, -10.0, 0.0]])},
-        }
-    )
+    scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"samples": array([[0.0, -10.0, 0.0]])},
+    })
 
-    assert sellarsystem.n_calls == 0
+    assert sellar_disciplines[2].n_calls == 0
     assert "Undefined" in caplog.text
 
 
@@ -269,14 +261,12 @@ def test_other_exceptions_caught(caplog):
         [discipline], "MDF", "y", design_space, main_mda_name="MDAJacobi"
     )
     with pytest.raises(InvalidDataError):
-        scenario.execute(
-            {
-                "algo": "CustomDOE",
-                "algo_options": {
-                    "samples": array([[0.0]]),
-                },
-            }
-        )
+        scenario.execute({
+            "algo": "CustomDOE",
+            "algo_options": {
+                "samples": array([[0.0]]),
+            },
+        })
     assert "0.0 cannot be raised to a negative power" in caplog.text
 
 
@@ -313,12 +303,10 @@ def test_lib_serialization(tmp_wd, doe_scenario):
         tmp_wd: Fixture to move into a temporary work directory.
         doe_scenario: A simple DOE scenario.
     """
-    doe_scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {"samples": array([[1.0]])},
-        }
-    )
+    doe_scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"samples": array([[1.0]])},
+    })
 
     doe_scenario.formulation.opt_problem.reset(database=False, design_space=False)
 
@@ -330,12 +318,10 @@ def test_lib_serialization(tmp_wd, doe_scenario):
 
     assert pickled_scenario._lib is None
 
-    pickled_scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {"samples": array([[0.5]])},
-        }
-    )
+    pickled_scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"samples": array([[0.5]])},
+    })
 
     assert pickled_scenario._lib.internal_algo_name == "CustomDOE"
     assert pickled_scenario.formulation.opt_problem.database.get_function_value(
@@ -350,7 +336,7 @@ other_doe_scenario = doe_scenario
 
 
 @pytest.mark.parametrize(
-    "samples_1,samples_2,reset_iteration_counters,expected",
+    ("samples_1", "samples_2", "reset_iteration_counters", "expected"),
     [
         (array([[0.5]]), array([[0.25], [0.75]]), True, 3),
         (array([[0.5]]), array([[0.25], [0.75]]), False, 2),
@@ -383,15 +369,13 @@ def test_partial_execution_from_backup(
     doe_scenario.set_optimization_history_backup("backup.h5")
     doe_scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples_1}})
     other_doe_scenario.set_optimization_history_backup("backup.h5", pre_load=True)
-    other_doe_scenario.execute(
-        {
-            "algo": "CustomDOE",
-            "algo_options": {
-                "samples": samples_2,
-                "reset_iteration_counters": reset_iteration_counters,
-            },
-        }
-    )
+    other_doe_scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {
+            "samples": samples_2,
+            "reset_iteration_counters": reset_iteration_counters,
+        },
+    })
     assert len(other_doe_scenario.formulation.opt_problem.database) == expected
 
 

@@ -18,22 +18,26 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The main discipline."""
+
 from __future__ import annotations
 
-from typing import Iterable
-
-from numpy.typing import NDArray
+from typing import TYPE_CHECKING
 
 from gemseo.problems.scalable.parametric.core.disciplines.main_discipline import (
     MainDiscipline as _MainDiscipline,
 )
-from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
 from gemseo.problems.scalable.parametric.core.variable_names import (
     SHARED_DESIGN_VARIABLE_NAME,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
 from gemseo.problems.scalable.parametric.disciplines.base_discipline import (
     BaseDiscipline,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from numpy.typing import NDArray
 
 
 class MainDiscipline(BaseDiscipline):
@@ -60,7 +64,7 @@ class MainDiscipline(BaseDiscipline):
         Args:
             *t_i: The threshold vectors :math:`t_1,\ldots,t_N`.
             **default_input_values: The default values of the input variables.
-        """
+        """  # noqa: D205 D212
         self.__n_scalable_disciplines = len(t_i)
         self.__y_i_names = [
             get_coupling_name(index) for index in range(1, len(t_i) + 1)

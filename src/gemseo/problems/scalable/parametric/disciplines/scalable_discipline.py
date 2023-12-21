@@ -18,24 +18,28 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The scalable discipline."""
+
 from __future__ import annotations
 
-from typing import Iterable
-from typing import Mapping
-
-from numpy.typing import NDArray
+from typing import TYPE_CHECKING
 
 from gemseo.problems.scalable.parametric.core.disciplines.scalable_discipline import (
     ScalableDiscipline as _ScalableDiscipline,
 )
-from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 from gemseo.problems.scalable.parametric.core.variable_names import (
     SHARED_DESIGN_VARIABLE_NAME,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 from gemseo.problems.scalable.parametric.disciplines.base_discipline import (
     BaseDiscipline,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from numpy.typing import NDArray
 
 
 class ScalableDiscipline(BaseDiscipline):
@@ -58,8 +62,8 @@ class ScalableDiscipline(BaseDiscipline):
         index: int,
         a_i: NDArray,
         D_i0: NDArray,  # noqa: N803
-        D_ii: NDArray,
-        C_ij: Mapping[str, NDArray[float]],
+        D_ii: NDArray,  # noqa: N803
+        C_ij: Mapping[str, NDArray[float]],  # noqa: N803
         **default_input_values: NDArray[float],
     ) -> None:
         r"""
@@ -75,7 +79,7 @@ class ScalableDiscipline(BaseDiscipline):
                 where :math:`C_{i,j}` is used
                 to multiply the coupling variable :math:`y_j`.
             **default_input_values: The default values of the input variables.
-        """
+        """  # noqa: D205 D212
         super().__init__(index, a_i, D_i0, D_ii, C_ij, **default_input_values)
         self.__u_i_name = get_u_local_name(self._discipline.index)
         self.__x_i_name = get_x_local_name(self._discipline.index)

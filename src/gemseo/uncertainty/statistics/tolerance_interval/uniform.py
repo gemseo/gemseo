@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted uniform distribution."""
+
 from __future__ import annotations
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (

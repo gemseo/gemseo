@@ -27,16 +27,20 @@ This dimension reduction algorithm relies on the PLSRegression class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.cross_decomposition.PLSRegression.html>`_.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Final
 
-from numpy import ndarray
 from sklearn.cross_decomposition import PLSRegression
 
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class PLS(DimensionReduction):
@@ -46,14 +50,14 @@ class PLS(DimensionReduction):
 
     def __init__(
         self,
-        name: str = "PLS",
+        name: str = "",
         n_components: int | None = None,
         **parameters: float | int | bool,
     ) -> None:
         """
         Args:
             **parameters: The optional parameters for sklearn PCA constructor.
-        """
+        """  # noqa: D205 D212
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = PLSRegression(n_components, **parameters)
 
@@ -61,18 +65,19 @@ class PLS(DimensionReduction):
         """Fit the transformer to the data.
 
         Args:
-            The data to be fitted.
+            data: The data to be fitted.
+            other_data: The other data to be fitted.
         """
         if self.algo.n_components is None:
-            self.algo.n_components = min(min(data.shape), min(other_data.shape))
+            self.algo.n_components = min(*data.shape, *other_data.shape)
 
         self.algo.fit(data, other_data)
         self.parameters["n_components"] = self.algo.n_components
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.algo.transform(data)
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.algo.inverse_transform(data)

@@ -18,12 +18,16 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm module."""
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
 import pytest
+from numpy import arange
+from numpy import array
+
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
@@ -31,13 +35,11 @@ from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import arange
-from numpy import array
 
 from .new_ml_algo.new_ml_algo import NewMLAlgo
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape(10, 3)
@@ -60,13 +62,28 @@ def test_constructor(dataset):
     assert kmeans.is_trained
 
 
-def test_learning_samples(dataset):
+@pytest.mark.parametrize(
+    ("kwargs", "expected"), [({}, list(range(10))), ({"samples": [0, 1]}, [0, 1])]
+)
+def test_learning_samples_indices(dataset, kwargs, expected):
     algo = NewMLAlgo(dataset)
-    algo.learn()
-    assert list(algo.learning_samples_indices) == list(range(len(dataset)))
+    assert algo.learning_samples_indices == list(range(10))
+    algo.learn(**kwargs)
+    assert algo.learning_samples_indices == expected
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected"),
+    [({}, ["a", "b", "c"]), ({"samples": ["c", "a"]}, ["c", "a"])],
+)
+def test_learning_samples_indices_with_abc_indices(kwargs, expected):
+    dataset = IODataset.from_array(arange(3).reshape(3, 1))
+    names = ["a", "b", "c"]
+    dataset.index = names
     algo = NewMLAlgo(dataset)
-    algo.learn(samples=[0, 1])
-    assert algo.learning_samples_indices == [0, 1]
+    assert algo.learning_samples_indices == names
+    algo.learn(**kwargs)
+    assert algo.learning_samples_indices == expected
 
 
 @pytest.mark.parametrize("samples", [range(10), [1, 2]])
@@ -112,9 +129,8 @@ def test_transformer_wrong_type(dataset):
             "Transformer type must be "
             "either Transformer, Tuple[str, Mapping[str, Any]] or str."
         ),
-    ):
-        with concretize_classes(MLAlgo):
-            MLAlgo(dataset, transformer={"parameters": 1})
+    ), concretize_classes(MLAlgo):
+        MLAlgo(dataset, transformer={"parameters": 1})
 
 
 def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory):
@@ -152,6 +168,5 @@ def test_transformers_error(dataset):
             "for all variables of a group and a transformer "
             "for one variable of this group."
         ),
-    ):
-        with concretize_classes(MLAlgo):
-            MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})
+    ), concretize_classes(MLAlgo):
+        MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})

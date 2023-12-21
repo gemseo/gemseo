@@ -25,5 +25,7 @@ This package contains:
   - :class:`.CorrelationAnalysis` (based on OpenTURNS capabilities)
   - :class:`.MorrisAnalysis`,
   - :class:`.SobolAnalysis` (based on OpenTURNS capabilities),
+  - :class:`.HSICAnalysis` (based on OpenTURNS capabilities).
 """
+
 from __future__ import annotations

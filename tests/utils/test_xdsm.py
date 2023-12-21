@@ -13,24 +13,26 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Tests for XDSM."""
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
 from unittest import mock
 
-import gemseo.utils.xdsm as xdsm_module
 import pytest
+
+import gemseo.utils.xdsm as xdsm_module
 from gemseo.utils.xdsm import XDSM
 
 
-@pytest.fixture
+@pytest.fixture()
 def xdsm() -> XDSM:
     """The view of an XDSM."""
     return XDSM({"foo": "bar"}, Path("xdsm_path"))
 
 
-@pytest.fixture
+@pytest.fixture()
 def xdsm_without_html_file() -> XDSM:
     """The view of an XDSM without an HTML file."""
     return XDSM({"foo": "bar"}, None)

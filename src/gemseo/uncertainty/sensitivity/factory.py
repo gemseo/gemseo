@@ -18,19 +18,24 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Module with a factory to create an instance of :class:`.SensitivityAnalysis`."""
+
 from __future__ import annotations
 
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Collection
-from typing import Iterable
-from typing import Mapping
 
-from gemseo.algos.doe.doe_library import DOELibraryOptionType
-from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.base_factory import BaseFactory
-from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.discipline import MDODiscipline
 
 
 class SensitivityAnalysisFactory(BaseFactory):
@@ -51,7 +56,7 @@ class SensitivityAnalysisFactory(BaseFactory):
         >>> from numpy import pi
         >>> from gemseo import create_discipline, create_parameter_space
         >>> from gemseo.uncertainty.sensitivity.factory import (
-        ...     SensitivityAnalysisFactory
+        ...     SensitivityAnalysisFactory,
         ... )
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}

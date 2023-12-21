@@ -17,11 +17,10 @@
 #                         documentation
 #        :author: Charlie Vanaret
 """Graphs of the disciplines dependencies and couplings."""
+
 from __future__ import annotations
 
 import logging
-from typing import Iterable
-from typing import Iterator
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.string_tools import pretty_str
@@ -33,11 +32,16 @@ try:
 except ImportError:
     GraphView = None
 
-from networkx import Graph
-from networkx import DiGraph
-from networkx import strongly_connected_components
-from networkx import condensation
+from typing import TYPE_CHECKING
 
+from networkx import DiGraph
+from networkx import Graph
+from networkx import condensation
+from networkx import strongly_connected_components
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,9 +89,9 @@ class DependencyGraph:
             if not leaves:
                 break
 
-            parallel_tasks = list(
+            parallel_tasks = [
                 tuple(condensed_graph.nodes[node_id]["members"]) for node_id in leaves
-            )
+            ]
             execution_sequence += [parallel_tasks]
             condensed_graph.remove_nodes_from(leaves)
 
@@ -193,7 +197,7 @@ class DependencyGraph:
 
         if len(condensed_discs) == 1:
             # not a scc node in a scc graph
-            return str(list(condensed_discs)[0])
+            return str(next(iter(condensed_discs)))
 
         # scc node
         return "MDA of {}".format(", ".join(map(str, condensed_discs)))
@@ -235,7 +239,7 @@ class DependencyGraph:
                 "Cannot write graph: "
                 "GraphView cannot be imported because graphviz is not installed."
             )
-            return
+            return None
 
         graph_view = GraphView()
 

@@ -21,6 +21,7 @@
 Analytical test case # 3
 ========================
 """
+
 # %%
 # In this example, we consider a simple optimization problem to illustrate
 # algorithms interfaces and DOE libraries integration.
@@ -30,13 +31,14 @@ Analytical test case # 3
 # -------
 from __future__ import annotations
 
+from numpy import sum as np_sum
+
 from gemseo import configure_logger
 from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from numpy import sum as np_sum
 
 LOGGER = configure_logger()
 

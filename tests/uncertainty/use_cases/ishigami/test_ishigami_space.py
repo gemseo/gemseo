@@ -14,8 +14,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 from numpy import pi
+
+from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 
 
 def test_ishigami_space():

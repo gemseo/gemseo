@@ -23,6 +23,7 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Structure discipline for the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
 import logging
@@ -47,7 +48,7 @@ class SobieskiStructure(SobieskiDiscipline):
     TWIST_UPPER_LIMIT = 1.04
     TWIST_LOWER_LIMIT = 0.8
 
-    def __init__(self, sobieski_base: SobieskiBase) -> None:
+    def __init__(self, sobieski_base: SobieskiBase) -> None:  # noqa: D107
         super().__init__(sobieski_base)
         self.__ao_coeff_secthick = zeros(1, dtype=self.dtype)
         self.__ai_coeff_secthick = zeros(1, dtype=self.dtype)
@@ -611,7 +612,6 @@ class SobieskiStructure(SobieskiDiscipline):
         Returns:
             The derivatives of the structural outputs and the structural constraints.
         """
-
         c_0 = c_0 or self.constants[0]
         c_1 = c_1 or self.constants[1]
         c_2 = c_2 or self.constants[2]
@@ -635,7 +635,7 @@ class SobieskiStructure(SobieskiDiscipline):
             c_2=c_2,
         )
 
-        y_1, y_11 = self.__poly_structure(
+        y_1, _ = self.__poly_structure(
             tc_ratio,
             aspect_ratio,
             sweep,
@@ -710,9 +710,7 @@ class SobieskiStructure(SobieskiDiscipline):
             jacobian["g_1"]["c_2"][6, :] = -jacobian["y_1"]["c_2"][2, :]
 
         # Coupling variables
-        jacobian = self.__set_coupling_jacobian(jacobian)
-
-        return jacobian
+        return self.__set_coupling_jacobian(jacobian)
 
     @staticmethod
     def __set_coupling_jacobian(
@@ -934,10 +932,7 @@ class SobieskiStructure(SobieskiDiscipline):
         Returns:
             The structural constraints from a polynomial approximation.
         """
-        if true_cstr is False:
-            n_g = 7
-        else:
-            n_g = 6
+        n_g = 6 if true_cstr else 7
         jacobian["g_1"]["x_shared"] = zeros((n_g, 6), dtype=self.dtype)
         jacobian["g_1"]["x_1"] = zeros((n_g, 2), dtype=self.dtype)
         jacobian["g_1"]["y_21"] = zeros((n_g, 1), dtype=self.dtype)

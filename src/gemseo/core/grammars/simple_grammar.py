@@ -12,23 +12,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Most basic grammar implementation."""
+"""A basic grammar based on names and types."""
+
 from __future__ import annotations
 
 import collections
 import logging
+from collections.abc import Collection
+from collections.abc import Iterable
+from collections.abc import Iterator
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Collection
-from typing import Iterable
-from typing import Iterator
-from typing import Mapping
+from typing import ClassVar
 
 from numpy import ndarray
 
-from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.base_grammar import NamesToTypes
-from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
+    from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,8 +46,10 @@ class SimpleGrammar(BaseGrammar):
     always valid.
     """
 
+    DATA_CONVERTER_CLASS: ClassVar[str] = "SimpleGrammarDataConverter"
+
     __names_to_types: dict[str, type | None]
-    """The binding from element names to element types."""
+    """The mapping from element names to element types."""
 
     __required_names: set[str]
     """The required names."""
@@ -124,7 +131,8 @@ class SimpleGrammar(BaseGrammar):
             of them are required.
 
         Raises:
-            ValueError: When merge is True, since it is not yet supported for SimpleGrammar.
+            ValueError: When merge is True,
+                since it is not yet supported for SimpleGrammar.
         """  # noqa: D205, D212, D415
         if merge:
             raise ValueError("Merge is not supported yet for SimpleGrammar.")
@@ -173,23 +181,8 @@ class SimpleGrammar(BaseGrammar):
         self.__names_to_types = {}
         self.__required_names = set()
 
-    def _repr_required_elements(self, text: MultiLineString) -> None:
-        for name, type_ in self.items():
-            if name in self.__required_names:
-                text.add(f"{name}: {type_.__name__}")
-
-    def _repr_optional_elements(self, text: MultiLineString) -> None:
-        for name, type_ in self.items():
-            if name not in self.__required_names:
-                if type_ is None:
-                    type_name = None
-                else:
-                    type_name = type_.__name__
-                text.add(f"{name}: {type_name}")
-                if name in self._defaults:
-                    text.indent()
-                    text.add(f"default: {self._defaults[name]}")
-                    text.dedent()
+    def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
+        repr_.add(f"Type: {properties}")
 
     def _validate(  # noqa: D102
         self,
@@ -216,11 +209,11 @@ class SimpleGrammar(BaseGrammar):
         numeric_only: bool = False,
     ) -> bool:
         self._check_name(name)
+        if numeric_only:
+            return self.data_converter.is_numeric(name)
         element_type = self.__names_to_types[name]
         if element_type is None:
             return False
-        if numeric_only:
-            return issubclass(element_type, ndarray)
         return issubclass(element_type, Collection)
 
     def _restrict_to(  # noqa: D102

@@ -17,6 +17,7 @@
 Example for exterior penalty applied to the Sobieski test case.
 ===============================================================
 """
+
 # %%
 # This section describes how to set up and solve the MDO problem relative to the
 # :ref:`Sobieski test case <sobieski_problem>` with |g| applying external penalty.
@@ -58,7 +59,7 @@ from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -70,14 +71,12 @@ configure_logger()
 # disciplines themselves have already been
 # developed and interfaced with |g| (see :ref:`benchmark_problems`).
 
-disciplines = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 
 # %%
 # .. tip::
@@ -104,8 +103,8 @@ disciplines = create_discipline(
 #   It can be imported from a text file, or created from scratch with the methods
 #   :func:`.create_design_space` and
 #   :meth:`~gemseo.algos.design_space.DesignSpace.add_variable`. In this case,
-#   we will retrieve it from the ``SobieskiProblem`` already defined in |g|.
-design_space = SobieskiProblem().design_space
+#   we will use ``SobieskiDesignSpace`` already defined in |g|.
+design_space = SobieskiDesignSpace()
 x_0 = design_space.get_current_value(as_dict=True)
 # %%
 #     .. code::

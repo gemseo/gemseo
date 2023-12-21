@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from numpy import array
 from numpy import complex128
 from numpy import float64
@@ -27,6 +26,8 @@ from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
 from numpy.testing import assert_equal
+
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 
 @pytest.fixture(scope="module")
@@ -68,7 +69,7 @@ def test_normalize(problem):
 
 
 @pytest.mark.parametrize(
-    "dtype,expected", [("complex128", complex128), ("float64", float64)]
+    ("dtype", "expected"), [("complex128", complex128), ("float64", float64)]
 )
 def test_design_space(dtype, expected):
     design_space = SobieskiProblem(dtype).design_space
@@ -126,20 +127,18 @@ def test_get_bounds(problem):
 
 def test_get_bounds_tuple(problem):
     """"""
-    bounds = array(
-        [
-            (0.1, 0.4),
-            (0.75, 1.25),
-            (0.75, 1.25),
-            (0.1, 1),
-            (0.01, 0.09),
-            (30000.0, 60000.0),
-            (1.4, 1.8),
-            (2.5, 8.5),
-            (40.0, 70.0),
-            (500.0, 1500.0),
-        ]
-    )
+    bounds = array([
+        (0.1, 0.4),
+        (0.75, 1.25),
+        (0.75, 1.25),
+        (0.1, 1),
+        (0.01, 0.09),
+        (30000.0, 60000.0),
+        (1.4, 1.8),
+        (2.5, 8.5),
+        (40.0, 70.0),
+        (500.0, 1500.0),
+    ])
     lower, upper = problem.design_bounds
     assert_equal(lower, bounds[:, 0])
     assert_equal(upper, bounds[:, 1])
@@ -512,15 +511,50 @@ def test_x0_optimum(problem, dtype):
 
 
 @pytest.mark.parametrize(
-    "design_variables,use_original_order",
+    ("design_variables", "physical_design_variables", "use_original_order"),
     [
-        (["x_shared", "x_1", "x_2", "x_3"], False),
-        (["x_1", "x_2", "x_3", "x_shared"], True),
+        (
+            ["x_shared", "x_1", "x_2", "x_3"],
+            [
+                "t_c",
+                "altitude",
+                "mach",
+                "ar",
+                "sweep",
+                "area",
+                "taper_ratio",
+                "wingbox_area",
+                "cf",
+                "throttle",
+            ],
+            False,
+        ),
+        (
+            ["x_1", "x_2", "x_3", "x_shared"],
+            [
+                "taper_ratio",
+                "wingbox_area",
+                "cf",
+                "throttle",
+                "t_c",
+                "altitude",
+                "mach",
+                "ar",
+                "sweep",
+                "area",
+            ],
+            True,
+        ),
     ],
 )
-def test_original_design_variables_order(design_variables, use_original_order):
+def test_original_design_variables_order(
+    design_variables, physical_design_variables, use_original_order
+):
     """Check the design space with original variables order."""
-    coupling_variables = [
+    problem = SobieskiProblem()
+    problem.USE_ORIGINAL_DESIGN_VARIABLES_ORDER = use_original_order
+    variable_names = [
+        *design_variables,
         "y_14",
         "y_32",
         "y_31",
@@ -530,10 +564,18 @@ def test_original_design_variables_order(design_variables, use_original_order):
         "y_21",
         "y_12",
     ]
-
-    problem = SobieskiProblem()
-    problem.USE_ORIGINAL_DESIGN_VARIABLES_ORDER = use_original_order
-    variable_names = design_variables + coupling_variables
     assert problem.design_space.variable_names == variable_names
-    assert problem.design_space_with_physical_naming.variable_names == variable_names
+    variable_names = [
+        *physical_design_variables,
+        "t_w_4",
+        "f_w",
+        "esf",
+        "e_w",
+        "cl_cd",
+        "sfc",
+        "cd",
+        "cl",
+        "t_w_2",
+        "twist",
+    ]
     assert problem.design_space_with_physical_naming.variable_names == variable_names

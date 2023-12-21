@@ -19,19 +19,17 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Basic display of optimization history: functions and x."""
+
 from __future__ import annotations
 
 import logging
 import sys
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import MutableSequence
-from typing import Sequence
 
 from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
-from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
@@ -52,17 +50,24 @@ from numpy import ndarray
 from numpy import ones_like
 from numpy import sort as np_sort
 from numpy import vstack
-from numpy import where
 from numpy.linalg import norm
 
-from gemseo.algos.database import Database
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import MutableSequence
+    from collections.abc import Sequence
+
+    from matplotlib.figure import Figure
+
+    from gemseo.algos.database import Database
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -303,8 +308,8 @@ class OptHistoryView(OptPostProcessor):
         # ax1.invert_yaxis()
 
         ax1.set_title("Evolution of the optimization variables")
-        ax1.set_xticks([i for i in range(n_iterations)])
-        ax1.set_xticklabels([i for i in range(1, n_iterations + 1)])
+        ax1.set_xticks(list(range(n_iterations)))
+        ax1.set_xticklabels(list(range(1, n_iterations + 1)))
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
 
         # colorbar
@@ -426,8 +431,8 @@ class OptHistoryView(OptPostProcessor):
         #                    "all values are not positive !")
         # ======================================================================
         ax1 = fig.gca()
-        ax1.set_xticks([i for i in range(n_iterations)])
-        ax1.set_xticklabels([i for i in range(1, n_iterations + 1)])
+        ax1.set_xticks(range(n_iterations))
+        ax1.set_xticklabels(range(1, n_iterations + 1))
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         plt.grid(True)
         plt.title("Distance to the optimum")
@@ -568,7 +573,7 @@ class OptHistoryView(OptPostProcessor):
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0, base=e),
         )
         if hasnan > 0:
-            x_absc_nan = where(idx_nan.any(axis=0))[0]
+            x_absc_nan = idx_nan.any(axis=0).nonzero()[0]
             for x_i in x_absc_nan:
                 plt.axvline(x_i, color="purple")
 
@@ -579,8 +584,8 @@ class OptHistoryView(OptPostProcessor):
         ax1.set_xlabel(self.x_label)
         ax1.set_title(f"Evolution of the {constraint_type} constraints")
         n_iterations = len(self.database)
-        ax1.set_xticks([i for i in range(n_iterations)])
-        ax1.set_xticklabels([i for i in range(1, n_iterations + 1)])
+        ax1.set_xticks(range(n_iterations))
+        ax1.set_xticklabels(range(1, n_iterations + 1))
 
         ax1.hlines(
             list(range(len(cstr_matrix))),
@@ -593,14 +598,8 @@ class OptHistoryView(OptPostProcessor):
 
         # color map
         cax = fig.add_subplot(grid[0, 1])
-        if 0.0 < vmax < 1.0:
-            thick_min = int(np_log10(vmax))
-        else:
-            thick_min = 0
-        if vmax > 1.0:
-            thick_max = int(np_log10(vmax))
-        else:
-            thick_max = 0
+        thick_min = int(np_log10(vmax)) if 0.0 < vmax < 1.0 else 0
+        thick_max = int(np_log10(vmax)) if vmax > 1.0 else 0
         thick_num = thick_max - thick_min + 1
         levels_pos = logspace(thick_min, thick_max, num=thick_num)
         if vmax != 0.0:
@@ -633,17 +632,20 @@ class OptHistoryView(OptPostProcessor):
                 If ``None``, use all design variables.
         """
         try:
-            _, diag, _, _ = SR1Approx(history).build_approximation(
+            diag = SR1Approx(history).build_approximation(
                 funcname=obj_name, save_diag=True
-            )
-            if isnan(diag).any():
-                raise ValueError("The approximated Hessian diagonal contains NaN.")
-
-            diag = [ones_like(diag[0])] + diag  # Add first iteration blank
-            diag = array(diag).T
+            )[1]
         except ValueError:
             LOGGER.warning("Failed to create Hessian approximation.", exc_info=True)
             return
+
+        if isnan(diag).any():
+            LOGGER.warning("Failed to create Hessian approximation.")
+            LOGGER.warning("The approximated Hessian diagonal contains NaN.")
+            return
+
+        diag = [ones_like(diag[0]), *diag]  # Add first iteration blank
+        diag = array(diag).T
 
         # if max problem, plot -Hessian
         if self._change_obj:
@@ -663,8 +665,8 @@ class OptHistoryView(OptPostProcessor):
             self._get_design_variable_names(variable_names, simplify=True)
         )
         n_iterations = len(self.database)
-        axe.set_xticks([i for i in range(n_iterations)])
-        axe.set_xticklabels([i for i in range(1, n_iterations + 1)])
+        axe.set_xticks(range(n_iterations))
+        axe.set_xticklabels(range(1, n_iterations + 1))
         axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
 
         # matrix

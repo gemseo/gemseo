@@ -13,25 +13,27 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """DOE assessor."""
+
 from __future__ import annotations
 
-import logging
 from collections import namedtuple
-from collections.abc import Callable
-from numbers import Real
 from operator import ge
 from operator import gt
 from operator import le
 from operator import lt
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 from typing import Literal
 
-from numpy import ndarray
 from scipy.spatial import distance
 from scipy.stats import qmc
 
-LOGGER = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from numbers import Real
+
+    from numpy import ndarray
 
 __EUCLIDEAN: Final[str] = "euclidean"
 _DEFAULT_DISCREPANCY_TYPE_NAME: Final[str] = "CD"

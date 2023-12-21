@@ -1,26 +1,63 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
-  "name": "grammar_2",
   "properties": {
-    "name1": {
+    "a_number": {
+      "type": "number"
+    },
+    "an_int": {
       "type": "integer"
     },
-    "name2": {
+    "a_bool": {
+      "type": "boolean"
+    },
+    "a_string": {
+      "type": "string"
+    },
+    "a_number_array": {
       "type": "array",
       "items": {
         "type": "number"
       }
     },
-    "name3": {
+    "an_int_array": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "a_bool_array": {
       "type": "array",
       "items": {
         "type": "boolean"
       }
+    },
+    "a_number_nested_array": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "an_int_nested_array": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      }
+    },
+    "a_bool_nested_array": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "boolean"
+        }
+      }
     }
-  },
-  "required": [
-    "name1"
-  ],
-  "additionalProperties": false
+  }
 }

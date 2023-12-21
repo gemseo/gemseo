@@ -19,20 +19,24 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Boxplots to quantify the robustness of the optimum."""
+
 from __future__ import annotations
 
 import logging
 from math import sqrt
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 from numpy import zeros
-from numpy.random import normal
-from numpy.random import seed
+from numpy.random import default_rng
 
+from gemseo import SEED
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 LOGGER = logging.getLogger(__name__)
 
@@ -60,7 +64,6 @@ class Robustness(OptPostProcessor):
                 to be added to the optimal design value;
                 expressed as a fraction of the bounds of the design variables.
         """  # noqa: D205, D212, D415
-        seed(0)
         self._add_figure(self.__boxplot(stddev))
 
     def __boxplot(
@@ -109,7 +112,7 @@ class Robustness(OptPostProcessor):
                 variance = robustness.compute_variance(x_ref, cov)
                 if variance > 0:  # Otherwise normal doesn't work
                     function_samples.append(
-                        normal(loc=mean, scale=sqrt(variance), size=500)
+                        default_rng(SEED).normal(mean, sqrt(variance), 500)
                     )
                     function_names.append(repr_variable(func_name, func_index, dim))
 

@@ -18,16 +18,19 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Connect the observations of variables stored in a :class:`.Dataset` with lines."""
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
-from gemseo.datasets.dataset import Dataset
+    from numpy.typing import NDArray
+
+    from gemseo.datasets.dataset import Dataset
+
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.utils.string_tools import repr_variable
 
 
 class Lines(DatasetPlot):
@@ -40,6 +43,7 @@ class Lines(DatasetPlot):
         abscissa_variable: str | None = None,
         add_markers: bool = False,
         set_xticks_from_data: bool = False,
+        plot_abscissa_variable: bool = False,
     ) -> None:
         """
         Args:
@@ -54,6 +58,7 @@ class Lines(DatasetPlot):
             add_markers: Whether to mark the observations with dots.
             set_xticks_from_data: Whether to use the values of ``abscissa_variable``
                 as locations of abscissa ticks.
+            plot_abscissa_variable: Whether to plot the abscissa variable.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
@@ -61,69 +66,50 @@ class Lines(DatasetPlot):
             abscissa_variable=abscissa_variable,
             add_markers=add_markers,
             set_xticks_from_data=set_xticks_from_data,
+            plot_abscissa_variable=plot_abscissa_variable,
         )
 
-    def _plot(
+    def _create_specific_data_from_dataset(
         self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        abscissa_variable = self._param.abscissa_variable
+    ) -> tuple[list[float], dict[str, NDArray[float]], str]:
+        """
+        Returns:
+            The values on the x-axis,
+            the variable names bound to the values on the y-axis.
+        """  # noqa: D205 D212 D415
+        abscissa_variable = self._specific_settings.abscissa_variable
         if abscissa_variable is None:
-            x_data = range(len(self.dataset))
+            x_values = list(range(len(self.dataset)))
         else:
-            x_data = (
+            x_values = (
                 self.dataset.get_view(variable_names=abscissa_variable)
                 .to_numpy()
                 .ravel()
                 .tolist()
             )
 
-        variables = self._param.variables
-        if variables is None:
-            variables = self.dataset.variable_names
+        variable_names = list(
+            self._specific_settings.variables or self.dataset.variable_names
+        )
+        if abscissa_variable is not None:
+            if self._specific_settings.plot_abscissa_variable:
+                if abscissa_variable not in variable_names:
+                    variable_names.append(abscissa_variable)
+            else:
+                if abscissa_variable in variable_names:
+                    variable_names.remove(abscissa_variable)
 
-        y_data = {
+        y_names_to_values = {
             variable_name: self.dataset.get_view(variable_names=variable_name)
             .to_numpy()
             .T
-            for variable_name in variables
+            for variable_name in variable_names
         }
-
         n_lines = sum(
-            self.dataset.variable_names_to_n_components[name] for name in variables
+            self.dataset.variable_names_to_n_components[name] for name in variable_names
         )
         self._set_color(n_lines)
         self._set_linestyle(n_lines, "-")
         self._set_marker(n_lines, "o")
-
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        line_index = -1
-        for variable_name, variable_values in y_data.items():
-            variable_size = self.dataset.variable_names_to_n_components[variable_name]
-            for variable_component, variable_value in enumerate(variable_values):
-                line_index += 1
-                axes.plot(
-                    x_data,
-                    variable_value,
-                    linestyle=self.linestyle[line_index],
-                    color=self.color[line_index],
-                    label=repr_variable(
-                        variable_name, variable_component, variable_size
-                    ),
-                )
-                if self._param.add_markers:
-                    axes.scatter(
-                        x_data,
-                        variable_value,
-                        color=self.color[line_index],
-                        marker=self.marker[line_index],
-                    )
-
-        axes.set_xlabel(self.xlabel or abscissa_variable)
-        axes.set_ylabel(self.ylabel)
-        axes.set_title(self.title)
-        axes.legend(loc=self.legend_location)
-        if self._param.set_xticks_from_data:
-            axes.set_xticks(x_data)
-        return [fig]
+        self._n_items = n_lines
+        return x_values, y_names_to_values, abscissa_variable or "Index"

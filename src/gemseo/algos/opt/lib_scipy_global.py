@@ -18,12 +18,13 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A wrapper for the global optimization algorithms of the SciPy library."""
+
 from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 from typing import Union
 
 from numpy import float64
@@ -35,11 +36,16 @@ from numpy.typing import NDArray
 from scipy import optimize
 from scipy.optimize import NonlinearConstraint
 
+from gemseo import SEED
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
-from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
+    from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType
 
 InputType = NDArray[Union[float64, int32]]
 
@@ -114,13 +120,13 @@ class ScipyGlobalOpt(OptimizationLibrary):
         sampling_method: str = "simplicial",
         niters: int = 1,
         n: int = 100,
-        seed: int = 1,
+        seed: int = SEED,
         polish: bool = True,
         iters: int = 1,
         eq_tolerance: float = 1e-6,
         ineq_tolerance: float = 1e-6,
         normalize_design_space: bool = True,
-        local_options: Mapping[str, Any] = None,
+        local_options: Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:  # pylint: disable=W0221
         r"""Set the options default values.
@@ -325,12 +331,10 @@ class ScipyGlobalOpt(OptimizationLibrary):
             for constr in self.problem.get_eq_constraints()
         ]
         ineq_tolerance = self.problem.ineq_tolerance
-        constraints.extend(
-            [
-                NonlinearConstraint(constr, -np_inf, ineq_tolerance, jac=constr.jac)
-                for constr in self.problem.get_ineq_constraints()
-            ]
-        )
+        constraints.extend([
+            NonlinearConstraint(constr, -np_inf, ineq_tolerance, jac=constr.jac)
+            for constr in self.problem.get_ineq_constraints()
+        ])
         return tuple(constraints)
 
     def __get_constraints_as_scipy_dictionary(

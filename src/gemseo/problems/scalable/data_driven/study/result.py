@@ -17,15 +17,16 @@
 #         documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scalability study - Result
-==========================
-"""
+"""Scalability study - Result."""
+
 from __future__ import annotations
 
 import pickle
 from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 RESULTS_DIRECTORY = Path("results")
 
@@ -123,9 +124,11 @@ class ScalabilityResult:
 
         :param str study_directory: study directory name.
         """
-        fname = Path(self.name).with_suffix(".pkl")
-        fpath = Path(study_directory) / RESULTS_DIRECTORY / fname
-        return fpath
+        return (
+            Path(study_directory)
+            / RESULTS_DIRECTORY
+            / Path(self.name).with_suffix(".pkl")
+        )
 
     def to_pickle(self, study_directory) -> Path:
         """Save a scalability result into a pickle file whose name is the name of the

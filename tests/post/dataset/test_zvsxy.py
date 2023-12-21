@@ -18,14 +18,16 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class ZvsXY plotting a variable z versus two variables x and y."""
+
 from __future__ import annotations
 
 import pytest
+from matplotlib import pyplot as plt
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.zvsxy import ZvsXY
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -38,12 +40,11 @@ def dataset():
     sample5 = [0.5, 0.5, 0.5, 0.5]
     data_array = array([sample1, sample2, sample3, sample4, sample5])
     variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
-    dataset = Dataset.from_array(
+    return Dataset.from_array(
         data_array,
         variable_names=["x", "y", "z"],
         variable_names_to_n_components=variable_names_to_n_components,
     )
-    return dataset
 
 
 sample1 = [0.0, 0.0, 1.0, 0.0]
@@ -130,7 +131,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
@@ -145,4 +146,6 @@ def test_plot(
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
-    plot.execute(save=False, fig=fig, axes=axes, properties=properties)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+    plot.execute(save=False, fig=fig, axes=axes)

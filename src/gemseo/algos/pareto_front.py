@@ -18,10 +18,11 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Compute and display a Pareto Front."""
+
 from __future__ import annotations
 
 from itertools import combinations
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -32,7 +33,10 @@ from numpy import full
 from numpy import ndarray
 from numpy import vstack
 
-from gemseo.utils.matplotlib_figure import FigSizeType
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.utils.matplotlib_figure import FigSizeType
 
 
 def compute_pareto_optimal_points(
@@ -247,7 +251,7 @@ def generate_pareto_plots(
         pareto_opt_loc = compute_pareto_optimal_points(obj_loc, is_feasible)
 
         axe = axes[i, j - 1]
-        bi_obj = True if n_obj == 2 else False
+        bi_obj = n_obj == 2
         plot_pareto_bi_obj = ParetoPlotBiObjective(
             axe,
             obj_loc,

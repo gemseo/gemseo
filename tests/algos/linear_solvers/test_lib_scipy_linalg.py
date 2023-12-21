@@ -21,22 +21,21 @@ from __future__ import annotations
 import logging
 import pickle
 from os import remove
+from pathlib import Path
 
 import pytest
+from numpy import eye
+from numpy import ones
+from numpy import zeros
+from numpy.random import default_rng
+from scipy.linalg import norm
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import aslinearoperator
+from scipy.sparse.linalg import spilu
+
 from gemseo.algos.linear_solvers.lib_scipy_linalg import ScipyLinalgAlgos
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
-from numpy import eye
-from numpy import ones
-from numpy import random
-from numpy import zeros
-from numpy.random import randn
-from numpy.random import seed
-from scipy.linalg import norm
-from scipy.sparse.linalg import aslinearoperator
-from scipy.sparse.linalg import LinearOperator
-from scipy.sparse.linalg import spilu
-
 
 RESIDUALS_TOL = 1e-12
 
@@ -52,9 +51,9 @@ def test_algo_list():
 def test_default():
     """Tests the DEFAULT solver."""
     factory = LinearSolversFactory()
-    random.seed(1)
+    rng = default_rng(1)
     n = 5
-    problem = LinearProblem(random.rand(n, n), random.rand(n))
+    problem = LinearProblem(rng.random((n, n)), rng.random(n))
     factory.execute(problem, "DEFAULT", max_iter=1000)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
@@ -68,8 +67,8 @@ def test_default():
 def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond):
     """Tests the solvers options."""
     factory = LinearSolversFactory()
-    random.seed(1)
-    problem = LinearProblem(random.rand(n, n), random.rand(n))
+    rng = default_rng(1)
+    problem = LinearProblem(rng.random((n, n)), rng.random(n))
     options = {
         "max_iter": 100,
         "tol": 1e-14,
@@ -82,16 +81,14 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond):
             problem.lhs.shape, spilu(problem.lhs).solve
         )
     if algo == "lgmres":
-        v = random.rand(n)
-        options.update(
-            {
-                "inner_m": 10,
-                "outer_k": 10,
-                "outer_v": [(v, problem.lhs.dot(v))],
-                "store_outer_av": True,
-                "prepend_outer_v": True,
-            }
-        )
+        v = rng.random(n)
+        options.update({
+            "inner_m": 10,
+            "outer_k": 10,
+            "outer_v": [(v, problem.lhs.dot(v))],
+            "store_outer_av": True,
+            "prepend_outer_v": True,
+        })
     factory.execute(problem, algo, **options)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
@@ -102,7 +99,6 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond):
 
 def test_common_dtype_cplx():
     factory = LinearSolversFactory()
-    random.seed(1)
     problem = LinearProblem(eye(2, dtype="complex128"), ones(2))
     factory.execute(problem, "DEFAULT")
     assert problem.compute_residuals() < RESIDUALS_TOL
@@ -115,9 +111,9 @@ def test_common_dtype_cplx():
 def test_not_converged(caplog):
     """Tests the cases when convergence fails and save_when_fail option."""
     factory = LinearSolversFactory()
-    random.seed(1)
+    rng = default_rng(1)
     n = 100
-    problem = LinearProblem(random.rand(n, n), random.rand(n))
+    problem = LinearProblem(rng.random((n, n)), rng.random(n))
     lib = factory.create("ScipyLinalgAlgos")
     caplog.set_level(logging.WARNING)
     lib.solve(
@@ -126,7 +122,8 @@ def test_not_converged(caplog):
     assert not problem.is_converged
     assert "The linear solver BICGSTAB did not converge." in caplog.text
 
-    problem2 = pickle.load(open(lib.save_fpath, "rb"))
+    with Path(lib.save_fpath).open("rb") as f:
+        problem2 = pickle.load(f)
     remove(lib.save_fpath)
     assert (problem2.lhs == problem.lhs).all()
     assert (problem2.rhs == problem.rhs).all()
@@ -140,9 +137,9 @@ def test_not_converged(caplog):
 
 @pytest.mark.parametrize("seed", range(3))
 def test_hard_conv(tmp_wd, seed):
-    random.seed(seed)
+    rng = default_rng(seed)
     n = 300
-    problem = LinearProblem(random.rand(n, n), random.rand(n))
+    problem = LinearProblem(rng.random((n, n)), rng.random(n))
     LinearSolversFactory().execute(
         problem,
         "DEFAULT",
@@ -186,9 +183,9 @@ def test_default_solver():
     LinearOperator. In the latter case, the final step using direct method cannot be
     used leading to an unconverged problem.
     """
-    seed(123456789)
+    rng = default_rng(123456789)
 
-    lhs, rhs = randn(30, 30), ones(30)
+    lhs, rhs = rng.normal(size=(30, 30)), ones(30)
     options = {"tol": 1e-12, "max_iter": 1, "inner_m": 1}
 
     # Linear system eventually solved using direct method and considered converged

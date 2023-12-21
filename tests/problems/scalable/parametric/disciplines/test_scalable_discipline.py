@@ -14,7 +14,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+from numpy import array
+from numpy import array_equal
+from numpy.testing import assert_equal
+
 from gemseo.problems.scalable.parametric.core.disciplines.scalable_discipline import (
     Coefficients,
 )
@@ -24,10 +30,9 @@ from gemseo.problems.scalable.parametric.core.disciplines.scalable_discipline im
 from gemseo.problems.scalable.parametric.disciplines.scalable_discipline import (
     ScalableDiscipline,
 )
-from numpy import array
-from numpy import array_equal
-from numpy.testing import assert_equal
-from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 @pytest.fixture(scope="module")
@@ -81,7 +86,7 @@ def core_scalable_discipline(
 
 def test_wrapped_discipline(scalable_discipline):
     """Check that ScalableDiscipline is composed of a CoreScalableDiscipline."""
-    assert scalable_discipline._CORE_DISCIPLINE_CLASS == CoreScalableDiscipline
+    assert CoreScalableDiscipline == scalable_discipline._CORE_DISCIPLINE_CLASS
 
 
 def test_execution(scalable_discipline, core_scalable_discipline):
@@ -91,13 +96,11 @@ def test_execution(scalable_discipline, core_scalable_discipline):
         x_i=array([1.0, 2.0, 1.0]),
         y_2=array([1.0, 2.0, 3.0]),
     )
-    scalable_discipline.execute(
-        {
-            "x_0": array([1.0, 2.0]),
-            "x_1": array([1.0, 2.0, 1.0]),
-            "y_2": array([1.0, 2.0, 3.0]),
-        }
-    )
+    scalable_discipline.execute({
+        "x_0": array([1.0, 2.0]),
+        "x_1": array([1.0, 2.0, 1.0]),
+        "y_2": array([1.0, 2.0, 3.0]),
+    })
     assert_equal(dict(scalable_discipline.get_output_data()), core_output_data)
 
 

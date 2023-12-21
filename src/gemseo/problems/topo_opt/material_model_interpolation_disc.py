@@ -16,15 +16,19 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline for topology optimization material model interpolation."""
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import ones
 from numpy import ones_like
 from scipy.sparse import diags
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class MaterialModelInterpolation(MDODiscipline):
@@ -85,8 +89,8 @@ class MaterialModelInterpolation(MDODiscipline):
         )
         dyoung_modulus_dxphys[self.empty_elements] = 0
         dyoung_modulus_dxphys[self.full_elements] = 0
-        self.jac["E"] = {"xPhys": diags(dyoung_modulus_dxphys).toarray()}
+        self.jac["E"] = {"xPhys": diags(dyoung_modulus_dxphys).tocsr()}
         drho_dxphys = ones_like(xphys)
         drho_dxphys[self.empty_elements] = 0
         drho_dxphys[self.full_elements] = 0
-        self.jac["rho"] = {"xPhys": diags(drho_dxphys).toarray()}
+        self.jac["rho"] = {"xPhys": diags(drho_dxphys).tocsr()}

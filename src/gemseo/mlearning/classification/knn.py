@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The k-nearest neighbors for classification.
+r"""The k-nearest neighbors for classification.
 
 The k-nearest neighbor classification algorithm is an approach
 to predict the output class of a new input point
@@ -88,20 +88,25 @@ The classifier relies on the KNeighborsClassifier class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.neighbors.KNeighborsClassifier.html>`_.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
 from numpy import ndarray
 from numpy import newaxis
 from numpy import stack
 from sklearn.neighbors import KNeighborsClassifier
 
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
-from gemseo.mlearning.core.ml_algo import TransformerType
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class KNNClassifier(MLClassificationAlgo):
@@ -122,7 +127,7 @@ class KNNClassifier(MLClassificationAlgo):
         """
         Args:
             n_neighbors: The number of neighbors.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,
@@ -146,18 +151,14 @@ class KNNClassifier(MLClassificationAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        output_data = self.algo.predict(input_data).astype(int)
-        if len(output_data.shape) == 1:
-            output_data = output_data[:, newaxis]
-        return output_data
+        return self.algo.predict(input_data).astype(int).reshape((len(input_data), -1))
 
     def _predict_proba_soft(
         self,
         input_data: ndarray,
     ) -> ndarray:
         probas = self.algo.predict_proba(input_data)
-        if len(probas[0].shape) == 1:
-            probas = probas[..., None]
-        else:
-            probas = stack(probas, axis=-1)
-        return probas
+        if probas[0].ndim == 1:
+            return probas[..., newaxis]
+
+        return stack(probas, axis=-1)

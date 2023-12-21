@@ -17,10 +17,13 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Singletons implementation and variants."""
+"""Implementations of the singleton design pattern."""
+
 from __future__ import annotations
 
 from os.path import realpath
+from typing import Any
+from typing import ClassVar
 
 
 class SingleInstancePerAttributeId(type):
@@ -32,7 +35,7 @@ class SingleInstancePerAttributeId(type):
     The test if the instances are equal is made with the id(obj1)==id(obj2) operator
     """
 
-    instances = {}
+    instances: ClassVar[dict[tuple[id, str], Any]] = {}
 
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
@@ -42,8 +45,7 @@ class SingleInstancePerAttributeId(type):
         if not args:
             raise ValueError(
                 "SingleInstancePerAttribute subclasses "
-                + "need at"
-                + " least one attribute in the constructor."
+                "need at least one attribute in the constructor."
             )
         inst_key = (id(cls), id(args[0]))
         inst = cls.instances.get(inst_key)
@@ -62,7 +64,7 @@ class SingleInstancePerFileAttribute(type):
     The test if the instances are equal is made with the obj1 == obj2 operator
     """
 
-    instances = {}
+    instances: ClassVar[dict[tuple[id, str], Any]] = {}
 
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
@@ -70,7 +72,7 @@ class SingleInstancePerFileAttribute(type):
         if not args:
             raise ValueError(
                 "SingleInstancePerAttribute subclasses need at"
-                + " least one attribute in the constructor."
+                " least one attribute in the constructor."
             )
         fpath = args[0]
 
@@ -78,6 +80,7 @@ class SingleInstancePerFileAttribute(type):
             raise TypeError(
                 "Argument 0 is not a string but of type :" + str(type(fpath))
             )
+
         fpath = realpath(fpath)
         inst_key = (id(cls), fpath)
         inst = cls.instances.get(inst_key)

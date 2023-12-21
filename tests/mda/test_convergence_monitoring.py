@@ -14,10 +14,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from typing import Mapping
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import pytest
+from numpy import concatenate
+from numpy.linalg import norm
+
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -26,12 +28,12 @@ from gemseo.mda.mda import MDA
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
-from numpy import concatenate
-from numpy.linalg import norm
-from numpy.random import seed
 
-seed(1)
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
+    from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 
 
 @pytest.fixture(scope="module")
@@ -75,27 +77,27 @@ def get_jacobi_reference_residuals(
         discipline.execute()
 
     # Compute the initial residual
-    input, output = {}, {}
+    input_, output = {}, {}
     for discipline in disciplines:
-        input.update(discipline.get_input_data())
+        input_.update(discipline.get_input_data())
         output.update(discipline.get_output_data())
 
     initial_residual = {}
     for coupling in ["a", "b", "y"]:
-        initial_residual[coupling] = input[coupling] - output[coupling]
+        initial_residual[coupling] = output[coupling] - input_[coupling]
 
     mda.scaling = MDA.ResidualScaling.NO_SCALING
     mda.execute()
 
     # Compute the final residual
-    input, output = {}, {}
+    input_, output = {}, {}
     for discipline in disciplines:
-        input.update(discipline.get_input_data())
+        input_.update(discipline.get_input_data())
         output.update(discipline.get_output_data())
 
     final_residual = {}
     for coupling in ["a", "b", "y"]:
-        final_residual[coupling] = input[coupling] - output[coupling]
+        final_residual[coupling] = output[coupling] - input_[coupling]
 
     return initial_residual, final_residual
 
@@ -149,11 +151,10 @@ def test_scaling_strategy_jacobi(disciplines: list[MDODiscipline], scaling_strat
             result += subres_norm**2
         assert abs(result**0.5 - norm(initial_residual_vector)) < 1e-12
 
-        subres_norms = []
-        for coupling in initial_residual.keys():
-            subres_norms.append(
-                norm(final_residual[coupling]) / norm(initial_residual[coupling])
-            )
+        subres_norms = [
+            norm(final_residual[coupling]) / norm(initial_residual[coupling])
+            for coupling in initial_residual
+        ]
         assert mda.residual_history[-1] == max(subres_norms)
 
     elif scaling_strategy == MDA.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
@@ -179,16 +180,11 @@ def get_gauss_seidel_reference_residuals(
     mda.scaling = MDA.ResidualScaling.NO_SCALING
     mda.execute()
 
-    _b = []
-    for value in disciplines[1].cache:
-        _b.append(value.outputs["b"])
+    _b = [value.outputs["b"] for value in disciplines[1].cache]
+    _y = [value.outputs["y"] for value in disciplines[2].cache]
 
-    _y = []
-    for value in disciplines[2].cache:
-        _y.append(value.outputs["y"])
-
-    initial_residual = {"b": _b[0] - _b[1], "y": _y[0] - _y[1]}
-    final_residual = {"b": _b[-2] - _b[-1], "y": _y[-2] - _y[-1]}
+    initial_residual = {"b": _b[1] - _b[0], "y": _y[1] - _y[0]}
+    final_residual = {"b": _b[-1] - _b[-2], "y": _y[-1] - _y[-2]}
 
     for discipline in disciplines:
         discipline.cache.clear()
@@ -247,11 +243,10 @@ def test_scaling_strategy_gauss_seidel(
             result += subres_norm**2
         assert abs(result - norm(initial_residual_vector) ** 2) < 1e-12
 
-        subres_norms = []
-        for coupling in initial_residual.keys():
-            subres_norms.append(
-                norm(final_residual[coupling]) / norm(initial_residual[coupling])
-            )
+        subres_norms = [
+            norm(final_residual[coupling]) / norm(initial_residual[coupling])
+            for coupling in initial_residual
+        ]
         assert mda.residual_history[-1] == max(subres_norms)
 
     elif scaling_strategy == MDA.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:

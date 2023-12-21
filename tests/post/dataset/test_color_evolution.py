@@ -18,14 +18,16 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class ColorEvolution plotting samples on a colored timeline."""
+
 from __future__ import annotations
 
 import pytest
+from matplotlib import pyplot as plt
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.color_evolution import ColorEvolution
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -57,7 +59,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
@@ -72,4 +74,6 @@ def test_plot(
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
-    plot.execute(save=False, properties=properties, fig=fig, axes=axes)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+    plot.execute(save=False, fig=fig, axes=axes)

@@ -20,31 +20,39 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A discipline running a scenario."""
+
 from __future__ import annotations
 
 import logging
 from copy import copy
 from copy import deepcopy
-from typing import Iterable
-from typing import Sequence
+from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import zeros
-from numpy.core.multiarray import ndarray
 from numpy.linalg import norm
 
-from gemseo.algos.database import Database
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.core.scenario import Scenario
+from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import LoggingContext
 
-LOGGER = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
+    from numpy.core.multiarray import ndarray
+
+    from gemseo.algos.database import Database
+    from gemseo.core.execution_sequence import LoopExecSequence
+    from gemseo.core.scenario import Scenario
+
+LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 
 
 class MDOScenarioAdapter(MDODiscipline):
@@ -206,12 +214,12 @@ class MDOScenarioAdapter(MDODiscipline):
                     "Can't compute inputs from scenarios: {}.".format(
                         ", ".join(sorted(missing_inputs))
                     )
-                )
+                ) from None
 
         # Add the design variables bounds to the input grammar
         if self._set_bounds_before_opt:
             current_x = self.scenario.design_space.get_current_value(as_dict=True)
-            names_to_values = dict()
+            names_to_values = {}
             for suffix in [
                 MDOScenarioAdapter.LOWER_BND_SUFFIX,
                 MDOScenarioAdapter.UPPER_BND_SUFFIX,
@@ -242,7 +250,7 @@ class MDOScenarioAdapter(MDODiscipline):
                     "Can't compute outputs from scenarios: {}.".format(
                         ", ".join(sorted(missing_outputs))
                     )
-                )
+                ) from None
 
         # Add the Lagrange multipliers to the output grammar
         if self._output_multipliers:
@@ -251,29 +259,23 @@ class MDOScenarioAdapter(MDODiscipline):
     def _add_output_multipliers(self) -> None:
         """Add the Lagrange multipliers of the scenario optimal solution as outputs."""
         # Fill a dictionary with data of typical shapes
-        base_dict = dict()
+        base_dict = {}
         problem = self.scenario.formulation.opt_problem
         # bound-constraints multipliers
         current_x = problem.design_space.get_current_value(as_dict=True)
-        base_dict.update(
-            {
-                self.get_bnd_mult_name(var_name, False): val
-                for var_name, val in current_x.items()
-            }
-        )
-        base_dict.update(
-            {
-                self.get_bnd_mult_name(var_name, True): val
-                for var_name, val in current_x.items()
-            }
-        )
+        base_dict.update({
+            self.get_bnd_mult_name(var_name, False): val
+            for var_name, val in current_x.items()
+        })
+        base_dict.update({
+            self.get_bnd_mult_name(var_name, True): val
+            for var_name, val in current_x.items()
+        })
         # equality- and inequality-constraints multipliers
-        base_dict.update(
-            {
-                self.get_cstr_mult_name(cstr_name): zeros(1)
-                for cstr_name in problem.get_constraint_names()
-            }
-        )
+        base_dict.update({
+            self.get_cstr_mult_name(cstr_name): zeros(1)
+            for cstr_name in problem.get_constraint_names()
+        })
 
         # Update the output grammar
         multipliers_grammar = JSONGrammar("multipliers")
@@ -316,7 +318,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
     def _run(self) -> None:
         self._pre_run()
-        with LoggingContext(level=self.__scenario_log_level):
+        with LoggingContext(LOGGING_SETTINGS.logger, level=self.__scenario_log_level):
             self.scenario.execute()
         self._post_run()
 
@@ -426,30 +428,22 @@ class MDOScenarioAdapter(MDODiscipline):
 
         # Store the Lagrange multipliers in the local data
         multipliers = lagrange.get_multipliers_arrays()
-        self.local_data.update(
-            {
-                self.get_bnd_mult_name(name, False): mult
-                for name, mult in multipliers[lagrange.LOWER_BOUNDS].items()
-            }
-        )
-        self.local_data.update(
-            {
-                self.get_bnd_mult_name(name, True): mult
-                for name, mult in multipliers[lagrange.UPPER_BOUNDS].items()
-            }
-        )
-        self.local_data.update(
-            {
-                self.get_cstr_mult_name(name): mult
-                for name, mult in multipliers[lagrange.EQUALITY].items()
-            }
-        )
-        self.local_data.update(
-            {
-                self.get_cstr_mult_name(name): mult
-                for name, mult in multipliers[lagrange.INEQUALITY].items()
-            }
-        )
+        self.local_data.update({
+            self.get_bnd_mult_name(name, False): mult
+            for name, mult in multipliers[lagrange.LOWER_BOUNDS].items()
+        })
+        self.local_data.update({
+            self.get_bnd_mult_name(name, True): mult
+            for name, mult in multipliers[lagrange.UPPER_BOUNDS].items()
+        })
+        self.local_data.update({
+            self.get_cstr_mult_name(name): mult
+            for name, mult in multipliers[lagrange.EQUALITY].items()
+        })
+        self.local_data.update({
+            self.get_cstr_mult_name(name): mult
+            for name, mult in multipliers[lagrange.INEQUALITY].items()
+        })
 
     def get_expected_workflow(self) -> LoopExecSequence:  # noqa: D102
         return self.scenario.get_expected_workflow()
@@ -581,7 +575,7 @@ class MDOScenarioAdapter(MDODiscipline):
             ]
 
         # Identify the disciplines that compute the functions
-        disciplines = dict()
+        disciplines = {}
         for func_name in func_names:
             for discipline in self.scenario.formulation.get_top_level_disc():
                 if discipline.is_all_outputs_existing([func_name]):
@@ -607,9 +601,9 @@ class MDOScenarioAdapter(MDODiscipline):
         parallel_linearization.execute([post_opt_data] * len(unique_disciplines))
 
         # Store the Jacobians
-        jacobians = dict()
+        jacobians = {}
         for func_name in func_names:
-            jacobians[func_name] = dict()
+            jacobians[func_name] = {}
             func_jacobian = disciplines[func_name].jac[func_name]
             for input_name in inputs:
                 jacobians[func_name][input_name] = func_jacobian[input_name]

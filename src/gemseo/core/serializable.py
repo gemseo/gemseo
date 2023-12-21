@@ -18,6 +18,7 @@
 #        :author: Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The baseclass for serializable |g| objects."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -25,13 +26,16 @@ from multiprocessing.sharedctypes import Synchronized
 from pathlib import Path
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Mapping
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.utils.portable_path import to_os_specific
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 class Serializable(metaclass=GoogleDocstringInheritanceMeta):
@@ -79,7 +83,7 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
         # Initialize all Synchronized attributes first.
         self._init_shared_memory_attrs()
         for attribute_name, attribute_value in state.items():
-            if attribute_name not in self.__dict__.keys():
+            if attribute_name not in self.__dict__:
                 self.__dict__[attribute_name] = attribute_value
                 # This is needed to handle the case where serialization and
                 # deserialization are not made on the same platform.

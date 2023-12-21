@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The F1 to measure the quality of a classification algorithm.
+r"""The F1 to measure the quality of a classification algorithm.
 
 The F1 is defined by
 
@@ -32,20 +32,28 @@ divided by the total number of *predicted* positives
 and :math:`\\mathit{recall}` is the number of correctly predicted positives
 divided by the total number of *true* positives.
 """
+
 from __future__ import annotations
 
-from numpy import ndarray
+from typing import TYPE_CHECKING
+
 from sklearn.metrics import f1_score
 
-from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MeasureType
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.mlearning.classification.classification import MLClassificationAlgo
+    from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 
 
 class F1Measure(MLErrorMeasure):
     """The F1 measure for machine learning."""
 
     SMALLER_IS_BETTER = False
+
+    algo: MLClassificationAlgo
 
     def __init__(
         self,
@@ -55,7 +63,7 @@ class F1Measure(MLErrorMeasure):
         """
         Args:
             algo: A machine learning algorithm for classification.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
     def _compute_measure(

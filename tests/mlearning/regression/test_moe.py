@@ -18,9 +18,18 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mixture of experts regression module."""
+
 from __future__ import annotations
 
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import hstack
+from numpy import linspace
+from numpy import meshgrid
+from numpy import newaxis
+from numpy import ones_like
+
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.classification.random_forest import RandomForestClassifier
@@ -30,13 +39,6 @@ from gemseo.mlearning.regression.moe import MOERegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from numpy import allclose
-from numpy import array
-from numpy import hstack
-from numpy import linspace
-from numpy import meshgrid
-from numpy import newaxis
-from numpy import ones_like
 
 ROOT_LEARNING_SIZE = 6
 LEARNING_SIZE = ROOT_LEARNING_SIZE**2
@@ -53,7 +55,7 @@ ATOL = 1e-5
 RTOL = 1e-5
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     x_1 = linspace(0, 1, ROOT_LEARNING_SIZE)
@@ -81,7 +83,7 @@ def dataset() -> IODataset:
     return tmp
 
 
-@pytest.fixture
+@pytest.fixture()
 def model(dataset) -> MOERegressor:
     """A trained MOERegressor."""
     moe = MOERegressor(dataset)
@@ -90,7 +92,7 @@ def model(dataset) -> MOERegressor:
     return moe
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_soft(dataset) -> MOERegressor:
     """A trained MOERegressor with soft classification."""
     moe = MOERegressor(dataset, hard=False)
@@ -99,7 +101,7 @@ def model_soft(dataset) -> MOERegressor:
     return moe
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_transform(dataset) -> MOERegressor:
     """A trained MOERegressor with inputs and outputs scaling."""
     moe = MOERegressor(
@@ -164,7 +166,7 @@ def test_predict_class(model, model_with_transform):
 
 
 @pytest.mark.parametrize(
-    "input_data,shape", [(INPUT_VALUE, (1,)), (INPUT_VALUES, (6, 1))]
+    ("input_data", "shape"), [(INPUT_VALUE, (1,)), (INPUT_VALUES, (6, 1))]
 )
 @pytest.mark.parametrize("index", [0, 1])
 def test_predict_local_model(model, input_data, index, shape):
@@ -224,9 +226,9 @@ def test_repr_str_(model):
       KNNClassifier(n_neighbors=5)
    Regression
       Local model 0
-         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)
+         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0, random_state=0)
       Local model 1
-         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)"""
+         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0, random_state=0)"""  # noqa: E501
     assert repr(model) == str(model) == expected
 
 
@@ -236,25 +238,32 @@ def test_repr_html(model):
         "MOERegressor(hard=True)<br/>"
         "<ul>"
         "<li>built from 36 learning samples</li>"
-        "<li>Clustering</li>"
+        "<li>Clustering"
         "<ul>"
         "<li>KMeans(n_clusters=2, random_state=0, var_names=None)</li>"
         "</ul>"
-        "<li>Classification</li>"
+        "</li>"
+        "<li>Classification"
         "<ul>"
         "<li>KNNClassifier(n_neighbors=5)</li>"
         "</ul>"
-        "<li>Regression</li>"
+        "</li>"
+        "<li>Regression"
         "<ul>"
-        "<li>Local model 0</li>"
+        "<li>Local model 0"
         "<ul>"
-        "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)</li>"
+        "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, "
+        "penalty_level=0.0, random_state=0)</li>"
         "</ul>"
-        "<li>Local model 1</li>"
+        "</li>"
+        "<li>Local model 1"
         "<ul>"
-        "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0)</li>"
+        "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, "
+        "penalty_level=0.0, random_state=0)</li>"
         "</ul>"
+        "</li>"
         "</ul>"
+        "</li>"
         "</ul>"
     )
 

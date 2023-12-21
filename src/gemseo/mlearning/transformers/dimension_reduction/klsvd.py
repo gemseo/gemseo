@@ -23,7 +23,10 @@ The :class:`.KLSVD` class wraps the ``KarhunenLoeveSVDAlgorithm``
 `from OpenTURNS <https://openturns.github.io/openturns/latest/user_manual/
 _generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
 """
+
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import openturns
 from numpy import array
@@ -39,8 +42,10 @@ from openturns import Sample
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 from gemseo.utils.compatibility.openturns import get_eigenvalues
+
+if TYPE_CHECKING:
+    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 
 
 class KLSVD(DimensionReduction):
@@ -56,7 +61,7 @@ class KLSVD(DimensionReduction):
         self,
         mesh: ndarray,
         n_components: int | None = None,
-        name: str = "KLSVD",
+        name: str = "",
         use_random_svd: bool = False,
         n_singular_values: int | None = None,
         use_halko2010: bool = True,
@@ -74,7 +79,7 @@ class KLSVD(DimensionReduction):
                 if ``None``, use the default value implemented by OpenTURNS.
             use_halko2010: Whether to use the *halko2010* algorithm
                 or the *halko2011* one.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             name,
             mesh=mesh,
@@ -121,17 +126,15 @@ class KLSVD(DimensionReduction):
         )
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return array(self.algo.project(self._get_process_sample(data)))
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
-        return array(
-            [
-                list(self.algo.liftAsSample(Point(list(coefficients))))
-                for coefficients in data
-            ]
-        )[:, :, 0]
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
+        return array([
+            list(self.algo.liftAsSample(Point(list(coefficients))))
+            for coefficients in data
+        ])[:, :, 0]
 
     @property
     def output_dimension(self) -> int:

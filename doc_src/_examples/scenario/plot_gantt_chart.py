@@ -25,6 +25,7 @@ Gantt Chart
 In this example, we illustrate the use of the Gantt chart plot
 on the Sobieski's SSBJ problem.
 """
+
 # %%
 # Import
 # ------
@@ -37,7 +38,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -47,20 +48,18 @@ configure_logger()
 # ------------------
 # Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
-disciplines = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiStructure",
-        "SobieskiMission",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiStructure",
+    "SobieskiMission",
+])
 
 # %%
 # Create design space
 # -------------------
-# We also read the design space from the :class:`.SobieskiProblem`.
-design_space = SobieskiProblem().design_space
+# We also create the :class:`.SobieskiDesignSpace`.
+design_space = SobieskiDesignSpace()
 
 # %%
 # Create and execute scenario

@@ -17,15 +17,19 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate linear solvers from their class names."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
-from numpy import ndarray
-
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
-from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
 
 class LinearSolversFactory(BaseAlgoFactory):

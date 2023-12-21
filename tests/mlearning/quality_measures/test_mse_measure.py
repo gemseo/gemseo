@@ -18,12 +18,16 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mean squared error measure."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+from numpy import allclose
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
@@ -31,7 +35,9 @@ from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import allclose
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
 MODEL.set_cache_policy(MODEL.CacheType.MEMORY_FULL)
@@ -41,7 +47,7 @@ TOL_DEG_2 = 0.001
 ATOL = 1e-12
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
@@ -52,7 +58,7 @@ def dataset() -> Dataset:
     return MODEL.cache.to_dataset()
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset_test() -> Dataset:
     """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
@@ -104,8 +110,7 @@ def test_compute_test_measure(dataset, dataset_test):
     mse_test = MSEMeasure(algo).compute_test_measure(dataset_test)
     assert mse_test < TOL_DEG_2
     assert (
-        abs(mse_test**0.5 - RMSEMeasure(algo).compute_test_measure(dataset_test))
-        < 1e-6
+        abs(mse_test**0.5 - RMSEMeasure(algo).compute_test_measure(dataset_test)) < 1e-6
     )
 
     algo = PolynomialRegressor(dataset, degree=1)

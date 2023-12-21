@@ -22,8 +22,7 @@ import sys
 from dataclasses import asdict
 from importlib.metadata import version as _version
 from pathlib import Path
-from typing import Iterable
-from typing import Mapping
+from typing import TYPE_CHECKING
 
 import requests
 from sphinx_gallery.sorting import ExampleTitleSortKey
@@ -33,7 +32,13 @@ os.chdir((Path(__file__).resolve()).parent)
 for directory_name in ("_ext", "templates"):
     sys.path.append(str(Path(directory_name).resolve()))
 
-from gemseo_templator.blocks import features, main_concepts  # noqa: E402
+
+from gemseo_templator.blocks import features  # noqa: E402
+from gemseo_templator.blocks import main_concepts  # noqa: E402
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -103,7 +108,7 @@ autosummary_generate = True
 # Show the typehints in the description instead of the signature.
 autodoc_typehints = "description"
 
-# Both the class’ and the __init__ method’s docstring are concatenated and inserted.
+# Both the class' and the __init__ method's docstring are concatenated and inserted.
 autoclass_content = "both"
 
 # Show arguments default values.
@@ -130,7 +135,7 @@ autodoc_mock_imports = [
 # Settings for napoleon.
 
 # True to include special members (like __membername__) with docstrings in the documentation.
-# False to fall back to Sphinx’s default behavior.
+# False to fall back to Sphinx's default behavior.
 napoleon_include_special_with_doc = False
 
 ################################################################################
@@ -152,7 +157,7 @@ master_doc = "contents"
 # General information about the project.
 project = "GEMSEO"
 
-copyright = f"{datetime.datetime.now().year}, IRT Saint Exupéry"
+copyright = f"{datetime.datetime.now().year}, IRT Saint Exupéry"  # noqa: A001
 
 pretty_version = release = version = _version("gemseo")
 if "dev" in pretty_version:
@@ -232,12 +237,13 @@ intersphinx_mapping = {
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "sympy": ("https://docs.sympy.org/latest/", None),
+    "openturns": ("https://openturns.github.io/openturns/latest", None),
 }
 
 ################################################################################
 # Setup the multiversion display
 
-html_context = dict()
+html_context = {}
 html_context["pretty_version"] = pretty_version
 
 __VERSION_REGEX = re.compile(r"^(develop|\d+\.\d+\.\d+\.?\w*)$")
@@ -295,7 +301,7 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
             "Capability to calibrate GEMSEO disciplines from data",
             False,
         ),
-        "gemseo-fmu": ("GEMSEO plugin for FMU dynamic models", False),
+        "gemseo-fmu": ("GEMSEO plugin for FMU dynamic models", True),
         "gemseo-matlab": ("GEMSEO plugin for MATLAB.", False),
         "gemseo-mlearning": ("Miscellaneous machine learning capabilities", False),
         "gemseo-mma": (
@@ -328,3 +334,8 @@ inheritance_edge_attrs = {
     "dir": '"both"',
     "style": '"setlinewidth(0.5)"',
 }
+
+###############################################################################
+# bibtex
+
+bibtex_bibfiles = ["references.bib"]

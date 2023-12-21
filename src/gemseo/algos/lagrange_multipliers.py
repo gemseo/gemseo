@@ -19,9 +19,12 @@
 #       :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Implementation of the Lagrange multipliers."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import numpy as np
 from numpy import abs as np_abs
@@ -29,18 +32,18 @@ from numpy import arange
 from numpy import array
 from numpy import atleast_2d
 from numpy import concatenate
+from numpy import isinf
 from numpy import ndarray
-from numpy import where
 from numpy import zeros
-from numpy.linalg import matrix_rank
 from numpy.linalg import norm
-from scipy.optimize import linprog
 from scipy.optimize import lsq_linear
 from scipy.optimize import nnls
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.third_party.prettytable import PrettyTable
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -83,6 +86,7 @@ class LagrangeMultipliers:
             \text{ otherwise }\lambda_{u,j}=0.
         \end{aligned}\right.
     """
+
     kkt_residual: float | None
     """The residual of the KKT conditions, ``None`` if not computed."""
 
@@ -94,7 +98,12 @@ class LagrangeMultipliers:
     UPPER_BOUNDS = "upper_bounds"
     INEQUALITY = "inequality"
     EQUALITY = "equality"
-    CSTR_LABELS = [LOWER_BOUNDS, UPPER_BOUNDS, INEQUALITY, EQUALITY]
+    CSTR_LABELS: ClassVar[list[str]] = [
+        LOWER_BOUNDS,
+        UPPER_BOUNDS,
+        INEQUALITY,
+        EQUALITY,
+    ]
 
     def __init__(self, opt_problem: OptimizationProblem) -> None:
         """
@@ -153,41 +162,25 @@ class LagrangeMultipliers:
             return self.lagrange_multipliers
         lhs = jac_act.T
         act_constr_nb = lhs.shape[1]
-        rank = matrix_rank(lhs)
-        LOGGER.info("Found %s active constraints", str(act_constr_nb))
-        LOGGER.info("Rank of jacobian = %s", str(rank))
-        if act_constr_nb > rank:
-            LOGGER.warning("Number of active constraints > rank !")
-
         # Compute the Lagrange multipliers as a feasible solution of a
         # linear optimization problem
         act_eq_constr_nb = len(self.active_eq_names)
-        bounds = [(0, None)] * (act_constr_nb - act_eq_constr_nb) + [
-            (None, None)
-        ] * act_eq_constr_nb
-        optim_result = linprog(zeros(act_constr_nb), A_eq=lhs, b_eq=rhs, bounds=bounds)
-        if optim_result.status == 2:
-            LOGGER.warning("The optimum does not satisfy exactly KKT conditions.")
-        if optim_result.success and act_constr_nb <= rank:
-            mul = optim_result.x
-            self.kkt_residual = 0.0
-        else:
+        if act_eq_constr_nb == 0:
             # If the linear optimization failed then obtain the Lagrange
             # multipliers as a solution of a least-square problem
-            if act_eq_constr_nb == 0:
-                mul, residuals = nnls(lhs, rhs)
-                self.kkt_residual = norm(residuals)
-                LOGGER.info("Residuals norm = %s", self.kkt_residual)
-            else:
-                lower_bound = array(
-                    [0.0] * (act_constr_nb - act_eq_constr_nb)
-                    + [-np.inf] * act_eq_constr_nb
-                )
-                upper_bound = array([np.inf] * act_constr_nb)
-                optim_result = lsq_linear(lhs, rhs, bounds=(lower_bound, upper_bound))
-                mul = optim_result.x
-                self.kkt_residual = optim_result.cost
-                LOGGER.info("Residuals norm = %s", self.kkt_residual)
+            mul, residuals = nnls(lhs, rhs)
+            self.kkt_residual = norm(residuals)
+            LOGGER.info("Residuals norm = %s", self.kkt_residual)
+        else:
+            lower_bound = array(
+                [0.0] * (act_constr_nb - act_eq_constr_nb)
+                + [-np.inf] * act_eq_constr_nb
+            )
+            upper_bound = array([np.inf] * act_constr_nb)
+            optim_result = lsq_linear(lhs, rhs, bounds=(lower_bound, upper_bound))
+            mul = optim_result.x
+            self.kkt_residual = optim_result.cost
+            LOGGER.info("Residuals norm = %s", self.kkt_residual)
 
         # stores multipliers in a dictionary
         self._store_multipliers(mul)
@@ -223,7 +216,7 @@ class LagrangeMultipliers:
         """
         dspace = self.opt_problem.design_space
         x_dim = dspace.dimension
-        dim_act = sum(len(where(bnd)[0]) for bnd in act_bounds.values())
+        dim_act = sum(len(bnd.nonzero()[0]) for bnd in act_bounds.values())
         if dim_act == 0:
             return None, []
         act_array = concatenate([act_bounds[var] for var in dspace.variable_names])
@@ -232,6 +225,7 @@ class LagrangeMultipliers:
 
         if self.__normalized:
             norm_factor = dspace.get_upper_bounds() - dspace.get_lower_bounds()
+            norm_factor[isinf(norm_factor)] = 1.0
             act_jac = norm_factor[act_array]
         else:
             act_jac = 1.0
@@ -260,7 +254,6 @@ class LagrangeMultipliers:
         act_constraints = self.opt_problem.get_active_ineq_constraints(
             x_vect, ineq_tolerance
         )
-
         dspace = self.opt_problem.design_space
 
         if self.__normalized:
@@ -285,10 +278,7 @@ class LagrangeMultipliers:
                         for i, active in enumerate(act_set)
                         if active
                     ]
-        if jac:
-            jac = concatenate(jac)
-        else:
-            jac = None
+        jac = concatenate(jac) if jac else None
         return jac, names
 
     def __compute_constraint_violation(self, x_vect: ndarray) -> None:
@@ -343,10 +333,7 @@ class LagrangeMultipliers:
                     self._get_component_name(eq_function.name, i)
                     for i in range(eq_jac.shape[0])
                 ]
-        if jac:
-            jac = concatenate(jac)
-        else:
-            jac = None
+        jac = concatenate(jac) if jac else None
         return jac, names
 
     def get_objective_jacobian(self, x_vect: ndarray) -> ndarray:
@@ -365,7 +352,7 @@ class LagrangeMultipliers:
 
     def _get_jac_act(
         self, x_vect: ndarray, ineq_tolerance: float = 1e-6
-    ) -> tuple[ndarray, list[str]]:
+    ) -> tuple[ndarray | None, list[str]]:
         """Return the Jacobian of the active constraints.
 
         Args:
@@ -397,18 +384,18 @@ class LagrangeMultipliers:
             + self.active_ineq_names
             + eq_names_act
         )
+
         jacobians = [
             jacobian
             for jacobian in [lb_jac_act, ub_jac_act, ineq_jac, eq_jac]
             if jacobian is not None
         ]
-        if jacobians:
-            jac_act_arr = concatenate(jacobians, axis=0)
-        else:
-            # There no active constraint
-            jac_act_arr = None
 
-        return jac_act_arr, names
+        if jacobians:
+            return concatenate(jacobians, axis=0), names
+
+        # There no active constraint
+        return None, names
 
     def _store_multipliers(self, multipliers: ndarray) -> None:
         """Store the Lagrange multipliers in the attribute :attr:`lagrange_multipliers`.
@@ -424,7 +411,7 @@ class LagrangeMultipliers:
             l_b_mult = multipliers[i_min : i_min + n_act]
             lag[self.LOWER_BOUNDS] = (self.active_lb_names, l_b_mult)
             i_min += n_act
-            wrong_inds = where(l_b_mult < 0.0)[0]
+            wrong_inds = (l_b_mult < 0.0).nonzero()[0]
             if wrong_inds.size > 0:
                 names_neg = array(self.active_lb_names)[wrong_inds]
                 LOGGER.warning(
@@ -438,7 +425,7 @@ class LagrangeMultipliers:
             u_b_mult = multipliers[i_min : i_min + n_act]
             lag[self.UPPER_BOUNDS] = (self.active_ub_names, u_b_mult)
             i_min += n_act
-            wrong_inds = where(u_b_mult < 0.0)[0]
+            wrong_inds = (u_b_mult < 0.0).nonzero()[0]
             if wrong_inds.size > 0:
                 names_neg = array(self.active_ub_names)[wrong_inds]
                 LOGGER.warning(
@@ -452,7 +439,7 @@ class LagrangeMultipliers:
             ineq_mult = multipliers[i_min : i_min + n_act]
             lag[self.INEQUALITY] = (self.active_ineq_names, ineq_mult)
             i_min += n_act
-            wrong_inds = where(ineq_mult < 0.0)[0]
+            wrong_inds = (ineq_mult < 0.0).nonzero()[0]
             if wrong_inds.size > 0:
                 names_neg = array(self.active_ineq_names)[wrong_inds]
                 LOGGER.warning(
@@ -478,7 +465,7 @@ class LagrangeMultipliers:
             The Lagrange multipliers.
         """
         problem = self.opt_problem
-        multipliers = dict()
+        multipliers = {}
 
         # Bound-constraints
         indexed_varnames = problem.design_space.get_indexed_variable_names()
@@ -511,7 +498,7 @@ class LagrangeMultipliers:
         design_space = problem.design_space
 
         # Convert to dictionaries
-        multipliers = dict()
+        multipliers = {}
         for label in self.CSTR_LABELS:
             names, mults = self.lagrange_multipliers.get(label, ([], array([])))
             multipliers[label] = dict(zip(names, mults))
@@ -522,55 +509,47 @@ class LagrangeMultipliers:
             multipliers_init[label].update(multipliers[label])
 
         # Cast the multipliers as arrays
-        mult_arrays = dict()
+        mult_arrays = {}
         # Bound-constraints multipliers
-        mult_arrays[self.LOWER_BOUNDS] = dict()
-        mult_arrays[self.UPPER_BOUNDS] = dict()
+        mult_arrays[self.LOWER_BOUNDS] = {}
+        mult_arrays[self.UPPER_BOUNDS] = {}
         for name in design_space.variable_names:
             indexed_varnames = design_space.get_indexed_variable_names()
-            var_low_mult = array(
-                [
-                    multipliers_init[self.LOWER_BOUNDS][comp_name]
-                    for comp_name in indexed_varnames
-                ]
-            )
+            var_low_mult = array([
+                multipliers_init[self.LOWER_BOUNDS][comp_name]
+                for comp_name in indexed_varnames
+            ])
             mult_arrays[self.LOWER_BOUNDS][name] = var_low_mult
-            var_upp_mult = array(
-                [
-                    multipliers_init[self.UPPER_BOUNDS][comp_name]
-                    for comp_name in indexed_varnames
-                ]
-            )
+            var_upp_mult = array([
+                multipliers_init[self.UPPER_BOUNDS][comp_name]
+                for comp_name in indexed_varnames
+            ])
             mult_arrays[self.UPPER_BOUNDS][name] = var_upp_mult
         # Inequality-constraints multipliers
         ineq_mult = multipliers_init[self.INEQUALITY]
-        mult_arrays[self.INEQUALITY] = dict()
+        mult_arrays[self.INEQUALITY] = {}
         for func in problem.get_ineq_constraints():
-            func_mult = array(
-                [
-                    ineq_mult[
-                        func.name
-                        if func.dim == 1
-                        else self._get_component_name(func.name, index)
-                    ]
-                    for index in range(func.dim)
+            func_mult = array([
+                ineq_mult[
+                    func.name
+                    if func.dim == 1
+                    else self._get_component_name(func.name, index)
                 ]
-            )
+                for index in range(func.dim)
+            ])
             mult_arrays[self.INEQUALITY][func.name] = func_mult
         # Equality-constraints multipliers
         eq_mult = multipliers_init[self.EQUALITY]
-        mult_arrays[self.EQUALITY] = dict()
+        mult_arrays[self.EQUALITY] = {}
         for func in problem.get_eq_constraints():
-            func_mult = array(
-                [
-                    eq_mult[
-                        func.name
-                        if func.dim == 1
-                        else self._get_component_name(func.name, index)
-                    ]
-                    for index in range(func.dim)
+            func_mult = array([
+                eq_mult[
+                    func.name
+                    if func.dim == 1
+                    else self._get_component_name(func.name, index)
                 ]
-            )
+                for index in range(func.dim)
+            ])
             mult_arrays[self.EQUALITY][func.name] = func_mult
 
         return mult_arrays
@@ -590,9 +569,11 @@ class LagrangeMultipliers:
 
     def _get_pretty_table(self) -> PrettyTable:
         """Display the Lagrange Multipliers."""
-        table = PrettyTable(
-            ["Constraint type", "Constraint name", "Lagrange Multiplier"]
-        )
+        table = PrettyTable([
+            "Constraint type",
+            "Constraint name",
+            "Lagrange Multiplier",
+        ])
 
         for cstr_type, nam_val in self.lagrange_multipliers.items():
             for name, value in zip(nam_val[0], nam_val[1]):

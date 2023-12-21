@@ -19,11 +19,12 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.core.structure import SobieskiStructure as CoreStructure
 from gemseo.problems.sobieski.core.utils import SobieskiBase
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from numpy import array
 
 THRESHOLD = 1e-12
 
@@ -141,16 +142,14 @@ def test_jac2_sobieski_struct(problem):
     inpt_data = {
         "y_31": array([6555.68459235 + 0j]),
         "y_21": array([50606.9742 + 0j]),
-        "x_shared": array(
-            [
-                5.00000000e-02 + 0j,
-                4.50000000e04 + 0j,
-                1.60000000e00 + 0j,
-                5.50000000e00 + 0j,
-                5.50000000e01 + 0j,
-                1.00000000e03 + 0j,
-            ]
-        ),
+        "x_shared": array([
+            5.00000000e-02 + 0j,
+            4.50000000e04 + 0j,
+            1.60000000e00 + 0j,
+            5.50000000e00 + 0j,
+            5.50000000e01 + 0j,
+            1.00000000e03 + 0j,
+        ]),
         "x_1": array([0.25 + 0j, 1.0 + 0j]),
     }
 

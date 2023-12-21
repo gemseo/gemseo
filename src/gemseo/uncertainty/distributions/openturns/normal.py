@@ -17,23 +17,21 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a normal distribution from the OpenTURNS library.
+"""The OpenTURNS-based normal distribution."""
 
-This class inherits from :class:`.OTDistribution`.
-"""
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 
 class OTNormalDistribution(OTDistribution):
-    """Create a normal distribution.
+    """The OpenTURNS-based normal distribution.
 
     Examples:
         >>> from gemseo.uncertainty.distributions.openturns.normal import (
         ...     OTNormalDistribution
         >>> )
-        >>> distribution = OTNormalDistribution('x', -1, 2)
+        >>> distribution = OTNormalDistribution("x", -1, 2)
         >>> print(distribution)
         Normal(mu=-1, sigma=2)
     """
@@ -55,13 +53,12 @@ class OTNormalDistribution(OTDistribution):
             sigma: The standard deviation
                 of the normal random variable.
         """  # noqa: D205,D212,D415
-        standard_parameters = {self._MU: mu, self._SIGMA: sigma}
         super().__init__(
             variable,
             "Normal",
             (mu, sigma),
             dimension,
-            standard_parameters,
+            {self._MU: mu, self._SIGMA: sigma},
             transformation,
             lower_bound,
             upper_bound,

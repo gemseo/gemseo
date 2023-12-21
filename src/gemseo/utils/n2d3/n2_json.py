@@ -13,13 +13,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Generator of the JSON file defining the coupling structure used by the N2 chart."""
+
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from collections.abc import Sized
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 from typing import TYPE_CHECKING
 
 from jinja2 import Template
@@ -237,13 +238,11 @@ class N2JSON:
                 disciplines[discipline_index - n_groups]
                 for discipline_index in disciplines_indices
             ]
-            data.append(
-                {
-                    "disciplines": sorted(discipline_names),
-                    "group_index": group_index,
-                    "group_name": groups[group_index],
-                }
-            )
+            data.append({
+                "disciplines": sorted(discipline_names),
+                "group_index": group_index,
+                "group_name": groups[group_index],
+            })
         return Template(
             "    <ul class='collapsible'>"
             "        <li>"
@@ -316,26 +315,24 @@ class N2JSON:
             if variables:
                 source_index = n_groups + disciplines.index(source.name)
                 target_index = n_groups + disciplines.index(target.name)
-                links.append(
-                    {
-                        "source": source_index,
-                        "target": target_index,
-                        "value": len(variables),
-                        "description": self._create_coupling_html(
-                            source.name, target.name, variables, variable_sizes
-                        ),
-                    }
-                )
+                links.append({
+                    "source": source_index,
+                    "target": target_index,
+                    "value": len(variables),
+                    "description": self._create_coupling_html(
+                        source.name, target.name, variables, variable_sizes
+                    ),
+                })
 
-        for index in range(n_nodes):
-            links.append(
-                {
-                    "source": index,
-                    "target": index,
-                    "value": 1,
-                    "description": "",
-                }
-            )
+        links.extend([
+            {
+                "source": index,
+                "target": index,
+                "value": 1,
+                "description": "",
+            }
+            for index in range(n_nodes)
+        ])
 
         return links
 
@@ -392,7 +389,7 @@ class N2JSON:
             self._DEFAULT_GROUP_TEMPLATE.format(group_index)
             for group_index in range(1, n_groups)
         ]
-        group_names = [self._DEFAULT_WEAKLY_COUPLED_DISCIPLINES] + group_names
+        group_names = [self._DEFAULT_WEAKLY_COUPLED_DISCIPLINES, *group_names]
 
         return groups_nodes + disciplines_nodes, group_names
 

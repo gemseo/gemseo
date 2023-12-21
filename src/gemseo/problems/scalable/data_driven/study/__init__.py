@@ -17,9 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Benchmark MDO formulations based on scalable disciplines
-========================================================
+"""Benchmark MDO formulations based on scalable disciplines.
 
 The :mod:`~gemseo.problems.scalable.study` package implements several classes
 to benchmark MDO formulations based on scalable disciplines.
@@ -69,4 +67,5 @@ of the true problem.
    that satisfies this budget, or even saves us time. Thus, it is important
    to carefully define these cost functions.
 """
+
 from __future__ import annotations

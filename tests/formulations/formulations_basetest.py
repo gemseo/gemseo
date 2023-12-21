@@ -19,13 +19,14 @@
 from __future__ import annotations
 
 import unittest
+from typing import ClassVar
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
@@ -55,7 +56,7 @@ class FakeDiscipline(MDODiscipline):
 class FormulationsBaseTest(unittest.TestCase):
     """"""
 
-    DV_NAMES = ["x_1", "x_2", "x_3", "x_shared"]
+    DV_NAMES: ClassVar[list[str]] = ["x_1", "x_2", "x_3", "x_shared"]
 
     def build_mdo_scenario(self, formulation="MDF", dtype="complex128", **options):
         """
@@ -70,7 +71,7 @@ class FormulationsBaseTest(unittest.TestCase):
             SobieskiAerodynamics(dtype),
             SobieskiMission(dtype),
         ]
-        design_space = SobieskiProblem().design_space
+        design_space = SobieskiDesignSpace()
         return MDOScenario(
             disciplines,
             formulation=formulation,

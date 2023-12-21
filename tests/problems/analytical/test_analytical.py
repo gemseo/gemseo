@@ -19,72 +19,65 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import unittest
+import contextlib
 
 import numpy as np
+import pytest
+from numpy import zeros
+
 from gemseo.algos.driver_library import MaxIterReachedException
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.analytical.rosenbrock import RosenMF
-from numpy import zeros
 
 
-class TestAnalyticalFunctions(unittest.TestCase):
+def run_and_test_problem(problem, algo_name="SLSQP"):
+    """
+
+    :param problem: param algo_name:  (Default value = "SLSQP")
+    :param algo_name:  (Default value = "SLSQP")
+
+    """
+    opt = OptimizersFactory().execute(problem, algo_name=algo_name, max_iter=800)
+    x_opt, f_opt = problem.get_solution()
+    assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
+    assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
+
+    x_0 = problem.get_x0_normalized()
+    for func in problem.get_all_functions():
+        with contextlib.suppress(MaxIterReachedException):
+            func.check_grad(x_0, step=1e-9, error_max=1e-4)
+
+
+def test_rastrigin():
     """"""
+    problem = Rastrigin()
+    run_and_test_problem(problem)
 
-    def __relative_norm(self, x, x_ref):
-        xr_norm = np.linalg.norm(x_ref)
-        if xr_norm < 1e-14:
-            return np.linalg.norm(x - x_ref)
-        return np.linalg.norm(x - x_ref) / xr_norm
 
-    def run_and_test_problem(self, problem, algo_name="SLSQP"):
-        """
+def test_rosen():
+    """"""
+    problem = Rosenbrock()
+    run_and_test_problem(problem, "L-BFGS-B")
+    Rosenbrock(initial_guess=zeros(2))
+    problem = Rosenbrock(scalar_var=True)
+    assert "x1" in problem.design_space.variable_names
+    assert "x" not in problem.design_space.variable_names
 
-        :param problem: param algo_name:  (Default value = "SLSQP")
-        :param algo_name:  (Default value = "SLSQP")
 
-        """
-        opt = OptimizersFactory().execute(problem, algo_name=algo_name, max_iter=800)
-        x_opt, f_opt = problem.get_solution()
-        x_err = self.__relative_norm(opt.x_opt, x_opt)
-        f_err = self.__relative_norm(opt.f_opt, f_opt)
-        self.assertAlmostEqual(x_err, 0.0, places=3)
-        self.assertAlmostEqual(f_err, 0.0, places=3)
+def test_power2():
+    """"""
+    problem = Power2()
+    run_and_test_problem(problem)
 
-        x_0 = problem.get_x0_normalized()
-        for func in problem.get_all_functions():
-            try:
-                func.check_grad(x_0, step=1e-9, error_max=1e-4)
-            except MaxIterReachedException:
-                pass
 
-    def test_rastrigin(self):
-        """"""
-        problem = Rastrigin()
-        self.run_and_test_problem(problem)
-
-    def test_rosen(self):
-        """"""
-        problem = Rosenbrock()
-        self.run_and_test_problem(problem, "L-BFGS-B")
-        problem = Rosenbrock(initial_guess=zeros(2))
-        problem = Rosenbrock(scalar_var=True)
-        assert "x1" in problem.design_space.variable_names
-        assert "x" not in problem.design_space.variable_names
-
-    def test_power2(self):
-        """"""
-        problem = Power2()
-        self.run_and_test_problem(problem)
-
-    def test_rosen_mf(self):
-        disc = RosenMF(3)
-        assert disc.check_jacobian(
-            {"x": np.zeros(3)},
-            derr_approx="finite_differences",
-            step=1e-8,
-            threshold=1e-4,
-        )
+def test_rosen_mf():
+    disc = RosenMF(3)
+    assert disc.check_jacobian(
+        {"x": np.zeros(3)},
+        derr_approx="finite_differences",
+        step=1e-8,
+        threshold=1e-4,
+    )

@@ -22,13 +22,13 @@ import re
 from pathlib import Path
 
 import pytest
+
 from gemseo import create_discipline
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.wrappers.job_schedulers.slurm import SLURM
-from pytest import fixture
 
 
-@fixture
+@pytest.fixture()
 def discipline(tmpdir):
     """Create a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the SLURM template.
@@ -36,15 +36,13 @@ def discipline(tmpdir):
     Returns:
         The wrapped discipline.
     """
-    disc = SLURM(
+    return SLURM(
         discipline=create_discipline("SobieskiMission"),
         workdir_path=tmpdir,
         scheduler_run_command="python",
         job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
         job_out_filename="run_disc.py",
     )
-
-    return disc
 
 
 def test_run(discipline):

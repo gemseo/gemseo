@@ -18,18 +18,17 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The base class for the scenarios."""
+
 from __future__ import annotations
 
 import logging
 import timeit
+from collections.abc import Mapping
+from collections.abc import Sequence
 from datetime import timedelta
-from os import remove
-from os.path import basename
-from os.path import exists
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
-from typing import Sequence
 from typing import Union
 
 from numpy import array
@@ -37,23 +36,28 @@ from numpy import complex128
 from numpy import float64
 from numpy import ndarray
 
-from gemseo.algos.design_space import DesignSpace
+from gemseo import create_scenario_result
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
-from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.post.opt_post_processor import OptPostProcessorOptionType
-from gemseo.post.post_factory import PostFactory
+from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
-from gemseo.utils.xdsm import XDSM
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.core.formulation import MDOFormulation
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.post.opt_post_processor import OptPostProcessor
+    from gemseo.post.opt_post_processor import OptPostProcessorOptionType
+    from gemseo.post.post_factory import PostFactory
+    from gemseo.utils.xdsm import XDSM
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -86,8 +90,8 @@ class Scenario(MDODiscipline):
     formulation_name: str
     """The name of the MDO formulation."""
 
-    optimization_result: OptimizationResult
-    """The optimization result."""
+    optimization_result: OptimizationResult | None
+    """The optimization result if the scenario has been executed; otherwise ``None``."""
 
     post_factory: PostFactory | None
     """The factory for post-processors if any."""
@@ -101,6 +105,7 @@ class Scenario(MDODiscipline):
     ALGO_OPTIONS = "algo_options"
     activate_input_data_check = True
     activate_output_data_check = True
+    _opt_hist_backup_path: Path
 
     def __init__(
         self,
@@ -127,14 +132,12 @@ class Scenario(MDODiscipline):
                 e.g. :class:`.IDF` with the coupling variables).
             name: The name to be given to this scenario.
                 If ``None``, use the name of the class.
+            grammar_type: The grammar for the scenario and the MDO formulation.
             maximize_objective: Whether to maximize the objective.
             **formulation_options: The options of the :class:`.MDOFormulation`.
         """  # noqa: D205, D212, D415
-        self.formulation = None
-        self.formulation_name = None
         self.optimization_result = None
         self._algo_factory = None
-        self._opt_hist_backup_path = None
         self._gen_opt_backup_plot = False
         self._algo_name = None
         self._lib = None
@@ -156,7 +159,6 @@ class Scenario(MDODiscipline):
             **formulation_options,
         )
         self.formulation.opt_problem.database.name = self.name
-        self.__post_factory = None
         self._update_input_grammar()
         self.clear_history_before_run = False
 
@@ -173,12 +175,9 @@ class Scenario(MDODiscipline):
         self.formulation.opt_problem.use_standardized_objective = value
 
     @property
-    def post_factory(self) -> PostFactory | None:
+    def post_factory(self) -> PostFactory:
         """The factory of post-processors."""
-        if self.__post_factory is None:
-            self.__post_factory = PostFactory()
-
-        return self.__post_factory
+        return ScenarioResult.POST_FACTORY
 
     @property
     def _formulation_factory(self) -> MDOFormulationsFactory:
@@ -254,13 +253,14 @@ class Scenario(MDODiscipline):
                 a single discipline must provide all outputs.
             constraint_type: The type of constraint.
             constraint_name: The name of the constraint to be stored.
-                If ``None``, the name of the constraint is generated from the output name.
+                If ``None``,
+                the name of the constraint is generated from the output name.
             value: The value for which the constraint is active.
                 If ``None``, this value is 0.
             positive: If ``True``, the inequality constraint is positive.
 
         Raises:
-            ValueError: If the constraint type is neither 'eq' or 'ineq'.
+            ValueError: If the constraint type is neither 'eq' nor 'ineq'.
         """
         self.formulation.add_constraint(
             output_name,
@@ -385,10 +385,10 @@ class Scenario(MDODiscipline):
             ValueError: If both erase and pre_load are ``True``.
         """
         opt_pb = self.formulation.opt_problem
-        self._opt_hist_backup_path = file_path
+        self._opt_hist_backup_path = Path(file_path)
         self._gen_opt_backup_plot = generate_opt_plot
 
-        if exists(self._opt_hist_backup_path):
+        if self._opt_hist_backup_path.exists():
             if erase and pre_load:
                 raise ValueError(
                     "Conflicting options for history backup, "
@@ -399,7 +399,7 @@ class Scenario(MDODiscipline):
                     "Erasing optimization history in %s",
                     self._opt_hist_backup_path,
                 )
-                remove(self._opt_hist_backup_path)
+                self._opt_hist_backup_path.unlink()
             elif pre_load:
                 opt_pb.database.update_from_hdf(self._opt_hist_backup_path)
                 max_iteration = len(opt_pb.database)
@@ -422,9 +422,11 @@ class Scenario(MDODiscipline):
         """
         self.save_optimization_history(self._opt_hist_backup_path, append=True)
         if self._gen_opt_backup_plot and self.formulation.opt_problem.database:
-            basepath = basename(self._opt_hist_backup_path).split(".")[0]
             self.post_process(
-                "OptHistoryView", save=True, show=False, file_path=basepath
+                "OptHistoryView",
+                save=True,
+                show=False,
+                file_path=self._opt_hist_backup_path.stem,
             )
 
     @property
@@ -443,6 +445,9 @@ class Scenario(MDODiscipline):
             post_name: The name of the post-processor,
                 i.e. the name of a class inheriting from :class:`.OptPostProcessor`.
             **options: The options for the post-processor.
+
+        Returns:
+            The post-processing instance related to the optimization scenario.
         """
         return self.post_factory.execute(
             self.formulation.opt_problem, post_name, **options
@@ -466,7 +471,7 @@ class Scenario(MDODiscipline):
 
     def _run_algorithm(self) -> OptimizationResult:
         """Run the driver algorithm."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __repr__(self) -> str:
         msg = MultiLineString()
@@ -554,15 +559,16 @@ class Scenario(MDODiscipline):
             XDSMizer(self).monitor(
                 directory_path=directory_path, log_workflow_status=log_workflow_status
             )
-        else:
-            return XDSMizer(self).run(
-                directory_path=directory_path,
-                save_pdf=save_pdf,
-                show_html=show_html,
-                save_html=save_html,
-                save_json=save_json,
-                file_name=file_name,
-            )
+            return None
+
+        return XDSMizer(self).run(
+            directory_path=directory_path,
+            save_pdf=save_pdf,
+            show_html=show_html,
+            save_html=save_html,
+            save_json=save_json,
+            file_name=file_name,
+        )
 
     def get_expected_dataflow(  # noqa:D102
         self,
@@ -575,7 +581,7 @@ class Scenario(MDODiscipline):
 
     def _init_algo_factory(self) -> None:
         """Initialize the factory of algorithms."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_available_driver_names(self) -> list[str]:
         """The available drivers."""
@@ -584,16 +590,14 @@ class Scenario(MDODiscipline):
     def _update_input_grammar(self) -> None:
         """Update the input grammar from the names of available drivers."""
         if self.grammar_type == MDODiscipline.GrammarType.JSON:
-            self.input_grammar.update_from_schema(
-                {
-                    "properties": {
-                        "algo": {
-                            "type": "string",
-                            "enum": self.get_available_driver_names(),
-                        }
+            self.input_grammar.update_from_schema({
+                "properties": {
+                    "algo": {
+                        "type": "string",
+                        "enum": self.get_available_driver_names(),
                     }
                 }
-            )
+            })
         else:
             self.input_grammar.update_from_types({"algo": str})
         self.input_grammar.required_names.add("algo")
@@ -647,3 +651,16 @@ class Scenario(MDODiscipline):
             opt_naming=opt_naming,
             export_gradients=export_gradients,
         )
+
+    def get_result(self, name: str = "", **options: Any) -> ScenarioResult:
+        """Return the result of the scenario execution.
+
+        Args:
+            name: The class name of the :class:`.ScenarioResult`.
+                If empty, use a default one (see :func:`create_scenario_result`).
+            **options: The options of the :class:`.ScenarioResult`.
+
+        Returns:
+            The result of the scenario execution.
+        """
+        return create_scenario_result(self, name, **options)

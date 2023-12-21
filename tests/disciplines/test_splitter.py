@@ -15,11 +15,12 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.disciplines.splitter import Splitter
 from numpy import array
 
+from gemseo.disciplines.splitter import Splitter
 
-@pytest.fixture
+
+@pytest.fixture()
 def splitting_discipline_for_test():
     """Define a Slicer discipline for test."""
     return Splitter("E", {"Ep": [0, 1], "Es": [2, 3], "Er": 4})
@@ -27,9 +28,9 @@ def splitting_discipline_for_test():
 
 def test_splitting_discipline_execution(splitting_discipline_for_test):
     """Test the Splitter execution."""
-    output_data = splitting_discipline_for_test.execute(
-        {"E": array([1.0, 2.0, 3.0, 4.0, 5.0])}
-    )
+    output_data = splitting_discipline_for_test.execute({
+        "E": array([1.0, 2.0, 3.0, 4.0, 5.0])
+    })
     assert (output_data["Ep"] == array([1.0, 2.0])).all
     assert (output_data["Es"] == array([3.0, 4.0])).all
     assert (output_data["Er"] == array([5.0])).all

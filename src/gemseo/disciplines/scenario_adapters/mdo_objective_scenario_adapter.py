@@ -20,14 +20,18 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A scenario adapter overwriting the local data with the optimal objective."""
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import atleast_1d
 
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):

@@ -20,10 +20,10 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """The MDOFunction consistency constraint subclass to support formulations."""
+
 from __future__ import annotations
 
 import logging
-from typing import Sequence
 from typing import TYPE_CHECKING
 
 from numpy import eye
@@ -32,16 +32,19 @@ from numpy import ones_like
 from numpy import zeros
 
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.core.formulation import MDOFormulation
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ConsistencyCstr(MDOFunction):
+class ConsistencyCstr(LinearCandidateFunction):
     """An :class:`.MDOFunction` object to compute the consistency constraints."""
 
     def __init__(
@@ -59,6 +62,7 @@ class ConsistencyCstr(MDOFunction):
         self.__coupl_func = FunctionFromDiscipline(
             self.__output_couplings, self.__formulation
         )
+
         self.__dv_names_of_disc = self.__coupl_func.input_names
 
         if self.__formulation.normalize_constraints:
@@ -83,6 +87,14 @@ class ConsistencyCstr(MDOFunction):
             output_names=self.__coupl_func.output_names,
             f_type=MDOFunction.ConstraintType.EQ,
         )
+
+    @property
+    def linear_candidate(self) -> bool:  # noqa: D102
+        return self.__coupl_func.linear_candidate
+
+    @property
+    def input_dimension(self) -> int | None:  # noqa: D102
+        return self.__coupl_func.input_dimension
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the consistency constraints.
@@ -109,7 +121,7 @@ class ConsistencyCstr(MDOFunction):
         Returns:
             The value of the gradient of the consistency constraints.
         """
-        coupl_jac = self.__coupl_func.jac(x_vect)  # pylint: disable=E1102
+        coupl_jac = self.__coupl_func.jac(x_vect)
 
         if len(coupl_jac.shape) > 1:
             # In this case it is harder since a block diagonal

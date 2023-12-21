@@ -18,27 +18,27 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for validating data structures."""
+
 from __future__ import annotations
 
 import collections
 import logging
 from abc import abstractmethod
+from collections.abc import Iterable
+from collections.abc import KeysView
+from collections.abc import Mapping
+from collections.abc import MutableMapping
 from copy import copy
-from typing import Any
-from typing import Iterable
-from typing import KeysView
-from typing import Mapping
-from typing import MutableMapping
-from typing import Optional
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
+from typing import Optional
 
-from typing_extensions import Self
-
-from gemseo.core.discipline_data import Data
+from gemseo.core.data_converters.factory import DataConverterFactory
 from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
+from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import update_namespaces
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
@@ -47,6 +47,10 @@ from gemseo.utils.string_tools import pretty_str
 NamesToTypes = Mapping[str, Optional[type]]
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
+    from gemseo.core.data_converters.base import BaseDataConverter
+    from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 LOGGER = logging.getLogger(__name__)
@@ -74,6 +78,12 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
     _defaults: Defaults
     """The mapping from the names to the default values, if any."""
 
+    _data_converter: BaseDataConverter
+    """The converter of data values to NumPy arrays and vice-versa."""
+
+    DATA_CONVERTER_CLASS: ClassVar[str | type[BaseDataConverter]]
+    """The class or the class name of the data converter."""
+
     def __init__(
         self,
         name: str,
@@ -89,6 +99,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             raise ValueError("The grammar name cannot be empty.")
         self.name = name
         self.clear()
+        self.__create_data_converter(self.DATA_CONVERTER_CLASS)
 
     def __str__(self) -> str:
         return f"Grammar name: {self.name}"
@@ -101,11 +112,11 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         text.indent()
         text.add("Required elements:")
         text.indent()
-        self._repr_required_elements(text)
+        self.__update_grammar_repr(text, True)
         text.dedent()
         text.add("Optional elements:")
         text.indent()
-        self._repr_optional_elements(text)
+        self.__update_grammar_repr(text, False)
         return text
 
     def __repr__(self) -> str:
@@ -153,20 +164,29 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             grammar: The grammar to be copied into.
         """
 
-    @abstractmethod
-    def _repr_required_elements(self, text: MultiLineString) -> None:
-        """Represent the required elements for `__repr__`.
+    def __update_grammar_repr(self, repr_: MultiLineString, required: bool) -> None:
+        """Update the string representation of the grammar with that of its elements.
 
         Args:
-            text: The text to be updated.
+            repr_: The string representation of the grammar.
+            required: Whether to show the required elements or the other ones.
         """
+        for name, properties in self.items():
+            if (name in self.required_names) == required:
+                repr_.add(f"{name}:")
+                repr_.indent()
+                self._update_grammar_repr(repr_, properties)
+                if not required:
+                    repr_.add(f"Default: {self._defaults.get(name, 'N/A')}")
+                repr_.dedent()
 
     @abstractmethod
-    def _repr_optional_elements(self, text: MultiLineString) -> None:
-        """Represent the optional elements for `__repr__`.
+    def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
+        """Update the string representation of the grammar with an element.
 
         Args:
-            text: The text to be updated.
+            repr_: The string representation of the grammar.
+            properties: The properties of the element.
         """
 
     @property
@@ -194,6 +214,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
     def _clear(self) -> None:
         """Empty the grammar but the defaults and namespace mappings."""
 
+    # TODO: API: rename exclude_names (starts with verb like method) to excluded_names.
     @abstractmethod
     def update(
         self,
@@ -301,6 +322,12 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             Whether the validation passed.
         """
 
+    @property
+    def data_converter(self) -> BaseDataConverter:
+        """The converter of data values to NumPy arrays and vice versa."""
+        return self._data_converter
+
+    # TODO: API: remove in favor of is_numeric?
     @abstractmethod
     def is_array(
         self,
@@ -314,8 +341,7 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             numeric_only: Whether to check if the array elements are numbers.
 
         Returns:
-            Whether the element is an array. If `check_items_number` is set to `True`,
-            then return whether the element is an array and its items are numbers.
+            Whether the element is an array.
 
         Raises:
             KeyError: If the element is not in the grammar.
@@ -422,3 +448,16 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         self.rename_element(name, new_name)
         self.to_namespaced[name] = new_name
         self.from_namespaced[new_name] = name
+
+    def __create_data_converter(
+        self,
+        cls: type[BaseDataConverter] | str,
+    ) -> None:
+        """Create the data converter.
+
+        Args:
+            cls: The class or the class name of the data
+        """
+        if isinstance(cls, str):
+            cls = DataConverterFactory().get_class(cls)
+        self._data_converter = cls(grammar=self)

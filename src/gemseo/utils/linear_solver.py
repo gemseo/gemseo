@@ -17,10 +17,13 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Linear solvers' wrapper."""
+
 from __future__ import annotations
 
 import logging
-from typing import Sized
+from typing import TYPE_CHECKING
+from typing import Callable
+from typing import ClassVar
 
 import numpy as np
 import scipy.sparse.linalg as scipy_linalg
@@ -29,6 +32,9 @@ from scipy.sparse.linalg import bicgstab
 from scipy.sparse.linalg import cgs
 from strenum import LowercaseStrEnum
 
+if TYPE_CHECKING:
+    from collections.abc import Sized
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -36,7 +42,9 @@ class LinearSolver:
     """Solve a linear system Ax=b."""
 
     Solver = LowercaseStrEnum("Solver", "LGMRES")
-    _SOLVER_NAME_TO_FUNCTION = {Solver.LGMRES: scipy_linalg.lgmres}
+    _SOLVER_NAME_TO_FUNCTION: ClassVar[dict[str, Callable]] = {
+        Solver.LGMRES: scipy_linalg.lgmres
+    }
 
     def __init__(self) -> None:
         """Constructor."""

@@ -17,16 +17,20 @@
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base wrapper for all ODE solvers."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
-
-from numpy.typing import NDArray
 
 from gemseo.algos.algorithm_library import AlgorithmDescription
 from gemseo.algos.algorithm_library import AlgorithmLibrary
-from gemseo.algos.ode.ode_problem import ODEProblem
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from gemseo.algos.ode.ode_problem import ODEProblem
 
 LOGGER = logging.getLogger(__name__)
 

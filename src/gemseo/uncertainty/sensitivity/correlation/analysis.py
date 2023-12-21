@@ -19,35 +19,27 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Class for the estimation of various correlation coefficients."""
+
 from __future__ import annotations
 
-import logging
-from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Collection
 from typing import Final
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 
 from numpy import array
 from numpy import newaxis
 from numpy import vstack
-from numpy.typing import NDArray
 from openturns import Sample
 from strenum import StrEnum
 
-from gemseo.algos.doe.doe_library import DOELibraryOptionType
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.dataset_plot import VariableType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import OutputsType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.compatibility.openturns import compute_kendall_tau
 from gemseo.utils.compatibility.openturns import compute_pcc
 from gemseo.utils.compatibility.openturns import compute_pearson_correlation
@@ -56,11 +48,22 @@ from gemseo.utils.compatibility.openturns import compute_spearman_correlation
 from gemseo.utils.compatibility.openturns import compute_squared_src
 from gemseo.utils.compatibility.openturns import compute_src
 from gemseo.utils.compatibility.openturns import compute_srrc
-from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
 
-LOGGER = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+    from pathlib import Path
+
+    from numpy.typing import NDArray
+
+    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.post.dataset.dataset_plot import VariableType
 
 
 class CorrelationAnalysis(SensitivityAnalysis):
@@ -70,7 +73,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         >>> from numpy import pi
         >>> from gemseo import create_discipline, create_parameter_space
         >>> from gemseo.uncertainty.sensitivity.correlation.analysis import (
-        ...     CorrelationAnalysis
+        ...     CorrelationAnalysis,
         ... )
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
@@ -89,9 +92,11 @@ class CorrelationAnalysis(SensitivityAnalysis):
         ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
         ... )
         >>>
-        >>> analysis = CorrelationAnalysis([discipline], parameter_space, n_samples=1000)
+        >>> analysis = CorrelationAnalysis(
+        ...     [discipline], parameter_space, n_samples=1000
+        ... )
         >>> indices = analysis.compute_indices()
-    """
+    """  # noqa: E501
 
     class Method(StrEnum):
         """The names of the sensitivity methods."""
@@ -137,7 +142,6 @@ class CorrelationAnalysis(SensitivityAnalysis):
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
-        self.__correlation = None
         super().__init__(
             disciplines,
             parameter_space,
@@ -160,7 +164,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         input_samples = Sample(
             self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
         )
-        self.__correlation = {}
+        self._indices = {}
         # For each correlation method
         new_methods = [self.Method.KENDALL, self.Method.SSRC]
         for method in self.Method:
@@ -170,7 +174,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
             # The version of OpenTURNS offers this correlation method.
             get_indices = self.__METHODS_TO_FUNCTIONS[method]
             sizes = self.dataset.variable_names_to_n_components
-            self.__correlation[method] = {
+            self._indices[method] = {
                 output_name: [
                     split_array_to_dict_of_arrays(
                         array(
@@ -194,7 +198,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 for output_name in output_names
             }
 
-        return self.indices
+        return self._indices
 
     @property
     def pcc(self) -> FirstOrderIndicesType:
@@ -212,7 +216,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.PCC]
+        return self._indices[self.Method.PCC]
 
     @property
     def prcc(self) -> FirstOrderIndicesType:
@@ -230,7 +234,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.PRCC]
+        return self._indices[self.Method.PRCC]
 
     @property
     def src(self) -> FirstOrderIndicesType:
@@ -248,7 +252,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.SRC]
+        return self._indices[self.Method.SRC]
 
     @property
     def ssrc(self) -> FirstOrderIndicesType:
@@ -266,7 +270,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation.get(self.Method.SSRC, {})
+        return self._indices.get(self.Method.SSRC, {})
 
     @property
     def kendall(self) -> FirstOrderIndicesType:
@@ -284,7 +288,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation.get(self.Method.KENDALL, {})
+        return self._indices.get(self.Method.KENDALL, {})
 
     @property
     def srrc(self) -> FirstOrderIndicesType:
@@ -302,7 +306,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.SRRC]
+        return self._indices[self.Method.SRRC]
 
     @property
     def pearson(self) -> FirstOrderIndicesType:
@@ -320,7 +324,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.PEARSON]
+        return self._indices[self.Method.PEARSON]
 
     @property
     def spearman(self) -> FirstOrderIndicesType:
@@ -338,27 +342,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 ]
             }
         """
-        return self.__correlation[self.Method.SPEARMAN]
-
-    @property
-    def indices(self) -> dict[str, FirstOrderIndicesType]:
-        """The sensitivity indices.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "method_name": {
-                    "output_name": [
-                        {
-                            "input_name": data_array,
-                        }
-                    ]
-                }
-            }
-        """
-        return self.__correlation
+        return self._indices[self.Method.SPEARMAN]
 
     def plot(  # noqa: D102
         self,
@@ -372,6 +356,11 @@ class CorrelationAnalysis(SensitivityAnalysis):
         file_name: str = "",
         file_format: str = "",
     ) -> None:
+        """
+        Args:
+            directory_path: The path to the directory where to save the plots.
+            file_name: The name of the file.
+        """  # noqa: D212, D205
         if isinstance(output, str):
             output_name, output_index = output, 0
         else:
@@ -385,14 +374,10 @@ class CorrelationAnalysis(SensitivityAnalysis):
             # in a 2D NumPy array shaped as (n_indices, input_dimension).
             dataset.add_variable(
                 input_name,
-                vstack(
-                    [
-                        getattr(self, method.lower())[output_name][output_index][
-                            input_name
-                        ]
-                        for method in all_indices
-                    ]
-                ),
+                vstack([
+                    getattr(self, method.lower())[output_name][output_index][input_name]
+                    for method in all_indices
+                ]),
             )
 
         dataset.index = all_indices

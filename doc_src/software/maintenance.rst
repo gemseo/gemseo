@@ -32,7 +32,7 @@ on the versions of its dependencies.
 Thus the versions of its dependencies cannot be pinned,
 but a range of compatible versions shall be defined.
 
-All the dependencies of |g| are defined in :file:`setup.cfg`,
+All the dependencies of |g| are defined in :file:`pyproject.toml`,
 this files does not tell where the packages will be pulled from.
 The dependencies could be provided by the packages repositories
 `pypi`_, `anaconda`_ or `conda-forge`_.
@@ -43,9 +43,8 @@ and python versions is tricky and challenging.
 This kind of work is mostly done by trials and errors.
 
 In addition to the dependencies of |g|,
-:file:`setup.cfg` also defines optional dependencies
+:file:`pyproject.toml` also defines optional dependencies
 used for running the tests or building the documentation.
-These are defined in the ``[options.extras_require]`` section.
 
 Dependencies for development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -76,14 +75,18 @@ The actual call to `pip-tools`_ is done via ``tox`` (see below).
 Documentation files like :file:`CREDITS.rst`
 and :file:`dependencies.rst` shall also be updated accordingly.
 
-Whenever a dependency defined in :file:`setup.cfg` is changed,
+Whenever a dependency defined in :file:`pyproject.toml` is changed,
 update the requirements for the testing and ``doc`` environments of ``tox``:
 
 .. _update-deps:
 
 .. code-block:: shell
 
-    tox -e update-deps-test-py38,update-deps-test-py39,update-deps-test-py310,update-deps-doc
+    tox -e update-deps-test-py39,update-deps-test-py310,update-deps-py311,update-deps-doc
+
+.. warning::
+
+   This shall be run on linux only otherwise windows specific packages will be included!
 
 The dependencies for the ``check`` and ``dist`` environments of ``tox``
 are defined in:
@@ -151,7 +154,9 @@ Making a new release
 
 #. Create a release branch named release-X.Y.Z.
 #. For plugins only:
-   #. Update the required gemseo version in :file:`setup.cfg`.
+
+   #. Update the required gemseo version in :file:`pyproject.toml`.
+
 #. Update the changelog.
 #. Push the branch.
 #. Create a MR to master.

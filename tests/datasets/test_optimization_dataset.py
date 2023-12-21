@@ -13,14 +13,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the class OptimizationDataset."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.optimization_dataset import OptimizationDataset
 from numpy import arange
 from numpy.testing import assert_equal
 from pandas.testing import assert_frame_equal
+
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 
 
 @pytest.fixture(scope="module")

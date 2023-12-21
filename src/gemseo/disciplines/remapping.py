@@ -15,12 +15,11 @@
 # Contributors:
 #     Matthias De Lozzo
 """A discipline whose inputs and outputs map to those of another."""
+
 from __future__ import annotations
 
+from collections.abc import Iterable
 from functools import singledispatchmethod
-from typing import Dict
-from typing import Iterable
-from typing import Tuple
 from typing import Union
 
 from numpy import empty
@@ -28,9 +27,9 @@ from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
 
-Data = Dict[str, ndarray]
-Indices = Tuple[str, Union[int, Iterable[int]]]
-NameMapping = Dict[str, Union[str, Indices]]
+Data = dict[str, ndarray]
+Indices = tuple[str, Union[int, Iterable[int]]]
+NameMapping = dict[str, Union[str, Indices]]
 
 
 class RemappingDiscipline(MDODiscipline):
@@ -94,7 +93,7 @@ class RemappingDiscipline(MDODiscipline):
             value: The value to be cast.
 
         Returns:
-            The casted value.
+            The cast value.
 
         Raises:
             ValueError: When the value is neither a string nor a tuple

@@ -16,6 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Simone Coniglio
 """Make an animated GIF from an :class:`.OptPostProcessor`."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -59,13 +60,9 @@ class Animation(OptPostProcessor):
             )
         )
         # cast paths as string or None before checks.
-        options.update(
-            {
-                self.__TEMPORARY_DATABASE_FILE: options.get(
-                    self.__TEMPORARY_DATABASE_FILE
-                )
-            }
-        )
+        options.update({
+            self.__TEMPORARY_DATABASE_FILE: options.get(self.__TEMPORARY_DATABASE_FILE)
+        })
         super().check_options(**options)
 
     def _plot(

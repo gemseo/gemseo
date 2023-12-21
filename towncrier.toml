@@ -1,0 +1,32 @@
+[tool.towncrier]
+directory = "changelog/fragments"
+filename = "CHANGELOG.rst"
+template = "changelog/template.jinja2"
+title_format = "Version {version} ({project_date})"
+issue_format = "`#{issue} <https://gitlab.com/gemseo/dev/gemseo/-/issues/{issue}>`_"
+underlines = "*-"
+
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "changed"
+name = "Changed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "removed"
+name = "Removed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "deprecated"
+name = "Deprecated"
+showcontent = true

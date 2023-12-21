@@ -23,6 +23,7 @@ import pickle
 from pathlib import Path
 
 import pytest
+
 from gemseo import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
@@ -31,7 +32,7 @@ from gemseo.utils.testing.helpers import image_comparison
 TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
 
 
-@pytest.fixture
+@pytest.fixture()
 def reset_time_stamping():
     """Reset the time stamping before and after a test."""
     MDODiscipline.deactivate_time_stamps()
@@ -44,8 +45,7 @@ def reset_time_stamping():
 def time_stamps_data():
     """Return the reference time stamps from local pickle."""
     with TIME_STAMPS_PATH.open("rb") as infile:
-        data = pickle.load(infile)
-    return data
+        return pickle.load(infile)
 
 
 def test_time_stamps(reset_time_stamping):
@@ -101,7 +101,7 @@ def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     # ]
     # )
     #
-    # design_space = SobieskiProblem().design_space
+    # design_space = SobieskiDesignSpace()
     # scenario = create_scenario(
     # disciplines,
     # "MDF",

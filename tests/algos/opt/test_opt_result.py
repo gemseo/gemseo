@@ -20,12 +20,16 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
+from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from numpy import array
 
 
 def test_from_dict():
@@ -63,17 +67,15 @@ def optimization_result() -> OptimizationResult:
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
     design_space.add_variable("z", size=2, l_b=0.0, u_b=1.0, value=0.5)
-    disc = AnalyticDiscipline(
-        {
-            "y": "x",
-            "eq_1": "x",
-            "eq_2": "x",
-            "ineq_p_1": "x",
-            "ineq_p_2": "x",
-            "ineq_n_1": "x",
-            "ineq_n_2": "x",
-        }
-    )
+    disc = AnalyticDiscipline({
+        "y": "x",
+        "eq_1": "x",
+        "eq_2": "x",
+        "ineq_p_1": "x",
+        "ineq_p_2": "x",
+        "ineq_n_1": "x",
+        "ineq_n_2": "x",
+    })
     scenario = DOEScenario([disc], "DisciplinaryOpt", "y", design_space)
     scenario.add_constraint("eq_1", constraint_type="eq")
     scenario.add_constraint("eq_2", constraint_type="eq", value=0.25)
@@ -176,3 +178,50 @@ def test_initialize_optimum_index():
     """Check that the optimum index is correctly initialized."""
     result = OptimizationResult(optimum_index=1)
     assert result.optimum_index == 1
+
+
+def test_from_optimization_problem_empy_database():
+    """Check from_optimization_problem with empty database."""
+    problem = OptimizationProblem(DesignSpace())
+    result = OptimizationResult.from_optimization_problem(problem)
+    assert result == OptimizationResult(n_obj_call=0)
+
+
+@pytest.mark.parametrize(
+    ("value", "is_feasible", "sign", "constraint"),
+    [(-1.0, False, "+", 1.1), (1.0, True, "-", -0.9)],
+)
+@pytest.mark.parametrize("use_standardized_objective", [True, False])
+@pytest.mark.parametrize("maximize", [True, False])
+def test_from_optimization_problem(
+    value, is_feasible, sign, constraint, use_standardized_objective, maximize
+):
+    """Check from_optimization_problem with empty database."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x, "f")
+    problem.add_constraint(
+        MDOFunction(lambda x: x, "g"), value, MDOFunction.ConstraintType.INEQ
+    )
+    if maximize:
+        problem.change_objective_sign()
+    problem.use_standardized_objective = use_standardized_objective
+    execute_algo(problem, "CustomDOE", "doe", samples=array([[0.1]]))
+    result = OptimizationResult.from_optimization_problem(problem)
+    f_opt = -0.1 if maximize and use_standardized_objective else 0.1
+
+    objective_name = "-f" if maximize and use_standardized_objective else "f"
+    assert result == OptimizationResult(
+        x_0=array([0.1]),
+        x_0_as_dict={"x": array([0.1])},
+        x_opt=array([0.1]),
+        x_opt_as_dict={"x": array([0.1])},
+        f_opt=f_opt,
+        objective_name=objective_name,
+        n_obj_call=1,
+        optimum_index=0,
+        is_feasible=is_feasible,
+        constraint_values={f"[g{sign}1.0]": array([constraint])},
+        constraints_grad={f"[g{sign}1.0]": None},
+    )

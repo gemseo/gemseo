@@ -23,14 +23,16 @@ from typing import Any
 from unittest import mock
 
 import pytest
+from numpy import array
+from numpy import unique
+
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe._openturns.base_ot_stratified_doe import BaseOTStratifiedDOE
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from numpy import unique
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -39,7 +41,7 @@ from .utils import get_problem
 DOE_LIB_NAME = "OpenTURNS"
 
 
-@pytest.fixture
+@pytest.fixture()
 def identity_problem() -> OptimizationProblem:
     """A problem whose objective is the identity function defined over [0,1]."""
     design_space = DesignSpace()
@@ -58,7 +60,7 @@ def test_library_from_factory():
 
 
 @pytest.mark.parametrize(
-    "levels,exception,msg",
+    ("levels", "exception", "msg"),
     [
         (
             4,
@@ -89,19 +91,18 @@ def test_composite_malformed_levels(levels, exception, msg):
 
 def test_malformed_levels_with_check_and_cast_levels():
     """Check that checking and casting malformed 'levels' raises an error."""
-    lib = DOEFactory().create(DOE_LIB_NAME)
-
+    algo = BaseOTStratifiedDOE()
     with pytest.raises(
         TypeError,
         match=re.escape(
             "The argument 'levels' must be either a list or a tuple; got a 'int'."
         ),
     ):
-        lib._OpenTURNS__check_and_cast_levels({"levels": 1})
+        algo._BaseOTStratifiedDOE__check_and_cast_levels(levels=1)
 
 
 @pytest.mark.parametrize(
-    "centers,exception", [([0.5] * (3 + 1), ValueError), (0.5, TypeError)]
+    ("centers", "exception"), [([0.5] * (3 + 1), ValueError), (0.5, TypeError)]
 )
 def test_composite_malformed_centers(centers, exception):
     """Check that passing malformed 'centers' raises an exception for Composite DOE."""
@@ -114,22 +115,37 @@ def test_composite_malformed_centers(centers, exception):
         )
 
 
-def test_malformed_centers_with_check_and_cast_centers():
+@pytest.mark.parametrize(
+    ("centers", "error", "error_message"),
+    [
+        (
+            1,
+            TypeError,
+            (
+                "Error for 'centers' definition in DOE design; "
+                "a tuple or a list is expected whereas <class 'int'> is provided."
+            ),
+        ),
+        (
+            [2, 3],
+            ValueError,
+            (
+                "Inconsistent length of 'centers' list argument "
+                "compared to design vector size: 1 vs 2."
+            ),
+        ),
+    ],
+)
+def test_malformed_centers_with_check_and_cast_centers(centers, error, error_message):
     """Check that checking and casting malformed 'centers' raises an error."""
-    lib = DOEFactory().create("OT_LHS")
-    lib.problem = Rosenbrock()
-
-    with pytest.raises(TypeError):
-        lib._OpenTURNS__check_and_cast_centers({"centers": 1})
+    algo = BaseOTStratifiedDOE()
+    with pytest.raises(error, match=re.escape(error_message)):
+        algo._BaseOTStratifiedDOE__check_and_cast_centers(1, centers=centers)
 
 
 def test_check_stratified_options():
-    """Verify that OpenTURNS.__check_stratified_options works correctly."""
-    factory = DOEFactory()
-    lib = factory.create(DOE_LIB_NAME)
-    lib.problem = Rosenbrock()
-    options = {}
-    dimension = lib.problem.dimension
+    """Verify that BaseOTStratifiedDOE.__check_stratified_options works correctly."""
+    algo = BaseOTStratifiedDOE()
     with pytest.raises(
         KeyError,
         match=re.escape(
@@ -137,11 +153,7 @@ def test_check_stratified_options():
             "tuple of normalized levels in [0,1] you need in your design."
         ),
     ):
-        lib._OpenTURNS__check_stratified_options(dimension, options)
-
-    options = {"levels": [0.5, 0.2]}
-    lib._OpenTURNS__check_stratified_options(dimension, options)
-    assert lib.CENTER_KEYWORD in options
+        algo._BaseOTStratifiedDOE__check_stratified_options(3)
 
 
 def test_call():
@@ -155,7 +167,7 @@ def test_call():
 
 
 @pytest.mark.parametrize(
-    "options,error",
+    ("options", "error"),
     [
         (
             {"criterion": "unknown_criterion"},
@@ -189,7 +201,7 @@ def test_centered_lhs():
 
 
 @pytest.mark.parametrize(
-    "algo_name,dim,n_samples,options",
+    ("algo_name", "dim", "n_samples", "options"),
     [
         ("OT_MONTE_CARLO", 2, 3, {"n_samples": 3}),
         ("OT_RANDOM", 2, 3, {"n_samples": 3}),
@@ -259,9 +271,8 @@ def get_expected_nsamples(
             return 5
         if dim == 5:
             return 65
-    if algo == "OT_FULLFACT":
-        if dim == 5:
-            return 1
+    if algo == "OT_FULLFACT" and dim == 5:
+        return 1
     if algo == "OT_SOBOL_INDICES":
         if dim == 1:
             return 16
@@ -308,6 +319,7 @@ def variables_space():
     design_space.variable_sizes = {"x": 2}
     design_space.dimension = 2
     design_space.untransform_vect = lambda doe, no_check: doe
+    design_space.normalize = {"x": array([True, True])}
     return design_space
 
 
@@ -335,7 +347,7 @@ def test_compute_doe(variables_space, name):
 
 
 @pytest.mark.parametrize(
-    ["name", "size"], [("OT_FACTORIAL", 5), ("OT_COMPOSITE", 9), ("OT_AXIAL", 5)]
+    ("name", "size"), [("OT_FACTORIAL", 5), ("OT_COMPOSITE", 9), ("OT_AXIAL", 5)]
 )
 def test_compute_stratified_doe(variables_space, name, size):
     """Check the computation of a stratified DOE out of a design space."""

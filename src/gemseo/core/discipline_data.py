@@ -15,23 +15,24 @@
 # Contributors:
 # Antoine DECHAUME
 """Provide a dict-like class for storing disciplines data."""
+
 from __future__ import annotations
 
+from collections.abc import Generator
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import MutableMapping
 from copy import copy
 from copy import deepcopy
 from pathlib import Path
 from pathlib import PurePath
 from typing import Any
-from typing import Generator
-from typing import Iterable
-from typing import Mapping
-from typing import MutableMapping
 
 from numpy import ndarray
 from pandas import DataFrame
 
-from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import NamespacesMapping
+from gemseo.core.namespaces import namespaces_separator
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.portable_path import to_os_specific
 
@@ -50,7 +51,8 @@ class DisciplineData(
     as if they were multiple items bound to :class:`numpy.ndarray`.
     Then, an object of this class may be used as if it was a standard dictionary
     containing :class:`numpy.ndarray`,
-    which is the assumption made by the clients of the :class:`.MDODiscipline` subclasses.
+    which is the assumption made by the clients of the
+    :class:`.MDODiscipline` subclasses.
 
     As compared to a standard dictionary,
     the methods of this class may hide the values bound to :class:`pandas.DataFrame`
@@ -76,38 +78,40 @@ class DisciplineData(
 
     Nested dictionaries are also supported.
 
+    .. warning:: Nested DataFrame (i.e. in a nested dictionary) are not supported.
+
     Examples:
         >>> from gemseo.core.discipline_data import DisciplineData
         >>> import numpy as np
         >>> import pandas as pd
         >>> data = {
-        ...         'x': 0,
-        ...         'y': pd.DataFrame(data={'a': np.array([0])}),
-        ...     }
+        ...     "x": 0,
+        ...     "y": pd.DataFrame(data={"a": np.array([0])}),
+        ... }
         >>> disc_data = DisciplineData(data)
-        >>> disc_data['x']
+        >>> disc_data["x"]
         0
-        >>> disc_data['y']
+        >>> disc_data["y"]
            a
         0  0
         >>> # DataFrame content can be accessed with the ~ separator.
-        >>> disc_data['y~a']
+        >>> disc_data["y~a"]
         array([0])
         >>> # New columns can be inserted into a DataFrame with the ~ separator.
-        >>> disc_data['y~b'] = np.array([1])
-        >>> data['y']['b']
+        >>> disc_data["y~b"] = np.array([1])
+        >>> data["y"]["b"]
         0    1
         Name: b, dtype: int64
         >>> # New DataFrame can be added.
-        >>> disc_data['z~c'] = np.array([2])
-        >>> data['z']
+        >>> disc_data["z~c"] = np.array([2])
+        >>> data["z"]
            c
         0  2
-        >>> type(data['z'])
+        >>> type(data["z"])
         <class 'pandas.core.frame.DataFrame'>
         >>> # DataFrame's columns can be deleted.
-        >>> del disc_data['z~c']
-        >>> data['z']
+        >>> del disc_data["z~c"]
+        >>> data["z"]
         Empty DataFrame
         Columns: []
         Index: [0]
@@ -142,25 +146,26 @@ class DisciplineData(
         Args:
             data: A dict-like object or a :class:`.DisciplineData` object.
                 If ``None``, an empty dictionary is used.
-            input_to_namespaced: The mapping from input data names to their prefixed names.
-            output_to_namespaced: The mapping from output data names to their prefixed names.
+            input_to_namespaced: The mapping from input data names
+                to their prefixed names.
+            output_to_namespaced: The mapping from output data names
+                to their prefixed names.
         """  # noqa: D205, D212, D415
         if isinstance(data, self.__class__):
             # By construction, data's keys shall have been already checked.
             # We demangle __data to keep it private because this is an implementation
             # detail.
             self.__data = getattr(data, "_DisciplineData__data")  # noqa:B009
+        elif data is None:
+            self.__data = {}
         else:
-            if data is None:
-                self.__data = {}
-            else:
-                if not isinstance(data, MutableMapping):
-                    raise TypeError(
-                        f"Invalid type for data, got {type(data)},"
-                        " while expected a MutableMapping."
-                    )
-                self.__check_keys(*data)
-                self.__data = data
+            if not isinstance(data, MutableMapping):
+                raise TypeError(
+                    f"Invalid type for data, got {type(data)},"
+                    " while expected a MutableMapping."
+                )
+            self.__check_keys(*data)
+            self.__data = data
 
         self.__input_to_namespaced = (
             input_to_namespaced if input_to_namespaced is not None else {}
@@ -171,11 +176,7 @@ class DisciplineData(
 
     def __getitem__(self, key: str) -> Any:
         if key in self.__data:
-            value = self.__data[key]
-            if isinstance(value, MutableMapping):
-                return DisciplineData(value)
-            else:
-                return value
+            return self.__data[key]
 
         if self.SEPARATOR in key:
             df_key, column = key.split(self.SEPARATOR)
@@ -235,7 +236,7 @@ class DisciplineData(
         for key, value in self.__data.items():
             if isinstance(value, DataFrame):
                 prefix = key + self.SEPARATOR
-                for name in value.keys():
+                for name in value:
                     yield prefix + name
             else:
                 yield key
@@ -354,7 +355,6 @@ class DisciplineData(
                 # This is needed to handle the case where serialization and
                 # deserialization are not made on the same platform.
                 state_data[item_name] = to_os_specific(item_value)
-
         return state
 
     def __setstate__(

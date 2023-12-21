@@ -19,10 +19,11 @@
 from __future__ import annotations
 
 import pytest
+from numpy import ones
+
 from gemseo.problems.topo_opt.material_model_interpolation_disc import (
     MaterialModelInterpolation,
 )
-from numpy import ones
 
 THRESHOLD = 1e-7
 

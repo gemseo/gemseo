@@ -23,14 +23,16 @@ YvsX
 ====
 
 """
+
 from __future__ import annotations
+
+from numpy import linspace
+from numpy import pi
+from numpy import sin
 
 from gemseo import configure_logger
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
-from numpy import linspace
-from numpy import pi
-from numpy import sin
 
 configure_logger()
 

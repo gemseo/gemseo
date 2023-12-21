@@ -13,15 +13,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Tests for the functions."""
+
 from __future__ import annotations
 
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
-@pytest.fixture
+@pytest.fixture()
 def problem_with_identity() -> OptimizationProblem:
     """An optimization problem whose objective is the identity function."""
     design_space = DesignSpace()

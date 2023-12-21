@@ -23,12 +23,14 @@ Radar chart
 ===========
 
 """
+
 from __future__ import annotations
+
+from numpy import array
 
 from gemseo import configure_logger
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
-from numpy import array
 
 configure_logger()
 

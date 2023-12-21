@@ -18,6 +18,7 @@ import logging
 import re
 
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
@@ -60,11 +61,12 @@ def disciplines_and_scenario() -> list[MDODiscipline]:
     design_space = DesignSpace()
     design_space.add_variable("xa")
     scenario = MDOScenario(sub_disciplines, "DisciplinaryOpt", "ya", design_space)
-    return disciplines + [scenario]
+    return [*disciplines, scenario]
 
 
 @pytest.mark.parametrize(
-    "skip_scenarios,expected", [(True, ["x1", "x2"]), (False, ["x1", "x2", "xa", "xb"])]
+    ("skip_scenarios", "expected"),
+    [(True, ["x1", "x2"]), (False, ["x1", "x2", "xa", "xb"])],
 )
 def test_get_all_inputs(disciplines_and_scenario, skip_scenarios, expected):
     """Check get_all_inputs."""
@@ -72,7 +74,8 @@ def test_get_all_inputs(disciplines_and_scenario, skip_scenarios, expected):
 
 
 @pytest.mark.parametrize(
-    "skip_scenarios,expected", [(True, ["y1", "y2"]), (False, ["y1", "y2", "ya", "yb"])]
+    ("skip_scenarios", "expected"),
+    [(True, ["y1", "y2"]), (False, ["y1", "y2", "ya", "yb"])],
 )
 def test_get_all_outputs(disciplines_and_scenario, skip_scenarios, expected):
     """Check get_all_outputs."""

@@ -19,14 +19,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Francois Gallard
 """Design of experiments from custom data."""
+
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
+from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar
-from typing import List
+from typing import Final
 from typing import Optional
-from typing import Sequence
 from typing import TextIO
 from typing import Union
 
@@ -34,11 +36,12 @@ from numpy import apply_along_axis
 from numpy import atleast_2d
 from numpy import loadtxt
 from numpy import ndarray
+from numpy import vstack
 
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
 
-OptionType = Optional[Union[str, int, float, bool, List[str], Path, TextIO, ndarray]]
+OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, ndarray]]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,22 +56,24 @@ class CustomDOE(DOELibrary):
     does not.
     """
 
-    COMMENTS_KEYWORD: ClassVar[str] = "comments"
+    COMMENTS_KEYWORD: Final[str] = "comments"
     """The name given to the string indicating a comment line."""
 
-    DELIMITER_KEYWORD: ClassVar[str] = "delimiter"
+    DELIMITER_KEYWORD: Final[str] = "delimiter"
     """The name given to the string separating two fields."""
 
-    DOE_FILE: ClassVar[str] = "doe_file"
+    DOE_FILE: Final[str] = "doe_file"
     """The name given to the DOE file."""
 
-    SAMPLES: ClassVar[str] = "samples"
+    SAMPLES: Final[str] = "samples"
     """The name given to the samples."""
 
-    SKIPROWS_KEYWORD: ClassVar[str] = "skiprows"
+    SKIPROWS_KEYWORD: Final[str] = "skiprows"
     """The name given to the number of skipped rows in the DOE file."""
 
-    LIBRARY_NAME = "GEMSEO"
+    LIBRARY_NAME: ClassVar[str] = "GEMSEO"
+
+    _USE_UNIT_HYPERCUBE: ClassVar[bool] = False
 
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
@@ -92,7 +97,7 @@ class CustomDOE(DOELibrary):
     def _get_options(
         self,
         doe_file: str | Path | None = None,
-        samples: ndarray | None = None,
+        samples: ndarray | dict[str, ndarray] | list[dict[str, ndarray]] | None = None,
         delimiter: str | None = ",",
         comments: str | Sequence[str] | None = "#",
         skiprows: int = 0,
@@ -108,7 +113,9 @@ class CustomDOE(DOELibrary):
             doe_file: The path to the file containing the input samples.
                 If ``None``, use ``samples``.
             samples: The input samples.
-                They must be at least a 2D-array.
+                They must be at least a 2D-array,
+                a dictionary of 2D-arrays
+                or a list of dictionaries of 1D-arrays.
                 If ``None``, use ``doe_file``.
             delimiter: The character used to separate values.
                 If ``None``, use whitespace.
@@ -172,7 +179,7 @@ class CustomDOE(DOELibrary):
             ):
                 samples = samples.T
         except ValueError:
-            LOGGER.error("Failed to load DOE input file: %s", doe_file)
+            LOGGER.exception("Failed to load DOE input file: %s", doe_file)
             raise
 
         return samples
@@ -203,14 +210,20 @@ class CustomDOE(DOELibrary):
                 delimiter=options[self.DELIMITER_KEYWORD],
                 skiprows=options[self.SKIPROWS_KEYWORD],
             )
-        else:
-            if options.get(self.DOE_FILE) is not None:
-                raise ValueError(error_message)
+        elif options.get(self.DOE_FILE) is not None:
+            raise ValueError(error_message)
+
+        if isinstance(samples, Mapping):
+            samples = self.problem.design_space.dict_to_array(samples)
+        elif not isinstance(samples, ndarray):
+            samples = vstack([
+                self.problem.design_space.dict_to_array(sample) for sample in samples
+            ])
 
         if samples.shape[1] != self.problem.dimension:
             raise ValueError(
-                "Dimension mismatch between the problem ({}) and "
-                " the samples ({}).".format(self.problem.dimension, samples.shape[1])
+                f"Dimension mismatch between the problem ({self.problem.dimension}) "
+                f"and the samples ({samples.shape[1]})."
             )
 
         return apply_along_axis(

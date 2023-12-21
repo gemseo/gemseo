@@ -21,6 +21,7 @@
 Generate an N2 from an Excel description of the coupling problem
 ================================================================
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

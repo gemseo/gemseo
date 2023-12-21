@@ -18,19 +18,19 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Make a discipline from an executable."""
+
 from __future__ import annotations
 
 import logging
 import re
-import subprocess
 from ast import literal_eval
+from collections.abc import Mapping
+from collections.abc import MutableSequence
+from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Callable
-from typing import Mapping
-from typing import MutableSequence
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from numpy import array
@@ -39,9 +39,12 @@ from strenum import StrEnum
 
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.data_processor import FloatDataProcessor
-from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.run_folder_manager import FoldersIter
-from gemseo.utils.run_folder_manager import RunFolderManager
+from gemseo.utils.directory_creator import DirectoryNamingMethod
+from gemseo.wrappers._base_disc_from_exe import _BaseDiscFromExe
+from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
 
 LOGGER = logging.getLogger(__name__)
 
@@ -70,7 +73,7 @@ class Parser(StrEnum):
 
 
 OutputParser = Callable[
-    [Mapping[str, Tuple[int]], Sequence[str]], Mapping[str, Union[ndarray, float]]
+    [Mapping[str, tuple[int]], Sequence[str]], Mapping[str, Union[ndarray, float]]
 ]
 """Output parser type."""
 
@@ -78,7 +81,7 @@ InputWriter = Callable[
     [
         Union[str, Path],
         Mapping[str, ndarray],
-        Mapping[str, Tuple[int, int, int]],
+        Mapping[str, tuple[int, int, int]],
         MutableSequence[str],
     ],
     None,
@@ -86,8 +89,8 @@ InputWriter = Callable[
 """Input writer type."""
 
 
-class DiscFromExe(MDODiscipline):
-    """Generic wrapper for executables.
+class DiscFromExe(_BaseDiscFromExe):
+    """Specific wrapper for executables.
 
     This :class:`.MDODiscipline` uses template files
     describing the input and output variables.
@@ -137,13 +140,10 @@ class DiscFromExe(MDODiscipline):
       If a shell is needed, you may override this in a derived class.
     """
 
-    _run_folder_manager: RunFolderManager
-    """The object generating unique names for run directories.."""
-
-    input_template: str
+    input_template: Path
     """The path to the input template file."""
 
-    output_template: str
+    output_template: Path
     """The path to the output template file."""
 
     input_filename: str
@@ -151,9 +151,6 @@ class DiscFromExe(MDODiscipline):
 
     output_filename: str
     """The name of the output file."""
-
-    executable_command: str
-    """The executable command."""
 
     parse_outfile: OutputParser
     """The function used to parse the output template file."""
@@ -165,6 +162,9 @@ class DiscFromExe(MDODiscipline):
     """A data processor to be used before the execution of the discipline."""
 
     # TODO: API: remove use_shell.
+    # TODO: API: rename executable_command into command_line
+    # TODO: API: rename folders_iter into directory_naming_method
+    # TODO: API: rename output_folder_basepath into root_directory
     def __init__(
         self,
         input_template: str | Path,
@@ -173,12 +173,13 @@ class DiscFromExe(MDODiscipline):
         executable_command: str,
         input_filename: str | Path,
         output_filename: str | Path,
-        folders_iter: FoldersIter = FoldersIter.NUMBERED,
+        folders_iter: DirectoryNamingMethod = DirectoryNamingMethod.NUMBERED,
         name: str | None = None,
         parse_outfile_method: Parser | OutputParser = Parser.TEMPLATE,
         write_input_file_method: InputWriter | None = None,
         parse_out_separator: str = "=",
         use_shell: bool = True,
+        clean_after_execution: bool = False,
     ) -> None:
         """
         Args:
@@ -200,14 +201,7 @@ class DiscFromExe(MDODiscipline):
             output_filename: The name of the output file
                 to be generated in the output folder.
                 E.g. ``"output.txt"``.
-            folders_iter: The type of unique identifiers for the output folders.
-                If :attr:`~.FoldersIter.NUMBERED`,
-                the generated output folders will be ``f"output_folder_basepath{i+1}"``,
-                where ``i`` is the maximum value
-                of the already existing ``f"output_folder_basepath{i}"`` folders.
-                Otherwise, a unique number based on the UUID function is
-                generated. This last option shall be used if multiple MDO
-                processes are run in the same work folder.
+            folders_iter: The method to create the execution directories.
             parse_outfile_method: The optional method that can be provided
                 by the user to parse the output template file.
                 If the :attr:`~.Parser.KEY_VALUE` is used as
@@ -225,22 +219,25 @@ class DiscFromExe(MDODiscipline):
             TypeError: If the provided ``parse_outfile_method`` is not callable.
                 If the provided ``write_input_file_method`` is not callable.
         """  # noqa:D205 D212 D415
-        super().__init__(name=name)
-
         if use_shell:
             LOGGER.warning(
                 "The argument 'use_shell' is no longer used,"
                 "the executable is run without shell."
             )
-
-        self._run_folder_manager = RunFolderManager(
-            output_folder_basepath, folders_iter
+        executable_runner = _BaseExecutableRunner(
+            root_directory=output_folder_basepath,
+            command_line=executable_command,
+            directory_naming_method=folders_iter,
         )
-        self.input_template = input_template
-        self.output_template = output_template
+        super().__init__(
+            executable_runner, name=name, clean_after_execution=clean_after_execution
+        )
+
+        self.input_template = Path(input_template)
+        self.output_template = Path(output_template)
         self.input_filename = input_filename
         self.output_filename = output_filename
-        self.executable_command = executable_command
+
         if parse_outfile_method == Parser.TEMPLATE:
             self.parse_outfile = parse_outfile
         elif parse_outfile_method == Parser.KEY_VALUE:
@@ -256,6 +253,7 @@ class DiscFromExe(MDODiscipline):
         self.write_input_file = write_input_file_method or write_input_file
         if not callable(self.write_input_file):
             raise TypeError("The write_input_file_method must be callable.")
+
         self._out_pos = None
         self._input_data = None
         self._in_lines = None
@@ -263,11 +261,17 @@ class DiscFromExe(MDODiscipline):
         self.data_processor = FloatDataProcessor()
         self.__parse_templates_and_set_grammars()
 
+    # TODO: API: rename as command_line
+    @property
+    def executable_command(self):
+        """The executable command."""
+        return self._executable_runner.command_line
+
     def __parse_templates_and_set_grammars(self) -> None:
         """Parse the templates and set the grammar of the discipline."""
-        with open(self.input_template) as infile:
+        with self.input_template.open() as infile:
             self._in_lines = infile.readlines()
-        with open(self.output_template) as outfile:
+        with self.output_template.open() as outfile:
             self._out_lines = outfile.readlines()
 
         self._input_data, self._in_pos = parse_template(self._in_lines, True)
@@ -287,36 +291,21 @@ class DiscFromExe(MDODiscipline):
             k: array([literal_eval(v)]) for k, v in self._input_data.items()
         }
 
-    def _run(self) -> None:
-        working_directory = self._run_folder_manager.get_unique_run_folder_path()
-        working_directory.mkdir()
+    def _create_inputs(self) -> None:
+        """Write the input file."""
         self.write_input_file(
-            working_directory / self.input_filename,
+            self._executable_runner.last_execution_directory / self.input_filename,
             self.local_data,
             self._in_pos,
             self._in_lines,
         )
 
-        completed = subprocess.run(
-            self.executable_command.split(),
-            stderr=subprocess.STDOUT,
-            cwd=working_directory,
-        )
-
-        if completed.returncode != 0:
-            LOGGER.error(
-                "Failed to execute the command %s, for discipline %s "
-                "in the working directory %s",
-                self.executable_command,
-                self.name,
-                working_directory,
-            )
-
-        completed.check_returncode()
-
-        out_lines = (
-            (working_directory / self.output_filename).read_text().splitlines(True)
-        )
+    def _parse_outputs(self) -> Data:
+        """Parse the output file."""
+        with (
+            self._executable_runner.last_execution_directory / self.output_filename
+        ).open() as outfile:
+            out_lines = outfile.readlines()
 
         if len(out_lines) != len(self._out_lines):
             raise ValueError(
@@ -324,7 +313,7 @@ class DiscFromExe(MDODiscipline):
                 "This is not supported yet"
             )
 
-        self.local_data.update(self.parse_outfile(self._out_pos, out_lines))
+        return self.parse_outfile(self._out_pos, out_lines)
 
 
 def parse_template(
@@ -406,7 +395,7 @@ def write_input_file(
             cline[:start] + float_format.format(data[input_name]) + cline[end:]
         )
 
-    with open(input_file_path, "w") as infile_o:
+    with Path(input_file_path).open("w") as infile_o:
         infile_o.writelines(f_text)
 
 
@@ -439,8 +428,8 @@ def parse_key_value_file(
             key, value = key_and_value
             try:
                 data[key.strip()] = float(literal_eval(value.strip()))
-            except Exception:
-                raise ValueError(f"Failed to parse value as float {value}.")
+            except BaseException:
+                raise ValueError(f"Failed to parse value as float {value}.") from None
 
     return data
 
@@ -487,7 +476,7 @@ def parse_outfile(
                 found_dot = True
                 continue
             # We found the e in exp notation
-            if char in ("E", "e"):
+            if char in {"E", "e"}:
                 if found_e:
                     break
                 found_e = True

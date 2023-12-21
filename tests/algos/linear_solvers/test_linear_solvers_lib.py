@@ -19,14 +19,15 @@
 from __future__ import annotations
 
 import pytest
+from numpy import eye
+from numpy import ones
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import aslinearoperator
+
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverDescription
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
-from numpy import eye
-from numpy import ones
-from scipy.sparse.linalg import aslinearoperator
-from scipy.sparse.linalg import LinearOperator
 
 
 @pytest.mark.parametrize("is_symmetric", [False, True])

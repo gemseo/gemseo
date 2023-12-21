@@ -19,9 +19,10 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
-from numpy import array
 
 THRESHOLD = 1e-12
 
@@ -118,16 +119,14 @@ def test_jac_mission(problem):
     )
     inpt_data = {
         "y_24": array([4.16647508]),
-        "x_shared": array(
-            [
-                5.00000000e-02,
-                4.50000000e04,
-                1.60000000e00,
-                5.50000000e00,
-                5.50000000e01,
-                1.00000000e03,
-            ]
-        ),
+        "x_shared": array([
+            5.00000000e-02,
+            4.50000000e04,
+            1.60000000e00,
+            5.50000000e00,
+            5.50000000e01,
+            1.00000000e03,
+        ]),
         "y_34": array([1.10754577]),
         "y_14": array([50808.33445658, 7306.20262124]),
     }

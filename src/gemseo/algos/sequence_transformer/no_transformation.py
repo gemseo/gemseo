@@ -18,13 +18,16 @@
 #        :author: Sebastien Bocquet, Alexandre Scotto Di Perrotolo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The sequence transformer which does nothing."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from numpy.typing import NDArray
-
 from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTransformer
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class NoTransformation(SequenceTransformer):
@@ -37,6 +40,6 @@ class NoTransformation(SequenceTransformer):
         pass
 
     def compute_transformed_iterate(  # noqa: D102
-        self, current_iterate: NDArray, next_iterate: NDArray
+        self, iterate: NDArray, residual: NDArray
     ) -> NDArray:
-        return next_iterate
+        return iterate

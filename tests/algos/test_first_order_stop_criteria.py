@@ -15,13 +15,14 @@
 from __future__ import annotations
 
 import pytest as pytest
+from numpy import array
+from numpy import ones
+from numpy import zeros
+
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from numpy import array
-from numpy import ones
-from numpy import zeros
 
 
 @pytest.mark.parametrize("is_optimum", [False, True])
@@ -67,15 +68,19 @@ def test_is_kkt_norm_tol_reached_power2(is_optimum):
 @pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
 def test_kkt_norm_correctly_stored(algorithm, problem):
     """Test that kkt norm is stored at each iteration requiring gradient."""
-    OptimizersFactory().execute(
-        problem,
-        algorithm,
-        normalize_design_space=True,
-        kkt_tol_abs=1e-3,
-        kkt_tol_rel=1e-3,
-    )
+    problem.preprocess_functions()
+    options = {
+        "normalize_design_space": True,
+        "kkt_tol_abs": 1e-5,
+        "kkt_tol_rel": 1e-5,
+        "max_iter": 100,
+    }
+    problem.reset()
+    OptimizersFactory().execute(problem, algorithm, **options)
     kkt_hist = problem.database.get_function_history(problem.KKT_RESIDUAL_NORM)
     obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
     obj_hist = problem.database.get_function_history(problem.objective.name)
     assert len(kkt_hist) == obj_grad_hist.shape[0]
     assert len(obj_hist) >= len(kkt_hist)
+    assert pytest.approx(problem.get_solution()[0], abs=1e-2) == problem.solution.x_opt
+    assert pytest.approx(problem.get_solution()[1], abs=1e-2) == problem.solution.f_opt

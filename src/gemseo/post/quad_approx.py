@@ -19,26 +19,31 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Quadratic approximations of functions from the optimization history."""
+
 from __future__ import annotations
 
 import logging
 from math import ceil
+from typing import TYPE_CHECKING
 
 import numpy as np
 from matplotlib import pyplot
 from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
-from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
 from numpy import array
 from numpy import e
 from numpy import ndarray
 
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -157,9 +162,11 @@ class QuadApprox(OptPostProcessor):
         fig.colorbar(
             img,
             cax=fig.add_subplot(grid[0, 1]),
-            ticks=np.concatenate(
-                (np.sort(-positive_levels), array([0]), positive_levels)
-            ),
+            ticks=np.concatenate((
+                np.sort(-positive_levels),
+                array([0]),
+                positive_levels,
+            )),
             format=LogFormatterSciNotation(),
         )
         fig.suptitle(f"Hessian matrix SR1 approximation of {function}")

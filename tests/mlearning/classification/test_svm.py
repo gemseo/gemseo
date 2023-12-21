@@ -18,22 +18,21 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test svmClassifier."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import import_classification_model
-from gemseo.mlearning.classification.svm import SVMClassifier
-from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
 from numpy import linspace
 from numpy import ndarray
 from numpy import zeros
-from numpy.random import seed
 
-seed(12345)
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning import import_classification_model
+from gemseo.mlearning.classification.svm import SVMClassifier
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 N_INPUTS = 2
 N_CLASSES = 4
@@ -46,7 +45,7 @@ INPUT_VALUES = {
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """The dataset used to train the SVMClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
@@ -63,7 +62,7 @@ def dataset() -> IODataset:
     return dataset_
 
 
-@pytest.fixture
+@pytest.fixture()
 def model(dataset) -> SVMClassifier:
     """A trained SVMClassifier with two outputs, y_1 and y_2."""
     svm = SVMClassifier(dataset, probability=True)
@@ -71,7 +70,7 @@ def model(dataset) -> SVMClassifier:
     return svm
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_transform(dataset) -> SVMClassifier:
     """A trained SVMClassifier using input scaling."""
     svm = SVMClassifier(
@@ -167,6 +166,7 @@ def test_not_predict_proba(dataset):
     svm.predict_proba(INPUT_VALUES)
     with pytest.raises(NotImplementedError):
         svm.predict_proba(INPUT_VALUE, False)
+    with pytest.raises(NotImplementedError):
         svm.predict_proba(INPUT_VALUES, False)
 
 

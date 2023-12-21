@@ -20,7 +20,7 @@ r"""The Van der Pol (VDP) problem describing an oscillator with non-linear dampi
 
 Van der Pol, B. & Van Der Mark, J.
 Frequency Demultiplication.
-Nature 120, 363–364 (1927).
+Nature 120, 363-364 (1927).
 
 The Van der Pol problem is written as follows:
 
@@ -57,16 +57,21 @@ The jacobian of this function can be expressed analytically:
     \end{pmatrix}
 
 There is no exact solution to the Van der Pol oscillator problem in terms of
-known tabulated functions (see Panayotounakos et al. « On the Lack of Analytic
-Solutions of the Van Der Pol Oscillator ». ZAMM 83, nᵒ 9 (1 septembre 2003)).
+known tabulated functions (see Panayotounakos *et al.*, On the Lack of Analytic
+Solutions of the Van Der Pol Oscillator. ZAMM 83, nᵒ 9 (1 septembre 2003)).
 """
+
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import zeros
-from numpy.typing import NDArray
 
 from gemseo.algos.ode.ode_problem import ODEProblem
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class VanDerPol(ODEProblem):
@@ -97,22 +102,20 @@ class VanDerPol(ODEProblem):
             use_jacobian: Whether to use the analytical expression of the Jacobian.
                 If false, use finite differences to estimate the Jacobian.
             state_vector: The state vector of the system.
-        """
+        """  # noqa: D205 D212
         self._mu = mu
 
         if state_vector is None:
             state_vector = zeros(2)
         self.state_vect = state_vector
 
-        initial_state = array(
-            [
-                2 + self.state_vect[0],
-                -2 / 3
-                + 10 / (81 * self._mu)
-                - 292 / (2187 * self._mu * self._mu)
-                + self.state_vect[1],
-            ]
-        )
+        initial_state = array([
+            2 + self.state_vect[0],
+            -2 / 3
+            + 10 / (81 * self._mu)
+            - 292 / (2187 * self._mu * self._mu)
+            + self.state_vect[1],
+        ])
 
         jac = self.__compute_rhs_jacobian if use_jacobian else None
         super().__init__(
@@ -123,9 +126,7 @@ class VanDerPol(ODEProblem):
             final_time=final_time,
         )
 
-    def __compute_rhs(
-        self, time: float, state: NDArray[float]
-    ) -> NDArray[float]:  # noqa:U100
+    def __compute_rhs(self, time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
         """Compute the right-hand side of the ODE.
 
         Args:

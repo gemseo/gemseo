@@ -17,18 +17,25 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """Build matrices from linear constraints for solvers."""
+
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import hstack
 from numpy import isfinite
 from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
+from scipy.sparse import vstack as sparse_vstack
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.utils.compatibility.scipy import sparse_classes
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 def build_constraints_matrices(
@@ -58,8 +65,15 @@ def build_constraints_matrices(
                 f'The constraint "{constraint.name}" is not an MDOLinearFunction.'
             )
 
+    contains_sparse = False
+    for constraint in constraints:
+        if isinstance(constraint.coefficients, sparse_classes):
+            contains_sparse = True
+            break
+
     # Build the constraints matrices
-    lhs_matrix = vstack([constraint.coefficients for constraint in constraints])
+    vstack_ = sparse_vstack if contains_sparse else vstack
+    lhs_matrix = vstack_([constraint.coefficients for constraint in constraints])
     rhs_vector = hstack([-constraint.value_at_zero for constraint in constraints])
 
     return lhs_matrix, rhs_vector

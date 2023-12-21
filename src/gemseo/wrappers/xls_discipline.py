@@ -18,24 +18,24 @@
 #        :author:  Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Excel based discipline."""
+
 from __future__ import annotations
 
 import atexit
 import os
 import shutil
-import sys
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 from uuid import uuid4
 
 from numpy import array
 
 from gemseo.core.discipline import MDODiscipline
 
-if sys.platform == "win32":
-    import pythoncom
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 cwd = Path.cwd()
 try:
@@ -44,6 +44,9 @@ except ImportError:
     # error will be reported if the discipline is used
     os.chdir(str(cwd))
     xlwings = None
+
+if xlwings is not None:
+    import pythoncom
 
 
 class XLSDiscipline(MDODiscipline):
@@ -56,12 +59,10 @@ class XLSDiscipline(MDODiscipline):
         is only working under Windows and macOS.
     """
 
-    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
-        [
-            "_xls_app",
-            "_book",
-        ]
-    )
+    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union([
+        "_xls_app",
+        "_book",
+    ])
 
     def __init__(
         self,
@@ -176,9 +177,9 @@ class XLSDiscipline(MDODiscipline):
         try:
             self._xls_app = xlwings.App(visible=False)
             self._xls_app.interactive = False
-        # wide except because I cannot tell what is the exception raised by xlwings
-        except:  # noqa: E722,B001
-            raise RuntimeError("xlwings requires Microsoft Excel")
+        # Wide except because I cannot tell what is the exception raised by xlwings.
+        except BaseException:
+            raise RuntimeError("xlwings requires Microsoft Excel") from None
 
         # In multiprocessing or sequential execution, excel closes in each process.
         # Each process keeps its own _xls_app instance from init to end.
@@ -193,12 +194,13 @@ class XLSDiscipline(MDODiscipline):
             raise ValueError(
                 "Workbook must contain a sheet named 'Inputs' "
                 "that define the inputs of the discipline"
-            )
+            ) from None
+
         if "Outputs" not in sh_names:
             raise ValueError(
                 "Workbook must contain a sheet named 'Outputs' "
                 "that define the outputs of the discipline"
-            )
+            ) from None
 
     def __del__(self) -> None:
         self.__reset_xls_objects()
@@ -296,17 +298,19 @@ class XLSDiscipline(MDODiscipline):
         if self._xls_file_path.match("*.xlsm") and self.macro_name is not None:
             try:
                 self._xls_app.api.Application.Run(self.macro_name)
-            except Exception as err:
-                macro_name = self.macro_name
-                msg = f"Failed to run '{macro_name}' macro: {err}."
-                raise RuntimeError(msg)
+            except BaseException as err:
+                raise RuntimeError(
+                    f"Failed to run '{self.macro_name}' macro: {err}."
+                ) from None
+
         out_vals = self.__read_sheet_col("Outputs", 1)
+
         if len(out_vals) != len(self.output_names):
             msg = (
                 "Inconsistent Outputs sheet, names (first columns) and "
                 "values column (second) must be of the same length."
             )
-            raise ValueError(msg)
+            raise ValueError(msg) from None
 
         outputs = {k: array([v]) for k, v in zip(self.output_names, out_vals)}
         self.store_local_data(**outputs)

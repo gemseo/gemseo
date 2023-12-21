@@ -26,15 +26,17 @@ from pathlib import Path
 from subprocess import CalledProcessError
 
 import pytest
+from numpy import array
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.utils.run_folder_manager import FoldersIter
+from gemseo.utils.directory_creator import DirectoryNamingMethod
+from gemseo.wrappers.disc_from_exe import DiscFromExe
+from gemseo.wrappers.disc_from_exe import Parser
 from gemseo.wrappers.disc_from_exe import parse_key_value_file
 from gemseo.wrappers.disc_from_exe import parse_outfile
 from gemseo.wrappers.disc_from_exe import parse_template
-from gemseo.wrappers.disc_from_exe import Parser
-from numpy import array
 
 from .cfgobj_exe import execute as exec_cfg
 from .sum_data import execute as exec_sum
@@ -46,7 +48,7 @@ def test_disc_from_exe_json(tmp_wd):
     sum_path = join(DIRNAME, "sum_data.py")
     exec_cmd = f"python {sum_path} -i input.json -o output.json"
 
-    disc = create_discipline(
+    disc: DiscFromExe = create_discipline(
         "DiscFromExe",
         input_template=join(DIRNAME, "input.json.template"),
         output_template=join(DIRNAME, "output.json.template"),
@@ -111,44 +113,10 @@ def test_disc_from_exe_cfgobj(tmp_wd):
         parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
-        folders_iter=FoldersIter.UUID,
+        folders_iter=DirectoryNamingMethod.UUID,
     )
 
     disc.execute(indata)
-
-
-@pytest.mark.parametrize(
-    "folders_iter",
-    [
-        ("UUID", FoldersIter.UUID),
-        (FoldersIter.UUID, FoldersIter.UUID),
-        (FoldersIter.NUMBERED, FoldersIter.NUMBERED),
-        ("NUMBERED", FoldersIter.NUMBERED),
-        ("FAIL", None),
-    ],
-)
-def test_disc_from_exe_cfgobj_folder_iter_str(tmp_wd, folders_iter):
-    sum_path = join(DIRNAME, "cfgobj_exe.py")
-    exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
-    disc = create_discipline(
-        "DiscFromExe",
-        input_template=join(DIRNAME, "input_template.cfg"),
-        output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=str(tmp_wd),
-        executable_command=exec_cmd,
-        parse_outfile_method="KEY_VALUE",
-        input_filename="input.cfg",
-        output_filename="output.cfg",
-        folders_iter=folders_iter[0],
-    )
-    if folders_iter[0] in tuple(FoldersIter):
-        assert disc._run_folder_manager._folders_iter == folders_iter[1]
-    else:
-        with pytest.raises(
-            ValueError,
-            match="is not a valid method for creating the execution folders.",
-        ):
-            disc._run_folder_manager.get_unique_run_folder_path()
 
 
 @pytest.mark.parametrize(
@@ -221,7 +189,7 @@ def test_disc_from_exe_wrong_inputs(tmp_wd):
 def test_disc_from_exe_fail_exe(tmp_wd):
     sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
-    disc = create_discipline(
+    disc: DiscFromExe = create_discipline(
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
@@ -238,7 +206,7 @@ def test_disc_from_exe_fail_exe(tmp_wd):
 
     disc.reset_statuses_for_run()
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f err_code"
-    disc.executable_command = exec_cmd
+    disc._executable_runner.command_line = exec_cmd
     with pytest.raises(CalledProcessError):
         disc.execute(indata)
 
@@ -300,9 +268,26 @@ def test_parse_outfile():
     assert values2["out 1"] == 1.0
 
 
+def test_executable_command(tmp_wd):
+    """Test the property: ``executable_command``."""
+    sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
+    exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
+    disc: DiscFromExe = create_discipline(
+        "DiscFromExe",
+        input_template=join(DIRNAME, "input_template.cfg"),
+        output_template=join(DIRNAME, "output_template.cfg"),
+        output_folder_basepath=str(tmp_wd),
+        executable_command=exec_cmd,
+        parse_outfile_method=Parser.KEY_VALUE,
+        input_filename="input.cfg",
+        output_filename="output.cfg",
+    )
+    assert disc.executable_command == exec_cmd
+
+
 def test_parallel_execution(tmp_wd):
     """Check if a :class:`~.DiscFromExe` executed within a multiprocess DOE can generate
-    unique folders in :attr:`~.FoldersIter.NUMBERED` mode.
+    unique folders in :attr:`~.DirectoryNamingMethod.NUMBERED` mode.
 
     The check is focused on this topic since the multiprocess features of
     :class:`~.DiscFromExe` are used there.
@@ -319,7 +304,7 @@ def test_parallel_execution(tmp_wd):
         executable_command=exec_cmd,
         input_filename="input.json",
         output_filename="output.json",
-        folders_iter=FoldersIter.NUMBERED,
+        folders_iter=DirectoryNamingMethod.NUMBERED,
     )
 
     design_space = DesignSpace()
@@ -329,13 +314,44 @@ def test_parallel_execution(tmp_wd):
         disc, "DisciplinaryOpt", "out", design_space, scenario_type="DOE"
     )
 
-    scenario.execute(
-        {
-            "algo": "OT_LHS",
-            "n_samples": 2,
-            "n_processes": nb_process,
-        }
-    )
+    scenario.execute({
+        "algo": "OT_LHS",
+        "n_samples": 2,
+        "n_processes": nb_process,
+    })
 
     for i in range(nb_process):
-        assert Path(f"{i+1}").is_dir()
+        assert Path(f"{i + 1}").is_dir()
+
+
+@pytest.mark.parametrize("clean_after_execution", [True, False])
+def test_last_execution_directory(tmp_wd, clean_after_execution: bool):
+    """Test the property: ``last_execution_directory``."""
+    sum_path = join(DIRNAME, "cfgobj_exe.py")
+    exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
+
+    disc: DiscFromExe = create_discipline(
+        "DiscFromExe",
+        input_template=join(DIRNAME, "input_template.cfg"),
+        output_template=join(DIRNAME, "output_template.cfg"),
+        output_folder_basepath=str(tmp_wd),
+        executable_command=exec_cmd,
+        parse_outfile_method=Parser.KEY_VALUE,
+        input_filename="input.cfg",
+        output_filename="output.cfg",
+        clean_after_execution=clean_after_execution,
+    )
+
+    indata = {
+        "input 1": array([1.015154]),
+        "input 2": array([3.0015151121254534242424]),
+        "input 3": array([2.001515112125]),
+    }
+    assert disc.last_execution_directory is None
+    disc.execute(indata)
+    assert disc.last_execution_directory == tmp_wd / "1"
+
+    if clean_after_execution:
+        assert not disc.last_execution_directory.is_dir()
+    else:
+        assert disc.last_execution_directory.is_dir()

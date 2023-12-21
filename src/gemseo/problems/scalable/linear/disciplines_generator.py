@@ -17,18 +17,15 @@
 #                         documentation
 #        :author: François Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Dummy linear discipline generator
-=================================
+"""Dummy linear discipline generator.
 
-A utility that generates dummy disciplines from a specification.
-The inputs and output names are specified by the user.
-A linear random dependency between the inputs and outputs is created.
-The size of the inputs and outputs can be parametrized by the user.
-The MDA of the generated disciplines will always converge because all the outputs
-are in [0, 1] if the inputs are in [0, 1].
-The analytic Jacobian is provided.
+A utility that generates dummy disciplines from a specification. The inputs and output
+names are specified by the user. A linear random dependency between the inputs and
+outputs is created. The size of the inputs and outputs can be parametrized by the user.
+The MDA of the generated disciplines will always converge because all the outputs are in
+[0, 1] if the inputs are in [0, 1]. The analytic Jacobian is provided.
 """
+
 from __future__ import annotations
 
 import string
@@ -40,8 +37,9 @@ from numpy import array
 from numpy import concatenate
 from numpy import setdiff1d
 from numpy import unique
-from numpy.random import shuffle
+from numpy.random import default_rng
 
+from gemseo import SEED
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 
@@ -185,11 +183,12 @@ def create_disciplines_from_sizes(
     used_outputs = []
     used_inputs = []
 
+    rng = default_rng(SEED)
     for disc_name in disc_names:
         if no_strong_couplings:
             input_names = setdiff1d(input_names, used_outputs, True)
         # Choose inputs among all io
-        shuffle(input_names)
+        rng.shuffle(input_names)
 
         # There are always enough inputs because we remove outputs only when
         # using no_strong_couplings, and then outputs are empty before inputs
@@ -200,7 +199,7 @@ def create_disciplines_from_sizes(
             output_names = setdiff1d(output_names, used_inputs, True)
 
         # Choose outputs
-        shuffle(output_names)
+        rng.shuffle(output_names)
 
         if no_self_coupled:
             output_names = setdiff1d(output_names, disc_in_names, True)
@@ -220,13 +219,11 @@ def create_disciplines_from_sizes(
 
         # Only create the discipline if it has at least 1 input and 1 output
         if disc_in_names.size and disc_out_names.size:
-            disc_descriptions.append(
-                (
-                    disc_name,
-                    array(disc_in_names, dtype="str").tolist(),
-                    array(disc_out_names, dtype="str").tolist(),
-                )
-            )
+            disc_descriptions.append((
+                disc_name,
+                array(disc_in_names, dtype="str").tolist(),
+                array(disc_out_names, dtype="str").tolist(),
+            ))
 
     return create_disciplines_from_desc(
         disc_descriptions,
@@ -253,8 +250,8 @@ def create_disciplines_from_desc(
     .. code-block:: python
 
         [
-        ("Disc_name1", ["in1"], ["out1", "out2"]),
-        ("Disc_name2", ["in2", "out1"], ["out3", "out2"]),
+            ("Disc_name1", ["in1"], ["out1", "out2"]),
+            ("Disc_name2", ["in2", "out1"], ["out3", "out2"]),
         ]
 
     This will generate two disciplines:

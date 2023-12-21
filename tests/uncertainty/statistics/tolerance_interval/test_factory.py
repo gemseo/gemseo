@@ -13,11 +13,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the factory used to create instances of :class:`.ToleranceInterval`."""
+
 from __future__ import annotations
 
 import re
 
 import pytest
+
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalFactory,
 )
@@ -41,7 +43,8 @@ def test_create_fail():
 
     expected = re.escape(
         "The class WrongNameToleranceInterval is not available; "
-        "the available ones are: ExponentialToleranceInterval, LogNormalToleranceInterval, "
+        "the available ones are: ExponentialToleranceInterval, "
+        "LogNormalToleranceInterval, "
         "NormalToleranceInterval, UniformToleranceInterval, "
         "WeibullMinToleranceInterval, WeibullToleranceInterval."
     )
@@ -50,6 +53,6 @@ def test_create_fail():
         factory.create("WrongName", 100000, 0, 1)
 
     with pytest.raises(
-        TypeError, match="Cannot create NormalToleranceInterval with arguments ()"
+        RuntimeError, match="Cannot create NormalToleranceInterval with arguments ()"
     ):
         factory.create("Normal", 100000)

@@ -18,10 +18,12 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm selection module."""
+
 from __future__ import annotations
 
 import numpy as np
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
@@ -32,7 +34,7 @@ from gemseo.mlearning.regression.rbf import RBFRegressor
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     data = np.linspace(0, 2 * np.pi, 10)
@@ -43,10 +45,9 @@ def dataset() -> IODataset:
         "x_1": IODataset.INPUT_GROUP,
         "x_2": IODataset.OUTPUT_GROUP,
     }
-    sample = IODataset.from_array(
+    return IODataset.from_array(
         data, variables, variable_names_to_n_components, variable_names_to_group_names
     )
-    return sample
 
 
 def test_init(dataset):

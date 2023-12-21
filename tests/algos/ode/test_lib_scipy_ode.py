@@ -17,14 +17,12 @@
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the SciPy ODE solver wrapper."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.algos.ode.lib_scipy_ode import ScipyODEAlgos
-from gemseo.algos.ode.ode_problem import ODEProblem
-from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
-from gemseo.problems.ode.orbital_dynamics import OrbitalDynamics
-from gemseo.problems.ode.van_der_pol import VanDerPol
 from numpy import arange
 from numpy import array
 from numpy import exp
@@ -32,8 +30,15 @@ from numpy import sqrt
 from numpy import sum
 from numpy import zeros
 from numpy.linalg import norm
-from numpy.typing import NDArray
 
+from gemseo.algos.ode.lib_scipy_ode import ScipyODEAlgos
+from gemseo.algos.ode.ode_problem import ODEProblem
+from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
+from gemseo.problems.ode.orbital_dynamics import OrbitalDynamics
+from gemseo.problems.ode.van_der_pol import VanDerPol
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 parametrized_algo_names = pytest.mark.parametrize(
     "algo_name",
@@ -103,7 +108,7 @@ def test_ode_problem_1d(time_vector):
 
     problem.check()
 
-    assert problem.func == _func
+    assert problem.rhs_function == _func
     assert problem.jac == _jac
     assert len(problem.initial_state) == 1
     assert problem.initial_state == _initial_state

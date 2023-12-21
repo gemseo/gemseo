@@ -17,9 +17,7 @@
 #    initial documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-The aerostructure MDO problem
-*****************************
+r"""The aerostructure MDO problem.
 
 The **aerostructure** module implements all :class:`.MDODiscipline`
 included in the Aerostructure problem:
@@ -69,9 +67,10 @@ and
            \end{aligned}
            \right.
 """
+
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import atleast_2d
@@ -79,6 +78,9 @@ from numpy import complex128
 from numpy import ones
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 def get_inputs(*names: str):
@@ -117,7 +119,7 @@ class Mission(MDODiscipline):
         Args:
             r_val: The threshold to compute the reserve factor constraint.
             lift_val: The threshold to compute the lift constraint.
-        """
+        """  # noqa: D205 D212
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs("lift", "mass", "drag", "reserve_fact")
         self.re_exec_policy = self.ReExecutionPolicy.DONE
@@ -125,9 +127,12 @@ class Mission(MDODiscipline):
         self.lift_val = lift_val
 
     def _run(self) -> None:
-        lift, mass, drag, reserve_fact = self.get_inputs_by_name(
-            ["lift", "mass", "drag", "reserve_fact"]
-        )
+        lift, mass, drag, reserve_fact = self.get_inputs_by_name([
+            "lift",
+            "mass",
+            "drag",
+            "reserve_fact",
+        ])
         obj = array([self.compute_range(lift, mass, drag)], dtype=complex128)
         c_lift = array([self.c_lift(lift, self.lift_val)], dtype=complex128)
         c_rf = array([self.c_rf(reserve_fact)], dtype=complex128)
@@ -135,7 +140,7 @@ class Mission(MDODiscipline):
 
     @staticmethod
     def compute_range(lift, mass, drag) -> float:
-        """Compute the objective function: :math:`range=8.10^{11}*lift/(mass*drag)`
+        """Compute the objective function: :math:`range=8.10^{11}*lift/(mass*drag)`.
 
         Args:
             lift: The lift.
@@ -149,7 +154,7 @@ class Mission(MDODiscipline):
 
     @staticmethod
     def c_lift(lift, lift_val: float = 0.5):
-        """Compute the lift constraint: :math:`lift-0.5`
+        """Compute the lift constraint: :math:`lift-0.5`.
 
         Args:
             lift: The lift.
@@ -162,7 +167,7 @@ class Mission(MDODiscipline):
 
     @staticmethod
     def c_rf(reserve_fact, rf_val: float = 0.5):
-        """Compute the reserve factor constraint: :math:`rf-0.5`
+        """Compute the reserve factor constraint: :math:`rf-0.5`.
 
         Args:
             reserve_fact: The reserve factor.
@@ -196,15 +201,17 @@ class Aerodynamics(MDODiscipline):
     Evaluate: ``[drag, forces, lift] = f(sweep, thick_airfoils, displ)``.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs("sweep", "thick_airfoils", "displ")
         self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
-        sweep, thick_airfoils, displ = self.get_inputs_by_name(
-            ["sweep", "thick_airfoils", "displ"]
-        )
+        sweep, thick_airfoils, displ = self.get_inputs_by_name([
+            "sweep",
+            "thick_airfoils",
+            "displ",
+        ])
         drag_out = array([self.compute_drag(sweep, thick_airfoils, displ)])
         lift_out = array([self.compute_lift(sweep, thick_airfoils, displ)])
         forces_out = array([self.compute_forces(sweep, thick_airfoils, displ)])
@@ -235,7 +242,9 @@ class Aerodynamics(MDODiscipline):
 
     @staticmethod
     def compute_forces(sweep, thick_airfoils, displ):
-        r"""Compute the coupling :math:`forces=10*sweep + 0.2*thick\\_airfoils-0.2*displ`
+        r"""Compute the coupling forces.
+
+        :math:`forces=10*sweep + 0.2*thick\\_airfoils-0.2*displ`
 
         Args:
             sweep: The sweep.
@@ -249,8 +258,9 @@ class Aerodynamics(MDODiscipline):
 
     @staticmethod
     def compute_lift(sweep, thick_airfoils, displ):
-        r"""Compute the coupling :math:`lift=(sweep +
-        0.2*thick\\_airfoils-2.*displ)/3000.`
+        r"""Compute the lift.
+
+        :math:`lift=(sweep + 0.2*thick\\_airfoils-2.*displ)/3000.`.
 
         Args:
             sweep: The sweep.
@@ -289,15 +299,17 @@ class Structure(MDODiscipline):
     Evaluate: ``[mass, rf, displ] = f(sweep, thick_panels, forces)``.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs("sweep", "forces", "thick_panels")
         self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
-        sweep, thick_panels, forces = self.get_inputs_by_name(
-            ["sweep", "thick_panels", "forces"]
-        )
+        sweep, thick_panels, forces = self.get_inputs_by_name([
+            "sweep",
+            "thick_panels",
+            "forces",
+        ])
         mass_out = array([self.compute_mass(sweep, thick_panels, forces)])
         rf_out = array([self.compute_rf(sweep, thick_panels, forces)])
         displ_out = array([self.compute_displ(sweep, thick_panels, forces)])
@@ -305,9 +317,9 @@ class Structure(MDODiscipline):
 
     @staticmethod
     def compute_mass(sweep, thick_panels, forces):
-        r"""Compute the coupling
-        :math:`mass=4000*(sweep/360)^3 + 200000 + 100*thick\\_panels
-        + 200.0*forces`
+        r"""Compute the mass.
+
+        :math:`mass=4000*(sweep/360)^3 + 200000 + 100*thick\\_panels + 200.0*forces`.
 
         Args:
              sweep: The sweep.
@@ -362,14 +374,17 @@ class Structure(MDODiscipline):
         # Initialize all matrices to zeros
         self._init_jacobian(inputs, outputs)
         sweep = self.get_inputs_by_name("sweep")
-        self.jac["mass"]["sweep"] = atleast_2d(
-            array([4000.0 * 3.0 * sweep[0] ** 2 / 360.0**3])
-        )
-        self.jac["mass"]["thick_panels"] = atleast_2d(array([100.0]))
-        self.jac["mass"]["forces"] = atleast_2d(array([200.0]))
-        self.jac["reserve_fact"]["sweep"] = atleast_2d(array([-3.0]))
-        self.jac["reserve_fact"]["thick_panels"] = atleast_2d(array([-6.0]))
-        self.jac["reserve_fact"]["forces"] = atleast_2d(array([0.1]))
-        self.jac["displ"]["sweep"] = atleast_2d(array([2.0]))
-        self.jac["displ"]["thick_panels"] = atleast_2d([3.0])
-        self.jac["displ"]["forces"] = atleast_2d(array([-2.0]))
+        jac = self.jac["mass"]
+        jac["sweep"] = atleast_2d(array([4000.0 * 3.0 * sweep[0] ** 2 / 360.0**3]))
+        jac["thick_panels"] = atleast_2d(array([100.0]))
+        jac["forces"] = atleast_2d(array([200.0]))
+
+        jac = self.jac["reserve_fact"]
+        jac["sweep"] = atleast_2d(array([-3.0]))
+        jac["thick_panels"] = atleast_2d(array([-6.0]))
+        jac["forces"] = atleast_2d(array([0.1]))
+
+        jac = self.jac["displ"]
+        jac["sweep"] = atleast_2d(array([2.0]))
+        jac["thick_panels"] = atleast_2d([3.0])
+        jac["forces"] = atleast_2d(array([-2.0]))

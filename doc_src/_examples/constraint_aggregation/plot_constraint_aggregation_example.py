@@ -17,6 +17,7 @@
 Examples for constraint aggregation
 ===================================
 """
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -35,7 +36,7 @@ N = 100
 # %%
 # Build the discipline
 constraint_names = [f"g_{k + 1}" for k in range(N)]
-function_names = ["o"] + constraint_names
+function_names = ["o", *constraint_names]
 function_expressions = ["y"] + [f"{k + 1}*x*exp(1-{k + 1}*x)-y" for k in range(N)]
 disc = AnalyticDiscipline(
     name="function",
@@ -107,8 +108,10 @@ new_scenario = create_scenario(
 new_scenario.add_constraint("g", "ineq")
 
 # %%
-# This method aggregates the constraints using the KS function
-new_scenario.formulation.opt_problem.aggregate_constraint(0, method="KS", rho=10.0)
+# This method aggregates the constraints using the lower bound KS function
+new_scenario.formulation.opt_problem.aggregate_constraint(
+    0, method="lower_bound_KS", rho=10.0
+)
 new_scenario.execute(algo_options)
 
 # %%

@@ -20,18 +20,23 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A scenario whose driver is an optimization algorithm."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
-from typing import Sequence
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.opt_result import OptimizationResult
 
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name
@@ -113,10 +118,11 @@ class MDOScenario(Scenario):
 
     def _update_input_grammar(self) -> None:
         super()._update_input_grammar()
-        if self.grammar_type == self.GrammarType.SIMPLE:
-            self.input_grammar.update_from_types(
-                {"max_iter": int, "algo_options": dict}
-            )
+        if self.grammar_type != self.GrammarType.JSON:
+            self.input_grammar.update_from_types({
+                "max_iter": int,
+                "algo_options": dict,
+            })
             self.input_grammar.required_names.remove("algo_options")
 
     def __setstate__(self, state: Mapping[str, Any]) -> None:

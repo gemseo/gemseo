@@ -19,12 +19,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
+from matplotlib import pyplot as plt
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -35,22 +38,32 @@ def dataset():
     sample3 = [1.0, 1.0, 0.75, 0.0]
     data_array = array([sample1, sample2, sample3])
     variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
-    dataset = Dataset.from_array(
+    return Dataset.from_array(
         data_array,
         variable_names=["x", "y", "z"],
         variable_names_to_n_components=variable_names_to_n_components,
     )
-    return dataset
 
 
 TEST_PARAMETERS = {
     "default": ({}, {}, ["Lines"]),
+    "xticks": ({"set_xticks_from_data": True}, {}, ["Lines_xticks"]),
     "markers": ({"add_markers": True}, {}, ["Lines_markers"]),
     "variables": ({"variables": ["y"]}, {}, ["Lines_variables"]),
     "abscissa": (
-        {"variables": ["y"], "abscissa_variable": "x"},
+        {"abscissa_variable": "x"},
         {},
         ["Lines_abscissa"],
+    ),
+    "plot_abscissa_variable_1": (
+        {"abscissa_variable": "x", "plot_abscissa_variable": True},
+        {},
+        ["Lines_plot_abscissa_variable_1"],
+    ),
+    "plot_abscissa_variable_2": (
+        {"abscissa_variable": "x", "plot_abscissa_variable": True, "variables": ["y"]},
+        {},
+        ["Lines_plot_abscissa_variable_2"],
     ),
     "with_properties": (
         {"add_markers": True},
@@ -74,19 +87,40 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
-def test_plot(
+def test_plot_matplotlib(
     kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
 ):
-    """Test images created by Lines.execute against references."""
+    """Test images created by Lines.execute against references for matplotlib."""
     plot = Lines(dataset, **kwargs)
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
-    plot.execute(save=False, fig=fig, axes=axes, properties=properties)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+
+    plot.execute(save=False, fig=fig, axes=axes)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "properties", "baseline_images"),
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+def test_plot_plotly(kwargs, properties, baseline_images, dataset):
+    """Test images created by Lines.execute against references for plotly."""
+    pytest.importorskip("plotly")
+    plot = Lines(dataset, **kwargs)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+
+    figure = plot.execute(save=False, show=False, file_format="html")[0]
+    ref = (Path(__file__).parent / "plotly" / baseline_images[0]).read_text()
+    assert figure.to_json() == ref.strip()

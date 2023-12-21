@@ -13,16 +13,18 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Generic tests."""
+
 from __future__ import annotations
 
 from pathlib import Path
 
 import pytest
+
 from gemseo import execute_post
 
 
 @pytest.mark.parametrize(
-    "class_name,kwargs,indices",
+    ("class_name", "kwargs", "indices"),
     [
         ("OptHistoryView", {}, []),
         ("ObjConstrHist", {}, []),

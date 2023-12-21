@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the module quadratic_programming_problem."""
+
 from __future__ import annotations
 
 from gemseo.problems.scalable.parametric.core.quadratic_programming_problem import (

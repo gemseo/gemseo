@@ -21,6 +21,7 @@
 Generate N2 and XDSM diagrams from an Excel description of the MDO problem
 ==========================================================================
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

@@ -13,15 +13,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """JSON schema handler."""
+
 from __future__ import annotations
 
 from collections import abc
 from contextlib import contextmanager
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Iterable
-from typing import Iterator
-from typing import Mapping
 
 from genson import SchemaBuilder
 from genson import SchemaNode
@@ -30,6 +29,11 @@ from genson.schema.strategies import Number
 from genson.schema.strategies import Object
 from numpy import float64
 from numpy import int64
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Mapping
 
 
 class _MergeRequiredStrategy(Object):
@@ -43,7 +47,7 @@ class _MergeRequiredStrategy(Object):
     """
 
     # Do not merge the name and id properties.
-    KEYWORDS = Object.KEYWORDS + ("name", "id")
+    KEYWORDS = (*Object.KEYWORDS, "name", "id")
 
     update: ClassVar[bool] = False
     """Whether to update or merge the schema."""
@@ -132,17 +136,17 @@ class _MultipleMeta(type(abc.Mapping), _MetaSchemaBuilder):
     passed to a class derived from ``SchemaBuilder``.
     """
 
-    def __init__(self, name: str, bases: tuple(type), attrs: dict[str, Any]) -> None:
+    def __init__(cls, name: str, bases: tuple(type), attrs: dict[str, Any]) -> None:
         super().__init__(name, bases, attrs)
-        self.NODE_CLASS = type(
-            "%sSchemaNode" % name, (_SchemaNode,), {"STRATEGIES": self.STRATEGIES}
+        cls.NODE_CLASS = type(
+            "%sSchemaNode" % name, (_SchemaNode,), {"STRATEGIES": cls.STRATEGIES}
         )
 
 
 class _Number(Number):
     """A number strategy that handles numpy data."""
 
-    PYTHON_TYPES = Number.PYTHON_TYPES + (float64, int64)
+    PYTHON_TYPES = (*Number.PYTHON_TYPES, float64, int64)
 
 
 class MutableMappingSchemaBuilder(abc.Mapping, SchemaBuilder, metaclass=_MultipleMeta):

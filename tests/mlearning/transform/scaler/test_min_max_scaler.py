@@ -17,10 +17,10 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test min-max scaler module."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import arange
 from numpy import array
@@ -28,8 +28,10 @@ from numpy import ndarray
 from numpy import zeros
 from numpy.testing import assert_almost_equal
 
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
-@pytest.fixture
+
+@pytest.fixture()
 def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))

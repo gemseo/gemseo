@@ -5,10 +5,7 @@
   ],
   "properties": {
     "rosen": {
-      "items": {
-        "type": "number"
-      },
-      "type": "array"
+      "type": "number"
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",

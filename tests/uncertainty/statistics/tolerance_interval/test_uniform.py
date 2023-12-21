@@ -18,9 +18,11 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the tolerance interval for uniform distributions."""
+
 from __future__ import annotations
 
 import pytest
+
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )
@@ -40,7 +42,7 @@ def test__quantile_both():
 def test_uniform_quantile_lower():
     """Check the bounds of lower-sided TI for the standard uniform distribution."""
     tolerance_interval = UniformToleranceInterval(1000000, minimum=0.0, maximum=1.0)
-    lower, upper = tolerance_interval.compute(
+    lower, _ = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert pytest.approx(lower, 0.001) == 0.025
@@ -49,7 +51,7 @@ def test_uniform_quantile_lower():
 def test_uniform_quantile_upper():
     """Check the bounds of upper-sided TI for the standard uniform distribution."""
     tolerance_interval = UniformToleranceInterval(1000000, minimum=0.0, maximum=1.0)
-    lower, upper = tolerance_interval.compute(
+    _, upper = tolerance_interval.compute(
         0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.UPPER
     )
     assert pytest.approx(upper, 0.001) == 0.975

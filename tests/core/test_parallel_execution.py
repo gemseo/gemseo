@@ -19,10 +19,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import unittest
+from copy import copy
 from timeit import default_timer as timer
 
 import pytest
+from numpy import array
+from numpy import complex128
+from numpy import equal
+from numpy import ones
+from scipy.optimize import rosen
+
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -36,18 +42,14 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.problems.sellar.sellar import get_inputs
+from gemseo.problems.sellar.sellar import WITH_2D_ARRAY
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import X_SHARED
-from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import get_inputs
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
-from numpy import array
-from numpy import complex128
-from numpy import equal
-from numpy import ones
-from scipy.optimize import rosen
 
 
 class CallableWorker:
@@ -60,171 +62,176 @@ class CallableWorker:
 
 def function_raising_exception(counter):
     """Raises an Exception."""
-    raise Exception("This is an Exception")
+    raise RuntimeError("This is an Exception")
 
 
-class TestParallelExecution(unittest.TestCase):
-    """Test the parallel execution."""
+def test_functional():
+    """Test the execution of functions in parallel."""
+    n = 10
+    parallel_execution = CallableParallelExecution([rosen])
+    output_list = parallel_execution.execute([[0.5] * i for i in range(1, n + 1)])
+    assert output_list == [rosen([0.5] * i) for i in range(1, n + 1)]
 
-    def test_functional(self):
-        """Test the execution of functions in parallel."""
-        n = 10
-        parallel_execution = CallableParallelExecution([rosen])
-        output_list = parallel_execution.execute([[0.5] * i for i in range(1, n + 1)])
-        assert output_list == [rosen([0.5] * i) for i in range(1, n + 1)]
 
-        self.assertRaises(
-            TypeError,
-            parallel_execution.execute,
-            [[0.5] * i for i in range(1, n + 1)],
-            exec_callback="toto",
+def test_callback_error():
+    parallel_execution = CallableParallelExecution([rosen])
+    with pytest.raises(TypeError):
+        parallel_execution.execute(
+            [[0.5] * i for i in range(1, 3)], exec_callback="toto"
         )
 
-        function_list = [rosen] * n
-        parallel_execution = CallableParallelExecution(function_list)
-        self.assertRaises(
-            TypeError,
-            parallel_execution.execute,
-            [[0.5] * i for i in range(1, n + 1)],
+
+def test_task_submitted_callback_error():
+    function_list = [rosen] * 3
+    parallel_execution = CallableParallelExecution(function_list)
+
+    with pytest.raises(TypeError):
+        parallel_execution.execute(
+            [[0.5] * i for i in range(1, 3)],
             task_submitted_callback="not_callable",
         )
 
-    def test_callable(self):
-        """Test CallableParallelExecution with a Callable worker."""
-        n = 2
-        function_list = [CallableWorker(), CallableWorker()]
-        parallel_execution = CallableParallelExecution(
-            function_list, use_threading=True
-        )
-        output_list = parallel_execution.execute([1] * n)
-        assert output_list == [2] * n
 
-    def test_callable_exception(self):
-        """Test CallableParallelExecution with a Callable worker."""
-        n = 2
-        function_list = [function_raising_exception, CallableWorker()]
-        parallel_execution = CallableParallelExecution(
-            function_list, use_threading=True
-        )
-        parallel_execution.execute([1] * n)
+def test_callable():
+    """Test CallableParallelExecution with a Callable worker."""
+    n = 2
+    function_list = [CallableWorker(), CallableWorker()]
+    parallel_execution = CallableParallelExecution(function_list, use_threading=True)
+    output_list = parallel_execution.execute([1] * n)
+    assert output_list == [2] * n
 
-    def test_disc_parallel_doe_scenario(self):
-        s_1 = Sellar1()
-        design_space = create_design_space()
-        design_space.add_variable("x_local", l_b=0.0, value=1.0, u_b=10.0)
-        scenario = create_scenario(
-            s_1, "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
-        )
-        n_samples = 20
-        scenario.execute(
-            {
-                "algo": "lhs",
-                "n_samples": n_samples,
-                "algo_options": {"eval_jac": True, "n_processes": 2},
-            }
-        )
-        assert (
-            len(scenario.formulation.opt_problem.database.get_function_history("y_1"))
-            == n_samples
-        )
 
-    def test_disc_parallel_doe(self):
-        """Test the execution of disciplines in parallel."""
-        s_1 = Sellar1()
-        n = 10
-        parallel_execution = DiscParallelExecution(
-            [s_1], n_processes=2, wait_time_between_fork=0.1
-        )
-        input_list = []
-        for i in range(n):
-            inpts = get_inputs()
-            inpts[X_SHARED][0] = i
-            input_list.append(inpts)
+def test_callable_exception():
+    """Test CallableParallelExecution with a Callable worker."""
+    n = 2
+    function_list = [function_raising_exception, CallableWorker()]
+    parallel_execution = CallableParallelExecution(function_list, use_threading=True)
+    parallel_execution.execute([1] * n)
 
-        t_0 = timer()
-        outs = parallel_execution.execute(input_list)
-        t_f = timer()
 
-        elapsed_time = t_f - t_0
-        assert elapsed_time > 0.1 * (n - 1)
+def test_disc_parallel_doe_scenario():
+    s_1 = Sellar1()
+    design_space = create_design_space()
+    design_space.add_variable("x_local", l_b=0.0, value=1.0, u_b=10.0)
+    scenario = create_scenario(
+        s_1, "DisciplinaryOpt", Y_1, design_space, scenario_type="DOE"
+    )
+    n_samples = 20
+    scenario.execute({
+        "algo": "lhs",
+        "n_samples": n_samples,
+        "algo_options": {"eval_jac": True, "n_processes": 2},
+    })
+    assert (
+        len(scenario.formulation.opt_problem.database.get_function_history(Y_1))
+        == n_samples
+    )
 
-        assert s_1.n_calls == n
 
-        func_gen = MDODisciplineAdapterGenerator(s_1)
-        y_0_func = func_gen.get_function([X_SHARED], [Y_1])
+def test_disc_parallel_doe(sellar_disciplines):
+    """Test the execution of disciplines in parallel."""
+    s_1 = sellar_disciplines.sellar1
+    n = 10
+    parallel_execution = DiscParallelExecution(
+        [s_1], n_processes=2, wait_time_between_fork=0.1
+    )
+    input_list = []
+    for i in range(n):
+        inputs = get_inputs()
+        if WITH_2D_ARRAY:
+            inputs[X_SHARED][0][0] = i
+        else:
+            inputs[X_SHARED][0] = i
+        input_list.append(inputs)
 
-        parallel_execution = CallableParallelExecution([y_0_func])
-        input_list = [array([i, 0.0], dtype=complex128) for i in range(n)]
-        output_list = parallel_execution.execute(input_list)
+    t_0 = timer()
+    outs = parallel_execution.execute(input_list)
+    t_f = timer()
 
-        for i in range(n):
-            inpts = get_inputs()
-            inpts[X_SHARED][0] = i
-            s_1.execute(inpts)
-            assert s_1.local_data[Y_1] == outs[i][Y_1]
-            assert s_1.local_data[Y_1] == output_list[i]
+    elapsed_time = t_f - t_0
+    assert elapsed_time > 0.1 * (n - 1)
 
-    def test_parallel_lin(self):
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        parallel_execution = DiscParallelLinearization(disciplines)
+    assert s_1.n_calls == n
 
-        input_list = []
-        for i in range(3):
-            inpts = get_inputs()
-            inpts[X_SHARED][0] = i + 1
-            input_list.append(inpts)
-        outs = parallel_execution.execute(input_list)
+    func_gen = MDODisciplineAdapterGenerator(s_1)
+    y_0_func = func_gen.get_function([X_SHARED], [Y_1])
 
-        disciplines2 = [Sellar1(), Sellar2(), SellarSystem()]
+    parallel_execution = CallableParallelExecution([y_0_func])
+    input_list = [array([i, 0], dtype=complex128) for i in range(n)]
+    output_list = parallel_execution.execute(input_list)
 
-        for i, disc in enumerate(disciplines):
-            inpts = get_inputs()
-            inpts[X_SHARED][0] = i + 1
+    for i in range(n):
+        inputs = get_inputs()
+        if WITH_2D_ARRAY:
+            inputs[X_SHARED][0][0] = i
+        else:
+            inputs[X_SHARED][0] = i
+        s_1.execute(inputs)
+        assert s_1.local_data[Y_1] == outs[i][Y_1]
+        assert s_1.local_data[Y_1] == output_list[i]
 
-            j_ref = disciplines2[i].linearize(inpts)
 
-            for f, jac_loc in disc.jac.items():
-                for x, dfdx in jac_loc.items():
-                    assert (dfdx == j_ref[f][x]).all()
-                    assert (dfdx == outs[i][f][x]).all()
+def test_parallel_lin():
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    parallel_execution = DiscParallelLinearization(disciplines)
 
-    def test_disc_parallel_threading_proc(self):
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        parallel_execution = DiscParallelExecution(
-            disciplines, n_processes=2, use_threading=True
-        )
-        outs1 = parallel_execution.execute([None] * 3)
+    input_list = []
+    for i in range(3):
+        inpts = get_inputs()
+        inpts[X_SHARED][0] = i + 1
+        input_list.append(inpts)
+    outs = parallel_execution.execute(input_list)
 
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        parallel_execution = DiscParallelExecution(disciplines, n_processes=2)
-        outs2 = parallel_execution.execute([None] * 3)
+    disciplines2 = [Sellar1(), Sellar2(), SellarSystem()]
 
-        for out_d1, out_d2 in zip(outs1, outs2):
-            for name, val in out_d2.items():
-                assert equal(out_d1[name], val).all()
+    for i, disc in enumerate(disciplines):
+        inpts = get_inputs()
+        inpts[X_SHARED][0] = i + 1
 
-        disciplines = [Sellar1()] * 2
-        self.assertRaises(
-            ValueError,
-            DiscParallelExecution,
+        j_ref = disciplines2[i].linearize(inpts)
+
+        for f, jac_loc in disc.jac.items():
+            for x, dfdx in jac_loc.items():
+                assert (dfdx == j_ref[f][x]).all()
+                assert (dfdx == outs[i][f][x]).all()
+
+
+def test_disc_parallel_threading_proc(sellar_disciplines):
+    disciplines = copy(sellar_disciplines)
+    parallel_execution = DiscParallelExecution(
+        disciplines, n_processes=2, use_threading=True
+    )
+    outs1 = parallel_execution.execute([None] * 3)
+
+    disciplines = copy(sellar_disciplines)
+    parallel_execution = DiscParallelExecution(disciplines, n_processes=2)
+    outs2 = parallel_execution.execute([None] * 3)
+
+    for out_d1, out_d2 in zip(outs1, outs2):
+        for name, val in out_d2.items():
+            assert equal(out_d1[name], val).all()
+
+    disciplines = [sellar_disciplines.sellar1] * 2
+
+    with pytest.raises(ValueError):
+        DiscParallelExecution(
             disciplines,
             n_processes=2,
             use_threading=True,
         )
 
-    def test_async_call(self):
-        disc = create_discipline("SobieskiMission")
-        func = MDODisciplineAdapterGenerator(disc).get_function([X_SHARED], ["y_4"])
 
-        x_list = [i * ones(6) for i in range(4)]
+def test_async_call():
+    disc = create_discipline("SobieskiMission")
+    func = MDODisciplineAdapterGenerator(disc).get_function([X_SHARED], ["y_4"])
 
-        def do_work():
-            return list(map(func, x_list))
+    x_list = [i * ones(6) for i in range(4)]
 
-        par = CallableParallelExecution([func] * 2, n_processes=2)
-        par.execute(
-            [i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work
-        )
+    def do_work():
+        return list(map(func, x_list))
+
+    par = CallableParallelExecution([func] * 2, n_processes=2)
+    par.execute([i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work)
 
 
 def test_not_worker(capfd):
@@ -247,12 +254,11 @@ def f(x: float = 0.0) -> float:
     """A function that raises an exception on certain conditions."""
     if x == 0:
         raise ValueError("Undefined")
-    y = x + 1
-    return y
+    return x + 1
 
 
 @pytest.mark.parametrize(
-    "exceptions,raises_exception",
+    ("exceptions", "raises_exception"),
     [((), False), ((ValueError,), True), ((RuntimeError,), False)],
 )
 def test_re_raise_exceptions(exceptions, raises_exception):
@@ -291,7 +297,7 @@ def reset_default_multiproc_method():
 
 
 @pytest.mark.parametrize(
-    "parallel_class, n_calls_attr, add_diff, expected_n_calls",
+    ("parallel_class", "n_calls_attr", "add_diff", "expected_n_calls"),
     [
         (DiscParallelExecution, "n_calls", False, 2),
         (DiscParallelLinearization, "n_calls_linearize", False, 0),
@@ -322,7 +328,7 @@ def test_multiprocessing_context(
 
     # Just for the test purpose, we consider multithreading as an mp_method
     # and set the boolean ``use_threading`` from this.
-    use_threading = True if mp_method == "threading" else False
+    use_threading = mp_method == "threading"
     if not use_threading:
         CallableParallelExecution.MULTI_PROCESSING_START_METHOD = mp_method
 
@@ -333,18 +339,13 @@ def test_multiprocessing_context(
 
     parallel_execution = parallel_class([sellar], use_threading=use_threading)
 
-    input_list = [
-        {
-            "x_local": array([0.0 + 0.0j]),
-            "x_shared": array([1.0 + 0.0j, 0.0 + 0.0j]),
-            "y_2": array([1.0 + 0.0j]),
-        },
-        {
-            "x_local": array([0.5 + 0.0j]),
-            "x_shared": array([0.5 + 0.0j, 0.0 + 0.0j]),
-            "y_2": array([0.5 + 0.0j]),
-        },
-    ]
+    atom_inputs = get_inputs()
+    del atom_inputs[Y_1]
+    atom_inputs_half = atom_inputs.copy()
+    for name, value in atom_inputs_half.items():
+        atom_inputs_half[name] = value / 2
+
+    input_list = [atom_inputs, atom_inputs_half]
 
     if (
         PLATFORM_IS_WINDOWS

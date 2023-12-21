@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Various termination criteria for drivers."""
+
 from __future__ import annotations
 
 from numpy import all
@@ -85,12 +86,9 @@ def is_x_tol_reached(
         return False
 
     x_average = average(x_values, axis=0)
-    return all(
-        [
-            allclose(x_val, x_average, atol=x_tol_abs, rtol=x_tol_rel)
-            for x_val in x_values
-        ]
-    )
+    return all([
+        allclose(x_val, x_average, atol=x_tol_abs, rtol=x_tol_rel) for x_val in x_values
+    ])
 
 
 def is_f_tol_reached(
@@ -135,9 +133,6 @@ def is_f_tol_reached(
         return False
 
     f_average = average(f_values)
-    return all(
-        [
-            allclose(f_val, f_average, atol=f_tol_abs, rtol=f_tol_rel)
-            for f_val in f_values
-        ]
-    )
+    return all([
+        allclose(f_val, f_average, atol=f_tol_abs, rtol=f_tol_rel) for f_val in f_values
+    ])

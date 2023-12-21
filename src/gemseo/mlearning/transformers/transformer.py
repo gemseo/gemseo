@@ -29,10 +29,11 @@ and possibly :meth:`.Transformer.inverse_transform` methods.
    :mod:`~gemseo.mlearning.transformers.scaler.scaler`
    :mod:`~gemseo.mlearning.transformers.dimension_reduction.dimension_reduction`
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import NoReturn
@@ -40,11 +41,15 @@ from typing import Union
 
 from numpy import ndarray
 from numpy import newaxis
-from typing_extensions import ParamSpecArgs
-from typing_extensions import ParamSpecKwargs
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from typing_extensions import ParamSpecArgs
+    from typing_extensions import ParamSpecKwargs
 
 ParameterType = Union[bool, int, float, ndarray, str, None]
 TransformerFitOptionType = Union[float, int, str]
@@ -59,13 +64,13 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     CROSSED: ClassVar[bool] = False
     """Whether the :meth:`.fit` method requires two data arrays."""
 
-    def __init__(self, name: str = "Transformer", **parameters: ParameterType) -> None:
+    def __init__(self, name: str = "", **parameters: ParameterType) -> None:
         """
         Args:
             name: A name for this transformer.
             **parameters: The parameters of the transformer.
-        """
-        self.name = name
+        """  # noqa: D205 D212
+        self.name = name or self.__class__.__name__
         self.__parameters = parameters
         self.__is_fitted = False
 
@@ -106,6 +111,7 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             data: The data to be fitted, shaped as ``(n_observations, n_features)``.
+            *args: The options for the transformer.
         """
 
     @abstractmethod
@@ -177,7 +183,7 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _use_2d_array(
-        f: Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any]
+        f: Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any],
     ) -> Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any]:
         """Force the NumPy array passed to a function as first argument to be a 2D one.
 
@@ -190,6 +196,8 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
             Args:
                 data: A 1D or 2D NumPy array.
+                *args: The positional arguments.
+                **kwargs: The optional arguments.
 
             Returns:
                 Any kind of output;
@@ -198,12 +206,12 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
             """
             if data.ndim == 2:
                 return f(self, data, *args, **kwargs)
-            else:
-                out = f(self, data[newaxis, :], *args, **kwargs)
-                if isinstance(out, ndarray):
-                    out = out[0]
 
-                return out
+            out = f(self, data[newaxis, :], *args, **kwargs)
+            if isinstance(out, ndarray):
+                return out[0]
+
+            return out
 
         return g
 

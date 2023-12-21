@@ -21,6 +21,7 @@
 Newton-Raphson MDA
 ==================
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger
@@ -70,9 +71,11 @@ def display_result(res, mda_name):
 # of the MDA will be used and computed from the
 # Default inputs of the disciplines
 
-disciplines = create_discipline(
-    ["SobieskiStructure", "SobieskiPropulsion", "SobieskiAerodynamics"]
-)
+disciplines = create_discipline([
+    "SobieskiStructure",
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+])
 mda = create_mda("MDANewtonRaphson", disciplines, relax_factor=0.99)
 res = mda.execute()
 display_result(res, mda.name)

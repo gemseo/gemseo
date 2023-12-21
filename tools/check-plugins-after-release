@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 """A script to check the plugins against a new gemseo release."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -31,10 +32,9 @@ ACTIONS = f"""
 git fetch {{remote}}
 git stash
 git checkout {{remote}}/{PARENT_BRANCH} -b {BRANCH}
-tox -e update-deps-test-py37
-tox -e update-deps-test-py38
 tox -e update-deps-test-py39
 tox -e update-deps-test-py310
+tox -e update-deps-test-py311
 git add -u
 git commit -m "build: udpate deps"
 git push origin {BRANCH}

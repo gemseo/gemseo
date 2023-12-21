@@ -77,15 +77,19 @@ The Jacobian of the right-hand side of this ODE is:
         0 & 1 & 0 & 0
     \end{pmatrix}.
 """
+
 from __future__ import annotations
 
 from math import sqrt
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import zeros
-from numpy.typing import NDArray
 
 from gemseo.algos.ode.ode_problem import ODEProblem
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 def _compute_rhs(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
@@ -99,11 +103,9 @@ def _compute_rhs(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:
     return array([f1, f2, f3, f4])
 
 
-def _compute_rhs_jacobian(
-    time: float, state: NDArray[float]
-) -> NDArray[float]:  # noqa:U100
+def _compute_rhs_jacobian(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
     """Compute the Jacobian of the right-hand side of the ODE."""
-    x, y, vx, vy = state
+    x, y, _, _ = state
     jac = zeros((4, 4))
     jac[0, 2] = (2 * x * x - y * y) / (x * x + y * y) ** (5 / 2)
     jac[0, 3] = (3 * x * y) / (x * x + y * y) ** (5 / 2)
@@ -115,8 +117,7 @@ def _compute_rhs_jacobian(
 
 
 class OrbitalDynamics(ODEProblem):
-    """Equations of motion of a massive point particle under the influence of a central
-    force."""
+    """Equations of motion of a massive point particle under a central force."""
 
     def __init__(
         self,
@@ -131,19 +132,17 @@ class OrbitalDynamics(ODEProblem):
             state_vector: The state vector
                 :math:`s(t)=(x(t), y(t), \dot{x(t)}, \dot{y(t)})`
                 of the system.
-        """
+        """  # noqa: D205 D212
         if state_vector is None:
             state_vector = zeros(2)
         self.state_vector = state_vector
 
-        initial_state = array(
-            [
-                1 - eccentricity,
-                0,
-                0,
-                sqrt((1 + eccentricity) / (1 - eccentricity)),
-            ]
-        )
+        initial_state = array([
+            1 - eccentricity,
+            0,
+            0,
+            sqrt((1 + eccentricity) / (1 - eccentricity)),
+        ])
 
         jac = _compute_rhs_jacobian if use_jacobian else None
         super().__init__(

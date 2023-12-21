@@ -22,14 +22,14 @@
 The namespaces implementation itself is mainly in :mod:`~gemseo.core.grammars` and
 :mod:`~gemseo.core.discipline`
 """
+
 from __future__ import annotations
 
-from typing import Iterable
-from typing import List
-from typing import MutableMapping
+from collections.abc import Iterable
+from collections.abc import MutableMapping
 from typing import Union
 
-NamespacesMapping = MutableMapping[str, Union[str, List[str]]]
+NamespacesMapping = MutableMapping[str, Union[str, list[str]]]
 
 namespaces_separator = ":"
 
@@ -96,9 +96,8 @@ def update_namespaces(
             if isinstance(other_ns, str):
                 namespaces[name] = [curr_ns, other_ns]
             else:
-                namespaces[name] = [curr_ns] + other_ns
+                namespaces[name] = [curr_ns, *other_ns]
+        elif isinstance(other_ns, str):
+            namespaces[name].append(other_ns)
         else:
-            if isinstance(other_ns, str):
-                namespaces[name].append(other_ns)
-            else:
-                namespaces[name].extend(other_ns)
+            namespaces[name].extend(other_ns)

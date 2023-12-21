@@ -15,12 +15,13 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
 from numpy import linspace
 from numpy import newaxis
 from numpy import pi
 from numpy import sin
+
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
 
 
 @pytest.fixture(scope="module")

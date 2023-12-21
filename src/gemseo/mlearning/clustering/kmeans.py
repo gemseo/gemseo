@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The k-means algorithm for clustering.
+r"""The k-means algorithm for clustering.
 
 The k-means algorithm groups the data into clusters,
 where the number of clusters :math:`k` is fixed.
@@ -68,11 +68,12 @@ This clustering algorithm relies on the KMeans class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.cluster.KMeans.html>`_.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
 from numpy import finfo
 from numpy import ndarray
@@ -80,9 +81,14 @@ from numpy import newaxis
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
 
-from gemseo.datasets.dataset import Dataset
+from gemseo import SEED
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
-from gemseo.mlearning.core.ml_algo import TransformerType
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class KMeans(MLPredictiveClusteringAlgo):
@@ -99,16 +105,16 @@ class KMeans(MLPredictiveClusteringAlgo):
         transformer: TransformerType = MLPredictiveClusteringAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         n_clusters: int = 5,
-        random_state: int | None = 0,
+        random_state: int | None = SEED,
         **parameters: int | float | bool | str | None,
     ) -> None:
         """
         Args:
             n_clusters: The number of clusters of the K-means algorithm.
-            random_state: If ``None``, use a random generation of the initial centroids.
-                Otherwise,
-                the integer is used to make the initialization deterministic.
-        """
+            random_state: The random state passed to the method
+                generating the initial centroids
+                Use an integer for reproducible results.
+        """  # noqa: D205 D212
         n_init = parameters.pop("n_init", "auto")
         super().__init__(
             data,
@@ -138,8 +144,7 @@ class KMeans(MLPredictiveClusteringAlgo):
         self,
         data: ndarray,
     ) -> ndarray:
-        centers = self.algo.cluster_centers_
-        distances = norm(data[:, newaxis] - centers, axis=2)
-        inverse_distances = 1 / (distances + self.EPS)
-        probas = inverse_distances / inverse_distances.sum(axis=1)[:, newaxis]
-        return probas
+        inverse_distances = 1 / (
+            norm(data[:, newaxis] - self.algo.cluster_centers_, axis=2) + self.EPS
+        )
+        return inverse_distances / inverse_distances.sum(axis=1)[:, newaxis]

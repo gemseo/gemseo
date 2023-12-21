@@ -18,14 +18,18 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The base discipline."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.scalable.parametric.core.disciplines.base_discipline import (
-    BaseDiscipline as _BaseDiscipline,
-)
+
+if TYPE_CHECKING:
+    from gemseo.problems.scalable.parametric.core.disciplines.base_discipline import (
+        BaseDiscipline as _BaseDiscipline,
+    )
 
 
 class BaseDiscipline(MDODiscipline):
@@ -37,7 +41,7 @@ class BaseDiscipline(MDODiscipline):
     _CORE_DISCIPLINE_CLASS: type[_BaseDiscipline]
     """The class of the core discipline."""
 
-    _discipline: _CORE_DISCIPLINE_CLASS
+    _discipline: _CORE_DISCIPLINE_CLASS  # noqa: F821
     """The core discipline."""
 
     def __init__(
@@ -51,7 +55,7 @@ class BaseDiscipline(MDODiscipline):
                 to instantiate the core discipline
                 as ``CoreDiscipline(*core_discipline_parameters)``.
             **default_input_values: The default values of the input variables.
-        """
+        """  # noqa: D205 D212
         self._discipline = self._CORE_DISCIPLINE_CLASS(
             *core_discipline_parameters, **default_input_values
         )

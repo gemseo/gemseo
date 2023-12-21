@@ -13,16 +13,18 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the function create_n2_html."""
+
 from __future__ import annotations
 
 from filecmp import cmp
 from pathlib import Path
 
 import pytest
+from numpy import ones
+
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.n2d3.n2_html import N2HTML
-from numpy import ones
 
 
 @pytest.fixture(scope="module")

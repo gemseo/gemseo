@@ -13,9 +13,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A function evaluating other functions and concatenating their outputs."""
+
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import atleast_1d
 from numpy import atleast_2d
@@ -24,6 +25,9 @@ from numpy import vstack
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class Concatenate(MDOFunction):

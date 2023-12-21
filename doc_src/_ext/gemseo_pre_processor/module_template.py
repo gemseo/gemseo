@@ -102,7 +102,7 @@ def create_tree_file(modules_path, dct, parents, root):
                 f.write(f"{underline(path)}\n\n")
                 f.write(".. raw:: html\n\n")
                 f.write("   <ul class='fa-ul'>\n")
-            create_tree_file(modules_path, dct[name], parents + [name], root)
+            create_tree_file(modules_path, dct[name], [*parents, name], root)
         else:  # module
             with open(modules_path / parent_rst, "a") as f:
                 f.write("      " + MOD_MSG.format(path, name))
@@ -188,13 +188,11 @@ def create_tree_file(modules_path, dct, parents, root):
 
 
 def main(modules_path, name):
-    tree = initialize_file_tree(
-        [
-            f.name
-            for f in modules_path.iterdir()
-            if f.is_file() and f.name != "modules.rst"
-        ]
-    )
+    tree = initialize_file_tree([
+        f.name
+        for f in modules_path.iterdir()
+        if f.is_file() and f.name != "modules.rst"
+    ])
 
     file_path = modules_path / Path(name).with_suffix(".rst")
     with open(file_path, "w") as f:

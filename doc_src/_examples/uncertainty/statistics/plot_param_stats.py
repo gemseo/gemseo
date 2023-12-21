@@ -34,17 +34,15 @@ distributed in the following way:
 
 These samples are generated from the NumPy library.
 """
+
 from __future__ import annotations
+
+from numpy import vstack
+from numpy.random import default_rng
 
 from gemseo import configure_logger
 from gemseo import create_dataset
 from gemseo.uncertainty import create_statistics
-from numpy import vstack
-from numpy.random import exponential
-from numpy.random import normal
-from numpy.random import rand
-from numpy.random import seed
-from numpy.random import weibull
 
 configure_logger()
 
@@ -52,14 +50,14 @@ configure_logger()
 # Create synthetic data
 # ---------------------
 
-seed(0)
+rng = default_rng(0)
 
 n_samples = 500
 
-uniform_rand = rand(n_samples)
-normal_rand = normal(size=n_samples)
-weibull_rand = weibull(1.5, size=n_samples)
-exponential_rand = exponential(size=n_samples)
+uniform_rand = rng.uniform(size=n_samples)
+normal_rand = rng.normal(size=n_samples)
+weibull_rand = rng.weibull(1.5, size=n_samples)
+exponential_rand = rng.exponential(size=n_samples)
 
 data = vstack((uniform_rand, normal_rand, weibull_rand, exponential_rand)).T
 
@@ -191,3 +189,10 @@ analysis.compute_tolerance_interval(0.5)
 # tolerance interval with a coverage level equal to 90%
 # with a confidence level of 95%:
 analysis.compute_b_value()
+
+# %%
+# Plot the distribution
+# ~~~~~~~~~~~~~~~~~~~~~
+# We can draw the empirical cumulative distribution function
+# and the empirical probability density function:
+analysis.plot()

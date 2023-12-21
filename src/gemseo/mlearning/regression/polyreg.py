@@ -74,25 +74,29 @@ modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_ classes of
 the `scikit-learn library <https://scikit-learn.org/stable/modules/
 linear_model.html>`_.
 """
+
 from __future__ import annotations
 
 import pickle
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Iterable
 
 from numpy import concatenate
 from numpy import ndarray
 from numpy import newaxis
-from numpy import where
 from numpy import zeros
 from sklearn.preprocessing import PolynomialFeatures
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import DataType
-from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.utils.compatibility.sklearn import get_n_input_features_
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class PolynomialRegressor(LinearRegressor):
@@ -126,7 +130,9 @@ class PolynomialRegressor(LinearRegressor):
 
         Raises:
             ValueError: If the degree is lower than one.
-        """
+        """  # noqa: D205 D212
+        if degree < 1:
+            raise ValueError("Degree must be >= 1.")
         super().__init__(
             data,
             degree=degree,
@@ -140,23 +146,19 @@ class PolynomialRegressor(LinearRegressor):
         )
         self._poly = PolynomialFeatures(degree=degree, include_bias=False)
         self.parameters["degree"] = degree
-        if degree < 1:
-            raise ValueError("Degree must be >= 1.")
 
     def _fit(
         self,
         input_data: ndarray,
         output_data: ndarray,
     ) -> None:
-        input_data = self._poly.fit_transform(input_data)
-        super()._fit(input_data, output_data)
+        super()._fit(self._poly.fit_transform(input_data), output_data)
 
     def _predict(
         self,
         input_data: ndarray,
     ) -> ndarray:
-        input_data = self._poly.transform(input_data)
-        return super()._predict(input_data)
+        return super()._predict(self._poly.transform(input_data))
 
     def _predict_jacobian(
         self,
@@ -172,17 +174,12 @@ class PolynomialRegressor(LinearRegressor):
         #
         # n_powers is given by the formula
         # n_powers = binom(n_inputs+degree, n_inputs)+1
-
-        vandermonde = self._poly.transform(input_data)
-
         powers = self._poly.powers_
         n_inputs = get_n_input_features_(self._poly)
-        n_powers = self._poly.n_output_features_
         n_outputs = self.algo.coef_.shape[0]
         coefs = self.get_coefficients()
-
         jac_intercept = zeros((n_outputs, n_inputs))
-        jac_coefs = zeros((n_outputs, n_powers, n_inputs))
+        jac_coefs = zeros((n_outputs, self._poly.n_output_features_, n_inputs))
 
         # Compute partial derivatives with respect to each input separately
         for index in range(n_inputs):
@@ -207,7 +204,7 @@ class PolynomialRegressor(LinearRegressor):
 
             # Find indices for the given powers
             inds_keep = [
-                where((powers == dpowers[i]).prod(axis=1) == 1)
+                ((powers == dpowers[i]).prod(axis=1) == 1).nonzero()[0]
                 for i in range(dpowers.shape[0])
             ]
             if len(inds_keep) > 0:
@@ -218,10 +215,9 @@ class PolynomialRegressor(LinearRegressor):
             jac_coefs[:, inds_keep, index] = dcoefs
 
         # Assemble polynomial (sum of weighted monomials)
-        contributions = jac_coefs[None] * vandermonde[:, newaxis, :, newaxis]
-        jacobians = jac_intercept + contributions.sum(axis=2)
-
-        return jacobians
+        vandermonde = self._poly.transform(input_data)
+        contributions = jac_coefs[newaxis] * vandermonde[:, newaxis, :, newaxis]
+        return jac_intercept + contributions.sum(axis=2)
 
     def get_coefficients(
         self,
@@ -230,7 +226,8 @@ class PolynomialRegressor(LinearRegressor):
         """Return the regression coefficients of the linear model.
 
         Args:
-            as_dict: If ``True``, return the coefficients as a dictionary of Numpy arrays
+            as_dict: If ``True``,
+                return the coefficients as a dictionary of Numpy arrays
                 indexed by the names of the coefficients.
                 Otherwise, return the coefficients as a Numpy array.
                 For now the only valid value is False.
@@ -241,13 +238,12 @@ class PolynomialRegressor(LinearRegressor):
         Raises:
             NotImplementedError: If the coefficients are required as a dictionary.
         """
-        coefficients = self.coefficients
         if as_dict:
             raise NotImplementedError(
                 "For now the coefficients can only be obtained "
                 "in the form of a NumPy array"
             )
-        return coefficients
+        return self.coefficients
 
     def _save_algo(
         self,
@@ -257,7 +253,7 @@ class PolynomialRegressor(LinearRegressor):
         with (directory / "poly.pkl").open("wb") as handle:
             pickle.dump(self._poly, handle)
 
-    def load_algo(
+    def load_algo(  # noqa: D102
         self,
         directory: str | Path,
     ) -> None:

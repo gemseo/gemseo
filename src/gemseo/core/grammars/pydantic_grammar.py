@@ -13,54 +13,42 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A grammar based on a pydantic model."""
+
 from __future__ import annotations
 
 import logging
-import sys
+from collections.abc import Collection
+from collections.abc import Iterable
+from collections.abc import Iterator
+from collections.abc import Mapping
+from collections.abc import Sequence
 from copy import copy
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Collection
-from typing import Generic
-from typing import get_origin
-from typing import Iterable
-from typing import Iterator
-from typing import Mapping
-from typing import Sequence
-from typing import Type
 from typing import Union
 
 from numpy import ndarray
-from numpy.typing import NDArray
 from pydantic import BaseModel
 from pydantic import ValidationError
-from pydantic.fields import ModelField
+from pydantic import create_model
+from pydantic.fields import FieldInfo
+from typing_extensions import get_origin
 
-from gemseo.core.discipline_data import MutableData
-from gemseo.core.grammars import _pydantic_utils
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.base_grammar import NamesToTypes
-from gemseo.core.grammars.json_grammar import DictSchemaType
+from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
+from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.utils.string_tools import MultiLineString
 
-ModelType = Type[BaseModel]
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import MutableData
+    from gemseo.core.grammars.json_grammar import DictSchemaType
+    from gemseo.utils.string_tools import MultiLineString
+
+ModelType = type[BaseModel]
 
 LOGGER = logging.getLogger(__name__)
-
-_pydantic_utils.patch_pydantic()
-
-
-if sys.version_info < (3, 9):  # pragma: >=3.9 no cover
-
-    def get_origin(type_: type) -> type | None:  # noqa:F811,D103
-        # The origin of an NDArray is not properly determined in the standard
-        # library, see the source code for the changes.
-        origin = getattr(type_, "__origin__", None)
-        if origin is not None:
-            return origin
-        if type_ is Generic:
-            return Generic
 
 
 class PydanticGrammar(BaseGrammar):
@@ -70,25 +58,30 @@ class PydanticGrammar(BaseGrammar):
     Currently, changing the defaults will not update the model.
     """
 
+    DATA_CONVERTER_CLASS: ClassVar[str] = "PydanticGrammarDataConverter"
+
     __model: ModelType
     """The pydantic model."""
 
-    __TYPE_TO_PYDANTIC_TYPE: ClassVar[dict[type, type]] = {
-        ndarray: NDArray,
-    }
-    """The mapping from standard types to pydantic specific types."""
+    __model_needs_rebuild: bool
+    """Whether to rebuild the model before validation when it had runtime changes.
 
-    __PYDANTIC_TYPE_TO_SIMPLE_TYPE: ClassVar[dict[type, type]] = {
-        ndarray: ndarray,
-        list: list,
-        tuple: tuple,
-        dict: dict,
-        int: int,
-        float: float,
-        str: str,
-        bool: bool,
+    This is necessary because the pydantic schema is built at model creation but it does
+    not reflect any of the changes done after.
+    """
+
+    __SIMPLE_TYPES: ClassVar[tuple[type]] = {
+        _NDArrayPydantic,
+        list,
+        tuple,
+        dict,
+        int,
+        float,
+        complex,
+        str,
+        bool,
     }
-    """The mapping from pydantic types to types for the simple grammar."""
+    """The types that can be converted for simple grammars."""
 
     def __init__(
         self,
@@ -106,28 +99,31 @@ class PydanticGrammar(BaseGrammar):
         if model is not None:
             self.__model = model
         # Set the defaults.
-        for name, field in self.__model.__fields__.items():
-            if not field.required:
-                self._defaults[name] = field.get_default()
+        for name, field in self.__model.model_fields.items():
+            if not field.is_required():
+                self._defaults[name] = field.get_default(call_default_factory=True)
 
-    def __getitem__(self, name: str) -> ModelField:
-        return self.__model.__fields__[name]
+    def __getitem__(self, name: str) -> FieldInfo:
+        return self.__model.model_fields[name]
 
     def __len__(self) -> int:
-        return len(self.__model.__fields__)
+        return len(self.__model.model_fields)
 
     def __iter__(self) -> Iterator[str]:
-        return iter(self.__model.__fields__)
+        return iter(self.__model.model_fields)
 
     def _delitem(self, name: str) -> None:  # noqa:D102
-        del self.__model.__fields__[name]
+        del self.__model.model_fields[name]
+        self.__model_needs_rebuild = True
 
     def _copy(self, grammar: PydanticGrammar) -> None:  # noqa:D102
         grammar.__model = copy(self.__model)
+        grammar.__model_needs_rebuild = self.__model_needs_rebuild
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa:D102
-        fields = self.__model.__fields__
+        fields = self.__model.model_fields
         fields[new_name] = fields.pop(current_name)
+        self.__model_needs_rebuild = True
 
     def update(  # noqa:D102
         self,
@@ -136,11 +132,12 @@ class PydanticGrammar(BaseGrammar):
     ) -> None:
         if not grammar:
             return
-        fields = self.__model.__fields__
-        for field_name, field in grammar.__model.__fields__.items():
+        fields = self.__model.model_fields
+        for field_name, field in grammar.__model.model_fields.items():
             if field_name in exclude_names:
                 continue
             fields[field_name] = copy(field)
+            self.__model_needs_rebuild = True
         super().update(grammar, exclude_names)
 
     def update_from_names(  # noqa:D102
@@ -149,67 +146,49 @@ class PydanticGrammar(BaseGrammar):
     ) -> None:
         if not names:
             return
-        model = self.__model
-        fields = model.__fields__
-        config = model.__config__
+        fields = self.__model.model_fields
         for name in names:
-            fields[name] = ModelField(
-                name=name,
-                type_=NDArray,
-                class_validators=None,
-                model_config=config,
-            )
+            fields[name] = FieldInfo(name=name, annotation=NDArrayPydantic)
+        self.__model_needs_rebuild = True
 
     def update_from_types(  # noqa:D102
         self,
         names_to_types: NamesToTypes,
         merge: bool = False,
     ) -> None:
+        """Update the grammar from names bound to types.
+
+        The updated elements are required.
+        For convenience, when a type is exactly ``ndarray``,
+        it is automatically converted to ``NDArrayPydantic``.
+        """
         if not names_to_types:
             return
-        model = self.__model
-        fields = model.__fields__
-        config = model.__config__
-        for name, type_ in names_to_types.items():
-            pydantic_type = self.__TYPE_TO_PYDANTIC_TYPE.get(type_, type_)
+        fields = self.__model.model_fields
+        for name, annotation in names_to_types.items():
+            if annotation is ndarray:
+                annotation = _NDArrayPydantic
             if merge and name in fields:
-                field = fields[name]
-                field.outer_type_ = Union[field.outer_type_, pydantic_type]
-            else:
-                fields[name] = ModelField(
-                    name=name,
-                    type_=pydantic_type,
-                    class_validators=None,
-                    model_config=config,
-                )
+                annotation = Union[fields[name].annotation, annotation]
+            fields[name] = FieldInfo(name=name, annotation=annotation)
+        self.__model_needs_rebuild = True
 
     def _clear(self) -> None:  # noqa:D102
-        class Model(BaseModel):  # noqa: D102
-            pass
+        self.__model = create_model("Model")
+        self.__model_needs_rebuild = False
 
-        self.__model = Model
-
-    def _repr_required_elements(self, text: MultiLineString) -> None:  # noqa: D102
-        for name, field in self.__model.__fields__.items():
-            if field.required:
-                text.add(f"{name}: {field.outer_type_}")
-
-    def _repr_optional_elements(self, text: MultiLineString) -> None:  # noqa: D102
-        for name, field in self.__model.__fields__.items():
-            if not field.required:
-                text.add(f"{name}: {field.outer_type_}")
-                if name in self._defaults:
-                    text.indent()
-                    text.add(f"default: {self._defaults[name]}")
-                    text.dedent()
+    def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
+        repr_.add(f"Type: {properties.annotation}")
 
     def _validate(  # noqa: D102
         self,
         data: MutableData,
         error_message: MultiLineString,
     ) -> bool:
+        self.__rebuild_model()
         try:
-            self.__model.parse_obj(data)
+            # The grammars shall be strict on typing and not coerce the data.
+            self.__model.model_validate(data, strict=True)
         except ValidationError as errors:
             for line in str(errors).split("\n"):
                 error_message.add(line)
@@ -222,19 +201,23 @@ class PydanticGrammar(BaseGrammar):
         numeric_only: bool = False,
     ) -> bool:
         self._check_name(name)
-        type_ = get_origin(self.__model.__fields__[name].outer_type_)
-        if type_ is None:
-            return False
         if numeric_only:
-            return issubclass(type_, ndarray)
-        return issubclass(type_, Collection)
+            return self.data_converter.is_numeric(name)
+        annotation = self.__model.model_fields[name].annotation
+        type_origin = get_origin(annotation)
+        if type_origin is None:
+            # This is a container with no information on the type of its contents.
+            # This is the case of a type just declared as ndarray for instance.
+            return False
+        return issubclass(type_origin, Collection)
 
     def _restrict_to(  # noqa:D102
         self,
         names: Sequence[str],
     ) -> None:
         for name in self.keys() - names:
-            del self.__model.__fields__[name]
+            del self.__model.model_fields[name]
+            self.__model_needs_rebuild = True
 
     def to_simple_grammar(self) -> SimpleGrammar:
         """
@@ -243,18 +226,20 @@ class PydanticGrammar(BaseGrammar):
             Python type, the type is set to ``None``.
         """  # noqa: D205, D212, D415
         names_to_types = {}
-        for name, field in self.__model.__fields__.items():
-            outer_type_ = field.outer_type_
-            origin = get_origin(outer_type_)
-            pydantic_type = outer_type_ if origin is None else origin
-            simple_type = self.__PYDANTIC_TYPE_TO_SIMPLE_TYPE.get(pydantic_type)
-            if simple_type is None:
+        for name, field in self.__model.model_fields.items():
+            annotation = field.annotation
+            origin = get_origin(annotation)
+            pydantic_type = annotation if origin is None else origin
+            if pydantic_type not in self.__SIMPLE_TYPES:
                 message = (
                     "Unsupported type '%s' in PydanticGrammar '%s' "
                     "for field '%s' in conversion to SimpleGrammar."
                 )
                 LOGGER.warning(message, origin, self.name, name)
-            names_to_types[name] = simple_type
+                # This type cannot be converted, use the catch-all type.
+                pydantic_type = None
+
+            names_to_types[name] = pydantic_type
 
         return SimpleGrammar(
             self.name,
@@ -265,13 +250,15 @@ class PydanticGrammar(BaseGrammar):
     @property
     def required_names(self) -> set[str]:  # noqa:D102
         return {
-            name for name, field in self.__model.__fields__.items() if field.required
+            name
+            for name, field in self.__model.model_fields.items()
+            if field.is_required()
         }
 
     @property
     def schema(self) -> dict[str, DictSchemaType]:
         """The dictionary representation of the schema."""
-        return self.__model.schema()
+        return self.__model.model_json_schema()
 
     # TODO: keep for backward compatibility but remove at some point since
     # the descriptions are set in the model.
@@ -284,13 +271,24 @@ class PydanticGrammar(BaseGrammar):
         if not descriptions:
             return
 
-        for name, field in self.__model.__fields__.items():
+        # The rebuild cannot be postponed for descriptions because these seem to be
+        # stored in the schema.
+        for name, field in self.__model.model_fields.items():
             description = descriptions.get(name)
             if description:
-                field.field_info.description = description
+                field.description = description
+                self.__model_needs_rebuild = True
+
+        self.__rebuild_model()
 
     def _check_name(self, *names: str) -> None:
-        fields = self.__model.__fields__
+        fields = self.__model.model_fields
         for name in names:
             if name not in fields:
                 raise KeyError(f"The name {name} is not in the grammar.")
+
+    def __rebuild_model(self) -> None:
+        """Rebuild the model if needed."""
+        if self.__model_needs_rebuild:
+            self.__model.model_rebuild(force=True)
+            self.__model_needs_rebuild = False

@@ -13,18 +13,21 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Generator of the HTML file containing a D3.js version of the N2 chart."""
+
 from __future__ import annotations
 
 import json
 import webbrowser
-from typing import Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.core.coupling_structure import DependencyGraph
 
-from gemseo.utils.n2d3.n2_json import N2JSON
 from pathlib import Path
+
+from gemseo.utils.n2d3.n2_json import N2JSON
 
 
 class N2HTML:

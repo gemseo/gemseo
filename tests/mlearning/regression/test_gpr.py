@@ -18,25 +18,31 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test Gaussian process regression algorithm module."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.dataset import Dataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
 from numpy import ndarray
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mlearning import import_regression_model
+from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
+
 LEARNING_SIZE = 9
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
@@ -88,15 +94,23 @@ def test_predict(model):
 
 def test_predict_std_training_point(model):
     """Test std prediction for a training point."""
-    input_value = {"x_1": array([1.0]), "x_2": array([1.0])}
-    prediction_std = model.predict_std(input_value)
+    prediction_std = model.predict_std({"x_1": array([1.0]), "x_2": array([1.0])})
     assert allclose(prediction_std, 0, atol=1e-3)
+    assert prediction_std.shape == (1, 2)
+
+
+def test_predict_std_1d_output(dataset):
+    """Test std prediction for a training point with a 1d output."""
+    gpr = GaussianProcessRegressor(dataset, output_names=["y_1"])
+    gpr.learn()
+    prediction_std = gpr.predict_std({"x_1": array([1.0]), "x_2": array([1.0])})
+    assert allclose(prediction_std, 0, atol=1e-3)
+    assert prediction_std.shape == (1, 1)
 
 
 def test_predict_std_test_point(model):
     """Test std prediction for a test point."""
-    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-    prediction_std = model.predict_std(input_value)
+    prediction_std = model.predict_std({"x_1": array([1.0]), "x_2": array([2.0])})
     assert (prediction_std > 0).all()
 
 
@@ -108,7 +122,9 @@ def test_predict_std_input_array(model):
     assert array_equal(model.predict_std(input_value), prediction_std)
 
 
-@pytest.mark.parametrize("x_1,x_2", [([1.0], [2.0]), ([[1.0], [1.0]], [[2.0], [2.0]])])
+@pytest.mark.parametrize(
+    ("x_1", "x_2"), [([1.0], [2.0]), ([[1.0], [1.0]], [[2.0], [2.0]])]
+)
 def test_predict_std_shape(model, x_1, x_2):
     """Test the shape and content of standard deviation."""
     input_value = {"x_1": array(x_1), "x_2": array(x_2)}
@@ -129,7 +145,7 @@ def test_save_and_load(model, tmp_wd):
 
 
 @pytest.mark.parametrize(
-    "bounds,expected",
+    ("bounds", "expected"),
     [
         (None, [(0.01, 100.0), (0.01, 100.0)]),
         ((0.1, 10), [(0.1, 10), (0.1, 10)]),

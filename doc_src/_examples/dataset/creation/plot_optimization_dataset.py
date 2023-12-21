@@ -30,6 +30,7 @@ and :attr:`~.IODataset.CONSTRAINT_GROUP`.
 This particular :class:`.Dataset` is useful
 to post-process an optimization history.
 """
+
 from __future__ import annotations
 
 from gemseo.datasets.optimization_dataset import OptimizationDataset

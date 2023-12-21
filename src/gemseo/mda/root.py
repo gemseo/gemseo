@@ -17,35 +17,35 @@
 #        :author: Charlie Vanaret, Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base module for Newton algorithm variants for solving MDAs."""
+
 from __future__ import annotations
 
 from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.mda.mda import MDA
+from gemseo.mda.base_mda_solver import BaseMDASolver
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
     from typing import Final
-    from typing import Mapping
-    from typing import Sequence
+
     from numpy.typing import NDArray
+
+    from gemseo.core.coupling_structure import MDOCouplingStructure
 
 N_CPUS: Final[int] = cpu_count()
 
 
-class MDARoot(MDA):
+class MDARoot(BaseMDASolver):
     """Abstract class implementing MDAs based on (Quasi-)Newton methods."""
-
-    use_threading: bool
-    """Whether to execute and linearize the disciplines in parallel."""
 
     n_processes: int
     """The maximum number of simultaneous threads,  if :attr:`.use_threading` is True,
@@ -82,7 +82,7 @@ class MDARoot(MDA):
             use_threading: Whether to use threads instead of processes to parallelize
                 the execution. Processes will copy (serialize) all the disciplines,
                 while threads will share all the memory. If one wants to execute the
-                same discipline multiple times then multiprocessing should be prefered.
+                same discipline multiple times then multiprocessing should be preferred.
         """  # noqa:D205 D212 D415
         self.use_threading = use_threading
         self.n_processes = n_processes
@@ -106,7 +106,7 @@ class MDARoot(MDA):
         )
 
         self._compute_input_couplings()
-        self._resolved_coupling_names = self.strong_couplings
+        self._set_resolved_variables(self.strong_couplings)
 
     def linearize_all_disciplines(
         self, input_data: Mapping[str, NDArray], execute: bool = True
@@ -145,22 +145,16 @@ class MDARoot(MDA):
             update_local_data: Whether to update the local data from the disciplines.
         """
         if self.parallel:
-            disciplines = self.coupling_structure.disciplines
             parallel_execution = DiscParallelExecution(
-                disciplines,
+                self.disciplines,
                 self.n_processes,
                 use_threading=self.use_threading,
             )
-            parallel_execution.execute([input_local_data] * len(disciplines))
+            parallel_execution.execute([input_local_data] * len(self.disciplines))
         else:
             for discipline in self.disciplines:
                 discipline.execute(input_local_data)
 
         if update_local_data:
-            self._update_local_data_from_disciplines()
-
-    def _update_local_data_from_disciplines(self) -> None:
-        """Update the local data from disciplines."""
-        outputs = (discipline.get_output_data() for discipline in self.disciplines)
-        for data in outputs:
-            self.local_data.update(data)
+            for discipline in self.disciplines:
+                self.local_data.update(discipline.get_output_data())

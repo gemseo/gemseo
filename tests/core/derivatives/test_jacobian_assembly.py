@@ -25,6 +25,13 @@ from unittest import mock
 
 import numpy as np
 import pytest
+from numpy import allclose
+from numpy import concatenate
+from numpy import ndarray
+from numpy import ones
+from numpy.random import default_rng
+from scipy.sparse import csr_matrix
+
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives import jacobian_assembly
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
@@ -36,15 +43,9 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
-from numpy import allclose
-from numpy import concatenate
-from numpy import ndarray
-from numpy import ones
-from numpy import random
-from numpy.random import randn
-from scipy.sparse import csr_matrix
 
 CWD = Path(__file__).parent
+RNG = default_rng()
 
 
 @pytest.fixture(scope="module")
@@ -69,7 +70,7 @@ def test_total_derivatives_ok(assembly, in_data):
 
 
 @pytest.mark.parametrize(
-    "args,kwargs,msg",
+    ("args", "kwargs", "msg"),
     [
         (
             [["toto"], ["x_shared"], ["y_24"]],
@@ -185,7 +186,7 @@ def test_sobieski_all_modes(
 ):
     """Test Sobieski's coupled derivatives computed in all modes (sparse direct, sparse
     adjoint, linear operator direct, linear operator adjoint)"""
-    if use_lu_fact and not matrix_type == JacobianAssembly.JacobianType.MATRIX:
+    if use_lu_fact and matrix_type != JacobianAssembly.JacobianType.MATRIX:
         return
 
     mda.jac = mda.assembly.total_derivatives(
@@ -198,7 +199,7 @@ def test_sobieski_all_modes(
         use_lu_fact=use_lu_fact,
     )
     if not compare_mda_jac_ref(mda.jac):
-        raise Exception(
+        raise ValueError(
             f"Linearization mode '{mode} 'failed for matrix type "
             f"{matrix_type} and use_lu_fact ={use_lu_fact}"
         )
@@ -218,7 +219,7 @@ def test_total_derivatives(mda, variables, couplings):
 
 
 @pytest.mark.parametrize(
-    "save,file_path,expected",
+    ("save", "file_path", "expected"),
     [
         (False, None, None),
         (False, "foo", None),
@@ -240,16 +241,16 @@ def test_plot_dependency_jacobian(mda, save, file_path, expected):
 
 
 def test_lu_convergence_warning(assembly, caplog):
-    random.seed(1)
+    rng = default_rng(1)
     n_x = 5
     n_y = 10
     n_f = 1
-    dres_dy_t = random.rand(n_y, n_y)
+    dres_dy_t = rng.random((n_y, n_y))
     dres_dy_t[0, :] = 0.0
     dres_dy_t[0, 0] = 1e-30
-    dfun_dy = {"y_4": csr_matrix(random.rand(n_f, n_y))}
-    dfun_dx = {"y_4": csr_matrix(random.rand(n_f, n_x))}
-    dres_dx = csr_matrix(random.rand(n_y, n_x))
+    dfun_dy = {"y_4": csr_matrix(rng.random((n_f, n_y)))}
+    dfun_dx = {"y_4": csr_matrix(rng.random((n_f, n_x)))}
+    dres_dx = csr_matrix(rng.random((n_y, n_x)))
 
     assembly.coupled_system._adjoint_mode_lu(
         ["y_4"], dres_dx=dres_dx, dres_dy_t=dres_dy_t, dfun_dx=dfun_dx, dfun_dy=dfun_dy
@@ -307,9 +308,9 @@ def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format):
     ja = JacobianAssembly(mc)
 
     inputs = {
-        "x": randn(io_size),
-        "a": randn(io_size),
-        "b": randn(io_size),
+        "x": RNG.normal(size=io_size),
+        "a": RNG.normal(size=io_size),
+        "b": RNG.normal(size=io_size),
     }
 
     ja.total_derivatives(inputs, ["f"], ["x"], mc.all_couplings)
@@ -330,12 +331,10 @@ def test_compute_newton_step(compute_residuals, size):
     for disc in disciplines:
         disc.linearize(inputs, compute_all_jacobians=True)
     if compute_residuals:
-        residuals = concatenate(
-            [
-                disciplines[0].local_data["a"] - inputs["a"],
-                disciplines[1].local_data["b"] - inputs["b"],
-            ]
-        )
+        residuals = concatenate([
+            disciplines[0].local_data["a"] - inputs["a"],
+            disciplines[1].local_data["b"] - inputs["b"],
+        ])
     else:
         residuals = None
     assembly = JacobianAssembly(MDOCouplingStructure(disciplines))

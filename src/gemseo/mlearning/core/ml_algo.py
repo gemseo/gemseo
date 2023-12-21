@@ -93,23 +93,23 @@ to be carefully tuned in order to maximize the generalization power of the model
    :mod:`~gemseo.mlearning.core.calibration`
    :mod:`~gemseo.mlearning.core.selection`
 """
+
 from __future__ import annotations
 
 import inspect
 import pickle
 from abc import abstractmethod
+from collections.abc import Mapping
+from collections.abc import MutableMapping
+from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Dict
 from typing import Final
-from typing import Mapping
-from typing import MutableMapping
 from typing import Optional
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from numpy import ndarray
@@ -122,10 +122,14 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
-SavedObjectType = Union[Dataset, Dict[str, Transformer], str, bool, int]
+if TYPE_CHECKING:
+    from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
+    from gemseo.mlearning.resampling.resampler import Resampler
+
+SavedObjectType = Union[Dataset, dict[str, Transformer], str, bool, int]
 DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
-SubTransformerType = Union[str, Tuple[str, Mapping[str, Any]], Transformer]
+SubTransformerType = Union[str, tuple[str, Mapping[str, Any]], Transformer]
 TransformerType = MutableMapping[str, SubTransformerType]
 DefaultTransformerType = ClassVar[Mapping[str, TransformerType]]
 
@@ -140,6 +144,21 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     representation for end users.
     Derived classes shall overload the :meth:`.MLAlgo.learn`,
     :meth:`!MLAlgo._save_algo` and :meth:`!MLAlgo._load_algo` methods.
+    """
+
+    resampling_results: dict[
+        str, tuple[Resampler, list[MLAlgo], list[ndarray] | ndarray]
+    ]
+    """The resampler class names bound to the resampling results.
+
+    A resampling result is formatted as ``(resampler, ml_algos, predictions)``
+    where ``resampler`` is a :class:`.Resampler`,
+    ``ml_algos`` is the list of the associated machine learning algorithms
+    built during the resampling stage
+    and ``predictions`` are the predictions obtained with the latter.
+
+    ``resampling_results`` stores only one resampling result per resampler type
+    (e.g., ``"CrossValidation"``, ``"LeaveOneOut"`` and ``"Boostrap"``).
     """
 
     learning_set: Dataset
@@ -179,6 +198,9 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     DEFAULT_TRANSFORMER: DefaultTransformerType = IDENTITY
     """The default transformer for the input and output data, if any."""
 
+    DataFormatters: ClassVar[type[BaseDataFormatters]]
+    """The data formatters for the learning and prediction methods."""
+
     def __init__(
         self,
         data: Dataset,
@@ -204,7 +226,8 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         Raises:
             ValueError: When both the variable and the group it belongs to
                 have a transformer.
-        """
+        """  # noqa: D205 D212
+        self.resampling_results = {}
         self.learning_set = data
         self.parameters = parameters
         self.transformer = {}
@@ -217,7 +240,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.algo = None
         self.sizes = deepcopy(self.learning_set.variable_names_to_n_components)
         self._trained = False
-        self._learning_samples_indices = range(len(self.learning_set))
+        self._learning_samples_indices = self.learning_set.index.to_list()
         transformer_keys = set(self.transformer)
         for group in self.learning_set.group_names:
             names = self.learning_set.get_variable_names(group)
@@ -246,12 +269,6 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             "or str."
         )
 
-    class DataFormatters:
-        """Decorators for the internal MLAlgo methods.
-
-        :noindex:
-        """
-
     @property
     def is_trained(self) -> bool:
         """Return whether the algorithm is trained."""
@@ -274,8 +291,12 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If ``None``, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
         """
-        if samples is not None:
+        self.resampling_results = {}
+        if samples is None:
+            self._learning_samples_indices = self.learning_set.index.to_list()
+        else:
             self._learning_samples_indices = samples
+
         self._learn(samples, fit_transformers)
         self._trained = True
 
@@ -341,9 +362,8 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         directory = Path(path) / (directory or default_directory_name)
         directory.mkdir(exist_ok=True)
 
-        objects = self._get_objects_to_save()
         with (directory / self.FILENAME).open("wb") as handle:
-            pickle.dump(objects, handle)
+            pickle.dump(self._get_objects_to_save(), handle)
 
         self._save_algo(directory)
 

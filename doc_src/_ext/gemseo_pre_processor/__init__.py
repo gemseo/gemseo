@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A sphinx extension to pre-process the docs."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -44,7 +45,7 @@ def builder_inited(app):
     (_modules_path / "modules.rst").unlink(missing_ok=True)
 
     plugins = app.config.html_context["plugins"]
-    names = ["gemseo"] + sorted(plugins)
+    names = ["gemseo", *sorted(plugins)]
 
     with open(_modules_path / "projects.rst", "w") as f:
         f.write(".. _projects:\n\n")

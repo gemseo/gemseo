@@ -19,14 +19,15 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.utils.testing.helpers import image_comparison
 from numpy import diag
 from numpy import eye
 from numpy import ones
-from numpy import random
 from numpy import zeros
+from numpy.random import RandomState
 from scipy.sparse.linalg import aslinearoperator
+
+from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+from gemseo.utils.testing.helpers import image_comparison
 
 
 def test_init():
@@ -60,7 +61,7 @@ def test_residuals_checks():
 
 
 @pytest.mark.parametrize(
-    "lhs,rhs",
+    ("lhs", "rhs"),
     [(diag([1, 1]), ones(1)), (ones(1), ones(2)), (diag([1, 1]), diag([1, 1]))],
 )
 def test_size_checks(lhs, rhs):
@@ -73,9 +74,9 @@ def test_size_checks(lhs, rhs):
 @image_comparison(["residuals0"])
 def test_plot_residuals(tmp_wd, pyplot_close_all):
     """Tests the residuals plot creation."""
-    random.seed(1)
+    rng = RandomState(1)
     n = 10
-    problem = LinearProblem(random.rand(n, n), random.rand(n))
+    problem = LinearProblem(rng.random((n, n)), rng.random(n))
 
     for i in range(100):
         problem.compute_residuals(current_x=i * ones(n), store=True)

@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A 1D Jameson sensor."""
+
 from __future__ import annotations
 
 from numpy import abs as np_abs
@@ -33,7 +34,7 @@ class JamesonSensor(Transformer):
 
     def __init__(
         self,
-        name: str = "JamesonSensor",
+        name: str = "",
         threshold: float = 0.3,
         removing_part: float = 0.01,
         dimension: int = 1,
@@ -46,7 +47,7 @@ class JamesonSensor(Transformer):
             removing_part: The level of the signal to
                 remove in order to avoid leading and trailing edge effects.
             dimension: The dimension of the mesh.
-        """
+        """  # noqa: D205 D212
         super().__init__(name)
         self.threshold = threshold
         self.removing_part = removing_part
@@ -56,7 +57,7 @@ class JamesonSensor(Transformer):
         self.threshold *= amax(data)
 
     @Transformer._use_2d_array
-    def transform(
+    def transform(  # noqa: D102
         self,
         data: ndarray,
     ) -> ndarray:

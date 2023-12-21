@@ -15,10 +15,11 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -34,12 +35,16 @@ def dataset() -> Dataset:
 
 TEST_PARAMETERS = {
     "default": ({}, {}, ["BarPlot"]),
-    "xtick_rotation": ({}, {"xtick_rotation": 45}, ["BarPlot_xtick_rotation"]),
+    "xtick_rotation": (
+        {},
+        {"xtick_rotation": 45, "color": ["red", "blue", "yellow", "black", "green"]},
+        ["BarPlot_xtick_rotation"],
+    ),
 }
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
@@ -48,4 +53,6 @@ TEST_PARAMETERS = {
 def test_bars_plot(tmp_path, kwargs, properties, dataset, baseline_images):
     """Test that bar plot generates the expected plot."""
     plot = BarPlot(dataset)
-    plot.execute(save=False, properties=properties)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+    plot.execute(save=False)

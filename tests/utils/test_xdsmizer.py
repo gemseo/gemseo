@@ -22,10 +22,11 @@ import json
 import unittest
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 
 import pytest
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
@@ -34,7 +35,6 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.mdo_scenario import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.core.scenario import Scenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -42,17 +42,22 @@ from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.xdsmizer import EdgeType
-from gemseo.utils.xdsmizer import expand
 from gemseo.utils.xdsmizer import NodeType
 from gemseo.utils.xdsmizer import XDSMizer
+from gemseo.utils.xdsmizer import expand
 
 from ..mda.test_mda import analytic_disciplines_from_desc
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.core.scenario import Scenario
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -69,15 +74,15 @@ class TestXDSMizer(unittest.TestCase):
         serial_seq = ExecutionSequenceFactory.serial([]).extend(d1)
         loop_seq = ExecutionSequenceFactory.loop(mda, serial_seq)
 
-        self.assertEqual(expand(loop_seq, to_id), ["mda", ["d1"]])
-        self.assertEqual(expand(ExecutionSequenceFactory.serial([]), to_id), [])
-        self.assertEqual(expand(serial_seq, to_id), ["d1"])
+        assert expand(loop_seq, to_id) == ["mda", ["d1"]]
+        assert expand(ExecutionSequenceFactory.serial([]), to_id) == []
+        assert expand(serial_seq, to_id) == ["d1"]
 
         parallel_seq = ExecutionSequenceFactory.parallel([]).extend(d1)
         parallel_seq.extend(d2)
 
         loop_seq = ExecutionSequenceFactory.loop(mda, parallel_seq)
-        self.assertEqual(expand(loop_seq, to_id), ["mda", [{"parallel": ["d1", "d2"]}]])
+        assert expand(loop_seq, to_id) == ["mda", [{"parallel": ["d1", "d2"]}]]
 
         self.assertRaises(Exception, expand, "a_bad_exec_seq", to_id)
 
@@ -97,7 +102,7 @@ class TestXDSMizer(unittest.TestCase):
             disciplines,
             formulation=formulation,
             objective_name="y_4",
-            design_space=SobieskiProblem().design_space,
+            design_space=SobieskiDesignSpace(),
             **options,
         )
 
@@ -151,7 +156,7 @@ class TestXDSMizer(unittest.TestCase):
 
     def test_xdsmize_bilevel(self):
         """Test xdsmization of Sobieski problem solved with bilevel."""
-        design_space = SobieskiProblem().design_space
+        design_space = SobieskiDesignSpace()
         # Disciplinary optimization
         propulsion = SobieskiPropulsion()
         aerodynamics = SobieskiAerodynamics()
@@ -203,7 +208,7 @@ class TestXDSMizer(unittest.TestCase):
         sc_str.add_constraint("g_1", constraint_type="ineq")
         sc_str.default_inputs = sub_sc_opts
 
-        sub_disciplines = [sc_prop, sc_aero, sc_str] + [mission]
+        sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 
         # Maximize range (Breguet)
         design_space = deepcopy(design_space).filter("x_shared")
@@ -268,16 +273,15 @@ def test_xdsmize_nested_chain(tmp_wd, elementary_discipline):
     def get_name(x: int) -> str:
         return f"x_{x}"
 
-    deep_chain = MDOChain(
-        [
-            elementary_discipline(get_name(1), get_name(2)),
-            elementary_discipline(get_name(2), get_name(3)),
-        ]
-    )
+    deep_chain = MDOChain([
+        elementary_discipline(get_name(1), get_name(2)),
+        elementary_discipline(get_name(2), get_name(3)),
+    ])
 
-    inter_chain = MDOChain(
-        [deep_chain, elementary_discipline(get_name(3), get_name(4))]
-    )
+    inter_chain = MDOChain([
+        deep_chain,
+        elementary_discipline(get_name(3), get_name(4)),
+    ])
 
     main_chain = [inter_chain, elementary_discipline(get_name(4), get_name(5))]
 
@@ -306,25 +310,23 @@ def test_xdsmize_nested_mda(tmp_wd):
     Here, we build a 2-levels nested mda with Jacobi and GaussSeidel.
     """
 
-    disciplines = create_disciplines_from_desc(
-        [
-            (
-                "D1",
-                ["y2", "y3", "x0"],
-                ["y1"],
-            ),
-            (
-                "D2",
-                ["y1", "y3", "x0"],
-                ["y2", "y2_bis"],
-            ),
-            (
-                "D3",
-                ["y2_bis", "x0"],
-                ["y3"],
-            ),
-        ]
-    )
+    disciplines = create_disciplines_from_desc([
+        (
+            "D1",
+            ["y2", "y3", "x0"],
+            ["y1"],
+        ),
+        (
+            "D2",
+            ["y1", "y3", "x0"],
+            ["y2", "y2_bis"],
+        ),
+        (
+            "D3",
+            ["y2_bis", "x0"],
+            ["y3"],
+        ),
+    ])
 
     inner_mda = MDAGaussSeidel([disciplines[0], disciplines[1]])
 
@@ -353,14 +355,12 @@ def test_xdsmize_nested_adapter(tmp_wd):
     Here, we build a 4-levels nested adapter.
     """
 
-    disciplines = create_disciplines_from_desc(
-        [
-            ("D1", ["x0", "x1"], ["z1", "y1"]),
-            ("D2", ["x0", "x2", "y3", "y1"], ["z2", "y2"]),
-            ("D3", ["x0", "x3", "y2", "z4"], ["y3", "z3"]),
-            ("D4", ["x0", "x4", "x3"], ["z4"]),
-        ]
-    )
+    disciplines = create_disciplines_from_desc([
+        ("D1", ["x0", "x1"], ["z1", "y1"]),
+        ("D2", ["x0", "x2", "y3", "y1"], ["z2", "y2"]),
+        ("D3", ["x0", "x3", "y2", "z4"], ["y3", "z3"]),
+        ("D4", ["x0", "x4", "x3"], ["z4"]),
+    ])
 
     # -- level 3
     ds_depth3 = DesignSpace()
@@ -433,12 +433,10 @@ def test_xdsmize_disciplinary_opt_with_adapter(tmp_wd):
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0)
 
-    disciplines = create_disciplines_from_desc(
-        [
-            ("D1", ["x", "n"], ["y"]),
-            ("D2", ["y"], ["z"]),
-        ]
-    )
+    disciplines = create_disciplines_from_desc([
+        ("D1", ["x", "n"], ["y"]),
+        ("D2", ["y"], ["z"]),
+    ])
 
     scenario = create_scenario(
         disciplines=disciplines,
@@ -484,16 +482,15 @@ def test_xdsmize_nested_parallel_chain(tmp_wd, elementary_discipline):
 
     beg_chain = elementary_discipline(get_name(1), get_name(2))
 
-    deep_chain = MDOParallelChain(
-        [
-            elementary_discipline(get_name(2), get_name(3)),
-            elementary_discipline(get_name(2), get_name(4)),
-        ]
-    )
+    deep_chain = MDOParallelChain([
+        elementary_discipline(get_name(2), get_name(3)),
+        elementary_discipline(get_name(2), get_name(4)),
+    ])
 
-    inter_chain = MDOParallelChain(
-        [deep_chain, elementary_discipline(get_name(4), get_name(5))]
-    )
+    inter_chain = MDOParallelChain([
+        deep_chain,
+        elementary_discipline(get_name(4), get_name(5)),
+    ])
 
     design_space = DesignSpace()
     design_space.add_variable(get_name(1))
@@ -539,18 +536,16 @@ def assert_xdsm_file_ok(generated_file: str, ref_file: str) -> None:
     ref_filepath = (current_dir / "data" / ref_file).with_suffix(".json")
 
     assert ref_filepath.exists(), (
-        f"Reference {str(ref_filepath)} not found in data " f"directory."
+        f"Reference {ref_filepath!s} not found in data " f"directory."
     )
 
-    with open(ref_filepath) as ref_file:
-        xdsm_str = ref_file.read()
+    xdsm_str = ref_filepath.read_text()
     expected = json.loads(xdsm_str)
 
     new_filepath = Path(generated_file).with_suffix(".json")
-    assert new_filepath.exists(), f"Generated {str(new_filepath)} not found."
+    assert new_filepath.exists(), f"Generated {new_filepath!s} not found."
 
-    with open(new_filepath) as new_file:
-        xdsm_str = new_file.read()
+    xdsm_str = new_filepath.read_text()
     xdsm_json = json.loads(xdsm_str)
 
     assert_xdsm_equal(expected, xdsm_json)
@@ -588,7 +583,7 @@ def assert_level_xdsm_equal(
                 assert expected_node["name"] == node["name"]
                 assert expected_node["type"] == node["type"]
                 found = True
-        assert found, f"Node {str(expected_node)} not found."
+        assert found, f"Node {expected_node!s} not found."
 
     for expected_edge in expected["edges"]:
         found = False
@@ -601,7 +596,7 @@ def assert_level_xdsm_equal(
                     edge["name"].split(", ")
                 )
                 found = True
-        assert found, f"Edge {str(expected_edge)} not found."
+        assert found, f"Edge {expected_edge!s} not found."
     assert expected["workflow"] == generated["workflow"]
 
 
@@ -610,15 +605,13 @@ def test_xdsmize_mdf_mdoparallelchain(tmp_wd):
 
     In this case, the two MDAGaussSeidel created in the MDAChain must be parallel
     """
-    disciplines = analytic_disciplines_from_desc(
-        (
-            {"a": "x"},
-            {"y1": "x1", "b": "a+1"},
-            {"x1": "1.-0.3*y1"},
-            {"y2": "x2", "c": "a+2"},
-            {"x2": "1.-0.3*y2"},
-        )
-    )
+    disciplines = analytic_disciplines_from_desc((
+        {"a": "x"},
+        {"y1": "x1", "b": "a+1"},
+        {"x1": "1.-0.3*y1"},
+        {"y2": "x2", "c": "a+2"},
+        {"x2": "1.-0.3*y2"},
+    ))
     design_space = DesignSpace()
     design_space.add_variable("x")
     mdachain_parallel_options = {"use_threading": True, "n_processes": 2}

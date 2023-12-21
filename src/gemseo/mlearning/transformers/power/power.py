@@ -26,15 +26,19 @@ of `scikit-learn <https://scikit-learn.org/
 stable/modules/generated/
 sklearn.preprocessing.PowerTransformer.html>`_.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from numpy import ndarray
 from sklearn.preprocessing import PowerTransformer
 
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class Power(Transformer):
@@ -46,15 +50,13 @@ class Power(Transformer):
     _TRANSFORMER_NAME: ClassVar[str] = "yeo-johnson"
     """The name of the transformer in scikit-learn."""
 
-    def __init__(self, name: str | None = None, standardize: bool = True) -> None:
+    def __init__(self, name: str = "", standardize: bool = True) -> None:
         """
         Args:
             name: A name for this transformer. If ``None``, use the class name.
             standardize: Whether to apply zero-mean, unit-variance
                 normalization to the transformed output.
-        """
-        if name is None:
-            name = self.__class__.__name__
+        """  # noqa: D205 D212
         super().__init__(name, standardize=standardize)
         self.__power_transformer = PowerTransformer(
             method=self._TRANSFORMER_NAME,
@@ -66,9 +68,9 @@ class Power(Transformer):
         self.lambdas_ = self.__power_transformer.lambdas_
 
     @Transformer._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.__power_transformer.transform(data)
 
     @Transformer._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.__power_transformer.inverse_transform(data)

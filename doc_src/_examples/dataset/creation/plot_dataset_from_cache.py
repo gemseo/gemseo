@@ -25,12 +25,13 @@ Convert a cache to a dataset
 In this example,
 we will see how to convert a cache to a :class:`.Dataset`.
 """
+
 from __future__ import annotations
+
+from numpy import array
 
 from gemseo import configure_logger
 from gemseo.caches.memory_full_cache import MemoryFullCache
-from numpy import array
-
 
 configure_logger()
 

@@ -18,25 +18,29 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """PyDOE algorithms wrapper."""
+
 from __future__ import annotations
 
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Optional
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 import pyDOE2 as pyDOE
-from numpy import array
 from numpy import ndarray
 from numpy.random import RandomState
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.doe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 OptionType = Optional[
-    Union[str, int, float, bool, Sequence[int], Tuple[int, int], ndarray]
+    Union[str, int, float, bool, Sequence[int], tuple[int, int], ndarray]
 ]
 
 
@@ -63,7 +67,7 @@ class PyDOE(DOELibrary):
     PYDOE_CCDESIGN = "ccdesign"
     PYDOE_CCDESIGN_DESC = "Central Composite implemented in pyDOE"
     PYDOE_CCDESIGN_WEB = PYDOE_DOC + "rsm.html#central-composite"
-    ALGO_LIST = [
+    ALGO_LIST: ClassVar[list[str]] = [
         PYDOE_FULLFACT,
         PYDOE_2LEVELFACT,
         PYDOE_PBDESIGN,
@@ -71,7 +75,7 @@ class PyDOE(DOELibrary):
         PYDOE_CCDESIGN,
         PYDOE_LHS,
     ]
-    DESC_LIST = [
+    DESC_LIST: ClassVar[list[str]] = [
         PYDOE_FULLFACT_DESC,
         PYDOE_2LEVELFACT_DESC,
         PYDOE_PBDESIGN_DESC,
@@ -79,7 +83,7 @@ class PyDOE(DOELibrary):
         PYDOE_CCDESIGN_DESC,
         PYDOE_LHS_DESC,
     ]
-    WEB_LIST = [
+    WEB_LIST: ClassVar[list[str]] = [
         PYDOE_FULLFACT_WEB,
         PYDOE_2LEVELFACT_WEB,
         PYDOE_PBDESIGN_WEB,
@@ -163,8 +167,7 @@ class PyDOE(DOELibrary):
         """
         if center_cc is None:
             center_cc = [4, 4]
-        wtbs = wait_time_between_samples
-        popts = self._process_options(
+        return self._process_options(
             alpha=alpha,
             face=face,
             criterion=criterion,
@@ -175,13 +178,11 @@ class PyDOE(DOELibrary):
             n_samples=n_samples,
             n_processes=n_processes,
             levels=levels,
-            wait_time_between_samples=wtbs,
+            wait_time_between_samples=wait_time_between_samples,
             seed=seed,
             max_time=max_time,
             **kwargs,
         )
-
-        return popts
 
     @staticmethod
     def __translate(
@@ -207,12 +208,11 @@ class PyDOE(DOELibrary):
         Returns:
             The samples for the DOE.
         """
-        self.seed += 1
         if self.algo_name == self.PYDOE_LHS:
             seed = options[self.SEED]
             return pyDOE.lhs(
                 options[self.DIMENSION],
-                random_state=RandomState(self.seed if seed is None else seed),
+                random_state=RandomState(self._get_seed(seed)),
                 samples=options["n_samples"],
                 criterion=options.get(self.CRITERION_KEYWORD),
                 iterations=options.get(self.ITERATION_KEYWORD),
@@ -240,10 +240,10 @@ class PyDOE(DOELibrary):
             )
 
         if self.algo_name == self.PYDOE_FULLFACT:
-            return self._generate_fullfact(
-                options[self.DIMENSION],
-                levels=options.get(self.LEVEL_KEYWORD),
-                n_samples=options.get(self.N_SAMPLES),
+            return PyDOEFullFactorialDOE().generate_samples(
+                options.pop(self.N_SAMPLES),
+                options.pop(self.DIMENSION),
+                **options,
             )
 
         if self.algo_name == self.PYDOE_2LEVELFACT:
@@ -252,22 +252,7 @@ class PyDOE(DOELibrary):
         if self.algo_name == self.PYDOE_PBDESIGN:
             return self.__translate(pyDOE.pbdesign(options[self.DIMENSION]))
 
-    def _generate_fullfact_from_levels(self, levels: int | Sequence[int]) -> ndarray:
-        doe = pyDOE.fullfact(levels)
-
-        # Because pyDOE return the DOE where the values of levels are integers from 0 to
-        # the maximum level number,
-        # we need to divide by levels - 1.
-        # To not divide by zero,
-        # we first find the null denominators,
-        # we replace them by one,
-        # then we change the final values of the DOE by 0.5.
-        divide_factor = array(levels) - 1
-        null_indices = divide_factor == 0
-        divide_factor[null_indices] = 1
-        doe /= divide_factor
-        doe[:, null_indices] = 0.5
-        return doe
+        raise ValueError(f"Bad algo_name: {self.algo_name}")
 
     @classmethod
     def _get_unsuitability_reason(

@@ -28,6 +28,7 @@ and used by the :class:`.ScalableDiagonalModel`.
 The idea is to sample the discipline by varying its inputs proportionally
 on one of the diagonals of its input space.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger
@@ -88,8 +89,10 @@ ScatterMatrix(dataset).execute(save=False, show=True)
 scenario = create_scenario(
     discipline, "DisciplinaryOpt", "z", design_space, scenario_type="DOE"
 )
-scenario.execute(
-    {"algo": "DiagonalDOE", "n_samples": 10, "algo_options": {"reverse": ["y"]}}
-)
+scenario.execute({
+    "algo": "DiagonalDOE",
+    "n_samples": 10,
+    "algo_options": {"reverse": ["y"]},
+})
 dataset = scenario.to_dataset(opt_naming=False)
 ScatterMatrix(dataset).execute(save=False, show=True)

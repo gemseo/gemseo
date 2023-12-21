@@ -21,14 +21,6 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo import execute_algo
-from gemseo.algos.aggregation.aggregation_func import aggregate_iks
-from gemseo.algos.aggregation.aggregation_func import aggregate_ks
-from gemseo.algos.aggregation.aggregation_func import aggregate_max
-from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
-from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.power_2 import Power2
 from numpy import allclose
 from numpy import array
 from numpy import complex128
@@ -36,6 +28,16 @@ from numpy import concatenate
 from numpy import cos
 from numpy import sin
 from numpy import vstack
+
+from gemseo import execute_algo
+from gemseo.algos.aggregation.aggregation_func import aggregate_iks
+from gemseo.algos.aggregation.aggregation_func import aggregate_lower_bound_ks
+from gemseo.algos.aggregation.aggregation_func import aggregate_max
+from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
+from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
+from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.problems.analytical.power_2 import Power2
 
 
 def create_problem():
@@ -46,8 +48,7 @@ def create_problem():
     eq = problem.constraints[2]
 
     def cstr(x):
-        c = concatenate([ineq1(x), ineq2(x)])
-        return c
+        return concatenate([ineq1(x), ineq2(x)])
 
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
@@ -57,7 +58,7 @@ def create_problem():
     return problem
 
 
-@pytest.fixture
+@pytest.fixture()
 def sellar_problem():
     """Sellar problem fixture."""
     return create_problem()
@@ -69,8 +70,7 @@ def create_pb_alleq():
     constraints = problem.constraints
 
     def cstr(x):
-        c = concatenate([cstr(x) for cstr in constraints])
-        return c
+        return concatenate([cstr(x) for cstr in constraints])
 
     def jac(x):
         return vstack([cstr.jac(x) for cstr in constraints])
@@ -80,7 +80,9 @@ def create_pb_alleq():
     return problem
 
 
-@pytest.mark.parametrize("method", ["KS", "IKS", "POS_SUM"])
+@pytest.mark.parametrize(
+    "method", ["upper_bound_KS", "lower_bound_KS", "IKS", "POS_SUM"]
+)
 def test_ks_aggreg(method):
     """Tests KS and IKS aggregation methods compared to no aggregation."""
     algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
@@ -89,7 +91,7 @@ def test_ks_aggreg(method):
     ref_sol = problem_ref.solution
 
     problem = create_problem()
-    if method in ["KS", "IKS"]:
+    if method in ["upper_bound_KS", "lower_bound_KS", "IKS"]:
         problem.aggregate_constraint(0, method=method, rho=300.0, scale=1.0)
     else:
         problem.aggregate_constraint(0, method=method, scale=1.0)
@@ -116,10 +118,12 @@ def test_wrong_constraint_index():
         problem.aggregate_constraint(10)
 
 
-@pytest.mark.parametrize("method", ["KS", "IKS", "POS_SUM"])
+@pytest.mark.parametrize(
+    "method", ["upper_bound_KS", "lower_bound_KS", "IKS", "POS_SUM"]
+)
 def test_groups(sellar_problem, method):
     """Test groups aggregation."""
-    if method in ["KS", "IKS"]:
+    if method in ["upper_bound_KS", "lower_bound_KS", "IKS"]:
         sellar_problem.aggregate_constraint(
             0, method=method, rho=300.0, scale=1.0, groups=(0, 1)
         )
@@ -141,7 +145,13 @@ def test_max_aggreg(sellar_problem):
 @pytest.mark.parametrize("indices", [None, [0], [0, 1]])
 @pytest.mark.parametrize(
     "aggregation_meth",
-    [aggregate_max, aggregate_ks, aggregate_iks, aggregate_positive_sum_square],
+    [
+        aggregate_max,
+        aggregate_upper_bound_ks,
+        aggregate_lower_bound_ks,
+        aggregate_iks,
+        aggregate_positive_sum_square,
+    ],
 )
 def test_gradients_ineq(sellar_problem, aggregation_meth, indices):
     """Checks gradients of inequality aggregation methods by finite differences."""
@@ -169,7 +179,8 @@ def jacobian_function(x):
             MDOFunction.FunctionType.INEQ,
             aggregate_max,
         ),
-        (MDOFunction.FunctionType.INEQ, aggregate_ks),
+        (MDOFunction.FunctionType.INEQ, aggregate_lower_bound_ks),
+        (MDOFunction.FunctionType.INEQ, aggregate_upper_bound_ks),
         (MDOFunction.FunctionType.INEQ, aggregate_iks),
         (MDOFunction.FunctionType.INEQ, aggregate_positive_sum_square),
         (MDOFunction.FunctionType.EQ, aggregate_sum_square),

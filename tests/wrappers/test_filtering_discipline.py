@@ -20,11 +20,12 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo import create_discipline
 from gemseo.wrappers.filtering_discipline import FilteringDiscipline
 
 
-@pytest.fixture
+@pytest.fixture()
 def discipline():
     expressions = {"y1": "x1+x2+x3", "y2": "-x1-x2-x3"}
     disc = create_discipline("AnalyticDiscipline", expressions=expressions, name="foo")

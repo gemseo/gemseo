@@ -13,12 +13,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Services for handling file paths."""
+
 from __future__ import annotations
 
 import re
 from collections import namedtuple
 from pathlib import Path
 from re import findall
+from typing import ClassVar
 
 from strenum import LowercaseStrEnum
 
@@ -28,7 +30,7 @@ FileDefinition = namedtuple("FileDefinition", ["name", "extension"])
 
 
 class FilePathManager:
-    """A factory of file paths for a given type of file and with default settings."""
+    """A manager of file paths for a given type of file and with default settings."""
 
     class FileType(LowercaseStrEnum):
         """The type of file, defined by its default name and format."""
@@ -38,7 +40,7 @@ class FilePathManager:
         TEXT = "document"
         WEBPAGE = "page"
 
-    __FILE_TYPE_TO_EXTENSION = {
+    __FILE_TYPE_TO_EXTENSION: ClassVar[dict[FileType, str]] = {
         FileType.FIGURE: "png",
         FileType.SCHEMA: "json",
         FileType.TEXT: "txt",
@@ -183,6 +185,6 @@ class FilePathManager:
             obtained from the file path.
         """
         extension = file_path.suffix
-        file_name = f"{str(file_path.stem)}_{suffix}"
+        file_name = f"{file_path.stem!s}_{suffix}"
         directory_path = file_path.parent
         return (directory_path / file_name).with_suffix(extension)

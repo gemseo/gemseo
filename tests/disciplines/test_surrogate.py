@@ -21,16 +21,18 @@ from __future__ import annotations
 import re
 
 import pytest
+from numpy import array
+from numpy import concatenate
+from numpy.testing import assert_allclose
+
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from numpy import array
-from numpy import concatenate
-from numpy.testing import assert_allclose
 
 
 @pytest.fixture(scope="module")
@@ -127,12 +129,10 @@ def test_parallel_execute(linear_discipline, dataset):
     parallel_execution = DiscParallelExecution(
         [linear_discipline, other_linear_discipline], n_processes=2
     )
-    parallel_execution.execute(
-        [
-            {"x_1": array([0.5]), "x_2": array([0.5])},
-            {"x_1": array([1.0]), "x_2": array([1.0])},
-        ]
-    )
+    parallel_execution.execute([
+        {"x_1": array([0.5]), "x_2": array([0.5])},
+        {"x_1": array([1.0]), "x_2": array([1.0])},
+    ])
 
     assert_allclose(
         concatenate(list(linear_discipline.get_outputs_by_name(["y_1", "y_2"]))),
@@ -179,3 +179,11 @@ def test_repr_html(dataset):
         "<li>Linearization mode: auto</li>"
         "</ul>"
     )
+
+
+def test_get_quality_viewer(dataset):
+    """Check the method get_quality_viewer()."""
+    discipline = SurrogateDiscipline("LinearRegressor", dataset)
+    quality_viewer = discipline.get_quality_viewer()
+    assert isinstance(quality_viewer, MLRegressorQualityViewer)
+    assert quality_viewer._MLRegressorQualityViewer__algo == discipline.regression_model

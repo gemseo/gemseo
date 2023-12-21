@@ -17,6 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
@@ -52,11 +53,11 @@ def test_repr_html():
 @pytest.fixture(scope="module")
 def file_path_manager() -> FilePathManager:
     """A manager of figure file paths."""
-    return FilePathManager(FilePathManager.FileType.FIGURE, default_directory=Path("."))
+    return FilePathManager(FilePathManager.FileType.FIGURE, default_directory=Path())
 
 
 @pytest.mark.parametrize(
-    "file_path,directory_path,file_name,file_extension,expected",
+    ("file_path", "directory_path", "file_name", "file_extension", "expected"),
     [
         (None, None, None, None, Path("figure.png")),
         (None, Path("directory"), None, None, Path("directory") / "figure.png"),
@@ -86,7 +87,7 @@ def test_create_file_path(
 
 
 @pytest.mark.parametrize(
-    "original,expected",
+    ("original", "expected"),
     [
         ("foo", "foo"),
         ("Foo", "foo"),
@@ -103,3 +104,17 @@ def test_add_suffix():
     file_path = Path("directory") / "filename.pdf"
     expected_file_path = Path("directory") / "filename_suffix.pdf"
     assert FilePathManager.add_suffix(file_path, "suffix") == expected_file_path
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected"),
+    [
+        ({}, "png"),
+        ({"default_extension": "png"}, "png"),
+        ({"default_extension": "jpg"}, "jpg"),
+    ],
+)
+def test_default_extension(kwargs, expected):
+    """Check the default extension."""
+    manager = FilePathManager(FilePathManager.FileType.FIGURE, **kwargs)
+    assert manager._FilePathManager__default_extension == expected

@@ -19,21 +19,23 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning regression algorithm module."""
+
 from __future__ import annotations
 
 import re
 
 import pytest
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
-from gemseo.mlearning.regression.linreg import LinearRegressor
 from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import zeros
 
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.linreg import LinearRegressor
 
-@pytest.fixture
+
+@pytest.fixture()
 def io_dataset():
     """The dataset used to train the regression algorithms."""
     data = arange(60).reshape(10, 6)
@@ -52,7 +54,7 @@ def test_predict(io_dataset):
     ml_algo = GaussianProcessRegressor(io_dataset)
     ml_algo.learn()
     input_data = io_dataset.get_view(group_names="inputs", indices=0)
-    input_names = list(map(lambda x: x[1], input_data.columns))
+    input_names = [x[1] for x in input_data.columns]
     input_data = {
         name: io_dataset.get_view(group_names="inputs", variable_names=name).to_numpy()[
             0
@@ -61,7 +63,7 @@ def test_predict(io_dataset):
     }
 
     output_data = io_dataset.get_view(group_names="outputs")
-    output_names = list(map(lambda x: x[1], output_data.columns))
+    output_names = [x[1] for x in output_data.columns]
     output_data = {
         name: io_dataset.get_view(
             group_names="outputs", variable_names=name
@@ -75,13 +77,11 @@ def test_predict(io_dataset):
 @pytest.fixture(scope="module")
 def dataset_for_jacobian() -> IODataset:
     """The dataset used to check the Jacobian computation."""
-    samples = array(
-        [
-            [1.0, 2.0, 3.0, 6.0, -6.0],
-            [2.0, 3.0, 4.0, 9.0, -9.0],
-            [3.0, 4.0, 5.0, 12.0, -12.0],
-        ]
-    )
+    samples = array([
+        [1.0, 2.0, 3.0, 6.0, -6.0],
+        [2.0, 3.0, 4.0, 9.0, -9.0],
+        [3.0, 4.0, 5.0, 12.0, -12.0],
+    ])
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 2}
     groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
@@ -95,10 +95,7 @@ def dataset_for_jacobian() -> IODataset:
 )
 def test_predict_jacobian(dataset_for_jacobian, groups):
     """Test predict Jacobian."""
-    if not groups:
-        transformer = None
-    else:
-        transformer = {group: "MinMaxScaler" for group in groups}
+    transformer = None if not groups else {group: "MinMaxScaler" for group in groups}
     ml_algo = LinearRegressor(dataset_for_jacobian, transformer=transformer)
     ml_algo.learn()
     jac = ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})

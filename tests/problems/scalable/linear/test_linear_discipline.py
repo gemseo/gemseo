@@ -20,9 +20,10 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 from numpy import ndarray
 from scipy.sparse import issparse
+
+from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
 
 
 @pytest.mark.parametrize(

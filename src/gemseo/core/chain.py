@@ -20,21 +20,19 @@
 
 Can be both sequential or parallel execution processes.
 """
+
 from __future__ import annotations
 
 import logging
-from typing import Iterable
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from numpy import ndarray
-from numpy import zeros
-from scipy.sparse import spmatrix
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
 
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
+from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -43,13 +41,21 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
+from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
+    from numpy import ndarray
+
 LOGGER = logging.getLogger(__name__)
 
 
+# TODO: One class per module.
 class MDOChain(MDODiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
@@ -165,7 +171,13 @@ class MDOChain(MDODiscipline):
                     for new_in, new_jac in discipline.jac[input_name].items():
                         # Chain rule the derivatives
                         # TODO: sum BEFORE dot
-                        loc_dot = curr_jac @ new_jac
+                        if isinstance(new_jac, JacobianOperator):
+                            # NumPy array @ JacobianOperator is not supported, thus
+                            # imposing to explictly use the __rmatmul__ method.
+                            loc_dot = new_jac.__rmatmul__(curr_jac)
+                        else:
+                            loc_dot = curr_jac @ new_jac
+
                         # when input_name==new_in, we are in the case of an
                         # input being also an output
                         # in this case we must only compose the derivatives
@@ -175,7 +187,12 @@ class MDOChain(MDODiscipline):
                             # d o     d o    d o     di_2
                             # ----  = ---- + ----- . -----
                             # d z     d z    d i_2    d z
-                            self.jac[output_name][new_in] += loc_dot
+                            if isinstance(loc_dot, JacobianOperator):
+                                self.jac[output_name][new_in] = (
+                                    loc_dot + self.jac[output_name][new_in]
+                                )
+                            else:
+                                self.jac[output_name][new_in] += loc_dot
                         else:
                             # The output is not yet linearized wrt this
                             # input_name.  We are in the case:
@@ -235,15 +252,13 @@ class MDOChain(MDODiscipline):
                     del output_jacobian[input_name]
 
         # Add differentiations that should be there,
-        # because inputs inputs of the chain but not
-        # of all disciplines
-        for output_name in outputs:
-            output_size = len(self.get_outputs_by_name(output_name))
-            output_jacobian = self.jac.setdefault(output_name, {})
-            for input_name in inputs:
-                if input_name not in output_jacobian:
-                    input_size = len(self.get_inputs_by_name(input_name))
-                    output_jacobian[input_name] = zeros((output_size, input_size))
+        # because inputs of the chain but not of all disciplines.
+        self._init_jacobian(
+            inputs,
+            outputs,
+            fill_missing_keys=True,
+            init_type=MDODiscipline.InitJacobianType.SPARSE,
+        )
 
     @staticmethod
     def copy_jacs(
@@ -265,7 +280,7 @@ class MDOChain(MDODiscipline):
                 jacobian_copy[output_name] = output_jacobian_copy
                 for input_name, derivatives in output_jacobian.items():
                     output_jacobian_copy[input_name] = derivatives.copy()
-            elif isinstance(output_jacobian, (ndarray, spmatrix)):
+            elif isinstance(output_jacobian, (array_classes, JacobianOperator)):
                 jacobian_copy[output_name] = output_jacobian.copy()
 
         return jacobian_copy
@@ -383,22 +398,21 @@ class MDOParallelChain(MDODiscipline):
                 DisciplineData(deepcopy_dict_of_arrays(self.local_data))
                 for _ in range(len(self._disciplines))
             ]
-        else:
-            for value in self.local_data.values():
-                value.flags.writeable = False
-            return [self.local_data] * len(self._disciplines)
+
+        for value in self.local_data.values():
+            value.flags.writeable = False
+
+        return [self.local_data] * len(self._disciplines)
 
     def _run(self) -> None:
         self.parallel_execution.execute(self._get_input_data_copies())
 
         # Update data according to input order of priority
         for discipline in self.disciplines:
-            self.local_data.update(
-                {
-                    output_name: discipline.local_data[output_name]
-                    for output_name in discipline.get_output_data_names()
-                }
-            )
+            self.local_data.update({
+                output_name: discipline.local_data[output_name]
+                for output_name in discipline.get_output_data_names()
+            })
 
     def _compute_jacobian(
         self,
@@ -417,11 +431,17 @@ class MDOParallelChain(MDODiscipline):
                     chain_jacobian = {}
                     self.jac[output_name] = chain_jacobian
                 chain_jacobian.update(output_jacobian)
-        self._init_jacobian(inputs, outputs, fill_missing_keys=True)
+
+        self._init_jacobian(
+            inputs,
+            outputs,
+            fill_missing_keys=True,
+            init_type=self.InitJacobianType.SPARSE,
+        )
 
     def add_differentiated_inputs(  # noqa: D102
         self,
-        inputs: Iterable[str] = None,
+        inputs: Iterable[str] | None = None,
     ) -> None:
         MDODiscipline.add_differentiated_inputs(self, inputs)
         self._set_disciplines_diff_inputs(inputs)
@@ -557,7 +577,7 @@ class MDOAdditiveChain(MDOParallelChain):
 
         # Sum the Jacobians of the required outputs across disciplines
         for output_name in self._outputs_to_sum:
-            self.jac[output_name] = dict()
+            self.jac[output_name] = {}
             for input_name in inputs:
                 disciplinary_jacobians = [
                     discipline.jac[output_name][input_name]
@@ -602,17 +622,18 @@ class MDOWarmStartedChain(MDOChain):
         super().__init__(disciplines=disciplines, name=name, grammar_type=grammar_type)
         self._variable_names_to_warm_start = variable_names_to_warm_start
         self._warm_start_variable_names_to_values = {}
-        if variable_names_to_warm_start:
-            if not self.is_all_outputs_existing(variable_names_to_warm_start):
-                all_output_names = self.get_output_data_names()
-                missing_output_names = set(variable_names_to_warm_start).difference(
-                    all_output_names
-                )
-                raise ValueError(
-                    "The following variable names are not "
-                    f"outputs of the chain: {missing_output_names}."
-                    f" Available outputs are: {all_output_names}."
-                )
+        if variable_names_to_warm_start and not self.is_all_outputs_existing(
+            variable_names_to_warm_start
+        ):
+            all_output_names = self.get_output_data_names()
+            missing_output_names = set(variable_names_to_warm_start).difference(
+                all_output_names
+            )
+            raise ValueError(
+                "The following variable names are not "
+                f"outputs of the chain: {missing_output_names}."
+                f" Available outputs are: {all_output_names}."
+            )
 
     def _compute_jacobian(
         self,

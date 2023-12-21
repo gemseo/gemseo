@@ -17,18 +17,21 @@
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Export data to the XML file format needed by GGOBI."""
+
 from __future__ import annotations
 
-import os
 from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING
 from xml.dom import minidom
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Comment
 from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import SubElement
 
-from numpy import ndarray
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from numpy import ndarray
 
 
 def prettify(elem):
@@ -55,8 +58,9 @@ def save_data_arrays_to_xml(
             of the form *(number of variables, number of iterations)*.
         file_path: The file path of the generated xml file.
     """
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    file_path = Path(file_path)
+    if file_path.exists():
+        file_path.unlink()
     nb_records = values_array.shape[0]
     nb_variables = len(variable_names)
 
@@ -82,5 +86,5 @@ def save_data_arrays_to_xml(
         )
         rec.text = str(values_array[i_rec, :]).replace("[", "").replace("]", "")
 
-    with open(file_path, "w") as xml_file:
+    with file_path.open("w") as xml_file:
         xml_file.write(prettify(root))

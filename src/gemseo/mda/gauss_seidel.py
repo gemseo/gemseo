@@ -17,24 +17,24 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Gauss Seidel algorithm for solving MDAs."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.mda import MDA
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.mda.base_mda_solver import BaseMDASolver
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Mapping
-    from typing import Sequence
-    from numpy.typing import NDArray
+
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
 
-class MDAGaussSeidel(MDA):
+class MDAGaussSeidel(BaseMDASolver):
     r"""Perform an MDA using the Gauss-Seidel algorithm.
 
     This algorithm is a fixed point iteration method to solve systems of non-linear
@@ -122,7 +122,7 @@ class MDAGaussSeidel(MDA):
         )
 
         self._compute_input_couplings()
-        self._resolved_coupling_names = self.strong_couplings
+        self._set_resolved_variables(self.strong_couplings)
 
     # TODO: API: Remove the property and its setter.
     @property
@@ -136,61 +136,36 @@ class MDAGaussSeidel(MDA):
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
-        self.input_grammar.clear()
-        self.output_grammar.clear()
         for discipline in self.disciplines:
             self.input_grammar.update(
                 discipline.input_grammar, exclude_names=self.output_grammar.keys()
             )
             self.output_grammar.update(discipline.output_grammar)
 
-        self._add_residuals_norm_to_output_grammar()
-
-    def __execute_all_disciplines(self) -> None:
+    def execute_all_disciplines(self) -> None:
         """Execute all the disciplines in sequence."""
         for discipline in self.disciplines:
             discipline.execute(self.local_data)
             self.local_data.update(discipline.get_output_data())
 
-    def __compute_initial_coupling_vector(self) -> NDArray:
-        """Compute the initial coupling vector.
-
-        Returns:
-            The vector filled in with the initial coupling values.
-        """
-        self.__execute_all_disciplines()
-        self._compute_coupling_sizes()
-
-        return self._current_working_couplings()
-
     def _run(self) -> None:
-        if self.warm_start:
-            self._couplings_warm_start()
+        super()._run()
+        self.execute_all_disciplines()
 
-        current_couplings = self.__compute_initial_coupling_vector()
-
-        self._sequence_transformer.clear()
-        # Perform fixed point iterations
         while True:
-            self.__execute_all_disciplines()
+            input_data = self.local_data.copy()
+
+            self.execute_all_disciplines()
+            self._update_residuals(input_data)
 
             new_couplings = self._sequence_transformer.compute_transformed_iterate(
-                current_couplings, self._current_working_couplings()
+                self.get_current_resolved_variables_vector(),
+                self.get_current_resolved_residual_vector(),
             )
 
-            self.local_data.update(
-                split_array_to_dict_of_arrays(
-                    new_couplings, self._coupling_sizes, self.strong_couplings
-                )
-            )
-
-            self._compute_residual(
-                current_couplings,
-                new_couplings,
-                log_normed_residual=self._log_convergence,
-            )
+            self._update_local_data(new_couplings)
+            self._update_residuals(input_data)
+            self._compute_residual(log_normed_residual=self._log_convergence)
 
             if self._stop_criterion_is_reached:
                 break
-
-            current_couplings = new_couplings

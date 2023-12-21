@@ -18,14 +18,14 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A parallel coordinates plot of functions and x."""
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import matplotlib
 import matplotlib as mpl
 from matplotlib import pyplot as plt
-from matplotlib.figure import Figure
 from numpy import array
 from numpy import ndarray
 
@@ -33,6 +33,11 @@ from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from matplotlib.figure import Figure
 
 
 class ParallelCoordinates(OptPostProcessor):
@@ -55,7 +60,7 @@ class ParallelCoordinates(OptPostProcessor):
             color_criteria: The values of same length as `y_data`
                 to colorize the lines.
         """
-        n_x, n_cols = y_data.shape
+        _, n_cols = y_data.shape
         expected_shape = (len(color_criteria), len(x_names))
         if y_data.shape != expected_shape:
             raise ValueError(
@@ -84,7 +89,7 @@ class ParallelCoordinates(OptPostProcessor):
         fig.colorbar(s_m, ax=axes)
         return fig
 
-    def _plot(self, **burgers_dataset: OptPostProcessorOptionType) -> None:
+    def _plot(self, **options: OptPostProcessorOptionType) -> None:
         problem = self.opt_problem
         variable_history, variable_names, _ = self.database.get_history_array(
             function_names=problem.get_all_function_name()

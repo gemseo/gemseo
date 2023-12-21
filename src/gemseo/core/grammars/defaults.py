@@ -13,15 +13,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """The grammar default values."""
+
 from __future__ import annotations
 
-from typing import Any
 from typing import TYPE_CHECKING
+from typing import Any
 
 from pandas import DataFrame
 
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.discipline_data import MutableData
+from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.base_grammar import BaseGrammar
@@ -59,7 +61,8 @@ class Defaults(DisciplineData):
                 }.difference(self.__grammar.keys())
                 if alien_names:
                     raise KeyError(
-                        f"The names {', '.join(sorted(alien_names))} are not in the grammar."
+                        f"The names {pretty_str(alien_names)} "
+                        "are not in the grammar."
                     )
             else:
                 raise KeyError(f"The name {name} is not in the grammar.")

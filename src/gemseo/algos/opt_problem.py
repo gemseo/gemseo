@@ -57,24 +57,23 @@ various getters and setters are available,
 as well as methods to export the :class:`.Database`
 to an HDF file or to a :class:`.Dataset` for future post-processing.
 """
+
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from copy import deepcopy
 from functools import reduce
 from numbers import Number
-from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Dict
 from typing import Final
-from typing import Iterable
-from typing import Mapping
 from typing import Optional
-from typing import Sequence
-from typing import Tuple
 
 import h5py
 import numpy
@@ -85,7 +84,9 @@ from numpy import any as np_any
 from numpy import argmin
 from numpy import array
 from numpy import array_equal
+from numpy import atleast_1d
 from numpy import bytes_
+from numpy import eye as np_eye
 from numpy import hstack
 from numpy import inf
 from numpy import insert
@@ -96,21 +97,23 @@ from numpy import nan
 from numpy import ndarray
 from numpy import number as np_number
 from numpy import where
-from numpy.core import atleast_1d
+from numpy import zeros
 from numpy.linalg import norm
-from numpy.typing import NDArray
 from pandas import MultiIndex
 from strenum import StrEnum
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_iks
-from gemseo.algos.aggregation.aggregation_func import aggregate_ks
+from gemseo.algos.aggregation.aggregation_func import aggregate_lower_bound_ks
 from gemseo.algos.aggregation.aggregation_func import aggregate_max
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
+from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
 from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.mdofunctions.dense_jacobian_function import DenseJacobianFunction
+from gemseo.core.mdofunctions.func_operations import LinearComposition
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
@@ -120,6 +123,7 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator_factory import (
     GradientApproximatorFactory,
@@ -129,14 +133,19 @@ from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from numpy.typing import NDArray
+
 LOGGER = logging.getLogger(__name__)
 
-BestInfeasiblePointType = Tuple[
-    Optional[ndarray], Optional[ndarray], bool, Dict[str, ndarray]
+BestInfeasiblePointType = tuple[
+    Optional[ndarray], Optional[ndarray], bool, dict[str, ndarray]
 ]
-OptimumType = Tuple[ndarray, ndarray, bool, Dict[str, ndarray], Dict[str, ndarray]]
-OptimumSolutionType = Tuple[
-    Optional[Sequence[ndarray]], ndarray, Dict[str, ndarray], Dict[str, ndarray]
+OptimumType = tuple[ndarray, ndarray, bool, dict[str, ndarray], dict[str, ndarray]]
+OptimumSolutionType = tuple[
+    Optional[Sequence[ndarray]], ndarray, dict[str, ndarray], dict[str, ndarray]
 ]
 
 
@@ -211,8 +220,8 @@ class OptimizationProblem(BaseProblem):
     database: Database
     """The database to store the optimization problem data."""
 
-    solution: OptimizationResult
-    """The solution of the optimization problem."""
+    solution: OptimizationResult | None
+    """The solution of the optimization problem if solved; otherwise ``None``."""
 
     design_space: DesignSpace
     """The design space on which the optimization problem is solved."""
@@ -236,7 +245,8 @@ class OptimizationProblem(BaseProblem):
 
     _AGGREGATION_FUNCTION_MAP: Final[str] = {
         AggregationFunction.IKS: aggregate_iks,
-        AggregationFunction.KS: aggregate_ks,
+        AggregationFunction.LOWER_BOUND_KS: aggregate_lower_bound_ks,
+        AggregationFunction.UPPER_BOUND_KS: aggregate_upper_bound_ks,
         AggregationFunction.POS_SUM: aggregate_positive_sum_square,
         AggregationFunction.MAX: aggregate_max,
         AggregationFunction.SUM: aggregate_sum_square,
@@ -300,7 +310,7 @@ class OptimizationProblem(BaseProblem):
     def __init__(
         self,
         design_space: DesignSpace,
-        pb_type: ProblemType = ProblemType.NON_LINEAR,
+        pb_type: ProblemType = ProblemType.LINEAR,
         input_database: str | Path | Database | None = None,
         differentiation_method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
         fd_step: float = 1e-7,
@@ -350,7 +360,6 @@ class OptimizationProblem(BaseProblem):
         else:
             self.database = Database.from_hdf(input_database)
         self.solution = None
-        # TODO: API: initialize with OptimizationResult()
         self.design_space = design_space
         self.__initial_current_x = deepcopy(
             design_space.get_current_value(as_dict=True)
@@ -377,7 +386,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             Whether the maximum amount of iterations has been reached.
         """
-        if self.max_iter in [None, 0] or self.current_iter in [None, 0]:
+        if self.max_iter in {None, 0} or self.current_iter in {None, 0}:
             return False
         return self.current_iter >= self.max_iter
 
@@ -427,10 +436,7 @@ class OptimizationProblem(BaseProblem):
         if self.pb_type == self.ProblemType.LINEAR and not isinstance(
             func, MDOLinearFunction
         ):
-            raise TypeError(
-                "The objective of a linear optimization problem "
-                "must be an MDOLinearFunction."
-            )
+            self.pb_type = self.ProblemType.NON_LINEAR
         self._objective = func
 
     @property
@@ -520,10 +526,7 @@ class OptimizationProblem(BaseProblem):
         if self.pb_type == OptimizationProblem.ProblemType.LINEAR and not isinstance(
             cstr_func, MDOLinearFunction
         ):
-            raise TypeError(
-                "The constraint of a linear optimization problem "
-                "must be an MDOLinearFunction."
-            )
+            self.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
         ctype = cstr_type or cstr_func.f_type
         cstr_repr = self.repr_constraint(cstr_func, ctype, value, positive)
         if value is not None:
@@ -533,13 +536,13 @@ class OptimizationProblem(BaseProblem):
 
         if cstr_type is not None:
             cstr_func.f_type = cstr_type
-        else:
-            if not cstr_func.is_constraint():
-                msg = (
-                    "Constraint type must be provided, "
-                    "either in the function attributes or to the add_constraint method."
-                )
-                raise ValueError(msg)
+        elif not cstr_func.is_constraint():
+            msg = (
+                "Constraint type must be provided, "
+                "either in the function attributes or to the add_constraint method."
+            )
+            raise ValueError(msg)
+
         cstr_func.special_repr = cstr_repr
         self.constraints.append(cstr_func)
         if not has_default_name:
@@ -597,7 +600,8 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             constraint_index: The index of the constraint in :attr:`.constraints`.
-            method: The aggregation method, e.g. ``"max"``, ``"KS"`` or ``"IKS"``.
+            method: The aggregation method, e.g. ``"max"``, ``"lower_bound_KS"``,
+                ``"upper_bound_KS"``or ``"IKS"``.
             groups: The groups of components of the constraint to aggregate
                 to produce one aggregation constraint per group of components;
                 if ``None``, a single aggregation constraint is produced.
@@ -609,6 +613,7 @@ class OptimizationProblem(BaseProblem):
                 or when the constraint aggregation method is unknown.
         """
         n_constraints = len(self.constraints)
+        self.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
         if constraint_index >= n_constraints:
             raise KeyError(
                 f"The index of the constraint ({constraint_index}) must be lower "
@@ -665,10 +670,12 @@ class OptimizationProblem(BaseProblem):
 
             l_b\leq x\leq u_b
 
-        Where :math:`H(x)` is the Heaviside function, :math:`o_s` is the ``objective_scale``
+        Where :math:`H(x)` is the Heaviside function,
+        :math:`o_s` is the ``objective_scale``
         parameter and :math:`s` is the scale parameter.
         The solution of the new problem approximate the one of the original problem.
-        Increasing the values of ``objective_scale`` and scale, the solutions are closer but
+        Increasing the values of ``objective_scale`` and scale,
+        the solutions are closer but
         the optimization problem requires more and more iterations to be solved.
 
         Args:
@@ -676,6 +683,7 @@ class OptimizationProblem(BaseProblem):
             objective_scale: The objective scaling constant.
             scale_inequality: The inequality constraint scaling constant.
         """
+        self.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
         penalized_objective = self.objective / objective_scale
         self.add_observable(self.objective)
         for constr in self.constraints:
@@ -690,6 +698,100 @@ class OptimizationProblem(BaseProblem):
             self.add_observable(constr)
         self.objective = penalized_objective
         self.constraints = []
+
+    def get_reformulated_problem_with_slack_variables(self) -> OptimizationProblem:
+        r"""Add slack variables and replace inequality constraints with equality ones.
+
+        Given the original optimization problem,
+
+        .. math::
+
+            min_x f(x)
+
+            s.t.
+
+            g(x)\leq 0
+
+            h(x)=0
+
+            l_b\leq x\leq u_b
+
+        Slack variables are introduced for all inequality constraints that are
+        non-positive. An equality constraint for each slack variable is then defined.
+
+        .. math::
+
+            min_{x,s} F(x,s) = f(x)
+
+            s.t.
+
+            H(x,s) = h(x)=0
+
+            G(x,s) = g(x)-s=0
+
+            l_b\leq x\leq u_b
+
+            s\leq 0
+
+        Returns:
+            An optimization problem without inequality constraints.
+        """
+        # Copy the original design space
+        problem = OptimizationProblem(deepcopy(self.design_space))
+
+        # Evaluate the MDOFunctions.
+        self.evaluate_functions()
+
+        # Add a slack variable to the copied design space for each
+        # inequality constraint.
+        for constr in self.get_ineq_constraints():
+            problem.design_space.add_variable(
+                name=f"slack_variable_{constr.name}",
+                size=constr.dim,
+                value=0,
+                u_b=0,
+            )
+
+        # Compute a restriction operator that goes from the new design space to the old
+        # design space variables.
+        restriction_operator = hstack((
+            np_eye(self.dimension),
+            zeros((self.dimension, problem.dimension - self.dimension)),
+        ))
+        # Get the new problem objective function composing the initial objective
+        # function with the restriction operator.
+        problem.objective = LinearComposition(self.objective, restriction_operator)
+
+        # Each constraint is passed to the new problem. Each inequality constraints is
+        # modified first composing the initial constraint with the restriction operator
+        # then subtracting s. Where s is the constraint slack variable previously built.
+        # Each equality constraint is added composing the initial constraint with the
+        # restriction operator.
+        for constr in self.constraints:
+            new_function = LinearComposition(constr, restriction_operator)
+            if constr.f_type == MDOFunction.ConstraintType.EQ:
+                problem.add_eq_constraint(new_function)
+                continue
+
+            coefficients = where(
+                [
+                    i
+                    in problem.design_space.get_variables_indexes(
+                        f"slack_variable_{constr.name}"
+                    )
+                    for i in range(problem.dimension)
+                ],
+                -1,
+                0,
+            )
+            correction_term = MDOLinearFunction(
+                coefficients=coefficients,
+                name=f"offset_{constr.name}",
+                input_names=problem.design_space.get_indexed_variable_names(),
+            )
+            problem.add_eq_constraint(new_function + correction_term)
+
+        return problem
 
     def add_observable(
         self,
@@ -720,7 +822,8 @@ class OptimizationProblem(BaseProblem):
 
         Args:
             obs_func: An observable to be observed.
-            new_iter: If ``True``, then the observable will be called at each new iterate.
+            new_iter: If ``True``,
+                then the observable will be called at each new iterate.
         """
         name = obs_func.name
         if name in self.__observable_names:
@@ -747,7 +850,7 @@ class OptimizationProblem(BaseProblem):
             """Check if a function is an equality constraint.
 
             Args:
-                A function.
+                func: A function.
 
             Returns:
                 True if the function is an equality constraint.
@@ -769,7 +872,7 @@ class OptimizationProblem(BaseProblem):
             """Check if a function is an inequality constraint.
 
             Args:
-                A function.
+                func: A function.
 
             Returns:
                 True if the function is an inequality constraint.
@@ -869,7 +972,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             All the functions of the optimization problem.
         """
-        return [self.objective] + self.constraints + self.observables
+        return [self.objective, *self.constraints, *self.observables]
 
     def get_all_function_name(self) -> list[str]:
         """Retrieve the names of all the function of the optimization problem.
@@ -951,21 +1054,22 @@ class OptimizationProblem(BaseProblem):
         """
         return len(self.get_ineq_constraints()) > 0
 
-    def get_x0_normalized(self, cast_to_real: bool = False) -> ndarray:
-        """Return the current values of the design variables after normalization.
+    def get_x0_normalized(
+        self, cast_to_real: bool = False, as_dict: bool = False
+    ) -> ndarray | dict[str, ndarray]:
+        """Return the initial values of the design variables after normalization.
 
         Args:
-            cast_to_real: Whether to cast the return value to real.
+            cast_to_real: Whether to return the real part of the initial values.
+            as_dict: Whether to return the values
+                as a dictionary of the form ``{variable_name: variable_value}``.
+
 
         Returns:
             The current values of the design variables
             normalized between 0 and 1 from their lower and upper bounds.
         """
-        dspace = self.design_space
-        normalized_x0 = dspace.normalize_vect(dspace.get_current_value())
-        if cast_to_real:
-            return normalized_x0.real
-        return normalized_x0
+        return self.design_space.get_current_value(None, cast_to_real, as_dict, True)
 
     def get_dimension(self) -> int:
         """Retrieve the total number of design variables.
@@ -1039,7 +1143,7 @@ class OptimizationProblem(BaseProblem):
             if not constraint.dim:
                 raise ValueError(
                     "Constraint dimension not available yet, "
-                    "please call function {} once".format(constraint)
+                    f"please call function {constraint} once"
                 )
             if constraint.f_type == cstr_type:
                 n_cstr += constraint.dim
@@ -1065,7 +1169,7 @@ class OptimizationProblem(BaseProblem):
             x_vect = self.design_space.normalize_vect(x_vect)
 
         return {
-            func: atleast_1d(np_abs(func(x_vect)) <= tol)
+            func: atleast_1d((func(x_vect)) >= -tol)
             for func in self.get_ineq_constraints()
         }
 
@@ -1183,8 +1287,8 @@ class OptimizationProblem(BaseProblem):
             for function in functions:
                 try:  # Calling function.evaluate is faster than function()
                     outputs[function.name] = function.evaluate(preprocessed_x_vect)
-                except ValueError:
-                    LOGGER.error("Failed to evaluate function %s", function.name)
+                except ValueError:  # noqa: PERF203
+                    LOGGER.exception("Failed to evaluate function %s", function.name)
                     raise
 
         if not eval_jac and jacobian_names is None:
@@ -1222,8 +1326,8 @@ class OptimizationProblem(BaseProblem):
         for function in functions:
             try:
                 jacobians[function.name] = function.jac(preprocessed_x_vect)
-            except ValueError:
-                LOGGER.error("Failed to evaluate Jacobian of %s.", function.name)
+            except ValueError:  # noqa: PERF203
+                LOGGER.exception("Failed to evaluate Jacobian of %s.", function.name)
                 raise
 
         return outputs, jacobians
@@ -1326,6 +1430,7 @@ class OptimizationProblem(BaseProblem):
         use_database: bool = True,
         round_ints: bool = True,
         eval_obs_jac: bool = False,
+        support_sparse_jacobian: bool = False,
     ) -> None:
         """Pre-process all the functions and eventually the gradient.
 
@@ -1338,6 +1443,7 @@ class OptimizationProblem(BaseProblem):
             use_database: Whether to wrap the functions in the database.
             round_ints: Whether to round the integer variables.
             eval_obs_jac: Whether to evaluate the Jacobian of the observables.
+            support_sparse_jacobian: Whether the driver support sparse Jacobian.
         """
         if round_ints:
             # Keep the rounding option only if there is an integer design variable
@@ -1361,6 +1467,7 @@ class OptimizationProblem(BaseProblem):
                     is_function_input_normalized=is_function_input_normalized,
                     use_database=use_database,
                     round_ints=round_ints,
+                    support_sparse_jacobian=support_sparse_jacobian,
                 )
                 p_cstr.special_repr = cstr.special_repr
                 self.constraints[icstr] = p_cstr
@@ -1374,6 +1481,7 @@ class OptimizationProblem(BaseProblem):
                     use_database=use_database,
                     round_ints=round_ints,
                     is_observable=True,
+                    support_sparse_jacobian=support_sparse_jacobian,
                 )
                 p_obs.special_repr = obs.special_repr
                 self.observables[iobs] = p_obs
@@ -1386,6 +1494,7 @@ class OptimizationProblem(BaseProblem):
                     use_database=use_database,
                     round_ints=round_ints,
                     is_observable=True,
+                    support_sparse_jacobian=support_sparse_jacobian,
                 )
 
                 p_obs.special_repr = obs.special_repr
@@ -1398,6 +1507,7 @@ class OptimizationProblem(BaseProblem):
                 is_function_input_normalized=is_function_input_normalized,
                 use_database=use_database,
                 round_ints=round_ints,
+                support_sparse_jacobian=support_sparse_jacobian,
             )
             self.objective.special_repr = self.objective.special_repr
             self.objective.f_type = MDOFunction.FunctionType.OBJ
@@ -1428,6 +1538,7 @@ class OptimizationProblem(BaseProblem):
         use_database: bool = True,
         round_ints: bool = True,
         is_observable: bool = False,
+        support_sparse_jacobian: bool = False,
     ) -> MDOFunction:
         """Wrap the function to differentiate it and store its call in the database.
 
@@ -1442,6 +1553,7 @@ class OptimizationProblem(BaseProblem):
             round_ints: If ``True``, then round the integer variables.
             is_observable: If ``True``, new_iter_listeners are not called
                 when function is called (avoid recursive call)
+            support_sparse_jacobian: Whether the driver support sparse Jacobian.
 
         Returns:
             The pre-processed function.
@@ -1452,6 +1564,9 @@ class OptimizationProblem(BaseProblem):
         # way round
         # Also, store non normalized values in the database for further
         # exploitation
+        # Convert Jacobian in dense format if needed
+        if not support_sparse_jacobian:
+            func = DenseJacobianFunction(func)
         if (
             isinstance(func, MDOLinearFunction)
             and not round_ints
@@ -1469,6 +1584,7 @@ class OptimizationProblem(BaseProblem):
             func = NormDBFunction(
                 func, is_function_input_normalized, is_observable, self
             )
+
         return func
 
     def __normalize_linear_function(
@@ -1500,17 +1616,20 @@ class OptimizationProblem(BaseProblem):
         shift = where(norm_policies, design_space.get_lower_bounds(), 0.0)
 
         # Build the normalized linear function
-        coefficients = multiply(orig_func.coefficients, norm_factors)
+        if isinstance(orig_func.coefficients, sparse_classes):
+            coefficients = deepcopy(orig_func.coefficients)
+            coefficients.data *= norm_factors[coefficients.indices]
+        else:
+            coefficients = multiply(orig_func.coefficients, norm_factors)
+
         value_at_zero = orig_func(shift)
-        normalized_func = MDOLinearFunction(
+        return MDOLinearFunction(
             coefficients,
             orig_func.name,
             orig_func.f_type,
             orig_func.input_names,
             value_at_zero,
         )
-
-        return normalized_func
 
     def __add_fd_jac(
         self,
@@ -1569,8 +1688,8 @@ class OptimizationProblem(BaseProblem):
             self.check_format(cstr)
             if not cstr.is_constraint():
                 raise ValueError(
-                    "Constraint type is not eq or ineq !, got {}"
-                    " instead ".format(cstr.f_type)
+                    f"Constraint type is not eq or ineq !, got {cstr.f_type}"
+                    " instead "
                 )
         self.check_format(self.objective)
 
@@ -1695,50 +1814,66 @@ class OptimizationProblem(BaseProblem):
                 f_history.append(out_val)
         return x_history, f_history
 
+    # TODO: API: rename to check_design_point_is_feasible
     def get_violation_criteria(
         self,
         x_vect: ndarray,
     ) -> tuple[bool, float]:
-        """Compute a violation measure associated to an iteration.
+        r"""Check if a design point is feasible and measure its constraint violation.
 
-        For each constraint,
-        when it is violated,
-        add the absolute distance to zero,
-        in L2 norm.
+        The constraint violation measure at a design point :math:`x` is
 
-        If 0, all constraints are satisfied
+        .. math::
+
+           \lVert\max(g(x)-\varepsilon_{\text{ineq}},0)\rVert_2^2
+           +\lVert|\max(|h(x)|-\varepsilon_{\text{eq}},0)\rVert_2^2
+
+        where :math:`\|.\|_2` is the Euclidean norm,
+        :math:`g(x)` is the inequality constraint vector,
+        :math:`h(x)` is the equality constraint vector,
+        :math:`\varepsilon_{\text{ineq}}` is the tolerance
+        for the inequality constraints
+        and
+        :math:`\varepsilon_{\text{eq}}` is the tolerance for the equality constraints.
+
+        If the design point is feasible, the constraint violation measure is 0.
 
         Args:
-            x_vect: The vector of the design variables values.
+            x_vect: The design point :math:`x`.
 
         Returns:
-            The feasibility of the point and the violation measure.
+            Whether the design point is feasible,
+            and its constraint violation measure.
         """
-        f_violation = 0.0
-        is_pt_feasible = True
-        constraints = self.get_ineq_constraints() + self.get_eq_constraints()
-        out_val = self.database.get(x_vect)
-        for constraint in constraints:
-            # look for the evaluation of the constraint
-            eval_cstr = out_val.get(constraint.name, None)
-            # if evaluation exists, check if it is satisfied
-            if eval_cstr is None:
+        violation = 0.0
+        x_vect_is_feasible = True
+        output_names_to_values = self.database.get(x_vect)
+        for constraint in self.constraints:
+            constraint_value = output_names_to_values.get(constraint.name)
+            if constraint_value is None:
                 break
-            if not self._satisfied_constraint(constraint.f_type, eval_cstr):
-                if isnan(eval_cstr).any():
-                    return False, inf
-                is_pt_feasible = False
-                if constraint.f_type == MDOFunction.ConstraintType.INEQ:
-                    if isinstance(eval_cstr, ndarray):
-                        viol_inds = where(eval_cstr > self.ineq_tolerance)
-                        f_violation += (
-                            norm(eval_cstr[viol_inds] - self.ineq_tolerance) ** 2
-                        )
-                    else:
-                        f_violation += (eval_cstr - self.ineq_tolerance) ** 2
-                else:
-                    f_violation += norm(abs(eval_cstr) - self.eq_tolerance) ** 2
-        return is_pt_feasible, f_violation
+
+            f_type = constraint.f_type
+            if self._satisfied_constraint(f_type, constraint_value):
+                continue
+
+            x_vect_is_feasible = False
+            if isnan(constraint_value).any():
+                return x_vect_is_feasible, inf
+
+            if f_type == MDOFunction.ConstraintType.INEQ:
+                tolerance = self.ineq_tolerance
+            else:
+                tolerance = self.eq_tolerance
+                constraint_value = abs(constraint_value)
+
+            if isinstance(constraint_value, ndarray):
+                violated_components = (constraint_value > tolerance).nonzero()
+                constraint_value = constraint_value[violated_components]
+
+            violation += norm(constraint_value - tolerance) ** 2
+
+        return x_vect_is_feasible, violation
 
     def get_best_infeasible_point(
         self,
@@ -1778,9 +1913,8 @@ class OptimizationProblem(BaseProblem):
             outputs_opt = f_history[best_i]
             x_opt = x_history[best_i]
             f_opt = outputs_opt.get(self.objective.name)
-        if isinstance(f_opt, ndarray):
-            if len(f_opt) == 1:
-                f_opt = f_opt[0]
+        if isinstance(f_opt, ndarray) and len(f_opt) == 1:
+            f_opt = f_opt[0]
 
         return x_opt, f_opt, is_opt_feasible, outputs_opt
 
@@ -1800,7 +1934,7 @@ class OptimizationProblem(BaseProblem):
         """
         msg = (
             "Optimization found no feasible point ! "
-            + " The least infeasible point is selected."
+            " The least infeasible point is selected."
         )
         LOGGER.warning(msg)
         x_opt, f_opt, _, f_history = self.get_best_infeasible_point()
@@ -1852,9 +1986,8 @@ class OptimizationProblem(BaseProblem):
                     c_opt[c_name] = feas_f[i].get(c_name)
                     c_key = Database.get_gradient_name(c_name)
                     c_opt_grad[constraint.name] = feas_f[i].get(c_key)
-        if isinstance(f_opt, ndarray):
-            if len(f_opt) == 1:
-                f_opt = f_opt[0]
+        if isinstance(f_opt, ndarray) and len(f_opt) == 1:
+            f_opt = f_opt[0]
         return x_opt, f_opt, c_opt, c_opt_grad
 
     def get_optimum(self) -> OptimumType:
@@ -1869,6 +2002,9 @@ class OptimizationProblem(BaseProblem):
             - the indicator of feasibility of the optimal solution,
             - the value of the constraints,
             - the value of the gradients of the constraints.
+
+        Raises:
+            ValueError: When the optimization database is empty.
         """
         if not self.database:
             raise ValueError("Optimization history is empty")
@@ -1881,6 +2017,36 @@ class OptimizationProblem(BaseProblem):
             is_feas = True
             x_opt, f_opt, c_opt, c_opt_d = self.__get_optimum_feas(feas_x, feas_f)
         return f_opt, x_opt, is_feas, c_opt, c_opt_d
+
+    def get_last_point(self) -> OptimumType:
+        """Return the last design point.
+
+        Returns:
+            The last point result,
+            defined by:
+
+            - the value of the objective function,
+            - the value of the design variables,
+            - the indicator of feasibility of the last point,
+            - the value of the constraints,
+            - the value of the gradients of the constraints.
+
+        Raises:
+            ValueError: When the optimization database is empty.
+        """
+        if not self.database:
+            raise ValueError("Optimization history is empty")
+        x_last = self.database.get_x_vect(-1)
+        f_last = self.database.get_function_value(self.objective.name, -1)
+        is_feas = self.is_point_feasible(self.database[x_last], self.constraints)
+        c_last = {}
+        c_last_grad = {}
+        for constraint in self.constraints:
+            c_last[constraint.name] = self.database[x_last].get(constraint.name)
+            f_key = Database.get_gradient_name(constraint.name)
+            c_last_grad[constraint.name] = self.database[x_last].get(f_key)
+
+        return f_last, x_last, is_feas, c_last, c_last_grad
 
     @property
     def __string_representation(self) -> MultiLineString:
@@ -2024,7 +2190,7 @@ class OptimizationProblem(BaseProblem):
                         self.__store_attr_h5data(observable, o_subgroup)
 
                 if hasattr(self.solution, "to_dict"):
-                    # TODO: API: initialize with OptimizationResult() and avoid hasattr
+                    # TODO: replace by "if self.solution is None"
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 
@@ -2091,7 +2257,7 @@ class OptimizationProblem(BaseProblem):
             if opt_pb.CONSTRAINTS_GROUP in h5file:
                 group = get_hdf5_group(h5file, opt_pb.CONSTRAINTS_GROUP)
 
-                for cstr_name in group.keys():
+                for cstr_name in group:
                     group_data = cls.__h5_group_to_dict(group, cstr_name)
                     attr = MDOFunction.init_from_dict_repr(**group_data)
                     opt_pb.constraints.append(attr)
@@ -2099,7 +2265,7 @@ class OptimizationProblem(BaseProblem):
             if opt_pb.OBSERVABLES_GROUP in h5file:
                 group = get_hdf5_group(h5file, opt_pb.OBSERVABLES_GROUP)
 
-                for observable_name in group.keys():
+                for observable_name in group:
                     group_data = cls.__h5_group_to_dict(group, observable_name)
                     attr = MDOFunction.init_from_dict_repr(**group_data)
                     opt_pb.observables.append(attr)
@@ -2168,7 +2334,7 @@ class OptimizationProblem(BaseProblem):
         positions = []
         offset = int(categorize & opt_naming)
         for input_value in input_values:
-            _positions = where((input_history == input_value).all(axis=1))[0]
+            _positions = ((input_history == input_value).all(axis=1)).nonzero()[0]
             positions.extend((_positions + offset).tolist())
 
         data = [input_history.real]
@@ -2276,8 +2442,8 @@ class OptimizationProblem(BaseProblem):
                 index += 1
 
             return insert(output_history, [index] * (database_size - index), nan, 0)
-        else:
-            return output_history
+
+        return output_history
 
     @staticmethod
     def __h5_group_to_dict(
@@ -2304,14 +2470,11 @@ class OptimizationProblem(BaseProblem):
             value = value[()]
 
             # h5py does not handle bytes natively, it maps it to a numpy generic type
-            if isinstance(value, ndarray) and value.dtype.type in (
+            if isinstance(value, ndarray) and value.dtype.type in {
                 numpy.object_,
-                numpy.string_,
-            ):
-                if value.size == 1:
-                    value = value[0]
-                else:
-                    value = value.tolist()
+                bytes_,
+            }:
+                value = value[0] if value.size == 1 else value.tolist()
 
             if isinstance(value, bytes):
                 value = value.decode()
@@ -2390,7 +2553,7 @@ class OptimizationProblem(BaseProblem):
             and the values are the functions dimensions.
         """
         if names is None:
-            names = [self.objective.name] + self.get_constraint_names()
+            names = [self.objective.name, *self.get_constraint_names()]
 
         return {name: self.get_function_dimension(name) for name in names}
 
@@ -2476,15 +2639,15 @@ class OptimizationProblem(BaseProblem):
         Returns:
             The names of the scalar constraints.
         """
-        constraint_names = list()
+        constraint_names = []
         for constraint in self.constraints:
             dimension = self.get_function_dimension(constraint.name)
             if dimension == 1:
                 constraint_names.append(constraint.name)
             else:
-                constraint_names.extend(
-                    [constraint.get_indexed_name(index) for index in range(dimension)]
-                )
+                constraint_names.extend([
+                    constraint.get_indexed_name(index) for index in range(dimension)
+                ])
         return constraint_names
 
     def reset(

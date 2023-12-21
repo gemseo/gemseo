@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 

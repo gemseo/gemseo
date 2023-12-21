@@ -27,15 +27,21 @@ This dimension reduction algorithm relies on the PCA class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.decomposition.PCA.html>`_.
 """
+
 from __future__ import annotations
 
-from numpy import ndarray
+from typing import TYPE_CHECKING
+
 from sklearn.decomposition import KernelPCA
 
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 
 
 class KPCA(DimensionReduction):
@@ -43,7 +49,7 @@ class KPCA(DimensionReduction):
 
     def __init__(
         self,
-        name: str = "KPCA",
+        name: str = "",
         n_components: int | None = None,
         fit_inverse_transform: bool = True,
         kernel: str = "linear",
@@ -56,7 +62,7 @@ class KPCA(DimensionReduction):
             kernel: The name of the kernel,
                 either 'linear', 'poly', 'rbf', 'sigmoid', 'cosine' or 'precomputed'.
             **parameters: The optional parameters for sklearn KPCA constructor.
-        """
+        """  # noqa: D205 D212
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = KernelPCA(
             n_components,
@@ -70,9 +76,9 @@ class KPCA(DimensionReduction):
         self.parameters["n_components"] = len(self.algo.eigenvalues_)
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.algo.transform(data)
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.algo.inverse_transform(data)

@@ -13,12 +13,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Compatibility between different versions of matplotlib."""
+
 from __future__ import annotations
 
 import matplotlib
 import matplotlib.pyplot as plt
 from packaging import version
-
 
 if version.parse(matplotlib.__version__) < version.parse("3.5.0"):
 

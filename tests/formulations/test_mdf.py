@@ -18,6 +18,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from numpy.testing import assert_allclose
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.mdf import MDF
@@ -26,7 +28,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.xdsmizer import XDSMizer
-from numpy.testing import assert_allclose
 
 from .formulations_basetest import FormulationsBaseTest
 
@@ -57,13 +58,11 @@ class TestMDFFormulation(FormulationsBaseTest):
         scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
-        scenario.execute(
-            {
-                "max_iter": 100,
-                "algo": algo,
-                "algo_options": {"ftol_rel": 1e-10, "ineq_tolerance": 1e-3},
-            }
-        )
+        scenario.execute({
+            "max_iter": 100,
+            "algo": algo,
+            "algo_options": {"ftol_rel": 1e-10, "ineq_tolerance": 1e-3},
+        })
         scenario.print_execution_metrics()
         return scenario.optimization_result.f_opt
 
@@ -94,11 +93,11 @@ class TestMDFFormulation(FormulationsBaseTest):
         disciplines = [disc1, disc2, disc3, disc4]
         mdf = MDF(disciplines, "y_4", DesignSpace(), inner_mda_name="MDAGaussSeidel")
         wkf = mdf.get_expected_workflow()
-        self.assertEqual(
-            str(wkf),
-            "[MDAChain(None), {MDAGaussSeidel(None), [SobieskiStructure(None), "
+        assert (
+            str(wkf)
+            == "[MDAChain(None), {MDAGaussSeidel(None), [SobieskiStructure(None), "
             "SobieskiPropulsion(None), SobieskiAerodynamics(None), ], }, "
-            "SobieskiMission(None), ]",
+            "SobieskiMission(None), ]"
         )
         mdf.get_expected_dataflow()
 

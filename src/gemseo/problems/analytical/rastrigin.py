@@ -17,10 +17,8 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-The Rastrigin analytic problem
-******************************
-"""
+"""The Rastrigin analytic problem."""
+
 from __future__ import annotations
 
 import logging
@@ -40,35 +38,36 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Rastrigin(OptimizationProblem):
-    r"""**Rastrigin** :class:`.OptimizationProblem` uses the Rastrigin objective function
+    r"""The Rastrigin optimization problem.
+
+    It uses the Rastrigin objective function
     with the :class:`.DesignSpace` :math:`[-0.1,0.1]^2`
 
     From http://en.wikipedia.org/wiki/Rastrigin_function:
+    the Rastrigin function is a non-convex function used as a
+    performance test problem for optimization algorithms.
+    It is a typical example of non-linear multimodal function.
+    It was first proposed by [Rastrigin] as a 2-dimensional
+    function and has been generalized by [MuhlenbeinEtAl].
+    Finding the minimum of this function is a fairly difficult
+    problem due to its large search space and its large
+    number of local minima.
+    It has a global minimum at :math:`x=0` where :math:`f(x)=0`.
+    It can be extended to :math:`n>2` dimensions:
 
-        the Rastrigin function is a non-convex function used as a
-        performance test problem for optimization algorithms.
-        It is a typical example of non-linear multimodal function.
-        It was first proposed by [Rastrigin] as a 2-dimensional
-        function and has been generalized by [MuhlenbeinEtAl].
-        Finding the minimum of this function is a fairly difficult
-        problem due to its large search space and its large
-        number of local minima.
-        It has a global minimum at :math:`x=0` where :math:`f(x)=0`.
-        It can be extended to :math:`n>2` dimensions:
+    .. math::
 
-        .. math::
+       f(x) = 10n + \sum_{i=1}^n [x_i^2 - 10\cos(2\pi x_i)]
 
-           f(x) = 10n + \sum_{i=1}^n [x_i^2 - 10\cos(2\pi x_i)]
+    [Rastrigin] Rastrigin, L. A. "Systems of extremal control."
+    Mir, Moscow (1974).
 
-        [Rastrigin] Rastrigin, L. A. "Systems of extremal control."
-        Mir, Moscow (1974).
-
-        [MuhlenbeinEtAl] H. Mühlenbein, D. Schomisch and J. Born.
-        "The Parallel Genetic Algorithm as Function Optimizer ".
-        Parallel Computing, 17, pages 619–632, 1991.
+    [MuhlenbeinEtAl] H. Mühlenbein, D. Schomisch and J. Born.
+    "The Parallel Genetic Algorithm as Function Optimizer ".
+    Parallel Computing, 17, pages 619-632, 1991.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         design_space = DesignSpace()
         design_space.add_variable("x", 2, l_b=-0.1, u_b=0.1)
         design_space.set_current_value(full(2, 0.01))
@@ -119,9 +118,7 @@ class Rastrigin(OptimizationProblem):
             The analytical gradient vector of Rastrigin function.
         """
         a_c = 10.0
-        return array(
-            [
-                2 * x_dv[0] + 2 * pi * a_c * sin(2 * pi * x_dv[0]),
-                2 * x_dv[1] + 2 * pi * a_c * sin(2 * pi * x_dv[1]),
-            ]
-        ).real
+        return array([
+            2 * x_dv[0] + 2 * pi * a_c * sin(2 * pi * x_dv[0]),
+            2 * x_dv[1] + 2 * pi * a_c * sin(2 * pi * x_dv[1]),
+        ]).real

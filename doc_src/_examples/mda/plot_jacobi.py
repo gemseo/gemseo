@@ -24,6 +24,7 @@ Jacobi MDA
 A smart MDA that solves only strongly coupled disciplines
 and then executes the weakly coupled ones
 """
+
 from __future__ import annotations
 
 from os import name as os_name
@@ -77,14 +78,12 @@ def display_result(res, mda_name):
 # of the MDA will be used and computed from the
 # Default inputs of the disciplines
 
-disciplines = create_discipline(
-    [
-        "SobieskiStructure",
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiStructure",
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+])
 use_threading = False
 if IS_NT:
     use_threading = True

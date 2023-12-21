@@ -17,10 +17,11 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the constraints on a radar chart at a given database index."""
+
 from __future__ import annotations
 
 import logging
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import vstack
 from numpy import zeros
@@ -28,6 +29,9 @@ from numpy import zeros
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -75,25 +79,29 @@ class RadarChart(OptPostProcessor):
                     "stored in the database."
                 )
 
+        # optimum_index is the zero-based position of the optimum.
+        # while an iteration is a one-based position.
+        optimum_iteration = self.opt_problem.solution.optimum_index + 1
+        is_optimum = iteration in [self.OPTIMUM, optimum_iteration]
+        if iteration == self.OPTIMUM:
+            iteration = optimum_iteration
+
         n_iterations = len(self.database)
-        if iteration != self.OPTIMUM and not 1 <= abs(iteration) <= n_iterations:
+        if abs(iteration) not in range(1, n_iterations + 1):
             raise ValueError(
                 f"The requested iteration {iteration} is neither "
                 f"in ({-n_iterations},...,-1,1,...,{n_iterations}) "
                 f"nor equal to the tag {self.OPTIMUM}."
             )
 
+        if iteration < 0:
+            iteration = n_iterations + iteration + 1
+
         constraint_values, constraint_names, _ = self.database.get_history_array(
             function_names=constraint_names, with_x_vect=False
         )
-
-        if iteration == self.OPTIMUM:
-            title_suffix = " (optimum)"
-            iteration = self.opt_problem.solution.optimum_index
-        else:
-            title_suffix = ""
-
-        constraint_values = constraint_values[iteration, :].ravel()
+        # "-1" because ndarray uses zero-based indexing and iteration is one-based.
+        constraint_values = constraint_values[iteration - 1, :].ravel()
 
         dataset = Dataset(dataset_name="Constraints")
         values = vstack((constraint_values, zeros(len(constraint_values))))
@@ -101,20 +109,17 @@ class RadarChart(OptPostProcessor):
             dataset.DEFAULT_GROUP,
             values,
             constraint_names,
-            {name: 1 for name in constraint_names},
         )
         dataset.index = ["computed constraints", "limit constraint"]
 
-        if iteration < 0:
-            iteration = n_iterations + iteration
-
-        radar = RadarChartPost(dataset)
+        radar = RadarChartPost(
+            dataset, display_zero=False, radial_ticks=show_names_radially
+        )
         radar.linestyle = ["-", "--"]
         radar.color = ["k", "r"]
+        title_suffix = " (optimum)" if is_optimum else ""
         radar.title = f"Constraints at iteration {iteration}{title_suffix}"
 
-        figures = radar.execute(
-            save=False, display_zero=False, radial_ticks=show_names_radially
-        )
+        figures = radar.execute(save=False)
         for figure in figures:
             self._add_figure(figure)

@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """The functional operations."""
+
 from __future__ import annotations
 
 from numpy import delete
@@ -86,8 +87,7 @@ class RestrictedFunction(MDOFunction):
         """
         x_full = insert(x_vect, self._restriction_indices, self.restriction_values)
         jac = self._orig_function.jac(x_full)
-        jac = delete(jac, self._restriction_indices, axis=0)
-        return jac
+        return delete(jac, self._restriction_indices, axis=0)
 
 
 class LinearComposition(MDOFunction):

@@ -23,17 +23,21 @@ This module contains a factory to instantiate an :class:`.MLAlgo` from its class
 This factory also provides a list of available machine learning algorithms and allows
 testing if a machine learning algorithm is available.
 """
+
 from __future__ import annotations
 
 import pickle
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 
 class MLAlgoFactory(BaseFactory):

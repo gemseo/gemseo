@@ -29,6 +29,15 @@ from unittest import mock
 
 import numpy as np
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import eye
+from numpy import matmul
+from numpy import ndarray
+from numpy import ones
+from numpy import zeros
+from numpy.linalg import norm
+
 from gemseo.core.mdofunctions.concatenate import Concatenate
 from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
 from gemseo.core.mdofunctions.function_restriction import FunctionRestriction
@@ -39,14 +48,6 @@ from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
 from gemseo.core.mdofunctions.taylor_polynomials import compute_quadratic_approximation
 from gemseo.problems.analytical.power_2 import Power2
-from numpy import allclose
-from numpy import array
-from numpy import eye
-from numpy import matmul
-from numpy import ndarray
-from numpy import ones
-from numpy import zeros
-from numpy.linalg import norm
 
 
 @pytest.fixture(scope="module")
@@ -86,7 +87,7 @@ def test_f_type(sinus, sinus_eq_output_names):
     assert (sinus_eq_output_names + sinus).f_type == MDOFunction.ConstraintType.EQ
 
 
-@pytest.mark.parametrize("operator,symbol", [(mul, "*"), (add, "+")])
+@pytest.mark.parametrize(("operator", "symbol"), [(mul, "*"), (add, "+")])
 def test_operation_error(sinus, operator, symbol):
     """Check that errors are raised with operations mixing MDOFunction and operators."""
     with pytest.raises(
@@ -166,7 +167,7 @@ def test_add_sub_neg():
     assert k(x) == math.sin(x) - math.cos(x)
     assert k.jac(x) == math.cos(x) + math.sin(x)
 
-    assert mm.jac(x) == math.cos(x) ** 2 + -math.sin(x) ** 2
+    assert mm.jac(x) == math.cos(x) ** 2 + -(math.sin(x) ** 2)
 
     fplu = f + 3.5
     fmin = f - 5.0
@@ -253,7 +254,7 @@ def test_wrong_jac_shape():
     [
         MDOFunction(lambda x: norm(x) ** 2, "f", jac=lambda x: 2.0 * x, dim=2),
         MDOFunction(
-            lambda x: array([norm(x) ** 2, -norm(x) ** 2]),
+            lambda x: array([norm(x) ** 2, -(norm(x) ** 2)]),
             "f",
             jac=lambda x: array([2.0 * x, -2.0 * x]),
         ),
@@ -274,7 +275,7 @@ def test_restriction(function):
 def test_linearization():
     """Test the linearization of a function."""
     function = MDOFunction(
-        lambda x: 0.5 * array([norm(x) ** 2, -norm(x) ** 2]),
+        lambda x: 0.5 * array([norm(x) ** 2, -(norm(x) ** 2)]),
         "f",
         jac=lambda x: array([x, -x]),
         dim=2,
@@ -288,7 +289,7 @@ def test_convex_linearization():
     """Test the convex linearization of a function."""
     # Vectorial function
     function = MDOFunction(
-        lambda x: 0.5 * array([norm(x) ** 2, -norm(x) ** 2]),
+        lambda x: 0.5 * array([norm(x) ** 2, -(norm(x) ** 2)]),
         "f",
         jac=lambda x: array([x, -x]),
         dim=2,
@@ -404,28 +405,51 @@ def test_linear_approximation():
     assert (linear_approximation.value_at_zero == vec).all()
 
 
-@pytest.fixture
+@pytest.fixture()
 def function():
-    return MDOFunction(lambda x: x, "n", expr="e")
+    return MDOFunction(lambda x: x, "n", expr="e", special_repr="a_special_repr")
 
 
 @pytest.mark.parametrize(
-    "neg,neg_after,value,expected_n,expected_e",
+    ("neg", "neg_after", "value", "expected_n", "expected_e", "expected_sr"),
     [
-        (False, True, 1.0, "[n+1.0]", "e+1.0"),
-        (True, True, 1.0, "-[n+1.0]", "-(e+1.0)"),
-        (False, True, -1.0, "[n-1.0]", "e-1.0"),
-        (True, True, -1.0, "-[n-1.0]", "-(e-1.0)"),
-        (False, False, 1.0, "[n+1.0]", "e+1.0"),
-        (True, False, 1.0, "[-n+1.0]", "-(e)+1.0"),
-        (False, False, -1.0, "[n-1.0]", "e-1.0"),
-        (True, False, -1.0, "[-n-1.0]", "-(e)-1.0"),
-        (False, False, array([1.0, 1.0]), "[n+offset]", "e+offset"),
-        (True, False, array([1.0, 1.0]), "[-n+offset]", "-(e)+offset"),
-        (True, True, array([1.0, 1.0]), "-[n+offset]", "-(e+offset)"),
+        (False, True, 1.0, "[n+1.0]", "e+1.0", "a_special_repr+1.0"),
+        (True, True, 1.0, "-[n+1.0]", "-(e+1.0)", "-(a_special_repr+1.0)"),
+        (False, True, -1.0, "[n-1.0]", "e-1.0", "a_special_repr-1.0"),
+        (True, True, -1.0, "-[n-1.0]", "-(e-1.0)", "-(a_special_repr-1.0)"),
+        (False, False, 1.0, "[n+1.0]", "e+1.0", "a_special_repr+1.0"),
+        (True, False, 1.0, "[-n+1.0]", "-(e)+1.0", "-(a_special_repr)+1.0"),
+        (False, False, -1.0, "[n-1.0]", "e-1.0", "a_special_repr-1.0"),
+        (True, False, -1.0, "[-n-1.0]", "-(e)-1.0", "-(a_special_repr)-1.0"),
+        (
+            False,
+            False,
+            array([1.0, 1.0]),
+            "[n+offset]",
+            "e+offset",
+            "a_special_repr+offset",
+        ),
+        (
+            True,
+            False,
+            array([1.0, 1.0]),
+            "[-n+offset]",
+            "-(e)+offset",
+            "-(a_special_repr)+offset",
+        ),
+        (
+            True,
+            True,
+            array([1.0, 1.0]),
+            "-[n+offset]",
+            "-(e+offset)",
+            "-(a_special_repr+offset)",
+        ),
     ],
 )
-def test_offset_name_and_expr(function, neg, neg_after, value, expected_n, expected_e):
+def test_offset_name_and_expr(
+    function, neg, neg_after, value, expected_n, expected_e, expected_sr
+):
     """Check the name and expression of a function after 1) __neg__ and 2) offset."""
     if neg_after:
         function = function.offset(value)
@@ -440,6 +464,7 @@ def test_offset_name_and_expr(function, neg, neg_after, value, expected_n, expec
 
     assert function.name == expected_n
     assert function.expr == expected_e
+    assert function.special_repr == expected_sr
 
 
 def test_expects_normalized_inputs(function):
@@ -519,7 +544,8 @@ def test_get_indexed_name(function):
 @pytest.mark.parametrize("fexpr", [None, "x**2"])
 @pytest.mark.parametrize("gexpr", [None, "x**3"])
 @pytest.mark.parametrize(
-    "op,op_name,func,jac", [(mul, "*", 32, 80), (truediv, "/", 0.5, -1.0 / 9)]
+    ("op", "op_name", "func", "jac"),
+    [(mul, "*", 32, 80), (truediv, "/", 0.5, -1.0 / 9)],
 )
 def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac):
     """Check the multiplication of a function by a function or its inverse."""
@@ -542,7 +568,7 @@ def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac):
 
 @pytest.mark.parametrize("expr", [None, "x**2"])
 @pytest.mark.parametrize(
-    "op,op_name,func,jac", [(mul, "*", 16, 24), (truediv, "/", 4, 6)]
+    ("op", "op_name", "func", "jac"), [(mul, "*", 16, 24), (truediv, "/", 4, 6)]
 )
 def test_multiplication_by_scalar(expr, op, op_name, func, jac):
     """Check the multiplication of a function by a scalar or its inverse."""
@@ -552,10 +578,7 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac):
     f_op_2 = op(f, 2)
     suffix = ""
     if expr:
-        if op_name == "*":
-            suffix = f" = 2*{expr}"
-        else:
-            suffix = f" = {expr}/2"
+        suffix = f" = 2*{expr}" if op_name == "*" else f" = {expr}/2"
 
     if op_name == "*":
         assert repr(f_op_2) == "2*f(x)" + suffix
@@ -567,7 +590,7 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac):
 
 
 @pytest.mark.parametrize(
-    "expr_1, expr_2, op, expected",
+    ("expr_1", "expr_2", "op", "expected"),
     [
         ("1+x", "x", mul, "[f*g](x) = (1+x)*x"),
         ("1-x", "-x+3", mul, "[f*g](x) = (1-x)*(-x+3)"),
@@ -598,7 +621,7 @@ def simple_function(x: ndarray) -> ndarray:
 
 @pytest.mark.parametrize("activate_counters", [True, False])
 @pytest.mark.parametrize(
-    "mdo_function, kwargs, value",
+    ("mdo_function", "kwargs", "value"),
     [
         (
             MDOFunction,
@@ -650,14 +673,14 @@ def test_serialize_deserialize(activate_counters, mdo_function, kwargs, value, t
 
     s_func_u_dict = serialized_func.__dict__
     ok = True
-    for k, _ in function.__dict__.items():
+    for k in function.__dict__:
         if k not in s_func_u_dict:
             ok = False
     assert ok
 
 
 @pytest.mark.parametrize(
-    "force_real,expected", [(False, array([1j])), (True, array([0.0]))]
+    ("force_real", "expected"), [(False, array([1j])), (True, array([0.0]))]
 )
 def test_force_real(force_real, expected):
     """Verify the use of force_real."""
@@ -666,7 +689,7 @@ def test_force_real(force_real, expected):
 
 
 @pytest.mark.parametrize(
-    "ft1,ft2,ft", [("", "", ""), ("obj", "", "obj"), ("", "obj", "obj")]
+    ("ft1", "ft2", "ft"), [("", "", ""), ("obj", "", "obj"), ("", "obj", "obj")]
 )
 def test_f_type_sum_two_functions(ft1, ft2, ft):
     """Verify the f_type of the sum of two functions."""
@@ -684,7 +707,7 @@ def test_f_type_sum_function_and_number(f_type):
 
 
 @pytest.mark.parametrize(
-    "f_out,g_out,h_out",
+    ("f_out", "g_out", "h_out"),
     [
         (None, None, []),
         (["a"], None, []),
@@ -705,7 +728,7 @@ def test_concatenate(f_out, g_out, h_out):
 
 
 @pytest.mark.parametrize(
-    "f_type,input_names,expr,neg,expected",
+    ("f_type", "input_names", "expr", "neg", "expected"),
     [
         (MDOFunction.FunctionType.NONE, None, "", False, "f"),
         (MDOFunction.FunctionType.NONE, None, "2*x", False, "f = 2*x"),

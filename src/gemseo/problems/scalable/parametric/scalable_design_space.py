@@ -18,18 +18,14 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The design space for the scalable problem."""
+
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import Iterable
-from typing import Mapping
-
-from numpy.typing import NDArray
+from typing import TYPE_CHECKING
 
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.problems.scalable.parametric.core.default_settings import (
-    DEFAULT_D_0,
-)
+from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_0
 from gemseo.problems.scalable.parametric.core.scalable_design_space import (
     ScalableDesignSpace as _ScalableDesignSpace,
 )
@@ -40,6 +36,12 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from numpy.typing import NDArray
 
 
 class ScalableDesignSpace(ParameterSpace):
@@ -58,8 +60,7 @@ class ScalableDesignSpace(ParameterSpace):
         names_to_default_values: Mapping[str, NDArray[float]] = MappingProxyType({}),
         add_uncertain_variables: bool = False,
     ) -> None:
-        r"""
-        Args:
+        r"""Args:
             discipline_settings: The configurations of the different disciplines.
                 If ``None``,
                 use a single discipline
@@ -78,7 +79,7 @@ class ScalableDesignSpace(ParameterSpace):
             ``n_local[i]`` (resp. ``n_coupling[i]``)
             is the number of local design variables (resp. coupling variables)
             of the *i*-th scalable discipline.
-        """
+        """  # noqa: D205 D212
         super().__init__()
         design_space = _ScalableDesignSpace(
             scalable_discipline_settings=discipline_settings,

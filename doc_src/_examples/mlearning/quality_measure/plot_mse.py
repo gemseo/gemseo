@@ -27,29 +27,29 @@ into two sets. We measure the quality of the regression by comparing the
 predictions with the output on the test set.
 
 """
+
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo import configure_logger
-from gemseo import create_dataset
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import create_regression_model
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from numpy import arange
 from numpy import argmin
 from numpy import hstack
 from numpy import linspace
 from numpy import sort
-from numpy.random import choice
-from numpy.random import normal
-from numpy.random import seed
+from numpy.random import default_rng
+
+from gemseo import configure_logger
+from gemseo import create_dataset
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning import create_regression_model
+from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 
 configure_logger()
 
 # %%
 # Define parameters
 # -----------------
-seed(12345)
+rng = default_rng(12345)
 n_samples = 10
 noise = 0.3**2
 max_pow = 5
@@ -66,7 +66,7 @@ def f(x):
 
 
 x = linspace(0, 1, n_samples)
-y = f(x) + normal(0, noise, n_samples)
+y = f(x) + rng.normal(0, noise, n_samples)
 
 # %%
 # Indices for test-train split
@@ -74,7 +74,7 @@ y = f(x) + normal(0, noise, n_samples)
 samples = arange(n_samples)
 n_train = int(amount_train * n_samples)
 n_test = n_samples - n_train
-train = sort(choice(samples, n_train, False))
+train = sort(rng.choice(samples, n_train, False))
 test = sort([sample for sample in samples if sample not in train])
 train, test
 

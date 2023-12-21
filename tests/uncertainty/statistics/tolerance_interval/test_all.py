@@ -18,9 +18,11 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the package implementing tolerance intervals."""
+
 from __future__ import annotations
 
 import pytest
+
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )

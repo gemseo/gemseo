@@ -17,19 +17,21 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test transformer module."""
+
 from __future__ import annotations
 
 from unittest import mock
 
 import pytest
-from gemseo.mlearning.transformers.transformer import Transformer
-from gemseo.utils.testing.helpers import concretize_classes
 from numpy import arange
 from numpy import array
 from numpy import ndarray
 
+from gemseo.mlearning.transformers.transformer import Transformer
+from gemseo.utils.testing.helpers import concretize_classes
 
-@pytest.fixture
+
+@pytest.fixture()
 def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))

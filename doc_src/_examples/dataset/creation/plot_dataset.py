@@ -38,11 +38,13 @@ From a software point of view,
 a :class:`.Dataset` is a particular `pandas DataFrame
 <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`__.
 """
+
 from __future__ import annotations
 
-from gemseo.datasets.dataset import Dataset
 from numpy import array
 from pandas import DataFrame
+
+from gemseo.datasets.dataset import Dataset
 
 # %%
 # Instantiation

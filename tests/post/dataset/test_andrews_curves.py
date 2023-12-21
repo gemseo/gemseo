@@ -18,16 +18,18 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class AndrewsCurves plotting samples as curves."""
+
 from __future__ import annotations
 
+import re
+
 import pytest
-from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.andrews_curves import AndrewsCurves
-from gemseo.utils.testing.helpers import image_comparison
 from matplotlib import pyplot as plt
 from numpy import array
 
-pytestmark = [pytest.mark.xfail(reason="fail with Python3 and coverage")]
+from gemseo.datasets.dataset import Dataset
+from gemseo.post.dataset.andrews_curves import AndrewsCurves
+from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -37,19 +39,17 @@ def dataset():
     sample2 = [1.0, 1.0, -1.0, 2]
     sample3 = [2.0, 2.0, -2.0, 2]
     sample4 = [3.0, 3.0, -3.0, 1]
-    dataset = Dataset.from_array(
+    return Dataset.from_array(
         array([sample1, sample2, sample3, sample4]), ["x", "y", "z", "c"]
     )
-    return dataset
 
 
 # the test parameters, it maps a test name to the inputs and references outputs:
 # - the kwargs to be passed to ParallelCoordinates._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default": ({}, {}, ["AndrewsCurves"]),
+    "default": ({}, ["AndrewsCurves"]),
     "with_properties": (
-        {},
         {
             "xlabel": "The xlabel",
             "ylabel": "The ylabel",
@@ -61,26 +61,26 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
-def test_plot(
-    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-):
+def test_plot(properties, baseline_images, dataset, pyplot_close_all, fig_and_axes):
     """Test images created by AndrewsCurves._plot against references."""
-    plot = AndrewsCurves(dataset, **kwargs)
+    plot = AndrewsCurves(dataset, classifier="c")
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
-    plot.execute(save=False, fig=fig, axes=axes, properties=properties)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+    plot.execute(save=False, fig=fig, axes=axes)
 
 
 def test_error(dataset):
     """Test an error is raised when a wrong name is given."""
-    expected = "Classifier must be one of these names: c, x, y, z"
-    with pytest.raises(ValueError, match=expected):
+    expected = "Classifier must be one of these names: c, x, y and z."
+    with pytest.raises(ValueError, match=re.escape(expected)):
         AndrewsCurves(dataset, classifier="foo")._plot()

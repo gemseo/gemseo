@@ -20,7 +20,8 @@
 """This module contains the base classes for clustering algorithms.
 
 The :mod:`~gemseo.mlearning.clustering.clustering` module implements the concept of
-clustering models, a kind of unsupervised machine learning algorithm where the goal is to
+clustering models,
+a kind of unsupervised machine learning algorithm where the goal is to
 group data into clusters. Wherever possible, these methods should be able to predict the
 class of the new data, as well as the probability of belonging to each class.
 
@@ -29,13 +30,15 @@ from the :class:`.MLUnsupervisedAlgo` class, and through the
 :class:`.MLPredictiveClusteringAlgo` class which inherits from
 :class:`.MLClusteringAlgo`.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Iterable
-from typing import Mapping
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 from typing import NoReturn
-from typing import Sequence
 from typing import Union
 
 from numpy import atleast_2d
@@ -43,13 +46,15 @@ from numpy import ndarray
 from numpy import unique
 from numpy import zeros
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSavedObjectType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
 
@@ -66,7 +71,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
     n_clusters: int
     """The number of clusters."""
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         data: Dataset,
         transformer: TransformerType = MLUnsupervisedAlgo.IDENTITY,
@@ -130,17 +135,18 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         Returns:
             The predicted cluster for each input data sample.
         """
-        as_dict = isinstance(data, Mapping)
-        if as_dict:
+        if isinstance(data, Mapping):
             data = concatenate_dict_of_arrays_to_array(data, self.var_names)
-        single_sample = len(data.shape) == 1
-        data = atleast_2d(data)
+
+        data_2d = atleast_2d(data)
         parameters = self.learning_set.DEFAULT_GROUP
         if parameters in self.transformer:
-            data = self.transformer[parameters].transform(data)
-        clusters = self._predict(atleast_2d(data)).astype(int)
-        if single_sample:
-            clusters = clusters[0]
+            data_2d = self.transformer[parameters].transform(data_2d)
+
+        clusters = self._predict(data_2d).astype(int)
+        if data.ndim == 1:
+            return clusters[0]
+
         return clusters
 
     @abstractmethod
@@ -185,14 +191,13 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
             The probability of belonging to each cluster,
             with shape (n_samples, n_clusters) or (n_clusters,).
         """
-        as_dict = isinstance(data, Mapping)
-        if as_dict:
+        if isinstance(data, Mapping):
             data = concatenate_dict_of_arrays_to_array(data, self.var_names)
-        single_sample = len(data.shape) == 1
-        data = atleast_2d(data)
+
         probas = self._predict_proba(atleast_2d(data), hard)
-        if single_sample:
-            probas = probas.ravel()
+        if data.ndim == 1:
+            return probas.ravel()
+
         return probas
 
     def _predict_proba(
@@ -211,10 +216,9 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
                 with shape (n_samples, n_clusters).
         """
         if hard:
-            probas = self._predict_proba_hard(data)
-        else:
-            probas = self._predict_proba_soft(data)
-        return probas
+            return self._predict_proba_hard(data)
+
+        return self._predict_proba_soft(data)
 
     def _predict_proba_hard(
         self,
@@ -243,7 +247,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         """Predict the probability of belonging to each cluster.
 
         Args:
-            The input data with shape (n_samples, n_inputs).
+            data: The input data with shape (n_samples, n_inputs).
 
         Returns:
             The probability of belonging to each cluster

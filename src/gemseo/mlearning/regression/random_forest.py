@@ -27,19 +27,25 @@ The regression model relies on the ``RandomForestRegressor`` class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
-from numpy import ndarray
-from numpy import newaxis
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo import SEED
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from numpy import ndarray
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class RandomForestRegressor(MLRegressionAlgo):
@@ -55,21 +61,27 @@ class RandomForestRegressor(MLRegressionAlgo):
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         n_estimators: int = 100,
+        random_state: int | None = SEED,
         **parameters,
     ) -> None:
         """
         Args:
             n_estimators: The number of trees in the forest.
-        """
+            random_state: The random state passed to the random number generator.
+                Use an integer for reproducible results.
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
             n_estimators=n_estimators,
+            random_state=random_state,
             **parameters,
         )
-        self.algo = SKLRandForest(n_estimators=n_estimators, **parameters)
+        self.algo = SKLRandForest(
+            n_estimators=n_estimators, random_state=random_state, **parameters
+        )
 
     def _fit(
         self,
@@ -87,10 +99,4 @@ class RandomForestRegressor(MLRegressionAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        output_data = self.algo.predict(input_data)
-
-        # n_outputs=1 => output_shape=(n_samples,). Convert to (n_samples, 1).
-        if len(output_data.shape) == 1:
-            output_data = output_data[:, newaxis]
-
-        return output_data
+        return self.algo.predict(input_data).reshape((len(input_data), -1))

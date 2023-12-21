@@ -25,12 +25,13 @@ Robustness
 In this example, we illustrate the use of the :class:`.Robustness` plot
 on the Sobieski's SSBJ problem.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
 # Import
@@ -62,20 +63,18 @@ configure_logger()
 # ------------------
 # At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
-disciplines = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiStructure",
-        "SobieskiMission",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiStructure",
+    "SobieskiMission",
+])
 
 # %%
 # Create design space
 # -------------------
-# We also read the design space from the :class:`.SobieskiProblem`.
-design_space = SobieskiProblem().design_space
+# We also create the :class:`.SobieskiDesignSpace`.
+design_space = SobieskiDesignSpace()
 
 # %%
 # Create and execute scenario

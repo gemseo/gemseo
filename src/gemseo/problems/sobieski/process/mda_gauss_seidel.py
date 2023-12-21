@@ -12,11 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""A Gauss-Seidel MDA for the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
 from typing import Any
 
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.problems.sobieski.core.utils import SobieskiBase
 from gemseo.problems.sobieski.disciplines import create_disciplines
 
 
@@ -25,12 +28,12 @@ class SobieskiMDAGaussSeidel(MDAGaussSeidel):
 
     def __init__(
         self,
-        dtype: str = "float64",
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
         **mda_options: Any,
     ) -> None:
         """
         Args:
             dtype: The NumPy type for data arrays, either "float64" or "complex128".
             **mda_options: The options of the MDA.
-        """
+        """  # noqa: D205 D212
         super().__init__(create_disciplines(dtype), **mda_options)

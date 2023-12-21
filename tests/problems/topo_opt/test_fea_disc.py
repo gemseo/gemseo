@@ -19,11 +19,12 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.problems.topo_opt.fea_disc import FininiteElementAnalysis
 from numpy import arange
 from numpy import array
 from numpy import ones
 from numpy import tile
+
+from gemseo.problems.topo_opt.fea_disc import FininiteElementAnalysis
 
 
 @pytest.fixture(scope="module")

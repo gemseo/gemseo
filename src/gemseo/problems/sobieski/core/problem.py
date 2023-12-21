@@ -23,6 +23,7 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """The Sobieski's SSBJ problem."""
+
 from __future__ import annotations
 
 import cmath
@@ -30,12 +31,10 @@ import logging
 import math
 import random
 from collections import namedtuple
-from pathlib import Path
 from random import uniform
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Sequence
 
 from numpy import array
 from numpy import complex128
@@ -44,12 +43,16 @@ from numpy import float64
 from numpy import ndarray
 from numpy import ones
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.problems.sobieski.core.aerodynamics import SobieskiAerodynamics
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.core.mission import SobieskiMission
 from gemseo.problems.sobieski.core.propulsion import SobieskiPropulsion
 from gemseo.problems.sobieski.core.structure import SobieskiStructure
 from gemseo.problems.sobieski.core.utils import SobieskiBase
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
 
 LOGGER = logging.getLogger(__name__)
 
@@ -212,24 +215,30 @@ class SobieskiProblem:
     ESF_LOWER_LIMIT = SobieskiPropulsion.ESF_LOWER_LIMIT
     TEMPERATURE_LIMIT = SobieskiPropulsion.TEMPERATURE_LIMIT
 
+    __design_space: SobieskiDesignSpace | None
+    """The design space if created."""
+
+    __design_space_with_physical_naming: SobieskiDesignSpace | None
+    """The design space with physical naming if created."""
+
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         """
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
-        """
-        if dtype == SobieskiBase.DTYPE_COMPLEX:
+        """  # noqa: D205 D212
+        if dtype == SobieskiBase.DataType.COMPLEX:
             self.__dtype = complex128
             self.__math = cmath
-        elif dtype == SobieskiBase.DTYPE_DOUBLE:
+        elif dtype == SobieskiBase.DataType.FLOAT:
             self.__math = math
             self.__dtype = float64
         else:
             raise ValueError(f"Unknown dtype: {dtype}.")
 
-        self.__base = SobieskiBase(dtype=self.__dtype)
+        self.__base = SobieskiBase(dtype=dtype)
 
         self.disciplines = _Disciplines(
             aerodynamics=SobieskiAerodynamics(self.__base),
@@ -253,6 +262,7 @@ class SobieskiProblem:
         ) = self.__base.get_initial_values()
         self.__l_b, self.__u_b = self.__base.design_bounds
         self.__design_space = None
+        self.__design_space_with_physical_naming = None
         self.__names_to_feasible_values = {
             "x_1": array([0.14951, 7.5e-01], dtype=self.__dtype),
             "x_2": array([7.5e-01], dtype=self.__dtype),
@@ -556,26 +566,23 @@ class SobieskiProblem:
             according to ``true_cstr``.
         """
         if true_cstr:
-            return concatenate(
-                (g_1[0:5], array((g_1[5], g_2[0], g_3[0], g_3[2], g_3[1])))
-            )
+            return concatenate((
+                g_1[0:5],
+                array((g_1[5], g_2[0], g_3[0], g_3[2], g_3[1])),
+            ))
 
-        return concatenate(
-            (
-                g_1[0:5] - self.STRESS_LIMIT,
-                array(
-                    (
-                        g_1[5] - self.TWIST_UPPER_LIMIT,
-                        self.TWIST_LOWER_LIMIT - g_1[5],
-                        g_2[0] - self.PRESSURE_GRADIENT_LIMIT,
-                        g_3[0] - self.ESF_UPPER_LIMIT,
-                        self.ESF_LOWER_LIMIT - g_3[0],
-                        g_3[2],
-                        g_3[1] - self.TEMPERATURE_LIMIT,
-                    )
-                ),
-            )
-        )
+        return concatenate((
+            g_1[0:5] - self.STRESS_LIMIT,
+            array((
+                g_1[5] - self.TWIST_UPPER_LIMIT,
+                self.TWIST_LOWER_LIMIT - g_1[5],
+                g_2[0] - self.PRESSURE_GRADIENT_LIMIT,
+                g_3[0] - self.ESF_UPPER_LIMIT,
+                self.ESF_LOWER_LIMIT - g_3[0],
+                g_3[2],
+                g_3[1] - self.TEMPERATURE_LIMIT,
+            )),
+        ))
 
     def normalize_inputs(
         self,
@@ -733,38 +740,22 @@ class SobieskiProblem:
         outputs = self.__compute_mda(design_vector, true_cstr=true_cstr)
         return outputs[-3], outputs[-2], outputs[-1]
 
-    def __read_design_space(self, suffix: str = "") -> DesignSpace:
-        """Create a design space from a file.
-
-        Args:
-            suffix: The suffix used in the file name.
-
-        Returns:
-            The design space.
-        """
-        if self.__design_space is None:
-            if self.USE_ORIGINAL_DESIGN_VARIABLES_ORDER:
-                file_name = f"sobieski_original_design_space{suffix}.csv"
-            else:
-                file_name = f"sobieski_design_space{suffix}.csv"
-
-            self.__design_space = DesignSpace.from_csv(
-                Path(__file__).parent / file_name
+    @property
+    def design_space(self) -> SobieskiDesignSpace:
+        """The design space."""
+        if not self.__design_space:
+            self.__design_space = SobieskiDesignSpace(
+                True, self.__dtype, self.USE_ORIGINAL_DESIGN_VARIABLES_ORDER
             )
-            if self.__dtype == complex128:
-                current_x = self.__design_space.get_current_value(as_dict=True)
-                for variable_name, current_value in current_x.items():
-                    current_x[variable_name] = array(current_value, dtype=complex128)
-                self.__design_space.set_current_value(current_x)
 
         return self.__design_space
 
     @property
-    def design_space(self) -> DesignSpace:
-        """The design space."""
-        return self.__read_design_space()
-
-    @property
-    def design_space_with_physical_naming(self) -> DesignSpace:
+    def design_space_with_physical_naming(self) -> SobieskiDesignSpace:
         """The design space with physical naming."""
-        return self.__read_design_space("_pn")
+        if not self.__design_space_with_physical_naming:
+            self.__design_space_with_physical_naming = SobieskiDesignSpace(
+                False, self.__dtype, self.USE_ORIGINAL_DESIGN_VARIABLES_ORDER
+            )
+
+        return self.__design_space_with_physical_naming

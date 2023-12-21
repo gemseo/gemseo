@@ -13,17 +13,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Parallel execution of disciplines."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Sequence
 
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.discipline_data import Data
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline_data import Data
 
 
 class DiscParallelExecution(CallableParallelExecution):
@@ -68,7 +73,7 @@ class DiscParallelExecution(CallableParallelExecution):
             task_submitted_callback=task_submitted_callback,
         )
 
-        if len(self._disciplines) == 1 or not len(self._disciplines) == len(inputs):
+        if len(self._disciplines) == 1 or len(self._disciplines) != len(inputs):
             if (
                 not self.use_threading
                 and self.MULTI_PROCESSING_START_METHOD

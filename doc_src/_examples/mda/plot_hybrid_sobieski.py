@@ -21,6 +21,7 @@
 Hybrid Jacobi/Newton MDA
 ========================
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger
@@ -70,14 +71,12 @@ def display_result(res, mda_name):
 # of the MDA will be used and computed from the
 # Default inputs of the disciplines
 
-disciplines = create_discipline(
-    [
-        "SobieskiStructure",
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiStructure",
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+])
 mda1 = create_mda("MDAJacobi", disciplines, max_mda_iter=1)
 mda2 = create_mda("MDAGaussSeidel", disciplines)
 mda_sequence = [mda1, mda2]

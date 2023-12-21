@@ -18,17 +18,22 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The data conversion processors."""
+
 from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from typing import Mapping
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import complex128
 
-from gemseo.core.discipline_data import Data
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.core.discipline_data import Data
 
 LOGGER = logging.getLogger(__name__)
 

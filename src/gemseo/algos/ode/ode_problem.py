@@ -17,20 +17,24 @@
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Ordinary differential equation problem."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 
 from numpy import asarray
 from numpy import empty
 from numpy import ndarray
-from numpy.typing import ArrayLike
-from numpy.typing import NDArray
 
 from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.ode.ode_result import ODEResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+    from numpy.typing import NDArray
 
 
 class ODEProblem(BaseProblem):
@@ -41,7 +45,7 @@ class ODEProblem(BaseProblem):
     :math:`f` is called the right-hand side of the ODE.
     """
 
-    func: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
+    rhs_function: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
     """The right-hand side of the ODE."""
 
     jac: Callable[[NDArray[float], NDArray[float]], NDArray[float]]
@@ -80,7 +84,7 @@ class ODEProblem(BaseProblem):
             jac: The Jacobian of the right-hand side of the ODE.
             time_vector: The time vector for the solution.
         """  # noqa: D205, D212, D415
-        self.func = func
+        self.rhs_function = func
         self.jac = jac
         self.initial_state = asarray(initial_state)
         self.__time_vector = time_vector
@@ -107,12 +111,14 @@ class ODEProblem(BaseProblem):
         Raises:
             ValueError: If the state and time shapes are inconsistent.
         """
-        if self.result.state_vector.size != 0:
-            if self.result.state_vector.shape[1] != self.result.time_vector.size:
-                raise ValueError("Inconsistent state and time shapes.")
+        if (
+            self.result.state_vector.size != 0
+            and self.result.state_vector.shape[1] != self.result.time_vector.size
+        ):
+            raise ValueError("Inconsistent state and time shapes.")
 
     def _func(self, state) -> ndarray:
-        return asarray(self.func(self.result.time_vector, state))
+        return asarray(self.rhs_function(self.result.time_vector, state))
 
     def _jac(self, state) -> ndarray:
         return asarray(self.jac(self.result.time_vector, state))

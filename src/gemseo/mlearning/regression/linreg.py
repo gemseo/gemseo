@@ -49,11 +49,12 @@ The linear model relies on the ``LinearRegression``,
 classes of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 linear_model.html>`_.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
 from numpy import array
 from numpy import ndarray
@@ -64,14 +65,19 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression as LinReg
 from sklearn.linear_model import Ridge
 
+from gemseo import SEED
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import DataType
-from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class LinearRegressor(MLRegressionAlgo):
@@ -89,6 +95,7 @@ class LinearRegressor(MLRegressionAlgo):
         fit_intercept: bool = True,
         penalty_level: float = 0.0,
         l2_penalty_ratio: float = 1.0,
+        random_state: int | None = SEED,
         **parameters: float | int | str | bool | None,
     ) -> None:
         """
@@ -100,8 +107,11 @@ class LinearRegressor(MLRegressionAlgo):
                 If 1, use the Ridge penalty.
                 If 0, use the Lasso penalty.
                 Between 0 and 1, use the ElasticNet penalty.
+            random_state: The random state passed to the random number generator
+                when there is a penalty.
+                Use an integer for reproducible results.
             **parameters: The parameters of the machine learning algorithm.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,
@@ -110,6 +120,7 @@ class LinearRegressor(MLRegressionAlgo):
             fit_intercept=fit_intercept,
             penalty_level=penalty_level,
             l2_penalty_ratio=l2_penalty_ratio,
+            random_state=random_state,
             **parameters,
         )
         if "degree" in parameters:
@@ -117,29 +128,31 @@ class LinearRegressor(MLRegressionAlgo):
 
         if penalty_level == 0.0:
             self.algo = LinReg(copy_X=False, fit_intercept=fit_intercept, **parameters)
+        elif l2_penalty_ratio == 1.0:
+            self.algo = Ridge(
+                copy_X=False,
+                fit_intercept=fit_intercept,
+                alpha=penalty_level,
+                random_state=random_state,
+                **parameters,
+            )
+        elif l2_penalty_ratio == 0.0:
+            self.algo = Lasso(
+                copy_X=False,
+                fit_intercept=fit_intercept,
+                alpha=penalty_level,
+                random_state=random_state,
+                **parameters,
+            )
         else:
-            if l2_penalty_ratio == 1.0:
-                self.algo = Ridge(
-                    copy_X=False,
-                    fit_intercept=fit_intercept,
-                    alpha=penalty_level,
-                    **parameters,
-                )
-            elif l2_penalty_ratio == 0.0:
-                self.algo = Lasso(
-                    copy_X=False,
-                    fit_intercept=fit_intercept,
-                    alpha=penalty_level,
-                    **parameters,
-                )
-            else:
-                self.algo = ElasticNet(
-                    copy_X=False,
-                    fit_intercept=fit_intercept,
-                    alpha=penalty_level,
-                    l1_ratio=1 - l2_penalty_ratio,
-                    **parameters,
-                )
+            self.algo = ElasticNet(
+                copy_X=False,
+                fit_intercept=fit_intercept,
+                alpha=penalty_level,
+                l1_ratio=1 - l2_penalty_ratio,
+                random_state=random_state,
+                **parameters,
+            )
 
     def _fit(
         self,
@@ -152,14 +165,13 @@ class LinearRegressor(MLRegressionAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        return self.algo.predict(input_data)
+        return self.algo.predict(input_data).reshape((len(input_data), -1))
 
     def _predict_jacobian(
         self,
         input_data: ndarray,
     ) -> ndarray:
-        n_samples = input_data.shape[0]
-        return repeat(self.algo.coef_[None], n_samples, axis=0)
+        return repeat(self.algo.coef_[None], len(input_data), axis=0)
 
     @property
     def coefficients(self) -> ndarray:
@@ -170,10 +182,9 @@ class LinearRegressor(MLRegressionAlgo):
     def intercept(self) -> ndarray:
         """The regression intercepts of the linear model."""
         if self.parameters["fit_intercept"]:
-            intercept = self.algo.intercept_
-        else:
-            intercept = zeros(self.algo.coef_.shape[0])
-        return intercept
+            return self.algo.intercept_
+
+        return zeros(self.algo.coef_.shape[0])
 
     def get_coefficients(
         self,
@@ -193,20 +204,19 @@ class LinearRegressor(MLRegressionAlgo):
                 even though the transformers change the variables dimensions.
         """
         coefficients = self.coefficients
-        if as_dict:
-            if any(
-                [
-                    isinstance(transformer, DimensionReduction)
-                    for _, transformer in self.transformer.items()
-                ]
-            ):
-                raise ValueError(
-                    "Coefficients are only representable in dictionary "
-                    "form if the transformers do not change the "
-                    "dimensions of the variables."
-                )
-            coefficients = self.__convert_array_to_dict(coefficients)
-        return coefficients
+        if not as_dict:
+            return coefficients
+
+        if any(
+            isinstance(transformer, DimensionReduction)
+            for transformer in self.transformer.values()
+        ):
+            raise ValueError(
+                "Coefficients are only representable in dictionary "
+                "form if the transformers do not change the "
+                "dimensions of the variables."
+            )
+        return self.__convert_array_to_dict(coefficients)
 
     def get_intercept(
         self,
@@ -226,19 +236,21 @@ class LinearRegressor(MLRegressionAlgo):
                 even though the transformers change the variables dimensions.
         """
         intercept = self.intercept
-        if as_dict:
-            if IODataset.OUTPUT_GROUP in self.transformer:
-                raise ValueError(
-                    "Intercept is only representable in dictionary "
-                    "form if the transformers do not change the "
-                    "dimensions of the output variables."
-                )
-            varsizes = self.learning_set.variable_names_to_n_components
-            intercept = split_array_to_dict_of_arrays(
-                intercept, varsizes, self.output_names
+        if not as_dict:
+            return intercept
+
+        if IODataset.OUTPUT_GROUP in self.transformer:
+            raise ValueError(
+                "Intercept is only representable in dictionary "
+                "form if the transformers do not change the "
+                "dimensions of the output variables."
             )
-            intercept = {key: list(val) for key, val in intercept.items()}
-        return intercept
+        intercept = split_array_to_dict_of_arrays(
+            intercept,
+            self.learning_set.variable_names_to_n_components,
+            self.output_names,
+        )
+        return {key: list(val) for key, val in intercept.items()}
 
     def __convert_array_to_dict(
         self,
@@ -259,5 +271,4 @@ class LinearRegressor(MLRegressionAlgo):
         ]
         data = [{key: list(val) for key, val in element.items()} for element in data]
         data = split_array_to_dict_of_arrays(array(data), varsizes, self.output_names)
-        data = {key: list(val) for key, val in data.items()}
-        return data
+        return {key: list(val) for key, val in data.items()}

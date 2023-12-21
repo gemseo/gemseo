@@ -17,7 +17,11 @@
 
 @author: matthias.delozzo
 """
+
 from __future__ import annotations
+
+from numpy import array
+from numpy import exp
 
 from gemseo import configure_logger
 from gemseo import create_design_space
@@ -25,8 +29,6 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
-from numpy import array
-from numpy import exp
 
 configure_logger()
 

@@ -14,8 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 r"""Scenario adapters.
 
-A scenario adapter is an :class:`.MDODiscipline` wrapping a :class:`.Scenario`. A call to
-:meth:`.MDODiscipline.execute` triggers calls to :meth:`.Scenario.execute`.
+A scenario adapter is an :class:`.MDODiscipline` wrapping a :class:`.Scenario`.
+A call to :meth:`.MDODiscipline.execute` triggers calls to :meth:`.Scenario.execute`.
 
 For instance, let us consider an :class:`.MDOScenario` defining a gradient-based
 constrained minimization of a cost function over a :class:`.DesignSpace` from several
@@ -39,4 +39,5 @@ variables :math:`x_1` and another :class:`.MDOScenario` considers this
 natures, e.g. :math:`x_1` is discrete and :math:`x_2` is continuous, and that dedicated
 algorithms exist.
 """
+
 from __future__ import annotations

@@ -13,21 +13,26 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Benchmark for compare_dict_of_arrays."""
+
 from __future__ import annotations
 
-from argparse import ArgumentParser
+from typing import TYPE_CHECKING
 from typing import Final
 
 from base_benchmark import BaseBenchmark
 from data_factory import DataFactory
-from gemseo.core.grammars.base_grammar import BaseGrammar
+
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
-from numpy.random import seed
+
+if TYPE_CHECKING:
+    from argparse import ArgumentParser
+
+    from gemseo.core.grammars.base_grammar import BaseGrammar
 
 
 class Benchmark(BaseBenchmark):
@@ -49,7 +54,6 @@ class Benchmark(BaseBenchmark):
             self._args.grammar
         ].__name__
         assert self._args.nb_of_disc_ios <= self._args.nb_of_total_disc_io
-        seed(1)
         self.disciplines = create_disciplines_from_sizes(
             self._args.nb_of_disc,
             nb_of_total_disc_io=self._args.nb_of_total_disc_io,

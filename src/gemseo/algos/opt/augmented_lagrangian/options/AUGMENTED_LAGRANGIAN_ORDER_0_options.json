@@ -1,0 +1,94 @@
+{
+  "name": "AUGMENTED_LAGRANGIAN_order_0_options",
+  "required": [
+    "sub_solver_algorithm"
+  ],
+  "properties": {
+    "xtol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "initial_rho": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_rho": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "tau": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "gamma": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stop_crit_n_x": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 2
+        }
+      ]
+    },
+    "kkt_tol_abs": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number",
+          "minimum": 0.0
+        }
+      ]
+    },
+    "kkt_tol_rel": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "number",
+          "minimum": 0.0
+        }
+      ]
+    },
+    "sub_solver_algorithm": {
+      "type": "string"
+    },
+    "sub_problem_options": {
+      "type": "object"
+    },
+    "sub_problem_constraints": {
+      "type": "array"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "id": "#AUGMENTED_LAGRANGIAN_ORDER_0"
+}

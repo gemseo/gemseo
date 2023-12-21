@@ -13,15 +13,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the class IODataset."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
 from numpy import arange
 from numpy import concatenate
 from numpy.testing import assert_equal
 from pandas.testing import assert_frame_equal
+
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
 
 
 @pytest.fixture(scope="module")

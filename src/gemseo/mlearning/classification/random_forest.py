@@ -28,20 +28,26 @@ The classifier relies on the RandomForestClassifier class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
 from numpy import ndarray
 from numpy import newaxis
 from numpy import stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
-from gemseo.datasets.io_dataset import IODataset
+from gemseo import SEED
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
-from gemseo.mlearning.core.ml_algo import TransformerType
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class RandomForestClassifier(MLClassificationAlgo):
@@ -57,21 +63,27 @@ class RandomForestClassifier(MLClassificationAlgo):
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         n_estimators: int = 100,
+        random_state: int | None = SEED,
         **parameters: int | float | bool | str | None,
     ) -> None:
         """
         Args:
             n_estimators: The number of trees in the forest.
-        """
+            random_state: The random state passed to the random number generator.
+                Use an integer for reproducible results.
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
             n_estimators=n_estimators,
+            random_state=random_state,
             **parameters,
         )
-        self.algo = SKLRandForest(n_estimators=n_estimators, **parameters)
+        self.algo = SKLRandForest(
+            n_estimators=n_estimators, random_state=random_state, **parameters
+        )
 
     def _fit(
         self,
@@ -86,18 +98,14 @@ class RandomForestClassifier(MLClassificationAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        output_data = self.algo.predict(input_data).astype(int)
-        if len(output_data.shape) == 1:
-            output_data = output_data[:, newaxis]
-        return output_data
+        return self.algo.predict(input_data).astype(int).reshape((len(input_data), -1))
 
     def _predict_proba_soft(
         self,
         input_data: ndarray,
     ) -> ndarray:
         probas = self.algo.predict_proba(input_data)
-        if len(probas[0].shape) == 1:
-            probas = probas[..., newaxis]
-        else:
-            probas = stack(probas, axis=-1)
-        return probas
+        if probas[0].ndim == 1:
+            return probas[..., newaxis]
+
+        return stack(probas, axis=-1)

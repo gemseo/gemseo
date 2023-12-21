@@ -22,15 +22,19 @@
 The :class:`.Pipeline` class chains a sequence of tranformers, and provides global
 fit(), transform(), fit_transform() and inverse_transform() methods.
 """
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import eye
 from numpy import ndarray
 
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class Pipeline(Transformer):
@@ -41,7 +45,7 @@ class Pipeline(Transformer):
 
     def __init__(
         self,
-        name: str = "Pipeline",
+        name: str = "",
         transformers: Sequence[Transformer] | None = None,
     ) -> None:
         """
@@ -52,7 +56,7 @@ class Pipeline(Transformer):
                 the list, i.e. the first transformer is applied first. If
                 transformers is an empty list or None, then the pipeline
                 transformer behaves like an identity transformer.
-        """
+        """  # noqa: D205 D212
         super().__init__(name)
         self.transformers = transformers or []
 
@@ -62,8 +66,7 @@ class Pipeline(Transformer):
         Returns:
             A deepcopy of the current instance.
         """
-        transformers = [trans.duplicate() for trans in self.transformers]
-        return self.__class__(self.name, transformers)
+        return self.__class__(self.name, [t.duplicate() for t in self.transformers])
 
     def _fit(
         self,
@@ -78,7 +81,7 @@ class Pipeline(Transformer):
             data: The data to be fitted.
         """
         for transformer in self.transformers:
-            data = transformer.fit_transform(data, *args)
+            transformer.fit_transform(data, *args)
 
     def transform(
         self,

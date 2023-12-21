@@ -20,13 +20,24 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+from numpy import array
+from numpy import cos
+from numpy import linspace
+from numpy import newaxis
+from numpy import pi as np_pi
+from numpy import sin
+
 from gemseo import AlgorithmFeatures
+from gemseo import DatasetClassName
 from gemseo import compute_doe
 from gemseo import configure
+from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo import create_cache
 from gemseo import create_dataset
@@ -37,7 +48,6 @@ from gemseo import create_parameter_space
 from gemseo import create_scalable
 from gemseo import create_scenario
 from gemseo import create_surrogate
-from gemseo import DatasetClassName
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import generate_coupling_graph
@@ -77,7 +87,6 @@ from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
 from gemseo.datasets.io_dataset import IODataset
@@ -86,14 +95,13 @@ from gemseo.mda.mda import MDA
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiMission
-from numpy import array
-from numpy import cos
-from numpy import linspace
-from numpy import newaxis
-from numpy import pi as np_pi
-from numpy import sin
+from gemseo.utils.logging_tools import LOGGING_SETTINGS
+from gemseo.utils.logging_tools import MultiLineStreamHandler
+
+if TYPE_CHECKING:
+    from gemseo.core.mdo_scenario import MDOScenario
 
 
 class Observer:
@@ -111,7 +119,7 @@ def scenario() -> MDOScenario:
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
     )
     scenario.execute({"algo": "SLSQP", "max_iter": 10})
     return scenario
@@ -123,14 +131,12 @@ def test_generate_n2_plot(tmp_wd):
     Args:
         tmp_wd: Fixture to move into a temporary directory.
     """
-    disciplines = create_discipline(
-        [
-            "SobieskiMission",
-            "SobieskiAerodynamics",
-            "SobieskiStructure",
-            "SobieskiPropulsion",
-        ]
-    )
+    disciplines = create_discipline([
+        "SobieskiMission",
+        "SobieskiAerodynamics",
+        "SobieskiStructure",
+        "SobieskiPropulsion",
+    ])
     file_path = "n2.png"
     generate_n2_plot(disciplines, file_path, fig_size=(5, 5))
     assert Path(file_path).exists()
@@ -140,14 +146,12 @@ def test_generate_n2_plot(tmp_wd):
 def test_generate_coupling_graph(tmp_wd, full):
     """Test the coupling graph with the Sobieski problem."""
     # TODO: reuse data and checks from test_dependency_graph
-    disciplines = create_discipline(
-        [
-            "SobieskiMission",
-            "SobieskiAerodynamics",
-            "SobieskiStructure",
-            "SobieskiPropulsion",
-        ]
-    )
+    disciplines = create_discipline([
+        "SobieskiMission",
+        "SobieskiAerodynamics",
+        "SobieskiStructure",
+        "SobieskiPropulsion",
+    ])
     file_path = "coupl.pdf"
     assert isinstance(generate_coupling_graph(disciplines, file_path, full), GraphView)
     assert Path(file_path).exists()
@@ -184,7 +188,7 @@ def test_create_scenario_and_monitor():
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
     )
 
     with pytest.raises(
@@ -194,7 +198,7 @@ def test_create_scenario_and_monitor():
             create_discipline("SobieskiMission"),
             "DisciplinaryOpt",
             "y_4",
-            SobieskiProblem().design_space,
+            SobieskiDesignSpace(),
             scenario_type="unknown",
         )
 
@@ -205,7 +209,7 @@ def test_monitor_scenario():
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
     )
 
     observer = Observer()
@@ -232,10 +236,7 @@ def test_execute_post(scenario, obj_type, tmp_wd):
     else:
         file_name = "results.hdf5"
         scenario.save_optimization_history(file_name)
-        if obj_type == str:
-            obj = file_name
-        else:
-            obj = Path(file_name)
+        obj = file_name if obj_type is str else Path(file_name)
 
     post = execute_post(obj, "OptHistoryView", save=False, show=False)
     assert isinstance(post, OptHistoryView)
@@ -253,13 +254,13 @@ def test_create_doe_scenario():
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().design_space,
+        SobieskiDesignSpace(),
         scenario_type="DOE",
     )
 
 
 @pytest.mark.parametrize(
-    "formulation_name, opts, expected",
+    ("formulation_name", "opts", "expected"),
     [
         (
             "MDF",
@@ -293,7 +294,7 @@ def test_get_formulation_sub_options_schema(formulation_name, opts, expected):
 
 
 @pytest.mark.parametrize(
-    "formulation_name, opts",
+    ("formulation_name", "opts"),
     [
         (
             "MDF",
@@ -333,7 +334,7 @@ def test_get_formulation_sub_options_schema_print(capfd, formulation_name, opts)
 def test_get_scenario_inputs_schema():
     """Check that the scenario inputs schema is retrieved correctly."""
     aero = create_discipline(["SobieskiAerodynamics"])
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     sc_aero = create_scenario(
         aero, "DisciplinaryOpt", "y_24", design_space.filter("x_2")
     )
@@ -458,7 +459,7 @@ def test_create_surrogate():
     disc = SobieskiMission()
     input_names = ["y_24", "y_34"]
     disc.set_cache_policy(disc.CacheType.MEMORY_FULL)
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     design_space.filter(input_names)
     doe = DOEScenario([disc], "DisciplinaryOpt", "y_4", design_space)
     doe.execute({"algo": "fullfact", "n_samples": 10})
@@ -493,14 +494,12 @@ def test_create_scalable():
 
 def test_create_mda():
     """Test the creation of an MDA from the Sobieski disciplines."""
-    disciplines = create_discipline(
-        [
-            "SobieskiAerodynamics",
-            "SobieskiPropulsion",
-            "SobieskiStructure",
-            "SobieskiMission",
-        ]
-    )
+    disciplines = create_discipline([
+        "SobieskiAerodynamics",
+        "SobieskiPropulsion",
+        "SobieskiStructure",
+        "SobieskiMission",
+    ])
     mda = create_mda("MDAGaussSeidel", disciplines)
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
@@ -654,7 +653,7 @@ def test_get_available_caches():
 
 
 @pytest.mark.parametrize(
-    "dataset_name,expected_n_samples",
+    ("dataset_name", "expected_n_samples"),
     [("BurgersDataset", 30), ("IrisDataset", 150), ("RosenbrockDataset", 100)],
 )
 def test_create_benchmark_dataset(tmp_wd, dataset_name, expected_n_samples):
@@ -707,10 +706,10 @@ def test_print_configuration(capfd):
     for module in gemseo_modules:
         header_patterns = (
             r"\+-+\+$\n"
-            r"\|\s+{}\s+\|$\n"
+            rf"\|\s+{module}\s+\|$\n"
             r"\+-+\+-+\+-+\+$\n"
             r"\|\s+Module\s+\|\s+Is available\?\s+\|\s+Purpose or error "
-            r"message\s+\|$\n".format(module)
+            r"message\s+\|$\n"
         )
 
         expected = re.compile(header_patterns, re.MULTILINE)
@@ -888,3 +887,55 @@ def test_create_dataset_without_name():
 def test_create_dataset_class_name():
     """Check create_dataset with class_name set from the enum DatasetClassName."""
     isinstance(create_dataset(class_name=DatasetClassName.IODataset), IODataset)
+
+
+def test_configure_logger():
+    """Check configure_logger() with default argument values."""
+    logger = configure_logger()
+    assert logger == logging.root
+    assert logger.level == logging.INFO
+
+
+def test_configure_logger_name():
+    """Check configure_logger() with custom name."""
+    logger = configure_logger(logger_name="foo")
+    assert logger.name == "foo"
+
+
+def test_configure_logger_level():
+    """Check configure_logger() with custom level."""
+    logger = configure_logger(level=logging.WARNING)
+    assert logger.level == logging.WARNING
+
+
+def test_configure_logger_format(caplog):
+    """Check configure_logger() with custom message and date formats."""
+    date_format = "foo"
+    message_format = "%(levelname)8s / %(asctime)s: %(message)s"
+    logger = configure_logger(
+        logger_name="bar", date_format=date_format, message_format=message_format
+    )
+    logger.info("baz")
+    assert LOGGING_SETTINGS.date_format == date_format
+    assert LOGGING_SETTINGS.message_format == message_format
+    assert re.match(r"INFO     bar:test_gemseo\.py:\d+\d+\d+ baz\n", caplog.text)
+
+
+def test_configure_logger_file(tmp_wd):
+    """Check configure_logger() with custom file."""
+    logger = configure_logger(filename="foo.txt")
+    stream_handler = logger.handlers[0]
+    assert isinstance(stream_handler, MultiLineStreamHandler)
+    assert len(logger.handlers) == 2
+    file_handler = logger.handlers[-1]
+    assert Path(file_handler.baseFilename) == tmp_wd / "foo.txt"
+    assert file_handler.mode == "a"
+    assert file_handler.delay
+    assert file_handler.encoding == "utf-8"
+    assert file_handler.formatter == stream_handler.formatter
+
+
+def test_configure_logger_file_mode(tmp_wd):
+    """Check configure_logger() with custom file and file mode."""
+    logger = configure_logger(filename="foo.txt", filemode="w")
+    assert logger.handlers[-1].mode == "w"

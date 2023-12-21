@@ -17,23 +17,21 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a uniform distribution from the SciPy library.
+"""The SciPy-based uniform distribution."""
 
-This class inherits from :class:`.SPDistribution`.
-"""
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 class SPUniformDistribution(SPDistribution):
-    """Create a uniform distribution.
+    """The SciPy-based uniform distribution.
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.uniform import (
-        ...     SPUniformDistribution
+        ...     SPUniformDistribution,
         ... )
-        >>> distribution = SPUniformDistribution('x', -1, 1)
+        >>> distribution = SPUniformDistribution("x", -1, 1)
         >>> print(distribution)
         uniform(lower=-1, upper=1)
     """
@@ -50,8 +48,10 @@ class SPUniformDistribution(SPDistribution):
             minimum: The minimum of the uniform random variable.
             maximum: The maximum of the uniform random variable.
         """  # noqa: D205,D212,D415
-        parameters = {"loc": minimum, "scale": maximum - minimum}
-        standard_parameters = {self._LOWER: minimum, self._UPPER: maximum}
         super().__init__(
-            variable, "uniform", parameters, dimension, standard_parameters
+            variable,
+            "uniform",
+            {"loc": minimum, "scale": maximum - minimum},
+            dimension,
+            {self._LOWER: minimum, self._UPPER: maximum},
         )

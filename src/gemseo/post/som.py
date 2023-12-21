@@ -17,11 +17,13 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Self Organizing Maps to display high dimensional design spaces."""
+
 from __future__ import annotations
 
 import logging
 from math import floor
 from math import sqrt
+from typing import TYPE_CHECKING
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -38,13 +40,14 @@ from numpy import min as np_min
 from numpy import ndarray
 from numpy import nonzero
 from numpy import unique
-from numpy import where
 from numpy import zeros
 
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.third_party import sompy
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -111,8 +114,9 @@ class SOM(OptPostProcessor):
             annotate: If ``True``, add label of neuron value to SOM plot.
         """  # noqa: D205, D212, D415
         criteria = [
-            self.opt_problem.get_objective_name()
-        ] + self.opt_problem.get_constraint_names()
+            self.opt_problem.get_objective_name(),
+            *self.opt_problem.get_constraint_names(),
+        ]
         all_data = self.database.get_function_names()
         # Ensure that the data is available in the database
         for criterion in criteria:
@@ -123,9 +127,12 @@ class SOM(OptPostProcessor):
         subplot_number = 0
         self.__compute(n_x, n_y)
         for criterion in criteria:
-            f_hist, _ = self.database.get_history(
-                ["SOM_i", "SOM_j", "SOM_indx", criterion]
-            )
+            f_hist, _ = self.database.get_history([
+                "SOM_i",
+                "SOM_j",
+                "SOM_indx",
+                criterion,
+            ])
             if isinstance(f_hist[0][3], ndarray):
                 dim_val = f_hist[0][3].size
                 for _ in range(dim_val):
@@ -141,14 +148,17 @@ class SOM(OptPostProcessor):
 
         index = 0
         for criterion in criteria:
-            f_hist, _ = self.database.get_history(
-                ["SOM_i", "SOM_j", "SOM_indx", criterion]
-            )
+            f_hist, _ = self.database.get_history([
+                "SOM_i",
+                "SOM_j",
+                "SOM_indx",
+                criterion,
+            ])
             if isinstance(f_hist[0][3], ndarray):
                 for k in range(f_hist[0][3].size):
                     self.__plot_som_from_scalar_data(
                         [f_h[0:3] + [f_h[3][k]] for f_h in f_hist],
-                        f"{criterion}_{k}",
+                        f"{criterion}[{k}]",
                         index + 1,
                         grid_size_x=grid_size_x,
                         grid_size_y=grid_size_y,
@@ -191,8 +201,8 @@ class SOM(OptPostProcessor):
         f_hist = array(f_hist_scalar).T.real
         unique_ind = unique(f_hist[2, :])
         average = {}
-        for _, som_id in enumerate(unique_ind):
-            where_somid = where(f_hist[2, :] == som_id)[0]
+        for som_id in unique_ind:
+            where_somid = (f_hist[2, :] == som_id).nonzero()[0]
             ranges_of_uniques = f_hist[3, where_somid]
             average[som_id] = mean(ranges_of_uniques)
 
@@ -296,7 +306,7 @@ class SOM(OptPostProcessor):
         max_subarr_size = floor(sqrt(max_occ)) + 1
         dxdy_max = max_ofset / (max_subarr_size - 1)
         for grp in unique_indx:
-            inds_of_grp = where(coord_indx == grp)[0]
+            inds_of_grp = (coord_indx == grp).nonzero()[0]
             subarr_size = sqrt(len(inds_of_grp))
             if floor(subarr_size) < subarr_size:
                 subarr_size = floor(subarr_size) + 1

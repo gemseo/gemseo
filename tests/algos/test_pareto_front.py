@@ -21,14 +21,14 @@ from __future__ import annotations
 from os.path import exists
 
 import pytest
-from gemseo.algos.pareto_front import compute_pareto_optimal_points
-from gemseo.algos.pareto_front import generate_pareto_plots
 from matplotlib import pyplot as plt
 from numpy import array
 from numpy import ndarray
-from numpy.random import rand
-from numpy.random import seed
+from numpy.random import default_rng
 from numpy.testing import assert_array_equal
+
+from gemseo.algos.pareto_front import compute_pareto_optimal_points
+from gemseo.algos.pareto_front import generate_pareto_plots
 
 
 @pytest.fixture()
@@ -107,7 +107,7 @@ def test_raise_error_if_dimension_mismatch(tmp_wd, objective_points):
         generate_pareto_plots(objective_points, ["0", "1", "2"])
 
 
-@pytest.mark.parametrize("show_non_feasible", (True, False))
+@pytest.mark.parametrize("show_non_feasible", [True, False])
 def test_pareto_front_w_non_feasible(
     tmp_wd, objective_points, non_feasible_points, show_non_feasible
 ):
@@ -132,9 +132,9 @@ def test_pareto_front_w_non_feasible(
 
 def test_5d(tmp_wd):
     """Generate a Pareto Front using random points."""
-    seed(1)
+    rng = default_rng(1)
     n_obj = 5
-    objs = rand(100, n_obj)
+    objs = rng.random((100, n_obj))
     inds = compute_pareto_optimal_points(objs)
     assert sum(inds) > 0
     names = [str(i) for i in range(n_obj)]

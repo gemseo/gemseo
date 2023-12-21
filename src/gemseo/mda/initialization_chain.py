@@ -17,14 +17,23 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """MDA input data initialization."""
+
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 def order_disciplines_from_default_inputs(
-    disciplines: list[MDODiscipline], raise_error: bool = True
+    disciplines: list[MDODiscipline],
+    raise_error: bool = True,
+    available_data_names: Iterable[str] = (),
 ) -> list[MDODiscipline] | list[str]:
     """Order disciplines such that all their input values are defined.
 
@@ -41,6 +50,8 @@ def order_disciplines_from_default_inputs(
     Args:
         disciplines: The disciplines to compute the initialization of.
         raise_error: Whether to raise an exception when the algorithm fails.
+        available_data_names: The data names that are assumed to be available
+            at runtime, in addition to the default_inputs.
 
     Returns:
         The ordered disciplines when the algorithm succeeds, or, if raise_error=False,
@@ -48,15 +59,15 @@ def order_disciplines_from_default_inputs(
     """
     ordered_discs = []
     remaining_discs = disciplines.copy()
-    available_data = []
+    available_data_names = list(available_data_names)
     while remaining_discs:
         removed_discs = []
         for disc in remaining_discs:
             required_inputs = set(disc.get_input_data_names())
             if not required_inputs.difference(disc.default_inputs).difference(
-                available_data
+                available_data_names
             ):
-                available_data.extend(disc.get_output_data_names())
+                available_data_names.extend(disc.get_output_data_names())
                 removed_discs.append(disc)
 
         if not removed_discs:
@@ -66,15 +77,18 @@ def order_disciplines_from_default_inputs(
                     in_name
                     for disc in remaining_discs
                     for in_name in disc.get_input_data_names()
-                }.difference(available_data)
+                }.difference(available_data_names)
             )
+
             if raise_error:
                 raise ValueError(
-                    f"Cannot compute the inputs {', '.join(missing_inputs)}, "
-                    f"for the following disciplines {', '.join(disc_names)}."
+                    "Cannot compute the inputs "
+                    f"{pretty_str(missing_inputs, sort=False)}, "
+                    "for the following disciplines "
+                    f"{pretty_str(disc_names, sort=False)}."
                 )
-            else:
-                return missing_inputs
+
+            return missing_inputs
 
         ordered_discs.extend(removed_discs)
         for disc in removed_discs:
@@ -102,6 +116,14 @@ class MDOInitializationChain(MDOChain):
         disciplines: list[MDODiscipline],
         name: str | None = None,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+        available_data_names: Iterable[str] = (),
     ) -> None:
-        disc_ordered = order_disciplines_from_default_inputs(disciplines)
+        """
+        Args:
+            available_data_names: The data names that are assumed to be available
+                at runtime, in addition to the default_inputs.
+        """  # noqa:D205 D212 D415
+        disc_ordered = order_disciplines_from_default_inputs(
+            disciplines, available_data_names=available_data_names
+        )
         super().__init__(disciplines=disc_ordered, name=name, grammar_type=grammar_type)

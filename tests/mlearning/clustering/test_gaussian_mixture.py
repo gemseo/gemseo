@@ -18,33 +18,32 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test Gaussian Mixture clustering model."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning import import_clustering_model
-from gemseo.mlearning.clustering.gaussian_mixture import GaussianMixture
-from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from numpy import integer
 from numpy import ndarray
 from numpy import vstack
 from numpy.linalg import eigvals
-from numpy.random import multivariate_normal
-from numpy.random import seed
+from numpy.random import default_rng
+
+from gemseo.datasets.dataset import Dataset
+from gemseo.mlearning import import_clustering_model
+from gemseo.mlearning.clustering.gaussian_mixture import GaussianMixture
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations
 LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])
 
 # Cluster covariance matrices
-SCALES = array(
-    [
-        [[0.10, 0.00], [0.00, 0.05]],
-        [[0.05, 0.01], [0.01, 0.10]],
-        [[0.10, 0.05], [0.05, 0.10]],
-    ]
-)
+SCALES = array([
+    [[0.10, 0.00], [0.00, 0.05]],
+    [[0.05, 0.01], [0.01, 0.10]],
+    [[0.10, 0.05], [0.05, 0.10]],
+])
 
 # Number of samples in each cluster
 N_SAMPLES = [50, 50, 50]
@@ -56,7 +55,7 @@ VALUE = {"x_1": [0], "x_2": [0]}
 VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 
-@pytest.fixture
+@pytest.fixture()
 def samples() -> tuple[ndarray, ndarray, list[int]]:
     """The description of the samples used to generate the learning dataset.
 
@@ -70,14 +69,14 @@ def samples() -> tuple[ndarray, ndarray, list[int]]:
     return LOCS, SCALES, N_SAMPLES
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset(samples) -> Dataset:
     """The dataset used to train the GaussianMixture.
 
     It consists of three clusters from normal distributions.
     """
     # Fix seed for consistency
-    seed(12345)
+    rng = default_rng(12345)
 
     # Unpack means, covariance matrices and number of samples
     locs, scales, n_samples = samples
@@ -86,11 +85,8 @@ def dataset(samples) -> Dataset:
     n_clusters = len(locs)
     data = array([[]])
     for i in range(n_clusters):
-        temp = multivariate_normal(locs[i], scales[i], n_samples[i])
-        if i == 0:
-            data = temp
-        else:
-            data = vstack((data, temp))
+        temp = rng.multivariate_normal(locs[i], scales[i], n_samples[i])
+        data = temp if i == 0 else vstack((data, temp))
 
     variables = ["x_1", "x_2"]
 
@@ -99,7 +95,7 @@ def dataset(samples) -> Dataset:
     return sample
 
 
-@pytest.fixture
+@pytest.fixture()
 def model(dataset) -> GaussianMixture:
     """A trained GaussianMixture."""
     n_components = 3
@@ -108,7 +104,7 @@ def model(dataset) -> GaussianMixture:
     return gaussian_mixture
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_transform(dataset) -> GaussianMixture:
     """A trained GaussianMixture with parameters scaling."""
     n_components = 3

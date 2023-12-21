@@ -47,17 +47,19 @@ a text file using the :meth:`.Dataset.from_array` and
 Then, the surrogate discipline can be used as any other discipline in a
 :class:`.MDOScenario`, a :class:`.DOEScenario`, or an :class:`.MDA`.
 """
+
 from __future__ import annotations
+
+from numpy import array
+from numpy import hstack
+from numpy import vstack
 
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import create_surrogate
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from numpy import array
-from numpy import hstack
-from numpy import vstack
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -78,12 +80,10 @@ configure_logger()
 variables = ["x", "y"]
 sizes = {"x": 1, "y": 1}
 groups = {"x": "inputs", "y": "outputs"}
-data = vstack(
-    (
-        hstack((array([1.0]), array([1.0]))),
-        hstack((array([2.0]), array([2.0]))),
-    )
-)
+data = vstack((
+    hstack((array([1.0]), array([1.0]))),
+    hstack((array([2.0]), array([2.0]))),
+))
 synthetic_dataset = IODataset.from_array(data, variables, sizes, groups)
 
 # %%
@@ -118,7 +118,7 @@ discipline = create_discipline("SobieskiMission")
 # "x_shared", "y_24", "y_34"
 # as inputs of the DOE:
 #
-design_space = SobieskiProblem().design_space
+design_space = SobieskiDesignSpace()
 design_space = design_space.filter(["x_shared", "y_24", "y_34"])
 
 # %%

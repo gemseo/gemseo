@@ -18,42 +18,48 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base DOE library."""
+
 from __future__ import annotations
 
 import logging
-import traceback
+from abc import abstractmethod
 from dataclasses import dataclass
 from multiprocessing import current_process
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
+from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import List
-from typing import MutableMapping
-from typing import Tuple
 from typing import Union
 
 from numpy import array
 from numpy import dtype
+from numpy import hstack
 from numpy import int32
 from numpy import ndarray
 from numpy import savetxt
+from numpy import where
 
-from gemseo.algos.design_space import DesignSpace
+from gemseo import SEED
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+    from pathlib import Path
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.opt_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)
 
-DOELibraryOptionType = Union[str, float, int, bool, List[str], ndarray]
-DOELibraryOutputType = Tuple[Dict[str, Union[float, ndarray]], Dict[str, ndarray]]
+DOELibraryOptionType = Union[str, float, int, bool, list[str], ndarray]
+DOELibraryOutputType = tuple[dict[str, Union[float, ndarray]], dict[str, ndarray]]
 
 
 @dataclass
@@ -106,12 +112,14 @@ class DOELibrary(DriverLibrary):
         "integer": int32,
     }
 
-    def __init__(self) -> None:
-        """Constructor Abstract class."""
+    _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
+    """Whether the algorithms use a unit hypercube to generate the input samples."""
+
+    def __init__(self) -> None:  # noqa: D107
         super().__init__()
         self.unit_samples = array([])
         self.samples = array([])
-        self.seed = 0
+        self.seed = SEED
         self.eval_jac = False
 
     def _pre_run(
@@ -120,13 +128,14 @@ class DOELibrary(DriverLibrary):
         algo_name: str,
         **options: DOELibraryOptionType,
     ) -> None:
+        self.__check_unnormalization_capability(self.problem.design_space)
         super()._pre_run(problem, algo_name, **options)
         problem.stop_if_nan = False
         options[self.DIMENSION] = self.problem.dimension
         options[self._VARIABLE_NAMES] = self.problem.design_space.variable_names
         options[self._VARIABLE_SIZES] = self.problem.design_space.variable_sizes
 
-        self.unit_samples = self._generate_samples(**options)
+        self.unit_samples = self.__generate_samples(**options)
 
         LOGGER.debug(
             (
@@ -176,26 +185,49 @@ class DOELibrary(DriverLibrary):
 
         return samples
 
+    def __generate_samples(self, **options: Any) -> ndarray:
+        """Generate the samples of the input variables.
+
+        Args:
+            **options: The options of the DOE algorithm.
+        """
+        self.seed += 1
+        return self._generate_samples(**options)
+
+    def _get_seed(self, seed: int | None) -> int:
+        """Return a seed for the random number generator.
+
+        Args:
+            seed: A seed if any.
+
+        Returns:
+            The seed for the random number generator.
+        """
+        return self.seed if seed is None else seed
+
+    @abstractmethod
     def _generate_samples(self, **options: Any) -> ndarray:
         """Generate the samples of the input variables.
 
         Args:
             **options: The options of the DOE algorithm.
         """
-        raise NotImplementedError()
 
-    def __call__(self, n_samples: int, dimension: int, **options: Any) -> ndarray:
+    def __call__(
+        self, n_samples: int | None, dimension: int, **options: Any
+    ) -> ndarray:
         """Generate a design of experiments in the unit hypercube.
 
         Args:
             n_samples: The number of samples.
+                If ``None``, the number of samples is deduced from the ``options``.
             dimension: The dimension of the input space.
             **options: The options of the DOE algorithm.
 
         Returns:
             A design of experiments in the unit hypercube.
         """
-        return self._generate_samples(
+        return self.__generate_samples(
             **self.__get_algorithm_options(options, n_samples, dimension)
         )
 
@@ -205,99 +237,6 @@ class DOELibrary(DriverLibrary):
         wait_time_between_samples = options.get(self.WAIT_TIME_BETWEEN_SAMPLES, 0)
         self.evaluate_samples(eval_jac, n_processes, wait_time_between_samples)
         return self.get_optimum_from_database()
-
-    def _generate_fullfact(
-        self,
-        dimension: int,
-        n_samples: int | None = None,
-        levels: int | Iterable[int] | None = None,
-    ) -> ndarray:
-        """Generate a full-factorial DOE.
-
-        Generate a full-factorial DOE based on either the number of samples,
-        or the number of levels per input direction.
-        When the number of samples is prescribed,
-        the levels are deduced and are uniformly distributed among all the inputs.
-
-        Args:
-            dimension: The dimension of the parameter space.
-            n_samples: The maximum number of samples from which the number of levels
-                per input is deduced.
-                The number of samples which is finally applied
-                is the product of the numbers of levels.
-                If ``None``, the algorithm uses the number of levels per input dimension
-                provided by the argument ``levels``.
-            levels: The number of levels per input direction.
-                If ``levels`` is given as a scalar value, the same number of
-                levels is used for all the inputs.
-                If ``None``, the number of samples provided in argument ``n_samples``
-                is used in order to deduce the levels.
-
-        Returns:
-            The values of the DOE.
-
-        Raises:
-            ValueError:
-                * If neither ``n_samples`` nor ``levels`` is provided.
-                * If both ``n_samples`` and ``levels`` are provided.
-        """
-        if not levels and not n_samples:
-            raise ValueError(
-                "Either 'n_samples' or 'levels' is required as an input "
-                "parameter for the full-factorial DOE."
-            )
-        if levels and n_samples:
-            raise ValueError(
-                "Only one input parameter among 'n_samples' and 'levels' "
-                "must be given for the full-factorial DOE."
-            )
-
-        if n_samples is not None:
-            levels = self._compute_fullfact_levels(n_samples, dimension)
-
-        if isinstance(levels, int):
-            levels = [levels] * dimension
-
-        return self._generate_fullfact_from_levels(levels)
-
-    def _generate_fullfact_from_levels(self, levels) -> ndarray:  # Iterable[int]
-        """Generate the full-factorial DOE from levels per input direction.
-
-        Args:
-            levels: The number of levels per input direction.
-
-        Returns:
-            The values of the DOE.
-        """
-        raise NotImplementedError()
-
-    @staticmethod
-    def _compute_fullfact_levels(n_samples: int, dimension: int) -> list[int]:
-        """Compute the number of levels per input dimension for a full factorial design.
-
-        Args:
-            n_samples: The number of samples.
-            dimension: The dimension of the input space.
-
-        Returns:
-            The number of levels per input dimension.
-        """
-        n_samples_dir = int(n_samples ** (1.0 / dimension))
-        final_n_samples = n_samples_dir**dimension
-        if final_n_samples != n_samples:
-            LOGGER.warning(
-                (
-                    "A full-factorial DOE of %s samples in dimension %s does not exist;"
-                    " use %s samples instead, "
-                    "i.e. the largest %s-th integer power less than %s."
-                ),
-                n_samples,
-                dimension,
-                final_n_samples,
-                dimension,
-                n_samples,
-            )
-        return [n_samples_dir] * dimension
 
     def export_samples(self, doe_output_file: Path | str) -> None:
         """Export the samples generated by DOE library to a CSV file.
@@ -391,10 +330,11 @@ class DOELibrary(DriverLibrary):
             # with the serial exec, so we clean the DB
             database.remove_empty_entries()
 
-        else:  # Sequential execution
+        else:
+            # Sequential execution
             if wait_time_between_samples != 0:
                 LOGGER.warning(
-                    "Wait time between samples option is ignored" " in sequential run."
+                    "Wait time between samples option is ignored in sequential run."
                 )
             for sample in self.samples:
                 try:
@@ -403,34 +343,32 @@ class DOELibrary(DriverLibrary):
                         eval_jac=self.eval_jac,
                         normalize=False,
                     )
-                except ValueError:
-                    LOGGER.error(
+                except ValueError:  # noqa: PERF203
+                    LOGGER.exception(
                         "Problem with evaluation of sample :"
                         "%s result is not taken into account "
                         "in DOE.",
-                        str(sample),
+                        sample,
                     )
-                    LOGGER.error(traceback.format_exc())
 
-    @staticmethod
-    def _rescale_samples(samples):
-        """When the samples are out of the [0, 1] bounds, rescales them.
+    @classmethod
+    def __check_unnormalization_capability(cls, design_space) -> None:
+        """Check if a point of the unit hypercube can be unnormalized.
 
         Args:
-            samples: The samples to rescale.
+            design_space: The design space to unnormalize the point.
 
-        Returns:
-            The samples scaled in the interval [0, 1].
+        Raises:
+            ValueError: When some components of the design space are unbounded.
         """
-        if (not (samples >= 0.0).all()) or (not (samples <= 1.0).all()):
-            max_s = samples.max()
-            min_s = samples.min()
-            if abs(max_s - min_s) > 1e-14:
-                samples_n = (samples - min_s) / (max_s - min_s)
-                assert samples_n.shape == samples.shape
-                return samples_n
-            return samples
-        return samples
+        if not cls._USE_UNIT_HYPERCUBE or isinstance(design_space, ParameterSpace):
+            return
+
+        components = set(where(hstack(list(design_space.normalize.values())) == 0)[0])
+        if components:
+            raise ValueError(
+                f"The components {components} of the design space are unbounded."
+            )
 
     def compute_doe(
         self,
@@ -452,10 +390,13 @@ class DOELibrary(DriverLibrary):
             The design of experiments
             whose rows are the samples and columns the variables.
         """
+        if not unit_sampling:
+            self.__check_unnormalization_capability(variables_space)
+
         options = self.__get_algorithm_options(options, size, variables_space.dimension)
         options[self._VARIABLE_NAMES] = variables_space.variable_names
         options[self._VARIABLE_SIZES] = variables_space.variable_sizes
-        doe = self._generate_samples(**options)
+        doe = self.__generate_samples(**options)
         if unit_sampling:
             return doe
 

@@ -19,10 +19,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from numpy import pi
+
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
-from numpy import pi
 
 
 def test_constructor():

@@ -18,26 +18,32 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A set of functions to convert data structures."""
+
 from __future__ import annotations
 
 import collections
 from copy import deepcopy
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Generator
-from typing import Iterable
-from typing import Mapping
 
 from numpy import array
 from numpy import concatenate
 from numpy import ndarray
 
-from gemseo.core.discipline_data import Data
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from numpy.typing import ArrayLike
+
+    from gemseo.core.discipline_data import Data
 
 STRING_SEPARATOR = "#&#"
 
 
 def concatenate_dict_of_arrays_to_array(
-    dict_of_arrays: Mapping[str, ndarray],
+    dict_of_arrays: Mapping[str, ArrayLike],
     names: Iterable[str],
 ) -> ndarray:
     """Concatenate some values of a dictionary of NumPy arrays.
@@ -47,7 +53,8 @@ def concatenate_dict_of_arrays_to_array(
 
     Examples:
         >>> result = concatenate_dict_of_arrays_to_array(
-        ...     {'x': array([1.]), 'y': array([2.]), 'z': array([3., 4.])}, ['x', 'z']
+        ...     {"x": array([1.0]), "y": array([2.0]), "z": array([3.0, 4.0])},
+        ...     ["x", "z"],
         ... )
         >>> print(result)
         array([1., 3., 4.])
@@ -62,9 +69,10 @@ def concatenate_dict_of_arrays_to_array(
     if not names:
         return array([])
 
-    return concatenate([dict_of_arrays[key] for key in names], -1)
+    return concatenate([dict_of_arrays[key] for key in names], axis=-1)
 
 
+# TODO: API: remove?
 dict_to_array = concatenate_dict_of_arrays_to_array
 
 
@@ -78,7 +86,7 @@ def split_array_to_dict_of_arrays(
 
     Examples:
         >>> result_1 = split_array_to_dict_of_arrays(
-        ...     array([1., 2., 3.]), {"x": 1, "y": 2}, ["x", "y"]
+        ...     array([1.0, 2.0, 3.0]), {"x": 1, "y": 2}, ["x", "y"]
         ... )
         >>> print(result_1)
         {'x': array([1.]), 'y': array([2., 3.])}
@@ -86,7 +94,7 @@ def split_array_to_dict_of_arrays(
         ...     array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]),
         ...     {"y1": 1, "y2": 2, "x2": 2, "x1": 1},
         ...     ["y1", "y2"],
-        ...     ["x1", "x2"]
+        ...     ["x1", "x2"],
         ... )
         >>> print(result_2)
         {
@@ -144,9 +152,11 @@ def split_array_to_dict_of_arrays(
     return result
 
 
+# TODO: API: remove?
 array_to_dict = split_array_to_dict_of_arrays
 
 
+# TODO: API: no longer used, remove.
 def update_dict_of_arrays_from_array(
     dict_of_arrays: Mapping[str, ndarray],
     names: Iterable[str],
@@ -164,7 +174,7 @@ def update_dict_of_arrays_from_array(
         >>> result = update_dict_of_arrays_from_array(
         ...     {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])},
         ...     ["y", "z"],
-        ...     array([0.5, 1.0, 2.0])
+        ...     array([0.5, 1.0, 2.0]),
         ... )
         >>> print(result)
         {"x": array([0.0, 1.0]), "y": array([0.5]), "z": array([1, 2])}
@@ -192,10 +202,7 @@ def update_dict_of_arrays_from_array(
     if not isinstance(array, ndarray):
         raise TypeError(f"The array must be a NumPy one, got instead: {type(array)}.")
 
-    if copy:
-        data = deepcopy(dict_of_arrays)
-    else:
-        data = dict_of_arrays
+    data = deepcopy(dict_of_arrays) if copy else dict_of_arrays
 
     if not names:
         return data
@@ -207,35 +214,31 @@ def update_dict_of_arrays_from_array(
         for data_name in names:
             data_value = dict_of_arrays[data_name]
             i_max = i_min + data_value.size
-            new_data_value = array[range(i_min, i_max)]
+            new_data_value = array[slice(i_min, i_max)]
             is_complex = new_data_value.dtype.kind == "c"
             if not is_complex or (is_complex and cast_complex):
                 new_data_value = new_data_value.astype(data_value.dtype)
 
             data[data_name] = new_data_value
             i_min = i_max
-    except IndexError as err:
+    except IndexError:
         if full_size < i_max:
             raise ValueError(
-                "Inconsistent input array size of values array {} "
-                "with reference data shape {} "
-                "for data named: {}.".format(array, data_value.shape, data_name)
-            )
-        else:
-            raise err
+                f"Inconsistent input array size of values array {array} "
+                f"with reference data shape {data_value.shape} "
+                f"for data named: {data_name}."
+            ) from None
+
+        raise
 
     if i_max != full_size:
+        shapes = [(data_name, dict_of_arrays[data_name].shape) for data_name in names]
         raise ValueError(
             "Inconsistent data shapes: "
-            "could not use the whole data array of shape {} "
-            "(only reached max index = {}), "
-            "while updating data dictionary names {} "
-            "of shapes: {}.".format(
-                array.shape,
-                i_max,
-                names,
-                [(data_name, dict_of_arrays[data_name].shape) for data_name in names],
-            )
+            f"could not use the whole data array of shape {array.shape} "
+            f"(only reached max index = {i_max}), "
+            f"while updating data dictionary names {names} "
+            f"of shapes: {shapes}."
         )
 
     return data
@@ -252,10 +255,10 @@ def deepcopy_dict_of_arrays(
 
     Examples:
         >>> result = deepcopy_dict_of_arrays(
-        ...     {"x": array([1.]), "y": array([2.])}, ["x"]
+        ...     {"x": array([1.0]), "y": array([2.0])}, ["x"]
         ... )
         >>> print(result)
-        >>> {"x": array([1.])}
+        >>> {"x": array([1.0])}
 
     Args:
         dict_of_arrays: The dictionary of NumPy arrays to be copied.
@@ -435,10 +438,7 @@ def __flatten_nested_mapping(
         The new keys and values of the mapping.
     """
     for key, value in nested_mapping.items():
-        if parent_key:
-            new_key = separator.join([parent_key, key])
-        else:
-            new_key = key
+        new_key = separator.join([parent_key, key]) if parent_key else key
 
         if isinstance(value, collections.abc.Mapping):
             yield from flatten_nested_dict(value, new_key, separator=separator).items()

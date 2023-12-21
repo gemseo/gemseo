@@ -18,32 +18,41 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A function computing some outputs of a discipline from some of its inputs."""
+
 from __future__ import annotations
 
-import logging
 from numbers import Number
+from typing import TYPE_CHECKING
 from typing import Callable
-from typing import Mapping
-from typing import MutableMapping
-from typing import Sequence
 from typing import Union
 
+from numpy import array
 from numpy import empty
 from numpy import ndarray
 
-from gemseo import MDODiscipline
-from gemseo.core.mdofunctions.mdo_function import ArrayType
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
+from gemseo.utils.compatibility.scipy import sparse_classes
 
-LOGGER = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import MutableMapping
+    from collections.abc import Sequence
+
+    from gemseo import MDODiscipline
+    from gemseo.core.mdofunctions.mdo_function import ArrayType
 
 OperandType = Union[ndarray, Number]
 OperatorType = Callable[[OperandType, OperandType], OperandType]
 
 
-class MDODisciplineAdapter(MDOFunction):
+class MDODisciplineAdapter(LinearCandidateFunction):
     """An :class:`.MDOFunction` executing a discipline for some inputs and outputs."""
+
+    __linear_candidate: bool
+    """Whether the final MDOFunction could be linear."""
+
+    __input_dimension: int | None
+    """The input variable dimension, needed for linear candidates."""
 
     def __init__(
         self,
@@ -52,6 +61,7 @@ class MDODisciplineAdapter(MDOFunction):
         default_inputs: Mapping[str, ndarray] | None,
         discipline: MDODiscipline,
         names_to_sizes: MutableMapping[str, int] | None = None,
+        linear_candidate: bool = False,
     ) -> None:
         """
         Args:
@@ -64,20 +74,25 @@ class MDODisciplineAdapter(MDOFunction):
                 If ``None``, do not overload them.
             discipline: The discipline to be adapted.
             names_to_sizes: The sizes of the input variables.
-                If ``None``, guess them from the default inputs and local data
+                If ``None``, determine them from the default inputs and local data
                 of the discipline :class:`.MDODiscipline`.
+            linear_candidate: Whether the final MDOFunction could be linear.
         """  # noqa: D205, D212, D415
         self.__input_names = input_names
         self.__output_names = output_names
-        self.__default_inputs = default_inputs
-        self.__input_indices = None
-        self.__output_indices = None
-        self.__output_size = 0
+        self.__default_inputs = default_inputs if default_inputs is not None else {}
         self.__input_size = 0
-        self.__jacobian = None
+        self.__output_names_to_slices = {}
+        self.__jacobian = array(())
         self.__discipline = discipline
-        self.__names_to_indices = {}
-        self.__names_to_sizes = names_to_sizes or {}
+        self.__input_names_to_slices = {}
+        self.__input_names_to_sizes = (
+            names_to_sizes if names_to_sizes is not None else {}
+        )
+        self.__linear_candidate = linear_candidate
+        self.__input_dimension = self.__compute_input_dimension(
+            default_inputs, discipline, input_names
+        )
         super().__init__(
             self._func_to_wrap,
             jac=self._jac_to_wrap,
@@ -86,47 +101,96 @@ class MDODisciplineAdapter(MDOFunction):
             output_names=self.__output_names,
         )
 
-    def __compute_input_indices(self) -> None:
-        """Compute the indices of the input variables in the Jacobian array."""
-        start = 0
-        self.__input_size = 0
-        self.__input_indices = {}
-        for name in self.__input_names:
-            jac = self.__discipline.jac[self.__output_names[0]][name]
-            self.__input_size += jac.shape[1]
-            self.__input_indices[name] = slice(start, self.__input_size)
-            start = self.__input_size
+    @property
+    def linear_candidate(self) -> bool:  # noqa: D102
+        return self.__linear_candidate
 
-    def __compute_output_indices(self) -> None:
-        """Compute the indices of the input variables in the Jacobian array."""
+    @property
+    def input_dimension(self) -> int | None:  # noqa: D102
+        return self.__input_dimension
+
+    def __compute_input_dimension(
+        self,
+        default_inputs: Mapping[str, ndarray] | None,
+        discipline: MDODiscipline,
+        input_names: Sequence[str],
+    ) -> int | None:
+        """Compute the input dimension.
+
+        Args:
+            default_inputs: : The default input values
+                to overload the ones of the discipline
+                at each evaluation of the outputs with :meth:`._fun`
+                or their derivatives with :meth:`._jac`.
+                If ``None``, do not overload them.
+            discipline: The discipline to be adapted.
+            input_names: The names of the inputs.
+
+        Returns:
+            The input dimension.
+        """
+        if default_inputs and all(inpt in default_inputs for inpt in input_names):
+            return sum([
+                len(default_inputs[inpt])
+                if isinstance(default_inputs[inpt], ndarray)
+                else 1
+                for inpt in input_names
+            ])
+
+        if len(self.__input_names_to_sizes) > 0:
+            return sum(self.__input_names_to_sizes.values())
+
+        if all(inpt in discipline.default_inputs for inpt in input_names):
+            return sum([
+                len(discipline.default_inputs[inpt])
+                if isinstance(discipline.default_inputs[inpt], ndarray)
+                else 1
+                for inpt in input_names
+            ])
+
+        return None
+
+    def __create_output_names_to_slices(self) -> int:
+        """Compute the indices of the input variables in the Jacobian array.
+
+        Returns:
+            The size of the inputs.
+        """
+        self.__output_names_to_slices = output_names_to_slices = {}
         start = 0
-        self.__output_size = 0
-        self.__output_indices = {}
+        output_size = 0
+        jac_row_id = self.__input_names[0]
+        jac = self.__discipline.jac
         for name in self.__output_names:
-            jac = self.__discipline.jac[name][self.__input_names[0]]
-            self.__output_size += jac.shape[0]
-            self.__output_indices[name] = slice(start, self.__output_size)
-            start = self.__output_size
+            output_size += jac[name][jac_row_id].shape[0]
+            output_names_to_slices[name] = slice(start, output_size)
+            start = output_size
+        return output_size
 
-    def _func_to_wrap(self, x_vect: ArrayType) -> OperandType:
+    def _func_to_wrap(self, x_vect: ArrayType) -> ndarray | Number:
         """Compute an output vector from an input one.
 
         Args:
             x_vect: The input vector.
 
         Returns:
-            The output vector.
+            The output vector or a scalar if the vector has only one component.
         """
         self.__discipline.reset_statuses_for_run()
-        input_data = self.__compute_discipline_input_data(x_vect)
+        input_data = self.__create_discipline_input_data(x_vect)
         output_data = self.__discipline.execute(input_data)
-        output_data = concatenate_dict_of_arrays_to_array(
-            output_data, self.__output_names
+        output_array = (
+            self.__discipline.output_grammar.data_converter.convert_data_to_array(
+                self.__output_names,
+                output_data,
+            )
         )
-        if output_data.size == 1:  # Then the function is scalar
-            return output_data[0]
 
-        return output_data
+        if output_array.size == 1:
+            # The function is scalar.
+            return output_array[0]
+
+        return output_array
 
     def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the Jacobian value from an input vector.
@@ -137,68 +201,78 @@ class MDODisciplineAdapter(MDOFunction):
         Returns:
             The Jacobian value.
         """
-        self.__discipline.linearize(self.__compute_discipline_input_data(x_vect))
-        if self.__jacobian is None:
-            self.__compute_input_indices()
-            self.__compute_output_indices()
-            if self.__output_size == 1:
-                self.__jacobian = empty(self.__input_size)
-            else:
-                self.__jacobian = empty((self.__output_size, self.__input_size))
+        self.__discipline.linearize(self.__create_discipline_input_data(x_vect))
 
-        if self.__output_size == 1:
+        if len(self.__jacobian) == 0:
+            output_size = self.__create_output_names_to_slices()
+            if output_size == 1:
+                shape = self.__input_size
+            else:
+                shape = (output_size, self.__input_size)
+            self.__jacobian = empty(shape)
+
+        if self.__jacobian.ndim == 1 or self.__jacobian.shape[0] == 1:
             output_name = self.__output_names[0]
+            jac_output = self.__discipline.jac[output_name]
             for input_name in self.__input_names:
-                in_indices = self.__input_indices[input_name]
-                jac = self.__discipline.jac[output_name][input_name]
-                self.__jacobian[in_indices] = jac[0, :]
+                input_slice = self.__input_names_to_slices[input_name]
+                jac = jac_output[input_name]
+                # TODO: This precaution is meant to disappear when sparse 1-D array will
+                # be available. This is also mandatory since self.__jacobian is
+                # initialized as a dense array.
+                if isinstance(jac, sparse_classes):
+                    first_row = jac.getrow(0).todense().flatten()
+                else:
+                    first_row = jac[0, :]
+
+                self.__jacobian[input_slice] = first_row
         else:
             for output_name in self.__output_names:
-                out_indices = self.__output_indices[output_name]
+                output_slice = self.__output_names_to_slices[output_name]
+                jac_output = self.__discipline.jac[output_name]
                 for input_name in self.__input_names:
-                    in_indices = self.__input_indices[input_name]
-                    jac = self.__discipline.jac[output_name][input_name]
-                    self.__jacobian[out_indices, in_indices] = jac
+                    input_slice = self.__input_names_to_slices[input_name]
+                    jac = jac_output[input_name]
+                    # TODO: This is mandatory since self.__jacobian is initialized as a
+                    # dense array. Performance improvement could be obtained if one is
+                    # able to infer the type of jac.
+                    if isinstance(jac, sparse_classes):
+                        jac = jac.toarray()
+
+                    self.__jacobian[output_slice, input_slice] = jac
 
         return self.__jacobian
 
-    def __create_names_to_indices(self) -> None:
-        """Create the map from discipline input names to input vector indices.
+    def __create_input_names_to_slices(self) -> None:
+        """Create the map from discipline input names to input vector slices.
 
         Raises:
             ValueError: When a discipline input has no default value.
         """
-        if set(self.__names_to_sizes) != set(self.__input_names):
-            self.__names_to_sizes.update(
-                {
-                    name: value.size
-                    for name, value in self.__discipline.get_input_data().items()
-                    if name in self.__input_names
-                }
+        input_data = self.__discipline.get_input_data()
+        input_data.update(self.__discipline.default_inputs)
+
+        missing_names = (
+            set(self.__input_names)
+            .difference(self.__input_names_to_sizes.keys())
+            .difference(input_data.keys())
+        )
+
+        if missing_names:
+            raise ValueError(
+                f"The size of the input {','.join(missing_names)} cannot be guessed "
+                f"from the discipline {self.__discipline.name}, "
+                f"nor from its default inputs or from its local data."
             )
-            self.__names_to_sizes.update(
-                {
-                    name: value.size
-                    for name, value in self.__discipline.default_inputs.items()
-                    if name in self.__input_names
-                }
-            )
 
-        for input_name in self.__input_names:
-            if input_name not in self.__names_to_sizes:
-                raise ValueError(
-                    f"The size of the input {input_name} cannot be guessed "
-                    f"from the discipline {self.__discipline.name}, "
-                    f"nor from its default inputs or from its local data."
-                )
+        (
+            self.__input_names_to_slices,
+            self.__input_size,
+        ) = self.__discipline.input_grammar.data_converter.compute_names_to_slices(
+            self.__input_names, input_data, self.__input_names_to_sizes
+        )
 
-        index = 0
-        for name in self.__input_names:
-            size = self.__names_to_sizes[name]
-            self.__names_to_indices[name] = slice(index, index + size)
-            index += size
-
-    def __compute_discipline_input_data(
+    def __create_discipline_input_data(
         self,
         x_vect: ndarray,
     ) -> dict[str, ndarray]:
@@ -216,15 +290,17 @@ class MDODisciplineAdapter(MDOFunction):
         Raises:
             ValueError: When a discipline input has no default value.
         """
-        if self.__default_inputs is not None:
+        if self.__default_inputs:
             self.__discipline.default_inputs.update(self.__default_inputs)
 
-        if not self.__names_to_indices:
-            self.__create_names_to_indices()
+        if not self.__input_names_to_slices:
+            self.__create_input_names_to_slices()
 
-        input_data = {
-            name: x_vect[self.__names_to_indices[name]] for name in self.__input_names
-        }
+        input_data = (
+            self.__discipline.input_grammar.data_converter.convert_array_to_data(
+                x_vect, self.__input_names_to_slices
+            )
+        )
 
         variable_types = x_vect.dtype.metadata
 

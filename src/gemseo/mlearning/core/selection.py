@@ -44,22 +44,27 @@ using the class :class:`.MLAlgoCalibration`.
    :mod:`~gemseo.mlearning.core.ml_algo`
    :mod:`~gemseo.mlearning.core.calibration`
 """
+
 from __future__ import annotations
 
 from itertools import product
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.scenario import ScenarioInputDataType
-from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.quality_measures.quality_measure import (
     OptionType as MeasureOptionType,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.scenario import ScenarioInputDataType
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.core.ml_algo import MLAlgo
 
 
 class MLAlgoSelection:
@@ -86,7 +91,7 @@ class MLAlgoSelection:
         self,
         dataset: Dataset,
         measure: str | MLQualityMeasure,
-        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: B950
+        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
         samples: Sequence[int] | None = None,
         **measure_options: MeasureOptionType,
     ) -> None:
@@ -106,7 +111,7 @@ class MLAlgoSelection:
 
         Raises:
             ValueError: If the unsupported "multioutput" option is enabled.
-        """
+        """  # noqa: D205 D212
         self.dataset = dataset
         if isinstance(measure, str):
             self.measure = MLQualityMeasureFactory().get_class(measure)
@@ -163,25 +168,12 @@ class MLAlgoSelection:
         keys, values = option_lists.keys(), option_lists.values()
 
         # Set initial quality to the worst possible value
-        if self.measure.SMALLER_IS_BETTER:
-            quality = float("inf")
-        else:
-            quality = -float("inf")
+        quality = float("inf") if self.measure.SMALLER_IS_BETTER else -float("inf")
 
         for prodvalues in product(*values):
             params = dict(zip(keys, prodvalues))
-            if not calib_space:
-                algo_new = self.factory.create(name, data=self.dataset, **params)
-                measure = self.measure(algo_new)
-                evaluate = getattr(
-                    measure,
-                    measure.EvaluationFunctionName[
-                        self.__measure_evaluation_method_name
-                    ],
-                )
-                quality_new = evaluate(**self.measure_options)
-            else:
-                calib = MLAlgoCalibration(
+            if calib_space:
+                ml_algo_calibration = MLAlgoCalibration(
                     name,
                     self.dataset,
                     calib_space.variable_names,
@@ -191,9 +183,19 @@ class MLAlgoSelection:
                     measure_options=self.measure_options,
                     **params,
                 )
-                calib.execute(calib_algo)
-                algo_new = calib.optimal_algorithm
-                quality_new = calib.optimal_criterion
+                ml_algo_calibration.execute(calib_algo)
+                algo_new = ml_algo_calibration.optimal_algorithm
+                quality_new = ml_algo_calibration.optimal_criterion
+            else:
+                algo_new = self.factory.create(name, data=self.dataset, **params)
+                quality_measurer = self.measure(algo_new)
+                compute_quality_measure = getattr(
+                    quality_measurer,
+                    quality_measurer.EvaluationFunctionName[
+                        self.__measure_evaluation_method_name
+                    ],
+                )
+                quality_new = compute_quality_measure(**self.measure_options)
 
             if self.measure.is_better(quality_new, quality):
                 algo = algo_new
@@ -225,6 +227,8 @@ class MLAlgoSelection:
         for new_candidate in self.candidates[1:]:
             if self.measure.is_better(new_candidate[1], candidate[1]):
                 candidate = new_candidate
-        if not return_quality:
-            candidate = candidate[0]
-        return candidate
+
+        if return_quality:
+            return candidate
+
+        return candidate[0]

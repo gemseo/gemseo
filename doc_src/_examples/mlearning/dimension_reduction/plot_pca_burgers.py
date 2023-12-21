@@ -24,13 +24,15 @@ PCA on Burgers equation
 
 Example using PCA on solutions of the Burgers equation.
 """
+
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+from numpy import eye
+
 from gemseo import configure_logger
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.problems.dataset.burgers import create_burgers_dataset
-from numpy import eye
 
 configure_logger()
 

@@ -13,14 +13,18 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """View of the solution of a 2D topology optimization problem."""
+
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from matplotlib import colors
 from matplotlib import pyplot as plt
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class TopologyView(OptPostProcessor):
@@ -32,7 +36,7 @@ class TopologyView(OptPostProcessor):
         self,
         n_x: int,
         n_y: int,
-        observable: str = None,
+        observable: str | None = None,
         iterations: int | Iterable[int] | None = None,
     ) -> None:
         """Plot the design variable or an observable field patch plot.

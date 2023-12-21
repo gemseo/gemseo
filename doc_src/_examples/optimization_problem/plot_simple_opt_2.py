@@ -19,6 +19,7 @@
 Analytical test case # 2
 ========================
 """
+
 # %%
 # In this example, we consider a simple optimization problem to illustrate
 # algorithms interfaces and optimization libraries integration.
@@ -27,6 +28,11 @@ Analytical test case # 2
 # -------
 from __future__ import annotations
 
+from numpy import cos
+from numpy import exp
+from numpy import ones
+from numpy import sin
+
 from gemseo import configure_logger
 from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
@@ -34,10 +40,6 @@ from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from numpy import cos
-from numpy import exp
-from numpy import ones
-from numpy import sin
 
 configure_logger()
 

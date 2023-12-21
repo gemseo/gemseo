@@ -17,28 +17,23 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for all Multi-disciplinary Design Analyses (MDA)."""
+
 from __future__ import annotations
 
 import logging
 from abc import abstractmethod
 from enum import auto
-from multiprocessing import cpu_count
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-from numpy import abs
-from numpy import array
-from numpy import concatenate
-from numpy import ndarray
-from numpy.linalg import norm
 from strenum import LowercaseStrEnum
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import (
     RelaxationAcceleration,
 )
+from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
@@ -48,26 +43,29 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+    from pathlib import Path
     from typing import Any
     from typing import ClassVar
-    from typing import Collection
-    from typing import Iterable
-    from typing import Mapping
-    from typing import Sequence
 
     from matplotlib.figure import Figure
+    from numpy import ndarray
     from numpy.typing import NDArray
 
+    from gemseo.core.discipline_data import DisciplineData
     from gemseo.core.execution_sequence import LoopExecSequence
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
 
 
+# TODO: API: rename to BaseMDA.
 class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     """An MDA analysis."""
-
-    N_CPUS = cpu_count()
 
     RESIDUALS_NORM: ClassVar[str] = "MDA residuals norm"
 
@@ -94,7 +92,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     assembly: JacobianAssembly
 
     residual_history: list[float]
-    """The history of MDA residuals."""
+    """The history of the MDA residuals."""
 
     reset_history_each_run: bool
     """Whether to reset the history of MDA residuals before each run."""
@@ -118,7 +116,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     """The names of the strong coupling variables."""
 
     all_couplings: list[str]
-    """The names of the coupling variables."""
+    """The names of all the coupling variables."""
 
     matrix_type: JacobianAssembly.JacobianType
     """The type of the matrix."""
@@ -132,12 +130,6 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     _starting_indices: list[int]
     """The indices of the residual history where a new execution starts."""
 
-    __resolved_coupling_names: tuple[str, ...] | None
-    """The names of the coupling variables the MDA is solving."""
-
-    _coupling_sizes: Mapping[str, int]
-    """The size of each coupling variables the MDA is acting on."""
-
     _sequence_transformer: RelaxationAcceleration
     """The sequence transformer aimed at improving the convergence rate.
 
@@ -148,7 +140,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """The scaling method applied to MDA residuals for convergence monitoring."""
 
         NO_SCALING = auto()
-        r"""The residual is not scaled and the MDA is considered converged when,
+        r"""The residual vector is not scaled. The MDA is considered converged when its
+        Euclidean norm satisfies,
 
         .. math::
 
@@ -156,8 +149,9 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
         INITIAL_RESIDUAL_NORM = auto()
-        r"""The residual is scaled by the norm of the initial residual if it is not null,
-        and not scaled otherwise. The MDA is considered converged when,
+        r"""The :math:k`-th residual vector is scaled by the Euclidean norm of the
+        initial residual (if not null, else it is not scaled). The MDA is considered
+        converged when its Euclidean norm satisfies,
 
         .. math::
 
@@ -165,8 +159,10 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
         INITIAL_SUBRESIDUAL_NORM = auto()
-        r"""The residual is scaled by considering the convergence of each sub-residual
-        individually. The MDA is considered converged when,
+        r"""The :math:k`-th residual vector is scaled discipline-wise. The sub-residual
+        associated wich each discipline is scaled by the Euclidean norm of the initial
+        sub-residual (if not null, else it is not scaled). The MDA is considered
+        converged when the Euclidean norm of each sub-residual satisfies,
 
         .. math::
 
@@ -174,17 +170,17 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
         N_COUPLING_VARIABLES = auto()
-        r"""The residual is scaled by the number of coupling variables. The MDA is
-        considered converged when,
-
+        r"""The :math:k`-th residual vector is scaled using the number of coupling
+        variables. The MDA is considered converged when its Euclidean norm satisfies,
         .. math::
 
             \frac{ \|R_k\|_2 }{ \sqrt{n_\text{coupl.}} } \leq \text{tol}.
         """
 
         INITIAL_RESIDUAL_COMPONENT = auto()
-        r"""The residual is scaled component-wise with the initial residual if not null,
-        and not scaled otherwise. The MDA is considered converged when,
+        r"""The :math:k`-th residual is scaled component-wise. Each component is scaled
+        by the corresponding component of the initial residual (if not null, else it is
+        not scaled). The MDA is considered converged when each component satisfies,
 
         .. math::
 
@@ -192,7 +188,10 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
         SCALED_INITIAL_RESIDUAL_COMPONENT = auto()
-        r"""The residual is not scaled and the MDA is considered converged when.
+        r"""The :math:k`-th residual vector is scaled component-wise and by the number
+        coupling variables. If :math:`\div` denotes the component-wise division between
+        two vectors, then the MDA is considered converged when the residual vector
+        satisfies,
 
         .. math::
 
@@ -264,8 +263,6 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             over_relaxation_factor, acceleration_method
         )
 
-        self._coupling_sizes = {}
-
         self.scaling = self.ResidualScaling.INITIAL_RESIDUAL_NORM
         self._scaling_data = None
 
@@ -278,13 +275,13 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self.strong_couplings = self.coupling_structure.strong_couplings
         self.all_couplings = self.coupling_structure.all_couplings
         self._input_couplings = []
-        self.__resolved_coupling_names = None
         self.matrix_type = JacobianAssembly.JacobianType.MATRIX
         self.use_lu_fact = use_lu_fact
         # By default don't use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0
 
         self._initialize_grammars()
+        self.output_grammar.update_from_names([self.RESIDUALS_NORM])
         self._check_consistency()
         self.__check_linear_solver_options()
         self._check_coupling_types()
@@ -308,27 +305,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def over_relaxation_factor(self, over_relaxation_factor: float) -> None:
         self._sequence_transformer.over_relaxation_factor = over_relaxation_factor
 
-    @property
-    def _resolved_coupling_names(self) -> tuple[str, ...] | None:
-        """The names of the coupling variables the MDA is solving."""
-        return self.__resolved_coupling_names
-
-    @_resolved_coupling_names.setter
-    def _resolved_coupling_names(self, couplings: Iterable[str]) -> None:
-        """
-        Raises:
-            RuntimeError: whenever one attempt to reset the resolved coupling names.
-        """  # noqa: D205 D212 D415
-        if self.__resolved_coupling_names is not None:
-            raise RuntimeError(
-                "The resolved coupling names have already been set, any changes could "
-                "make the MDA solution inconsistent."
-            )
-
-        self.__resolved_coupling_names = tuple(
-            coupling for coupling in sorted(couplings)
-        )
-
+    # TODO: API: this property is useless, either remove it or at least check it is
+    # positive in the setter.
     @property
     def max_mda_iter(self) -> int:
         """The maximum iterations number of the MDA algorithm."""
@@ -347,12 +325,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
 
-        self._add_residuals_norm_to_output_grammar()
-
-    def _add_residuals_norm_to_output_grammar(self) -> None:
-        """Add RESIDUALS_NORM to the output grammar."""
-        self.output_grammar.update_from_names([self.RESIDUALS_NORM])
-
+    # TODO: API: this property is useless, remove it?
     @property
     def log_convergence(self) -> bool:
         """Whether to log the MDA convergence."""
@@ -429,17 +402,11 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 sorted(multiple_outs),
             )
 
+    # TODO: API: better naming: _compute_input_coupling_names
     def _compute_input_couplings(self) -> None:
         """Compute the strong couplings that are inputs of the MDA."""
-        input_couplings = set(self.strong_couplings) & set(self.get_input_data_names())
-        self._input_couplings = sorted(input_couplings)
-
-    def _current_working_couplings(self) -> ndarray:
-        """Return the current values of the working coupling variables."""
-        if not self._resolved_coupling_names:
-            return array([])
-        return concatenate(
-            [self.local_data[name] for name in self._resolved_coupling_names]
+        self._input_couplings = sorted(
+            set(self.strong_couplings).intersection(self.get_input_data_names())
         )
 
     def _retrieve_diff_inouts(
@@ -460,17 +427,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         if self.RESIDUALS_NORM in outputs:
             outputs = list(outputs)
             outputs.remove(self.RESIDUALS_NORM)
-        return inputs, outputs
 
-    def _couplings_warm_start(self) -> None:
-        """Load the previous couplings values to local data."""
-        cached_outputs = self.cache.last_entry.outputs
-        if not cached_outputs:
-            return
-        for input_name in self._input_couplings:
-            input_value = cached_outputs.get(input_name)
-            if input_value is not None:
-                self.local_data[input_name] = input_value
+        return inputs, outputs
 
     def _check_coupling_types(self) -> None:
         """Check that the coupling variables are of type array in the grammars.
@@ -478,19 +436,20 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         Raises:
             TypeError: When at least one of the coupling variables is not an array.
         """
-        not_arrays = []
-        for discipline in self.disciplines:
-            for grammar in (discipline.input_grammar, discipline.output_grammar):
-                for coupling in self.all_couplings:
-                    if coupling in grammar and not grammar.is_array(
-                        coupling, numeric_only=True
+        not_arrays = set()
+        for coupling_name in self.all_couplings:
+            for discipline in self.disciplines:
+                for grammar in (discipline.input_grammar, discipline.output_grammar):
+                    if (
+                        coupling_name in grammar
+                        and not grammar.data_converter.is_numeric(coupling_name)
                     ):
-                        not_arrays.append(coupling)
+                        not_arrays.add(coupling_name)
+                        break
 
         if not_arrays:
-            not_arrays = sorted(set(not_arrays))
             raise TypeError(
-                f"The coupling variables {not_arrays} must be of type array."
+                f"The coupling variables {sorted(not_arrays)} must be numeric."
             )
 
     def reset_disciplines_statuses(self) -> None:
@@ -499,7 +458,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             discipline.reset_statuses_for_run()
 
     def reset_statuses_for_run(self) -> None:  # noqa:D102
-        MDODiscipline.reset_statuses_for_run(self)
+        super().reset_statuses_for_run()
         self.reset_disciplines_statuses()
 
     def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
@@ -511,7 +470,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        all_disc = [self] + self.disciplines
+        all_disc = [self, *self.disciplines]
         graph = DependencyGraph(all_disc)
         res = graph.get_disciplines_couplings()
         for discipline in self.disciplines:
@@ -556,117 +515,17 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             **self.linear_solver_options,
         )
 
-    def _compute_residual(
-        self,
-        current_couplings: ndarray,
-        new_couplings: ndarray,
-        store_it: bool = True,
-        log_normed_residual: bool = False,
-    ) -> float:
-        """Compute the residual on the inputs of the MDA.
-
-        Args:
-            current_couplings: The values of the couplings before the execution.
-            new_couplings: The values of the couplings after the execution.
-            store_it: Whether to store the normed residual.
-            log_normed_residual: Whether to log the normed residual.
-
-        Returns:
-            The normed residual.
-        """
-        if self._current_iter == 0 and self.reset_history_each_run:
-            self.residual_history = []
-            self._starting_indices = []
-
-        residual = (current_couplings - new_couplings).real
-
-        if self.scaling == self.ResidualScaling.NO_SCALING:
-            self.normed_residual = float(norm(residual))
-
-        elif self.scaling == self.ResidualScaling.INITIAL_RESIDUAL_NORM:
-            normed_residual = float(norm(residual))
-
-            if self._scaling_data is None:
-                self._scaling_data = normed_residual if normed_residual != 0 else 1.0
-
-            self.normed_residual = normed_residual / self._scaling_data
-
-        elif self.scaling == self.ResidualScaling.N_COUPLING_VARIABLES:
-            normed_residual = norm(residual)
-
-            if self._scaling_data is None:
-                self._scaling_data = new_couplings.size**0.5
-
-            self.normed_residual = normed_residual / self._scaling_data
-
-        elif self.scaling == self.ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
-            if self._scaling_data is None:
-                self._scaling_data = []
-
-                index = 0
-                for coupling in self._resolved_coupling_names:
-                    coupling_size = self._coupling_sizes[coupling]
-                    current_slice = slice(index, index + coupling_size)
-
-                    initial_norm = float(norm(residual[current_slice]))
-                    initial_norm = initial_norm if initial_norm != 0.0 else 1.0
-
-                    self._scaling_data.append((current_slice, initial_norm))
-
-                    index += coupling_size
-
-            normalized_norms = list()
-            for current_slice, initial_norm in self._scaling_data:
-                normalized_norms.append(norm(residual[current_slice]) / initial_norm)
-
-            self.normed_residual = max(normalized_norms)
-
-        elif self.scaling == self.ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
-            if self._scaling_data is None:
-                self._scaling_data = residual + (residual == 0)
-
-            self.normed_residual = abs(residual / self._scaling_data).max()
-
-        elif self.scaling == self.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
-            if self._scaling_data is None:
-                self._scaling_data = residual + (residual == 0)
-
-            self.normed_residual = float(norm(residual / self._scaling_data))
-            self.normed_residual /= new_couplings.size**0.5
-
-        else:
-            # Use the strEnum casting to raise an explicit error
-            self.ResidualScaling(self.scaling)
-
-        if log_normed_residual:
-            LOGGER.info(
-                "%s running... Normed residual = %s (iter. %s)",
-                self.name,
-                f"{self.normed_residual:.2e}",
-                self._current_iter,
-            )
-
-        if store_it:
-            if self._current_iter == 0:
-                self._starting_indices.append(len(self.residual_history))
-            self.residual_history.append(self.normed_residual)
-            self._current_iter += 1
-
-        self.local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
-
-        return self.normed_residual
-
     def check_jacobian(
         self,
         input_data: Mapping[str, ndarray] | None = None,
-        derr_approx: MDODiscipline.ApproximationMode = MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,  # noqa:B950
+        derr_approx: MDODiscipline.ApproximationMode = MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,  # noqa:E501
         step: float = 1e-7,
         threshold: float = 1e-8,
         linearization_mode: str = "auto",
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
         parallel: bool = False,
-        n_processes: int = N_CPUS,
+        n_processes: int = MDODiscipline.N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: int = 0,
         auto_set_step: bool = False,
@@ -741,7 +600,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-                If ``None``, consider all the components of all the ``inputs`` and ``outputs``.
+                If ``None``,
+                consider all the components of all the ``inputs`` and ``outputs``.
 
         Returns:
             Whether the passed Jacobian is correct.
@@ -789,32 +649,9 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def execute(  # noqa:D102
         self, input_data: Mapping[str, Any] | None = None
-    ) -> dict[str, Any]:
+    ) -> DisciplineData:
         self._current_iter = 0
         return super().execute(input_data=input_data)
-
-    def _warn_convergence_criteria(self) -> tuple[bool, bool]:
-        """Log a warning if max_iter is reached and if max residuals is above tolerance.
-
-        Returns:
-            * Whether the normed residual is lower than the tolerance.
-            * Whether the maximum number of iterations is reached.
-        """
-        residual_is_small = self.normed_residual <= self.tolerance
-        max_iter_is_reached = self.max_mda_iter <= self._current_iter
-        if max_iter_is_reached and not residual_is_small:
-            msg = (
-                "%s has reached its maximum number of iterations "
-                "but the normed residual %s is still above the tolerance %s."
-            )
-            LOGGER.warning(msg, self.name, self.normed_residual, self.tolerance)
-        return residual_is_small, max_iter_is_reached
-
-    @property
-    def _stop_criterion_is_reached(self) -> bool:
-        """Whether a stop criterion is reached."""
-        residual_is_small, max_iter_is_reached = self._warn_convergence_criteria()
-        return residual_is_small or max_iter_is_reached
 
     def _set_cache_tol(
         self,
@@ -837,7 +674,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         save: bool = True,
         n_iterations: int | None = None,
         logscale: tuple[int, int] | None = None,
-        filename: str | None = None,
+        filename: Path | str = "",
         fig_size: FigSizeType | None = None,
     ) -> Figure:
         """Generate a plot of the residual history.
@@ -852,7 +689,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             logscale: The limits of the *y* axis.
                 If ``None``, do not change the limits of the *y* axis.
             filename: The name of the file to save the figure.
-                If ``None``, use "{mda.name}_residual_history.pdf".
+                If empty, use "{mda.name}_residual_history.pdf".
             fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
 
         Returns:
@@ -898,22 +735,44 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         if logscale is not None:
             fig_ax.set_ylim(logscale)
 
-        if save and filename is None:
+        if save and not filename:
             filename = f"{self.name}_residual_history.pdf"
 
         save_show_figure(fig, show, filename, fig_size=fig_size)
 
         return fig
 
+    # TODO: API: better naming: _prepare_warm_start
+    def _couplings_warm_start(self) -> None:
+        """Load the previous couplings values to local data."""
+        cached_outputs = self.cache.last_entry.outputs
+
+        if not cached_outputs:
+            return
+
+        # Non simple caches require NumPy arrays.
+        if not isinstance(self.cache, SimpleCache):
+            to_value = self.input_grammar.data_converter.convert_array_to_value
+            for input_name, input_value in self.__get_cached_outputs(cached_outputs):
+                self.local_data[input_name] = to_value(input_name, input_value)
+        else:
+            self.local_data.update(dict(self.__get_cached_outputs(cached_outputs)))
+
+    def __get_cached_outputs(self, cached_outputs) -> Iterator[Any]:
+        """Return an iterator over the input couplings names and value in cache.
+
+        Args:
+            cached_outputs: The cached outputs.
+
+        Returns:
+            The names and value of the input couplings in cache.
+        """
+        for input_name in self._input_couplings:
+            input_value = cached_outputs.get(input_name)
+            if input_value is not None:
+                yield input_name, input_value
+
     @abstractmethod
     def _run(self) -> None:  # noqa:D103
-        # MDODiscipline does not declare this method as abstract on purpose,
-        # but for MDAs this makes sense.
-        pass
-
-    def _compute_coupling_sizes(self) -> None:
-        """Compute the size of the provided coupling variables."""
-        if not self._coupling_sizes:
-            self._coupling_sizes = {
-                key: self.local_data[key].size for key in self._resolved_coupling_names
-            }
+        if self.warm_start:
+            self._couplings_warm_start()

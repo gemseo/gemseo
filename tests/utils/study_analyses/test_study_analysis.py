@@ -23,6 +23,7 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.utils.study_analyses import coupling_study_analysis
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis

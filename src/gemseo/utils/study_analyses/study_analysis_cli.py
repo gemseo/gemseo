@@ -17,10 +17,10 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """CLI for |g| study."""
+
 from __future__ import annotations
 
 import argparse
-from os import getcwd
 from pathlib import Path
 from typing import Final
 
@@ -59,7 +59,7 @@ def parse_args() -> argparse.Namespace:
         "--out-dir",
         help="The path of the directory to save the files.",
         type=str,
-        default=getcwd(),
+        default=Path().cwd(),
     )
     parser.add_argument(
         "-x",

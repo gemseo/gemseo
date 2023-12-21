@@ -20,25 +20,27 @@
 
 `quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
 """
+
 from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import Callable
+from typing import ClassVar
 
 from numpy import array
+from numpy import ndarray
 from scipy.optimize import root
 
-from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.root import MDARoot
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Mapping
-    from typing import Sequence
-    from numpy.typing import NDArray
+
+    from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline_data import DisciplineData
 
 LOGGER = logging.getLogger(__name__)
@@ -80,7 +82,7 @@ class MDAQuasiNewton(MDARoot):
     DF_SANE = "df-sane"
 
     # TODO: API: use enums.
-    QUASI_NEWTON_METHODS = [
+    QUASI_NEWTON_METHODS: ClassVar[list[str]] = [
         HYBRID,
         LEVENBERG_MARQUARDT,
         BROYDEN1,
@@ -92,6 +94,9 @@ class MDAQuasiNewton(MDARoot):
         KRYLOV,
         DF_SANE,
     ]
+
+    __current_couplings: ndarray
+    """The current values of the coupling variables."""
 
     def __init__(
         self,
@@ -118,7 +123,6 @@ class MDAQuasiNewton(MDARoot):
         Raises:
             ValueError: If the method is not a valid quasi-Newton method.
         """  # noqa:D205 D212 D415
-        self.method = method
         super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
@@ -132,19 +136,21 @@ class MDAQuasiNewton(MDARoot):
             linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
         )
-
         if method not in self.QUASI_NEWTON_METHODS:
             raise ValueError(f"Method '{method}' is not a valid quasi-Newton method.")
 
+        self.method = method
+
+        if self.method not in self._methods_with_callback():
+            del self.output_grammar[self.RESIDUALS_NORM]
+
         self.use_gradient = use_gradient
-        self.local_residual_history = []
-        self.last_outputs = None  # used for computing the residual history
 
     # TODO: API: prepend verb.
     def _solver_options(self) -> dict[str, float | int]:
         """Determine options for the solver, based on the resolution method."""
         options = {}
-        if self.method in [
+        if self.method in {
             self.BROYDEN1,
             self.BROYDEN2,
             self.ANDERSON,
@@ -152,32 +158,123 @@ class MDAQuasiNewton(MDARoot):
             self.DIAG_BROYDEN,
             self.EXCITING_MIXING,
             self.KRYLOV,
-        ]:
+        }:
             options["ftol"] = self.tolerance
             options["maxiter"] = self.max_mda_iter
-        elif self.method in [self.LEVENBERG_MARQUARDT]:
+        elif self.method == self.LEVENBERG_MARQUARDT:
             options["xtol"] = self.tolerance
             options["maxiter"] = self.max_mda_iter
-        elif self.method in [self.DF_SANE]:
+        elif self.method == self.DF_SANE:
             options["fatol"] = self.tolerance
             options["maxfev"] = self.max_mda_iter
-        elif self.method in [self.HYBRID]:
+        elif self.method == self.HYBRID:
             options["xtol"] = self.tolerance
             options["maxfev"] = self.max_mda_iter
         return options
 
     # TODO: API: prepend verb.
     def _methods_with_callback(self) -> list[str]:
-        """Determine whether resolution method accepts a callback function."""
+        """Determine whether resolution method accepts a callback function.
+
+        Returns:
+            The names of the methods with callback.
+        """
         return [self.BROYDEN1, self.BROYDEN2]
 
+    def __get_jacobian_computer(self) -> Callable[[ndarray], ndarray] | None:
+        """Return the function to compute the jacobian.
+
+        Returns:
+            The callable to compute the jacobian.
+        """
+        if not self.use_gradient:
+            return None
+
+        self.assembly.set_newton_differentiated_ios(self._resolved_variable_names)
+
+        def compute_jacobian(
+            x_vect: ndarray,
+        ) -> ndarray:
+            """Linearize all residuals.
+
+            Args:
+                x_vect: The value of the design variables.
+
+            Returns:
+                The linearized residuals.
+            """
+            self._update_local_data(x_vect)
+
+            self.reset_disciplines_statuses()
+            for discipline in self.disciplines:
+                discipline.linearize(self._local_data)
+
+            self.assembly.compute_sizes(
+                self._resolved_variable_names,
+                self._resolved_variable_names,
+                self._resolved_variable_names,
+            )
+
+            return (
+                self.assembly.assemble_jacobian(
+                    self._resolved_variable_names,
+                    self._resolved_variable_names,
+                    is_residual=True,
+                )
+                .toarray()
+                .real
+            )
+
+        return compute_jacobian
+
+    def __get_residual_history_callback(self) -> Callable[[ndarray, Any], None] | None:
+        """Return the callback used to store the residual history."""
+        if self.method not in self._methods_with_callback():
+            return None
+
+        def callback(
+            new_couplings: ndarray,
+            _,
+        ) -> None:
+            """Store the current residual in the history.
+
+            Args:
+                new_couplings: The new coupling variables.
+                _: ignored
+            """
+            self._compute_residual()
+            self.__current_couplings = new_couplings
+
+        return callback
+
+    def __compute_residuals(
+        self,
+        x_vect: ndarray,
+    ) -> ndarray:
+        """Evaluate all residuals, possibly in parallel.
+
+        Args:
+            x_vect: The value of the design variables.
+
+        Returns:
+            The residuals.
+        """
+        self.current_iter += 1
+        # Work on a temporary copy so _update_local_data can be called.
+        local_data_copy = self._local_data.copy()
+        self._update_local_data(x_vect)
+        input_data = self._local_data
+        self._local_data = local_data_copy
+        self.reset_disciplines_statuses()
+        self.execute_all_disciplines(input_data)
+        self._update_residuals(input_data)
+        return self.assembly.residuals(input_data, self._resolved_variable_names).real
+
     def _run(self) -> DisciplineData:
-        if self.warm_start:
-            self._couplings_warm_start()
+        super()._run()
 
         self.reset_disciplines_statuses()
-        self.execute_all_disciplines(self.local_data)
-        self._compute_coupling_sizes()
+        self.execute_all_disciplines(self._local_data)
 
         if not self.strong_couplings:
             msg = (
@@ -185,116 +282,33 @@ class MDAQuasiNewton(MDARoot):
                 "disciplines once."
             )
             LOGGER.warning(msg)
-            self.local_data[self.RESIDUALS_NORM] = array([0.0])
-            return self.local_data
+            self._local_data[self.RESIDUALS_NORM] = array([0.0])
+            return self._local_data
 
-        options = self._solver_options()
         self.current_iter = 0
 
-        def fun(
-            x_vect: NDArray,
-        ) -> NDArray:
-            """Evaluate all residuals, possibly in parallel.
-
-            Args:
-                x_vect: The value of the design variables.
-            """
-            self.current_iter += 1
-            # transform input vector into a dict
-            input_values = update_dict_of_arrays_from_array(
-                self.local_data, self.strong_couplings, x_vect
-            )
-            # compute all residuals
-            self.reset_disciplines_statuses()
-            self.execute_all_disciplines(input_values)
-            return self.assembly.residuals(input_values, self.strong_couplings).real
-
-        jac = None
-        if self.use_gradient:
-            self.assembly.set_newton_differentiated_ios(self.strong_couplings)
-
-            def jacobian(
-                x_vect: NDArray,
-            ) -> NDArray:
-                """Linearize all residuals.
-
-                Args:
-                    x_vect: The value of the design variables.
-                """
-                # transform input vector into a dict
-                self.local_data.update(
-                    split_array_to_dict_of_arrays(
-                        x_vect, self._coupling_sizes, self.strong_couplings
-                    )
-                )
-                # linearize all residuals
-                self.reset_disciplines_statuses()
-                for discipline in self.disciplines:
-                    discipline.linearize(self.local_data)
-                # assemble the system
-                self.assembly.compute_sizes(
-                    self.strong_couplings, self.strong_couplings, self.strong_couplings
-                )
-                dresiduals = self.assembly.assemble_jacobian(
-                    self.strong_couplings, self.strong_couplings, is_residual=True
-                )
-                return dresiduals.toarray().real
-
-            jac = jacobian
-
-        # initial solution
-        self.current_couplings = self._current_working_couplings().real
-        # callback function to retrieve the residual at iteration k
         if self.reset_history_each_run:
             self.residual_history = []
 
-        # callback function to store residuals
-        if self.method in self._methods_with_callback():
-
-            def callback(
-                new_couplings: NDArray,
-                _,
-            ) -> None:
-                """Store the current residual in the history.
-
-                Args:
-                    new_couplings: The new coupling variables.
-                    _: ignored
-                """
-                self._compute_residual(self.current_couplings, new_couplings)
-                self.current_couplings = new_couplings
-
-        else:
-            callback = None
+        # initial solution
+        self.__current_couplings = self.get_current_resolved_variables_vector().real
 
         # solve the system
         y_opt = root(
-            fun,
-            x0=self.current_couplings,
+            self.__compute_residuals,
+            x0=self.__current_couplings,
             method=self.method,
-            jac=jac,
-            callback=callback,
+            jac=self.__get_jacobian_computer(),
+            callback=self.__get_residual_history_callback(),
             tol=self.tolerance,
-            options=options,
+            options=self._solver_options(),
         )
+
         self._warn_convergence_criteria()
 
-        # transform optimal vector into a dict
-        self.local_data.update(
-            split_array_to_dict_of_arrays(
-                y_opt.x, self._coupling_sizes, self.strong_couplings
-            )
-        )
+        self._update_local_data(y_opt.x)
 
         if self.method in self._methods_with_callback():
-            self.local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
+            self._local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
 
-        return self.local_data
-
-    def _initialize_grammars(self) -> None:
-        for disciplines in self.disciplines:
-            self.input_grammar.update(disciplines.input_grammar)
-            self.output_grammar.update(disciplines.output_grammar)
-
-        if self.method in self._methods_with_callback():
-            self._add_residuals_norm_to_output_grammar()
+        return self._local_data

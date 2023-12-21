@@ -32,4 +32,5 @@ This package contains:
 Lastly, the class :class:`.OTDistributionFitter` offers the possibility
 to fit an :class:`.OTDistribution` from data based on OpenTURNS.
 """
+
 from __future__ import annotations

@@ -19,21 +19,22 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class to describe a function."""
+
 from __future__ import annotations
 
 import logging
 import pickle
+from collections.abc import Iterable
+from collections.abc import Sequence
+from collections.abc import Sized
 from multiprocessing import Value
 from numbers import Number
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
-from typing import Sized
 from typing import Union
 
 from numpy import abs as np_abs
@@ -44,7 +45,6 @@ from numpy.linalg import norm
 from numpy.typing import NDArray
 from strenum import StrEnum
 
-from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdofunctions._operations import _AdditionFunctionMaker
 from gemseo.core.mdofunctions._operations import _MultiplicationFunctionMaker
@@ -58,6 +58,9 @@ from gemseo.utils.derivatives.gradient_approximator_factory import (
 )
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from gemseo.algos.database import Database
 
 LOGGER = logging.getLogger(__name__)
 
@@ -161,7 +164,7 @@ class MDOFunction(Serializable):
 
     ApproximationMode = ApproximationMode
 
-    DICT_REPR_ATTR: list[str] = [
+    DICT_REPR_ATTR: ClassVar[list[str]] = [
         "name",
         "f_type",
         "expr",
@@ -236,7 +239,8 @@ class MDOFunction(Serializable):
     __original_name: str
     """The original name of the function.
 
-    By default, it is the same as :attr:`.name`. When the value of :attr:`.name` changes,
+    By default, it is the same as :attr:`.name`.
+    When the value of :attr:`.name` changes,
     :attr:`.original_name` stores its former value.
     """
 
@@ -304,7 +308,7 @@ class MDOFunction(Serializable):
         self.last_eval = None
         self.force_real = force_real
         self.special_repr = special_repr or ""
-        self.has_default_name = True if self.name else False
+        self.has_default_name = bool(self.name)
 
     @property
     def original_name(self) -> str:
@@ -320,6 +324,7 @@ class MDOFunction(Serializable):
         """
         if self.activate_counters:
             return self._n_calls.value
+        return None
 
     @n_calls.setter
     def n_calls(
@@ -384,17 +389,7 @@ class MDOFunction(Serializable):
             The function instance.
         """
         with Path(file_path).open("rb") as file_:
-            obj = pickle.Unpickler(file_).load()
-
-        return obj
-
-    def __setstate__(
-        self,
-        state: Mapping[str, Any],
-    ) -> None:
-        super().__setstate__(state)
-        # If at some point this class includes attributes that are not serializable
-        # nor Synchronized, they shall be set last.
+            return pickle.Unpickler(file_).load()
 
     def _init_shared_memory_attrs(self) -> None:
         """Initialize the shared attributes in multiprocessing."""
@@ -561,33 +556,33 @@ class MDOFunction(Serializable):
             self._jac, NotImplementedCallable
         )
 
-    def __add__(self, other_f: MDOFunction) -> MDOFunction:
+    def __add__(self, other: MDOFunction) -> MDOFunction:
         """Operator defining the sum of the function and another one.
 
         This operator supports automatic differentiation
         if both functions have an implemented Jacobian function.
 
         Args:
-            other_f: The other function.
+            other: The other function.
 
         Returns:
             The sum of the function and the other one.
         """
-        return _AdditionFunctionMaker(MDOFunction, self, other_f).function
+        return _AdditionFunctionMaker(MDOFunction, self, other).function
 
-    def __sub__(self, other_f: MDOFunction) -> MDOFunction:
+    def __sub__(self, other: MDOFunction) -> MDOFunction:
         """Operator defining the difference of the function and another one.
 
         This operator supports automatic differentiation
         if both functions have an implemented Jacobian function.
 
         Args:
-            other_f: The other function.
+            other: The other function.
 
         Returns:
             The difference of the function and the other one.
         """
-        return _AdditionFunctionMaker(MDOFunction, self, other_f, inverse=True).function
+        return _AdditionFunctionMaker(MDOFunction, self, other, inverse=True).function
 
     def _min_pt(self, x_vect: ArrayType) -> ArrayType:
         """Evaluate the function and return its opposite value.
@@ -609,7 +604,7 @@ class MDOFunction(Serializable):
         Returns:
             The opposite of the value of the Jacobian function.
         """
-        return -self.jac(x_vect)  # pylint: disable=E1102
+        return -self.jac(x_vect)
 
     def __neg__(self) -> MDOFunction:
         """Operator defining the opposite of the function.
@@ -625,11 +620,10 @@ class MDOFunction(Serializable):
         name = f"-{self.name}"
         if self.expr:
             expr = f"-({self.expr})"
+        elif self.input_names:
+            expr = f"{name}({pretty_str(self.input_names, sort=False)})"
         else:
-            if self.input_names:
-                expr = f"{name}({pretty_str(self.input_names, sort=False)})"
-            else:
-                expr = name
+            expr = name
 
         return MDOFunction(
             self._min_pt,
@@ -641,6 +635,7 @@ class MDOFunction(Serializable):
             output_names=self.output_names,
             expr=expr,
             original_name=self.original_name,
+            special_repr=f"-({self.special_repr})" if self.special_repr else "",
         )
 
     def __truediv__(self, other: MDOFunction | Number) -> MDOFunction:
@@ -698,6 +693,9 @@ class MDOFunction(Serializable):
         )
         function.expr = _OperationFunctionMaker.get_string_representation(
             self.expr or name, operator, second_operand
+        )
+        function.special_repr = _OperationFunctionMaker.get_string_representation(
+            self.special_repr or name, operator, second_operand
         )
         return function
 
@@ -850,7 +848,8 @@ class MDOFunction(Serializable):
         Args:
             database: The database to read.
             design_space: The design space used for normalization.
-            normalize: If ``True``, the values of the inputs are unnormalized before call.
+            normalize: If ``True``,
+                the values of the inputs are unnormalized before call.
             jac: If ``True``, a Jacobian pointer is also generated.
             x_tolerance: The tolerance on the distance between inputs.
         """

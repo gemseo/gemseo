@@ -17,17 +17,19 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """Build matrices from linear constraints for solvers."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.algos.opt.core.linear_constraints import build_bounds_matrices
-from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import inf
+
+from gemseo.algos.opt.core.linear_constraints import build_bounds_matrices
+from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 
 
 def test_upper_bounds_matrices():
@@ -96,7 +98,7 @@ def get_eq_constraints():
 
 def test_constraint_check():
     """Test the checking of the constraints."""
-    ineq_cstr_1, ineq_cstr_2 = get_ineq_constraints()
+    ineq_cstr_1, _ = get_ineq_constraints()
     # Check function type
     nonlinear_ineq_cstr = MDOFunction(lambda x: x**2, "square", f_type="ineq")
     with pytest.raises(TypeError):

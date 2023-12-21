@@ -17,13 +17,15 @@
 #                           documentation
 #        :author: Simone Coniglio
 """SciPy linear programming library wrapper."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+from typing import ClassVar
 
 from numpy import concatenate
-from numpy import Infinity
+from numpy import inf
 from numpy import ones_like
 from scipy.optimize import Bounds
 from scipy.optimize import LinearConstraint
@@ -35,6 +37,7 @@ from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.utils.compatibility.scipy import sparse_classes
 
 
 @dataclass
@@ -61,11 +64,14 @@ class ScipyMILP(OptimizationLibrary):
 
     LIB_COMPUTE_GRAD = True
 
-    OPTIONS_MAP = {
+    OPTIONS_MAP: ClassVar[dict[int, str]] = {
         OptimizationLibrary.MAX_ITER: "node_limit",
     }
 
     LIBRARY_NAME = "SciPy"
+
+    _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = True
+    """Whether the library support sparse Jacobians."""
 
     def __init__(self) -> None:
         """Constructor.
@@ -92,7 +98,7 @@ class ScipyMILP(OptimizationLibrary):
         presolve: bool = True,
         time_limit: int | None = None,
         mip_rel_gap: float = 0.0,
-        **kwargs: Any,
+        **options: Any,
     ) -> dict[str, Any]:
         """Retrieve the options of the library.
 
@@ -111,6 +117,7 @@ class ScipyMILP(OptimizationLibrary):
             mip_rel_gap: The termination criterion for MIP solver: solver will terminate
                 when the gap between the primal objective value and the dual objective
                 bound, scaled by the primal objective value, is <= mip_rel_gap.
+            **options: The options for the algorithm.
 
         Returns:
             The processed options.
@@ -121,7 +128,7 @@ class ScipyMILP(OptimizationLibrary):
             presolve=presolve,
             time_limit=time_limit,
             mip_rel_gap=mip_rel_gap,
-            **kwargs,
+            **options,
         )
 
     def _run(self, **options: Any) -> OptimizationResult:
@@ -135,7 +142,12 @@ class ScipyMILP(OptimizationLibrary):
 
         # Build the functions matrices
         # N.B. use the non-processed functions to access the coefficients
-        obj_coeff = self.problem.nonproc_objective.coefficients[0, :].real
+        coefficients = self.problem.nonproc_objective.coefficients
+        if isinstance(coefficients, sparse_classes):
+            obj_coeff = coefficients.getrow(0).todense().flatten()
+        else:
+            obj_coeff = coefficients[0, :]
+
         constraints = self.problem.nonproc_constraints
         ineq_lhs, ineq_rhs = build_constraints_matrices(
             constraints, MDOLinearFunction.ConstraintType.INEQ
@@ -145,7 +157,7 @@ class ScipyMILP(OptimizationLibrary):
             lq_constraints.append(
                 LinearConstraint(
                     ineq_lhs,
-                    -Infinity * ones_like(ineq_rhs),
+                    -inf * ones_like(ineq_rhs),
                     ineq_rhs,
                     keep_feasible=True,
                 )
@@ -165,23 +177,18 @@ class ScipyMILP(OptimizationLibrary):
             )
         # Pass the MILP to Scipy
         milp_result = milp(
-            c=obj_coeff,
+            c=obj_coeff.real,
             bounds=bounds,
             constraints=lq_constraints,
             options=options,
-            integrality=concatenate(
-                [
-                    self.problem.design_space.variable_types[variable_name]
-                    == self.problem.design_space.DesignVariableType.INTEGER
-                    for variable_name in self.problem.design_space.variable_names
-                ]
-            ),
+            integrality=concatenate([
+                self.problem.design_space.variable_types[variable_name]
+                == self.problem.design_space.DesignVariableType.INTEGER
+                for variable_name in self.problem.design_space.variable_names
+            ]),
         )
         # Gather the optimization results
-        if milp_result.x is not None:
-            x_opt = milp_result.x
-        else:
-            x_opt = x_0
+        x_opt = x_0 if milp_result.x is None else milp_result.x
         # N.B. SciPy tolerance on bounds is higher than the DesignSpace one
         x_opt = self.problem.design_space.project_into_bounds(x_opt)
         val_opt, jac_opt = self.problem.evaluate_functions(

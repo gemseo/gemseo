@@ -16,11 +16,8 @@
 .. _tox: https://tox.readthedocs.io
 .. _sphinx: https://www.sphinx-doc.org
 .. _gitflow: https://nvie.com/posts/a-successful-git-branching-model
-.. _pylint: https://pylint.readthedocs.io
 .. _pep8: https://pep8.org
-.. _flake8: https://flake8.pycqa.org
-.. _black: https://black.readthedocs.io
-.. _reorder_python_imports: https://github.com/asottile/reorder_python_imports
+.. _ruff: https://docs.astral.sh/ruff
 .. _conventional commits: https://www.conventionalcommits.org
 .. _commitizen: https://commitizen-tools.github.io/commitizen
 .. _semantic versioning: https://semver.org
@@ -253,16 +250,13 @@ Coding Style
 ++++++++++++
 
 We use the `pep8`_ convention.
-The formatting of the source code is done
-with `reorder_python_imports`_ and `black`_.
-The code is systematically checked with `flake8`_.
-A git commit shall have no flake8 violations.
+The checking and formatting of the source code is done with `ruff`_.
+A git commit shall have no checkers violations.
 
-Except for *pylint*,
-all these tools are used:
+All these tools are used:
 
 * either automatically by the git hooks when creating a commit,
-* or manually by running :command:`tox -e style`.
+* or manually by running :command:`tox -e check`.
 
 Coding guidelines
 +++++++++++++++++
@@ -647,7 +641,7 @@ run the tests with:
 
    tox -e py39
 
-Replace py39 by py38 for testing with Python 3.8.
+Replace py39 by py310 for testing with Python 3.10.
 With `tox`_,
 you can pass options to `pytest`_ after ``--``,
 for instance:
@@ -660,7 +654,7 @@ Run the tests for several Python versions with for instance (on Linux):
 
 .. code-block:: console
 
-   tox -e py38,py39
+   tox -e py39,py310,py311
 
 Tests coverage
 ++++++++++++++
@@ -812,31 +806,29 @@ select ``Import Scheme...``:
 
 .. image:: /_images/pycharm/configure-code-style.png
 
-File watchers
-+++++++++++++
+Check and format
+++++++++++++++++
 
-File watchers can automatically run tools on file save.
 Some tools used by the :ref:`git hooks` can be executed
 in order to be notified of code issues earlier
 and avoid having to fix files when creating a commit.
 
-First,
-install the ``File Watchers`` plugin by opening the `PyCharm`_ settings,
-and search in ``Plugins > Marketplace``.
+Install the ``Ruff`` plugin by opening the `PyCharm`_ settings,
+and searching in ``Plugins > Marketplace``.
+Then,
+activate all the options and
+provide the path to the ``ruff`` executable
+that shall be in the following directory relative
+to the root of the git clone of gemseo:
 
-Download :download:`this file </_static/pycharm/file-watchers.xml>`,
-open the `PyCharm`_ settings,
-go to ``Tools > File Watchers`` and
-click on the import icon:
+- On Linux and MacOS: :file:`.tox/check/bin/ruff`.
+- On Windows: :file:`.tox\\check\\Scripts\\ruff.exe`.
 
-.. image:: /_images/pycharm/configure-file-watchers.png
+.. warning::
 
-Then for all the file watchers,
-edit their settings
-and change the ``Program:`` entry
-with the path to ``pre-commit`` as installed in :ref:`requirements`:
-
-.. image:: /_images/pycharm/file-watchers-settings.png
+    For :class:`.AutoPyDiscipline` functions,
+    ``ruff`` will refactor the ``return`` line in an incompatible manner.
+    You shall append ``# noqa: RET504`` to the ``return`` line.
 
 Environment variables
 +++++++++++++++++++++

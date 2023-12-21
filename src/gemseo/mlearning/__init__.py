@@ -17,13 +17,12 @@
 This module proposes many high-level functions for creating and loading machine learning
 models.
 """
+
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgo
@@ -32,6 +31,9 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.classification.classification import MLClassificationAlgo
     from gemseo.mlearning.core.ml_algo import TransformerType
 
@@ -44,12 +46,11 @@ def get_mlearning_models() -> list[str]:
     Returns:
         The available machine learning algorithms.
 
-    See also
-    --------
-    import_mlearning_model
-    create_mlearning_model
-    get_mlearning_options
-    import_mlearning_model
+    See Also:
+        import_mlearning_model
+        create_mlearning_model
+        get_mlearning_options
+        import_mlearning_model
     """
     from gemseo.mlearning.core.factory import MLAlgoFactory
 
@@ -62,11 +63,10 @@ def get_regression_models() -> list[str]:
     Returns:
         The available regression models.
 
-    See also
-    --------
-    create_regression_model
-    get_regression_options
-    import_regression_model
+    See Also:
+        create_regression_model
+        get_regression_options
+        import_regression_model
     """
     from gemseo.mlearning.regression.factory import RegressionModelFactory
 
@@ -79,11 +79,10 @@ def get_classification_models() -> list[str]:
     Returns:
         The available classification models.
 
-    See also
-    --------
-    create_classification_model
-    get_classification_options
-    import_classification_model
+    See Also:
+        create_classification_model
+        get_classification_options
+        import_classification_model
     """
     from gemseo.mlearning.classification.factory import ClassificationModelFactory
 
@@ -96,11 +95,10 @@ def get_clustering_models() -> list[str]:
     Returns:
         The available clustering models.
 
-    See also
-    --------
-    create_clustering_model
-    get_clustering_options
-    import_clustering_model
+    See Also:
+        create_clustering_model
+        get_clustering_options
+        import_clustering_model
     """
     from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 
@@ -127,11 +125,10 @@ def create_mlearning_model(
     Returns:
         A machine learning model.
 
-    See also
-    --------
-    get_mlearning_models
-    get_mlearning_options
-    import_mlearning_model
+    See Also:
+        get_mlearning_models
+        get_mlearning_options
+        import_mlearning_model
     """
     from gemseo.mlearning.core.factory import MLAlgoFactory
 
@@ -145,7 +142,7 @@ minmax_inputs = {IODataset.INPUT_GROUP: MinMaxScaler()}
 def create_regression_model(
     name: str,
     data: IODataset,
-    transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
+    transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
     **parameters,
 ) -> MLRegressionAlgo:
     """Create a regression model from a learning dataset.
@@ -162,11 +159,10 @@ def create_regression_model(
     Returns:
         A regression model.
 
-    See also
-    --------
-    get_regression_models
-    get_regression_options
-    import_regression_model
+    See Also:
+        get_regression_models
+        get_regression_options
+        import_regression_model
     """
     from gemseo.mlearning.regression.factory import RegressionModelFactory
 
@@ -187,7 +183,7 @@ def create_regression_model(
 def create_classification_model(
     name: str,
     data: IODataset,
-    transformer: TransformerType = MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: B950
+    transformer: TransformerType = MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
     **parameters,
 ) -> MLClassificationAlgo:
     """Create a classification model from a learning dataset.
@@ -204,11 +200,10 @@ def create_classification_model(
     Returns:
         A classification model.
 
-    See also
-    --------
-    get_classification_models
-    get_classification_options
-    import_classification_model
+    See Also:
+        get_classification_models
+        get_classification_options
+        import_classification_model
     """
     from gemseo.mlearning.classification.factory import ClassificationModelFactory
 
@@ -237,11 +232,10 @@ def create_clustering_model(
     Returns:
         A clustering model.
 
-    See also
-    --------
-    get_clustering_models
-    get_clustering_options
-    import_clustering_model
+    See Also:
+        get_clustering_models
+        get_clustering_options
+        import_clustering_model
     """
     from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 
@@ -259,11 +253,10 @@ def import_mlearning_model(directory: str | Path) -> MLAlgo:
     Returns:
         A machine learning model.
 
-    See also
-    --------
-    create_mlearning_model
-    get_mlearning_models
-    get_mlearning_options
+    See Also:
+        create_mlearning_model
+        get_mlearning_models
+        get_mlearning_options
     """
     from gemseo.mlearning.core.factory import MLAlgoFactory
 
@@ -279,11 +272,10 @@ def import_regression_model(directory: str | Path) -> MLRegressionAlgo:
     Returns:
         A regression model.
 
-    See also
-    --------
-    create_regression_model
-    get_regression_models
-    get_regression_options
+    See Also:
+        create_regression_model
+        get_regression_models
+        get_regression_options
     """
     from gemseo.mlearning.regression.factory import RegressionModelFactory
 
@@ -299,11 +291,10 @@ def import_classification_model(directory: str | Path) -> MLClassificationAlgo:
     Returns:
         A classification model.
 
-    See also
-    --------
-    create_classification_model
-    get_classification_models
-    get_classification_options
+    See Also:
+        create_classification_model
+        get_classification_models
+        get_classification_options
     """
     from gemseo.mlearning.classification.factory import ClassificationModelFactory
 
@@ -319,11 +310,10 @@ def import_clustering_model(directory: str | Path) -> MLClusteringAlgo:
     Returns:
         A clustering model.
 
-    See also
-    --------
-    create_clustering_model
-    get_clustering_models
-    get_clustering_options
+    See Also:
+        create_clustering_model
+        get_clustering_models
+        get_clustering_options
     """
     from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 
@@ -343,14 +333,13 @@ def get_mlearning_options(
     Returns:
         The options schema of the machine learning algorithm.
 
-    See also
-    --------
-    create_mlearning_model
-    get_mlearning_models
-    import_mlearning_model
+    See Also:
+        create_mlearning_model
+        get_mlearning_models
+        import_mlearning_model
     """
-    from gemseo.mlearning.core.factory import MLAlgoFactory
     from gemseo import _get_schema
+    from gemseo.mlearning.core.factory import MLAlgoFactory
 
     return _get_schema(
         MLAlgoFactory().get_options_grammar(model_name),
@@ -372,14 +361,13 @@ def get_regression_options(
     Returns:
         The options schema of the regression model.
 
-    See also
-    --------
-    create_regression_model
-    get_regression_models
-    import_regression_model
+    See Also:
+        create_regression_model
+        get_regression_models
+        import_regression_model
     """
-    from gemseo.mlearning.regression.factory import RegressionModelFactory
     from gemseo import _get_schema
+    from gemseo.mlearning.regression.factory import RegressionModelFactory
 
     return _get_schema(
         RegressionModelFactory().get_options_grammar(model_name),
@@ -401,14 +389,13 @@ def get_classification_options(
     Returns:
         The options schema of the classification model.
 
-    See also
-    --------
-    create_classification_model
-    get_classification_models
-    import_classification_model
+    See Also:
+        create_classification_model
+        get_classification_models
+        import_classification_model
     """
-    from gemseo.mlearning.classification.factory import ClassificationModelFactory
     from gemseo import _get_schema
+    from gemseo.mlearning.classification.factory import ClassificationModelFactory
 
     return _get_schema(
         ClassificationModelFactory().get_options_grammar(model_name),
@@ -430,14 +417,13 @@ def get_clustering_options(
     Returns:
         The options schema of the clustering model.
 
-    See also
-    --------
-    create_clustering_model
-    get_clustering_models
-    import_clustering_model
+    See Also:
+        create_clustering_model
+        get_clustering_models
+        import_clustering_model
     """
-    from gemseo.mlearning.clustering.factory import ClusteringModelFactory
     from gemseo import _get_schema
+    from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 
     return _get_schema(
         ClusteringModelFactory().get_options_grammar(model_name),

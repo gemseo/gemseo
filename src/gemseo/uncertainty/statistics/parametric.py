@@ -87,14 +87,14 @@ Additional ones are:
 - :meth:`.plot_criteria`:
   this method plots the criterion values for a given variable.
 """
+
 from __future__ import annotations
 
 import logging
+from itertools import starmap
 from pathlib import Path
-from typing import Dict
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
+from typing import TYPE_CHECKING
+from typing import NamedTuple
 from typing import Union
 
 import matplotlib.pyplot as plt
@@ -102,7 +102,6 @@ from numpy import array
 from numpy import linspace
 from numpy import ndarray
 
-from gemseo.datasets.dataset import Dataset
 from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
@@ -119,9 +118,28 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
+    from matplotlib.figure import Figure
+
+    from gemseo.datasets.dataset import Dataset
+
 LOGGER = logging.getLogger(__name__)
 
-DistributionType = Dict[str, Union[str, OTDistribution]]
+DistributionType = dict[str, Union[str, OTDistribution]]
+
+
+class _Distribution(NamedTuple):
+    """A probability distribution."""
+
+    name: str
+    """The name of the probability distribution."""
+
+    value: OTDistribution
+    """The probability distribution."""
 
 
 class ParametricStatistics(Statistics):
@@ -139,7 +157,7 @@ class ParametricStatistics(Statistics):
         >>> from gemseo import (
         ...     create_discipline,
         ...     create_parameter_space,
-        ...     create_scenario
+        ...     create_scenario,
         ... )
         >>> from gemseo.uncertainty.statistics.parametric import ParametricStatistics
         >>>
@@ -159,14 +177,16 @@ class ParametricStatistics(Statistics):
         >>> scenario = create_scenario(
         ...     [discipline],
         ...     "DisciplinaryOpt",
-        ...     "y1", parameter_space, scenario_type="DOE"
+        ...     "y1",
+        ...     parameter_space,
+        ...     scenario_type="DOE",
         ... )
-        >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
+        >>> scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
         >>>
         >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>
         >>> statistics = ParametricStatistics(
-        ...     dataset, ['Normal', 'Uniform', 'Triangular']
+        ...     dataset, ["Normal", "Uniform", "Triangular"]
         ... )
         >>> fitting_matrix = statistics.get_fitting_matrix()
         >>> mean = statistics.compute_mean()
@@ -246,7 +266,7 @@ class ParametricStatistics(Statistics):
         """
         variables = sorted(self._all_distributions.keys())
         distributions = list(self._all_distributions[variables[0]][0].keys())
-        table = PrettyTable(["Variable"] + distributions + ["Selection"])
+        table = PrettyTable(["Variable", *distributions, "Selection"])
         for variable in variables:
             for index in range(self.dataset.variable_names_to_n_components[variable]):
                 row = (
@@ -255,7 +275,7 @@ class ParametricStatistics(Statistics):
                         str(self.get_criteria(variable, index)[0][distribution])
                         for distribution in distributions
                     ]
-                    + [self.__distributions[variable][index]["name"]]
+                    + [self.__distributions[variable][index].name]
                 )
                 table.add_row(row)
         return str(table)
@@ -407,12 +427,12 @@ class ParametricStatistics(Statistics):
                     best_dist,
                 )
 
-            self.__distributions[variable] = [
-                {"name": distribution_name, "value": marginal_distribution}
-                for distribution_name, marginal_distribution in zip(
-                    selected_distribution_names, marginal_distributions
+            self.__distributions[variable] = list(
+                starmap(
+                    _Distribution,
+                    zip(selected_distribution_names, marginal_distributions),
                 )
-            ]
+            )
             if len(marginal_distributions) == 1:
                 distributions[variable] = self.__distributions[variable][0]
             else:
@@ -438,12 +458,15 @@ class ParametricStatistics(Statistics):
             ", ".join(distributions),
         )
         results = {}
-        for variable in self.names:
-            LOGGER.info("| Fit different distributions for %s.", variable)
-            dataset_values = self.dataset.get_view(variable_names=variable).to_numpy()
-            results[variable] = [
-                self._fit_marginal_distributions(variable, column, distributions)
-                for column in dataset_values.T
+        for name in self.names:
+            LOGGER.info("| Fit different distributions for %s.", name)
+            dataset_values = self.dataset.get_view(variable_names=name).to_numpy()
+            size = self.dataset.variable_names_to_n_components[name]
+            results[name] = [
+                self._fit_marginal_distributions(
+                    repr_variable(name, index, size), column, distributions
+                )
+                for index, column in enumerate(dataset_values.T)
             ]
         return results
 
@@ -477,34 +500,28 @@ class ParametricStatistics(Statistics):
 
     def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution["value"].math_upper_bound[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.math_upper_bound[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution["value"].mean[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.mean[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution["value"].math_lower_bound[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.math_lower_bound[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
@@ -526,14 +543,10 @@ class ParametricStatistics(Statistics):
                 new_thresh[name] = value
 
         return {
-            name: array(
-                [
-                    func(
-                        distribution["value"].compute_cdf([new_thresh[name][index]])[0]
-                    )
-                    for index, distribution in enumerate(self.__distributions[name])
-                ]
-            )
+            name: array([
+                func(distribution.value.compute_cdf([new_thresh[name][index]])[0])
+                for index, distribution in enumerate(self.__distributions[name])
+            ])
             for name in self.names
         }
 
@@ -546,7 +559,7 @@ class ParametricStatistics(Statistics):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:B950
+        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
     ) -> dict[str, list[ToleranceInterval.Bounds]]:
         if not 0.0 <= coverage <= 1.0:
             raise ValueError("The argument 'coverage' must be a number in [0,1].")
@@ -557,9 +570,9 @@ class ParametricStatistics(Statistics):
         tolerance_interval_factory = ToleranceIntervalFactory()
         return {
             name: [
-                tolerance_interval_factory.get_class(distribution["name"])(
+                tolerance_interval_factory.get_class(distribution.name)(
                     self.n_samples,
-                    *distribution["value"].marginals[0].getParameter(),
+                    *distribution.value.marginals[0].getParameter(),
                 ).compute(coverage, confidence, side)
                 for distribution in self.__distributions[name]
             ]
@@ -569,56 +582,78 @@ class ParametricStatistics(Statistics):
     def compute_quantile(self, prob: float) -> dict[str, ndarray]:  # noqa: D102
         prob = array([prob])
         return {
-            name: array(
-                [
-                    distribution["value"].compute_inverse_cdf(prob)[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.compute_inverse_cdf(prob)[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_standard_deviation(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution["value"].standard_deviation[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.standard_deviation[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution["value"].standard_deviation[0] ** 2
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.standard_deviation[0] ** 2
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_moment(self, order: int) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution["value"].distribution.getMoment(order)[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.distribution.getMoment(order)[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
 
     def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
         return {
-            name: array(
-                [
-                    distribution["value"].math_upper_bound[0]
-                    - distribution["value"].math_lower_bound[0]
-                    for distribution in self.__distributions[name]
-                ]
-            )
+            name: array([
+                distribution.value.math_upper_bound[0]
+                - distribution.value.math_lower_bound[0]
+                for distribution in self.__distributions[name]
+            ])
             for name in self.names
         }
+
+    def plot(
+        self,
+        save: bool = False,
+        show: bool = True,
+        directory_path: str | Path = "",
+        file_format: str = "png",
+    ) -> dict[str, Figure]:
+        """Visualize the cumulative distribution and probability density functions.
+
+        Args:
+            save: Whether to save the figures.
+            show: Whether to show the figures.
+            directory_path: The path to save the figures.
+            file_format: The file extension.
+
+        Returns:
+            The cumulative distribution and probability density functions
+            for each variable.
+        """
+        plots = {}
+        for name in self.names:
+            size = self.dataset.variable_names_to_n_components[name]
+            for index, distribution in enumerate(self.__distributions[name]):
+                plots[repr_variable(name, index, size)] = distribution.value.plot(
+                    save=save,
+                    show=show,
+                    directory_path=directory_path,
+                    file_extension=file_format,
+                )
+
+        return plots

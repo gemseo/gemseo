@@ -18,6 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Factory base class."""
+
 from __future__ import annotations
 
 import importlib
@@ -25,57 +26,26 @@ import logging
 import os
 import pkgutil
 import sys
-from abc import ABCMeta
 from abc import abstractmethod
 from importlib import metadata
 from inspect import isabstract
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Iterable
 from typing import NamedTuple
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
-
-from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
+from gemseo.utils.base_multiton import BaseABCMultiton
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from gemseo.utils.source_parsing import get_default_option_values
+from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.core.grammars.json_grammar import JSONGrammar
+
 LOGGER = logging.getLogger(__name__)
-
-
-class _FactoryMultitonMeta(ABCMeta, GoogleDocstringInheritanceMeta):
-    """A metaclass for implementing the Multiton design pattern.
-
-    See `Multiton <https://en.wikipedia.org/wiki/Multiton_pattern>`.
-
-    As opposed to the functools.lru_cache,
-    the objects built from this metaclass can be pickled.
-
-    A cache entry is bound to the tuple combining :attr:`.Factory._CLASS` and
-    :attr:`.Factory._MODULE_NAMES`.
-    When instantiating a factory, if an instance has already been created for this
-    tuple then this instance is used, otherwise a new instance is created is stored
-    into the cache.
-    """
-
-    __cache: ClassVar[dict[tuple, BaseFactory]] = {}
-    """The cache that keeps the factory instances."""
-
-    def __call__(cls) -> BaseFactory:  # noqa: D107
-        key = (cls._CLASS,) + tuple(cls._MODULE_NAMES)
-        # Either return an instance that match an already existing key
-        # or create and return a new instance.
-        obj = cls.__cache.get(key)
-        if obj is not None:
-            return obj
-        return cls.__cache.setdefault(key, type.__call__(cls))
-
-    @classmethod
-    def clear_cache(cls) -> None:
-        """Clear the cache."""
-        cls.__cache.clear()
 
 
 class _ClassInfo(NamedTuple):
@@ -88,7 +58,7 @@ class _ClassInfo(NamedTuple):
     """The name of the library (the module) that contains the class."""
 
 
-class BaseFactory(metaclass=_FactoryMultitonMeta):
+class BaseFactory(metaclass=BaseABCMultiton):
     """A base class for factory of objects.
 
     This factory can create objects from a base class
@@ -99,8 +69,10 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
 
         class AFactory(BaseFactory):
             _CLASS = ABaseClass
-            _MODULE_NAMES = ("first.module.fully.qualified.name",
-                             "second.module.fully.qualified.name")
+            _MODULE_NAMES = (
+                "first.module.fully.qualified.name",
+                "second.module.fully.qualified.name",
+            )
 
     There are 3 sources of modules that can be searched:
 
@@ -108,7 +80,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
     - the environment variable "GEMSEO_PATH" may contain the list of directories,
     - |g| plugins, i.e. packages which have declared a setuptools entry point.
 
-    A setuptools entry point is declared in a plugin :file:`setup.cfg` file,
+    A setuptools entry point is declared in a plugin :file:`pyproject.toml` file,
     with a section::
 
         [options.entry_points]
@@ -212,16 +184,13 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         if search_paths is None:
             return []
 
-        if ":" in search_paths:
-            paths = search_paths.split(":")
-        else:
-            paths = [search_paths]
+        paths = search_paths.split(":") if ":" in search_paths else [search_paths]
 
         # temporary make the paths visible to the import machinery
         for path in paths:
             sys.path.insert(0, path)
 
-        mod_names = list()
+        mod_names = []
         for _, mod_name, _ in pkgutil.iter_modules(path=paths):
             self.__import_modules_from(mod_name)
             mod_names += [mod_name]
@@ -239,7 +208,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         """
         try:
             pkg = importlib.import_module(pkg_name)
-        except Exception as error:
+        except BaseException as error:
             self.__record_import_failure(pkg_name, error)
             return
 
@@ -252,7 +221,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         ):
             try:
                 importlib.import_module(mod_name)
-            except Exception as error:
+            except BaseException as error:  # noqa: PERF203
                 self.__record_import_failure(mod_name, error)
 
     def __record_import_failure(self, name: str, error: Exception | str = "") -> None:
@@ -279,10 +248,8 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         """
         all_sub_classes = {}
         for sub_class in cls.__subclasses__():
-            sub_classes = {sub_class.__name__: sub_class}
-            sub_classes.update(self.__get_sub_classes(sub_class))
-            for cls_name, _cls in sub_classes.items():
-                all_sub_classes[cls_name] = _cls
+            all_sub_classes[sub_class.__name__] = sub_class
+            all_sub_classes.update(self.__get_sub_classes(sub_class))
         return all_sub_classes
 
     @staticmethod
@@ -292,17 +259,14 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
     ) -> bool:
         """Return whether a class belongs to given modules.
 
-         Args:
+        Args:
             module_names: The names of the modules.
             cls: The class.
 
         Returns:
             Whether the class belongs to the modules.
         """
-        for name in module_names:
-            if cls.__module__.startswith(name):
-                return True
-        return False
+        return any(cls.__module__.startswith(name) for name in module_names)
 
     @property
     def class_names(self) -> list[str]:
@@ -374,7 +338,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         try:
             return cls(*args, **kwargs)
         except TypeError:
-            LOGGER.error(
+            LOGGER.exception(
                 (
                     "Failed to create class %s "
                     "with positional arguments %s "
@@ -408,7 +372,7 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
         Returns:
             The mapping from the argument names to their default values.
         """
-        return get_default_option_values(self.get_class(name))
+        return get_callable_argument_defaults(self.get_class(name).__init__)
 
     def get_options_grammar(
         self,
@@ -440,6 +404,10 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
             for option_name, option_description in self.get_options_doc(name).items()
             if option_name in default_option_values
         }
+
+        # Import locally to avoid a cyclic import.
+        from gemseo.core.grammars.json_grammar import JSONGrammar
+
         grammar = JSONGrammar(name)
         grammar.update_from_data(default_option_values)
         grammar.set_descriptions(option_descriptions)
@@ -505,10 +473,10 @@ class BaseFactory(metaclass=_FactoryMultitonMeta):
             msg = ""
             try:
                 class_docstring_lines = cls.__doc__.split("\n")
-                while class_docstring_lines and msg == "":
+                while class_docstring_lines and not msg:
                     msg = class_docstring_lines[0]
                     del class_docstring_lines[0]
-            except Exception:  # pylint: disable=broad-except
+            except BaseException:
                 pass
 
             class_name = cls.__name__

@@ -23,6 +23,9 @@ import pickle
 from unittest import mock
 
 import pytest
+from numpy import array
+from numpy import linalg
+
 from gemseo import create_mda
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
@@ -32,14 +35,12 @@ from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import Y_1
-from gemseo.problems.sellar.sellar import Y_2
+from gemseo.problems.sellar.sellar import get_y_opt
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from numpy import array
-from numpy import linalg
 
+from ..core.test_dataframe_disciplines import assert_disc_data_equal
 
 TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
@@ -159,8 +160,7 @@ def test_raphson_sellar_sparse_complex():
 
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
@@ -192,9 +192,7 @@ def test_raphson_sellar(parallel):
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-6
-
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 def test_sellar_linop():
@@ -224,9 +222,12 @@ def test_weak_and_strong_couplings():
     disc4 = AnalyticDiscipline(expressions={"obj": "i+j"}, name="obj=f(i,j) disc")
     disciplines = [disc1, disc2, disc3, disc4]
     mda = MDAChain(disciplines, inner_mda_name="MDANewtonRaphson")
-    mda.execute(
-        {"z": array([0.0]), "i": array([0.0]), "j": array([0.0]), "x": array([0.0])}
-    )
+    mda.execute({
+        "z": array([0.0]),
+        "i": array([0.0]),
+        "j": array([0.0]),
+        "x": array([0.0]),
+    })
     assert mda.inner_mdas[0].residual_history[-1] < TRESHOLD_MDA_TOL
     assert mda.local_data[mda.RESIDUALS_NORM][0] < TRESHOLD_MDA_TOL
     assert mda.local_data["obj"] == pytest.approx(array([2.0 / 1.3]))
@@ -279,8 +280,12 @@ def test_weak_and_strong_couplings_two_cycles():
 
 
 @pytest.mark.parametrize(
-    "mda_linear_solver, mda_linear_solver_options, "
-    "newton_linear_solver_name, newton_linear_solver_options",
+    (
+        "mda_linear_solver",
+        "mda_linear_solver_options",
+        "newton_linear_solver_name",
+        "newton_linear_solver_options",
+    ),
     [
         ("DEFAULT", None, "DEFAULT", None),
         ("DEFAULT", {"atol": 1e-6}, "DEFAULT", None),
@@ -333,7 +338,7 @@ def test_pass_dedicated_newton_options(
 
 
 @pytest.mark.parametrize(
-    "newton_linear_solver_name, newton_linear_solver_options",
+    ("newton_linear_solver_name", "newton_linear_solver_options"),
     [
         ("DEFAULT", {"atol": 1e-7}),
         ("DEFAULT", None),
@@ -362,9 +367,7 @@ def test_mda_newton_convergence_passing_dedicated_newton_options(
     )
     mda.execute()
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
-
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 def test_mda_newton_serialization(tmp_wd):
@@ -382,9 +385,8 @@ def test_mda_newton_serialization(tmp_wd):
 
     with open(out_file, "rb") as file:
         mda_d = pickle.load(file)
-    for k, v in out.items():
-        assert k in mda_d.local_data
-        assert (v == mda_d.local_data[k]).all()
+
+    assert_disc_data_equal(mda_d.local_data, out)
 
 
 def test_mda_newton_weak_couplings():

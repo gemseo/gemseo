@@ -213,6 +213,7 @@
 Self Organizing Maps
 ********************
 """
+
 import itertools
 import logging
 import os
@@ -237,8 +238,6 @@ except ImportError:
     load = None
 
 
-
-
 try:
     from sklearn.decomposition import RandomizedPCA
 except ImportError:
@@ -255,10 +254,10 @@ class SOM(object):
         self,
         name: str,
         Data,
-        mapsize: Optional[int]=None,
-        norm_method: str="var",
-        initmethod: str="pca",
-        neigh: str="Guassian",
+        mapsize: Optional[int] = None,
+        norm_method: str = "var",
+        initmethod: str = "pca",
+        neigh: str = "Guassian",
     ) -> None:
         """
         name and data, neigh== Bubble or Guassian
@@ -283,7 +282,12 @@ class SOM(object):
 
     # set SOM topology
     def set_topology(
-        self, mapsize: Optional[int]=None, mapshape: str="planar", lattice: str="rect", mask=None, compname: Optional[str]=None
+        self,
+        mapsize: Optional[int] = None,
+        mapshape: str = "planar",
+        lattice: str = "rect",
+        mask=None,
+        compname: Optional[str] = None,
     ) -> None:
         """all_mapshapes = ['planar','toroid','cylinder']
         all_lattices = ['hexa','rect']
@@ -345,7 +349,7 @@ class SOM(object):
 
     # Set labels of the training data
     # it should be in the format of a list of strings
-    def set_data_labels(self, dlabel: Optional[str]=None) -> None:
+    def set_data_labels(self, dlabel: Optional[str] = None) -> None:
         """
 
         :param dlabel: Default value = None)
@@ -388,12 +392,12 @@ class SOM(object):
 
     def set_algorithm(
         self,
-        initmethod: str="pca",
-        algtype: str="batch",
-        neighborhoodmethod: str="gaussian",
-        alfatype: str="inv",
-        alfaini: float=0.5,
-        alfafinal: float=0.005,
+        initmethod: str = "pca",
+        algtype: str = "batch",
+        neighborhoodmethod: str = "gaussian",
+        alfatype: str = "inv",
+        alfaini: float = 0.5,
+        alfafinal: float = 0.005,
     ) -> None:
         """initmethod = ['random', 'pca']
         algos = ['seq','batch']
@@ -418,16 +422,16 @@ class SOM(object):
     # visualize map
     def view_map(
         self,
-        what: str="codebook",
-        which_dim: str="all",
-        pack: str="Yes",
-        text_size: float=2.8,
-        save: str="No",
-        save_dir: str="empty",
-        grid: str="No",
-        text: str="Yes",
-        cmap: str="None",
-        COL_SiZe: int=6,
+        what: str = "codebook",
+        which_dim: str = "all",
+        pack: str = "Yes",
+        text_size: float = 2.8,
+        save: str = "No",
+        save_dir: str = "empty",
+        grid: str = "No",
+        text: str = "Yes",
+        cmap: str = "None",
+        COL_SiZe: int = 6,
     ) -> None:
         """
 
@@ -499,7 +503,13 @@ class SOM(object):
             LOGGER.debug("possible init methods:'random', 'pca'")
 
     # Main loop of training
-    def train(self, trainlen=None, n_job: int=1, shared_memory: str="no", verbose: str="on") -> None:
+    def train(
+        self,
+        trainlen=None,
+        n_job: int = 1,
+        shared_memory: str = "no",
+        verbose: str = "on",
+    ) -> None:
         """
 
         :param trainlen: Default value = None)
@@ -555,7 +565,7 @@ class SOM(object):
         Predicted_labels = clf.predict(data)
         return Predicted_labels
 
-    def predict_by(self, data, Target, K: int=5, wt: str="distance"):
+    def predict_by(self, data, Target, K: int = 5, wt: str = "distance"):
         """‘uniform’
 
         :param data: param Target:
@@ -591,7 +601,7 @@ class SOM(object):
         Predicted_values = denormalize_by(data_raw[:, Target], Predicted_values)
         return Predicted_values
 
-    def predict(self, X_test, K: int=5, wt: str="distance"):
+    def predict(self, X_test, K: int = 5, wt: str = "distance"):
         """‘uniform’
 
         :param X_test: param K:  (Default value = 5)
@@ -618,7 +628,7 @@ class SOM(object):
         Predicted_values = denormalize_by(data_raw[:, Target], Predicted_values)
         return Predicted_values
 
-    def find_K_nodes(self, data, K: int=5):
+    def find_K_nodes(self, data, K: int = 5):
         """
 
         :param data: param K:  (Default value = 5)
@@ -655,7 +665,7 @@ class SOM(object):
         out[:, 1] = bm_ind % cols
         return out.astype(int)
 
-    def cluster(self, method: str="Kmeans", n_clusters: int=8):
+    def cluster(self, method: str = "Kmeans", n_clusters: int = 8):
         """
 
         :param method: Default value = 'Kmeans')
@@ -665,9 +675,7 @@ class SOM(object):
         import sklearn.cluster as clust
 
         km = clust.KMeans(n_clusters=n_clusters)
-        labels = km.fit_predict(
-            denormalize_by(self.data_raw, self.codebook)
-        )
+        labels = km.fit_predict(denormalize_by(self.data_raw, self.codebook))
         setattr(self, "cluster_labels", labels)
         return labels
 
@@ -817,7 +825,7 @@ class SOM(object):
         plt.show()
         return cents
 
-    def predict_Probability(self, data, Target, K: int=5):
+    def predict_Probability(self, data, Target, K: int = 5):
         """
 
         :param data: param Target:
@@ -871,7 +879,7 @@ class SOM(object):
         # Predicted_values = denormalize_by(data_raw[:,Target], Predicted_values)
         return np.concatenate((pos_prob, neg_prob), axis=1)
 
-    def node_Activation(self, data, wt: str="distance", Target=None):
+    def node_Activation(self, data, wt: str = "distance", Target=None):
         """‘uniform’
 
         :param data: param wt:  (Default value = 'distance')
@@ -901,7 +909,7 @@ class SOM(object):
 
         #
 
-    def para_bmu_find(self, x, y, njb: int=1):
+    def para_bmu_find(self, x, y, njb: int = 1):
         """
 
         :param x: param y:
@@ -1014,7 +1022,9 @@ def chunk_based_bmu_find(self, x, y, y_2):
 # Batch training which is called for rought training as well as finetuning
 
 
-def batchtrain(self, njob: int=1, phase=None, shared_memory: str="no", verbose: str="on") -> None:
+def batchtrain(
+    self, njob: int = 1, phase=None, shared_memory: str = "no", verbose: str = "on"
+) -> None:
     """
 
     :param njob: Default value = 1)
@@ -1190,7 +1200,9 @@ def rect_dist(self, bmu):
         return np.zeros((rows, cols)).ravel()
 
 
-def view_2d(self, text_size: int, which_dim: str="all", what: str="codebook") -> None:
+def view_2d(
+    self, text_size: int, which_dim: str = "all", what: str = "codebook"
+) -> None:
     """
 
     :param text_size: param which_dim:  (Default value = 'all')
@@ -1263,13 +1275,13 @@ def view_2d(self, text_size: int, which_dim: str="all", what: str="codebook") ->
 def view_2d_Pack(
     self,
     text_size: int,
-    which_dim: str="all",
-    what: str="codebook",
-    save: str="No",
-    grid: str="Yes",
-    save_dir: str="empty",
-    text: str="Yes",
-    CMAP: str="None",
+    which_dim: str = "all",
+    what: str = "codebook",
+    save: str = "No",
+    grid: str = "Yes",
+    save_dir: str = "empty",
+    text: str = "Yes",
+    CMAP: str = "None",
     col_sz=None,
 ) -> None:
     """
@@ -1405,7 +1417,6 @@ def view_2d_Pack(
         plt.subplots_adjust(hspace=h, wspace=w)
 
     if save == "Yes":
-
         if save_dir != "empty":
             #         		LOGGER.debug(save_dir)
             fig.savefig(save_dir, bbox_inches="tight", transparent=False, dpi=400)
@@ -1417,7 +1428,9 @@ def view_2d_Pack(
         plt.close(fig)
 
 
-def view_1d(self, text_size: int, which_dim: str="all", what: str="codebook") -> None:
+def view_1d(
+    self, text_size: int, which_dim: str = "all", what: str = "codebook"
+) -> None:
     """
 
     :param text_size: param which_dim:  (Default value = 'all')
@@ -1557,7 +1570,7 @@ def lininit(self):
         return np.around(codebook, decimals=6)
 
 
-def normalize(data, method: str="var"):
+def normalize(data, method: str = "var"):
     """
 
     :param data: param method:  (Default value = 'var')
@@ -1575,7 +1588,7 @@ def normalize(data, method: str="var"):
         return n_data
 
 
-def normalize_by(data_raw, data, method: str="var"):
+def normalize_by(data_raw, data, method: str = "var"):
     """
 
     :param data_raw: param data:
@@ -1593,7 +1606,7 @@ def normalize_by(data_raw, data, method: str="var"):
         return n_data
 
 
-def denormalize_by(data_by, n_vect, n_method: str="var"):
+def denormalize_by(data_by, n_vect, n_method: str = "var"):
     """
 
     :param data_by: param n_vect:

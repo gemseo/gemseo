@@ -24,15 +24,17 @@ Random forest classification
 
 We want to classify the Iris dataset using a Random Forest classifier.
 """
+
 # %%
 # Import
 # ------
 from __future__ import annotations
 
+from numpy import array
+
 from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_classification_model
-from numpy import array
 
 configure_logger()
 

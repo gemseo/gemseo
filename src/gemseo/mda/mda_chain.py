@@ -18,13 +18,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Jean-Christophe Giret
 """An advanced MDA splitting algorithm based on graphs."""
+
 from __future__ import annotations
 
 import logging
 from itertools import repeat
 from multiprocessing import cpu_count
-from os.path import join
-from os.path import split
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from numpy import array
@@ -34,14 +34,17 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
+from gemseo.mda.initialization_chain import MDOInitializationChain
 from gemseo.mda.mda import MDA
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Iterable
-    from typing import Mapping
-    from typing import Sequence
+
     from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.discipline_data import DisciplineData
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
@@ -57,6 +60,9 @@ class MDAChain(MDA):
 
     inner_mdas: list[MDA]
     """The ordered MDAs."""
+
+    __initialize_defaults: bool
+    """Whether to compute the eventually missing :attr:`.default_inputs`."""
 
     def __init__(
         self,
@@ -77,6 +83,7 @@ class MDAChain(MDA):
         linear_solver_options: Mapping[str, Any] | None = None,
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool] | None = None,
+        initialize_defaults: bool = False,
         **inner_mda_options: float | int | bool | str | None,
     ) -> None:
         """
@@ -94,6 +101,9 @@ class MDAChain(MDA):
                 any.
             mdachain_parallel_options: The options of the MDOParallelChain instances, if
                 any.
+            initialize_defaults: Whether to create a :class:`.MDOInitializationChain`
+                to compute the eventually missing :attr:`.default_inputs` at the first
+                execution.
             **inner_mda_options: The options of the inner-MDAs.
         """  # noqa:D205 D212 D415
         self.n_processes = n_processes
@@ -129,7 +139,7 @@ class MDAChain(MDA):
         )
 
         self.log_convergence = log_convergence
-
+        self.__initialize_defaults = initialize_defaults
         self._initialize_grammars()
         self._check_consistency()
         self._compute_input_couplings()
@@ -228,7 +238,8 @@ class MDAChain(MDA):
                 rate of the fixed point iteration method.
             over_relax_factor: The over-relaxation factor.
             parallel_tasks: The parallel tasks to be processed.
-            mdachain_parallelize_tasks: Whether to parallelize the parallel tasks, if any.
+            mdachain_parallelize_tasks: Whether to parallelize the parallel tasks,
+                if any.
             mdachain_parallel_options: The :class:`MDOParallelChain` options.
             inner_mda_options: The inner :class:`.MDA` options.
 
@@ -379,12 +390,11 @@ class MDAChain(MDA):
             and not an MDA.
         """
         first_discipline = disciplines[0]
-        is_one_discipline_self_coupled = (
+        return (
             len(disciplines) == 1
             and self.coupling_structure.is_self_coupled(first_discipline)
             and not isinstance(disciplines[0], MDA)
         )
-        return is_one_discipline_self_coupled
 
     @staticmethod
     def __get_coupled_disciplines_initial_order(
@@ -456,7 +466,6 @@ class MDAChain(MDA):
             return
         self.input_grammar = self.mdo_chain.input_grammar.copy()
         self.output_grammar = self.mdo_chain.output_grammar.copy()
-        self._add_residuals_norm_to_output_grammar()
 
     def _check_consistency(self) -> None:
         """Check if there is no more than 1 equation per variable.
@@ -467,9 +476,19 @@ class MDAChain(MDA):
             return
         super()._check_consistency()
 
+    def execute(  # noqa:D102
+        self, input_data: Mapping[str, Any] | None = None
+    ) -> DisciplineData:
+        if self.__initialize_defaults:
+            init_chain = MDOInitializationChain(
+                self.disciplines, available_data_names=input_data or ()
+            )
+            self.default_inputs.update(init_chain.execute(input_data))
+            self.__initialize_defaults = False
+        return super().execute(input_data=input_data)
+
     def _run(self) -> None:
-        if self.warm_start:
-            self._couplings_warm_start()
+        super()._run()
 
         self.local_data = self.mdo_chain.execute(self.local_data)
 
@@ -549,16 +568,16 @@ class MDAChain(MDA):
         save: bool = True,
         n_iterations: int | None = None,
         logscale: tuple[int, int] | None = None,
-        filename: str | None = None,
+        filename: Path | str = "",
         fig_size: FigSizeType = (50.0, 10.0),
     ) -> None:
+        if filename:
+            file_path = Path(filename)
         for mda in self.inner_mdas:
-            if filename is not None:
-                s_filename = split(filename)
-                filename = join(
-                    s_filename[0],
-                    f"{mda.__class__.__name__}_{s_filename[1]}",
-                )
+            if filename:
+                path = file_path.parent / f"{mda.__class__.__name__}_{file_path.name}"
+            else:
+                path = filename
             mda.plot_residual_history(
-                show, save, n_iterations, logscale, filename, fig_size
+                show, save, n_iterations, logscale, path, fig_size
             )

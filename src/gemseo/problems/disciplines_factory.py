@@ -18,17 +18,21 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Factory to create disciplines."""
+
 from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 
 from gemseo.core import discipline
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 class DisciplinesFactory(BaseFactory):
@@ -51,12 +55,7 @@ class DisciplinesFactory(BaseFactory):
         "gemseo.wrappers",
     )
 
-    def __init__(self) -> None:
-        """The constructor initializes the factory by scanning the directories to search
-        for subclasses of :class:`.MDODiscipline` objects.
-
-        Searches in "GEMSEO_PATH" and :doc:`gemseo.problems`.
-        """
+    def __init__(self) -> None:  # noqa: D107
         # Defines the benchmark problems to be imported
         super().__init__()
         self.__base_grammar = JSONGrammar("MDODiscipline_options")
@@ -108,10 +107,7 @@ class DisciplinesFactory(BaseFactory):
         return {k: v for k, v in options.items() if k.startswith(prefix)}
 
     def __filter_common_options(self, options):
-        """Separate options:
-
-        - from the :class:`.MDODiscipline` options grammar
-        - from the options that are specific to the discipline.
+        """Separate options.
 
         Args:
             options: The options of the discipline.

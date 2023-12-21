@@ -18,10 +18,10 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generate a gantt chart with processes execution time data."""
+
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
@@ -29,6 +29,10 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from pathlib import Path
 
 DEFAULT_NAME = "gantt_chart"
 
@@ -97,16 +101,18 @@ def create_gantt_chart(
     colors = {False: "tab:blue", True: "tab:red"}
     for i, name in enumerate(disc_names):
         stamps_orig = time_stamps[name]
-        stamps = [(l - min_t, u - l) for (l, u, _) in stamps_orig]
-        facecolors = [colors[s[2]] for s in stamps_orig]
-        ax.broken_barh(stamps, ((i + 1) * 10, 9), facecolors=facecolors)
+        stamps = [(low - min_t, up - low) for (low, up, _) in stamps_orig]
+        face_colors = [colors[s[2]] for s in stamps_orig]
+        ax.broken_barh(stamps, ((i + 1) * 10, 9), facecolors=face_colors)
 
     # Set all fonts sizes
-    for item in (
-        [ax.title, ax.xaxis.label, ax.yaxis.label]
-        + ax.get_xticklabels()
-        + ax.get_yticklabels()
-    ):
+    for item in {
+        ax.title,
+        ax.xaxis.label,
+        ax.yaxis.label,
+        *ax.get_xticklabels(),
+        *ax.get_yticklabels(),
+    }:
         item.set_fontsize(font_size)
 
     if save:

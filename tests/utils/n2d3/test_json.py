@@ -13,19 +13,21 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the class N2JSON."""
+
 from __future__ import annotations
 
 from json import loads
 
 import pytest
-from gemseo.core.coupling_structure import DependencyGraph
-from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.n2d3.n2_json import N2JSON
 from numpy import array
 from numpy import ones
 
+from gemseo.core.coupling_structure import DependencyGraph
+from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.n2d3.n2_json import N2JSON
 
-@pytest.fixture
+
+@pytest.fixture()
 def n2_json() -> N2JSON:
     """The N2JSON related to two strongly coupled disciplines and a weakly one."""
     description_list = [
@@ -52,7 +54,7 @@ def n2_json() -> N2JSON:
     return N2JSON(DependencyGraph(disciplines))
 
 
-@pytest.fixture
+@pytest.fixture()
 def expected_links(n2_json):
     """The expected links computed by the N2JSON.
 
@@ -102,7 +104,7 @@ def expected_links(n2_json):
     ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def expected_nodes(n2_json):
     """The expected nodes computed by the N2JSON.
 
@@ -115,23 +117,19 @@ def expected_nodes(n2_json):
     children = [[4], [2, 3]]
     nodes = []
     desc = n2_json._create_group_html(0, disciplines, n_groups, children)
-    nodes.append(
-        {
-            "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(0),
-            "is_group": True,
-            "group": 0,
-            "description": desc,
-        }
-    )
+    nodes.append({
+        "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(0),
+        "is_group": True,
+        "group": 0,
+        "description": desc,
+    })
     desc = n2_json._create_group_html(1, disciplines, n_groups, children)
-    nodes.append(
-        {
-            "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(1),
-            "is_group": True,
-            "group": 1,
-            "description": desc,
-        }
-    )
+    nodes.append({
+        "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(1),
+        "is_group": True,
+        "group": 1,
+        "description": desc,
+    })
 
     disciplines = list(n2_json._graph.disciplines)
     for discipline in [disciplines[index] for index in [2, 0, 1]]:
@@ -139,14 +137,12 @@ def expected_nodes(n2_json):
             discipline,
             {"y12a": 4, "y12b": 3, "y21": "n/a"},
         )
-        nodes.append(
-            {
-                "name": discipline.name,
-                "is_group": False,
-                "group": 0 if discipline.name == "D3" else 1,
-                "description": desc,
-            }
-        )
+        nodes.append({
+            "name": discipline.name,
+            "is_group": False,
+            "group": 0 if discipline.name == "D3" else 1,
+            "description": desc,
+        })
     return nodes
 
 

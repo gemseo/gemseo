@@ -16,4 +16,5 @@
 
 The main class is :class:`.CorrelationAnalysis` (based on OpenTURNS capabilities).
 """
+
 from __future__ import annotations

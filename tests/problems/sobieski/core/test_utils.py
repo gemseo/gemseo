@@ -19,23 +19,18 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.problems.sobieski.core.utils import SobieskiBase
 from numpy import array
 from numpy import complex128
 from numpy import eye
 from numpy import float64
 from numpy import zeros
 
+from gemseo.problems.sobieski.core.utils import SobieskiBase
+
 
 def test_init():
-    SobieskiBase("float64")
-    SobieskiBase("complex128")
-    SobieskiBase(float64)
-    SobieskiBase(complex128)
-
-    assert SobieskiBase("float64").dtype == SobieskiBase(float64).dtype
-    assert SobieskiBase("complex128").dtype == SobieskiBase(complex128).dtype
-
+    assert SobieskiBase("float64").dtype == float64
+    assert SobieskiBase("complex128").dtype == complex128
     with pytest.raises(ValueError, match="foo"):
         SobieskiBase("foo")
 

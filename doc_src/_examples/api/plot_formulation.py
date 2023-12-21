@@ -25,6 +25,7 @@ Formulation
 In this example, we will discover the different functions of the API
 related to MDO formulations: their names, their options and their sub-options.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

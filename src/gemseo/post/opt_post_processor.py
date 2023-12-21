@@ -17,30 +17,23 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for optimization history post-processing."""
+
 from __future__ import annotations
 
 import inspect
 from abc import abstractmethod
-from os.path import abspath
-from os.path import dirname
-from os.path import exists
-from os.path import join
+from collections.abc import Iterable
+from collections.abc import Sequence
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Dict
-from typing import Iterable
-from typing import List
 from typing import Optional
-from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 
-from gemseo.algos.database import Database
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.post.dataset.dataset_plot import DatasetPlot
@@ -52,9 +45,13 @@ from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
+if TYPE_CHECKING:
+    from gemseo.algos.database import Database
+    from gemseo.algos.opt_problem import OptimizationProblem
+
 OptPostProcessorOptionType = Union[int, float, str, bool, Sequence[str], FigSizeType]
-PlotOutputType = List[
-    Tuple[Optional[str], Union[Figure, DatasetPlot], Optional[Dict[str, Sequence[str]]]]
+PlotOutputType = list[
+    tuple[Optional[str], Union[Figure, DatasetPlot], Optional[dict[str, Sequence[str]]]]
 ]
 
 
@@ -105,9 +102,10 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._standardized_obj_name = opt_problem.get_objective_name()
         self._neg_obj_name = f"-{self._obj_name}"
         self.database = opt_problem.database
-        comp_dir = abspath(dirname(inspect.getfile(OptPostProcessor)))
         self.opt_grammar = JSONGrammar("OptPostProcessor")
-        self.opt_grammar.update_from_file(join(comp_dir, "OptPostProcessor.json"))
+        self.opt_grammar.update_from_file(
+            Path(inspect.getfile(OptPostProcessor)).parent / "OptPostProcessor.json"
+        )
         self.opt_grammar.set_descriptions(get_options_doc(self.execute))
         self._update_grammar_from_class(self.__class__)
 
@@ -128,15 +126,14 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             cls: The class.
         """
         name = f"{cls.__name__}_options"
-        f_class = inspect.getfile(cls)
-        comp_dir = abspath(dirname(f_class))
-        schema_file = join(comp_dir, f"{name}.json")
-        if not exists(schema_file):
-            schema_file = join(comp_dir, "options", f"{name}.json")
-        if not exists(schema_file):
+        class_dir_path = Path(inspect.getfile(cls)).parent
+        schema_file = class_dir_path / f"{name}.json"
+        if not schema_file.exists():
+            schema_file = class_dir_path / "options" / f"{name}.json"
+        if not schema_file.exists():
             raise ValueError(
                 "Options grammar for optimization post-processor does not exist, "
-                f"expected: {comp_dir} or {join(comp_dir, name)}.json."
+                f"expected: {class_dir_path} or {class_dir_path / name}.json."
             )
         descriptions = {}
         if hasattr(self.__class__, "_run"):
@@ -261,11 +258,11 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         try:
             self.opt_grammar.validate(options)
-        except InvalidDataError:
+        except InvalidDataError as error:
             raise InvalidDataError(
                 f"Invalid options for post-processor {self.__class__.__name__}; "
                 f"got {pretty_repr(options)}."
-            )
+            ) from error
 
     def _run(
         self,
@@ -357,14 +354,12 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         design_variable_sizes = self.opt_problem.design_space.variable_sizes
         for variable in variables:
             design_variable_size = design_variable_sizes[variable]
-            design_variable_names.extend(
-                [
-                    repr_variable(
-                        variable, index, size=design_variable_size, simplify=simplify
-                    )
-                    for index in range(design_variable_size)
-                ]
-            )
+            design_variable_names.extend([
+                repr_variable(
+                    variable, index, size=design_variable_size, simplify=simplify
+                )
+                for index in range(design_variable_size)
+            ])
 
         return design_variable_names
 

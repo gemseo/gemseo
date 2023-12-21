@@ -30,6 +30,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+
 from __future__ import annotations
 
 import docutils
@@ -82,12 +83,10 @@ def add_toctree_functions(app, pagename, templatename, context, doctree):
         ]
 
         # Now convert our docutils nodes into dicts that Jinja can use
-        nav = [
+        return [
             docutils_node_to_jinja(child, only_pages=True, numbered=numbered)
             for child in toc_items
         ]
-
-        return nav
 
     context["get_nav_object"] = get_nav_object
 

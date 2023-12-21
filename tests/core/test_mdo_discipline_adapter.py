@@ -20,15 +20,20 @@
 from __future__ import annotations
 
 import re
-from typing import Mapping
+from typing import TYPE_CHECKING
 
 import pytest
-from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.disciplines.auto_py import AutoPyDiscipline
 from numpy import array
 from numpy import ndarray
 from numpy.testing import assert_equal
+
+from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
+from gemseo.disciplines.auto_py import AutoPyDiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 INPUT_VECTOR = array([1.0, 1.0])
 
@@ -46,7 +51,7 @@ def create_disciplinary_function(
 
     def my_func(x: float, y: float = 0.0) -> float:
         z = x + y
-        return z
+        return z  # noqa: RET504
 
     def my_jac(x: float, y: float = 0.0) -> ndarray:
         return array([[1.0, 1.0]])
@@ -63,7 +68,7 @@ def create_disciplinary_function(
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def disciplinary_function() -> MDODisciplineAdapter:
     """A disciplinary function."""
     return create_disciplinary_function()
@@ -89,17 +94,17 @@ def test_error(disciplinary_function):
 
 def test_discipline_local_data(disciplinary_function):
     """Check that input sizes can be guessed from the discipline's local data."""
-    disciplinary_function._MDODisciplineAdapter__discipline.local_data.update(
-        {"x": array([1.0])}
-    )
+    disciplinary_function._MDODisciplineAdapter__discipline.local_data.update({
+        "x": array([1.0])
+    })
     check_func_and_jac_evaluation(disciplinary_function)
 
 
 def test_discipline_default_inputs(disciplinary_function):
     """Check that input sizes can be guessed from the discipline's default inputs."""
-    disciplinary_function._MDODisciplineAdapter__discipline.default_inputs.update(
-        {"x": array([1.0])}
-    )
+    disciplinary_function._MDODisciplineAdapter__discipline.default_inputs.update({
+        "x": array([1.0])
+    })
     check_func_and_jac_evaluation(disciplinary_function)
 
 

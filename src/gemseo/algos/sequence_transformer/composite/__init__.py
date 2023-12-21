@@ -18,4 +18,5 @@
 #        :author: Sebastien Bocquet, Alexandre Scotto Di Perrotolo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The sub-package for composite sequence transformers."""
+
 from __future__ import annotations

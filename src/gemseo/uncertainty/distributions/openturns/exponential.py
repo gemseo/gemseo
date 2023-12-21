@@ -17,25 +17,23 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create an exponential distribution from the OpenTURNS library.
+"""The OpenTURNS-based exponential distribution."""
 
-This class inherits from :class:`.OTDistribution`.
-"""
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 
 class OTExponentialDistribution(OTDistribution):
-    """Create an exponential distribution.
+    """The OpenTURNS-based exponential distribution.
 
     Examples:
         >>> from gemseo.uncertainty.distributions.openturns.exponential import (
-        ...     OTExponentialDistribution
+        ...     OTExponentialDistribution,
         ... )
-        >>> distribution = OTExponentialDistribution('x', 2, 3)
+        >>> distribution = OTExponentialDistribution("x", 2, 3)
         >>> print(distribution)
-        Exponential(loc=3, rate=2)
+        Exponential(rate=2, loc=3)
     """
 
     def __init__(
@@ -54,13 +52,12 @@ class OTExponentialDistribution(OTDistribution):
             rate: The rate of the exponential random variable.
             loc: The location of the exponential random variable.
         """  # noqa: D205,D212,D415
-        standard_parameters = {self._RATE: rate, self._LOC: loc}
         super().__init__(
             variable,
             "Exponential",
             (rate, loc),
             dimension,
-            standard_parameters,
+            {self._RATE: rate, self._LOC: loc},
             transformation,
             lower_bound,
             upper_bound,

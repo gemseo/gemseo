@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Job schedulers interface."""
+
 from __future__ import annotations
 
 import pickle
@@ -231,10 +232,13 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
         """
         if not outputs_path.exists():
             raise FileNotFoundError(
-                f"The serialized outputs file of the discipline does not exist: {outputs_path}."
+                "The serialized outputs file of the discipline does not exist: "
+                f"{outputs_path}."
             )
+
         with outputs_path.open("rb") as output_file:
             output = pickle.load(output_file)
+
             if isinstance(output, tuple):
                 error, trace = output
                 LOGGER.error(
@@ -245,13 +249,13 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
 
                 LOGGER.error(trace)
                 raise error
-            else:
-                LOGGER.debug(
-                    "Discipline %s execution succeeded in %s",
-                    self._discipline.name,
-                    current_workdir,
-                )
-                self.local_data.update(output)
+
+            LOGGER.debug(
+                "Discipline %s execution succeeded in %s",
+                self._discipline.name,
+                current_workdir,
+            )
+            self.local_data.update(output)
 
     def _create_current_workdir(self) -> Path:
         """Create the current working directory.

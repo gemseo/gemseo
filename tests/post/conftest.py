@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_scalable import DiagonalDOE
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -22,8 +23,8 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 
-@pytest.fixture
-def __common_problem():
+@pytest.fixture()
+def __common_problem():  # noqa: PT005
     """A dummy optimization problem to check post-processors."""
     design_space = DesignSpace()
     design_space.add_variable("x", size=2, l_b=0, u_b=1, value=0.5)
@@ -56,7 +57,7 @@ def __common_problem():
     return problem
 
 
-@pytest.fixture
+@pytest.fixture()
 def three_length_common_problem(__common_problem):
     """The __common_problem sampled three times on a diagonal of its input space."""
     lib = DiagonalDOE()
@@ -65,7 +66,7 @@ def three_length_common_problem(__common_problem):
     return __common_problem
 
 
-@pytest.fixture
+@pytest.fixture()
 def common_problem(__common_problem):
     """The __common_problem sampled twice on a diagonal of its input space."""
     lib = DiagonalDOE()
@@ -74,7 +75,7 @@ def common_problem(__common_problem):
     return __common_problem
 
 
-@pytest.fixture
+@pytest.fixture()
 def large_common_problem(__common_problem):
     """The __common_problem sampled 20 times on a diagonal of its input space."""
     lib = DiagonalDOE()
@@ -83,7 +84,7 @@ def large_common_problem(__common_problem):
     return __common_problem
 
 
-@pytest.fixture
+@pytest.fixture()
 def common_problem_():
     """A dummy optimization problem to check post-processors."""
     problem = Rosenbrock()

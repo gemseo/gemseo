@@ -18,19 +18,25 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test R2 error measure module."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+from numpy import allclose
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import allclose
+
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
 MODEL.set_cache_policy(MODEL.CacheType.MEMORY_FULL)
@@ -41,7 +47,7 @@ TOL_DEG_3 = 0.01
 ATOL = 1e-12
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
@@ -52,7 +58,7 @@ def dataset() -> IODataset:
     return MODEL.cache.to_dataset()
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset_test() -> IODataset:
     """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
@@ -154,10 +160,8 @@ def test_compute_cross_validation_measure(dataset):
 
 def test_compute_bootstrap_measure(dataset):
     """Test evaluate bootstrap method."""
-    algo = PolynomialRegressor(dataset, degree=2)
-    measure = R2Measure(algo)
-    with pytest.raises(NotImplementedError):
-        measure.compute_bootstrap_measure()
+    r2_measure = R2Measure(PolynomialRegressor(dataset, degree=2))
+    assert r2_measure.compute_bootstrap_measure() == pytest.approx(1.0)
 
 
 @pytest.mark.parametrize("fit", [False, True])

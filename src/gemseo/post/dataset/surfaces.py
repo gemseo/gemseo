@@ -22,19 +22,19 @@
 A :class:`.Surfaces` plot represents samples
 of a functional variable :math:`z(x,y)` discretized over a 2D mesh.
 Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
-:math:`z` as a parameter and the mesh as a misc.
+:math:`z` as a parameter and the mesh as a metadata.
 """
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-import matplotlib.pyplot as plt
-import matplotlib.tri as mtri
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class Surfaces(DatasetPlot):
@@ -48,11 +48,11 @@ class Surfaces(DatasetPlot):
         samples: Sequence[int] | None = None,
         add_points: bool = False,
         fill: bool = True,
-        levels: int | Sequence[int] = None,
+        levels: int | Sequence[int] | None = None,
     ) -> None:
         """
         Args:
-            mesh: The name of the dataset misc corresponding to the mesh.
+            mesh: The name of the dataset metadata corresponding to the mesh.
             variable: The name of the variable for the x-axis.
             samples: The indices of the samples to plot. If ``None``, plot all samples.
             add_points: If ``True`` then display the samples over the surface plot.
@@ -70,46 +70,3 @@ class Surfaces(DatasetPlot):
             fill=fill,
             levels=levels,
         )
-
-    def _plot(
-        self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        mesh = self._param.mesh
-        variable = self._param.variable
-        samples = self._param.samples
-        x_data = self.dataset.misc[mesh][:, 0]
-        y_data = self.dataset.misc[mesh][:, 1]
-        data = self.dataset.get_view(variable_names=variable).to_numpy()
-
-        if samples is not None:
-            samples = data[samples, :]
-        else:
-            samples = data
-
-        options = {"cmap": self.colormap}
-        levels = self._param.levels
-        if levels is not None:
-            options["levels"] = levels
-
-        figs = []
-        for sample, sample_name in zip(samples, self.dataset.index):
-            fig = plt.figure(figsize=self.fig_size)
-            axes = fig.add_subplot(1, 1, 1)
-            triangle = mtri.Triangulation(x_data, y_data)
-            if self._param.fill:
-                tcf = axes.tricontourf(triangle, sample, **options)
-            else:
-                tcf = axes.tricontour(triangle, sample, **options)
-
-            if self._param.add_points:
-                axes.scatter(x_data, y_data, color=self.color or None)
-
-            axes.set_xlabel(self.xlabel)
-            axes.set_ylabel(self.ylabel)
-            axes.set_title(f"{self.title or self.zlabel or variable} - {sample_name}")
-            fig.colorbar(tcf)
-            figs.append(fig)
-
-        return figs

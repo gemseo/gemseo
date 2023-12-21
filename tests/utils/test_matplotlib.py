@@ -13,15 +13,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the function that save and/or show a Matplotlib figure."""
+
 from __future__ import annotations
 
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from gemseo.utils.matplotlib_figure import save_show_figure
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
+
+from gemseo.utils.matplotlib_figure import save_show_figure
 
 
 @pytest.mark.parametrize("file_path", [None, "file_name.pdf"])
@@ -29,7 +31,7 @@ from matplotlib import rcParams
 @pytest.mark.parametrize("fig_size", [(10, 10), None])
 def test_process(tmp_wd, pyplot_close_all, file_path, show, fig_size):
     """Verify that a Matplotlib figure is correctly saved."""
-    fig, axes = plt.subplots()
+    fig, _ = plt.subplots()
 
     with patch("matplotlib.pyplot.savefig"), patch("matplotlib.pyplot.show"):
         save_show_figure(fig, show, file_path, fig_size)

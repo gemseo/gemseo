@@ -31,6 +31,7 @@ A. B. Lambe and J. R. R. A. Martins, “Extensions to the Design Structure Matri
 the Description of Multidisciplinary Design, Analysis, and Optimization Processes”,
 Structural and Multidisciplinary Optimization, vol. 46, no. 2, p. 273-284, 2012.
 """
+
 from __future__ import annotations
 
 import logging
@@ -38,10 +39,8 @@ from json import dumps
 from multiprocessing import RLock
 from pathlib import Path
 from tempfile import mkdtemp
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Mapping
 from typing import Union
 
 from gemseo.core.discipline import MDODiscipline
@@ -53,7 +52,6 @@ from gemseo.core.execution_sequence import ParallelExecSequence
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.monitoring import Monitoring
-from gemseo.core.scenario import Scenario
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.mda import MDA
 from gemseo.utils.locks import synchronized
@@ -61,13 +59,18 @@ from gemseo.utils.show_utils import generate_xdsm_html
 from gemseo.utils.xdsm import XDSM
 from gemseo.utils.xdsm_to_pdf import xdsm_data_to_pdf
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.core.scenario import Scenario
+
 LOGGER = logging.getLogger(__name__)
 
 OPT_NAME = OPT_ID = "Opt"
 USER_NAME = USER_ID = "_U_"
 
-EdgeType = Dict[str, Union[MDODiscipline, List[str]]]
-NodeType = Dict[str, str]
+EdgeType = dict[str, Union[MDODiscipline, list[str]]]
+NodeType = dict[str, str]
 IdsType = Any
 
 
@@ -317,9 +320,7 @@ class XDSMizer:
         nodes.append(opt_node)
 
         # Disciplines
-        for atom_id, atom in enumerate(
-            self.atoms
-        ):  # pylint: disable=too-many-nested-blocks
+        for atom_id, atom in enumerate(self.atoms):  # pylint: disable=too-many-nested-blocks
             # if a node already created from an atom with same discipline
             # at one level just reference the same node
             for ref_atom in self.to_id:
@@ -338,9 +339,9 @@ class XDSMizer:
 
                         if not node:
                             # TODO: add specific exception?
-                            raise "Node " + self.to_id[
-                                atom
-                            ] + " not found in " + nodes  # pragma: no cover
+                            raise (
+                                "Node " + self.to_id[atom] + " not found in " + nodes
+                            )  # pragma: no cover
 
                         node["status"] = atom.status
 
@@ -536,8 +537,7 @@ class XDSMizer:
         for sequence in workflow.sequences:
             if isinstance(sequence, LoopExecSequence):
                 if sequence.atom_controller.uuid == atom_controller.uuid:
-                    sub_workflow = sequence
-                    return sub_workflow
+                    return sequence
 
                 sub_workflow = sub_workflow or XDSMizer._find_sub_workflow(
                     sequence.iteration_sequence, atom_controller
@@ -551,8 +551,7 @@ class XDSMizer:
 
     def _create_workflow(self) -> list[str, IdsType]:
         """Manage the creation of the XDSM workflow creation from a formulation one."""
-        workflow = [USER_ID, expand(self.workflow, self.to_id)]
-        return workflow
+        return [USER_ID, expand(self.workflow, self.to_id)]
 
 
 def expand(
@@ -598,5 +597,5 @@ def expand(
     elif isinstance(wks, AtomicExecSequence):
         ids = [to_id[wks]]
     else:
-        raise Exception(f"Bad execution sequence: found {wks}")
+        raise TypeError(f"Bad execution sequence: found {wks}")
     return ids

@@ -25,12 +25,10 @@ Mixture of experts
 In this demo, we load a dataset (the Rosenbrock function in 2D) and apply a
 mixture of experts regression model to obtain an approximation.
 """
+
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo import configure_logger
-from gemseo import create_benchmark_dataset
-from gemseo.mlearning import create_regression_model
 from numpy import array
 from numpy import hstack
 from numpy import linspace
@@ -38,6 +36,10 @@ from numpy import meshgrid
 from numpy import nonzero
 from numpy import sqrt
 from numpy import zeros
+
+from gemseo import configure_logger
+from gemseo import create_benchmark_dataset
+from gemseo.mlearning import create_regression_model
 
 configure_logger()
 
@@ -167,9 +169,10 @@ plt.show()
 for i in range(model.n_clusters):
     plt.figure()
     plt.imshow(
-        model.predict_local_model(fine_input, i)["rosen"].reshape(
-            (refinement, refinement)
-        )
+        model.predict_local_model(fine_input, i)["rosen"].reshape((
+            refinement,
+            refinement,
+        ))
     )
     plt.colorbar()
     plt.title(f"Local model {i}")

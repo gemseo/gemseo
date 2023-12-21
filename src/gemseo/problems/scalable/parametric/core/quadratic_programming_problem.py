@@ -18,11 +18,14 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A quadratic programming (QP) problem."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import NamedTuple
 
-from numpy.typing import NDArray
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class QuadraticProgrammingProblem(NamedTuple):

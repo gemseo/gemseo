@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Provide base test class stub for testing bilevel also for |g| plugins."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -83,7 +84,7 @@ def create_sobieski_bilevel_scenario(
         )
 
         sub_scenarios = [sc_str, sc_aero, sc_prop]
-        sub_disciplines = sub_scenarios + [mission]
+        sub_disciplines = [*sub_scenarios, mission]
         for sc in sub_scenarios:
             sc.default_inputs = {"max_iter": 5, "algo": "SLSQP"}
 

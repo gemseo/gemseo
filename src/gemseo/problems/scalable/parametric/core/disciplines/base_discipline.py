@@ -18,12 +18,16 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The base discipline."""
+
 from __future__ import annotations
 
 from abc import ABC
-from typing import Mapping
+from typing import TYPE_CHECKING
 
-from numpy.typing import NDArray
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from numpy.typing import NDArray
 
 
 class BaseDiscipline(ABC):

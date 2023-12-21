@@ -17,9 +17,7 @@
 #                  initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scalable model factory
-======================
+"""Scalable model factory.
 
 This module contains the :class:`.ScalableModelFactory` which is a factory
 to create a :class:`.ScalableModel` from its class name by means of the
@@ -29,6 +27,7 @@ of available scalable models
 and to check is a type of scalable model is available
 (see :meth:`.ScalableModelFactory.is_available` method)
 """
+
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory

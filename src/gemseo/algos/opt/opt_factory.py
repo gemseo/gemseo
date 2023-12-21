@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """A factory to execute optimization algorithms from their name."""
+
 from __future__ import annotations
 
 from gemseo.algos.base_algo_factory import BaseAlgoFactory

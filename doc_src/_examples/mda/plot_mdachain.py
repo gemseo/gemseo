@@ -24,6 +24,7 @@ MDAChain
 A smart MDA that solves only strongly coupled disciplines
 and then executes the weakly coupled ones
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger
@@ -73,14 +74,12 @@ def display_result(res, mda_name):
 # of the MDA will be used and computed from the
 # Default inputs of the disciplines
 
-disciplines = create_discipline(
-    [
-        "SobieskiStructure",
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiStructure",
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+])
 mda = create_mda("MDAChain", disciplines, inner_mda_name="MDAJacobi")
 res = mda.execute()
 display_result(res, mda.name)

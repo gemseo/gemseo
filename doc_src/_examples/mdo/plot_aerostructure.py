@@ -21,6 +21,7 @@
 MDO formulations for a toy example in aerostructure
 ===================================================
 """
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -52,8 +53,7 @@ algo_options = {
 # using the :class:`.AnalyticDiscipline` class.
 
 aero_formulas = {
-    "drag": "0.1*((sweep/360)**2 + 200 + "
-    + "thick_airfoils**2-thick_airfoils -4*displ)",
+    "drag": "0.1*((sweep/360)**2 + 200 + thick_airfoils**2-thick_airfoils -4*displ)",
     "forces": "10*sweep + 0.2*thick_airfoils-0.2*displ",
     "lift": "(sweep + 0.2*thick_airfoils-2.*displ)/3000.",
 }
@@ -61,8 +61,8 @@ aerodynamics = create_discipline(
     "AnalyticDiscipline", name="Aerodynamics", expressions=aero_formulas
 )
 struc_formulas = {
-    "mass": "4000*(sweep/360)**3 + 200000 + " + "100*thick_panels +200.0*forces",
-    "reserve_fact": "-3*sweep " + "-6*thick_panels+0.1*forces+55",
+    "mass": "4000*(sweep/360)**3 + 200000 + 100*thick_panels +200.0*forces",
+    "reserve_fact": "-3*sweep -6*thick_panels+0.1*forces+55",
     "displ": "2*sweep + 3*thick_panels-2.*forces",
 }
 structure = create_discipline(
@@ -154,7 +154,9 @@ system_scenario = create_scenario(
 )
 system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)
 system_scenario.add_constraint("lift", "eq", value=0.5)
-system_scenario.execute(
-    {"algo": "NLOPT_COBYLA", "max_iter": 7, "algo_options": algo_options}
-)
+system_scenario.execute({
+    "algo": "NLOPT_COBYLA",
+    "max_iter": 7,
+    "algo_options": algo_options,
+})
 system_scenario.post_process("OptHistoryView", save=False, show=True)

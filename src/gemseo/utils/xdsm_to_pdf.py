@@ -17,12 +17,16 @@
 #       :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Provide routines for XDSM and tikz."""
+
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from pyxdsm.XDSM import XDSM
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class XDSMToPDFConverter:
@@ -65,7 +69,7 @@ class XDSMToPDFConverter:
 
         # Build XDSM for sub-scenarios
         if scenario == "root":
-            subscenarios = [key for key in xdsm_data.keys() if "scn-" in key]
+            subscenarios = [key for key in xdsm_data if "scn-" in key]
             for subscenario in subscenarios:
                 self.convert(
                     xdsm_data,
@@ -155,9 +159,9 @@ class XDSMToPDFConverter:
     def __add_nodes(self, numbers: Sequence[int], nodes) -> None:
         """Add the different nodes, called 'systems', in the XDSM."""
         for node in nodes:
-            name = ",".join(
-                [str(current) for current in numbers[node["id"]]["current"]]
-            )
+            name = ",".join([
+                str(current) for current in numbers[node["id"]]["current"]
+            ])
 
             name_1 = name + ",{}-{}:".format(
                 str(numbers[node["id"]]["end"]), str(numbers[node["id"]]["next"])
@@ -170,7 +174,7 @@ class XDSMToPDFConverter:
             elif node["type"] == "lp_optimization":
                 node_type = "LP_Optimization"
                 name = name_1
-            if node["type"] == "doe":
+            elif node["type"] == "doe":
                 node_type = "DOE"
                 name = name_1
             elif node["type"] == "mda":
@@ -179,10 +183,7 @@ class XDSMToPDFConverter:
             elif node["type"] == "mdo":
                 node_type = "MDO"
                 name = name_2
-            elif node["type"] == "analysis":
-                node_type = "Function"
-                name = name_2
-            elif node["type"] == "function":
+            elif node["type"] in {"analysis", "function"}:
                 node_type = "Function"
                 name = name_2
             elif node["type"] == "metamodel":

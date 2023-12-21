@@ -21,6 +21,7 @@
 Application: Sobieski's Super-Sonic Business Jet (MDO)
 ======================================================
 """
+
 # %%
 # This section describes how to setup and solve the MDO problem relative to the
 # :ref:`Sobieski test case <sobieski_problem>` with |g|.
@@ -64,7 +65,7 @@ from gemseo import get_available_formulations
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -76,14 +77,12 @@ configure_logger()
 # disciplines themselves have already been
 # developed and interfaced with |g| (see :ref:`benchmark_problems`).
 
-disciplines = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 
 # %%
 # .. tip::
@@ -111,7 +110,7 @@ disciplines = create_discipline(
 #   :func:`.create_design_space` and
 #   :meth:`~gemseo.algos.design_space.DesignSpace.add_variable`. In this case,
 #   we will create it directly from the API.
-design_space = SobieskiProblem().design_space
+design_space = SobieskiDesignSpace()
 # %%
 #     .. code::
 #

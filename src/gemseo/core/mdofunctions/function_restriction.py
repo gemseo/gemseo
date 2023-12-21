@@ -13,9 +13,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A function mapping another one from some input components."""
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import empty
@@ -23,6 +24,9 @@ from numpy import ndarray
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class FunctionRestriction(MDOFunction):
@@ -74,9 +78,9 @@ class FunctionRestriction(MDOFunction):
         self.__expr = expr
         self.__input_names = input_names
 
-        self._active_indexes = array(
-            [i for i in range(self.__input_dim) if i not in self.__frozen_indexes]
-        )
+        self._active_indexes = array([
+            i for i in range(self.__input_dim) if i not in self.__frozen_indexes
+        ])
 
         # Build the name of the restriction
         if self.__name is None and self.__input_names is not None:

@@ -95,29 +95,34 @@ The GPR model relies on the GaussianProcessRegressor class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 """
+
 from __future__ import annotations
 
+from collections.abc import Iterable
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Mapping
-from typing import Tuple
 
 import sklearn.gaussian_process
 from numpy import atleast_2d
 from numpy import ndarray
 from numpy import newaxis
 from numpy import repeat
-from sklearn.gaussian_process.kernels import Kernel
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import DataType
-from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo import SEED
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
-__Bounds = Tuple[float, float]
+if TYPE_CHECKING:
+    from sklearn.gaussian_process.kernels import Kernel
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.ml_algo import TransformerType
+
+__Bounds = tuple[float, float]
 
 
 class GaussianProcessRegressor(MLRegressionAlgo):
@@ -138,7 +143,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         alpha: float | ndarray = 1e-10,
         optimizer: str | Callable = "fmin_l_bfgs_b",
         n_restarts_optimizer: int = 10,
-        random_state: int | None = None,
+        random_state: int | None = SEED,
     ) -> None:
         """
         Args:
@@ -153,10 +158,9 @@ class GaussianProcessRegressor(MLRegressionAlgo):
             alpha: The nugget effect to regularize the model.
             optimizer: The optimization algorithm to find the parameter length scales.
             n_restarts_optimizer: The number of restarts of the optimizer.
-            random_state: The seed used to initialize the centers.
-                If ``None``, the random number generator is the RandomState instance
-                used by `numpy.random`.
-        """
+            random_state: The random state passed to the random number generator.
+                Use an integer for reproducible results.
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,
@@ -190,8 +194,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         """The kernel used for prediction."""
         if self.is_trained:
             return self.algo.kernel_
-        else:
-            return self.algo.kernel
+        return self.algo.kernel
 
     def __compute_parameter_length_scale_bounds(
         self,
@@ -234,10 +237,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        output_data = self.algo.predict(input_data)
-        if output_data.ndim == 1:
-            output_data = output_data[:, newaxis]
-        return output_data
+        return self.algo.predict(input_data).reshape((len(input_data), -1))
 
     def predict_std(
         self,
@@ -278,7 +278,6 @@ class GaussianProcessRegressor(MLRegressionAlgo):
 
         output_data = self.algo.predict(input_data, return_std=True)[1]
         if output_data.ndim == 1:
-            output_data = repeat(
-                output_data[:, newaxis], self._reduced_dimensions[1], 1
-            )
+            return repeat(output_data[:, newaxis], self._reduced_dimensions[1], 1)
+
         return output_data

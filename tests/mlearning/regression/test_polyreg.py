@@ -18,15 +18,10 @@
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial regression module."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from numpy import allclose
 from numpy import array
 from numpy import hstack
@@ -36,6 +31,13 @@ from numpy import newaxis
 from numpy import sqrt
 from numpy import zeros
 from scipy.special import comb
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mlearning import import_regression_model
+from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 
 LEARNING_SIZE = 50
 DEGREE = 5
@@ -58,7 +60,7 @@ ANOTHER_INPUT_VALUE = {
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """Dataset from a R^2 -> R^3 function sampled over [-1, 2]^2."""
     root_learning_size = int(sqrt(LEARNING_SIZE))
@@ -81,33 +83,29 @@ def dataset() -> IODataset:
         "y_3": IODataset.OUTPUT_GROUP,
     }
 
-    dataset_ = IODataset.from_array(
+    return IODataset.from_array(
         data, variables, variable_names_to_n_components, variable_names_to_group_names
     )
-    return dataset_
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset_from_cache() -> IODataset:
     """The dataset used to train the regression algorithms."""
-    discipline = AnalyticDiscipline(
-        {
-            "y_1": "1 + x_1 + x_2**2",
-            "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
-            "y_3": "10*x_1*x_2**2 + 7*x_2**5",
-        }
-    )
+    discipline = AnalyticDiscipline({
+        "y_1": "1 + x_1 + x_2**2",
+        "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
+        "y_3": "10*x_1*x_2**2 + 7*x_2**5",
+    })
     discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_2", l_b=-1, u_b=2)
     design_space.add_variable("x_1", l_b=-1, u_b=2)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
-    data = discipline.cache.to_dataset("dataset_name")
-    return data
+    return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture
+@pytest.fixture()
 def model(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor."""
     polyreg = PolynomialRegressor(dataset, degree=DEGREE)
@@ -115,7 +113,7 @@ def model(dataset) -> PolynomialRegressor:
     return polyreg
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_without_intercept(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor without intercept fitting."""
     polyreg = PolynomialRegressor(dataset, degree=DEGREE, fit_intercept=False)

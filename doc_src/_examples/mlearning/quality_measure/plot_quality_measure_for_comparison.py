@@ -27,22 +27,24 @@ of a mixture of experts (MoE) and a random forest algorithm under different
 circumstances. We will consider two different datasets: A 1D function, and the
 Rosenbrock dataset (two inputs and one output).
 """
+
 # %%
 # Import
 # ------
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+from numpy import hstack
+from numpy import linspace
+from numpy import meshgrid
+from numpy import sin
+
 from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
-from numpy import hstack
-from numpy import linspace
-from numpy import meshgrid
-from numpy import sin
 
 configure_logger()
 

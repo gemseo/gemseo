@@ -19,23 +19,27 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test partial least square regression."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
 from numpy import ndarray
 from numpy import newaxis
 from numpy import sum as npsum
-from numpy.random import rand
+from numpy.random import default_rng
+
+from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
 
 N_SAMPLES = 10
 N_FEATURES = 8
 
+RNG = default_rng()
 
-@pytest.fixture
+
+@pytest.fixture()
 def data() -> tuple[ndarray, ndarray]:
     """The dataset used to build the transformer, based on a 1D-mesh."""
-    input_data = rand(N_SAMPLES, N_FEATURES)
+    input_data = RNG.random((N_SAMPLES, N_FEATURES))
     output_data = npsum(input_data, 1)[:, newaxis]
     return input_data, output_data
 
@@ -83,7 +87,7 @@ def test_inverse_transform(data):
     n_components = 3
     pca = PLS(n_components=n_components)
     pca.fit(input_data, output_data)
-    data = rand(N_SAMPLES, n_components)
+    data = RNG.random((N_SAMPLES, n_components))
     restored_data = pca.inverse_transform(data)
     assert restored_data.shape[0] == data.shape[0]
     assert restored_data.shape[1] == N_FEATURES

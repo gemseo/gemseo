@@ -23,12 +23,13 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Sobieski's SSBJ base class."""
+
 from __future__ import annotations
 
 import cmath
 import logging
 import math
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import atleast_2d
@@ -37,6 +38,11 @@ from numpy import complex128
 from numpy import concatenate
 from numpy import float64
 from numpy import ndarray
+from strenum import StrEnum
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from types import ModuleType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,29 +55,25 @@ _MISC_WEIGHT = 25000.0
 _MAXIMUM_LOAD_FACTOR = 6.0
 _REFERENCE_ENGINE_WEIGHT = 4360.0
 _MINIMUM_DRAG_COEFFICIENT = 0.01375
-_CONSTANTS = array(
-    [
-        _MINIMUM_FUEL_WEIGHT,
-        _MISC_WEIGHT,
-        _MAXIMUM_LOAD_FACTOR,
-        _REFERENCE_ENGINE_WEIGHT,
-        _MINIMUM_DRAG_COEFFICIENT,
-    ]
-)
-_DESIGN_BOUNDS = array(
-    [
-        (0.1, 0.4),
-        (0.75, 1.25),
-        (0.75, 1.25),
-        (0.1, 1),
-        (0.01, 0.09),
-        (30000.0, 60000.0),
-        (1.4, 1.8),
-        (2.5, 8.5),
-        (40.0, 70.0),
-        (500.0, 1500.0),
-    ]
-)
+_CONSTANTS = array([
+    _MINIMUM_FUEL_WEIGHT,
+    _MISC_WEIGHT,
+    _MAXIMUM_LOAD_FACTOR,
+    _REFERENCE_ENGINE_WEIGHT,
+    _MINIMUM_DRAG_COEFFICIENT,
+])
+_DESIGN_BOUNDS = array([
+    (0.1, 0.4),
+    (0.75, 1.25),
+    (0.75, 1.25),
+    (0.1, 1),
+    (0.01, 0.09),
+    (30000.0, 60000.0),
+    (1.4, 1.8),
+    (2.5, 8.5),
+    (40.0, 70.0),
+    (500.0, 1500.0),
+])
 _NAMES_TO_BOUNDS = {
     "x_1": _DESIGN_BOUNDS[0:2],
     "x_2": _DESIGN_BOUNDS[2],
@@ -91,29 +93,37 @@ _NAMES_TO_BOUNDS = {
 class SobieskiBase:
     """Utilities for Sobieski's SSBJ use case."""
 
+    # TODO: API: remove these unused class attributes.
     DTYPE_COMPLEX = "complex128"
     DTYPE_DOUBLE = "float64"
     DTYPE_DEFAULT = DTYPE_COMPLEX
 
+    class DataType(StrEnum):
+        """A NumPy data type."""
+
+        COMPLEX = "complex128"
+        FLOAT = "float64"
+
+    dtype: DataType
+    """The NumPy data type."""
+
+    math: ModuleType
+    """The library of mathematical functions."""
+
     def __init__(
         self,
-        dtype: str,
+        dtype: DataType,
     ) -> None:
         """
         Args:
             dtype: The NumPy data type.
-        """
-        self.dtype = dtype
-        if dtype == complex128:
-            self.math = cmath
-        elif dtype == float64:
-            self.math = math
-        elif dtype == self.DTYPE_DOUBLE:
-            self.math = math
-            self.dtype = float64
-        elif dtype == self.DTYPE_COMPLEX:
+        """  # noqa: D205 D212
+        if dtype == self.DataType.COMPLEX:
             self.math = cmath
             self.dtype = complex128
+        elif dtype == self.DataType.FLOAT:
+            self.math = math
+            self.dtype = float64
         else:
             raise ValueError(f"Unknown dtype: {dtype}.")
 
@@ -317,12 +327,9 @@ class SobieskiBase:
             Derivatives of normalized value.
         """
         s_norm = s_new.real / s_ref.real
-        if s_norm > 1.25:
-            return 0.0
-        elif s_norm < 0.75:
-            return 0.0
-        else:
+        if 0.75 <= s_norm <= 1.25:
             return 1.0 / s_ref
+        return 0.0
 
     def derive_polynomial_approximation(
         self,

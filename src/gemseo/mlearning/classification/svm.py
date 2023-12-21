@@ -30,20 +30,26 @@ The classifier relies on the SVC class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.svm.SVC.html>`_.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 
-from numpy import ndarray
-from numpy import newaxis
 from sklearn.svm import SVC
 
-from gemseo.datasets.io_dataset import IODataset
+from gemseo import SEED
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
-from gemseo.mlearning.core.ml_algo import TransformerType
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from numpy import ndarray
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class SVMClassifier(MLClassificationAlgo):
@@ -61,6 +67,7 @@ class SVMClassifier(MLClassificationAlgo):
         C: float = 1.0,  # noqa: N803
         kernel: str | Callable | None = "rbf",
         probability: bool = False,
+        random_state: int | None = SEED,
         **parameters: int | float | bool | str | None,
     ) -> None:
         """
@@ -72,6 +79,8 @@ class SVMClassifier(MLClassificationAlgo):
                 or a callable.
             probability: Whether to enable the probability estimates.
                 The algorithm is faster if set to False.
+            random_state: The random state passed to the random number generator.
+                Use an integer for reproducible results.
         """  # noqa: D205, D212, D415
         super().__init__(
             data,
@@ -81,9 +90,16 @@ class SVMClassifier(MLClassificationAlgo):
             C=C,
             kernel=kernel,
             probability=probability,
+            random_state=random_state,
             **parameters,
         )
-        self.algo = SVC(C=C, kernel=kernel, probability=probability, **parameters)
+        self.algo = SVC(
+            C=C,
+            kernel=kernel,
+            probability=probability,
+            random_state=random_state,
+            **parameters,
+        )
 
     def _fit(
         self,
@@ -96,7 +112,7 @@ class SVMClassifier(MLClassificationAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        return self.algo.predict(input_data)[:, newaxis].astype(int)
+        return self.algo.predict(input_data).astype(int).reshape((len(input_data), -1))
 
     def _predict_proba_soft(
         self,

@@ -3,11 +3,11 @@ exclude: ^src/gemseo/third_party
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: v4.5.0
   hooks:
     - id: trailing-whitespace
     - id: end-of-file-fixer
-      exclude: (LICENSES/headers|tests/core/data/factory/.*\.json)
+      exclude: LICENSES/headers
     - id: check-yaml
       # !reference is specific to gitlab
       exclude: \.gitlab-ci.yml
@@ -29,79 +29,14 @@ repos:
     - id: rst-directive-colons
     - id: rst-inline-touching-normal
 
-- repo: https://github.com/PyCQA/autoflake
-  rev: v2.2.1
-  hooks:
-    - id: autoflake
-      args: [
-        --in-place,
-        --remove-all-unused-imports,
-      ]
-
-- repo: https://github.com/asottile/reorder_python_imports
-  rev: v3.12.0
-  hooks:
-    - id: reorder-python-imports
-      name: reorder python imports in src
-      files: ^src
-      # Prevent pyupgrade from changing the type hint that breaks syntax for python < 3.10
-      exclude: _models?\.py$
-      args: [
-        --application-directories,
-        src,
-        --py38-plus,
-        --add-import,
-        "from __future__ import annotations",
-      ]
-    - id: reorder-python-imports
-      name: reorder python imports out of src
-      # Prevent pyupgrade from changing the type hint that breaks syntax for python < 3.10
-      exclude: (^src|_models?\.py$)
-      args: [
-        --py38-plus,
-        --add-import,
-        "from __future__ import annotations",
-      ]
-
 - repo: https://github.com/myint/docformatter
   rev: v1.7.5
   hooks:
     - id: docformatter
       args: [
         --in-place,
-        --wrap-summaries,
-        "88",
-        --wrap-descriptions,
-        "88",
+        --black,
       ]
-
-- repo: https://github.com/asottile/pyupgrade
-  rev: v3.14.0
-  hooks:
-    - id: pyupgrade
-      args: [--py38-plus]
-
-- repo: https://github.com/psf/black
-  rev: 23.9.1
-  hooks:
-    - id: black
-
-- repo: https://github.com/PyCQA/flake8
-  rev: 6.1.0
-  hooks:
-    - id: flake8
-      additional_dependencies:
-        - flake8-bugbear==23.9.16
-        - flake8-docstrings==1.7.0
-        - flake8-logging-format==0.9.0
-        - flake8-print==5.0.0
-        - pep8-naming==0.13.3
-
-- repo: https://github.com/commitizen-tools/commitizen
-  rev: 3.10.0
-  hooks:
-    - id: commitizen
-      stages: [commit-msg]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
   rev: v1.5.4
@@ -128,3 +63,24 @@ repos:
         - LICENSES/headers/CC-BY-SA-4.0.txt
         - --comment-style
         - ..|   |
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.1.8
+  hooks:
+    - id: ruff
+      args: [
+        --fix,
+        --preview,
+        --exit-non-zero-on-fix,
+      ]
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.1.8
+  hooks:
+    - id: ruff-format
+
+- repo: https://github.com/commitizen-tools/commitizen
+  rev: v3.13.0
+  hooks:
+    - id: commitizen
+      stages: [commit-msg]

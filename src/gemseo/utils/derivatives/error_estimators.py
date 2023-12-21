@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Error estimators for computing derivatives."""
+
 from __future__ import annotations
 
 import logging
@@ -20,7 +21,6 @@ from typing import Final
 
 from numpy import finfo
 from numpy import ndarray
-
 
 LOGGER = logging.getLogger(__name__)
 EPSILON: Final[float] = finfo(float).eps
@@ -75,7 +75,8 @@ def compute_hessian_approximation(
     Args:
         f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
         f_x: The value of the function :math:`f` at the current step :math:`x`.
-        f_m: The value of the function :math:`f` at the previous step :math:`x-\\delta_x`.
+        f_m: The value of the function :math:`f` at the previous step
+            :math:`x-\\delta_x`.
         step: The differentiation step :math:`\\delta_x`.
 
     Returns:
@@ -110,7 +111,8 @@ def compute_best_step(
     Args:
         f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
         f_x: The value of the function :math:`f` at the current step :math:`x`.
-        f_m: The value of the function :math:`f` at the previous step :math:`x-\\delta_x`.
+        f_m: The value of the function :math:`f` at the previous step
+            :math:`x-\\delta_x`.
         step: The differentiation step :math:`\\delta_x`.
 
     Returns:

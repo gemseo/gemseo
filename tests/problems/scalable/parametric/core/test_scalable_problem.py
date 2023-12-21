@@ -15,17 +15,17 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+from numpy.random import default_rng
+from numpy.testing import assert_almost_equal
+from numpy.testing import assert_equal
+
+from gemseo import SEED
 from gemseo.problems.scalable.parametric.core.scalable_discipline_settings import (
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.scalable_problem import ScalableProblem
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from numpy import array
-from numpy.random import get_state
-from numpy.random import rand
-from numpy.random import seed
-from numpy.testing import assert_almost_equal
-from numpy.testing import assert_equal
 
 
 @pytest.fixture(scope="module")
@@ -81,60 +81,69 @@ def test_repr_html(default_scalable_problem):
     assert default_scalable_problem._repr_html_() == REPR_HTML_WRAPPER.format(
         "Scalable problem<br/>"
         "<ul>"
-        "<li>MainDiscipline</li>"
+        "<li>MainDiscipline"
         "<ul>"
-        "<li>Inputs</li>"
+        "<li>Inputs"
         "<ul>"
         "<li>x_0 (1)</li>"
         "<li>y_1 (1)</li>"
         "<li>y_2 (1)</li>"
         "</ul>"
-        "<li>Outputs</li>"
+        "</li>"
+        "<li>Outputs"
         "<ul>"
         "<li>f (1)</li>"
         "<li>c_1 (1)</li>"
         "<li>c_2 (1)</li>"
         "</ul>"
-        "<li>ScalableDiscipline[1]</li>"
+        "</li>"
+        "</ul>"
+        "</li>"
+        "<li>ScalableDiscipline[1]"
         "<ul>"
-        "<li>Inputs</li>"
+        "<li>Inputs"
         "<ul>"
         "<li>x_0 (1)</li>"
         "<li>x_1 (1)</li>"
         "<li>y_2 (1)</li>"
         "</ul>"
-        "<li>Outputs</li>"
+        "</li>"
+        "<li>Outputs"
         "<ul>"
         "<li>y_1 (1)</li>"
         "</ul>"
-        "<li>ScalableDiscipline[2]</li>"
+        "</li>"
+        "</ul>"
+        "</li>"
+        "<li>ScalableDiscipline[2]"
         "<ul>"
-        "<li>Inputs</li>"
+        "<li>Inputs"
         "<ul>"
         "<li>x_0 (1)</li>"
         "<li>x_2 (1)</li>"
         "<li>y_1 (1)</li>"
         "</ul>"
-        "<li>Outputs</li>"
+        "</li>"
+        "<li>Outputs"
         "<ul>"
         "<li>y_2 (1)</li>"
         "</ul>"
+        "</li>"
         "</ul>"
+        "</li>"
         "</ul>"
     )
 
 
 def test_instance_seed(default_scalable_problem):
     """Check the use of the NumPy seed for reproducibility."""
-    state = get_state()
+    beta = ScalableProblem()._ScalableProblem__beta.sum()
 
-    # Same seed, same random state.
-    ScalableProblem()
-    assert_equal(get_state(), state)
+    # Same seed, same beta.
+    assert ScalableProblem()._ScalableProblem__beta.sum() == beta
 
-    # New seed, new random state.
-    ScalableProblem(seed=2)
-    assert get_state()[1][0] != state[1][0]
+    # New seed, new beta.
+    assert ScalableProblem(seed=2)._ScalableProblem__beta.sum() != beta
 
 
 def test_total_output_size(custom_scalable_problem):
@@ -170,26 +179,26 @@ def test_scalable_disciplines(default_scalable_problem):
 
 def test_scalable_discipline_coefficients(default_scalable_problem):
     """Check the coefficients of the scalable disciplines."""
-    seed(1)
+    rng = default_rng(SEED)
     for scalable_discipline, coupling_name in zip(
         default_scalable_problem.scalable_disciplines, ["y_2", "y_1"]
     ):
         coefficients = scalable_discipline.coefficients
-        assert_equal(coefficients.D_i0, rand(1, 1))
-        assert_equal(coefficients.D_ii, rand(1, 1))
-        assert_equal(coefficients.C_ij[coupling_name], rand(1, 1))
-        assert_equal(coefficients.a_i, rand(1))
+        assert_equal(coefficients.D_i0, rng.random((1, 1)))
+        assert_equal(coefficients.D_ii, rng.random((1, 1)))
+        assert_equal(coefficients.C_ij[coupling_name], rng.random((1, 1)))
+        assert_equal(coefficients.a_i, rng.random(1))
 
 
 def test_main_discipline_coefficients(default_scalable_problem):
     """Check the coefficients of the main disciplines."""
     coefficients = default_scalable_problem.main_discipline._MainDiscipline__t_i
-    assert_almost_equal(coefficients, array([[-0.267], [-0.267]]), decimal=3)
+    assert_almost_equal(coefficients, array([[-0.519], [-0.519]]), decimal=3)
 
 
 def test_coefficients_custom(custom_scalable_problem):
     """Check the coefficients."""
-    seed(1)
+    rng = default_rng(SEED)
     for p_i, d_i, scalable_discipline, couplings in zip(
         [3, 2, 1],
         [1, 2, 3],
@@ -197,17 +206,17 @@ def test_coefficients_custom(custom_scalable_problem):
         [(("y_2", 2), ("y_3", 1)), (("y_1", 3), ("y_3", 1)), (("y_1", 3), ("y_2", 2))],
     ):
         coefficients = scalable_discipline.coefficients
-        assert_equal(coefficients.D_i0, rand(p_i, 2))
-        assert_equal(coefficients.D_ii, rand(p_i, d_i))
+        assert_equal(coefficients.D_i0, rng.random((p_i, 2)))
+        assert_equal(coefficients.D_ii, rng.random((p_i, d_i)))
         for coupling in couplings:
-            assert_equal(coefficients.C_ij[coupling[0]], rand(p_i, coupling[1]))
+            assert_equal(coefficients.C_ij[coupling[0]], rng.random((p_i, coupling[1])))
 
-        assert_equal(coefficients.a_i, rand(p_i))
+        assert_equal(coefficients.a_i, rng.random(p_i))
 
     coefficients = custom_scalable_problem.main_discipline._MainDiscipline__t_i
-    assert_almost_equal(coefficients[0], array([0.206, 0.206, 0.206]), decimal=3)
-    assert_almost_equal(coefficients[1], array([0.206, 0.206]), decimal=3)
-    assert_almost_equal(coefficients[2], array([0.206]), decimal=3)
+    assert_almost_equal(coefficients[0], array([-0.59, -0.59, -0.59]), decimal=3)
+    assert_almost_equal(coefficients[1], array([-0.59, -0.59]), decimal=3)
+    assert_almost_equal(coefficients[2], array([-0.59]), decimal=3)
 
 
 def test_qp_problem(default_scalable_problem):
@@ -215,30 +224,28 @@ def test_qp_problem(default_scalable_problem):
     problem = default_scalable_problem.qp_problem
     assert_almost_equal(
         problem.Q,
-        array([[2.449, 0.661, 0.041], [0.661, 1.074, 0.025], [0.041, 0.025, 0.017]]),
+        array([[5.972, 0.793, 2.356], [0.793, 0.209, 0.335], [2.356, 0.335, 1.755]]),
         decimal=3,
     )
-    assert_almost_equal(problem.c, array([[-0.433], [-0.543], [-0.074]]), decimal=3)
-    assert_almost_equal(problem.d, 0.25294177528006323, decimal=3)
+    assert_almost_equal(problem.c, array([[-1.931], [-0.281], [-1.423]]), decimal=3)
+    assert_almost_equal(problem.d, 0.577, decimal=3)  # noqa: FURB152
     assert_almost_equal(
         problem.A,
-        array(
-            [
-                [4.17047674e-01, 7.20339839e-01, 1.05614349e-05],
-                [2.24435279e-01, 1.34170651e-01, 9.23405619e-02],
-                [1.00000000e00, 0.00000000e00, 0.00000000e00],
-                [0.00000000e00, 1.00000000e00, 0.00000000e00],
-                [0.00000000e00, 0.00000000e00, 1.00000000e00],
-                [-1.00000000e00, -0.00000000e00, -0.00000000e00],
-                [-0.00000000e00, -1.00000000e00, -0.00000000e00],
-                [-0.00000000e00, -0.00000000e00, -1.00000000e00],
-            ]
-        ),
+        array([
+            [0.687, 0.277, 0.038],
+            [1.23, 0.168, 0.936],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [-1.0, -0.0, -0.0],
+            [-0.0, -1.0, -0.0],
+            [-0.0, -0.0, -1.0],
+        ]),
         decimal=3,
     )
     assert_almost_equal(
         problem.b,
-        array([0.57, 0.669, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0]),
+        array([0.566, 1.277, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0]),
         decimal=3,
     )
 

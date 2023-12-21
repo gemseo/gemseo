@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoît Pauwels - refactoring
 """Updates a trust parameter according to a decreases' ratio."""
+
 from __future__ import annotations
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -45,13 +46,13 @@ class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
             bound: The absolute bound for the trust parameter.
         """  # noqa: D205, D212, D415
         if not isinstance(thresholds, tuple):
-            raise ValueError(
+            raise TypeError(
                 "The thresholds must be input as a tuple; "
                 f"input of type {type(thresholds)} was provided."
             )
         self._ratio_thresholds = thresholds
         if not isinstance(multipliers, tuple):
-            raise ValueError(
+            raise TypeError(
                 "The multipliers must be input as a tuple; "
                 f"input of type {type(multipliers)} was provided."
             )
@@ -60,7 +61,7 @@ class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
 
     def _check(self) -> None:
         """Check the consistency of the attributes."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def update(self, ratio: float, parameter: float) -> tuple[float, bool]:
         """Update the trust parameter relative to the decrease ratio value.
@@ -74,7 +75,7 @@ class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The new trust parameter, the iteration success.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class PenaltyUpdater(TrustUpdater):
@@ -131,11 +132,10 @@ class PenaltyUpdater(TrustUpdater):
             new_penalty = parameter * self._param_multipliers[0]
             if self._param_bound is not None and new_penalty < self._param_bound:
                 new_penalty = 0.0
+        elif self._param_bound is not None and parameter == 0.0:
+            new_penalty = self._param_bound
         else:
-            if self._param_bound is not None and parameter == 0.0:
-                new_penalty = self._param_bound
-            else:
-                new_penalty = parameter * self._param_multipliers[1]
+            new_penalty = parameter * self._param_multipliers[1]
         return new_penalty, success
 
 

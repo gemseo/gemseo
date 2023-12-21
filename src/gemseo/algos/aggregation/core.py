@@ -17,10 +17,11 @@
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Constraints aggregation core functions."""
+
 from __future__ import annotations
 
 from math import log
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import argmax as np_argmax
 from numpy import array
@@ -34,8 +35,11 @@ from numpy import ndarray
 from numpy import sum as np_sum
 from numpy import zeros
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
-def compute_ks_agg(
+
+def compute_lower_bound_ks_agg(
     orig_val: ndarray,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
@@ -43,24 +47,38 @@ def compute_ks_agg(
 ) -> float:
     """Transform a vector of constraint functions into a KS function.
 
-    The Kreisselmeier–Steinhauser function tends to the maximum operator
-        when the aggregation parameter tends to infinity.
+    The lower bound Kreisselmeier-Steinhauser function tends to the maximum operator
+    when the aggregation parameter tends to infinity.
 
-    Kreisselmeier G, Steinhauser R (1983)
-    Application of Vector Performance Optimization
-    to a Robust Control Loop Design for a Fighter Aircraft.
-    International Journal of Control 37(2):251–284,
-    doi:10.1080/00207179.1983.9753066
+    See :cite:`kennedy2015improved` and :cite:`kreisselmeier1983application`.
 
-    Graeme J. Kennedy, Jason E. Hicken,
-    Improved constraint-aggregation methods,
-    Computer Methods in Applied Mechanics and Engineering,
-    Volume 289,
-    2015,
-    Pages 332-354,
-    ISSN 0045-7825,
-    https://doi.org/10.1016/j.cma.2015.02.017.
-    (http://www.sciencedirect.com/science/article/pii/S0045782515000663)
+    Args:
+        orig_val: The original constraint values.
+        indices: The indices to generate a subset of the outputs to aggregate.
+            If ``None``, aggregate all the outputs.
+        rho: The aggregation parameter.
+        scale: The scaling factor for multiplying the constraints.
+
+    Returns:
+        The KS function value.
+    """
+    alpha = len(orig_val)
+
+    return compute_upper_bound_ks_agg(orig_val, indices, rho, scale) - log(alpha) / rho
+
+
+def compute_upper_bound_ks_agg(
+    orig_val: ndarray,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> float:
+    """Transform a vector of constraint functions into a KS function.
+
+    The upper bound Kreisselmeier-Steinhauser function tends to the maximum operator
+    when the aggregation parameter tends to infinity.
+
+    See :cite:`kennedy2015improved` and :cite:`kreisselmeier1983application`.
 
     Args:
         orig_val: The original constraint values.
@@ -76,14 +94,9 @@ def compute_ks_agg(
         orig_val = orig_val[indices]
 
     orig_val *= scale
-    alpha = len(orig_val)
     m = max(orig_val)
 
-    return (
-        m
-        + (1.0 / rho) * log((1.0 / alpha) * sum(np_exp(rho * (orig_val + 1.0 - m))))
-        - 1.0
-    )
+    return m + (1.0 / rho) * log(sum(np_exp(rho * (orig_val + 1.0 - m)))) - 1.0
 
 
 def compute_total_ks_agg_jac(
@@ -248,10 +261,8 @@ def compute_partial_iks_agg_jac(
 ) -> ndarray:
     """Compute the Jacobian of IKS function with respect to constraints functions.
 
-    Kennedy, Graeme J., and Jason E. Hicken.
-    "Improved constraint-aggregation methods."
-    Computer Methods in Applied Mechanics and Engineering
-    289 (2015): 332-354.
+    See :cite:`kennedy2015improved`.
+
 
     Args:
         orig_val: The original constraint values.

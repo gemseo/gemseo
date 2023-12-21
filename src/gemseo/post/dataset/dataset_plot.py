@@ -26,178 +26,309 @@ The :mod:`~gemseo.post.dataset.dataset_plot` module implements the abstract
 This abstract class has to be overloaded by concrete ones implementing at least method
 :meth:`!DatasetPlot._run`.
 """
+
 from __future__ import annotations
 
-from abc import abstractmethod
-from collections import namedtuple
-from numbers import Number
-from typing import Any
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
-from typing import Tuple
+from collections.abc import Iterable
+from collections.abc import Mapping
+from collections.abc import Sequence
+from inspect import getfullargspec
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
+from typing import NamedTuple
 from typing import Union
 
-from matplotlib.axes import Axes
 from numpy import linspace
+from strenum import StrEnum
 
+from gemseo.post.dataset.plot_factory_factory import PlotFactoryFactory
+from gemseo.post.dataset.plot_settings import PlotSettings
 from gemseo.utils.compatibility.matplotlib import get_color_map
-from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.matplotlib_figure import FigSizeType
-from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from matplotlib.figure import Figure
+
     from gemseo.datasets.dataset import Dataset
+    from gemseo.utils.matplotlib_figure import FigSizeType
 
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-
-from pathlib import Path
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
-VariableType = Union[str, Tuple[str, int]]
+VariableType = Union[str, tuple[str, int]]
 
 
 class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Abstract class for plotting a dataset."""
 
-    color: str | list[str]
-    """The color(s) for the series.
+    _common_settings: PlotSettings
+    """The settings common to many plot classes."""
 
-    If empty, use a default one.
+    _n_items: int
+    """The number of items to plot.
+
+    This notion is specific to the class deriving from :class:`.DatasetPlot`.
     """
 
-    colormap: str
-    """The color map."""
+    _specific_settings: NamedTuple
+    """The settings specific to this plot class."""
 
-    dataset: Dataset
+    __common_dataset: Dataset
     """The dataset to be plotted."""
 
-    fig_size: FigSizeType
-    """The figure size."""
+    __figure_file_paths: list[str]
+    """The figure file paths."""
 
-    font_size: int
-    """The font size."""
+    __names_to_labels: Mapping[str, str]
+    """The variable names bound to the variable labels."""
 
-    legend_location: str
-    """The location of the legend."""
+    __specific_data: tuple
+    """The data pre-processed specifically for this :class:`.DatasetPlot`."""
 
-    linestyle: str | list[str]
-    """The line style(s) for the series.
+    class PlotEngine(StrEnum):
+        """An engine of plots."""
 
-    If empty, use a default one.
+        MATPLOTLIB = "MatplotlibPlotFactory"
+        PLOTLY = "PlotlyPlotFactory"
+
+    DEFAULT_PLOT_ENGINE: ClassVar[PlotEngine] = PlotEngine.MATPLOTLIB
+    """The default engine of plots."""
+
+    FILE_FORMATS_TO_PLOT_ENGINES: ClassVar[dict[str, PlotEngine]] = {
+        "html": PlotEngine.PLOTLY
+    }
+    """The file formats bound to the engines of plots.
+
+    The method :meth:`.execute` uses this dictionary
+    to select the engine of plots associated with its ``file_format`` argument.
+    If missing, the method uses the :attr:`.DEFAULT_PLOT_ENGINE`.
     """
-
-    marker: str | list[str]
-    """The marker(s) for the series.
-
-    If empty, use a default one.
-    """
-
-    title: str
-    """The title of the plot."""
-
-    xlabel: str
-    """The label for the x-axis."""
-
-    xmin: float | None
-    """The minimum value on the x-axis.
-
-    If ``None``, compute it from data.
-    """
-
-    xmax: float | None
-    """The maximum value on the x-axis.".
-
-    If ``None``, compute it from data.
-    """
-
-    ylabel: str
-    """The label for the y-axis."""
-
-    ymin: float | None
-    """The minimum value on the y-axis.
-
-    If ``None``, compute it from data.
-    """
-
-    ymax: float | None
-    """The maximum value on the y-axis.
-
-    If ``None``, compute it from data.
-    """
-
-    zlabel: str
-    """The label for the z-axis."""
-
-    zmin: float | None
-    """The minimum value on the z-axis.
-
-    If ``None``, compute it from data.
-    """
-
-    zmax: float | None
-    """The maximum value on the z-axis.
-
-    If ``None``, compute it from data.
-    """
-
-    xtick_rotation: float
-    """The rotation angle in degrees for the x-ticks."""
 
     def __init__(
         self,
         dataset: Dataset,
-        **kwargs: Any,
+        **parameters: Any,
     ) -> None:
         """
         Args:
             dataset: The dataset containing the data to plot.
+            **parameters: The parameters of the visualization.
 
         Raises:
             ValueError: If the dataset is empty.
         """  # noqa: D205, D212, D415
-        param = namedtuple(f"{self.__class__.__name__}Parameters", kwargs.keys())
-        self._param = param(**kwargs)
-
         if dataset.empty:
             raise ValueError("Dataset is empty.")
 
-        self.color = ""
-        self.colormap = "rainbow"
-        self.dataset = dataset
-        self.font_size = 10
-        self.legend_location = "best"
-        self.linestyle = ""
-        self.marker = ""
-        self.title = ""
-        self.rmin = None
-        self.rmax = None
-        self.xlabel = ""
-        self.xmin = None
-        self.xmax = None
-        self.ylabel = ""
-        self.ymin = None
-        self.ymax = None
-        self.zlabel = ""
-        self.zmin = None
-        self.zmax = None
-        self.xtick_rotation = 0.0
-        self.fig_size = (6.4, 4.8)
-        self.__file_path_manager = FilePathManager(
-            FilePathManager.FileType.FIGURE,
-            default_name=FilePathManager.to_snake_case(self.__class__.__name__),
-        )
-        self.__output_files = []
+        annotations = getfullargspec(self.__init__).annotations
+        parameter_names_to_types = [(name, annotations[name]) for name in parameters]
+
+        specific_settings = NamedTuple("SpecificSettings", parameter_names_to_types)
+        self._common_settings = PlotSettings()
+        self._n_items = 0
+        self._specific_settings = specific_settings(**parameters)
+        self.__common_dataset = dataset
+        self.__figure_file_paths = []
         self.__names_to_labels = {}
+        self.__specific_data = self._create_specific_data_from_dataset()
 
     @property
-    def output_files(self) -> list[str]:
-        """The paths to the output files."""
-        return self.__output_files
+    def dataset(self) -> Dataset:
+        """The dataset."""
+        return self.__common_dataset
+
+    @property
+    def color(self) -> str | list[str]:
+        """The colors for the series; if empty, use a default one."""
+        return self._common_settings.color
+
+    @color.setter
+    def color(self, value: str | list[str]) -> None:
+        if isinstance(value, str) and self._n_items:
+            self._common_settings.color = [value] * self._n_items
+        else:
+            self._common_settings.color = value
+
+    @property
+    def colormap(self) -> str:
+        """The color map."""
+        return self._common_settings.colormap
+
+    @colormap.setter
+    def colormap(self, value: str) -> None:
+        self._common_settings.colormap = value
+
+    @property
+    def font_size(self) -> int:
+        """The font size."""
+        return self._common_settings.font_size
+
+    @font_size.setter
+    def font_size(self, value: int) -> None:
+        self._common_settings.font_size = value
+
+    @property
+    def legend_location(self) -> str:
+        """The location of the legend."""
+        return self._common_settings.legend_location
+
+    @legend_location.setter
+    def legend_location(self, value: str) -> None:
+        self._common_settings.legend_location = value
+
+    @property
+    def linestyle(self) -> str | list[str]:
+        """The line style for the series; if empty, use a default one."""
+        return self._common_settings.linestyle
+
+    @linestyle.setter
+    def linestyle(self, value: str | list[str]) -> None:
+        if isinstance(value, str) and self._n_items:
+            self._common_settings.linestyle = [value] * self._n_items
+        else:
+            self._common_settings.linestyle = value
+
+    @property
+    def marker(self) -> str | list[str]:
+        """The marker for the series; if empty, use a default one."""
+        return self._common_settings.marker
+
+    @marker.setter
+    def marker(self, value: str | list[str]) -> None:
+        if isinstance(value, str) and self._n_items:
+            self._common_settings.marker = [value] * self._n_items
+        else:
+            self._common_settings.marker = value
+
+    @property
+    def title(self) -> str:
+        """The title of the plot."""
+        return self._common_settings.title
+
+    @title.setter
+    def title(self, value: str) -> None:
+        self._common_settings.title = value
+
+    @property
+    def xtick_rotation(self) -> str:
+        """The rotation angle in degrees for the x-ticks."""
+        return self._common_settings.xtick_rotation
+
+    @xtick_rotation.setter
+    def xtick_rotation(self, value: str) -> None:
+        self._common_settings.xtick_rotation = value
+
+    @property
+    def rmin(self) -> float | None:
+        """The minimum value on the r-axis; if ``None``, compute it from data."""
+        return self._common_settings.rmin
+
+    @rmin.setter
+    def rmin(self, value: float | None) -> None:
+        self._common_settings.rmin = value
+
+    @property
+    def rmax(self) -> float | None:
+        """The maximum value on the r-axis; if ``None``, compute it from data."""
+        return self._common_settings.rmax
+
+    @rmax.setter
+    def rmax(self, value: float | None) -> None:
+        self._common_settings.rmax = value
+
+    @property
+    def xmin(self) -> float | None:
+        """The minimum value on the x-axis; if ``None``, compute it from data."""
+        return self._common_settings.xmin
+
+    @xmin.setter
+    def xmin(self, value: float | None) -> None:
+        self._common_settings.xmin = value
+
+    @property
+    def xmax(self) -> float | None:
+        """The maximum value on the x-axis; if ``None``, compute it from data."""
+        return self._common_settings.xmax
+
+    @xmax.setter
+    def xmax(self, value: float | None) -> None:
+        self._common_settings.xmax = value
+
+    @property
+    def ymin(self) -> float | None:
+        """The minimum value on the y-axis; if ``None``, compute it from data."""
+        return self._common_settings.ymin
+
+    @ymin.setter
+    def ymin(self, value: float | None) -> None:
+        self._common_settings.ymin = value
+
+    @property
+    def ymax(self) -> float | None:
+        """The maximum value on the y-axis; if ``None``, compute it from data."""
+        return self._common_settings.ymax
+
+    @ymax.setter
+    def ymax(self, value):
+        self._common_settings.ymax = value
+
+    @property
+    def zmin(self) -> float | None:
+        """The minimum value on the z-axis; if ``None``, compute it from data."""
+        return self._common_settings.zmin
+
+    @zmin.setter
+    def zmin(self, value: float | None):
+        self._common_settings.zmin = value
+
+    @property
+    def zmax(self) -> float | None:
+        """The maximum value on the z-axis; if ``None``, compute it from data."""
+        return self._common_settings.zmax
+
+    @zmax.setter
+    def zmax(self, value: float | None) -> None:
+        self._common_settings.zmax = value
+
+    @property
+    def xlabel(self) -> str:
+        """The label for the x-axis."""
+        return self._common_settings.xlabel
+
+    @xlabel.setter
+    def xlabel(self, value: str) -> None:
+        self._common_settings.xlabel = value
+
+    @property
+    def ylabel(self) -> str:
+        """The label for the y-axis."""
+        return self._common_settings.ylabel
+
+    @ylabel.setter
+    def ylabel(self, value: str) -> None:
+        self._common_settings.ylabel = value
+
+    @property
+    def zlabel(self) -> str:
+        """The label for the z-axis."""
+        return self._common_settings.zlabel
+
+    @zlabel.setter
+    def zlabel(self, value: str) -> None:
+        self._common_settings.zlabel = value
+
+    @property
+    def fig_size(self) -> FigSizeType:
+        """The figure size."""
+        return self._common_settings.fig_size
+
+    @fig_size.setter
+    def fig_size(self, value: FigSizeType) -> None:
+        self._common_settings.fig_size = value
 
     @property
     def fig_size_x(self) -> float:
@@ -217,6 +348,11 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     def fig_size_y(self, value: float) -> None:
         self.fig_size = (self.fig_size_x, value)
 
+    @property
+    def output_files(self) -> list[str]:
+        """The paths to the output files."""
+        return self.__figure_file_paths
+
     def execute(
         self,
         save: bool = True,
@@ -224,11 +360,9 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         file_path: str | Path = "",
         directory_path: str | Path | None = None,
         file_name: str | None = None,
-        file_format: str | None = None,
-        properties: Mapping[str, DatasetPlotPropertyType] | None = None,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-        **plot_options,
+        file_format: str = "png",
+        file_name_suffix: str = "",
+        **engine_parameters: Any,
     ) -> list[Figure]:
         """Execute the post-processing.
 
@@ -244,117 +378,40 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             file_name: The name of the file to save the figures.
                 If ``None``, use a default one generated by the post-processing.
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
-                If ``None``, use a default file extension.
-            properties: The general properties of a :class:`.DatasetPlot`.
-            fig: The figure to plot the data.
-                If ``None``, create a new one.
-            axes: The axes to plot the data.
-                If ``None``, create new ones.
-            **plot_options: The options of the current class
-                inheriting from :class:`.DatasetPlot`.
+            file_name_suffix: The suffix to be added to the file name.
+            **engine_parameters: The parameters specific to the plot engine.
 
         Returns:
             The figures.
-
-        Raises:
-            AttributeError: When the name of a property is not the name of an attribute.
         """
-        properties = properties or {}
-        for name, value in properties.items():
-            if not hasattr(self, name):
-                raise AttributeError(
-                    f"{name} is not an attribute of {self.__class__.__name__}."
-                )
-            setattr(self, name, value)
-
-        if file_path:
-            file_path = Path(file_path)
-
-        file_path = self.__file_path_manager.create_file_path(
-            file_path=file_path,
-            directory_path=directory_path,
-            file_name=file_name,
-            file_extension=file_format,
+        engine = self.FILE_FORMATS_TO_PLOT_ENGINES.get(
+            file_format, self.DEFAULT_PLOT_ENGINE
         )
-        return self._run(save, show, file_path, fig, axes, **plot_options)
+        plot_factory = PlotFactoryFactory().create(engine)
+        plot = plot_factory.create(
+            self.__class__.__name__,
+            self.dataset,
+            self._common_settings,
+            self._specific_settings,
+            *self.__specific_data,
+            **engine_parameters,
+        )
+        if show:
+            plot.show()
 
-    def _run(
-        self,
-        save: bool,
-        show: bool,
-        file_path: Path,
-        fig: None | Figure,
-        axes: None | Axes,
-        **plot_options,
-    ) -> list[Figure]:
-        """Create the post-processing and save or display it.
+        if save:
+            args = (file_path, directory_path, file_name, file_format, file_name_suffix)
+            self.__figure_file_paths = list(plot.save(*args))
 
-        Args:
-            save: Whether to save the plot on the disk;
-                not used if ``fig`` and ``axes`` are ``None``.
-            show: Whether to display the plot;
-                not used if ``fig`` and ``axes`` are ``None``.
-            file_path: The file path.
-            fig: The figure to plot the data.
-                If ``None``, create a new one.
-            axes: The axes to plot the data.
-                If ``None``, create new ones.
-            **plot_options: The options of the current class
-                inheriting from :class:`.DatasetPlot`.
+        return plot.figures
+
+    def _create_specific_data_from_dataset(self) -> tuple:
+        """Pre-process the dataset specifically for this type of :class:`.DatasetPlot`.
 
         Returns:
-            The figures.
+            The data resulting from the pre-processing of the dataset.
         """
-        if plot_options:
-            self._param = self._param._replace(**plot_options)
-
-        figures = self._plot(fig=fig, axes=axes)
-        if fig or axes:
-            return []
-
-        if self.xtick_rotation:
-            for figure in figures:
-                for ax in figure.axes:
-                    ax.tick_params(axis="x", labelrotation=self.xtick_rotation)
-
-        for index, sub_figure in enumerate(figures):
-            if save:
-                if len(figures) > 1:
-                    fig_file_path = self.__file_path_manager.add_suffix(
-                        file_path, index
-                    )
-                else:
-                    fig_file_path = file_path
-                self.__output_files.append(str(fig_file_path))
-
-            else:
-                fig_file_path = None
-
-            save_show_figure(
-                sub_figure,
-                show,
-                fig_file_path,
-            )
-
-        return figures
-
-    @abstractmethod
-    def _plot(
-        self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        """Define the way as the dataset is plotted.
-
-        Args:
-            fig: The figure to plot the data.
-                If ``None``, create a new one.
-            axes: The axes to plot the data.
-                If ``None``, create new ones.
-
-        Returns:
-            The figures.
-        """
+        return ()
 
     def _get_variable_names(
         self,
@@ -393,44 +450,27 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         if names_to_sizes[name] == 1:
             return name
-        else:
-            return f"{name}({component})"
+        return f"{name}({component})"
 
     def _get_label(
         self,
-        variable: str | tuple[str, int],
-    ) -> tuple[str, tuple[str, int]]:
+        variable: str | tuple[str, str, int],
+    ) -> tuple[str, tuple[str, str, int]]:
         """Return the label related to a variable name and a refactored variable name.
 
         Args:
             variable: The name of a variable,
-                either a string (e.g. "x") or a (name, component) tuple (e.g. ("x", 0)).
+                either a string (e.g. "x")
+                or a tuple formatted as ``(group_name, variable_name, component)``.
 
         Returns:
-            The label related to a variable, e.g. "x(0)",
-            as well as the refactored variable name, e.g. (x,0).
+            The label related to a variable, e.g. "x[0]",
+            as well as the refactored variable name, e.g. (group_name, "x", 0).
         """
-        error_message = (
-            "'variable' must be either a string or a tuple"
-            " whose first component is a string and second"
-            " one is an integer"
-        )
         if isinstance(variable, str):
-            label = variable
-            variable = (self.dataset.get_group_names(variable)[0], variable, 0)
-        elif hasattr(variable, "__len__") and len(variable) == 3:
-            is_string = isinstance(variable[0], str)
-            is_string = is_string and isinstance(variable[1], str)
-            is_number = isinstance(variable[2], Number)
-            if is_string and is_number:
-                label = f"{variable[1]}({variable[2]})"
-                variable[2] = str(variable[2])
-                variable = tuple(variable)
-            else:
-                raise TypeError(error_message)
-        else:
-            raise TypeError(error_message)
-        return label, variable
+            return variable, (self.dataset.get_group_names(variable)[0], variable, 0)
+
+        return repr_variable(variable[1], variable[2]), variable
 
     def _set_color(
         self,
@@ -475,50 +515,12 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def labels(self) -> Mapping[str, str]:
-        """The labels of the variables."""
-        return self.__names_to_labels
+        """The labels for the variables."""
+        return self._common_settings.labels
 
     @labels.setter
     def labels(self, names_to_labels: Mapping[str, str]) -> None:
-        self.__names_to_labels = names_to_labels
-
-    def _get_figure_and_axes(
-        self,
-        fig: Figure | None,
-        axes: Axes | None,
-        fig_size: FigSizeType | None = None,
-        n_rows: int = 1,
-        n_cols: int = 1,
-    ) -> tuple[Figure, Axes]:
-        """Return the figure and axes to plot the data.
-
-        Args:
-            fig: The figure to plot the data.
-                If ``None``, create a new one.
-            axes: The axes to plot the data.
-                If ``None``, create new ones.
-            fig_size: The width and height of the figure in inches.
-                If ``None``, use the default ``fig_size``.
-            n_rows: The number of rows of the subplot grid.
-            n_cols: The number of cols of the subplot grid.
-
-        Returns:
-            The figure and axis to plot the data.
-        """
-        if fig is None:
-            if axes is not None:
-                raise ValueError(
-                    "The figure associated with the given axes is missing."
-                )
-
-            return plt.subplots(
-                nrows=n_rows, ncols=n_cols, figsize=fig_size or self.fig_size
-            )
-
-        if axes is None:
-            raise ValueError("The axes associated with the given figure are missing.")
-
-        return fig, axes
+        self._common_settings.labels = names_to_labels
 
     @staticmethod
     def _force_variable_to_tuple(variable: VariableType) -> tuple[str, int]:

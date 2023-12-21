@@ -24,13 +24,18 @@ thus converted to surrogate disciplines. The Jacobians are checked over differen
 combinations of datasets (scalar and vector inputs and outputs), transformers and
 parameters.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+from numpy import arange
+from numpy import array
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
@@ -39,8 +44,9 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import arange
-from numpy import array
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 LEARNING_SIZE = 10
 
@@ -144,13 +150,12 @@ def test_regression_model():
     with pytest.raises(
         NotImplementedError,
         match="Derivatives are not available for MLRegressionAlgo.",
-    ):
-        with concretize_classes(MLRegressionAlgo):
-            MLRegressionAlgo(dataset).predict_jacobian(array([1.0]))
+    ), concretize_classes(MLRegressionAlgo):
+        MLRegressionAlgo(dataset).predict_jacobian(array([1.0]))
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("fit_intercept", (True, False))
+@pytest.mark.parametrize("fit_intercept", [True, False])
 def test_linreg(dataset, transformer, fit_intercept):
     """Test linear regression Jacobians."""
     discipline = SurrogateDiscipline(
@@ -163,7 +168,7 @@ def test_linreg(dataset, transformer, fit_intercept):
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("fit_intercept", (True, False))
+@pytest.mark.parametrize("fit_intercept", [True, False])
 @pytest.mark.parametrize("degree", arange(1, 5))
 def test_polyreg(dataset, transformer, fit_intercept, degree):
     """Test polynomial regression Jacobians."""
@@ -186,13 +191,10 @@ def _der_r3(x, norx, eps):
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("function", list(RBFRegressor.Function) + [_r3])
+@pytest.mark.parametrize("function", [*list(RBFRegressor.Function), _r3])
 def test_rbf(dataset, transformer, function):
     """Test polynomial regression Jacobians."""
-    if function is _r3:
-        der_func = _der_r3
-    else:
-        der_func = None
+    der_func = _der_r3 if function is _r3 else None
 
     discipline = SurrogateDiscipline(
         "RBFRegressor",

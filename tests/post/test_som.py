@@ -21,6 +21,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
 from gemseo.utils.testing.helpers import image_comparison
@@ -42,7 +43,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "is_annotated, h5_path, baseline_images",
+    ("is_annotated", "h5_path", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

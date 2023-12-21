@@ -18,50 +18,53 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Coupled derivatives calculations."""
+
 from __future__ import annotations
 
 import itertools
 import logging
 from collections import defaultdict
 from multiprocessing import cpu_count
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Collection
 from typing import Final
-from typing import Generator
-from typing import Iterable
-from typing import Mapping
 from typing import NamedTuple
-from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from numpy import concatenate
 from numpy import empty
 from numpy import fill_diagonal
-from numpy import int8
 from numpy import ndarray
 from numpy import zeros
-from numpy._typing import NDArray
 from numpy.linalg import norm
 from scipy.sparse import bmat
 from scipy.sparse import csc_matrix
 from scipy.sparse import csr_matrix
 from scipy.sparse import dok_matrix
 from scipy.sparse import eye
-from scipy.sparse import spmatrix
 from scipy.sparse import vstack
-from scipy.sparse.linalg import factorized
 from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import factorized
 from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.core.derivatives import derivation_modes
+from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Mapping
+
+    from numpy.typing import NDArray
+
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline import MDODiscipline
 
@@ -80,8 +83,8 @@ def default_dict_factory() -> dict[Any, None]:
     return defaultdict(none_factory)
 
 
-class JacobianOperator(LinearOperator):
-    """Representation of the Jacobian as a SciPy ``LinearOperator``."""
+class AssembledJacobianOperator(LinearOperator):
+    """Representation of the assembled Jacobian as a SciPy ``LinearOperator``."""
 
     def __init__(
         self,
@@ -90,7 +93,7 @@ class JacobianOperator(LinearOperator):
         n_functions: int,
         n_variables: int,
         get_jacobian_generator: Callable[
-            [Iterable[str], Iterable[str], bool], Generator
+            [Iterable[str], Iterable[str], bool], Iterator
         ],
         is_residual: bool = False,
     ) -> None:
@@ -224,7 +227,7 @@ class JacobianAssembly:
         self.coupling_structure = coupling_structure
         self.sizes = {}
         self.disciplines = {}
-        self.__last_diff_inouts = tuple()
+        self.__last_diff_inouts = ()
         self.__minimal_couplings = []
         self.coupled_system = CoupledSystem()
         self.__linear_solver_factory = LinearSolversFactory(use_cache=True)
@@ -260,17 +263,16 @@ class JacobianAssembly:
             unknown_dvars -= inputs
 
         if unknown_dvars:
+            inputs = [
+                disc.get_input_data_names()
+                for disc in self.coupling_structure.disciplines
+            ]
             raise ValueError(
                 "Some of the specified variables are not "
-                + "inputs of the disciplines: "
-                + str(unknown_dvars)
-                + " possible inputs are: "
-                + str(
-                    [
-                        disc.get_input_data_names()
-                        for disc in self.coupling_structure.disciplines
-                    ]
-                )
+                "inputs of the disciplines: "
+                f"{unknown_dvars}"
+                " possible inputs are: "
+                f"{inputs}"
             )
 
         if unknown_outs:
@@ -278,12 +280,10 @@ class JacobianAssembly:
                 "Some outputs are not computed by the disciplines:"
                 + str(unknown_outs)
                 + " available outputs are: "
-                + str(
-                    [
-                        disc.get_output_data_names()
-                        for disc in self.coupling_structure.disciplines
-                    ]
-                )
+                + str([
+                    disc.get_output_data_names()
+                    for disc in self.coupling_structure.disciplines
+                ])
             )
 
         for coupling in set(couplings) & set(variables):
@@ -298,8 +298,8 @@ class JacobianAssembly:
         if use_lu_fact and matrix_type == self.JacobianType.LINEAR_OPERATOR:
             raise ValueError(
                 "Unsupported LU factorization for "
-                + "LinearOperators! Please use Sparse matrices"
-                + " instead"
+                "LinearOperators! Please use Sparse matrices"
+                " instead"
             )
 
     def compute_sizes(
@@ -321,8 +321,7 @@ class JacobianAssembly:
         Raises:
             ValueError: When the size of some variables could not be determined.
         """
-        # search for the functions/variables/couplings in the
-        # Jacobians of the disciplines
+        # search for functions/variables/couplings in the Jacobians of the disciplines
         if residual_variables:
             outputs = itertools.chain(
                 functions,
@@ -338,7 +337,11 @@ class JacobianAssembly:
             discipline = self.coupling_structure.find_discipline(output)
             self.disciplines[output] = discipline
             # get an arbitrary Jacobian and compute the number of rows
-            self.sizes[output] = discipline.local_data[output].shape[0]
+            self.sizes[output] = (
+                discipline.output_grammar.data_converter.get_value_size(
+                    output, discipline.local_data[output]
+                )
+            )
 
         # variables
         for variable in variables:
@@ -356,9 +359,15 @@ class JacobianAssembly:
                     f"Failed to determine the size of input variable {variable}"
                 )
 
+    # TODO: API: give a better name like get_derivation_mode for instance.
     @classmethod
-    def _check_mode(cls, mode: str, n_variables: int, n_functions: int) -> str:
-        """Check the differentiation mode (direct or adjoint).
+    def _check_mode(
+        cls,
+        mode: DerivationMode,
+        n_variables: int,
+        n_functions: int,
+    ) -> DerivationMode:
+        """Check the differentiation mode.
 
         Args:
             mode: The differentiation mode.
@@ -366,14 +375,13 @@ class JacobianAssembly:
             n_functions: The number of functions.
 
         Returns:
-            The linearization mode.
+            The differentiation mode.
         """
-        if mode == cls.DerivationMode.AUTO:
-            if n_variables <= n_functions:
-                mode = cls.DerivationMode.DIRECT
-            else:
-                mode = cls.DerivationMode.ADJOINT
-        return mode
+        if mode != cls.DerivationMode.AUTO:
+            return mode
+        if n_variables <= n_functions:
+            return cls.DerivationMode.DIRECT
+        return cls.DerivationMode.ADJOINT
 
     def compute_dimension(self, names: Iterable[str]) -> int:
         """Compute the total number of functions/variables/couplings of the full system.
@@ -391,7 +399,7 @@ class JacobianAssembly:
         functions: Iterable[str],
         variables: Iterable[str],
         is_residual: bool = False,
-    ) -> Generator[Any, JacobianPosition]:
+    ) -> Iterator[tuple[ndarray | csr_matrix | JacobianOperator, JacobianPosition]]:
         """Iterate over Jacobian matrices.
 
         Provide a generator to iterate over the Jacobians associated with each provided
@@ -421,21 +429,31 @@ class JacobianAssembly:
                     if jacobian is not None:
                         # Make a copy to avoid in-place modifications
                         jacobian_copy = jacobian.copy()
+
                         if isinstance(jacobian_copy, ndarray):
                             fill_diagonal(jacobian_copy, jacobian.diagonal() - 1)
-                        elif isinstance(jacobian_copy, spmatrix):
+
+                        elif isinstance(jacobian_copy, sparse_classes):
                             jacobian_copy.setdiag(jacobian.diagonal() - 1)
+
+                        elif isinstance(jacobian_copy, JacobianOperator):
+                            jacobian_copy = jacobian_copy.shift_identity()
+
                         jacobian = jacobian_copy
+
                     else:
-                        jacobian = -eye(variable_size, dtype=int8)
+                        jacobian = -eye(variable_size, dtype=int)
 
                 # Yield only if Jacobian exists
                 if jacobian is not None:
-                    yield jacobian.real, self.JacobianPosition(
-                        row_slice=slice(row, row + jacobian.shape[0]),
-                        column_slice=slice(column, column + jacobian.shape[1]),
-                        row_index=row_index,
-                        column_index=column_index,
+                    yield (
+                        jacobian.real,
+                        self.JacobianPosition(
+                            row_slice=slice(row, row + jacobian.shape[0]),
+                            column_slice=slice(column, column + jacobian.shape[1]),
+                            row_index=row_index,
+                            column_index=column_index,
+                        ),
                     )
 
                 column += variable_size
@@ -484,6 +502,9 @@ class JacobianAssembly:
         )
 
         for jacobian, position in jacobian_generator:
+            if isinstance(jacobian, JacobianOperator):
+                jacobian = jacobian.get_matrix_representation()
+
             total_jacobian[position.row_index][position.column_index] = csr_matrix(
                 jacobian.real
             )
@@ -496,7 +517,7 @@ class JacobianAssembly:
         variables: Collection[str],
         is_residual: bool = False,
         jacobian_type: JacobianType = JacobianType.MATRIX,
-    ) -> csr_matrix | JacobianOperator:
+    ) -> csr_matrix | AssembledJacobianOperator:
         """Form the Jacobian as a SciPy ``LinearOperator``.
 
         Args:
@@ -516,7 +537,7 @@ class JacobianAssembly:
             )
 
         if jacobian_type == self.JacobianType.LINEAR_OPERATOR:
-            return JacobianOperator(
+            return AssembledJacobianOperator(
                 functions,
                 variables,
                 self.compute_dimension(functions),
@@ -524,6 +545,8 @@ class JacobianAssembly:
                 self._get_jacobian_generator,
                 is_residual,
             )
+
+        raise ValueError(f"Bad jacobian_type: {jacobian_type}")
 
     def _compute_diff_ios_and_couplings(
         self,
@@ -628,10 +651,7 @@ class JacobianAssembly:
         self.__check_inputs(functions, variables, couplings, matrix_type, use_lu_fact)
 
         # Retrieve states variables and local residuals if provided
-        if residual_variables:
-            states = list(residual_variables.values())
-        else:
-            states = []
+        states = list(residual_variables.values()) if residual_variables else []
 
         couplings_minimal = self._compute_diff_ios_and_couplings(
             variables,
@@ -779,6 +799,7 @@ class JacobianAssembly:
         linear_solver: str = "DEFAULT",
         matrix_type: JacobianType = JacobianType.MATRIX,
         residuals: ndarray | None = None,
+        resolved_residual_names: Collection[str] = (),
         **linear_solver_options: Any,
     ) -> tuple[ndarray, bool]:
         """Compute the Newton step for the coupled system of disciplines residuals.
@@ -790,6 +811,7 @@ class JacobianAssembly:
             matrix_type: The representation of the matrix ∂R/∂y (sparse or
                 linear operator).
             residuals: The residuals vector, if ``None`` use :attr:`.residuals`.
+            resolved_residual_names: The names of residual variables.
             **linear_solver_options: The options passed to the linear solver factory.
 
         Returns:
@@ -797,13 +819,20 @@ class JacobianAssembly:
             for which the order is given by the `couplings` argument.
             Whether the linear solver converged.
         """
+        residual_names = (
+            resolved_residual_names if resolved_residual_names else couplings
+        )
+
+        self.compute_sizes(residual_names, couplings, couplings)
+
         # compute the partial derivatives of the residuals
         dres_dy = self.assemble_jacobian(
-            couplings,
+            residual_names,
             couplings,
             is_residual=True,
             jacobian_type=matrix_type,
         )
+
         # form the residuals
         if residuals is None:
             residuals = self.residuals(in_data, couplings)
@@ -838,11 +867,13 @@ class JacobianAssembly:
         # Build rows blocks
         for name in var_names:
             for discipline in self.coupling_structure.disciplines:
-                # Find associated discipline
-                if name in discipline.get_output_data_names():
-                    residuals.append(
-                        discipline.get_outputs_by_name(name) - in_data[name]
+                if name in discipline.output_grammar:
+                    to_array = (
+                        discipline.output_grammar.data_converter.convert_value_to_array
                     )
+                    local_data_array = to_array(name, discipline.local_data[name])
+                    in_data_array = to_array(name, in_data[name])
+                    residuals.append(local_data_array - in_data_array)
 
         return concatenate(residuals)
 
@@ -885,10 +916,7 @@ class JacobianAssembly:
             outputs_positions[fun] = current_position
             current_position += self.sizes[fun]
 
-            if total_jac is None:
-                total_jac = dfun_dx
-            else:
-                total_jac = vstack((total_jac, dfun_dx))
+            total_jac = dfun_dx if total_jac is None else vstack((total_jac, dfun_dx))
 
         # compute the positions of the inputs
         inputs_positions = {}
@@ -1081,7 +1109,7 @@ class CoupledSystem:
         # function to differentiate
         dy_dx = empty((n_couplings, n_variables))
         self.linear_problem = LinearProblem(dres_dy)
-        if linear_solver in ["DEFAULT", "LGMRES"]:
+        if linear_solver in {"DEFAULT", "LGMRES"}:
             # Reinit outerV, and store it for all RHS
             linear_solver_options["outer_v"] = []
         for var_index in range(n_variables):
@@ -1125,7 +1153,7 @@ class CoupledSystem:
         jac = {}
 
         # adjoint vector for each interest function
-        if linear_solver in ["DEFAULT", "LGMRES"]:
+        if linear_solver in {"DEFAULT", "LGMRES"}:
             # Reinit outerV, and store it for all RHS
             linear_solver_options["outer_v"] = []
 

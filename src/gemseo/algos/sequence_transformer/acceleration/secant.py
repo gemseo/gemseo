@@ -18,6 +18,7 @@
 #        :author: Sebastien Bocquet, Alexandre Scotto Di Perrotolo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The secant acceleration method."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -26,6 +27,7 @@ from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTrans
 
 if TYPE_CHECKING:
     from typing import ClassVar
+
     from numpy.typing import NDArray
 
 

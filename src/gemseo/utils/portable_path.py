@@ -17,6 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A set of functions to handle OS dependent path operations."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -33,9 +34,8 @@ def to_os_specific(path: Path) -> PureWindowsPath | PurePosixPath:
         path: The path to cast.
 
     Returns:
-        The casted path.
+        The cast path.
     """
     if PLATFORM_IS_WINDOWS:
         return PureWindowsPath(path)
-    else:
-        return PurePosixPath(path)
+    return PurePosixPath(path)

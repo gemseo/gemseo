@@ -18,6 +18,7 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory for caches."""
+
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory

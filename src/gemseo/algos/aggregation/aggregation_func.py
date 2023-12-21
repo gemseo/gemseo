@@ -20,17 +20,16 @@
 
 Transform a constraint vector into one scalar equivalent or quasi equivalent constraint.
 """
+
 from __future__ import annotations
 
 from functools import wraps
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Sequence
-
-from numpy import ndarray
 
 from gemseo.algos.aggregation.core import compute_iks_agg
-from gemseo.algos.aggregation.core import compute_ks_agg
+from gemseo.algos.aggregation.core import compute_lower_bound_ks_agg
 from gemseo.algos.aggregation.core import compute_max_agg
 from gemseo.algos.aggregation.core import compute_max_agg_jac
 from gemseo.algos.aggregation.core import compute_sum_positive_square_agg
@@ -40,6 +39,11 @@ from gemseo.algos.aggregation.core import compute_total_ks_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_positive_agg_jac
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from numpy import ndarray
 
 
 def check_constraint_type(
@@ -87,9 +91,9 @@ def check_constraint_type(
 
             if constr.f_type != function_type:
                 msg = (
-                    "{} constraint aggregation is only supported"
-                    " for func_type {}, got {}"
-                ).format(func.__name__, function_type, constr.f_type)
+                    f"{func.__name__} constraint aggregation is only supported"
+                    f" for func_type {function_type}, got {constr.f_type}"
+                )
                 raise ValueError(msg)
 
             return func(*args, **kwargs)
@@ -250,7 +254,7 @@ def aggregate_iks(
 
 
 @check_constraint_type("ineq")
-def aggregate_ks(
+def aggregate_lower_bound_ks(
     constr_fct: MDOFunction,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
@@ -272,7 +276,9 @@ def aggregate_ks(
     """
 
     def compute(x):
-        return compute_ks_agg(constr_fct(x), indices=indices, rho=rho, scale=scale)
+        return compute_lower_bound_ks_agg(
+            constr_fct(x), indices=indices, rho=rho, scale=scale
+        )
 
     def compute_jac(x):
         return compute_total_ks_agg_jac(
@@ -283,9 +289,51 @@ def aggregate_ks(
         constr_fct,
         compute,
         compute_jac,
-        f"KS({constr_fct.name})",
-        f"KS({constr_fct.expr})",
-        "KS",
+        f"lower_bound_KS({constr_fct.name})",
+        f"lower_bound_KS({constr_fct.expr})",
+        "lower_bound_KS",
+    )
+
+
+@check_constraint_type("ineq")
+def aggregate_upper_bound_ks(
+    constr_fct: MDOFunction,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> MDOFunction:
+    """Aggregate constraints for inequality constraints.
+
+    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
+
+    Args:
+        constr_fct: The initial constraint function.
+        indices: The indices to generate a subset of the outputs to aggregate.
+            If ``None``, aggregate all the outputs.
+        scale: The scaling factor for multiplying the constraints.
+        rho: The multiplicative parameter in the exponential.
+
+    Returns:
+        The aggregated function.
+    """
+
+    def compute(x):
+        return compute_lower_bound_ks_agg(
+            constr_fct(x), indices=indices, rho=rho, scale=scale
+        )
+
+    def compute_jac(x):
+        return compute_total_ks_agg_jac(
+            constr_fct(x), constr_fct.jac(x), indices=indices, rho=rho, scale=scale
+        )
+
+    return _create_mdofunc(
+        constr_fct,
+        compute,
+        compute_jac,
+        f"upper_bound_KS({constr_fct.name})",
+        f"upper_bound_KS({constr_fct.expr})",
+        "upper_bound_KS",
     )
 
 

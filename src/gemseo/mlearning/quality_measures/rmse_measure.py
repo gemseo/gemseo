@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The root mean squared error to measure the quality of a regression algorithm.
+r"""The root mean squared error to measure the quality of a regression algorithm.
 
 The :mod:`~gemseo.mlearning.quality_measures.mse_measure` module
 implements the concept of root mean squared error measures
@@ -37,14 +37,19 @@ where
 :math:`\\hat{y}` are the predictions and
 :math:`y` are the data points.
 """
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MeasureType
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.quality_measures.quality_measure import MeasureType
+    from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 class RMSEMeasure(MSEMeasure):
@@ -58,10 +63,10 @@ class RMSEMeasure(MSEMeasure):
         """
         Args:
             algo: A machine learning algorithm for regression.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def compute_learning_measure(
+    def compute_learning_measure(  # noqa: D102
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
@@ -73,7 +78,7 @@ class RMSEMeasure(MSEMeasure):
             )
         )
 
-    def compute_test_measure(
+    def compute_test_measure(  # noqa: D102
         self,
         test_data: IODataset,
         samples: Sequence[int] | None = None,
@@ -86,7 +91,7 @@ class RMSEMeasure(MSEMeasure):
             )
         )
 
-    def compute_cross_validation_measure(
+    def compute_cross_validation_measure(  # noqa: D102
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -94,6 +99,7 @@ class RMSEMeasure(MSEMeasure):
         randomize: bool = MSEMeasure._RANDOMIZE,
         seed: int | None = None,
         as_dict: bool = False,
+        store_resampling_result: bool = False,
     ) -> MeasureType:
         return self.__post_process_measure(
             super().compute_cross_validation_measure(
@@ -103,16 +109,18 @@ class RMSEMeasure(MSEMeasure):
                 randomize=randomize,
                 seed=seed,
                 as_dict=as_dict,
+                store_resampling_result=store_resampling_result,
             )
         )
 
-    def compute_bootstrap_measure(
+    def compute_bootstrap_measure(  # noqa: D102
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         seed: int | None = None,
         as_dict: bool = False,
+        store_resampling_result: bool = False,
     ) -> MeasureType:
         return self.__post_process_measure(
             super().compute_bootstrap_measure(
@@ -120,6 +128,7 @@ class RMSEMeasure(MSEMeasure):
                 samples=samples,
                 multioutput=multioutput,
                 as_dict=as_dict,
+                store_resampling_result=store_resampling_result,
             ),
         )
 
@@ -135,5 +144,4 @@ class RMSEMeasure(MSEMeasure):
         """
         if isinstance(measure, dict):
             return {k: v**0.5 for k, v in measure.items()}
-        else:
-            return measure**0.5
+        return measure**0.5

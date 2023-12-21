@@ -19,13 +19,14 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Pareto front on Binh and Korn problem using a BiLevel formulation
-=================================================================
+Pareto front on the Binh and Korn problem using a BiLevel formulation
+=====================================================================
 
 In this example,
 we illustrate the computation of a Pareto front plot for the Binh and Korn problem.
 We use a BiLevel formulation in order to only compute the Pareto-optimal points.
 """
+
 # %%
 # Import
 # ------
@@ -33,12 +34,14 @@ We use a BiLevel formulation in order to only compute the Pareto-optimal points.
 # and to configure the logger.
 from __future__ import annotations
 
+from logging import WARNING
+
+from numpy import array
+
 from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from numpy import array
 
 configure_logger()
 
@@ -48,8 +51,8 @@ configure_logger()
 # -----------------------------
 #
 # In this example,
-# we create the Binh and Korn disciplines from scratch by declaring their expressions and using
-# the :class:`.AnalyticDiscipline`.
+# we create the Binh and Korn disciplines from scratch by declaring
+# their expressions and using the :class:`.AnalyticDiscipline`.
 
 expr_binh_korn = {
     "obj1": "4*x1**2 + 4*x2**2",
@@ -59,7 +62,8 @@ expr_binh_korn = {
 }
 
 # %%
-# This constraint will be used to set `obj1` to a target value for the lower-level scenario.
+# This constraint will be used to set `obj1` to a target value for
+# the lower-level scenario.
 
 expr_cstr_obj1_target = {"cstr3": "obj1 - obj1_target"}
 
@@ -94,66 +98,67 @@ disciplines = [
 # ------------------------------------
 # This scenario aims at finding the `obj2` optimal value for a specific value of `obj1`.
 
-scenario = create_scenario(
+sub_scenario = create_scenario(
     disciplines,
     "DisciplinaryOpt",
     design_space=design_space,
     objective_name="obj2",
 )
 
-scenario.default_inputs = {"algo": "NLOPT_SLSQP", "max_iter": 100}
+sub_scenario.default_inputs = {"algo": "NLOPT_SLSQP", "max_iter": 100}
 
 # %%
 # We add the Binh and Korn problem constraints.
-scenario.add_constraint("cstr1", "ineq")
-scenario.add_constraint("cstr2", "ineq")
+sub_scenario.add_constraint("cstr1", "ineq")
+sub_scenario.add_constraint("cstr2", "ineq")
 
 # %%
-# We add a constraint to force the value of `obj1` to `obj1_target`.
-scenario.add_constraint("cstr3", "eq")
-
-# %%
-# Creation of an MDOScenarioAdapter
-# ---------------------------------
-#
-# An :class:`.MDOScenarioAdapter` is created to use the lower-level scenario as a discipline.
-# This newly created discipline takes as input a target `obj_1`,
-# and returns `obj1`, `obj2` and `cstr3`.
-# The latter variable is used by the upper level scenario
-# to check if `obj1` = `obj1_target` at the end of the lower-lever scenario execution.
-
-scenario_adapter = MDOScenarioAdapter(
-    scenario, ["obj1_target"], ["obj1", "obj2", "cstr3"]
-)
-design_space_doe = create_design_space()
-design_space_doe.add_variable(
+# Creation of the design space for the system-level scenario
+# ----------------------------------------------------------
+# At the system level, we will fix a target for the `obj1` value of
+# the lower-level scenario.
+system_design_space = create_design_space()
+system_design_space.add_variable(
     "obj1_target", l_b=array([0.1]), u_b=array([100.0]), value=array([1.0])
 )
 
 # %%
-# Creation of a DOEScenario
-# -------------------------
-# Create a DOE Scenario, which will take as input the scenario adapter.
-# It will perform a DOE over the `obj1_target` variable.
+# Creation of the system-level DOE Scenario
+# -----------------------------------------
+# The system-level scenario will perform a DOE over the `obj1_target` variable.
+# We will use the `BiLevel` formulation to nest the lower-level scenario into the DOE.
+# The log level for the sub scenarios is set to `WARNING` to avoid getting the complete
+# log of each sub scenario, which would be too verbose. Set it to `INFO` if you wish to
+# keep the logs of each sub scenario as well.
+
+system_scenario = create_scenario(
+    sub_scenario,
+    formulation="BiLevel",
+    objective_name="obj1",
+    design_space=system_design_space,
+    scenario_type="DOE",
+    sub_scenarios_log_level=WARNING,
+)
+
+# %%
+# Add the system-level constraint and observables
+# -----------------------------------------------
+# Here, we add the constraint on the `obj1_target`, this way we make sure that the
+# lower-level scenario will respect the target imposed by the system.
+# The BiLevel formulation will automatically add the constraints from the system-level
+# to the lower-level, if you wish to handle the constraints manually, pass
+# `apply_cstr_tosub_scenarios=False` as an argument to `create_scenario`.
 # Note that `obj2` shall be added as an observable of `scenario_doe`,
 # otherwise it cannot be used by the ParetoFront post-processing.
-
-scenario_doe = create_scenario(
-    scenario_adapter,
-    formulation="DisciplinaryOpt",
-    objective_name="obj1",
-    design_space=design_space_doe,
-    scenario_type="DOE",
-)
-scenario_doe.add_constraint("cstr3", "eq")
-scenario_doe.add_observable("obj2")
-
+system_scenario.add_constraint("cstr3", "eq")
+system_scenario.add_observable("obj2")
+system_scenario.xdsmize()
 # %%
 # Run the scenario
 # ----------------
-# Finally, we run a full-factorial DOE using 100 samples and we run the post-processing.
+# Finally, we run a full-factorial DOE using 100 samples and run the post-processing.
 run_inputs = {"n_samples": 50, "algo": "fullfact"}
-scenario_doe.execute(run_inputs)
-scenario_doe.post_process(
+system_scenario.execute(run_inputs)
+system_scenario.post_process(
     "ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
 )

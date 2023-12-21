@@ -18,17 +18,16 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The design space."""
+
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import Iterable
-from typing import Mapping
+from typing import TYPE_CHECKING
 
 from numpy import full
 from numpy import ndarray
 from numpy import ones
 from numpy import zeros
-from numpy.typing import NDArray
 
 from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_0
 from gemseo.problems.scalable.parametric.core.scalable_discipline_settings import (
@@ -38,11 +37,17 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.variable import Variable
-from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 from gemseo.problems.scalable.parametric.core.variable_names import (
     SHARED_DESIGN_VARIABLE_NAME,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from numpy.typing import NDArray
 
 
 class ScalableDesignSpace:
@@ -69,7 +74,7 @@ class ScalableDesignSpace:
                 disciplines.
             d_0: The size of the shared design variable :math:`x_0`.
             names_to_default_values: The default values of the variables.
-        """
+        """  # noqa: D205 D212
         self.variables = []
         name = SHARED_DESIGN_VARIABLE_NAME
         self.__add_variable(name, d_0, names_to_default_values.get(name))

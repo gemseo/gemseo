@@ -18,14 +18,21 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The design space of the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
-from gemseo.algos.design_space import DesignSpace
+from typing import TYPE_CHECKING
+
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.utils import SobieskiBase
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
 
 
 def create_design_space(
-    dtype: str = "float64", physical_naming: bool = False
+    dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
+    physical_naming: bool = False,
 ) -> DesignSpace:
     """Create the design space for the Sobieski's SSBJ use case.
 
@@ -40,5 +47,4 @@ def create_design_space(
     """
     if physical_naming:
         return SobieskiProblem(dtype).design_space_with_physical_naming
-    else:
-        return SobieskiProblem(dtype).design_space
+    return SobieskiProblem(dtype).design_space

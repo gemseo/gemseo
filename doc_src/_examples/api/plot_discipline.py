@@ -22,7 +22,10 @@
 Discipline
 ==========
 """
+
 from __future__ import annotations
+
+from numpy import array
 
 from gemseo import configure_logger
 from gemseo import create_discipline
@@ -36,7 +39,6 @@ from gemseo import get_discipline_outputs_schema
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
-from numpy import array
 
 configure_logger()
 
@@ -63,14 +65,12 @@ get_available_disciplines()
 # :class:`.MDODiscipline` or a list of :class:`.MDODiscipline`
 # by using its class name. Specific ``**options`` can be provided in
 # argument. E.g.
-disciplines = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 type(disciplines), type(disciplines[0]), isinstance(disciplines[0], MDODiscipline)
 # %%
 # This function can also be used to create a particular :class:`.MDODiscipline`

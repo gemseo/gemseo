@@ -15,14 +15,15 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
-    SequenceTransformerFactory,
-)
 from numpy import allclose
 from numpy import arange
 from numpy import ndarray
 from numpy import ones
 from numpy import sin
+
+from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
+    SequenceTransformerFactory,
+)
 
 A_TOL: float = 1e-6
 DIMENSION: int = 100
@@ -53,11 +54,11 @@ def test_overrelaxation(factor):
     transformer = SequenceTransformerFactory().create("OverRelaxation", factor=factor)
 
     x_1 = g(x_0)
-    new_iterate = transformer.compute_transformed_iterate(x_0, x_1)
+    new_iterate = transformer.compute_transformed_iterate(x_1, x_1 - x_0)
     assert allclose(new_iterate, x_1)
 
     x_2 = g(x_1)
-    new_iterate = transformer.compute_transformed_iterate(x_1, x_2)
+    new_iterate = transformer.compute_transformed_iterate(x_2, x_2 - x_1)
 
     gxn_1, gxn = x_1, x_2
     new_iterate_ref = factor * gxn + (1.0 - factor) * gxn_1
@@ -74,7 +75,7 @@ def test_relaxation_factor(factor):
     if factor in [-1, 3]:
         with pytest.raises(ValueError):
             SequenceTransformerFactory().create("OverRelaxation", factor=factor)
-    elif factor in ["foo"]:
+    elif factor == "foo":
         with pytest.raises(TypeError):
             SequenceTransformerFactory().create("OverRelaxation", factor=factor)
     else:

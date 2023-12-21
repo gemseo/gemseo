@@ -38,19 +38,25 @@ where
 - :math:`C_k` are the indices of the points belonging to the cluster :math:`k`,
 - :math:`|C_k|` is the size of :math:`C_k`.
 """
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from numpy import ndarray
 from sklearn.metrics import silhouette_score
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 from gemseo.mlearning.quality_measures.cluster_measure import (
     MLPredictiveClusteringMeasure,
 )
-from gemseo.mlearning.quality_measures.quality_measure import MeasureType
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from numpy import ndarray
+
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
+    from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 
 
 class SilhouetteMeasure(MLPredictiveClusteringMeasure):
@@ -66,10 +72,10 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         """
         Args:
             algo: A clustering algorithm.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def compute_test_measure(
+    def compute_test_measure(  # noqa: D102
         self,
         test_data: Dataset,
         samples: Sequence[int] | None = None,
@@ -77,7 +83,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     ) -> MeasureType:
         raise NotImplementedError
 
-    def compute_cross_validation_measure(
+    def compute_cross_validation_measure(  # noqa: D102
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
@@ -87,7 +93,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     ) -> MeasureType:
         raise NotImplementedError
 
-    def compute_bootstrap_measure(
+    def compute_bootstrap_measure(  # noqa: D102
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,

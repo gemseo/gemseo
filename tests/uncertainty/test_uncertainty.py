@@ -19,6 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import pytest
+from numpy import pi
+from numpy.random import default_rng
+
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -30,13 +34,25 @@ from gemseo.uncertainty import get_available_sensitivity_analyses
 from gemseo.uncertainty import load_sensitivity_analysis
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
-from numpy import pi
-from numpy.random import normal
 
 
-def test_available_distribution():
-    distributions = get_available_distributions()
-    assert "OTNormalDistribution" in distributions
+@pytest.mark.parametrize(
+    "kwargs",
+    [{}, {"base_class_name": "OTDistribution"}, {"base_class_name": "SPDistribution"}],
+)
+def test_available_distributions(kwargs):
+    """Check the function get_available_distributions."""
+    distributions = get_available_distributions(**kwargs)
+    base_class_name = kwargs.get("base_class_name")
+    if base_class_name == "OTDistribution":
+        assert "OTNormalDistribution" in distributions
+        assert "SPNormalDistribution" not in distributions
+    elif base_class_name == "SPDistribution":
+        assert "OTNormalDistribution" not in distributions
+        assert "SPNormalDistribution" in distributions
+    else:
+        assert "OTNormalDistribution" in distributions
+        assert "SPNormalDistribution" in distributions
 
 
 def test_create_distribution():
@@ -70,8 +86,7 @@ def test_create_sensitivity():
 
 def test_create_statistics():
     n_samples = 100
-    normal_rand = normal(size=n_samples).reshape((-1, 1))
-    dataset = Dataset.from_array(normal_rand)
+    dataset = Dataset.from_array(default_rng().normal(size=(n_samples, 1)))
     stat = create_statistics(dataset)
     assert isinstance(stat, EmpiricalStatistics)
     stat = create_statistics(dataset, tested_distributions=["Normal", "Exponential"])

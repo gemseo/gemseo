@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.post.robustness import Robustness
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -29,12 +30,12 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "use_standardized_objective, baseline_images",
+    ("use_standardized_objective", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, tol_py38=0.61)
+@image_comparison(None)
 def test_common_scenario(
     use_standardized_objective,
     baseline_images,
@@ -49,11 +50,13 @@ def test_common_scenario(
 
 @pytest.mark.parametrize(
     "baseline_images",
-    (["Robustness_stddev"],),
+    [
+        ("Robustness_stddev",),
+    ],
     indirect=["baseline_images"],
     ids=["stddev"],
 )
-@image_comparison(None, tol_py38=0.61)
+@image_comparison(None)
 def test_common_scenario_std(
     baseline_images,
     common_problem,

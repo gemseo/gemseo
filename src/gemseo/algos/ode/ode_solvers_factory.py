@@ -18,14 +18,18 @@
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate ODE solvers from their class names."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
-from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.algos.ode.ode_solver_lib import ODESolverLib
-from gemseo.algos.opt_result import OptimizationResult
+
+if TYPE_CHECKING:
+    from gemseo.algos.ode.ode_problem import ODEProblem
+    from gemseo.algos.opt_result import OptimizationResult
 
 
 class ODESolversFactory(BaseAlgoFactory):

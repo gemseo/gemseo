@@ -63,4 +63,5 @@ per coupling equation:
 These random vectors :math:`U_1,\ldots,U_N` are independent
 and the covariance matrix of :math:`U_i` is denoted :math:`\Sigma_i`.
 """
+
 from __future__ import annotations

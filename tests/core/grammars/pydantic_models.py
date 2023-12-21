@@ -13,16 +13,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test models creators."""
-from typing import List
+
 from typing import Union
 
 from numpy import array
-from numpy import ndarray
-from numpy.typing import NDArray
 from pydantic import BaseModel
 from pydantic import Field
 
 from gemseo.core.grammars.pydantic_grammar import ModelType
+from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
 
 
 def get_model1() -> ModelType:
@@ -30,7 +29,7 @@ def get_model1() -> ModelType:
 
     class Model(BaseModel):
         name1: int
-        name2: NDArray[int] = Field(default_factory=lambda: array([0]))
+        name2: NDArrayPydantic[int] = Field(default_factory=lambda: array([0]))
 
     return Model
 
@@ -49,9 +48,15 @@ def get_model3() -> ModelType:
     """Return a pydantic model."""
 
     class Model(BaseModel):
-        name1: int
-        name2: NDArray[int]
-        name3: List[int]
+        an_int: int
+        a_float: float
+        a_bool: bool
+        an_int_ndarray: NDArrayPydantic[int]
+        a_float_ndarray: NDArrayPydantic[float]
+        a_bool_ndarray: NDArrayPydantic[bool]
+        an_int_list: list[int]
+        a_float_list: list[float]
+        a_bool_list: list[bool]
 
     return Model
 
@@ -60,8 +65,8 @@ def get_model4() -> ModelType:
     """Return a pydantic model."""
 
     class Model(BaseModel):
-        name1: NDArray[int]
-        name2: NDArray
-        name3: ndarray
+        name1: NDArrayPydantic[int]
+        name2: NDArrayPydantic
+        name3: NDArrayPydantic
 
     return Model

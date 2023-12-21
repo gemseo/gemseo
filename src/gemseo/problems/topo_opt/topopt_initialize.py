@@ -15,9 +15,11 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Generation of the design space and disciplines of the topology optimization
-problems."""
+"""Design space and disciplines of the topology optimization problems."""
+
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from numpy import arange
 from numpy import concatenate
@@ -30,13 +32,15 @@ from numpy import where
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.topo_opt.density_filter_disc import DensityFilter
 from gemseo.problems.topo_opt.fea_disc import FininiteElementAnalysis
 from gemseo.problems.topo_opt.material_model_interpolation_disc import (
     MaterialModelInterpolation,
 )
 from gemseo.problems.topo_opt.volume_fraction_disc import VolumeFraction
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 
 def initialize_design_space_and_discipline_to(
@@ -63,7 +67,6 @@ def initialize_design_space_and_discipline_to(
             imposed in the topology optimization solution.
 
     Returns:
-
         - The design space.
         - The disciplines.
     """
@@ -87,47 +90,43 @@ def initialize_design_space_and_discipline_to(
         yc[arange(yi, n_x * n_y, n_y)] = yi + 0.5
     yc = n_y - yc
     # DEFINE LOADS AND SUPPORTS
-    if "MBB" == problem:
+    if problem == "MBB":
         excitation_node = 0  # Node where the force is applied
         excitation_direction = 1  # 0 for x and 1 for y
         amplitude = -1  # Amplitude of the force
         fixednodes = concatenate(
-            ([[where(xx == min(xx))], [(n_x + 1) * (n_y + 1) - 1]]), axis=None
+            ([[(xx == min(xx)).nonzero()], [(n_x + 1) * (n_y + 1) - 1]]), axis=None
         )  # Fixed nodes
         fixed_dir = concatenate(([[ones(n_y + 1)], [2]]), axis=None) - 1
         emptyelts = []  # Mandatory empty elements
         fullelts = []  # Mandatory full elements
-    elif "Short_Cantilever" == problem:
+    elif problem == "Short_Cantilever":
         excitation_node = where(
             logical_and((xx == max(xx)), (yy == fix(0.5 * min(yy) + 0.5 * max(yy))))
-        )[0][
-            0
-        ]  # Nodes where the force is applied
+        )[0][0]  # Nodes where the force is applied
         excitation_direction = 1  # 0 for x and 1 for y
         amplitude = -1  # Amplitude of the force
-        fixednodes = kron([1, 1], where(xx == min(xx))[0])  # Fixed nodes
+        fixednodes = kron([1, 1], (xx == min(xx)).nonzero()[0])  # Fixed nodes
         fixed_dir = concatenate([[ones(n_y + 1)], [2 * ones(n_y + 1)]]).flatten() - 1
         emptyelts = []  # Mandatory empty elements
         fullelts = []  # Mandatory full elements
-    elif "L-Shape" == problem:
+    elif problem == "L-Shape":
         excitation_node = where(
             logical_and((xx == max(xx)), (yy == fix(0.5 * min(yy) + 0.5 * max(yy))))
-        )[0][
-            0
-        ]  # Nodes where the force is applied
+        )[0][0]  # Nodes where the force is applied
         excitation_direction = 1  # 0 for x and 1 for y
         amplitude = -1  # Amplitude of the force
         fixednodes = kron([1, 1], where(yy == max(yy))[0])  # Fixed nodes
         fixed_dir = concatenate([[ones(n_x + 1)], [2 * ones(n_x + 1)]]).flatten()
-        emptyelts = where(
+        emptyelts = (
             logical_and(xc >= (max(xx) + min(xx)) / 2, yc >= ((max(yy) + min(yy)) / 2))
-        )[
-            0
-        ]  # Mandatory empty elements
+        ).nonzero()[0]  # Mandatory empty elements
         fullelts = []  # Mandatory full element
     else:
-        msg = "The examples covered by this function are MBB, L-Shape and Short_Cantilever."
-        raise NotImplementedError(msg)
+        raise NotImplementedError(
+            "The examples covered by this function are MBB, "
+            "L-Shape and Short_Cantilever."
+        )
     initial_point = full((n_x * n_y,), vf0)
     initial_point[emptyelts] = 0
     initial_point[fullelts] = 1

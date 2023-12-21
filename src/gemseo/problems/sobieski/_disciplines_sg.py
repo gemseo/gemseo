@@ -22,21 +22,25 @@
 This disciplines use simple grammars rather than JSON ones mainly for proof of concept.
 Please use the JSON versions with enhanced checks and features.
 """
+
 from __future__ import annotations
 
-from typing import Iterable
-
-from numpy import ndarray
+from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.core.utils import SobieskiBase
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from numpy import ndarray
+
 
 class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
     """Base discipline for the Sobieski's SSBJ use case with simple grammars."""
 
-    dtype: str
+    dtype: SobieskiBase.DataType
     """The data type for the NumPy arrays."""
 
     init_values: dict[str, ndarray]
@@ -48,12 +52,12 @@ class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         """
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
-        """
+        """  # noqa: D205 D212
         super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
         self.sobieski_problem = SobieskiProblem(dtype=dtype)
         self.init_values = {}
@@ -66,7 +70,7 @@ class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
         )
 
     def _run(self) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
@@ -84,7 +88,7 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.input_grammar.update_from_names(("y_14", "y_24", "y_34", "x_shared"))
@@ -112,7 +116,7 @@ class SobieskiStructureSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.input_grammar.update_from_names(["x_1", "y_21", "y_31", "x_shared"])
@@ -142,7 +146,7 @@ class SobieskiAerodynamicsSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.input_grammar.update_from_names(["x_2", "y_12", "y_32", "x_shared"])
@@ -174,7 +178,7 @@ class SobieskiPropulsionSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
         self.input_grammar.update_from_names(["x_3", "y_23", "x_shared"])

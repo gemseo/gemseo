@@ -17,21 +17,29 @@
 #       :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Post-optimal analysis."""
+
 from __future__ import annotations
 
 import logging
-from typing import Iterable
-from typing import Mapping
+from typing import TYPE_CHECKING
 
 from numpy import atleast_1d
 from numpy import hstack
 from numpy import ndarray
 from numpy import vstack
-from numpy import zeros_like
+from numpy import zeros
 from numpy.linalg.linalg import norm
+from scipy.sparse import vstack as spvstack
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.utils.compatibility.scipy import array_classes
+from gemseo.utils.compatibility.scipy import sparse_classes
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -79,11 +87,12 @@ class PostOptimalAnalysis:
         \text{ and }
         \lambda_h^\top\frac{\total h(x^\ast(p),p)}{\total p}(p)=0.
     """
+
     # Dictionary key for term "Lagrange multipliers dot constraints Jacobian"
     MULT_DOT_CONSTR_JAC = "mult_dot_constr_jac"
 
     def __init__(
-        self, opt_problem: OptimizationProblem, ineq_tol: float = None
+        self, opt_problem: OptimizationProblem, ineq_tol: float | None = None
     ) -> None:
         """
         Args:
@@ -228,8 +237,8 @@ class PostOptimalAnalysis:
         if nondifferentiable_outputs:
             nondifferentiable_outputs = ", ".join(nondifferentiable_outputs)
             raise ValueError(
-                f"Only the post-optimal Jacobian of {self.output_names[0]} can be computed, "
-                f"not the one(s) of {nondifferentiable_outputs}."
+                f"Only the post-optimal Jacobian of {self.output_names[0]} can be "
+                f"computed, not the one(s) of {nondifferentiable_outputs}."
             )
 
         # Check the inputs and Jacobians consistency
@@ -275,8 +284,8 @@ class PostOptimalAnalysis:
                         f"Jacobian of {output_name} "
                         f"with respect to {input_name} is missing."
                     )
-                if not isinstance(jac_block, ndarray):
-                    raise ValueError(
+                if not isinstance(jac_block, array_classes):
+                    raise TypeError(
                         f"Jacobian of {output_name} "
                         f"with respect to {input_name} must be of type ndarray."
                     )
@@ -315,11 +324,11 @@ class PostOptimalAnalysis:
         act_ineq_jac = self._get_act_ineq_jac(functions_jac, inputs)
         eq_jac = self._get_eq_jac(functions_jac, inputs)
 
-        jac = {self.output_names[0]: dict(), self.MULT_DOT_CONSTR_JAC: dict()}
+        jac = {self.output_names[0]: {}, self.MULT_DOT_CONSTR_JAC: {}}
         for input_name in inputs:
             # Contribution of the objective
             jac_obj_arr = functions_jac[self.output_names[0]][input_name]
-            jac_cstr_arr = zeros_like(jac_obj_arr)
+            jac_cstr_arr = zeros(jac_obj_arr.shape)
 
             # Contributions of the inequality constraints
             jac_ineq_arr = act_ineq_jac.get(input_name)
@@ -354,15 +363,20 @@ class PostOptimalAnalysis:
         active_ineq_constraints = self.opt_problem.get_active_ineq_constraints(
             self.x_opt, self.ineq_tol
         )
-        input_names_to_jacobians = dict()
+        input_names_to_jacobians = {}
         for input_name in input_names:
             jacobians = [
                 jacobian[constraint.name][input_name][atleast_1d(components_are_active)]
                 for constraint, components_are_active in active_ineq_constraints.items()
                 if True in components_are_active
             ]
+
+            contains_sparse = any(isinstance(jac, sparse_classes) for jac in jacobians)
+
             if jacobians:
-                input_names_to_jacobians[input_name] = vstack(jacobians)
+                input_names_to_jacobians[input_name] = (
+                    spvstack(jacobians) if contains_sparse else vstack(jacobians)
+                )
 
         return input_names_to_jacobians
 
@@ -380,11 +394,11 @@ class PostOptimalAnalysis:
             The jacobian of the equality constraints.
         """
         eq_constraints = self.opt_problem.get_eq_constraints()
-        jacobian = dict()
+        jacobian = {}
         if eq_constraints:
             for input_name in inputs:
-                jacobian[input_name] = vstack(
-                    [jacobians[func.name][input_name] for func in eq_constraints]
-                )
+                jacobian[input_name] = vstack([
+                    jacobians[func.name][input_name] for func in eq_constraints
+                ])
 
         return jacobian

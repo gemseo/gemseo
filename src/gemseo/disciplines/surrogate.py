@@ -18,27 +18,33 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Surrogate discipline."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
-from typing import Mapping
-
-from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
-from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
 from gemseo.mlearning.quality_measures.error_measure_factory import (
     MLErrorMeasureFactory,
 )
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from numpy import ndarray
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+    from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,8 +59,8 @@ class SurrogateDiscipline(MDODiscipline):
         >>>
         >>> # Create an input-output dataset.
         >>> dataset = IODataset()
-        >>> dataset.add_input_variable("x", np.array([[1.], [2.], [3.]]))
-        >>> dataset.add_output_variable("y", np.array([[3.], [5.], [6.]]))
+        >>> dataset.add_input_variable("x", np.array([[1.0], [2.0], [3.0]]))
+        >>> dataset.add_output_variable("y", np.array([[3.0], [5.0], [6.0]]))
         >>>
         >>> # Build a surrogate discipline relying on a linear regression model.
         >>> surrogate_discipline = SurrogateDiscipline("LinearRegressor", dataset)
@@ -77,7 +83,7 @@ class SurrogateDiscipline(MDODiscipline):
     def __init__(
         self,
         surrogate: str | MLRegressionAlgo,
-        data: Dataset | None = None,
+        data: IODataset | None = None,
         transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,
         disc_name: str | None = None,
         default_inputs: dict[str, ndarray] | None = None,
@@ -110,7 +116,8 @@ class SurrogateDiscipline(MDODiscipline):
             default_inputs: The default values of the inputs.
                 If ``None``, use the center of the learning input space.
             input_names: The names of the input variables.
-                If ``None``, consider all input variables mentioned in the learning dataset.
+                If ``None``,
+                consider all input variables mentioned in the learning dataset.
             output_names: The names of the output variables.
                 If ``None``,
                 consider all input variables mentioned in the learning dataset.
@@ -233,6 +240,14 @@ class SurrogateDiscipline(MDODiscipline):
     ) -> None:
         self._init_jacobian(inputs, outputs, MDODiscipline.InitJacobianType.EMPTY)
         self.jac = self.regression_model.predict_jacobian(self.get_input_data())
+
+    def get_quality_viewer(self) -> MLRegressorQualityViewer:
+        """Return a viewer of the quality of the underlying regressor.
+
+        Returns:
+            A viewer of the quality of the underlying regressor.
+        """
+        return MLRegressorQualityViewer(self.regression_model)
 
     def get_error_measure(
         self,

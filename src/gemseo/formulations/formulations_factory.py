@@ -18,6 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate a formulation or check its availability."""
+
 from __future__ import annotations
 
 from gemseo.core.base_formulation import BaseFormulationsFactory

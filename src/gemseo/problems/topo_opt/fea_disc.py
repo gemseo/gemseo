@@ -16,9 +16,10 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Finite element analysis (FEA) for 2D topology optimization problems."""
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import scipy
 from numpy import arange
@@ -32,6 +33,9 @@ from numpy import tile
 from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class FininiteElementAnalysis(MDODiscipline):
@@ -59,7 +63,8 @@ class FininiteElementAnalysis(MDODiscipline):
             n_x: The number of elements in the x-direction.
             n_y: The number of elements in the y-direction.
             f_node: The indices of the nodes where the forces are applied.
-            f_direction: The force direction for each ``f_node``, either 0 for x or 1 for y.
+            f_direction: The force direction for each ``f_node``,
+                either 0 for x or 1 for y.
             f_amplitude: The force amplitude for each pair ``(f_node, f_direction)``.
             fixed_nodes: The indices of the nodes where the structure is clamped.
                 If ``None``, a default value is used.
@@ -67,8 +72,7 @@ class FininiteElementAnalysis(MDODiscipline):
                 If ``None``, a default value is used.
             name: The name of the discipline.
                 If ``None``, use the class name.
-        """
-
+        """  # noqa: D205 D212
         super().__init__(name=name)
         if fixed_nodes is None:
             fixed_nodes = tile(arange(101), 2)
@@ -132,25 +136,23 @@ class FininiteElementAnalysis(MDODiscipline):
                 el = ely + elx * self.n_y
                 n1 = (self.n_y + 1) * elx + ely
                 n2 = (self.n_y + 1) * (elx + 1) + ely
-                edof_mat[el, :] = array(
-                    [
-                        2 * n1 + 2,
-                        2 * n1 + 3,
-                        2 * n2 + 2,
-                        2 * n2 + 3,
-                        2 * n2,
-                        2 * n2 + 1,
-                        2 * n1,
-                        2 * n1 + 1,
-                    ]
-                )
+                edof_mat[el, :] = array([
+                    2 * n1 + 2,
+                    2 * n1 + 3,
+                    2 * n2 + 2,
+                    2 * n2 + 3,
+                    2 * n2,
+                    2 * n2 + 1,
+                    2 * n1,
+                    2 * n1 + 1,
+                ])
         self.edofMat = edof_mat
         # Construct the index pointers for the coo format
         self.iK = kron(edof_mat, ones((8, 1))).flatten()
         self.jK = kron(edof_mat, ones((1, 8))).flatten()
 
         # Free DOFs
-        alldofs = array(range(0, 2 * self.N_nodes))
+        alldofs = array(range(2 * self.N_nodes))
         fixeddofs = 2 * self.fixednodes + self.fixed_dir
         self.freedofs = setdiff1d(alldofs, fixeddofs)
 
@@ -159,31 +161,27 @@ class FininiteElementAnalysis(MDODiscipline):
     ) -> None:  # noqa: D205,D212,D415
         """Compute the elementary stiffness matrix of 1x1 quadrilateral elements."""
         em = 1.0
-        k = array(
-            [
-                1 / 2 - self.nu / 6,
-                1 / 8 + self.nu / 8,
-                -1 / 4 - self.nu / 12,
-                -1 / 8 + 3 * self.nu / 8,
-                -1 / 4 + self.nu / 12,
-                -1 / 8 - self.nu / 8,
-                self.nu / 6,
-                1 / 8 - 3 * self.nu / 8,
-            ]
-        )
+        k = array([
+            1 / 2 - self.nu / 6,
+            1 / 8 + self.nu / 8,
+            -1 / 4 - self.nu / 12,
+            -1 / 8 + 3 * self.nu / 8,
+            -1 / 4 + self.nu / 12,
+            -1 / 8 - self.nu / 8,
+            self.nu / 6,
+            1 / 8 - 3 * self.nu / 8,
+        ])
         return (
             em
             / (1 - self.nu**2)
-            * array(
-                [
-                    [k[0], k[1], k[2], k[3], k[4], k[5], k[6], k[7]],
-                    [k[1], k[0], k[7], k[6], k[5], k[4], k[3], k[2]],
-                    [k[2], k[7], k[0], k[5], k[6], k[3], k[4], k[1]],
-                    [k[3], k[6], k[5], k[0], k[7], k[2], k[1], k[4]],
-                    [k[4], k[5], k[6], k[7], k[0], k[1], k[2], k[3]],
-                    [k[5], k[4], k[3], k[2], k[1], k[0], k[7], k[6]],
-                    [k[6], k[3], k[4], k[1], k[2], k[7], k[0], k[5]],
-                    [k[7], k[2], k[1], k[4], k[3], k[6], k[5], k[0]],
-                ]
-            )
+            * array([
+                [k[0], k[1], k[2], k[3], k[4], k[5], k[6], k[7]],
+                [k[1], k[0], k[7], k[6], k[5], k[4], k[3], k[2]],
+                [k[2], k[7], k[0], k[5], k[6], k[3], k[4], k[1]],
+                [k[3], k[6], k[5], k[0], k[7], k[2], k[1], k[4]],
+                [k[4], k[5], k[6], k[7], k[0], k[1], k[2], k[3]],
+                [k[5], k[4], k[3], k[2], k[1], k[0], k[7], k[6]],
+                [k[6], k[3], k[4], k[1], k[2], k[7], k[0], k[5]],
+                [k[7], k[2], k[1], k[4], k[3], k[6], k[5], k[0]],
+            ])
         )

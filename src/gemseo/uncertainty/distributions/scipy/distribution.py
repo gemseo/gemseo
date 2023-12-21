@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a probability distribution from the SciPy library.
+"""The interface to SciPy-based probability distributions.
 
 The :class:`.SPDistribution` class is a concrete class
 inheriting from :class:`.Distribution` which is an abstract one.
@@ -45,16 +45,15 @@ The constructor has also optional arguments:
 - a standard representation of these parameters
   (default: use ``parameters``).
 """
+
 from __future__ import annotations
 
 import logging
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Iterable
-from typing import Mapping
-from typing import TYPE_CHECKING
 
 import scipy
 import scipy.stats as sp_stats
@@ -69,6 +68,12 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from numpy.random import RandomState
+
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 LOGGER = logging.getLogger(__name__)
@@ -77,7 +82,7 @@ SP_WEBSITE = "https://docs.scipy.org/doc/scipy/reference/stats.html"
 
 
 class SPDistribution(Distribution):
-    """SciPy probability distribution.
+    """A SciPy-based probability distribution.
 
     Create a probability distribution for an uncertain variable
     from its dimension and distribution names and properties.
@@ -91,16 +96,16 @@ class SPDistribution(Distribution):
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.distribution import (
-        ...    SPDistribution
+        ...     SPDistribution,
         ... )
-        >>> distribution = SPDistribution('x', 'expon', {'loc': 3, 'scale': 1/2.})
+        >>> distribution = SPDistribution("x", "expon", {"loc": 3, "scale": 1 / 2.0})
         >>> print(distribution)
         expon(loc=3, scale=0.5)
     """
 
-    COMPOSED_DISTRIBUTION_CLASS: ClassVar[
-        type[ComposedDistribution] | None
-    ] = SPComposedDistribution
+    COMPOSED_DISTRIBUTION_CLASS: ClassVar[type[ComposedDistribution] | None] = (
+        SPComposedDistribution
+    )
 
     def __init__(  # noqa: D107
         self,
@@ -146,34 +151,37 @@ class SPDistribution(Distribution):
     def compute_samples(  # noqa: D102
         self,
         n_samples: int = 1,
+        random_state: None | int | Generator | RandomState = None,
     ) -> ndarray:
-        return vstack([marginal.rvs(n_samples) for marginal in self.marginals]).T
+        """
+        Args:
+            random_state: The SciPy random state.
+        """  # noqa: D205, D212
+        return vstack([m.rvs(n_samples, random_state) for m in self.marginals]).T
 
     def compute_cdf(  # noqa: D102
         self,
         vector: Iterable[float],
     ) -> ndarray:
-        return array(
-            [self.marginals[index].cdf(value) for index, value in enumerate(vector)]
-        )
+        return array([
+            self.marginals[index].cdf(value) for index, value in enumerate(vector)
+        ])
 
     def compute_inverse_cdf(  # noqa: D102
         self,
         vector: Iterable[float],
     ) -> ndarray:
-        return array(
-            [self.marginals[index].ppf(value) for index, value in enumerate(vector)]
-        )
+        return array([
+            self.marginals[index].ppf(value) for index, value in enumerate(vector)
+        ])
 
     @property
     def mean(self) -> ndarray:  # noqa: D102
-        mean = [marginal.mean() for marginal in self.marginals]
-        return array(mean)
+        return array([marginal.mean() for marginal in self.marginals])
 
     @property
     def standard_deviation(self) -> ndarray:  # noqa: D102
-        std = [marginal.std() for marginal in self.marginals]
-        return array(std)
+        return array([marginal.std() for marginal in self.marginals])
 
     def __create_distributions(
         self,
@@ -191,18 +199,20 @@ class SPDistribution(Distribution):
         """
         try:
             create_distribution = getattr(sp_stats, distribution)
-        except Exception:
-            raise ValueError(f"{distribution} is an unknown scipy distribution.")
+        except BaseException:
+            raise ValueError(
+                f"{distribution} is an unknown scipy distribution."
+            ) from None
 
         try:
             parameters = parameters or {}
             create_distribution(**parameters)
             distributions = [create_distribution(**parameters)] * self.dimension
-        except Exception:
+        except BaseException:
             raise ValueError(
                 f"Arguments are wrong in {distribution}({pretty_str(parameters)}); "
                 f"more details on: {SP_WEBSITE}."
-            )
+            ) from None
 
         self.__set_bounds(distributions)
         return distributions

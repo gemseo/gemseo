@@ -24,15 +24,20 @@ A :class:`.Curves` plot represents samples of a functional variable
 and mesh are stored in a :class:`.Dataset`, :math:`y` as a parameter
 and the mesh as a misc.
 """
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from collections.abc import Sequence
+
+    from numpy.typing import NDArray
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class Curves(DatasetPlot):
@@ -54,44 +59,37 @@ class Curves(DatasetPlot):
         """  # noqa: D205, D212, D415
         super().__init__(dataset, mesh=mesh, variable=variable, samples=samples)
 
-    def _plot(
+    def _create_specific_data_from_dataset(
         self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        def lines_gen():
-            """Linestyle generator."""
-            yield "-"
-            for i in range(1, len(self.dataset)):
-                yield 0, (i, 1, 1, 1)
-
-        variable = self._param.variable
-        samples = self._param.samples
-        data = self.dataset.get_view(variable_names=variable).to_numpy()
-        if samples is not None:
-            output = data[samples, :].T
+    ) -> tuple[NDArray[float], list[str]]:
+        """
+        Returns:
+            The values of the points of the curves on the y-axis (one curve per row),
+            the labels of the curves.
+        """  # noqa: D205 D212 D415
+        samples = self._specific_settings.samples
+        y_values = self.dataset.get_view(
+            variable_names=self._specific_settings.variable
+        ).to_numpy()
+        if samples is None:
+            self._n_items = len(y_values)
+            samples = range(self._n_items)
         else:
-            output = data.T
-            samples = range(output.shape[1])
-        n_samples = output.shape[1]
+            self._n_items = len(samples)
+            y_values = y_values[samples, :]
 
-        self._set_color(n_samples)
-        self._set_linestyle(n_samples, [line for line in lines_gen()])
+        self._set_color(self._n_items)
+        self._set_linestyle(self._n_items, list(self.__get_line_style_generator()))
+        return y_values, [self.dataset.index[sample] for sample in samples]
 
-        data = (output.T, self.linestyle, self.color, samples)
-        mesh = self._param.mesh
+    def __get_line_style_generator(
+        self,
+    ) -> Generator[str | tuple[int, tuple[int, int, int, int]], None, None]:
+        """A line style generator.
 
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        for output, line_style, color, sample in zip(*data):
-            axes.plot(
-                self.dataset.misc[mesh],
-                output,
-                linestyle=line_style,
-                color=color,
-                label=self.dataset.index[sample],
-            )
-        axes.set_xlabel(self.xlabel or mesh)
-        axes.set_ylabel(self.ylabel or f"{variable}({mesh})")
-        axes.set_title(self.title)
-        axes.legend(loc=self.legend_location)
-        return [fig]
+        Yields:
+            A line style.
+        """
+        yield "-"
+        for i in range(1, self._n_items):
+            yield 0, (i, 1, 1, 1)

@@ -22,26 +22,31 @@
 The concept of clustering quality measure is implemented with the
 :class:`.MLClusteringMeasure` class and proposes different evaluation methods.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod
-from copy import deepcopy
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from numpy import arange
-from numpy import delete as npdelete
-from numpy import ndarray
-from numpy import unique
-
-from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
-from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+from gemseo.mlearning.resampling.bootstrap import Bootstrap
+from gemseo.mlearning.resampling.cross_validation import CrossValidation
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from numpy import ndarray
+
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
+    from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
 
 
 class MLClusteringMeasure(MLQualityMeasure):
     """An abstract clustering measure for clustering algorithms."""
+
+    algo: MLClusteringAlgo
 
     def __init__(
         self,
@@ -51,18 +56,18 @@ class MLClusteringMeasure(MLQualityMeasure):
         """
         Args:
             algo: A machine learning algorithm for clustering.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def compute_learning_measure(
+    def compute_learning_measure(  # noqa: D102
         self,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
     ) -> MeasureType:
-        self._train_algo(samples)
-        samples = self._assure_samples(samples)
         return self._compute_measure(
-            self._get_data()[samples], self.algo.labels, multioutput
+            self._get_data()[self._pre_process(samples)[0]],
+            self.algo.labels,
+            multioutput,
         )
 
     @abstractmethod
@@ -102,6 +107,8 @@ class MLClusteringMeasure(MLQualityMeasure):
 class MLPredictiveClusteringMeasure(MLClusteringMeasure):
     """An abstract clustering measure for predictive clustering algorithms."""
 
+    algo: MLPredictiveClusteringAlgo
+
     def __init__(
         self,
         algo: MLPredictiveClusteringAlgo,
@@ -110,76 +117,68 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         """
         Args:
             algo: A machine learning algorithm for predictive clustering.
-        """
+        """  # noqa: D205 D212
         super().__init__(algo, fit_transformers=fit_transformers)
 
-    def compute_test_measure(
+    def compute_test_measure(  # noqa: D102
         self,
         test_data: Dataset,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
     ) -> MeasureType:
-        self._train_algo(samples)
+        self._pre_process(samples)
         data = test_data.get_view(variable_names=self.algo.var_names).to_numpy()
         return self._compute_measure(data, self.algo.predict(data), multioutput)
 
-    def compute_cross_validation_measure(
+    def compute_cross_validation_measure(  # noqa: D102
         self,
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         randomize: bool = MLClusteringMeasure._RANDOMIZE,
         seed: int | None = None,
+        store_resampling_result: bool = False,
     ) -> MeasureType:
-        self._train_algo(samples)
+        samples, seed = self._pre_process(samples, seed, randomize)
+        cross_validation = CrossValidation(samples, n_folds, randomize, seed)
         data = self._get_data()
-        algo = deepcopy(self.algo)
-        qualities = []
-        folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
-        for fold in folds:
-            algo.learn(
-                samples=npdelete(samples, fold),
-                fit_transformers=self._fit_transformers,
-            )
-            test_data = data[fold]
-            qualities.append(
-                self._compute_measure(test_data, algo.predict(test_data), multioutput)
-            )
+        _, predictions = cross_validation.execute(
+            self.algo,
+            store_resampling_result,
+            True,
+            True,
+            self._fit_transformers,
+            store_resampling_result,
+            data,
+            (len(data),),
+        )
+        return self._compute_measure(data, predictions, multioutput)
 
-        return sum(qualities) / len(qualities)
-
-    def compute_bootstrap_measure(
+    def compute_bootstrap_measure(  # noqa: D102
         self,
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
         seed: int | None = None,
+        store_resampling_result: bool = False,
     ) -> MeasureType:
-        self._train_algo(samples)
-        samples = self._assure_samples(samples)
-        n_samples = samples.size
-        indices = arange(n_samples)
-
+        samples, seed = self._pre_process(samples, seed, True)
+        bootstrap = Bootstrap(samples, n_replicates, seed)
         data = self._get_data()
-
-        algo = deepcopy(self.algo)
-
-        qualities = []
-        generator = self._get_rng(seed)
-        for _ in range(n_replicates):
-            train_indices = unique(generator.choice(n_samples, n_samples))
-            test_indices = npdelete(indices, train_indices)
-            algo.learn(
-                samples=[samples[index] for index in train_indices],
-                fit_transformers=self._fit_transformers,
-            )
-            test_data = data[[samples[index] for index in test_indices]]
-            predictions = algo.predict(test_data)
-
-            quality = self._compute_measure(test_data, predictions, multioutput)
-            qualities.append(quality)
-
-        return sum(qualities) / len(qualities)
+        _, predictions = bootstrap.execute(
+            self.algo,
+            store_resampling_result,
+            True,
+            False,
+            self._fit_transformers,
+            store_resampling_result,
+            data,
+            (len(data),),
+        )
+        measure = 0
+        for prediction, split in zip(predictions, bootstrap.splits):
+            measure += self._compute_measure(data[split.test], prediction, multioutput)
+        return measure / n_replicates
 
     # TODO: API: remove these aliases in the next major release.
     evaluate_test = compute_test_measure

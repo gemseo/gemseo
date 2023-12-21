@@ -17,14 +17,15 @@
 #                           documentation
 #        :author: Reda El Amri
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The Dirac distribution based on OpenTURNS."""
+"""The OpenTURNS-based Dirac distribution."""
+
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 
 class OTDiracDistribution(OTDistribution):
-    """The Dirac distribution."""
+    """The OpenTURNS-based Dirac distribution."""
 
     def __init__(
         self,

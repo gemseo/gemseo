@@ -18,23 +18,24 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test random forest classification module."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import import_classification_model
-from gemseo.mlearning.classification.random_forest import RandomForestClassifier
-from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
 from numpy import linspace
 from numpy import ndarray
 from numpy import zeros
-from numpy.random import permutation
-from numpy.random import seed
+from numpy.random import default_rng
 
-seed(12345)
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning import import_classification_model
+from gemseo.mlearning.classification.random_forest import RandomForestClassifier
+from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+
+RNG = default_rng(12345)
 
 N_INPUTS = 2
 N_OUTPUTS = 3
@@ -48,7 +49,7 @@ INPUT_VALUES = {
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> IODataset:
     """The dataset used to train the RandomForestClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
@@ -56,8 +57,8 @@ def dataset() -> IODataset:
     output_data[::4, 0] = 1
     output_data[1::4, 0] = 2
     output_data[2::4, 0] = 3
-    output_data[:, 1] = permutation(output_data[:, 0])
-    output_data[:, 2] = permutation(output_data[:, 0])
+    output_data[:, 1] = RNG.permutation(output_data[:, 0])
+    output_data[:, 2] = RNG.permutation(output_data[:, 0])
     dataset_ = IODataset()
     dataset_.add_group(
         IODataset.INPUT_GROUP, input_data, ["x_1", "x_2"], {"x_1": 1, "x_2": 1}
@@ -68,7 +69,7 @@ def dataset() -> IODataset:
     return dataset_
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_1d(dataset) -> RandomForestClassifier:
     """A trained RandomForestClassifier with y_1 as single output."""
     algo = RandomForestClassifier(dataset, output_names=["y_1"])
@@ -76,7 +77,7 @@ def model_1d(dataset) -> RandomForestClassifier:
     return algo
 
 
-@pytest.fixture
+@pytest.fixture()
 def model(dataset) -> RandomForestClassifier:
     """A trained KNNClassifier with two outputs, y_1 and y_2."""
     algo = RandomForestClassifier(dataset)
@@ -84,7 +85,7 @@ def model(dataset) -> RandomForestClassifier:
     return algo
 
 
-@pytest.fixture
+@pytest.fixture()
 def model_with_transform(dataset) -> RandomForestClassifier:
     """A trained KNNClassifier using input scaling."""
     algo = RandomForestClassifier(dataset, transformer={"inputs": MinMaxScaler()})

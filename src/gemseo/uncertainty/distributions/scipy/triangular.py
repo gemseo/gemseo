@@ -17,23 +17,21 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a triangular distribution from the SciPy library.
+"""The SciPy-based triangular distribution."""
 
-This class inherits from :class:`.SPDistribution`.
-"""
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 class SPTriangularDistribution(SPDistribution):
-    """Create a triangular distribution.
+    """The SciPy-based triangular distribution.
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.triangular import (
-        ...     SPTriangularDistribution
+        ...     SPTriangularDistribution,
         ... )
-        >>> distribution = SPTriangularDistribution('x', -1, 0, 1)
+        >>> distribution = SPTriangularDistribution("x", -1, 0, 1)
         >>> print(distribution)
         triang(lower=-1, mode=0, upper=1)
     """
@@ -52,14 +50,18 @@ class SPTriangularDistribution(SPDistribution):
             mode: The mode of the triangular random variable.
             maximum: The maximum of the triangular random variable.
         """  # noqa: D205,D212,D415
-        parameters = {
-            "loc": minimum,
-            "scale": maximum - minimum,
-            "c": (mode - minimum) / float(maximum - minimum),
-        }
-        standard_parameters = {
-            self._LOWER: minimum,
-            self._MODE: mode,
-            self._UPPER: maximum,
-        }
-        super().__init__(variable, "triang", parameters, dimension, standard_parameters)
+        super().__init__(
+            variable,
+            "triang",
+            {
+                "loc": minimum,
+                "scale": maximum - minimum,
+                "c": (mode - minimum) / float(maximum - minimum),
+            },
+            dimension,
+            {
+                self._LOWER: minimum,
+                self._MODE: mode,
+                self._UPPER: maximum,
+            },
+        )

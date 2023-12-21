@@ -22,6 +22,11 @@ from __future__ import annotations
 import re
 
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import pi
+from numpy.testing import assert_almost_equal
+
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.doe_scenario import DOEScenario
@@ -30,10 +35,6 @@ from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import allclose
-from numpy import array
-from numpy import pi
-from numpy.testing import assert_almost_equal
 
 FUNCTION = {
     "name": "my_function",
@@ -71,7 +72,7 @@ def parameter_space() -> ParameterSpace:
     return space
 
 
-@pytest.fixture
+@pytest.fixture()
 def morris(discipline, parameter_space):
     """Morris analysis for the Ishigami function."""
     analysis = MorrisAnalysis([discipline], parameter_space, n_samples=None)
@@ -154,7 +155,7 @@ def test_morris_relative_sigma(morris, output, variable):
 
 
 @pytest.mark.parametrize(
-    "output_name,,kwargs,baseline_images",
+    ("output_name", "kwargs", "baseline_images"),
     [
         ("y1", {}, ["plot_y1"]),
         ("y2", {}, ["plot_y2"]),
@@ -171,7 +172,7 @@ def test_plot(morris, output_name, kwargs, baseline_images, pyplot_close_all):
 
 
 @pytest.mark.parametrize(
-    "output,expected", [("y1", ["x2", "x3", "x1"]), ("y2", ["x3", "x2", "x1"])]
+    ("output", "expected"), [("y1", ["x2", "x3", "x1"]), ("y2", ["x3", "x2", "x1"])]
 )
 def test_morris_sort_parameters(morris, output, expected):
     """Verify that the parameters are correctly sorted."""
@@ -209,7 +210,7 @@ def test_morris_outputs_bounds(morris, output):
     assert morris.outputs_bounds[output][0] < morris.outputs_bounds[output][1]
 
 
-@pytest.fixture
+@pytest.fixture()
 def oat():
     """A One-At-a-Time (OAT) discipline."""
 
@@ -244,7 +245,7 @@ def test_oat_get_fd_name(oat):
 
 
 @pytest.mark.parametrize(
-    "x1,x2,fd",
+    ("x1", "x2", "fd"),
     [
         (0.0, 0.0, [0.4, 0.4, 0.4, -0.4]),
         (0.7, 0.0, [-0.4, 0.4, -0.4, -0.4]),
@@ -287,7 +288,7 @@ def test_oat_with_wrong_step(step):
 
     expected = (
         "Relative variation step must be "
-        "strictly comprised between 0 and 0.5; got {}.".format(step)
+        f"strictly comprised between 0 and 0.5; got {step}."
     )
 
     with pytest.raises(ValueError, match=expected):
@@ -366,7 +367,9 @@ def test_morris_multiple_disciplines():
     assert morris.dataset.n_samples == 1
 
 
-@pytest.mark.parametrize("n_samples,expected_n_samples", [(None, 5), (8, 2), (9, 2)])
+@pytest.mark.parametrize(
+    ("n_samples", "expected_n_samples"), [(None, 5), (8, 2), (9, 2)]
+)
 def test_n_samples(discipline, parameter_space, n_samples, expected_n_samples):
     """Check the effect of n_samples."""
     n_calls = discipline.n_calls
@@ -434,11 +437,10 @@ MorrisAnalysisSamplingPhase
    Disciplines: _OATSensitivity
    MDO formulation: MDF
 Running the algorithm lhs:
-\.\.\.   0%\|          \| 0\/5 \[00:00<\?, \?it\]
-\.\.\.  20%\|██        \| 1\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\.\.\.  40%\|████      \| 2\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\.\.\.  60%\|██████    \| 3\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\.\.\.  80%\|████████  \| 4\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\.\.\. 100%\|██████████\| 5\/5 \[00:00<00:00, \d+\.\d+ it\/sec\]
-\*\*\* End MorrisAnalysisSamplingPhase execution \(time: 0:00:00\.\d+\) \*\*\*$"""
+    20%\|██        \| 1\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+    40%\|████      \| 2\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+    60%\|██████    \| 3\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+    80%\|████████  \| 4\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+   100%\|██████████\| 5\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+\*\*\* End MorrisAnalysisSamplingPhase execution \(time: \d+:\d+:\d+\.\d+\) \*\*\*$"""
     assert re.match(pattern, result)

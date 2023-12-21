@@ -13,17 +13,18 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Performance benchmark for resampling."""
+
 from __future__ import annotations
 
 import argparse
 import sys
 
+from benchmarks.base_benchmark import BaseBenchmark
+from pyperf import Runner
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from pyperf import Runner
-
-from benchmarks.base_benchmark import BaseBenchmark
 
 
 def _execute_doe_scenario(scenario: DOEScenario) -> None:
@@ -33,12 +34,10 @@ def _execute_doe_scenario(scenario: DOEScenario) -> None:
         scenario: The scenario to be executed.
     """
     scenario.formulation.opt_problem.reset()
-    scenario.execute(
-        {
-            "algo": "OT_MONTE_CARLO",
-            "n_samples": 10,
-        }
-    )
+    scenario.execute({
+        "algo": "OT_MONTE_CARLO",
+        "n_samples": 10,
+    })
 
 
 class ResamplingBenchmark(BaseBenchmark):

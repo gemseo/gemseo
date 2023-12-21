@@ -13,9 +13,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test clustering measure module."""
+
 from __future__ import annotations
 
 import pytest
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
@@ -24,16 +27,15 @@ from gemseo.mlearning.quality_measures.cluster_measure import (
     MLPredictiveClusteringMeasure,
 )
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import array
 
 
-@pytest.fixture
+@pytest.fixture()
 def learning_data() -> Dataset:
     """The dataset used to train the clustering algorithms."""
     return Dataset.from_array(array([[1, 0], [2, 0], [3, 1], [4, 1]]), ["x", "y"])
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_data() -> Dataset:
     """The dataset used to test the performance clustering algorithms."""
     return Dataset.from_array(array([[1, 0.5]]), ["x", "y"])

@@ -18,23 +18,28 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Correlations in the optimization database."""
+
 from __future__ import annotations
 
 import logging
 import re
 from functools import partial
 from re import fullmatch
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import ticker
-from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
 from numpy import ndarray
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from matplotlib.figure import Figure
 
 LOGGER = logging.getLogger(__name__)
 
@@ -97,10 +102,10 @@ class Correlations(OptPostProcessor):
             variable_names[obj_index] = self._obj_name
 
         correlation_coefficients = self.__compute_correlations(variable_history)
-        i_corr, j_corr = np.where(
+        i_corr, j_corr = (
             (np.abs(correlation_coefficients) > coeff_limit)
             & (np.abs(correlation_coefficients) < self.MAXIMUM_CORRELATION_COEFFICIENT)
-        )
+        ).nonzero()
         LOGGER.info("Detected %s correlations > %s", i_corr.size, coeff_limit)
 
         if i_corr.size <= 16:

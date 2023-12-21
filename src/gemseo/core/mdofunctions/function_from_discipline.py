@@ -20,15 +20,15 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """The MDOFunction subclass to create a function from an MDODiscipline."""
+
 from __future__ import annotations
 
 import logging
-from typing import Iterable
-from typing import Sequence
 from typing import TYPE_CHECKING
 
 from numpy import empty
 
+from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
@@ -36,13 +36,16 @@ from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
     from gemseo.core.base_formulation import BaseFormulation
+    from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger(__name__)
 
 
-class FunctionFromDiscipline(MDOFunction):
+class FunctionFromDiscipline(LinearCandidateFunction):
     """An :class:`.MDOFunction` object from an :class:`.MDODiscipline`."""
 
     def __init__(
@@ -109,6 +112,14 @@ class FunctionFromDiscipline(MDOFunction):
             output_names=self.__out_x_func.output_names,
         )
 
+    @property
+    def linear_candidate(self) -> bool:  # noqa: D102
+        return self.__out_x_func.linear_candidate
+
+    @property
+    def input_dimension(self) -> int | None:  # noqa: D102
+        return self.__out_x_func.input_dimension
+
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
         """Compute the outputs.
 
@@ -139,7 +150,7 @@ class FunctionFromDiscipline(MDOFunction):
             )
         x_of_disc = x_vect[self.__x_mask]
 
-        loc_jac = self.__out_x_func.jac(x_of_disc)  # pylint: disable=E1102
+        loc_jac = self.__out_x_func.jac(x_of_disc)
 
         if len(loc_jac.shape) == 1:
             # This is surprising but there is a duality between the
@@ -150,6 +161,7 @@ class FunctionFromDiscipline(MDOFunction):
             )
         else:
             n_outs = loc_jac.shape[0]
+            # TODO: The support of sparse Jacobians requires modifications here.
             jac = empty((n_outs, x_vect.size), dtype=x_vect.dtype)
             for func_ind in range(n_outs):
                 gr_u = self.__mdo_formulation.unmask_x_swap_order(

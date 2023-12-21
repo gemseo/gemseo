@@ -17,17 +17,19 @@ from __future__ import annotations
 import logging
 
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
+from numpy import atleast_2d
+
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from numpy import allclose
-from numpy import array
-from numpy import array_equal
-from numpy import atleast_2d
+from gemseo.utils.testing.helpers import concretize_classes
 
 
 @pytest.fixture()
@@ -40,7 +42,8 @@ def doe_problem_dim_2():
 
 
 @pytest.mark.parametrize(
-    "doe_library_class,algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+    ("doe_library_class", "algo_name"),
+    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
     "expected",
@@ -48,8 +51,6 @@ def doe_problem_dim_2():
         array([[1.0]]),
         array([[0.0], [2.0]]),
         array([[0.0], [1.0], [2.0]]),
-        array([[1.0, 1.0]]),
-        array([[1.0, 1.0]]),
         array([[1.0, 1.0]]),
         array([[0.0, 0.0], [2.0, 0.0], [0.0, 2.0], [2.0, 2.0]]),
     ],
@@ -70,7 +71,8 @@ def test_fullfact_values(doe_library_class, algo_name, expected):
 
 
 @pytest.mark.parametrize(
-    "doe_library_class,algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+    ("doe_library_class", "algo_name"),
+    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize("n_samples", [1, 100])
 @pytest.mark.parametrize("size", [2, 5])
@@ -98,10 +100,11 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size):
 
 
 @pytest.mark.parametrize(
-    "doe_library_class, algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+    ("doe_library_class", "algo_name"),
+    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
-    "options, expected",
+    ("options", "expected"),
     [
         (
             {"levels": [2, 3]},
@@ -125,10 +128,11 @@ def test_fullfact_levels(
 
 
 @pytest.mark.parametrize(
-    "doe_library_class, algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+    ("doe_library_class", "algo_name"),
+    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
-    "options, exception, error_msg",
+    ("options", "exception", "error_msg"),
     [
         (
             {},
@@ -164,7 +168,8 @@ def test_fullfact_error(
 
 def test__compute_fullfact_levels(caplog):
     """Check the WARNING logged when the number of samples is less than expected."""
-    DOELibrary._compute_fullfact_levels(10, 3)
+    with concretize_classes(BaseFullFactorialDOE):
+        BaseFullFactorialDOE()._compute_fullfact_levels(10, 3)
     message = (
         "A full-factorial DOE of 10 samples in dimension 3 does not exist; "
         "use 8 samples instead, i.e. the largest 3-th integer power less than 10."
@@ -172,3 +177,12 @@ def test__compute_fullfact_levels(caplog):
     _, log_level, log_message = caplog.record_tuples[0]
     assert log_level == logging.WARNING
     assert message in log_message
+
+
+def test_numerical_precision_issue():
+    """Check that the number of samples is robust to numerical precision."""
+    with concretize_classes(BaseFullFactorialDOE):
+        levels = BaseFullFactorialDOE()._compute_fullfact_levels(1000, 3)
+
+    # In the issue #1028, the result was wrong: [9, 9, 9].
+    assert levels == [10, 10, 10]

@@ -23,6 +23,7 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Mission discipline for the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
 import logging
@@ -228,8 +229,7 @@ class SobieskiMission(SobieskiDiscipline):
         """
         if altitude < 36089.0:
             return -0.000006875
-        else:
-            return 0.0
+        return 0.0
 
     def __compute_sqrt_theta(self, altitude: float) -> float:
         """Compute the square root of the air temperature.
@@ -242,8 +242,7 @@ class SobieskiMission(SobieskiDiscipline):
         """
         if altitude < 36089.0:
             return self.math.sqrt(1 - 0.000006875 * altitude)
-        else:
-            return self.math.sqrt(0.7519)
+        return self.math.sqrt(0.7519)
 
     def execute(
         self,
@@ -351,7 +350,6 @@ class SobieskiMission(SobieskiDiscipline):
         Returns:
             The Jacobian of the discipline.
         """
-
         jacobian = self.__initialize_jacobian()
         sqrt_theta = self.__compute_sqrt_theta(altitude)
         dtheta_dh = self.__compute_dtheta_dh(altitude)

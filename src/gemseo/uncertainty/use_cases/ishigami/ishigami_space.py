@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """The uncertain space used in the Ishigami use case."""
+
 from __future__ import annotations
 
 from typing import Final
@@ -40,5 +41,5 @@ class IshigamiSpace(ParameterSpace):
         super().__init__()
         for index in range(3):
             self.add_random_variable(
-                f"x{index+1}", _DISTRIBUTION_NAME, minimum=-pi, maximum=pi
+                f"x{index + 1}", _DISTRIBUTION_NAME, minimum=-pi, maximum=pi
             )

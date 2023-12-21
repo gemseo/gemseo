@@ -13,20 +13,25 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A linear function defined from coefficients and offset matrices."""
+
 from __future__ import annotations
 
 from numbers import Number
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Sequence
 
 from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
-from scipy.sparse import spmatrix
 
 from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import OutputType
+from gemseo.utils.compatibility.scipy import array_classes
+from gemseo.utils.compatibility.scipy import sparse_classes
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class MDOLinearFunction(MDOFunction):
@@ -51,6 +56,7 @@ class MDOLinearFunction(MDOFunction):
         +
         \begin{bmatrix} b_1 \\ \vdots \\ b_m \end{bmatrix}.
     """
+
     __initial_expression: str | None
     """The initially provided expression.
 
@@ -82,7 +88,7 @@ class MDOLinearFunction(MDOFunction):
             expr: The expression of the linear function.
         """  # noqa: D205, D212, D415
         # Format the passed coefficients and value at zero
-        if isinstance(coefficients, spmatrix):
+        if isinstance(coefficients, sparse_classes):
             coefficients = coefficients.tocsr()
         self.coefficients = coefficients
         output_dim, input_dim = self._coefficients.shape
@@ -155,9 +161,9 @@ class MDOLinearFunction(MDOFunction):
     def coefficients(self, coefficients: Number | ArrayType) -> None:
         if isinstance(coefficients, Number):
             self._coefficients = atleast_2d(coefficients)
-        elif isinstance(coefficients, (ndarray, spmatrix)) and coefficients.ndim == 2:
+        elif isinstance(coefficients, array_classes) and coefficients.ndim == 2:
             self._coefficients = coefficients
-        elif isinstance(coefficients, (ndarray, spmatrix)) and coefficients.ndim == 1:
+        elif isinstance(coefficients, array_classes) and coefficients.ndim == 1:
             self._coefficients = coefficients.reshape((1, -1))
         else:
             raise ValueError(
@@ -263,11 +269,10 @@ class MDOLinearFunction(MDOFunction):
             else:
                 strings.append(" " + " ".join([" " * 3] * in_dim) + " ")
             # vector line
-            strings.append(
-                f"[{input_names[i]}]" if i < in_dim else " " * (max_input_name_len + 2)
-            )
-            # sign
-            strings.append(" + " if i == 0 else "   ")
+            strings.extend((
+                f"[{input_names[i]}]" if i < in_dim else " " * (max_input_name_len + 2),
+                " + " if i == 0 else "   ",
+            ))
             # value at zero
             if i < out_dim:
                 strings.append(
@@ -314,13 +319,11 @@ class MDOLinearFunction(MDOFunction):
             raise ValueError(
                 "Arrays of frozen indexes and values must have same shape."
             )
-        active_indexes = array(
-            [
-                index
-                for index in range(self.coefficients.shape[1])
-                if index not in frozen_indexes
-            ]
-        )
+        active_indexes = array([
+            index
+            for index in range(self.coefficients.shape[1])
+            if index not in frozen_indexes
+        ])
         frozen_coefficients = self.coefficients[:, frozen_indexes]
         new_value_at_zero = frozen_coefficients @ frozen_values + self._value_at_zero
         new_coefficients = self.coefficients[:, active_indexes]

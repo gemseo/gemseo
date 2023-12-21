@@ -19,20 +19,30 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from numbers import Number
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
-from gemseo.core.discipline_data import Data
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from numpy import array
+from numpy import complex128
 from numpy import float64
 from numpy import int64
 from numpy import ndarray
 
+from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.grammars.simple_grammar import SimpleGrammar
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
+
 DATA_PATH = Path(__file__).parent / "data"
+
+
+@pytest.fixture(scope="module")
+def grammar_5() -> JSONGrammar:
+    """A JSON grammar using grammar_5.json."""
+    return JSONGrammar("g", file_path=DATA_PATH / "grammar_5.json")
 
 
 def new_grammar(file_path: Path | None) -> JSONGrammar:
@@ -123,11 +133,11 @@ def test_getitem_error():
 def test_getitem():
     """Verify getting an item."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
-    assert g["name1"]._active_strategies[0].PYTHON_TYPES == (int, float, float64, int64)
+    assert (int, float, float64, int64) == g["name1"]._active_strategies[0].PYTHON_TYPES
 
 
 @pytest.mark.parametrize(
-    "file_path,length",
+    ("file_path", "length"),
     [
         (None, 0),
         (DATA_PATH / "grammar_2.json", 2),
@@ -140,7 +150,7 @@ def test_len(file_path, length):
 
 
 @pytest.mark.parametrize(
-    "file_path,names",
+    ("file_path", "names"),
     [
         (None, []),
         (DATA_PATH / "grammar_2.json", ["name1", "name2"]),
@@ -153,7 +163,7 @@ def test_iter(file_path, names):
 
 
 @pytest.mark.parametrize(
-    "file_path,names",
+    ("file_path", "names"),
     [
         (None, []),
         (DATA_PATH / "grammar_2.json", ["name1", "name2"]),
@@ -212,10 +222,7 @@ def test_update_and_update_from_file(
     else:
         g1.update_from_file(file_path2)
 
-    if not method_is_update:
-        exclude_names = set()
-    else:
-        exclude_names = set(exclude_names)
+    exclude_names = set() if not method_is_update else set(exclude_names)
 
     assert g1.defaults.keys() == g2.defaults.keys() - exclude_names
 
@@ -252,7 +259,7 @@ def test_clear(file_path):
 
 
 @pytest.mark.parametrize(
-    "file_path,repr_",
+    ("file_path", "repr_"),
     [
         (
             None,
@@ -267,10 +274,14 @@ Grammar name: g
             """
 Grammar name: g
    Required elements:
-      name1: {'type': 'integer'}
+      name1:
+         Type: integer
    Optional elements:
-      name2: {'type': 'array', 'items': {'type': 'number'}}
-         default: foo
+      name2:
+         Type: array
+         Items:
+            Type: number
+         Default: foo
 """,
         ),
     ],
@@ -283,31 +294,41 @@ def test_repr(file_path, repr_):
     assert repr(g) == repr_.strip()
 
 
+def test_validate_empty_grammar():
+    """Check that an empty grammar can validate everything."""
+    JSONGrammar("g").validate({"name": 0})
+
+
 @pytest.mark.parametrize(
-    "file_path,data_sets",
-    (
-        # Empty grammar: everything validates.
-        (None, ({"name": 0},)),
-        (
-            DATA_PATH / "grammar_3.json",
-            (
-                {"name1": 1},
-                {"name1": 1, "name2": "bar"},
-                {"name1": 1, "name2": 0},
-            ),
-        ),
-    ),
+    "data",
+    [
+        {"number": 1.1},
+        {"number": 1},
+        {"number": 1 + 1j},
+        {"number": complex128(3)},
+        {"string": "foo"},
+        {"string": Path("foo")},
+        {"1d_array": array([1, 2])},
+        {"2d_array": array([[1, 2]])},
+        {"2d_array": array([[1, 2], [3, 4]])},
+        {
+            "list_of_dict_of_1D_arrays": [
+                {"x": array([1.0, 2.0, 1.0])},
+                {"x": array([1.0, 2.0, 0.0])},
+            ]
+        },
+        {"dict_of_2d_arrays": {"x": array([[1.0, 2.0, 1.0], [1.0, 2.0, 0.0]])}},
+    ],
 )
-def test_validate(file_path, data_sets):
+def test_validate(grammar_5, data):
     """Verify validate."""
-    g = JSONGrammar("g", file_path=file_path)
-    for data in data_sets:
-        g.validate(data)
+    data["mandatory"] = True
+    grammar_5.validate(data)
 
 
 @pytest.mark.parametrize("raise_exception", [True, False])
 @pytest.mark.parametrize(
-    "data,error_msg",
+    ("data", "error_msg"),
     [
         ({}, r"Missing required names: name1."),
         (
@@ -345,7 +366,7 @@ def test_validate_error(raise_exception, data, error_msg, caplog):
         ["name2"],
     ],
 )
-@pytest.mark.parametrize("merge", (True, False))
+@pytest.mark.parametrize("merge", [True, False])
 def test_update_from_names(file_path, names, merge):
     """Verify update with names."""
     g = new_grammar(file_path)
@@ -362,25 +383,25 @@ def test_update_from_names(file_path, names, merge):
         return
 
     name = names[0]
-    property = g.schema["properties"][name]
+    property_ = g.schema["properties"][name]
 
     if name == "name1" and file_path:
         if merge:
-            assert property == {
+            assert property_ == {
                 "anyOf": [
                     {"type": "integer"},
                     {"type": "array", "items": {"type": "number"}},
                 ]
             }
         else:
-            assert property == {"type": "array", "items": {"type": "number"}}
+            assert property_ == {"type": "array", "items": {"type": "number"}}
 
     if name == "name2" or not file_path:
-        assert property == {"type": "array", "items": {"type": "number"}}
+        assert property_ == {"type": "array", "items": {"type": "number"}}
 
 
 @pytest.mark.parametrize(
-    "data,expected_type",
+    ("data", "expected_type"),
     [
         ({}, "integer"),
         ({"name1": 0}, "integer"),
@@ -391,7 +412,7 @@ def test_update_from_names(file_path, names, merge):
         ({"name1": {"name2": 0}}, "object"),
     ],
 )
-@pytest.mark.parametrize("merge", (True, False))
+@pytest.mark.parametrize("merge", [True, False])
 def test_update_from_data_with_empty(data, expected_type, merge):
     """Verify update_from_data from an empty grammar."""
     g = _test_update_from_data(None, data, merge)
@@ -403,7 +424,7 @@ def test_update_from_data_with_empty(data, expected_type, merge):
 
 
 @pytest.mark.parametrize(
-    "data,expected_type",
+    ("data", "expected_type"),
     [
         ({}, "integer"),
         ({"name1": 0}, "integer"),
@@ -414,7 +435,7 @@ def test_update_from_data_with_empty(data, expected_type, merge):
         ({"name1": {"name2": 0}}, "object"),
     ],
 )
-@pytest.mark.parametrize("merge", (True, False))
+@pytest.mark.parametrize("merge", [True, False])
 def test_update_from_data_with_non_empty(data, expected_type, merge):
     """Verify update_from_data from a non empty grammar."""
     g = _test_update_from_data(DATA_PATH / "grammar_2.json", data, merge)
@@ -465,7 +486,7 @@ def _test_update_from_data(file_path: Path | None, data: Data, merge):
 
 
 def test_is_array_error():
-    """Verify that is_array error."""
+    """Verify is_array error."""
     g = JSONGrammar("g")
     msg = "The name foo is not in the grammar."
     with pytest.raises(KeyError, match=msg):
@@ -475,11 +496,33 @@ def test_is_array_error():
 def test_is_array():
     """Verify is_array."""
     g = new_grammar(DATA_PATH / "grammar_4.json")
-    assert not g.is_array("name1")
-    assert g.is_array("name2")
-    assert g.is_array("name2", numeric_only=True)
-    assert g.is_array("name3")
-    assert not g.is_array("name3", numeric_only=True)
+
+    for name in ("a_number", "an_int", "a_bool", "a_string"):
+        assert not g.is_array(name)
+
+    for name in (
+        "a_number_array",
+        "an_int_array",
+        "a_bool_array",
+        "a_number_nested_array",
+        "an_int_nested_array",
+        "a_bool_nested_array",
+    ):
+        assert g.is_array(name)
+
+    for name in (
+        "a_number_array",
+        "an_int_array",
+        "a_number_nested_array",
+        "an_int_nested_array",
+    ):
+        assert g.is_array(name, numeric_only=True)
+
+    for name in (
+        "a_bool_array",
+        "a_bool_nested_array",
+    ):
+        assert not g.is_array(name, numeric_only=True)
 
 
 def test_restrict_to_error():
@@ -561,7 +604,7 @@ def test_convert_to_simple_grammar_warnings(caplog):
 
 
 @pytest.mark.parametrize(
-    "file_path,names",
+    ("file_path", "names"),
     [
         (None, set()),
         (DATA_PATH / "grammar_2.json", {"name1"}),
@@ -575,11 +618,11 @@ def test_required_names(file_path, names):
 
 @pytest.mark.parametrize(
     "descriptions",
-    (
+    [
         {},
         {"name1": "name1 description"},
         {"name1": "name1 description", "name2": "name2 description"},
-    ),
+    ],
 )
 def test_set_descriptions(descriptions):
     """Verify setting descriptions."""
@@ -602,7 +645,7 @@ def test_set_descriptions(descriptions):
 
 
 @pytest.mark.parametrize(
-    "file_path,schema",
+    ("file_path", "schema"),
     [
         (None, {"$schema": "http://json-schema.org/schema#"}),
         (
@@ -643,7 +686,7 @@ EXPECTED_JSON = """
 """.strip()
 
 
-@pytest.mark.parametrize("path", (None, "g.json"))
+@pytest.mark.parametrize("path", [None, "g.json"])
 def test_write(path, tmp_wd):
     """Verify write."""
     g = JSONGrammar("g", file_path=DATA_PATH / "grammar_1.json")
@@ -683,32 +726,6 @@ def test_update_from_error():
         g.update(g2)
 
 
-@pytest.mark.parametrize(
-    "var, check_is_numeric_array, expected",
-    [
-        pytest.param(
-            "IDONTEXIST",
-            False,
-            None,
-            marks=pytest.mark.xfail(raises=KeyError, math="is not in the grammar"),
-        ),
-        ("not_array_var", False, False),
-        ("array_number_var", False, True),
-        ("array_str_var", False, True),
-        ("not_array_var", True, False),
-        ("array_number_var", True, True),
-        ("array_wo_type", True, True),
-        ("array_str_var", True, False),
-        ("array_array_number_var", True, True),
-        ("array_array_str_var", True, False),
-    ],
-)
-def test_is_type_array_errors(var, check_is_numeric_array, expected):
-    fpath = DATA_PATH / "grammar_test6.json"
-    gram = JSONGrammar(name="toto", file_path=fpath)
-    assert gram.is_array(var, check_is_numeric_array) == expected
-
-
 def test_copy():
     """Verify copy."""
     g = JSONGrammar("g")
@@ -718,16 +735,16 @@ def test_copy():
     # Contrary to the simple grammar, the items values are not shared because the
     # schema builder is deeply copied.
     assert g_copy.defaults["name"] is g.defaults["name"]
-    assert list(g_copy.required_names)[0] is list(g.required_names)[0]
+    assert next(iter(g_copy.required_names)) is next(iter(g.required_names))
 
 
 @pytest.mark.parametrize(
     "data",
     [
-        [1.0, "s"],
-        [[1, 2], ["a", "b"], (1, 2), ("a", "b")],
-        [array([1, 2]), [1.0, 2.0]],
-        [False, True, 1],
+        (1.0, "s"),
+        ([1, 2], ["a", "b"], (1, 2), ("a", "b")),
+        (array([1, 2]), [1.0, 2.0]),
+        (False, True, 1),
     ],
 )
 def test_update_from_types(data):
@@ -758,15 +775,15 @@ def test_empty_types():
 
 
 @pytest.mark.parametrize(
-    "py_type, json_type",
+    ("py_type", "json_type"),
     [
-        [int, "integer"],
-        [float, "number"],
-        [ndarray, "array"],
-        [list, "array"],
-        [str, "string"],
-        [bool, "boolean"],
-        [Number, "number"],
+        (int, "integer"),
+        (float, "number"),
+        (ndarray, "array"),
+        (list, "array"),
+        (str, "string"),
+        (bool, "boolean"),
+        (complex, "number"),
     ],
 )
 def test_update_from_types_basic(py_type, json_type):
@@ -783,13 +800,30 @@ def test_update_from_types_basic(py_type, json_type):
 def test_from_types_unsupported():
     grammar = JSONGrammar("test")
     with pytest.raises(
-        KeyError, match="Unsupported python type for a JSON Grammar: <class 'complex'>"
+        KeyError, match="Unsupported python type for a JSON Grammar: None"
     ):
-        grammar.update_from_types({"x": complex})
+        grammar.update_from_types({"x": None})
 
 
-@pytest.mark.parametrize("file_path", ["bar", Path("bar")])
-def test_pathlike(file_path):
-    """Check that a JSONGrammar can use PathLike."""
-    grammar = JSONGrammar("foo", DATA_PATH / "grammar_pathlike.json")
-    grammar.validate({"file_path": file_path})
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("foo", "foo"),
+        (Path("foo"), "foo"),
+        (3 + 1j, 3),
+        (array([1, 2]), [1, 2]),
+        (array([[1, 2], [3, 4]]), [[1, 2], [3, 4]]),
+        (complex128(3), 3),
+        (
+            [1, array([1, 2]), "foo", [3, array([3, 4])]],
+            [1, [1, 2], "foo", [3, [3, 4]]],
+        ),
+        (
+            {"x": array([1, 2]), "y": ["foo", {"z": array([2, 3])}]},
+            {"x": [1, 2], "y": ["foo", {"z": [2, 3]}]},
+        ),
+    ],
+)
+def test_cast(value, expected):
+    """Check the method casting any value to a JSON-interpretable one."""
+    assert JSONGrammar._JSONGrammar__cast_value(value) == expected

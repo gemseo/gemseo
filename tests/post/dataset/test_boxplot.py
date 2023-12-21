@@ -20,11 +20,12 @@
 from __future__ import annotations
 
 import pytest
+from matplotlib import pyplot as plt
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -79,13 +80,13 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, datasets, baseline_images",
+    ("kwargs", "datasets", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
-@image_comparison(None, tol_py38=0.5)
+@image_comparison(None)
 def test_plot(
     kwargs,
     datasets,
@@ -96,10 +97,7 @@ def test_plot(
     fig_and_axes,
 ):
     """Check Boxplot."""
-    if datasets:
-        datasets = [other_dataset]
-    else:
-        datasets = []
+    datasets = [other_dataset] if datasets else []
     plot = Boxplot(dataset, *datasets, **kwargs)
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)

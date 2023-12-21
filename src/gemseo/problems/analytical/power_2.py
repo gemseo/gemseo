@@ -17,10 +17,8 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A quadratic analytical problem
-******************************
-"""
+"""A quadratic analytical problem."""
+
 from __future__ import annotations
 
 import logging
@@ -37,7 +35,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Power2(OptimizationProblem):
-    """**Power2** is a very basic quadratic analytical :class:`.OptimizationProblem`:
+    """**Power2** is a very basic quadratic analytical :class:`.OptimizationProblem`.
 
     - Objective to minimize: :math:`x_0^2 + x_1^2 + x_2^2`
     - Inequality constraint 1: :math:`x_0^3 - 0.5 > 0`
@@ -54,7 +52,7 @@ class Power2(OptimizationProblem):
             exception_error: Whether to raise an error when calling the objective;
                 useful for tests.
             initial_value: The initial design value of the problem.
-        """
+        """  # noqa: D205 D212
         design_space = DesignSpace()
         design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0, value=initial_value)
 
@@ -145,7 +143,7 @@ class Power2(OptimizationProblem):
         Returns:
             The value of the first inequality constraint.
         """
-        return -x_dv[[0]] ** 3 + 0.5
+        return -(x_dv[[0]] ** 3) + 0.5
 
     @staticmethod
     def ineq_constraint2(x_dv: ndarray) -> ndarray:
@@ -157,7 +155,7 @@ class Power2(OptimizationProblem):
         Returns:
             The value of the second inequality constraint.
         """
-        return -x_dv[[1]] ** 3 + 0.5
+        return -(x_dv[[1]] ** 3) + 0.5
 
     @staticmethod
     def eq_constraint(x_dv: ndarray) -> ndarray:
@@ -169,7 +167,7 @@ class Power2(OptimizationProblem):
         Returns:
             The value of the equality constraint.
         """
-        return -x_dv[[2]] ** 3 + 0.9
+        return -(x_dv[[2]] ** 3) + 0.9
 
     @staticmethod
     def ineq_constraint1_jac(x_dv: ndarray) -> ndarray:

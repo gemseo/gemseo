@@ -18,6 +18,7 @@
 #        :author: Charlie Vanaret, Benoit Pauwels, Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Sequence transformer methods."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -27,8 +28,9 @@ from typing import TYPE_CHECKING
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
     from typing import ClassVar
+
+    from numpy.typing import NDArray
 
 
 class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -75,21 +77,21 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def compute_transformed_iterate(
         self,
-        current_iterate: NDArray,
-        next_iterate: NDArray,
+        iterate: NDArray,
+        residual: NDArray,
     ) -> NDArray:
         """Compute the next transformed iterate.
 
         Args:
-            current_iterate: The current iterate :math:`x_n`.
-            next_iterate: The new iterate :math:`G(x_n)`.
+            iterate: The iterate :math:`G(x_n)`.
+            residual: The associated residual :math:`G(x_n) - x_n`.
 
         Returns:
             The next transformed iterate :math:`x_{n+1}`.
         """
         # Store iterates and residuals
-        self._iterates.append(next_iterate.copy())
-        self._residuals.append(next_iterate - current_iterate)
+        self._iterates.append(iterate.copy())
+        self._residuals.append(residual.copy())
 
         # Compute the transformed iterate only if sufficient material at hand
         if (
@@ -97,8 +99,8 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
             and len(self._residuals) >= self._MINIMUM_NUMBER_OF_RESIDUALS
         ):
             return self._compute_transformed_iterate()
-        else:
-            return next_iterate
+
+        return iterate
 
     @abstractmethod
     def _compute_transformed_iterate(self) -> NDArray:

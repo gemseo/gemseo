@@ -17,10 +17,11 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A matrix of constraint history plots."""
+
 from __future__ import annotations
 
 from math import ceil
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from matplotlib import pyplot
 from matplotlib.colors import SymLogNorm
@@ -35,12 +36,15 @@ from numpy import flip
 from numpy import interp
 from numpy import max as np_max
 from numpy import sign
-from numpy import where
 
-from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 
 class ConstraintsHistory(OptPostProcessor):
@@ -102,12 +106,10 @@ class ConstraintsHistory(OptPostProcessor):
         # harmonization of tables format because constraints can be vectorial
         # or scalars. *vals.shape[0] = iteration, *vals.shape[1] = cstr values
         constraint_histories = atleast_3d(constraint_histories)
-        constraint_histories = constraint_histories.reshape(
-            (
-                constraint_histories.shape[0],
-                constraint_histories.shape[1] * constraint_histories.shape[2],
-            )
-        )
+        constraint_histories = constraint_histories.reshape((
+            constraint_histories.shape[0],
+            constraint_histories.shape[1] * constraint_histories.shape[2],
+        ))
 
         # prepare the main window
         fig, axes = pyplot.subplots(
@@ -140,8 +142,8 @@ class ConstraintsHistory(OptPostProcessor):
             # prepare the graph
             axe.grid(True)
             axe.set_title(f"{constraint_name} ({constraint_type})")
-            axe.set_xticks([i for i in range(n_iterations)])
-            axe.set_xticklabels([i for i in range(1, n_iterations + 1)])
+            axe.set_xticks(range(n_iterations))
+            axe.set_xticklabels(range(1, n_iterations + 1))
             axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
             axe.axhline(tolerance, color="k", linestyle="--")
             axe.axhline(0.0, color="k")
@@ -168,7 +170,7 @@ class ConstraintsHistory(OptPostProcessor):
 
             # Plot a vertical line at the last iteration (or pseudo-iteration)
             # where the constraint is (or should be) active.
-            indices_before_sign_change = where(diff(sign(constraint_history)))[0]
+            indices_before_sign_change = diff(sign(constraint_history)).nonzero()[0]
             if indices_before_sign_change.size != 0:
                 index_before_last_sign_change = indices_before_sign_change[-1]
                 indices = [

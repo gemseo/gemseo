@@ -20,17 +20,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
 
 import numpy as np
 import pytest
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.post.core.hessians import BFGSApprox
-from gemseo.post.core.hessians import HessianApproximation
-from gemseo.post.core.hessians import LSTSQApprox
-from gemseo.post.core.hessians import SR1Approx
 from numpy import array
 from numpy import multiply
 from numpy import ndarray
@@ -38,6 +32,17 @@ from numpy import outer
 from numpy.linalg import LinAlgError
 from numpy.linalg import norm
 from scipy.optimize import rosen_hess
+
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.post.core.hessians import BFGSApprox
+from gemseo.post.core.hessians import HessianApproximation
+from gemseo.post.core.hessians import LSTSQApprox
+from gemseo.post.core.hessians import SR1Approx
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.algos.opt_result import OptimizationResult
 
 MDF_HIST_PATH = Path(__file__).parent / "mdf_history.h5"
 ROSENBROCK_2_PATH = Path(__file__).parent / "rosenbrock_2_opt_pb.h5"

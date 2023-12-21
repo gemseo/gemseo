@@ -13,19 +13,34 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Compatibility between different versions of openturns."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Final
 
 import openturns
-from numpy import ndarray
 from packaging import version
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 OT_VERSION: Final[version.Version] = version.parse(openturns.__version__)
 
-IS_OT_LOWER_THAN_1_20: Final[bool] = OT_VERSION < version.parse("1.20")
+IS_OT_LOWER_THAN_1_20: Final[bool] = version.parse("1.20") > OT_VERSION
 
-if OT_VERSION < version.parse("1.18"):
+if version.parse("1.17.0") > OT_VERSION:
+
+    def get_simulated_annealing_for_lhs(lhs, temperature, criteria):  # noqa:D103
+        return openturns.SimulatedAnnealingLHS(lhs, temperature, criteria)
+
+else:
+
+    def get_simulated_annealing_for_lhs(lhs, temperature, criteria):  # noqa:D103
+        return openturns.SimulatedAnnealingLHS(lhs, criteria, temperature)
+
+
+if version.parse("1.18") > OT_VERSION:
 
     def get_eigenvalues(  # noqa:D103
         result: openturns.KarhunenLoeveResult,

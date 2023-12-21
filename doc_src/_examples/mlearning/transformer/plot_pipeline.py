@@ -24,16 +24,18 @@ Transformer pipeline example
 
 In this example, we will create a pipeline of transformers.
 """
+
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from gemseo import configure_logger
-from gemseo.mlearning.transformers.pipeline import Pipeline
-from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from numpy import allclose
 from numpy import linspace
 from numpy import matmul
 from numpy import sin
+
+from gemseo import configure_logger
+from gemseo.mlearning.transformers.pipeline import Pipeline
+from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
 configure_logger()
 

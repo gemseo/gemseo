@@ -21,6 +21,7 @@
 BiLevel-based DOE on the Sobieski SSBJ test case
 ================================================
 """
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -29,7 +30,7 @@ from os import name as os_name
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -41,14 +42,12 @@ configure_logger()
 # :class:`.SobieskiAerodynamics`,
 # :class:`.SobieskiMission`
 # and :class:`.SobieskiStructure`.
-propu, aero, mission, struct = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+propu, aero, mission, struct = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 
 # %%
 # Build, execute and post-process the scenario
@@ -59,7 +58,7 @@ propu, aero, mission, struct = create_discipline(
 # instead of minimizing y_4 (range), which is the default option.
 #
 # We need to define the design space.
-design_space = SobieskiProblem().design_space
+design_space = SobieskiDesignSpace()
 
 # %%
 # Then, we build a sub-scenario for each strongly coupled disciplines,
@@ -118,7 +117,7 @@ sc_str = create_scenario(
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This scenario is based on the three previous sub-scenarios and on the
 # Mission and aims to maximize the range (Breguet).
-sub_disciplines = [sc_prop, sc_aero, sc_str] + [mission]
+sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 design_space = deepcopy(design_space).filter("x_shared")
 system_scenario = create_scenario(
     sub_disciplines,
@@ -174,13 +173,11 @@ system_scenario.xdsmize(save_html=False)
 #    available for multiprocessing on Windows.
 #    As an alternative, we recommend the method
 #    :meth:`.DOEScenario.set_optimization_history_backup`.
-system_scenario.execute(
-    {
-        "n_samples": 30,
-        "algo": "lhs",
-        "algo_options": {"n_processes": 1 if os_name == "nt" else 4},
-    }
-)
+system_scenario.execute({
+    "n_samples": 30,
+    "algo": "lhs",
+    "algo_options": {"n_processes": 1 if os_name == "nt" else 4},
+})
 
 system_scenario.print_execution_metrics()
 

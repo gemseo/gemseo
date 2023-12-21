@@ -19,13 +19,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import h5py
 import pytest
-from gemseo.caches.cache_factory import CacheFactory
-from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from numpy import array
 from numpy import ones
+
+from gemseo.caches.cache_factory import CacheFactory
+from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+
+if TYPE_CHECKING:
+    from gemseo.caches.hdf5_cache import HDF5Cache
 
 
 def create_cache(hdf_node_path="Dummy") -> HDF5Cache:
@@ -108,8 +113,8 @@ def test_repr_html(tmp_wd):
         "<ul>"
         "<li>Type: HDF5Cache</li>"
         "<li>Tolerance: 0.0</li>"
-        "<li>Input names: ['i']</li>"
-        "<li>Output names: ['o']</li>"
+        "<li>Input names: [&#x27;i&#x27;]</li>"
+        "<li>Output names: [&#x27;o&#x27;]</li>"
         "<li>Length: 2</li>"
         "<li>HDF file path: dummy.h5</li>"
         "<li>HDF node path: Dummy</li>"

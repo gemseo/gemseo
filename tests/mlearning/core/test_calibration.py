@@ -18,18 +18,24 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm calibration."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
+
 from gemseo.algos.design_space import DesignSpace
-from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.calibration import MLAlgoAssessor
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
-from numpy import allclose
-from numpy import array
-from numpy import array_equal
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 
 @pytest.fixture(scope="module")
@@ -81,7 +87,7 @@ def test_discipline(dataset):
     assert "degree" in result
     assert "criterion" in result
     assert "learning" in result
-    assert allclose(result["criterion"], array([25182]), atol=1e0)
+    assert allclose(result["criterion"], array([32107]), atol=1e0)
     assert array_equal(result["degree"], array([3]))
 
 

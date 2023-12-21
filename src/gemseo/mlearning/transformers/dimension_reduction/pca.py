@@ -27,7 +27,10 @@ This dimension reduction algorithm relies on the PCA class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.decomposition.PCA.html>`_.
 """
+
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from numpy import ndarray
 from numpy import sqrt
@@ -39,7 +42,9 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
 )
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 
 
 class PCA(DimensionReduction):
@@ -47,7 +52,7 @@ class PCA(DimensionReduction):
 
     def __init__(
         self,
-        name: str = "PCA",
+        name: str = "",
         n_components: int | None = None,
         scale: bool = False,
         **parameters: float | int | str | bool | None,
@@ -56,7 +61,7 @@ class PCA(DimensionReduction):
         Args:
             scale: Whether to scale the data before applying the PCA.
             **parameters: The optional parameters for sklearn PCA constructor.
-        """
+        """  # noqa: D205 D212
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = SKLPCA(n_components, **parameters)
         self.__scaler = StandardScaler() if scale else Scaler()
@@ -67,21 +72,21 @@ class PCA(DimensionReduction):
         self.parameters["n_components"] = self.algo.n_components_
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:
+    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.algo.transform(self.__scaler.transform(data))
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:
+    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
         return self.__scaler.inverse_transform(self.algo.inverse_transform(data))
 
     @DimensionReduction._use_2d_array
-    def compute_jacobian(self, data: ndarray) -> ndarray:
+    def compute_jacobian(self, data: ndarray) -> ndarray:  # noqa: D102
         return tile(
             self.algo.components_, (len(data), 1, 1)
         ) @ self.__scaler.compute_jacobian(data)
 
     @DimensionReduction._use_2d_array
-    def compute_jacobian_inverse(self, data: ndarray) -> ndarray:
+    def compute_jacobian_inverse(self, data: ndarray) -> ndarray:  # noqa: D102
         _data = self.algo.inverse_transform(data)
         return self.__scaler.compute_jacobian_inverse(_data) @ tile(
             self.algo.components_.T, (len(data), 1, 1)

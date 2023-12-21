@@ -18,6 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial chaos expansion regression module."""
+
 from __future__ import annotations
 
 import logging
@@ -27,6 +28,13 @@ from pickle import dump
 from pickle import load
 
 import pytest
+from numpy import array
+from numpy import pi
+from numpy import sin
+from numpy.testing import assert_almost_equal
+from numpy.testing import assert_equal
+from openturns import FunctionalChaosRandomVector
+
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.datasets.io_dataset import IODataset
@@ -37,12 +45,6 @@ from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.regression.pce import CleaningOptions
 from gemseo.mlearning.regression.pce import PCERegressor
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from numpy import array
-from numpy import pi
-from numpy import sin
-from numpy.testing import assert_almost_equal
-from numpy.testing import assert_equal
-from openturns import FunctionalChaosRandomVector
 
 
 @pytest.fixture(scope="module")
@@ -321,7 +323,9 @@ def test_learn_linear_model_with_quadrature_and_quadrature_points(
     assert_almost_equal(pce.predict(array([0.25, 0.75])), array([3.75, -3.75]))
 
 
-@pytest.mark.parametrize("hyperbolic_parameter,n_coefficients", [(0.4, 10), (1.0, 20)])
+@pytest.mark.parametrize(
+    ("hyperbolic_parameter", "n_coefficients"), [(0.4, 10), (1.0, 20)]
+)
 def test_learning_hyperbolic_parameter(
     ishigami_dataset, ishigami_probability_space, hyperbolic_parameter, n_coefficients
 ):
@@ -336,7 +340,7 @@ def test_learning_hyperbolic_parameter(
     assert len(pce.algo.getCoefficients()) == n_coefficients
 
 
-@pytest.mark.parametrize("use_lars,n_coefficients", [(False, 20), (True, 5)])
+@pytest.mark.parametrize(("use_lars", "n_coefficients"), [(False, 20), (True, 5)])
 def test_learning_lars(
     ishigami_dataset, ishigami_probability_space, use_lars, n_coefficients
 ):
@@ -351,7 +355,7 @@ def test_learning_lars(
     assert len(pce.algo.getCoefficients()) == n_coefficients
 
 
-@pytest.mark.parametrize("use_cleaning,n_coefficients", [(False, 20), (True, 5)])
+@pytest.mark.parametrize(("use_cleaning", "n_coefficients"), [(False, 20), (True, 5)])
 def test_learning_cleaning(
     ishigami_dataset, ishigami_probability_space, use_cleaning, n_coefficients
 ):
@@ -371,7 +375,7 @@ __MESSAGE_2 = "most_significant is too important; set it to max_considered_terms
 
 
 @pytest.mark.parametrize(
-    "max_considered_terms,most_significant,messages",
+    ("max_considered_terms", "most_significant", "messages"),
     [
         (40, 15, [__MESSAGE_1]),
         (40, 21, [__MESSAGE_1, __MESSAGE_2]),
@@ -406,7 +410,7 @@ def test_learning_cleaning_options_logging(
         assert message in logged_warning_messages
 
 
-@pytest.mark.parametrize("max_considered_terms,n_coefficients", [(18, 5), (10, 3)])
+@pytest.mark.parametrize(("max_considered_terms", "n_coefficients"), [(18, 5), (10, 3)])
 def test_learning_cleaning_max_considered_terms(
     ishigami_dataset, ishigami_probability_space, max_considered_terms, n_coefficients
 ):
@@ -424,7 +428,9 @@ def test_learning_cleaning_max_considered_terms(
     assert len(pce.algo.getCoefficients()) == n_coefficients
 
 
-@pytest.mark.parametrize("most_significant,n_coefficients", [(10, [8, 9]), (5, [6])])
+@pytest.mark.parametrize(
+    ("most_significant", "n_coefficients"), [(10, [8, 9]), (5, [6])]
+)
 def test_learning_cleaning_most_significant(
     ishigami_dataset, ishigami_probability_space, most_significant, n_coefficients
 ):
@@ -444,7 +450,7 @@ def test_learning_cleaning_most_significant(
 
 
 @pytest.mark.parametrize(
-    "significance_factor,n_coefficients", [(1e-4, [8, 9]), (1e-1, [8])]
+    ("significance_factor", "n_coefficients"), [(1e-4, [8, 9]), (1e-1, [8])]
 )
 def test_learning_cleaning_significance_factor(
     ishigami_dataset, ishigami_probability_space, significance_factor, n_coefficients
@@ -491,7 +497,7 @@ def test_prediction_jacobian(pce):
 
 
 @pytest.mark.parametrize(
-    "order,expected",
+    ("order", "expected"),
     [
         ("first", [{"x1": 0.31, "x2": 0.69}, {"x1": 0.31, "x2": 0.69}]),
         (
@@ -589,7 +595,7 @@ def test_multidimensional_variables():
     # build a PCE of the Ishigami function with 3 scalar inputs.
     def f(x1=0, x2=0, x3=0):
         y = sin(x1) + 7 * sin(x2) ** 2 + 0.1 * x3**4 * sin(x1)
-        return y
+        return y  # noqa: RET504
 
     discipline = AutoPyDiscipline(f)
     parameter_space = ParameterSpace()
@@ -620,7 +626,7 @@ def test_multidimensional_variables():
     # with a 2-length input vector and a scalar input.
     def f(a=array([0, 0]), b=array([0])):  # noqa: B008
         y = array([sin(a[0]) + 7 * sin(a[1]) ** 2 + 0.1 * b[0] ** 4 * sin(a[0])])
-        return y
+        return y  # noqa: RET504
 
     discipline = AutoPyDiscipline(f, use_arrays=True)
     parameter_space = ParameterSpace()

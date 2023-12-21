@@ -18,20 +18,23 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to avoid multiple evaluations of a discipline."""
+
 from __future__ import annotations
 
-import abc
 import logging
 import sys
+from abc import abstractmethod
+from collections.abc import Generator
+from collections.abc import Iterable
+from collections.abc import Mapping
 from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
 from itertools import chain
 from multiprocessing import RLock
 from multiprocessing import Value
+from typing import TYPE_CHECKING
+from typing import Callable
 from typing import ClassVar
-from typing import Generator
-from typing import Iterable
-from typing import Mapping
 from typing import NamedTuple
 
 from numpy import append
@@ -49,9 +52,9 @@ from numpy import vstack
 from pandas import MultiIndex
 from xxhash import xxh3_64_hexdigest
 
-from gemseo.core.discipline_data import Data
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.utils.comparisons import DataToCompare
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
@@ -60,9 +63,18 @@ from gemseo.utils.locks import synchronized_hashes
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
 
+if TYPE_CHECKING:
+    from gemseo.core.discipline_data import Data
+
 LOGGER = logging.getLogger(__name__)
 
 JacobianData = Mapping[str, Mapping[str, ndarray]]
+
+DATA_COMPARATOR: Callable[[DataToCompare, DataToCompare], bool] = compare_dict_of_arrays
+"""The comparator of input data structures.
+
+It is used to check whether an input data has been cached in.
+"""
 
 
 class CacheEntry(NamedTuple):
@@ -78,6 +90,7 @@ class CacheEntry(NamedTuple):
     """The Jacobian data."""
 
 
+# TODO: API: rename to BaseCache
 class AbstractCache(ABCMapping):
     """An abstract base class for caches with a dictionary-like interface.
 
@@ -104,9 +117,9 @@ class AbstractCache(ABCMapping):
         - the output data: :math:`(1., 2.)`,
         - the Jacobian data: :math:`(2., 6.)^T`.
 
-        >>> input_data = {"x": array([1.])}
-        >>> output_data = {"y": array([1., 2.])}
-        >>> jacobian_data = {"y": {"x": array([[2.], [6.]])}}
+        >>> input_data = {"x": array([1.0])}
+        >>> output_data = {"y": array([1.0, 2.0])}
+        >>> jacobian_data = {"y": {"x": array([[2.0], [6.0]])}}
 
         For this ``input_data``,
         one can cache the output data:
@@ -254,14 +267,13 @@ class AbstractCache(ABCMapping):
         if jacobian_data:
             self.cache_jacobian(input_data, jacobian_data)
 
-    @abc.abstractmethod
+    @abstractmethod
     def __getitem__(
         self,
         input_data: Data,
-    ) -> CacheEntry:
-        ...
+    ) -> CacheEntry: ...
 
-    @abc.abstractmethod
+    @abstractmethod
     def cache_outputs(
         self,
         input_data: Data,
@@ -274,7 +286,7 @@ class AbstractCache(ABCMapping):
             output_data: The data containing the output data to cache.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def cache_jacobian(
         self,
         input_data: Data,
@@ -294,7 +306,7 @@ class AbstractCache(ABCMapping):
         self._output_names = []
 
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def last_entry(self) -> CacheEntry:
         """The last cache entry."""
 
@@ -351,9 +363,9 @@ class AbstractCache(ABCMapping):
 
                 new_data = vstack(cache_entries)
                 data.append(new_data)
-                columns.extend(
-                    [(group_name, variable_name, i) for i in range(new_data.shape[1])]
-                )
+                columns.extend([
+                    (group_name, variable_name, i) for i in range(new_data.shape[1])
+                ])
 
         return dataset_class(
             hstack(data),
@@ -365,6 +377,7 @@ class AbstractCache(ABCMapping):
         )
 
 
+# TODO: API: rename to BaseFullCache
 class AbstractFullCache(AbstractCache):
     """Abstract cache to store all the data, either in memory or on the disk.
 
@@ -412,18 +425,16 @@ class AbstractFullCache(AbstractCache):
         self._last_accessed_index = Value("i", 0)
         self.lock = self._set_lock()
 
-    @abc.abstractmethod
+    @abstractmethod
     def _set_lock(self) -> RLock:
         """Set a lock for multithreading.
 
         Either from an external object or internally by using RLock().
         """
-        ...
 
     def __ensure_input_data_exists(
         self,
         input_data: Data,
-        data_hash: int,
     ) -> bool:
         """Ensure ``input_data`` associated with ``data_hash`` exists.
 
@@ -436,11 +447,12 @@ class AbstractFullCache(AbstractCache):
 
         Args:
             input_data: The input data to cache.
-            data_hash: The hash of the input data.
 
         Returns:
             Whether ``input_data`` was missing.
         """
+        data_hash = hash_data_dict(input_data)
+
         # Check if there is an entry with this hash in the cache.
         indices = self._hashes_to_indices.get(data_hash)
 
@@ -454,9 +466,7 @@ class AbstractFullCache(AbstractCache):
 
         # If yes, look if there is a corresponding input data equal to ``input_data``.
         for index in indices:
-            if compare_dict_of_arrays(
-                input_data, self._read_data(index, self._INPUTS_GROUP)
-            ):
+            if DATA_COMPARATOR(input_data, self._read_data(index, self._INPUTS_GROUP)):
                 # The input data is already cached => we don't store it again.
                 self._last_accessed_index.value = index
                 return False
@@ -479,7 +489,7 @@ class AbstractFullCache(AbstractCache):
             index: The index of the entry.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def _has_group(
         self,
         index: int,
@@ -494,9 +504,8 @@ class AbstractFullCache(AbstractCache):
         Returns:
             Whether the entry has data for this group.
         """
-        ...
 
-    @abc.abstractmethod
+    @abstractmethod
     def _write_data(
         self,
         values: Data,
@@ -513,7 +522,6 @@ class AbstractFullCache(AbstractCache):
                 or :attr:`._JACOBIAN_GROUP`.
             index: The index of the entry in the cache.
         """
-        ...
 
     def _cache_inputs(
         self,
@@ -535,12 +543,10 @@ class AbstractFullCache(AbstractCache):
         Returns:
             Whether ``group`` exists.
         """
-        if self.__ensure_input_data_exists(input_data, hash_data_dict(input_data)):
+        if self.__ensure_input_data_exists(input_data):
             self._write_data(input_data, self._INPUTS_GROUP, self._max_index.value)
-        else:
-            if self._has_group(self._last_accessed_index.value, group):
-                return True
-
+        elif self._has_group(self._last_accessed_index.value, group):
+            return True
         return False
 
     @synchronized
@@ -602,7 +608,7 @@ class AbstractFullCache(AbstractCache):
     def __len__(self) -> int:
         return self._max_index.value
 
-    @abc.abstractmethod
+    @abstractmethod
     def _read_data(
         self,
         index: int,
@@ -619,13 +625,12 @@ class AbstractFullCache(AbstractCache):
         Returns:
             The output and Jacobian data corresponding to these index and group.
         """
-        ...
 
     @synchronized_hashes
     def __has_hash(
         self,
         data_hash: int,
-    ) -> int:
+    ) -> ndarray | None:
         """Get the indices corresponding to a data hash.
 
         Args:
@@ -651,9 +656,7 @@ class AbstractFullCache(AbstractCache):
             The output and Jacobian data if they exist, ``None`` otherwise.
         """
         for index in indices:
-            if compare_dict_of_arrays(
-                input_data, self._read_data(index, self._INPUTS_GROUP)
-            ):
+            if DATA_COMPARATOR(input_data, self._read_data(index, self._INPUTS_GROUP)):
                 output_data = self._read_data(index, self._OUTPUTS_GROUP)
                 jacobian_data = self._read_data(index, self._JACOBIAN_GROUP)
                 return CacheEntry(input_data, output_data, jacobian_data)
@@ -676,9 +679,7 @@ class AbstractFullCache(AbstractCache):
         for indices in self._hashes_to_indices.values():
             for index in indices:
                 cached_input_data = self._read_data(index, self._INPUTS_GROUP)
-                if compare_dict_of_arrays(
-                    input_data, cached_input_data, self.tolerance
-                ):
+                if DATA_COMPARATOR(input_data, cached_input_data, self.tolerance):
                     output_data = self._read_data(index, self._OUTPUTS_GROUP)
                     jacobian_data = self._read_data(index, self._JACOBIAN_GROUP)
                     return CacheEntry(input_data, output_data, jacobian_data)
@@ -770,21 +771,16 @@ class AbstractFullCache(AbstractCache):
             else:
                 variable_names += [f"{data_name}_{i + 1}" for i in range(data_size)]
 
-        cache_as_array = vstack(
-            [
-                concatenate(
-                    [
-                        all_input_data[index][name].flatten()
-                        for name in shared_input_names
-                    ]
-                    + [
-                        all_output_data[index][name].flatten()
-                        for name in shared_output_names
-                    ]
-                )
-                for index in range(len(all_input_data))
-            ]
-        )
+        cache_as_array = vstack([
+            concatenate(
+                [all_input_data[index][name].flatten() for name in shared_input_names]
+                + [
+                    all_output_data[index][name].flatten()
+                    for name in shared_output_names
+                ]
+            )
+            for index in range(len(all_input_data))
+        ])
         save_data_arrays_to_xml(variable_names, cache_as_array, file_path)
 
     def update(
@@ -800,10 +796,9 @@ class AbstractFullCache(AbstractCache):
             if output_data or jacobian_data:
                 self[input_data] = (output_data, jacobian_data)
 
-    @abc.abstractmethod
+    @abstractmethod
     def _copy_empty_cache(self) -> AbstractFullCache:
         """Copy a cache without its entries."""
-        ...
 
     def __add__(
         self,
@@ -823,6 +818,7 @@ class AbstractFullCache(AbstractCache):
         return new_cache
 
 
+# TODO: API: remove dict from the method name.
 def hash_data_dict(
     data: Mapping[str, ndarray | int | float],
 ) -> int:
@@ -834,15 +830,14 @@ def hash_data_dict(
     Returns:
         The hash value of the data.
 
-    Examples
-    --------
-    >>> from gemseo.core.cache import hash_data_dict
-    >>> from numpy import array
-    >>> data = {'x':array([1.,2.]),'y':array([3.])}
-    >>> hash_data_dict(data)
-    13252388834746642440
-    >>> hash_data_dict(data,'x')
-    4006190450215859422
+    Examples:
+        >>> from gemseo.core.cache import hash_data_dict
+        >>> from numpy import array
+        >>> data = {"x": array([1.0, 2.0]), "y": array([3.0])}
+        >>> hash_data_dict(data)
+        13252388834746642440
+        >>> hash_data_dict(data, "x")
+        4006190450215859422
     """
     names_with_hashed_values = []
 

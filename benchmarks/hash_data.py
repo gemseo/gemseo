@@ -13,9 +13,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Benchmark for hashing data."""
+
 from __future__ import annotations
 
 import compare_data
+
 from gemseo.utils.hash import hash_data
 
 

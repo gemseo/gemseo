@@ -47,35 +47,48 @@ by means of the ``classifier`` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled.
 """
+
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Iterable
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Union
 
-from matplotlib import pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from pandas.plotting import scatter_matrix
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.post.dataset._trend import Trend as _Trend
+from gemseo.post.dataset._trend import TrendFunctionCreator
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+ScatterMatrixOption = Union[bool, int, str, None, Sequence[str]]
 
 
 class ScatterMatrix(DatasetPlot):
     """Scatter plot matrix."""
 
+    Trend = _Trend
+    """The type of trend."""
+
     def __init__(
         self,
         dataset: Dataset,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Iterable[str] | None = None,
         classifier: str | None = None,
         kde: bool = False,
         size: int = 25,
         marker: str = "o",
         plot_lower: bool = True,
         plot_upper: bool = True,
+        trend: Trend | TrendFunctionCreator = Trend.NONE,
+        **options: Any,
     ) -> None:
         """
         Args:
+            variable_names: The names of the variables to consider.
+                If ``None``, consider all the variables of the dataset.
             classifier: The name of the variable to build the cluster.
             kde: The type of the distribution representation.
                 If ``True``, plot kernel-density estimator on the diagonal.
@@ -84,6 +97,9 @@ class ScatterMatrix(DatasetPlot):
             marker: The marker for the points.
             plot_lower: Whether to plot the lower part.
             plot_upper: Whether to plot the upper part.
+            trend: The trend function to be added on the scatter plots
+                or a function creating a trend function from a set of *xy*-points.
+            **options: The options of the underlying pandas scatter matrix.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
@@ -94,21 +110,20 @@ class ScatterMatrix(DatasetPlot):
             marker=marker,
             plot_lower=plot_lower,
             plot_upper=plot_upper,
+            trend=trend,
+            options=options,
         )
 
-    def _plot(
-        self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        variable_names = self._param.variable_names
-        classifier = self._param.classifier
-        kde = self._param.kde
-        size = self._param.size
-        marker = self._param.marker
-        if variable_names is None:
-            variable_names = self.dataset.variable_names
+    def _create_specific_data_from_dataset(self) -> tuple[tuple[str, str, int] | None]:
+        """
+        Returns:
+            The column of the dataset associated with the classifier
+            if the classifier is not ``None``.
 
+        Raises:
+            ValueError: When the classifier does not exist.
+        """  # noqa: D205, D212, D415
+        classifier = self._specific_settings.classifier
         if classifier is not None and classifier not in self.dataset.variable_names:
             raise ValueError(
                 f"{classifier} cannot be used as a classifier "
@@ -116,61 +131,7 @@ class ScatterMatrix(DatasetPlot):
                 f"available ones are: {self.dataset.variable_names}."
             )
 
-        if kde:
-            diagonal = "kde"
-        else:
-            diagonal = "hist"
+        if self._specific_settings.classifier is not None:
+            return (self._get_label(self._specific_settings.classifier)[1],)
 
-        dataframe = self.dataset.get_view(variable_names=variable_names)
-        kwargs = {}
-        if classifier is not None:
-            palette = dict(enumerate("bgrcmyk"))
-            groups = self.dataset.get_view(variable_names=[classifier]).to_numpy()[
-                :, 0:1
-            ]
-            kwargs["color"] = [palette[group[0] % len(palette)] for group in groups]
-            _, variable_name = self._get_label(classifier)
-            dataframe = dataframe.drop(labels=variable_name, axis=1)
-
-        dataframe.columns = self._get_variable_names(dataframe)
-        n_cols = n_rows = dataframe.shape[1] if axes is None else 1
-        fig, axes = self._get_figure_and_axes(
-            fig, axes, self.fig_size, n_rows=n_rows, n_cols=n_cols
-        )
-        sub_axes = scatter_matrix(
-            dataframe,
-            diagonal=diagonal,
-            s=size,
-            marker=marker,
-            figsize=self.fig_size,
-            ax=axes,
-            **kwargs,
-        )
-
-        n_cols = sub_axes.shape[0]
-        if not (self._param.plot_lower and self._param.plot_upper):
-            for i in range(n_cols):
-                for j in range(n_cols):
-                    sub_axes[i, j].get_xaxis().set_visible(False)
-                    sub_axes[i, j].get_yaxis().set_visible(False)
-
-        if not self._param.plot_lower:
-            for i in range(n_cols):
-                for j in range(i):
-                    sub_axes[i, j].set_visible(False)
-
-            for i in range(n_cols):
-                sub_axes[i, i].get_xaxis().set_visible(True)
-                sub_axes[i, i].get_yaxis().set_visible(True)
-
-        if not self._param.plot_upper:
-            for i in range(n_cols):
-                for j in range(i + 1, n_cols):
-                    sub_axes[i, j].set_visible(False)
-
-            for i in range(n_cols):
-                sub_axes[-1, i].get_xaxis().set_visible(True)
-                sub_axes[i, 0].get_yaxis().set_visible(True)
-
-        plt.suptitle(self.title)
-        return [fig]
+        return (None,)

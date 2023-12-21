@@ -34,18 +34,20 @@ can also be exported to a :class:`.Dataset`
 using the methods :meth:`.AbstractFullCache.to_dataset`
 and :meth:`.OptimizationProblem.to_dataset`.
 """
+
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from numbers import Number
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import TYPE_CHECKING
+from typing import Literal
 from typing import Union
+from typing import overload
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import arange
@@ -65,6 +67,8 @@ from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pandas._typing import Axes
     from pandas._typing import Dtype
 
@@ -178,6 +182,11 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         """
         Args:
+            data: See :class:`.DataFrame`.
+            index: See :class:`.DataFrame`.
+            columns:See :class:`.DataFrame`.
+            dtype: See :class:`.DataFrame`.
+            copy: See :class:`.DataFrame`.
             dataset_name: The name of the dataset.
         """  # noqa: D205, D212, D415
         if data is None and index is None and columns is None:
@@ -392,8 +401,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 If empty, consider all the variables of the considered groups.
             components: The component(s) corresponding to these data.
                 If empty, consider all the components of the considered variables.
-            indices: The index (indices) of the dataset into which these data is to be inserted.
-                If empty, consider all the indices.
+            indices: The index (indices) of the dataset into which these data is to be
+                inserted. If empty, consider all the indices.
 
         Notes:
             Changing the type of data can turn a view into a copy.
@@ -424,7 +433,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         """Add the data related to a variable.
 
         If the variable does not exist, it is added.
-        If the variable already exists, non-existing components can be added, when specified.
+        If the variable already exists, non-existing components can be added,
+        when specified.
         It is impossible to add components that have already been added.
 
         Args:
@@ -476,10 +486,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         apply_scalar_to_all_entries = len(data) == 1 and not self.empty
 
         columns = [(group_name, variable_name, component) for component in components]
-        if apply_scalar_to_all_entries:
-            value = data[0]
-        else:
-            value = data
+        value = data[0] if apply_scalar_to_all_entries else data
         self[columns] = value
 
         self.__transform_single_index_column_to_multi_index_column()
@@ -493,8 +500,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             components, self.get_variable_components(group_name, variable_name)
         ).any():
             raise ValueError(
-                f"The group {repr(group_name)} "
-                f"has already a variable {repr(variable_name)} defined."
+                f"The group {group_name!r} "
+                f"has already a variable {variable_name!r} defined."
             )
 
     @staticmethod
@@ -545,7 +552,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             ValueError: If the group already exists.
         """
         if group_name in self.group_names:
-            raise ValueError(f"The group {repr(group_name)} is already defined.")
+            raise ValueError(f"The group {group_name!r} is already defined.")
 
         data = self.__force_to_2d_array(data)
         n_rows, n_columns = data.shape
@@ -581,7 +588,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             ValueError: When the shape of the data is inconsistent.
         """
-        if data.shape not in ((n_rows, n_columns), (1, n_columns)):
+        if data.shape not in {(n_rows, n_columns), (1, n_columns)}:
             raise ValueError(
                 "The data shape "
                 f"must be ({n_rows}, {n_columns}) or (1, {n_columns}); "
@@ -748,12 +755,10 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         for variable in variable_names:
             group = variable_to_group.get(variable, cls.DEFAULT_GROUP)
             n_components = variable_to_n_component.get(variable, 1)
-            columns.extend(
-                [
-                    (group, variable, component)
-                    for component in arange(n_components, dtype=np_int64)
-                ]
-            )
+            columns.extend([
+                (group, variable, component)
+                for component in arange(n_components, dtype=np_int64)
+            ])
 
         index = MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES)
         dataset = cls(data, columns=index)
@@ -837,9 +842,19 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         dataset._reindex()
         return dataset
 
+    @overload
+    def get_columns(
+        self, variable_names: Iterable[str] = (), as_tuple: Literal[False] = False
+    ) -> list[str]: ...
+
+    @overload
+    def get_columns(
+        self, variable_names: Iterable[str] = (), as_tuple: Literal[True] = True
+    ) -> list[tuple[str, str, int]]: ...
+
     def get_columns(
         self, variable_names: Iterable[str] = (), as_tuple: bool = False
-    ) -> list[str]:
+    ) -> list[str | tuple[str, str, int]]:
         """Return the columns based on variable names.
 
         Args:
@@ -856,19 +871,19 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         columns = self.get_view(variable_names=variable_names).columns.to_list()
         if as_tuple:
             return columns
-        else:
-            return [
-                repr_variable(
-                    column[self.__VARIABLE_LEVEL],
-                    column[self.__COMPONENT_LEVEL],
-                    size=len(
-                        self.get_variable_components(
-                            column[self.__GROUP_LEVEL], column[self.__VARIABLE_LEVEL]
-                        )
-                    ),
-                )
-                for column in columns
-            ]
+
+        return [
+            repr_variable(
+                column[self.__VARIABLE_LEVEL],
+                column[self.__COMPONENT_LEVEL],
+                size=len(
+                    self.get_variable_components(
+                        column[self.__GROUP_LEVEL], column[self.__VARIABLE_LEVEL]
+                    )
+                ),
+            )
+            for column in columns
+        ]
 
     def transform_data(
         self,
@@ -972,8 +987,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             return [
                 {k: v.ravel() for k, v in d.items()} for d in list_of_dict_of_arrays
             ]
-        else:
-            return list_of_dict_of_arrays[0]
+
+        return list_of_dict_of_arrays[0]
 
     @property
     def summary(self) -> str:

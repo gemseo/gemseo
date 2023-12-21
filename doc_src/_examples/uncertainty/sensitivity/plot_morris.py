@@ -22,13 +22,17 @@
 Morris analysis
 ===============
 """
+
 from __future__ import annotations
 
 import pprint
 
+from gemseo import configure_logger
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
+
+configure_logger()
 
 # %%
 # In this example,
@@ -50,7 +54,7 @@ uncertain_space = IshigamiSpace()
 # %%
 # Then,
 # we run sensitivity analysis of type :class:`.MorrisAnalysis`:
-sensitivity_analysis = MorrisAnalysis([discipline], uncertain_space, 10)
+sensitivity_analysis = MorrisAnalysis([discipline], uncertain_space, n_samples=None)
 sensitivity_analysis.compute_indices()
 
 # %%

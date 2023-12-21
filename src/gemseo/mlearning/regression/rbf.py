@@ -36,12 +36,13 @@ The RBF model relies on the Rbf class of the
 `scipy library
 <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html>`_.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
 from typing import Union
 
 from numpy import average
@@ -55,12 +56,16 @@ from numpy.linalg import norm
 from scipy.interpolate import Rbf
 from strenum import StrEnum
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.core.supervised import SavedObjectType
+from gemseo.mlearning.core.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
-SavedObjectType = Union[SavedObjectType, float, Callable]
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import TransformerType
+
+SavedObjectType = Union[_SavedObjectType, float, Callable]
 
 
 class RBFRegressor(MLRegressionAlgo):
@@ -68,6 +73,7 @@ class RBFRegressor(MLRegressionAlgo):
 
     This model relies on the SciPy class :class:`scipy.interpolate.Rbf`.
     """
+
     der_function: Callable[[ndarray], ndarray]
     """The derivative of the radial basis function."""
 
@@ -145,7 +151,7 @@ class RBFRegressor(MLRegressionAlgo):
                 <https://docs.scipy.org/doc/scipy/reference/generated/
                 scipy.spatial.distance.cdist.html>`_
                 or a function that computes the distance between two points.
-        """
+        """  # noqa: D205 D212 D415
         super().__init__(
             data,
             transformer=transformer,
@@ -180,7 +186,7 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative of  :math:`f(r) = \sqrt{r^2 + 1}` wrt :math:`x`.
+            r"""Compute derivative of :math:`f(r) = \sqrt{r^2 + 1}` w.r.t. :math:`x`.
 
             Args:
                 input_data: The 1D input data.
@@ -199,8 +205,7 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative w.r.t. :math:`x` of the function :math:`f(r) =
-            1/\sqrt{r^2 + 1}`.
+            r"""Compute derivative of :math:`f(r)=1/\sqrt{r^2 + 1}` w.r.t. :math:`x`.
 
             Args:
                 input_data: The 1D input data.
@@ -219,8 +224,7 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative w.r.t. :math:`x` of the function :math:`f(r) =
-            \exp(-r^2)`.
+            r"""Compute derivative of :math:`f(r)=\exp(-r^2)` w.r.t. :math:`x`.
 
             Args:
                 input_data: The 1D input data.
@@ -239,8 +243,9 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            """Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r`. If
-            :math:`x=0`, return 0 (determined up to a tolerance).
+            """Compute derivative of :math:`f(r)=r` w.r.t. :math:`x`.
+
+            If :math:`x=0`, return 0 (determined up to a tolerance).
 
             Args:
                 input_data: The 1D input data.
@@ -302,8 +307,9 @@ class RBFRegressor(MLRegressionAlgo):
             norm_input_data: float,
             eps: float,
         ) -> ndarray:
-            r"""Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r^2
-            \log(r)`. If :math:`x=0`, return 0 (determined up to a tolerance).
+            r"""Compute derivative of :math:`f(r) = r^2\log(r)` w.r.t. :math:`x`.
+
+            If :math:`x=0`, return 0 (determined up to a tolerance).
 
             Args:
                 input_data: The 1D input data.
@@ -327,7 +333,7 @@ class RBFRegressor(MLRegressionAlgo):
     ) -> None:
         self.y_average = average(output_data, axis=0)
         output_data -= self.y_average
-        args = list(input_data.T) + [output_data]
+        args = [*list(input_data.T), output_data]
         self.algo = Rbf(
             *args,
             mode="N-D",
@@ -341,10 +347,7 @@ class RBFRegressor(MLRegressionAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        output_data = self.algo(*input_data.T)
-        if len(output_data.shape) == 1:
-            output_data = output_data[:, newaxis]  # n_outputs=1, rbf reduces
-        return output_data + self.y_average
+        return self.algo(*input_data.T).reshape((len(input_data), -1)) + self.y_average
 
     def _predict_jacobian(
         self,
@@ -360,14 +363,12 @@ class RBFRegressor(MLRegressionAlgo):
         # ref_points : (           ,           , n_inputs , n_learn_samples )
         # nodes      : (           , n_outputs ,          , n_learn_samples )
         # jacobians  : ( n_samples , n_outputs , n_inputs ,                 )
-        eps = self.algo.epsilon
         ref_points = self.algo.xi[newaxis, newaxis]
         nodes = self.algo.nodes.T[newaxis, :, newaxis]
         input_data = input_data[:, newaxis, :, newaxis]
         diffs = input_data - ref_points
         dists = norm(diffs, axis=2)[:, :, newaxis]
-        contributions = nodes * der_func(diffs, dists, eps=eps)
-        return contributions.sum(-1)
+        return (nodes * der_func(diffs, dists, eps=self.algo.epsilon)).sum(-1)
 
     def _check_available_jacobian(self) -> None:
         """Check if the Jacobian is available for the given setup.

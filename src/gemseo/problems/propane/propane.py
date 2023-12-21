@@ -19,9 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 # from Tedford2010
 # Propane combustion, p12
-r"""
-The propane combustion MDO problem
-**********************************
+r"""The propane combustion MDO problem.
 
 The Propane MDO problem can be found in :cite:`Padula1996`
 and :cite:`TedfordMartins2006`. It represents the chemical equilibrium
@@ -92,6 +90,7 @@ and Discipline 3 computes :math:`(x_5, x_9, x_{11})` by solving:
    x_{11} - \sum_{j=1}^{10} x_j &=& 0. \\
    \end{aligned}
 """
+
 from __future__ import annotations
 
 from cmath import sqrt
@@ -132,7 +131,7 @@ class PropaneReaction(MDODiscipline):
         for which discipline analyses are not computable.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {
             "x_shared": ones(4, dtype=complex128),
@@ -237,7 +236,7 @@ class PropaneComb1(MDODiscipline):
     This discipline is characterized by two coupling equations in functional form.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.ReExecutionPolicy.DONE
@@ -280,7 +279,7 @@ class PropaneComb2(MDODiscipline):
     This discipline is characterized by two coupling equations in functional form.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.ReExecutionPolicy.DONE
@@ -326,7 +325,7 @@ class PropaneComb3(MDODiscipline):
     This discipline is characterized by three coupling equations in functional form.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.ReExecutionPolicy.DONE

@@ -21,15 +21,17 @@
 BiLevel-based MDO on the Sobieski SSBJ test case
 ================================================
 """
+
 from __future__ import annotations
 
 from copy import deepcopy
+from logging import WARNING
 
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -41,14 +43,12 @@ configure_logger()
 # :class:`.SobieskiAerodynamics`,
 # :class:`.SobieskiMission`
 # and :class:`.SobieskiStructure`.
-propu, aero, mission, struct = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+propu, aero, mission, struct = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 
 # %%
 # Build, execute and post-process the scenario
@@ -59,7 +59,7 @@ propu, aero, mission, struct = create_discipline(
 # instead of minimizing y_4 (range), which is the default option.
 #
 # We need to define the design space.
-design_space = SobieskiProblem().design_space
+design_space = SobieskiDesignSpace()
 
 # %%
 # Then, we build a sub-scenario for each strongly coupled disciplines,
@@ -123,7 +123,7 @@ sc_str.default_inputs = sub_sc_opts
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This scenario is based on the three previous sub-scenarios and on the
 # Mission and aims to maximize the range (Breguet).
-sub_disciplines = [sc_prop, sc_aero, sc_str] + [mission]
+sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 design_space = deepcopy(design_space).filter("x_shared")
 system_scenario = create_scenario(
     sub_disciplines,
@@ -136,6 +136,7 @@ system_scenario = create_scenario(
     tolerance=1e-14,
     max_mda_iter=30,
     maximize_objective=True,
+    sub_scenarios_log_level=WARNING,
 )
 system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
 
@@ -152,9 +153,11 @@ system_scenario.xdsmize(save_html=False)
 # %%
 # Execute the main scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.execute(
-    {"max_iter": 50, "algo": "NLOPT_COBYLA", "algo_options": algo_options}
-)
+system_scenario.execute({
+    "max_iter": 50,
+    "algo": "NLOPT_COBYLA",
+    "algo_options": algo_options,
+})
 
 # %%
 # Plot the history of the MDA residuals

@@ -20,15 +20,15 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+from numpy import linalg
+
 from gemseo.mda.quasi_newton import MDAQuasiNewton
+from gemseo.problems.sellar.sellar import X_SHARED
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import X_SHARED
-from gemseo.problems.sellar.sellar import Y_1
-from gemseo.problems.sellar.sellar import Y_2
-from numpy import array
-from numpy import linalg
+from gemseo.problems.sellar.sellar import get_y_opt
 
 from .test_gauss_seidel import SelfCoupledDisc
 
@@ -49,9 +49,7 @@ def test_broyden_sellar():
     mda.reset_history_each_run = True
     mda.execute()
     assert mda.residual_history[-1] < 1e-5
-
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-3
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
 
     mda.warm_start = True
     mda.execute({X_SHARED: mda.default_inputs[X_SHARED] + 0.1})
@@ -64,8 +62,7 @@ def test_hybrid_sellar():
 
     mda.execute()
 
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 def test_lm_sellar():
@@ -76,8 +73,7 @@ def test_lm_sellar():
     )
     mda.execute()
 
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
 def test_dfsane_sellar():
@@ -85,8 +81,7 @@ def test_dfsane_sellar():
     mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.DF_SANE)
     mda.execute()
 
-    y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert linalg.norm(SELLAR_Y_REF - y_opt) / linalg.norm(SELLAR_Y_REF) < 1e-3
+    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
     with pytest.raises(
         ValueError, match="Method 'unknown_method' is not a valid quasi-Newton method."
     ):

@@ -19,29 +19,43 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.post.basic_history import BasicHistory
 from gemseo.utils.testing.helpers import image_comparison
 
-TEST_PARAMETERS = {
-    "standardized": (True, ["BasicHistory_standardized"]),
-    "unstandardized": (False, ["BasicHistory_unstandardized"]),
-}
-
 
 @pytest.mark.parametrize(
-    "use_standardized_objective, baseline_images",
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("variable_names", "use_standardized_objective", "options", "baseline_images"),
+    [
+        (["obj", "eq", "neg", "pos", "x"], True, {}, ["BasicHistory_standardized"]),
+        (["obj", "eq", "neg", "pos", "x"], False, {}, ["BasicHistory_unstandardized"]),
+        (
+            ["obj", "x"],
+            True,
+            {"normalize": True},
+            ["BasicHistory_standardized_normalize"],
+        ),
+        (
+            ["obj", "x"],
+            False,
+            {"normalize": True},
+            ["BasicHistory_unstandardized_normalize"],
+        ),
+    ],
 )
 @image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+    variable_names,
+    use_standardized_objective,
+    options,
+    baseline_images,
+    common_problem,
+    pyplot_close_all,
 ):
     """Check BasicHistory with objective, standardized or not."""
     opt = BasicHistory(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
-    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)
+    opt.execute(variable_names=variable_names, save=False, **options)
 
 
 @pytest.mark.parametrize("baseline_images", [("BasicHistory_many_iterations",)])

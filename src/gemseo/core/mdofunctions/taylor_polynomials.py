@@ -13,16 +13,21 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Functions computing first- and second-order Taylor polynomials from a function."""
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import ndarray
 
-from gemseo.core.mdofunctions.mdo_function import ArrayType
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.core.mdofunctions.mdo_function import ArrayType
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 def compute_linear_approximation(

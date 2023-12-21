@@ -17,11 +17,12 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A constraints plot."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Final
-from typing import Sequence
 
 from matplotlib.ticker import MaxNLocator
 from numpy import arange
@@ -29,6 +30,9 @@ from numpy import newaxis
 
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.opt_post_processor import OptPostProcessor
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,10 +53,12 @@ class BasicHistory(OptPostProcessor):
     def _plot(
         self,
         variable_names: Sequence[str],
+        normalize: bool = False,
     ) -> None:
         """
         Args:
             variable_names: The names of the variables.
+            normalize: Whether to normalize the data.
         """  # noqa: D205, D212, D415
         problem = self.opt_problem
         dataset = problem.to_dataset(opt_naming=False)
@@ -67,6 +73,9 @@ class BasicHistory(OptPostProcessor):
             if self._change_obj:
                 dataset.transform_data(lambda x: -x, variable_names=self._neg_obj_name)
                 dataset.rename_variable(self._neg_obj_name, self._obj_name)
+
+        if normalize:
+            dataset = dataset.get_normalized()
 
         plot = Lines(
             dataset,

@@ -30,29 +30,32 @@ wherever possible.
 This concept is implemented through the :class:`.MLClassificationAlgo` class
 which inherits from the :class:`.MLSupervisedAlgo` class.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Dict
-from typing import Iterable
-from typing import Sequence
+from collections.abc import Iterable
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 from typing import Union
 
 from numpy import ndarray
 from numpy import unique
 from numpy import zeros
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import DataType
-from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
-from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.core.supervised import (
     SavedObjectType as MLSupervisedAlgoSavedObjectType,
 )
 
+if TYPE_CHECKING:
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+    from gemseo.mlearning.core.ml_algo import TransformerType
+
 SavedObjectType = Union[
-    MLSupervisedAlgoSavedObjectType, Sequence[str], Dict[str, ndarray], int
+    MLSupervisedAlgoSavedObjectType, Sequence[str], dict[str, ndarray], int
 ]
 
 
@@ -67,7 +70,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     n_classes: int
     """The number of classes."""
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         data: IODataset,
         transformer: TransformerType = MLSupervisedAlgo.IDENTITY,
@@ -143,10 +146,9 @@ class MLClassificationAlgo(MLSupervisedAlgo):
                 with shape (n_samples, n_classes).
         """
         if hard:
-            probas = self._predict_proba_hard(input_data)
-        else:
-            probas = self._predict_proba_soft(input_data)
-        return probas
+            return self._predict_proba_hard(input_data)
+
+        return self._predict_proba_soft(input_data)
 
     def _predict_proba_hard(
         self,
@@ -160,13 +162,13 @@ class MLClassificationAlgo(MLSupervisedAlgo):
         Returns:
             The indicator of belonging to each class with shape (n_samples, n_classes).
         """
-        n_samples = input_data.shape[0]
+        n_samples = len(input_data)
         prediction = self._predict(input_data).astype(int)
         n_outputs = prediction.shape[1]
         probas = zeros((n_samples, self.n_classes, n_outputs))
-        for n_sample in range(prediction.shape[0]):
+        for sample in range(n_samples):
             for n_output in range(n_outputs):
-                probas[n_sample, prediction[n_sample, n_output], n_output] = 1
+                probas[sample, prediction[sample, n_output], n_output] = 1
         return probas
 
     @abstractmethod

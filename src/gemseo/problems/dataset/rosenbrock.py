@@ -17,9 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Rosenbrock dataset
-==================
+"""Rosenbrock dataset.
 
 This :class:`.Dataset` contains 100 evaluations
 of the well-known Rosenbrock function:
@@ -37,6 +35,7 @@ design of experiments.
 `More information about the Rosenbrock function
 <https://en.wikipedia.org/wiki/Rosenbrock_function>`_
 """
+
 from __future__ import annotations
 
 from numpy import hstack

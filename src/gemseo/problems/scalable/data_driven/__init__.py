@@ -46,6 +46,7 @@ based on scalable disciplines.
    of course, scalability results by means of a dedicated class:
    :class:`.ScalabilityResult`.
 """
+
 from __future__ import annotations
 
 from gemseo.problems.scalable.data_driven.study.post import PostScalabilityStudy

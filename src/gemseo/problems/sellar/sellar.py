@@ -75,11 +75,13 @@ constraints and objective:
   this :class:`.MDODiscipline` computes both objective and constraints
   from :math:`y_1`, :math:`y_2`, :math:`x_{local}` and :math:`x_{shared,2}`.
 """
+
 from __future__ import annotations
 
 from cmath import exp
 from cmath import sqrt
-from typing import Iterable
+from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import array
 from numpy import atleast_2d
@@ -88,7 +90,13 @@ from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 
+from gemseo.core.data_converters.json import JSONGrammarDataConverter
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.mda.mda import MDA
 
 Y_1 = "y_1"
 Y_2 = "y_2"
@@ -100,10 +108,13 @@ C_2 = "c_2"
 R_1 = "r_1"
 R_2 = "r_2"
 
+# This allows to test a specific data converter.
+WITH_2D_ARRAY = False
+
 
 def get_inputs(
     names: Iterable[str] | None = None,
-) -> dict[str, ndarray]:
+) -> dict[str, ndarray | complex]:
     """Generate an initial solution for the MDO problem.
 
     Args:
@@ -113,30 +124,69 @@ def get_inputs(
         The default values of the discipline inputs.
     """
     inputs = {
-        X_LOCAL: array([0.0], dtype=complex128),
+        X_LOCAL: complex(0),
         X_SHARED: array([1.0, 0.0], dtype=complex128),
-        Y_1: ones(1, dtype=complex128),
-        Y_2: ones(1, dtype=complex128),
+        Y_1: complex(1),
+        Y_2: complex(1),
     }
+    if WITH_2D_ARRAY:
+        inputs[X_SHARED] = atleast_2d(inputs[X_SHARED])
     if names is None:
         return inputs
     return {name: inputs[name] for name in names}
 
 
+def get_y_opt(mda: MDA) -> ndarray:
+    """Return the optimal ``y`` array.
+
+    Args:
+        mda: The mda.
+
+    Returns:
+        The optimal ``y`` array.
+    """
+    return array([mda.local_data[Y_1].real, mda.local_data[Y_2].real])
+
+
+if WITH_2D_ARRAY:
+
+    class DataConverter(JSONGrammarDataConverter):
+        """A data converter where ``x_shared`` is not a ndarray."""
+
+        def convert_value_to_array(self, name: str, value: Any) -> ndarray:  # noqa: D102
+            if name == X_SHARED:
+                return value[0]
+            return super().convert_value_to_array(name, value)
+
+        def convert_array_to_value(self, name: str, array_: Any) -> Any:  # noqa: D102
+            if name == X_SHARED:
+                return array([array_])
+            return super().convert_array_to_value(name, array_)
+
+else:
+    DataConverter = JSONGrammarDataConverter
+
+
 class SellarSystem(MDODiscipline):
     """The discipline to compute the objective and constraints of the Sellar problem."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.input_grammar.update_from_names(["x_local", "x_shared", "y_1", "y_2"])
-        self.output_grammar.update_from_names(["obj", "c_1", "c_2"])
-        self.default_inputs = get_inputs()
+        input_data = get_inputs()
+        self.input_grammar.update_from_data(input_data)
+        self.output_grammar.update_from_names([OBJ, C_1, C_2])
+        self.default_inputs = input_data
         self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
-        x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(
-            [X_LOCAL, X_SHARED, Y_1, Y_2]
-        )
+        x_local, x_shared, y_1, y_2 = self.get_inputs_by_name([
+            X_LOCAL,
+            X_SHARED,
+            Y_1,
+            Y_2,
+        ])
+        if WITH_2D_ARRAY:
+            x_shared = x_shared[0]
         obj = array([self.compute_obj(x_local, x_shared, y_1, y_2)], dtype=complex128)
         c_1 = array([self.compute_c_1(y_1)], dtype=complex128)
         c_2 = array([self.compute_c_2(y_2)], dtype=complex128)
@@ -144,11 +194,11 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def compute_obj(
-        x_local: ndarray,
+        x_local: complex,
         x_shared: ndarray,
-        y_1: ndarray,
-        y_2: ndarray,
-    ) -> float:
+        y_1: complex,
+        y_2: complex,
+    ) -> complex:
         """Evaluate the objective :math:`obj`.
 
         Args:
@@ -160,12 +210,12 @@ class SellarSystem(MDODiscipline):
         Returns:
             The value of the objective :math:`obj`.
         """
-        return x_local[0] ** 2 + x_shared[1] + y_1[0] ** 2 + exp(-y_2[0])
+        return x_local**2 + x_shared[1] + y_1**2 + exp(-y_2)
 
     @staticmethod
     def compute_c_1(
-        y_1: ndarray,
-    ) -> float:
+        y_1: complex,
+    ) -> complex:
         """Evaluate the constraint :math:`c_1`.
 
         Args:
@@ -174,12 +224,12 @@ class SellarSystem(MDODiscipline):
         Returns:
             The value of the constraint :math:`c_1`.
         """
-        return 3.16 - y_1[0] ** 2
+        return 3.16 - y_1**2
 
     @staticmethod
     def compute_c_2(
-        y_2: ndarray,
-    ) -> float:
+        y_2: complex,
+    ) -> complex:
         """Evaluate the constraint :math:`c_2`.
 
         Args:
@@ -188,7 +238,7 @@ class SellarSystem(MDODiscipline):
         Returns:
             The value of the constraint :math:`c_2`.
         """
-        return y_2[0] - 24.0
+        return y_2 - 24.0
 
     def _compute_jacobian(
         self,
@@ -196,36 +246,39 @@ class SellarSystem(MDODiscipline):
         outputs: Iterable[str] | None = None,
     ) -> None:
         self._init_jacobian(inputs, outputs)
-        x_local, _, y_1, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_1, Y_2])
+        x_local, y_1, y_2 = self.get_inputs_by_name([X_LOCAL, Y_1, Y_2])
         self.jac[C_1][Y_1] = atleast_2d(array([-2.0 * y_1]))
         self.jac[C_2][Y_2] = ones((1, 1))
-        self.jac[OBJ][X_LOCAL] = atleast_2d(array([2.0 * x_local[0]]))
+        self.jac[OBJ][X_LOCAL] = atleast_2d(array([2.0 * x_local]))
         self.jac[OBJ][X_SHARED] = atleast_2d(array([0.0, 1.0]))
-        self.jac[OBJ][Y_1] = atleast_2d(array([2.0 * y_1[0]]))
-        self.jac[OBJ][Y_2] = atleast_2d(array([-exp(-y_2[0])]))
+        self.jac[OBJ][Y_1] = atleast_2d(array([2.0 * y_1]))
+        self.jac[OBJ][Y_2] = atleast_2d(array([-exp(-y_2)]))
 
 
 class Sellar1(MDODiscipline):
     """The discipline to compute the coupling variable :math:`y_1`."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.input_grammar.update_from_names(["x_local", "x_shared", "y_2"])
-        self.output_grammar.update_from_names(["y_1"])
-        self.default_inputs = get_inputs(self.input_grammar.keys())
+        input_data = get_inputs((X_LOCAL, X_SHARED, Y_2))
+        self.input_grammar.update_from_data(input_data)
+        self.output_grammar.update_from_data(get_inputs([Y_1]))
+        self.default_inputs = input_data
 
     def _run(self) -> None:
         x_local, x_shared, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_2])
+        if WITH_2D_ARRAY:
+            x_shared = x_shared[0]
 
         # functional form
-        y_1_out = array([self.compute_y_1(x_local, x_shared, y_2)], dtype=complex128)
+        y_1_out = self.compute_y_1(x_local, x_shared, y_2)
         self.store_local_data(y_1=y_1_out)
 
     @staticmethod
     def compute_y_1(
-        x_local: ndarray,
+        x_local: complex,
         x_shared: ndarray,
-        y_2: ndarray,
+        y_2: complex,
     ) -> complex:
         """Evaluate the first coupling equation in functional form.
 
@@ -237,7 +290,7 @@ class Sellar1(MDODiscipline):
         Returns:
             The value of the coupling variable :math:`y_1`.
         """
-        return sqrt(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])
+        return sqrt(x_shared[0] ** 2 + x_shared[1] + x_local - 0.2 * y_2)
 
     def _compute_jacobian(
         self,
@@ -246,6 +299,8 @@ class Sellar1(MDODiscipline):
     ) -> None:
         self._init_jacobian(inputs, outputs)
         x_local, x_shared, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_2])
+        if WITH_2D_ARRAY:
+            x_shared = x_shared[0]
 
         inv_denom = 1.0 / (self.compute_y_1(x_local, x_shared, y_2))
         self.jac[Y_1] = {}
@@ -259,18 +314,18 @@ class Sellar1(MDODiscipline):
 class Sellar2(MDODiscipline):
     """The discipline to compute the coupling variable :math:`y_2`."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.input_grammar.update_from_names(["x_shared", "y_1"])
-        self.output_grammar.update_from_names(["y_2"])
-        self.default_inputs = get_inputs(self.input_grammar.keys())
+        input_data = get_inputs((X_SHARED, Y_1))
+        self.input_grammar.update_from_data(input_data)
+        self.output_grammar.update_from_data(get_inputs([Y_2]))
+        self.default_inputs = input_data
 
     def _run(self) -> None:
         x_shared, y_1 = self.get_inputs_by_name([X_SHARED, Y_1])
-
-        self.store_local_data(
-            y_2=array([self.compute_y_2(x_shared, y_1)], dtype=complex128)
-        )
+        if WITH_2D_ARRAY:
+            x_shared = x_shared[0]
+        self.store_local_data(y_2=self.compute_y_2(x_shared, y_1))
 
     def _compute_jacobian(
         self,
@@ -282,9 +337,9 @@ class Sellar2(MDODiscipline):
         self.jac[Y_2] = {}
         self.jac[Y_2][X_LOCAL] = zeros((1, 1))
         self.jac[Y_2][X_SHARED] = ones((1, 2))
-        if y_1[0] < 0.0:
+        if y_1.real < 0.0:
             self.jac[Y_2][Y_1] = -ones((1, 1))
-        elif y_1[0] == 0.0:
+        elif y_1 == 0.0:
             self.jac[Y_2][Y_1] = zeros((1, 1))
         else:
             self.jac[Y_2][Y_1] = ones((1, 1))
@@ -292,8 +347,8 @@ class Sellar2(MDODiscipline):
     @staticmethod
     def compute_y_2(
         x_shared: ndarray,
-        y_1: ndarray,
-    ) -> float:
+        y_1: complex,
+    ) -> complex:
         """Evaluate the second coupling equation in functional form.
 
         Args:
@@ -304,10 +359,10 @@ class Sellar2(MDODiscipline):
             The value of the coupling variable :math:`y_2`.
         """
         out = x_shared[0] + x_shared[1]
-        if y_1[0].real == 0:
+        if y_1.real == 0:
             y_2 = out
-        elif y_1[0].real > 0:
-            y_2 = y_1[0] + out
+        elif y_1.real > 0:
+            y_2 = y_1 + out
         else:
-            y_2 = -y_1[0] + out
+            y_2 = -y_1 + out
         return y_2

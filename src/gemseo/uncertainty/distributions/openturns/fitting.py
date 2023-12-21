@@ -99,33 +99,37 @@ associated with the criterion and a criterion selection:
 - 'first': Select the first distribution for which the criterion is
   greater (or lower, depending on the criterion) than the level.
 """
+
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
+from collections.abc import MutableSequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 from typing import Callable
-from typing import Mapping
-from typing import MutableSequence
-from typing import Sequence
-from typing import Tuple
+from typing import ClassVar
 from typing import Union
 
 import openturns as ots
-from numpy import ndarray
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
+if TYPE_CHECKING:
+    from numpy import ndarray
+
 LOGGER = logging.getLogger(__name__)
 
-MeasureType = Union[Tuple[bool, Mapping[str, float]], float]
+MeasureType = Union[tuple[bool, Mapping[str, float]], float]
 
 
 def _get_distribution_factories() -> dict[str, ots.DistributionFactory]:
     """Return the distribution factories.
 
     Returns:
-        The bindings from the distributions to their factories.
+        The mapping from the distributions to their factories.
     """
     dist_to_factory_class = {}
     for factory in ots.DistributionFactory.GetContinuousUniVariateFactories():
@@ -146,7 +150,7 @@ class OTDistributionFitter:
 
     _DISTRIBUTIONS_NAME_TO_FACTORY = _get_distribution_factories()
 
-    _FITTINGS_CRITERION_TO_TEST = {
+    _FITTINGS_CRITERION_TO_TEST: ClassVar[dict[str, ots.FittingTest]] = {
         "BIC": ots.FittingTest.BIC,
         "ChiSquared": ots.FittingTest.ChiSquared,
         "Kolmogorov": ots.FittingTest.Kolmogorov,
@@ -168,7 +172,7 @@ class OTDistributionFitter:
     SelectionCriterion = LowercaseStrEnum("SelectionCriterion", "FIRST BEST")
     """The different selection criteria."""
 
-    __CRITERIA_TO_MINIMIZE = [FittingCriterion.BIC]
+    __CRITERIA_TO_MINIMIZE: ClassVar[list[str]] = [FittingCriterion.BIC]
 
     def __init__(
         self,
@@ -261,8 +265,7 @@ class OTDistributionFitter:
                 "level": level,
             }
             return result.getBinaryQualityMeasure(), details
-        else:
-            return fitting_test(self.data, distribution)
+        return fitting_test(self.data, distribution)
 
     def select(
         self,
@@ -330,8 +333,7 @@ class OTDistributionFitter:
                 )
         if selection_criterion == cls.SelectionCriterion.BEST or level is None:
             return cls.__find_opt_distribution(measures, fitting_criterion)
-        else:
-            return cls.__apply_first_strategy(measures, fitting_criterion, level)
+        return cls.__apply_first_strategy(measures, fitting_criterion, level)
 
     @classmethod
     def __apply_first_strategy(
@@ -383,8 +385,7 @@ class OTDistributionFitter:
         """
         if fitting_criterion in cls.__CRITERIA_TO_MINIMIZE:
             return measures.index(min(measures))
-        else:
-            return measures.index(max(measures))
+        return measures.index(max(measures))
 
     @property
     def available_distributions(self) -> list[str]:

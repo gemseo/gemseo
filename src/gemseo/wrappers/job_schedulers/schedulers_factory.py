@@ -18,16 +18,21 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate job scheduler interfaes from their class names."""
+
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.core.discipline import MDODiscipline
 from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
     JobSchedulerDisciplineWrapper,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.core.discipline import MDODiscipline
 
 
 class SchedulersFactory(BaseFactory):
@@ -66,7 +71,8 @@ class SchedulersFactory(BaseFactory):
 
         Args:
             discipline: The discipline to wrap in the job scheduler.
-            scheduler_name: The name of the job scheduler (for instance LSF, SLURM, PBS).
+            scheduler_name: The name of the job scheduler
+                (for instance LSF, SLURM, PBS).
             workdir_path: The path to the workdir
             **options: The submission options.
 

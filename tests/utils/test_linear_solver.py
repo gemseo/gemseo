@@ -20,10 +20,11 @@ from __future__ import annotations
 
 import unittest
 
-from gemseo.utils.linear_solver import LinearSolver
 from numpy import diag
 from numpy import ones
 from scipy.sparse import csr_matrix
+
+from gemseo.utils.linear_solver import LinearSolver
 
 
 class TestLinearSolver(unittest.TestCase):

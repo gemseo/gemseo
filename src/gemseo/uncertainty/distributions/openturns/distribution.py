@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a probability distribution from the OpenTURNS library.
+"""The interface to OpenTURNS-based probability distributions.
 
 The :class:`.OTDistribution` class is a concrete class
 inheriting from :class:`.Distribution` which is an abstract one.
@@ -51,14 +51,14 @@ The constructor has also optional arguments:
   (`more details <http://openturns.github.io/openturns/latest/user_manual/
   _generated/openturns.TruncatedDistribution.html>`_).
 """
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Iterable
-from typing import TYPE_CHECKING
 
 import openturns as ot
 from numpy import array
@@ -73,6 +73,8 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 OT_WEBSITE = (
@@ -84,23 +86,23 @@ LOGGER = logging.getLogger(__name__)
 
 
 class OTDistribution(Distribution):
-    """OpenTURNS probability distribution.
+    """An OpenTURNS-based probability distribution.
 
     Create a probability distribution for an uncertain variable
     from its dimension and probability distribution name and properties.
 
     Examples:
         >>> from gemseo.uncertainty.distributions.openturns.distribution import (
-        ...     OTDistribution
+        ...     OTDistribution,
         ... )
-        >>> distribution = OTDistribution('x', 'Exponential', (3, 2))
+        >>> distribution = OTDistribution("x", "Exponential", (3, 2))
         >>> print(distribution)
         Exponential(3, 2)
     """
 
-    COMPOSED_DISTRIBUTION_CLASS: ClassVar[
-        type[ComposedDistribution] | None
-    ] = OTComposedDistribution
+    COMPOSED_DISTRIBUTION_CLASS: ClassVar[type[ComposedDistribution] | None] = (
+        OTComposedDistribution
+    )
 
     marginals: list[ot.Distribution]
     distribution: ot.ComposedDistribution
@@ -172,20 +174,16 @@ class OTDistribution(Distribution):
         return array(self.distribution.getSample(n_samples))
 
     def compute_cdf(self, vector: Iterable[float]) -> ndarray:  # noqa: D102
-        return array(
-            [
-                self.marginals[index].computeCDF(ot.Point([value]))
-                for index, value in enumerate(vector)
-            ]
-        )
+        return array([
+            self.marginals[index].computeCDF(ot.Point([value]))
+            for index, value in enumerate(vector)
+        ])
 
     def compute_inverse_cdf(self, vector: Iterable[float]) -> ndarray:  # noqa: D102
-        return array(
-            [
-                self.marginals[index].computeQuantile(value)[0]
-                for index, value in enumerate(vector)
-            ]
-        )
+        return array([
+            self.marginals[index].computeQuantile(value)[0]
+            for index, value in enumerate(vector)
+        ])
 
     def _pdf(self, index: int) -> Callable:  # noqa: D102
         def pdf(point: float) -> float:
@@ -250,16 +248,18 @@ class OTDistribution(Distribution):
         """
         try:
             create_distribution = getattr(ot, distribution)
-        except Exception:
-            raise ValueError(f"{distribution} is an unknown OpenTURNS distribution.")
+        except AttributeError:
+            raise ValueError(
+                f"{distribution} is an unknown OpenTURNS distribution."
+            ) from None
 
         try:
             distributions = [create_distribution(*parameters)] * self.dimension
-        except Exception:
+        except BaseException:
             raise ValueError(
                 f"Arguments are wrong in {distribution}({pretty_str(parameters)}); "
                 f"more details on: {OT_WEBSITE}."
-            )
+            ) from None
 
         self.__set_bounds(distributions)
         if transformation is not None:

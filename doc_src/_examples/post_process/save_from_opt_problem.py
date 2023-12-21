@@ -22,6 +22,7 @@
 Save an optimization problem for post-processing
 ================================================
 """
+
 from __future__ import annotations
 
 from gemseo import create_design_space

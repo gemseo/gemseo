@@ -23,6 +23,9 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+from numpy import array
+from numpy import empty
+
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -30,11 +33,9 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import array
-from numpy import empty
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 SOBIESKI_MISSING_GRADIENTS = Path(__file__).parent / "sobieski_missing_gradients.h5"
@@ -96,17 +97,15 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
             with matplotlib pyplot.
     """
     disc = SobieskiStructure()
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     inputs = [name for name in disc.get_input_data_names() if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
-    doe_scenario.execute(
-        {
-            "algo": "DiagonalDOE",
-            "n_samples": 10,
-            "algo_options": {"eval_jac": True},
-        }
-    )
+    doe_scenario.execute({
+        "algo": "DiagonalDOE",
+        "n_samples": 10,
+        "algo_options": {"eval_jac": True},
+    })
     doe_scenario.post_process(
         "GradientSensitivity",
         scale_gradients=scale_gradients,
@@ -114,13 +113,11 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
         save=True,
     )
     doe_scenario2 = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
-    doe_scenario2.execute(
-        {
-            "algo": "DiagonalDOE",
-            "n_samples": 10,
-            "algo_options": {"eval_jac": False},
-        }
-    )
+    doe_scenario2.execute({
+        "algo": "DiagonalDOE",
+        "n_samples": 10,
+        "algo_options": {"eval_jac": False},
+    })
 
     with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
         doe_scenario2.post_process(
@@ -135,7 +132,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
 def f(x1=0.0, x2=0.0):
     """A simple analytical test function."""
     y = 1 * x1 + 2 * x2**2
-    return y
+    return y  # noqa: RET504
 
 
 def dfdxy(x1=0.0, x2=0.0):
@@ -177,16 +174,13 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
         array([-2.0, 0.0]), scale_gradients=scale_gradients
     )
 
-    if scale_gradients:
-        expected_jac = array([4.0, 0])
-    else:
-        expected_jac = array([1.0, 0.0])
+    expected_jac = array([4.0, 0]) if scale_gradients else array([1.0, 0.0])
 
     assert expected_jac.all() == actual_jac["y"].all()
 
 
 @pytest.mark.parametrize(
-    "scale_gradients,baseline_images",
+    ("scale_gradients", "baseline_images"),
     [(True, ["grad_sens_scaled"]), (False, ["grad_sens"])],
 )
 @image_comparison(None)
@@ -217,7 +211,7 @@ def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all):
         file_extension="png",
         save=False,
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 TEST_PARAMETERS = {
@@ -227,7 +221,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "use_standardized_objective, baseline_images",
+    ("use_standardized_objective", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
@@ -247,7 +241,7 @@ def test_common_scenario(
 
 
 @pytest.mark.parametrize(
-    "compute_missing_gradients, opt_problem, baseline_images",
+    ("compute_missing_gradients", "opt_problem", "baseline_images"),
     [
         (True, SOBIESKI_ALL_GRADIENTS, ["grad_sens_sobieski"]),
         (
@@ -292,11 +286,12 @@ def test_compute_missing_gradients(
                 save=False,
                 show=False,
             )
-            if compute_missing_gradients:
-                assert (
-                    "The missing gradients for an OptimizationProblem without callable "
-                    "functions cannot be computed." in caplog.text
-                )
+
+        if compute_missing_gradients:
+            assert (
+                "The missing gradients for an OptimizationProblem without callable "
+                "functions cannot be computed." in caplog.text
+            )
     else:
         post = factory.execute(
             problem,
@@ -305,7 +300,7 @@ def test_compute_missing_gradients(
             save=False,
             show=False,
         )
-        post.figures
+        post.figures  # noqa: B018
 
 
 @image_comparison(["grad_sens_sobieski"])
@@ -332,4 +327,4 @@ def test_compute_missing_gradients_with_eval(factory, pyplot_close_all):
             show=False,
         )
         mocked_evaluate_functions.assert_called()
-    post.figures
+    post.figures  # noqa: B018

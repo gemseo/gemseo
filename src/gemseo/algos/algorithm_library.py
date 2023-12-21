@@ -18,6 +18,7 @@
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for algorithm libraries."""
+
 from __future__ import annotations
 
 import inspect
@@ -25,22 +26,26 @@ import logging
 from abc import abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Final
-from typing import Mapping
-from typing import MutableMapping
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
-from numpy import ndarray
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.base_problem import BaseProblem
-from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import MutableMapping
+
+    from numpy import ndarray
+
+    from gemseo.algos.base_problem import BaseProblem
+    from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -92,13 +97,14 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     problem: Any | None
     """The problem to be solved."""
 
+    # TODO: API: rename to grammar or option_grammar
     opt_grammar: JSONGrammar | None
     """The grammar defining the options of the current algorithm."""
 
-    OPTIONS_DIR: Final[str] = "options"
+    OPTIONS_DIR: ClassVar[str | Path] = "options"
     """The name of the directory containing the files of the grammars of the options."""
 
-    OPTIONS_MAP: dict[str, str] = {}
+    OPTIONS_MAP: ClassVar[dict[str, str]] = {}
     """The names of the options in |g| mapping to those in the wrapped library."""
 
     LIBRARY_NAME: ClassVar[str | None] = None
@@ -133,9 +139,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         library_directory = Path(inspect.getfile(self.__class__)).parent
         options_directory = library_directory / self.OPTIONS_DIR
-        algo_schema_file = options_directory / "{}_options.json".format(
-            algo_name.upper()
-        )
+        algo_schema_file = options_directory / f"{algo_name.upper()}_options.json"
         lib_schema_file = options_directory / "{}_options.json".format(
             self.__class__.__name__.upper()
         )
@@ -269,7 +273,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     def execute(
         self,
         problem: BaseProblem,
-        algo_name: str = None,
+        algo_name: str | None = None,
         **options: Any,
     ) -> None:
         """Execute the driver.
@@ -289,7 +293,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         if self.algo_name is None:
             raise ValueError(
                 "Algorithm name must be either passed as "
-                + "argument or set by the attribute self.algo_name"
+                "argument or set by the attribute self.algo_name"
             )
 
         self._check_algorithm(self.algo_name, problem)

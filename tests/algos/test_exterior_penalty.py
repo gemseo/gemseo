@@ -14,12 +14,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo import execute_algo
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.power_2 import Power2
 from numpy import allclose
 from numpy import vstack
 from numpy.core._multiarray_umath import concatenate
+
+from gemseo import execute_algo
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.problems.analytical.power_2 import Power2
 
 
 def create_problem():

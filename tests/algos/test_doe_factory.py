@@ -21,11 +21,12 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_pydoe import PyDOE
 
 
-@pytest.fixture
+@pytest.fixture()
 def factory():
     """The DOE factory."""
     return DOEFactory()

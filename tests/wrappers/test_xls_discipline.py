@@ -22,15 +22,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from numpy import array
+from numpy import exp
+from numpy import isclose
+from numpy import ones
+
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.wrappers.xls_discipline import XLSDiscipline
-from numpy import array
-from numpy import exp
-from numpy import isclose
-from numpy import ones
 
 DIR_PATH = Path(__file__).parent
 FILE_PATH_PATTERN = str(DIR_PATH / "test_excel_fail{}.xlsx")
@@ -100,9 +101,10 @@ def test_multiprocessing(skip_if_xlwings_is_not_usable):
     xlsd_2 = XLSDiscipline(DIR_PATH / "test_excel.xlsx", copy_xls_at_setstate=True)
 
     parallel_execution = DiscParallelExecution([xlsd, xlsd_2], n_processes=2)
-    parallel_execution.execute(
-        [{"a": array([2.0]), "b": array([1.0])}, {"a": array([5.0]), "b": array([3.0])}]
-    )
+    parallel_execution.execute([
+        {"a": array([2.0]), "b": array([1.0])},
+        {"a": array([5.0]), "b": array([3.0])},
+    ])
     assert xlsd.get_output_data() == {"c": array([3.0])}
     assert xlsd_2.get_output_data() == {"c": array([8.0])}
 
@@ -124,9 +126,10 @@ def test_multithreading(skip_if_xlwings_is_not_usable):
     parallel_execution = DiscParallelExecution(
         [xlsd, xlsd_2], use_threading=True, n_processes=2
     )
-    parallel_execution.execute(
-        [{"a": array([2.0]), "b": array([1.0])}, {"a": array([5.0]), "b": array([3.0])}]
-    )
+    parallel_execution.execute([
+        {"a": array([2.0]), "b": array([1.0])},
+        {"a": array([5.0]), "b": array([3.0])},
+    ])
 
     assert xlsd.get_output_data() == {"c": array([3.0])}
     assert xlsd_2.get_output_data() == {"c": array([8.0])}
@@ -134,7 +137,7 @@ def test_multithreading(skip_if_xlwings_is_not_usable):
 
 def f_sellar_system(
     x_local: float = 1.0, x_shared_2: float = 3.0, y_1: float = 1.0, y_2: float = 1.0
-) -> tuple[float, float, float]:
+):
     """Objective function for the sellar problem."""
     obj = x_local**2 + x_shared_2 + y_1**2 + exp(-y_2)
     c_1 = 3.16 - y_1**2
@@ -147,10 +150,10 @@ def f_sellar_1(
     y_2: float = 1.0,
     x_shared_1: float = 1.0,
     x_shared_2: float = 3.0,
-) -> float:
+):
     """Function for discipline sellar 1."""
     y_1 = (x_shared_1**2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
-    return y_1
+    return y_1  # noqa: RET504
 
 
 def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable):

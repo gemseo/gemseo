@@ -20,13 +20,14 @@
 from __future__ import annotations
 
 import pytest
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 from numpy import array
 from numpy import newaxis
 
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 
-@pytest.fixture
+
+@pytest.fixture()
 def dataset():
     data = IODataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])

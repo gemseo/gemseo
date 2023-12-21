@@ -17,33 +17,35 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Jacobi algorithm for solving MDAs."""
+
 from __future__ import annotations
 
 from multiprocessing import cpu_count
-from typing import Final
 from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Final
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
-from gemseo.mda.mda import MDA
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.mda.base_mda_solver import BaseMDASolver
 
 if TYPE_CHECKING:
-    from gemseo.core.coupling_structure import MDOCouplingStructure
-    from gemseo.core.execution_sequence import LoopExecSequence
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Mapping
-    from typing import Sequence
 
     from numpy.typing import NDArray
+
+    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.execution_sequence import LoopExecSequence
 
 
 N_CPUS: Final[int] = cpu_count()
 
 
-class MDAJacobi(MDA):
+class MDAJacobi(BaseMDASolver):
     r"""Perform an MDA using the Jacobi algorithm.
 
     This algorithm is a fixed point iteration method to solve systems of non-linear
@@ -79,8 +81,8 @@ class MDAJacobi(MDA):
     """
 
     # TODO: API: Remove the class attributes.
-    SECANT_ACCELERATION = "secant"
-    M2D_ACCELERATION = "m2d"
+    SECANT_ACCELERATION: ClassVar[str] = "secant"
+    M2D_ACCELERATION: ClassVar[str] = "m2d"
 
     # TODO: API: Remove the compatibility mapping.
     __ACCELERATION_COMPATIBILITY: Final[dict[str, AccelerationMethod | None]] = {
@@ -148,7 +150,7 @@ class MDAJacobi(MDA):
         )
 
         self._compute_input_couplings()
-        self._resolved_coupling_names = self._input_couplings
+        self._set_resolved_variables(self._input_couplings)
 
         self.parallel_execution = DiscParallelExecution(
             disciplines,
@@ -180,9 +182,12 @@ class MDAJacobi(MDA):
         ):
             return super()._compute_input_couplings()
 
-        inputs = self.get_input_data_names()
-        strong_couplings = self.coupling_structure.all_couplings
-        self._input_couplings = sorted(set(strong_couplings) & set(inputs))
+        self._input_couplings = sorted(
+            set(self.coupling_structure.all_couplings).intersection(
+                self.get_input_data_names()
+            )
+        )
+        return None
 
     def execute_all_disciplines(self, input_local_data: Mapping[str, NDArray]) -> None:
         """Execute all the disciplines, possibly in parallel.
@@ -213,35 +218,22 @@ class MDAJacobi(MDA):
         return ExecutionSequenceFactory.loop(self, sub_workflow)
 
     def _run(self) -> None:
-        self._compute_coupling_sizes()
+        super()._run()
 
-        if self.warm_start:
-            self._couplings_warm_start()
-
-        current_couplings = self._current_working_couplings()
-
-        self._sequence_transformer.clear()
-        # Perform fixed point iterations
         while True:
+            input_data = self.local_data.copy()
+
             self.execute_all_disciplines(self.local_data)
+            self._update_residuals(input_data)
 
             new_couplings = self._sequence_transformer.compute_transformed_iterate(
-                current_couplings, self._current_working_couplings()
+                self.get_current_resolved_variables_vector(),
+                self.get_current_resolved_residual_vector(),
             )
 
-            self.local_data.update(
-                split_array_to_dict_of_arrays(
-                    new_couplings, self._coupling_sizes, self._input_couplings
-                )
-            )
-
-            self._compute_residual(
-                current_couplings,
-                new_couplings,
-                log_normed_residual=self._log_convergence,
-            )
+            self._update_local_data(new_couplings)
+            self._update_residuals(input_data)
+            self._compute_residual(log_normed_residual=self._log_convergence)
 
             if self._stop_criterion_is_reached:
                 break
-
-            current_couplings = new_couplings

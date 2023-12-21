@@ -13,105 +13,87 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test linear combination discipline."""
+
 from __future__ import annotations
 
-import pytest
+from numpy import array
+from numpy import zeros
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
-from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from numpy import array
-from numpy import zeros
 
 
-@pytest.fixture
-def linear_combination_for_tests():
-    """Define a linear combination disciplines for pytests."""
-    return LinearCombination(
-        input_names=["alpha", "beta", "gamma"],
-        output_name="delta",
-        input_coefficients={"alpha": 1.0, "beta": -2.0, "gamma": 3.0},
-        offset=-2.0,
-    )
-
-
-def test_linear_combination_execution(linear_combination_for_tests):
+def test_linear_combination_execution(linear_combination):
     """Test  linear combination discipline execution."""
-    output_data = linear_combination_for_tests.execute(
-        {"alpha": array([1.0]), "beta": array([1.0]), "gamma": array([1.0])}
-    )
-    assert all(output_data["delta"] == array([0.0]))
-
-
-def test_linear_combination_execution2points(linear_combination_for_tests):
-    """Test  linear combination discipline execution."""
-    output_data = linear_combination_for_tests.execute(
-        {
-            "alpha": array([1.0, 0.0]),
-            "beta": array([1.0, -1.0]),
-            "gamma": array([1.0, 0.0]),
-        }
-    )
-    assert all(output_data["delta"] == array([0.0, 0.0]))
-
-
-def test_check_gradient(linear_combination_for_tests):
-    """Test jacobian computation by finite differences."""
-    linear_combination_for_tests.default_inputs = {
+    output_data = linear_combination.execute({
         "alpha": array([1.0]),
         "beta": array([1.0]),
-        "gamma": array([1.0]),
-    }
-    assert linear_combination_for_tests.check_jacobian(threshold=1e-3, step=1e-4)
+    })
+    assert all(output_data["delta"] == array([-3.0]))
 
 
-def test_check_gradient2points(linear_combination_for_tests):
-    """Test jacobian computation by finite differences."""
-    linear_combination_for_tests.default_inputs = {
+def test_linear_combination_execution2points(linear_combination):
+    """Test  linear combination discipline execution."""
+    output_data = linear_combination.execute({
         "alpha": array([1.0, 0.0]),
         "beta": array([1.0, -1.0]),
-        "gamma": array([1.0, 0.0]),
+    })
+    assert all(output_data["delta"] == array([-3.0, 0.0]))
+
+
+def test_check_gradient(linear_combination):
+    """Test jacobian computation by finite differences."""
+    linear_combination.default_inputs = {
+        "alpha": array([1.0]),
+        "beta": array([1.0]),
     }
-    assert linear_combination_for_tests.check_jacobian(threshold=1e-3, step=1e-4)
+    assert linear_combination.check_jacobian(threshold=1e-3, step=1e-4)
 
 
-def test_parallel_doe_execution(linear_combination_for_tests):
+def test_check_gradient2points(linear_combination):
+    """Test jacobian computation by finite differences."""
+    linear_combination.default_inputs = {
+        "alpha": array([1.0, 0.0]),
+        "beta": array([1.0, -1.0]),
+    }
+    assert linear_combination.check_jacobian(threshold=1e-3, step=1e-4)
+
+
+def test_parallel_doe_execution(linear_combination):
     """Test parallel execution."""
     custom_doe = CustomDOE()
     design_space = DesignSpace()
     design_space.add_variable("alpha", l_b=-1.0, u_b=1.0, value=0.0)
     design_space.add_variable("beta", l_b=-1.0, u_b=1.0, value=0.0)
-    design_space.add_variable("gamma", l_b=-1.0, u_b=1.0, value=0.0)
     opt_problem = OptimizationProblem(design_space)
     opt_problem.objective = MDODisciplineAdapterGenerator(
-        linear_combination_for_tests
+        linear_combination
     ).get_function(
-        input_names=["alpha", "beta", "gamma"],
+        input_names=["alpha", "beta"],
         output_names=["delta"],
         default_inputs={
             "alpha": array([1.0]),
             "beta": array([1.0]),
-            "gamma": array([1.0]),
         },
     )
     custom_doe.execute(
         problem=opt_problem,
-        samples=array([[1.0, 0.0], [1.0, -1.0], [1.0, 0.0]]).T,
+        samples=array([[1.0, 0.0], [1.0, -1.0]]).T,
         eval_jac=True,
         n_processes=2,
     )
-    assert opt_problem.database.get_function_value(
-        "delta", array([1.0, 1.0, 1.0])
-    ) == array([0.0])
+    v = opt_problem.database.get_function_value("delta", array([1.0, 1.0]))
+    assert v == array([-3.0])
 
 
-def test_default_values(linear_combination_for_tests):
+def test_default_values(linear_combination):
     """Check that all the input variables have zero as default value."""
     assert compare_dict_of_arrays(
-        linear_combination_for_tests.default_inputs,
-        {"alpha": zeros(1), "beta": zeros(1), "gamma": zeros(1)},
+        linear_combination.default_inputs,
+        {"alpha": zeros(1), "beta": zeros(1)},
     )

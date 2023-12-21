@@ -22,11 +22,13 @@
 Multidisciplinary coupling graph
 ================================
 """
+
 from __future__ import annotations
+
+from numpy import ones
 
 from gemseo import generate_n2_plot
 from gemseo.core.discipline import MDODiscipline
-from numpy import ones
 
 # %%
 # Create the disciplines

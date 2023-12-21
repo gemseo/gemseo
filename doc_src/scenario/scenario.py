@@ -67,11 +67,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 100})
 ###
 
 opt_results = scenario.optimization_result
-print(
-    "The solution of P is (x*,f(x*)) = ({}, {})".format(
-        opt_results.x_opt, opt_results.f_opt
-    )
-)
+print(f"The solution of P is (x*,f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")
 scenario.print_execution_metrics()
 
 scenario.log_me()

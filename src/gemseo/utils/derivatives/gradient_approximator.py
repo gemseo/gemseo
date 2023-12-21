@@ -13,22 +13,27 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Gradient approximation."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
-from numbers import Number
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Sequence
 
 from numpy import array
 from numpy import float64
 from numpy import ndarray
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from numbers import Number
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 
 class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -124,6 +129,7 @@ class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return array(grad, dtype=float64).T
 
+    # TODO: API: remove useless n_perturbations
     @abstractmethod
     def _compute_parallel_grad(
         self,
@@ -138,6 +144,7 @@ class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             input_values: The input values.
             n_perturbations: The number of perturbations.
+            input_perturbations: The perturbations of the input.
             step: The differentiation step,
                 either one global step or one step by input component.
             **kwargs: The optional arguments for the function.

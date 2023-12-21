@@ -22,13 +22,14 @@ import unittest
 from math import exp
 
 import numpy as np
+
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.aerostructure.aerostructure import Aerodynamics
-from gemseo.problems.aerostructure.aerostructure import get_inputs
 from gemseo.problems.aerostructure.aerostructure import Mission
 from gemseo.problems.aerostructure.aerostructure import Structure
+from gemseo.problems.aerostructure.aerostructure import get_inputs
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -89,9 +90,11 @@ class TestAerostructure(unittest.TestCase):
         """Evaluate discipline Struct."""
         struct = Structure()
         struct.execute()
-        mass, reserve_fact, displ = struct.get_outputs_by_name(
-            ["mass", "reserve_fact", "displ"]
-        )
+        mass, reserve_fact, displ = struct.get_outputs_by_name([
+            "mass",
+            "reserve_fact",
+            "displ",
+        ])
         self.assertAlmostEqual(mass[0], 200300.00008573389, 10)
         self.assertAlmostEqual(reserve_fact[0], 46.1, 10)
         self.assertAlmostEqual(displ[0], 3.0, 10)
@@ -185,8 +188,7 @@ class TestAerostructureScenarios(unittest.TestCase):
     @staticmethod
     def create_functional_disciplines():
         """"""
-        disciplines = [Aerodynamics(), Structure(), Mission()]
-        return disciplines
+        return [Aerodynamics(), Structure(), Mission()]
 
     @staticmethod
     def build_scenario(disciplines, formulation="MDF"):
@@ -196,13 +198,12 @@ class TestAerostructureScenarios(unittest.TestCase):
         :param formulation: name of the formulation (Default value = 'MDF')
         """
         design_space = AerostructureDesignSpace()
-        scenario = MDOScenario(
+        return MDOScenario(
             disciplines,
             formulation=formulation,
             objective_name="range",
             design_space=design_space,
         )
-        return scenario
 
     @staticmethod
     def build_and_run_scenario(formulation, algo, lin_method="complex_step"):

@@ -22,14 +22,14 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.sequential_mda import MDAGSNewton
 from gemseo.mda.sequential_mda import MDASequential
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import Y_1
-from gemseo.problems.sellar.sellar import Y_2
+from gemseo.problems.sellar.sellar import get_y_opt
 
 
 def test_sequential_mda_sellar(tmp_wd):
@@ -43,8 +43,7 @@ def test_sequential_mda_sellar(tmp_wd):
     mda.execute()
 
     y_ref = np.array([0.80004953, 1.79981434])
-    y_opt = np.array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-    assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
+    assert np.linalg.norm(y_ref - get_y_opt(mda)) / np.linalg.norm(y_ref) < 1e-4
 
     mda3 = MDAGSNewton(disciplines, max_mda_iter=4)
     mda3.execute()
@@ -52,8 +51,7 @@ def test_sequential_mda_sellar(tmp_wd):
     mda3.plot_residual_history(filename=filename)
 
     assert Path(filename).exists
-    y_opt = np.array([mda3.local_data[Y_1][0].real, mda3.local_data[Y_2][0].real])
-    assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
+    assert np.linalg.norm(y_ref - get_y_opt(mda3)) / np.linalg.norm(y_ref) < 1e-4
 
     assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-6
 

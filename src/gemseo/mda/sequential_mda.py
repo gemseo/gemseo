@@ -17,6 +17,7 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A chain of MDAs to build hybrids of MDA algorithms sequentially."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -27,9 +28,10 @@ from gemseo.mda.mda import MDA
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
-    from typing import Mapping
-    from typing import Sequence
+
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
 
@@ -82,8 +84,7 @@ class MDASequential(MDA):
             mda.log_convergence = value
 
     def _run(self) -> None:
-        """Run the MDAs in a sequential way."""
-        self._couplings_warm_start()
+        super()._run()
 
         if self.reset_history_each_run:
             self.residual_history = []
@@ -125,9 +126,13 @@ class MDAGSNewton(MDASequential):
     ) -> None:
         """
         Args:
+            relax_factor: The relaxation factor.
             max_mda_iter_gs: The maximum number of iterations of the Gauss-Seidel MDA.
             newton_linear_solver: The name of the linear solver for the Newton method.
             newton_linear_solver_options: The options for the Newton linear solver.
+            log_convergence: Whether to log the MDA convergence,
+                expressed in terms of normed residuals.
+            **newton_mda_options: The options for the Newton MDA.
         """  # noqa:D205 D212 D415
         mda_gauss_seidel = MDAGaussSeidel(
             disciplines,

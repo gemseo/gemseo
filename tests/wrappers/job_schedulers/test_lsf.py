@@ -22,13 +22,13 @@ import re
 from pathlib import Path
 
 import pytest
+
 from gemseo import create_discipline
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.wrappers.job_schedulers.lsf import LSF
-from pytest import fixture
 
 
-@fixture
+@pytest.fixture()
 def discipline(tmpdir):
     """Create a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the SLURM template.
@@ -36,7 +36,7 @@ def discipline(tmpdir):
     Returns:
         The wrapped discipline.
     """
-    disc = LSF(
+    return LSF(
         discipline=create_discipline("SobieskiMission"),
         workdir_path=tmpdir,
         scheduler_run_command="python",
@@ -51,8 +51,6 @@ def discipline(tmpdir):
         wall_time="1:0:0",
         queue_name="myqueue",
     )
-
-    return disc
 
 
 def test_run(discipline):

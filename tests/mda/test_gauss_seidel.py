@@ -22,6 +22,9 @@ from __future__ import annotations
 from copy import deepcopy
 
 import pytest
+from numpy import array
+from numpy import isclose
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
@@ -31,11 +34,9 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.testing.helpers import image_comparison
-from numpy import array
-from numpy import isclose
 
 from ..core.test_chain import two_virtual_disciplines  # noqa W0611 F811
 
@@ -126,15 +127,13 @@ def test_expected_workflow():
 
 
 def test_expected_workflow_with_adapter():
-    discs = create_discipline(
-        [
-            "SobieskiPropulsion",
-            "SobieskiStructure",
-            "SobieskiAerodynamics",
-            "SobieskiMission",
-        ]
-    )
-    design_space = SobieskiProblem().design_space
+    discs = create_discipline([
+        "SobieskiPropulsion",
+        "SobieskiStructure",
+        "SobieskiAerodynamics",
+        "SobieskiMission",
+    ])
+    design_space = SobieskiDesignSpace()
     scn_propu = create_scenario(
         discs,
         "DisciplinaryOpt",
@@ -165,16 +164,16 @@ def test_expected_workflow_with_adapter():
 
     expected = (
         "{MDAGaussSeidel(None), ["
-        + "{PropulsionScenario(None), [SobieskiPropulsion(None), "
-        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        + "SobieskiMission(None), ], }, "
-        + "{AeroScenario(None), [SobieskiPropulsion(None), "
-        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        + "SobieskiMission(None), ], }, "
-        + "{StructureScenario(None), [SobieskiPropulsion(None), "
-        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        + "SobieskiMission(None), ], }, "
-        + "], }"
+        "{PropulsionScenario(None), [SobieskiPropulsion(None), "
+        "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        "SobieskiMission(None), ], }, "
+        "{AeroScenario(None), [SobieskiPropulsion(None), "
+        "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        "SobieskiMission(None), ], }, "
+        "{StructureScenario(None), [SobieskiPropulsion(None), "
+        "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        "SobieskiMission(None), ], }, "
+        "], }"
     )
     assert str(mda.get_expected_workflow()) == expected
 
@@ -198,14 +197,12 @@ def test_self_coupled():
 
 @pytest.mark.parametrize("over_relax_factor", [1.0, 0.8, 1.1, 1.2, 1.5])
 def test_over_relaxation(over_relax_factor):
-    discs = create_discipline(
-        [
-            "SobieskiPropulsion",
-            "SobieskiStructure",
-            "SobieskiAerodynamics",
-            "SobieskiMission",
-        ]
-    )
+    discs = create_discipline([
+        "SobieskiPropulsion",
+        "SobieskiStructure",
+        "SobieskiAerodynamics",
+        "SobieskiMission",
+    ])
     tolerance = 1e-14
     mda = MDAGaussSeidel(
         discs,
@@ -264,7 +261,7 @@ def test_parallel_doe(generate_parallel_doe_data):
 
 
 @pytest.mark.parametrize(
-    "baseline_images,n_iterations,logscale",
+    ("baseline_images", "n_iterations", "logscale"),
     [
         (["all_iter_default_log"], None, None),
         (["all_iter_modified_log"], None, [1e-10, 10.0]),
@@ -300,7 +297,7 @@ def test_plot_residual_history(
 
 
 def test_virtual_exe_mda(two_virtual_disciplines):  # noqa F811
-    """Test a MDA with disciplines in virtual execution mode."""
+    """Test an MDA with disciplines in virtual execution mode."""
     chain = MDAGaussSeidel(two_virtual_disciplines)
     chain.execute()
     assert chain.local_data["x"] == 1.0

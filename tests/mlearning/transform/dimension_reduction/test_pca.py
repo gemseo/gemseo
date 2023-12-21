@@ -19,17 +19,19 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test principal component analysis dimension reduction."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import diag
 from numpy import ndarray
 from numpy import tile
+
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 
 N_SAMPLES = 10
 N_FEATURES = 8

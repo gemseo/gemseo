@@ -23,7 +23,10 @@ Create an MDO Scenario
 ======================
 
 """
+
 from __future__ import annotations
+
+from numpy import ones
 
 from gemseo import configure_logger
 from gemseo import create_design_space
@@ -31,7 +34,6 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_opt_algorithms
 from gemseo import get_available_post_processings
-from numpy import ones
 
 configure_logger()
 

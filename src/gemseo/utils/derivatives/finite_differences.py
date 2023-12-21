@@ -17,6 +17,7 @@
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Gradient approximation by finite differences."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -33,8 +34,8 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.error_estimators import compute_best_step
 from gemseo.utils.derivatives.error_estimators import EPSILON
+from gemseo.utils.derivatives.error_estimators import compute_best_step
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 
@@ -72,9 +73,10 @@ class FirstOrderFD(GradientApproximator):
             input_perturbations[:, perturbation_index]
             for perturbation_index in range(n_perturbations)
         ]
-        initial_and_perturbated_outputs = parallel_execution.execute(
-            [input_values] + perturbated_inputs
-        )
+        initial_and_perturbated_outputs = parallel_execution.execute([
+            input_values,
+            *perturbated_inputs,
+        ])
 
         gradient = []
         initial_output = initial_and_perturbated_outputs[0]
@@ -144,10 +146,7 @@ class FirstOrderFD(GradientApproximator):
             t_e, c_e, opt_step = compute_best_step(
                 f_p, f_0, f_m, self.step, epsilon_mach=numerical_error
             )
-            if t_e is None:
-                error = 0.0
-            else:
-                error = t_e + c_e
+            error = 0.0 if t_e is None else t_e + c_e
         else:
             errors = zeros(n_out)
             opt_steps = zeros(n_out)
@@ -239,19 +238,19 @@ class FirstOrderFD(GradientApproximator):
         if self._design_space is None:
             input_perturbations[input_indices, range(n_indices)] += step
             return input_perturbations, step
-        else:
-            if self._normalize:
-                upper_bounds = self._design_space.normalize_vect(
-                    self._design_space.get_upper_bounds()
-                )
-            else:
-                upper_bounds = self._design_space.get_upper_bounds()
 
-            steps = where(
-                input_perturbations[input_indices, range(n_indices)] == upper_bounds,
-                -step,
-                step,
+        if self._normalize:
+            upper_bounds = self._design_space.normalize_vect(
+                self._design_space.get_upper_bounds()
             )
-            input_perturbations[input_indices, range(n_indices)] += steps
+        else:
+            upper_bounds = self._design_space.get_upper_bounds()
 
-            return input_perturbations, steps
+        steps = where(
+            input_perturbations[input_indices, range(n_indices)] >= upper_bounds,
+            -step,
+            step,
+        )
+        input_perturbations[input_indices, range(n_indices)] += steps
+
+        return input_perturbations, steps

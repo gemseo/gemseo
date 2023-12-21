@@ -18,27 +18,26 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The scalable problem."""
+
 from __future__ import annotations
 
 from statistics import NormalDist
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Iterable
 
 from numpy import diag
 from numpy import trace
-from numpy.typing import NDArray
 from scipy.linalg import block_diag
 
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.scenario import Scenario
 from gemseo.problems.scalable.parametric.core.scalable_problem import (
     ScalableProblem as _ScalableProblem,
 )
-from gemseo.problems.scalable.parametric.core.variable_names import get_constraint_name
 from gemseo.problems.scalable.parametric.core.variable_names import OBJECTIVE_NAME
+from gemseo.problems.scalable.parametric.core.variable_names import get_constraint_name
 from gemseo.problems.scalable.parametric.disciplines.main_discipline import (
     MainDiscipline,
 )
@@ -48,6 +47,13 @@ from gemseo.problems.scalable.parametric.disciplines.scalable_discipline import 
 from gemseo.problems.scalable.parametric.scalable_design_space import (
     ScalableDesignSpace,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from numpy.typing import NDArray
+
+    from gemseo.core.scenario import Scenario
 
 
 class ScalableProblem(_ScalableProblem):
@@ -145,7 +151,7 @@ class ScalableProblem(_ScalableProblem):
             if use_margin:
                 g_offset = margin_factor * diag(P_Sigma_Pt) ** 0.5
             else:
-                g_offset = -diag(P_Sigma_Pt) ** 0.5 * NormalDist().inv_cdf(tolerance)
+                g_offset = -(diag(P_Sigma_Pt) ** 0.5) * NormalDist().inv_cdf(tolerance)
         else:
             g_offset = f_offset = 0
 

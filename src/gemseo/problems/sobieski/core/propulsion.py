@@ -23,9 +23,11 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Propulsion discipline for the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from numpy import append
 from numpy import array
@@ -33,7 +35,9 @@ from numpy import ndarray
 from numpy import zeros
 
 from gemseo.problems.sobieski.core.discipline import SobieskiDiscipline
-from gemseo.problems.sobieski.core.utils import SobieskiBase
+
+if TYPE_CHECKING:
+    from gemseo.problems.sobieski.core.utils import SobieskiBase
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,7 +49,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
     ESF_LOWER_LIMIT = 0.5
     TEMPERATURE_LIMIT = 1.02
 
-    def __init__(self, sobieski_base: SobieskiBase) -> None:
+    def __init__(self, sobieski_base: SobieskiBase) -> None:  # noqa: D107
         super().__init__(sobieski_base)
         # Surface fit to engine deck with the least square method
         # Polynomial coefficients for SFC computation
@@ -586,10 +590,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         jacobian["y_3"]["x_shared"] = zeros((3, 6), dtype=self.dtype)
         jacobian["y_3"]["y_23"] = zeros((3, 1), dtype=self.dtype)
         jacobian["y_3"]["c_3"] = zeros((3, 1), dtype=self.dtype)
-        if not true_cstr:
-            n_constraints = 4
-        else:
-            n_constraints = 3
+        n_constraints = 3 if true_cstr else 4
         jacobian["g_3"]["x_3"] = zeros((n_constraints, 1), dtype=self.dtype)
         jacobian["g_3"]["x_shared"] = zeros((n_constraints, 6), dtype=self.dtype)
         jacobian["g_3"]["y_23"] = zeros((n_constraints, 1), dtype=self.dtype)
@@ -662,7 +663,6 @@ class SobieskiPropulsion(SobieskiDiscipline):
         Returns:
             The Jacobian of the discipline.
         """
-
         c_3 = ref_weight or self.constants[3]
 
         # Jacobian matrix as a dictionary

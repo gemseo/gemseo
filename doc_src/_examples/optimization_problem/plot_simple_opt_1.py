@@ -21,6 +21,7 @@
 Analytical test case # 1
 ========================
 """
+
 # %%
 # In this example, we consider a simple optimization problem to illustrate
 # algorithms interfaces and :class:`.MDOFunction`.
@@ -29,13 +30,14 @@ Analytical test case # 1
 # -----------------------------
 from __future__ import annotations
 
-from gemseo import configure_logger
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from numpy import cos
 from numpy import exp
 from numpy import ones
 from numpy import sin
 from scipy import optimize
+
+from gemseo import configure_logger
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 configure_logger()
 

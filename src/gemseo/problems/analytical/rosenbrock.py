@@ -17,15 +17,12 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-The Rosenbrock analytic problem
-*******************************
-"""
+"""The Rosenbrock analytic problem."""
+
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
-from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
 from numpy import ones
@@ -38,10 +35,12 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 class Rosenbrock(OptimizationProblem):
-    r"""**Rosenbrock** :class:`.OptimizationProblem` uses the Rosenbrock objective
-    function.
+    r"""The Rosenbrock optimization problem.
 
     .. math::
 
@@ -71,7 +70,7 @@ class Rosenbrock(OptimizationProblem):
                 the design space will contain a single multidimensional variable
                 (whose size equals the problem dimension).
             initial_guess: The initial guess for optimal solution.
-        """
+        """  # noqa: D205 D212
         design_space = DesignSpace()
         if scalar_var:
             args = [f"x{i}" for i in range(1, n_x + 1)]
@@ -105,25 +104,19 @@ class Rosenbrock(OptimizationProblem):
 
 
 class RosenMF(MDODiscipline):
-    r"""**RosenMF**, a multi-fidelity Rosenbrock
-    :class:`.MDODiscipline`,
-    returns the value:
+    r"""A multi-fidelity Rosenbrock discipline.
 
-    .. math::
-
-       \mathrm{fidelity} * \mathrm{Rosenbrock}(x)
-
-    where both :math:`\mathrm{fidelity}` and :math:`x`
-    are provided as input data.
+    Its expression is :math:`\mathrm{fidelity} * \mathrm{Rosenbrock}(x)`
+    where both :math:`\mathrm{fidelity}` and :math:`x` are provided as input data.
     """
 
     def __init__(self, dimension: int = 2) -> None:
         """
         Args:
             dimension: The dimension of the design space.
-        """
+        """  # noqa: D205 D212
         super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = {"x": zeros(dimension), "fidelity": array([1.0])}
+        self.default_inputs = {"x": zeros(dimension), "fidelity": 1.0}
 
     def _run(self) -> None:
         fidelity = self.local_data["fidelity"]

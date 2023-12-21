@@ -22,16 +22,17 @@ from __future__ import annotations
 from copy import deepcopy
 
 import pytest
+from numpy import array
+from numpy import isclose
+
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
-from numpy import array
-from numpy import isclose
 
 from .test_gauss_seidel import SelfCoupledDisc
 
@@ -162,15 +163,13 @@ def test_expected_workflow():
 
 
 def test_expected_workflow_with_adapter():
-    discs = create_discipline(
-        [
-            "SobieskiPropulsion",
-            "SobieskiStructure",
-            "SobieskiAerodynamics",
-            "SobieskiMission",
-        ]
-    )
-    design_space = SobieskiProblem().design_space
+    discs = create_discipline([
+        "SobieskiPropulsion",
+        "SobieskiStructure",
+        "SobieskiAerodynamics",
+        "SobieskiMission",
+    ])
+    design_space = SobieskiDesignSpace()
     scn_propu = create_scenario(
         discs,
         "DisciplinaryOpt",
@@ -201,16 +200,16 @@ def test_expected_workflow_with_adapter():
 
     expected = (
         "{MDAJacobi(None), ("
-        + "{PropulsionScenario(None), [SobieskiPropulsion(None), "
-        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        + "SobieskiMission(None), ], }, "
-        + "{AeroScenario(None), [SobieskiPropulsion(None), "
-        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        + "SobieskiMission(None), ], }, "
-        + "{StructureScenario(None), [SobieskiPropulsion(None), "
-        + "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        + "SobieskiMission(None), ], }, "
-        + "), }"
+        "{PropulsionScenario(None), [SobieskiPropulsion(None), "
+        "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        "SobieskiMission(None), ], }, "
+        "{AeroScenario(None), [SobieskiPropulsion(None), "
+        "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        "SobieskiMission(None), ], }, "
+        "{StructureScenario(None), [SobieskiPropulsion(None), "
+        "SobieskiStructure(None), SobieskiAerodynamics(None), "
+        "SobieskiMission(None), ], }, "
+        "), }"
     )
 
     assert str(mda.get_expected_workflow()) == expected

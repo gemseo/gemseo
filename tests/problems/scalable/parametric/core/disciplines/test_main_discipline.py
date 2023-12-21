@@ -13,16 +13,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Tests for the module main_discipline."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.problems.scalable.parametric.core.disciplines.main_discipline import (
-    MainDiscipline,
-)
 from numpy import array
 from numpy import zeros
 from numpy.testing import assert_equal
-from numpy.typing import NDArray
+
+from gemseo.problems.scalable.parametric.core.disciplines.main_discipline import (
+    MainDiscipline,
+)
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 @pytest.fixture(scope="module")

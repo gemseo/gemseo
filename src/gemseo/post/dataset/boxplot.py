@@ -24,25 +24,25 @@ variability outside the inter quartile domain can be represented with lines, cal
 *whiskers*. The numerical data that are significantly different are called *outliers*
 and can be plotted as individual points beyond the whiskers.
 """
+
 from __future__ import annotations
 
-from typing import Any
-from typing import ClassVar
-from typing import Iterable
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from matplotlib import pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-
-from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Any
+
+    from gemseo.datasets.dataset import Dataset
 
 
 class Boxplot(DatasetPlot):
     """Draw the boxplots of some variables from a :class:`.Dataset`."""
 
-    opacity_level: ClassVar[float] = 0.25
+    # TODO: API: remove this attribute and use the option instead.
+    opacity_level: float
     """The opacity level for the faces, between 0 and 1."""
 
     def __init__(
@@ -55,6 +55,7 @@ class Boxplot(DatasetPlot):
         use_vertical_bars: bool = True,
         add_confidence_interval: bool = False,
         add_outliers: bool = True,
+        opacity_level: float = 0.25,
         **boxplot_options: Any,
     ) -> None:
         """
@@ -68,8 +69,13 @@ class Boxplot(DatasetPlot):
             add_confidence_interval: Whether to add the confidence interval (CI)
                 around the median; a CI is also called *notch*.
             add_outliers: Whether to add the outliers.
+            opacity_level: The opacity level for the faces, between 0 and 1.
             **boxplot_options: The options of the wrapped boxplot function.
         """  # noqa: D205, D212, D415
+        self.__n_datasets = 1 + len(datasets)
+        self.__names = dataset.get_columns(variables)
+        self.__origin = 0
+        self.opacity_level = opacity_level
         super().__init__(
             dataset,
             datasets=datasets,
@@ -80,92 +86,30 @@ class Boxplot(DatasetPlot):
             add_confidence_interval=add_confidence_interval,
             add_outliers=add_outliers,
             boxplot_options=boxplot_options,
+            opacity_level=opacity_level,
         )
-        self.__n_datasets = 1 + len(datasets)
-        self.__names = self.dataset.get_columns(variables)
-        self.__origin = 0
 
-    def _plot(
+    def _create_specific_data_from_dataset(
         self,
-        fig: None | Figure = None,
-        axes: None | Axes = None,
-    ) -> list[Figure]:
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        variables = self._param.variables
-        if variables is None:
-            variables = self.dataset.variable_names
-
-        self._set_color(self.__n_datasets)
-        self.__draw_boxplot(self.dataset, axes, variables, self.color[0])
-        for index, dataset in enumerate(self._param.datasets):
-            self.__draw_boxplot(dataset, axes, variables, self.color[index + 1])
-
-        positions = [
-            (self.__n_datasets - 1) / self.__n_datasets + i * self.__n_datasets
-            for i, _ in enumerate(self.__names)
-        ]
-        if self._param.use_vertical_bars:
-            axes.set_xticks(positions)
-            axes.set_xticklabels(self.__names)
-        else:
-            axes.set_yticks(positions)
-            axes.set_yticklabels(self.__names)
-
-        axes.set_xlabel(self.xlabel)
-        axes.set_ylabel(self.ylabel)
-        axes.set_title(self.title)
-
-        if self.__n_datasets > 1:
-            plt.plot([], c=self.color[0], label=self.dataset.name)
-            for index in range(self.__n_datasets - 1):
-                plt.plot(
-                    [], c=self.color[index + 1], label=self._param.datasets[index].name
-                )
-            plt.legend(loc="upper right")
-
-        return [fig]
-
-    def __draw_boxplot(
-        self, dataset: Dataset, axes: Axes, variables: Iterable[str], color: str
-    ) -> None:
-        """Draw the boxplots for a given dataset.
-
-        Args:
-            dataset: The dataset containing the data to be plotted.
-            axes: The axes to plot the data.
-            variables: The names of the variables.
-            color: The color for the boxplot.
+    ) -> tuple[Sequence[str], list[float], int, float, list[str], float]:
         """
-        if self._param.center or self._param.scale:
-            dataset = dataset.get_normalized(
-                use_min_max=False, center=self._param.center, scale=self._param.scale
-            )
-        boxplot = axes.boxplot(
-            dataset.get_view(variable_names=variables).to_numpy(),
-            vert=self._param.use_vertical_bars,
-            notch=self._param.add_confidence_interval,
-            showfliers=self._param.add_outliers,
-            positions=[
-                self.__origin + i * self.__n_datasets
+        Returns:
+            The names of the variables,
+            the positions of the variables on the x-axis,
+            the number of datasets,
+            the x-offset,
+            the names of the variables,
+            the level of opacity.
+        """  # noqa: D205, D212, D415
+        self._set_color(self.__n_datasets)
+        return (
+            self._specific_settings.variables or self.dataset.variable_names,
+            [
+                (self.__n_datasets - 1) / self.__n_datasets + i * self.__n_datasets
                 for i, _ in enumerate(self.__names)
             ],
-            sym="*",
-            patch_artist=True,
-            flierprops=dict(markeredgecolor=color),
-            **self._param.boxplot_options,
+            self.__n_datasets,
+            self.__origin,
+            self.__names,
+            self._specific_settings.opacity_level,
         )
-        self.__origin += 1
-
-        axes.xaxis.grid(
-            True, linestyle="-", which="major", color="lightgrey", alpha=0.5
-        )
-        axes.yaxis.grid(
-            True, linestyle="-", which="major", color="lightgrey", alpha=0.5
-        )
-
-        plt.setp(boxplot["boxes"], color=color)
-        plt.setp(boxplot["whiskers"], color=color)
-        plt.setp(boxplot["caps"], color=color)
-        plt.setp(boxplot["medians"], color=color)
-        for patch in boxplot["boxes"]:
-            patch.set(alpha=self.opacity_level)

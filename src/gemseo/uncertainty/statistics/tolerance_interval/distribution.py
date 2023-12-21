@@ -18,20 +18,24 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted probability distribution."""
+
 from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import NamedTuple
 
 from numpy import array
 from numpy import inf
-from numpy.typing import NDArray
 from strenum import LowercaseStrEnum
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -235,14 +239,12 @@ class ToleranceIntervalFactory(BaseFactory):
         try:
             return cls(size, *args)
         except TypeError:
-            LOGGER.error(
+            LOGGER.exception(
                 "Failed to create class %s with arguments %s", class_name, args
             )
-            raise TypeError(
-                "Cannot create {}ToleranceInterval with arguments {}".format(
-                    class_name, args
-                )
-            )
+            raise RuntimeError(
+                f"Cannot create {class_name}ToleranceInterval with arguments {args}"
+            ) from None
 
     def get_class(self, name: str) -> type[Any]:
         """Return a class from its name.

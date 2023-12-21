@@ -19,18 +19,20 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test principal component analysis dimension reduction."""
+
 from __future__ import annotations
 
 import pytest
-from gemseo.mlearning.transformers.dimension_reduction.kpca import KPCA
 from numpy import linspace
 from numpy import ndarray
+
+from gemseo.mlearning.transformers.dimension_reduction.kpca import KPCA
 
 N_SAMPLES = 10
 N_FEATURES = 8
 
 
-@pytest.fixture
+@pytest.fixture()
 def data() -> ndarray:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     return linspace(0, 1, N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)

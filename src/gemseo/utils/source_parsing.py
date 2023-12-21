@@ -18,11 +18,13 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Parse source code to extract information."""
+
 from __future__ import annotations
 
 import inspect
 import re
 from inspect import getfullargspec
+from typing import Any
 from typing import Callable
 
 
@@ -54,22 +56,41 @@ def get_options_doc(
     )
 
 
+# TODO: API: remove.
 def get_default_option_values(
-    cls,
+    cls: type,
 ) -> dict[str, str]:
-    """Get the options default values for the given class, by only addressing kwargs.
+    """Return the default values of the kwargs of a class constructor.
 
     Args:
         cls: The class.
+
+    Returns:
+        The defaults.
     """
-    full_arg_specs = getfullargspec(cls.__init__)
-    args = full_arg_specs[0]
-    defaults = full_arg_specs[3]
+    return get_callable_argument_defaults(cls.__init__)
+
+
+def get_callable_argument_defaults(
+    callable_: Callable,
+) -> dict[str, Any]:
+    """Return the default values of the kwargs of a callable.
+
+    Args:
+        callable_: The callable.
+
+    Returns:
+        The defaults if any, an empty dictionary otherwise.
+    """
+    full_arg_specs = getfullargspec(callable_)
+    defaults = full_arg_specs.defaults
+    if defaults is None:
+        return {}
+    args = full_arg_specs.args
     if "self" in args:
         args.remove("self")
-    n_def = len(defaults)
-
-    return {args[-n_def:][i]: defaults[i] for i in range(n_def)}
+    n_defaults = len(defaults)
+    return {args[-n_defaults:][i]: defaults[i] for i in range(n_defaults)}
 
 
 def parse_rest(
@@ -87,11 +108,10 @@ def parse_rest(
     param_re = re.compile(pattern, re.S)
     strings = param_re.findall(docstring)
     parsed_doc = {txt[0]: txt[1].replace(" " * 4, "").rstrip("\n") for txt in strings}
-    parsed_doc = {
+    return {
         name: description.replace("  ", " ").replace("\n", " ").replace("  ", "\n\n")
         for name, description in parsed_doc.items()
     }
-    return parsed_doc
 
 
 # regex pattern for finding the arguments section of a Google docstring
@@ -113,7 +133,8 @@ def parse_google(docstring: str) -> dict[str, str]:
         docstring: The docstring to be parsed.
 
     Returns:
-        The parsed docstring with the function arguments names bound to their descriptions.
+        The parsed docstring with the function arguments names bound to their
+        descriptions.
     """
     args_sections = RE_PATTERN_ARGS_SECTION.findall(docstring)
 

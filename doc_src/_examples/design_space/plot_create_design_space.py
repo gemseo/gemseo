@@ -25,11 +25,13 @@ DesignSpace creation and manipulation
 In this example, we will see how to create and how to manipulate an instance of
 :class:`.DesignSpace`.
 """
+
 from __future__ import annotations
+
+from numpy import array
 
 from gemseo import configure_logger
 from gemseo import create_design_space
-from numpy import array
 
 configure_logger()
 

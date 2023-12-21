@@ -16,20 +16,25 @@
 #     Matthias De Lozzo
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.problems.sobieski.design_space import create_design_space
-from gemseo.problems.sobieski.disciplines import create_disciplines_with_physical_naming
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from numpy import array
 from numpy import ndarray
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
+
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.problems.sobieski.design_space import create_design_space
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.sobieski.disciplines import create_disciplines_with_physical_naming
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 FACTORS = [0.5, 1.0, 1.5]
 DECIMAL = 5
@@ -172,14 +177,12 @@ def test_coupling(factor, mda):
     input_data = compute_input_data(
         design_space.get_current_value(as_dict=True), factor
     )
-    original_mda = MDAGaussSeidel(
-        [
-            SobieskiAerodynamics(),
-            SobieskiStructure(),
-            SobieskiPropulsion(),
-            SobieskiMission(),
-        ]
-    )
+    original_mda = MDAGaussSeidel([
+        SobieskiAerodynamics(),
+        SobieskiStructure(),
+        SobieskiPropulsion(),
+        SobieskiMission(),
+    ])
     original_mda.execute(input_data)
     assert_allclose(original_mda.local_data["y_1"], y_1, rtol=1e-2)
     assert_allclose(original_mda.local_data["y_2"], y_2, rtol=1e-2)
@@ -187,7 +190,7 @@ def test_coupling(factor, mda):
     assert_allclose(original_mda.local_data["y_4"], y_4, rtol=1e-2)
 
 
-@pytest.fixture
+@pytest.fixture()
 def scenario_pn() -> DOEScenario:
     """A DOEScenario for the Sobieski's SSBJ use case with physical naming."""
     scn = DOEScenario(
@@ -211,7 +214,7 @@ def scenario_pn() -> DOEScenario:
     return scn
 
 
-@pytest.fixture
+@pytest.fixture()
 def scenario() -> DOEScenario:
     """A DOEScenario for the Sobieski's SSBJ use case without physical naming."""
     scn = DOEScenario(

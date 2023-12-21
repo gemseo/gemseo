@@ -22,11 +22,6 @@ from __future__ import annotations
 import re
 
 import pytest
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.algos.parameter_space import RandomVariable
-from gemseo.algos.parameter_space import RandomVector
-from gemseo.datasets.io_dataset import IODataset
 from numpy import allclose
 from numpy import arange
 from numpy import array
@@ -35,6 +30,12 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy.testing import assert_array_equal
 from openturns import NormalCopula
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.algos.parameter_space import RandomVariable
+from gemseo.algos.parameter_space import RandomVector
+from gemseo.datasets.io_dataset import IODataset
 
 
 def test_constructor():
@@ -66,7 +67,7 @@ def test_add_random_variable():
     assert "y" in space.distributions
 
 
-@pytest.fixture
+@pytest.fixture()
 def mixed_space():
     """A parameter space containing both deterministic and uncertain variables."""
     space = ParameterSpace()
@@ -224,17 +225,11 @@ def parameter_space():
 @pytest.mark.parametrize("one_dim", [True, False])
 def test_normalize(parameter_space, one_dim):
     """Check that normalize works correctly with both 1D and 2D arrays."""
-    if one_dim:
-        vector = array([0.5] * 6)
-    else:
-        vector = array([0.5] * 12).reshape((2, 6))
+    vector = array([0.5] * 6) if one_dim else array([0.5] * 12).reshape((2, 6))
 
     u_vector = parameter_space.normalize_vect(vector, use_dist=True)
     values = [0.5] * 2 + [0.25] + [0.598706] * 3
-    if one_dim:
-        expectation = array(values)
-    else:
-        expectation = array([values, values])
+    expectation = array(values) if one_dim else array([values, values])
     assert allclose(u_vector, expectation, 1e-3)
 
 
@@ -242,16 +237,10 @@ def test_normalize(parameter_space, one_dim):
 def test_unnormalize(parameter_space, one_dim):
     """Check that unnormalize works correctly with both 1D and 2D arrays."""
     values = [0.5] * 2 + [0.25] + [0.598706] * 3
-    if one_dim:
-        u_vector = array(values)
-    else:
-        u_vector = array([values, values])
+    u_vector = array(values) if one_dim else array([values, values])
     vector = parameter_space.unnormalize_vect(u_vector, use_dist=True)
     values = [0.5] * 6
-    if one_dim:
-        expectation = array(values)
-    else:
-        expectation = array([values, values])
+    expectation = array(values) if one_dim else array([values, values])
     assert allclose(vector, expectation, 1e-3)
 
 
@@ -318,7 +307,7 @@ def test_evaluate_cdf_raising_errors():
         space.evaluate_cdf({"x": array([1.5])}, inverse=True)
 
 
-@pytest.fixture
+@pytest.fixture()
 def io_dataset() -> IODataset:
     """An input-output dataset."""
     inputs = arange(50).reshape(10, 5)
@@ -331,10 +320,9 @@ def io_dataset() -> IODataset:
         "in_2": "inputs",
         "out_1": "outputs",
     }
-    dataset = IODataset.from_array(
+    return IODataset.from_array(
         data, variables, variable_names_to_n_components, variable_names_to_group_names
     )
-    return dataset
 
 
 def test_init_from_dataset_default(io_dataset):
@@ -497,7 +485,7 @@ def test_rename_variable():
     assert parameter_space == other_parameter_space
 
 
-@pytest.mark.parametrize("first,second", [("SP", "OT"), ("OT", "SP")])
+@pytest.mark.parametrize(("first", "second"), [("SP", "OT"), ("OT", "SP")])
 def test_mix_different_distribution_families(first, second):
     """Check that a ParameterSpace cannot mix distributions from different families."""
     parameter_space = ParameterSpace()
@@ -538,7 +526,7 @@ def test_random_vector_consistency(kwargs):
 
 
 @pytest.mark.parametrize(
-    "kwargs,samples",
+    ("kwargs", "samples"),
     [
         ({"variable_value": [1, 2]}, array([[1, 2]] * 4)),
         ({"variable_value": [1, 2], "size": 2}, array([[1, 2]] * 4)),
@@ -557,7 +545,7 @@ def test_ot_random_vector(kwargs, samples):
 
 
 @pytest.mark.parametrize(
-    "kwargs,upper_bound",
+    ("kwargs", "upper_bound"),
     [
         ({"maximum": [1, 2]}, [1, 2]),
         ({"maximum": [1, 2], "size": 2}, [1, 2]),
@@ -578,7 +566,7 @@ def test_sp_random_vector(kwargs, upper_bound):
 
 
 @pytest.mark.parametrize(
-    "kwargs,samples",
+    ("kwargs", "samples"),
     [
         ({"interfaced_distribution_parameters": ([1, 2],)}, array([[1, 2]] * 4)),
         (
@@ -608,7 +596,7 @@ def test_ot_random_vector_interfaced_distribution(kwargs, samples, use_parameter
 
 
 @pytest.mark.parametrize(
-    "kwargs,upper_bound",
+    ("kwargs", "upper_bound"),
     [
         (
             {"interfaced_distribution_parameters": {"scale": [1, 2]}},
@@ -666,7 +654,7 @@ def test_parameters_and_interfaced_distribution_parameters(method):
 
 
 @pytest.mark.parametrize(
-    "obj,args,expected",
+    ("obj", "args", "expected"),
     [
         ("variable", (2,), RandomVector),
         ("variable", (), RandomVariable),
@@ -683,7 +671,7 @@ def test_random_vector_getitem(obj, args, expected):
 
 
 @pytest.mark.parametrize(
-    "distribution,interfaced_distribution,interfaced_distribution_parameters",
+    ("distribution", "interfaced_distribution", "interfaced_distribution_parameters"),
     [
         ("OTDistribution", "Uniform", ()),
         ("OTDistribution", "Uniform", (2, 4)),
@@ -710,7 +698,7 @@ def test_random_variable_interfaced_distribution(
     assert marginal.parameters == interfaced_distribution_parameters
 
 
-def test_str():
+def test_string_representation():
     """Check the string representation of a parameter space."""
     parameter_space = ParameterSpace()
     parameter_space.add_variable("a")
@@ -719,7 +707,7 @@ def test_str():
     parameter_space.add_random_vector("d", "OTUniformDistribution", maximum=[2, 3, 4])
     expected = """Parameter space:
 +------+-------------+-------+-------------+-------+-------------------------------+
-| name | lower_bound | value | upper_bound | type  |      Initial distribution     |
+| Name | Lower bound | Value | Upper bound | Type  |          Distribution         |
 +------+-------------+-------+-------------+-------+-------------------------------+
 | a    |     -inf    |  None |     inf     | float |                               |
 | b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
@@ -728,8 +716,68 @@ def test_str():
 | d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
 | d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
 | d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
++------+-------------+-------+-------------+-------+-------------------------------+"""  # noqa: E501
+    assert str(parameter_space) == repr(parameter_space) == expected
+
+    expected = """+------+-------------+-------+-------------+-------+-------------------------------+
+| name | lower_bound | value | upper_bound | type  |          distribution         |
++------+-------------+-------+-------------+-------+-------------------------------+
+| a    |     -inf    |  None |     inf     | float |                               |
+| b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[1] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
+| d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
+| d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
++------+-------------+-------+-------------+-------+-------------------------------+"""  # noqa: E501
+    assert (
+        str(parameter_space.get_pretty_table(with_index=True, capitalize=False))
+        == expected
+    )
+
+    parameter_space.remove_variable("a")
+    expected = """Parameter space:
++------+-------------+-------+-------------+-------+-------------------------------+
+| Name | Lower bound | Value | Upper bound | Type  |          Distribution         |
++------+-------------+-------+-------------+-------+-------------------------------+
+| b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| c[1] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
+| d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
+| d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
+| d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
 +------+-------------+-------+-------------+-------+-------------------------------+"""
     assert repr(parameter_space) == expected
+
+    expected = """Uncertain space:
++------+-------------------------------+
+| Name |          Distribution         |
++------+-------------------------------+
+|  b   | Uniform(lower=0.0, upper=1.0) |
+| c[0] | Uniform(lower=0.0, upper=1.0) |
+| c[1] | Uniform(lower=0.0, upper=1.0) |
+| d[0] |  Uniform(lower=0.0, upper=2)  |
+| d[1] |  Uniform(lower=0.0, upper=3)  |
+| d[2] |  Uniform(lower=0.0, upper=4)  |
++------+-------------------------------+"""
+    assert str(parameter_space) == expected
+
+    parameter_space.add_random_variable(
+        "e", "OTNormalDistribution", transformation="x+2"
+    )
+    expected = """Uncertain space:
++------+-------------------------------+--------------------+
+| Name |      Initial distribution     | Transformation(x)= |
++------+-------------------------------+--------------------+
+|  b   | Uniform(lower=0.0, upper=1.0) |         x          |
+| c[0] | Uniform(lower=0.0, upper=1.0) |         x          |
+| c[1] | Uniform(lower=0.0, upper=1.0) |         x          |
+| d[0] |  Uniform(lower=0.0, upper=2)  |         x          |
+| d[1] |  Uniform(lower=0.0, upper=3)  |         x          |
+| d[2] |  Uniform(lower=0.0, upper=4)  |         x          |
+|  e   |   Normal(mu=0.0, sigma=1.0)   |       (x)+2        |
++------+-------------------------------+--------------------+"""  # noqa: E501
+    assert str(parameter_space) == expected
 
 
 def test_existing_variable():

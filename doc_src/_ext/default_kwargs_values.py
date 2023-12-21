@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import cast
-from typing import Iterable
 
 from docutils import nodes
-from docutils.nodes import Element
 from sphinx import addnodes
-from sphinx.application import Sphinx
 from sphinx.util import inspect
+
+if TYPE_CHECKING:
+    from docutils.nodes import Element
+    from sphinx.application import Sphinx
 
 
 def record_defaults(

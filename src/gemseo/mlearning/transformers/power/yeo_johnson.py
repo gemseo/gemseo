@@ -35,6 +35,7 @@ of `scikit-learn <https://scikit-learn.org/
 stable/modules/generated/
 sklearn.preprocessing.PowerTransformer.html>`_.
 """
+
 from __future__ import annotations
 
 from gemseo.mlearning.transformers.power.power import Power

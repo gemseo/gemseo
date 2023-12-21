@@ -17,27 +17,33 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Wrappers for SciPy's linear solvers."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Mapping
+from typing import ClassVar
 
-from numpy import find_common_type
 from numpy import ndarray
+from numpy import promote_types
 from scipy.sparse import issparse
-from scipy.sparse import spmatrix
+from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import bicg
 from scipy.sparse.linalg import bicgstab
 from scipy.sparse.linalg import gmres
 from scipy.sparse.linalg import lgmres
-from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import qmr
 from scipy.sparse.linalg import splu
 
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverDescription
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
+from gemseo.utils.compatibility.scipy import ArrayType
+from gemseo.utils.compatibility.scipy import array_classes
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +59,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
     """The mapping between the solver names and the solvers methods in scipy.sparse."""
 
     BASE_INFO_MSG = "scipy linear solver algorithm stop info: "
-    OPTIONS_MAP = {
+    OPTIONS_MAP: ClassVar[dict[str, str]] = {
         "max_iter": "maxiter",
         "preconditioner": "M",
         "store_outer_av": "store_outer_Av",
@@ -69,7 +75,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
 
     __WEBSITE = "https://docs.scipy.org/doc/scipy/reference/generated/{}.html"
     __WEBPAGE = "scipy.sparse.linalg.{}"
-    __WEBPAGES = {
+    __WEBPAGES: ClassVar[dict[str, str]] = {
         "BICG": __WEBPAGE.format("bicg"),
         "GMRES": __WEBPAGE.format("gmres"),
         "LGMRES": __WEBPAGE.format("lgmres"),
@@ -142,7 +148,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
 
         Args:
             max_iter: The maximum number of iterations.
-            preconditioner: The preconditionner, approximation of RHS^-1.
+            preconditioner: The preconditioner, approximation of RHS^-1.
                 If ``None``, no preconditioner is used.
             tol: The relative tolerance for convergence,
                 norm(RHS.dot(sol)) <= max(tol*norm(LHS), atol).
@@ -151,10 +157,10 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
             x0: The initial guess for the solution.
                 M{sparse matrix, dense matrix, LinearOperator}.
                 If ``None``, solvers usually start from the null vector.
-            inner_m int: The number of inner GMRES iterations per outer iteration.
+            inner_m: The number of inner GMRES iterations per outer iteration.
             outer_k: The number of vectors to carry between inner GMRES iterations.
             outer_v:  The data used to augment the Krylov subspace.
-            store_outer_A: Whether LGMRES should store also A*v in
+            store_outer_av: Whether LGMRES should store also A*v in
                 addition to the vectors v in outer_v.
             prepend_outer_v: Whether to put outer_v
                 augmentation vectors before the Krylov iterates.
@@ -221,7 +227,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         c_dtype = None
 
         if rhs.dtype != lhs.dtype and not isinstance(lhs, LinearOperator):
-            c_dtype = find_common_type([rhs.dtype, lhs.dtype], [])
+            c_dtype = promote_types(rhs.dtype, lhs.dtype)
             if lhs.dtype != c_dtype:
                 lhs = lhs.astype(c_dtype)
             if rhs.dtype != c_dtype:
@@ -286,7 +292,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         # check the dimensions
         if info < 0:
             raise RuntimeError(
-                self.BASE_INFO_MSG + "illegal input or breakdown" ", options = %s",
+                self.BASE_INFO_MSG + "illegal input or breakdown, options = %s",
                 options,
             )
 
@@ -294,7 +300,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
 
     def _run_default_solver(
         self,
-        lhs: ndarray | spmatrix | LinearOperator,
+        lhs: ArrayType | LinearOperator,
         rhs: ndarray,
         **options: Any,
     ) -> tuple[ndarray, int]:
@@ -342,7 +348,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         self.problem.is_converged = False
 
         # Attempt direct solver when possible
-        if isinstance(lhs, (ndarray, spmatrix)):
+        if isinstance(lhs, array_classes):
             a_fact = splu(lhs)
             sol = a_fact.solve(rhs)
             res = self.problem.compute_residuals(True, current_x=sol)

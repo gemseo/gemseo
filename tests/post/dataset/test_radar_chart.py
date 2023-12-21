@@ -18,14 +18,16 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class RadarChart plotting samples on a radar chart."""
+
 from __future__ import annotations
 
 import pytest
+from matplotlib import pyplot as plt
+from numpy import array
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.utils.testing.helpers import image_comparison
-from matplotlib import pyplot as plt
-from numpy import array
 
 
 @pytest.fixture(scope="module")
@@ -50,14 +52,25 @@ TEST_PARAMETERS = {
     "with_n_levels": ({"n_levels": 3}, {}, ["RadarChart_n_levels"]),
     "with_properties": (
         {},
-        {"title": "The title"},
+        {
+            "title": "The title",
+            "linestyle": ["-", "--"],
+            "rmin": -1,
+            "rmax": 4,
+            "color": "red",
+        },
         ["RadarChart_properties"],
+    ),
+    "with_scientific_notation": (
+        {"scientific_notation": False},
+        {},
+        ["RadarChart_scientific_notation"],
     ),
 }
 
 
 @pytest.mark.parametrize(
-    "kwargs, properties, baseline_images",
+    ("kwargs", "properties", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
@@ -75,4 +88,6 @@ def test_plot(
     else:
         fig, axes = (None, None)
 
-    plot.execute(save=False, fig=fig, axes=axes, properties=properties)
+    for k, v in properties.items():
+        setattr(plot, k, v)
+    plot.execute(save=False, fig=fig, axes=axes)

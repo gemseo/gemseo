@@ -21,14 +21,12 @@ from __future__ import annotations
 import os
 
 import pytest
+
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.problems.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.scalable.data_driven.study.process import ScalabilityStudy
 from gemseo.problems.sellar.sellar import OBJ
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar import X_LOCAL
 from gemseo.problems.sellar.sellar import X_SHARED
 from gemseo.problems.sellar.sellar import Y_1
@@ -52,13 +50,12 @@ def idf_cost(varsizes, n_c, n_lc, n_tl_c, n_tl_lc):
 
 
 @pytest.fixture()
-def sellar_use_case(tmp_wd):
+def sellar_use_case(tmp_wd, sellar_disciplines):
     n_samples = 20
     os.mkdir("data")
     file_name = "data/sellar.h5"
     discipline_names = []
-    for discipline_class in [Sellar1, Sellar2, SellarSystem]:
-        discipline = discipline_class()
+    for discipline in sellar_disciplines:
         discipline.set_cache_policy(discipline.CacheType.HDF5, cache_hdf_file=file_name)
         discipline_names.append(discipline.name)
         objective_name = next(iter(discipline.output_grammar.keys()))

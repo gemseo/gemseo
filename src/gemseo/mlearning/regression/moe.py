@@ -53,17 +53,14 @@ where
 that :math:`x` belongs to cluster :math:`k` and
 :math:`f_k(x)` is the local regression model on cluster :math:`k`.
 """
+
 from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Dict
 from typing import Final
-from typing import Iterable
-from typing import List
-from typing import Mapping
 from typing import NoReturn
 from typing import Optional
 from typing import Union
@@ -72,41 +69,44 @@ from numpy import ndarray
 from numpy import newaxis
 from numpy import nonzero
 from numpy import unique
-from numpy import where
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
-from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
 from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.selection import MLAlgoSelection
-from gemseo.mlearning.core.supervised import SavedObjectType
+from gemseo.mlearning.core.supervised import SavedObjectType as _SavedObjectType
+from gemseo.mlearning.data_formatters.moe_data_formatters import MOEDataFormatters
 from gemseo.mlearning.quality_measures.f1_measure import F1Measure
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
-from gemseo.mlearning.quality_measures.quality_measure import (
-    OptionType as EvalOptionType,
-)
 from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.classification.classification import MLClassificationAlgo
+    from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
+    from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+    from gemseo.mlearning.quality_measures.quality_measure import (
+        OptionType as EvalOptionType,
+    )
 
 LOGGER = logging.getLogger(__name__)
 
-SavedObjectType = Union[SavedObjectType, str, Dict]
+SavedObjectType = Union[_SavedObjectType, str, dict]
 
-MLAlgoType = Dict[
+MLAlgoType = dict[
     str,
     Optional[
-        Union[str, DesignSpace, Dict[str, Union[str, int]], List[MLAlgoParameterType]]
+        Union[str, DesignSpace, dict[str, Union[str, int]], list[MLAlgoParameterType]]
     ],
 ]
 
@@ -169,6 +169,8 @@ class MOERegressor(MLRegressionAlgo):
     _LOCAL_INPUT: Final[str] = "input"
     _LOCAL_OUTPUT: Final[str] = "output"
 
+    DataFormatters = MOEDataFormatters
+
     def __init__(
         self,
         data: IODataset,
@@ -180,7 +182,7 @@ class MOERegressor(MLRegressionAlgo):
         """
         Args:
             hard: Whether clustering/classification should be hard or soft.
-        """
+        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,
@@ -211,68 +213,6 @@ class MOERegressor(MLRegressionAlgo):
         self.clusterer = None
         self.classifier = None
         self.regress_models = None
-
-    class DataFormatters(MLRegressionAlgo.DataFormatters):
-        """Machine learning regression model decorators."""
-
-        @classmethod
-        def format_predict_class_dict(
-            cls,
-            predict: Callable[[ndarray], ndarray],
-        ) -> Callable[[DataType], DataType]:
-            """Make an array-based function be called with a dictionary of NumPy arrays.
-
-            Args:
-                predict: The function to be called;
-                    it takes a NumPy array in input and returns a NumPy array.
-
-            Returns:
-                A function making the function 'predict' work with
-                either a NumPy data array
-                or a dictionary of NumPy data arrays indexed by variables names.
-                The evaluation will have the same type as the input data.
-            """
-
-            def wrapper(
-                self,
-                input_data: DataType,
-                *args,
-                **kwargs,
-            ) -> DataType:
-                """Evaluate 'predict' with either array or dictionary-based input data.
-
-                Firstly,
-                the pre-processing stage converts the input data to a NumPy data array,
-                if these data are expressed as a dictionary of NumPy data arrays.
-
-                Then,
-                the processing evaluates the function 'predict'
-                from this NumPy input data array.
-
-                Lastly,
-                the post-processing transforms the output data
-                to a dictionary of output NumPy data array
-                if the input data were passed as a dictionary of NumPy data arrays.
-
-                Args:
-                    input_data: The input data.
-                    *args: The positional arguments of the function 'predict'.
-                    **kwargs: The keyword arguments of the function 'predict'.
-
-                Returns:
-                    The output data with the same type as the input one.
-                """
-                as_dict = isinstance(input_data, Mapping)
-                if as_dict:
-                    input_data = concatenate_dict_of_arrays_to_array(
-                        input_data, self.input_names
-                    )
-                output_data = predict(self, input_data, *args, **kwargs)
-                if as_dict:
-                    output_data = {self.LABELS: output_data}
-                return output_data
-
-            return wrapper
 
     def set_clusterer(
         self,
@@ -636,13 +576,11 @@ class MOERegressor(MLRegressionAlgo):
         """
         # dim(input_data)  = (n_samples, n_inputs)
         # dim(output_data) = (n_samples, n_clusters, n_outputs)
-        output_data = zeros(
-            (
-                input_data.shape[0],
-                self.n_clusters,
-                self.regress_models[0].output_dimension,
-            )
-        )
+        output_data = zeros((
+            input_data.shape[0],
+            self.n_clusters,
+            self.regress_models[0].output_dimension,
+        ))
         for i in range(self.n_clusters):
             output_data[:, i] = self.regress_models[i].predict(input_data)
         return output_data
@@ -658,18 +596,16 @@ class MOERegressor(MLRegressionAlgo):
         probas = self.classifier.predict_proba(input_data, hard=self.hard)
         local_outputs = self._predict_all(input_data)
         contributions = probas * local_outputs
-        global_outputs = contributions.sum(axis=1)
-        return global_outputs
+        return contributions.sum(axis=1)
 
     def _predict_jacobian(
         self,
         input_data: ndarray,
     ) -> ndarray:
         if self.hard:
-            jacobians = self._predict_jacobian_hard(input_data)
-        else:
-            jacobians = self._predict_jacobian_soft(input_data)
-        return jacobians
+            return self._predict_jacobian_hard(input_data)
+
+        return self._predict_jacobian_soft(input_data)
 
     def _predict_jacobian_hard(
         self,
@@ -685,18 +621,15 @@ class MOERegressor(MLRegressionAlgo):
         Returns:
             The predicted Jacobian data with shape (n_samples, n_outputs, n_inputs).
         """
-        n_samples = input_data.shape[0]
         classes = self.classifier.predict(input_data)[..., 0]
-        unq_classes = unique(classes)
-        jacobians = zeros(
-            (
-                n_samples,
-                self.regress_models[0].output_dimension,
-                self.regress_models[0].input_dimension,
-            )
-        )
-        for klass in unq_classes:
-            inds_kls = where(classes == klass)
+        first_regression_model = self.regress_models[0]
+        jacobians = zeros((
+            len(input_data),
+            first_regression_model.output_dimension,
+            first_regression_model.input_dimension,
+        ))
+        for klass in unique(classes):
+            inds_kls = (classes == klass).nonzero()[0]
             jacobians[inds_kls] = self.regress_models[klass].predict_jacobian(
                 input_data[inds_kls]
             )
@@ -727,7 +660,7 @@ class MOERegressor(MLRegressionAlgo):
         for i, local_model in enumerate(self.regress_models):
             local_model.to_pickle(directory / f"local_model_{i}")
 
-    def load_algo(
+    def load_algo(  # noqa: D102
         self,
         directory: str | Path,
     ) -> None:

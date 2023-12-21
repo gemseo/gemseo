@@ -27,6 +27,7 @@ we will discover the different high-levels functions
 related to optimization algorithms.
 
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger

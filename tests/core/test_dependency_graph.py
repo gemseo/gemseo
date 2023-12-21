@@ -25,6 +25,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from numpy import ones
+
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -35,7 +37,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from numpy import ones
 
 DATA_PATH = Path(__file__).absolute().parent / "data" / "dependency-graph"
 
@@ -197,17 +198,15 @@ class DisciplineEncoder(json.JSONEncoder):
 @pytest.fixture(scope="module")
 def graph_with_self_coupling() -> DependencyGraph:
     """Dependency graph with a self-coupled discipline."""
-    return DependencyGraph(
-        [
-            AnalyticDiscipline({"y0": "x0+y10+y2"}, name="D0"),
-            AnalyticDiscipline({"y10": "x0+x1+y2", "y11": "x0-x1+2*y11"}, name="D1"),
-            AnalyticDiscipline({"y2": "x0+x2+y10"}, name="D2"),
-        ]
-    )
+    return DependencyGraph([
+        AnalyticDiscipline({"y0": "x0+y10+y2"}, name="D0"),
+        AnalyticDiscipline({"y10": "x0+x1+y2", "y11": "x0-x1+2*y11"}, name="D1"),
+        AnalyticDiscipline({"y2": "x0+x2+y10"}, name="D2"),
+    ])
 
 
 @pytest.mark.parametrize(
-    "file_path,method",
+    ("file_path", "method"),
     [
         ("full_coupling_graph.pdf", "write_full_graph"),
         ("condensed_coupling_graph.pdf", "write_condensed_graph"),

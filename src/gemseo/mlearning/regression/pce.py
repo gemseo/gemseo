@@ -19,11 +19,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Polynomial chaos expansion model.
 
-.. _FunctionalChaosAlgorithm: https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.FunctionalChaosAlgorithm.html # noqa: B950
-.. _CleaningStrategy: https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.CleaningStrategy.html # noqa: B950
-.. _FixedStrategy: http://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.FixedStrategy.html # noqa: B950
-.. _LARS: https://openturns.github.io/openturns/latest/theory/meta_modeling/polynomial_sparse_least_squares.html#polynomial-sparse-least-squares # noqa: B950
-.. _hyperbolic and anisotropic enumerate function: https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.HyperbolicAnisotropicEnumerateFunction.html # noqa: B950
+.. _FunctionalChaosAlgorithm: https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.FunctionalChaosAlgorithm.html
+.. _CleaningStrategy: https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.CleaningStrategy.html
+.. _FixedStrategy: http://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.FixedStrategy.html
+.. _LARS: https://openturns.github.io/openturns/latest/theory/meta_modeling/polynomial_sparse_least_squares.html#polynomial-sparse-least-squares
+.. _hyperbolic and anisotropic enumerate function: https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.HyperbolicAnisotropicEnumerateFunction.html
 
 The polynomial chaos expansion (PCE) model expresses an output variable
 as a weighted sum of polynomial functions which are orthonormal
@@ -80,15 +80,15 @@ the `CleaningStrategy` can also remove the non-significant coefficients.
 Dependence
 ----------
 The PCE model relies on the OpenTURNS class `FunctionalChaosAlgorithm`_.
-"""
+"""  # noqa: E501
+
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Iterable
-from typing import Mapping
 
 from numpy import array
 from numpy import atleast_1d
@@ -96,6 +96,7 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
+from openturns import LARS
 from openturns import CleaningStrategy
 from openturns import ComposedDistribution
 from openturns import CorrectedLeaveOneOut
@@ -106,7 +107,6 @@ from openturns import FunctionalChaosSobolIndices
 from openturns import GaussProductExperiment
 from openturns import HyperbolicAnisotropicEnumerateFunction
 from openturns import IntegrationStrategy
-from openturns import LARS
 from openturns import LeastSquaresMetaModelSelectionFactory
 from openturns import LeastSquaresStrategy
 from openturns import OrthogonalBasis
@@ -114,14 +114,19 @@ from openturns import OrthogonalProductPolynomialFactory
 from openturns import Point
 from openturns import StandardDistributionPolynomialFactory
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.utils.string_tools import pretty_str
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.mlearning.core.supervised import SavedObjectType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -144,9 +149,7 @@ class CleaningOptions:
 class PCERegressor(MLRegressionAlgo):
     """Polynomial chaos expansion model.
 
-    See Also:
-
-    API documentation of the OpenTURNS class `FunctionalChaosAlgorithm`_.
+    See Also: API documentation of the OpenTURNS class `FunctionalChaosAlgorithm`_.
     """
 
     SHORT_ALGO_NAME: ClassVar[str] = "PCE"
@@ -212,7 +215,7 @@ class PCERegressor(MLRegressionAlgo):
                 of an input variable,
                 when an input variable has a data transformer
                 or when a probability distribution is not an :class:`.OTDistribution`.
-        """
+        """  # noqa: D205 D212
         if cleaning_options is None:
             cleaning_options = CleaningOptions()
 
@@ -270,7 +273,7 @@ class PCERegressor(MLRegressionAlgo):
 
         if [
             key
-            for key in self.transformer.keys()
+            for key in self.transformer
             if key in self.input_names or key == IODataset.INPUT_GROUP
         ]:
             raise ValueError("PCERegressor does not support input transformers.")
@@ -300,14 +303,12 @@ class PCERegressor(MLRegressionAlgo):
         self.__cleaning = cleaning_options
         self.__hyperbolic_parameter = hyperbolic_parameter
         self.__degree = degree
-        self.__composed_distribution = ComposedDistribution(
-            [
-                marginal
-                for input_name in self.input_names
-                for distribution in distributions[input_name].marginals
-                for marginal in distribution.marginals
-            ]
-        )
+        self.__composed_distribution = ComposedDistribution([
+            marginal
+            for input_name in self.input_names
+            for distribution in distributions[input_name].marginals
+            for marginal in distribution.marginals
+        ])
 
         if use_quadrature:
             if discipline is not None:
@@ -410,14 +411,14 @@ class PCERegressor(MLRegressionAlgo):
                 truncation_strategy,
                 IntegrationStrategy(),
             )
-        else:
-            return FunctionalChaosAlgorithm(
-                input_data,
-                output_data,
-                self.__composed_distribution,
-                truncation_strategy,
-                evaluation_strategy,
-            )
+
+        return FunctionalChaosAlgorithm(
+            input_data,
+            output_data,
+            self.__composed_distribution,
+            truncation_strategy,
+            evaluation_strategy,
+        )
 
     @staticmethod
     def __simplify_sobol_indices(
@@ -489,27 +490,25 @@ class PCERegressor(MLRegressionAlgo):
         self._second_order_sobol_indices = [
             {
                 first_name: {
-                    second_name: self.__simplify_sobol_indices(
+                    second_name: self.__simplify_sobol_indices([
                         [
-                            [
-                                (
-                                    ot_sobol_indices.getSobolGroupedIndex(
-                                        [first_index, second_index], output_index
-                                    )
-                                    - ot_sobol_indices.getSobolIndex(
-                                        first_index, output_index
-                                    )
-                                    - ot_sobol_indices.getSobolIndex(
-                                        second_index, output_index
-                                    )
+                            (
+                                ot_sobol_indices.getSobolGroupedIndex(
+                                    [first_index, second_index], output_index
                                 )
-                                if first_index != second_index
-                                else 0
-                                for second_index in names_to_positions[second_name]
-                            ]
-                            for first_index in names_to_positions[first_name]
+                                - ot_sobol_indices.getSobolIndex(
+                                    first_index, output_index
+                                )
+                                - ot_sobol_indices.getSobolIndex(
+                                    second_index, output_index
+                                )
+                            )
+                            if first_index != second_index
+                            else 0
+                            for second_index in names_to_positions[second_name]
                         ]
-                    )
+                        for first_index in names_to_positions[first_name]
+                    ])
                     for second_name in self.input_names
                 }
                 for first_name in self.input_names
@@ -542,12 +541,10 @@ class PCERegressor(MLRegressionAlgo):
         )
         indices = [
             {
-                input_name: self.__simplify_sobol_indices(
-                    [
-                        method(input_index, output_index)
-                        for input_index in names_to_positions[input_name]
-                    ]
-                )
+                input_name: self.__simplify_sobol_indices([
+                    method(input_index, output_index)
+                    for input_index in names_to_positions[input_name]
+                ])
                 for input_name in self.input_names
             }
             for output_index in range(self.output_dimension)

@@ -31,13 +31,14 @@ For that, we can use a 20-length :class:`.DiagonalDOE`
 and test different sizes of variables or different settings
 for the scalable diagonal discipline.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scalable
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
 # Import
@@ -64,7 +65,7 @@ discipline = create_discipline("SobieskiAerodynamics")
 # Get the input space
 # ~~~~~~~~~~~~~~~~~~~
 # We also define the input space on which to sample the discipline.
-input_space = SobieskiProblem().design_space
+input_space = SobieskiDesignSpace()
 input_names = [name for name in discipline.get_input_data_names() if name != "c_4"]
 input_space.filter(input_names)
 

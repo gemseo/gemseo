@@ -18,18 +18,23 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A scenario whose driver is a design of experiments."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Mapping
-from typing import Sequence
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
-from gemseo.datasets.dataset import Dataset
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.datasets.dataset import Dataset
 
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name
@@ -110,14 +115,12 @@ class DOEScenario(Scenario):
 
     def _update_input_grammar(self) -> None:  # noqa: D102
         super()._update_input_grammar()
-        if self.grammar_type == self.GrammarType.SIMPLE:
-            self.input_grammar.update_from_types(
-                {
-                    self.EVAL_JAC: bool,
-                    "n_samples": int,
-                    "algo_options": dict,
-                }
-            )
+        if self.grammar_type != self.GrammarType.JSON:
+            self.input_grammar.update_from_types({
+                self.EVAL_JAC: bool,
+                "n_samples": int,
+                "algo_options": dict,
+            })
             for name in ("n_samples", "algo_options"):
                 self.input_grammar.required_names.remove(name)
 

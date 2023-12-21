@@ -20,13 +20,13 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """An MDOFunction subclass to support formulations."""
+
 from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
 
-from numpy import any as np_any
-from numpy import isnan as np_isnan
+from numpy import isnan
 
 from gemseo.algos.database import Database
 from gemseo.algos.stop_criteria import DesvarIsNan
@@ -102,7 +102,8 @@ class NormDBFunction(MDOFunction):
             MaxIterReachedException: If the maximum number of iterations has been
                 reached.
         """
-        if np_any(np_isnan(x_vect)):
+        # TODO: Add a dedicated function check_has_nan().
+        if isnan(x_vect).any():
             raise DesvarIsNan(f"Design Variables contain a NaN value: {x_vect}")
         normalize = self.__normalize
         if normalize:
@@ -119,14 +120,14 @@ class NormDBFunction(MDOFunction):
 
         if value is None:
             if not database.get(hashed_xu) and self.__is_max_iter_reached():
-                raise MaxIterReachedException()
+                raise MaxIterReachedException
 
             # if not evaluated yet, evaluate
             if normalize:
                 value = self.__evaluate_orig_func(xn_vect)
             else:
                 value = self.__evaluate_orig_func(xu_vect)
-            if self.__optimization_problem.stop_if_nan and np_any(np_isnan(value)):
+            if self.__optimization_problem.stop_if_nan and isnan(value).any():
                 raise FunctionIsNan(f"The function {self.name} is NaN for x={xu_vect}")
             # store (x, f(x)) in database
             database.store(hashed_xu, {self.name: value})
@@ -146,7 +147,8 @@ class NormDBFunction(MDOFunction):
             FunctionIsNan: If the design variables contain a NaN value.
                 If the evaluation of the jacobian results in a NaN value.
         """
-        if np_any(np_isnan(x_vect)):
+        # TODO: Add a dedicated function check_has_nan().
+        if isnan(x_vect).any():
             raise FunctionIsNan(f"Design Variables contain a NaN value: {x_vect}")
         normalize = self.__normalize
         if normalize:
@@ -165,7 +167,7 @@ class NormDBFunction(MDOFunction):
         )
         if jac_u is None:
             if not database.get(xu_vect) and self.__is_max_iter_reached():
-                raise MaxIterReachedException()
+                raise MaxIterReachedException
 
             # if not evaluated yet, evaluate
             if self.__normalize:
@@ -174,10 +176,9 @@ class NormDBFunction(MDOFunction):
             else:
                 jac_u = self.__jac_orig_func(xu_vect)
                 jac_n = None
-            if np_any(np_isnan(jac_u)) and self.__optimization_problem.stop_if_nan:
+            if isnan(jac_u.data).any() and self.__optimization_problem.stop_if_nan:
                 raise FunctionIsNan(
-                    "Function {}'s Jacobian is NaN "
-                    "for x={}".format(self.name, xu_vect)
+                    f"Function {self.name}'s Jacobian is NaN for x={xu_vect}"
                 )
             func_name_to_value = {Database.get_gradient_name(self.name): jac_u}
             # store (x, j(x)) in database
@@ -187,8 +188,7 @@ class NormDBFunction(MDOFunction):
 
         if self.__normalize:
             return jac_n.real
-        else:
-            return jac_u.real
+        return jac_u.real
 
     @property
     def expects_normalized_inputs(self) -> bool:  # noqa:D102

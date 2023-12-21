@@ -21,13 +21,14 @@
 IDF-based MDO on the Sobieski SSBJ test case
 ============================================
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -39,14 +40,12 @@ configure_logger()
 # :class:`.SobieskiAerodynamics`,
 # :class:`.SobieskiMission`
 # and :class:`.SobieskiStructure`.
-disciplines = create_discipline(
-    [
-        "SobieskiPropulsion",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-        "SobieskiStructure",
-    ]
-)
+disciplines = create_discipline([
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+    "SobieskiStructure",
+])
 
 # %%
 # We can quickly access the most relevant information of any discipline (name, inputs,
@@ -73,7 +72,7 @@ generate_n2_plot(disciplines, save=False, show=True)
 #
 # Instantiate the scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^
-design_space = SobieskiProblem().design_space
+design_space = SobieskiDesignSpace()
 design_space
 
 # %%

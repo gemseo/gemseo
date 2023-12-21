@@ -18,35 +18,41 @@
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the class SensitivityAnalysis."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from gemseo import create_discipline
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
-from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
-from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
-from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
-from gemseo.utils.testing.helpers import concretize_classes
-from gemseo.utils.testing.helpers import image_comparison
 from numpy import array
 from numpy import linspace
 from numpy import pi
 from numpy import sin
 from numpy.testing import assert_array_equal
 
+from gemseo import create_discipline
+from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.core.discipline import MDODiscipline
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
+from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.utils.testing.helpers import image_comparison
 
-@pytest.fixture
+if TYPE_CHECKING:
+    from gemseo.disciplines.analytic import AnalyticDiscipline
+
+
+@pytest.fixture()
 def discipline() -> AnalyticDiscipline:
     """Return a discipline of interest."""
     return create_discipline("AnalyticDiscipline", expressions={"out": "x1+2*x2+3*x3"})
 
 
-@pytest.fixture
+@pytest.fixture()
 def parameter_space() -> ParameterSpace:
     """Return the parameter space on which to evaluate the discipline."""
     space = ParameterSpace()
@@ -183,14 +189,14 @@ class MockMorrisAnalysisIndices(MorrisAnalysis):
         }
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_sensitivity_analysis() -> MockSensitivityAnalysis:
     """Return an instance of MockSensitivityAnalysis."""
     with concretize_classes(MockSensitivityAnalysis):
         return MockSensitivityAnalysis()
 
 
-@pytest.fixture
+@pytest.fixture()
 def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
     """Return an instance of SecondMockSensitivityAnalysis."""
     with concretize_classes(SecondMockSensitivityAnalysis):
@@ -220,7 +226,7 @@ BARPLOT_TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    ("kwargs", "baseline_images"),
     BARPLOT_TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=BARPLOT_TEST_PARAMETERS.keys(),
@@ -244,7 +250,7 @@ RADAR_TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    ("kwargs", "baseline_images"),
     RADAR_TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=RADAR_TEST_PARAMETERS.keys(),
@@ -264,7 +270,7 @@ COMPARISON_TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "use_bar_plot, baseline_images",
+    ("use_bar_plot", "baseline_images"),
     COMPARISON_TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=COMPARISON_TEST_PARAMETERS.keys(),
@@ -354,11 +360,12 @@ ONE_D_FIELD_TEST_PARAMETERS = {
         ["1d_field_inputs_standardize"],
         "out",
     ),
+    "properties": ({"properties": {"xlabel": "foo"}}, ["1d_field_properties"], "out"),
 }
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images, output",
+    ("kwargs", "baseline_images", "output"),
     ONE_D_FIELD_TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=ONE_D_FIELD_TEST_PARAMETERS.keys(),
@@ -392,7 +399,7 @@ TWO_D_FIELD_TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    ("kwargs", "baseline_images"),
     TWO_D_FIELD_TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TWO_D_FIELD_TEST_PARAMETERS.keys(),

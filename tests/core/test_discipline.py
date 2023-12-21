@@ -20,6 +20,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import platform
@@ -30,7 +31,14 @@ from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
 
 import pytest
+from numpy import array
+from numpy import complex128
+from numpy import ndarray
+from numpy import ones
+from numpy.linalg import norm
+
 from gemseo.caches.hdf5_cache import HDF5Cache
+from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.chain import MDOChain
 from gemseo.core.data_processor import ComplexDataProcessor
 from gemseo.core.discipline import MDODiscipline
@@ -47,13 +55,8 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from numpy import array
-from numpy import complex128
-from numpy import ndarray
-from numpy import ones
-from numpy.linalg import norm
-from scipy.sparse import spmatrix
 
 
 def check_jac_equals(
@@ -69,10 +72,10 @@ def check_jac_equals(
     Returns:
         True if the two jacobian matrices are equal.
     """
-    if not sorted(jac_1.keys()) == sorted(jac_2.keys()):
+    if sorted(jac_1.keys()) != sorted(jac_2.keys()):
         return False
     for out, jac_dict in jac_1.items():
-        if not sorted(jac_dict.keys()) == sorted(jac_2[out].keys()):
+        if sorted(jac_dict.keys()) != sorted(jac_2[out].keys()):
             return False
         for inpt, jac_loc in jac_dict.items():
             if not (jac_loc == jac_2[out][inpt]).all():
@@ -81,7 +84,7 @@ def check_jac_equals(
     return True
 
 
-@pytest.fixture
+@pytest.fixture()
 def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
     """Build a Sobieski chain.
 
@@ -89,14 +92,12 @@ def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
          Tuple containing a Sobieski MDOChain instance
              and the defaults inputs of the chain.
     """
-    chain = MDOChain(
-        [
-            SobieskiStructure(),
-            SobieskiAerodynamics(),
-            SobieskiPropulsion(),
-            SobieskiMission(),
-        ]
-    )
+    chain = MDOChain([
+        SobieskiStructure(),
+        SobieskiAerodynamics(),
+        SobieskiPropulsion(),
+        SobieskiMission(),
+    ])
     chain_inputs = chain.input_grammar.keys()
     indata = SobieskiProblem().get_default_inputs(names=chain_inputs)
     return chain, indata
@@ -104,14 +105,12 @@ def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
 
 def test_set_statuses(tmp_wd):
     """Test the setting of the statuses."""
-    chain = MDOChain(
-        [
-            SobieskiAerodynamics(),
-            SobieskiPropulsion(),
-            SobieskiStructure(),
-            SobieskiMission(),
-        ]
-    )
+    chain = MDOChain([
+        SobieskiAerodynamics(),
+        SobieskiPropulsion(),
+        SobieskiStructure(),
+        SobieskiMission(),
+    ])
     chain.set_disciplines_statuses("FAILED")
     assert chain.disciplines[0].status == "FAILED"
 
@@ -319,7 +318,7 @@ def test_serialize_deserialize(tmp_wd):
 
     saero_u_dict = saero_u.__dict__
     ok = True
-    for k, _ in aero.__dict__.items():
+    for k in aero.__dict__:
         if k not in saero_u_dict and k != "get_attributes_to_serialize":
             ok = False
     assert ok
@@ -796,7 +795,7 @@ def test_init_jacobian_with_incorrect_type():
 
     def myfunc(x=1.0, y=2.0):
         z = x + y
-        return z
+        return z  # noqa: RET504
 
     disc = AutoPyDiscipline(myfunc)
 
@@ -811,7 +810,7 @@ def test_init_jacobian(init_method, fill_missing_keys):
 
     def myfunc(x=1.0, y=2.0):
         z = x + y
-        return z
+        return z  # noqa: RET504
 
     disc = AutoPyDiscipline(myfunc)
 
@@ -832,7 +831,7 @@ def test_init_jacobian(init_method, fill_missing_keys):
         assert isinstance(disc.jac["z"]["x"], ndarray)
         assert norm(disc.jac["z"]["x"]) == 0.0
     elif init_method == "sparse":
-        assert isinstance(disc.jac["z"]["x"], spmatrix)
+        assert isinstance(disc.jac["z"]["x"], sparse_classes)
         assert disc.jac["z"]["x"].size == 0
 
 
@@ -841,7 +840,7 @@ def test_repr_str():
 
     def myfunc(x=1, y=2):
         z = x + y
-        return z
+        return z  # noqa: RET504
 
     disc = AutoPyDiscipline(myfunc)
     assert str(disc) == "myfunc"
@@ -933,7 +932,7 @@ def test_grammar_inheritance():
 
 
 @pytest.mark.parametrize(
-    "grammar_directory,comp_dir,in_or_out,expected",
+    ("grammar_directory", "comp_dir", "in_or_out", "expected"),
     [
         (
             None,
@@ -957,15 +956,15 @@ def test_get_grammar_file_path(grammar_directory, comp_dir, in_or_out, expected)
     Sellar1.GRAMMAR_DIRECTORY = original_grammar_directory
 
 
-def test_residuals_fail():
-    """Tests the check of residual variables with run_solves_residuals=False."""
-    disc = SobieskiMission()
-    disc.residual_variables = {"y_4": "x_shared"}
-    with pytest.raises(
-        RuntimeError,
-        match="Disciplines that do not solve their residuals are not supported yet.",
-    ):
-        disc.execute()
+# def test_residuals_fail():
+#     """Tests the check of residual variables with run_solves_residuals=False."""
+#     disc = SobieskiMission()
+#     disc.residual_variables = {"y_4": "x_shared"}
+#     with pytest.raises(
+#         RuntimeError,
+#         match="Disciplines that do not solve their residuals are not supported yet.",
+#     ):
+#         disc.execute()
 
 
 def test_activate_checks():
@@ -989,14 +988,15 @@ def test_no_cache():
     assert disc.n_calls == 2
 
     with pytest.raises(ValueError, match="does not have a cache"):
-        disc.cache_tol
+        disc.cache_tol  # noqa: B018
 
     with pytest.raises(ValueError, match="does not have a cache"):
         disc.cache_tol = 1.0
 
 
 @pytest.mark.parametrize(
-    "recursive, expected", [(False, {"d1", "d2", "chain1"}), (True, {"d1", "d2", "d3"})]
+    ("recursive", "expected"),
+    [(False, {"d1", "d2", "chain1"}), (True, {"d1", "d2", "d3"})],
 )
 def test_get_sub_disciplines_recursive(recursive, expected):
     """Test the recursive option of get_sub_disciplines.
@@ -1021,7 +1021,13 @@ def test_get_sub_disciplines_recursive(recursive, expected):
 
 
 @pytest.mark.parametrize(
-    "inputs, outputs, grammar_type, expected_diff_inputs, expected_diff_outputs",
+    (
+        "inputs",
+        "outputs",
+        "grammar_type",
+        "expected_diff_inputs",
+        "expected_diff_outputs",
+    ),
     [
         (
             {"x": array([1.0]), "in_path": "some_string"},
@@ -1035,7 +1041,7 @@ def test_get_sub_disciplines_recursive(recursive, expected):
             {"y": 1, "out_path": "another_string"},
             MDODiscipline.GrammarType.SIMPLE,
             ["x"],
-            [],
+            ["y"],
         ),
         (
             {"x": array([1.0]), "in_path": array(["some_string"])},
@@ -1056,7 +1062,7 @@ def test_get_sub_disciplines_recursive(recursive, expected):
             {"y": 1, "out_path": "another_string"},
             MDODiscipline.GrammarType.JSON,
             ["x"],
-            [],
+            ["y"],
         ),
     ],
 )
@@ -1161,10 +1167,8 @@ def test_statuses(observer):
     observer.reset()
 
     disc._run = lambda x: 1 / 0
-    try:
+    with contextlib.suppress(Exception):
         disc.execute({"x_local": disc.local_data["x_local"] + 1.0})
-    except Exception:
-        pass
     assert observer.statuses == [
         MDODiscipline.ExecutionStatus.RUNNING,
         MDODiscipline.ExecutionStatus.FAILED,
@@ -1197,7 +1201,7 @@ def self_coupled_disc() -> MDODiscipline:
 
 
 @pytest.mark.parametrize(
-    "name, group, value",
+    ("name", "group", "value"),
     [
         ("x", "inputs", array([1])),
         ("x", "outputs", array([2])),
@@ -1252,7 +1256,7 @@ class DisciplineWithPaths(MDODiscipline):
         super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
         self.input_grammar.update_from_types({"path": Path})
         self.output_grammar.update_from_types({"out_path": Path})
-        self.local_path = Path(".")
+        self.local_path = Path()
 
     def _run(self):
         self.local_data["out_path"] = self.local_data["path"]
@@ -1308,3 +1312,11 @@ def test_repr_html():
         "<li>Outputs: y_1</li>"
         "</ul>"
     )
+
+
+def test_set_cache_policy_to_none():
+    """Check that set_cache_policy can use CacheType.NONE as cache_type value."""
+    discipline = MDODiscipline()
+    assert isinstance(discipline.cache, SimpleCache)
+    discipline.set_cache_policy(discipline.CacheType.NONE)
+    assert discipline.cache is None

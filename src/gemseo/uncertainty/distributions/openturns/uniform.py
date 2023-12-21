@@ -17,23 +17,21 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class to create a uniform distribution from the OpenTURNS library.
+"""The OpenTURNS-based uniform distribution."""
 
-This class inherits from :class:`.OTDistribution`.
-"""
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 
 class OTUniformDistribution(OTDistribution):
-    """Create a uniform distribution.
+    """The OpenTURNS-based uniform distribution.
 
     Examples:
         >>> from gemseo.uncertainty.distributions.openturns.uniform import (
         ...     OTUniformDistribution
         >>> )
-        >>> distribution = OTUniformDistribution('x', -1, 1)
+        >>> distribution = OTUniformDistribution("x", -1, 1)
         >>> print(distribution)
         Uniform(lower=-1, upper=1)
     """
@@ -54,13 +52,12 @@ class OTUniformDistribution(OTDistribution):
             minimum: The minimum of the uniform random variable.
             maximum: The maximum of the uniform random variable.
         """  # noqa: D205,D212,D415
-        standard_parameters = {self._LOWER: minimum, self._UPPER: maximum}
         super().__init__(
             variable,
             "Uniform",
             (minimum, maximum),
             dimension,
-            standard_parameters,
+            {self._LOWER: minimum, self._UPPER: maximum},
             transformation,
             lower_bound,
             upper_bound,

@@ -13,10 +13,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Comparison tools for testing."""
+
 from __future__ import annotations
 
 import contextlib
-import sys
 from contextlib import nullcontext
 from typing import Any
 from typing import Final
@@ -36,9 +36,6 @@ def image_comparison(*args: Any, **kwargs: Any) -> None:
         kwargs["style"] = "default"
     if "extensions" not in kwargs:
         kwargs["extensions"] = ["png"]
-    tol_py38 = kwargs.pop("tol_py38", None)
-    if tol_py38 is not None and sys.version_info < (3, 9):
-        kwargs["tol"] = tol_py38
     return mpl_image_comparison(*args, **kwargs)
 
 
@@ -69,6 +66,7 @@ class do_not_raise(nullcontext):  # noqa: N801
         """
         Args:
             *args: The arguments to match the signature of :func:`pytest.raises`.
-            **kwargs: The keyword arguments to match the signature of :func:`pytest.raises`.
+            **kwargs: The keyword arguments to match the signature of
+                :func:`pytest.raises`.
         """  # noqa:D205 D212 D415
         super().__init__()

@@ -21,18 +21,22 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pytest
+from numpy import array
+from numpy import isclose
+
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.mda.mda_chain import MDAChain
-from numpy import array
-from numpy import isclose
-from numpy import ones
+from gemseo.problems.scalable.linear.disciplines_generator import (
+    create_disciplines_from_desc,
+)
+from gemseo.problems.sellar.sellar import get_inputs
 
 from .test_mda import analytic_disciplines_from_desc
 
@@ -52,7 +56,7 @@ DISC_DESCR_16D = [
     ("M", ["p", "s"], ["r"]),
     ("N", ["r"], ["t", "u"]),
     ("O", ["q", "t"], ["s", "v"]),
-    ("P", ["u", "v", "z"], []),
+    ("P", ["u", "v", "z"], ["xx"]),
 ]
 
 
@@ -113,12 +117,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplin
     linear_solver_options = {"tol": 1e-6}
     mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
     mda_chain.linear_solver_options = linear_solver_options
-    input_data = {
-        "x_local": np.array([0.7]),
-        "x_shared": np.array([1.97763897, 0.2]),
-        "y_0": np.array([1.0]),
-        "y_1": np.array([1.0]),
-    }
+    input_data = get_inputs()
     inputs = ["x_local", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     mda_chain.add_differentiated_inputs(inputs)
@@ -134,12 +133,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplin
 def test_sellar(tmp_wd, sellar_disciplines):
     """"""
     mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
-    input_data = {
-        "x_local": np.array([0.7]),
-        "x_shared": np.array([1.97763897, 0.2]),
-        "y_0": np.array([1.0]),
-        "y_1": np.array([1.0]),
-    }
+    input_data = get_inputs()
     inputs = ["x_local", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     assert mda_chain.check_jacobian(
@@ -165,36 +159,19 @@ def test_sellar_chain_linearize(sellar_disciplines):
         warm_start=True,
     )
 
-    ok = mda_chain.check_jacobian(
+    assert mda_chain.check_jacobian(
         derr_approx=MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,
         inputs=inputs,
         outputs=outputs,
         step=1e-6,
         threshold=1e-5,
     )
-    assert ok
 
     assert mda_chain.local_data[mda_chain.RESIDUALS_NORM][0] < 1e-13
 
 
-def generate_disciplines_from_desc(
-    description_list, grammar_type=MDODiscipline.GrammarType.JSON
-):
-    disciplines = []
-    data = ones(1)
-    for desc in description_list:
-        name = desc[0]
-        input_d = {k: data for k in desc[1]}
-        output_d = {k: data for k in desc[2]}
-        disc = MDODiscipline(name)
-        disc.input_grammar.update_from_data(input_d)
-        disc.output_grammar.update_from_data(output_d)
-        disciplines.append(disc)
-    return disciplines
-
-
 def test_16_disc_parallel():
-    disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
+    disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
     MDAChain(disciplines)
 
 
@@ -202,7 +179,7 @@ def test_16_disc_parallel():
     "in_gtype", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
 def test_simple_grammar_type(in_gtype):
-    disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
+    disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
 
     assert isinstance(mda.input_grammar, SimpleGrammar)
@@ -239,12 +216,10 @@ def test_mix_sim_jsongrammar(sellar_disciplines):
 )
 def test_self_coupled_mda_jacobian(matrix_type, linearization_mode):
     """Tests a particular coupling structure."""
-    disciplines = analytic_disciplines_from_desc(
-        (
-            {"c1": "x+1.-0.2*c1"},
-            {"obj": "x+c1"},
-        )
-    )
+    disciplines = analytic_disciplines_from_desc((
+        {"c1": "x+1.-0.2*c1"},
+        {"obj": "x+c1"},
+    ))
     mda = MDAChain(disciplines, tolerance=1e-14, linear_solver_tolerance=1e-14)
     mda.matrix_type = matrix_type
     assert mda.check_jacobian(
@@ -303,14 +278,12 @@ def test_parallel_doe(generate_parallel_doe_data):
 
 def test_mda_chain_self_coupling():
     """Test that a nested MDAChain is not detected as a self-coupled discipline."""
-    disciplines = analytic_disciplines_from_desc(
-        (
-            {"y1": "x"},
-            {"c1": "y1+x+0.2*c2"},
-            {"c2": "y1+x+1.-0.3*c1"},
-            {"obj": "x+c1+c2"},
-        )
-    )
+    disciplines = analytic_disciplines_from_desc((
+        {"y1": "x"},
+        {"c1": "y1+x+0.2*c2"},
+        {"c2": "y1+x+1.-0.3*c1"},
+        {"obj": "x+c1+c2"},
+    ))
     mdachain_lower = MDAChain(disciplines, name="mdachain_lower")
     mdachain_root = MDAChain([mdachain_lower], name="mdachain_root")
 
@@ -321,18 +294,16 @@ def test_mda_chain_self_coupling():
 def test_mdachain_parallelmdochain():
     """Test that the MDAChain creates MDOParallelChain for parallel tasks, if
     requested."""
-    disciplines = analytic_disciplines_from_desc(
-        (
-            {"a": "x"},
-            {"y1": "x1", "b": "a+1"},
-            {"x1": "1.-0.3*y1"},
-            {"y2": "x2", "c": "a+2"},
-            {"x2": "1.-0.3*y2"},
-            {"obj1": "x1+x2"},
-            {"obj2": "b+c"},
-            {"obj": "obj1+obj2"},
-        )
-    )
+    disciplines = analytic_disciplines_from_desc((
+        {"a": "x"},
+        {"y1": "x1", "b": "a+1"},
+        {"x1": "1.-0.3*y1"},
+        {"y2": "x2", "c": "a+2"},
+        {"x2": "1.-0.3*y2"},
+        {"obj1": "x1+x2"},
+        {"obj2": "b+c"},
+        {"obj": "obj1+obj2"},
+    ))
     mdachain = MDAChain(
         disciplines, name="mdachain_lower", mdachain_parallelize_tasks=True
     )
@@ -368,18 +339,16 @@ PARALLEL_OPTIONS = [
 @pytest.mark.parametrize("parallel_options", PARALLEL_OPTIONS)
 def test_mdachain_parallelmdochain_options(parallel_options):
     """Test the parallel MDO chain in a MDAChain with various arguments."""
-    disciplines = analytic_disciplines_from_desc(
-        (
-            {"a": "x"},
-            {"y1": "x1", "b": "a+1"},
-            {"x1": "1.-0.3*y1"},
-            {"y2": "x2", "c": "a+2"},
-            {"x2": "1.-0.3*y2"},
-            {"obj1": "x1+x2"},
-            {"obj2": "b+c"},
-            {"obj": "obj1+obj2"},
-        )
-    )
+    disciplines = analytic_disciplines_from_desc((
+        {"a": "x"},
+        {"y1": "x1", "b": "a+1"},
+        {"x1": "1.-0.3*y1"},
+        {"y2": "x2", "c": "a+2"},
+        {"x2": "1.-0.3*y2"},
+        {"obj1": "x1+x2"},
+        {"obj2": "b+c"},
+        {"obj": "obj1+obj2"},
+    ))
     mdachain_parallelize_tasks = parallel_options["mdachain_parallelize_tasks"]
     mdo_parallel_chain_options = parallel_options["mdachain_parallel_options"]
     mdachain = MDAChain(
@@ -408,3 +377,33 @@ def test_max_mda_iter(sellar_disciplines):
     assert mda_chain.max_mda_iter == 10
     for mda in mda_chain.inner_mdas:
         assert mda.max_mda_iter == 10
+
+
+def test_initialize_defaults():
+    """Test the automated initialization of the default_inputs."""
+    disciplines = create_disciplines_from_desc([
+        ("A", ["x", "y"], ["z"]),
+        ("B", ["a", "z"], ["y"]),
+    ])
+    del disciplines[0].default_inputs["y"]
+    chain = MDAChain(disciplines, initialize_defaults=False)
+    with pytest.raises(InvalidDataError, match="Missing required names: y."):
+        chain.execute()
+
+    MDAChain(disciplines, initialize_defaults=True).execute()
+
+    del disciplines[1].default_inputs["z"]
+    chain = MDAChain(disciplines, initialize_defaults=True)
+    with pytest.raises(
+        ValueError,
+        match="Cannot compute the inputs a, x, y, z, "
+        "for the following disciplines A, B.",
+    ):
+        chain.execute()
+
+    chain = MDAChain(disciplines, initialize_defaults=True)
+    assert "z" not in chain.default_inputs
+    chain.execute({"z": array([0])})
+    # Tests that the default inputs are well udapted
+    assert "z" in chain.default_inputs
+    chain.execute({"z": array([2])})

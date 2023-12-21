@@ -18,13 +18,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Calibration of a machine learning algorithm.
 
-A machine learning algorithm depends on hyper-parameters, e.g. the number of clusters for
+A machine learning algorithm depends on hyper-parameters,
+e.g. the number of clusters for
 a clustering algorithm, the regularization constant for a regression model, the kernel
 for a Gaussian process regression, ... Its ability to generalize the information learned
 during the training stage, and thus to avoid over-fitting, which is an over-reliance on
 the learning data set, depends on the values of these hyper-parameters. Thus, the hyper-
 parameters minimizing the learning quality measure are rarely those minimizing the
-generalization one. Classically, the generalization one decreases before growing again as
+generalization one.
+Classically, the generalization one decreases before growing again as
 the model becomes more complex, while the learning error keeps decreasing. This
 phenomenon is called the curse of dimensionality.
 
@@ -37,28 +39,33 @@ which is a discipline (:class:`.MDODiscipline`) built from a machine learning al
 measure and the machine learning algorithm. The inputs of this discipline are hyper-
 parameters of the machine learning algorithm while the output is the quality criterion.
 """
+
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import argmin
 from numpy import array
 from numpy import ndarray
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.core.scenario import Scenario
-from gemseo.core.scenario import ScenarioInputDataType
-from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.quality_measures.quality_measure import MeasureOptionsType
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.scenario import Scenario
+    from gemseo.core.scenario import ScenarioInputDataType
+    from gemseo.datasets.dataset import Dataset
 
 
 class MLAlgoAssessor(MDODiscipline):
@@ -100,7 +107,7 @@ class MLAlgoAssessor(MDODiscipline):
         dataset: Dataset,
         parameters: Iterable[str],
         measure: type[MLQualityMeasure],
-        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: B950
+        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
         measure_options: MeasureOptionsType | None = None,
         transformer: TransformerType = MLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
@@ -134,7 +141,7 @@ class MLAlgoAssessor(MDODiscipline):
 
         Raises:
             ValueError: If the measure option "multioutput" is True.
-        """
+        """  # noqa: D205 D212
         super().__init__()
         self.input_grammar.update_from_names(parameters)
         self.output_grammar.update_from_names([self.CRITERION, self.LEARNING])
@@ -164,19 +171,19 @@ class MLAlgoAssessor(MDODiscipline):
             if len(inputs[index]) == 1:
                 inputs[index] = inputs[index][0]
         self.parameters.update(inputs)
-        factory = MLAlgoFactory()
-        algo = factory.create(
+        algo = MLAlgoFactory().create(
             self.algo, data=self.data, transformer=self.transformer, **self.parameters
         )
         algo.learn()
         measure = self.measure(algo)
-        learning = measure.compute_learning_measure(multioutput=False)
-        evaluate = getattr(
+        compute_criterion = getattr(
             measure,
             measure.EvaluationFunctionName[self.__measure_evaluation_method_name],
         )
-        criterion = evaluate(**self.measure_options)
-        self.store_local_data(criterion=array([criterion]), learning=array([learning]))
+        self.store_local_data(
+            criterion=array([compute_criterion(**self.measure_options)]),
+            learning=array([measure.compute_learning_measure(multioutput=False)]),
+        )
         self.algos.append(algo)
 
 
@@ -245,7 +252,7 @@ class MLAlgoCalibration:
                 to all the variables of this group.
                 If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
             **algo_options: The options of the machine learning algorithm.
-        """
+        """  # noqa: D205 D212
         disc = MLAlgoAssessor(
             algo,
             dataset,
@@ -276,33 +283,26 @@ class MLAlgoCalibration:
         Args:
             input_data: The driver properties.
         """
-        doe_factory = DOEFactory()
-
-        if doe_factory.is_available(input_data["algo"]):
-            self.scenario = DOEScenario(
-                [self.algo_assessor],
-                "DisciplinaryOpt",
-                self.algo_assessor.CRITERION,
-                self.calibration_space,
-                maximize_objective=self.maximize_objective,
-            )
+        if DOEFactory().is_available(input_data["algo"]):
+            cls = DOEScenario
         else:
-            self.scenario = MDOScenario(
-                [self.algo_assessor],
-                "DisciplinaryOpt",
-                self.algo_assessor.CRITERION,
-                self.calibration_space,
-                maximize_objective=self.maximize_objective,
-            )
+            cls = MDOScenario
+
+        self.scenario = cls(
+            [self.algo_assessor],
+            "DisciplinaryOpt",
+            self.algo_assessor.CRITERION,
+            self.calibration_space,
+            maximize_objective=self.maximize_objective,
+        )
         self.scenario.add_observable(self.algo_assessor.LEARNING)
         self.scenario.execute(input_data)
-        x_opt = self.scenario.design_space.get_current_value(as_dict=True)
-        f_opt = self.scenario.optimization_result.f_opt
         self.dataset = self.scenario.to_dataset(opt_naming=False)
-        algo_opt = self.algos[argmin(self.get_history(self.algo_assessor.CRITERION))]
-        self.optimal_parameters = x_opt
-        self.optimal_criterion = f_opt
-        self.optimal_algorithm = algo_opt
+        self.optimal_parameters = self.scenario.optimization_result.x_opt_as_dict
+        self.optimal_criterion = self.scenario.optimization_result.f_opt
+        self.optimal_algorithm = self.algos[
+            argmin(self.get_history(self.algo_assessor.CRITERION))
+        ]
 
     def get_history(
         self,
@@ -319,8 +319,8 @@ class MLAlgoCalibration:
         if self.dataset is not None:
             if name == self.algo_assessor.CRITERION and self.maximize_objective:
                 return -self.dataset.get_view(variable_names="-" + name).to_numpy()
-            else:
-                return self.dataset.get_view(variable_names=name).to_numpy()
+            return self.dataset.get_view(variable_names=name).to_numpy()
+        return None
 
     @property
     def algos(self) -> MLAlgo:

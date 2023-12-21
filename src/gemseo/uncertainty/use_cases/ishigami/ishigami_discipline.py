@@ -13,15 +13,19 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """The Ishigami function as a discipline."""
+
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import array
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.use_cases.ishigami.functions import compute_gradient
 from gemseo.uncertainty.use_cases.ishigami.functions import compute_output
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class IshigamiDiscipline(MDODiscipline):
@@ -38,9 +42,9 @@ class IshigamiDiscipline(MDODiscipline):
         super().__init__()
         self.input_grammar.update_from_names(["x1", "x2", "x3"])
         self.output_grammar.update_from_names(["y"])
-        self.default_inputs.update(
-            {name: array([0.0]) for name in self.input_grammar.names}
-        )
+        self.default_inputs.update({
+            name: array([0.0]) for name in self.input_grammar.names
+        })
 
     def _run(self) -> None:
         self.store_local_data(y=array([compute_output(self.get_inputs_asarray())]))

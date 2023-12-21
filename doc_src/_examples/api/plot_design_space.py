@@ -27,13 +27,15 @@ design space, which is a key element to represent the space of parameters on
 which a scenario will evaluate a list of disciplines.
 
 """
+
 from __future__ import annotations
+
+from numpy import array
 
 from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import read_design_space
 from gemseo import write_design_space
-from numpy import array
 
 configure_logger()
 

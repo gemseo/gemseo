@@ -18,19 +18,24 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to store only one entry."""
+
 from __future__ import annotations
 
-from typing import Generator
-from typing import Mapping
+from typing import TYPE_CHECKING
 
-from numpy import ndarray
-
+from gemseo.core.cache import DATA_COMPARATOR
 from gemseo.core.cache import AbstractCache
 from gemseo.core.cache import CacheEntry
-from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
-from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from collections.abc import Mapping
+
+    from numpy import ndarray
+
+    from gemseo.core.discipline_data import Data
 
 
 class SimpleCache(AbstractCache):
@@ -66,18 +71,6 @@ class SimpleCache(AbstractCache):
     def __len__(self) -> int:
         return 1 if self.__inputs else 0
 
-    def __cache_inputs(self, input_data: Data) -> None:
-        """Cache the input data.
-
-        Args:
-            input_data: The input data to cache.
-        """
-        cached_input_data = deepcopy_dict_of_arrays(input_data)
-        if not self.__is_cached(cached_input_data):
-            self.__inputs = cached_input_data
-            self.__outputs = {}
-            self.__jacobian = {}
-
     def __is_cached(
         self,
         input_data: Data,
@@ -90,18 +83,24 @@ class SimpleCache(AbstractCache):
         Returns:
             Whether the input data is cached.
         """
-        cached_input_data = self.__inputs
-        if not cached_input_data:
-            return False
-        return compare_dict_of_arrays(input_data, cached_input_data, self.tolerance)
+        return self.__inputs and DATA_COMPARATOR(
+            input_data, self.__inputs, self.tolerance
+        )
 
     def cache_outputs(  # noqa:D102
         self,
         input_data: Data,
         output_data: Data,
     ) -> None:
-        self.__cache_inputs(input_data)
+        if self.__is_cached(input_data):
+            if not self.__outputs:
+                self.__outputs = deepcopy_dict_of_arrays(output_data)
+            return
+
+        self.__inputs = deepcopy_dict_of_arrays(input_data)
         self.__outputs = deepcopy_dict_of_arrays(output_data)
+        self.__jacobian = {}
+
         if not self._output_names:
             self._output_names = sorted(output_data.keys())
 
@@ -118,8 +117,14 @@ class SimpleCache(AbstractCache):
         input_data: Data,
         jacobian_data: JacobianData,
     ) -> None:
-        self.__cache_inputs(input_data)
+        if self.__is_cached(input_data):
+            if not self.__jacobian:
+                self.__jacobian = jacobian_data
+            return
+
+        self.__inputs = deepcopy_dict_of_arrays(input_data)
         self.__jacobian = jacobian_data
+        self.__outputs = {}
 
     @property
     def last_entry(self) -> CacheEntry:  # noqa:D102

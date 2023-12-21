@@ -25,6 +25,7 @@ Parameter space
 In this example,
 we will see the basics of :class:`.ParameterSpace`.
 """
+
 from __future__ import annotations
 
 from gemseo import configure_logger
@@ -46,17 +47,59 @@ parameter_space = ParameterSpace()
 # %%
 # Then, we can add either deterministic variables
 # from their lower and upper bounds
-# (use :meth:`.ParameterSpace.add_variable`)
-# or uncertain variables from their distribution names and parameters
-# (use :meth:`.ParameterSpace.add_random_variable`)
+# (use :meth:`.ParameterSpace.add_variable`):
 parameter_space.add_variable("x", l_b=-2.0, u_b=2.0)
+
+# %%
+# or uncertain variables from their distribution names and parameters
+# (use :meth:`.ParameterSpace.add_random_variable`):
 parameter_space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
 parameter_space
 
 # %%
+# .. warning::
+#
+#    We cannot mix probability distributions from different families,
+#    e.g. an :class:`.OTDistribution` and a :class:`.SPDistribution`.
+#
 # We can check that the variables *x* and *y* are implemented
-# as deterministic and deterministic variables respectively:
+# as deterministic and uncertain variables respectively:
 parameter_space.is_deterministic("x"), parameter_space.is_uncertain("y")
+
+# %%
+# Note that when GEMSEO does not offer a class for the SciPy distribution,
+# we can use the generic GEMSEO class :class:`.SPDistribution`
+# to create any SciPy distribution
+# by setting ``interfaced_distribution`` to its SciPy name
+# and ``parameters`` as a dictionary of SciPy parameter names and values
+# (`see the documentation of SciPy
+# <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.norm.html>`__).
+
+# parameter_space.add_random_variable(
+#     "y",
+#     "SPDistribution",
+#     interfaced_distribution="norm",
+#     parameters={"loc": 1.0, "scale": 2.0},
+# )
+
+# %%
+# A similar procedure can be followed
+# for OpenTURNS distributions for which
+# GEMSEO does not offer a class directly.
+# We can use the generic GEMSEO class :class:`.OTDistribution`
+# to create any OpenTURNS distribution
+# by setting ``interfaced_distribution`` to its OpenTURNS name
+# and ``parameters`` as a tuple of OpenTURNS parameter values
+# (`see the documentation of OpenTURNS
+# <https://openturns.github.io/openturns/latest/user_manual/_generated/
+# openturns.Normal.html#openturns.Normal>`__).
+
+# parameter_space.add_random_variable(
+#     "y",
+#     "OTDistribution",
+#     interfaced_distribution="Normal",
+#     parameters=(1.0, 2.0),
+# )
 
 # %%
 # Sample from the parameter space

@@ -18,19 +18,25 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for RegressionModelFactory class in gemseo.mlearning.regression.factory."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.factory import RegressionModelFactory
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 LEARNING_SIZE = 9
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})

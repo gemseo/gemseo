@@ -33,33 +33,35 @@ as relevant as possible in order to reach as soon as possible the optimum.
 These families are implemented in :class:`.DOELibrary`
 and :class:`.OptimizationLibrary`.
 """
+
 from __future__ import annotations
 
 import logging
+from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
 from time import time
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
-from typing import List
+from typing import Literal
 from typing import Union
+from typing import overload
 
 from numpy import ndarray
-from numpy import ones
-from numpy import where
-from numpy import zeros
 from strenum import StrEnum
 
+from gemseo.algos._progress_bars.custom_tqdm_progress_bar import LOGGER as TQDM_LOGGER
+from gemseo.algos._progress_bars.dummy_progress_bar import DummyProgressBar
+from gemseo.algos._progress_bars.progress_bar import ProgressBar
+from gemseo.algos._progress_bars.unsuffixed_progress_bar import UnsuffixedProgressBar
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription
 from gemseo.algos.algorithm_library import AlgorithmLibrary
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.progress_bar import ProgressBar
-from gemseo.algos.progress_bar import TqdmToLogger
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import FunctionIsNan
@@ -70,9 +72,14 @@ from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
+from gemseo.utils.logging_tools import OneLineLogging
 from gemseo.utils.string_tools import MultiLineString
 
-DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
+if TYPE_CHECKING:
+    from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
+    from gemseo.algos.design_space import DesignSpace
+
+DriverLibOptionType = Union[str, float, int, bool, list[str], ndarray]
 LOGGER = logging.getLogger(__name__)
 
 
@@ -88,7 +95,7 @@ class DriverDescription(AlgorithmDescription):
 
 
 class DriverLibrary(AlgorithmLibrary):
-    """Abstract class for library interfaces.
+    """Abstract class for driver library interfaces.
 
     Lists available methods in the library for the proposed problem to be solved.
 
@@ -121,44 +128,74 @@ class DriverLibrary(AlgorithmLibrary):
     EVAL_OBS_JAC_OPTION = "eval_obs_jac"
     MAX_DS_SIZE_PRINT = 40
 
+    _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = False
+    """Whether the library support sparse Jacobians."""
+
+    __USE_ONE_LINE_PROGRESS_BAR: Final[str] = "use_one_line_progress_bar"
+    """The name of the option to use a one line progress bar."""
+
+    USE_ONE_LINE_PROGRESS_BAR: ClassVar[bool] = False
+    """Whether to use a one line progress bar."""
+
     _ACTIVATE_PROGRESS_BAR_OPTION_NAME = "activate_progress_bar"
     """The name of the option to activate the progress bar in the optimization log."""
-
-    activate_progress_bar: ClassVar[bool] = True
-    """Whether to activate the progress bar in the optimization log."""
 
     _COMMON_OPTIONS_GRAMMAR: ClassVar[JSONGrammar] = JSONGrammar(
         "DriverLibOptions",
         file_path=Path(__file__).parent / "driver_lib_options.json",
     )
 
+    __LOG_PROBLEM: Final[str] = "log_problem"
+    """The name of the option to log the definition and result of the problem."""
+
     __RESET_ITERATION_COUNTERS_OPTION: Final[str] = "reset_iteration_counters"
     """The name of the option to reset the iteration counters of the OptimizationProblem
     before each execution."""
+
+    activate_progress_bar: ClassVar[bool] = True
+    """Whether to activate the progress bar in the optimization log."""
+
+    # TODO: API: use 0.0 instead of None
+    _max_time: float | None
+    """The maximum duration of the execution."""
+
+    # TODO: API: use 0.0 instead of None
+    _start_time: float | None
+    """The time at which the execution begins."""
+
+    __iter: int
+    """The current iteration."""
+
+    __log_problem: bool
+    """Whether to log the definition and result of the problem."""
+
+    __max_iter: int
+    """The maximum number of iterations."""
+
+    __one_line_progress_bar: bool
+    """Whether to log the progress bar on a single line."""
+
+    __progress_bar: BaseProgressBar
+    """The progress bar used during the execution."""
 
     __reset_iteration_counters: bool
     """Whether to reset the iteration counters of the OptimizationProblem before each
     execution."""
 
-    __log_problem: bool
-    """Whether to log the definition and result of the problem."""
-
-    __LOG_PROBLEM: Final[str] = "log_problem"
-    """The name of the option to log the definition and result of the problem."""
+    problem: OptimizationProblem
+    """The optimization problem the driver library is bonded to."""
 
     def __init__(self) -> None:  # noqa:D107
-        # Library settings and check
         super().__init__()
-        self.__progress_bar = None
+        self.deactivate_progress_bar()
         self.__activate_progress_bar = self.activate_progress_bar
         self.__max_iter = 0
         self.__iter = 0
         self._start_time = None
         self._max_time = None
-        self.__message = None
-        self.__is_current_iteration_logged = True
         self.__reset_iteration_counters = True
         self.__log_problem = True
+        self.__one_line_progress_bar = False
 
     @classmethod
     def _get_unsuitability_reason(
@@ -172,12 +209,12 @@ class DriverLibrary(AlgorithmLibrary):
 
     def deactivate_progress_bar(self) -> None:
         """Deactivate the progress bar."""
-        self.__progress_bar = None
+        self.__progress_bar = DummyProgressBar()
 
     def init_iter_observer(
         self,
         max_iter: int,
-        message: str = "...",
+        message: str = "",
     ) -> None:
         """Initialize the iteration observer.
 
@@ -185,7 +222,7 @@ class DriverLibrary(AlgorithmLibrary):
 
         Args:
             max_iter: The maximum number of iterations.
-            message: The message to display at the beginning.
+            message: The message to display at the beginning of the progress bar status.
 
         Raises:
             ValueError: If ``max_iter`` is lower than one.
@@ -196,60 +233,18 @@ class DriverLibrary(AlgorithmLibrary):
         self.problem.current_iter = self.__iter = (
             0 if self.__reset_iteration_counters else self.problem.current_iter
         )
-        self.__message = message
         if self.__activate_progress_bar:
-            self.__progress_bar = ProgressBar(
-                total=max_iter,
-                desc=message,
-                ascii=False,
-                bar_format="{desc} {percentage:3.0f}%|{bar}{r_bar}",
-                file=TqdmToLogger(),
+            cls = ProgressBar if self.__log_problem else UnsuffixedProgressBar
+            self.__progress_bar = cls(
+                max_iter,
+                self.__iter,
+                self.problem,
+                message,
             )
-            self.__progress_bar.n = self.__iter
         else:
             self.deactivate_progress_bar()
 
         self._start_time = time()
-
-    def __set_progress_bar_objective_value(self, x_vect: ndarray | None) -> None:
-        """Set the objective value in the progress bar.
-
-        Args:
-            x_vect: The design variables values.
-                If ``None``, consider the objective at the last iteration.
-        """
-        if self.__log_problem:
-            if x_vect is None:
-                obj = self.problem.objective.last_eval
-            else:
-                obj = self.problem.database.get_function_value(
-                    self.problem.objective.name, x_vect
-                )
-
-        if self.__log_problem and obj is None:
-            self.__is_current_iteration_logged = not self.__is_current_iteration_logged
-            if self.__is_current_iteration_logged:
-                self.__progress_bar.n += 1
-                obj = "Not evaluated"
-        else:
-            self.__is_current_iteration_logged = True
-            self.__progress_bar.n += 1
-            if self.__log_problem:
-                # if maximization problem: take the opposite
-                if (
-                    not self.problem.minimize_objective
-                    and not self.problem.use_standardized_objective
-                ):
-                    obj = -obj
-
-                if isinstance(obj, ndarray) and len(obj) == 1:
-                    obj = obj[0]
-
-        if self.__is_current_iteration_logged:
-            if self.__log_problem:
-                self.__progress_bar.set_postfix(refresh=True, obj=obj)
-            else:
-                self.__progress_bar.set_postfix(refresh=True)
 
     def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
         """Iterate the progress bar, implement the stop criteria.
@@ -262,30 +257,17 @@ class DriverLibrary(AlgorithmLibrary):
             MaxTimeReached: If the elapsed time is greater than the maximum
                 execution time.
         """
-        # First check if the max_iter is reached and update the progress bar
-        if self.__progress_bar is not None and not self.__is_current_iteration_logged:
-            self.__set_progress_bar_objective_value(
-                self.problem.database.get_x_vect(self.problem.current_iter or -1)
-            )
+        self.__progress_bar.set_objective_value(None, True)
         self.__iter += 1
         self.problem.current_iter = self.__iter
-        if self._max_time > 0:
-            delta_t = time() - self._start_time
-            if delta_t > self._max_time:
-                raise MaxTimeReached()
+        if 0 < self._max_time < time() - self._start_time:
+            raise MaxTimeReached
 
-        if self.__progress_bar is not None:
-            self.__set_progress_bar_objective_value(x_vect)
+        self.__progress_bar.set_objective_value(x_vect)
 
     def finalize_iter_observer(self) -> None:
         """Finalize the iteration observer."""
-        if self.__progress_bar is not None:
-            if not self.__is_current_iteration_logged:
-                self.__set_progress_bar_objective_value(
-                    self.problem.database.get_x_vect(self.problem.current_iter or -1)
-                )
-            self.__progress_bar.leave = False
-            self.__progress_bar.close()
+        self.__progress_bar.finalize_iter_observer()
 
     def _pre_run(
         self,
@@ -304,20 +286,6 @@ class DriverLibrary(AlgorithmLibrary):
                 see the associated JSON file.
         """
         self._max_time = options.get(self.MAX_TIME, 0.0)
-        if self.__log_problem:
-            LOGGER.info("%s", problem)
-            if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
-                log = MultiLineString()
-                log.indent()
-                log.add("over the design space:")
-                for line in str(problem.design_space).split("\n")[1:]:
-                    log.add(line)
-                LOGGER.info("%s", log)
-                LOGGER.info(
-                    "Solving optimization problem with algorithm %s:", algo_name
-                )
-        else:
-            LOGGER.info("Running the algorithm %s:", algo_name)
 
     def _post_run(
         self,
@@ -352,8 +320,11 @@ class DriverLibrary(AlgorithmLibrary):
                 log = MultiLineString()
                 log.indent()
                 log.indent()
-                for line in str(problem.design_space).split("\n"):
+                log.add("Design space:")
+                log.indent()
+                for line in str(problem.design_space).split("\n")[1:]:
                     log.add(line)
+                log.dedent()
                 LOGGER.info("%s", log)
 
     def _check_integer_handling(
@@ -387,11 +358,11 @@ class DriverLibrary(AlgorithmLibrary):
                     "Execution may be forced setting the 'skip_int_check' "
                     "argument to 'True'.".format(self.algo_name)
                 )
-            else:
-                LOGGER.warning(
-                    "Forcing the execution of an algorithm that does not handle "
-                    "integer variables."
-                )
+
+            LOGGER.warning(
+                "Forcing the execution of an algorithm that does not handle "
+                "integer variables."
+            )
 
     def execute(
         self,
@@ -438,6 +409,10 @@ class DriverLibrary(AlgorithmLibrary):
         if activate_progress_bar is not None:
             self.__activate_progress_bar = activate_progress_bar
 
+        use_one_line_progress_bar = options.pop(
+            self.__USE_ONE_LINE_PROGRESS_BAR, self.USE_ONE_LINE_PROGRESS_BAR
+        )
+
         self.__reset_iteration_counters = options.pop(
             self.__RESET_ITERATION_COUNTERS_OPTION, True
         )
@@ -456,20 +431,43 @@ class DriverLibrary(AlgorithmLibrary):
             use_database=options.get(self.USE_DATABASE_OPTION, True),
             round_ints=options.get(self.ROUND_INTS_OPTION, True),
             eval_obs_jac=eval_obs_jac,
+            support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
         )
         problem.database.add_new_iter_listener(problem.execute_observables_callback)
         problem.database.add_new_iter_listener(self.new_iteration_callback)
-        try:  # Term criteria such as max iter or max_time can be triggered in pre_run
-            self._pre_run(problem, self.algo_name, **options)
-            result = self._run(**options)
-        except TerminationCriterion as error:
-            result = self._termination_criterion_raised(error)
+        if self.__log_problem:
+            LOGGER.info("%s", problem)
+            if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+                log = MultiLineString()
+                log.indent()
+                log.add("over the design space:")
+                log.indent()
+                for line in str(problem.design_space).split("\n")[1:]:
+                    log.add(line)
+                log.dedent()
+                LOGGER.info("%s", log)
+                LOGGER.info(
+                    "Solving optimization problem with algorithm %s:",
+                    self.algo_name,
+                )
+        else:
+            LOGGER.info("Running the algorithm %s:", self.algo_name)
+
+        with OneLineLogging(
+            TQDM_LOGGER
+        ) if use_one_line_progress_bar else nullcontext():
+            # Term criteria such as max iter or max_time can be triggered in pre_run
+            try:
+                self._pre_run(problem, self.algo_name, **options)
+                result = self._run(**options)
+            except TerminationCriterion as error:
+                result = self._termination_criterion_raised(error)
 
         result.objective_name = problem.objective.name
         result.design_space = problem.design_space
         self.finalize_iter_observer()
         problem.database.clear_listeners()
-        self._post_run(problem, algo_name, result, **options)
+        self._post_run(problem, self.algo_name, result, **options)
         return result
 
     def _process_specific_option(self, options, option_key: str) -> None:
@@ -525,48 +523,9 @@ class DriverLibrary(AlgorithmLibrary):
     def get_optimum_from_database(
         self, message=None, status=None
     ) -> OptimizationResult:
-        """Retrieve the optimum from the database and build an optimization."""
-        problem = self.problem
-        if len(problem.database) == 0:
-            return OptimizationResult(
-                optimizer_name=self.algo_name,
-                message=message,
-                status=status,
-                n_obj_call=0,
-            )
-        x_0 = problem.database.get_x_vect(1)
-        # compute the best feasible or infeasible point
-        f_opt, x_opt, is_feas, c_opt, c_opt_grad = problem.get_optimum()
-        if (
-            f_opt is not None
-            and not problem.minimize_objective
-            and not problem.use_standardized_objective
-        ):
-            f_opt = -f_opt
-            objective_name = problem.objective.original_name
-        else:
-            objective_name = problem.objective.name
-
-        if x_opt is None:
-            optimum_index = None
-        else:
-            optimum_index = problem.database.get_iteration(x_opt) - 1
-
-        return OptimizationResult(
-            x_0=x_0,
-            x_0_as_dict=problem.design_space.array_to_dict(x_0),
-            x_opt=x_opt,
-            x_opt_as_dict=problem.design_space.array_to_dict(x_opt),
-            f_opt=f_opt,
-            objective_name=objective_name,
-            optimizer_name=self.algo_name,
-            message=message,
-            status=status,
-            n_obj_call=problem.objective.n_calls,
-            is_feasible=is_feas,
-            constraint_values=c_opt,
-            constraints_grad=c_opt_grad,
-            optimum_index=optimum_index,
+        """Return the optimization result from the database."""
+        return OptimizationResult.from_optimization_problem(
+            self.problem, message=message, status=status, optimizer_name=self.algo_name
         )
 
     def requires_gradient(self, driver_name: str) -> bool:
@@ -583,33 +542,54 @@ class DriverLibrary(AlgorithmLibrary):
 
         return self.descriptions[driver_name].require_gradient
 
-    def get_x0_and_bounds_vects(self, normalize_ds):
-        """Return x0 and bounds.
+    @overload
+    def get_x0_and_bounds_vects(
+        self, normalize_ds: bool, as_dict: Literal[False] = False
+    ) -> tuple[ndarray, ndarray, ndarray]: ...
+
+    @overload
+    def get_x0_and_bounds_vects(
+        self, normalize_ds: bool, as_dict: Literal[True] = False
+    ) -> tuple[dict[str, ndarray], dict[str, ndarray], dict[str, ndarray]]: ...
+
+    # TODO: API: remove "_vects" from the following method name
+    # TODO: return the design space to be used by the solver instead of a tuple
+    def get_x0_and_bounds_vects(
+        self, normalize_ds: bool, as_dict: bool = False
+    ) -> (
+        tuple[ndarray, ndarray, ndarray]
+        | tuple[dict[str, ndarray], dict[str, ndarray], dict[str, ndarray]]
+    ):
+        """Return the initial design variable values and their lower and upper bounds.
 
         Args:
-            normalize_ds: Whether to normalize the input variables
-                that are not integers,
-                according to the normalization policy of the design space.
+            normalize_ds: Whether to normalize the design variables.
+            as_dict: Whether to return dictionaries instead of NumPy arrays.
 
         Returns:
-            The current value, the lower bounds and the upper bounds.
+            The initial values of the design variables,
+            their lower bounds,
+            and their upper bounds.
         """
-        design_space = self.problem.design_space
-        l_b = design_space.get_lower_bounds()
-        u_b = design_space.get_upper_bounds()
-
-        # remove normalization from options for algo
-        if normalize_ds:
-            norm_array = design_space.dict_to_array(design_space.normalize)
-            l_b = where(norm_array, zeros(norm_array.shape), l_b)
-            u_b = where(norm_array, ones(norm_array.shape), u_b)
-            current_x = self.problem.get_x0_normalized(cast_to_real=True)
-        else:
-            current_x = self.problem.design_space.get_current_value(
-                complex_to_real=True
+        space = self.problem.design_space
+        if not normalize_ds:
+            return (
+                space.get_current_value(None, True, as_dict),
+                space.get_lower_bounds(None, as_dict),
+                space.get_upper_bounds(None, as_dict),
             )
 
-        return current_x, l_b, u_b
+        current_value = self.problem.get_x0_normalized(True, as_dict)
+        lower_bounds = space.normalize_vect(space.get_lower_bounds())
+        upper_bounds = space.normalize_vect(space.get_upper_bounds())
+        if not as_dict:
+            return current_value, lower_bounds, upper_bounds
+
+        return (
+            current_value,
+            space.array_to_dict(lower_bounds),
+            space.array_to_dict(upper_bounds),
+        )
 
     def ensure_bounds(self, orig_func, normalize: bool = True):
         """Project the design vector onto the design space before execution.

@@ -24,11 +24,13 @@ Simple cache
 This example shows the manipulation of :class:`.SimpleCache` instances. This
 cache only stores the last inputs and outputs stored.
 """
+
 from __future__ import annotations
+
+from numpy import array
 
 from gemseo import configure_logger
 from gemseo.caches.simple_cache import SimpleCache
-from numpy import array
 
 configure_logger()
 
@@ -73,7 +75,7 @@ len(cache)
 # %%
 # As mentioned before,
 # we can see that only the last inputs and outputs cached are available:
-[entry for entry in cache]
+list(cache)
 
 # %%
 # Get last cached data

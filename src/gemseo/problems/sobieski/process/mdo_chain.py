@@ -18,11 +18,13 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Some chains of SSBJ disciplines."""
+
 from __future__ import annotations
 
 import logging
 
 from gemseo.core.chain import MDOChain
+from gemseo.problems.sobieski.core.utils import SobieskiBase
 from gemseo.problems.sobieski.disciplines import create_disciplines
 
 LOGGER = logging.getLogger(__name__)
@@ -34,9 +36,12 @@ class SobieskiChain(MDOChain):
     Order: structure, aerodynamics, propulsion and mission.
     """
 
-    def __init__(self, dtype: str = "float64") -> None:
+    def __init__(
+        self,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
+    ) -> None:
         """
         Args:
             dtype: The NumPy type for data arrays, either "float64" or "complex128".
-        """
+        """  # noqa: D205 D212
         super().__init__(create_disciplines(dtype), "SobieskiChain")

@@ -16,13 +16,17 @@ Examples:
 Section breaks are created by resuming un-indented text.
 Section breaks are also implicitly created anytime a new section starts.
 """
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Generator
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 MODULE_LEVEL_VARIABLE: Final[int] = 98765
 """Module level constant variable documented inline.
@@ -73,10 +77,7 @@ def example_function(
         The ``Returns`` section supports any reStructuredText formatting,
         including literal blocks::
 
-            {
-                'arg1': arg1,
-                'arg2': arg2
-            }
+            {"arg1": arg1, "arg2": arg2}
 
     Raises:
         AnError: The ``Raises`` section is a list of all exceptions

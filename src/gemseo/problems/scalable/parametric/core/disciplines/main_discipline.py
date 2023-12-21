@@ -18,23 +18,28 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The main discipline."""
+
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import eye
 from numpy import newaxis
 from numpy import zeros
-from numpy.typing import NDArray
 
 from gemseo.problems.scalable.parametric.core.disciplines.base_discipline import (
     BaseDiscipline,
 )
-from gemseo.problems.scalable.parametric.core.variable_names import get_constraint_name
-from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
 from gemseo.problems.scalable.parametric.core.variable_names import OBJECTIVE_NAME
 from gemseo.problems.scalable.parametric.core.variable_names import (
     SHARED_DESIGN_VARIABLE_NAME,
 )
+from gemseo.problems.scalable.parametric.core.variable_names import get_constraint_name
+from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class MainDiscipline(BaseDiscipline):
@@ -65,7 +70,7 @@ class MainDiscipline(BaseDiscipline):
         Args:
             *t_i: The threshold vectors :math:`t_1,\ldots,t_N`.
             **default_input_values: The default values of the input variables.
-        """
+        """  # noqa: D205 D212
         self.name = self.__class__.__name__
         self.input_names_to_default_values = default_input_values
         self.__n_scalable_disciplines = len(t_i)
@@ -123,12 +128,10 @@ class MainDiscipline(BaseDiscipline):
             jacobian = {}
             for output_name in self.output_names:
                 jacobian[output_name] = {
-                    input_name: zeros(
-                        (
-                            self.names_to_sizes[output_name],
-                            self.names_to_sizes[input_name],
-                        )
-                    )
+                    input_name: zeros((
+                        self.names_to_sizes[output_name],
+                        self.names_to_sizes[input_name],
+                    ))
                     for input_name in self.input_names
                 }
 
@@ -140,12 +143,9 @@ class MainDiscipline(BaseDiscipline):
             return jacobian
 
         output_names_to_values = {
-            OBJECTIVE_NAME: array(
-                [
-                    sum([(__y_i**2).sum() for __y_i in _y_i.values()])
-                    + (x_0**2).sum()
-                ]
-            )
+            OBJECTIVE_NAME: array([
+                sum([(__y_i**2).sum() for __y_i in _y_i.values()]) + (x_0**2).sum()
+            ])
         }
         for c_i_name, __y_i, t_i in zip(self.__c_i_names, _y_i.values(), self.__t_i):
             output_names_to_values[c_i_name] = t_i - __y_i

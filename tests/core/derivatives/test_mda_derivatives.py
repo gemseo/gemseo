@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pytest
+
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.core.discipline import MDODiscipline
@@ -29,10 +30,7 @@ from gemseo.problems.scalable.linear.disciplines_generator import (
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
-from numpy.random import seed
-
 from tests.mda.test_mda import analytic_disciplines_from_desc
-
 
 DISC_DESCR_1 = [
     ("A", ["x1", "x2"], ["a"]),
@@ -84,46 +82,41 @@ def test_traverse_add_diff_io_basic():
 )
 def test_chain_jac_basic_grammars(grammar_type):
     """Test the jacobian from the MDOChain on a basic case with different grammars."""
-    seed(1)
     disciplines = create_disciplines_from_desc(DISC_DESCR_1, grammar_type=grammar_type)
     mda = MDAChain(disciplines, grammar_type=grammar_type)
     assert mda.check_jacobian(inputs=["x1"], outputs=["o1"])
 
 
-@pytest.mark.parametrize("input", [["x1"], ["x2"], ["x1", "x2"]])
+@pytest.mark.parametrize("input_", [["x1"], ["x2"], ["x1", "x2"]])
 @pytest.mark.parametrize("output", [["o1"], ["o2"], ["o1", "o2"]])
-def test_chain_jac_basic(input, output):
+def test_chain_jac_basic(input_, output):
     """Test the jacobian from the MDOChain on a basic case."""
-    seed(1)
     disciplines = create_disciplines_from_desc(
         DISC_DESCR_1, grammar_type=MDODiscipline.GrammarType.SIMPLE
     )
     mda = MDAChain(disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
-    assert mda.check_jacobian(inputs=input, outputs=output)
+    assert mda.check_jacobian(inputs=input_, outputs=output)
 
 
 @pytest.mark.parametrize("descriptions", [DISC_DESCR_SELF_C, DISC_DESCR_SELF_STRONG_C])
 def test_chain_jac_self_coupled(descriptions):
     """Test the jacobian with self-couplings."""
-    seed(1)
     disciplines = create_disciplines_from_desc(descriptions)
     mda = MDAChain(disciplines, tolerance=1e-14)
     assert mda.check_jacobian(inputs=["x"], outputs=["o"])
 
 
 def test_double_mda():
-    disciplines = analytic_disciplines_from_desc(
-        (
-            {"a": "x"},
-            {"y1": "x1", "b": "a+1"},
-            {"x1": "1.-0.3*y1"},
-            {"y2": "x2", "c": "a+2"},
-            {"x2": "1.-0.3*y2"},
-            {"obj1": "x1+x2"},
-            {"obj2": "b+c"},
-            {"obj": "obj1+obj2"},
-        )
-    )
+    disciplines = analytic_disciplines_from_desc((
+        {"a": "x"},
+        {"y1": "x1", "b": "a+1"},
+        {"x1": "1.-0.3*y1"},
+        {"y2": "x2", "c": "a+2"},
+        {"x2": "1.-0.3*y2"},
+        {"obj1": "x1+x2"},
+        {"obj2": "b+c"},
+        {"obj": "obj1+obj2"},
+    ))
     mdachain = MDAChain(disciplines)
     assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])
 
@@ -135,7 +128,6 @@ def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios):
     """Test the Jacobian of MDA with various IOs variables set sizes."""
     if nb_of_disc_ios > nb_of_total_disc_io:
         return
-    seed(1)
     disciplines = create_disciplines_from_sizes(
         nb_of_disc,
         nb_of_total_disc_io=nb_of_total_disc_io,
@@ -157,7 +149,6 @@ def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios):
 @pytest.mark.parametrize("outputs_size", [1, 3])
 def test_chain_jac_io_sizes(inputs_size, outputs_size):
     """Test the Jacobian of MDA with various IOs sizes."""
-    seed(1)
     disciplines = create_disciplines_from_sizes(
         5,
         nb_of_total_disc_io=20,

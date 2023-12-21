@@ -24,6 +24,7 @@ from functools import partial
 from pathlib import Path
 
 import pytest
+
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
@@ -113,7 +114,7 @@ def test_correlations_func_name_error(factory):
 
 
 @pytest.mark.parametrize(
-    "func_names,baseline_images",
+    ("func_names", "baseline_images"),
     [(["pow2", "ineq1"], ["pow2_ineq1"]), ([], ["all_func"])],
 )
 @image_comparison(None)
@@ -143,7 +144,7 @@ def test_correlations_func_names(
         coeff_limit=0.99,
         file_path="correlations",
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 @image_comparison(["modified_sellar"])
@@ -173,7 +174,7 @@ def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
         coeff_limit=0.99,
         file_path="correlations",
     )
-    post.figures
+    post.figures  # noqa: B018
 
 
 def test_func_order():
@@ -278,7 +279,7 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "use_standardized_objective, baseline_images",
+    ("use_standardized_objective", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),

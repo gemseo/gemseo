@@ -13,11 +13,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Comparison tools for _repr_html_()."""
+
 from __future__ import annotations
 
 from typing import Final
 
-REPR_HTML_WRAPPER: Final[
-    str
-] = "<div style='background-color: #fafae2; padding: 10px;'>{}</div>"
+REPR_HTML_WRAPPER: Final[str] = (
+    "<div style='background-color: #fafae2; padding: 10px;'>{}</div>"
+)
 """The wrapper of the HTML representation of an object."""

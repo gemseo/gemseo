@@ -13,14 +13,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A set of functions to handle disciplines."""
+
 from __future__ import annotations
 
 import logging
-from typing import Iterable
-from typing import MutableSequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import MutableSequence
+
     from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger(__name__)

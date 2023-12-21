@@ -18,17 +18,24 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test high-level functions for machine learning."""
+
 from __future__ import annotations
 
 import pickle
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+from numpy import arange
+from numpy import array
+from numpy import atleast_2d
+from numpy import hstack
+from numpy import ndarray
+
 from gemseo import create_dataset
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import create_classification_model
 from gemseo.mlearning import create_clustering_model
@@ -49,11 +56,9 @@ from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
-from numpy import arange
-from numpy import array
-from numpy import atleast_2d
-from numpy import hstack
-from numpy import ndarray
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 LEARNING_SIZE = 9
 AVAILABLE_REGRESSION_MODELS = [
@@ -68,7 +73,7 @@ AVAILABLE_CLASSIFICATION_MODELS = ["KNNClassifier", "RandomForestClassifier"]
 AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the machine learning algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
@@ -81,24 +86,40 @@ def dataset() -> Dataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture
+@pytest.fixture()
 def classification_data() -> tuple[ndarray, list[str], dict[str, str]]:
     """The dataset used to train the classification algorithms."""
-    data = array(
-        [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
-    )
+    data = array([
+        [0, 0],
+        [0, 1],
+        [0, 2],
+        [1, 0],
+        [1, 1],
+        [1, 2],
+        [2, 0],
+        [2, 1],
+        [2, 2],
+    ])
     data = hstack((data, atleast_2d(arange(9)).T))
     variables = ["x_1", "x_2", "class"]
     groups = {"class": "outputs", "x_1": "inputs", "x_2": "inputs"}
     return data, variables, groups
 
 
-@pytest.fixture
+@pytest.fixture()
 def cluster_data() -> tuple[ndarray, list[str]]:
     """The dataset used to train the clustering algorithms."""
-    data = array(
-        [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
-    )
+    data = array([
+        [0, 0],
+        [0, 1],
+        [0, 2],
+        [1, 0],
+        [1, 1],
+        [1, 2],
+        [2, 0],
+        [2, 1],
+        [2, 2],
+    ])
     return data, ["x_1", "x_2"]
 
 

@@ -21,36 +21,44 @@ from __future__ import annotations
 import pickle
 import re
 from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import pytest
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
-)
-from gemseo.datasets.dataset import Dataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
-from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
-from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG
-from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from numpy import array
 from numpy import complex128
 from numpy import float64
 from numpy import int64
 from numpy.linalg import norm
 from numpy.testing import assert_equal
+
+from gemseo import create_scenario
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.discipline import MDODiscipline
+from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
+from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.datasets.dataset import Dataset
 
 
 def build_mdo_scenario(
@@ -81,8 +89,8 @@ def build_mdo_scenario(
             SobieskiStructureSG(),
         ]
 
-    design_space = SobieskiProblem().design_space
-    scenario = MDOScenario(
+    design_space = SobieskiDesignSpace()
+    return MDOScenario(
         disciplines,
         formulation=formulation,
         objective_name="y_4",
@@ -90,7 +98,6 @@ def build_mdo_scenario(
         grammar_type=grammar_type,
         maximize_objective=True,
     )
-    return scenario
 
 
 @pytest.fixture()
@@ -260,7 +267,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
 
 def test_typeerror_formulation():
     disciplines = [SobieskiPropulsion()]
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
 
     expected_message = (
         "Formulation must be specified by its name; "
@@ -348,12 +355,12 @@ def test_adapter_error(idf_scenario):
     with pytest.raises(
         ValueError, match="Can't compute inputs from scenarios: missing_input."
     ):
-        MDOScenarioAdapter(idf_scenario, inputs + ["missing_input"], outputs)
+        MDOScenarioAdapter(idf_scenario, [*inputs, "missing_input"], outputs)
 
     with pytest.raises(
         ValueError, match="Can't compute outputs from scenarios: missing_output."
     ):
-        MDOScenarioAdapter(idf_scenario, inputs, outputs + ["missing_output"])
+        MDOScenarioAdapter(idf_scenario, inputs, [*outputs, "missing_output"])
 
 
 def test_repr_str(idf_scenario):
@@ -442,7 +449,7 @@ def test_clear_history_before_run(mdf_scenario):
 
 
 @pytest.mark.parametrize(
-    "activate,text",
+    ("activate", "text"),
     [
         (True, "Scenario Execution Statistics"),
         (False, "The discipline counters are disabled."),
@@ -515,7 +522,7 @@ def test_export_to_dataset(mdf_scenario):
     assert dataset == (1, 2, 3, 4, 5)
 
 
-@pytest.fixture
+@pytest.fixture()
 def complex_step_scenario() -> MDOScenario:
     """The scenario to be used by test_complex_step."""
     design_space = DesignSpace()
@@ -540,18 +547,16 @@ def complex_step_scenario() -> MDOScenario:
 @pytest.mark.parametrize("normalize_design_space", [False, True])
 def test_complex_step(complex_step_scenario, normalize_design_space):
     """Check that complex step approximation works correctly."""
-    complex_step_scenario.execute(
-        {
-            "algo": "SLSQP",
-            "max_iter": 10,
-            "algo_options": {"normalize_design_space": normalize_design_space},
-        }
-    )
+    complex_step_scenario.execute({
+        "algo": "SLSQP",
+        "max_iter": 10,
+        "algo_options": {"normalize_design_space": normalize_design_space},
+    })
 
     assert complex_step_scenario.optimization_result.x_opt[0] == 0.0
 
 
-@pytest.fixture
+@pytest.fixture()
 def sinus_use_case() -> tuple[AnalyticDiscipline, DesignSpace]:
     """The sinus discipline and its design space."""
     discipline = AnalyticDiscipline({"y": "sin(2*pi*x)"})
@@ -561,7 +566,7 @@ def sinus_use_case() -> tuple[AnalyticDiscipline, DesignSpace]:
 
 
 @pytest.mark.parametrize(
-    "maximize,standardize,expr,val",
+    ("maximize", "standardize", "expr", "val"),
     [
         (False, False, "minimize y(x)", -1.0),
         (False, True, "minimize y(x)", -1.0),
@@ -591,7 +596,7 @@ def test_use_standardized_objective(
 
 
 @pytest.mark.parametrize(
-    "cast_default_inputs_to_complex, expected_dtype",
+    ("cast_default_inputs_to_complex", "expected_dtype"),
     [(True, complex128), (False, float64)],
 )
 def test_complex_casting(
@@ -618,7 +623,7 @@ def test_complex_casting(
             assert value.dtype == expected_dtype
 
 
-@pytest.fixture
+@pytest.fixture()
 def scenario_with_non_float_variables() -> MDOScenario:
     """Create an ``MDOScenario`` from an ``AnalyticDiscipline`` with non-float inputs.
 
@@ -638,7 +643,7 @@ def scenario_with_non_float_variables() -> MDOScenario:
 
 
 @pytest.mark.parametrize(
-    "cast_default_inputs_to_complex, expected_dtype",
+    ("cast_default_inputs_to_complex", "expected_dtype"),
     [(True, complex128), (False, float64)],
 )
 def test_complex_casting_with_non_float_variables(
@@ -693,7 +698,7 @@ def test_check_disciplines():
         MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)
 
 
-@pytest.fixture
+@pytest.fixture()
 def identity_scenario() -> MDOScenario:
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
@@ -703,7 +708,7 @@ def identity_scenario() -> MDOScenario:
 
 
 @pytest.mark.parametrize(
-    "constraint_type,constraint_name,value,positive,expected",
+    ("constraint_type", "constraint_name", "value", "positive", "expected"),
     [
         ("eq", None, None, False, ["y", "", "y(x) == 0.0", "y(x) == 0.0"]),
         (
@@ -853,3 +858,58 @@ def test_lib_serialization(tmp_wd, mdf_scenario):
     pickled_scenario.execute({"algo": "SLSQP", "max_iter": 1})
 
     assert pickled_scenario._lib.internal_algo_name == "SLSQP"
+
+
+def test_get_result(mdf_scenario):
+    """Check get_result."""
+    assert mdf_scenario.get_result() is None
+
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert mdf_scenario.get_result().design_variable_names_to_values
+
+    with pytest.raises(
+        ImportError,
+        match="The class foo is not available; the available ones are: .*",
+    ):
+        mdf_scenario.get_result("foo")
+
+
+@pytest.fixture(params=[True, False])
+def full_linear(request):
+    """Whether the generated problem should be linear."""
+    return request.param
+
+
+@pytest.fixture()
+def scenario_for_linear_check(full_linear):
+    """MDOScenario for linear check."""
+    my_disc = AnalyticDiscipline({"f": "x1+ x2**2"})
+    my_disc.default_inputs = {"x1": array([0.5]), "x2": array([0.5])}
+    my_disc.set_linear_relationships(["f"], ["x1"])
+    ds = DesignSpace()
+    ds.add_variable("x1", 1, l_b=0.0, u_b=1.0, value=0.5)
+    if not full_linear:
+        ds.add_variable("x2", 1, l_b=0.0, u_b=1.0, value=0.5)
+    return create_scenario(my_disc, "DisciplinaryOpt", "f", design_space=ds)
+
+
+def test_function_problem_type(scenario_for_linear_check, full_linear):
+    """Test that function and problem are consistent with declaration."""
+    if not full_linear:
+        assert isinstance(
+            scenario_for_linear_check.formulation.opt_problem.objective,
+            FunctionFromDiscipline,
+        )
+        assert (
+            scenario_for_linear_check.formulation.opt_problem.pb_type
+            == scenario_for_linear_check.formulation.opt_problem.ProblemType.NON_LINEAR
+        )
+    else:
+        assert isinstance(
+            scenario_for_linear_check.formulation.opt_problem.objective,
+            MDOLinearFunction,
+        )
+        assert (
+            scenario_for_linear_check.formulation.opt_problem.pb_type
+            == scenario_for_linear_check.formulation.opt_problem.ProblemType.LINEAR
+        )

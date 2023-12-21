@@ -13,9 +13,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A quadratic function defined from coefficients and offset matrices."""
+
 from __future__ import annotations
 
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import ndarray
@@ -26,6 +27,9 @@ from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import OutputType
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class MDOQuadraticFunction(MDOFunction):
@@ -52,7 +56,7 @@ class MDOQuadraticFunction(MDOFunction):
         quad_coeffs: ArrayType,
         name: str,
         f_type: str | None = None,
-        input_names: Sequence[str] = None,
+        input_names: Sequence[str] | None = None,
         linear_coeffs: ArrayType | None = None,
         value_at_zero: OutputType = 0.0,
     ) -> None:
@@ -207,9 +211,7 @@ class MDOQuadraticFunction(MDOFunction):
                 and (linear_coeffs != zeros_like(linear_coeffs)).any()
             ):
                 expr += " + " if index == 0 else "   "
-                expr += "[{}]".format(
-                    cls.COEFF_FORMAT_ND.format(linear_coeffs[0, index])
-                )
+                expr += f"[{cls.COEFF_FORMAT_ND.format(linear_coeffs[0, index])}]"
                 expr += transpose_str if index == 0 else " "
                 expr += f"[{arg}]"
             # Zero-order expression

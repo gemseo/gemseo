@@ -43,6 +43,7 @@ This sub-package is based in particular on OpenTURNS.
     :class:`.CorrelationAnalysis`
     :class:`.MorrisAnalysis`
     :class:`.SobolAnalysis`
+    :class:`.HSICAnalysis`
 
 The sub-package :mod:`~gemseo.uncertainty.statistics` offers an abstract level
 for statistics, as well as parametric and empirical versions.
@@ -55,30 +56,48 @@ fitted from a :class:`.Dataset`.
     :class:`.EmpiricalStatistics`
     :class:`.ParametricStatistics`
 """
+
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Collection
-from typing import Iterable
-from typing import Sequence
 from typing import TYPE_CHECKING
 
-from gemseo.datasets.dataset import Dataset
-
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+    from pathlib import Path
+
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
+    from gemseo.datasets.dataset import Dataset
     from gemseo.uncertainty.distributions.distribution import Distribution
-    from gemseo.uncertainty.statistics.statistics import Statistics
     from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+    from gemseo.uncertainty.statistics.statistics import Statistics
 
 
-def get_available_distributions() -> list[str]:
-    """Get the available distributions."""
+def get_available_distributions(base_class_name: str = "Distribution") -> list[str]:
+    """Get the available probability distributions.
+
+    Args:
+        base_class_name: The name of the base class of the probability distributions,
+            e.g. ``"Distribution"``, ``"OTDistribution"`` or ``"SPDistribution"``.
+
+    Returns:
+        The names of the available probability distributions.
+    """
     from gemseo.uncertainty.distributions.factory import DistributionFactory
 
     factory = DistributionFactory()
-    return factory.available_distributions
+    class_names = factory.class_names
+    if base_class_name == "Distribution":
+        return class_names
+
+    return [
+        class_name
+        for class_name in class_names
+        if base_class_name
+        in [cls.__name__ for cls in factory.get_class(class_name).mro()]
+    ]
 
 
 def create_distribution(
@@ -168,7 +187,7 @@ def create_statistics(
         >>> from gemseo import (
         ...     create_discipline,
         ...     create_parameter_space,
-        ...     create_scenario
+        ...     create_scenario,
         ... )
         >>> from gemseo.uncertainty import create_statistics
         >>>
@@ -190,9 +209,9 @@ def create_statistics(
         ...     "DisciplinaryOpt",
         ...     "y1",
         ...     parameter_space,
-        ...     scenario_type="DOE"
+        ...     scenario_type="DOE",
         ... )
-        >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
+        >>> scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
         >>>
         >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>

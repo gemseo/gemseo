@@ -23,11 +23,18 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Aerodynamics computation for the Sobieski's SSBJ use case."""
+
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from gemseo.problems.sobieski.core.utils import SobieskiBase
+
+if TYPE_CHECKING:
+    from types import ModuleType
+
+    from numpy import ndarray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,6 +42,7 @@ LOGGER = logging.getLogger(__name__)
 class SobieskiDiscipline:
     """Base class for the disciplines of the Sobieski's SSBJ use case."""
 
+    # TODO: API: remove these unused class attributes.
     DTYPE_COMPLEX = SobieskiBase.DTYPE_COMPLEX
     DTYPE_DOUBLE = SobieskiBase.DTYPE_DOUBLE
 
@@ -42,7 +50,7 @@ class SobieskiDiscipline:
         """
         Args:
             sobieski_base: The Sobieski base.
-        """
+        """  # noqa: D205 D212
         self.base = sobieski_base
         (
             self.x_initial,
@@ -59,13 +67,16 @@ class SobieskiDiscipline:
         ) = self.base.get_initial_values()
 
     @property
-    def constants(self):
+    def constants(self) -> ndarray:
+        """The default constants."""
         return self.base.constants
 
     @property
-    def dtype(self) -> str:
+    def dtype(self) -> SobieskiBase.DataType:
+        """The NumPy data type."""
         return self.base.dtype
 
     @property
-    def math(self):
+    def math(self) -> ModuleType:
+        """The library of mathematical functions."""
         return self.base.math

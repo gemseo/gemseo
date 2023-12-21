@@ -20,10 +20,12 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.idf import IDF
+from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
@@ -65,7 +67,7 @@ def test_build_func_from_disc():
 
 
 @pytest.mark.parametrize(
-    "options, expected_feasible",
+    ("options", "expected_feasible"),
     [
         (
             {
@@ -200,7 +202,7 @@ def test_idf_start_equilibrium():
         SobieskiAerodynamics(),
         SobieskiMission(),
     ]
-    design_space = SobieskiProblem().design_space
+    design_space = SobieskiDesignSpace()
     idf = IDF(disciplines, "y_4", design_space, start_at_equilibrium=True)
     coupling_names = [
         "y_12",

@@ -67,15 +67,12 @@ where :math:`\mu_i = \frac{1}{r}\sum_{j=1}^rdf_i^{(j)}`.
 
 This methodology relies on the :class:`.MorrisAnalysis` class.
 """
+
 from __future__ import annotations
 
-from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Collection
-from typing import Iterable
-from typing import Mapping
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 from numpy import abs as np_abs
@@ -83,16 +80,24 @@ from numpy import array
 from numpy import ndarray
 from strenum import StrEnum
 
-from gemseo.algos.doe.doe_library import DOELibraryOptionType
 from gemseo.algos.doe.lib_pydoe import PyDOE
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.utils import get_all_outputs
-from gemseo.post.dataset.dataset_plot import VariableType
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
 from gemseo.utils.string_tools import repr_variable
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+    from pathlib import Path
+
+    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.post.dataset.dataset_plot import VariableType
 
 
 class MorrisAnalysis(SensitivityAnalysis):
@@ -134,6 +139,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         >>> analysis = MorrisAnalysis([discipline], parameter_space, n_samples=None)
         >>> indices = analysis.compute_indices()
     """
+
     mu_: dict[str, dict[str, ndarray]]
     """The mean effects with the following structure:
 
@@ -190,7 +196,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         }
     """
 
-    min: dict[str, dict[str, ndarray]]
+    min: dict[str, dict[str, ndarray]]  # noqa: A003
     """The minimum effect with the following structure:
 
     .. code-block:: python
@@ -204,7 +210,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         }
     """
 
-    max: dict[str, dict[str, ndarray]]
+    max: dict[str, dict[str, ndarray]]  # noqa: A003
     """The maximum effect with the following structure:
 
     .. code-block:: python
@@ -272,7 +278,7 @@ class MorrisAnalysis(SensitivityAnalysis):
                 raise ValueError(
                     f"The number of samples ({n_samples}) must be "
                     "at least equal to the dimension of the input space plus one "
-                    f"({parameter_space.dimension}+1={parameter_space.dimension+1})."
+                    f"({parameter_space.dimension}+1={parameter_space.dimension + 1})."
                 )
 
         disciplines = list(disciplines)
@@ -370,13 +376,8 @@ class MorrisAnalysis(SensitivityAnalysis):
                     {name: array([val[idx]]) for name, val in func[output_name].items()}
                     for idx in range(length)
                 ]
-        return self.indices
 
-    @property
-    def indices(  # noqa: D102
-        self,
-    ) -> dict[str, FirstOrderIndicesType]:
-        return {
+        self._indices = {
             "MU": self.mu_,
             "MU_STAR": self.mu_star,
             "SIGMA": self.sigma,
@@ -384,6 +385,7 @@ class MorrisAnalysis(SensitivityAnalysis):
             "MIN": self.min,
             "MAX": self.max,
         }
+        return self._indices
 
     def plot(
         self,
@@ -406,6 +408,8 @@ class MorrisAnalysis(SensitivityAnalysis):
         plot :math:`\mu_i^*` in function of :math:`\sigma_i`.
 
         Args:
+            directory_path: The path to the directory where to save the plots.
+            file_name: The name of the file.
             offset: The offset to display the inputs names,
                 expressed as a percentage applied to both x-range and y-range.
             lower_mu: The lower bound for :math:`\mu`.

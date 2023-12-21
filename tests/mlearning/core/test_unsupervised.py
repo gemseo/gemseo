@@ -18,17 +18,19 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test unsupervised machine learning algorithm module."""
+
 from __future__ import annotations
 
 import pytest
+from numpy import arange
+
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.testing.helpers import concretize_classes
-from numpy import arange
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataset() -> Dataset:
     """The dataset used to train the unsupervised machine learning algorithms."""
     data = arange(30).reshape(10, 3)

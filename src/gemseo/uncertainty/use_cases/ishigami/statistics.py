@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Statistics associated with the Ishigami use case."""
+
 from __future__ import annotations
 
 from typing import Final
@@ -30,9 +31,7 @@ r"""The expectation of the output.
    \mathbb{E}[Y] = \frac{a}{2}
 """
 
-VARIANCE: Final[float] = (
-    0.5 + __A**2 / 8 + __B**2 * pi**8 / 18 + __B * pi**4 / 5
-)
+VARIANCE: Final[float] = 0.5 + __A**2 / 8 + __B**2 * pi**8 / 18 + __B * pi**4 / 5
 r"""The variance of the output.
 
 .. math::
