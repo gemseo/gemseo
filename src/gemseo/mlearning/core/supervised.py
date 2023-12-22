@@ -513,9 +513,9 @@ class MLSupervisedAlgo(MLAlgo):
         for name in self.input_names + self.output_names:
             transformer = self.transformer.get(name)
             if transformer is None or not isinstance(transformer, DimensionReduction):
-                self._transformed_variable_sizes[
-                    name
-                ] = self.learning_set.variable_names_to_n_components[name]
+                self._transformed_variable_sizes[name] = (
+                    self.learning_set.variable_names_to_n_components[name]
+                )
             else:
                 self._transformed_variable_sizes[name] = transformer.n_components
 

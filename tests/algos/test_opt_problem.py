@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import operator
 from copy import deepcopy
 from functools import partial
 from math import sqrt
@@ -1140,7 +1141,7 @@ def constrained_problem() -> OptimizationProblem:
         MDOFunction(lambda x: x, "h", jac=lambda _: np.eye(2)), cstr_type="eq"
     )
     problem.add_observable(MDOFunction(lambda x: x[1], "a", jac=lambda x: [0, 1]))
-    problem.add_observable(MDOFunction(lambda x: -x, "b", jac=lambda x: -np.eye(2)))
+    problem.add_observable(MDOFunction(operator.neg, "b", jac=lambda x: -np.eye(2)))
     return problem
 
 

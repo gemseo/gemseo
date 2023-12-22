@@ -531,7 +531,7 @@ def test_rename(cls):
 
     assert list(g.required_names) == ["n:name1"]
     assert not names_to_types.keys() & set(g)
-    assert ["n:name1", "n:name2"] == sorted(g.names)
+    assert sorted(g.names) == ["n:name1", "n:name2"]
 
     for name, value in defaults.items():
         assert g.defaults[f"n:{name}"] == value

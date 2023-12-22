@@ -263,20 +263,20 @@ class BaseMDASolver(MDA):
 
         if input_coupling_names:
             converter = self.input_grammar.data_converter
-            self.__resolved_variable_names_to_slices[
-                converter
-            ] = converter.compute_names_to_slices(
-                input_coupling_names, self._local_data
-            )[0]
+            self.__resolved_variable_names_to_slices[converter] = (
+                converter.compute_names_to_slices(
+                    input_coupling_names, self._local_data
+                )[0]
+            )
 
         if output_coupling_names:
             converter = self.output_grammar.data_converter
-            self.__resolved_variable_names_to_slices[
-                converter
-            ] = converter.compute_names_to_slices(
-                output_coupling_names,
-                self._local_data,
-            )[0]
+            self.__resolved_variable_names_to_slices[converter] = (
+                converter.compute_names_to_slices(
+                    output_coupling_names,
+                    self._local_data,
+                )[0]
+            )
 
         self.__resolved_residual_names_to_slices = {}
         for (
