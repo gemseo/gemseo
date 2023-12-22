@@ -1,2 +1,0 @@
-The upper bound KS function is added to the aggregation functions.
-The upper bound KS function is an offset of the lower bound KS function already implemented.

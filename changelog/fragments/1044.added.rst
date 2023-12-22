@@ -1,1 +1,0 @@
-The following machine learning algorithms have an argument ``random_state`` to control the generation of random numbers: ``RandomForestClassifier``, ``SVMClassifier``, ``GaussianMixture``, ``KMeans``, ``GaussianProcessRegressor``, ``LinearRegressor`` and ``RandomForestRegressor``. Use an integer for reproducible results (default behavior).

@@ -1,1 +1,0 @@
-The subpackage ``gemseo.mlearning.data_formatters`` includes the ``DataFormatters`` used by the learning and prediction methods of the machine learning algorithms.

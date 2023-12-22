@@ -1,1 +1,0 @@
-The class ``SobieskiDesignSpace`` deriving from ``DesignSpace`` can be used in the Sobieski's SSBJ problem. It offers new filtering methods, namely ``filter_coupling_variables`` and ``filter_design_variables``.

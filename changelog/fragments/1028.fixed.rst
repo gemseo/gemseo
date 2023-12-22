@@ -1,1 +1,0 @@
-Full-factorial design of experiments: the actual number of samples computed from the maximum number of samples and the dimension of the design space is now robust to numerical precision issues.

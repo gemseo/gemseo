@@ -1,1 +1,0 @@
-The log of the ``ProgressBar`` no longer displays the initialization of the progress bar.

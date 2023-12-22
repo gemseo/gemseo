@@ -1,1 +1,0 @@
-``ParameterSpace.__str__`` no longer displays the current values, the bounds and the variable types when all the variables are uncertain.

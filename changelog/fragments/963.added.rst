@@ -1,3 +1,0 @@
-Optimization problems with inequality constraints can be reformulated with only bounds and equality constraints
-and additional slack variables
-thanks to the public method: ``OptimizationProblem.get_reformulated_problem_with_slack_variables.``

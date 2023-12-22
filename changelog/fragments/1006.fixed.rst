@@ -1,1 +1,0 @@
-The types used with ``PydanticGrammar.update_from_types`` with ``merge=True`` are taken into account.

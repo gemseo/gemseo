@@ -1,3 +1,0 @@
-- ``gemseo.mlearning.sampling`` is a new package with resampling techniques, such as ``CrossValidation`` and ``Bootstrap``.
-- ``MLAlgo.resampling_results`` stores the resampling results; a resampling result is defined by a ``Resampler``, the machine learning algorithms generated during the resampling stage and the associated predictions.
-- The methods offered by ``MLQualityMeasure`` to estimate a quality measure by resampling have a new argument called ``store_resampling_result`` to store the resampling results and reuse them to estimate another quality measure faster.

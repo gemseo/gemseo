@@ -1,1 +1,0 @@
-The type of the coupling variables is no longer restricted to NumPy arrays thanks to data converters attached to grammars.

@@ -1,6 +1,0 @@
-API:
-- The class ``RunFolderManager`` is renamed ``DirectoryGenerator``.
-- The class ``FoldersIter`` is renamed ``Identifiers``.
-- The signature of the class ``DirectoryGenerator`` has changed.
-  - ``folders_iter`` is replaced by ``identifiers``
-  - ``output_folder_basepath`` is replaced by ``root_directory``

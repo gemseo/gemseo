@@ -1,1 +1,0 @@
-The existing KS function aggregation is renamed as ``lower_bound_KS``.

@@ -1,1 +1,0 @@
-When third-party libraries do not handle sparse Jacobians, a preprocessing step is used to convert them as dense NumPy arrays.

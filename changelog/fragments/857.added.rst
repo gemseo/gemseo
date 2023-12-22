@@ -1,1 +1,0 @@
-``SciPyDOE`` is a new ``DOELibrary`` based on SciPy, with five algorithms: crude Monte Carlo, Halton sequence, Sobol' sequence, Latin hypercube sampling and Poisson disk sampling.

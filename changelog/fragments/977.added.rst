@@ -1,1 +1,0 @@
-The ``use_one_line_progress_bar`` driver option allows to display only one iteration of the progress bar at a time.
