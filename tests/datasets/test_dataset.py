@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import operator
 import re
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
@@ -438,7 +439,7 @@ def test_transform_data():
     dataset = Dataset()
     dataset.add_variable("x", 1.0, group_name="a")
     dataset.add_variable("x", 1.0, group_name="b")
-    dataset.transform_data(lambda x: -x, variable_names="x")
+    dataset.transform_data(operator.neg, variable_names="x")
 
     expected_dataset = Dataset()
     expected_dataset.add_variable("x", -1.0, group_name="a")

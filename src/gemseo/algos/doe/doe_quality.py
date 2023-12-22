@@ -21,6 +21,7 @@ from operator import ge
 from operator import gt
 from operator import le
 from operator import lt
+from operator import neg
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
@@ -52,7 +53,7 @@ except for the minimum-distance criterion for which the larger it is the better.
 
 _measure_transformations: tuple[Callable[[float], float]] = (
     lambda x: x,
-    lambda x: -x,
+    neg,
     lambda x: x,
 )
 """Transformations of quality measures into quantities to minimize."""

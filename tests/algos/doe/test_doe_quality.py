@@ -20,6 +20,7 @@ from operator import ge
 from operator import gt
 from operator import le
 from operator import lt
+from operator import neg
 
 import pytest
 from numpy import array
@@ -97,7 +98,7 @@ def test_measures_comparison(
         (phip_1, mindist_1, discr_1) == (phip_2, mindist_2, discr_2)
     )
 
-    transformations = [lambda x: x, lambda x: -x, lambda x: x]
+    transformations = [lambda x: x, neg, lambda x: x]
     for operator, other_operator in {lt: gt, le: ge, gt: lt, ge: le}.items():
         if (
             sum(
