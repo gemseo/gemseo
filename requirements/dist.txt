@@ -26,7 +26,7 @@ docutils==0.20.1
     # via readme-renderer
 idna==3.6
     # via requests
-importlib-metadata==7.0.0
+importlib-metadata==7.0.1
     # via
     #   keyring
     #   twine
@@ -54,9 +54,9 @@ pkginfo==1.9.6
     # via twine
 pycparser==2.21
     # via cffi
-pydantic==2.5.2
+pydantic==2.5.3
     # via check-wheel-contents
-pydantic-core==2.14.5
+pydantic-core==2.14.6
     # via pydantic
 pygments==2.17.2
     # via
