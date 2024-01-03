@@ -76,12 +76,15 @@ def test_check_options(problem):
 
 def test_no_option_grammar(problem):
     """Check the error raised when no options grammar."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"Options grammar for optimization post-processor does not exist, "
-            r"expected: .*post "
-            r"or .*NewOptPostProcessorWithoutOptionsGrammar_options\.json"
+    with (
+        pytest.raises(
+            ValueError,
+            match=(
+                r"Options grammar for optimization post-processor does not exist, "
+                r"expected: .*post "
+                r"or .*NewOptPostProcessorWithoutOptionsGrammar_options\.json"
+            ),
         ),
-    ), concretize_classes(NewOptPostProcessorWithoutOptionsGrammar):
+        concretize_classes(NewOptPostProcessorWithoutOptionsGrammar),
+    ):
         NewOptPostProcessorWithoutOptionsGrammar(problem)

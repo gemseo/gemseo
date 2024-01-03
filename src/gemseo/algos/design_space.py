@@ -154,9 +154,9 @@ class DesignSpace(collections.abc.MutableMapping):
         """A design variable."""
 
         size: int | None = 1
-        var_type: NDArray[
-            _DesignVariableType
-        ] | _DesignVariableType | None = _DesignVariableType.FLOAT
+        var_type: NDArray[_DesignVariableType] | _DesignVariableType | None = (
+            _DesignVariableType.FLOAT
+        )
         l_b: ndarray | None = None
         u_b: ndarray | None = None
         value: ndarray | None = None

@@ -36,7 +36,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
-from typing import NoReturn
 
 from numpy import concatenate
 from numpy import empty
@@ -484,7 +483,7 @@ class MDODiscipline(Serializable):
     def n_calls_linearize(
         self,
         value: int,
-    ) -> None | NoReturn:
+    ) -> None:
         if not self.activate_counters:
             raise RuntimeError("The discipline counters are disabled.")
 
