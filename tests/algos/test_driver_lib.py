@@ -90,24 +90,30 @@ def test_max_iter_fail(optimization_problem):
 
 def test_no_algo_fail(optimization_problem):
     """Check that a ValueError is raised when no algorithm name is set."""
-    with pytest.raises(
-        ValueError,
-        match="Algorithm name must be either passed as "
-        "argument or set by the attribute 'algo_name'.",
-    ), concretize_classes(MyDriver):
+    with (
+        pytest.raises(
+            ValueError,
+            match="Algorithm name must be either passed as "
+            "argument or set by the attribute 'algo_name'.",
+        ),
+        concretize_classes(MyDriver),
+    ):
         MyDriver().execute(optimization_problem)
 
 
 def test_grammar_fail():
     """Check that a ValueError is raised when the grammar file is not found."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            "Neither the options grammar file .+ for the algorithm 'unknown' "
-            "nor the options grammar file .+ for the library 'DriverLibrary' "
-            "has been found."
+    with (
+        pytest.raises(
+            ValueError,
+            match=(
+                "Neither the options grammar file .+ for the algorithm 'unknown' "
+                "nor the options grammar file .+ for the library 'DriverLibrary' "
+                "has been found."
+            ),
         ),
-    ), concretize_classes(DriverLibrary):
+        concretize_classes(DriverLibrary),
+    ):
         DriverLibrary().init_options_grammar("unknown")
 
 

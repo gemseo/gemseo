@@ -453,9 +453,9 @@ class DriverLibrary(AlgorithmLibrary):
         else:
             LOGGER.info("Running the algorithm %s:", self.algo_name)
 
-        with OneLineLogging(
-            TQDM_LOGGER
-        ) if use_one_line_progress_bar else nullcontext():
+        with (
+            OneLineLogging(TQDM_LOGGER) if use_one_line_progress_bar else nullcontext()
+        ):
             # Term criteria such as max iter or max_time can be triggered in pre_run
             try:
                 self._pre_run(problem, self.algo_name, **options)

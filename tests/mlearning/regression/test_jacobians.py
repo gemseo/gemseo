@@ -147,10 +147,13 @@ def dataset(request) -> Dataset:
 def test_regression_model():
     """Test that by default the computation of the Jacobian raises an error."""
     dataset = dataset_factory(*DATASETS_DESCRIPTIONS[0])
-    with pytest.raises(
-        NotImplementedError,
-        match="Derivatives are not available for MLRegressionAlgo.",
-    ), concretize_classes(MLRegressionAlgo):
+    with (
+        pytest.raises(
+            NotImplementedError,
+            match="Derivatives are not available for MLRegressionAlgo.",
+        ),
+        concretize_classes(MLRegressionAlgo),
+    ):
         MLRegressionAlgo(dataset).predict_jacobian(array([1.0]))
 
 

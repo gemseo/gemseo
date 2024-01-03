@@ -123,13 +123,16 @@ def test_transformer(dataset, transformer):
 
 def test_transformer_wrong_type(dataset):
     """Check that using a wrong transformer type raises a ValueError."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Transformer type must be "
-            "either Transformer, Tuple[str, Mapping[str, Any]] or str."
+    with (
+        pytest.raises(
+            ValueError,
+            match=re.escape(
+                "Transformer type must be "
+                "either Transformer, Tuple[str, Mapping[str, Any]] or str."
+            ),
         ),
-    ), concretize_classes(MLAlgo):
+        concretize_classes(MLAlgo),
+    ):
         MLAlgo(dataset, transformer={"parameters": 1})
 
 
@@ -161,12 +164,15 @@ def test_transformers_error(dataset):
     """Check that MLAlgo cannot use a transformer for both group and variable."""
     dataset = IODataset()
     dataset.add_variable("x", array([[1.0]]), group_name="foo")
-    with pytest.raises(
-        ValueError,
-        match=(
-            "An MLAlgo cannot have both a transformer "
-            "for all variables of a group and a transformer "
-            "for one variable of this group."
+    with (
+        pytest.raises(
+            ValueError,
+            match=(
+                "An MLAlgo cannot have both a transformer "
+                "for all variables of a group and a transformer "
+                "for one variable of this group."
+            ),
         ),
-    ), concretize_classes(MLAlgo):
+        concretize_classes(MLAlgo),
+    ):
         MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})

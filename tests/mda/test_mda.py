@@ -311,9 +311,12 @@ def test_not_numeric_couplings():
     sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
-    with pytest.raises(
-        TypeError, match=r"The coupling variables \['y\_1'\] must be numeric\."
-    ), concretize_classes(MDA):
+    with (
+        pytest.raises(
+            TypeError, match=r"The coupling variables \['y\_1'\] must be numeric\."
+        ),
+        concretize_classes(MDA),
+    ):
         MDA([sellar1, sellar2])
 
 
