@@ -43,7 +43,7 @@ from gemseo.utils.testing.helpers import concretize_classes
 class TestMDOFormulation(unittest.TestCase):
     """"""
 
-    def test_get_generator(self):
+    def test_get_generator(self) -> None:
         """"""
         sm = SobieskiMission()
         ds = SobieskiDesignSpace()
@@ -54,7 +54,7 @@ class TestMDOFormulation(unittest.TestCase):
 
         self.assertRaises(Exception, f._get_generator_from, *args)
 
-    def test_cstrs(self):
+    def test_cstrs(self) -> None:
         """"""
         sm = SobieskiMission()
         ds = SobieskiDesignSpace()
@@ -86,7 +86,7 @@ class TestMDOFormulation(unittest.TestCase):
     #
     #         self.assertRaises(Exception, f.get_discipline_run_inputs, None)
 
-    def test_jac_sign(self):
+    def test_jac_sign(self) -> None:
         """Check the evaluation and linearization of the sinus MDOFunction."""
         # TODO: this test should be removed as it does not check MDOFormulation.
         sm = SobieskiMission()
@@ -109,12 +109,12 @@ class TestMDOFormulation(unittest.TestCase):
         self.assertAlmostEqual(obj(math.pi / 2), 1.0, 9)
         self.assertAlmostEqual(obj.jac(0.0), 1.0, 9)
 
-    def test_get_x0(self):
+    def test_get_x0(self) -> None:
         """"""
         with concretize_classes(MDOFormulation):
             _ = MDOFormulation([SobieskiMission()], "y_4", SobieskiDesignSpace())
 
-    def test_add_user_defined_constraint_error(self):
+    def test_add_user_defined_constraint_error(self) -> None:
         """Check that an error is raised when adding a constraint with wrong type."""
         sm = SobieskiMission()
         design_space = DesignSpace()
@@ -135,19 +135,19 @@ class TestMDOFormulation(unittest.TestCase):
     #         assert add_to
     # =========================================================================
 
-    def test_get_values_array_from_dict(self):
+    def test_get_values_array_from_dict(self) -> None:
         """"""
         a = concatenate_dict_of_arrays_to_array({}, [])
         assert isinstance(a, type(np.array([])))
 
-    def test_get_mask_from_datanames(self):
+    def test_get_mask_from_datanames(self) -> None:
         """"""
         a = MDOFormulation._get_mask_from_datanames(["y_1", "y_2", "y_3"], ["y_2"])[0][
             0
         ]
         assert a == 1
 
-    def test_x_mask(self):
+    def test_x_mask(self) -> None:
         """"""
         sm = SobieskiMission()
         rid = SobieskiProblem().get_default_inputs(sm.get_input_data_names())
@@ -189,7 +189,7 @@ class TestMDOFormulation(unittest.TestCase):
         design_space.add_variable("x_shared", 10)
         self.assertRaises(IndexError, f.mask_x_swap_order, dvs, x)
 
-    def test_remove_sub_scenario_dv_from_ds(self):
+    def test_remove_sub_scenario_dv_from_ds(self) -> None:
         ds2 = DesignSpace()
         ds2.add_variable("y_14")
         ds2.add_variable("x")
@@ -203,7 +203,7 @@ class TestMDOFormulation(unittest.TestCase):
         f2._remove_sub_scenario_dv_from_ds()
         assert "x" not in f2.design_space.variable_names
 
-    def test_get_obj(self):
+    def test_get_obj(self) -> None:
         """"""
         sm = SobieskiMission()
         dvs = ["x_shared", "y_14"]
@@ -217,7 +217,7 @@ class TestMDOFormulation(unittest.TestCase):
         self.assertRaises(Exception, lambda: f.get_objective())
 
 
-def test_grammar_type():
+def test_grammar_type() -> None:
     """Check that the grammar type is correctly stored."""
     discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
@@ -229,7 +229,7 @@ def test_grammar_type():
     assert formulation._grammar_type == "a_grammar_type"
 
 
-def test_remove_unused_variable_logger(caplog):
+def test_remove_unused_variable_logger(caplog) -> None:
     """Check that a message is logged when an unused variable is removed.
 
     Args:
@@ -255,7 +255,7 @@ def test_remove_unused_variable_logger(caplog):
 @pytest.mark.parametrize(
     ("recursive", "expected"), [(False, {"d1", "chain2"}), (True, {"d1", "d2", "d3"})]
 )
-def test_get_sub_disciplines_recursive(recursive, expected):
+def test_get_sub_disciplines_recursive(recursive, expected) -> None:
     """Test the recursive option of get_sub_disciplines.
 
     Args:
@@ -283,7 +283,7 @@ def test_get_sub_disciplines_recursive(recursive, expected):
 
 
 @pytest.mark.parametrize("top_level_disc", [False, True])
-def test_get_generator_with_inputs(top_level_disc):
+def test_get_generator_with_inputs(top_level_disc) -> None:
     """Check that _get_generator_with_inputs works properly."""
     design_space = DesignSpace()
     design_space.add_variable("x")

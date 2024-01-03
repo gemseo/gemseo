@@ -51,7 +51,9 @@ class XDSM:
     </script>
     """
 
-    def __init__(self, json_schema: dict[str, Any], html_file_path: Path | None):
+    def __init__(
+        self, json_schema: dict[str, Any], html_file_path: Path | None
+    ) -> None:
         """
         Args:
             json_schema: The JSON schema of the XDSM.
@@ -77,9 +79,8 @@ class XDSM:
     def visualize(self) -> None:
         """Open a web browser and display the XDSM."""
         if not self.__html_file_url:
-            raise ValueError(
-                "A HTML file is required to visualize the XDSM in a web browser."
-            )
+            msg = "A HTML file is required to visualize the XDSM in a web browser."
+            raise ValueError(msg)
 
         webbrowser.open(self.__html_file_url, new=2)
 

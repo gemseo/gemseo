@@ -228,7 +228,8 @@ class DriverLibrary(AlgorithmLibrary):
             ValueError: If ``max_iter`` is lower than one.
         """
         if max_iter < 1:
-            raise ValueError(f"max_iter must be >=1, got {max_iter}")
+            msg = f"max_iter must be >=1, got {max_iter}"
+            raise ValueError(msg)
         self.problem.max_iter = self.__max_iter = max_iter
         self.problem.current_iter = self.__iter = (
             0 if self.__reset_iteration_counters else self.problem.current_iter
@@ -352,12 +353,13 @@ class DriverLibrary(AlgorithmLibrary):
             and not self.descriptions[self.algo_name].handle_integer_variables
         ):
             if not force_execution:
-                raise ValueError(
+                msg = (
                     "Algorithm {} is not adapted to the problem, it does not handle "
                     "integer variables.\n"
                     "Execution may be forced setting the 'skip_int_check' "
                     "argument to 'True'.".format(self.algo_name)
                 )
+                raise ValueError(msg)
 
             LOGGER.warning(
                 "Forcing the execution of an algorithm that does not handle "
@@ -396,10 +398,11 @@ class DriverLibrary(AlgorithmLibrary):
             self.algo_name = algo_name
 
         if self.algo_name is None:
-            raise ValueError(
+            msg = (
                 "Algorithm name must be either passed as "
                 "argument or set by the attribute 'algo_name'."
             )
+            raise ValueError(msg)
 
         self._check_algorithm(self.algo_name, problem)
         self._check_integer_handling(problem.design_space, skip_int_check)
@@ -538,7 +541,8 @@ class DriverLibrary(AlgorithmLibrary):
             Whether the driver requires the gradient.
         """
         if driver_name not in self.descriptions:
-            raise ValueError(f"Algorithm {driver_name} is not available.")
+            msg = f"Algorithm {driver_name} is not available."
+            raise ValueError(msg)
 
         return self.descriptions[driver_name].require_gradient
 

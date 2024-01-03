@@ -36,7 +36,7 @@ POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
 @pytest.mark.parametrize("first_iteration", [-1, 1])
 def test_common_scenario(
     common_problem, n_rep, keep_frames, tmp_file, tmp_wd, first_iteration
-):
+) -> None:
     """Check Animation with objective, standardized or not."""
     animation = Animation(common_problem)
     output_files = animation.execute(
@@ -51,7 +51,7 @@ def test_common_scenario(
         assert Path(output_file).exists()
 
 
-def test_large_common_scenario(large_common_problem, tmp_wd):
+def test_large_common_scenario(large_common_problem, tmp_wd) -> None:
     """Check Animation with objective, standardized or not."""
     opt = Animation(large_common_problem)
     output_files = opt.execute(
@@ -62,7 +62,7 @@ def test_large_common_scenario(large_common_problem, tmp_wd):
         assert Path(output_file).exists()
 
 
-def test_opt_hist_const(tmp_wd):
+def test_opt_hist_const(tmp_wd) -> None:
     """Test that a problem with constraints is properly rendered."""
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     output_files = execute_post(
@@ -78,7 +78,7 @@ def test_opt_hist_const(tmp_wd):
         assert Path(output_file).exists()
 
 
-def test_l_shape(tmp_wd):
+def test_l_shape(tmp_wd) -> None:
     """Test the plot of the solution of the L-shape topology optimization."""
     volume_fraction = 0.3
     problem_name = "L-Shape"

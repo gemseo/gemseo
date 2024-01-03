@@ -45,14 +45,14 @@ DECIMAL = 5
     "discipline_class",
     [SobieskiMission, SobieskiAerodynamics, SobieskiStructure, SobieskiPropulsion],
 )
-def test_dtype(dtype, discipline_class):
+def test_dtype(dtype, discipline_class) -> None:
     """Check that the NumPy dtype is correctly passed to the underlying discipline."""
     discipline = discipline_class.create_with_physical_naming(dtype=dtype)
     assert discipline._discipline.dtype == dtype
 
 
 @pytest.mark.parametrize("enable_delay", [False, True])
-def test_enable_delay(enable_delay):
+def test_enable_delay(enable_delay) -> None:
     """Check that enable_delay is correctly passed to the underlying SobieskiMission."""
     discipline = SobieskiMission.create_with_physical_naming(enable_delay=enable_delay)
     assert discipline._discipline.enable_delay is enable_delay
@@ -88,7 +88,7 @@ def compute_output_data(discipline: MDODiscipline, factor: float) -> dict[str, n
 
 
 @pytest.mark.parametrize("factor", FACTORS)
-def test_mission_execute(factor):
+def test_mission_execute(factor) -> None:
     """Check the output data of SobieskiMissionPhysicalNaming."""
     output_data = compute_output_data(SobieskiMission(), factor)
     output_data_pn = compute_output_data(
@@ -98,7 +98,7 @@ def test_mission_execute(factor):
 
 
 @pytest.mark.parametrize("factor", FACTORS)
-def test_structure_execute(factor):
+def test_structure_execute(factor) -> None:
     """Check the output data of SobieskiStructurePhysicalNaming."""
     output_data = compute_output_data(SobieskiStructure(), factor)
     output_data_pn = compute_output_data(
@@ -114,7 +114,7 @@ def test_structure_execute(factor):
 
 
 @pytest.mark.parametrize("factor", FACTORS)
-def test_aerodynamics_execute(factor):
+def test_aerodynamics_execute(factor) -> None:
     """Check the output data of SobieskiAerodynamicsPhysicalNaming."""
     output_data = compute_output_data(SobieskiAerodynamics(), factor)
     output_data_pn = compute_output_data(
@@ -128,7 +128,7 @@ def test_aerodynamics_execute(factor):
 
 
 @pytest.mark.parametrize("factor", FACTORS)
-def test_propulsion_execute(factor):
+def test_propulsion_execute(factor) -> None:
     """Check the output data of SobieskiPropulsionPhysicalNaming."""
     output_data = compute_output_data(SobieskiPropulsion(), factor)
     output_data_pn = compute_output_data(
@@ -148,7 +148,7 @@ def test_propulsion_execute(factor):
     [SobieskiMission, SobieskiAerodynamics, SobieskiStructure, SobieskiPropulsion],
 )
 @pytest.mark.parametrize("factor", FACTORS)
-def test_mission_linearize(discipline_class, factor):
+def test_mission_linearize(discipline_class, factor) -> None:
     """Check the Jacobian data of the different disciplines."""
     discipline = discipline_class.create_with_physical_naming()
     input_data = compute_input_data(discipline.default_inputs, factor)
@@ -162,7 +162,7 @@ def mda():
 
 
 @pytest.mark.parametrize("factor", FACTORS)
-def test_coupling(factor, mda):
+def test_coupling(factor, mda) -> None:
     """Check the MDA results of the four disciplines."""
     design_space = create_design_space(physical_naming=True)
     input_data = compute_input_data(
@@ -236,7 +236,7 @@ def scenario() -> DOEScenario:
     return scn
 
 
-def test_scenario(scenario_pn, scenario):
+def test_scenario(scenario_pn, scenario) -> None:
     """Check the MDA results of the four disciplines."""
     scenario_pn.execute({"algo": "OT_HALTON", "n_samples": 10})
     dataset_pn = scenario_pn.to_dataset(opt_naming=False)
@@ -277,7 +277,7 @@ def test_scenario(scenario_pn, scenario):
     assert_allclose(data, data_pn)
 
 
-def test_solution(mda):
+def test_solution(mda) -> None:
     """Check the value of the range at optimum."""
     problem = mda.disciplines[0]._discipline.sobieski_problem
     optimum_design = problem.optimum_design

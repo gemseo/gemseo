@@ -37,7 +37,7 @@ configure_logger()
 # %%
 # Define a way to display results
 # -------------------------------
-def display_result(res, mda_name):
+def display_result(res, mda_name) -> None:
     """Display coupling and output variables in logger.
 
     Args:

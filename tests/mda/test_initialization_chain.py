@@ -53,7 +53,7 @@ def disciplines1() -> list[MDODiscipline]:
     return disciplines
 
 
-def test_get_initialization_disciplines(disciplines1):
+def test_get_initialization_disciplines(disciplines1) -> None:
     """Tests the execution sequence correctness."""
     assert order_disciplines_from_default_inputs(disciplines1) == [
         disciplines1[2],
@@ -62,7 +62,7 @@ def test_get_initialization_disciplines(disciplines1):
     ]
 
 
-def test_fail_get_initialization_disciplines(disciplines1):
+def test_fail_get_initialization_disciplines(disciplines1) -> None:
     """Tests that the algorithm fails when not enough default inputs are present."""
     disciplines1[1].default_inputs.pop("g")
     missing_inputs = order_disciplines_from_default_inputs(disciplines1, False)
@@ -77,7 +77,7 @@ def test_fail_get_initialization_disciplines(disciplines1):
     assert missing_inputs == ["g"]
 
 
-def test_create_init_chain(disciplines1):
+def test_create_init_chain(disciplines1) -> None:
     """Tests the creation of the process."""
     chain = MDOInitializationChain(disciplines1)
     chain.execute()

@@ -33,7 +33,7 @@ def library() -> SciPyDOE:
     return SciPyDOE()
 
 
-def test_get_options(library):
+def test_get_options(library) -> None:
     """Check that _get_options passed the right values to _process_options."""
     with mock.patch.object(library, "_process_options") as mock_method:
         library._get_options()
@@ -56,7 +56,7 @@ def test_get_options(library):
     }
 
 
-def test_remove_recent_scipy_options(library):
+def test_remove_recent_scipy_options(library) -> None:
     """Check that the method removing not yet available SciPy options works."""
     original_option_names = ["a", "b", "c"]
     option_names = original_option_names.copy()
@@ -76,7 +76,9 @@ def test_remove_recent_scipy_options(library):
     assert option_names == ["a", "c"]
 
 
-def check_option_filtering(option_name, target_version, current_version, caplog):
+def check_option_filtering(
+    option_name, target_version, current_version, caplog
+) -> None:
     """Check that the options not yet available in SciPy are correctly removed."""
     text = (
         f"Removed the option {option_name} "
@@ -91,7 +93,7 @@ def check_option_filtering(option_name, target_version, current_version, caplog)
 @pytest.mark.parametrize("algo_name", ["Sobol", "Halton", "MC", "LHS", "PoissonDisk"])
 @pytest.mark.parametrize("version", ["1.7", "1.8", "1.9", "1.10"])
 @pytest.mark.parametrize("seed", [None, 3])
-def test_generate_samples(library, algo_name, version, seed, caplog):
+def test_generate_samples(library, algo_name, version, seed, caplog) -> None:
     """Check the generation of samples."""
     dimension = 2
     n_samples = 3
@@ -119,7 +121,7 @@ def test_generate_samples(library, algo_name, version, seed, caplog):
     assert samples.shape == (n_samples, dimension)
 
 
-def test_monte_carlo():
+def test_monte_carlo() -> None:
     """Check that the class _MonteCarlo works properly."""
     monte_carlo = _MonteCarlo(3, 4)
     samples = monte_carlo.random(2)
@@ -143,7 +145,7 @@ def test_monte_carlo():
 @pytest.mark.parametrize(
     "kwargs", [{}, {"optimization": SciPyDOE.Optimizer.NONE}, {"optimization": ""}]
 )
-def test_no_optimizer(library, kwargs):
+def test_no_optimizer(library, kwargs) -> None:
     """Check that _get_options converts SciPyDOE.Optimizer.NONE to None."""
     library.init_options_grammar("HALTON")
     assert library._get_options(**kwargs)["optimization"] is None

@@ -164,7 +164,8 @@ class OptLibraryTestBase:
             return Power2(**pb_options)
         if pb_name == "Rastrigin":
             return Rastrigin(**pb_options)
-        raise ValueError(f"Bad pb_name argument: {pb_name}")
+        msg = f"Bad pb_name argument: {pb_name}"
+        raise ValueError(msg)
 
     def generate_test(self, opt_lib_name, get_options=None, get_problem_options=None):
         """Generates the tests for an opt library Filters algorithms adapted to the

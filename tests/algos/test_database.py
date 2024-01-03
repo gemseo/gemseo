@@ -80,7 +80,7 @@ def problem(problem_and_result) -> Rosenbrock:
     return problem_and_result[0]
 
 
-def test_correct_store_unstore(problem):
+def test_correct_store_unstore(problem) -> None:
     """Test the storage of objective function values and gradient values."""
     database = problem.database
     fname = problem.objective.name
@@ -96,7 +96,7 @@ def test_correct_store_unstore(problem):
             assert_almost_equal(grad_rel_err, 0.0, decimal=14)
 
 
-def test_write_read(tmp_wd, problem):
+def test_write_read(tmp_wd, problem) -> None:
     """Test the writing of objective function values and gradient values."""
     database = problem.database
     hdf_file = "rosen.hdf"
@@ -125,7 +125,7 @@ def test_write_read(tmp_wd, problem):
             assert_almost_equal(df_rel_err, 0.0, decimal=14)
 
 
-def test_get_output_names():
+def test_get_output_names() -> None:
     database = Database()
     fname = "f"
     gname = database.get_gradient_name(fname)
@@ -141,7 +141,7 @@ def test_get_output_names():
     ]
 
 
-def test_get_f_hist():
+def test_get_f_hist() -> None:
     """Test the objective history extraction."""
     problem = Rosenbrock()
     database = problem.database
@@ -162,7 +162,7 @@ def test_get_f_hist():
     assert len(hist_f) == len(hist_x)
 
 
-def test_get_f_hist_rosen(problem):
+def test_get_f_hist_rosen(problem) -> None:
     """Test the objective history extraction."""
     database = problem.database
     hist_x = database.get_x_vect_history()
@@ -176,7 +176,7 @@ def test_get_f_hist_rosen(problem):
     assert len(hist_f) == len(hist_x)
 
 
-def test_clean_from_iteration(problem):
+def test_clean_from_iteration(problem) -> None:
     """Tests access to design variables by iteration index."""
     database = problem.database
     # clean after iteration 13
@@ -187,7 +187,7 @@ def test_clean_from_iteration(problem):
     database.store(x_test, {})
 
 
-def test_get_x_at_iteration():
+def test_get_x_at_iteration() -> None:
     """Tests access to design variables by iteration index."""
     problem = Rosenbrock()
     database = problem.database
@@ -203,7 +203,7 @@ def test_get_x_at_iteration():
     assert all(database.get_x_vect(-1) == database.get_x_vect(29))
 
 
-def test_scipy_df0_rosenbrock(problem_and_result):
+def test_scipy_df0_rosenbrock(problem_and_result) -> None:
     """Tests the storage of optimization solutions."""
     problem, result = problem_and_result
     database = problem.database
@@ -212,7 +212,7 @@ def test_scipy_df0_rosenbrock(problem_and_result):
     assert database.get_function_history("rosen")[-1] < 6.2e-11
 
 
-def test_append_export(tmp_wd):
+def test_append_export(tmp_wd) -> None:
     database = Database()
     file_path_db = "test_db_append.hdf5"
     # Export empty file
@@ -234,7 +234,7 @@ def test_append_export(tmp_wd):
     assert len(Database.from_hdf(file_path_db)) == n_calls + 1
 
 
-def test_add_listeners():
+def test_add_listeners() -> None:
     database = Database()
     with pytest.raises(TypeError, match="Listener function is not callable"):
         database.add_store_listener("toto")
@@ -242,7 +242,7 @@ def test_add_listeners():
         database.add_new_iter_listener("toto")
 
 
-def test_append_export_after_store(tmp_wd):
+def test_append_export_after_store(tmp_wd) -> None:
     """Test that a database is correctly exported when it is appended after each storage
     call."""
     database = Database()
@@ -272,7 +272,7 @@ def test_append_export_after_store(tmp_wd):
             assert value == pytest.approx(new_database[idx][key])
 
 
-def test_create_hdf_input_dataset(h5_file):
+def test_create_hdf_input_dataset(h5_file) -> None:
     """Test that design variable values are correctly added to the hdf5 group of design
     variables."""
     hdf_database = HDFDatabase()
@@ -293,7 +293,7 @@ def test_create_hdf_input_dataset(h5_file):
         )
 
 
-def test_add_hdf_name_output(h5_file):
+def test_add_hdf_name_output(h5_file) -> None:
     """Test that output names are correctly added to the hdf5 group of output names."""
     hdf_database = HDFDatabase()
 
@@ -316,7 +316,7 @@ def test_add_hdf_name_output(h5_file):
     ).all()
 
 
-def test_add_hdf_scalar_output(h5_file):
+def test_add_hdf_scalar_output(h5_file) -> None:
     """Test that scalar values are correctly added to the group of output values."""
     hdf_database = HDFDatabase()
 
@@ -335,7 +335,7 @@ def test_add_hdf_scalar_output(h5_file):
     assert array(values_group["1"]) == pytest.approx(array([100, 200]))
 
 
-def test_add_hdf_vector_output(h5_file):
+def test_add_hdf_vector_output(h5_file) -> None:
     """Test that a vector (array and/or list) of outputs is correctly added to the group
     of output values."""
     hdf_database = HDFDatabase()
@@ -361,7 +361,7 @@ def test_add_hdf_vector_output(h5_file):
         hdf_database._HDFDatabase__add_hdf_vector_output(1, 2, values_group, [1, 2])
 
 
-def test_add_hdf_output_dataset(h5_file):
+def test_add_hdf_output_dataset(h5_file) -> None:
     """Test that output datasets are correctly added to the hdf groups of output."""
     hdf_database = HDFDatabase()
 
@@ -394,7 +394,7 @@ def test_add_hdf_output_dataset(h5_file):
     assert array(values_group["arr_100"]["2"]) == pytest.approx(array([[1, 2, 3]]))
 
 
-def test_get_missing_hdf_output_dataset(h5_file):
+def test_get_missing_hdf_output_dataset(h5_file) -> None:
     """Test that missing values in the hdf  output datasets are correctly found."""
     hdf_database = HDFDatabase()
 
@@ -431,19 +431,19 @@ def test_get_missing_hdf_output_dataset(h5_file):
     assert idx_mapping == {"h": 2, "i": 3}
 
 
-def test_get_x_at_iteration_except(problem):
+def test_get_x_at_iteration_except(problem) -> None:
     """Tests exception in get_x_vect."""
     with pytest.raises(ValueError):
         problem.database.get_x_vect(1000)
 
 
-def test_contains_dataname(problem):
+def test_contains_dataname(problem) -> None:
     """Tests data name belonging check."""
     database = problem.database
     assert "toto" not in database.get_function_names(False)
 
 
-def test_get_history_array(problem):
+def test_get_history_array(problem) -> None:
     """Tests history extraction into an array."""
     database = problem.database
     values_array, _, _ = database.get_history_array(input_names=["x_1", "x_2"])
@@ -455,7 +455,7 @@ def test_get_history_array(problem):
     database.get_history_array()
 
 
-def test_get_history_array_wrong_f_name(problem):
+def test_get_history_array_wrong_f_name(problem) -> None:
     """Check that get_history_array raises an error with an unknown function name."""
     with pytest.raises(
         ValueError,
@@ -475,14 +475,14 @@ def test_get_history_array_wrong_f_name(problem):
         problem.database.get_history_array(function_names=["foo", "bar"])
 
 
-def test_ggobi_export(tmp_wd, problem):
+def test_ggobi_export(tmp_wd, problem) -> None:
     """Tests export to GGobi."""
     file_path = "opt_hist.xml"
     problem.database.to_ggobi(file_path=file_path)
     assert Path(file_path).exists()
 
 
-def test_hdf_grad_export(tmp_wd, problem):
+def test_hdf_grad_export(tmp_wd, problem) -> None:
     """Tests export into HDF."""
     database = problem.database
     f_database_ref, x_database_ref = database.get_history()
@@ -496,7 +496,7 @@ def test_hdf_grad_export(tmp_wd, problem):
     assert len(database) == len(database_read)
 
 
-def test_hdf_import():
+def test_hdf_import() -> None:
     """Tests import from HDF."""
     database = Database.from_hdf(DIRNAME / "rosen_grad.hdf5")
     fname = "rosen"
@@ -511,7 +511,7 @@ def test_hdf_import():
     assert len(hist_f) == len(hist_x)
 
 
-def test_hdf_import_sob():
+def test_hdf_import_sob() -> None:
     """Tests import from HDF."""
     database = Database.from_hdf(DIRNAME / "mdf_backup.h5")
     hist_x = database.get_x_vect_history()
@@ -523,7 +523,7 @@ def test_hdf_import_sob():
         assert len(hist_g) == 5
 
 
-def test_opendace_import(tmp_wd):
+def test_opendace_import(tmp_wd) -> None:
     """Tests import from Opendace."""
     database = Database()
     inf = DIRNAME / "rae2822_cl075_085_mach_068_074.xml"
@@ -533,7 +533,7 @@ def test_opendace_import(tmp_wd):
     assert outfpath.exists()
 
 
-def test_missing_tag():
+def test_missing_tag() -> None:
     """Tests the missing tag insertion."""
     database = Database()
     # Store a point with the associated objective function value and
@@ -551,7 +551,7 @@ def test_missing_tag():
     assert f_history == [[value, gradient], [0.0, "NA"]]
 
 
-def test__str__database():
+def test__str__database() -> None:
     """Test that the string representation of the database is correct."""
     database = Database()
     x1 = array([1.0, 2.0])
@@ -566,7 +566,7 @@ def test__str__database():
     assert database.__str__() == ref
 
 
-def test_filter_database():
+def test_filter_database() -> None:
     """Test that the database is correctly filtered."""
     database = Database()
     x1 = array([1.0, 2.0])
@@ -589,21 +589,21 @@ def test_filter_database():
     assert database[x2] == {"Rosenbrock": value2}
 
 
-def test__str__hashable_ndarray():
+def test__str__hashable_ndarray() -> None:
     """Tests the string representation."""
     x_array = array([1.0, 1.0])
     x_hash = HashableNdarray(x_array)
     assert str(x_hash) == str(x_array)
 
 
-def test__repr__():
+def test__repr__() -> None:
     """Tests the __repr__ method."""
     x_array = array([1.0, 1.0])
     x_hash = HashableNdarray(x_array)
     assert repr(x_hash) == str(x_array)
 
 
-def test_unwrap():
+def test_unwrap() -> None:
     """Tests HashableNdarray unwrapping."""
     x_array = array([1.0, 1.0])
     x_hash = HashableNdarray(x_array)
@@ -613,12 +613,12 @@ def test_unwrap():
     assert (x_hash.unwrap() == x_array).all()
 
 
-def test_fail_import():
+def test_fail_import() -> None:
     with pytest.raises(KeyError):
         Database.from_hdf(FAIL_HDF)
 
 
-def test_remove_empty_entries():
+def test_remove_empty_entries() -> None:
     database = Database()
     database.store(array([1.0]), {})
     database.store(array([2.0]), {"f": array([1.0])})
@@ -627,7 +627,7 @@ def test_remove_empty_entries():
     assert array([2.0]) in database
 
 
-def test_get_last_n_x():
+def test_get_last_n_x() -> None:
     database = Database()
     database.store(ones(1), {})
     database.store(2 * ones(1), {})
@@ -639,7 +639,7 @@ def test_get_last_n_x():
         database.get_last_n_x_vect(4)
 
 
-def test_name():
+def test_name() -> None:
     """Check the name of the database."""
 
     class NewDatabase(Database):
@@ -649,13 +649,13 @@ def test_name():
     assert Database(name="my_database").name == "my_database"
 
 
-def test_notify_newiter_store_listeners():
+def test_notify_newiter_store_listeners() -> None:
     """Check that notify_new_iter_listeners and notify_store_listeners works
     properly."""
     database = Database()
     database.x_sum = 0
 
-    def add(x):
+    def add(x) -> None:
         database.x_sum += x
 
     database.store(array([1]), {"y": 0})
@@ -682,18 +682,18 @@ def simple_database():
     return database
 
 
-def test_clear(simple_database):
+def test_clear(simple_database) -> None:
     """Check the Database.clear method."""
     simple_database.clear()
     assert len(simple_database) == 0
 
 
-def test_last_item(simple_database):
+def test_last_item(simple_database) -> None:
     """Check that the property last_item is the last item stored in the database."""
     assert simple_database.last_item["y"] == 3.0
 
 
-def test_get_history_array_with_simple_database(simple_database):
+def test_get_history_array_with_simple_database(simple_database) -> None:
     """Check get_history_array with a simple database."""
     values_array, variable_names, functions = simple_database.get_history_array()
     assert_almost_equal(values_array, array([[1.0, 2.0, 3.0, 4.0, 5.0, 0.0]]))
@@ -701,7 +701,7 @@ def test_get_history_array_with_simple_database(simple_database):
     assert functions == ["w", "x", "y", "z"]
 
 
-def test_get_output_value():
+def test_get_output_value() -> None:
     """Check get_output()."""
     database = Database()
     input_value = array([1.0])
@@ -734,7 +734,7 @@ def test_get_output_value():
     )
 
 
-def test_check_output_history_is_empty():
+def test_check_output_history_is_empty() -> None:
     """Check check_output_history_is_empty."""
     database = Database()
     database.store(array([1.0]), {"f": array([2.0])})
@@ -742,7 +742,7 @@ def test_check_output_history_is_empty():
     assert database.check_output_history_is_empty("g")
 
 
-def test_get_hashable_ndarray():
+def test_get_hashable_ndarray() -> None:
     """Check get_hashable_ndarray."""
     with pytest.raises(
         KeyError,
@@ -754,7 +754,7 @@ def test_get_hashable_ndarray():
         Database.get_hashable_ndarray(12)
 
 
-def test_delitem():
+def test_delitem() -> None:
     """Check __delitem__."""
     database = Database()
     database.store(array([1.0]), {"f": array([2.0])})

@@ -95,7 +95,7 @@ def test_plot(
     dataset,
     pyplot_close_all,
     fig_and_axes,
-):
+) -> None:
     """Check Boxplot."""
     datasets = [other_dataset] if datasets else []
     plot = Boxplot(dataset, *datasets, **kwargs)

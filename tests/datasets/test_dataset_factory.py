@@ -22,6 +22,6 @@ from gemseo.datasets.dataset_factory import DatasetFactory
 
 
 @pytest.mark.parametrize("name", ["Dataset", "IODataset", "OptimizationDataset"])
-def test_dataset_factory(name):
+def test_dataset_factory(name) -> None:
     """Test the class DatasetFactory."""
     assert DatasetFactory().is_available(name)

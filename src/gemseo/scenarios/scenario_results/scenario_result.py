@@ -67,9 +67,8 @@ class ScenarioResult:
             optimization_result = scenario.optimization_result
 
         if optimization_result is None:
-            raise ValueError(
-                "A ScenarioResult requires a scenario that has been executed."
-            )
+            msg = "A ScenarioResult requires a scenario that has been executed."
+            raise ValueError(msg)
 
         self.design_variable_names_to_values = optimization_result.x_opt_as_dict
         self.optimization_problems_to_results = {

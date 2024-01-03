@@ -70,9 +70,8 @@ class LinearSolver:
                 str(a_mat.shape),
                 str(b_vec.shape),
             )
-            raise ValueError(
-                "Second member of the linear system must be a column vector"
-            )
+            msg = "Second member of the linear system must be a column vector"
+            raise ValueError(msg)
         if issparse(b_vec):
             b_vec = b_vec.toarray()
         return b_vec.real

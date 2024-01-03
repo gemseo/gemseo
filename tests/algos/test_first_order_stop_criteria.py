@@ -26,7 +26,7 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 
 @pytest.mark.parametrize("is_optimum", [False, True])
-def test_is_kkt_norm_tol_reached_rosenbrock(is_optimum):
+def test_is_kkt_norm_tol_reached_rosenbrock(is_optimum) -> None:
     """Test KKT criterion on Rosenbrock problem."""
     problem = Rosenbrock(l_b=0, u_b=1.0)
     design_point = ones(2) if is_optimum else zeros(2)
@@ -43,7 +43,7 @@ def test_is_kkt_norm_tol_reached_rosenbrock(is_optimum):
 
 
 @pytest.mark.parametrize("is_optimum", [False, True])
-def test_is_kkt_norm_tol_reached_power2(is_optimum):
+def test_is_kkt_norm_tol_reached_power2(is_optimum) -> None:
     """Test KKT criterion on Power2 problem."""
     problem = Power2()
     problem.preprocess_functions()
@@ -66,7 +66,7 @@ def test_is_kkt_norm_tol_reached_power2(is_optimum):
 
 @pytest.mark.parametrize("algorithm", ["NLOPT_SLSQP", "SLSQP"])
 @pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
-def test_kkt_norm_correctly_stored(algorithm, problem):
+def test_kkt_norm_correctly_stored(algorithm, problem) -> None:
     """Test that kkt norm is stored at each iteration requiring gradient."""
     problem.preprocess_functions()
     options = {

@@ -80,10 +80,11 @@ class BiLevelScenarioResult(ScenarioResult):
         """
         max_index = self.__n_sub_problems - 1
         if index > max_index:
-            raise ValueError(
+            msg = (
                 f"The index ({index}) of a sub-optimization result "
                 f"must be between 0 and {max_index}."
             )
+            raise ValueError(msg)
         return self.optimization_problems_to_results[
             self.__SUB_LABEL_FORMATTER.format(index)
         ]

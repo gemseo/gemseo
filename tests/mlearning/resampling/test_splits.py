@@ -43,23 +43,23 @@ def splits(first_split, second_split) -> Splits:
     return Splits(first_split, second_split)
 
 
-def test_collection():
+def test_collection() -> None:
     """Check that Splits is a subclass of collections.abc.Collection."""
     assert issubclass(Splits, Collection)
 
 
-def test_len(splits):
+def test_len(splits) -> None:
     """Check the length of a collection of train-test splits."""
     assert len(splits) == 2
 
 
-def test_iter(splits, first_split, second_split):
+def test_iter(splits, first_split, second_split) -> None:
     """Check the objects returned when iterating Splits."""
     for split, one_split in zip(splits, (first_split, second_split)):
         assert split == one_split
 
 
-def test_contains(splits, first_split):
+def test_contains(splits, first_split) -> None:
     """Check the method Splits.__contains__."""
     assert first_split in splits
     assert Split(array([12]), array([4])) not in splits

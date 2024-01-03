@@ -73,7 +73,8 @@ def _parse_inputs(args: Iterable[str] | None = None) -> tuple[Path, Path, Path, 
 
     workir_path = parsed_args.run_workdir
     if not workir_path.exists():
-        raise FileNotFoundError(f"Work directory {workir_path} does not exist.")
+        msg = f"Work directory {workir_path} does not exist."
+        raise FileNotFoundError(msg)
 
     serialized_disc_path = Path(parsed_args.discipline_path.name)
     input_data_path = Path(parsed_args.inputs_path.name)

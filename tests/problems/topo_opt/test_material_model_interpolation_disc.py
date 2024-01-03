@@ -36,7 +36,7 @@ def material_model():
     )
 
 
-def test_run_e(material_model):
+def test_run_e(material_model) -> None:
     """"""
     output_data = material_model.execute(
         input_data={"xPhys": ones(material_model.N_elements)}
@@ -44,7 +44,7 @@ def test_run_e(material_model):
     assert all(1.0 - THRESHOLD <= item <= 1.0 + THRESHOLD for item in output_data["E"])
 
 
-def test_run_rho(material_model):
+def test_run_rho(material_model) -> None:
     """"""
     output_data = material_model.execute(
         input_data={"xPhys": ones(material_model.N_elements)}
@@ -54,7 +54,7 @@ def test_run_rho(material_model):
     )
 
 
-def test_jacobian(material_model):
+def test_jacobian(material_model) -> None:
     """Check the analytic Jacobian by finite differences."""
     assert material_model.check_jacobian(
         material_model.get_input_data(), threshold=THRESHOLD, auto_set_step=True

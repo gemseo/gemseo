@@ -33,7 +33,7 @@ from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
 from gemseo.problems.analytical.rosenbrock import RosenMF
 
 
-def test_linear_composition():
+def test_linear_composition() -> None:
     fg = MDODisciplineAdapterGenerator(RosenMF(3))
     f1 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": 0})
     f2 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": 1})
@@ -49,7 +49,7 @@ def test_linear_composition():
     f_1_2.check_grad(ones(1), error_max=1e-4)
 
 
-def test_restricted_function():
+def test_restricted_function() -> None:
     fg = MDODisciplineAdapterGenerator(RosenMF(3))
     x = zeros(3)
     f_ref = fg.get_function(["fidelity", "x"], ["rosen"])

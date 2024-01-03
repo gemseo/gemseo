@@ -248,11 +248,13 @@ class DiscFromExe(_BaseDiscFromExe):
             self.parse_outfile = parse_outfile_method
 
         if not callable(self.parse_outfile):
-            raise TypeError("The parse_outfile_method must be callable.")
+            msg = "The parse_outfile_method must be callable."
+            raise TypeError(msg)
 
         self.write_input_file = write_input_file_method or write_input_file
         if not callable(self.write_input_file):
-            raise TypeError("The write_input_file_method must be callable.")
+            msg = "The write_input_file_method must be callable."
+            raise TypeError(msg)
 
         self._out_pos = None
         self._input_data = None
@@ -308,10 +310,11 @@ class DiscFromExe(_BaseDiscFromExe):
             out_lines = outfile.readlines()
 
         if len(out_lines) != len(self._out_lines):
-            raise ValueError(
+            msg = (
                 "The number of lines of the output file changed."
                 "This is not supported yet"
             )
+            raise ValueError(msg)
 
         return self.parse_outfile(self._out_pos, out_lines)
 
@@ -423,13 +426,15 @@ def parse_key_value_file(
         if separator in line:
             key_and_value = line.strip().split(separator)
             if len(key_and_value) != 2:
-                raise ValueError(f"unbalanced = in line {line}.")
+                msg = f"unbalanced = in line {line}."
+                raise ValueError(msg)
 
             key, value = key_and_value
             try:
                 data[key.strip()] = float(literal_eval(value.strip()))
             except BaseException:
-                raise ValueError(f"Failed to parse value as float {value}.") from None
+                msg = f"Failed to parse value as float {value}."
+                raise ValueError(msg) from None
 
     return data
 

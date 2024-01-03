@@ -134,7 +134,7 @@ def idf_scenario():
     return build_mdo_scenario("IDF")
 
 
-def test_scenario_state(mdf_scenario):
+def test_scenario_state(mdf_scenario) -> None:
     stats = mdf_scenario.get_disciplines_statuses()
 
     assert len(stats) == len(mdf_scenario.disciplines)
@@ -144,7 +144,7 @@ def test_scenario_state(mdf_scenario):
         assert stats[disc.name] == "PENDING"
 
 
-def test_add_user_defined_constraint_error(mdf_scenario):
+def test_add_user_defined_constraint_error(mdf_scenario) -> None:
     # Set the design constraints
     mdf_scenario.set_differentiation_method(
         mdf_scenario.DifferentiationMethod.NO_DERIVATIVE
@@ -156,7 +156,7 @@ def test_add_user_defined_constraint_error(mdf_scenario):
     )
 
 
-def test_save_optimization_history_exception(mdf_scenario):
+def test_save_optimization_history_exception(mdf_scenario) -> None:
     with pytest.raises(
         ValueError, match="Cannot export optimization history to file format: foo."
     ):
@@ -166,21 +166,21 @@ def test_save_optimization_history_exception(mdf_scenario):
 @pytest.mark.parametrize(
     "file_format", [OptimizationProblem.GGOBI_FORMAT, OptimizationProblem.HDF5_FORMAT]
 )
-def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd):
+def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd) -> None:
     file_path = Path("file_name")
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     mdf_scenario.save_optimization_history(str(file_path), file_format=file_format)
     assert file_path.exists()
 
 
-def test_init_mdf(mdf_scenario):
+def test_init_mdf(mdf_scenario) -> None:
     assert (
         sorted(["y_12", "y_21", "y_23", "y_31", "y_32"])
         == mdf_scenario.formulation.mda.strong_couplings
     )
 
 
-def test_basic_idf(tmp_wd, idf_scenario):
+def test_basic_idf(tmp_wd, idf_scenario) -> None:
     """"""
     posts = idf_scenario.posts
     assert len(posts) > 0
@@ -193,7 +193,7 @@ def test_basic_idf(tmp_wd, idf_scenario):
     assert Path("xdsm.html").exists()
 
 
-def test_backup_error(tmp_wd, mdf_scenario):
+def test_backup_error(tmp_wd, mdf_scenario) -> None:
     """"""
     expected_message = (
         "Conflicting options for history backup, "
@@ -209,7 +209,7 @@ def test_backup_error(tmp_wd, mdf_scenario):
 
 
 @pytest.mark.parametrize("each_iter", [False, True])
-def test_backup_0(tmp_wd, mdf_scenario, each_iter):
+def test_backup_0(tmp_wd, mdf_scenario, each_iter) -> None:
     """Test the optimization backup with generation of plots during convergence.
 
     Test that, when used, the backup does not call the original objective.
@@ -236,7 +236,7 @@ def test_backup_0(tmp_wd, mdf_scenario, each_iter):
     [MDOScenario.GrammarType.SIMPLE, MDOScenario.GrammarType.JSON],
     indirect=True,
 )
-def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
+def test_backup_1(tmp_wd, mdf_variable_grammar_scenario) -> None:
     """Test the optimization backup with generation of plots during convergence.
 
     tests that when used, the backup does not call the original objective
@@ -265,7 +265,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
     )
 
 
-def test_typeerror_formulation():
+def test_typeerror_formulation() -> None:
     disciplines = [SobieskiPropulsion()]
     design_space = SobieskiDesignSpace()
 
@@ -282,7 +282,7 @@ def test_typeerror_formulation():
     [MDOScenario.GrammarType.SIMPLE, MDOScenario.GrammarType.JSON],
     indirect=True,
 )
-def test_get_optimization_results(mdf_variable_grammar_scenario):
+def test_get_optimization_results(mdf_variable_grammar_scenario) -> None:
     """Test the optimization results accessor.
 
     Test the case when the Optimization results are available.
@@ -311,7 +311,7 @@ def test_get_optimization_results(mdf_variable_grammar_scenario):
     assert optimum.is_feasible is is_feasible
 
 
-def test_get_optimization_results_empty(mdf_scenario):
+def test_get_optimization_results_empty(mdf_scenario) -> None:
     """Test the optimization results accessor.
 
     Test the case when the Optimization results are not available (e.g. when the execute
@@ -320,7 +320,7 @@ def test_get_optimization_results_empty(mdf_scenario):
     assert mdf_scenario.optimization_result is None
 
 
-def test_adapter(tmp_wd, idf_scenario):
+def test_adapter(tmp_wd, idf_scenario) -> None:
     """Test the adapter."""
     # Monitor in the console
     idf_scenario.xdsmize(True, log_workflow_status=True, save_json=True)
@@ -347,7 +347,7 @@ def test_adapter(tmp_wd, idf_scenario):
     func(x_shared)
 
 
-def test_adapter_error(idf_scenario):
+def test_adapter_error(idf_scenario) -> None:
     """Test the adapter."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
@@ -363,7 +363,7 @@ def test_adapter_error(idf_scenario):
         MDOScenarioAdapter(idf_scenario, inputs, [*outputs, "missing_output"])
 
 
-def test_repr_str(idf_scenario):
+def test_repr_str(idf_scenario) -> None:
     assert str(idf_scenario) == idf_scenario.name
 
     expected = [
@@ -375,7 +375,7 @@ def test_repr_str(idf_scenario):
     assert repr(idf_scenario) == "\n".join(expected)
 
 
-def test_xdsm_filename(tmp_wd, idf_scenario):
+def test_xdsm_filename(tmp_wd, idf_scenario) -> None:
     """Tests the export path dir for xdsm."""
     file_name = "my_xdsm.html"
     idf_scenario.xdsmize(file_name=file_name)
@@ -386,7 +386,7 @@ def test_xdsm_filename(tmp_wd, idf_scenario):
 def test_add_observable(
     mdf_scenario: MDOScenario,
     observables: Sequence[str],
-):
+) -> None:
     """Test adding observables from discipline outputs.
 
     Args:
@@ -401,7 +401,7 @@ def test_add_observable(
 
 def test_add_observable_not_available(
     mdf_scenario: MDOScenario,
-):
+) -> None:
     """Test adding an observable which is not available in any discipline.
 
     Args:
@@ -412,13 +412,13 @@ def test_add_observable_not_available(
         mdf_scenario.add_observable("toto")
 
 
-def test_database_name(mdf_scenario):
+def test_database_name(mdf_scenario) -> None:
     """Check the name of the database."""
     assert mdf_scenario.formulation.opt_problem.database.name == "MDOScenario"
 
 
 @patch("timeit.default_timer", new=lambda: 1)
-def test_run_log(mdf_scenario, caplog):
+def test_run_log(mdf_scenario, caplog) -> None:
     """Check the log message of Scenario._run."""
     mdf_scenario._run_algorithm = lambda: None
     mdf_scenario.name = "ABC Scenario"
@@ -431,12 +431,12 @@ def test_run_log(mdf_scenario, caplog):
         assert string in caplog.text
 
 
-def test_clear_history_before_run(mdf_scenario):
+def test_clear_history_before_run(mdf_scenario) -> None:
     """Check that clear_history_before_run is correctly used in Scenario._run."""
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
     assert len(mdf_scenario.formulation.opt_problem.database) == 1
 
-    def run_algorithm_mock():
+    def run_algorithm_mock() -> None:
         pass
 
     mdf_scenario._run_algorithm = run_algorithm_mock
@@ -455,7 +455,7 @@ def test_clear_history_before_run(mdf_scenario):
         (False, "The discipline counters are disabled."),
     ],
 )
-def test_print_execution_metrics(mdf_scenario, caplog, activate, text):
+def test_print_execution_metrics(mdf_scenario, caplog, activate, text) -> None:
     """Check the print of the execution metrics w.r.t.
 
     activate_counters.
@@ -468,7 +468,7 @@ def test_print_execution_metrics(mdf_scenario, caplog, activate, text):
     MDODiscipline.activate_counters = activate_counters
 
 
-def test_get_execution_metrics(mdf_scenario):
+def test_get_execution_metrics(mdf_scenario) -> None:
     """Check the string returned byecution_metrics."""
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
     expected = re.compile(
@@ -512,7 +512,7 @@ def mocked_export_to_dataset(
     )
 
 
-def test_export_to_dataset(mdf_scenario):
+def test_export_to_dataset(mdf_scenario) -> None:
     """Check that to_dataset calls OptimizationProblem.to_dataset."""
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
     mdf_scenario.to_dataset = mocked_export_to_dataset
@@ -545,7 +545,7 @@ def complex_step_scenario() -> MDOScenario:
 
 
 @pytest.mark.parametrize("normalize_design_space", [False, True])
-def test_complex_step(complex_step_scenario, normalize_design_space):
+def test_complex_step(complex_step_scenario, normalize_design_space) -> None:
     """Check that complex step approximation works correctly."""
     complex_step_scenario.execute({
         "algo": "SLSQP",
@@ -576,7 +576,7 @@ def sinus_use_case() -> tuple[AnalyticDiscipline, DesignSpace]:
 )
 def test_use_standardized_objective(
     sinus_use_case, maximize, standardize, expr, val, caplog
-):
+) -> None:
     """Check that the setter use_standardized_objective works correctly."""
     discipline, design_space = sinus_use_case
     scenario = MDOScenario(
@@ -601,7 +601,7 @@ def test_use_standardized_objective(
 )
 def test_complex_casting(
     cast_default_inputs_to_complex, expected_dtype, mdf_scenario: MDOScenario
-):
+) -> None:
     """Check the automatic casting of default inputs when complex_step is selected.
 
     Args:
@@ -648,7 +648,7 @@ def scenario_with_non_float_variables() -> MDOScenario:
 )
 def test_complex_casting_with_non_float_variables(
     cast_default_inputs_to_complex, expected_dtype, scenario_with_non_float_variables
-):
+) -> None:
     """Test that the scenario will not cast non-float variables to complex.
 
     Args:
@@ -682,7 +682,7 @@ def test_complex_casting_with_non_float_variables(
     )
 
 
-def test_check_disciplines():
+def test_check_disciplines() -> None:
     """Test that an exception is raised when two disciplines compute the same output."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
@@ -822,7 +822,7 @@ def identity_scenario() -> MDOScenario:
 )
 def test_constraint_representation(
     identity_scenario, constraint_type, constraint_name, value, positive, expected
-):
+) -> None:
     """"""
     identity_scenario.add_constraint(
         "y",
@@ -838,7 +838,7 @@ def test_constraint_representation(
     assert constraints.special_repr == expected[3]
 
 
-def test_lib_serialization(tmp_wd, mdf_scenario):
+def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
     """Test the serialization of an MDOScenario with an instantiated opt_lib.
 
     Args:
@@ -860,7 +860,7 @@ def test_lib_serialization(tmp_wd, mdf_scenario):
     assert pickled_scenario._lib.internal_algo_name == "SLSQP"
 
 
-def test_get_result(mdf_scenario):
+def test_get_result(mdf_scenario) -> None:
     """Check get_result."""
     assert mdf_scenario.get_result() is None
 
@@ -893,7 +893,7 @@ def scenario_for_linear_check(full_linear):
     return create_scenario(my_disc, "DisciplinaryOpt", "f", design_space=ds)
 
 
-def test_function_problem_type(scenario_for_linear_check, full_linear):
+def test_function_problem_type(scenario_for_linear_check, full_linear) -> None:
     """Test that function and problem are consistent with declaration."""
     if not full_linear:
         assert isinstance(

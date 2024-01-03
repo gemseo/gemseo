@@ -724,7 +724,8 @@ class AbstractFullCache(AbstractCache):
                 If ``None``, export all of them.
         """
         if not self._hashes_to_indices:
-            raise ValueError("An empty cache cannot be exported to XML file.")
+            msg = "An empty cache cannot be exported to XML file."
+            raise ValueError(msg)
 
         shared_input_names = None
         shared_output_names = None
@@ -761,7 +762,8 @@ class AbstractFullCache(AbstractCache):
             all_output_data.append(output_data)
 
         if not all_output_data:
-            raise ValueError("Failed to find outputs in the cache.")
+            msg = "Failed to find outputs in the cache."
+            raise ValueError(msg)
 
         variable_names = []
         for data_name in list(shared_input_names) + list(shared_output_names):

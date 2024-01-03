@@ -43,11 +43,11 @@ def dataset() -> Dataset:
 class NewAlgo(MLClusteringAlgo):
     """New machine learning algorithm class."""
 
-    def _fit(self, data):
+    def _fit(self, data) -> None:
         pass
 
 
-def test_labels(dataset):
+def test_labels(dataset) -> None:
     """Test clustering labels."""
     algo = NewAlgo(dataset)
     with pytest.raises(ValueError):

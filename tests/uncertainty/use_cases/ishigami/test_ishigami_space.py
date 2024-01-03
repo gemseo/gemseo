@@ -19,7 +19,7 @@ from numpy import pi
 from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 
 
-def test_ishigami_space():
+def test_ishigami_space() -> None:
     """Check the Ishigami space."""
     space = IshigamiSpace()
     assert space.dimension == 3

@@ -109,7 +109,8 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         multioutput: bool = True,
     ) -> MeasureType:
         if multioutput:
-            raise NotImplementedError(
+            msg = (
                 f"The {self.__class__.__name__} does not support the multioutput case."
             )
+            raise NotImplementedError(msg)
         return silhouette_score(data, labels)

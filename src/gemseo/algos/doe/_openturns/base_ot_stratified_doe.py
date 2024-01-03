@@ -56,10 +56,11 @@ class BaseOTStratifiedDOE(BaseOTDOE):
             KeyError: If the key `levels` is not in `options`.
         """
         if self.__LEVELS not in options:
-            raise KeyError(
+            msg = (
                 "Missing parameter 'levels', "
                 "tuple of normalized levels in [0,1] you need in your design."
             )
+            raise KeyError(msg)
         self.__check_and_cast_levels(**options)
         centers = options.get(self.__CENTERS)
         if len(centers) == 1:
@@ -82,15 +83,17 @@ class BaseOTStratifiedDOE(BaseOTDOE):
             lower_bound = np_min(levels)
             upper_bound = np_max(levels)
             if lower_bound < 0.0 or upper_bound > 1.0:
-                raise ValueError(
+                msg = (
                     f"Levels must belong to [0, 1]; got [{lower_bound}, {upper_bound}]."
                 )
+                raise ValueError(msg)
             options[self.__LEVELS] = levels
         else:
-            raise TypeError(
+            msg = (
                 "The argument 'levels' must be either a list or a tuple; "
                 f"got a '{levels.__class__.__name__}'."
             )
+            raise TypeError(msg)
 
     def __check_and_cast_centers(self, dimension: int, **options: Any) -> None:
         """Check that the options ``centers`` is properly defined and cast it to array.
@@ -106,16 +109,18 @@ class BaseOTStratifiedDOE(BaseOTDOE):
         center = options[self.__CENTERS]
         if isinstance(center, (list, tuple)):
             if len(center) != dimension:
-                raise ValueError(
+                msg = (
                     "Inconsistent length of 'centers' list argument "
                     f"compared to design vector size: {dimension} vs {len(center)}."
                 )
+                raise ValueError(msg)
             options[self.__CENTERS] = array(center)
         else:
-            raise TypeError(
+            msg = (
                 "Error for 'centers' definition in DOE design; "
                 f"a tuple or a list is expected whereas {type(center)} is provided."
             )
+            raise TypeError(msg)
 
     def generate_samples(  # noqa: D102
         self, n_samples: int, dimension: int, **options: Any

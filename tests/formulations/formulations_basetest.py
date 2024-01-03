@@ -39,7 +39,7 @@ class FakeDiscipline(MDODiscipline):
         input_grammar_file,
         output_grammar_file,
         grammar_type=MDODiscipline.GrammarType.JSON,
-    ):
+    ) -> None:
         """
 
         :param input_grammar_file: param output_grammar_file:

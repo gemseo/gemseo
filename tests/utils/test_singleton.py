@@ -26,9 +26,9 @@ from gemseo.utils.singleton import SingleInstancePerAttributeId
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 
-def test_sing_id():
+def test_sing_id() -> None:
     class SingleId(metaclass=SingleInstancePerAttributeId):
-        def __init__(self, arg):
+        def __init__(self, arg) -> None:
             super().__init__()
             self.arg = arg
 
@@ -39,18 +39,18 @@ def test_sing_id():
     assert a is not c
 
     class SingleIdFail(metaclass=SingleInstancePerAttributeId):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
     with pytest.raises(ValueError):
         SingleIdFail()
 
 
-def test_sing_file():
+def test_sing_file() -> None:
     file_loc = __file__
 
     class SingleFile(metaclass=SingleInstancePerFileAttribute):
-        def __init__(self, arg):
+        def __init__(self, arg) -> None:
             super().__init__()
             self.arg = arg
 
@@ -64,21 +64,21 @@ def test_sing_file():
         SingleFile()
 
     class SingleFileFail(metaclass=SingleInstancePerFileAttribute):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
     with pytest.raises(ValueError):
         SingleFileFail()
 
 
-def test_id_collision_inst():
+def test_id_collision_inst() -> None:
     class SingleId1(metaclass=SingleInstancePerAttributeId):
-        def __init__(self, arg):
+        def __init__(self, arg) -> None:
             super().__init__()
             self.arg = arg
 
     class SingleId2(metaclass=SingleInstancePerAttributeId):
-        def __init__(self, arg):
+        def __init__(self, arg) -> None:
             super().__init__()
             self.arg = arg
 
@@ -89,14 +89,14 @@ def test_id_collision_inst():
     assert not isinstance(s1, type(s2))
 
 
-def test_id_collision_file():
+def test_id_collision_file() -> None:
     class SingleFId1(metaclass=SingleInstancePerFileAttribute):
-        def __init__(self, arg):
+        def __init__(self, arg) -> None:
             super().__init__()
             self.arg = arg
 
     class SingleFId2(metaclass=SingleInstancePerFileAttribute):
-        def __init__(self, arg):
+        def __init__(self, arg) -> None:
             super().__init__()
             self.arg = arg
 

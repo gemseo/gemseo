@@ -29,7 +29,7 @@ from gemseo.algos.opt.core.updater_factory import UpdaterFactory
 class TestUpdaterFactory(TestCase):
     """A class to test the UpdaterFactory class."""
 
-    def test_unavailable_update(self):
+    def test_unavailable_update(self) -> None:
         """Tests the unavailable update exception."""
         updater_factory = UpdaterFactory()
         self.assertRaises(

@@ -41,7 +41,7 @@ def parse_cfgobj(infile):
     return data
 
 
-def write_output(out1, out2, outfile):
+def write_output(out1, out2, outfile) -> None:
     sout = """out 1 = {:1.18g}
 
 [ "section 1" ]
@@ -50,7 +50,7 @@ def write_output(out1, out2, outfile):
         fout.write(sout.format(out1, out2))
 
 
-def execute(infile=None, outfile=None):
+def execute(infile=None, outfile=None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", help="input file")
     parser.add_argument("-o", help="output file")

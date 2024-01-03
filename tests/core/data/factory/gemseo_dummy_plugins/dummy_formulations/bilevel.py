@@ -22,5 +22,5 @@ from gemseo.formulations.bilevel import BiLevel
 class DummyBiLevel(BiLevel):
     """Dummy."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass

@@ -42,7 +42,7 @@ def factory():
     return PostFactory()
 
 
-def test_correlations(tmp_wd, factory, pyplot_close_all):
+def test_correlations(tmp_wd, factory, pyplot_close_all) -> None:
     """Test correlations with the Rosenbrock problem.
 
     Args:
@@ -68,7 +68,7 @@ def test_correlations(tmp_wd, factory, pyplot_close_all):
         assert Path(outf).exists()
 
 
-def test_correlations_import(tmp_wd, factory, pyplot_close_all):
+def test_correlations_import(tmp_wd, factory, pyplot_close_all) -> None:
     """Test correlations with imported problem.
 
     Args:
@@ -92,7 +92,7 @@ def test_correlations_import(tmp_wd, factory, pyplot_close_all):
         assert Path(outf).exists()
 
 
-def test_correlations_func_name_error(factory):
+def test_correlations_func_name_error(factory) -> None:
     """Test ValueError for non-existent function.
 
     Args:
@@ -120,7 +120,7 @@ def test_correlations_func_name_error(factory):
 @image_comparison(None)
 def test_correlations_func_names(
     tmp_wd, factory, baseline_images, func_names, pyplot_close_all
-):
+) -> None:
     """Test func_names filter.
 
     Args:
@@ -148,7 +148,7 @@ def test_correlations_func_names(
 
 
 @image_comparison(["modified_sellar"])
-def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
+def test_func_name_sorting(tmp_wd, factory, pyplot_close_all) -> None:
     """Test that the function names sorting.
 
     Use a database from a modified Sellar problem
@@ -177,7 +177,7 @@ def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
     post.figures  # noqa: B018
 
 
-def test_func_order():
+def test_func_order() -> None:
     """Test the func_order static method used to sort the function names.
 
     When the variables (functions and design variables) are sorted using `func_order` as
@@ -287,7 +287,7 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_common_scenario(
     use_standardized_objective, baseline_images, common_problem, pyplot_close_all
-):
+) -> None:
     """Check Correlations with objective, standardized or not."""
     opt = Correlations(common_problem)
     maximum_correlation_coefficient = opt.MAXIMUM_CORRELATION_COEFFICIENT

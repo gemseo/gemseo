@@ -37,19 +37,19 @@ from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 
 class TestExecSequence(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.d1 = SobieskiMission()
         self.d2 = SobieskiAerodynamics()
         self.d3 = SobieskiPropulsion()
         self.d4 = SobieskiStructure()
 
-    def test_atomic_exec_sequence(self):
+    def test_atomic_exec_sequence(self) -> None:
         self.assertRaises(Exception, AtomicExecSequence, "not_a_discipline")
         tmp = AtomicExecSequence(SobieskiAerodynamics())
         assert tmp.__str__() == "SobieskiAerodynamics(None)"
         assert tmp.__repr__() == ("SobieskiAerodynamics(None, " + str(tmp.uuid) + ")")
 
-    def test_loop_exec_sequence(self):
+    def test_loop_exec_sequence(self) -> None:
         self.assertRaises(
             Exception,
             LoopExecSequence,
@@ -57,29 +57,29 @@ class TestExecSequence(unittest.TestCase):
             "not_a_compositeexecsequence",
         )
 
-    def test_atom(self):
+    def test_atom(self) -> None:
         _ = ExecutionSequenceFactory.atom(self.d1)
 
-    def test_parent_assignment(self):
+    def test_parent_assignment(self) -> None:
         atom = ExecutionSequenceFactory.atom(self.d1)
         seq = ExecutionSequenceFactory.serial().extend(atom)
         assert atom.parent == seq
         self.d1.parent = seq  # should not raise exception
         atom2 = ExecutionSequenceFactory.atom(self.d2)
 
-        def test_parent():
+        def test_parent() -> None:
             atom2.parent = seq
 
         self.assertRaises(RuntimeError, test_parent)
 
-    def test_par(self):
+    def test_par(self) -> None:
         seq0 = ExecutionSequenceFactory.parallel([self.d1, self.d2])
         seq1 = ExecutionSequenceFactory.parallel([self.d3, self.d4])
         seq2 = ExecutionSequenceFactory.serial(seq0)
         seq2.extend(seq1)
         seq0.extend(seq1)
 
-    def test_seq(self):
+    def test_seq(self) -> None:
         seq0 = SerialExecSequence()
         str(seq0)
         repr(seq0)
@@ -90,16 +90,16 @@ class TestExecSequence(unittest.TestCase):
         seq1.extend(self.d4)
         seq0.extend(seq1)
 
-    def test_serial_par_extend(self):
+    def test_serial_par_extend(self) -> None:
         seq2 = ExecutionSequenceFactory.serial([self.d1, self.d2])
         seq4 = ExecutionSequenceFactory.parallel([self.d3, self.d4])
         seq2.extend(seq4)
 
-    def test_loop(self):
+    def test_loop(self) -> None:
         seq1 = ExecutionSequenceFactory.serial([self.d1, self.d2])
         _ = ExecutionSequenceFactory.loop(self.d3, seq1)
 
-    def test_serial_execution(self):
+    def test_serial_execution(self) -> None:
         seq = ExecutionSequenceFactory.serial([self.d1, self.d1])
         seq.enable()
         assert seq.status == MDODiscipline.ExecutionStatus.PENDING
@@ -118,7 +118,7 @@ class TestExecSequence(unittest.TestCase):
         seq = SerialExecSequence()
         self.assertRaises(Exception, seq.enable)
 
-    def test_serial_execution_failed(self):
+    def test_serial_execution_failed(self) -> None:
         seq = ExecutionSequenceFactory.serial([self.d1, self.d2])
         seq.enable()
         assert seq.status == MDODiscipline.ExecutionStatus.PENDING
@@ -131,7 +131,7 @@ class TestExecSequence(unittest.TestCase):
         self.d1.status = MDODiscipline.ExecutionStatus.PENDING  # check PENDING ignored
         assert seq.status == MDODiscipline.ExecutionStatus.FAILED
 
-    def test_parallel_execution(self):
+    def test_parallel_execution(self) -> None:
         seq = ExecutionSequenceFactory.parallel([self.d1, self.d2])
         seq.enable()
         assert seq.status == MDODiscipline.ExecutionStatus.PENDING
@@ -149,7 +149,7 @@ class TestExecSequence(unittest.TestCase):
         for state in seq.get_statuses().values():
             assert state == MDODiscipline.ExecutionStatus.DONE
 
-    def test_parallel_execution_failed(self):
+    def test_parallel_execution_failed(self) -> None:
         seq = ExecutionSequenceFactory.parallel([self.d1, self.d2])
         seq.enable()
         assert seq.status == MDODiscipline.ExecutionStatus.PENDING
@@ -159,7 +159,7 @@ class TestExecSequence(unittest.TestCase):
         self.d1.status = MDODiscipline.ExecutionStatus.FAILED
         assert seq.status == MDODiscipline.ExecutionStatus.FAILED
 
-    def test_loop_execution(self):
+    def test_loop_execution(self) -> None:
         seq = ExecutionSequenceFactory.loop(
             self.d3, ExecutionSequenceFactory.serial([self.d1, self.d2])
         )
@@ -188,7 +188,7 @@ class TestExecSequence(unittest.TestCase):
         assert seq.status == MDODiscipline.ExecutionStatus.DONE
         assert seq.iteration_count == 2
 
-    def test_loop_execution_failed(self):
+    def test_loop_execution_failed(self) -> None:
         seq = ExecutionSequenceFactory.loop(
             self.d3, ExecutionSequenceFactory.serial([self.d1, self.d2])
         )
@@ -199,7 +199,7 @@ class TestExecSequence(unittest.TestCase):
     def status_of(self, seq, disc, n=0):
         return seq.get_statuses()[seq.disc_to_uuids[disc][n]]
 
-    def test_sub_scenario(self):
+    def test_sub_scenario(self) -> None:
         d1 = SobieskiPropulsion()
         design_space = SobieskiDesignSpace()
         sc_prop = MDOScenario(
@@ -244,21 +244,21 @@ class TestExecSequence(unittest.TestCase):
         assert self.status_of(seq, sc_prop) == MDODiscipline.ExecutionStatus.DONE
         self.assertRaises(IndexError, lambda: self.status_of(seq, d1, 1))
 
-    def test_visitor_pattern(self):
+    def test_visitor_pattern(self) -> None:
         class Visitor:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.result = []
 
-            def visit_atomic(self, atom):
+            def visit_atomic(self, atom) -> None:
                 self.result.append(atom.discipline)
 
-            def visit_serial(self, serial):
+            def visit_serial(self, serial) -> None:
                 self.result.append(serial)
 
-            def visit_parallel(self, parallel):
+            def visit_parallel(self, parallel) -> None:
                 self.result.append(parallel)
 
-            def visit_loop(self, loop):
+            def visit_loop(self, loop) -> None:
                 self.result.append(loop)
 
         serial = ExecutionSequenceFactory.serial().extend([self.d1, self.d2])

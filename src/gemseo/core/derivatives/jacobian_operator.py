@@ -38,7 +38,7 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
         self,
         dtype: dtype,
         shape: tuple[int, ...],
-    ):
+    ) -> None:
         """
         Args:
             dtype: The data type of the Jacobian.
@@ -53,9 +53,8 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
                 ndarray or SciPy spmatrix.
         """  # noqa: D205 D212 D415
         if not isinstance(other, (JacobianOperator, array_classes)):
-            raise TypeError(
-                f"Adding a JacobianOperator with {type(other)} is not supported."
-            )
+            msg = f"Adding a JacobianOperator with {type(other)} is not supported."
+            raise TypeError(msg)
 
         return _SumJacobianOperator(self, other)
 
@@ -66,9 +65,10 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
                 ndarray or SciPy spmatrix.
         """  # noqa: D205 D212 D415
         if not isinstance(other, (JacobianOperator, array_classes)):
-            raise TypeError(
+            msg = (
                 f"Substracting a JacobianOperator with {type(other)} is not supported."
             )
+            raise TypeError(msg)
 
         return _SubJacobianOperator(self, other)
 
@@ -81,9 +81,8 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
                 ndarray or SciPy spmatrix.
         """  # noqa: D205 D212 D415
         if not isinstance(other, (JacobianOperator, array_classes)):
-            raise TypeError(
-                f"Multiplying a JacobianOperator with {type(other)} is not supported."
-            )
+            msg = f"Multiplying a JacobianOperator with {type(other)} is not supported."
+            raise TypeError(msg)
 
         return _ComposedJacobianOperator(self, other)
 
@@ -96,9 +95,8 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
                 ndarray or SciPy spmatrix.
         """  # noqa: D205 D212 D415
         if not isinstance(other, (JacobianOperator, array_classes)):
-            raise TypeError(
-                f"Multiplying a JacobianOperator with {type(other)} is not supported."
-            )
+            msg = f"Multiplying a JacobianOperator with {type(other)} is not supported."
+            raise TypeError(msg)
 
         return _ComposedJacobianOperator(other, self)
 
@@ -147,7 +145,7 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
 
 
 class _RealJacobianOperator(JacobianOperator):
-    def __init__(self, operator: JacobianOperator):
+    def __init__(self, operator: JacobianOperator) -> None:
         """
         Args:
             operator: The Jacobian operator to cast to real.
@@ -164,7 +162,7 @@ class _RealJacobianOperator(JacobianOperator):
 
 
 class _AdjointJacobianOperator(JacobianOperator):
-    def __init__(self, operator: JacobianOperator):
+    def __init__(self, operator: JacobianOperator) -> None:
         """
         Args:
             operator: The Jacobian operator to take the adjoint of.
@@ -181,7 +179,7 @@ class _AdjointJacobianOperator(JacobianOperator):
 
 
 class _IdentityOperator(JacobianOperator):
-    def __init__(self, size: int):
+    def __init__(self, size: int) -> None:
         """
         Args:
             operator: The size of the identity.
@@ -200,7 +198,7 @@ class _SumJacobianOperator(JacobianOperator):
         self,
         operand_1: JacobianOperator,
         operand_2: JacobianOperator | ArrayType,
-    ):
+    ) -> None:
         """
         Args:
             operand_1: First operand of the summation.
@@ -229,7 +227,7 @@ class _SubJacobianOperator(JacobianOperator):
         self,
         operand_1: JacobianOperator,
         operand_2: JacobianOperator | ArrayType,
-    ):
+    ) -> None:
         """
         Args:
             operand_1: First operand of the substraction.
@@ -258,7 +256,7 @@ class _ComposedJacobianOperator(JacobianOperator):
         self,
         operand_1: JacobianOperator | ArrayType,
         operand_2: JacobianOperator | ArrayType,
-    ):
+    ) -> None:
         """
         Args:
             operand_1: First operand of the composition.

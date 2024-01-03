@@ -115,7 +115,7 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._parent
 
     @parent.setter
-    def parent(self, parent):
+    def parent(self, parent) -> None:
         """Set the containing execution sequence as parent.
 
         Args:
@@ -126,7 +126,8 @@ class ExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
                 of the given parent execution sequence.
         """
         if self not in parent.sequences:
-            raise RuntimeError(f"parent {parent} does not include child {self}")
+            msg = f"parent {parent} does not include child {self}"
+            raise RuntimeError(msg)
         self._parent = parent
 
     def enabled(self) -> bool:
@@ -168,10 +169,11 @@ class AtomicExecSequence(ExecutionSequence):
         """  # noqa: D205, D212, D415
         super().__init__()
         if not isinstance(discipline, MDODiscipline):
-            raise TypeError(
+            msg = (
                 "Atomic sequence shall be a discipline, got "
                 f"{type(discipline)} instead !"
             )
+            raise TypeError(msg)
         self.discipline = discipline
         self.uuid_to_disc = {self.uuid: discipline}
         self.disc_to_uuids = {discipline: [self.uuid]}
@@ -509,7 +511,8 @@ class SerialExecSequence(ExtendableExecSequence):
         if self.sequences:
             self.sequences[self.exec_index].enable()
         else:
-            raise ValueError("Serial execution is empty")
+            msg = "Serial execution is empty"
+            raise ValueError(msg)
 
     def _update_child_done_status(self, child) -> None:
         """Activate next child to given child execution sequence.
@@ -582,17 +585,19 @@ class LoopExecSequence(CompositeExecSequence):
         if isinstance(controller, AtomicExecSequence):
             control = controller
         elif not isinstance(controller, MDODiscipline):
-            raise TypeError(
+            msg = (
                 "Controller of a loop shall be a discipline, "
                 f"got {type(controller)} instead."
             )
+            raise TypeError(msg)
         else:
             control = AtomicExecSequence(controller)
         if not isinstance(sequence, CompositeExecSequence):
-            raise TypeError(
+            msg = (
                 "Sequence of a loop shall be a composite execution sequence, "
                 f"got {type(sequence)} instead."
             )
+            raise TypeError(msg)
         super().__init__()
         self.sequences = [control, sequence]
         self.atom_controller = control

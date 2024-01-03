@@ -45,12 +45,12 @@ def discipline(tmpdir):
     )
 
 
-def test_run(discipline):
+def test_run(discipline) -> None:
     """Tests the outputs written by the discipline."""
     assert "y_4" in discipline.execute()
 
 
-def test_wrap_discipline_in_job_scheduler(tmpdir):
+def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:
     """Test the LSF wrapper execution errors when LSF is not available."""
     disc = create_discipline("SobieskiMission")
     wrapped = SLURM(disc, workdir_path=tmpdir)

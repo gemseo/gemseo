@@ -50,7 +50,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_bars_plot(tmp_path, kwargs, properties, dataset, baseline_images):
+def test_bars_plot(tmp_path, kwargs, properties, dataset, baseline_images) -> None:
     """Test that bar plot generates the expected plot."""
     plot = BarPlot(dataset)
     for k, v in properties.items():

@@ -34,7 +34,7 @@ def problem():
     return SobieskiProblem("complex128")
 
 
-def test_dfuelweightdtoverc(problem):
+def test_dfuelweightdtoverc(problem) -> None:
     h = 1e-30
     sr = problem.structure
     indata = problem.get_default_inputs(
@@ -52,7 +52,7 @@ def test_dfuelweightdtoverc(problem):
     )
 
 
-def test_dfuelweightd_ar(problem):
+def test_dfuelweightd_ar(problem) -> None:
     h = 1e-30
     sr = problem.structure
     indata = problem.get_default_inputs(
@@ -72,7 +72,7 @@ def test_dfuelweightd_ar(problem):
     )
 
 
-def test_dfuelweightdsref(problem):
+def test_dfuelweightdsref(problem) -> None:
     h = 1e-30
     sr = problem.structure
     indata = problem.get_default_inputs(
@@ -92,7 +92,7 @@ def test_dfuelweightdsref(problem):
     )
 
 
-def test_jac_structure(problem):
+def test_jac_structure(problem) -> None:
     """"""
     sr = SobieskiStructure("complex128")
     indata = problem.get_default_inputs(names=sr.get_input_data_names())
@@ -138,7 +138,7 @@ def test_jac_structure(problem):
     )
 
 
-def test_jac2_sobieski_struct(problem):
+def test_jac2_sobieski_struct(problem) -> None:
     inpt_data = {
         "y_31": array([6555.68459235 + 0j]),
         "y_21": array([50606.9742 + 0j]),

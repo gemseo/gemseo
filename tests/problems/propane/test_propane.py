@@ -105,15 +105,15 @@ class TestPropaneScenario(unittest.TestCase):
         x_opt = scenario.design_space.get_current_value()
         return obj_opt, x_opt
 
-    def test_init_mdf(self):
+    def test_init_mdf(self) -> None:
         """"""
         self.build_mdo_scenario()
 
-    def test_init_idf(self):
+    def test_init_idf(self) -> None:
         """"""
         self.build_mdo_scenario("IDF")
 
-    def test_exec_mdf_mma(self):
+    def test_exec_mdf_mma(self) -> None:
         """"""
         obj_opt, x_opt = self.build_and_run_scenario("MDF", "SLSQP")
         self.assertAlmostEqual(obj_opt, 0, 2)
@@ -141,15 +141,15 @@ class TestPropaneScenario(unittest.TestCase):
 class TestPropaneCombustion(unittest.TestCase):
     """"""
 
-    def test_init_1(self):
+    def test_init_1(self) -> None:
         """"""
         PropaneComb1()
 
-    def test_init_2(self):
+    def test_init_2(self) -> None:
         """"""
         PropaneComb2()
 
-    def test_init_3(self):
+    def test_init_3(self) -> None:
         """"""
         PropaneComb3()
 
@@ -166,7 +166,7 @@ class TestPropaneCombustion(unittest.TestCase):
         y_1, y_2, y_3, x_shared = self.get_xy()
         return {"y_1": y_1, "y_2": y_2, "y_3": y_3, "x_shared": x_shared}
 
-    def test_run_1(self):
+    def test_run_1(self) -> None:
         """"""
         pc = PropaneComb1()
         pc.execute(self.get_current_x())
@@ -174,7 +174,7 @@ class TestPropaneCombustion(unittest.TestCase):
         self.assertAlmostEqual(y_1[0], 1.0, 10)
         self.assertAlmostEqual(y_1[1], 2.0, 10)
 
-    def test_run_2(self):
+    def test_run_2(self) -> None:
         """"""
         pc = PropaneComb2()
         pc.execute(self.get_current_x())
@@ -182,7 +182,7 @@ class TestPropaneCombustion(unittest.TestCase):
         self.assertAlmostEqual(y_2[0], 2.0, 10)
         self.assertAlmostEqual(y_2[1], 0.058860363180964305, 10)
 
-    def test_run_3(self):
+    def test_run_3(self) -> None:
         """"""
         pc = PropaneComb3()
         pc.execute(self.get_current_x())
@@ -191,7 +191,7 @@ class TestPropaneCombustion(unittest.TestCase):
         self.assertAlmostEqual(y_3[1], 0.029430181590482152, 10)
         self.assertAlmostEqual(y_3[2], 47.088290544771446, 10)
 
-    def test_run_reac(self):
+    def test_run_reac(self) -> None:
         """"""
         pc = PropaneReaction()
         indata = self.get_current_x()

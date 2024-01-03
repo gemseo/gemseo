@@ -41,7 +41,7 @@ def dataset() -> IODataset:
     return create_iris_dataset(as_io=True, as_numeric=True)
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test ClusteringModelFactory constructor."""
     factory = ClusteringModelFactory()
     # plugins may add classes
@@ -52,14 +52,14 @@ def test_constructor():
     }
 
 
-def test_create(dataset):
+def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     factory = ClusteringModelFactory()
     kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
     assert hasattr(kmeans, "parameters")
 
 
-def test_load(dataset, tmp_wd):
+def test_load(dataset, tmp_wd) -> None:
     """Test the loading of a model from data."""
     factory = ClusteringModelFactory()
     kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
@@ -69,14 +69,14 @@ def test_load(dataset, tmp_wd):
     assert hasattr(loaded_kmeans, "parameters")
 
 
-def test_available_clustering_models():
+def test_available_clustering_models() -> None:
     """Test the getter of available clustering models."""
     factory = ClusteringModelFactory()
     assert "KMeans" in factory.models
     assert "LinearRegressor" not in factory.models
 
 
-def test_is_available():
+def test_is_available() -> None:
     """Test the existence of a clustering model."""
     factory = ClusteringModelFactory()
     assert factory.is_available("KMeans")

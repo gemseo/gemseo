@@ -56,7 +56,7 @@ def linear_discipline(dataset) -> SurrogateDiscipline:
     return SurrogateDiscipline("LinearRegressor", dataset)
 
 
-def test_instantiation_without_data(dataset):
+def test_instantiation_without_data(dataset) -> None:
     """Check that instantiation without existing model and data raises an error."""
     with pytest.raises(
         ValueError, match=re.escape("data is required to train the surrogate model.")
@@ -64,12 +64,12 @@ def test_instantiation_without_data(dataset):
         SurrogateDiscipline("LinearRegressor")
 
 
-def test_linearization_mode_with_gradient(linear_discipline):
+def test_linearization_mode_with_gradient(linear_discipline) -> None:
     """Check the attribute linearization_mode for a model with gradient."""
     assert linear_discipline.linearization_mode == "auto"
 
 
-def test_linearization_mode_without_gradient(dataset):
+def test_linearization_mode_without_gradient(dataset) -> None:
     """Check the attribute linearization_mode for a model without gradient."""
     discipline = SurrogateDiscipline("GaussianProcessRegressor", dataset)
     assert discipline.linearization_mode == "finite_differences"
@@ -77,7 +77,7 @@ def test_linearization_mode_without_gradient(dataset):
     assert {"y_1", "y_2"} == set(discipline.get_output_data_names())
 
 
-def test_instantiation_from_algo(dataset):
+def test_instantiation_from_algo(dataset) -> None:
     """Check the instantiation from an MLRegressionAlgo."""
     algo = LinearRegressor(dataset)
     algo.learn()
@@ -87,7 +87,7 @@ def test_instantiation_from_algo(dataset):
     assert {"y_1", "y_2"} == set(discipline.get_output_data_names())
 
 
-def test_repr_str(linear_discipline):
+def test_repr_str(linear_discipline) -> None:
     """Check the __repr__ and __str__ of a surrogate discipline."""
     expected = """Surrogate discipline: LinReg_func
    Dataset name: func
@@ -100,7 +100,7 @@ def test_repr_str(linear_discipline):
     assert str(linear_discipline) == "LinReg_func"
 
 
-def test_execute(linear_discipline):
+def test_execute(linear_discipline) -> None:
     """Check the execution of a surrogate discipline."""
     linear_discipline.execute()
     assert compare_dict_of_arrays(
@@ -110,7 +110,7 @@ def test_execute(linear_discipline):
     )
 
 
-def test_linearize(linear_discipline):
+def test_linearize(linear_discipline) -> None:
     """Check the computation of the Jacobian of a surrogate discipline."""
     assert compare_dict_of_arrays(
         linear_discipline.linearize(),
@@ -122,7 +122,7 @@ def test_linearize(linear_discipline):
     )
 
 
-def test_parallel_execute(linear_discipline, dataset):
+def test_parallel_execute(linear_discipline, dataset) -> None:
     """Test the execution of the surrogate discipline in parallel."""
     other_linear_discipline = SurrogateDiscipline("LinearRegressor", dataset)
 
@@ -146,7 +146,7 @@ def test_parallel_execute(linear_discipline, dataset):
     )
 
 
-def test_serialize(linear_discipline, tmp_wd):
+def test_serialize(linear_discipline, tmp_wd) -> None:
     """Check the serialization of a surrogate discipline."""
     file_path = "discipline.pkl"
     linear_discipline.to_pickle(file_path)
@@ -157,14 +157,14 @@ def test_serialize(linear_discipline, tmp_wd):
     assert linear_discipline.local_data == loaded_discipline.local_data
 
 
-def test_get_error_measure(linear_discipline):
+def test_get_error_measure(linear_discipline) -> None:
     """Check that get_error_measure returns an instance of MLErrorMeasure."""
     error_measure = linear_discipline.get_error_measure("R2Measure")
     assert isinstance(error_measure, R2Measure)
     assert error_measure.algo == linear_discipline.regression_model
 
 
-def test_repr_html(dataset):
+def test_repr_html(dataset) -> None:
     """Check SurrogateDiscipline._repr_html_."""
     assert SurrogateDiscipline(
         "LinearRegressor", dataset
@@ -181,7 +181,7 @@ def test_repr_html(dataset):
     )
 
 
-def test_get_quality_viewer(dataset):
+def test_get_quality_viewer(dataset) -> None:
     """Check the method get_quality_viewer()."""
     discipline = SurrogateDiscipline("LinearRegressor", dataset)
     quality_viewer = discipline.get_quality_viewer()

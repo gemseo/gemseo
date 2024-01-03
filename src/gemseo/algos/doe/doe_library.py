@@ -245,7 +245,8 @@ class DOELibrary(DriverLibrary):
             doe_output_file: The path to the output file.
         """
         if not self.unit_samples.size:
-            raise RuntimeError("Samples are missing, execute method before export.")
+            msg = "Samples are missing, execute method before export."
+            raise RuntimeError(msg)
 
         savetxt(doe_output_file, self.unit_samples, delimiter=",")
 
@@ -366,9 +367,8 @@ class DOELibrary(DriverLibrary):
 
         components = set(where(hstack(list(design_space.normalize.values())) == 0)[0])
         if components:
-            raise ValueError(
-                f"The components {components} of the design space are unbounded."
-            )
+            msg = f"The components {components} of the design space are unbounded."
+            raise ValueError(msg)
 
     def compute_doe(
         self,

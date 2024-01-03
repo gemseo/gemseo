@@ -47,7 +47,7 @@ class DFChooser(MDODiscipline):
         with_df: bool,
         grammar_type: MDODiscipline.GrammarType,
         df_shares_io: bool,
-    ):
+    ) -> None:
         super().__init__(grammar_type=grammar_type)
         self.with_df = with_df
         if df_shares_io:
@@ -68,7 +68,7 @@ class A(DFChooser):
         with_df: bool,
         grammar_type: MDODiscipline.GrammarType,
         df_shares_io: bool = False,
-    ):
+    ) -> None:
         super().__init__(with_df, grammar_type, df_shares_io)
 
         if self.with_df:
@@ -80,7 +80,7 @@ class A(DFChooser):
             self.output_grammar.update_from_data({"b": array([0.0])})
             self.default_inputs = {"a": array([0.0])}
 
-    def _run(self):
+    def _run(self) -> None:
         d = self.local_data
         if self.with_df:
             d[self.output_name] = 1 - 0.2 * d[to_df_key("x", "a")]
@@ -100,7 +100,7 @@ class B(DFChooser):
         with_df: bool,
         grammar_type: MDODiscipline.GrammarType,
         df_shares_io: bool = False,
-    ):
+    ) -> None:
         super().__init__(with_df, grammar_type, df_shares_io)
         if self.with_df:
             self.input_grammar.update_from_data({self.output_name: array([0.0])})
@@ -112,7 +112,7 @@ class B(DFChooser):
             self.output_grammar.update_from_data({"a": array([0.0])})
             self.default_inputs = {"b": array([0.0])}
 
-    def _run(self):
+    def _run(self) -> None:
         d = self.local_data
         if self.with_df:
             d[to_df_key("x", "a")] = 1 - 0.3 * d[self.output_name]
@@ -157,7 +157,7 @@ def get_executed_disc(
     "disc_class",
     [MDAGaussSeidel, MDAJacobi, MDAQuasiNewton, MDOChain, MDOParallelChain],
 )
-def test_disciplines_comparison(grammar_type, disc_class, df_shares_io):
+def test_disciplines_comparison(grammar_type, disc_class, df_shares_io) -> None:
     """Compare results of data frames against NumPy arrays with disciplines."""
     with_df = False
     disc = get_executed_disc(disc_class, with_df, grammar_type)
@@ -172,7 +172,7 @@ def test_disciplines_comparison(grammar_type, disc_class, df_shares_io):
     assert disc_with_df.local_data[output_name] == disc.local_data["b"]
 
 
-def test_mdo_function_comparison():
+def test_mdo_function_comparison() -> None:
     """Compare results of data frames against NumPy arrays with MDOFunctions."""
     grammar_type = MDODiscipline.GrammarType.SIMPLE
 
@@ -191,7 +191,7 @@ def test_mdo_function_comparison():
 class A2(A):
     """Discipline with 2 inputs and 2 outputs."""
 
-    def __init__(self, with_df):
+    def __init__(self, with_df) -> None:
         super().__init__(with_df, MDODiscipline.GrammarType.SIMPLE)
         if self.with_df:
             self.input_grammar.update_from_names([to_df_key("x", "c")])
@@ -202,7 +202,7 @@ class A2(A):
             self.default_inputs["c"] = array([0.0])
             self.output_grammar.update_from_names(["d"])
 
-    def _run(self):
+    def _run(self) -> None:
         super()._run()
         d = self.local_data
         if self.with_df:
@@ -211,7 +211,7 @@ class A2(A):
             d["d"] = d["c"] ** 2
 
 
-def test_mdo_function_array_dispatch():
+def test_mdo_function_array_dispatch() -> None:
     """Compare results of data frames against NumPy arrays with MDOFunction array
     dispatch."""
     with_df = False
@@ -229,7 +229,7 @@ def test_mdo_function_array_dispatch():
     np.testing.assert_array_equal(fct(x), fct_with_df(x))
 
 
-def test_discipline_outputs():
+def test_discipline_outputs() -> None:
     """Compare discipline outputs of data frames against NumPy arrays."""
     res = A2(False).execute({"a": np.array([1.0]), "c": np.array([2.0])})
     res_with_df = A2(True).execute({
@@ -243,7 +243,7 @@ def test_discipline_outputs():
     assert res_with_df[to_df_key("y", "d")] == res["d"]
 
 
-def assert_disc_data_equal(dd1, dd2):
+def assert_disc_data_equal(dd1, dd2) -> None:
     assert len(dd1) == len(dd2)
     for key, value in dd1.items():
         assert key in dd2
@@ -259,7 +259,7 @@ def assert_disc_data_equal(dd1, dd2):
         ("HDF5Cache", {"hdf_file_path": "dummy.h5", "hdf_node_path": "DummyCache"}),
     ],
 )
-def test_cache(cache_name, cache_options, tmp_wd):
+def test_cache(cache_name, cache_options, tmp_wd) -> None:
     """Verify cache usages."""
     cache = CacheFactory().create(cache_name, **cache_options)
 
@@ -275,7 +275,7 @@ def test_cache(cache_name, cache_options, tmp_wd):
     assert not jac
 
 
-def test_serialization(tmp_wd):
+def test_serialization(tmp_wd) -> None:
     """Verify serialization."""
     with_df = True
     disc = A(with_df, MDODiscipline.GrammarType.JSON)

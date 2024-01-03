@@ -38,7 +38,7 @@ def data() -> ndarray:
     return linspace(0, 1, N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test constructor."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
@@ -47,14 +47,14 @@ def test_constructor():
     assert kpca.n_components == n_components
 
 
-def test_learn(data):
+def test_learn(data) -> None:
     """Test learn with the default number of components (None)."""
     kpca = KPCA()
     kpca.fit(data)
     assert kpca.n_components == len(kpca.algo.eigenvalues_)
 
 
-def test_learn_custom(data):
+def test_learn_custom(data) -> None:
     """Test learn with a custom number of components."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
@@ -62,7 +62,7 @@ def test_learn_custom(data):
     assert kpca.n_components == n_components
 
 
-def test_transform(data):
+def test_transform(data) -> None:
     """Test transform."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
@@ -72,7 +72,7 @@ def test_transform(data):
     assert reduced_data.shape[1] == n_components
 
 
-def test_inverse_transform(data):
+def test_inverse_transform(data) -> None:
     """Test inverse transform."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
@@ -84,7 +84,7 @@ def test_inverse_transform(data):
     assert restored_data.shape[1] == N_FEATURES
 
 
-def test_shape(data):
+def test_shape(data) -> None:
     """Check the shapes of the data."""
     kpca = KPCA(n_components=3)
     kpca.fit(data)

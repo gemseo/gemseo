@@ -95,10 +95,11 @@ class HDFDatabase:
         """
         str_index_dataset = str(index_dataset)
         if str_index_dataset in design_vars_group:
-            raise ValueError(
+            msg = (
                 f"Dataset name '{str_index_dataset}' already exists "
                 "in the group of design variables."
             )
+            raise ValueError(msg)
 
         design_vars_group.create_dataset(
             str_index_dataset, data=design_vars_values.wrapped_array
@@ -175,7 +176,8 @@ class HDFDatabase:
         """
         name = str(index_dataset)
         if name not in keys_group:
-            raise ValueError(f"The dataset named '{name}' does not exist.")
+            msg = f"The dataset named '{name}' does not exist."
+            raise ValueError(msg)
 
         existing_output_names = {out.decode() for out in keys_group[name]}
         all_output_names = set(output_values)
@@ -277,10 +279,11 @@ class HDFDatabase:
             sub_group = values_group[sub_group_name]
 
         if str(idx_sub_group) in sub_group:
-            raise ValueError(
+            msg = (
                 f"Dataset name '{idx_sub_group}' already exists "
                 f"in the sub-group of array output '{sub_group_name}'."
             )
+            raise ValueError(msg)
 
         sub_group.create_dataset(
             str(idx_sub_group), data=self.__to_real(value), dtype=float64

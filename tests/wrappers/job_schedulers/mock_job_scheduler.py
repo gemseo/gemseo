@@ -28,8 +28,7 @@ cmd = (
 
 result = run(cmd, capture_output=True, shell=True)
 if result.returncode != 0:
-    raise RuntimeError(
-        "Failed to execute cmd {}, Received stderr : {}\n, stdout : {}.".format(
-            cmd, result.stdout, result.stderr
-        )
+    msg = "Failed to execute cmd {}, Received stderr : {}\n, stdout : {}.".format(
+        cmd, result.stdout, result.stderr
     )
+    raise RuntimeError(msg)

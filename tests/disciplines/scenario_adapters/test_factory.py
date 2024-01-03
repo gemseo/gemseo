@@ -22,6 +22,6 @@ from gemseo.disciplines.scenario_adapters.factory import ScenarioAdapterFactory
 @pytest.mark.parametrize(
     "class_name", ["MDOScenarioAdapter", "MDOObjectiveScenarioAdapter"]
 )
-def test_scenario_adapter_factory(class_name):
+def test_scenario_adapter_factory(class_name) -> None:
     """Check ScenarioAdapterFactory."""
     assert ScenarioAdapterFactory().is_available(class_name)

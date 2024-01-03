@@ -29,13 +29,13 @@ class TestKMeans(unittest.TestCase):
     """"""
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         problem = Rosenbrock()
         OptimizersFactory().execute(problem, "L-BFGS-B")
         cls.problem = problem
         cls.factory = PostFactory()
 
-    def test_kmeans(self):
+    def test_kmeans(self) -> None:
         """"""
         if self.factory.is_available("KMeans"):
             self.factory.execute(self.problem, "KMeans", n_clusters=6)

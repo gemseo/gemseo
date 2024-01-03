@@ -315,7 +315,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 constraints=self.__get_non_linear_constraints(),
             )
         else:  # pragma: no cover
-            raise ValueError(f"Unknown algorithm: {self.internal_algo_name}.")
+            msg = f"Unknown algorithm: {self.internal_algo_name}."
+            raise ValueError(msg)
 
         return self.get_optimum_from_database(opt_result.message, opt_result.success)
 

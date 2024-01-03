@@ -47,8 +47,9 @@ class RestrictedFunction(MDOFunction):
             ValueError: If the shape of the restriction values is not consistent
                 with the shape of the restriction indices.
         """  # noqa: D205, D212, D415
-        if not restriction_indices.shape == restriction_values.shape:
-            raise ValueError("Inconsistent shapes for restriction values and indices.")
+        if restriction_indices.shape != restriction_values.shape:
+            msg = "Inconsistent shapes for restriction values and indices."
+            raise ValueError(msg)
         self.restriction_values = restriction_values
         self._restriction_indices = restriction_indices
         self._orig_function = orig_function

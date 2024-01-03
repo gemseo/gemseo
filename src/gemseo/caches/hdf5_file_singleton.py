@@ -149,8 +149,9 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         # IOError and RuntimeError are for python 2.7
         except (RuntimeError, OSError, ValueError):
             h5_file.close()
+            msg = "Failed to cache dataset %s.%s.%s in file: %s"
             raise RuntimeError(
-                "Failed to cache dataset %s.%s.%s in file: %s",
+                msg,
                 hdf_node_path,
                 index,
                 group,
@@ -377,21 +378,23 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         h5_file.close()
 
         if version is None:
-            raise ValueError(
+            msg = (
                 "The file {} cannot be used because it has no file format version: "
                 "see HDFCache.update_file_format to convert it.".format(
                     self.hdf_file_path
                 )
             )
+            raise ValueError(msg)
 
         if version > self.FILE_FORMAT_VERSION:
-            raise ValueError(
+            msg = (
                 "The file {} cannot be used because its file format version is {} "
                 "while the expected version is {}: "
                 "see HDFCache.update_file_format to convert it.".format(
                     self.hdf_file_path, version, self.FILE_FORMAT_VERSION
                 )
             )
+            raise ValueError(msg)
 
     @classmethod
     def __set_file_format_version(

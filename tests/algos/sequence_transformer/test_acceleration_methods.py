@@ -49,7 +49,7 @@ def g(x: ndarray) -> ndarray:
     return MEAN_ANOMALY + EXCENTRICITY * sin(x)
 
 
-def test_no_acceleration():
+def test_no_acceleration() -> None:
     """Tests the case where no acceleration is applied."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.NONE)
@@ -59,7 +59,7 @@ def test_no_acceleration():
     assert new_iterate is x_1
 
 
-def test_alternate_2_delta():
+def test_alternate_2_delta() -> None:
     """Tests the alternate 2-δ acceleration method."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.ALTERNATE_2_DELTA)
@@ -84,7 +84,7 @@ def test_alternate_2_delta():
     assert allclose(new_iterate, new_iterate_ref)
 
 
-def test_alternate_delta_squared():
+def test_alternate_delta_squared() -> None:
     """Tests the alternate δ² acceleration method."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.ALTERNATE_DELTA_SQUARED)
@@ -110,7 +110,7 @@ def test_alternate_delta_squared():
     assert allclose(new_iterate, new_iterate_ref)
 
 
-def test_secant():
+def test_secant() -> None:
     """Tests the secant method."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.SECANT)
@@ -132,7 +132,7 @@ def test_secant():
     assert allclose(new_iterate, new_iterate_ref)
 
 
-def test_aitken():
+def test_aitken() -> None:
     """Tests the Aitken method."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.AITKEN)
@@ -157,7 +157,7 @@ def test_aitken():
     "window_size",
     [0, 2, "foo"],
 )
-def test_minimum_polynomial_parameters(window_size):
+def test_minimum_polynomial_parameters(window_size) -> None:
     """Tests the window size argument of MinimumPolynomial."""
     if window_size in [0, "foo"]:
         with pytest.raises(ValueError):

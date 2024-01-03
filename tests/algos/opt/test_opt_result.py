@@ -32,7 +32,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 
-def test_from_dict():
+def test_from_dict() -> None:
     """Check the creation of an optimization result from a dictionary."""
     dct = {
         "x_0": [0],
@@ -89,7 +89,7 @@ def optimization_result() -> OptimizationResult:
     return scenario.optimization_result
 
 
-def test_optimization_result(optimization_result):
+def test_optimization_result(optimization_result) -> None:
     """Check optimization_result."""
     assert optimization_result == OptimizationResult(
         x_0=array([0.5]),
@@ -120,7 +120,7 @@ def test_optimization_result(optimization_result):
     )
 
 
-def test_repr(optimization_result):
+def test_repr(optimization_result) -> None:
     """Check OptimizationResult.__repr__."""
     assert (
         repr(optimization_result)
@@ -131,7 +131,7 @@ def test_repr(optimization_result):
     )
 
 
-def test_repr_html(optimization_result):
+def test_repr_html(optimization_result) -> None:
     """Check OptimizationResult._repr_html_."""
     assert optimization_result._repr_html_() == REPR_HTML_WRAPPER.format(
         "Optimization result:<br/>"
@@ -143,7 +143,7 @@ def test_repr_html(optimization_result):
     )
 
 
-def test_str(optimization_result):
+def test_str(optimization_result) -> None:
     """Check the string representation of an optimization result."""
     expected = """Optimization result:
    Optimizer info:
@@ -163,24 +163,24 @@ def test_str(optimization_result):
     assert str(optimization_result) == str(expected)
 
 
-def test_optimum_index(optimization_result):
+def test_optimum_index(optimization_result) -> None:
     """Check the value of the optimum index of an optimization result."""
     assert optimization_result.optimum_index == 0
 
 
-def test_default_optimum_index(caplog):
+def test_default_optimum_index(caplog) -> None:
     """Check that the default value of the optimum index is None."""
     result = OptimizationResult()
     assert result.optimum_index is None
 
 
-def test_initialize_optimum_index():
+def test_initialize_optimum_index() -> None:
     """Check that the optimum index is correctly initialized."""
     result = OptimizationResult(optimum_index=1)
     assert result.optimum_index == 1
 
 
-def test_from_optimization_problem_empy_database():
+def test_from_optimization_problem_empy_database() -> None:
     """Check from_optimization_problem with empty database."""
     problem = OptimizationProblem(DesignSpace())
     result = OptimizationResult.from_optimization_problem(problem)
@@ -195,7 +195,7 @@ def test_from_optimization_problem_empy_database():
 @pytest.mark.parametrize("maximize", [True, False])
 def test_from_optimization_problem(
     value, is_feasible, sign, constraint, use_standardized_objective, maximize
-):
+) -> None:
     """Check from_optimization_problem with empty database."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)

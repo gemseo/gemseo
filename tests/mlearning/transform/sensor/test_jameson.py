@@ -32,7 +32,7 @@ def data() -> ndarray:
     return arange(300).reshape((3, 100))
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test constructor."""
     sensor = JamesonSensor()
     assert sensor.name == "JamesonSensor"
@@ -41,14 +41,14 @@ def test_constructor():
     assert sensor.dimension == 1
 
 
-def test_fit(data):
+def test_fit(data) -> None:
     """Test fit method."""
     sensor = JamesonSensor()
     sensor.fit(data)
     assert allclose(sensor.threshold, 89.7)
 
 
-def test_transform(data):
+def test_transform(data) -> None:
     """Test transform method."""
     sensor = JamesonSensor()
     sensor.fit(data)

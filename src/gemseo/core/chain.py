@@ -629,18 +629,20 @@ class MDOWarmStartedChain(MDOChain):
             missing_output_names = set(variable_names_to_warm_start).difference(
                 all_output_names
             )
-            raise ValueError(
+            msg = (
                 "The following variable names are not "
                 f"outputs of the chain: {missing_output_names}."
                 f" Available outputs are: {all_output_names}."
             )
+            raise ValueError(msg)
 
     def _compute_jacobian(
         self,
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        raise NotImplementedError(f"{self.__class__.__name__} cannot be linearized.")
+        msg = f"{self.__class__.__name__} cannot be linearized."
+        raise NotImplementedError(msg)
 
     def _run(self) -> None:
         if self._warm_start_variable_names_to_values:

@@ -19,7 +19,7 @@ from gemseo.uncertainty.use_cases.ishigami.ishigami_problem import IshigamiProbl
 from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 
 
-def test_ishigami_problem():
+def test_ishigami_problem() -> None:
     """Check the Ishigami problem."""
     problem = IshigamiProblem()
     assert isinstance(problem.design_space, IshigamiSpace)

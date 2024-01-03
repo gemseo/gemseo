@@ -49,7 +49,7 @@ class SLURM(JobSchedulerDisciplineWrapper):
         scheduler_run_command: str = "sbatch --wait",
         job_out_filename: str = "batch.sh",
         job_template_path: Path | str | None = None,
-        use_template=True,
+        use_template: bool = True,
         setup_cmd: str = "",
         user_email: str = "",
         wall_time: str = "24:00:00",

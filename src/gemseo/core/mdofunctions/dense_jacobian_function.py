@@ -82,10 +82,11 @@ class DenseJacobianFunction(MDOFunction):
             ValueError: If the original function does not provide a Jacobian matrix.
         """
         if not self.__original_function.has_jac:
-            raise ValueError(
+            msg = (
                 f"Selected user gradient, but function {self.__original_function} "
                 "has no Jacobian matrix."
             )
+            raise ValueError(msg)
 
         original_jacobian = self.__original_function.jac(x_vect)
         if isinstance(original_jacobian, sparse_classes):

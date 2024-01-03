@@ -78,12 +78,12 @@ def discipline(module_tmp_wd, request) -> MDODiscipline:
     return MDODiscipline.from_pickle(file_name)
 
 
-def test_original_discipline(discipline):
+def test_original_discipline(discipline) -> None:
     """Check the property original_discipline."""
     assert discipline.original_discipline == discipline._discipline
 
 
-def test_with_discipline_wo_default_values():
+def test_with_discipline_wo_default_values() -> None:
     """Check that the wrapped discipline must have default input values."""
     with pytest.raises(
         ValueError, match="The original discipline has no default input values."
@@ -91,12 +91,12 @@ def test_with_discipline_wo_default_values():
         RemappingDiscipline(MDODiscipline(), {}, {})
 
 
-def test_discipline_name(discipline):
+def test_discipline_name(discipline) -> None:
     """Check that the discipline name is the name of the original discipline."""
     assert discipline.name == "foo"
 
 
-def test_io_names(discipline):
+def test_io_names(discipline) -> None:
     """Check the input and output names."""
     assert list(discipline.get_input_data_names()) == [
         "new_in_1",
@@ -106,7 +106,7 @@ def test_io_names(discipline):
     assert list(discipline.get_output_data_names()) == ["new_out_1", "new_out_2"]
 
 
-def test_default_inputs(discipline):
+def test_default_inputs(discipline) -> None:
     """Check the default inputs when missing in original discipline."""
     assert_equal(
         {"new_in_1": array([1.0]), "new_in_2": array([2.0]), "new_in_3": array([3.0])},
@@ -114,14 +114,14 @@ def test_default_inputs(discipline):
     )
 
 
-def test_execute(discipline):
+def test_execute(discipline) -> None:
     """Check the execution of the discipline."""
     discipline.execute()
     assert_equal(discipline.local_data["new_out_1"], array([2.0]))
     assert_equal(discipline.local_data["new_out_2"], array([1.0, 2.0]))
 
 
-def test_linearize(discipline):
+def test_linearize(discipline) -> None:
     """Check the linearization of the discipline."""
     discipline.linearize(compute_all_jacobians=True)
     assert_equal(
@@ -150,7 +150,7 @@ def test_linearize(discipline):
         ({"new_in_1": ("x", range(2))}, {"new_in_1": ("x", range(2))}),
     ],
 )
-def test_format_mapping(mapping, expected):
+def test_format_mapping(mapping, expected) -> None:
     """Check the formatting of a mapping."""
     formatted_mapping = RemappingDiscipline._RemappingDiscipline__format_mapping(
         mapping

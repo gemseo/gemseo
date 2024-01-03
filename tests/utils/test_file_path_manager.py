@@ -22,7 +22,7 @@ from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 
-def test_repr():
+def test_repr() -> None:
     """Verify the string representation of a FileManager."""
     manager = FilePathManager(FilePathManager.FileType.FIGURE)
     expected = [
@@ -35,7 +35,7 @@ def test_repr():
     assert repr(manager) == str(manager) == "\n".join(expected)
 
 
-def test_repr_html():
+def test_repr_html() -> None:
     """Check FileManager._repr_html_."""
     assert FilePathManager(
         FilePathManager.FileType.FIGURE, default_directory="."
@@ -76,7 +76,7 @@ def test_create_file_path(
     file_name,
     file_extension,
     expected,
-):
+) -> None:
     """Verify the creation of file paths."""
     assert expected == file_path_manager.create_file_path(
         file_path=file_path,
@@ -96,11 +96,11 @@ def test_create_file_path(
         ("Foo-Bar", "foo_bar"),
     ],
 )
-def test_to_snake_case(original, expected):
+def test_to_snake_case(original, expected) -> None:
     assert FilePathManager.to_snake_case(original) == expected
 
 
-def test_add_suffix():
+def test_add_suffix() -> None:
     file_path = Path("directory") / "filename.pdf"
     expected_file_path = Path("directory") / "filename_suffix.pdf"
     assert FilePathManager.add_suffix(file_path, "suffix") == expected_file_path
@@ -114,7 +114,7 @@ def test_add_suffix():
         ({"default_extension": "jpg"}, "jpg"),
     ],
 )
-def test_default_extension(kwargs, expected):
+def test_default_extension(kwargs, expected) -> None:
     """Check the default extension."""
     manager = FilePathManager(FilePathManager.FileType.FIGURE, **kwargs)
     assert manager._FilePathManager__default_extension == expected

@@ -60,7 +60,7 @@ def io_dataset() -> IODataset:
     return dataset
 
 
-def test_constructor(io_dataset):
+def test_constructor(io_dataset) -> None:
     """Test construction."""
     with concretize_classes(MLSupervisedAlgo):
         ml_algo = MLSupervisedAlgo(io_dataset)
@@ -76,7 +76,9 @@ def test_constructor(io_dataset):
 @pytest.mark.parametrize(
     ("out_transformer", "n_out"), [({}, 3), ({"outputs": PCA(n_components=1)}, 1)]
 )
-def test_get_raw_shapes(io_dataset, in_transformer, n_in, out_transformer, n_out):
+def test_get_raw_shapes(
+    io_dataset, in_transformer, n_in, out_transformer, n_out
+) -> None:
     """Verify the raw input and output shapes of the algorithm."""
     transformer = {}
     transformer.update(in_transformer)
@@ -87,7 +89,7 @@ def test_get_raw_shapes(io_dataset, in_transformer, n_in, out_transformer, n_out
     assert algo._reduced_dimensions == (n_in, n_out)
 
 
-def test_learn(io_dataset):
+def test_learn(io_dataset) -> None:
     """Test learn."""
     model = LinearRegressor(io_dataset)
     model.learn()
@@ -114,7 +116,7 @@ def test_learn(io_dataset):
     assert array_equal(model.get_coefficients(False), reference)
 
 
-def test_io_shape(io_dataset):
+def test_io_shape(io_dataset) -> None:
     """Test input output shapes."""
     model = LinearRegressor(io_dataset)
     assert model.input_dimension == 3
@@ -132,7 +134,7 @@ INPUT_VALUE_2D = array([[1.0, 2.0, 3.0]])
 INPUT_VALUES = array([[1.0, 2.0, 3.0], [-1.0, -2.0, -3.0]])
 
 
-def test_format_dict(io_dataset):
+def test_format_dict(io_dataset) -> None:
     """Test format dict decorator."""
     with concretize_classes(MLSupervisedAlgo):
         ml_algo = MLSupervisedAlgo(io_dataset)
@@ -175,7 +177,7 @@ def test_format_dict(io_dataset):
     assert array_equal(out_dict_2d_multisamples["y_1"], out_values)
 
 
-def test_format_sample(io_dataset):
+def test_format_sample(io_dataset) -> None:
     """Test format sample decorator."""
     partially_transformed = [None]
     with concretize_classes(MLSupervisedAlgo):
@@ -216,7 +218,7 @@ def dataset_for_transform() -> IODataset:
 class NewSupervisedAlgo(MLSupervisedAlgo):
     """A supervised algorithm without fitting algorithm."""
 
-    def _fit(self, input_data, output_data):
+    def _fit(self, input_data, output_data) -> None:
         return
 
     def _predict(self, input_data):
@@ -257,7 +259,7 @@ def test_format_transform(
     transform_in_key,
     transform_out_key,
     expected,
-):
+) -> None:
     """Check the DataFormatter format_transform().
 
     This formatter replaces a function by a composition of functions:
@@ -310,7 +312,7 @@ def dataset() -> Dataset:
     "name", [IODataset.INPUT_GROUP, IODataset.OUTPUT_GROUP, "x", "y"]
 )
 @pytest.mark.parametrize("fit_transformers", [False, True])
-def test_fit_transformers_option(dataset, name, fit_transformers):
+def test_fit_transformers_option(dataset, name, fit_transformers) -> None:
     """Check that the fit_transformers option is correctly used."""
     with concretize_classes(MLSupervisedAlgo):
         algo = MLSupervisedAlgo(dataset, transformer={name: "MinMaxScaler"})
@@ -323,7 +325,7 @@ def test_fit_transformers_option(dataset, name, fit_transformers):
 @pytest.mark.parametrize(
     ("name", "expected"), [("x", {"x": 3, "y": 1}), ("y", {"x": 1, "y": 3})]
 )
-def test_compute_transformed_variable_sizes(dataset, name, expected):
+def test_compute_transformed_variable_sizes(dataset, name, expected) -> None:
     """Check that the compute_transformed_variable_sizes method works."""
     with concretize_classes(MLSupervisedAlgo, DimensionReduction):
         algo = MLSupervisedAlgo(
@@ -337,7 +339,7 @@ def test_compute_transformed_variable_sizes(dataset, name, expected):
     assert algo._transformed_output_sizes == {"y": sizes["y"]}
 
 
-def test_crossed_transformer_failure(dataset):
+def test_crossed_transformer_failure(dataset) -> None:
     """Check that a crossed transformer cannot be applied to outputs."""
     with concretize_classes(MLSupervisedAlgo):
         algo = MLSupervisedAlgo(dataset, transformer={"y": "PLS"})
@@ -350,7 +352,7 @@ def test_crossed_transformer_failure(dataset):
         algo.learn()
 
 
-def test_crossed_transformer(dataset):
+def test_crossed_transformer(dataset) -> None:
     """Check that a crossed transformer can be applied to inputs."""
     with concretize_classes(MLSupervisedAlgo):
         algo = MLSupervisedAlgo(dataset, transformer={"x": "PLS"})

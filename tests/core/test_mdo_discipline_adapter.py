@@ -80,7 +80,7 @@ def check_func_and_jac_evaluation(mdo_function: MDOFunction) -> None:
     assert_equal(mdo_function.jac(INPUT_VECTOR), array([1.0, 1.0]))
 
 
-def test_error(disciplinary_function):
+def test_error(disciplinary_function) -> None:
     """Check that a ValueError is raised when the size of an input cannot be guessed."""
     with pytest.raises(
         ValueError,
@@ -92,7 +92,7 @@ def test_error(disciplinary_function):
         disciplinary_function.func(INPUT_VECTOR)
 
 
-def test_discipline_local_data(disciplinary_function):
+def test_discipline_local_data(disciplinary_function) -> None:
     """Check that input sizes can be guessed from the discipline's local data."""
     disciplinary_function._MDODisciplineAdapter__discipline.local_data.update({
         "x": array([1.0])
@@ -100,7 +100,7 @@ def test_discipline_local_data(disciplinary_function):
     check_func_and_jac_evaluation(disciplinary_function)
 
 
-def test_discipline_default_inputs(disciplinary_function):
+def test_discipline_default_inputs(disciplinary_function) -> None:
     """Check that input sizes can be guessed from the discipline's default inputs."""
     disciplinary_function._MDODisciplineAdapter__discipline.default_inputs.update({
         "x": array([1.0])
@@ -108,7 +108,7 @@ def test_discipline_default_inputs(disciplinary_function):
     check_func_and_jac_evaluation(disciplinary_function)
 
 
-def test_default_inputs():
+def test_default_inputs() -> None:
     """Check that input sizes can be guessed from the function's default inputs."""
     disciplinary_function = create_disciplinary_function(
         default_inputs={"x": array([1.0])}
@@ -116,7 +116,7 @@ def test_default_inputs():
     check_func_and_jac_evaluation(disciplinary_function)
 
 
-def test_names_to_sizes():
+def test_names_to_sizes() -> None:
     """Check that input sizes can be guessed from the function's input sizes."""
     disciplinary_function = create_disciplinary_function(names_to_sizes={"x": 1})
     check_func_and_jac_evaluation(disciplinary_function)

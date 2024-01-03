@@ -109,9 +109,10 @@ class DiagonalDOE(DOELibrary):
         """
         n_samples = options.get(self.N_SAMPLES)
         if n_samples is None or n_samples < 2:
-            raise ValueError(
+            msg = (
                 "The number of samples must set to a value greater than or equal to 2."
             )
+            raise ValueError(msg)
 
         reverse = options.get("reverse", [])
         if reverse is None:

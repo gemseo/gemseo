@@ -155,12 +155,13 @@ class RegressionDataFormatters(SupervisedDataFormatters):
                 or algo._output_variables_to_transform
             ):
                 # TODO: implement this case
-                raise NotImplementedError(
+                msg = (
                     "The Jacobian of regression models cannot be computed "
                     "when the transformed quantities are variables; "
                     "please transform the whole group 'inputs' or 'outputs' "
                     "or do not use data transformation."
                 )
+                raise NotImplementedError(msg)
 
             inputs = algo.learning_set.INPUT_GROUP
             if inputs in algo.transformer:

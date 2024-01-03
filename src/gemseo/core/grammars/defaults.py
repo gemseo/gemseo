@@ -60,12 +60,14 @@ class Defaults(DisciplineData):
                     f"{name}{self.SEPARATOR}{column}" for column in value.columns
                 }.difference(self.__grammar.keys())
                 if alien_names:
-                    raise KeyError(
+                    msg = (
                         f"The names {pretty_str(alien_names)} "
                         "are not in the grammar."
                     )
+                    raise KeyError(msg)
             else:
-                raise KeyError(f"The name {name} is not in the grammar.")
+                msg = f"The name {name} is not in the grammar."
+                raise KeyError(msg)
         super().__setitem__(name, value)
 
     def rename(self, name: str, new_name: str) -> None:

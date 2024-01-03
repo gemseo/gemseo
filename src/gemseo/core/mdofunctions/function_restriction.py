@@ -67,7 +67,8 @@ class FunctionRestriction(MDOFunction):
         """  # noqa: D205, D212, D415
         # Check the shapes of the passed arrays
         if frozen_indexes.shape != frozen_values.shape:
-            raise ValueError("Arrays of frozen indexes and values must have same shape")
+            msg = "Arrays of frozen indexes and values must have same shape"
+            raise ValueError(msg)
 
         self.__frozen_indexes = frozen_indexes
         self.__frozen_values = frozen_values

@@ -41,7 +41,7 @@ def create_problem():
     return problem
 
 
-def test_exterior_penalty():
+def test_exterior_penalty() -> None:
     """Tests exterior penalty compared to no aggregation."""
     algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
     problem_ref = create_problem()

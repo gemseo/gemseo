@@ -59,7 +59,7 @@ class Testmdochain(unittest.TestCase):
 
         return [disciplines[p] for p in perm]
 
-    def test_linearize_sobieski_chain_combinatorial(self):
+    def test_linearize_sobieski_chain_combinatorial(self) -> None:
         """"""
         for perm in permutations(range(4)):
             disciplines = self.get_disciplines_list(perm)
@@ -69,7 +69,7 @@ class Testmdochain(unittest.TestCase):
             )
             assert ok
 
-    def test_add_differentiated_inputs(self):
+    def test_add_differentiated_inputs(self) -> None:
         disciplines = [
             SobieskiStructure(),
             SobieskiAerodynamics(),
@@ -80,7 +80,7 @@ class Testmdochain(unittest.TestCase):
         chain.add_differentiated_inputs()
         chain.add_differentiated_outputs()
 
-    def test_parallel_chain_combinatorial_thread(self):
+    def test_parallel_chain_combinatorial_thread(self) -> None:
         for perm in permutations(range(4)):
             for use_deep_copy in [True, False]:
                 disciplines = self.get_disciplines_list(perm)
@@ -97,7 +97,7 @@ class Testmdochain(unittest.TestCase):
                 assert ok
 
     @pytest.mark.skip_under_windows()
-    def test_parallel_chain_combinatorial_mprocess(self):
+    def test_parallel_chain_combinatorial_mprocess(self) -> None:
         # Keep the two first only as MP is slow there
         perms = list(permutations(range(4)))[:2]
         for perm in perms:
@@ -111,13 +111,13 @@ class Testmdochain(unittest.TestCase):
             )
             assert ok
 
-    def test_workflow_dataflow(self):
+    def test_workflow_dataflow(self) -> None:
         disciplines = self.get_disciplines_list(range(4))
         chain = MDOParallelChain(disciplines)
         assert isinstance(chain.get_expected_workflow(), ParallelExecSequence)
         assert chain.get_expected_dataflow() == []
 
-    def test_common_in_out(self):
+    def test_common_in_out(self) -> None:
         # Check that the linearization works with a discipline
         # that has inputs and outputs of the same name
         a = AnalyticDiscipline({"x": "x"}, name="a")
@@ -130,7 +130,7 @@ class Testmdochain(unittest.TestCase):
             derr_approx="finite_differences",
         )
 
-    def test_double_mission_chain(self):
+    def test_double_mission_chain(self) -> None:
         # Create a chain that adds two missions
         disciplines = [SobieskiMission(), SobieskiMission()]
         outputs_to_sum = ["y_4"]
@@ -146,13 +146,13 @@ class Testmdochain(unittest.TestCase):
         chain.check_jacobian(threshold=1e-5)
 
 
-def test_get_sub_disciplines():
+def test_get_sub_disciplines() -> None:
     """Test the get_sub_disciplines method."""
     chain = SobieskiChain()
     assert chain.get_sub_disciplines() == chain.disciplines
 
 
-def test_get_sub_disciplines_parallel():
+def test_get_sub_disciplines_parallel() -> None:
     """Test the get_sub_disciplines method with an MDOParallelChain."""
     parallel_chain = MDOParallelChain([
         SobieskiStructure(),
@@ -163,7 +163,7 @@ def test_get_sub_disciplines_parallel():
     assert parallel_chain.get_sub_disciplines() == parallel_chain.disciplines
 
 
-def test_mdo_chain_serialization(tmp_wd):
+def test_mdo_chain_serialization(tmp_wd) -> None:
     """Test that an MDOChain can be serialized, loaded and executed.
 
     The focus of this test is to guarantee that the loaded MDOChain instance can be
@@ -186,7 +186,7 @@ def test_mdo_chain_serialization(tmp_wd):
 @pytest.mark.parametrize(
     ("variable_names", "expected"), [(["y_21"], True), ([], False)]
 )
-def test_warm_started_mdo_chain(variable_names, expected):
+def test_warm_started_mdo_chain(variable_names, expected) -> None:
     """Test that the variables are warm-started properly."""
     disciplines = [
         SobieskiStructure(),
@@ -202,7 +202,7 @@ def test_warm_started_mdo_chain(variable_names, expected):
     assert (y_12 != out["y_12"]).any() == expected
 
 
-def test_warm_started_mdo_chain_jac():
+def test_warm_started_mdo_chain_jac() -> None:
     """Test that the Jacobian of an MDOWarmStartedChain raises an exception."""
     chain = MDOWarmStartedChain([SobieskiMission()], variable_names_to_warm_start=[])
     with pytest.raises(
@@ -212,7 +212,7 @@ def test_warm_started_mdo_chain_jac():
 
 
 @pytest.mark.parametrize("variable_names", [("y_4", "i_dont_exist"), ("i_dont_exist",)])
-def test_warm_started_mdo_chain_variables(variable_names):
+def test_warm_started_mdo_chain_variables(variable_names) -> None:
     """Test an exception if a variable that is not in the chain is warm started."""
     with pytest.raises(
         ValueError,
@@ -250,7 +250,7 @@ def two_virtual_disciplines() -> list[MDODiscipline]:
     return [disc_1, disc_2]
 
 
-def test_virtual_exe_chain(two_virtual_disciplines):
+def test_virtual_exe_chain(two_virtual_disciplines) -> None:
     """Test a chain with disciplines in virtual execution mode."""
     chain = MDOChain(two_virtual_disciplines)
     chain.execute()
@@ -258,7 +258,7 @@ def test_virtual_exe_chain(two_virtual_disciplines):
     assert chain.local_data["y"] == 2.0
 
 
-def test_jacobian_of_chain_including_splitter():
+def test_jacobian_of_chain_including_splitter() -> None:
     """Test the jacobian of an MDOChain including a splitter."""
     splitter_disc = Splitter(
         input_name="x", output_names_to_input_indices={"x_1": [0], "x_2": [1]}

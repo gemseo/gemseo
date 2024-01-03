@@ -49,13 +49,13 @@ def dataset():
     return data
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     ScalableDiagonalModel(dataset)
     with pytest.raises(TypeError):
         ScalableDiagonalModel(dataset, fill_factor="dummy")
 
 
-def test_scalable_function(dataset):
+def test_scalable_function(dataset) -> None:
     model = ScalableDiagonalModel(dataset)
     output = model.scalable_function()
     assert "y1" in output
@@ -66,7 +66,7 @@ def test_scalable_function(dataset):
     assert len(output["y2"] == 3)
 
 
-def test_scalable_derivative(dataset):
+def test_scalable_derivative(dataset) -> None:
     model = ScalableDiagonalModel(dataset)
     output = model.scalable_derivatives()
     assert "y1" in output
@@ -79,7 +79,7 @@ def test_scalable_derivative(dataset):
     assert output["y2"].shape[1] == 3
 
 
-def test_plot(dataset, tmp_wd):
+def test_plot(dataset, tmp_wd) -> None:
     model = ScalableDiagonalModel(dataset)
     model.plot_1d_interpolations(save=True)
     assert exists("sdm_sinus_y1_1D_interpolation_0.pdf")
@@ -88,19 +88,19 @@ def test_plot(dataset, tmp_wd):
     assert exists("sdm_sinus_dependency.pdf")
 
 
-def test_force_io_dependency(dataset):
+def test_force_io_dependency(dataset) -> None:
     ScalableDiagonalModel(dataset, force_input_dependency=True)
 
 
-def test_force_allow_unusedinputs(dataset):
+def test_force_allow_unusedinputs(dataset) -> None:
     ScalableDiagonalModel(dataset, allow_unused_inputs=False)
 
 
-def test_wrong_fill_factor(dataset):
+def test_wrong_fill_factor(dataset) -> None:
     with pytest.raises(TypeError):
         ScalableDiagonalModel(dataset, fill_factor=-2)
 
 
-def test_group_dep(dataset):
+def test_group_dep(dataset) -> None:
     model = ScalableDiagonalModel(dataset, group_dep={"y2": ["x1", "x2"]})
     assert model.model.io_dependency["y2"]["x3"][0] == 0.0

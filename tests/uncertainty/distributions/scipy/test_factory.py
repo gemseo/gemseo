@@ -29,12 +29,12 @@ def factory() -> SPDistributionFactory:
     return SPDistributionFactory()
 
 
-def test_inheritance(factory):
+def test_inheritance(factory) -> None:
     """Check that a SPDistributionFactory is a DistributionFactory."""
     assert isinstance(factory, DistributionFactory)
 
 
-def test_class_names(factory):
+def test_class_names(factory) -> None:
     """Check that the SPDistributionFactory can only create SPDistribution objects."""
     class_names = factory.class_names
     assert {"SPDistribution", "SPNormalDistribution"}.issubset(class_names)

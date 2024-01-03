@@ -36,7 +36,7 @@ def discipline() -> IshigamiDiscipline:
     return IshigamiDiscipline()
 
 
-def test_init(discipline):
+def test_init(discipline) -> None:
     """Check the instantiation of the discipline."""
     assert discipline.name == "IshigamiDiscipline"
     input_names = ["x1", "x2", "x3"]
@@ -45,14 +45,14 @@ def test_init(discipline):
     assert discipline.default_inputs == {name: array([0.0]) for name in input_names}
 
 
-def test_execute(discipline, input_values):
+def test_execute(discipline, input_values) -> None:
     """Check the output value of the discipline."""
     assert discipline.execute(input_values[0])["y"][0] == compute_output(
         input_values[1]
     )
 
 
-def test_gradient(discipline, input_values):
+def test_gradient(discipline, input_values) -> None:
     """Check the gradient of the discipline."""
     gradient = discipline.linearize(
         input_data=input_values[0], compute_all_jacobians=True

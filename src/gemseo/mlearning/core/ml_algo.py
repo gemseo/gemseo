@@ -245,11 +245,12 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         for group in self.learning_set.group_names:
             names = self.learning_set.get_variable_names(group)
             if group in self.transformer and transformer_keys & set(names):
-                raise ValueError(
+                msg = (
                     "An MLAlgo cannot have both a transformer "
                     "for all variables of a group and a transformer "
                     "for one variable of this group."
                 )
+                raise ValueError(msg)
 
     @staticmethod
     def __create_transformer(transformer: SubTransformerType) -> Transformer:
@@ -262,12 +263,13 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         if isinstance(transformer, str):
             return TransformerFactory().create(transformer)
 
-        raise ValueError(
+        msg = (
             "Transformer type must be "
             "either Transformer, "
             "Tuple[str, Mapping[str, Any]] "
             "or str."
         )
+        raise ValueError(msg)
 
     @property
     def is_trained(self) -> bool:
@@ -417,7 +419,8 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             RuntimeError: If the algorithm is not trained.
         """
         if not self.is_trained:
-            raise RuntimeError(
+            msg = (
                 f"The {self.__class__.__name__} must be trained "
                 f"to access {inspect.stack()[1].function}."
             )
+            raise RuntimeError(msg)

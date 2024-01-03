@@ -494,15 +494,16 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     def __check_existence_variable_components(
         self, group_name, variable_name, components
-    ):
+    ) -> None:
         """Check if the variable components are already in the dataset."""
         if isin(
             components, self.get_variable_components(group_name, variable_name)
         ).any():
-            raise ValueError(
+            msg = (
                 f"The group {group_name!r} "
                 f"has already a variable {variable_name!r} defined."
             )
+            raise ValueError(msg)
 
     @staticmethod
     def __force_to_2d_array(
@@ -552,7 +553,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             ValueError: If the group already exists.
         """
         if group_name in self.group_names:
-            raise ValueError(f"The group {group_name!r} is already defined.")
+            msg = f"The group {group_name!r} is already defined."
+            raise ValueError(msg)
 
         data = self.__force_to_2d_array(data)
         n_rows, n_columns = data.shape
@@ -589,11 +591,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             ValueError: When the shape of the data is inconsistent.
         """
         if data.shape not in {(n_rows, n_columns), (1, n_columns)}:
-            raise ValueError(
+            msg = (
                 "The data shape "
                 f"must be ({n_rows}, {n_columns}) or (1, {n_columns}); "
                 f"got {data.shape} instead."
             )
+            raise ValueError(msg)
 
     def get_view(
         self,

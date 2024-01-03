@@ -38,12 +38,12 @@ def scalable_problem() -> ScalableProblem:
     return ScalableProblem()
 
 
-def test_main_discipline(scalable_problem):
+def test_main_discipline(scalable_problem) -> None:
     """Check the property main_discipline."""
     assert isinstance(scalable_problem.main_discipline, MainDiscipline)
 
 
-def test_scalable_disciplines(scalable_problem):
+def test_scalable_disciplines(scalable_problem) -> None:
     """Check the property scalable_disciplines."""
     for discipline in scalable_problem.scalable_disciplines:
         assert isinstance(discipline, ScalableDiscipline)
@@ -57,7 +57,9 @@ def test_scalable_disciplines(scalable_problem):
         ("IDF", {"start_at_equilibrium": True}),
     ],
 )
-def test_create_scenario(scalable_problem, use_optimizer, formulation_name, options):
+def test_create_scenario(
+    scalable_problem, use_optimizer, formulation_name, options
+) -> None:
     """Check the creation of a scenario."""
     scenario = scalable_problem.create_scenario(
         formulation_name=formulation_name, use_optimizer=use_optimizer, **options
@@ -104,7 +106,7 @@ def test_create_scenario(scalable_problem, use_optimizer, formulation_name, opti
     assert "x_2" in scenario.design_space
 
 
-def test_create_quadratic_optimization_problem(scalable_problem):
+def test_create_quadratic_optimization_problem(scalable_problem) -> None:
     """Check create_quadratic_optimization_problem."""
     qp_problem = scalable_problem.create_quadratic_programming_problem()
     assert len(qp_problem.design_space) == 1
@@ -131,7 +133,7 @@ def test_create_quadratic_optimization_problem(scalable_problem):
     )
 
 
-def test_create_quadratic_optimization_problem_with_coupling(scalable_problem):
+def test_create_quadratic_optimization_problem_with_coupling(scalable_problem) -> None:
     """Check create_quadratic_optimization_problem with coupling as observable."""
     qp_problem = scalable_problem.create_quadratic_programming_problem(
         add_coupling=True
@@ -140,7 +142,9 @@ def test_create_quadratic_optimization_problem_with_coupling(scalable_problem):
     assert qp_problem.database.get_function_history("coupling").shape == (3, 2)
 
 
-def test_create_quadratic_optimization_problem_uncertainty_default(scalable_problem):
+def test_create_quadratic_optimization_problem_uncertainty_default(
+    scalable_problem,
+) -> None:
     """Check quadratic problem with uncertainties."""
     qp_problem = scalable_problem.create_quadratic_programming_problem(
         covariance_matrices=(array([[1]]), array([[1.25]]))
@@ -159,7 +163,7 @@ def test_create_quadratic_optimization_problem_uncertainty_default(scalable_prob
         ({"use_margin": False, "tolerance": 0.1}, [2.105, 4.769]),
     ],
 )
-def test_robust_quadratic_optimization(scalable_problem, options, expected):
+def test_robust_quadratic_optimization(scalable_problem, options, expected) -> None:
     """Check quadratic optimization problem with uncertainties."""
     qp_problem = scalable_problem.create_quadratic_programming_problem(
         covariance_matrices=(array([[1]]), array([[1.25]])), **options
@@ -169,7 +173,7 @@ def test_robust_quadratic_optimization(scalable_problem, options, expected):
     assert_almost_equal(qp_problem.constraints[0](x), array(expected), decimal=3)
 
 
-def test_compute_y(scalable_problem):
+def test_compute_y(scalable_problem) -> None:
     """Check the method compute_y."""
     assert_almost_equal(
         scalable_problem.compute_y(array([1, 2, 3])), array([-1.3081518, -3.6156121])

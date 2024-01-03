@@ -81,21 +81,21 @@ def model(
     return None
 
 
-def test_init_error():
+def test_init_error() -> None:
     """Verify that init raises the expected errors."""
     msg = "The grammar name cannot be empty."
     with pytest.raises(ValueError, match=msg):
         PydanticGrammar("")
 
 
-def test_init_with_name():
+def test_init_with_name() -> None:
     """Verify init defaults."""
     g = PydanticGrammar("g")
     assert g.name == "g"
     assert not g
 
 
-def test_init_with_model(model1):
+def test_init_with_model(model1) -> None:
     """Verify initializing with a file."""
     g = PydanticGrammar("g", model=model1)
     assert g
@@ -103,7 +103,7 @@ def test_init_with_model(model1):
     assert g.required_names == {"name1"}
 
 
-def test_delitem_error():
+def test_delitem_error() -> None:
     """Verify that removing a non-existing item raises."""
     g = PydanticGrammar("g")
     msg = "foo"
@@ -111,7 +111,7 @@ def test_delitem_error():
         del g["foo"]
 
 
-def test_delitem(model1):
+def test_delitem(model1) -> None:
     """Verify removing an item."""
     g = PydanticGrammar("g", model=model1)
     del g["name1"]
@@ -120,7 +120,7 @@ def test_delitem(model1):
     assert "name2" in g
 
 
-def test_getitem_error():
+def test_getitem_error() -> None:
     """Verify that getting a non-existing item raises."""
     g = PydanticGrammar("g")
     msg = "foo"
@@ -128,7 +128,7 @@ def test_getitem_error():
         g["foo"]
 
 
-def test_getitem(model1):
+def test_getitem(model1) -> None:
     """Verify getting an item."""
     g = PydanticGrammar("g", model=model1)
     assert_equal_types(g["name1"], int)
@@ -142,7 +142,7 @@ def test_getitem(model1):
     ],
     indirect=["model"],
 )
-def test_len(model, length):
+def test_len(model, length) -> None:
     """Verify computing the length."""
     g = PydanticGrammar("g", model=model)
     assert len(g) == length
@@ -156,7 +156,7 @@ def test_len(model, length):
     ],
     indirect=["model"],
 )
-def test_iter(model, names):
+def test_iter(model, names) -> None:
     """Verify iterating."""
     g = PydanticGrammar("g", model=model)
     assert list(iter(g)) == names
@@ -170,7 +170,7 @@ def test_iter(model, names):
     ],
     indirect=["model"],
 )
-def test_names(model, names):
+def test_names(model, names) -> None:
     """Verify names getter."""
     g = PydanticGrammar("g", model=model)
     assert list(g.names) == names
@@ -221,7 +221,7 @@ def assert_equal_types(field_1: FieldInfo, obj_2: FieldInfo | type) -> None:
         ["name2"],
     ],
 )
-def test_update(model_1, model_2, exclude_names):
+def test_update(model_1, model_2, exclude_names) -> None:
     """Verify update."""
     g1 = PydanticGrammar("g", model=model_1)
     g1_names_before = g1.keys()
@@ -259,7 +259,7 @@ def test_update(model_1, model_2, exclude_names):
     ],
     indirect=True,
 )
-def test_clear(model):
+def test_clear(model) -> None:
     """Verify clear."""
     g = PydanticGrammar("g", model=model)
     g.clear()
@@ -295,7 +295,7 @@ Grammar name: g
     ],
     indirect=["model"],
 )
-def test_repr(model, repr_):
+def test_repr(model, repr_) -> None:
     """Verify repr."""
     g = PydanticGrammar("g", model=model)
     assert repr(g) == repr_.strip()
@@ -316,14 +316,14 @@ def test_repr(model, repr_):
     ],
     indirect=["model"],
 )
-def test_validate(model, data_sets):
+def test_validate(model, data_sets) -> None:
     """Verify validate."""
     g = PydanticGrammar("g", model=model)
     for data in data_sets:
         g.validate(data)
 
 
-def test_validate_with_rebuild(model1):
+def test_validate_with_rebuild(model1) -> None:
     """Verify validate with rebuild."""
     g = PydanticGrammar("g", model=model1)
     data = {"name1": 1}
@@ -395,7 +395,7 @@ name2
 )
 def test_validate_error(
     raise_exception, exception_tester, data, error_msg, model1, caplog
-):
+) -> None:
     """Verify that validate raises the expected errors."""
     g = PydanticGrammar("g", model=model1)
 
@@ -423,7 +423,7 @@ def test_validate_error(
         ["name2"],
     ],
 )
-def test_update_from_names(model, names):
+def test_update_from_names(model, names) -> None:
     """Verify update from names."""
     g = PydanticGrammar("g", model=model)
     names_before = g.keys()
@@ -465,7 +465,7 @@ def test_update_from_names(model, names):
     ],
     indirect=True,
 )
-def test_update_from_types_with_merge(model, data, expected_type):
+def test_update_from_types_with_merge(model, data, expected_type) -> None:
     """Verify update_from_types."""
 
     def action(g: PydanticGrammar, data: Data) -> None:
@@ -486,7 +486,7 @@ def test_update_from_types_with_merge(model, data, expected_type):
         ({"name1": dict}, dict),
     ],
 )
-def test_update_from_types_from_empty(data, expected_type):
+def test_update_from_types_from_empty(data, expected_type) -> None:
     """Verify update_from_types."""
 
     def action(g: PydanticGrammar, data: Data) -> None:
@@ -515,7 +515,7 @@ def test_update_from_types_from_empty(data, expected_type):
     ],
     indirect=True,
 )
-def test_update_from_types(model, data, expected_type):
+def test_update_from_types(model, data, expected_type) -> None:
     """Verify update_from_types."""
 
     def action(g: PydanticGrammar, data: Data) -> None:
@@ -544,7 +544,7 @@ def test_update_from_types(model, data, expected_type):
     ],
     indirect=True,
 )
-def test_update_from_data(model, data, expected_type):
+def test_update_from_data(model, data, expected_type) -> None:
     """Verify update_from_data."""
 
     def action(g: PydanticGrammar, data: Data) -> None:
@@ -558,7 +558,7 @@ def _test_update_from(
     data: Data,
     expected_type: type,
     action: Callable[[PydanticGrammar, Data], None],
-):
+) -> None:
     """Helper function for testing update_from_data."""
     g = PydanticGrammar("g", model=model)
     g_before = dict(g)
@@ -581,7 +581,7 @@ def _test_update_from(
             assert_equal_types(type_, g_before[name])
 
 
-def test_is_array_error():
+def test_is_array_error() -> None:
     """Verify that is_array error."""
     g = PydanticGrammar("g")
     msg = "The name foo is not in the grammar."
@@ -589,7 +589,7 @@ def test_is_array_error():
         g.is_array("foo")
 
 
-def test_is_array(model3):
+def test_is_array(model3) -> None:
     """Verify is_array."""
     g = PydanticGrammar("g", model=model3)
 
@@ -621,7 +621,7 @@ def test_is_array(model3):
         assert not g.is_array(name, numeric_only=True)
 
 
-def test_restrict_to_error():
+def test_restrict_to_error() -> None:
     """Verify that raises the expected error."""
     g = PydanticGrammar("g")
     msg = "The name foo is not in the grammar."
@@ -637,7 +637,7 @@ def test_restrict_to_error():
         ["name1", "name2"],
     ],
 )
-def test_restrict_to(names, model1):
+def test_restrict_to(names, model1) -> None:
     """Verify restrict_to."""
     g = PydanticGrammar("g", model=model1)
     required_names_before = set(g.required_names)
@@ -660,7 +660,7 @@ def test_restrict_to(names, model1):
     ],
     indirect=["model"],
 )
-def test_convert_to_simple_grammar(model, types):
+def test_convert_to_simple_grammar(model, types) -> None:
     """Verify grammar conversion."""
     g1 = PydanticGrammar("g", model=model)
     g2 = g1.to_simple_grammar()
@@ -671,7 +671,7 @@ def test_convert_to_simple_grammar(model, types):
         assert type_ == ref_type
 
 
-def test_convert_to_simple_grammar_warnings(model2, caplog):
+def test_convert_to_simple_grammar_warnings(model2, caplog) -> None:
     """Verify grammar conversion warnings."""
     g1 = PydanticGrammar("g", model=model2)
     g1.to_simple_grammar()
@@ -690,7 +690,7 @@ def test_convert_to_simple_grammar_warnings(model2, caplog):
     ],
     indirect=["model"],
 )
-def test_required_names(model, names):
+def test_required_names(model, names) -> None:
     """Verify required_names."""
     g = PydanticGrammar("g", model=model)
     assert g.required_names == names
@@ -704,7 +704,7 @@ def test_required_names(model, names):
         {"name1": "name1 description", "name2": "name2 description"},
     ],
 )
-def test_set_descriptions(descriptions, model2):
+def test_set_descriptions(descriptions, model2) -> None:
     """Verify setting descriptions."""
     g = PydanticGrammar("g", model=model2)
     g.set_descriptions(descriptions)
@@ -716,7 +716,7 @@ def test_set_descriptions(descriptions, model2):
             assert "description" not in g.schema["properties"][name]
 
 
-def test_set_descriptions_no_rebuild(model2):
+def test_set_descriptions_no_rebuild(model2) -> None:
     """Verify setting descriptions that does nothing."""
     g = PydanticGrammar("g", model=model2)
     g.set_descriptions({"dummy": "description"})
@@ -746,13 +746,13 @@ def test_set_descriptions_no_rebuild(model2):
     ],
     indirect=["model"],
 )
-def test_schema(model, schema):
+def test_schema(model, schema) -> None:
     """Verify schema getter."""
     g = PydanticGrammar("g", model=model)
     assert g.schema == schema
 
 
-def test_rename():
+def test_rename() -> None:
     """Verify rename."""
     g = PydanticGrammar("g")
     g.update_from_names(["name1", "name2"])
@@ -765,7 +765,7 @@ def test_rename():
     assert g.defaults.keys() == {"n:name1"}
 
 
-def test_copy():
+def test_copy() -> None:
     """Verify copy."""
     g = PydanticGrammar("g")
     g.update_from_names(["name"])
@@ -786,7 +786,7 @@ def test_copy():
     ],
     indirect=["model"],
 )
-def test_defaults_instantiation(model, defaults):
+def test_defaults_instantiation(model, defaults) -> None:
     """Verify defaults after instantiation."""
     g = PydanticGrammar("g", model=model)
     assert g.defaults == defaults

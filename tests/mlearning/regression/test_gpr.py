@@ -63,7 +63,7 @@ def model(request, dataset) -> GaussianProcessRegressor:
     return gpr
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     gpr = GaussianProcessRegressor(dataset)
     assert gpr.algo is not None
@@ -71,14 +71,14 @@ def test_constructor(dataset):
     assert gpr.LIBRARY == "scikit-learn"
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     gpr = GaussianProcessRegressor(dataset)
     gpr.learn()
     assert gpr.algo is not None
 
 
-def test_predict(model):
+def test_predict(model) -> None:
     """Test prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     prediction = model.predict(input_value)
@@ -92,14 +92,14 @@ def test_predict(model):
     assert allclose(prediction["y_1"], -prediction["y_2"], 1e-2)
 
 
-def test_predict_std_training_point(model):
+def test_predict_std_training_point(model) -> None:
     """Test std prediction for a training point."""
     prediction_std = model.predict_std({"x_1": array([1.0]), "x_2": array([1.0])})
     assert allclose(prediction_std, 0, atol=1e-3)
     assert prediction_std.shape == (1, 2)
 
 
-def test_predict_std_1d_output(dataset):
+def test_predict_std_1d_output(dataset) -> None:
     """Test std prediction for a training point with a 1d output."""
     gpr = GaussianProcessRegressor(dataset, output_names=["y_1"])
     gpr.learn()
@@ -108,13 +108,13 @@ def test_predict_std_1d_output(dataset):
     assert prediction_std.shape == (1, 1)
 
 
-def test_predict_std_test_point(model):
+def test_predict_std_test_point(model) -> None:
     """Test std prediction for a test point."""
     prediction_std = model.predict_std({"x_1": array([1.0]), "x_2": array([2.0])})
     assert (prediction_std > 0).all()
 
 
-def test_predict_std_input_array(model):
+def test_predict_std_input_array(model) -> None:
     """Test std prediction when the input data is an array."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     prediction_std = model.predict_std(input_value)
@@ -125,7 +125,7 @@ def test_predict_std_input_array(model):
 @pytest.mark.parametrize(
     ("x_1", "x_2"), [([1.0], [2.0]), ([[1.0], [1.0]], [[2.0], [2.0]])]
 )
-def test_predict_std_shape(model, x_1, x_2):
+def test_predict_std_shape(model, x_1, x_2) -> None:
     """Test the shape and content of standard deviation."""
     input_value = {"x_1": array(x_1), "x_2": array(x_2)}
     prediction_std = model.predict_std(input_value)
@@ -133,7 +133,7 @@ def test_predict_std_shape(model, x_1, x_2):
     assert prediction_std.shape[1] == 2
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)
@@ -152,13 +152,13 @@ def test_save_and_load(model, tmp_wd):
         ({"x_2": (0.1, 10)}, [(0.01, 100), (0.1, 10)]),
     ],
 )
-def test_bounds(dataset, bounds, expected):
+def test_bounds(dataset, bounds, expected) -> None:
     """Verify that bounds are correctly passed to the default kernel."""
     model = GaussianProcessRegressor(dataset, bounds=bounds)
     assert model.algo.kernel.length_scale_bounds == expected
 
 
-def test_kernel(dataset):
+def test_kernel(dataset) -> None:
     """Verify that the property 'kernel' corresponds to the kernel for prediction."""
     model = GaussianProcessRegressor(dataset)
     assert id(model.kernel) == id(model.algo.kernel)

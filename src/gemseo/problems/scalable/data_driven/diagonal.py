@@ -120,10 +120,11 @@ class ScalableDiagonalModel(ScalableModel):
                 for function_name in data.get_variable_names(data.OUTPUT_GROUP)
             }
         elif not isinstance(fill_factor, dict):
-            raise TypeError(
+            msg = (
                 "Fill factor must be either a number between 0 and 1, "
                 "a number equal to -1 or a dictionary."
             )
+            raise TypeError(msg)
         parameters = {
             "fill_factor": fill_factor,
             "comp_dep": comp_dep,

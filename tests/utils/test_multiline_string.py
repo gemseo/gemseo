@@ -28,7 +28,7 @@ from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 
-def test_message():
+def test_message() -> None:
     src = [str(index + 1) for index in range(7)]
     msg = MultiLineString()
     msg.add(src[0])
@@ -48,7 +48,7 @@ def test_message():
     assert str(msg) == expected
 
 
-def test_message_with_offset():
+def test_message_with_offset() -> None:
     with MultiLineString.offset():
         msg = MultiLineString()
         msg.add("foo")
@@ -59,10 +59,10 @@ def test_message_with_offset():
 
 
 class A:
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "foo"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "bar"
 
 
@@ -79,7 +79,7 @@ class A:
         ([1, "a", 2], "!", None, None, "'a'!1!2"),
     ],
 )
-def test_pretty_repr(obj, delimiter, expected, sort, key_value_separator):
+def test_pretty_repr(obj, delimiter, expected, sort, key_value_separator) -> None:
     """Check the function pretty_repr."""
     kwargs = {}
     if delimiter is not None:
@@ -104,7 +104,7 @@ def test_pretty_repr(obj, delimiter, expected, sort, key_value_separator):
         ([1, "a", 2], "!", None, None, "1!2!a"),
     ],
 )
-def test_pretty_str(obj, delimiter, key_value_separator, sort, expected):
+def test_pretty_str(obj, delimiter, key_value_separator, sort, expected) -> None:
     """Check the function pretty_str."""
     kwargs = {}
     if delimiter is not None:
@@ -116,7 +116,7 @@ def test_pretty_str(obj, delimiter, key_value_separator, sort, expected):
     assert pretty_str(obj, **kwargs) == expected
 
 
-def test_use_and():
+def test_use_and() -> None:
     """Check the option use_and of pretty_repr and pretty_str."""
     assert pretty_str(["b", "c", "a"]) == "a, b, c"
     assert pretty_str(["a", "c", "b"], use_and=True) == "a, b and c"
@@ -124,7 +124,7 @@ def test_use_and():
     assert pretty_repr(["a", "c", "b"], use_and=True) == "'a', 'b' and 'c'"
 
 
-def test_replace():
+def test_replace() -> None:
     msg = MultiLineString()
     msg.add("123")
     msg.add("4526")
@@ -138,7 +138,7 @@ def test_replace():
     assert str(repl) == "123"
 
 
-def test_add():
+def test_add() -> None:
     msg = MultiLineString()
     msg.add("123")
     msg2 = MultiLineString()
@@ -149,24 +149,24 @@ def test_add():
     assert str(msg + "456") == expected
 
 
-def test_repr_variable_default_settings():
+def test_repr_variable_default_settings() -> None:
     """Check repr_variable() with default settings."""
     assert repr_variable("x", 0) == "x[0]"
 
 
 @pytest.mark.parametrize(("size", "expected"), [(0, "x[0]"), (1, "x"), (2, "x[0]")])
-def test_repr_variable_custom_settings(size, expected):
+def test_repr_variable_custom_settings(size, expected) -> None:
     """Check repr_variable() with custom settings."""
     assert repr_variable("x", 0, size=size) == expected
 
 
 @pytest.mark.parametrize(("index", "expected"), [(0, "x[0]"), (1, "[1]")])
-def test_repr_variable_simplify(index, expected):
+def test_repr_variable_simplify(index, expected) -> None:
     """Check repr_variable() with argument simplify."""
     assert repr_variable("x", index, simplify=True) == expected
 
 
-def test_repr_html():
+def test_repr_html() -> None:
     """Check MultiLineString._repr_html_."""
     mls = MultiLineString()
     mls.add("a")

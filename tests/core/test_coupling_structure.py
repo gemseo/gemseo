@@ -53,7 +53,7 @@ from .test_dependency_graph import create_disciplines_from_desc
 class TestCouplingStructure(unittest.TestCase):
     """Test the methods of the coupling structure class."""
 
-    def test_couplings_sellar(self):
+    def test_couplings_sellar(self) -> None:
         """Verify the strong/weak/total couplings of Sellar pb."""
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         coupling_structure = MDOCouplingStructure(disciplines)
@@ -70,7 +70,7 @@ class TestCouplingStructure(unittest.TestCase):
 
         self.assertRaises(ValueError, coupling_structure.find_discipline, "self")
 
-    def test_strong_weak_coupling(self):
+    def test_strong_weak_coupling(self) -> None:
         disciplines = [SobieskiStructure(), SobieskiMission()]
         coupling_structure = MDOCouplingStructure(disciplines)
         s1_o_strong = coupling_structure.get_output_couplings(disciplines[0])
@@ -80,7 +80,7 @@ class TestCouplingStructure(unittest.TestCase):
         )
         assert s1_o_weak == ["y_14"]
 
-    def test_n2(self):
+    def test_n2(self) -> None:
         """Verify the strong/weak/total couplings of Sellar pb."""
         disciplines = [
             SobieskiStructure(),
@@ -111,7 +111,7 @@ class TestCouplingStructure(unittest.TestCase):
         ):
             coupling_structure.plot_n2_chart("n2_3.png", False)
 
-    def test_n2_many_io(self):
+    def test_n2_many_io(self) -> None:
         a = MDODiscipline("a")
         b = MDODiscipline("b")
         a.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
@@ -122,7 +122,7 @@ class TestCouplingStructure(unittest.TestCase):
         cpl = MDOCouplingStructure([a, b])
         cpl.plot_n2_chart()
 
-    def test_self_coupled(self):
+    def test_self_coupled(self) -> None:
         sc_disc = SelfCoupledDisc()
         sc_disc.execute()
 
@@ -135,13 +135,13 @@ class TestCouplingStructure(unittest.TestCase):
 
 
 class SelfCoupledDisc(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         MDODiscipline.__init__(self)
         self.input_grammar.update_from_names(["y"])
         self.output_grammar.update_from_names(["y"])
         self.default_inputs["y"] = array([0.2])
 
-    def _run(self):
+    def _run(self) -> None:
         self.local_data["y"] = 1.0 - self.local_data["y"]
 
 
@@ -159,7 +159,7 @@ def get_strong_couplings(analytic_expressions):
     return MDOCouplingStructure(disciplines).strong_couplings
 
 
-def test_strong_couplings_basic():
+def test_strong_couplings_basic() -> None:
     """Tests a particular coupling structure."""
     coupl = get_strong_couplings((
         {"c1": "x+0.2*c2", "out1": "x"},
@@ -170,7 +170,7 @@ def test_strong_couplings_basic():
     assert coupl == ["c1", "c2"]
 
 
-def test_strong_couplings_self_coupled():
+def test_strong_couplings_self_coupled() -> None:
     """Tests a particular coupling structure with self couplings."""
     coupl = get_strong_couplings((
         {"cs": "x+0.2*cs"},
@@ -216,7 +216,7 @@ def test_strong_couplings_self_coupled():
 @image_comparison(None)
 def test_n2_no_coupling(
     tmp_wd, baseline_images, show_data_names, descriptions, pyplot_close_all
-):
+) -> None:
     """Test that an N2 plot is generated correctly when there are no couplings.
 
     Args:
@@ -240,7 +240,7 @@ def test_n2_no_coupling(
     )
 
 
-def test_coupl_properties():
+def test_coupl_properties() -> None:
     """Test the weak_couplings and get_input_couplings on the Sellar problem."""
     disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
     coupl = MDOCouplingStructure(disciplines)
@@ -267,7 +267,7 @@ def test_coupl_properties():
     assert coupl.get_input_couplings(disciplines[1]) == []
 
 
-def test_check_disciplines_consistency():
+def test_check_disciplines_consistency() -> None:
     """Test that MDOCouplingStructure checks the consistency of the disciplines."""
     disciplines = create_discipline(["Sellar1", "Sellar2"])
     with mock.patch.object(coupling_structure, "check_disciplines_consistency") as func:

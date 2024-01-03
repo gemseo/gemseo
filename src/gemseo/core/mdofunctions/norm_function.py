@@ -116,10 +116,11 @@ class NormFunction(MDOFunction):
             ValueError: If the original function does not provide a Jacobian matrix.
         """
         if not self.__orig_func.has_jac:
-            raise ValueError(
+            msg = (
                 f"Selected user gradient but function {self.__orig_func} "
                 "has no Jacobian matrix !"
             )
+            raise ValueError(msg)
         if self.__normalize:
             x_vect = self.__unnormalize_vect(x_vect)
         if self.__round_ints:

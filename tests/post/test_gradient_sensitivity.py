@@ -51,7 +51,7 @@ def factory():
 @pytest.mark.parametrize("scale_gradients", [True, False])
 def test_import_gradient_sensitivity(
     tmp_wd, factory, scale_gradients, pyplot_close_all
-):
+) -> None:
     """Test the gradient sensitivity post-processing with an imported problem.
 
     Args:
@@ -87,7 +87,7 @@ def test_import_gradient_sensitivity(
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
-def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
+def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all) -> None:
     """Test the gradient sensitivity post-processing with the Sobiesky problem.
 
     Args:
@@ -144,7 +144,7 @@ def dfdxy(x1=0.0, x2=0.0):
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
-def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
+def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all) -> None:
     """Test the analytical results of the gradient normalization.
 
     Args:
@@ -184,7 +184,7 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
     [(True, ["grad_sens_scaled"]), (False, ["grad_sens"])],
 )
 @image_comparison(None)
-def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all):
+def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all) -> None:
     """Test images created by the post_process method against references.
 
     Args:
@@ -233,7 +233,7 @@ def test_common_scenario(
     baseline_images,
     common_problem,
     pyplot_close_all,
-):
+) -> None:
     """Check GradientSensitivity with objective, standardized or not."""
     opt = GradientSensitivity(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
@@ -261,7 +261,7 @@ def test_compute_missing_gradients(
     factory,
     pyplot_close_all,
     caplog,
-):
+) -> None:
     """Test the option to compute missing gradients for a given iteration.
 
     Args:
@@ -304,7 +304,7 @@ def test_compute_missing_gradients(
 
 
 @image_comparison(["grad_sens_sobieski"])
-def test_compute_missing_gradients_with_eval(factory, pyplot_close_all):
+def test_compute_missing_gradients_with_eval(factory, pyplot_close_all) -> None:
     """Test that the computation of the missing gradients works well with functions.
 
     Args:

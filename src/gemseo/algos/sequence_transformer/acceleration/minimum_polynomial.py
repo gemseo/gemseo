@@ -51,7 +51,8 @@ class MinimumPolynomial(SequenceTransformer):
             window_size: The maximum number of iterates to be kept.
         """  # noqa:D205 D212 D415
         if not isinstance(window_size, int) or window_size < 1:
-            raise ValueError("The window size must be greater than or equal to 1.")
+            msg = "The window size must be greater than or equal to 1."
+            raise ValueError(msg)
 
         self.__window_size = window_size
 

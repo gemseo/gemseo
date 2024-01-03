@@ -115,7 +115,8 @@ class Power2(OptimizationProblem):
         """
         if self.exception_error:
             if self.iter_error >= 3:
-                raise ValueError("pow2() has already been called three times.")
+                msg = "pow2() has already been called three times."
+                raise ValueError(msg)
 
             self.iter_error += 1
 

@@ -59,7 +59,7 @@ def assert_equal(disc_data_1, disc_data_2, shallow_copy: bool) -> None:
     assert "w" not in disc_data_2
 
 
-def test_copy():
+def test_copy() -> None:
     """Verify copy()."""
     df = DataFrame(data={"a": [0]})
     data = {"x": df, "y": 0, "z": [0]}
@@ -69,7 +69,7 @@ def test_copy():
     assert_equal(d, d_copy, True)
 
 
-def test_deepcopy():
+def test_deepcopy() -> None:
     """Verify deepcopy()."""
     df = DataFrame(data={"a": [0]})
     data = {"x": df, "y": 0, "z": [0]}
@@ -80,7 +80,7 @@ def test_deepcopy():
 
 
 @pytest.mark.parametrize("with_namespace", [True, False])
-def test_copy_keys_namespace(with_namespace):
+def test_copy_keys_namespace(with_namespace) -> None:
     """Verify the copy with keys and namespace."""
     data = DisciplineData()
     data["ns:name"] = 0
@@ -108,7 +108,7 @@ def assert_getitem(
 
 
 @pytest.mark.parametrize("namespace_mapping", [{}, {"z": "ns:z"}])
-def test_getitem(namespace_mapping):
+def test_getitem(namespace_mapping) -> None:
     """Verify __getitem__()."""
     df = DataFrame(data={"a": [0]})
     data = {"x": df, "y": 0}
@@ -121,7 +121,7 @@ def test_getitem(namespace_mapping):
     assert_getitem(d, df)
 
 
-def test_len():
+def test_len() -> None:
     """Verify len()."""
     length = 2
     df = DataFrame(data=dict.fromkeys(range(length), [0]))
@@ -130,7 +130,7 @@ def test_len():
     assert len(d) == length + 1
 
 
-def test_iter():
+def test_iter() -> None:
     """Verify __iter__()."""
     length = 2
     df = DataFrame(data=dict.fromkeys(map(str, range(length)), [0]))
@@ -142,7 +142,7 @@ def test_iter():
     assert tuple(d) == ref_keys
 
 
-def test_delitem():
+def test_delitem() -> None:
     """Verify __delitem__()."""
     leaf_data = [0]
     df = DataFrame(data={"a": leaf_data, "b": leaf_data})
@@ -162,7 +162,7 @@ def test_delitem():
     del d["y"]
 
 
-def test_setitem():
+def test_setitem() -> None:
     """Verify __setitem__()."""
     d = DisciplineData({})
 
@@ -184,7 +184,7 @@ def test_setitem():
         d[to_df_key("y", "a")] = 0
 
 
-def test_repr():
+def test_repr() -> None:
     """Verify __repr__()."""
     df = DataFrame(data={"a": [0]})
     data = {"x": df, "y": 0}
@@ -193,7 +193,7 @@ def test_repr():
     assert repr(d) == repr(data)
 
 
-def test_keys():
+def test_keys() -> None:
     """Verify the shared dict keys have no separator."""
     msg = "{} shall not contain {}.".format(
         to_df_key("x", "x"), DisciplineData.SEPARATOR
@@ -202,7 +202,7 @@ def test_keys():
         DisciplineData({to_df_key("x", "x"): 0})
 
 
-def test_init():
+def test_init() -> None:
     """Verify that creating a DisciplineData from another one shares contents."""
     assert not DisciplineData()
     data = {}
@@ -212,14 +212,14 @@ def test_init():
     assert data["x"] == d2["x"]
 
 
-def test_init_error():
+def test_init_error() -> None:
     """Verify that creating a DisciplineData with a bad key raises an error."""
     msg = r"The key bad~key shall not contain ~\."
     with pytest.raises(KeyError, match=msg):
         DisciplineData({"bad~key": 0})
 
 
-def test_getitem_ns():
+def test_getitem_ns() -> None:
     """Verify access of data from keys without namespaces."""
     data = DisciplineData(
         {"ns:x": 1, "ns:y": 2, "z": 0},
@@ -237,7 +237,7 @@ def test_getitem_ns():
     assert data.get("ns:y") == 2
 
 
-def test_contains():
+def test_contains() -> None:
     """Verify that the in operator works."""
     d = DisciplineData({"x": 0})
     assert "x" in d
@@ -255,7 +255,7 @@ exclude_names = pytest.mark.parametrize(
 
 
 @exclude_names
-def test_update(exclude_names):
+def test_update(exclude_names) -> None:
     """Verify the defaults update."""
     data = DisciplineData({"name": 0})
     data_before = dict(data)
@@ -268,7 +268,7 @@ def test_update(exclude_names):
             assert value == other_data[name]
 
 
-def test_restrict():
+def test_restrict() -> None:
     """Verify the restriction."""
     data = DisciplineData()
     data["name"] = 0
@@ -277,13 +277,13 @@ def test_restrict():
     assert data.keys() == {"name"}
 
 
-def test_wrong_data_type():
+def test_wrong_data_type() -> None:
     """Verify that the type of the initial data is well checked."""
     data = ("a",)
     with pytest.raises(TypeError, match=f"Invalid type for data, got {type(data)}."):
         DisciplineData(data)
 
 
-def test_serialization():
+def test_serialization() -> None:
     """Verify serialization of nested data."""
     assert json.dumps(dict(DisciplineData({"a": {"b": "c"}}))) == '{"a": {"b": "c"}}'

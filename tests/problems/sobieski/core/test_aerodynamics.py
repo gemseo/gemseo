@@ -32,7 +32,7 @@ def problem():
     return SobieskiProblem("complex128")
 
 
-def test_dk_d_mach(problem):
+def test_dk_d_mach(problem) -> None:
     """"""
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
@@ -51,7 +51,7 @@ def test_dk_d_mach(problem):
     )
 
 
-def test_dk_dsweep(problem):
+def test_dk_dsweep(problem) -> None:
     """"""
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
@@ -70,7 +70,7 @@ def test_dk_dsweep(problem):
     )
 
 
-def test_d_c_dmin_dsweep(problem):
+def test_d_c_dmin_dsweep(problem) -> None:
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
         names=SobieskiAerodynamics().get_input_data_names()
@@ -92,7 +92,7 @@ def test_d_c_dmin_dsweep(problem):
     )
 
 
-def test_d_cd_dsweep(problem):
+def test_d_cd_dsweep(problem) -> None:
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
         names=SobieskiAerodynamics().get_input_data_names()
@@ -115,7 +115,7 @@ def test_d_cd_dsweep(problem):
     )
 
 
-def test_d_cd_d_mach(problem):
+def test_d_cd_d_mach(problem) -> None:
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
         names=SobieskiAerodynamics().get_input_data_names()
@@ -141,7 +141,7 @@ def test_d_cd_d_mach(problem):
     )
 
 
-def test_d_cd_dsref(problem):
+def test_d_cd_dsref(problem) -> None:
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
         names=SobieskiAerodynamics().get_input_data_names()
@@ -165,7 +165,7 @@ def test_d_cd_dsref(problem):
     )
 
 
-def test_d_cl_dh(problem):
+def test_d_cl_dh(problem) -> None:
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
         names=SobieskiAerodynamics().get_input_data_names()
@@ -203,7 +203,7 @@ def test_d_cl_dh(problem):
     )
 
 
-def test_d_cl_dsref(problem):
+def test_d_cl_dsref(problem) -> None:
     """"""
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
@@ -225,7 +225,7 @@ def test_d_cl_dsref(problem):
     )
 
 
-def test_d_cl_d_mach(problem):
+def test_d_cl_d_mach(problem) -> None:
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
         names=SobieskiAerodynamics().get_input_data_names()
@@ -266,7 +266,7 @@ def test_d_cl_d_mach(problem):
     )
 
 
-def test_drho_v2_dh(problem):
+def test_drho_v2_dh(problem) -> None:
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
         names=SobieskiAerodynamics().get_input_data_names()
@@ -301,7 +301,7 @@ def test_drho_v2_dh(problem):
     )
 
 
-def test_drho_v2_d_m(problem):
+def test_drho_v2_d_m(problem) -> None:
     sr_aero = problem.aerodynamics
     indata = problem.get_default_inputs(
         names=SobieskiAerodynamics().get_input_data_names()
@@ -335,7 +335,7 @@ def test_drho_v2_d_m(problem):
     )
 
 
-def test_dv_d_mach(problem):
+def test_dv_d_mach(problem) -> None:
     """"""
     sr_aero = problem.aerodynamics
     h = 1e-30
@@ -360,7 +360,7 @@ def test_dv_d_mach(problem):
     )
 
 
-def test_d_v_dh_drho_dh(problem):
+def test_d_v_dh_drho_dh(problem) -> None:
     sr_aero = problem.aerodynamics
     h = 1e-30
     mach = 1.6
@@ -402,7 +402,7 @@ def test_d_v_dh_drho_dh(problem):
     assert drhodh_ref == pytest.approx(drhodh, 1e-4)
 
 
-def test_jac_aero(problem):
+def test_jac_aero(problem) -> None:
     """"""
     sr = SobieskiAerodynamics("complex128")
     indata = problem.get_default_inputs(names=sr.get_input_data_names())

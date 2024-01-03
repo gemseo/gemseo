@@ -123,10 +123,11 @@ def initialize_design_space_and_discipline_to(
         ).nonzero()[0]  # Mandatory empty elements
         fullelts = []  # Mandatory full element
     else:
-        raise NotImplementedError(
+        msg = (
             "The examples covered by this function are MBB, "
             "L-Shape and Short_Cantilever."
         )
+        raise NotImplementedError(msg)
     initial_point = full((n_x * n_y,), vf0)
     initial_point[emptyelts] = 0
     initial_point[fullelts] = 1

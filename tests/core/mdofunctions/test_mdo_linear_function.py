@@ -30,7 +30,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 
 
-def test_inputs():
+def test_inputs() -> None:
     """Tests the formatting of the passed inputs."""
     coeffs_as_list = [1.0, 2.0]
     coeffs_as_vec = array(coeffs_as_list)
@@ -57,7 +57,7 @@ def test_inputs():
 @pytest.mark.parametrize(
     "coefficients", [array([1.0, 2.0, 3.0]), coo_array(array([1.0, 2.0, 3.0]))]
 )
-def test_input_names_generation(coefficients):
+def test_input_names_generation(coefficients) -> None:
     """Tests the generation of arguments strings."""
     # No arguments strings passed
     func = MDOLinearFunction(coefficients, "f")
@@ -87,7 +87,7 @@ def test_input_names_generation(coefficients):
         csr_array(np.array([0.0, 0.0, -1.0, 2.0, 1.0, 0.0, -9.0])),
     ],
 )
-def test_linear_function(coefs):
+def test_linear_function(coefs) -> None:
     """Tests the MDOLinearFunction class."""
 
     linear_fun = MDOLinearFunction(coefs, "f")
@@ -107,7 +107,7 @@ def test_linear_function(coefs):
     "coefficients",
     [array([[1.0, 2.0], [3.0, 4.0]]), coo_array(array([[1.0, 2.0], [3.0, 4.0]]))],
 )
-def test_nd_expression(coefficients):
+def test_nd_expression(coefficients) -> None:
     """Tests multi-valued MDOLinearFunction literal expression."""
     value_at_zero = array([5.0, 6.0])
     func = MDOLinearFunction(
@@ -124,7 +124,7 @@ def test_nd_expression(coefficients):
     "coefficients",
     [array([[1.0, 2.0], [3.0, 4.0]]), coo_array(array([[1.0, 2.0], [3.0, 4.0]]))],
 )
-def test_provided_expression(coefficients):
+def test_provided_expression(coefficients) -> None:
     """Tests provided expression."""
     func = MDOLinearFunction(
         coefficients,
@@ -141,7 +141,7 @@ def test_provided_expression(coefficients):
     )
 
 
-def test_mult_linear_function():
+def test_mult_linear_function() -> None:
     """Tests the multiplication of a standard MDOFunction and an MDOLinearFunction."""
     sqr = MDOFunction(
         lambda x: x[0] ** 2.0,
@@ -181,7 +181,7 @@ def test_mult_linear_function():
         coo_array(array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])),
     ],
 )
-def test_linear_restriction(coefficients):
+def test_linear_restriction(coefficients) -> None:
     """Tests the restriction of an MDOLinear function."""
     value_at_zero = array([7.0, 8.0])
     function = MDOLinearFunction(

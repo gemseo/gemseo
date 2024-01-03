@@ -79,10 +79,11 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         self._operator = operator
         self._operator_repr = operator_repr
         if not self._second_operand_is_number and not self._second_operand_is_func:
-            raise TypeError(
+            msg = (
                 f"Unsupported {operator_repr} operator "
                 f"for MDOFunction and {type(self._second_operand)}."
             )
+            raise TypeError(msg)
         if self._second_operand_is_func:
             self._second_operand_expr = self._second_operand.expr
             self._second_operand_name = self._second_operand.name

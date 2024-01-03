@@ -191,7 +191,7 @@ html_favicon = "_static/favicon.ico"
 html_static_path = ["_static"]
 
 
-def setup(app):
+def setup(app) -> None:
     app.add_css_file("css/gemseo.css")
     app.add_css_file("css/all.css")
     app.add_css_file("xdsm/fontello.css")

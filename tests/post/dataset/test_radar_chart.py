@@ -79,7 +79,7 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(
     kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-):
+) -> None:
     """Test images created by RadarChart._plot against references."""
     plot = RadarChart(dataset, **kwargs)
     if fig_and_axes:

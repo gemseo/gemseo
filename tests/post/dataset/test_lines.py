@@ -96,7 +96,7 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot_matplotlib(
     kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-):
+) -> None:
     """Test images created by Lines.execute against references for matplotlib."""
     plot = Lines(dataset, **kwargs)
     fig, axes = (
@@ -114,7 +114,7 @@ def test_plot_matplotlib(
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-def test_plot_plotly(kwargs, properties, baseline_images, dataset):
+def test_plot_plotly(kwargs, properties, baseline_images, dataset) -> None:
     """Test images created by Lines.execute against references for plotly."""
     pytest.importorskip("plotly")
     plot = Lines(dataset, **kwargs)

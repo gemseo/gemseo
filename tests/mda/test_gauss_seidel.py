@@ -53,7 +53,7 @@ def compute_reference_n_iter():
 
 
 @pytest.mark.parametrize("acceleration_method", AccelerationMethod)
-def test_acceleration_methods(compute_reference_n_iter, acceleration_method):
+def test_acceleration_methods(compute_reference_n_iter, acceleration_method) -> None:
     """Tests the acceleration methods."""
     mda = SobieskiMDAGaussSeidel(
         tolerance=1e-12, max_mda_iter=30, acceleration_method=acceleration_method
@@ -65,7 +65,7 @@ def test_acceleration_methods(compute_reference_n_iter, acceleration_method):
 
 
 # TODO: Remove tests once the old attributes are removed
-def test_compatibility():
+def test_compatibility() -> None:
     """Tests that the compatibility with previous behavior is ensured."""
     mda_1 = SobieskiMDAGaussSeidel(over_relax_factor=0.95)
     mda_1.reset_history_each_run = True
@@ -89,7 +89,7 @@ def test_compatibility():
 
 
 # TODO: Remove tests once the old attributes are removed
-def test_compatibility_setters_getters():
+def test_compatibility_setters_getters() -> None:
     """Tests that the compatibility with previous behavior is ensured."""
     mda = SobieskiMDAGaussSeidel(over_relax_factor=0.95)
     assert mda.over_relax_factor == 0.95
@@ -97,7 +97,7 @@ def test_compatibility_setters_getters():
 
 
 @image_comparison(["sobieski"])
-def test_sobieski(tmp_wd, pyplot_close_all):
+def test_sobieski(tmp_wd, pyplot_close_all) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
     mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
     mda.default_inputs["x_shared"] += 0.1
@@ -111,7 +111,7 @@ def test_sobieski(tmp_wd, pyplot_close_all):
     mda.plot_residual_history(save=False)
 
 
-def test_expected_workflow():
+def test_expected_workflow() -> None:
     """Test MDA GaussSeidel workflow should be disciplines sequence."""
     disc1 = MDODiscipline()
     disc2 = MDODiscipline()
@@ -126,7 +126,7 @@ def test_expected_workflow():
     assert str(mda.get_expected_workflow()) == expected
 
 
-def test_expected_workflow_with_adapter():
+def test_expected_workflow_with_adapter() -> None:
     discs = create_discipline([
         "SobieskiPropulsion",
         "SobieskiStructure",
@@ -178,7 +178,7 @@ def test_expected_workflow_with_adapter():
     assert str(mda.get_expected_workflow()) == expected
 
 
-def test_self_coupled():
+def test_self_coupled() -> None:
     for plus_y in [False, True]:
         sc_disc = SelfCoupledDisc(plus_y)
         mda = MDAGaussSeidel([sc_disc], tolerance=1e-14, max_mda_iter=40)
@@ -196,7 +196,7 @@ def test_self_coupled():
 
 
 @pytest.mark.parametrize("over_relax_factor", [1.0, 0.8, 1.1, 1.2, 1.5])
-def test_over_relaxation(over_relax_factor):
+def test_over_relaxation(over_relax_factor) -> None:
     discs = create_discipline([
         "SobieskiPropulsion",
         "SobieskiStructure",
@@ -217,7 +217,7 @@ def test_over_relaxation(over_relax_factor):
 
 
 class SelfCoupledDisc(MDODiscipline):
-    def __init__(self, plus_y=False):
+    def __init__(self, plus_y=False) -> None:
         MDODiscipline.__init__(self)
         self.input_grammar.update_from_names(["y", "x"])
         self.output_grammar.update_from_names(["y", "o"])
@@ -227,20 +227,20 @@ class SelfCoupledDisc(MDODiscipline):
         if not plus_y:
             self.coeff = -1.0
 
-    def _run(self):
+    def _run(self) -> None:
         self.local_data["y"] = (
             1.0 + self.coeff * 0.5 * self.local_data["y"] + self.local_data["x"]
         )
         self.local_data["o"] = self.local_data["y"] + self.local_data["x"]
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(self, inputs=None, outputs=None) -> None:
         self.jac = {
             "y": {"y": self.coeff * array([[0.5]]), "x": array([[1.0]])},
             "o": {"y": array([[1.0]]), "x": array([[1.0]])},
         }
 
 
-def test_log_convergence():
+def test_log_convergence() -> None:
     """Check that the boolean log_convergence is correctly set."""
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     mda = MDAGaussSeidel(disciplines)
@@ -249,7 +249,7 @@ def test_log_convergence():
     assert mda.log_convergence
 
 
-def test_parallel_doe(generate_parallel_doe_data):
+def test_parallel_doe(generate_parallel_doe_data) -> None:
     """Test the execution of GaussSeidel in parallel.
 
     Args:
@@ -273,7 +273,7 @@ def test_parallel_doe(generate_parallel_doe_data):
 @image_comparison(None, tol=0.098)
 def test_plot_residual_history(
     baseline_images, n_iterations, logscale, caplog, pyplot_close_all
-):
+) -> None:
     """Test the residual history plot.
 
     Args:

@@ -39,7 +39,7 @@ def dataset() -> IODataset:
     return create_iris_dataset(as_io=True)
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test factory constructor."""
     factory = ClassificationModelFactory()
     # plugins may add classes
@@ -50,14 +50,14 @@ def test_constructor():
     }
 
 
-def test_create(dataset):
+def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     factory = ClassificationModelFactory()
     knn = factory.create("KNNClassifier", data=dataset)
     assert hasattr(knn, "parameters")
 
 
-def test_load(dataset, tmp_wd):
+def test_load(dataset, tmp_wd) -> None:
     """Test the loading of a model from data."""
     factory = ClassificationModelFactory()
     knn = factory.create("KNNClassifier", data=dataset)
@@ -67,13 +67,13 @@ def test_load(dataset, tmp_wd):
     assert hasattr(loaded_knn, "parameters")
 
 
-def test_available_models():
+def test_available_models() -> None:
     """Test the getter of available classification models."""
     factory = ClassificationModelFactory()
     assert "KNNClassifier" in factory.models
 
 
-def test_is_available():
+def test_is_available() -> None:
     """Test the existence of a classification model."""
     factory = ClassificationModelFactory()
     assert factory.is_available("KNNClassifier")

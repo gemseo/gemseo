@@ -125,7 +125,8 @@ class SobieskiBase:
             self.math = math
             self.dtype = float64
         else:
-            raise ValueError(f"Unknown dtype: {dtype}.")
+            msg = f"Unknown dtype: {dtype}."
+            raise ValueError(msg)
 
         self.__constants = _CONSTANTS.astype(self.dtype)
         self.__coeff_mtrix = array(

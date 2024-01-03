@@ -97,7 +97,7 @@ class ScalableModel:
         """
         return {name: full(self.sizes[name], 0.5) for name in self.input_names}
 
-    def scalable_function(self, input_value=None):
+    def scalable_function(self, input_value=None) -> None:
         """Evaluate the scalable function.
 
         Args:
@@ -108,7 +108,7 @@ class ScalableModel:
         """
         raise NotImplementedError
 
-    def scalable_derivatives(self, input_value=None):
+    def scalable_derivatives(self, input_value=None) -> None:
         """Evaluate the scalable derivatives.
 
         Args:

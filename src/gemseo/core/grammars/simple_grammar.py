@@ -135,7 +135,8 @@ class SimpleGrammar(BaseGrammar):
                 since it is not yet supported for SimpleGrammar.
         """  # noqa: D205, D212, D415
         if merge:
-            raise ValueError("Merge is not supported yet for SimpleGrammar.")
+            msg = "Merge is not supported yet for SimpleGrammar."
+            raise ValueError(msg)
         if not names_to_types:
             return
         self.__update(names_to_types, names_to_types.keys())
@@ -240,9 +241,11 @@ class SimpleGrammar(BaseGrammar):
             TypeError: If the object is neither a type nor ``None``.
         """
         if obj is not None and not isinstance(obj, type):
-            raise TypeError(f"The element {name} must be a type or None: it is {obj}.")
+            msg = f"The element {name} must be a type or None: it is {obj}."
+            raise TypeError(msg)
 
     def _check_name(self, *names: str) -> None:
         for name in names:
             if name not in self.__names_to_types:
-                raise KeyError(f"The name {name} is not in the grammar.")
+                msg = f"The name {name} is not in the grammar."
+                raise KeyError(msg)

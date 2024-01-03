@@ -29,12 +29,12 @@ def factory() -> OTDistributionFactory:
     return OTDistributionFactory()
 
 
-def test_inheritance(factory):
+def test_inheritance(factory) -> None:
     """Check that a OTDistributionFactory is a DistributionFactory."""
     assert isinstance(factory, DistributionFactory)
 
 
-def test_class_names(factory):
+def test_class_names(factory) -> None:
     """Check that the OTFactoryFactory can only create OTDistribution objects."""
     class_names = factory.class_names
     assert {"OTDistribution", "OTNormalDistribution"}.issubset(class_names)

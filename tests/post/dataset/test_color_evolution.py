@@ -68,7 +68,7 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(
     kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-):
+) -> None:
     """Test images created by ColorEvolution._plot against references."""
     plot = ColorEvolution(dataset, **kwargs)
     fig, axes = (

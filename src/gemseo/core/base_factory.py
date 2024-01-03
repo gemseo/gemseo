@@ -310,8 +310,9 @@ class BaseFactory(metaclass=BaseABCMultiton):
         class_info = self._names_to_class_info.get(name)
         if class_info is None:
             names = ", ".join(self.class_names)
+            msg = f"The class {name} is not available; the available ones are: {names}."
             raise ImportError(
-                f"The class {name} is not available; the available ones are: {names}.",
+                msg,
             )
         return class_info.class_
 

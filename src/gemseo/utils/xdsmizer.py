@@ -514,7 +514,8 @@ class XDSMizer:
                     atom = atom_i
         if atom is None:
             disciplines = [a.discipline for a in self.atoms]
-            raise ValueError(f"Discipline {discipline} not found in {disciplines}")
+            msg = f"Discipline {discipline} not found in {disciplines}"
+            raise ValueError(msg)
         return atom
 
     @staticmethod
@@ -597,5 +598,6 @@ def expand(
     elif isinstance(wks, AtomicExecSequence):
         ids = [to_id[wks]]
     else:
-        raise TypeError(f"Bad execution sequence: found {wks}")
+        msg = f"Bad execution sequence: found {wks}"
+        raise TypeError(msg)
     return ids

@@ -130,7 +130,8 @@ class AutoPyDiscipline(MDODiscipline):
             TypeError: When ``py_func`` is not callable.
         """  # noqa: D205 D212 D415
         if not callable(py_func):
-            raise TypeError("py_func must be callable.")
+            msg = "py_func must be callable."
+            raise TypeError(msg)
 
         super().__init__(name=name or py_func.__name__, grammar_type=grammar_type)
         self.py_func = py_func
@@ -254,10 +255,11 @@ class AutoPyDiscipline(MDODiscipline):
                 temp_output_names = [value.id]
 
             if output_names and output_names != temp_output_names:
-                raise ValueError(
+                msg = (
                     "Two return statements use different variable names; "
                     f"{output_names} and {temp_output_names}."
                 )
+                raise ValueError(msg)
 
             output_names = temp_output_names
 
@@ -282,7 +284,8 @@ class AutoPyDiscipline(MDODiscipline):
             ValueError: When the Jacobian shape is inconsistent.
         """  # noqa: D205 D212 D415
         if self.py_jac is None:
-            raise RuntimeError("The analytic Jacobian is missing.")
+            msg = "The analytic Jacobian is missing."
+            raise RuntimeError(msg)
 
         if not self.__sizes:
             for name, value in self._local_data.items():
@@ -316,7 +319,7 @@ class AutoPyDiscipline(MDODiscipline):
         if len(func_jac.shape) < 2:
             func_jac = atleast_2d(func_jac)
         if func_jac.shape != self.__jac_shape:
-            raise ValueError(
+            msg = (
                 f"The shape {func_jac.shape} "
                 "of the Jacobian matrix "
                 f"of the discipline {self.name} "
@@ -324,6 +327,7 @@ class AutoPyDiscipline(MDODiscipline):
                 "does not match "
                 f"(output_size, input_size)={self.__jac_shape}."
             )
+            raise ValueError(msg)
 
         self.jac = split_array_to_dict_of_arrays(
             func_jac,

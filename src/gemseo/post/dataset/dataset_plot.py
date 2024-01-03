@@ -122,7 +122,8 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: If the dataset is empty.
         """  # noqa: D205, D212, D415
         if dataset.empty:
-            raise ValueError("Dataset is empty.")
+            msg = "Dataset is empty."
+            raise ValueError(msg)
 
         annotations = getfullargspec(self.__init__).annotations
         parameter_names_to_types = [(name, annotations[name]) for name in parameters]
@@ -273,7 +274,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._common_settings.ymax
 
     @ymax.setter
-    def ymax(self, value):
+    def ymax(self, value) -> None:
         self._common_settings.ymax = value
 
     @property
@@ -282,7 +283,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._common_settings.zmin
 
     @zmin.setter
-    def zmin(self, value: float | None):
+    def zmin(self, value: float | None) -> None:
         self._common_settings.zmin = value
 
     @property

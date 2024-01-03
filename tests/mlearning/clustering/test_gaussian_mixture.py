@@ -116,7 +116,7 @@ def model_with_transform(dataset) -> GaussianMixture:
     return gaussian_mixture
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     gaussian_mixture = GaussianMixture(dataset)
     assert gaussian_mixture.algo is not None
@@ -124,7 +124,7 @@ def test_constructor(dataset):
     assert gaussian_mixture.LIBRARY == "scikit-learn"
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     n_components = 5
     gaussian_mixture = GaussianMixture(dataset, n_components=n_components)
@@ -147,7 +147,7 @@ def test_learn(dataset):
         assert gm_model.n_clusters == n_components
 
 
-def test_predict(model):
+def test_predict(model) -> None:
     """Test prediction."""
     prediction = model.predict(VALUE)
     predictions = model.predict(VALUES)
@@ -159,7 +159,7 @@ def test_predict(model):
     assert predictions[1] != predictions[2]
 
 
-def test_predict_with_transform(model_with_transform):
+def test_predict_with_transform(model_with_transform) -> None:
     """Test prediction."""
     prediction = model_with_transform.predict(VALUE)
     predictions = model_with_transform.predict(VALUES)
@@ -171,7 +171,7 @@ def test_predict_with_transform(model_with_transform):
     assert predictions[1] != predictions[2]
 
 
-def test_predict_proba(model):
+def test_predict_proba(model) -> None:
     """Test prediction."""
     for is_hard in [True, False]:
         proba = model.predict_proba(VALUE, is_hard)
@@ -187,7 +187,7 @@ def test_predict_proba(model):
         assert not allclose(probas[1], probas[2])
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_clustering_model(dirname)

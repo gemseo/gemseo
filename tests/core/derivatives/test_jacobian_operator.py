@@ -78,7 +78,7 @@ def rectangular_jacobian() -> tuple[ndarray, JacobianOperator]:
     return matrix, operator
 
 
-def test_matvec():
+def test_matvec() -> None:
     """Tests the matrix-vector product."""
     matrix = RNG.normal(size=RECTANGULAR_SHAPE)
 
@@ -103,7 +103,7 @@ def test_matvec():
     assert (jacobian.T.dot(y) == matrix.T.dot(y)).all()
 
 
-def test_copy(rectangular_jacobian):
+def test_copy(rectangular_jacobian) -> None:
     """Tests the copying."""
     _, jacobian = rectangular_jacobian
 
@@ -117,7 +117,7 @@ def test_copy(rectangular_jacobian):
     assert (jacobian_copy.T.dot(y) == jacobian.T.dot(y)).all()
 
 
-def test_transpose(rectangular_jacobian):
+def test_transpose(rectangular_jacobian) -> None:
     """Tests the transposition."""
     _, jacobian = rectangular_jacobian
 
@@ -131,7 +131,7 @@ def test_transpose(rectangular_jacobian):
     assert (jacobian_transposed.T.dot(x) == jacobian.dot(x)).all()
 
 
-def test_shift_identity(square_jacobian):
+def test_shift_identity(square_jacobian) -> None:
     """Tests the shifting."""
     _, jacobian = square_jacobian
 
@@ -143,7 +143,7 @@ def test_shift_identity(square_jacobian):
     assert (jacobian_shifted.dot(x) == (jacobian.dot(x) - x)).all()
 
 
-def test_matrix_representation(rectangular_jacobian):
+def test_matrix_representation(rectangular_jacobian) -> None:
     """Tests the computation of matrix representation."""
     matrix, jacobian = rectangular_jacobian
 
@@ -156,7 +156,7 @@ def test_matrix_representation(rectangular_jacobian):
     "matrix",
     [RNG.normal(size=RECTANGULAR_SHAPE), rand(*RECTANGULAR_SHAPE, density=0.25)],
 )
-def test_algebra_with_arrays(matrix, rectangular_jacobian):
+def test_algebra_with_arrays(matrix, rectangular_jacobian) -> None:
     """Tests the algebraic operations with array-like objects."""
     jacobian_matrix, jacobian_operator = rectangular_jacobian
 
@@ -201,7 +201,7 @@ def test_algebra_with_arrays(matrix, rectangular_jacobian):
     )
 
 
-def test_algebra_between_jacobian_operators(rectangular_jacobian):
+def test_algebra_between_jacobian_operators(rectangular_jacobian) -> None:
     """Tests the algebraic operations between JacobianOperators."""
     jacobian_matrix, jacobian_operator = rectangular_jacobian
 
@@ -227,7 +227,7 @@ def test_algebra_between_jacobian_operators(rectangular_jacobian):
     assert allclose(result.T.get_matrix_representation(), result_mat.T, atol=1e-12)
 
 
-def test_algebra_with_not_supported_type(rectangular_jacobian):
+def test_algebra_with_not_supported_type(rectangular_jacobian) -> None:
     """Tests the algebraic operations with non supported objects."""
     _, jacobian_operator = rectangular_jacobian
 

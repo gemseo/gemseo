@@ -21,7 +21,7 @@ import jinja2
 ENV = jinja2.Environment(loader=jinja2.FileSystemLoader(Path(__file__).parent))
 
 
-def create_plugins_page(plugins, path):
+def create_plugins_page(plugins, path) -> None:
     template = ENV.get_template("plugins.tmpl")
     doc = template.render(plugins=plugins)
     with open(path / "plugins.rst", "w", encoding="utf-8") as f:

@@ -66,13 +66,13 @@ configure_logger()
 
 
 class DataFrameDiscipline(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
         self.input_grammar.update_from_names(["df~x"])
         self.output_grammar.update_from_names(["df~y"])
         self.default_inputs = {"df": DataFrame(data={"x": [0.0]})}
 
-    def _run(self):
+    def _run(self) -> None:
         df = self.local_data["df"]
         df["y"] = 1.0 - 0.2 * df["x"]
 

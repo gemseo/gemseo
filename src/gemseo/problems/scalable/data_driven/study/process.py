@@ -289,40 +289,43 @@ class ScalabilityStudy:
             self._fill_factor[discipline] = {}
         self._fill_factor[discipline][output] = fill_factor
 
-    def __check_discipline(self, discipline):
+    def __check_discipline(self, discipline) -> None:
         """Check if discipline is a string comprised in the list of disciplines
         names."""
         if not isinstance(discipline, str):
-            raise TypeError("The argument discipline should be a string")
+            msg = "The argument discipline should be a string"
+            raise TypeError(msg)
         discipline_names = self.discipline_names
         if discipline not in discipline_names:
+            msg = "The argument discipline should be a string comprised in the list %s"
             raise ValueError(
-                "The argument discipline should be a string comprised in the list %s",
+                msg,
                 discipline_names,
             )
 
-    def __check_output(self, discipline, varname: str):
+    def __check_output(self, discipline, varname: str) -> None:
         """Check if a variable is an output of a given discipline."""
         self.__check_discipline(discipline)
         if not isinstance(varname, str):
-            raise TypeError(f"{varname} is not a string.")
+            msg = f"{varname} is not a string."
+            raise TypeError(msg)
         output_names = next(
             dataset.get_variable_names(dataset.OUTPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
         )
         if varname not in output_names:
-            raise ValueError(
-                "'{}' is not an output of {}; available outputs are: {}".format(
-                    varname, discipline, output_names
-                )
+            msg = "'{}' is not an output of {}; available outputs are: {}".format(
+                varname, discipline, output_names
             )
+            raise ValueError(msg)
 
-    def __check_inputs(self, discipline, inputs):
+    def __check_inputs(self, discipline, inputs) -> None:
         """Check if inputs is a list of inputs of discipline."""
         self.__check_discipline(discipline)
         if not isinstance(inputs, list):
-            raise TypeError("The argument 'inputs' must be a list of string.")
+            msg = "The argument 'inputs' must be a list of string."
+            raise TypeError(msg)
         input_names = next(
             dataset.get_variable_names(dataset.INPUT_GROUP)
             for dataset in self.datasets
@@ -330,15 +333,15 @@ class ScalabilityStudy:
         )
         for inpt in inputs:
             if not isinstance(inpt, str):
-                raise TypeError(f"{inpt} is not a string.")
+                msg = f"{inpt} is not a string."
+                raise TypeError(msg)
             if inpt not in input_names:
-                raise ValueError(
-                    "'{}' is not a discipline input; available inputs are: {}".format(
-                        inpt, input_names
-                    )
+                msg = "'{}' is not a discipline input; available inputs are: {}".format(
+                    inpt, input_names
                 )
+                raise ValueError(msg)
 
-    def __check_fill_factor(self, fill_factor):
+    def __check_fill_factor(self, fill_factor) -> None:
         """Check if fill factor is a proportion or a number equal to -1.
 
         :param float fill_factor: a proportion or -1
@@ -347,25 +350,24 @@ class ScalabilityStudy:
             self.__check_proportion(fill_factor)
         except ValueError:
             if fill_factor != -1:
-                raise TypeError(
+                msg = (
                     "Fill factor should be a float number comprised in 0 and 1 "
                     "or a number equal to -1."
-                ) from None
+                )
+                raise TypeError(msg) from None
 
     @staticmethod
-    def __check_proportion(proportion):
+    def __check_proportion(proportion) -> None:
         """Check if a proportion is a float number comprised in 0 and 1.
 
         :param float proportion: proportion comprised in 0 and 1.
         """
         if not isinstance(proportion, numbers.Number):
-            raise TypeError(
-                "A proportion should be a float number comprised in 0 and 1."
-            )
+            msg = "A proportion should be a float number comprised in 0 and 1."
+            raise TypeError(msg)
         if not 0 <= proportion <= 1:
-            raise ValueError(
-                "A proportion should be a float number comprised in 0 and 1."
-            )
+            msg = "A proportion should be a float number comprised in 0 and 1."
+            raise ValueError(msg)
 
     def add_optimization_strategy(
         self,
@@ -393,7 +395,8 @@ class ScalabilityStudy:
         if algo_options is None:
             algo_options = {}
         elif not isinstance(algo_options, dict):
-            raise TypeError("algo_options must be a dictionary.")
+            msg = "algo_options must be a dictionary."
+            raise TypeError(msg)
         algo_options.update({"max_iter": max_iter})
         self.algorithms_options.append(algo_options)
         self.formulations.append(formulation)
@@ -569,11 +572,12 @@ class ScalabilityStudy:
         plural = "s" if n_replicates > 1 else ""
         LOGGER.info("Execute scalability study %s time%s", n_replicates, plural)
         if not self.formulations and not self.algorithms:
-            raise ValueError(
+            msg = (
                 "A scalable study needs at least 1 optimization strategy, "
                 "defined by a mandatory optimization algorithm "
                 "and optional optimization algorithm and options"
             )
+            raise ValueError(msg)
         counter = "Formulation: {} - Algo: {} - Scaling: {}/{} - Replicate: {}/{}"
         n_scal_strategies = len(self.var_scalings)
         n_opt_strategies = len(self.algorithms)

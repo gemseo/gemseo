@@ -38,7 +38,7 @@ FILE_PATH_PATTERN = str(DIR_PATH / "test_excel_fail{}.xlsx")
 INPUT_DATA = {"a": array([20.25]), "b": array([3.25])}
 
 
-def test_missing_xlwings(skip_if_xlwings_is_usable):
+def test_missing_xlwings(skip_if_xlwings_is_usable) -> None:
     """Check error when excel is not available.
 
     Args:
@@ -49,7 +49,7 @@ def test_missing_xlwings(skip_if_xlwings_is_usable):
         XLSDiscipline("dummy_file_path")
 
 
-def test_basic(skip_if_xlwings_is_not_usable):
+def test_basic(skip_if_xlwings_is_not_usable) -> None:
     """Simple test, the output is the sum of the inputs.
 
     Args:
@@ -62,7 +62,7 @@ def test_basic(skip_if_xlwings_is_not_usable):
 
 
 @pytest.mark.parametrize("file_id", range(1, 4))
-def test_error_init(skip_if_xlwings_is_not_usable, file_id):
+def test_error_init(skip_if_xlwings_is_not_usable, file_id) -> None:
     """Test that errors are raised for files without the proper format.
 
     Args:
@@ -74,7 +74,7 @@ def test_error_init(skip_if_xlwings_is_not_usable, file_id):
         XLSDiscipline(FILE_PATH_PATTERN.format(file_id))
 
 
-def test_error_execute(skip_if_xlwings_is_not_usable):
+def test_error_execute(skip_if_xlwings_is_not_usable) -> None:
     """Check that an exception is raised for incomplete data.
 
     Args:
@@ -90,7 +90,7 @@ def test_error_execute(skip_if_xlwings_is_not_usable):
         disc.execute(INPUT_DATA)
 
 
-def test_multiprocessing(skip_if_xlwings_is_not_usable):
+def test_multiprocessing(skip_if_xlwings_is_not_usable) -> None:
     """Test the parallel execution xls disciplines.
 
     Args:
@@ -109,7 +109,7 @@ def test_multiprocessing(skip_if_xlwings_is_not_usable):
     assert xlsd_2.get_output_data() == {"c": array([8.0])}
 
 
-def test_multithreading(skip_if_xlwings_is_not_usable):
+def test_multithreading(skip_if_xlwings_is_not_usable) -> None:
     """Test the execution of an XLSDiscipline with threading.
 
     Args:
@@ -156,7 +156,7 @@ def f_sellar_1(
     return y_1  # noqa: RET504
 
 
-def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable):
+def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
     """Test the execution of a parallel DOE with multithreading at the MDA level.
 
     At the DOE level, the parallelization uses multiprocessing to compute the samples.

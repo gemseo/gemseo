@@ -40,7 +40,7 @@ def dataset() -> IODataset:
     return dataset_
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test factory constructor."""
     assert {
         "GaussianMixture",
@@ -58,14 +58,14 @@ def test_constructor():
     } <= set(MLAlgoFactory().models)
 
 
-def test_create(dataset):
+def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     factory = MLAlgoFactory()
     ml_algo = factory.create("LinearRegressor", data=dataset)
     assert hasattr(ml_algo, "parameters")
 
 
-def test_load(dataset, tmp_wd):
+def test_load(dataset, tmp_wd) -> None:
     """Test the loading of a model from data."""
     factory = MLAlgoFactory()
     ml_algo = factory.create("RandomForestClassifier", data=dataset)
@@ -74,13 +74,13 @@ def test_load(dataset, tmp_wd):
     assert hasattr(loaded_ml_algo, "parameters")
 
 
-def test_available_models():
+def test_available_models() -> None:
     """Test the getter of available regression models."""
     factory = MLAlgoFactory()
     assert "KMeans" in factory.models
 
 
-def test_is_available():
+def test_is_available() -> None:
     """Test the existence of a regression model."""
     factory = MLAlgoFactory()
     assert factory.is_available("PolynomialRegressor")

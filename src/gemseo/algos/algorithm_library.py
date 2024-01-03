@@ -291,10 +291,11 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             self.algo_name = algo_name
 
         if self.algo_name is None:
-            raise ValueError(
+            msg = (
                 "Algorithm name must be either passed as "
                 "argument or set by the attribute self.algo_name"
             )
+            raise ValueError(msg)
 
         self._check_algorithm(self.algo_name, problem)
         options = self._update_algorithm_options(**options)
@@ -368,19 +369,21 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             problem: The problem to be solved.
         """
         if algo_name not in self.descriptions:
-            raise KeyError(
+            msg = (
                 f"The algorithm {algo_name} is unknown; "
                 f"available ones are: {pretty_str(self.descriptions.keys())}."
             )
+            raise KeyError(msg)
 
         unsuitability_reason = self._get_unsuitability_reason(
             self.descriptions[self.algo_name], problem
         )
         if unsuitability_reason:
-            raise ValueError(
+            msg = (
                 f"The algorithm {algo_name} is not adapted to the problem "
                 f"because {unsuitability_reason}."
             )
+            raise ValueError(msg)
 
     @classmethod
     def _get_unsuitability_reason(

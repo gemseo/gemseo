@@ -131,10 +131,11 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         if not schema_file.exists():
             schema_file = class_dir_path / "options" / f"{name}.json"
         if not schema_file.exists():
-            raise ValueError(
+            msg = (
                 "Options grammar for optimization post-processor does not exist, "
                 f"expected: {class_dir_path} or {class_dir_path / name}.json."
             )
+            raise ValueError(msg)
         descriptions = {}
         if hasattr(self.__class__, "_run"):
             descriptions.update(get_options_doc(self.__class__._run))
@@ -230,10 +231,11 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             **options,
         )
         if not self.opt_problem.database:
-            raise ValueError(
+            msg = (
                 f"The post-processor {self.__class__.__name__} cannot be solved "
                 "because the optimization problem was not solved."
             )
+            raise ValueError(msg)
 
         self.__figures = self._run(
             save=save,
@@ -259,10 +261,11 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         try:
             self.opt_grammar.validate(options)
         except InvalidDataError as error:
-            raise InvalidDataError(
+            msg = (
                 f"Invalid options for post-processor {self.__class__.__name__}; "
                 f"got {pretty_repr(options)}."
-            ) from error
+            )
+            raise InvalidDataError(msg) from error
 
     def _run(
         self,

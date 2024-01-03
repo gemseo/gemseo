@@ -33,7 +33,7 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.analytical.rosenbrock import RosenMF
 
 
-def run_and_test_problem(problem, algo_name="SLSQP"):
+def run_and_test_problem(problem, algo_name="SLSQP") -> None:
     """
 
     :param problem: param algo_name:  (Default value = "SLSQP")
@@ -51,13 +51,13 @@ def run_and_test_problem(problem, algo_name="SLSQP"):
             func.check_grad(x_0, step=1e-9, error_max=1e-4)
 
 
-def test_rastrigin():
+def test_rastrigin() -> None:
     """"""
     problem = Rastrigin()
     run_and_test_problem(problem)
 
 
-def test_rosen():
+def test_rosen() -> None:
     """"""
     problem = Rosenbrock()
     run_and_test_problem(problem, "L-BFGS-B")
@@ -67,13 +67,13 @@ def test_rosen():
     assert "x" not in problem.design_space.variable_names
 
 
-def test_power2():
+def test_power2() -> None:
     """"""
     problem = Power2()
     run_and_test_problem(problem)
 
 
-def test_rosen_mf():
+def test_rosen_mf() -> None:
     disc = RosenMF(3)
     assert disc.check_jacobian(
         {"x": np.zeros(3)},

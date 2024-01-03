@@ -42,7 +42,7 @@ def parse_cfgobj(infile):
     return data
 
 
-def write_output(out1, out2, outfile, failure=None):
+def write_output(out1, out2, outfile, failure=None) -> None:
     sout = """out 1 = {:1.18g}
 
 [ "section 1" ]

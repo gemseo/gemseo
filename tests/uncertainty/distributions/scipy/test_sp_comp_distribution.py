@@ -50,7 +50,7 @@ def composed_distribution(
     return SPComposedDistribution(distributions)
 
 
-def test_constructor(composed_distribution):
+def test_constructor(composed_distribution) -> None:
     assert composed_distribution.dimension == 4
     assert composed_distribution.variable_name == "x1_x2"
     assert composed_distribution.distribution_name == "Composed"
@@ -59,12 +59,12 @@ def test_constructor(composed_distribution):
     assert composed_distribution.parameters[0] is None
 
 
-def test_variable_name(distributions):
+def test_variable_name(distributions) -> None:
     """Check the use of a custom variable name."""
     assert SPComposedDistribution(distributions, variable="foo").variable_name == "foo"
 
 
-def test_str(composed_distribution):
+def test_str(composed_distribution) -> None:
     """Check the string representation of the composed distribution."""
     assert (
         repr(composed_distribution)
@@ -79,7 +79,7 @@ def test_str(composed_distribution):
     )
 
 
-def test_copula(distributions):
+def test_copula(distributions) -> None:
     """Check that using a copula which is not None raises an error."""
     with pytest.raises(
         NotImplementedError,
@@ -90,48 +90,48 @@ def test_copula(distributions):
         SPComposedDistribution(distributions, copula="foo")
 
 
-def test_compute_samples(composed_distribution):
+def test_compute_samples(composed_distribution) -> None:
     sample = composed_distribution.compute_samples(3)
     assert len(sample.shape) == 2
     assert sample.shape[0] == 3
     assert sample.shape[1] == 4
 
 
-def test_get_cdf(composed_distribution):
+def test_get_cdf(composed_distribution) -> None:
     result = composed_distribution.compute_cdf(array([0] * 4))
     assert allclose(result, array([0.5] * 4))
 
 
-def test_get_inverse_cdf(composed_distribution):
+def test_get_inverse_cdf(composed_distribution) -> None:
     result = composed_distribution.compute_inverse_cdf(array([0.5] * 4))
     assert allclose(result, array([0.0] * 4))
 
 
-def test_cdf(composed_distribution):
+def test_cdf(composed_distribution) -> None:
     cdf = composed_distribution._cdf(1)
     assert cdf(0.0) == 0.5
 
 
-def test_pdf(composed_distribution):
+def test_pdf(composed_distribution) -> None:
     pdf = composed_distribution._pdf(1)
     assert allclose(pdf(0.0), 0.398942, 1e-3)
 
 
-def test_mean(composed_distribution):
+def test_mean(composed_distribution) -> None:
     assert allclose(composed_distribution.mean, array([0.0] * 4))
 
 
-def test_std(composed_distribution):
+def test_std(composed_distribution) -> None:
     assert allclose(composed_distribution.standard_deviation, array([1.0] * 4))
 
 
-def test_support(composed_distribution):
+def test_support(composed_distribution) -> None:
     expectation = array([-inf, inf])
     for element in composed_distribution.support:
         assert allclose(element, expectation)
 
 
-def test_range(composed_distribution):
+def test_range(composed_distribution) -> None:
     expectation = array([-7.034484, 7.034487])
     for element in composed_distribution.range:
         assert allclose(element, expectation, 1e-3)

@@ -85,10 +85,11 @@ class ParetoFront(OptPostProcessor):
 
         if objectives_labels is not None:
             if len(all_labels) != len(objectives_labels):
-                raise ValueError(
+                msg = (
                     "objective_labels shall have the same dimension as the number"
                     " of objectives to plot."
                 )
+                raise ValueError(msg)
             all_labels = objectives_labels
 
         fig = generate_pareto_plots(

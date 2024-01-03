@@ -43,7 +43,7 @@ def dataset() -> Dataset:
 
 
 @image_comparison(["Subplots"])
-def test_plot(dataset, pyplot_close_all):
+def test_plot(dataset, pyplot_close_all) -> None:
     """Check the creation of a plot with subplots."""
     fig, (ax1, ax2) = plt.subplots(ncols=2)
     plot_1 = BarPlot(dataset, n_digits=2)

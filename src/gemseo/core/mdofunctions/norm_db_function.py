@@ -104,7 +104,8 @@ class NormDBFunction(MDOFunction):
         """
         # TODO: Add a dedicated function check_has_nan().
         if isnan(x_vect).any():
-            raise DesvarIsNan(f"Design Variables contain a NaN value: {x_vect}")
+            msg = f"Design Variables contain a NaN value: {x_vect}"
+            raise DesvarIsNan(msg)
         normalize = self.__normalize
         if normalize:
             xn_vect = x_vect
@@ -128,7 +129,8 @@ class NormDBFunction(MDOFunction):
             else:
                 value = self.__evaluate_orig_func(xu_vect)
             if self.__optimization_problem.stop_if_nan and isnan(value).any():
-                raise FunctionIsNan(f"The function {self.name} is NaN for x={xu_vect}")
+                msg = f"The function {self.name} is NaN for x={xu_vect}"
+                raise FunctionIsNan(msg)
             # store (x, f(x)) in database
             database.store(hashed_xu, {self.name: value})
 
@@ -149,7 +151,8 @@ class NormDBFunction(MDOFunction):
         """
         # TODO: Add a dedicated function check_has_nan().
         if isnan(x_vect).any():
-            raise FunctionIsNan(f"Design Variables contain a NaN value: {x_vect}")
+            msg = f"Design Variables contain a NaN value: {x_vect}"
+            raise FunctionIsNan(msg)
         normalize = self.__normalize
         if normalize:
             xn_vect = x_vect
@@ -177,9 +180,8 @@ class NormDBFunction(MDOFunction):
                 jac_u = self.__jac_orig_func(xu_vect)
                 jac_n = None
             if isnan(jac_u.data).any() and self.__optimization_problem.stop_if_nan:
-                raise FunctionIsNan(
-                    f"Function {self.name}'s Jacobian is NaN for x={xu_vect}"
-                )
+                msg = f"Function {self.name}'s Jacobian is NaN for x={xu_vect}"
+                raise FunctionIsNan(msg)
             func_name_to_value = {Database.get_gradient_name(self.name): jac_u}
             # store (x, j(x)) in database
             database.store(xu_vect, func_name_to_value)

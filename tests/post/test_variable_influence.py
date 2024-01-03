@@ -34,7 +34,7 @@ POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 SSBJ_HDF5_PATH = Path(__file__).parent / "mdf_backup.h5"
 
 
-def test_variable_influence(tmp_wd, pyplot_close_all):
+def test_variable_influence(tmp_wd, pyplot_close_all) -> None:
     """Test the variable influence post-processing.
 
     Args:
@@ -64,7 +64,7 @@ def test_variable_influence(tmp_wd, pyplot_close_all):
     #     assert Path(outf).exists()
 
 
-def test_variable_influence_doe(tmp_wd, pyplot_close_all):
+def test_variable_influence_doe(tmp_wd, pyplot_close_all) -> None:
     """Test the variable influence post-processing on a DOE.
 
     Args:
@@ -90,7 +90,7 @@ def test_variable_influence_doe(tmp_wd, pyplot_close_all):
         )
 
 
-def test_variable_influence_ssbj(tmp_wd, pyplot_close_all):
+def test_variable_influence_ssbj(tmp_wd, pyplot_close_all) -> None:
     """Test the variable influence post-processing on the SSBJ problem.
 
     Args:
@@ -129,7 +129,7 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_common_scenario(
     use_standardized_objective, baseline_images, common_problem, pyplot_close_all
-):
+) -> None:
     """Check VariableInfluence with objective, standardized or not."""
     opt = VariableInfluence(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective

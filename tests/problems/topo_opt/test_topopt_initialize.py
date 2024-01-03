@@ -28,7 +28,7 @@ from gemseo.problems.topo_opt.topopt_initialize import (
 
 
 @pytest.mark.parametrize("problem", ["MBB", "L-Shape", "Short_Cantilever"])
-def test_initialize_design_space_and_discipline_to(problem):
+def test_initialize_design_space_and_discipline_to(problem) -> None:
     """"""
     ds, disciplines = initialize_design_space_and_discipline_to(
         problem=problem,
@@ -45,7 +45,7 @@ def test_initialize_design_space_and_discipline_to(problem):
     assert all(isinstance(disc, MDODiscipline) for disc in disciplines)
 
 
-def test_not_implemented():
+def test_not_implemented() -> None:
     with pytest.raises(NotImplementedError):
         initialize_design_space_and_discipline_to(
             problem="test",

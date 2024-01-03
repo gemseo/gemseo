@@ -92,7 +92,7 @@ def df5(y=2.0):
     return array([[-0.01], [-0.02]])
 
 
-def test_basic():
+def test_basic() -> None:
     """Test a basic auto-discipline execution."""
     d1 = AutoPyDiscipline(f1)
 
@@ -113,13 +113,13 @@ def test_basic():
     "grammar_type",
     [AutoPyDiscipline.GrammarType.SIMPLE, AutoPyDiscipline.GrammarType.JSON],
 )
-def test_jac(grammar_type):
+def test_jac(grammar_type) -> None:
     """Test a basic jacobian."""
     disc = AutoPyDiscipline(py_func=f5, py_jac=df5, grammar_type=grammar_type)
     assert disc.check_jacobian()
 
 
-def test_use_arrays():
+def test_use_arrays() -> None:
     """Test the use of arrays."""
     d1 = AutoPyDiscipline(f1, use_arrays=True)
     d1.execute()
@@ -128,7 +128,7 @@ def test_use_arrays():
     assert d1.local_data["y1"] == f1()
 
 
-def test_fail_wrongly_formatted_function():
+def test_fail_wrongly_formatted_function() -> None:
     """Test that a wrongly formatted function cannot be used."""
     AutoPyDiscipline(f3)
     with pytest.raises(
@@ -141,14 +141,14 @@ def test_fail_wrongly_formatted_function():
         AutoPyDiscipline(f4)
 
 
-def test_fail_not_a_python_function():
+def test_fail_not_a_python_function() -> None:
     """Test the failure if a Python function is not provided."""
     not_a_function = 2
     with pytest.raises(TypeError, match="py_func must be callable."):
         AutoPyDiscipline(not_a_function)
 
 
-def test_jac_pb(design_space):
+def test_jac_pb(design_space) -> None:
     """Test the AutoPyDiscipline with Jacobian provided."""
     max_iter = 100
     algo = "L-BFGS-B"
@@ -169,20 +169,20 @@ def test_jac_pb(design_space):
     assert fopt_ref == scn.optimization_result.f_opt
 
 
-def test_missing_jacobian():
+def test_missing_jacobian() -> None:
     auto_rosen = AutoPyDiscipline(rosen)
     with pytest.raises(RuntimeError, match="The analytic Jacobian is missing."):
         auto_rosen._compute_jacobian()
 
 
 @pytest.mark.parametrize("input_", [{"a": [1.0]}, {"a": array([1.0])}])
-def test_to_arrays_dict(input_):
+def test_to_arrays_dict(input_) -> None:
     """Test the function to_arrays_dict."""
     output = to_arrays_dict(input_)
     assert output["a"] == array([1.0])
 
 
-def test_multiprocessing():
+def test_multiprocessing() -> None:
     """Test the execution of an AutoPyDiscipline in multiprocessing."""
     d1 = AutoPyDiscipline(f1)
     d2 = AutoPyDiscipline(f2)
@@ -200,7 +200,7 @@ def test_multiprocessing():
 @pytest.mark.parametrize(
     ("name", "expected"), [("custom_name", "custom_name"), (None, "f1")]
 )
-def test_auto_py_name(name, expected):
+def test_auto_py_name(name, expected) -> None:
     """Test that the name of the AutoPyDiscipline is set correctly."""
     d1 = AutoPyDiscipline(f1, name=name)
     assert d1.name == expected
@@ -219,7 +219,7 @@ def jac_wrong_shape(a=1.0, b=2.0, c=3.0):
     return array([[1.0, 2.0, 3.0]]).T
 
 
-def test_jacobian_shape_mismatch():
+def test_jacobian_shape_mismatch() -> None:
     """Tests the jacobian shape."""
     disc = AutoPyDiscipline(py_func=obj, py_jac=jac)
 
@@ -236,7 +236,7 @@ def test_jacobian_shape_mismatch():
         disc_wrong.linearize(compute_all_jacobians=True)
 
 
-def test_multiline_return():
+def test_multiline_return() -> None:
     """Check that AutoPyDiscipline can wrap a function with a multiline return."""
 
     def f(x):
@@ -367,7 +367,7 @@ def test_type_hints_for_grammars(
     input_names_to_types,
     output_names_to_types,
     caplog,
-):
+) -> None:
     """Verify the type hints handling."""
     d = AutoPyDiscipline(func, grammar_type=MDODiscipline.GrammarType.SIMPLE)
     assert d.input_grammar == input_names_to_types
@@ -448,7 +448,7 @@ def compute_jacobian_2(
 @pytest.mark.parametrize(
     "mda_name", ["MDAGaussSeidel", "MDAJacobi", "MDANewtonRaphson", "MDAQuasiNewton"]
 )
-def test_mda(x_local, mda_name, sellar_disciplines):
+def test_mda(x_local, mda_name, sellar_disciplines) -> None:
     """Verify MDA."""
     input_data_ref = get_inputs()
     mda_ref = create_mda(mda_name, sellar_disciplines[:-1])

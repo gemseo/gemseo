@@ -26,7 +26,7 @@ from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
 @pytest.mark.parametrize(
     "identifiers", [DirectoryNamingMethod.UUID, DirectoryNamingMethod.NUMBERED]
 )
-def test_create_directory(tmp_wd, root_directory, identifiers):
+def test_create_directory(tmp_wd, root_directory, identifiers) -> None:
     base_exec_runner = _BaseExecutableRunner(
         root_directory=root_directory,
         command_line="echo hello world",
@@ -38,7 +38,7 @@ def test_create_directory(tmp_wd, root_directory, identifiers):
 
 
 @pytest.mark.parametrize("command", ["echo hello world", "ls"])
-def test_executable_command(tmp_wd, command):
+def test_executable_command(tmp_wd, command) -> None:
     base_exec_runner = _BaseExecutableRunner(
         root_directory=".",
         command_line=command,
@@ -46,7 +46,7 @@ def test_executable_command(tmp_wd, command):
     assert command == base_exec_runner.command_line
 
 
-def test_change_working_directory(tmp_wd):
+def test_change_working_directory(tmp_wd) -> None:
     """Test to use a different execution directory."""
     Path("toto").mkdir()
     _BaseExecutableRunner(
@@ -56,7 +56,7 @@ def test_change_working_directory(tmp_wd):
     assert Path("toto/toto.txt").exists()
 
 
-def test_attached_files(tmp_wd):
+def test_attached_files(tmp_wd) -> None:
     """Test to copy attached files."""
     # Create empty files
     with open("toto.txt", "w") as f, open("tata.txt", "w") as g:
@@ -75,7 +75,7 @@ def test_attached_files(tmp_wd):
     assert (wd / "tata.txt").exists()
 
 
-def test_run_options(tmp_wd):
+def test_run_options(tmp_wd) -> None:
     log_file = Path("myfile_stdout.txt")
     with log_file.open("w") as outfile:
         exec_runner = _BaseExecutableRunner(
@@ -97,7 +97,7 @@ def test_run_options(tmp_wd):
         {"shell": False, "cwd": ".."},
     ],
 )
-def test_run_options_error(tmp_wd, options):
+def test_run_options_error(tmp_wd, options) -> None:
     msg = (
         f"{set(options.keys())} must not be defined a second time in "
         "subprocess_run_options."

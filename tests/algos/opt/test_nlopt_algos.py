@@ -44,13 +44,13 @@ from .problems.x2 import X2
 class TestNLOPT(TestCase):
     OPT_LIB_NAME = "Nlopt"
 
-    def _test_init(self):
+    def _test_init(self) -> None:
         """Tests the initialization of the problem."""
         factory = OptimizersFactory()
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
 
-    def test_failed(self):
+    def test_failed(self) -> None:
         """"""
         algo_name = "NLOPT_SLSQP"
         self.assertRaises(
@@ -61,7 +61,7 @@ class TestNLOPT(TestCase):
             max_iter=10,
         )
 
-    def test_roundoff(self):
+    def test_roundoff(self) -> None:
         problem = Power2()
 
         def obj_grad(x):
@@ -72,7 +72,7 @@ class TestNLOPT(TestCase):
         opt_library = OptimizersFactory().create("Nlopt")
         opt_library.execute(problem, algo_name="NLOPT_BFGS", max_iter=10)
 
-    def test_normalization(self):
+    def test_normalization(self) -> None:
         """Runs a problem with one variable to be normalized and three not to be."""
         design_space = DesignSpace()
         design_space.add_variable(
@@ -91,7 +91,7 @@ class TestNLOPT(TestCase):
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
         OptimizersFactory().execute(problem, "NLOPT_COBYLA")
 
-    def test_tolerance_activation(self):
+    def test_tolerance_activation(self) -> None:
         def run_pb(algo_options):
             design_space = DesignSpace()
             design_space.add_variable(
@@ -122,7 +122,7 @@ class TestNLOPT(TestCase):
             assert len(pb.database) == 1
 
 
-def test_cast_to_float():
+def test_cast_to_float() -> None:
     """Test that the NLopt library handles functions that return an `ndarray`."""
     space = DesignSpace()
     space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
@@ -172,7 +172,7 @@ for test_method in suite_tests.generate_test("Nlopt", get_options):
     setattr(TestNLOPT, test_method.__name__, test_method)
 
 
-def test_library_name():
+def test_library_name() -> None:
     """Check the library name."""
     assert Nlopt.LIBRARY_NAME == "NLopt"
 
@@ -190,7 +190,7 @@ def x2_problem() -> X2:
 
 
 @pytest.mark.parametrize("algo_name", ["NLOPT_COBYLA", "NLOPT_BOBYQA"])
-def test_no_stop_during_doe_phase(x2_problem: X2, algo_name: str):
+def test_no_stop_during_doe_phase(x2_problem: X2, algo_name: str) -> None:
     """Test that COBYLA and BOBYQA does not trigger a stop criterion during the DoE
     phase.
 
@@ -207,7 +207,7 @@ def test_no_stop_during_doe_phase(x2_problem: X2, algo_name: str):
     assert res.n_obj_call == 12
 
 
-def test_cobyla_stopped_due_to_small_crit_n_x(x2_problem: X2):
+def test_cobyla_stopped_due_to_small_crit_n_x(x2_problem: X2) -> None:
     """Test that COBYLA does not trigger a stop criterion during the doe phase.
 
     In this test, stop_crit_n_x is set by the user. An insufficient value is given,
@@ -222,7 +222,7 @@ def test_cobyla_stopped_due_to_small_crit_n_x(x2_problem: X2):
     assert res.n_obj_call == 5
 
 
-def test_bobyqa_stopped_due_to_small_crit_n_x(x2_problem: X2):
+def test_bobyqa_stopped_due_to_small_crit_n_x(x2_problem: X2) -> None:
     """Test that BOBYQA does not trigger a stop criterion during its DoE phase.
 
     In this test, stop_crit_n_x is set by the user. An insufficient value is given,

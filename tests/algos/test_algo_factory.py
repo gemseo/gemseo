@@ -27,18 +27,18 @@ from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFact
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 
 
-def test_is_available_error():
+def test_is_available_error() -> None:
     assert not OptimizersFactory().is_available("None")
 
 
-def test_create_ok():
+def test_create_ok() -> None:
     """Verify that an existing algorithm can be created."""
     algo = OptimizersFactory().create("L-BFGS-B")
     assert algo.algo_name == "L-BFGS-B"
     assert "max_iter" in algo.opt_grammar
 
 
-def test_create_ko():
+def test_create_ko() -> None:
     """Verify that an error is raised when trying to create an unknown algorithm."""
     with pytest.raises(
         ImportError,
@@ -50,12 +50,12 @@ def test_create_ko():
         OptimizersFactory().create("idontexist")
 
 
-def test_is_scipy_available():
+def test_is_scipy_available() -> None:
     assert OptimizersFactory().is_available("ScipyOpt")
     assert "SLSQP" in OptimizersFactory().algorithms
 
 
-def test_solver_factory_cache():
+def test_solver_factory_cache() -> None:
     """Verify the caching of the solver factory."""
     factory = LinearSolversFactory(use_cache=True)
     lib1 = factory.create("DEFAULT")
@@ -71,7 +71,7 @@ def test_solver_factory_cache():
     assert lib1_bis is not lib1
 
 
-def test_clear_lib_cache():
+def test_clear_lib_cache() -> None:
     """Verify clearing the lib cache."""
     factory = LinearSolversFactory(use_cache=True)
     lib1 = factory.create("DEFAULT")

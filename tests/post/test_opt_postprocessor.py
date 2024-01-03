@@ -50,7 +50,7 @@ class NewOptPostProcessorWithoutOptionsGrammar(OptPostProcessor):
     """A new optimization post processor without options grammar."""
 
 
-def test_fig_size(problem):
+def test_fig_size(problem) -> None:
     """Check the effect of fig_size."""
     post = NewOptPostProcessor(problem)
     figure = post.execute(save=False)["my_figure"]
@@ -62,7 +62,7 @@ def test_fig_size(problem):
     assert figure.get_figheight() == 20
 
 
-def test_check_options(problem):
+def test_check_options(problem) -> None:
     """Check that an error is raised when using an option that is not in the grammar."""
     with pytest.raises(
         InvalidDataError,
@@ -74,7 +74,7 @@ def test_check_options(problem):
         NewOptPostProcessor(problem).check_options(foo="True", bar=True)
 
 
-def test_no_option_grammar(problem):
+def test_no_option_grammar(problem) -> None:
     """Check the error raised when no options grammar."""
     with (
         pytest.raises(

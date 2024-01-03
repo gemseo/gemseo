@@ -65,7 +65,7 @@ def other_transformers():
     ]
 
 
-def test_constructor(transformers, other_transformers):
+def test_constructor(transformers, other_transformers) -> None:
     """Test constructor."""
     pipeline = Pipeline()
     assert pipeline.name == "Pipeline"
@@ -76,7 +76,7 @@ def test_constructor(transformers, other_transformers):
     assert yet_another_pipeline.transformers == other_transformers
 
 
-def test_duplicate(data, transformers):
+def test_duplicate(data, transformers) -> None:
     """Test pipeline duplicate method."""
     pipeline = Pipeline()
     pipeline.fit(data)
@@ -95,7 +95,7 @@ def test_duplicate(data, transformers):
         assert transformer != transformer_dup
 
 
-def test_fit(data, transformers, other_transformers):
+def test_fit(data, transformers, other_transformers) -> None:
     """Test fit method."""
     pipeline = Pipeline()
     pipeline.fit(data)
@@ -107,7 +107,7 @@ def test_fit(data, transformers, other_transformers):
     yet_another_pipeline.fit(data)
 
 
-def test_transform(data, transformers, other_transformers):
+def test_transform(data, transformers, other_transformers) -> None:
     """Test transform method."""
     pipeline = Pipeline()
     pipeline.fit(data)
@@ -125,7 +125,7 @@ def test_transform(data, transformers, other_transformers):
     assert allclose(transformed_data, OFF_3 + C_3 * (OFF_2 + C_1 * data))
 
 
-def test_inverse_transform(data, transformers, other_transformers):
+def test_inverse_transform(data, transformers, other_transformers) -> None:
     """Test inverse_transform method."""
     pipeline = Pipeline()
     pipeline.fit(data)
@@ -143,7 +143,7 @@ def test_inverse_transform(data, transformers, other_transformers):
     assert allclose(transformed_data, ((data - OFF_3) / C_3 - OFF_2) / C_1)
 
 
-def test_compute_jacobian(data, transformers, other_transformers):
+def test_compute_jacobian(data, transformers, other_transformers) -> None:
     """Test compute_jacobian method."""
     iden = eye(data.shape[1])
 
@@ -163,7 +163,7 @@ def test_compute_jacobian(data, transformers, other_transformers):
     assert allclose(jacobian, diag(C_3 * C_1))
 
 
-def test_compute_jacobian_inverse(data, transformers, other_transformers):
+def test_compute_jacobian_inverse(data, transformers, other_transformers) -> None:
     """Test compute_jacobian_inverse method."""
     iden = eye(data.shape[1])
 

@@ -123,7 +123,7 @@ def cluster_data() -> tuple[ndarray, list[str]]:
     return data, ["x_1", "x_2"]
 
 
-def test_get_mlearning_models():
+def test_get_mlearning_models() -> None:
     """Test that available ML models are found."""
     available_models = get_mlearning_models()
     for regression_model in AVAILABLE_REGRESSION_MODELS:
@@ -135,7 +135,7 @@ def test_get_mlearning_models():
     assert "Dummy" not in available_models
 
 
-def test_get_regression_models():
+def test_get_regression_models() -> None:
     """Test that available regression models are found."""
     available_models = get_regression_models()
     for regression_model in AVAILABLE_REGRESSION_MODELS:
@@ -143,7 +143,7 @@ def test_get_regression_models():
     assert "Dummy" not in available_models
 
 
-def test_get_classification_models():
+def test_get_classification_models() -> None:
     """Test that available classification models are found."""
     available_models = get_classification_models()
     for classification_model in AVAILABLE_CLASSIFICATION_MODELS:
@@ -151,7 +151,7 @@ def test_get_classification_models():
     assert "Dummy" not in available_models
 
 
-def test_get_clustering_models():
+def test_get_clustering_models() -> None:
     """Test that available clustering models are found."""
     available_models = get_clustering_models()
     for clustering_model in AVAILABLE_CLUSTERING_MODELS:
@@ -159,7 +159,7 @@ def test_get_clustering_models():
     assert "Dummy" not in available_models
 
 
-def test_create_mlearning_model(dataset, classification_data, cluster_data):
+def test_create_mlearning_model(dataset, classification_data, cluster_data) -> None:
     """Test creation of model."""
     model = create_mlearning_model("LinearRegressor", dataset)
     assert model.algo is not None
@@ -179,7 +179,7 @@ def test_create_mlearning_model(dataset, classification_data, cluster_data):
     assert model.algo is not None
 
 
-def test_create_regression_model(dataset):
+def test_create_regression_model(dataset) -> None:
     """Test creation of regression model."""
     model = create_regression_model("LinearRegressor", dataset)
     assert model.algo is not None
@@ -200,7 +200,7 @@ def test_create_regression_model(dataset):
     assert not model.transformer
 
 
-def test_create_classification_model(classification_data):
+def test_create_classification_model(classification_data) -> None:
     """Test creation of classification model."""
     data, variables, groups = classification_data
     dataset = create_dataset(
@@ -214,7 +214,7 @@ def test_create_classification_model(classification_data):
     assert model.algo is not None
 
 
-def test_create_clustering_model(cluster_data):
+def test_create_clustering_model(cluster_data) -> None:
     """Test creation of clustering model."""
     data, variables = cluster_data
     dataset = create_dataset("dataset_name", data, variables)
@@ -222,7 +222,9 @@ def test_create_clustering_model(cluster_data):
     assert model.algo is not None
 
 
-def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_wd):
+def test_import_mlearning_model(
+    dataset, classification_data, cluster_data, tmp_wd
+) -> None:
     """Test import of model."""
     model = create_mlearning_model("LinearRegressor", dataset)
     model.learn()
@@ -251,7 +253,7 @@ def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_
     assert hasattr(loaded_model, "parameters")
 
 
-def test_import_regression_model(dataset, tmp_wd):
+def test_import_regression_model(dataset, tmp_wd) -> None:
     """Test import of regression model."""
     model = create_regression_model("LinearRegressor", dataset)
     model.learn()
@@ -265,7 +267,7 @@ def test_import_regression_model(dataset, tmp_wd):
     "A compatibility issue has been created: "
     "https://gitlab.com/gemseo/dev/gemseo/-/issues/768",
 )
-def test_import_regression_model_with_old_class_name():
+def test_import_regression_model_with_old_class_name() -> None:
     """Test import of a regression model with an old class name.
 
     An instance of LinearRegression has been saved with GEMSEO 3.2.2; GEMSEO 3.0 renamed
@@ -282,7 +284,7 @@ def test_import_regression_model_with_old_class_name():
     assert objects.pop("algo_name") == "LinearRegression"
 
 
-def test_import_classification_model(classification_data, tmp_wd):
+def test_import_classification_model(classification_data, tmp_wd) -> None:
     """Test import of classification model."""
     data, variables, groups = classification_data
     dataset = create_dataset(
@@ -299,7 +301,7 @@ def test_import_classification_model(classification_data, tmp_wd):
     assert hasattr(loaded_model, "parameters")
 
 
-def test_import_clustering_model(cluster_data, tmp_wd):
+def test_import_clustering_model(cluster_data, tmp_wd) -> None:
     """Test import of clustering model."""
     data, variables = cluster_data
     dataset = create_dataset("dataset_name", data, variables)
@@ -310,7 +312,7 @@ def test_import_clustering_model(cluster_data, tmp_wd):
     assert hasattr(loaded_model, "parameters")
 
 
-def test_get_mlearning_options():
+def test_get_mlearning_options() -> None:
     """Test correct retrieval of model options."""
     properties = get_mlearning_options("LinearRegressor")["properties"]
     assert "fit_intercept" in properties
@@ -323,21 +325,21 @@ def test_get_mlearning_options():
     assert "Dummy" not in properties
 
 
-def test_get_regression_options():
+def test_get_regression_options() -> None:
     """Test correct retrieval of regression model options."""
     properties = get_regression_options("LinearRegressor")["properties"]
     assert "fit_intercept" in properties
     assert "Dummy" not in properties
 
 
-def test_get_classification_options():
+def test_get_classification_options() -> None:
     """Test correct retrieval of classification model options."""
     properties = get_classification_options("KNNClassifier")["properties"]
     assert "n_neighbors" in properties
     assert "Dummy" not in properties
 
 
-def test_get_clustering_model_options():
+def test_get_clustering_model_options() -> None:
     """Test correct retrieval of clustering model options."""
     properties = get_clustering_options("KMeans")["properties"]
     assert "n_clusters" in properties

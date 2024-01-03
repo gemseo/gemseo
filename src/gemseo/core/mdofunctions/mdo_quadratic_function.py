@@ -147,10 +147,11 @@ class MDOQuadraticFunction(MDOFunction):
             or len(coefficients.shape) != 2
             or coefficients.shape[0] != coefficients.shape[1]
         ):
-            raise ValueError(
+            msg = (
                 "Quadratic coefficients must be passed as a 2-dimensional "
                 "square ndarray."
             )
+            raise ValueError(msg)
         self._quad_coeffs = coefficients
         self._input_dim = self._quad_coeffs.shape[0]
 
@@ -167,10 +168,11 @@ class MDOQuadraticFunction(MDOFunction):
     @linear_coeffs.setter
     def linear_coeffs(self, coefficients: ArrayType) -> None:
         if coefficients.size != self._input_dim:
-            raise ValueError(
+            msg = (
                 "The number of first-order coefficients must be equal "
                 "to the input dimension."
             )
+            raise ValueError(msg)
         self._linear_part.coefficients = coefficients
 
     @classmethod

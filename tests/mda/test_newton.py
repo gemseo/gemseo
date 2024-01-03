@@ -28,7 +28,7 @@ from numpy import isclose
     "mda_class",
     ["MDAQuasiNewton", "MDANewtonRaphson", "MDAGaussSeidel"],
 )
-def test_parallel_doe(mda_class, generate_parallel_doe_data):
+def test_parallel_doe(mda_class, generate_parallel_doe_data) -> None:
     """Test the execution of Newton methods in parallel.
 
     Args:

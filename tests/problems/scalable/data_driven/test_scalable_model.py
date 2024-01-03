@@ -26,7 +26,7 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 
 
-def test_notimplementederror():
+def test_notimplementederror() -> None:
     dataset = IODataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])
     dataset.add_variable("x", (val * 2)[:, newaxis], dataset.INPUT_GROUP)
@@ -36,7 +36,7 @@ def test_notimplementederror():
         ScalableModel(dataset)
 
     class NewScalableModel(ScalableModel):
-        def build_model(self):
+        def build_model(self) -> None:
             return None
 
     model = NewScalableModel(dataset)

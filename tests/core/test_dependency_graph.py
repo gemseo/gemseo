@@ -124,12 +124,12 @@ def name_and_graph(request):
     return name, graph
 
 
-def assert_dot_file(file_name):
+def assert_dot_file(file_name) -> None:
     """Assert the contents of the dot file given a pdf file."""
     assert_file(Path(file_name).with_suffix(".dot"))
 
 
-def assert_file(file_path: Path):
+def assert_file(file_path: Path) -> None:
     """Assert the contents of the file against its reference."""
     # strip because some reference files are stripped by our pre-commit hooks
     assert (
@@ -138,7 +138,7 @@ def assert_file(file_path: Path):
     )
 
 
-def test_write_full_graph(tmp_wd, name_and_graph):
+def test_write_full_graph(tmp_wd, name_and_graph) -> None:
     """Test writing the full graph to disk.
 
     This also checks the expected contents of a graph.
@@ -149,7 +149,7 @@ def test_write_full_graph(tmp_wd, name_and_graph):
     assert_dot_file(file_name)
 
 
-def test_write_condensed_graph(tmp_wd, name_and_graph):
+def test_write_condensed_graph(tmp_wd, name_and_graph) -> None:
     """Test writing the condensed graph to disk.
 
     This also checks the expected contents of a graph.
@@ -160,7 +160,7 @@ def test_write_condensed_graph(tmp_wd, name_and_graph):
     assert_dot_file(file_name)
 
 
-def test_couplings(tmp_wd, name_and_graph):
+def test_couplings(tmp_wd, name_and_graph) -> None:
     """Test the couplings against references stored in json files."""
     name, graph = name_and_graph
     couplings = graph.get_disciplines_couplings()
@@ -212,13 +212,15 @@ def graph_with_self_coupling() -> DependencyGraph:
         ("condensed_coupling_graph.pdf", "write_condensed_graph"),
     ],
 )
-def test_coupling_structure_plot(tmp_wd, graph_with_self_coupling, file_path, method):
+def test_coupling_structure_plot(
+    tmp_wd, graph_with_self_coupling, file_path, method
+) -> None:
     """Check the rendering of the coupling graph with a self-coupled discipline."""
     getattr(graph_with_self_coupling, method)(file_path)
     assert_dot_file(Path(file_path))
 
 
-def test_no_graphviz(caplog, graph_with_self_coupling):
+def test_no_graphviz(caplog, graph_with_self_coupling) -> None:
     """Check the message logged when graphviz is missing."""
     with patch("gemseo.core.dependency_graph.GraphView", None):
         assert graph_with_self_coupling.write_full_graph("graph.pdf") is None

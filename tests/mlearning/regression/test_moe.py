@@ -116,7 +116,7 @@ def model_with_transform(dataset) -> MOERegressor:
     return moe
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     moe = MOERegressor(dataset)
     assert moe.cluster_algo is not None
@@ -124,7 +124,7 @@ def test_constructor(dataset):
     assert moe.regress_algo is not None
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     moe = MOERegressor(dataset)
     moe.learn()
@@ -136,7 +136,7 @@ def test_learn(dataset):
     assert len(moe.labels) == len(dataset)
 
 
-def test_set_algos(dataset):
+def test_set_algos(dataset) -> None:
     """Test learn."""
     moe = MOERegressor(dataset)
     moe.set_classifier("RandomForestClassifier")
@@ -149,7 +149,7 @@ def test_set_algos(dataset):
         assert isinstance(local_model, LinearRegressor)
 
 
-def test_predict_class(model, model_with_transform):
+def test_predict_class(model, model_with_transform) -> None:
     """Test class prediction."""
     prediction = model.predict_class(INPUT_VALUE)
     assert isinstance(prediction, dict)
@@ -169,13 +169,13 @@ def test_predict_class(model, model_with_transform):
     ("input_data", "shape"), [(INPUT_VALUE, (1,)), (INPUT_VALUES, (6, 1))]
 )
 @pytest.mark.parametrize("index", [0, 1])
-def test_predict_local_model(model, input_data, index, shape):
+def test_predict_local_model(model, input_data, index, shape) -> None:
     """Test prediction of individual regression model."""
     prediction = model.predict_local_model(input_data, index)
     assert prediction["y"].shape == shape
 
 
-def test_local_model_transform(model_with_transform):
+def test_local_model_transform(model_with_transform) -> None:
     """Test prediction of individual regression model."""
     prediction = model_with_transform.predict_local_model(INPUT_VALUES, 0)
     assert isinstance(prediction, dict)
@@ -183,7 +183,7 @@ def test_local_model_transform(model_with_transform):
     assert prediction["y"].shape == (6, 1)
 
 
-def test_predict(model):
+def test_predict(model) -> None:
     """Test prediction."""
     prediction = model.predict(INPUT_VALUES)
     assert isinstance(prediction, dict)
@@ -191,7 +191,7 @@ def test_predict(model):
     assert prediction["y"].shape == (6, 1)
 
 
-def test_predict_jacobian(model):
+def test_predict_jacobian(model) -> None:
     """Test jacobian prediction."""
     jac = model.predict_jacobian(INPUT_VALUES)
     assert isinstance(jac, dict)
@@ -199,13 +199,13 @@ def test_predict_jacobian(model):
     assert jac["y"]["x_2"].shape == (6, 1, 1)
 
 
-def test_predict_jacobian_soft(model_soft):
+def test_predict_jacobian_soft(model_soft) -> None:
     """Test predict jacobian soft."""
     with pytest.raises(NotImplementedError):
         model_soft.predict_jacobian(INPUT_VALUES)
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)
@@ -216,7 +216,7 @@ def test_save_and_load(model, tmp_wd):
         assert allclose(value, out2[name], 1e-3)
 
 
-def test_repr_str_(model):
+def test_repr_str_(model) -> None:
     """Test string representations."""
     expected = """MOERegressor(hard=True)
    built from 36 learning samples
@@ -232,7 +232,7 @@ def test_repr_str_(model):
     assert repr(model) == str(model) == expected
 
 
-def test_repr_html(model):
+def test_repr_html(model) -> None:
     """Check MOERegressor._repr_html."""
     assert model._repr_html_() == REPR_HTML_WRAPPER.format(
         "MOERegressor(hard=True)<br/>"
@@ -268,7 +268,7 @@ def test_repr_html(model):
     )
 
 
-def test_moe_with_candidates(dataset):
+def test_moe_with_candidates(dataset) -> None:
     moe = MOERegressor(dataset)
 
     assert not moe.cluster_cands

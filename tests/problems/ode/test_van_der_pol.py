@@ -20,8 +20,8 @@ import unittest
 class TestVanDerPol(unittest.TestCase):
     """Test the VanDerPol class."""
 
-    def test_run(self):
+    def test_run(self) -> None:
         pass
 
-    def test_sensitivity_computation(self):
+    def test_sensitivity_computation(self) -> None:
         pass

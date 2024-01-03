@@ -205,9 +205,10 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
         if self.use_threading:
             ids = {id(obj) for obj in objects}
             if len(ids) != len(objects):
-                raise ValueError(
+                msg = (
                     "When using multithreading, all workers shall be different objects."
                 )
+                raise ValueError(msg)
 
     def execute(
         self,
@@ -241,12 +242,14 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             statement when working on Windows.
         """
         if exec_callback is not None and not callable(exec_callback):
-            raise TypeError("exec_callback function must be callable.")
+            msg = "exec_callback function must be callable."
+            raise TypeError(msg)
 
         if task_submitted_callback is not None and not callable(
             task_submitted_callback
         ):
-            raise TypeError("task_submitted_callback function must be callable.")
+            msg = "task_submitted_callback function must be callable."
+            raise TypeError(msg)
 
         n_tasks = len(inputs)
 
@@ -326,7 +329,7 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
 
         return ordered_outputs
 
-    def __check_multiprocessing_start_method(self):
+    def __check_multiprocessing_start_method(self) -> None:
         """Check the multiprocessing start method with respect to the platform.
 
         Raises:
@@ -338,9 +341,10 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             and self.MULTI_PROCESSING_START_METHOD
             != self.MultiProcessingStartMethod.SPAWN
         ):
-            raise ValueError(
+            msg = (
                 f"The multiprocessing start method "
                 f"{self.MULTI_PROCESSING_START_METHOD.value} "
                 f"cannot be used on the Windows platform. "
                 f"Only {self.MultiProcessingStartMethod.SPAWN.value} is available."
             )
+            raise ValueError(msg)

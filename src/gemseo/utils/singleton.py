@@ -43,10 +43,11 @@ class SingleInstancePerAttributeId(type):
     def __call__(cls, *args, **kwargs):  # noqa:D102
         # id = memory address of the object, which is unique
         if not args:
-            raise ValueError(
+            msg = (
                 "SingleInstancePerAttribute subclasses "
                 "need at least one attribute in the constructor."
             )
+            raise ValueError(msg)
         inst_key = (id(cls), id(args[0]))
         inst = cls.instances.get(inst_key)
         if inst is None:
@@ -70,10 +71,11 @@ class SingleInstancePerFileAttribute(type):
     # argument but this is an eclipse bug.
     def __call__(cls, *args, **kwargs):  # noqa:D102
         if not args:
-            raise ValueError(
+            msg = (
                 "SingleInstancePerAttribute subclasses need at"
                 " least one attribute in the constructor."
             )
+            raise ValueError(msg)
         fpath = args[0]
 
         if not isinstance(fpath, str):

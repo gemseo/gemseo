@@ -44,7 +44,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_scatter(tmp_wd, pyplot_close_all):
+def test_scatter(tmp_wd, pyplot_close_all) -> None:
     """Test the scatter matrix post-processing for all functions.
 
     Args:
@@ -66,7 +66,7 @@ def test_scatter(tmp_wd, pyplot_close_all):
         assert Path(outf).exists()
 
 
-def test_scatter_load(tmp_wd, pyplot_close_all):
+def test_scatter_load(tmp_wd, pyplot_close_all) -> None:
     """Test scatter matrix post-processing with an imported problem.
 
     Args:
@@ -91,7 +91,7 @@ def test_scatter_load(tmp_wd, pyplot_close_all):
         assert Path(outf).exists()
 
 
-def test_non_existent_var(tmp_wd):
+def test_non_existent_var(tmp_wd) -> None:
     """Test exception when a requested variable does not exist.
 
     Args:
@@ -118,7 +118,7 @@ def test_non_existent_var(tmp_wd):
     ],
 )
 @image_comparison(None)
-def test_scatter_plot(baseline_images, variables, pyplot_close_all):
+def test_scatter_plot(baseline_images, variables, pyplot_close_all) -> None:
     """Test images created by the post_process method against references.
 
     Args:
@@ -141,7 +141,7 @@ def test_scatter_plot(baseline_images, variables, pyplot_close_all):
     post.figures  # noqa: B018
 
 
-def test_maximized_func(tmp_wd, pyplot_close_all, sellar_disciplines):
+def test_maximized_func(tmp_wd, pyplot_close_all, sellar_disciplines) -> None:
     """Test if the method identifies maximized objectives properly.
 
     Args:
@@ -185,7 +185,9 @@ def test_maximized_func(tmp_wd, pyplot_close_all, sellar_disciplines):
     [(True, ["power_2_filtered"]), (False, ["power_2_not_filtered"])],
 )
 @image_comparison(None)
-def test_filter_non_feasible(filter_non_feasible, baseline_images, pyplot_close_all):
+def test_filter_non_feasible(
+    filter_non_feasible, baseline_images, pyplot_close_all
+) -> None:
     """Test if the filter_non_feasible option works properly.
 
     Args:
@@ -225,7 +227,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images, pyplot_close_
     post.figures  # noqa: B018
 
 
-def test_filter_non_feasible_exception():
+def test_filter_non_feasible_exception() -> None:
     """Test exception when no feasible points are left after filtering."""
     factory = PostFactory()
     # Create a Power2 instance
@@ -260,7 +262,7 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_common_scenario(
     use_standardized_objective, baseline_images, common_problem, pyplot_close_all
-):
+) -> None:
     """Check ScatterPlotMatrix with objective, standardized or not."""
     opt = ScatterPlotMatrix(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective

@@ -34,7 +34,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.lognormal import (
 )
 
 
-def test_lognormal_quantile_both():
+def test_lognormal_quantile_both() -> None:
     """Check the bounds of two-sided TI for the standard log-normal distribution."""
     tolerance_interval = LogNormalToleranceInterval(
         1000000, mean=0.0, std=1.0, location=0.5
@@ -44,7 +44,7 @@ def test_lognormal_quantile_both():
     assert pytest.approx(upper, 0.01) == exp(2**0.5 * erfinv(2 * 0.975 - 1)) + 0.5
 
 
-def test_lognormal_quantile_lower():
+def test_lognormal_quantile_lower() -> None:
     """Check the bounds of lower-sided TI for the standard log-normal distribution."""
     tolerance_interval = LogNormalToleranceInterval(
         1000000, mean=0.0, std=1.0, location=0.5
@@ -55,7 +55,7 @@ def test_lognormal_quantile_lower():
     assert pytest.approx(lower, 0.01) == exp(2**0.5 * erfinv(2 * 0.025 - 1)) + 0.5
 
 
-def test_lognormal_quantile_upper():
+def test_lognormal_quantile_upper() -> None:
     """Check the bounds of upper-sided TI for the standard log-normal distribution."""
     tolerance_interval = LogNormalToleranceInterval(
         1000000, mean=0.0, std=1.0, location=0.5

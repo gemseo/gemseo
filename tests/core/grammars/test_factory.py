@@ -25,16 +25,16 @@ def factory():
     return GrammarFactory()
 
 
-def test_is_available(factory):
+def test_is_available(factory) -> None:
     assert factory.is_available("JSONGrammar")
 
 
-def test_create(factory):
+def test_create(factory) -> None:
     grammar_name = "my_grammar"
     grammar = factory.create("SimpleGrammar", name=grammar_name)
     assert isinstance(grammar, SimpleGrammar)
     assert grammar.name == grammar_name
 
 
-def test_grammars(factory):
+def test_grammars(factory) -> None:
     assert "SimpleGrammar" in factory.grammars

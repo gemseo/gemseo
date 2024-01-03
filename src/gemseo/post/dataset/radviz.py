@@ -83,11 +83,12 @@ class Radar(DatasetPlot):
         """  # noqa: D205, D212, D415
         classifier = self._specific_settings.classifier
         if classifier not in self.dataset.variable_names:
-            raise ValueError(
+            msg = (
                 f"The classifier ({classifier}) is not stored in the dataset; "
                 "available variables are "
                 f"{pretty_str(self.dataset.variable_names, use_and=True)}."
             )
+            raise ValueError(msg)
 
         dataset = self.dataset
         label = self._get_label(classifier)[0]

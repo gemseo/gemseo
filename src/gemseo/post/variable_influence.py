@@ -203,7 +203,8 @@ class VariableInfluence(OptPostProcessor):
         """
         n_funcs = len(names_to_sensitivities)
         if not n_funcs:
-            raise ValueError("No gradients to plot at current iteration.")
+            msg = "No gradients to plot at current iteration."
+            raise ValueError(msg)
 
         n_cols = 2
         n_rows = sum(divmod(n_funcs, n_cols))

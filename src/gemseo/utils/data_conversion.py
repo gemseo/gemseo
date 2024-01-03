@@ -125,11 +125,12 @@ def split_array_to_dict_of_arrays(
         variables_size = sum(names_to_sizes[name] for name in names[0])
         array_dimension_size = array.shape[dimension]
         if variables_size != array_dimension_size:
-            raise ValueError(
+            msg = (
                 "The total size of the elements ({}) "
                 "and the size of the last dimension of the array ({}) "
                 "are different.".format(variables_size, array_dimension_size)
             )
+            raise ValueError(msg)
 
     result = {}
     first_index = 0
@@ -200,7 +201,8 @@ def update_dict_of_arrays_from_array(
               with the shapes of the values of ``dict_of_arrays``.
     """
     if not isinstance(array, ndarray):
-        raise TypeError(f"The array must be a NumPy one, got instead: {type(array)}.")
+        msg = f"The array must be a NumPy one, got instead: {type(array)}."
+        raise TypeError(msg)
 
     data = deepcopy(dict_of_arrays) if copy else dict_of_arrays
 
@@ -223,23 +225,25 @@ def update_dict_of_arrays_from_array(
             i_min = i_max
     except IndexError:
         if full_size < i_max:
-            raise ValueError(
+            msg = (
                 f"Inconsistent input array size of values array {array} "
                 f"with reference data shape {data_value.shape} "
                 f"for data named: {data_name}."
-            ) from None
+            )
+            raise ValueError(msg) from None
 
         raise
 
     if i_max != full_size:
         shapes = [(data_name, dict_of_arrays[data_name].shape) for data_name in names]
-        raise ValueError(
+        msg = (
             "Inconsistent data shapes: "
             f"could not use the whole data array of shape {array.shape} "
             f"(only reached max index = {i_max}), "
             f"while updating data dictionary names {names} "
             f"of shapes: {shapes}."
         )
+        raise ValueError(msg)
 
     return data
 

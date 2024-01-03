@@ -184,22 +184,26 @@ class PostScalabilityStudy:
         """
         if not self.descriptions.get(keyword):
             keywords = ", ".join(list(self.descriptions.keys()))
-            raise ValueError(f"The keyword {keyword} is not in the list: {keywords}")
+            msg = f"The keyword {keyword} is not in the list: {keywords}"
+            raise ValueError(msg)
         if not isinstance(description, str):
-            raise TypeError(
+            msg = (
                 'The argument "description" must be '
                 "of type string, "
                 f"not of type {description.__class__.__name__}"
             )
+            raise TypeError(msg)
         self.descriptions[keyword] = description
 
     def __load_results(self):
         """Load results from the results directory of the study path."""
         if not self.study_directory.is_dir():
-            raise ValueError(f'Directory "{self.study_directory}" does not exist.')
+            msg = f'Directory "{self.study_directory}" does not exist.'
+            raise ValueError(msg)
         directory = self.study_directory / RESULTS_DIRECTORY
         if not directory.is_dir():
-            raise ValueError(f'Directory "{directory}" does not exist.')
+            msg = f'Directory "{directory}" does not exist.'
+            raise ValueError(msg)
         filenames = [
             filename.name for filename in directory.iterdir() if filename.is_file()
         ]
@@ -212,7 +216,8 @@ class PostScalabilityStudy:
             result.load(self.study_directory)
             results.append(result)
         if not results:
-            raise ValueError(f"Directory {directory} is empty.")
+            msg = f"Directory {directory} is empty."
+            raise ValueError(msg)
         return results
 
     def plot(
@@ -640,11 +645,12 @@ class PostScalabilityStudy:
             varsizes = scalability_result.new_varsizes
             formulation = scalability_result.formulation
             if formulation not in self.cost_function:
-                raise ValueError(
+                msg = (
                     f"The cost function of {formulation} must be defined "
                     "in order to compute "
                     "the estimated original time."
                 )
+                raise ValueError(msg)
             result = self.cost_function[formulation](
                 varsizes, n_c, n_cl, n_tl_c, n_tl_cl
             )

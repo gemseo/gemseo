@@ -46,7 +46,7 @@ configure_logger()
 # and introduce an error in the implementation of
 # :math:`\frac{\partial f(x,y)}{\partial x}`.
 class BuggedDiscipline(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x", "y"])
         self.output_grammar.update_from_names(["f", "g"])

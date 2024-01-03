@@ -214,7 +214,8 @@ class MutableMappingSchemaBuilder(abc.Mapping, SchemaBuilder, metaclass=_Multipl
         """
         for name in names:
             if name not in self.properties:
-                raise KeyError(f"The name {name} is not in the grammar.")
+                msg = f"The name {name} is not in the grammar."
+                raise KeyError(msg)
 
     def add_schema(self, schema, update: bool) -> None:
         """

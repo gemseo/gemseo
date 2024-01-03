@@ -62,7 +62,7 @@ def test_pareto(
     kwargs,
     baseline_images,
     pyplot_close_all,
-):
+) -> None:
     """Test the generation of Pareto front plots.
 
     Args:
@@ -87,7 +87,7 @@ def test_pareto(
 
 def test_pareto_minimize(
     tmp_wd,
-):
+) -> None:
     """Test the generation of Pareto front plots.
 
     Args:
@@ -101,7 +101,7 @@ def test_pareto_minimize(
     )
 
 
-def test_pareto_incorrect_objective_list():
+def test_pareto_incorrect_objective_list() -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
     DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
@@ -120,7 +120,7 @@ def test_pareto_incorrect_objective_list():
         )
 
 
-def test_pareto_incorrect_objective_names():
+def test_pareto_incorrect_objective_names() -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
     DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
@@ -150,7 +150,7 @@ def test_pareto_binhkorn(
     kwargs,
     baseline_images,
     pyplot_close_all,
-):
+) -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem.
 
     Args:
@@ -174,7 +174,7 @@ def test_pareto_binhkorn(
 
 
 @image_comparison(["binh_korn_design_variable"])
-def test_pareto_binhkorn_design_variable(pyplot_close_all):
+def test_pareto_binhkorn_design_variable(pyplot_close_all) -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem.
 
     Args:
@@ -195,7 +195,7 @@ def test_pareto_binhkorn_design_variable(pyplot_close_all):
 
 
 @image_comparison(["binh_korn_no_obj"])
-def test_pareto_binhkorn_no_obj(pyplot_close_all):
+def test_pareto_binhkorn_no_obj(pyplot_close_all) -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem.
 
     Args:

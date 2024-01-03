@@ -28,7 +28,7 @@ from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
 
-def test_linear_combination_execution(linear_combination):
+def test_linear_combination_execution(linear_combination) -> None:
     """Test  linear combination discipline execution."""
     output_data = linear_combination.execute({
         "alpha": array([1.0]),
@@ -37,7 +37,7 @@ def test_linear_combination_execution(linear_combination):
     assert all(output_data["delta"] == array([-3.0]))
 
 
-def test_linear_combination_execution2points(linear_combination):
+def test_linear_combination_execution2points(linear_combination) -> None:
     """Test  linear combination discipline execution."""
     output_data = linear_combination.execute({
         "alpha": array([1.0, 0.0]),
@@ -46,7 +46,7 @@ def test_linear_combination_execution2points(linear_combination):
     assert all(output_data["delta"] == array([-3.0, 0.0]))
 
 
-def test_check_gradient(linear_combination):
+def test_check_gradient(linear_combination) -> None:
     """Test jacobian computation by finite differences."""
     linear_combination.default_inputs = {
         "alpha": array([1.0]),
@@ -55,7 +55,7 @@ def test_check_gradient(linear_combination):
     assert linear_combination.check_jacobian(threshold=1e-3, step=1e-4)
 
 
-def test_check_gradient2points(linear_combination):
+def test_check_gradient2points(linear_combination) -> None:
     """Test jacobian computation by finite differences."""
     linear_combination.default_inputs = {
         "alpha": array([1.0, 0.0]),
@@ -64,7 +64,7 @@ def test_check_gradient2points(linear_combination):
     assert linear_combination.check_jacobian(threshold=1e-3, step=1e-4)
 
 
-def test_parallel_doe_execution(linear_combination):
+def test_parallel_doe_execution(linear_combination) -> None:
     """Test parallel execution."""
     custom_doe = CustomDOE()
     design_space = DesignSpace()
@@ -91,7 +91,7 @@ def test_parallel_doe_execution(linear_combination):
     assert v == array([-3.0])
 
 
-def test_default_values(linear_combination):
+def test_default_values(linear_combination) -> None:
     """Check that all the input variables have zero as default value."""
     assert compare_dict_of_arrays(
         linear_combination.default_inputs,
