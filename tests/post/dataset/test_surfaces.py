@@ -87,7 +87,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
+def test_plot(kwargs, baseline_images, dataset, pyplot_close_all) -> None:
     """Test images created by Surfaces._plot against references."""
     properties = kwargs.pop("properties", {})
     plot = Surfaces(dataset, mesh="mesh", variable="output", **kwargs)
@@ -96,7 +96,7 @@ def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     plot.execute(save=False)
 
 
-def test_save_multiple_files(dataset, tmp_wd):
+def test_save_multiple_files(dataset, tmp_wd) -> None:
     """Check that the generation of multiple files is OK."""
     surfaces = Surfaces(dataset, mesh="mesh", variable="output")
     surfaces.execute()

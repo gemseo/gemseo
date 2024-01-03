@@ -64,7 +64,7 @@ if TYPE_CHECKING:
 class TestXDSMizer(unittest.TestCase):
     """Test XDSM diagram json generation."""
 
-    def test_expand(self):
+    def test_expand(self) -> None:
         """"""
         mda = ExecutionSequenceFactory.atom(MDODiscipline("mda"))
         d1 = ExecutionSequenceFactory.atom(MDODiscipline("d1"))
@@ -109,7 +109,7 @@ class TestXDSMizer(unittest.TestCase):
         sc.formulation.minimize_objective = False
         return sc
 
-    def test_xdsmize_mdf(self):
+    def test_xdsmize_mdf(self) -> None:
         """Test xdsmization of Sobieski problem solved with MDF with and without
         constraint."""
         scenario = self.build_mdo_scenario(inner_mda_name="MDAGaussSeidel")
@@ -134,7 +134,7 @@ class TestXDSMizer(unittest.TestCase):
 
         xdsmizer.run(file_name="xdsmized_sobieski_mdf")
 
-    def test_xdsmize_idf(self):
+    def test_xdsmize_idf(self) -> None:
         """Test xdsmization of Sobieski problem solved with IDF with and without
         constraint."""
         formulation = "IDF"
@@ -154,7 +154,7 @@ class TestXDSMizer(unittest.TestCase):
             scenario.add_constraint(c_name, "ineq")
         assert_xdsm(scenario, **options)
 
-    def test_xdsmize_bilevel(self):
+    def test_xdsmize_bilevel(self) -> None:
         """Test xdsmization of Sobieski problem solved with bilevel."""
         design_space = SobieskiDesignSpace()
         # Disciplinary optimization
@@ -264,7 +264,7 @@ def elementary_discipline():
     return _elementary_discipline
 
 
-def test_xdsmize_nested_chain(tmp_wd, elementary_discipline):
+def test_xdsmize_nested_chain(tmp_wd, elementary_discipline) -> None:
     """Test the XDSM representation of nested ``MDOChain``s.
 
     Here, we build a 3-levels nested chain.
@@ -304,7 +304,7 @@ def test_xdsmize_nested_chain(tmp_wd, elementary_discipline):
     assert_xdsm(nested_chains, **options)
 
 
-def test_xdsmize_nested_mda(tmp_wd):
+def test_xdsmize_nested_mda(tmp_wd) -> None:
     """Test the XDSM representation of nested ``MDA``s.
 
     Here, we build a 2-levels nested mda with Jacobi and GaussSeidel.
@@ -349,7 +349,7 @@ def test_xdsmize_nested_mda(tmp_wd):
     assert_xdsm(scenario, **options)
 
 
-def test_xdsmize_nested_adapter(tmp_wd):
+def test_xdsmize_nested_adapter(tmp_wd) -> None:
     """Test the XDSM representation of nested ``MDOScenarioAdapter``s.
 
     Here, we build a 4-levels nested adapter.
@@ -426,7 +426,7 @@ def test_xdsmize_nested_adapter(tmp_wd):
     assert_xdsm(sce_glob, **options)
 
 
-def test_xdsmize_disciplinary_opt_with_adapter(tmp_wd):
+def test_xdsmize_disciplinary_opt_with_adapter(tmp_wd) -> None:
     """Test that an XDSM with a DisciplinaryOpt formulation involving a single adapter
     is generated correctly."""
 
@@ -471,7 +471,7 @@ def test_xdsmize_disciplinary_opt_with_adapter(tmp_wd):
     assert_xdsm(top_scenario, **options)
 
 
-def test_xdsmize_nested_parallel_chain(tmp_wd, elementary_discipline):
+def test_xdsmize_nested_parallel_chain(tmp_wd, elementary_discipline) -> None:
     """Test the XDSM representation of nested ``MDOParallelChain``s.
 
     Here, we build a 3-levels nested chain.
@@ -600,7 +600,7 @@ def assert_level_xdsm_equal(
     assert expected["workflow"] == generated["workflow"]
 
 
-def test_xdsmize_mdf_mdoparallelchain(tmp_wd):
+def test_xdsmize_mdf_mdoparallelchain(tmp_wd) -> None:
     """Test the XDSM representation of an MDF including an MDOParallelChain.
 
     In this case, the two MDAGaussSeidel created in the MDAChain must be parallel
@@ -637,7 +637,7 @@ def test_xdsmize_mdf_mdoparallelchain(tmp_wd):
 @pytest.mark.parametrize("directory_path", [".", Path("bar")])
 @pytest.mark.parametrize("file_name", [None, "foo"])
 @pytest.mark.parametrize("save_html", [False, True])
-def test_run_return(tmp_wd, directory_path, file_name, save_html):
+def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
     """Check the object returned by XDSMizer.run()."""
     if directory_path != ".":
         (tmp_wd / directory_path).mkdir()

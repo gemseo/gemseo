@@ -221,29 +221,28 @@ class PCERegressor(MLRegressionAlgo):
 
         if use_quadrature:
             if discipline is None and data is None:
-                raise ValueError(
-                    "The quadrature rule requires either data or discipline."
-                )
+                msg = "The quadrature rule requires either data or discipline."
+                raise ValueError(msg)
 
             if discipline is not None and data is not None and len(data):
-                raise ValueError(
-                    "The quadrature rule requires data or discipline but not both."
-                )
+                msg = "The quadrature rule requires data or discipline but not both."
+                raise ValueError(msg)
 
             if use_lars:
-                raise ValueError("LARS is not applicable with the quadrature rule.")
+                msg = "LARS is not applicable with the quadrature rule."
+                raise ValueError(msg)
 
             if data is None:
                 data = IODataset()
 
         else:
             if data is None:
-                raise ValueError("The least-squares regression requires data.")
+                msg = "The least-squares regression requires data."
+                raise ValueError(msg)
 
             if discipline is not None:
-                raise ValueError(
-                    "The least-squares regression does not require a discipline."
-                )
+                msg = "The least-squares regression does not require a discipline."
+                raise ValueError(msg)
 
         super().__init__(
             data,
@@ -265,18 +264,20 @@ class PCERegressor(MLRegressionAlgo):
         if not data.empty:
             missing = set(self.input_names) - set(probability_space.uncertain_variables)
             if missing:
-                raise ValueError(
+                msg = (
                     "The probability space does not contain "
                     "the probability distributions "
                     f"of the random input variables: {pretty_str(missing)}."
                 )
+                raise ValueError(msg)
 
         if [
             key
             for key in self.transformer
             if key in self.input_names or key == IODataset.INPUT_GROUP
         ]:
-            raise ValueError("PCERegressor does not support input transformers.")
+            msg = "PCERegressor does not support input transformers."
+            raise ValueError(msg)
 
         distributions = probability_space.distributions
         wrongly_distributed_random_variable_names = [
@@ -287,11 +288,12 @@ class PCERegressor(MLRegressionAlgo):
             )
         ]
         if wrongly_distributed_random_variable_names:
-            raise ValueError(
+            msg = (
                 "The probability distributions of the random variables "
                 f"{pretty_str(wrongly_distributed_random_variable_names)} "
                 "are not instances of OTComposedDistribution."
             )
+            raise ValueError(msg)
 
         self.__variable_sizes = probability_space.variable_sizes
         self.__input_dimension = sum(

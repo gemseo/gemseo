@@ -60,12 +60,13 @@ class CallableWorker:
         return 2 * counter
 
 
-def function_raising_exception(counter):
+def function_raising_exception(counter) -> None:
     """Raises an Exception."""
-    raise RuntimeError("This is an Exception")
+    msg = "This is an Exception"
+    raise RuntimeError(msg)
 
 
-def test_functional():
+def test_functional() -> None:
     """Test the execution of functions in parallel."""
     n = 10
     parallel_execution = CallableParallelExecution([rosen])
@@ -73,7 +74,7 @@ def test_functional():
     assert output_list == [rosen([0.5] * i) for i in range(1, n + 1)]
 
 
-def test_callback_error():
+def test_callback_error() -> None:
     parallel_execution = CallableParallelExecution([rosen])
     with pytest.raises(TypeError):
         parallel_execution.execute(
@@ -81,7 +82,7 @@ def test_callback_error():
         )
 
 
-def test_task_submitted_callback_error():
+def test_task_submitted_callback_error() -> None:
     function_list = [rosen] * 3
     parallel_execution = CallableParallelExecution(function_list)
 
@@ -92,7 +93,7 @@ def test_task_submitted_callback_error():
         )
 
 
-def test_callable():
+def test_callable() -> None:
     """Test CallableParallelExecution with a Callable worker."""
     n = 2
     function_list = [CallableWorker(), CallableWorker()]
@@ -101,7 +102,7 @@ def test_callable():
     assert output_list == [2] * n
 
 
-def test_callable_exception():
+def test_callable_exception() -> None:
     """Test CallableParallelExecution with a Callable worker."""
     n = 2
     function_list = [function_raising_exception, CallableWorker()]
@@ -109,7 +110,7 @@ def test_callable_exception():
     parallel_execution.execute([1] * n)
 
 
-def test_disc_parallel_doe_scenario():
+def test_disc_parallel_doe_scenario() -> None:
     s_1 = Sellar1()
     design_space = create_design_space()
     design_space.add_variable("x_local", l_b=0.0, value=1.0, u_b=10.0)
@@ -128,7 +129,7 @@ def test_disc_parallel_doe_scenario():
     )
 
 
-def test_disc_parallel_doe(sellar_disciplines):
+def test_disc_parallel_doe(sellar_disciplines) -> None:
     """Test the execution of disciplines in parallel."""
     s_1 = sellar_disciplines.sellar1
     n = 10
@@ -171,7 +172,7 @@ def test_disc_parallel_doe(sellar_disciplines):
         assert s_1.local_data[Y_1] == output_list[i]
 
 
-def test_parallel_lin():
+def test_parallel_lin() -> None:
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     parallel_execution = DiscParallelLinearization(disciplines)
 
@@ -196,7 +197,7 @@ def test_parallel_lin():
                 assert (dfdx == outs[i][f][x]).all()
 
 
-def test_disc_parallel_threading_proc(sellar_disciplines):
+def test_disc_parallel_threading_proc(sellar_disciplines) -> None:
     disciplines = copy(sellar_disciplines)
     parallel_execution = DiscParallelExecution(
         disciplines, n_processes=2, use_threading=True
@@ -221,7 +222,7 @@ def test_disc_parallel_threading_proc(sellar_disciplines):
         )
 
 
-def test_async_call():
+def test_async_call() -> None:
     disc = create_discipline("SobieskiMission")
     func = MDODisciplineAdapterGenerator(disc).get_function([X_SHARED], ["y_4"])
 
@@ -234,7 +235,7 @@ def test_async_call():
     par.execute([i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work)
 
 
-def test_not_worker(capfd):
+def test_not_worker(capfd) -> None:
     """Test that an exception is shown when a worker is not acceptable.
 
     The `TypeError` exception is caught by `worker`, but the execution continues.
@@ -253,7 +254,8 @@ def test_not_worker(capfd):
 def f(x: float = 0.0) -> float:
     """A function that raises an exception on certain conditions."""
     if x == 0:
-        raise ValueError("Undefined")
+        msg = "Undefined"
+        raise ValueError(msg)
     return x + 1
 
 
@@ -261,7 +263,7 @@ def f(x: float = 0.0) -> float:
     ("exceptions", "raises_exception"),
     [((), False), ((ValueError,), True), ((RuntimeError,), False)],
 )
-def test_re_raise_exceptions(exceptions, raises_exception):
+def test_re_raise_exceptions(exceptions, raises_exception) -> None:
     """Test that exceptions inside workers are properly handled.
 
     Args:
@@ -319,7 +321,7 @@ def test_multiprocessing_context(
     add_diff,
     expected_n_calls,
     reset_default_multiproc_method,
-):
+) -> None:
     """Test the multiprocessing where the method for the context is changed.
 
     The test is applied on both parallel execution and linearization, with and without

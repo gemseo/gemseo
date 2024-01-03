@@ -44,7 +44,7 @@ from .sum_data import execute as exec_sum
 DIRNAME = dirname(__file__)
 
 
-def test_disc_from_exe_json(tmp_wd):
+def test_disc_from_exe_json(tmp_wd) -> None:
     sum_path = join(DIRNAME, "sum_data.py")
     exec_cmd = f"python {sum_path} -i input.json -o output.json"
 
@@ -74,7 +74,7 @@ def test_disc_from_exe_json(tmp_wd):
     assert abs(out_jac["out"]["a"] - 1) < 1e-8
 
 
-def test_disc_from_exe_cfgobj(tmp_wd):
+def test_disc_from_exe_cfgobj(tmp_wd) -> None:
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
@@ -127,7 +127,7 @@ def test_disc_from_exe_cfgobj(tmp_wd):
         lambda a, b: zip(a, b),
     ],
 )
-def test_disc_from_exe_cfgobj_parser_str(tmp_wd, parser):
+def test_disc_from_exe_cfgobj_parser_str(tmp_wd, parser) -> None:
     """Test the instantiation of the discipline with built-in and custom parsers."""
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
@@ -145,19 +145,19 @@ def test_disc_from_exe_cfgobj_parser_str(tmp_wd, parser):
     )
 
 
-def test_exec_cfg(tmp_wd):
+def test_exec_cfg(tmp_wd) -> None:
     outfile = "out_dummy.cfg"
     infile = join(DIRNAME, "input.cfg")
     exec_cfg(infile, outfile)
 
 
-def test_exec_json(tmp_wd):
+def test_exec_json(tmp_wd) -> None:
     outfile = "out_dummy.json"
     infile = join(DIRNAME, "input.json")
     exec_sum(infile, outfile)
 
 
-def test_disc_from_exe_wrong_inputs(tmp_wd):
+def test_disc_from_exe_wrong_inputs(tmp_wd) -> None:
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg"
 
@@ -186,7 +186,7 @@ def test_disc_from_exe_wrong_inputs(tmp_wd):
         )
 
 
-def test_disc_from_exe_fail_exe(tmp_wd):
+def test_disc_from_exe_fail_exe(tmp_wd) -> None:
     sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
     disc: DiscFromExe = create_discipline(
@@ -211,7 +211,7 @@ def test_disc_from_exe_fail_exe(tmp_wd):
         disc.execute(indata)
 
 
-def test_parse_key_value_file():
+def test_parse_key_value_file() -> None:
     data = parse_key_value_file(None, ["a = 1.0"])
     assert data["a"] == 1.0
     assert len(data) == 1
@@ -233,7 +233,7 @@ def test_parse_key_value_file():
         parse_key_value_file(None, ["a = 1.0b"])
 
 
-def test_parse_outfile():
+def test_parse_outfile() -> None:
     with open(join(DIRNAME, "output_template.cfg")) as infile:
         out_template = infile.readlines()
 
@@ -268,7 +268,7 @@ def test_parse_outfile():
     assert values2["out 1"] == 1.0
 
 
-def test_executable_command(tmp_wd):
+def test_executable_command(tmp_wd) -> None:
     """Test the property: ``executable_command``."""
     sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
@@ -285,7 +285,7 @@ def test_executable_command(tmp_wd):
     assert disc.executable_command == exec_cmd
 
 
-def test_parallel_execution(tmp_wd):
+def test_parallel_execution(tmp_wd) -> None:
     """Check if a :class:`~.DiscFromExe` executed within a multiprocess DOE can generate
     unique folders in :attr:`~.DirectoryNamingMethod.NUMBERED` mode.
 
@@ -325,7 +325,7 @@ def test_parallel_execution(tmp_wd):
 
 
 @pytest.mark.parametrize("clean_after_execution", [True, False])
-def test_last_execution_directory(tmp_wd, clean_after_execution: bool):
+def test_last_execution_directory(tmp_wd, clean_after_execution: bool) -> None:
     """Test the property: ``last_execution_directory``."""
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"

@@ -137,7 +137,8 @@ class MDAQuasiNewton(MDARoot):
             coupling_structure=coupling_structure,
         )
         if method not in self.QUASI_NEWTON_METHODS:
-            raise ValueError(f"Method '{method}' is not a valid quasi-Newton method.")
+            msg = f"Method '{method}' is not a valid quasi-Newton method."
+            raise ValueError(msg)
 
         self.method = method
 

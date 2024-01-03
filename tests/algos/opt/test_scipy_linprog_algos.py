@@ -40,17 +40,17 @@ def library() -> ScipyLinprog:
     return OptimizersFactory().create("ScipyLinprog")
 
 
-def test_library_name():
+def test_library_name() -> None:
     """Tests the library name."""
     assert ScipyLinprog.LIBRARY_NAME == "SciPy"
 
 
-def test_factory(library):
+def test_factory(library) -> None:
     """Tests creation of library from factory."""
     assert isinstance(library, ScipyLinprog)
 
 
-def test_nonlinear_optimization_problem(library):
+def test_nonlinear_optimization_problem(library) -> None:
     """Tests that library does not support non-linear problems."""
     problem = Rosenbrock()
     assert not library.filter_adapted_algorithms(problem)
@@ -99,7 +99,7 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
     ("minimization", "x_opt", "f_opt"),
     [(True, array([0.0, 0.0]), -1.0), (False, array([1 / 3, 2 / 3]), 0.0)],
 )
-def test_linprog_algorithms(minimization, x_opt, f_opt, library):
+def test_linprog_algorithms(minimization, x_opt, f_opt, library) -> None:
     """Tests algorithms on linear optimization problems."""
     for algo_name in library.algorithms:
         linprog_problem = get_opt_problem()
@@ -119,7 +119,9 @@ def test_linprog_algorithms(minimization, x_opt, f_opt, library):
 @pytest.mark.parametrize(
     "algo_name", ["HIGHS", "HIGHS_DUAL_SIMPLEX", "HIGHS_INTERIOR_POINT"]
 )
-def test_sparse_linprog_algorithms(minimization, x_opt, f_opt, algo_name, library):
+def test_sparse_linprog_algorithms(
+    minimization, x_opt, f_opt, algo_name, library
+) -> None:
     """Tests algorithms on linear optimization problems with sparse Jacobians."""
     linprog_problem = get_opt_problem(sparse_jacobian=True)
     if not minimization:

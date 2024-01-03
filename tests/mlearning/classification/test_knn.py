@@ -93,7 +93,7 @@ def model_with_transform(dataset) -> KNNClassifier:
     return knn
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     knn = KNNClassifier(dataset)
     assert knn.algo is not None
@@ -101,14 +101,14 @@ def test_constructor(dataset):
     assert knn.LIBRARY == "scikit-learn"
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     knn = KNNClassifier(dataset)
     knn.learn()
     assert knn.algo is not None
 
 
-def test_predict_1d(model_1d):
+def test_predict_1d(model_1d) -> None:
     """Test prediction."""
     prediction = model_1d.predict(INPUT_VALUE)
     predictions = model_1d.predict(INPUT_VALUES)
@@ -122,7 +122,7 @@ def test_predict_1d(model_1d):
     assert predictions["y_1"].shape == (5, 1)
 
 
-def test_predict(model):
+def test_predict(model) -> None:
     """Test prediction."""
     prediction = model.predict(INPUT_VALUE)
     predictions = model.predict(INPUT_VALUES)
@@ -142,7 +142,7 @@ def test_predict(model):
     # TODO: Test 1 sample 1 output
 
 
-def test_predict_with_transform(model_with_transform):
+def test_predict_with_transform(model_with_transform) -> None:
     """Test prediction."""
     prediction = model_with_transform.predict(INPUT_VALUE)
     predictions = model_with_transform.predict(INPUT_VALUES)
@@ -161,7 +161,7 @@ def test_predict_with_transform(model_with_transform):
     assert predictions["y_2"].shape == (5, 2)
 
 
-def test_predict_proba_1d(model_1d):
+def test_predict_proba_1d(model_1d) -> None:
     """Test probability prediction."""
     for hard in [True, False]:
         proba = model_1d.predict_proba(INPUT_VALUE, hard)
@@ -178,7 +178,7 @@ def test_predict_proba_1d(model_1d):
         assert allclose(probas["y_1"].sum(axis=1), 1)
 
 
-def test_predict_proba(model):
+def test_predict_proba(model) -> None:
     """Test probability prediction."""
     for hard in [True, False]:
         proba = model.predict_proba(INPUT_VALUE, hard)
@@ -201,7 +201,7 @@ def test_predict_proba(model):
         assert allclose(probas["y_2"].sum(axis=1), 1)
 
 
-def test_predict_proba_transform(model_with_transform):
+def test_predict_proba_transform(model_with_transform) -> None:
     """Test probability prediction."""
     for hard in [True, False]:
         proba = model_with_transform.predict_proba(INPUT_VALUE, hard)
@@ -224,7 +224,7 @@ def test_predict_proba_transform(model_with_transform):
         assert allclose(probas["y_2"].sum(axis=1), 1)
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_classification_model(dirname)

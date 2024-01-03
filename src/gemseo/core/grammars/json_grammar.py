@@ -242,9 +242,8 @@ class JSONGrammar(BaseGrammar):
                 for element_name, element_type in names_to_types.items()
             }
         except KeyError as error:
-            raise KeyError(
-                f"Unsupported python type for a JSON Grammar: {error}"
-            ) from None
+            msg = f"Unsupported python type for a JSON Grammar: {error}"
+            raise KeyError(msg) from None
 
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema",
@@ -342,9 +341,8 @@ class JSONGrammar(BaseGrammar):
         """
         path = Path(path)
         if not path.exists():
-            raise FileNotFoundError(
-                f"Cannot update the grammar from non existing file: {path}."
-            )
+            msg = f"Cannot update the grammar from non existing file: {path}."
+            raise FileNotFoundError(msg)
         self.__schema_builder.add_schema(json.loads(path.read_text()), not merge)
         self.__init_dependencies()
 

@@ -76,7 +76,7 @@ def milp_problem(
     return problem
 
 
-def test_init():
+def test_init() -> None:
     """Test solver is correctly initialized."""
     factory = OptimizersFactory()
     assert factory.is_available("ScipyMILP")
@@ -95,7 +95,7 @@ def test_init():
         {"eq_tolerance": 1e-6},
     ],
 )
-def test_solve_milp(milp_problem, problem_is_feasible, algo_options):
+def test_solve_milp(milp_problem, problem_is_feasible, algo_options) -> None:
     """Test Scipy MILP solver."""
     optim_result = OptimizersFactory().execute(
         milp_problem, "Scipy_MILP", **algo_options

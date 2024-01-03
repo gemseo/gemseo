@@ -278,9 +278,8 @@ class DisciplineJacApprox:
         x_vect = self._prepare_xvect(inputs, self.discipline.local_data)
 
         if isinstance(step, Sized) and 1 < len(step) != len(x_vect):
-            raise ValueError(
-                f"Inconsistent step size, expected {x_vect.size} got {len(step)}."
-            )
+            msg = f"Inconsistent step size, expected {x_vect.size} got {len(step)}."
+            raise ValueError(msg)
 
         with self.__set_zero_cache_tol():
             flat_jac = atleast_2d(
@@ -635,7 +634,8 @@ class DisciplineJacApprox:
         )
         n_funcs = len(app_grad)
         if n_funcs == 0:
-            raise ValueError("No gradients to plot!")
+            msg = "No gradients to plot!"
+            raise ValueError(msg)
         nrows = n_funcs // 2
         if 2 * nrows < n_funcs:
             nrows += 1

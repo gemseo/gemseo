@@ -86,7 +86,7 @@ def test_large_data_validation(sizes=(10, 1000, 100000), n_repeats=5):
     for n_t in sizes:
         inputs = {"t": ones(n_t)}
 
-        def create_chain():
+        def create_chain() -> None:
             grammar.load_data(inputs)  # noqa: B023
 
         tref = timeit.timeit(stmt=create_chain, number=n_repeats)
@@ -103,7 +103,7 @@ class ManyDisciplinesBenchmark(BaseBenchmark):
 
     def __init__(
         self, class_, nb_of_disc, nb_of_total_disc_io, nb_of_disc_io, data_size
-    ):
+    ) -> None:
         """Constructor.
 
         Args:
@@ -144,7 +144,7 @@ class ManyDisciplinesBenchmark(BaseBenchmark):
         data = ones(1)
         disc.local_data = {key: data for key in disc.get_output_data_names()}
 
-    def setup(self):  # noqa: D102
+    def setup(self) -> None:  # noqa: D102
         disc_names = self.__get_disc_names(self.nb_of_disc)
         input_data = ones(self.data_size)
         disciplines = {}
@@ -167,10 +167,10 @@ class ManyDisciplinesBenchmark(BaseBenchmark):
 
         self.disciplines = disciplines
 
-    def run(self):  # noqa: D102
+    def run(self) -> None:  # noqa: D102
         self.class_(list(self.disciplines.values()))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.class_.__name__}-{self.nb_of_disc}"
 
 

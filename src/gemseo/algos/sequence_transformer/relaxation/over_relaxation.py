@@ -57,7 +57,8 @@ class OverRelaxation(SequenceTransformer):
     @factor.setter
     def factor(self, factor: float) -> None:
         if not (0 < factor <= 2):
-            raise ValueError("Relax factor must lie within ]0, 2].")
+            msg = "Relax factor must lie within ]0, 2]."
+            raise ValueError(msg)
 
         self.__factor = factor
         self.clear()

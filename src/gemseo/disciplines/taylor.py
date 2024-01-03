@@ -62,10 +62,11 @@ class TaylorDiscipline(MDODiscipline):
             or not input_data
             and discipline.default_inputs.keys() < input_names
         ):
-            raise ValueError(
+            msg = (
                 "All the discipline input values must be "
                 "specified either in input_data or in discipline.default_inputs."
             )
+            raise ValueError(msg)
 
         discipline.linearize(compute_all_jacobians=True, input_data=input_data)
         super().__init__(name=name)

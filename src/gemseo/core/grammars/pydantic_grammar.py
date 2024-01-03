@@ -88,7 +88,7 @@ class PydanticGrammar(BaseGrammar):
         name: str,
         model: ModelType | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """
         Args:
             model: A pydantic model.
@@ -285,7 +285,8 @@ class PydanticGrammar(BaseGrammar):
         fields = self.__model.model_fields
         for name in names:
             if name not in fields:
-                raise KeyError(f"The name {name} is not in the grammar.")
+                msg = f"The name {name} is not in the grammar."
+                raise KeyError(msg)
 
     def __rebuild_model(self) -> None:
         """Rebuild the model if needed."""

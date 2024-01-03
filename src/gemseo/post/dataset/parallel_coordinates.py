@@ -102,10 +102,11 @@ class ParallelCoordinates(DatasetPlot):
         upper = self._specific_settings.upper
         lower = self._specific_settings.lower
         if classifier not in self.dataset.variable_names:
-            raise ValueError(
+            msg = (
                 "Classifier must be one of these names: "
                 f"{pretty_str(self.dataset.variable_names, use_and=True)}."
             )
+            raise ValueError(msg)
         label, varname = self._get_label(classifier)
         dataframe = self.dataset.copy()
         cluster = varname

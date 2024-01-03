@@ -301,10 +301,11 @@ class BiLevel(MDOFormulation):
         """
         main_mda_name = options.get("main_mda_name")
         if main_mda_name is None:
-            raise ValueError(
+            msg = (
                 "'main_mda_name' option is required to deduce the "
                 "sub options of BiLevel."
             )
+            raise ValueError(msg)
         return MDAFactory().get_options_grammar(main_mda_name)
 
     @classmethod
@@ -317,10 +318,11 @@ class BiLevel(MDOFormulation):
         """  # noqa: D205, D212, D415
         main_mda_name = options.get("main_mda_name")
         if main_mda_name is None:
-            raise ValueError(
+            msg = (
                 "'main_mda_name' option is required to deduce the "
                 "sub options of BiLevel."
             )
+            raise ValueError(msg)
         return MDAFactory().get_default_option_values(main_mda_name)
 
     def _build_mdas(
@@ -496,7 +498,8 @@ class BiLevel(MDOFormulation):
                 )
         # Otherwise the constraint is applied at the specified levels.
         elif not isinstance(levels, list) or not set(levels) <= set(BiLevel.LEVELS):
-            raise ValueError(f"Constraint levels must be a sublist of {BiLevel.LEVELS}")
+            msg = f"Constraint levels must be a sublist of {BiLevel.LEVELS}"
+            raise ValueError(msg)
         elif not levels:
             LOGGER.warning("Empty list of constraint levels, constraint not added")
         else:
@@ -570,10 +573,11 @@ class BiLevel(MDOFormulation):
                 )
                 added = True
         if not added:
-            raise ValueError(
+            msg = (
                 f"No sub scenario has an output named {output_name} "
                 "cannot create such a constraint."
             )
+            raise ValueError(msg)
 
     @staticmethod
     def _scenario_computes_outputs(

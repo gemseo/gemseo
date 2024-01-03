@@ -37,7 +37,7 @@ POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
 POWER2_NAN_PATH = DIR_PATH / "power2_opt_pb_nan.h5"
 
 
-def test_get_constraints():
+def test_get_constraints() -> None:
     """Test that the constraints of the problem are retrieved correctly."""
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     view = OptHistoryView(problem)
@@ -74,7 +74,7 @@ def test_get_constraints():
     ],
 )
 @image_comparison(None)
-def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all):
+def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all) -> None:
     """Test that a problem with constraints is properly rendered."""
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     post = execute_post(
@@ -118,7 +118,9 @@ def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all):
     ],
 )
 @image_comparison(None)
-def test_opt_hist_from_database(baseline_images, problem_path, pyplot_close_all):
+def test_opt_hist_from_database(
+    baseline_images, problem_path, pyplot_close_all
+) -> None:
     """Test the generation of the plots from databases.
 
     Args:
@@ -136,7 +138,7 @@ def test_opt_hist_from_database(baseline_images, problem_path, pyplot_close_all)
     post.figures  # noqa: B018
 
 
-def test_diag_with_nan(caplog):
+def test_diag_with_nan(caplog) -> None:
     """Check that the Hessian plot creation is skipped if its diagonal contains NaN."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
@@ -190,7 +192,7 @@ def test_common_scenario(
     baseline_images,
     three_length_common_problem,
     pyplot_close_all,
-):
+) -> None:
     """Check OptHistoryView with objective, standardized or not."""
     opt = OptHistoryView(three_length_common_problem)
     three_length_common_problem.use_standardized_objective = use_standardized_objective
@@ -221,7 +223,7 @@ def test_common_scenario(
     ],
 )
 @image_comparison(None)
-def test_461(case, baseline_images):
+def test_461(case, baseline_images) -> None:
     """Check that OptHistoryView works with the cases mentioned in issue 461.
 
     1. Design space of dimension 1 and scalar output.
@@ -254,7 +256,7 @@ def test_461(case, baseline_images):
         "opt_history_view_ineq_constraints_variable_names",
     ]
 )
-def test_variable_names(pyplot_close_all):
+def test_variable_names(pyplot_close_all) -> None:
     execute_post(
         Path(__file__).parent / "mdf_backup.h5",
         "OptHistoryView",
@@ -264,7 +266,7 @@ def test_variable_names(pyplot_close_all):
     )
 
 
-def test_no_gradient_history(caplog):
+def test_no_gradient_history(caplog) -> None:
     """Check that OptHistoryView works without gradient history."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=-1, u_b=1.0, value=0.5)

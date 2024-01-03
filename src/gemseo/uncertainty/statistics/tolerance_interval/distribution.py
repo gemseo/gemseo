@@ -184,7 +184,8 @@ class ToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
         elif side == self.ToleranceIntervalSide.BOTH:
             lower, upper = self._compute_bounds(coverage, alpha, size)
         else:
-            raise ValueError("The type of tolerance interval is incorrect.")
+            msg = "The type of tolerance interval is incorrect."
+            raise ValueError(msg)
         return self.Bounds(array([lower]), array([upper]))
 
     def compute(
@@ -242,9 +243,8 @@ class ToleranceIntervalFactory(BaseFactory):
             LOGGER.exception(
                 "Failed to create class %s with arguments %s", class_name, args
             )
-            raise RuntimeError(
-                f"Cannot create {class_name}ToleranceInterval with arguments {args}"
-            ) from None
+            msg = f"Cannot create {class_name}ToleranceInterval with arguments {args}"
+            raise RuntimeError(msg) from None
 
     def get_class(self, name: str) -> type[Any]:
         """Return a class from its name.

@@ -22,7 +22,7 @@ from openturns import WeibullMin
 from gemseo.uncertainty.distributions.openturns.weibull import OTWeibullDistribution
 
 
-def test_default_distribution():
+def test_default_distribution() -> None:
     """Check the default Weibull distribution."""
     distribution = OTWeibullDistribution()
     assert distribution.variable_name == distribution.DEFAULT_VARIABLE_NAME
@@ -31,7 +31,7 @@ def test_default_distribution():
     assert marginal.getParameter() == [1, 1, 0]
 
 
-def test_custom():
+def test_custom() -> None:
     """Check a custom Weibull distribution."""
     distribution = OTWeibullDistribution(
         "u",

@@ -200,19 +200,19 @@ class SPDistribution(Distribution):
         try:
             create_distribution = getattr(sp_stats, distribution)
         except BaseException:
-            raise ValueError(
-                f"{distribution} is an unknown scipy distribution."
-            ) from None
+            msg = f"{distribution} is an unknown scipy distribution."
+            raise ValueError(msg) from None
 
         try:
             parameters = parameters or {}
             create_distribution(**parameters)
             distributions = [create_distribution(**parameters)] * self.dimension
         except BaseException:
-            raise ValueError(
+            msg = (
                 f"Arguments are wrong in {distribution}({pretty_str(parameters)}); "
                 f"more details on: {SP_WEBSITE}."
-            ) from None
+            )
+            raise ValueError(msg) from None
 
         self.__set_bounds(distributions)
         return distributions

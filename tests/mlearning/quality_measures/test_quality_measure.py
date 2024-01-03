@@ -53,7 +53,7 @@ def measure(dataset) -> MLQualityMeasure:
 
 
 @pytest.mark.parametrize("fit_transformers", [False, True])
-def test_constructor(fit_transformers, dataset):
+def test_constructor(fit_transformers, dataset) -> None:
     """Test construction."""
     with concretize_classes(MLQualityMeasure, MLAlgo):
         measure = MLQualityMeasure(MLAlgo(dataset), fit_transformers=fit_transformers)
@@ -62,7 +62,7 @@ def test_constructor(fit_transformers, dataset):
     assert measure._fit_transformers is fit_transformers
 
 
-def test_is_better():
+def test_is_better() -> None:
     class MLQualityMeasureToMinimize(MLQualityMeasure):
         SMALLER_IS_BETTER = True
 
@@ -73,7 +73,7 @@ def test_is_better():
     assert MLQualityMeasureToMaximize.is_better(2, 1)
 
 
-def test_factory():
+def test_factory() -> None:
     """Check that the factory of MLQualityMeasure works correctly."""
     assert "MSEMeasure" in MLQualityMeasureFactory().class_names
 
@@ -116,6 +116,6 @@ def test_factory():
         ),
     ],
 )
-def test_deprecated_evaluate_xxx(cls, old, new):
+def test_deprecated_evaluate_xxx(cls, old, new) -> None:
     """Check that the aliases of the deprecated evaluation methods are correct."""
     assert getattr(cls, old) == getattr(cls, new)

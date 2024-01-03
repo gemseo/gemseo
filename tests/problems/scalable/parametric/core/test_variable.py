@@ -21,7 +21,7 @@ from numpy import array
 from gemseo.problems.scalable.parametric.core.variable import Variable
 
 
-def test_variable():
+def test_variable() -> None:
     """Check the named tuple Variable."""
     variable = Variable("foo", 123, array([-1.0]), array([3.0]), array([0.6]))
     assert variable.name == "foo"

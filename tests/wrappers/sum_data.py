@@ -23,7 +23,7 @@ import argparse
 import json
 
 
-def execute(infile=None, outfile=None):
+def execute(infile=None, outfile=None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", help="input file")
     parser.add_argument("-o", help="output file")

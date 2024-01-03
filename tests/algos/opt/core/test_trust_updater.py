@@ -36,7 +36,7 @@ from gemseo.algos.opt.core.trust_updater import TrustUpdater
 class TestTrustUpdater(TestCase):
     """A class to test the TrustUpdater class."""
 
-    def test_not_implemented_errors(self):
+    def test_not_implemented_errors(self) -> None:
         trust_updater = TrustUpdater(
             thresholds=(0.0, 0.25), multipliers=(0.5, 2.0), bound=1e-6
         )
@@ -47,7 +47,7 @@ class TestTrustUpdater(TestCase):
 class TestPenaltyUpdater(TestCase):
     """A class to test the PenaltyUpdater class."""
 
-    def test_invalid_parameters(self):
+    def test_invalid_parameters(self) -> None:
         """Tests the invalid parameters exceptions."""
         self.assertRaises(Exception, PenaltyUpdater, thresholds=0.1)
         self.assertRaises(Exception, PenaltyUpdater, thresholds=(0.1,))
@@ -58,7 +58,7 @@ class TestPenaltyUpdater(TestCase):
         self.assertRaises(Exception, PenaltyUpdater, multipliers=(0.5, 0.5))
         PenaltyUpdater(multipliers=(0.5, 2.0))
 
-    def test_failure(self):
+    def test_failure(self) -> None:
         """Tests the failure case of the evaluate method."""
         updater = PenaltyUpdater(
             thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=1e-10
@@ -72,7 +72,7 @@ class TestPenaltyUpdater(TestCase):
         self.assertAlmostEqual(new_penalty, 1e-10, places=15)
         assert not success
 
-    def test_success_and_contraction(self):
+    def test_success_and_contraction(self) -> None:
         """Tests the success&contract case of the update method."""
         updater = PenaltyUpdater(
             thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=1e-10
@@ -86,7 +86,7 @@ class TestPenaltyUpdater(TestCase):
         self.assertAlmostEqual(new_penalty, 0.0, places=15)
         assert success
 
-    def test_success_and_expansion(self):
+    def test_success_and_expansion(self) -> None:
         """Tests the success&expand case of the update method."""
         updater = PenaltyUpdater(
             thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=1e-10
@@ -104,7 +104,7 @@ class TestPenaltyUpdater(TestCase):
 class TestRadiusUpdater(TestCase):
     """A class to test the RadiusUpdater class."""
 
-    def test_invalid_parameters(self):
+    def test_invalid_parameters(self) -> None:
         """Tests the invalid parameters exceptions."""
         self.assertRaises(Exception, RadiusUpdater, thresholds=0.1)
         self.assertRaises(Exception, RadiusUpdater, thresholds=(0.1,))
@@ -115,7 +115,7 @@ class TestRadiusUpdater(TestCase):
         self.assertRaises(Exception, RadiusUpdater, multipliers=(0.5, 0.5))
         RadiusUpdater(multipliers=(0.5, 2.0))
 
-    def test_failure(self):
+    def test_failure(self) -> None:
         """Tests the failure case of the evaluate method."""
         updater = RadiusUpdater(
             thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=10.0
@@ -124,7 +124,7 @@ class TestRadiusUpdater(TestCase):
         self.assertAlmostEqual(new_radius, 0.5, places=15)
         assert not success
 
-    def test_success_and_contraction(self):
+    def test_success_and_contraction(self) -> None:
         """Tests the success&contract case of the update method."""
         updater = RadiusUpdater(
             thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=10.0
@@ -133,7 +133,7 @@ class TestRadiusUpdater(TestCase):
         self.assertAlmostEqual(new_radius, 0.5, places=15)
         assert success
 
-    def test_success_and_expansion(self):
+    def test_success_and_expansion(self) -> None:
         """Tests the success&expand case of the update method."""
         updater = RadiusUpdater(
             thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=10.0
@@ -151,21 +151,21 @@ class TestRadiusUpdater(TestCase):
 class TestBoundsUpdater(TestCase):
     """A class to test the BoundsUpdater class."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         dim = 5
         self.dim = dim
         self.upper_bounds = 5.0 * ones(dim)
         self.lower_bounds = -3.0 * ones(dim)
         self.center = 2.0 * ones(dim)
 
-    def test_nonnormalized_update(self):
+    def test_nonnormalized_update(self) -> None:
         """Tests the non-normalized update of trust bounds."""
         trust_bounds = BoundsUpdater(self.lower_bounds, self.upper_bounds)
         lower_bounds, upper_bounds = trust_bounds.update(0.5, self.center)
         assert allclose(lower_bounds, 1.5 * ones(self.dim))
         assert allclose(upper_bounds, 2.5 * ones(self.dim))
 
-    def test_normalized_update(self):
+    def test_normalized_update(self) -> None:
         """Tests the normalized update of trust bounds."""
         trust_bounds = BoundsUpdater(
             self.lower_bounds, self.upper_bounds, normalize=True

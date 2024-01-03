@@ -464,7 +464,8 @@ def get_algorithm_options_schema(
             algo_lib = factory.create(algorithm_name)
             opts_gram = algo_lib.init_options_grammar(algorithm_name)
             return _get_schema(opts_gram, output_json, pretty_print)
-    raise ValueError(f"Algorithm named {algorithm_name} is not available.")
+    msg = f"Algorithm named {algorithm_name} is not available."
+    raise ValueError(msg)
 
 
 def get_discipline_inputs_schema(
@@ -783,7 +784,8 @@ def get_scenario_options_schema(
         get_scenario_differentiation_modes
     """
     if scenario_type not in get_available_scenario_types():
-        raise ValueError(f"Unknown scenario type {scenario_type}")
+        msg = f"Unknown scenario type {scenario_type}"
+        raise ValueError(msg)
     scenario_class = {"MDO": "MDOScenario", "DOE": "DOEScenario"}[scenario_type]
     return get_discipline_options_schema(scenario_class, output_json, pretty_print)
 
@@ -1060,9 +1062,8 @@ def create_scenario(
     elif scenario_type == "DOE":
         cls = DOEScenario
     else:
-        raise ValueError(
-            f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
-        )
+        msg = f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
+        raise ValueError(msg)
 
     return cls(
         disciplines,
@@ -1369,7 +1370,8 @@ def execute_post(
     elif isinstance(to_post_proc, (str, PathLike)):
         opt_problem = OptimizationProblem.from_hdf(to_post_proc)
     else:
-        raise TypeError(f"Cannot post process type: {type(to_post_proc)}")
+        msg = f"Cannot post process type: {type(to_post_proc)}"
+        raise TypeError(msg)
     return PostFactory().execute(opt_problem, post_name, **options)
 
 
@@ -1415,7 +1417,8 @@ def execute_algo(
 
         factory = DOEFactory()
     else:
-        raise ValueError(f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !")
+        msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
+        raise ValueError(msg)
 
     return factory.execute(opt_problem, algo_name, **options)
 
@@ -1734,15 +1737,17 @@ def create_dataset(
                 header,
             )
         else:
-            raise ValueError(
+            msg = (
                 "The dataset can be created from a file with a .csv or .txt extension, "
                 f"not {extension}."
             )
+            raise ValueError(msg)
     else:
-        raise ValueError(
+        msg = (
             "The dataset can be created from an array or a .csv or .txt file, "
             f"not a {type(data)}."
         )
+        raise ValueError(msg)
 
     if name:
         dataset.name = name
@@ -1906,9 +1911,8 @@ def get_algorithm_features(
 
     factory = OptimizersFactory()
     if not factory.is_available(algorithm_name):
-        raise ValueError(
-            f"{algorithm_name} is not the name of an optimization algorithm."
-        )
+        msg = f"{algorithm_name} is not the name of an optimization algorithm."
+        raise ValueError(msg)
 
     driver = factory.create(algorithm_name)
     description = driver.descriptions[algorithm_name]

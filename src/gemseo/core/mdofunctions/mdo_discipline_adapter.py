@@ -259,11 +259,12 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         )
 
         if missing_names:
-            raise ValueError(
+            msg = (
                 f"The size of the input {','.join(missing_names)} cannot be guessed "
                 f"from the discipline {self.__discipline.name}, "
                 f"nor from its default inputs or from its local data."
             )
+            raise ValueError(msg)
 
         (
             self.__input_names_to_slices,

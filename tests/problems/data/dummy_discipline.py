@@ -27,10 +27,10 @@ from gemseo.core.discipline import MDODiscipline
 class DummyDisciplineIMP(MDODiscipline):
     """Dummy."""
 
-    def __init__(self, opts1=0, jac_approx_n_processes=1):
+    def __init__(self, opts1=0, jac_approx_n_processes=1) -> None:
         super().__init__()
         self.opts1 = opts1
         self.jac_approx_n_processes = jac_approx_n_processes
 
-    def _run(self):
+    def _run(self) -> None:
         """Dummy."""

@@ -22,7 +22,7 @@ import jinja2
 ENV = jinja2.Environment(loader=jinja2.FileSystemLoader(Path(__file__).parent))
 
 
-def create_authors_page(path):
+def create_authors_page(path) -> None:
     template = ENV.get_template("authors.tmpl")
     with (path / "_static" / "authors" / "authors.csv").open(
         "r", encoding="UTF-8", newline=""

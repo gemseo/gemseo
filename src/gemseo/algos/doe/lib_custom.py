@@ -221,10 +221,11 @@ class CustomDOE(DOELibrary):
             ])
 
         if samples.shape[1] != self.problem.dimension:
-            raise ValueError(
+            msg = (
                 f"Dimension mismatch between the problem ({self.problem.dimension}) "
                 f"and the samples ({samples.shape[1]})."
             )
+            raise ValueError(msg)
 
         return apply_along_axis(
             self.problem.design_space.transform_vect, axis=1, arr=samples

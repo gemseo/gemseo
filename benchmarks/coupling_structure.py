@@ -91,14 +91,14 @@ class ComputeGraphBenchmark(BaseBenchmark):
         self.nodes = None
         super().__init__()
 
-    def setup(self):  # noqa: D102
+    def setup(self) -> None:  # noqa: D102
         with self.file_path.open("rb") as f:
             self.nodes = pickle.load(f)
 
-    def run(self):  # noqa: D102
+    def run(self) -> None:  # noqa: D102
         _compute_graph(self.nodes)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"_compute_graph-{self.file_path.stem}"
 
 

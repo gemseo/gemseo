@@ -26,12 +26,12 @@ from gemseo.problems.scalable.parametric.core.quadratic_programming_problem impo
 )
 
 
-def test_quadratic_programming_problem_fields():
+def test_quadratic_programming_problem_fields() -> None:
     """Check the fields of QuadraticProgrammingProblem."""
     assert QuadraticProgrammingProblem._fields == ("Q", "c", "d", "A", "b")
 
 
-def test_quadratic_programming_problem_values():
+def test_quadratic_programming_problem_values() -> None:
     """Check that QuadraticProgrammingProblem does not modify the values."""
     problem = QuadraticProgrammingProblem(1, 2, 3, 4, 5)
     assert problem.Q == 1

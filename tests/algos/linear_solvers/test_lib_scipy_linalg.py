@@ -40,7 +40,7 @@ from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFact
 RESIDUALS_TOL = 1e-12
 
 
-def test_algo_list():
+def test_algo_list() -> None:
     """Tests the algo list detection at lib creation."""
     factory = LinearSolversFactory()
     assert len(factory.algorithms) >= 6
@@ -48,7 +48,7 @@ def test_algo_list():
         factory.is_available(algo)
 
 
-def test_default():
+def test_default() -> None:
     """Tests the DEFAULT solver."""
     factory = LinearSolversFactory()
     rng = default_rng(1)
@@ -64,7 +64,7 @@ def test_default():
 @pytest.mark.parametrize("use_preconditioner", [True, False])
 @pytest.mark.parametrize("use_ilu_precond", [True, False])
 @pytest.mark.parametrize("use_x0", [True, False])
-def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond):
+def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
     """Tests the solvers options."""
     factory = LinearSolversFactory()
     rng = default_rng(1)
@@ -97,7 +97,7 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond):
     assert norm(problem.lhs.dot(problem.solution) - problem.rhs) < RESIDUALS_TOL
 
 
-def test_common_dtype_cplx():
+def test_common_dtype_cplx() -> None:
     factory = LinearSolversFactory()
     problem = LinearProblem(eye(2, dtype="complex128"), ones(2))
     factory.execute(problem, "DEFAULT")
@@ -108,7 +108,7 @@ def test_common_dtype_cplx():
     assert problem.compute_residuals() < RESIDUALS_TOL
 
 
-def test_not_converged(caplog):
+def test_not_converged(caplog) -> None:
     """Tests the cases when convergence fails and save_when_fail option."""
     factory = LinearSolversFactory()
     rng = default_rng(1)
@@ -136,7 +136,7 @@ def test_not_converged(caplog):
 
 
 @pytest.mark.parametrize("seed", range(3))
-def test_hard_conv(tmp_wd, seed):
+def test_hard_conv(tmp_wd, seed) -> None:
     rng = default_rng(seed)
     n = 300
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
@@ -152,7 +152,7 @@ def test_hard_conv(tmp_wd, seed):
     assert problem.compute_residuals() < 1e-10
 
 
-def test_inconsistent_options():
+def test_inconsistent_options() -> None:
     problem = LinearProblem(ones((2, 2)), ones(2))
 
     with pytest.raises(ValueError, match="Inconsistent Preconditioner shape"):
@@ -170,13 +170,13 @@ def test_inconsistent_options():
         )
 
 
-def test_runtime_error():
+def test_runtime_error() -> None:
     problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(RuntimeError, match="Factor is exactly singular"):
         LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False)
 
 
-def test_default_solver():
+def test_default_solver() -> None:
     """Tests the default linear solver sequence.
 
     Consider the default solver when the matrix A is either a NumPy array or a SciPy
@@ -199,24 +199,24 @@ def test_default_solver():
     assert not problem.is_converged
 
 
-def test_check_info():
+def test_check_info() -> None:
     lib = ScipyLinalgAlgos()
     lib.problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(RuntimeError, match="illegal input or breakdown"):
         lib._check_solver_info(-1, {})
 
 
-def test_factory():
+def test_factory() -> None:
     assert "ScipyLinalgAlgos" in LinearSolversFactory().linear_solvers
 
 
-def test_algo_none():
+def test_algo_none() -> None:
     lib = ScipyLinalgAlgos()
     problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(ValueError, match="Algorithm name must be either passed as"):
         lib.execute(problem)
 
 
-def test_library_name():
+def test_library_name() -> None:
     """Check the library name."""
     assert ScipyLinalgAlgos.LIBRARY_NAME == "SciPy"

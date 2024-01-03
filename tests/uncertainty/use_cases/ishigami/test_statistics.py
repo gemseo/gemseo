@@ -47,5 +47,5 @@ from gemseo.uncertainty.use_cases.ishigami.statistics import VARIANCE
         (TOTAL_SOBOL_3, 0.24),
     ],
 )
-def test_statistics(statistic, value):
+def test_statistics(statistic, value) -> None:
     assert statistic == pytest.approx(value, abs=0.01)

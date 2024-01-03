@@ -398,12 +398,13 @@ class MLSupervisedAlgo(MLAlgo):
             return transformer.fit_transform(data)
 
         if not input_group:
-            raise NotImplementedError(
+            msg = (
                 "The transformer {} cannot be applied to the outputs "
                 "to build a supervised machine learning algorithm.".format(
                     transformer.__class__.__name__
                 )
             )
+            raise NotImplementedError(msg)
 
         return transformer.fit_transform(
             data,

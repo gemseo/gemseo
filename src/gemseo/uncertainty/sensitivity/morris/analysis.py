@@ -261,7 +261,8 @@ class MorrisAnalysis(SensitivityAnalysis):
             ValueError: If at least one input dimension is not equal to 1.
         """  # noqa: D205, D212, D415
         if parameter_space.dimension != len(parameter_space.variable_names):
-            raise ValueError("Each input dimension must be equal to 1.")
+            msg = "Each input dimension must be equal to 1."
+            raise ValueError(msg)
 
         self.mu_ = {}
         self.mu_star = {}
@@ -275,11 +276,12 @@ class MorrisAnalysis(SensitivityAnalysis):
         else:
             self.__n_replicates = n_samples // (parameter_space.dimension + 1)
             if self.__n_replicates == 0:
-                raise ValueError(
+                msg = (
                     f"The number of samples ({n_samples}) must be "
                     "at least equal to the dimension of the input space plus one "
                     f"({parameter_space.dimension}+1={parameter_space.dimension + 1})."
                 )
+                raise ValueError(msg)
 
         disciplines = list(disciplines)
         if not output_names:

@@ -236,7 +236,8 @@ class SobieskiProblem:
             self.__math = math
             self.__dtype = float64
         else:
-            raise ValueError(f"Unknown dtype: {dtype}.")
+            msg = f"Unknown dtype: {dtype}."
+            raise ValueError(msg)
 
         self.__base = SobieskiBase(dtype=dtype)
 

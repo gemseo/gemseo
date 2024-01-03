@@ -65,28 +65,28 @@ def data2d():
     return array([func(tau, theta) for theta in RNG.random(N_SAMPLES)])
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test constructor."""
     algo = KLSVD(MESH)
     assert algo.name == "KLSVD"
     assert algo.algo is None
 
 
-def test_learn(data):
+def test_learn(data) -> None:
     """Test learn with the default number of components (None)."""
     algo = KLSVD(MESH)
     algo.fit(data)
     assert algo.n_components == 10
 
 
-def test_learn_custom(data):
+def test_learn_custom(data) -> None:
     """Test learn with a number of components different from the mesh size."""
     algo = KLSVD(MESH, 9)
     algo.fit(data)
     assert algo.n_components == 9
 
 
-def test_transform(data, data2d):
+def test_transform(data, data2d) -> None:
     """Test transform."""
     algo = KLSVD(MESH)
     algo.fit(data)
@@ -100,7 +100,7 @@ def test_transform(data, data2d):
     assert reduced_data.shape[1] == algo.output_dimension
 
 
-def test_inverse_transform(data, data2d):
+def test_inverse_transform(data, data2d) -> None:
     """Test inverse transform."""
     algo = KLSVD(MESH)
     algo.fit(data)
@@ -116,7 +116,7 @@ def test_inverse_transform(data, data2d):
     assert restored_data.shape[1] == data2d.shape[1]
 
 
-def test_eigen(data):
+def test_eigen(data) -> None:
     """Test eigen values and eigen vectors."""
     algo = KLSVD(MESH)
     algo.fit(data)
@@ -125,27 +125,27 @@ def test_eigen(data):
     assert len(algo.eigenvalues) == algo.n_components
 
 
-def test_mesh():
+def test_mesh() -> None:
     """Test mesh."""
     algo = KLSVD(MESH)
     assert algo.mesh == MESH
 
 
-def test_n_singular_values_default(data):
+def test_n_singular_values_default(data) -> None:
     """Check the default value of n_singular_values."""
     algo = KLSVD(MESH)
     algo.fit(data)
     assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank") == "1000"
 
 
-def test_n_singular_values(data):
+def test_n_singular_values(data) -> None:
     """Check changing the value of n_singular_values."""
     algo = KLSVD(MESH, n_singular_values=10)
     algo.fit(data)
     assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank") == "10"
 
 
-def test_use_random_svd_default(data):
+def test_use_random_svd_default(data) -> None:
     """Check the default value of use_random_svd."""
     algo = KLSVD(MESH)
     algo.fit(data)
@@ -153,7 +153,7 @@ def test_use_random_svd_default(data):
 
 
 @pytest.mark.parametrize("use_random_svd", [False, True])
-def test_use_random_svd(data, use_random_svd):
+def test_use_random_svd(data, use_random_svd) -> None:
     """Check changing use_random_svd."""
     algo = KLSVD(MESH, use_random_svd=use_random_svd)
     algo.fit(data)
@@ -163,7 +163,7 @@ def test_use_random_svd(data, use_random_svd):
     )
 
 
-def test_use_halko2010_default(data):
+def test_use_halko2010_default(data) -> None:
     """Check the default value of use_halko2010."""
     algo = KLSVD(MESH)
     algo.fit(data)
@@ -171,7 +171,7 @@ def test_use_halko2010_default(data):
 
 
 @pytest.mark.parametrize("use_halko2010", [False, True])
-def test_use_halko2010(data, use_halko2010):
+def test_use_halko2010(data, use_halko2010) -> None:
     """Check changing the value of use_halko2010."""
     algo = KLSVD(MESH, use_halko2010=use_halko2010)
     algo.fit(data)
@@ -180,7 +180,7 @@ def test_use_halko2010(data, use_halko2010):
     )
 
 
-def test_shape(data):
+def test_shape(data) -> None:
     """Check the shapes of the data."""
     klsvd = KLSVD(MESH)
     klsvd.fit(data)

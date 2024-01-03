@@ -48,7 +48,7 @@ def graph() -> DependencyGraph:
     return DependencyGraph(disciplines)
 
 
-def test_from_graph(graph, tmp_wd):
+def test_from_graph(graph, tmp_wd) -> None:
     """Check that the content of the HTML file is correct when created from a graph.
 
     Args:
@@ -60,7 +60,7 @@ def test_from_graph(graph, tmp_wd):
     assert cmp(file_path, str(Path(__file__).parent / "expected_from_graph.html"))
 
 
-def test_from_json(tmp_wd):
+def test_from_json(tmp_wd) -> None:
     """Check that the content of the HTML file is correct when create from a JSON file.
 
     Args:

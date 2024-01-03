@@ -64,16 +64,16 @@ class ConvexLinearApprox(MDOFunction):
             self.__approx_indexes.shape != self.__x_vect.shape
             or self.__approx_indexes.dtype != "bool"
         ):
-            raise ValueError(
+            msg = (
                 "The approximation array must be an array of booleans with "
                 "the same shape as the function argument."
             )
+            raise ValueError(msg)
 
         # Get the function Jacobian matrix
         if not self.__mdo_function.has_jac:
-            raise AttributeError(
-                "Function Jacobian unavailable for convex linearization."
-            )
+            msg = "Function Jacobian unavailable for convex linearization."
+            raise AttributeError(msg)
 
         jac = atleast_2d(self.__mdo_function.jac(x_vect))
 

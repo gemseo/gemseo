@@ -76,7 +76,8 @@ def create_gantt_chart(
     """
     time_stamps = MDODiscipline.time_stamps
     if time_stamps is None:
-        raise ValueError("Time stamps are not activated in MDODiscipline")
+        msg = "Time stamps are not activated in MDODiscipline"
+        raise ValueError(msg)
 
     fig, ax = plt.subplots(figsize=fig_size)
 
@@ -85,7 +86,8 @@ def create_gantt_chart(
     else:
         missing = list(set(disc_names) - set(time_stamps.keys()))
         if missing:
-            raise ValueError(f"The disciplines: {missing}, have no time stamps.")
+            msg = f"The disciplines: {missing}, have no time stamps."
+            raise ValueError(msg)
 
     ax.set_ylim(5, 10 * len(disc_names) + 15)
     ax.set_yticklabels(disc_names)

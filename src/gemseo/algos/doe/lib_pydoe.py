@@ -252,7 +252,8 @@ class PyDOE(DOELibrary):
         if self.algo_name == self.PYDOE_PBDESIGN:
             return self.__translate(pyDOE.pbdesign(options[self.DIMENSION]))
 
-        raise ValueError(f"Bad algo_name: {self.algo_name}")
+        msg = f"Bad algo_name: {self.algo_name}"
+        raise ValueError(msg)
 
     @classmethod
     def _get_unsuitability_reason(

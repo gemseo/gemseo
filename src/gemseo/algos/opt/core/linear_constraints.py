@@ -61,9 +61,8 @@ def build_constraints_matrices(
     # Check that the constraint are linear
     for constraint in constraints:
         if not isinstance(constraint, MDOLinearFunction):
-            raise TypeError(
-                f'The constraint "{constraint.name}" is not an MDOLinearFunction.'
-            )
+            msg = f'The constraint "{constraint.name}" is not an MDOLinearFunction.'
+            raise TypeError(msg)
 
     contains_sparse = False
     for constraint in constraints:

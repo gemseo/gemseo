@@ -30,7 +30,7 @@ def bootstrap(sample_indices) -> Bootstrap:
     return Bootstrap(sample_indices)
 
 
-def test_default_properties(bootstrap, sample_indices):
+def test_default_properties(bootstrap, sample_indices) -> None:
     """Check the default values of the properties."""
     assert_equal(bootstrap.sample_indices, sample_indices)
     assert bootstrap.seed == SEED
@@ -38,7 +38,7 @@ def test_default_properties(bootstrap, sample_indices):
     assert len(bootstrap.splits) == 100
 
 
-def test_properties_with_n_replicates(sample_indices):
+def test_properties_with_n_replicates(sample_indices) -> None:
     """Check that the number of folds depends on n_replicates."""
     bootstrap = Bootstrap(sample_indices, n_replicates=2)
     assert bootstrap.n_replicates == 2
@@ -46,7 +46,7 @@ def test_properties_with_n_replicates(sample_indices):
 
 
 @pytest.mark.parametrize("stack_predictions", [False, True])
-def test_stacked_predictions(bootstrap, stack_predictions):
+def test_stacked_predictions(bootstrap, stack_predictions) -> None:
     """Check the stacked_predictions argument of the method execute."""
     predictions = [array([[1, 2], [3, 4]]), array([[1, 2], [3, 4]])]
     result = bootstrap._post_process_predictions(predictions, (3, 2), stack_predictions)

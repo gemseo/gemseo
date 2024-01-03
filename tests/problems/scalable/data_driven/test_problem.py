@@ -56,23 +56,23 @@ def scalable_problem():
     )
 
 
-def test_print(scalable_problem):
+def test_print(scalable_problem) -> None:
     assert "Sizes" in str(scalable_problem)
 
 
-def test_plot_n2_chart(scalable_problem, tmp_wd):
+def test_plot_n2_chart(scalable_problem, tmp_wd) -> None:
     """"""
     scalable_problem.plot_n2_chart()
     assert os.path.exists("n2.pdf")
 
 
-def test_plot_coupling_graph(scalable_problem, tmp_wd):
+def test_plot_coupling_graph(scalable_problem, tmp_wd) -> None:
     """"""
     scalable_problem.plot_coupling_graph()
     assert os.path.exists("coupling_graph.pdf")
 
 
-def test_plot_1d_interpolations(scalable_problem, tmp_wd):
+def test_plot_1d_interpolations(scalable_problem, tmp_wd) -> None:
     """"""
     files = scalable_problem.plot_1d_interpolations(directory=str(tmp_wd))
     assert len(files) > 0
@@ -80,7 +80,7 @@ def test_plot_1d_interpolations(scalable_problem, tmp_wd):
         assert os.path.exists(fname)
 
 
-def test_plot_dependencies(scalable_problem, tmp_wd):
+def test_plot_dependencies(scalable_problem, tmp_wd) -> None:
     """"""
     files = scalable_problem.plot_dependencies(directory=str(tmp_wd))
     assert len(files) > 0
@@ -88,12 +88,12 @@ def test_plot_dependencies(scalable_problem, tmp_wd):
         assert os.path.exists(fname)
 
 
-def test_create_scenario(scalable_problem):
+def test_create_scenario(scalable_problem) -> None:
     """"""
     scalable_problem.create_scenario()
 
 
-def test_statistics(scalable_problem):
+def test_statistics(scalable_problem) -> None:
     """"""
     scalable_problem.create_scenario()
     scalable_problem.exec_time()

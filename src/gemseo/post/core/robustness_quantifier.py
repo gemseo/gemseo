@@ -129,11 +129,11 @@ class RobustnessQuantifier:
         """
         n_vars = len(expect)
         if cov.shape != (n_vars, n_vars):
-            raise ValueError("Inconsistent expect and covariance matrices shapes")
+            msg = "Inconsistent expect and covariance matrices shapes"
+            raise ValueError(msg)
         if self.b_mat is None:
-            raise ValueError(
-                "Build Hessian approximation before computing expected_value_offset"
-            )
+            msg = "Build Hessian approximation before computing expected_value_offset"
+            raise ValueError(msg)
         b_approx = 0.5 * self.b_mat
         exp_val = np.trace(b_approx @ cov)
         delta = expect - self.x_ref
@@ -159,10 +159,12 @@ class RobustnessQuantifier:
                 have inconsistent shapes or when the Hessian approximation is missing.
         """
         if self.b_mat is None:
-            raise ValueError("Build Hessian approximation before computing variance")
+            msg = "Build Hessian approximation before computing variance"
+            raise ValueError(msg)
         n_vars = len(expect)
         if cov.shape != (n_vars, n_vars):
-            raise ValueError("Inconsistent expect and covariance matrices shapes")
+            msg = "Inconsistent expect and covariance matrices shapes"
+            raise ValueError(msg)
         b_approx = 0.5 * self.b_mat
         mu_cent = expect - self.x_ref
         b_approx_cov = b_approx @ cov
@@ -181,9 +183,8 @@ class RobustnessQuantifier:
             A second order approximation of the function.
         """
         if self.b_mat is None or self.x_ref is None:
-            raise ValueError(
-                "Build Hessian approximation before computing function approximation"
-            )
+            msg = "Build Hessian approximation before computing function approximation"
+            raise ValueError(msg)
         x_l = x_vars - self.x_ref
         return 0.5 * x_l.T @ (self.b_mat @ x_l) + self.fgrad_ref.T @ x_l + self.f_ref
 
@@ -194,9 +195,8 @@ class RobustnessQuantifier:
             x_vars: The point on which the approximation is evaluated.
         """
         if self.b_mat is None or self.fgrad_ref is None:
-            raise ValueError(
-                "Build Hessian approximation before computing function approximation"
-            )
+            msg = "Build Hessian approximation before computing function approximation"
+            raise ValueError(msg)
         x_l = x_vars - self.x_ref
         return self.b_mat @ x_l + self.fgrad_ref
 

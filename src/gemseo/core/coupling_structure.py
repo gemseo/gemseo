@@ -308,7 +308,8 @@ class MDOCouplingStructure:
             if discipline.is_output_existing(output):
                 return discipline
 
-        raise ValueError(f"{output} is not the output of a discipline.")
+        msg = f"{output} is not the output of a discipline."
+        raise ValueError(msg)
 
     def __draw_n2_chart(
         self,
@@ -433,7 +434,8 @@ class MDOCouplingStructure:
             ValueError: When there is less than two disciplines.
         """
         if len(self.disciplines) < 2:
-            raise ValueError("N2 diagrams need at least two disciplines.")
+            msg = "N2 diagrams need at least two disciplines."
+            raise ValueError(msg)
 
         html_file_path = Path(file_path).parent / "n2.html"
         self_coupled_discipline = [

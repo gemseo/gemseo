@@ -19,10 +19,10 @@ from gemseo.core.base_formulation import BaseFormulation
 
 
 class NotMDOFormulation(BaseFormulation):
-    def get_expected_workflow(self):
+    def get_expected_workflow(self) -> None:
         return
 
-    def get_expected_dataflow(self):
+    def get_expected_dataflow(self) -> None:
         return
 
 

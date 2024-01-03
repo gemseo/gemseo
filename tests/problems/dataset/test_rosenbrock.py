@@ -22,7 +22,7 @@ from __future__ import annotations
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
 
-def test_constructor():
+def test_constructor() -> None:
     dataset = create_rosenbrock_dataset()
     assert dataset.name == "Rosenbrock"
     assert len(dataset) == 100
@@ -30,7 +30,7 @@ def test_constructor():
     assert "designs" in dataset.group_names
 
 
-def test_constructor_categorize():
+def test_constructor_categorize() -> None:
     dataset = create_rosenbrock_dataset(categorize=False)
     assert dataset.name == "Rosenbrock"
     assert len(dataset) == 100
@@ -38,7 +38,7 @@ def test_constructor_categorize():
     assert "designs" not in dataset.group_names
 
 
-def test_constructor_optnaming():
+def test_constructor_optnaming() -> None:
     dataset = create_rosenbrock_dataset(opt_naming=False)
     assert dataset.name == "Rosenbrock"
     assert len(dataset) == 100

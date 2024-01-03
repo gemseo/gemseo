@@ -41,7 +41,7 @@ def dataset() -> Dataset:
     return dataset_
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     with concretize_classes(MLUnsupervisedAlgo):
         ml_algo = MLUnsupervisedAlgo(dataset)
@@ -50,7 +50,7 @@ def test_constructor(dataset):
     assert ml_algo.var_names == dataset.get_variable_names(dataset.DEFAULT_GROUP)
 
 
-def test_variable_limitation(dataset):
+def test_variable_limitation(dataset) -> None:
     """Test specifying learning variables."""
     with concretize_classes(MLUnsupervisedAlgo):
         ml_algo_limited = MLUnsupervisedAlgo(

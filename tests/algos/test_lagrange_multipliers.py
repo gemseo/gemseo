@@ -51,7 +51,7 @@ def problem() -> Power2:
 
 
 @pytest.mark.parametrize("upper_bound", [False, True])
-def test_lagrange_pow2_too_many_acts(problem, upper_bound):
+def test_lagrange_pow2_too_many_acts(problem, upper_bound) -> None:
     problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
     if upper_bound:
         problem.design_space.set_current_value(array([0.5, 0.9, -0.5]))
@@ -71,7 +71,7 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound):
 @pytest.mark.parametrize(
     ("normalize", "eps", "tol"), [(False, 1e-5, 1e-7), (True, 1e-3, 1e-8)]
 )
-def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol):
+def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) -> None:
     options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = normalize
     problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
@@ -93,7 +93,7 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol):
     assert err < tol
 
 
-def test_lagrangian_validation_eq(problem):
+def test_lagrangian_validation_eq(problem) -> None:
     execute_algo(problem, "SLSQP", "opt", **SLSQP_OPTIONS)
     lagrange = LagrangeMultipliers(problem)
     lagrangian = lagrange.compute(problem.solution.x_opt)
@@ -111,7 +111,7 @@ def test_lagrangian_validation_eq(problem):
     assert err < 1e-5
 
 
-def test_lagrangian_validation_ineq_normalize():
+def test_lagrangian_validation_ineq_normalize() -> None:
     options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = True
 
@@ -142,7 +142,7 @@ def test_lagrangian_validation_ineq_normalize():
 
 
 @pytest.mark.parametrize("constraint_type", ["eq", "ineq"])
-def test_lagrangian_constraint(constraint_type, sellar_disciplines):
+def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
     scenario = create_scenario(
         sellar_disciplines,
         formulation="MDF",
@@ -169,7 +169,7 @@ def test_lagrangian_constraint(constraint_type, sellar_disciplines):
             assert (c_vals[-1] > 0).all()
 
 
-def test_lagrange_store(problem):
+def test_lagrange_store(problem) -> None:
     options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = True
     execute_algo(problem, "SLSQP", "opt", **options)
@@ -215,7 +215,9 @@ parametrized_algo_eq = pytest.mark.parametrize(
 @parametrized_options
 @parametrized_algo_ineq
 @parametrized_reformulate
-def test_2d_ineq(analytical_test_2d_ineq, options, algo_ineq, reformulate_constraints):
+def test_2d_ineq(
+    analytical_test_2d_ineq, options, algo_ineq, reformulate_constraints
+) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_ineq
@@ -243,7 +245,7 @@ def test_2d_ineq(analytical_test_2d_ineq, options, algo_ineq, reformulate_constr
 
 @parametrized_options
 @parametrized_algo_eq
-def test_2d_eq(analytical_test_2d_eq, options, algo_eq):
+def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
@@ -260,7 +262,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq):
 
 @parametrized_options
 @parametrized_algo_eq
-def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq):
+def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
@@ -293,7 +295,7 @@ def test_2d_mixed(
     algo_eq,
     reformulate_constraints,
     subsolver_constraints,
-):
+) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     if subsolver_constraints:
         pytest.skip(f"{algo_eq} does not have subsolver_constraints option.")

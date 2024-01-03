@@ -267,13 +267,14 @@ class JacobianAssembly:
                 disc.get_input_data_names()
                 for disc in self.coupling_structure.disciplines
             ]
-            raise ValueError(
+            msg = (
                 "Some of the specified variables are not "
                 "inputs of the disciplines: "
                 f"{unknown_dvars}"
                 " possible inputs are: "
                 f"{inputs}"
             )
+            raise ValueError(msg)
 
         if unknown_outs:
             raise ValueError(
@@ -296,11 +297,12 @@ class JacobianAssembly:
         matrix_type = self.JacobianType(matrix_type)
 
         if use_lu_fact and matrix_type == self.JacobianType.LINEAR_OPERATOR:
-            raise ValueError(
+            msg = (
                 "Unsupported LU factorization for "
                 "LinearOperators! Please use Sparse matrices"
                 " instead"
             )
+            raise ValueError(msg)
 
     def compute_sizes(
         self,
@@ -355,9 +357,8 @@ class JacobianAssembly:
                             break
 
             if variable not in self.sizes:
-                raise ValueError(
-                    f"Failed to determine the size of input variable {variable}"
-                )
+                msg = f"Failed to determine the size of input variable {variable}"
+                raise ValueError(msg)
 
     # TODO: API: give a better name like get_derivation_mode for instance.
     @classmethod
@@ -546,7 +547,8 @@ class JacobianAssembly:
                 is_residual,
             )
 
-        raise ValueError(f"Bad jacobian_type: {jacobian_type}")
+        msg = f"Bad jacobian_type: {jacobian_type}"
+        raise ValueError(msg)
 
     def _compute_diff_ios_and_couplings(
         self,

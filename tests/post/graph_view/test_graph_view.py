@@ -21,7 +21,7 @@ import pytest
 from gemseo.post._graph_view import GraphView
 
 
-def test_graph_view(tmp_wd):
+def test_graph_view(tmp_wd) -> None:
     """Check GraphView."""
     graph = GraphView()
     graph.edge("A", "B", "foo")
@@ -59,7 +59,7 @@ def test_graph_view(tmp_wd):
 
 
 @pytest.mark.parametrize("use_directed_edges", [False, True])
-def test_use_directed_edges(tmp_wd, use_directed_edges):
+def test_use_directed_edges(tmp_wd, use_directed_edges) -> None:
     """Check the argument use_directed_edges passed at instantiation."""
     graph = GraphView(use_directed_edges)
     graph.edge("A", "B")
@@ -73,13 +73,13 @@ def test_use_directed_edges(tmp_wd, use_directed_edges):
 
 
 @pytest.mark.parametrize("clean_up", [False, True])
-def test_clean_up(tmp_wd, clean_up):
+def test_clean_up(tmp_wd, clean_up) -> None:
     """Check the argument clean_up."""
     GraphView().visualize(show=False, clean_up=clean_up)
     assert Path("graph_view.dot").exists() is not clean_up
 
 
-def test_repr_html():
+def test_repr_html() -> None:
     """Check _repr_html_."""
     graph = GraphView()
     graph.edge("A", "B", "foo")

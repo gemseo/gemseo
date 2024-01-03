@@ -54,19 +54,19 @@ def measure(dataset) -> SilhouetteMeasure:
     return SilhouetteMeasure(algo)
 
 
-def test_constructor(measure, dataset):
+def test_constructor(measure, dataset) -> None:
     """Test construction."""
     assert measure.algo is not None
     assert measure.algo.learning_set is dataset
 
 
-def test_compute_learning_measure(measure):
+def test_compute_learning_measure(measure) -> None:
     """Test evaluate learn method."""
     quality = measure.compute_learning_measure(multioutput=False)
     assert quality > 0
 
 
-def test_compute_learning_measure_fail(measure):
+def test_compute_learning_measure_fail(measure) -> None:
     """Test evaluate learn method; should fail if multioutput is True."""
     with pytest.raises(
         NotImplementedError,
@@ -75,25 +75,25 @@ def test_compute_learning_measure_fail(measure):
         measure.compute_learning_measure(multioutput=True)
 
 
-def test_compute_test_measure(measure, dataset_test):
+def test_compute_test_measure(measure, dataset_test) -> None:
     """Test evaluate test method."""
     with pytest.raises(NotImplementedError):
         measure.compute_test_measure(dataset_test, multioutput=False)
 
 
-def test_compute_leave_one_out_measure(measure):
+def test_compute_leave_one_out_measure(measure) -> None:
     """Test evaluate leave one out method."""
     with pytest.raises(NotImplementedError):
         measure.compute_leave_one_out_measure(multioutput=False)
 
 
-def test_compute_cross_validation_measure(measure):
+def test_compute_cross_validation_measure(measure) -> None:
     """Test evaluate k-folds method."""
     with pytest.raises(NotImplementedError):
         measure.compute_cross_validation_measure(multioutput=False)
 
 
-def test_compute_bootstrap_measure(measure):
+def test_compute_bootstrap_measure(measure) -> None:
     """Test evaluate bootstrap method."""
     with pytest.raises(NotImplementedError):
         measure.compute_bootstrap_measure(multioutput=False)

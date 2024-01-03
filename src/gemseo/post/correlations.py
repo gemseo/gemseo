@@ -86,10 +86,11 @@ class Correlations(OptPostProcessor):
 
         not_func_names = set(func_names) - set(all_func_names)
         if not_func_names:
-            raise ValueError(
+            msg = (
                 f"The following elements are not functions: {sorted(not_func_names)}; "
                 f"available ones are: {sorted(all_func_names)}."
             )
+            raise ValueError(msg)
 
         variable_history, variable_names, _ = self.database.get_history_array(
             function_names=func_names, add_missing_tag=True, missing_tag=0.0

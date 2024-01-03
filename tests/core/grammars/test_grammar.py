@@ -26,7 +26,7 @@ FACTORY = GrammarFactory()
 
 
 @pytest.mark.parametrize("class_name", tuple(FACTORY.class_names))
-def test_serialize(tmp_wd, class_name):
+def test_serialize(tmp_wd, class_name) -> None:
     """Check that a grammar can be properly serialized."""
     # TODO: implement the serialization of PydanticGrammar
     if class_name == "PydanticGrammar":

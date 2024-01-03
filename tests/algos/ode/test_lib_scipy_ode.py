@@ -54,20 +54,20 @@ parametrized_algo_names = pytest.mark.parametrize(
 
 
 @parametrized_algo_names
-def test_factory(algo_name):
+def test_factory(algo_name) -> None:
     """Test the factory for ODE solvers."""
     assert ODESolversFactory().is_available(algo_name)
 
 
 @parametrized_algo_names
-def test_scipy_ode_algos(algo_name):
+def test_scipy_ode_algos(algo_name) -> None:
     """Test the wrapper for SciPy ODE solvers."""
     algos = ScipyODEAlgos()
     assert algo_name in algos.algorithms
 
 
 @pytest.mark.parametrize("time_vector", [None, arange(0, 1, 0.1)])
-def test_ode_problem_1d(time_vector):
+def test_ode_problem_1d(time_vector) -> None:
     r"""Test the definition and resolution of an ODE problem.
 
     Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
@@ -124,7 +124,7 @@ def test_ode_problem_1d(time_vector):
     assert problem.result.n_func_evaluations > 0
 
 
-def test_ode_problem_2d():
+def test_ode_problem_2d() -> None:
     r"""Test the definition and resolution of an ODE problem.
 
     Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
@@ -157,7 +157,7 @@ def test_ode_problem_2d():
     assert sqrt(sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
 
 
-def test_ode_problem_2d_wrong_jacobian():
+def test_ode_problem_2d_wrong_jacobian() -> None:
     r"""Test that check_jacobian raises an error when the jacobian is wrong.
 
     Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
@@ -186,11 +186,12 @@ def test_ode_problem_2d_wrong_jacobian():
     except ValueError:
         pass
     else:
-        raise ValueError("Jacobian should not be considered correct.")
+        msg = "Jacobian should not be considered correct."
+        raise ValueError(msg)
 
 
 @parametrized_algo_names
-def test_van_der_pol(algo_name):
+def test_van_der_pol(algo_name) -> None:
     """Solve Van der Pol with the jacobian analytical expression."""
     problem = VanDerPol()
     ODESolversFactory().execute(problem, algo_name, first_step=10e-6)
@@ -204,7 +205,7 @@ def test_van_der_pol(algo_name):
 
 
 @parametrized_algo_names
-def test_van_der_pol_finite_differences(algo_name):
+def test_van_der_pol_finite_differences(algo_name) -> None:
     """Solve Van der Pol using finite differences for the jacobian."""
     problem = VanDerPol(use_jacobian=False)
     ODESolversFactory().execute(problem, algo_name, first_step=10e-6)
@@ -216,7 +217,7 @@ def test_van_der_pol_finite_differences(algo_name):
     )
 
 
-def test_van_der_pol_jacobian_explicit_expression():
+def test_van_der_pol_jacobian_explicit_expression() -> None:
     """Validate the analytical expression of the jacobian."""
     problem = VanDerPol()
     state_vect = [0.0, 0.0]
@@ -239,14 +240,14 @@ def test_van_der_pol_jacobian_explicit_expression():
     ],
 )
 @pytest.mark.parametrize("use_jacobian", [True, False])
-def test_orbital(algo_name, eccentricity, use_jacobian):
+def test_orbital(algo_name, eccentricity, use_jacobian) -> None:
     """Solve the orbital problem."""
     problem = OrbitalDynamics(eccentricity=eccentricity, use_jacobian=use_jacobian)
     ODESolversFactory().execute(problem, algo_name, first_step=10e-6)
     assert problem.result.is_converged
 
 
-def test_orbital_jacobian_explicit_expression():
+def test_orbital_jacobian_explicit_expression() -> None:
     """Validate the analytical expression of the jacobian."""
     problem = OrbitalDynamics()
     problem.time_vect = array([0.0, 1.0])
@@ -255,7 +256,7 @@ def test_orbital_jacobian_explicit_expression():
     assert not problem.result.is_converged
 
 
-def test_unconverged(caplog):
+def test_unconverged(caplog) -> None:
     r"""Test solver behavior when it doesn't converge.
 
     Consider the equation :math:`s' = s^2` with the initial condition :math:`s(0) = 1`.
@@ -276,7 +277,7 @@ def test_unconverged(caplog):
 
 
 @pytest.mark.parametrize("problem", [OrbitalDynamics, VanDerPol])
-def test_check_ode_problem(problem):
+def test_check_ode_problem(problem) -> None:
     """Ensure the check method of ODEProblem behaves as expected."""
     problem = problem()
     assert problem.result.state_vector.size == 0

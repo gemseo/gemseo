@@ -48,17 +48,17 @@ def timer() -> Timer:
     return timer
 
 
-def test_elapsed_time(timer):
+def test_elapsed_time(timer) -> None:
     """Check the elapsed_time attribute."""
     assert timer.elapsed_time == pytest.approx(1.0, abs=0.1)
 
 
-def test_str(timer):
+def test_str(timer) -> None:
     """Check the string representation of the timer."""
     assert re.compile(r"Elapsed time: .* s\.").match(str(timer))
 
 
-def test_no_log(caplog):
+def test_no_log(caplog) -> None:
     """Check that there is no log by default."""
     with Timer():
         sleep(0.1)
@@ -67,7 +67,7 @@ def test_no_log(caplog):
 
 
 @pytest.mark.parametrize("level", ["INFO", "DEBUG"])
-def test_log(caplog, level):
+def test_log(caplog, level) -> None:
     """Check the logs."""
     caplog.set_level(level)
     with Timer(level):

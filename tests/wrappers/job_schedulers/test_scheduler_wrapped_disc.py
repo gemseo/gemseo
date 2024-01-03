@@ -76,7 +76,7 @@ def discipline_mocked_js(tmpdir) -> JobSchedulerDisciplineWrapper:
     )
 
 
-def test_write_inputs_to_disk(discipline, tmpdir):
+def test_write_inputs_to_disk(discipline, tmpdir) -> None:
     """Test the outputs written by the discipline."""
     current_workdir = Path(tmpdir)
     path_to_discipline, path_to_input_data = discipline._write_inputs_to_disk(
@@ -88,7 +88,7 @@ def test_write_inputs_to_disk(discipline, tmpdir):
     assert path_to_input_data.parent == current_workdir
 
 
-def test_generate_job_template(discipline):
+def test_generate_job_template(discipline) -> None:
     """Test the job scheduler template creation."""
     current_workdir = discipline._create_current_workdir()
     path_to_discipline, path_to_input_data = discipline._write_inputs_to_disk(
@@ -112,7 +112,7 @@ def test_generate_job_template(discipline):
     assert len(lines) > 40
 
 
-def test_generate_job_template_fail(discipline, tmpdir):
+def test_generate_job_template_fail(discipline, tmpdir) -> None:
     """Test that missing template values raises a proper exception."""
     discipline.job_file_template = Template("$missing")
     with pytest.raises(
@@ -121,7 +121,7 @@ def test_generate_job_template_fail(discipline, tmpdir):
         discipline._generate_job_file_from_template(tmpdir, None, None, None, None)
 
 
-def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmpdir, caplog):
+def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmpdir, caplog) -> None:
     """Test the run failure is correctly handled."""
     discipline._scheduler_run_command = "IDONTEXIST"
     if PLATFORM_IS_WINDOWS:
@@ -132,7 +132,9 @@ def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmpdir, caplog):
         discipline._run_command(tmpdir, tmpdir / "output.pckl")
 
 
-def test_handle_outputs_errors(discipline: JobSchedulerDisciplineWrapper, tmpdir):
+def test_handle_outputs_errors(
+    discipline: JobSchedulerDisciplineWrapper, tmpdir
+) -> None:
     """Test that errors in outputs are correctly handled."""
     with pytest.raises(
         FileNotFoundError,
@@ -149,14 +151,14 @@ def test_handle_outputs_errors(discipline: JobSchedulerDisciplineWrapper, tmpdir
         discipline._handle_outputs(outputs_path, tmpdir)
 
 
-def test_create_current_workdir(discipline):
+def test_create_current_workdir(discipline) -> None:
     """Test the creation of the workdir."""
     current_workdir = discipline._create_current_workdir()
     assert current_workdir.exists()
     assert current_workdir.parent == discipline._workdir_path
 
 
-def test_execution(discipline_mocked_js):
+def test_execution(discipline_mocked_js) -> None:
     """Test the execution of the wrapped discipline."""
     orig_disc = discipline_mocked_js._discipline
     ref_data = orig_disc.default_inputs
@@ -168,7 +170,7 @@ def test_execution(discipline_mocked_js):
     assert compare_dict_of_arrays(out, out_ref)
 
 
-def test_api_fail(tmpdir):
+def test_api_fail(tmpdir) -> None:
     """Test the api method that wraps the JS error messages."""
     with pytest.raises(
         FileNotFoundError,

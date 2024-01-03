@@ -95,7 +95,7 @@ def dummy_bilevel_scenario() -> MDOScenario:
     )
 
 
-def test_execute(sobieski_bilevel_scenario):
+def test_execute(sobieski_bilevel_scenario) -> None:
     """Test the execution of the Sobieski BiLevel Scenario."""
     scenario = sobieski_bilevel_scenario(
         apply_cstr_tosub_scenarios=True, apply_cstr_to_system=False
@@ -116,7 +116,7 @@ def test_execute(sobieski_bilevel_scenario):
         scenario.add_constraint(["toto"], "ineq")
 
 
-def test_get_sub_options_grammar_errors():
+def test_get_sub_options_grammar_errors() -> None:
     """Test that errors are raised if no MDA name is provided."""
     with pytest.raises(ValueError):
         BiLevel.get_sub_options_grammar()
@@ -124,7 +124,7 @@ def test_get_sub_options_grammar_errors():
         BiLevel.get_default_sub_option_values()
 
 
-def test_get_sub_options_grammar():
+def test_get_sub_options_grammar() -> None:
     """Test that the MDAJacobi sub-options can be retrieved."""
     sub_options_schema = BiLevel.get_sub_options_grammar(main_mda_name="MDAJacobi")
     assert sub_options_schema.name == "MDAJacobi"
@@ -133,7 +133,7 @@ def test_get_sub_options_grammar():
     assert "acceleration" in sub_option_values
 
 
-def test_bilevel_aerostructure():
+def test_bilevel_aerostructure() -> None:
     """Test the Bi-level formulation on the aero-structure problem."""
     algo_options = {
         "xtol_rel": 1e-8,
@@ -211,7 +211,7 @@ def test_bilevel_aerostructure():
     })
 
 
-def test_grammar_type():
+def test_grammar_type() -> None:
     """Check that the grammar type is correctly used."""
     discipline = AnalyticDiscipline({"y1": "z+x1+y2", "y2": "z+x2+2*y1"})
     design_space = DesignSpace()
@@ -243,7 +243,7 @@ def test_grammar_type():
     assert formulation.mda2.grammar_type == grammar_type
 
 
-def test_bilevel_weak_couplings(dummy_bilevel_scenario):
+def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
     """Test that the adapters contains the discipline weak couplings.
 
     This test generates a bi-level scenario which does not aim to be run as it has no
@@ -266,14 +266,14 @@ def test_bilevel_weak_couplings(dummy_bilevel_scenario):
     assert "b" in disciplines[1].get_output_data_names()
 
 
-def test_bilevel_mda_getter(dummy_bilevel_scenario):
+def test_bilevel_mda_getter(dummy_bilevel_scenario) -> None:
     """Test that the user can access the MDA1 and MDA2."""
     # In the Dummy scenario, there's not strongly coupled disciplines -> No MDA1
     assert dummy_bilevel_scenario.formulation.mda1 is None
     assert "obj" in dummy_bilevel_scenario.formulation.mda2.get_output_data_names()
 
 
-def test_bilevel_mda_setter(dummy_bilevel_scenario):
+def test_bilevel_mda_setter(dummy_bilevel_scenario) -> None:
     """Test that the user cannot modify the MDA1 and MDA2 after instantiation."""
     discipline = create_discipline("SellarSystem")
     with pytest.raises(AttributeError):
@@ -282,7 +282,7 @@ def test_bilevel_mda_setter(dummy_bilevel_scenario):
         dummy_bilevel_scenario.formulation.mda2 = discipline
 
 
-def test_get_sub_disciplines(sobieski_bilevel_scenario):
+def test_get_sub_disciplines(sobieski_bilevel_scenario) -> None:
     """Test the get_sub_disciplines method with the BiLevel formulation.
 
     Args:
@@ -302,7 +302,7 @@ def test_get_sub_disciplines(sobieski_bilevel_scenario):
     }
 
 
-def test_bilevel_warm_start(sobieski_bilevel_scenario):
+def test_bilevel_warm_start(sobieski_bilevel_scenario) -> None:
     """Test the warm start of the BiLevel chain.
 
     Args:
@@ -334,7 +334,7 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario):
         {"sub_scenarios_log_level": logging.WARNING},
     ],
 )
-def test_scenario_log_level(caplog, options):
+def test_scenario_log_level(caplog, options) -> None:
     """Check scenario_log_level."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)

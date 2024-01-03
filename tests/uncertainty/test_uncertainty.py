@@ -40,7 +40,7 @@ from gemseo.uncertainty.statistics.parametric import ParametricStatistics
     "kwargs",
     [{}, {"base_class_name": "OTDistribution"}, {"base_class_name": "SPDistribution"}],
 )
-def test_available_distributions(kwargs):
+def test_available_distributions(kwargs) -> None:
     """Check the function get_available_distributions."""
     distributions = get_available_distributions(**kwargs)
     base_class_name = kwargs.get("base_class_name")
@@ -55,17 +55,17 @@ def test_available_distributions(kwargs):
         assert "SPNormalDistribution" in distributions
 
 
-def test_create_distribution():
+def test_create_distribution() -> None:
     distribution = create_distribution("x", "OTNormalDistribution")
     assert distribution.mean[0] == 0.0
 
 
-def test_available_sensitivity_analysis():
+def test_available_sensitivity_analysis() -> None:
     sensitivities = get_available_sensitivity_analyses()
     assert "MorrisAnalysis" in sensitivities
 
 
-def test_create_sensitivity():
+def test_create_sensitivity() -> None:
     discipline = AnalyticDiscipline(
         {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}, name="Ishigami"
     )
@@ -84,7 +84,7 @@ def test_create_sensitivity():
     )
 
 
-def test_create_statistics():
+def test_create_statistics() -> None:
     n_samples = 100
     dataset = Dataset.from_array(default_rng().normal(size=(n_samples, 1)))
     stat = create_statistics(dataset)
@@ -93,7 +93,7 @@ def test_create_statistics():
     assert isinstance(stat, ParametricStatistics)
 
 
-def test_load_sensitivity_analysis(tmp_wd):
+def test_load_sensitivity_analysis(tmp_wd) -> None:
     discipline = AnalyticDiscipline(
         {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}, name="Ishigami"
     )

@@ -23,4 +23,5 @@ class NotImplementedCallable:
     """A callable object which raises NotImplementedError when called."""
 
     def __call__(self, *args, **kwargs) -> NoReturn:  # noqa:D102
-        raise NotImplementedError("Function is not implemented.")
+        msg = "Function is not implemented."
+        raise NotImplementedError(msg)

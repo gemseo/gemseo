@@ -28,7 +28,7 @@ def factory() -> SchedulersFactory:
     return SchedulersFactory()
 
 
-def test_available_schedulers(factory):
+def test_available_schedulers(factory) -> None:
     """Test the availability of job schedulers using the Factory mechanism."""
     assert factory.is_available("LSF")
     assert factory.is_available("SLURM")

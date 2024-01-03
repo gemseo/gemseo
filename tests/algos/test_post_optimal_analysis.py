@@ -127,7 +127,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
 
         return opt_problem
 
-    def test_invalid_problem(self):
+    def test_invalid_problem(self) -> None:
         """Tests for an exception raise when the passed problem is unsolved or has a
         multi-named objective."""
         # Pass an unsolved problem
@@ -139,7 +139,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         opt_problem.objective.output_names = ["f", "f"]
         self.assertRaises(ValueError, PostOptimalAnalysis, opt_problem)
 
-    def test_invalid_output(self):
+    def test_invalid_output(self) -> None:
         """Tests for an exception raise when the passed outputs are invalid."""
         opt_problem = self.get_problem()
         post_optimal_analyser = PostOptimalAnalysis(opt_problem)
@@ -150,7 +150,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
             ValueError, post_optimal_analyser.execute, ["g"], ["p"], jac_opt
         )
 
-    def test_invalid_jacobians(self):
+    def test_invalid_jacobians(self) -> None:
         """Tests for an exception raise when the passed Jacobians are invalid."""
         opt_problem = self.get_problem()
         post_optimal_analyser = PostOptimalAnalysis(opt_problem)
@@ -187,7 +187,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
             ValueError, post_optimal_analyser.execute, ["f"], ["p"], jac_at_sol
         )
 
-    def test_validity(self):
+    def test_validity(self) -> None:
         """Tests the validity check."""
         # Set up a post-optimal analyzer
         p = 0.5
@@ -216,7 +216,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         assert allclose(ineq_corr["p"], 0.0)
         assert allclose(eq_corr["p"], 0.0)
 
-    def test_execute(self):
+    def test_execute(self) -> None:
         """Tests the validity of the post-optimal analysis."""
         p = 1.0
 

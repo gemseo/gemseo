@@ -88,16 +88,18 @@ class BaseFullFactorialDOE(BaseDOE):
         levels = options.pop("levels", None)
 
         if not levels and not n_samples:
-            raise ValueError(
+            msg = (
                 "Either 'n_samples' or 'levels' is required as an input "
                 "parameter for the full-factorial DOE."
             )
+            raise ValueError(msg)
 
         if levels and n_samples:
-            raise ValueError(
+            msg = (
                 "Only one input parameter among 'n_samples' and 'levels' "
                 "must be given for the full-factorial DOE."
             )
+            raise ValueError(msg)
 
         if n_samples is not None:
             levels = self._compute_fullfact_levels(n_samples, dimension)

@@ -69,7 +69,7 @@ def dataset_test() -> Dataset:
     return MODEL.cache.to_dataset()
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     with concretize_classes(MLAlgo):
         algo = MLAlgo(dataset)
@@ -79,7 +79,7 @@ def test_constructor(dataset):
     assert measure.algo.learning_set is dataset
 
 
-def test_compute_learning_measure(dataset):
+def test_compute_learning_measure(dataset) -> None:
     """Test evaluate learn method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
@@ -104,7 +104,7 @@ def test_compute_learning_measure(dataset):
     assert mse_train < TOL_DEG_2
 
 
-def test_compute_test_measure(dataset, dataset_test):
+def test_compute_test_measure(dataset, dataset_test) -> None:
     """Test evaluate test method."""
     algo = PolynomialRegressor(dataset, degree=2)
     mse_test = MSEMeasure(algo).compute_test_measure(dataset_test)
@@ -124,7 +124,7 @@ def test_compute_test_measure(dataset, dataset_test):
     assert MSEMeasure(algo).compute_test_measure(test_data=dataset_test) < TOL_DEG_2
 
 
-def test_compute_leave_one_out_measure(dataset):
+def test_compute_leave_one_out_measure(dataset) -> None:
     """Test evaluate leave one out method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
@@ -140,7 +140,7 @@ def test_compute_leave_one_out_measure(dataset):
     assert mse_loo < TOL_DEG_1
 
 
-def test_compute_cross_validation_measure(dataset):
+def test_compute_cross_validation_measure(dataset) -> None:
     """Test evaluate k-folds method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
@@ -165,7 +165,7 @@ def test_compute_cross_validation_measure(dataset):
     assert mse_kfolds < TOL_DEG_2
 
 
-def test_compute_bootstrap_measure(dataset):
+def test_compute_bootstrap_measure(dataset) -> None:
     """Test evaluate bootstrap method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
@@ -187,7 +187,7 @@ def test_compute_bootstrap_measure(dataset):
     "method", ["compute_bootstrap_measure", "compute_cross_validation_measure"]
 )
 @pytest.mark.parametrize("fit", [False, True])
-def test_fit_transformers(algo_for_transformer, method, fit):
+def test_fit_transformers(algo_for_transformer, method, fit) -> None:
     """Check that the transformers are fitted with the sub-datasets.
 
     By default, the transformers are fitted with the sub-datasets. If False, use the
@@ -204,7 +204,7 @@ def test_fit_transformers(algo_for_transformer, method, fit):
     "method", ["compute_bootstrap_measure", "compute_cross_validation_measure"]
 )
 @pytest.mark.parametrize("seed", [None, 0])
-def test_seed(algo_for_transformer, method, seed):
+def test_seed(algo_for_transformer, method, seed) -> None:
     """Check that the seed is correctly used."""
     m = MSEMeasure(algo_for_transformer)
     evaluate = getattr(m, method)

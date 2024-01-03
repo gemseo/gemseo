@@ -43,17 +43,19 @@ def get_options_doc(
     docstring = inspect.getdoc(method)
 
     if docstring is None:
-        raise ValueError(f"Empty doc for {method}")
+        msg = f"Empty doc for {method}"
+        raise ValueError(msg)
 
     for parse in (parse_google, parse_rest):
         parsed_docstring = parse(docstring)
         if parsed_docstring:
             return parsed_docstring
 
-    raise ValueError(
+    msg = (
         "The docstring of the arguments is malformed: "
         "please use Google style docstrings"
     )
+    raise ValueError(msg)
 
 
 # TODO: API: remove.

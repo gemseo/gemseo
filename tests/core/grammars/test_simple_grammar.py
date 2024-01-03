@@ -46,7 +46,7 @@ def cls(request):
 
 
 @pytest.mark.parametrize("names_to_types", [None, {}])
-def test_init_empty(cls, names_to_types):
+def test_init_empty(cls, names_to_types) -> None:
     """Verify init with empty inputs."""
     g = cls("g", names_to_types=names_to_types)
     assert g.name == "g"
@@ -56,7 +56,7 @@ def test_init_empty(cls, names_to_types):
 
 
 @pytest.mark.parametrize("required_names", [None, [], ["name"]])
-def test_init(cls, required_names):
+def test_init(cls, required_names) -> None:
     """Verify init with non-empty inputs."""
     g = cls("g", names_to_types={"name": str}, required_names=required_names)
     assert g
@@ -69,7 +69,7 @@ def test_init(cls, required_names):
     assert not g.defaults
 
 
-def test_init_errors(cls):
+def test_init_errors(cls) -> None:
     """Verify init errors."""
     msg = "The grammar name cannot be empty."
     with pytest.raises(ValueError, match=msg):
@@ -90,14 +90,14 @@ def test_init_errors(cls):
         cls("g", names_to_types={"name": str}, required_names=["foo"])
 
 
-def test_delitem_error(cls):
+def test_delitem_error(cls) -> None:
     """Verify item deletion errors."""
     g = cls("g")
     with pytest.raises(KeyError, match="foo"):
         del g["foo"]
 
 
-def test_delitem(cls):
+def test_delitem(cls) -> None:
     """Verify item deletion."""
     g = cls("g", names_to_types={"name1": str, "name2": str}, required_names=["name1"])
     g.defaults["name1"] = "foo"
@@ -115,35 +115,35 @@ def test_delitem(cls):
     assert "name2" not in g.defaults
 
 
-def test_getitem_error(cls):
+def test_getitem_error(cls) -> None:
     """Verify getitem errors."""
     g = cls("g")
     with pytest.raises(KeyError, match="foo"):
         g["foo"]
 
 
-def test_getitem(cls):
+def test_getitem(cls) -> None:
     """Verify getitem."""
     g = cls("g", names_to_types={"name": str})
     assert g["name"] is str
 
 
 @parametrized_names_to_types
-def test_len(cls, names_to_types):
+def test_len(cls, names_to_types) -> None:
     """Verify len."""
     g = cls("g", names_to_types=names_to_types)
     assert len(g) == len(names_to_types)
 
 
 @parametrized_names_to_types
-def test_iter(cls, names_to_types):
+def test_iter(cls, names_to_types) -> None:
     """Verify iterator."""
     g = cls("g", names_to_types=names_to_types)
     assert list(iter(g)) == list(names_to_types)
 
 
 @parametrized_names_to_types
-def test_names(cls, names_to_types):
+def test_names(cls, names_to_types) -> None:
     """Verify names getter."""
     g = cls("g", names_to_types=names_to_types)
     assert list(g.names) == list(names_to_types)
@@ -178,7 +178,7 @@ def create_defaults(names_to_types: Mapping[str, type]) -> dict[str, Any]:
 
 
 @double_names_to_types
-def test_update_from_types(cls, names_to_types1, names_to_types2):
+def test_update_from_types(cls, names_to_types1, names_to_types2) -> None:
     """Verify update with a dict."""
     g1 = cls("g1", names_to_types=names_to_types1)
     defaults = create_defaults(names_to_types1)
@@ -216,7 +216,7 @@ def test_update_with_grammar(
     required_names1,
     required_names2,
     exclude_names,
-):
+) -> None:
     """Verify update with a grammar."""
     g1 = cls(
         "g1",
@@ -254,14 +254,14 @@ def test_update_with_grammar(
             assert g1[name] == names_to_types1[name]
 
 
-def test_update_dict_with_mapping(cls):
+def test_update_dict_with_mapping(cls) -> None:
     """Verify update with mapping."""
     g = cls("g")
     g.update_from_types({"name": dict})
     assert g["name"] == collections.abc.Mapping
 
 
-def test_update_dict_with_merge(cls):
+def test_update_dict_with_merge(cls) -> None:
     """Verify that merge is not supported."""
     g = cls("g")
     with pytest.raises(ValueError, match="Merge is not supported yet."):
@@ -277,7 +277,7 @@ def test_update_dict_with_merge(cls):
     ],
 )
 @parametrized_names_to_types
-def test_update_with_names(cls, names_to_types, names):
+def test_update_with_names(cls, names_to_types, names) -> None:
     """Verify update with names."""
     g = cls("g", names_to_types=names_to_types)
     defaults = create_defaults(names_to_types)
@@ -297,7 +297,7 @@ def test_update_with_names(cls, names_to_types, names):
             assert g[name] == names_to_types[name]
 
 
-def test_update_error(cls):
+def test_update_error(cls) -> None:
     """Verify update error."""
     g1 = cls("g1")
 
@@ -307,7 +307,7 @@ def test_update_error(cls):
 
 
 @parametrized_names_to_types
-def test_clear(cls, names_to_types):
+def test_clear(cls, names_to_types) -> None:
     """Verify clear."""
     g = cls("g", names_to_types=names_to_types)
     g.defaults.update(create_defaults(names_to_types))
@@ -332,7 +332,7 @@ def test_clear(cls, names_to_types):
         ({"name": None}, {"name": {}}),
     ],
 )
-def test_validate(cls, names_to_types, data):
+def test_validate(cls, names_to_types, data) -> None:
     """Verify validate."""
     g = cls("g", names_to_types=names_to_types)
     g.validate(data)
@@ -349,7 +349,7 @@ def test_validate(cls, names_to_types, data):
     ],
 )
 @pytest.mark.parametrize("raise_exception", [True, False])
-def test_validate_error(cls, data, error_msg, raise_exception, caplog):
+def test_validate_error(cls, data, error_msg, raise_exception, caplog) -> None:
     """Verify that validate raises the expected errors."""
     g = cls("g", names_to_types={"name1": None, "name2": int}, required_names=["name1"])
 
@@ -380,7 +380,7 @@ def test_validate_error(cls, data, error_msg, raise_exception, caplog):
         {"name": ndarray([])},
     ],
 )
-def test_update_from_data(cls, names_to_types, required_names, data):
+def test_update_from_data(cls, names_to_types, required_names, data) -> None:
     """Verify update_from_data."""
     g = cls("g", names_to_types=names_to_types, required_names=required_names)
     required_names_before = set(g.required_names)
@@ -393,7 +393,7 @@ def test_update_from_data(cls, names_to_types, required_names, data):
         assert g[name] == type(value)
 
 
-def test_is_array(cls):
+def test_is_array(cls) -> None:
     """Verify is_array."""
     g = cls(
         "g",
@@ -415,7 +415,7 @@ def test_is_array(cls):
     assert not g.is_array("a_list", numeric_only=True)
 
 
-def test_is_array_error(cls):
+def test_is_array_error(cls) -> None:
     """Verify is_array error."""
     g = cls("g")
     with pytest.raises(KeyError, match="foo"):
@@ -431,7 +431,7 @@ NAMES = [
 
 @pytest.mark.parametrize("names", NAMES)
 @pytest.mark.parametrize("required_names", [None, *NAMES])
-def test_restrict_to(cls, names, required_names):
+def test_restrict_to(cls, names, required_names) -> None:
     """Verify restrict_to."""
     names_to_types = {"name1": None, "name2": int}
     g = cls(
@@ -454,20 +454,20 @@ def test_restrict_to(cls, names, required_names):
     assert len(g.defaults) == len(names)
 
 
-def test_convert_to_simple_grammar(cls):
+def test_convert_to_simple_grammar(cls) -> None:
     """Verify grammar conversion."""
     g = cls("g")
     assert id(g.to_simple_grammar()) == id(g)
 
 
 @parametrized_names_to_types
-def test_required_names(cls, names_to_types):
+def test_required_names(cls, names_to_types) -> None:
     """Verify required_names."""
     g = cls("g", names_to_types=names_to_types)
     assert g.required_names == set(names_to_types.keys())
 
 
-def test_repr(cls):
+def test_repr(cls) -> None:
     g = cls("g", names_to_types={"name1": int, "name2": str}, required_names=["name1"])
     g.defaults["name2"] = "foo"
     assert (
@@ -509,7 +509,7 @@ Grammar name: g
     )
 
 
-def test_serialization(cls):
+def test_serialization(cls) -> None:
     """Check that the SimpleGrammar can be serialized."""
     g = cls("g", names_to_types={"name1": int, "name2": str}, required_names=["name1"])
     serialized_grammar = pickle.dumps(g)
@@ -519,7 +519,7 @@ def test_serialization(cls):
         assert deserialized_grammar[k] == v
 
 
-def test_rename(cls):
+def test_rename(cls) -> None:
     """Verify rename."""
     names_to_types = {"name1": int, "name2": str}
     g = cls("g", names_to_types=names_to_types, required_names=["name1"])
@@ -537,14 +537,14 @@ def test_rename(cls):
         assert g.defaults[f"n:{name}"] == value
 
 
-def test_rename_error(cls):
+def test_rename_error(cls) -> None:
     """Verify rename error."""
     g = cls("g")
     with pytest.raises(KeyError, match="foo"):
         g.rename_element("foo", "bar")
 
 
-def test_copy(cls):
+def test_copy(cls) -> None:
     """Verify copy."""
     g = cls("g")
     g.update_from_names(["name"])

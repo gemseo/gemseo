@@ -39,19 +39,19 @@ def factory(reset_factory) -> MDOFormulationsFactory:
     return MDOFormulationsFactory()
 
 
-def test_formulations(factory):
+def test_formulations(factory) -> None:
     """Check the property formulations."""
     assert "MDF" in factory.formulations
 
 
-def test_is_available(monkeypatch, factory):
+def test_is_available(monkeypatch, factory) -> None:
     """Check the method is_available."""
     monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "not_mdo_formulations")
     assert factory.is_available("MDF")
     assert not factory.is_available("ANotMDOFormulation")
 
 
-def test_create_with_wrong_formulation_name(factory):
+def test_create_with_wrong_formulation_name(factory) -> None:
     """Check that a MDOFormulation cannot be instantiated with a wrong name."""
     with pytest.raises(
         ImportError,
@@ -63,7 +63,7 @@ def test_create_with_wrong_formulation_name(factory):
         factory.create("foo", None, None, None)
 
 
-def test_create(factory):
+def test_create(factory) -> None:
     """Check the creation of a MDOFormulation."""
     design_space = DesignSpace()
     design_space.add_variable("x_shared", 3)
@@ -79,7 +79,7 @@ def test_create(factory):
     ]
 
 
-def test_not_mdo_formulation():
+def test_not_mdo_formulation() -> None:
     """Check the use of a factory of _BaseFormulation that is not a MDOFormulation."""
     with concretize_classes(ANotMDOFormulation):
         factory = NotMDOFormulationFactory()

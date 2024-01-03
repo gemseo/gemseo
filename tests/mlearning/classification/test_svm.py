@@ -80,7 +80,7 @@ def model_with_transform(dataset) -> SVMClassifier:
     return svm
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     svm = SVMClassifier(dataset)
     assert svm.algo is not None
@@ -88,14 +88,14 @@ def test_constructor(dataset):
     assert svm.LIBRARY == "scikit-learn"
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     svm = SVMClassifier(dataset)
     svm.learn()
     assert svm.algo is not None
 
 
-def test_predict(model):
+def test_predict(model) -> None:
     """Test prediction."""
     prediction = model.predict(INPUT_VALUE)
     predictions = model.predict(INPUT_VALUES)
@@ -109,7 +109,7 @@ def test_predict(model):
     assert predictions["y_1"].shape == (5, 1)
 
 
-def test_predict_with_transform(model_with_transform):
+def test_predict_with_transform(model_with_transform) -> None:
     """Test prediction."""
     prediction = model_with_transform.predict(INPUT_VALUE)
     predictions = model_with_transform.predict(INPUT_VALUES)
@@ -124,7 +124,7 @@ def test_predict_with_transform(model_with_transform):
     assert predictions["y_1"].shape == (5, 1)
 
 
-def test_predict_proba(model):
+def test_predict_proba(model) -> None:
     """Test probability prediction."""
     for hard in [True, False]:
         proba = model.predict_proba(INPUT_VALUE, hard)
@@ -141,7 +141,7 @@ def test_predict_proba(model):
         assert allclose(probas["y_1"].sum(axis=1), 1)
 
 
-def test_predict_proba_transform(model_with_transform):
+def test_predict_proba_transform(model_with_transform) -> None:
     """Test probability prediction."""
     for hard in [True, False]:
         proba = model_with_transform.predict_proba(INPUT_VALUE, hard)
@@ -158,7 +158,7 @@ def test_predict_proba_transform(model_with_transform):
         assert allclose(probas["y_1"].sum(axis=1), 1)
 
 
-def test_not_predict_proba(dataset):
+def test_not_predict_proba(dataset) -> None:
     """Test not implemented soft predict proba case."""
     svm = SVMClassifier(dataset)
     svm.learn()
@@ -170,7 +170,7 @@ def test_not_predict_proba(dataset):
         svm.predict_proba(INPUT_VALUES, False)
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_classification_model(dirname)

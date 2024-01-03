@@ -31,7 +31,7 @@ from gemseo.core.grammars.simple_grammar import SimpleGrammar
         PydanticGrammarDataConverter,
     ],
 )
-def test_data_converter_factory(cls):
+def test_data_converter_factory(cls) -> None:
     assert isinstance(
         DataConverterFactory().create(cls.__name__, SimpleGrammar("dummy")),
         cls,

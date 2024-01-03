@@ -22,7 +22,7 @@ from scipy.stats import weibull_min
 from gemseo.uncertainty.distributions.scipy.weibull import SPWeibullDistribution
 
 
-def test_default_distribution():
+def test_default_distribution() -> None:
     """Check the default Weibull distribution."""
     distribution = SPWeibullDistribution()
     assert distribution.variable_name == distribution.DEFAULT_VARIABLE_NAME
@@ -31,7 +31,7 @@ def test_default_distribution():
     assert marginal.var() == weibull_min.var(1, loc=0, scale=1)
 
 
-def test_custom():
+def test_custom() -> None:
     """Check a custom Weibull distribution."""
     distribution = SPWeibullDistribution(
         "u", location=2.0, scale=3.0, shape=4.0, use_weibull_min=False

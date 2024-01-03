@@ -61,11 +61,12 @@ class XDSMToPDFConverter:
         self.__xdsm.write(file_path)
 
         if not Path(filename_without_ext).with_suffix(".pdf").exists():
-            raise RuntimeError(
+            msg = (
                 "Something went wrong during the Latex compilation,"
                 " as xdsm.pdf has not been generated. Please have a look at the"
                 " Latex log file to investigate the root cause of the error."
             )
+            raise RuntimeError(msg)
 
         # Build XDSM for sub-scenarios
         if scenario == "root":

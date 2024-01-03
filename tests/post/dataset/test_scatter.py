@@ -94,7 +94,7 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(
     kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-):
+) -> None:
     """Test images created by Scatter._plot against references."""
     plot = Scatter(dataset, **kwargs)
     fig, axes = (
@@ -116,6 +116,6 @@ def test_plot(
     ],
 )
 @image_comparison(None)
-def test_trend(trend, quadratic_dataset, baseline_images, pyplot_close_all):
+def test_trend(trend, quadratic_dataset, baseline_images, pyplot_close_all) -> None:
     """Check the use of a trend."""
     Scatter(quadratic_dataset, "x", "y", trend=trend).execute(save=False)

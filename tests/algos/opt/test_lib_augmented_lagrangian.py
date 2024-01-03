@@ -25,7 +25,7 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 
 @pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
-def test_kkt_norm_correctly_stored(problem):
+def test_kkt_norm_correctly_stored(problem) -> None:
     """Test that kkt norm is stored at each iteration requiring gradient."""
     problem.preprocess_functions()
     options = {
@@ -84,7 +84,7 @@ parametrized_algo = pytest.mark.parametrize(
 @parametrized_reformulate
 def test_2d_ineq(
     analytical_test_2d_ineq, options, algo, reformulate_constraints_with_slack_var
-):
+) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     problem = analytical_test_2d_ineq.formulation.opt_problem
@@ -112,7 +112,7 @@ def test_2d_ineq(
 
 @parametrized_options
 @parametrized_algo
-def test_2d_eq(analytical_test_2d_eq, options, algo):
+def test_2d_eq(analytical_test_2d_eq, options, algo) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo
@@ -129,7 +129,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo):
 
 @parametrized_options
 @parametrized_algo
-def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo):
+def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo
@@ -162,7 +162,7 @@ def test_2d_mixed(
     algo,
     reformulate_constraints_with_slack_var,
     subsolver_constraints,
-):
+) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo

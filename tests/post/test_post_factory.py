@@ -32,18 +32,18 @@ POWER2 = join(DIRNAME, "power2_opt_pb.h5")
 class TestPostFactory(unittest.TestCase):
     """"""
 
-    def test_is_available(self):
+    def test_is_available(self) -> None:
         """"""
         factory = PostFactory()
         assert factory.is_available("OptHistoryView")
         assert not factory.is_available("TOTO")
         self.assertRaises(ImportError, factory.create, None, "toto")
 
-    def test_post(self):
+    def test_post(self) -> None:
         available = PostFactory().posts
         assert "GradientSensitivity" in available
         assert "Correlations" in available
 
-    def test_execute_from_hdf(self):
+    def test_execute_from_hdf(self) -> None:
         post = PostFactory().execute(POWER2, "OptHistoryView", save=False)
         assert isinstance(post, OptHistoryView)

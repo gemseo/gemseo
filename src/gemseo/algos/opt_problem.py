@@ -372,13 +372,14 @@ class OptimizationProblem(BaseProblem):
         self.__eval_obs_jac = False
         self.__observable_names = set()
 
-    def __raise_exception_if_functions_are_already_preprocessed(self):
+    def __raise_exception_if_functions_are_already_preprocessed(self) -> None:
         """Raise an exception if the function have already been pre-processed."""
         if self.__functions_are_preprocessed:
-            raise RuntimeError(
+            msg = (
                 "The parallel differentiation cannot be changed "
                 "because the functions have already been pre-processed."
             )
+            raise RuntimeError(msg)
 
     def is_max_iter_reached(self) -> bool:
         """Check if the maximum amount of iterations has been reached.
@@ -615,10 +616,11 @@ class OptimizationProblem(BaseProblem):
         n_constraints = len(self.constraints)
         self.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
         if constraint_index >= n_constraints:
-            raise KeyError(
+            msg = (
                 f"The index of the constraint ({constraint_index}) must be lower "
                 f"than the number of constraints ({n_constraints})."
             )
+            raise KeyError(msg)
 
         constraint = self.constraints[constraint_index]
         if callable(method):
@@ -1095,9 +1097,8 @@ class OptimizationProblem(BaseProblem):
             TypeError: If the function is not an :class:`.MDOFunction`.
         """
         if not isinstance(input_function, MDOFunction):
-            raise TypeError(
-                "Optimization problem functions must be instances of MDOFunction"
-            )
+            msg = "Optimization problem functions must be instances of MDOFunction"
+            raise TypeError(msg)
 
     def get_eq_cstr_total_dim(self) -> int:
         """Retrieve the total dimension of the equality constraints.
@@ -1141,10 +1142,11 @@ class OptimizationProblem(BaseProblem):
         n_cstr = 0
         for constraint in self.constraints:
             if not constraint.dim:
-                raise ValueError(
+                msg = (
                     "Constraint dimension not available yet, "
                     f"please call function {constraint} once"
                 )
+                raise ValueError(msg)
             if constraint.f_type == cstr_type:
                 n_cstr += constraint.dim
         return n_cstr
@@ -1303,10 +1305,11 @@ class OptimizationProblem(BaseProblem):
                 else:
                     message = "This name is"
 
-                raise ValueError(
+                msg = (
                     f"{message} not among the names of the functions: "
                     f"{pretty_str(unknown_names)}."
                 )
+                raise ValueError(msg)
 
             functions = self.__get_functions(
                 self.objective.name in jacobian_names,
@@ -1603,7 +1606,8 @@ class OptimizationProblem(BaseProblem):
             TypeError: If the original function is not an :class:`.MDOLinearFunction`.
         """
         if not isinstance(orig_func, MDOLinearFunction):
-            raise TypeError("Original function must be linear")
+            msg = "Original function must be linear"
+            raise TypeError(msg)
         design_space = self.design_space
 
         # Get normalization factors and shift
@@ -1649,7 +1653,8 @@ class OptimizationProblem(BaseProblem):
             ValueError: When the current value is not defined.
         """
         if not self.design_space.has_current_value():
-            raise ValueError("The design space has no current value.")
+            msg = "The design space has no current value."
+            raise ValueError(msg)
 
         if self.differentiation_method not in set(self.ApproximationMode):
             return
@@ -1672,7 +1677,8 @@ class OptimizationProblem(BaseProblem):
             ValueError: If the objective function is missing.
         """
         if self.objective is None:
-            raise ValueError("Missing objective function in OptimizationProblem")
+            msg = "Missing objective function in OptimizationProblem"
+            raise ValueError(msg)
         self.design_space.check()
         self.__check_differentiation_method()
         self.check_format(self.objective)
@@ -1687,13 +1693,14 @@ class OptimizationProblem(BaseProblem):
         for cstr in self.constraints:
             self.check_format(cstr)
             if not cstr.is_constraint():
-                raise ValueError(
+                msg = (
                     f"Constraint type is not eq or ineq !, got {cstr.f_type}"
                     " instead "
                 )
+                raise ValueError(msg)
         self.check_format(self.objective)
 
-    def __check_differentiation_method(self):
+    def __check_differentiation_method(self) -> None:
         """Check that the differentiation method is in allowed ones.
 
         Available ones are: :attr:`.OptimizationProblem.DifferentiationMethod`.
@@ -1706,7 +1713,8 @@ class OptimizationProblem(BaseProblem):
         """
         if self.differentiation_method == self.ApproximationMode.COMPLEX_STEP:
             if self.fd_step == 0:
-                raise ValueError("ComplexStep step is null!")
+                msg = "ComplexStep step is null!"
+                raise ValueError(msg)
             if self.fd_step.imag != 0:
                 LOGGER.warning(
                     "Complex step method has an imaginary "
@@ -1716,7 +1724,8 @@ class OptimizationProblem(BaseProblem):
                 self.fd_step = self.fd_step.imag
         elif self.differentiation_method == self.ApproximationMode.FINITE_DIFFERENCES:
             if self.fd_step == 0:
-                raise ValueError("Finite differences step is null!")
+                msg = "Finite differences step is null!"
+                raise ValueError(msg)
             if self.fd_step.imag != 0:
                 LOGGER.warning(
                     "Finite differences method has a complex "
@@ -2007,7 +2016,8 @@ class OptimizationProblem(BaseProblem):
             ValueError: When the optimization database is empty.
         """
         if not self.database:
-            raise ValueError("Optimization history is empty")
+            msg = "Optimization history is empty"
+            raise ValueError(msg)
         feas_x, feas_f = self.get_feasible_points()
 
         if not feas_x:
@@ -2035,7 +2045,8 @@ class OptimizationProblem(BaseProblem):
             ValueError: When the optimization database is empty.
         """
         if not self.database:
-            raise ValueError("Optimization history is empty")
+            msg = "Optimization history is empty"
+            raise ValueError(msg)
         x_last = self.database.get_x_vect(-1)
         f_last = self.database.get_function_value(self.objective.name, -1)
         is_feas = self.is_point_feasible(self.database[x_last], self.constraints)
@@ -2535,7 +2546,8 @@ class OptimizationProblem(BaseProblem):
             return obj_dim == 1
         n_outvars = len(self.objective.output_names)
         if n_outvars == 0:
-            raise ValueError("Cannot determine the dimension of the objective.")
+            msg = "Cannot determine the dimension of the objective."
+            raise ValueError(msg)
         return n_outvars == 1
 
     def get_functions_dimensions(
@@ -2576,7 +2588,8 @@ class OptimizationProblem(BaseProblem):
                 function = func
                 break
         else:
-            raise ValueError(f"The problem has no function named {name}.")
+            msg = f"The problem has no function named {name}."
+            raise ValueError(msg)
 
         # Get the dimension of the function output
         if function.dim:
@@ -2590,7 +2603,8 @@ class OptimizationProblem(BaseProblem):
 
             return atleast_1d(function(current_variables)).size
 
-        raise RuntimeError(f"The output dimension of function {name} is not available.")
+        msg = f"The output dimension of function {name} is not available."
+        raise RuntimeError(msg)
 
     def get_number_of_unsatisfied_constraints(
         self,
@@ -2744,10 +2758,11 @@ class OptimizationProblem(BaseProblem):
             ValueError: If the name is not among the names of the available functions.
         """
         if name not in names:
-            raise ValueError(
+            msg = (
                 f"{name} is not among the names of the {group_name}: "
                 f"{pretty_str(names)}."
             )
+            raise ValueError(msg)
 
         if from_original_functions and self.__functions_are_preprocessed:
             functions = original_functions

@@ -24,21 +24,21 @@ from gemseo.problems.scalable.parametric.core.default_settings import (
 from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_P_I
 
 
-def test_default_n_disciplines():
+def test_default_n_disciplines() -> None:
     """Check DEFAULT_N_DISCIPLINES."""
     assert DEFAULT_N_DISCIPLINES == 2
 
 
-def test_default_d_0():
+def test_default_d_0() -> None:
     """Check DEFAULT_D_0."""
     assert DEFAULT_D_0 == 1
 
 
-def test_default_d_i():
+def test_default_d_i() -> None:
     """Check DEFAULT_D_I."""
     assert DEFAULT_D_I == 1
 
 
-def test_default_p_i():
+def test_default_p_i() -> None:
     """Check DEFAULT_P_I."""
     assert DEFAULT_P_I == 1

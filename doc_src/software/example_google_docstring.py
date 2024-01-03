@@ -85,7 +85,8 @@ def example_function(
         ValueError: If `arg2` is equal to `arg1`.
     """
     if arg1 == arg2:
-        raise ValueError("arg1 may not be equal to arg2")
+        msg = "arg1 may not be equal to arg2"
+        raise ValueError(msg)
     return True
 
 

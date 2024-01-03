@@ -67,7 +67,7 @@ def dataset() -> Dataset:
 @image_comparison(None)
 def test_plot(
     dataset, kwargs, properties, baseline_images, pyplot_close_all, fig_and_axes
-):
+) -> None:
     """Test images created by Radar._plot against references."""
 
     plot = Radar(dataset, classifier="specy")
@@ -79,7 +79,7 @@ def test_plot(
     plot.execute(save=False, fig=fig, axes=axes)
 
 
-def test_classifier_error(dataset):
+def test_classifier_error(dataset) -> None:
     """Check the error returned when setting a classifier that is not a variable."""
     with pytest.raises(
         ValueError,

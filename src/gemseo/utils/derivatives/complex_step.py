@@ -105,10 +105,11 @@ class ComplexStep(GradientApproximator):
         **kwargs: Any,
     ) -> ndarray:
         if norm(x_vect.imag) != 0.0:
-            raise ValueError(
+            msg = (
                 "Impossible to check the gradient at a complex "
                 "point using the complex step method."
             )
+            raise ValueError(msg)
         return super().f_gradient(x_vect, step=step, x_indices=x_indices, **kwargs)
 
     def _compute_parallel_grad(

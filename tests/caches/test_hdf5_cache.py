@@ -47,7 +47,7 @@ def create_cache(hdf_node_path="Dummy") -> HDF5Cache:
     )
 
 
-def test_runtimerror(tmp_wd):
+def test_runtimerror(tmp_wd) -> None:
     h_cache1 = create_cache()
     h_cache2 = create_cache()
     data = {"a": ones(1)}
@@ -61,7 +61,7 @@ def test_runtimerror(tmp_wd):
         )
 
 
-def test_hasgroup(tmp_wd):
+def test_hasgroup(tmp_wd) -> None:
     cache = create_cache()
     cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
     h5file_sing = cache._HDF5Cache__hdf_file
@@ -87,7 +87,7 @@ def test_hasgroup(tmp_wd):
     )
 
 
-def test_repr(tmp_wd):
+def test_repr(tmp_wd) -> None:
     """Check string representation."""
     cache = create_cache()
     cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
@@ -103,7 +103,7 @@ def test_repr(tmp_wd):
     assert repr(cache) == str(cache) == expected
 
 
-def test_repr_html(tmp_wd):
+def test_repr_html(tmp_wd) -> None:
     """Check HDF5Cache._repr_html."""
     cache = create_cache()
     cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
@@ -122,7 +122,7 @@ def test_repr_html(tmp_wd):
     )
 
 
-def test_cache_array_str(tmp_wd):
+def test_cache_array_str(tmp_wd) -> None:
     """Test a cache with arrays of strings.
 
     Args:
@@ -136,7 +136,7 @@ def test_cache_array_str(tmp_wd):
     assert cache.last_entry[1] == outputs
 
 
-def test_hdf_node_path(tmp_wd):
+def test_hdf_node_path(tmp_wd) -> None:
     """Check the property hdf_node_path."""
     assert create_cache().hdf_node_path == "Dummy"
     assert create_cache("foo").hdf_node_path == "foo"

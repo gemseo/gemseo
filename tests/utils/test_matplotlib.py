@@ -29,7 +29,7 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 @pytest.mark.parametrize("file_path", [None, "file_name.pdf"])
 @pytest.mark.parametrize("show", [True, False])
 @pytest.mark.parametrize("fig_size", [(10, 10), None])
-def test_process(tmp_wd, pyplot_close_all, file_path, show, fig_size):
+def test_process(tmp_wd, pyplot_close_all, file_path, show, fig_size) -> None:
     """Verify that a Matplotlib figure is correctly saved."""
     fig, _ = plt.subplots()
 

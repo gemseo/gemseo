@@ -103,7 +103,7 @@ def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
     return chain, indata
 
 
-def test_set_statuses(tmp_wd):
+def test_set_statuses(tmp_wd) -> None:
     """Test the setting of the statuses."""
     chain = MDOChain([
         SobieskiAerodynamics(),
@@ -115,20 +115,20 @@ def test_set_statuses(tmp_wd):
     assert chain.disciplines[0].status == "FAILED"
 
 
-def test_get_sub_disciplines():
+def test_get_sub_disciplines() -> None:
     """Test the get_sub_disciplines method."""
     chain = MDOChain([SobieskiAerodynamics()])
     assert len(chain.disciplines[0].get_sub_disciplines()) == 0
 
 
-def test_instantiate_grammars():
+def test_instantiate_grammars() -> None:
     """Test the instantiation of the grammars."""
     chain = MDOChain([SobieskiAerodynamics()])
     chain.disciplines[0]._instantiate_grammars(None, None, grammar_type="JSONGrammar")
     assert isinstance(chain.disciplines[0].input_grammar, JSONGrammar)
 
 
-def test_execute_status_error(sobieski_chain):
+def test_execute_status_error(sobieski_chain) -> None:
     """Test the execution with a failed status."""
     chain, indata = sobieski_chain
     chain.set_disciplines_statuses("FAILED")
@@ -136,7 +136,7 @@ def test_execute_status_error(sobieski_chain):
         chain.execute(indata)
 
 
-def test_check_input_data_exception_chain(sobieski_chain):
+def test_check_input_data_exception_chain(sobieski_chain) -> None:
     """Test the check input data exception."""
     chain, indata = sobieski_chain
     del indata["x_1"]
@@ -147,7 +147,7 @@ def test_check_input_data_exception_chain(sobieski_chain):
 @pytest.mark.parametrize(
     "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
 )
-def test_check_input_data_exception(grammar_type):
+def test_check_input_data_exception(grammar_type) -> None:
     """Test the check input data exception."""
     if grammar_type == MDODiscipline.GrammarType.SIMPLE:
         struct = SobieskiStructureSG()
@@ -168,7 +168,7 @@ def test_check_input_data_exception(grammar_type):
         struct.execute(indata)
 
 
-def test_outputs():
+def test_outputs() -> None:
     """Test the execution of a MDODiscipline."""
     struct = SobieskiStructure()
     with pytest.raises(InvalidDataError):
@@ -179,7 +179,7 @@ def test_outputs():
     assert len(in_array) == 13
 
 
-def test_get_outputs_by_name_exception(sobieski_chain):
+def test_get_outputs_by_name_exception(sobieski_chain) -> None:
     """Test get_input_by_name with incorrect output var."""
     chain, indata = sobieski_chain
     chain.execute(indata)
@@ -187,14 +187,14 @@ def test_get_outputs_by_name_exception(sobieski_chain):
         chain.get_outputs_by_name("toto")
 
 
-def test_get_inputs_by_name_exception(sobieski_chain):
+def test_get_inputs_by_name_exception(sobieski_chain) -> None:
     """Test get_input_by_name with incorrect input var."""
     chain, _ = sobieski_chain
     with pytest.raises(ValueError):
         chain.get_inputs_by_name("toto")
 
 
-def test_get_input_data(sobieski_chain):
+def test_get_input_data(sobieski_chain) -> None:
     """Test get_input_data."""
     chain, indata_ref = sobieski_chain
     chain.execute(indata_ref)
@@ -202,7 +202,7 @@ def test_get_input_data(sobieski_chain):
     assert sorted(indata.keys()) == sorted(indata_ref.keys())
 
 
-def test_get_local_data_by_name_exception(sobieski_chain):
+def test_get_local_data_by_name_exception(sobieski_chain) -> None:
     """Test that an exception is raised when the var is not in the grammar."""
     chain, indata = sobieski_chain
     chain.execute(indata)
@@ -210,21 +210,21 @@ def test_get_local_data_by_name_exception(sobieski_chain):
         chain.get_local_data_by_name("toto")
 
 
-def test_reset_statuses_for_run_error(sobieski_chain):
+def test_reset_statuses_for_run_error(sobieski_chain) -> None:
     """Test the reset of the discipline status."""
     chain, _ = sobieski_chain
     chain.set_disciplines_statuses("FAILED")
     chain.reset_statuses_for_run()
 
 
-def test_get_data_list_from_dict_error(sobieski_chain):
+def test_get_data_list_from_dict_error(sobieski_chain) -> None:
     """Test exception from get_data_list_from_dict."""
     _, indata = sobieski_chain
     with pytest.raises(TypeError):
         MDODiscipline.get_data_list_from_dict(2, indata)
 
 
-def test_check_jac_fdapprox():
+def test_check_jac_fdapprox() -> None:
     """Test the finite difference approximation."""
     aero = SobieskiAerodynamics("complex128")
     inpts = aero.default_inputs
@@ -236,7 +236,7 @@ def test_check_jac_fdapprox():
     aero.check_jacobian(inpts)
 
 
-def test_check_jac_csapprox():
+def test_check_jac_csapprox() -> None:
     """Test the complex step approximation."""
     aero = SobieskiAerodynamics("complex128")
     aero.linearization_mode = aero.ApproximationMode.COMPLEX_STEP
@@ -244,7 +244,7 @@ def test_check_jac_csapprox():
     aero.check_jacobian()
 
 
-def test_check_jac_approx_plot(tmp_wd, pyplot_close_all):
+def test_check_jac_approx_plot(tmp_wd, pyplot_close_all) -> None:
     """Test the generation of the gradient plot."""
     aero = SobieskiAerodynamics()
     aero.linearize(compute_all_jacobians=True)
@@ -253,7 +253,7 @@ def test_check_jac_approx_plot(tmp_wd, pyplot_close_all):
     assert os.path.exists(file_path)
 
 
-def test_check_lin_threshold():
+def test_check_lin_threshold() -> None:
     """Check the linearization threshold."""
     aero = SobieskiAerodynamics()
     problem = SobieskiProblem()
@@ -261,7 +261,7 @@ def test_check_lin_threshold():
     aero.check_jacobian(indata, threshold=1e-50)
 
 
-def test_input_exist():
+def test_input_exist() -> None:
     """Test is_input_existing."""
     sr = SobieskiAerodynamics()
     problem = SobieskiProblem()
@@ -270,7 +270,7 @@ def test_input_exist():
     assert not sr.is_input_existing("bidon")
 
 
-def test_get_all_inputs_outputs_name():
+def test_get_all_inputs_outputs_name() -> None:
     """Test get_all_input_outputs_name method."""
     aero = SobieskiAerodynamics()
     problem = SobieskiProblem()
@@ -279,7 +279,7 @@ def test_get_all_inputs_outputs_name():
         assert data_name in aero.get_input_data_names()
 
 
-def test_get_all_inputs_outputs():
+def test_get_all_inputs_outputs() -> None:
     """Test get all_inputs_outputs method."""
     aero = SobieskiAerodynamics()
     problem = SobieskiProblem()
@@ -295,7 +295,7 @@ def test_get_all_inputs_outputs():
     assert len(arr) > 0
 
 
-def test_serialize_deserialize(tmp_wd):
+def test_serialize_deserialize(tmp_wd) -> None:
     """Test the serialization/deserialization method."""
     aero = SobieskiAerodynamics()
     aero.data_processor = ComplexDataProcessor()
@@ -324,7 +324,7 @@ def test_serialize_deserialize(tmp_wd):
     assert ok
 
 
-def test_serialize_run_deserialize(tmp_wd):
+def test_serialize_run_deserialize(tmp_wd) -> None:
     """Test serialization, run and deserialization."""
     aero = SobieskiAerodynamics()
     out_file = "sellar1.o"
@@ -343,7 +343,7 @@ def test_serialize_run_deserialize(tmp_wd):
         assert (v == saero_u.local_data[k]).all()
 
 
-def test_serialize_hdf_cache(tmp_wd):
+def test_serialize_hdf_cache(tmp_wd) -> None:
     """Test the serialization into a HDF5 cache."""
     aero = SobieskiAerodynamics()
     cache_hdf_file = "aero_cache.h5"
@@ -355,7 +355,7 @@ def test_serialize_hdf_cache(tmp_wd):
     assert saero_u.cache.last_entry.outputs["y_2"] is not None
 
 
-def test_data_processor():
+def test_data_processor() -> None:
     """Test the data processor."""
     aero = SobieskiAerodynamics()
     input_data = SobieskiProblem().get_default_inputs()
@@ -370,7 +370,7 @@ def test_data_processor():
         assert (out_data2[k] == v).all()
 
 
-def test_diff_inputs_outputs():
+def test_diff_inputs_outputs() -> None:
     """Test the differentiation w.r.t inputs and outputs."""
     d = MDODiscipline()
     with pytest.raises(
@@ -388,39 +388,39 @@ def test_diff_inputs_outputs():
     d.add_differentiated_inputs()
 
 
-def test_run():
+def test_run() -> None:
     """Test the execution of a abstract MDODiscipline."""
     d = MDODiscipline()
     with pytest.raises(NotImplementedError):
         d._run()
 
 
-def test_load_default_inputs():
+def test_load_default_inputs() -> None:
     """Test the load of the default inputs."""
     d = MDODiscipline()
     with pytest.raises(TypeError):
         d._filter_inputs(["toto"])
 
 
-def test_linearize_errors():
+def test_linearize_errors() -> None:
     """Test the exceptions and errors during discipline linearization."""
 
     class LinDisc0(MDODiscipline):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
     LinDisc0()._compute_jacobian()
 
     class LinDisc(MDODiscipline):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.input_grammar.update_from_names(["x"])
             self.output_grammar.update_from_names(["y"])
 
-        def _run(self):
+        def _run(self) -> None:
             self.local_data["y"] = array([2.0])
 
-        def _compute_jacobian(self, inputs=None, outputs=None):
+        def _compute_jacobian(self, inputs=None, outputs=None) -> None:
             self._init_jacobian()
             self.jac = {"y": {"x": array([0.0])}}
 
@@ -442,7 +442,7 @@ def test_linearize_errors():
 
     sm = SobieskiMission()
 
-    def _compute_jacobian(inputs=None, outputs=None):
+    def _compute_jacobian(inputs=None, outputs=None) -> None:
         SobieskiMission._compute_jacobian(sm, inputs=inputs, outputs=outputs)
         sm.jac["y_4"]["x_shared"] += 3.0
 
@@ -452,7 +452,7 @@ def test_linearize_errors():
     assert not success
 
 
-def test_check_jacobian_errors():
+def test_check_jacobian_errors() -> None:
     """Test the errors raised during check_jacobian."""
     sm = SobieskiMission()
     with pytest.raises(ValueError):
@@ -467,13 +467,13 @@ def test_check_jacobian_errors():
     sm._check_jacobian_shape(sm.get_input_data_names(), sm.get_output_data_names())
 
 
-def test_check_jacobian():
+def test_check_jacobian() -> None:
     """Test the check_jacobian method."""
     sm = SobieskiMission()
     sm.execute()
     sm._compute_jacobian()
 
-    def _compute_jacobian(inputs=None, outputs=None):
+    def _compute_jacobian(inputs=None, outputs=None) -> None:
         SobieskiMission._compute_jacobian(sm, inputs=inputs, outputs=outputs)
         del sm.jac["y_4"]
 
@@ -484,7 +484,7 @@ def test_check_jacobian():
 
     sm2 = SobieskiMission()
 
-    def _compute_jacobian2(inputs=None, outputs=None):
+    def _compute_jacobian2(inputs=None, outputs=None) -> None:
         SobieskiMission._compute_jacobian(sm2, inputs=inputs, outputs=outputs)
         del sm2.jac["y_4"]["x_shared"]
 
@@ -493,12 +493,12 @@ def test_check_jacobian():
         sm2.linearize(compute_all_jacobians=True)
 
 
-def test_check_jacobian_2():
+def test_check_jacobian_2() -> None:
     """Test check_jacobian."""
     x = array([1.0, 2.0])
 
     class LinDisc(MDODiscipline):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.input_grammar.update_from_names(["x"])
             self.output_grammar.update_from_names(["y"])
@@ -506,10 +506,10 @@ def test_check_jacobian_2():
             self.jac_key = "x"
             self.jac_len = 2
 
-        def _run(self):
+        def _run(self) -> None:
             self.local_data["y"] = array([2.0])
 
-        def _compute_jacobian(self, inputs=None, outputs=None):
+        def _compute_jacobian(self, inputs=None, outputs=None) -> None:
             self._init_jacobian()
             self.jac = {"y": {self.jac_key: array([[0.0] * self.jac_len])}}
 
@@ -532,13 +532,13 @@ def test_check_jacobian_2():
         disc.linearize({"x": x}, compute_all_jacobians=True)
 
 
-def test_check_jacobian_parallel_fd():
+def test_check_jacobian_parallel_fd() -> None:
     """Test check_jacobian in parallel."""
     sm = SobieskiMission()
     sm.check_jacobian(step=1e-6, threshold=1e-6, parallel=True, n_processes=6)
 
 
-def test_check_jacobian_parallel_cplx():
+def test_check_jacobian_parallel_cplx() -> None:
     """Test check_jacobian in parallel with complex-step."""
     sm = SobieskiMission()
     sm.check_jacobian(
@@ -550,11 +550,11 @@ def test_check_jacobian_parallel_cplx():
     )
 
 
-def test_execute_rerun_errors():
+def test_execute_rerun_errors() -> None:
     """Test the execution and errors during re-run of MDODiscipline."""
 
     class MyDisc(MDODiscipline):
-        def _run(self):
+        def _run(self) -> None:
             self.local_data["b"] = array([1.0])
 
     d = MyDisc()
@@ -575,7 +575,7 @@ def test_execute_rerun_errors():
         d.execute({"a": [2]})
 
 
-def test_cache():
+def test_cache() -> None:
     """Test the MDODiscipline cache."""
     sm = SobieskiMission(enable_delay=0.1)
     sm.cache_tol = 1e-6
@@ -593,7 +593,7 @@ def test_cache():
     assert sm.exec_time == 1.0
 
 
-def test_cache_h5(tmp_wd):
+def test_cache_h5(tmp_wd) -> None:
     """Test the HDF5 cache."""
     sm = SobieskiMission(enable_delay=0.1)
     hdf_file = sm.name + ".hdf5"
@@ -616,7 +616,7 @@ def test_cache_h5(tmp_wd):
         sm.set_cache_policy(cache_type="toto")
 
 
-def test_cache_h5_inpts(tmp_wd):
+def test_cache_h5_inpts(tmp_wd) -> None:
     """Test the HD5 cache for inputs."""
     sm = SobieskiMission()
     hdf_file = sm.name + ".hdf5"
@@ -630,7 +630,7 @@ def test_cache_h5_inpts(tmp_wd):
     assert (sm.local_data["y_4"] == out_ref).all()
 
 
-def test_cache_memory_inpts():
+def test_cache_memory_inpts() -> None:
     """Test the CacheType.MEMORY_FULL."""
     sm = SobieskiMission()
     sm.set_cache_policy(sm.CacheType.MEMORY_FULL)
@@ -643,7 +643,7 @@ def test_cache_memory_inpts():
     assert (sm.local_data["y_4"] == out_ref).all()
 
 
-def test_cache_h5_jac(tmp_wd):
+def test_cache_h5_jac(tmp_wd) -> None:
     """Test the HDF5 cache for the Jacobian."""
     sm = SobieskiMission()
     hdf_file = sm.name + ".hdf5"
@@ -673,7 +673,7 @@ def test_cache_h5_jac(tmp_wd):
     sm.cache = HDF5Cache(hdf_file_path=hdf_file, hdf_node_path=sm.name)
 
 
-def test_replace_h5_cache(tmp_wd):
+def test_replace_h5_cache(tmp_wd) -> None:
     """Check that changing the HDF5 cache is correctly taken into account."""
     sm = SobieskiMission()
     hdf_file_1 = sm.name + "_1.hdf5"
@@ -683,12 +683,12 @@ def test_replace_h5_cache(tmp_wd):
     assert sm.cache.hdf_file.hdf_file_path == hdf_file_2
 
 
-def test_cache_run_and_linearize():
+def test_cache_run_and_linearize() -> None:
     """Check that the cache is filled with the Jacobian during linearization."""
     sm = SobieskiMission()
     run_orig = sm._run
 
-    def run_and_lin():
+    def run_and_lin() -> None:
         run_orig()
         sm._compute_jacobian()
         sm._is_linearized = True
@@ -703,7 +703,7 @@ def test_cache_run_and_linearize():
     assert sm.n_calls_linearize == 0
 
 
-def test_jac_approx_mix_fd():
+def test_jac_approx_mix_fd() -> None:
     """Check the complex step method with parallel=True."""
     sm = SobieskiMission()
     sm.set_jacobian_approximation(
@@ -714,7 +714,7 @@ def test_jac_approx_mix_fd():
     assert sm.check_jacobian(parallel=True, n_processes=4, threshold=1e-4)
 
 
-def test_jac_set_optimal_fd_step_compute_all_jacobians():
+def test_jac_set_optimal_fd_step_compute_all_jacobians() -> None:
     """Test the computation of the optimal time step with compute_all_jacobians=True."""
     sm = SobieskiMission()
     sm.set_jacobian_approximation()
@@ -722,7 +722,7 @@ def test_jac_set_optimal_fd_step_compute_all_jacobians():
     assert sm.check_jacobian(n_processes=1, threshold=1e-4)
 
 
-def test_jac_set_optimal_fd_step_input_output():
+def test_jac_set_optimal_fd_step_input_output() -> None:
     """Test the computation of the optimal time step with compute_all_jacobians=True."""
     sm = SobieskiMission()
     sm.set_jacobian_approximation()
@@ -730,7 +730,7 @@ def test_jac_set_optimal_fd_step_input_output():
     assert sm.check_jacobian(n_processes=1, threshold=1e-4)
 
 
-def test_jac_set_optimal_fd_step_no_jac_approx():
+def test_jac_set_optimal_fd_step_no_jac_approx() -> None:
     """Test that the optimal_fd_step cannot be called before settijng the approx
     method."""
     sm = SobieskiMission()
@@ -739,7 +739,7 @@ def test_jac_set_optimal_fd_step_no_jac_approx():
         sm.set_optimal_fd_step(compute_all_jacobians=True)
 
 
-def test_jac_cache_trigger_shapecheck():
+def test_jac_cache_trigger_shapecheck() -> None:
     """Test the check of cache shape."""
     # if cache is loaded and jacobian has already been computed for given i/o
     # and jacobian is called again but with new i/o
@@ -761,7 +761,7 @@ def test_jac_cache_trigger_shapecheck():
     aero.linearize(inpts, execute=False)
 
 
-def test_is_linearized():
+def test_is_linearized() -> None:
     """Test that MDODiscipline can be linearized."""
     # Test at the jacobian is not computed if _is_linearized is
     # set to true by the discipline
@@ -790,7 +790,7 @@ def test_is_linearized():
     assert aero2.n_calls_linearize == 0
 
 
-def test_init_jacobian_with_incorrect_type():
+def test_init_jacobian_with_incorrect_type() -> None:
     """Test the initialization of the jacobian matrix with incorrect type."""
 
     def myfunc(x=1.0, y=2.0):
@@ -805,7 +805,7 @@ def test_init_jacobian_with_incorrect_type():
 
 @pytest.mark.parametrize("init_method", MDODiscipline.InitJacobianType)
 @pytest.mark.parametrize("fill_missing_keys", [True, False])
-def test_init_jacobian(init_method, fill_missing_keys):
+def test_init_jacobian(init_method, fill_missing_keys) -> None:
     """Test the initialization of the jacobian matrix."""
 
     def myfunc(x=1.0, y=2.0):
@@ -835,7 +835,7 @@ def test_init_jacobian(init_method, fill_missing_keys):
         assert disc.jac["z"]["x"].size == 0
 
 
-def test_repr_str():
+def test_repr_str() -> None:
     """Test the representation of a MDODiscipline."""
 
     def myfunc(x=1, y=2):
@@ -847,7 +847,7 @@ def test_repr_str():
     assert repr(disc) == "myfunc\n   Inputs: x, y\n   Outputs: z"
 
 
-def test_activate_counters():
+def test_activate_counters() -> None:
     """Check that the discipline counters are active by default."""
     discipline = MDODiscipline()
     assert discipline.n_calls == 0
@@ -861,7 +861,7 @@ def test_activate_counters():
     assert discipline.exec_time > 0
 
 
-def test_deactivate_counters():
+def test_deactivate_counters() -> None:
     """Check that the discipline counters are set to None when deactivated."""
     activate_counters = MDODiscipline.activate_counters
 
@@ -890,7 +890,7 @@ def test_deactivate_counters():
     MDODiscipline.activate_counters = activate_counters
 
 
-def test_cache_none():
+def test_cache_none() -> None:
     """Check that the discipline cache can be deactivated."""
     discipline = MDODiscipline(cache_type=MDODiscipline.CacheType.NONE)
     assert discipline.activate_cache is True
@@ -908,7 +908,7 @@ def test_cache_none():
     MDODiscipline.activate_cache = True
 
 
-def test_grammar_inheritance():
+def test_grammar_inheritance() -> None:
     """Check that disciplines based on JSON grammar files inherit these files."""
 
     class NewSellar1(Sellar1):
@@ -921,7 +921,7 @@ def test_grammar_inheritance():
     class NewScenario(Scenario):
         """A discipline whose parent forces its children to use IO grammar files."""
 
-        def _init_algo_factory(self):
+        def _init_algo_factory(self) -> None:
             pass
 
     # An error is raised as Scenario does not provide JSON grammar files.
@@ -946,7 +946,9 @@ def test_grammar_inheritance():
         ("class_gd", "instance_gd", "out", Path("instance_gd") / "foo_output.json"),
     ],
 )
-def test_get_grammar_file_path(grammar_directory, comp_dir, in_or_out, expected):
+def test_get_grammar_file_path(
+    grammar_directory, comp_dir, in_or_out, expected
+) -> None:
     """Check the grammar file path."""
     original_grammar_directory = Sellar1.GRAMMAR_DIRECTORY
     Sellar1.GRAMMAR_DIRECTORY = grammar_directory
@@ -967,7 +969,7 @@ def test_get_grammar_file_path(grammar_directory, comp_dir, in_or_out, expected)
 #         disc.execute()
 
 
-def test_activate_checks():
+def test_activate_checks() -> None:
     out_ref = SobieskiMission().execute()["y_4"]
     disc = SobieskiMission()
     disc.activate_input_data_check = False
@@ -975,7 +977,7 @@ def test_activate_checks():
     assert out_ref == disc.execute()["y_4"]
 
 
-def test_no_cache():
+def test_no_cache() -> None:
     disc = SobieskiMission()
     disc.execute()
     disc.execute()
@@ -998,7 +1000,7 @@ def test_no_cache():
     ("recursive", "expected"),
     [(False, {"d1", "d2", "chain1"}), (True, {"d1", "d2", "d3"})],
 )
-def test_get_sub_disciplines_recursive(recursive, expected):
+def test_get_sub_disciplines_recursive(recursive, expected) -> None:
     """Test the recursive option of get_sub_disciplines.
 
     Args:
@@ -1068,7 +1070,7 @@ def test_get_sub_disciplines_recursive(recursive, expected):
 )
 def test_add_differentiated_io_non_numeric(
     inputs, outputs, grammar_type, expected_diff_inputs, expected_diff_outputs
-):
+) -> None:
     """Check that non-numeric i/o are ignored in add_differentiated_inputs/outputs.
 
     If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.JSON` and
@@ -1094,7 +1096,7 @@ def test_add_differentiated_io_non_numeric(
     assert discipline._differentiated_outputs == expected_diff_outputs
 
 
-def test_hdf5cache_twice(tmp_wd, caplog):
+def test_hdf5cache_twice(tmp_wd, caplog) -> None:
     """Check what happens when the cache policy is set twice at HDF5Cache."""
     discipline = MDODiscipline()
     discipline.set_cache_policy(
@@ -1140,7 +1142,7 @@ def observer() -> Observer:
     return Observer()
 
 
-def test_statuses(observer):
+def test_statuses(observer) -> None:
     """Verify the successive status."""
     disc = Sellar1()
     disc.add_status_observer(observer)
@@ -1175,7 +1177,7 @@ def test_statuses(observer):
     ]
 
 
-def test_statuses_linearize(observer):
+def test_statuses_linearize(observer) -> None:
     """Verify the successive status for linearize alone."""
     disc = Sellar1()
     disc.add_status_observer(observer)
@@ -1207,7 +1209,7 @@ def self_coupled_disc() -> MDODiscipline:
         ("x", "outputs", array([2])),
     ],
 )
-def test_self_coupled(self_coupled_disc, name, group, value):
+def test_self_coupled(self_coupled_disc, name, group, value) -> None:
     """Check that the value of each variable is equal to the prescribed value, and that
     each variable belongs to the prescribed group."""
     self_coupled_disc.execute()
@@ -1223,7 +1225,7 @@ def test_self_coupled(self_coupled_disc, name, group, value):
     assert len(d.get_group_names(name)) > 1
 
 
-def test_virtual_exe():
+def test_virtual_exe() -> None:
     """Tests the discipline virtual execution."""
     disc_1 = MDODiscipline("d1")
     disc_1.input_grammar.update_from_names(["x"])
@@ -1252,13 +1254,13 @@ def test_virtual_exe():
 
 
 class DisciplineWithPaths(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
         self.input_grammar.update_from_types({"path": Path})
         self.output_grammar.update_from_types({"out_path": Path})
         self.local_path = Path()
 
-    def _run(self):
+    def _run(self) -> None:
         self.local_data["out_path"] = self.local_data["path"]
 
 
@@ -1277,7 +1279,7 @@ def __is_path_correct(local_path: (Path, PurePosixPath, PureWindowsPath)) -> Non
         assert isinstance(local_path, PurePosixPath)
 
 
-def test_path_serialization(tmp_path):
+def test_path_serialization(tmp_path) -> None:
     """Test the serialization of Paths in disciplines."""
     discipline = DisciplineWithPaths()
     disc_path = tmp_path / "mydisc.pckl"
@@ -1303,7 +1305,7 @@ def test_path_serialization(tmp_path):
     assert isinstance(data["path"], Path)
 
 
-def test_repr_html():
+def test_repr_html() -> None:
     """Check MDODiscipline._repr_html_."""
     assert Sellar1()._repr_html_() == REPR_HTML_WRAPPER.format(
         "Sellar1<br/>"
@@ -1314,7 +1316,7 @@ def test_repr_html():
     )
 
 
-def test_set_cache_policy_to_none():
+def test_set_cache_policy_to_none() -> None:
     """Check that set_cache_policy can use CacheType.NONE as cache_type value."""
     discipline = MDODiscipline()
     assert isinstance(discipline.cache, SimpleCache)

@@ -448,9 +448,8 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                         break
 
         if not_arrays:
-            raise TypeError(
-                f"The coupling variables {sorted(not_arrays)} must be numeric."
-            )
+            msg = f"The coupling variables {sorted(not_arrays)} must be numeric."
+            raise TypeError(msg)
 
     def reset_disciplines_statuses(self) -> None:
         """Reset all the statuses of the disciplines."""

@@ -102,6 +102,5 @@ def main() -> None:
         if args.study_type == "mdo":
             study.generate_xdsm(directory_path, save_pdf=args.save_pdf, show_html=True)
         else:
-            raise ValueError(
-                "The option 'xdsm' is compatible only with the study type 'mdo'."
-            )
+            msg = "The option 'xdsm' is compatible only with the study type 'mdo'."
+            raise ValueError(msg)

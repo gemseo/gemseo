@@ -26,23 +26,23 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
 
-def test_constructor():
+def test_constructor() -> None:
     SensitivityAnalysisFactory()
 
 
-def test_available():
+def test_available() -> None:
     factory = SensitivityAnalysisFactory()
     sensitivity_indices = factory.available_sensitivity_analyses
     assert "MorrisAnalysis" in sensitivity_indices
 
 
-def test_is_available():
+def test_is_available() -> None:
     factory = SensitivityAnalysisFactory()
     assert factory.is_available("MorrisAnalysis")
     assert not factory.is_available("FooAnalysis")
 
 
-def test_create():
+def test_create() -> None:
     discipline = AnalyticDiscipline(
         {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}, name="Ishigami"
     )

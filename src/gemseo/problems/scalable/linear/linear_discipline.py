@@ -89,9 +89,11 @@ class LinearDiscipline(MDODiscipline):
             ValueError: if ``input_names`` or ``output_names`` are empty.
         """  # noqa: D205, D212, D415
         if not input_names:
-            raise ValueError("input_names must not be empty.")
+            msg = "input_names must not be empty."
+            raise ValueError(msg)
         if not output_names:
-            raise ValueError("output_names must not be empty.")
+            msg = "output_names must not be empty."
+            raise ValueError(msg)
         super().__init__(name, grammar_type=grammar_type)
         self.input_names = input_names
         self.output_names = output_names

@@ -144,7 +144,7 @@ def dataset(request) -> Dataset:
     return dataset_factory(*request.param)
 
 
-def test_regression_model():
+def test_regression_model() -> None:
     """Test that by default the computation of the Jacobian raises an error."""
     dataset = dataset_factory(*DATASETS_DESCRIPTIONS[0])
     with (
@@ -159,7 +159,7 @@ def test_regression_model():
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
 @pytest.mark.parametrize("fit_intercept", [True, False])
-def test_linreg(dataset, transformer, fit_intercept):
+def test_linreg(dataset, transformer, fit_intercept) -> None:
     """Test linear regression Jacobians."""
     discipline = SurrogateDiscipline(
         "LinearRegressor",
@@ -173,7 +173,7 @@ def test_linreg(dataset, transformer, fit_intercept):
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
 @pytest.mark.parametrize("fit_intercept", [True, False])
 @pytest.mark.parametrize("degree", arange(1, 5))
-def test_polyreg(dataset, transformer, fit_intercept, degree):
+def test_polyreg(dataset, transformer, fit_intercept, degree) -> None:
     """Test polynomial regression Jacobians."""
     discipline = SurrogateDiscipline(
         "PolynomialRegressor",
@@ -195,7 +195,7 @@ def _der_r3(x, norx, eps):
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
 @pytest.mark.parametrize("function", [*list(RBFRegressor.Function), _r3])
-def test_rbf(dataset, transformer, function):
+def test_rbf(dataset, transformer, function) -> None:
     """Test polynomial regression Jacobians."""
     der_func = _der_r3 if function is _r3 else None
 
@@ -209,7 +209,7 @@ def test_rbf(dataset, transformer, function):
     discipline.check_jacobian()
 
 
-def test_pce(dataset):
+def test_pce(dataset) -> None:
     """Test polynomial regression Jacobians."""
     space = ParameterSpace()
 

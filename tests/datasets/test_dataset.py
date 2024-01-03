@@ -283,7 +283,7 @@ def test_update_data(
     components,
     indices,
     expected_array,
-):
+) -> None:
     dataset_to_update = small_dataset.copy()
     dataset_to_update.update_data(
         update,
@@ -295,7 +295,7 @@ def test_update_data(
     assert (dataset_to_update.to_numpy() == expected_array).all()
 
 
-def test_update_data_errors(dataset):
+def test_update_data_errors(dataset) -> None:
     """Test the ``update_data`` method when inputs are incorrect."""
     dataset_to_update = dataset.copy()
     with pytest.raises(ValueError):
@@ -308,7 +308,7 @@ def test_update_data_errors(dataset):
         )
 
 
-def test_from_array(data):
+def test_from_array(data) -> None:
     """Test the method from_array."""
     dataset = Dataset.from_array(data)
     columns = MultiIndex.from_tuples(
@@ -369,7 +369,7 @@ def test_from_array_with_options(
     variable_names_to_n_components,
     variable_names_to_group_names,
     expected_column_multi_index,
-):
+) -> None:
     """Test the method from_array with its options."""
     dataset = Dataset.from_array(
         data,
@@ -401,7 +401,7 @@ def test_get_normalized_dataset(
     use_min_max,
     center,
     scale,
-):
+) -> None:
     """Check the normalization of a dataset."""
     for group in excluded_group_names:
         excluded_variable_names.extend(io_dataset.get_variable_names(group))
@@ -434,7 +434,7 @@ def test_get_normalized_dataset(
             assert allclose(expected_data, data)
 
 
-def test_transform_data():
+def test_transform_data() -> None:
     """Check the method transform_data."""
     dataset = Dataset()
     dataset.add_variable("x", 1.0, group_name="a")
@@ -494,7 +494,7 @@ def test_add_groups(
     variable_names_to_n_components,
     expected_variable,
     expected_components,
-):
+) -> None:
     """Test ``add_groups``."""
     dataset = Dataset()
     dataset.add_group(group_name, data, variables, variable_names_to_n_components)
@@ -507,7 +507,7 @@ def test_add_groups(
         ).all()
 
 
-def test_add_group_error(dataset):
+def test_add_group_error(dataset) -> None:
     """Test the method add_group with a group already defined."""
     with pytest.raises(
         ValueError, match=re.escape("The group 'parameters' is already defined.")
@@ -516,7 +516,7 @@ def test_add_group_error(dataset):
 
 
 @pytest.mark.parametrize("delimiter", [",", "/"])
-def test_from_csv(tmp_wd, io_dataset, delimiter):
+def test_from_csv(tmp_wd, io_dataset, delimiter) -> None:
     """Test the ``from_csv`` method."""
     io_dataset.to_csv("io_dataset.csv", sep=delimiter, index=False)
     dataset = Dataset.from_csv("io_dataset.csv", delimiter=delimiter)
@@ -531,7 +531,7 @@ def test_from_txt(
     variable_names_to_n_components,
     variable_names_to_group_names,
     expected_column_multi_index,
-):
+) -> None:
     """Test the ``from_txt`` method."""
     dataset = Dataset.from_txt(
         small_file_dataset,
@@ -559,7 +559,7 @@ def test_from_txt(
         ("o1", True, [("g2", "o1", 0), ("g2", "o1", 1)]),
     ],
 )
-def test_get_columns(io_dataset, variables, as_tuple, expected_output):
+def test_get_columns(io_dataset, variables, as_tuple, expected_output) -> None:
     """Test the method get_columns."""
     assert (
         io_dataset.get_columns(variable_names=variables, as_tuple=as_tuple)
@@ -567,18 +567,18 @@ def test_get_columns(io_dataset, variables, as_tuple, expected_output):
     )
 
 
-def test_name_default():
+def test_name_default() -> None:
     """Test the property name with a default value."""
     assert Dataset().name == Dataset.__name__
 
 
-def test_name_custom():
+def test_name_custom() -> None:
     """Test the property name with a custom value."""
     assert Dataset(dataset_name="foo").name == "foo"
 
 
 @pytest.mark.parametrize("reverse_column_order", [False, True])
-def test_variable_names(dataset, reverse_column_order):
+def test_variable_names(dataset, reverse_column_order) -> None:
     """Test the property variable_names."""
     if reverse_column_order:
         # Reverse the column order to check the alphabetical order.
@@ -587,7 +587,7 @@ def test_variable_names(dataset, reverse_column_order):
 
 
 @pytest.mark.parametrize("reverse_column_order", [False, True])
-def test_group_names(dataset, reverse_column_order):
+def test_group_names(dataset, reverse_column_order) -> None:
     """Test the property group_names."""
     if reverse_column_order:
         dataset = dataset[dataset.columns[::-1]]
@@ -595,7 +595,7 @@ def test_group_names(dataset, reverse_column_order):
 
 
 @pytest.mark.parametrize("reverse_column_order", [False, True])
-def test_variable_identifiers(dataset, reverse_column_order):
+def test_variable_identifiers(dataset, reverse_column_order) -> None:
     """Test the property variable_identifiers."""
     if reverse_column_order:
         dataset = dataset[dataset.columns[::-1]]
@@ -605,30 +605,30 @@ def test_variable_identifiers(dataset, reverse_column_order):
     ]
 
 
-def test_variable_names_to_n_components(dataset):
+def test_variable_names_to_n_components(dataset) -> None:
     """Test the property variable_names_to_n_components."""
     assert dataset.variable_names_to_n_components == {"var_1": 1, "var_2": 2}
 
 
-def test_group_names_to_n_components(io_dataset):
+def test_group_names_to_n_components(io_dataset) -> None:
     """Test the property group_names_to_n_components."""
     assert io_dataset.group_names_to_n_components == {"g1": 5, "g2": 2}
 
 
-def test_get_variable_names(dataset):
+def test_get_variable_names(dataset) -> None:
     """Test the method get_variable_names."""
     assert dataset.get_variable_names("parameters") == ["var_1"]
     assert dataset.get_variable_names("foo") == ["var_2"]
     assert dataset.get_variable_names("not_existing_group") == []
 
 
-def test_get_variable_components(dataset):
+def test_get_variable_components(dataset) -> None:
     """Test the method get_variable_components."""
     assert dataset.get_variable_components("parameters", "var_1") == [0]
     assert dataset.get_variable_components("foo", "var_2") == [0, 1]
 
 
-def test_get_variable_components_custom():
+def test_get_variable_components_custom() -> None:
     """Test the method get_variable_components with custom components."""
     dataset = Dataset()
     dataset.add_variable("x", array([[1, 1]]), components=[3, 5])
@@ -636,7 +636,7 @@ def test_get_variable_components_custom():
 
 
 @pytest.mark.parametrize("new_group", ["foo2", ""])
-def test_rename_group(dataset, data, new_group):
+def test_rename_group(dataset, data, new_group) -> None:
     """The the method rename_group."""
     dataset_to_update = dataset.copy()
     dataset_to_update.rename_group("parameters", new_group)
@@ -649,7 +649,7 @@ def test_rename_group(dataset, data, new_group):
     assert_frame_equal(dataset_to_update, expected_dataset)
 
 
-def test_rename_variable(io_dataset, io_data):
+def test_rename_variable(io_dataset, io_data) -> None:
     """Test the method rename_variable."""
     io_dataset.rename_variable("i1", "x")
     dataset = Dataset.from_array(
@@ -661,7 +661,7 @@ def test_rename_variable(io_dataset, io_data):
     assert_frame_equal(io_dataset, dataset)
 
 
-def test_rename_variable_group_name(data):
+def test_rename_variable_group_name(data) -> None:
     """Test the method rename_variable according to group_name."""
     dataset = Dataset()
     dataset.add_variable("x", 1, "a")
@@ -685,7 +685,7 @@ def test_rename_variable_group_name(data):
     version.parse(pandas_version) >= version.parse("2.0.0"),
     reason="DataFrame does not get the append method in Pandas >= 2.0.0",
 )
-def test_append(dataset, data):
+def test_append(dataset, data) -> None:
     """Test the method DataFrame.append."""
     new_dataset = dataset.append(dataset, ignore_index=True)
     expected_dataset = Dataset.from_array(
@@ -697,7 +697,7 @@ def test_append(dataset, data):
     assert_frame_equal(new_dataset, expected_dataset)
 
 
-def test_concat(dataset, data):
+def test_concat(dataset, data) -> None:
     """Test the function concat of pandas."""
     new_dataset = concat([dataset, dataset], ignore_index=True)
     expected_dataset = Dataset.from_array(
@@ -821,7 +821,7 @@ def test_concat(dataset, data):
 )
 def test_get_view(
     small_dataset, group_names, variable_names, components, indices, expected_array
-):
+) -> None:
     """Test get_view with many options."""
     view = small_dataset.get_view(
         group_names=group_names,
@@ -838,7 +838,7 @@ def test_get_view(
     reason="Does not work with Pandas >= 2.0.0",
 )
 @pytest.mark.parametrize("arg", ["group_names", "variable_names", "components"])
-def test_get_view_empty(dataset, arg):
+def test_get_view_empty(dataset, arg) -> None:
     """Test that asking for a unknown column returns an empty dataset."""
     assert dataset.get_view(**{arg: "x"}).empty
 
@@ -848,7 +848,7 @@ def test_get_view_empty(dataset, arg):
     reason="Does not work with Pandas < 2.0.0",
 )
 @pytest.mark.parametrize("arg", ["group_names", "variable_names", "components"])
-def test_get_view_key_error(dataset, arg):
+def test_get_view_key_error(dataset, arg) -> None:
     """Test that asking for a unknown column raises a KeyError."""
     with pytest.raises(
         KeyError,
@@ -856,7 +856,7 @@ def test_get_view_key_error(dataset, arg):
         dataset.get_view(**{arg: "x"})
 
 
-def test_add_variable():
+def test_add_variable() -> None:
     """Test the method add_variable."""
     dataset = Dataset()
     dataset.add_variable("x", array([[1, 2], [3, 4]]))
@@ -883,7 +883,7 @@ def test_add_variable():
     assert_frame_equal(dataset, dataframe)
 
 
-def test_add_variable_twice():
+def test_add_variable_twice() -> None:
     """Test the method add_variable to raise ValueError, when needed."""
     dataset = Dataset()
     dataset.add_variable("x", array([[1, 2], [3, 4]]))
@@ -895,7 +895,7 @@ def test_add_variable_twice():
         dataset.add_variable("x", array([[10, 20], [30, 40]]))
 
 
-def test_data_shape_inconsistency():
+def test_data_shape_inconsistency() -> None:
     """Check that an exception is raised when data is inconsistent."""
     dataset = Dataset()
     dataset.add_variable("x", [[1, 1], [1, 1]])
@@ -913,7 +913,7 @@ def test_data_shape_inconsistency():
         dataset.add_variable("y", [[1, 1, 1]] * 3, components=[1, 2])
 
 
-def test_add_variable_constant():
+def test_add_variable_constant() -> None:
     """Test adding a constant variable with data shaped as (1, d).
 
     This data is added to all the existing entries.
@@ -929,7 +929,7 @@ def test_add_variable_constant():
     assert_frame_equal(dataset, expected_dataset)
 
 
-def test_add_variable_number():
+def test_add_variable_number() -> None:
     """Test adding a constant variable with data as number."""
     dataset = Dataset()
     dataset.add_variable("x", [[1, 1], [1, 1]])
@@ -947,13 +947,13 @@ def test_add_variable_number():
     assert_frame_equal(dataset, expected_dataset)
 
 
-def test_slice(dataset):
+def test_slice(dataset) -> None:
     """Test the use of slice."""
     view = dataset.get_view(indices=slice(1, 3))
     assert_frame_equal(view, dataset.iloc[[1, 2, 3]])
 
 
-def test_get_group_names():
+def test_get_group_names() -> None:
     """Test the ``get_group_names`` method."""
     dataset = Dataset()
     dataset.add_variable("x", array([[1, 2], [3, 4]]))
@@ -977,7 +977,7 @@ def dataset_for_to_dict_of_arrays() -> Dataset:
     return dataset
 
 
-def test_to_dict_of_arrays(dataset_for_to_dict_of_arrays):
+def test_to_dict_of_arrays(dataset_for_to_dict_of_arrays) -> None:
     """Test the method to_dict_of_arrays with default options."""
     result = dataset_for_to_dict_of_arrays.to_dict_of_arrays()
     expected = {
@@ -987,7 +987,7 @@ def test_to_dict_of_arrays(dataset_for_to_dict_of_arrays):
     assert_equal(result, expected)
 
 
-def test_to_dict_of_arrays_by_variable_name(dataset_for_to_dict_of_arrays):
+def test_to_dict_of_arrays_by_variable_name(dataset_for_to_dict_of_arrays) -> None:
     """Test the method to_dict_of_arrays without sorting by group."""
     result = dataset_for_to_dict_of_arrays.to_dict_of_arrays(False)
     expected = {
@@ -999,7 +999,9 @@ def test_to_dict_of_arrays_by_variable_name(dataset_for_to_dict_of_arrays):
     assert_equal(result, expected)
 
 
-def test_to_dict_of_arrays_by_entry_by_variable_name(dataset_for_to_dict_of_arrays):
+def test_to_dict_of_arrays_by_entry_by_variable_name(
+    dataset_for_to_dict_of_arrays,
+) -> None:
     """Test the method to_dict_of_arrays with sorting by entry and by variable name."""
     result = dataset_for_to_dict_of_arrays.to_dict_of_arrays(False, True)
     expected = [
@@ -1019,7 +1021,7 @@ def test_to_dict_of_arrays_by_entry_by_variable_name(dataset_for_to_dict_of_arra
     assert_equal(result, expected)
 
 
-def test_summary():
+def test_summary() -> None:
     """Test the property summary."""
     assert create_iris_dataset().summary == (
         "Iris\n"
@@ -1049,14 +1051,14 @@ def test_summary():
     )
 
 
-def test_create_empty_dataset():
+def test_create_empty_dataset() -> None:
     """Check the high-level function create_dataset to create an empty dataset."""
     dataset = create_dataset("foo")
     assert dataset.empty
     assert dataset.name == "foo"
 
 
-def test_create_dataset_with_wrong_data():
+def test_create_dataset_with_wrong_data() -> None:
     """Check the high-level function create_dataset from a wrong type."""
     with pytest.raises(
         ValueError,
@@ -1068,7 +1070,7 @@ def test_create_dataset_with_wrong_data():
         create_dataset("foo", 123)
 
 
-def test_create_dataset_from_wrong_file_extension():
+def test_create_dataset_from_wrong_file_extension() -> None:
     """Check the high-level function create_dataset from a .png file."""
     with pytest.raises(
         ValueError,
@@ -1080,7 +1082,7 @@ def test_create_dataset_from_wrong_file_extension():
         create_dataset("foo", "file_name.png")
 
 
-def test_create_dataset_from_csv_file(tmp_wd):
+def test_create_dataset_from_csv_file(tmp_wd) -> None:
     """Check the high-level function create_dataset from a .csv file."""
     dataset = create_dataset("foo", array([[1], [2]]))
     dataset.to_csv("bar.csv", sep="#", index=False)
@@ -1096,7 +1098,7 @@ def test_create_dataset_from_txt_file(
     variable_names_to_n_components,
     variable_names_to_group_names,
     expected_column_multi_index,
-):
+) -> None:
     """Check the high-level function create_dataset from a .txt file."""
     dataset = Dataset.from_txt(
         small_file_dataset,

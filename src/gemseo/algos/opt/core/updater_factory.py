@@ -60,9 +60,10 @@ class UpdaterFactory:
             ValueError: When the updater does not exist.
         """
         if name not in self.__update_name_to_updater:
-            raise ValueError(
+            msg = (
                 f"No update method named {name} is available among update methods: "
                 f"{list(self.__update_name_to_updater.keys())}."
             )
+            raise ValueError(msg)
 
         return self.__update_name_to_updater[name](thresholds, multipliers, bound)

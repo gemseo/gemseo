@@ -43,7 +43,7 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
     "method",
     ["compute_bootstrap_measure", "compute_cross_validation_measure"],
 )
-def test_resampling_based_measure(method):
+def test_resampling_based_measure(method) -> None:
     """Check that a resampling-based measure does not re-train the algo (but a copy)."""
     dataset = create_rosenbrock_dataset(opt_naming=False)
     algo = PolynomialRegressor(dataset, degree=2)
@@ -106,7 +106,7 @@ def test_subset_of_inputs_and_outputs(
     method,
     input_names,
     output_names,
-):
+) -> None:
     """Check that quality measures correctly handle algo with subsets of IO names."""
     kwargs = {}
     if method == "compute_test_measure":
@@ -139,7 +139,7 @@ def test_subset_of_inputs_and_outputs(
             )
 
 
-def test_no_resampling_result_storage(linear_regressor):
+def test_no_resampling_result_storage(linear_regressor) -> None:
     """Check that by default, a quality measure does not store the resampling result."""
     mse = MSEMeasure(linear_regressor)
     mse.evaluate_kfolds()
@@ -156,7 +156,7 @@ def test_no_resampling_result_storage(linear_regressor):
 )
 def test_resampling_result_storage(
     linear_regressor, method, resampler_name, class_name, dimension
-):
+) -> None:
     """Check that the resampling result can be stored in the ML algorithm and reused."""
     options = {}
     if resampler_name == "Bootstrap":
@@ -209,7 +209,7 @@ def test_resampling_result_storage(
     assert id(algos[0]) == first_algo_id
 
 
-def test_factory():
+def test_factory() -> None:
     """Test the MLErrorMeasureFactory."""
     assert MLErrorMeasureFactory().is_available("R2Measure")
     assert not MLErrorMeasureFactory().is_available("SilhouetteMeasure")

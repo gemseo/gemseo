@@ -64,7 +64,7 @@ def in_data() -> dict[str, ndarray]:
     return SobieskiProblem().get_default_inputs()
 
 
-def test_total_derivatives_ok(assembly, in_data):
+def test_total_derivatives_ok(assembly, in_data) -> None:
     """Check total_derivatives()."""
     assembly.total_derivatives(in_data, ["y_4"], ["x_shared"], ["y_24"])
 
@@ -108,13 +108,13 @@ def test_total_derivatives_ok(assembly, in_data):
         ),
     ],
 )
-def test_total_derivatives_ko(assembly, in_data, args, kwargs, msg):
+def test_total_derivatives_ko(assembly, in_data, args, kwargs, msg) -> None:
     """Check that the errors raised by total_derivatives()."""
     with pytest.raises(ValueError, match=re.escape(msg)):
         assembly.total_derivatives(in_data, *args, **kwargs)
 
 
-def test_compute_sizes_ko(assembly):
+def test_compute_sizes_ko(assembly) -> None:
     """Check the consistency error raised by compute_sizes()."""
     with pytest.raises(
         ValueError,
@@ -183,7 +183,7 @@ def mda(in_data, functions, variables, couplings) -> SobieskiMDAGaussSeidel:
 @pytest.mark.parametrize("use_lu_fact", [False, True])
 def test_sobieski_all_modes(
     mda, in_data, functions, variables, couplings, mode, matrix_type, use_lu_fact
-):
+) -> None:
     """Test Sobieski's coupled derivatives computed in all modes (sparse direct, sparse
     adjoint, linear operator direct, linear operator adjoint)"""
     if use_lu_fact and matrix_type != JacobianAssembly.JacobianType.MATRIX:
@@ -199,13 +199,14 @@ def test_sobieski_all_modes(
         use_lu_fact=use_lu_fact,
     )
     if not compare_mda_jac_ref(mda.jac):
-        raise ValueError(
+        msg = (
             f"Linearization mode '{mode} 'failed for matrix type "
             f"{matrix_type} and use_lu_fact ={use_lu_fact}"
         )
+        raise ValueError(msg)
 
 
-def test_total_derivatives(mda, variables, couplings):
+def test_total_derivatives(mda, variables, couplings) -> None:
     """Check that total_derivatives() returns a non-empty nested dictionary."""
     jac = mda.assembly.total_derivatives(
         in_data,
@@ -227,7 +228,7 @@ def test_total_derivatives(mda, variables, couplings):
         (True, "bar", "coupled_jacobian_bar.pdf"),
     ],
 )
-def test_plot_dependency_jacobian(mda, save, file_path, expected):
+def test_plot_dependency_jacobian(mda, save, file_path, expected) -> None:
     """Check the file path used by plot_dependency_jacobian()."""
     with mock.patch.object(jacobian_assembly, "save_show_figure") as mock_method:
         assert (
@@ -240,7 +241,7 @@ def test_plot_dependency_jacobian(mda, save, file_path, expected):
         assert mock_method.call_args.args[2] == expected
 
 
-def test_lu_convergence_warning(assembly, caplog):
+def test_lu_convergence_warning(assembly, caplog) -> None:
     rng = default_rng(1)
     n_x = 5
     n_y = 10
@@ -293,7 +294,7 @@ def test_lu_convergence_warning(assembly, caplog):
     "matrix_format",
     LinearDiscipline.MatrixFormat,
 )
-def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format):
+def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format) -> None:
     io_size = 10
 
     disciplines = create_disciplines_from_desc(
@@ -318,7 +319,7 @@ def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format):
 
 @pytest.mark.parametrize("compute_residuals", [True, False])
 @pytest.mark.parametrize("size", [1, 3])
-def test_compute_newton_step(compute_residuals, size):
+def test_compute_newton_step(compute_residuals, size) -> None:
     """Test the Newton step for linear disciplines."""
     disciplines = create_disciplines_from_desc(
         [("A", ["x", "b"], ["a"]), ("B", ["a"], ["b", "f"])],

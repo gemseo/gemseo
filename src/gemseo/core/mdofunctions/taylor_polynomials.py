@@ -68,7 +68,8 @@ def compute_linear_approximation(
         AttributeError: If the function does not have a Jacobian function.
     """
     if not function.has_jac:
-        raise AttributeError("Function Jacobian unavailable for linear approximation.")
+        msg = "Function Jacobian unavailable for linear approximation."
+        raise AttributeError(msg)
 
     coefficients = function.jac(x_vect)
     func_val = function.evaluate(x_vect)
@@ -128,13 +129,16 @@ def compute_quadratic_approximation(
         or hessian_approx.ndim != 2
         or hessian_approx.shape[0] != hessian_approx.shape[1]
     ):
-        raise ValueError("Hessian approximation must be a square ndarray.")
+        msg = "Hessian approximation must be a square ndarray."
+        raise ValueError(msg)
 
     if hessian_approx.shape[1] != x_vect.size:
-        raise ValueError("Hessian approximation and vector must have same dimension.")
+        msg = "Hessian approximation and vector must have same dimension."
+        raise ValueError(msg)
 
     if not function.has_jac:
-        raise AttributeError("Jacobian unavailable.")
+        msg = "Jacobian unavailable."
+        raise AttributeError(msg)
 
     gradient = function.jac(x_vect)
     hess_dot_vect = hessian_approx @ x_vect

@@ -103,7 +103,9 @@ def get_jacobi_reference_residuals(
 
 
 @pytest.mark.parametrize("scaling_strategy", MDA.ResidualScaling)
-def test_scaling_strategy_jacobi(disciplines: list[MDODiscipline], scaling_strategy):
+def test_scaling_strategy_jacobi(
+    disciplines: list[MDODiscipline], scaling_strategy
+) -> None:
     """Tests the different scaling strategies for MDAJacobi."""
     initial_residual, final_residual = get_jacobi_reference_residuals(disciplines)
 
@@ -195,7 +197,7 @@ def get_gauss_seidel_reference_residuals(
 @pytest.mark.parametrize("scaling_strategy", MDA.ResidualScaling)
 def test_scaling_strategy_gauss_seidel(
     disciplines: list[MDODiscipline], scaling_strategy
-):
+) -> None:
     """Tests the different scaling strategies for MDAGaussSeidel."""
     initial_residual, final_residual = get_gauss_seidel_reference_residuals(disciplines)
 

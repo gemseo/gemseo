@@ -55,13 +55,13 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_post(kwargs, baseline_images, problem, pyplot_close_all):
+def test_post(kwargs, baseline_images, problem, pyplot_close_all) -> None:
     """Test the radar chart post-processing with the Power2 problem."""
     post = RadarChart(problem)
     post.execute(save=False, show=False, **kwargs)
 
 
-def test_function_error(problem):
+def test_function_error(problem) -> None:
     """Test a ValueError is raised for a non-existent function."""
     post = RadarChart(problem)
     with pytest.raises(
@@ -74,7 +74,7 @@ def test_function_error(problem):
         post.execute(save=False, constraint_names=["foo"])
 
 
-def test_iteration_error(problem):
+def test_iteration_error(problem) -> None:
     """Test a ValueError is raised with ill defined iteration."""
     n_iterations = len(problem.database)
     post = RadarChart(problem)
@@ -101,7 +101,7 @@ TEST_PARAMETERS = {"default": ["RadarChart_common_problem"]}
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_common_scenario(baseline_images, common_problem, pyplot_close_all):
+def test_common_scenario(baseline_images, common_problem, pyplot_close_all) -> None:
     """Check RadarChart."""
     opt = RadarChart(common_problem)
     opt.execute(constraint_names=["eq", "neg", "pos"], save=False)

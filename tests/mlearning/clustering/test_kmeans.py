@@ -116,7 +116,7 @@ def model(dataset):
     return kmeans
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     algo = KMeans(dataset)
     assert algo.algo is not None
@@ -124,7 +124,7 @@ def test_constructor(dataset):
     assert algo.LIBRARY == "scikit-learn"
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     n_clusters = 5
     kmeans = KMeans(dataset, n_clusters=n_clusters)
@@ -139,7 +139,7 @@ def test_learn(dataset):
         assert km_model.n_clusters == n_clusters
 
 
-def test_predict(model):
+def test_predict(model) -> None:
     """Test prediction."""
     prediction = model.predict(VALUE)
     predictions = model.predict(VALUES)
@@ -151,7 +151,7 @@ def test_predict(model):
     assert predictions[1] != predictions[2]
 
 
-def test_predict_with_transform(model_with_transform):
+def test_predict_with_transform(model_with_transform) -> None:
     """Test prediction."""
     prediction = model_with_transform.predict(VALUE)
     predictions = model_with_transform.predict(VALUES)
@@ -164,7 +164,7 @@ def test_predict_with_transform(model_with_transform):
 
 
 @pytest.mark.parametrize("hard", [True, False])
-def test_predict_proba(model, hard):
+def test_predict_proba(model, hard) -> None:
     """Test prediction."""
     proba = model.predict_proba(VALUE, hard)
     probas = model.predict_proba(VALUES, hard)
@@ -180,7 +180,7 @@ def test_predict_proba(model, hard):
     assert not allclose(probas[1], probas[2])
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_clustering_model(dirname)

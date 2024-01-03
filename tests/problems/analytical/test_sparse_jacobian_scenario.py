@@ -79,7 +79,7 @@ def scenario(request) -> Scenario:
     return scenario
 
 
-def test_problem_is_linear(scenario):
+def test_problem_is_linear(scenario) -> None:
     """Tests that optimization problems are linear."""
     assert (
         scenario.formulation.opt_problem.pb_type
@@ -87,7 +87,7 @@ def test_problem_is_linear(scenario):
     )
 
 
-def test_execution(scenario):
+def test_execution(scenario) -> None:
     """Tests the execution of scenario with sparse Jacobians."""
     scenario.execute({"algo": "LINEAR_INTERIOR_POINT", "max_iter": 1000})
     out = scenario.formulation.opt_problem.solution

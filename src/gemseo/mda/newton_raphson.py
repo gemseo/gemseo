@@ -110,7 +110,7 @@ class MDANewtonRaphson(MDARoot):
             ValueError: When there are no coupling variables, or when there are weakly
                 coupled disciplines. In these cases, use MDAChain.
         """  # noqa:D205 D212 D415
-        # TODO API: Remove the old name and attributes for over-relaxatino factor.
+        # TODO API: Remove the old name and attributes for over-relaxation factor.
         if relax_factor is not None:
             over_relaxation_factor = relax_factor
 
@@ -143,18 +143,18 @@ class MDANewtonRaphson(MDARoot):
         self.__newton_linear_solver_options = newton_linear_solver_options or {}
 
         if not self._newton_coupling_names:
-            raise ValueError(
-                "There is no couplings to compute. Please consider using MDAChain."
-            )
+            msg = "There is no couplings to compute. Please consider using MDAChain."
+            raise ValueError(msg)
 
         strongly_coupled = self.coupling_structure.get_strongly_coupled_disciplines()
 
         if len(strongly_coupled) < len(self.disciplines):
-            raise ValueError(
+            msg = (
                 "The MDANewtonRaphson has weakly coupled disciplines, "
                 "which is not supported. Please consider using a MDAChain with "
                 "the option inner_mda_name='MDANewtonRaphson'."
             )
+            raise ValueError(msg)
 
         self.__set_differentiated_ios()
 

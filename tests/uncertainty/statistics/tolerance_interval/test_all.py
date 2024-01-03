@@ -53,7 +53,7 @@ DISTRIBUTIONS = {
 
 @pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
-def test_tolerance_interval(side, distribution):
+def test_tolerance_interval(side, distribution) -> None:
     """Check that the lower bound is lower than the upper one."""
     tolerance_interval = DISTRIBUTIONS[distribution]
     lower, upper = tolerance_interval.compute(0.90, side=side)
@@ -62,7 +62,7 @@ def test_tolerance_interval(side, distribution):
 
 @pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
-def test_tolerance_interval_coverage_lower(side, distribution):
+def test_tolerance_interval_coverage_lower(side, distribution) -> None:
     """Check that the lower bound is lower when the coverage is higher."""
     tolerance_interval = DISTRIBUTIONS[distribution]
     lower_with_95_coverage, _ = tolerance_interval.compute(coverage=0.95, side=side)
@@ -72,7 +72,7 @@ def test_tolerance_interval_coverage_lower(side, distribution):
 
 @pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
-def test_tolerance_interval_coverage_upper(side, distribution):
+def test_tolerance_interval_coverage_upper(side, distribution) -> None:
     """Check that the upper bound is higher when the coverage is higher."""
     tolerance_interval = DISTRIBUTIONS[distribution]
     _, upper_with_95_coverage = tolerance_interval.compute(coverage=0.95, side=side)
@@ -82,7 +82,7 @@ def test_tolerance_interval_coverage_upper(side, distribution):
 
 @pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
-def test_tolerance_interval_confidence_lower(side, distribution):
+def test_tolerance_interval_confidence_lower(side, distribution) -> None:
     """Check that the lower bound is lower when the confidence is higher."""
     tolerance_interval = DISTRIBUTIONS[distribution]
     lower_with_95_confidence, _ = tolerance_interval.compute(
@@ -98,7 +98,7 @@ def test_tolerance_interval_confidence_lower(side, distribution):
 
 @pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
-def test_tolerance_interval_confidence_upper(side, distribution):
+def test_tolerance_interval_confidence_upper(side, distribution) -> None:
     """Check that the upper bound is higher when the confidence is higher."""
     tolerance_interval = DISTRIBUTIONS[distribution]
     _, upper_with_95_confidence = tolerance_interval.compute(
@@ -111,7 +111,7 @@ def test_tolerance_interval_confidence_upper(side, distribution):
 
 
 @pytest.mark.parametrize("distribution_name", ["Uniform", "Normal"])
-def test_tolerance_interval_incorrect_side(distribution_name):
+def test_tolerance_interval_incorrect_side(distribution_name) -> None:
     """Check that an error is raised if the type of tolerance interval is incorrect."""
     with pytest.raises(
         ValueError, match="The type of tolerance interval is incorrect."

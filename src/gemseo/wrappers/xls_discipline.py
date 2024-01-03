@@ -130,7 +130,8 @@ class XLSDiscipline(MDODiscipline):
             ImportError: If ``xlwings`` cannot be imported.
         """
         if xlwings is None:
-            raise ImportError("cannot import xlwings")
+            msg = "cannot import xlwings"
+            raise ImportError(msg)
         super().__init__(name)
         self._xls_file_path = Path(xls_file_path)
         self._xls_app = None
@@ -179,7 +180,8 @@ class XLSDiscipline(MDODiscipline):
             self._xls_app.interactive = False
         # Wide except because I cannot tell what is the exception raised by xlwings.
         except BaseException:
-            raise RuntimeError("xlwings requires Microsoft Excel") from None
+            msg = "xlwings requires Microsoft Excel"
+            raise RuntimeError(msg) from None
 
         # In multiprocessing or sequential execution, excel closes in each process.
         # Each process keeps its own _xls_app instance from init to end.
@@ -191,16 +193,18 @@ class XLSDiscipline(MDODiscipline):
         sh_names = [sheet.name for sheet in self._book.sheets]
 
         if "Inputs" not in sh_names:
-            raise ValueError(
+            msg = (
                 "Workbook must contain a sheet named 'Inputs' "
                 "that define the inputs of the discipline"
-            ) from None
+            )
+            raise ValueError(msg) from None
 
         if "Outputs" not in sh_names:
-            raise ValueError(
+            msg = (
                 "Workbook must contain a sheet named 'Outputs' "
                 "that define the outputs of the discipline"
-            ) from None
+            )
+            raise ValueError(msg) from None
 
     def __del__(self) -> None:
         self.__reset_xls_objects()
@@ -299,9 +303,8 @@ class XLSDiscipline(MDODiscipline):
             try:
                 self._xls_app.api.Application.Run(self.macro_name)
             except BaseException as err:
-                raise RuntimeError(
-                    f"Failed to run '{self.macro_name}' macro: {err}."
-                ) from None
+                msg = f"Failed to run '{self.macro_name}' macro: {err}."
+                raise RuntimeError(msg) from None
 
         out_vals = self.__read_sheet_col("Outputs", 1)
 

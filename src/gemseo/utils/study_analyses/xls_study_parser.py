@@ -182,7 +182,8 @@ class XLSStudyParser:
         self.__set_scenario_descriptions()
 
         if has_scenario and not self.scenarios:
-            raise ValueError("No scenario found in the XLS file.")
+            msg = "No scenario found in the XLS file."
+            raise ValueError(msg)
 
     def _init_disciplines(self) -> None:
         """Initialize the disciplines.
@@ -256,7 +257,8 @@ class XLSStudyParser:
         series = frame.get(series_name)
         if series is None:
             if raise_error:
-                raise ValueError(f"The sheet has no series named '{series_name}'.")
+                msg = f"The sheet has no series named '{series_name}'."
+                raise ValueError(msg)
             return []
         # Remove empty data
         return [val for val in series.tolist() if val == val]
@@ -319,17 +321,17 @@ class XLSStudyParser:
             option_values = self.__get_series(frame, self.OPTION_VALUES, False)
 
             if len(formulation) != 1:
-                raise ValueError(
-                    "Scenario {} must have one {} value.".format(
-                        str(frame_name), self.FORMULATION
-                    )
-                ) from None
+                msg = "Scenario {} must have one {} value.".format(
+                    str(frame_name), self.FORMULATION
+                )
+                raise ValueError(msg) from None
 
             if options is not None and len(options) != len(option_values):
-                raise ValueError(
+                msg = (
                     f"Options {options} and Options values {option_values} "
                     "must have the same length."
-                ) from None
+                )
+                raise ValueError(msg) from None
 
             scenario_description = {
                 self.DISCIPLINES: disciplines,
@@ -424,35 +426,39 @@ class XLSStudyParser:
 
         missing = set(design_variables) - self.inputs
         if missing:
-            raise ValueError(
+            msg = (
                 f"{scenario_name}: some design variables are not "
                 f"the inputs of any discipline: {missing}."
             )
+            raise ValueError(msg)
 
         missing = set(disciplines) - set(self.disciplines.keys()) - set(self.scenarios)
         if missing:
-            raise ValueError(
-                f"{scenario_name}: some disciplines don't exist: {missing}."
-            )
+            msg = f"{scenario_name}: some disciplines don't exist: {missing}."
+            raise ValueError(msg)
 
         missing = set(constraints) - self.outputs
         if missing:
-            raise ValueError(
+            msg = (
                 f"{scenario_name}: some constraints are not "
                 f"the outputs of any discipline: {missing}."
             )
+            raise ValueError(msg)
 
         missing = set(objectives) - self.outputs
         if missing:
-            raise ValueError(
+            msg = (
                 f"{scenario_name}: some objectives are not "
                 f"the outputs of any discipline: {missing}."
             )
+            raise ValueError(msg)
         if not objectives:
-            raise ValueError(f"{scenario_name}: no objectives are defined")
+            msg = f"{scenario_name}: no objectives are defined"
+            raise ValueError(msg)
 
         if formulation not in get_available_formulations():
-            raise ValueError(
+            msg = (
                 f"{scenario_name}: unknown formulation '{formulation}'; "
                 f"use one of: {get_available_formulations()}"
             )
+            raise ValueError(msg)

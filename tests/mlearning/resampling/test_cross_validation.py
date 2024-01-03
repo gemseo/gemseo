@@ -37,7 +37,7 @@ def cross_validation(sample_indices) -> CrossValidation:
     return CrossValidation(sample_indices)
 
 
-def test_default_properties(sample_indices):
+def test_default_properties(sample_indices) -> None:
     """Check the default values of the properties."""
     cross_validation = CrossValidation(sample_indices)
     assert_equal(cross_validation.sample_indices, sample_indices)
@@ -57,7 +57,7 @@ def test_default_properties(sample_indices):
     )
 
 
-def test_properties_with_n_folds(sample_indices):
+def test_properties_with_n_folds(sample_indices) -> None:
     """Check that the number and size of the folds depend on n_folds."""
     cross_validation = CrossValidation(sample_indices, n_folds=2)
     assert cross_validation.n_folds == 2
@@ -70,7 +70,7 @@ def test_properties_with_n_folds(sample_indices):
     )
 
 
-def test_properties_with_randomize(sample_indices):
+def test_properties_with_randomize(sample_indices) -> None:
     """Check that the indices are shuffled before sampling when randomize is True."""
     cross_validation = CrossValidation(sample_indices, randomize=True)
     assert cross_validation.randomize is True
@@ -81,7 +81,7 @@ def test_properties_with_randomize(sample_indices):
     assert not array_equal(next(iter(cross_validation.splits)).test, array([1, 2]))
 
 
-def test_properties_with_none_seed(sample_indices):
+def test_properties_with_none_seed(sample_indices) -> None:
     """Check that setting the seed at None makes the cross-validation random.
 
     i.e. two instances give different folds.
@@ -94,7 +94,7 @@ def test_properties_with_none_seed(sample_indices):
     )
 
 
-def test_properties_with_custom_seed(sample_indices):
+def test_properties_with_custom_seed(sample_indices) -> None:
     """Check that fixing the seed makes the cross-validation deterministic."""
     first_cross_validation = CrossValidation(sample_indices, randomize=True)
     second_cross_validation = CrossValidation(sample_indices, randomize=True, seed=2)
@@ -112,7 +112,9 @@ def test_properties_with_custom_seed(sample_indices):
 @pytest.mark.parametrize("modify_learning", [False, True])
 @pytest.mark.parametrize("modify_test", [False, True])
 @pytest.mark.parametrize("add_fold", [False, True])
-def test_eq(sample_indices, cross_validation, modify_learning, modify_test, add_fold):
+def test_eq(
+    sample_indices, cross_validation, modify_learning, modify_test, add_fold
+) -> None:
     """Check that CrossValidation are equal if and only their folds are equal."""
     other_cross_validation = CrossValidation(sample_indices)
     iterator = iter(other_cross_validation.splits)
@@ -140,7 +142,7 @@ def test_eq(sample_indices, cross_validation, modify_learning, modify_test, add_
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_execution(
     cross_validation, return_models, predict, stack_predictions, fit_transformers
-):
+) -> None:
     """Check that the method execute() works correctly."""
     dataset = IODataset()
     x = linspace(0, 1, 10)[:, newaxis]
@@ -178,6 +180,6 @@ def test_execution(
 @pytest.mark.parametrize(
     ("n_folds", "name"), [(3, "CrossValidation"), (10, "LeaveOneOut")]
 )
-def test_name(sample_indices, n_folds, name):
+def test_name(sample_indices, n_folds, name) -> None:
     """Check the name of the CrossValidation instance."""
     assert CrossValidation(sample_indices, n_folds).name == name

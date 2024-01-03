@@ -439,7 +439,8 @@ class MDODiscipline(Serializable):
         value: int,
     ) -> None:
         if not self.activate_counters:
-            raise RuntimeError("The discipline counters are disabled.")
+            msg = "The discipline counters are disabled."
+            raise RuntimeError(msg)
 
         self._n_calls.value = value
 
@@ -462,7 +463,8 @@ class MDODiscipline(Serializable):
         value: float,
     ) -> None:
         if not self.activate_counters:
-            raise RuntimeError("The discipline counters are disabled.")
+            msg = "The discipline counters are disabled."
+            raise RuntimeError(msg)
 
         self._exec_time.value = value
 
@@ -485,7 +487,8 @@ class MDODiscipline(Serializable):
         value: int,
     ) -> None:
         if not self.activate_counters:
-            raise RuntimeError("The discipline counters are disabled.")
+            msg = "The discipline counters are disabled."
+            raise RuntimeError(msg)
 
         self._n_calls_linearize.value = value
 
@@ -535,7 +538,8 @@ class MDODiscipline(Serializable):
                 return grammar_file_path
 
         file_name = f"{initial_name}_{in_or_out}put.json"
-        raise FileNotFoundError(f"The grammar file {file_name} is missing.")
+        msg = f"The grammar file {file_name} is missing."
+        raise FileNotFoundError(msg)
 
     @staticmethod
     def __get_grammar_file_path(
@@ -590,11 +594,12 @@ class MDODiscipline(Serializable):
                 are not inputs of the latter.
         """
         if (inputs is not None) and not self.is_all_inputs_existing(inputs):
-            raise ValueError(
+            msg = (
                 f"Cannot differentiate the discipline {self.name} w.r.t. the inputs "
                 "that are not among the discipline inputs: "
                 f"{self.get_input_data_names()}."
             )
+            raise ValueError(msg)
 
         if inputs is None:
             inputs = self.get_input_data_names()
@@ -628,11 +633,12 @@ class MDODiscipline(Serializable):
             ValueError: When the outputs to differentiate are not discipline outputs.
         """
         if not (outputs is None or self.is_all_outputs_existing(outputs)):
-            raise ValueError(
+            msg = (
                 f"Cannot differentiate the discipline {self.name} w.r.t. the outputs "
                 "that are not among the discipline outputs: "
                 f"{self.get_output_data_names()}."
             )
+            raise ValueError(msg)
 
         if outputs is None:
             outputs = self.get_output_data_names()
@@ -868,9 +874,8 @@ class MDODiscipline(Serializable):
             return deepcopy(self.default_inputs)
 
         if not isinstance(input_data, collections.abc.Mapping):
-            raise TypeError(
-                f"Input data must be of dict type, got {type(input_data)} instead."
-            )
+            msg = f"Input data must be of dict type, got {type(input_data)} instead."
+            raise TypeError(msg)
 
         full_input_data = DisciplineData({})
         for input_name in self.input_grammar:
@@ -921,10 +926,11 @@ class MDODiscipline(Serializable):
             self.status == self.ExecutionStatus.DONE
             and self.re_exec_policy == self.ReExecutionPolicy.NEVER
         ):
-            raise ValueError(
+            msg = (
                 f"Trying to run a discipline {type(self)} with status: {self.status} "
                 f"while re_exec_policy is {self.re_exec_policy}."
             )
+            raise ValueError(msg)
 
     def __create_input_data_for_cache(
         self,
@@ -1411,10 +1417,11 @@ class MDODiscipline(Serializable):
             ValueError: When the Jacobian approximation method has not been set.
         """
         if self._jac_approx is None:
-            raise ValueError(
+            msg = (
                 "set_jacobian_approximation must be called "
                 "before setting an optimal step."
             )
+            raise ValueError(msg)
         diff_inputs, diff_outputs = self._retrieve_diff_inouts(
             compute_all_jacobians=compute_all_jacobians
         )
@@ -1447,7 +1454,8 @@ class MDODiscipline(Serializable):
                 discipline.
         """
         if not self.jac:
-            raise ValueError(f"The discipline {self.name} was not linearized.")
+            msg = f"The discipline {self.name} was not linearized."
+            raise ValueError(msg)
 
         unique_output_names = set(output_names)
         unique_input_names = set(input_names)
@@ -1490,13 +1498,14 @@ class MDODiscipline(Serializable):
                 input_size = get_input_size(input_name, input_value)
 
                 if jac_output[input_name].shape != (output_size, input_size):
-                    raise ValueError(
+                    msg = (
                         f"The shape {jac_output[input_name].shape} "
                         f"of the Jacobian matrix d{output_name}/d{input_name} "
                         f"of the discipline {self.name} "
                         "does not match "
                         f"(output_size, input_size)=({output_size}, {input_size})."
                     )
+                    raise ValueError(msg)
 
         # Discard imaginary part of Jacobian
         for output_jacobian in self.jac.values():
@@ -1516,7 +1525,8 @@ class MDODiscipline(Serializable):
             ValueError: When the discipline does not have a cache.
         """
         if self.cache is None:
-            raise ValueError(f"The discipline {self.name} does not have a cache.")
+            msg = f"The discipline {self.name} does not have a cache."
+            raise ValueError(msg)
 
         return self.cache.tolerance
 
@@ -1526,7 +1536,8 @@ class MDODiscipline(Serializable):
         cache_tol: float,
     ) -> None:
         if self.cache is None:
-            raise ValueError(f"The discipline {self.name} does not have a cache.")
+            msg = f"The discipline {self.name} does not have a cache."
+            raise ValueError(msg)
 
         self._set_cache_tol(cache_tol)
 
@@ -1935,9 +1946,8 @@ class MDODiscipline(Serializable):
             ValueError: When the discipline cannot be run because of its status.
         """
         if not self._is_status_ok_for_run_again(self.status):
-            raise ValueError(
-                f"Cannot run discipline {self.name} with status {self.status}."
-            )
+            msg = f"Cannot run discipline {self.name} with status {self.status}."
+            raise ValueError(msg)
         self.status = self.ExecutionStatus.PENDING
 
     @status.setter
@@ -2065,9 +2075,8 @@ class MDODiscipline(Serializable):
         try:
             return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(
-                f"Discipline {self.name} has no input named {err}."
-            ) from None
+            msg = f"Discipline {self.name} has no input named {err}."
+            raise ValueError(msg) from None
 
     # TODO: API: remove and replace with get_data_list_from_dict with a default for the
     # the second argument such that it uses self._local_data
@@ -2089,9 +2098,8 @@ class MDODiscipline(Serializable):
         try:
             return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(
-                f"Discipline {self.name} has no output named {err}."
-            ) from None
+            msg = f"Discipline {self.name} has no output named {err}."
+            raise ValueError(msg) from None
 
     def get_input_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the input variables.
@@ -2236,9 +2244,8 @@ class MDODiscipline(Serializable):
         try:
             return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(
-                f"Discipline {self.name} has no local_data named {err}."
-            ) from None
+            msg = f"Discipline {self.name} has no local_data named {err}."
+            raise ValueError(msg) from None
 
     @staticmethod
     def is_scenario() -> bool:

@@ -83,7 +83,7 @@ def create_pb_alleq():
 @pytest.mark.parametrize(
     "method", ["upper_bound_KS", "lower_bound_KS", "IKS", "POS_SUM"]
 )
-def test_ks_aggreg(method):
+def test_ks_aggreg(method) -> None:
     """Tests KS and IKS aggregation methods compared to no aggregation."""
     algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
     problem_ref = create_problem()
@@ -105,7 +105,7 @@ def test_ks_aggreg(method):
     assert allclose(ref_sol.x_opt, sol2.x_opt, rtol=1e-2)
 
 
-def test_wrong_constraint_index():
+def test_wrong_constraint_index() -> None:
     """Tests OptimizationProblem.aggregate_constraint with a wrong constraint index."""
     problem = create_pb_alleq()
     with pytest.raises(
@@ -121,7 +121,7 @@ def test_wrong_constraint_index():
 @pytest.mark.parametrize(
     "method", ["upper_bound_KS", "lower_bound_KS", "IKS", "POS_SUM"]
 )
-def test_groups(sellar_problem, method):
+def test_groups(sellar_problem, method) -> None:
     """Test groups aggregation."""
     if method in ["upper_bound_KS", "lower_bound_KS", "IKS"]:
         sellar_problem.aggregate_constraint(
@@ -132,7 +132,7 @@ def test_groups(sellar_problem, method):
     assert len(sellar_problem.constraints) == 3
 
 
-def test_max_aggreg(sellar_problem):
+def test_max_aggreg(sellar_problem) -> None:
     """Tests max inequality aggregation method compared to no aggregation."""
     xopt_ref = array([0.79370053, 0.79370053, 0.96548938])
     sellar_problem.aggregate_constraint(0, method=aggregate_max, scale=2.0)
@@ -153,7 +153,7 @@ def test_max_aggreg(sellar_problem):
         aggregate_positive_sum_square,
     ],
 )
-def test_gradients_ineq(sellar_problem, aggregation_meth, indices):
+def test_gradients_ineq(sellar_problem, aggregation_meth, indices) -> None:
     """Checks gradients of inequality aggregation methods by finite differences."""
     c = sellar_problem.constraints[0]
     f1 = aggregation_meth(c, indices=indices)
@@ -161,7 +161,7 @@ def test_gradients_ineq(sellar_problem, aggregation_meth, indices):
 
 
 @pytest.mark.parametrize("indices", [None, [0]])
-def test_gradients_eq(sellar_problem, indices):
+def test_gradients_eq(sellar_problem, indices) -> None:
     """Checks gradients of equality aggregation methods by finite differences."""
     c = create_pb_alleq().constraints[0]
     f4 = aggregate_sum_square(c, indices=indices)
@@ -208,7 +208,7 @@ def complex_real_mdo_func_aggregation(
 
 
 @pytest.mark.parametrize("indices", [None, [0], [0, 1]])
-def test_real_complex(complex_real_mdo_func_aggregation, indices):
+def test_real_complex(complex_real_mdo_func_aggregation, indices) -> None:
     """Test that the aggregation applied to complex and real values is consistent."""
     (
         complex_mdo_function,

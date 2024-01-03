@@ -64,7 +64,7 @@ def test_concatenation_discipline_execution(
     concatenation_disc: Concatenater,
     input_data: dict[str, ndarray],
     coefficients: dict[str, float],
-):
+) -> None:
     """Check the output data returned by Concatenater."""
     if coefficients is None:
         coefficients = {"c_1": 1.0, "c_2": 1.0}
@@ -80,7 +80,7 @@ def test_concatenation_discipline_linearization(
     concatenation_disc: Concatenater,
     input_data: dict[str, ndarray],
     coefficients: dict[str, float],
-):
+) -> None:
     """Check the Jacobian data returned by Concatenater."""
     if coefficients is None:
         coefficients = {"c_1": 1.0, "c_2": 1.0}
@@ -110,7 +110,7 @@ def test_concatenation_discipline_linearization(
 
 def test_check_gradient(
     concatenation_disc: Concatenater, input_data: dict[str, ndarray]
-):
+) -> None:
     """Test the Jacobian computation by finite differences."""
     concatenation_disc.default_inputs = input_data
     assert concatenation_disc.check_jacobian(threshold=1e-3, step=1e-4)

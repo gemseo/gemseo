@@ -71,13 +71,13 @@ def model_1d_output(dataset) -> RandomForestRegressor:
     return random_forest
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     model_ = RandomForestRegressor(dataset)
     assert model_.algo is not None
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     model_ = RandomForestRegressor(dataset)
     model_.learn()
@@ -86,7 +86,7 @@ def test_learn(dataset):
     assert model_.LIBRARY == "scikit-learn"
 
 
-def test_prediction(model):
+def test_prediction(model) -> None:
     """Test prediction."""
     prediction = model.predict(INPUT_VALUE)
     predictions = model.predict(INPUT_VALUES)
@@ -104,7 +104,7 @@ def test_prediction(model):
     assert allclose(predictions["y_1"], -predictions["y_2"])
 
 
-def test_model_1d_output(model_1d_output):
+def test_model_1d_output(model_1d_output) -> None:
     """Test the case where n_outputs=1, a particular case for random forest."""
     prediction = model_1d_output.predict(INPUT_VALUE)
     predictions = model_1d_output.predict(INPUT_VALUES)
@@ -118,7 +118,7 @@ def test_model_1d_output(model_1d_output):
     assert predictions["y_1"].shape == (3, 1)
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)

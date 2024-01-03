@@ -312,10 +312,11 @@ class Scenario(MDODiscipline):
                 to be passed to the :class:`.MDOFormulation`.
         """
         if not isinstance(formulation, str):
-            raise TypeError(
+            msg = (
                 "Formulation must be specified by its name; "
                 "please use GEMSEO_PATH to specify custom formulations."
             )
+            raise TypeError(msg)
         self.formulation = self._form_factory.create(
             formulation,
             disciplines=self.disciplines,
@@ -356,9 +357,8 @@ class Scenario(MDODiscipline):
         elif file_format == OptimizationProblem.GGOBI_FORMAT:
             opt_pb.database.to_ggobi(file_path=file_path)
         else:
-            raise ValueError(
-                f"Cannot export optimization history to file format: {file_format}."
-            )
+            msg = f"Cannot export optimization history to file format: {file_format}."
+            raise ValueError(msg)
 
     def set_optimization_history_backup(
         self,
@@ -390,10 +390,11 @@ class Scenario(MDODiscipline):
 
         if self._opt_hist_backup_path.exists():
             if erase and pre_load:
-                raise ValueError(
+                msg = (
                     "Conflicting options for history backup, "
                     "cannot pre load optimization history and erase it!"
                 )
+                raise ValueError(msg)
             if erase:
                 LOGGER.warning(
                     "Erasing optimization history in %s",

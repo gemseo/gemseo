@@ -50,7 +50,7 @@ def test_common_scenario(
     baseline_images,
     common_problem_,
     pyplot_close_all,
-):
+) -> None:
     """Check QuadApprox with objective, standardized or not."""
     opt = QuadApprox(common_problem_)
     common_problem_.use_standardized_objective = use_standardized_objective

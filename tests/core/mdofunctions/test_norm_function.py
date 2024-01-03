@@ -19,7 +19,7 @@ from __future__ import annotations
 from gemseo.core.mdofunctions.norm_function import NormFunction
 
 
-def test_special_repr(problem_with_identity):
+def test_special_repr(problem_with_identity) -> None:
     """Check NormFunction.special_repr."""
     assert (
         NormFunction(

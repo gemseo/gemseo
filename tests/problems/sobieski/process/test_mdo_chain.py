@@ -21,6 +21,6 @@ from __future__ import annotations
 from gemseo.problems.sobieski.process.mdo_chain import SobieskiChain
 
 
-def test_exec_chain():
+def test_exec_chain() -> None:
     chain = SobieskiChain()
     chain.execute()

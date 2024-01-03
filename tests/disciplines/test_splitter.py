@@ -26,7 +26,7 @@ def splitting_discipline_for_test():
     return Splitter("E", {"Ep": [0, 1], "Es": [2, 3], "Er": 4})
 
 
-def test_splitting_discipline_execution(splitting_discipline_for_test):
+def test_splitting_discipline_execution(splitting_discipline_for_test) -> None:
     """Test the Splitter execution."""
     output_data = splitting_discipline_for_test.execute({
         "E": array([1.0, 2.0, 3.0, 4.0, 5.0])
@@ -36,7 +36,7 @@ def test_splitting_discipline_execution(splitting_discipline_for_test):
     assert (output_data["Er"] == array([5.0])).all
 
 
-def test_check_gradient(splitting_discipline_for_test):
+def test_check_gradient(splitting_discipline_for_test) -> None:
     """Test Splitter jacobian computation by finite differences."""
     splitting_discipline_for_test.default_inputs = {
         "E": array([1.0, 2.0, 3.0, 4.0, 5.0])

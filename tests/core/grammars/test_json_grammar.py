@@ -59,7 +59,7 @@ def assert_reset_dependencies(grammar: JSONGrammar) -> None:
     assert grammar._JSONGrammar__schema == {}
 
 
-def test_init_error():
+def test_init_error() -> None:
     """Verify that init raises the expected errors."""
     msg = "The grammar name cannot be empty."
     with pytest.raises(ValueError, match=msg):
@@ -71,7 +71,7 @@ def test_init_error():
         JSONGrammar("g", file_path="foo")
 
 
-def test_init_with_name():
+def test_init_with_name() -> None:
     """Verify init defaults."""
     g = JSONGrammar("g")
     assert g.name == "g"
@@ -79,7 +79,7 @@ def test_init_with_name():
     assert not g.defaults
 
 
-def test_init_with_file():
+def test_init_with_file() -> None:
     """Verify initializing with a file."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
     assert g
@@ -87,7 +87,7 @@ def test_init_with_file():
     assert g.required_names == {"name1"}
 
 
-def test_init_with_file_and_descriptions():
+def test_init_with_file_and_descriptions() -> None:
     """Verify initializing with a file and descriptions."""
     descriptions = {"name1": "name1 description", "name2": "name2 description"}
     g = JSONGrammar(
@@ -104,7 +104,7 @@ def test_init_with_file_and_descriptions():
         assert item["description"] == "name2 description"
 
 
-def test_delitem_error():
+def test_delitem_error() -> None:
     """Verify that removing a non-existing item raises."""
     g = JSONGrammar("g")
     msg = "foo"
@@ -112,7 +112,7 @@ def test_delitem_error():
         del g["foo"]
 
 
-def test_delitem():
+def test_delitem() -> None:
     """Verify removing an item."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
     del g["name1"]
@@ -122,7 +122,7 @@ def test_delitem():
     assert_reset_dependencies(g)
 
 
-def test_getitem_error():
+def test_getitem_error() -> None:
     """Verify that getting a non-existing item raises."""
     g = JSONGrammar("g")
     msg = "foo"
@@ -130,7 +130,7 @@ def test_getitem_error():
         g["foo"]
 
 
-def test_getitem():
+def test_getitem() -> None:
     """Verify getting an item."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
     assert (int, float, float64, int64) == g["name1"]._active_strategies[0].PYTHON_TYPES
@@ -143,7 +143,7 @@ def test_getitem():
         (DATA_PATH / "grammar_2.json", 2),
     ],
 )
-def test_len(file_path, length):
+def test_len(file_path, length) -> None:
     """Verify computing the length."""
     g = new_grammar(file_path)
     assert len(g) == length
@@ -156,7 +156,7 @@ def test_len(file_path, length):
         (DATA_PATH / "grammar_2.json", ["name1", "name2"]),
     ],
 )
-def test_iter(file_path, names):
+def test_iter(file_path, names) -> None:
     """Verify iterating."""
     g = new_grammar(file_path)
     assert list(iter(g)) == names
@@ -169,7 +169,7 @@ def test_iter(file_path, names):
         (DATA_PATH / "grammar_2.json", ["name1", "name2"]),
     ],
 )
-def test_names(file_path, names):
+def test_names(file_path, names) -> None:
     """Verify names getter."""
     g = new_grammar(file_path)
     assert list(g.names) == names
@@ -205,7 +205,7 @@ exclude_names = pytest.mark.parametrize(
 @exclude_names
 def test_update_and_update_from_file(
     file_path1, file_path2, method_is_update, exclude_names
-):
+) -> None:
     """Verify update and update_from_file."""
     g1 = new_grammar(file_path1)
     g1_names_before = g1.keys()
@@ -233,7 +233,7 @@ def test_update_and_update_from_file(
     assert_reset_dependencies(g1)
 
 
-def test_update_error():
+def test_update_error() -> None:
     """Verify update error."""
     g = JSONGrammar("g")
 
@@ -249,7 +249,7 @@ def test_update_error():
         DATA_PATH / "grammar_2.json",
     ],
 )
-def test_clear(file_path):
+def test_clear(file_path) -> None:
     """Verify clear."""
     g = new_grammar(file_path)
     g.clear()
@@ -286,7 +286,7 @@ Grammar name: g
         ),
     ],
 )
-def test_repr(file_path, repr_):
+def test_repr(file_path, repr_) -> None:
     """Verify repr."""
     g = new_grammar(file_path)
     if g:
@@ -294,7 +294,7 @@ def test_repr(file_path, repr_):
     assert repr(g) == repr_.strip()
 
 
-def test_validate_empty_grammar():
+def test_validate_empty_grammar() -> None:
     """Check that an empty grammar can validate everything."""
     JSONGrammar("g").validate({"name": 0})
 
@@ -320,7 +320,7 @@ def test_validate_empty_grammar():
         {"dict_of_2d_arrays": {"x": array([[1.0, 2.0, 1.0], [1.0, 2.0, 0.0]])}},
     ],
 )
-def test_validate(grammar_5, data):
+def test_validate(grammar_5, data) -> None:
     """Verify validate."""
     data["mandatory"] = True
     grammar_5.validate(data)
@@ -337,7 +337,7 @@ def test_validate(grammar_5, data):
         ),
     ],
 )
-def test_validate_error(raise_exception, data, error_msg, caplog):
+def test_validate_error(raise_exception, data, error_msg, caplog) -> None:
     """Verify that validate raises the expected errors."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
 
@@ -367,7 +367,7 @@ def test_validate_error(raise_exception, data, error_msg, caplog):
     ],
 )
 @pytest.mark.parametrize("merge", [True, False])
-def test_update_from_names(file_path, names, merge):
+def test_update_from_names(file_path, names, merge) -> None:
     """Verify update with names."""
     g = new_grammar(file_path)
     names_before = g.keys()
@@ -413,7 +413,7 @@ def test_update_from_names(file_path, names, merge):
     ],
 )
 @pytest.mark.parametrize("merge", [True, False])
-def test_update_from_data_with_empty(data, expected_type, merge):
+def test_update_from_data_with_empty(data, expected_type, merge) -> None:
     """Verify update_from_data from an empty grammar."""
     g = _test_update_from_data(None, data, merge)
 
@@ -436,7 +436,7 @@ def test_update_from_data_with_empty(data, expected_type, merge):
     ],
 )
 @pytest.mark.parametrize("merge", [True, False])
-def test_update_from_data_with_non_empty(data, expected_type, merge):
+def test_update_from_data_with_non_empty(data, expected_type, merge) -> None:
     """Verify update_from_data from a non empty grammar."""
     g = _test_update_from_data(DATA_PATH / "grammar_2.json", data, merge)
 
@@ -485,7 +485,7 @@ def _test_update_from_data(file_path: Path | None, data: Data, merge):
     return g
 
 
-def test_is_array_error():
+def test_is_array_error() -> None:
     """Verify is_array error."""
     g = JSONGrammar("g")
     msg = "The name foo is not in the grammar."
@@ -493,7 +493,7 @@ def test_is_array_error():
         g.is_array("foo")
 
 
-def test_is_array():
+def test_is_array() -> None:
     """Verify is_array."""
     g = new_grammar(DATA_PATH / "grammar_4.json")
 
@@ -525,7 +525,7 @@ def test_is_array():
         assert not g.is_array(name, numeric_only=True)
 
 
-def test_restrict_to_error():
+def test_restrict_to_error() -> None:
     """Verify that raises the expected error."""
     g = JSONGrammar("g")
     msg = "The name foo is not in the grammar."
@@ -541,7 +541,7 @@ def test_restrict_to_error():
         ["name1", "name2"],
     ],
 )
-def test_restrict_to(names):
+def test_restrict_to(names) -> None:
     """Verify restrict_to."""
     g = new_grammar(DATA_PATH / "grammar_2.json")
 
@@ -567,7 +567,7 @@ def test_restrict_to(names):
         DATA_PATH / "grammar_2.json",
     ],
 )
-def test_convert_to_simple_grammar(file_path):
+def test_convert_to_simple_grammar(file_path) -> None:
     """Verify grammar conversion."""
     g1 = new_grammar(file_path)
     g2 = g1.to_simple_grammar()
@@ -576,14 +576,14 @@ def test_convert_to_simple_grammar(file_path):
     assert isinstance(g2, SimpleGrammar)
 
 
-def test_convert_to_simple_grammar_not_convertible_type():
+def test_convert_to_simple_grammar_not_convertible_type() -> None:
     """Verify grammar conversion with non-convertible type."""
     g1 = new_grammar(DATA_PATH / "grammar_1.json")
     g2 = g1.to_simple_grammar()
     assert g2["name"] is None
 
 
-def test_convert_to_simple_grammar_warnings(caplog):
+def test_convert_to_simple_grammar_warnings(caplog) -> None:
     """Verify grammar conversion warnings."""
     g1 = new_grammar(
         DATA_PATH / "grammar_conversion_to_simple_grammar_warn_for_array.json"
@@ -610,7 +610,7 @@ def test_convert_to_simple_grammar_warnings(caplog):
         (DATA_PATH / "grammar_2.json", {"name1"}),
     ],
 )
-def test_required_names(file_path, names):
+def test_required_names(file_path, names) -> None:
     """Verify required_names."""
     g = new_grammar(file_path)
     assert g.required_names == names
@@ -624,7 +624,7 @@ def test_required_names(file_path, names):
         {"name1": "name1 description", "name2": "name2 description"},
     ],
 )
-def test_set_descriptions(descriptions):
+def test_set_descriptions(descriptions) -> None:
     """Verify setting descriptions."""
     g = JSONGrammar(
         "g",
@@ -663,7 +663,7 @@ def test_set_descriptions(descriptions):
         ),
     ],
 )
-def test_schema(file_path, schema):
+def test_schema(file_path, schema) -> None:
     """Verify schema getter."""
     g = JSONGrammar("g", file_path=file_path)
     assert g.schema == schema
@@ -687,20 +687,20 @@ EXPECTED_JSON = """
 
 
 @pytest.mark.parametrize("path", [None, "g.json"])
-def test_write(path, tmp_wd):
+def test_write(path, tmp_wd) -> None:
     """Verify write."""
     g = JSONGrammar("g", file_path=DATA_PATH / "grammar_1.json")
     g.to_file(path)
     assert Path("g.json").read_text() == EXPECTED_JSON
 
 
-def test_to_json(tmp_wd):
+def test_to_json(tmp_wd) -> None:
     """Verify to_json."""
     g = JSONGrammar("g", file_path=DATA_PATH / "grammar_1.json")
     assert g.to_json(indent=2) == EXPECTED_JSON
 
 
-def test_rename():
+def test_rename() -> None:
     """Verify rename."""
     g = JSONGrammar("g")
     g.update_from_names(["name1", "name2"])
@@ -717,7 +717,7 @@ def test_rename():
     assert g.defaults == {"new_name1": 1.0}
 
 
-def test_update_from_error():
+def test_update_from_error() -> None:
     g = JSONGrammar("g")
     g2 = SimpleGrammar("g")
     with pytest.raises(
@@ -726,7 +726,7 @@ def test_update_from_error():
         g.update(g2)
 
 
-def test_copy():
+def test_copy() -> None:
     """Verify copy."""
     g = JSONGrammar("g")
     g.update_from_names(["name"])
@@ -747,7 +747,7 @@ def test_copy():
         (False, True, 1),
     ],
 )
-def test_update_from_types(data):
+def test_update_from_types(data) -> None:
     """Test the consistency between the python types and the data validation."""
     data_dict = {str(i): value for i, value in enumerate(data)}
     names_to_types = {name: type(value) for name, value in data_dict.items()}
@@ -756,7 +756,7 @@ def test_update_from_types(data):
     grammar.validate(data_dict)
 
 
-def test_update_from_types_two_elements():
+def test_update_from_types_two_elements() -> None:
     """Tests an update from types with two elements of different types."""
     grammar = JSONGrammar("test")
     grammar.update_from_types({"i": int, "x": float})
@@ -767,7 +767,7 @@ def test_update_from_types_two_elements():
     }
 
 
-def test_empty_types():
+def test_empty_types() -> None:
     """Test update_from_types with empty payload."""
     grammar = JSONGrammar("test")
     grammar.update_from_types({})
@@ -786,7 +786,7 @@ def test_empty_types():
         (complex, "number"),
     ],
 )
-def test_update_from_types_basic(py_type, json_type):
+def test_update_from_types_basic(py_type, json_type) -> None:
     """Tests with all supported basic types."""
     names_to_types = {"name": py_type}
     grammar = JSONGrammar("test")
@@ -797,7 +797,7 @@ def test_update_from_types_basic(py_type, json_type):
     }
 
 
-def test_from_types_unsupported():
+def test_from_types_unsupported() -> None:
     grammar = JSONGrammar("test")
     with pytest.raises(
         KeyError, match="Unsupported python type for a JSON Grammar: None"
@@ -824,6 +824,6 @@ def test_from_types_unsupported():
         ),
     ],
 )
-def test_cast(value, expected):
+def test_cast(value, expected) -> None:
     """Check the method casting any value to a JSON-interpretable one."""
     assert JSONGrammar._JSONGrammar__cast_value(value) == expected

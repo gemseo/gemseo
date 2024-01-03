@@ -30,7 +30,7 @@ from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.utils.testing.helpers import image_comparison
 
 
-def test_init():
+def test_init() -> None:
     """Checks the linear problem initialization and residuals storage."""
     pb1 = LinearProblem(
         diag([1, 1]),
@@ -49,7 +49,7 @@ def test_init():
     assert len(pb1.residuals_history) == 2
 
 
-def test_residuals_checks():
+def test_residuals_checks() -> None:
     """Tests the basic checks for residuals computation."""
     pb1 = LinearProblem(diag([1, 1]))
     with pytest.raises(ValueError, match="Missing RHS"):
@@ -64,7 +64,7 @@ def test_residuals_checks():
     ("lhs", "rhs"),
     [(diag([1, 1]), ones(1)), (ones(1), ones(2)), (diag([1, 1]), diag([1, 1]))],
 )
-def test_size_checks(lhs, rhs):
+def test_size_checks(lhs, rhs) -> None:
     """Tests the sizes consistency checks in RHL and LHS."""
     problem = LinearProblem(lhs, rhs)
     with pytest.raises(ValueError, match="Incompatible dimensions in linear system"):
@@ -72,7 +72,7 @@ def test_size_checks(lhs, rhs):
 
 
 @image_comparison(["residuals0"])
-def test_plot_residuals(tmp_wd, pyplot_close_all):
+def test_plot_residuals(tmp_wd, pyplot_close_all) -> None:
     """Tests the residuals plot creation."""
     rng = RandomState(1)
     n = 10
@@ -83,21 +83,21 @@ def test_plot_residuals(tmp_wd, pyplot_close_all):
     problem.plot_residuals()
 
 
-def test_plot_residuals_checks():
+def test_plot_residuals_checks() -> None:
     """Tests the residuals plot creation."""
     problem = LinearProblem(eye(1), ones(1))
     with pytest.raises(ValueError, match="Residuals history is empty."):
         problem.plot_residuals()
 
 
-def test_residuals():
+def test_residuals() -> None:
     problem = LinearProblem(eye(3), ones(3))
     assert problem.compute_residuals(False, current_x=zeros(3)) == (3**0.5)
     assert problem.compute_residuals(current_x=zeros(3)) == 1.0
     assert problem.compute_residuals(current_x=ones(3)) == 0.0
 
 
-def test_linear_operator():
+def test_linear_operator() -> None:
     """Tests the sizes consistency checks in RHL and LHS."""
     problem = LinearProblem(aslinearoperator(eye(3)), ones(3))
     assert problem.compute_residuals(current_x=zeros(3)) == 1.0

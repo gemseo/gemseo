@@ -146,7 +146,7 @@ def expected_nodes(n2_json):
     return nodes
 
 
-def test_generate_variables_html(n2_json):
+def test_generate_variables_html(n2_json) -> None:
     """Check the private static method generate_variables_html.
 
     Args:
@@ -169,7 +169,7 @@ def test_generate_variables_html(n2_json):
     assert html == expected_html
 
 
-def test_generate_coupling_html(n2_json):
+def test_generate_coupling_html(n2_json) -> None:
     """Check the private static method generate_coupling_html.
 
     Args:
@@ -193,7 +193,7 @@ def test_generate_coupling_html(n2_json):
     assert html == expected_html
 
 
-def test_generate_discipline_html(n2_json):
+def test_generate_discipline_html(n2_json) -> None:
     """Check the private static method generate_discipline_html.
 
     Args:
@@ -229,7 +229,7 @@ def test_generate_discipline_html(n2_json):
 
 
 @pytest.mark.parametrize("group", [0, 1])
-def test_generate_group_html(n2_json, group):
+def test_generate_group_html(n2_json, group) -> None:
     """Check the private static method generate_group_html.
 
     Args:
@@ -272,7 +272,7 @@ def test_generate_group_html(n2_json, group):
     assert html == expected_html
 
 
-def test_generate_groups_menu_html(n2_json):
+def test_generate_groups_menu_html(n2_json) -> None:
     """Check the private static method generate_groups_menu_html.
 
     Args:
@@ -330,7 +330,7 @@ def test_generate_groups_menu_html(n2_json):
     assert html == expected_html
 
 
-def test_get_discipline_names(n2_json):
+def test_get_discipline_names(n2_json) -> None:
     """Check the private static method get_discipline_names.
 
     Args:
@@ -340,7 +340,7 @@ def test_get_discipline_names(n2_json):
     assert n2_json._get_discipline_names() == ["D3", "D1", "D2"]
 
 
-def test_compute_variable_sizes(n2_json):
+def test_compute_variable_sizes(n2_json) -> None:
     """Check the private static method compute_variable_sizes.
 
     Args:
@@ -350,7 +350,7 @@ def test_compute_variable_sizes(n2_json):
     assert n2_json._compute_variable_sizes() == {"y12a": 4, "y12b": 3, "y21": "n/a"}
 
 
-def test_compute_groups(n2_json):
+def test_compute_groups(n2_json) -> None:
     """Check the private static method compute_groups.
 
     Args:
@@ -363,7 +363,7 @@ def test_compute_groups(n2_json):
     assert groups == {"D1": 1, "D2": 1, "D3": 0}
 
 
-def test_create_nodes(n2_json, expected_nodes):
+def test_create_nodes(n2_json, expected_nodes) -> None:
     """Check the private static method create_nodes.
 
     Args:
@@ -391,7 +391,7 @@ def test_create_nodes(n2_json, expected_nodes):
 
 
 @pytest.mark.parametrize("name", [1, "foo"])
-def test_default_group_template(name):
+def test_default_group_template(name) -> None:
     """Test the application of the group template for a group index.
 
     Args:
@@ -400,7 +400,7 @@ def test_default_group_template(name):
     assert N2JSON._DEFAULT_GROUP_TEMPLATE.format(name) == f"Group {name}"
 
 
-def test_create_links(n2_json, expected_links):
+def test_create_links(n2_json, expected_links) -> None:
     """Check the private static method create_links.
 
     Args:
@@ -418,7 +418,7 @@ def test_create_links(n2_json, expected_links):
     assert links == expected_links
 
 
-def test_loads(n2_json, expected_links, expected_nodes):
+def test_loads(n2_json, expected_links, expected_nodes) -> None:
     """Check that the JSON attribute is loaded correctly.
 
     Args:

@@ -27,7 +27,7 @@ from gemseo.utils.source_parsing import parse_google
 from gemseo.utils.source_parsing import parse_rest
 
 
-def function_with_google_docstring(arg1, arg2):
+def function_with_google_docstring(arg1, arg2) -> None:
     """Compute the sum of two elements.
 
     Args:
@@ -42,7 +42,7 @@ def function_with_google_docstring(arg1, arg2):
 class ClassWithGoogleDocstring:
     """A class doing nothing."""
 
-    def __init__(self, arg1=0.0, arg2=1.0):
+    def __init__(self, arg1=0.0, arg2=1.0) -> None:
         """
         Args:
             arg1: The first argument.
@@ -50,7 +50,7 @@ class ClassWithGoogleDocstring:
         """
 
 
-def test_get_default_option_values():
+def test_get_default_option_values() -> None:
     """Check the function getting the default values of the __init__'s options."""
     assert get_callable_argument_defaults(ClassWithGoogleDocstring.__init__) == {
         "arg1": 0.0,
@@ -58,7 +58,7 @@ def test_get_default_option_values():
     }
 
 
-def test_get_options_doc():
+def test_get_options_doc() -> None:
     """Check the function getting the documentation of the options of a function."""
     assert get_options_doc(function_with_google_docstring) == {
         "arg1": "The first element.",
@@ -90,7 +90,7 @@ REST_DOCSTRING = """
 """
 
 
-def test_google():
+def test_google() -> None:
     """Test that the Google docstrings are correctly parsed."""
     parsed_docstring = parse_google(DOCSTRING)
     assert parsed_docstring == {
@@ -101,7 +101,7 @@ def test_google():
     }
 
 
-def test_rest():
+def test_rest() -> None:
     """Test that the reST docstrings are correctly parsed."""
     assert parse_rest(REST_DOCSTRING) == {
         "arg1": "A one-line description.",
@@ -110,12 +110,12 @@ def test_rest():
     }
 
 
-def test_google_without_parameters_block():
+def test_google_without_parameters_block() -> None:
     """Test that the arguments docstring cannot be parsed without 'Args' section."""
     assert not parse_google(DOCSTRING.replace("Args", "Foo"))
 
 
-def function_with_malformed_docstring(x):
+def function_with_malformed_docstring(x) -> None:
     """Function.
 
     Foo:
@@ -123,7 +123,7 @@ def function_with_malformed_docstring(x):
     """
 
 
-def test_parsing_with_malformed_docstring():
+def test_parsing_with_malformed_docstring() -> None:
     """Test an invalid docstring."""
     with pytest.raises(
         ValueError,

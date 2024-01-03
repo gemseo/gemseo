@@ -43,6 +43,5 @@ def get_hdf5_group(
     try:
         return h5py_data[name]
     except KeyError as err:
-        raise KeyError(
-            f"In HDF5 file {h5py_data.file}: no such group {err.args[0]}."
-        ) from None
+        msg = f"In HDF5 file {h5py_data.file}: no such group {err.args[0]}."
+        raise KeyError(msg) from None

@@ -26,7 +26,7 @@ from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
 )
 
 
-def test_bilevel_scenario_result_after_execution(scenario):
+def test_bilevel_scenario_result_after_execution(scenario) -> None:
     """Check BiLevelScenarioResult after execution."""
     scenario.execute()
     # The optimal objective is z*=0 and is achieved in (x*, y*) = (0, 0).
@@ -61,7 +61,7 @@ def test_bilevel_scenario_result_after_execution(scenario):
     assert f_opt == 1.0
 
 
-def test_get_sub_optimization_result(scenario):
+def test_get_sub_optimization_result(scenario) -> None:
     """Check get_sub_optimization_result."""
     scenario.execute()
     scenario_result = BiLevelScenarioResult(scenario)
@@ -79,7 +79,7 @@ def test_get_sub_optimization_result(scenario):
     )
 
 
-def test_get_top_optimization_result(scenario):
+def test_get_top_optimization_result(scenario) -> None:
     """Check get_top_optimization_result."""
     scenario.execute()
     scenario_result = BiLevelScenarioResult(scenario)

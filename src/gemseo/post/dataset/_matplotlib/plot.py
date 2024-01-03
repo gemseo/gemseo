@@ -129,9 +129,8 @@ class MatplotlibPlot(BasePlot):
         """
         if fig is None:
             if axes is not None:
-                raise ValueError(
-                    "The figure associated with the given axes is missing."
-                )
+                msg = "The figure associated with the given axes is missing."
+                raise ValueError(msg)
 
             return plt.subplots(
                 nrows=n_rows,
@@ -140,7 +139,8 @@ class MatplotlibPlot(BasePlot):
             )
 
         if axes is None:
-            raise ValueError("The axes associated with the given figure are missing.")
+            msg = "The axes associated with the given figure are missing."
+            raise ValueError(msg)
 
         return fig, axes
 

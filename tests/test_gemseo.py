@@ -105,10 +105,10 @@ if TYPE_CHECKING:
 
 
 class Observer:
-    def __init__(self):
+    def __init__(self) -> None:
         self.status_changes = 0
 
-    def update(self, atom):
+    def update(self, atom) -> None:
         self.status_changes += 1
 
 
@@ -125,7 +125,7 @@ def scenario() -> MDOScenario:
     return scenario
 
 
-def test_generate_n2_plot(tmp_wd):
+def test_generate_n2_plot(tmp_wd) -> None:
     """Test the n2 plot with the Sobieski problem.
 
     Args:
@@ -143,7 +143,7 @@ def test_generate_n2_plot(tmp_wd):
 
 
 @pytest.mark.parametrize("full", [False, True])
-def test_generate_coupling_graph(tmp_wd, full):
+def test_generate_coupling_graph(tmp_wd, full) -> None:
     """Test the coupling graph with the Sobieski problem."""
     # TODO: reuse data and checks from test_dependency_graph
     disciplines = create_discipline([
@@ -158,7 +158,7 @@ def test_generate_coupling_graph(tmp_wd, full):
     assert Path("coupl.dot").exists()
 
 
-def test_get_algorithm_options_schema():
+def test_get_algorithm_options_schema() -> None:
     """Test that all available options are printed."""
     schema_dict = get_algorithm_options_schema("SLSQP")
     assert "properties" in schema_dict
@@ -176,13 +176,13 @@ def test_get_algorithm_options_schema():
     get_algorithm_options_schema("SLSQP", pretty_print=True)
 
 
-def test_get_surrogate_options_schema():
+def test_get_surrogate_options_schema() -> None:
     """Test that the surrogate options schema is printed."""
     get_surrogate_options_schema("RBFRegressor")
     get_surrogate_options_schema("RBFRegressor", pretty_print=True)
 
 
-def test_create_scenario_and_monitor():
+def test_create_scenario_and_monitor() -> None:
     """Test the creation of a scenario from the SobieskiMission discipline."""
     create_scenario(
         create_discipline("SobieskiMission"),
@@ -203,7 +203,7 @@ def test_create_scenario_and_monitor():
         )
 
 
-def test_monitor_scenario():
+def test_monitor_scenario() -> None:
     """Test the scenario monitoring API method."""
     scenario = create_scenario(
         create_discipline("SobieskiMission"),
@@ -223,7 +223,7 @@ def test_monitor_scenario():
 
 
 @pytest.mark.parametrize("obj_type", [Scenario, str, Path])
-def test_execute_post(scenario, obj_type, tmp_wd):
+def test_execute_post(scenario, obj_type, tmp_wd) -> None:
     """Test the API method to call the post-processing factory.
 
     Args:
@@ -242,13 +242,13 @@ def test_execute_post(scenario, obj_type, tmp_wd):
     assert isinstance(post, OptHistoryView)
 
 
-def test_execute_post_type_error(scenario):
+def test_execute_post_type_error(scenario) -> None:
     """Test the method execute_post with a wrong typed argument."""
     with pytest.raises(TypeError, match=f"Cannot post process type: {int}"):
         execute_post(1234, "OptHistoryView")
 
 
-def test_create_doe_scenario():
+def test_create_doe_scenario() -> None:
     """Test the creation of a DOE scenario."""
     create_scenario(
         create_discipline("SobieskiMission"),
@@ -276,7 +276,7 @@ def test_create_doe_scenario():
         ("IDF", {}, None),
     ],
 )
-def test_get_formulation_sub_options_schema(formulation_name, opts, expected):
+def test_get_formulation_sub_options_schema(formulation_name, opts, expected) -> None:
     """Check that the sub options schema is recovered for different formulations.
 
     Args:
@@ -308,7 +308,9 @@ def test_get_formulation_sub_options_schema(formulation_name, opts, expected):
         ("IDF", {}),
     ],
 )
-def test_get_formulation_sub_options_schema_print(capfd, formulation_name, opts):
+def test_get_formulation_sub_options_schema_print(
+    capfd, formulation_name, opts
+) -> None:
     """Check that the sub options schema is printed for different formulations.
 
     Args:
@@ -331,7 +333,7 @@ def test_get_formulation_sub_options_schema_print(capfd, formulation_name, opts)
         assert bool(re.search(expected, out))
 
 
-def test_get_scenario_inputs_schema():
+def test_get_scenario_inputs_schema() -> None:
     """Check that the scenario inputs schema is retrieved correctly."""
     aero = create_discipline(["SobieskiAerodynamics"])
     design_space = SobieskiDesignSpace()
@@ -346,7 +348,7 @@ def test_get_scenario_inputs_schema():
     get_scenario_inputs_schema(sc_aero, pretty_print=True)
 
 
-def test_exec_algo():
+def test_exec_algo() -> None:
     """Test the execution of an algorithm with the Rosenbrock problem."""
     problem = Rosenbrock()
     sol = execute_algo(problem, "L-BFGS-B", max_iter=200)
@@ -362,7 +364,7 @@ def test_exec_algo():
         execute_algo(problem, "lhs", "unknown_algo", n_samples=200)
 
 
-def test_get_scenario_options_schema():
+def test_get_scenario_options_schema() -> None:
     """Check that the scenario options schema is retrieved correctly."""
     schema = get_scenario_options_schema("MDO")
     assert "name" in schema["properties"]
@@ -373,7 +375,7 @@ def test_get_scenario_options_schema():
     get_scenario_options_schema("MDO", pretty_print=True)
 
 
-def test_get_mda_options_schema():
+def test_get_mda_options_schema() -> None:
     """Check that the mda options schema are retrieved correctly."""
     schema = get_mda_options_schema("MDAJacobi")
     assert "name" in schema["properties"]
@@ -381,7 +383,7 @@ def test_get_mda_options_schema():
     get_mda_options_schema("MDAJacobi", pretty_print=True)
 
 
-def test_get_available_opt_algorithms():
+def test_get_available_opt_algorithms() -> None:
     """Check that the optimization algorithms are retrieved correctly."""
     algos = get_available_opt_algorithms()
     assert "SLSQP" in algos
@@ -389,14 +391,14 @@ def test_get_available_opt_algorithms():
     assert "TNC" in algos
 
 
-def test_get_available_doe_algorithms():
+def test_get_available_doe_algorithms() -> None:
     """Test that the doe algorithms are retrieved correctly."""
     algos = get_available_doe_algorithms()
     assert "lhs" in algos
     assert "fullfact" in algos
 
 
-def test_get_available_formulations():
+def test_get_available_formulations() -> None:
     """Test that the available formulations are retrieved correctly."""
     formulations = get_available_formulations()
     assert "MDF" in formulations
@@ -404,28 +406,28 @@ def test_get_available_formulations():
     assert "IDF" in formulations
 
 
-def test_get_available_post_processings():
+def test_get_available_post_processings() -> None:
     """Test that the available post-processing methods are retrieved correctly."""
     post_processors = get_available_post_processings()
     assert "OptHistoryView" in post_processors
     assert "RadarChart" in post_processors
 
 
-def test_get_available_surrogates():
+def test_get_available_surrogates() -> None:
     """Test that the available surrogates are retrieved correctly."""
     surrogates = get_available_surrogates()
     assert "RBFRegressor" in surrogates
     assert "LinearRegressor" in surrogates
 
 
-def test_get_available_disciplines():
+def test_get_available_disciplines() -> None:
     """Test that the available disciplines are retrieved correctly."""
     disciplines = get_available_disciplines()
     assert "SobieskiMission" in disciplines
     assert "Sellar1" in disciplines
 
 
-def test_create_discipline():
+def test_create_discipline() -> None:
     """Test that API method creates a discipline properly.
 
     Test exceptions when the options dictionary does not follow the specified json
@@ -454,7 +456,7 @@ def test_create_discipline():
         create_discipline("SobieskiMission", **options_fail)
 
 
-def test_create_surrogate():
+def test_create_surrogate() -> None:
     """Test the creation of a surrogate discipline."""
     disc = SobieskiMission()
     input_names = ["y_24", "y_34"]
@@ -473,7 +475,7 @@ def test_create_surrogate():
     assert outs["y_4"] > 0.0
 
 
-def test_create_scalable():
+def test_create_scalable() -> None:
     """Test the creation of a scalable discipline."""
 
     def f_1(x_1, x_2, x_3):
@@ -492,7 +494,7 @@ def test_create_scalable():
     create_scalable("ScalableDiagonalModel", data, fill_factor=0.7)
 
 
-def test_create_mda():
+def test_create_mda() -> None:
     """Test the creation of an MDA from the Sobieski disciplines."""
     disciplines = create_discipline([
         "SobieskiAerodynamics",
@@ -505,14 +507,14 @@ def test_create_mda():
     assert mda.residual_history[-1] < 1e-4
 
 
-def test_get_available_mdas():
+def test_get_available_mdas() -> None:
     """Test that the available MDA solvers are retrieved correctly."""
     mdas = get_available_mdas()
     assert "MDAGaussSeidel" in mdas
     assert "MDA" not in mdas
 
 
-def test_get_discipline_inputs_schema():
+def test_get_discipline_inputs_schema() -> None:
     """Test that the discipline input schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_inputs_schema(mission)
@@ -524,7 +526,7 @@ def test_get_discipline_inputs_schema():
     get_discipline_inputs_schema(mission, pretty_print=True)
 
 
-def test_get_discipline_outputs_schema():
+def test_get_discipline_outputs_schema() -> None:
     """Test that the discipline output schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_outputs_schema(mission)
@@ -536,20 +538,20 @@ def test_get_discipline_outputs_schema():
     get_discipline_outputs_schema(mission, pretty_print=True)
 
 
-def test_get_scenario_differentiation_modes():
+def test_get_scenario_differentiation_modes() -> None:
     """Test that the scenario differentiation modes are retrieved correctly."""
     modes = get_scenario_differentiation_modes()
     for mode in modes:
         assert isinstance(mode, str)
 
 
-def test_get_post_processing_options_schema():
+def test_get_post_processing_options_schema() -> None:
     """Test that the post-processing option schemas are retrieved correctly."""
     for post in get_available_post_processings():
         get_post_processing_options_schema(post)
 
 
-def test_get_formulation_options_schema():
+def test_get_formulation_options_schema() -> None:
     """Test that the formulation options schemas are retrieved correctly."""
     mdf_schema = get_formulation_options_schema("MDF")
     for prop in ["maximize_objective", "inner_mda_name"]:
@@ -566,7 +568,7 @@ def test_get_formulation_options_schema():
     get_formulation_options_schema("IDF", pretty_print=True)
 
 
-def test_get_discipline_options_schema():
+def test_get_discipline_options_schema() -> None:
     """Test that the discipline options schemas are retrieved correctly."""
     for disc in ["SobieskiMission", "MDOChain", "AnalyticDiscipline"]:
         schema = get_discipline_options_schema(disc)
@@ -582,14 +584,14 @@ def test_get_discipline_options_schema():
         get_discipline_options_schema(disc, pretty_print=True)
 
 
-def test_get_discipline_options_defaults():
+def test_get_discipline_options_defaults() -> None:
     """Test that the discipline options defaults are retrieved correctly."""
     for disc in ["SobieskiMission", "MDOChain", "AnalyticDiscipline"]:
         defaults = get_discipline_options_defaults(disc)
         assert len(defaults) > 0
 
 
-def test_get_default_sub_option_values():
+def test_get_default_sub_option_values() -> None:
     """Test that the default sub option values are retrieved correctly."""
     defaults = get_formulations_sub_options_defaults("MDF", main_mda_name="MDAChain")
     assert defaults is not None
@@ -598,21 +600,21 @@ def test_get_default_sub_option_values():
     assert defaults is None
 
 
-def test_get_formulations_options_defaults():
+def test_get_formulations_options_defaults() -> None:
     """Test that the formulation options defaults are retrieved correctly."""
     for form in ["MDF", "BiLevel"]:
         defaults = get_formulations_options_defaults(form)
         assert len(defaults) > 0
 
 
-def test_get_available_scenario_types():
+def test_get_available_scenario_types() -> None:
     """Test that the available scenario types are retrieved correctly."""
     scen_types = get_available_scenario_types()
     assert "MDO" in scen_types
     assert "DOE" in scen_types
 
 
-def test_create_parameter_space():
+def test_create_parameter_space() -> None:
     """Test the creation of a parameter space."""
     parameter_space = create_parameter_space()
     parameter_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
@@ -620,14 +622,14 @@ def test_create_parameter_space():
     parameter_space.check()
 
 
-def test_create_design_space():
+def test_create_design_space() -> None:
     """Test the creation of a design space."""
     design_space = create_design_space()
     design_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
     design_space.check()
 
 
-def test_write_design_space(tmp_wd):
+def test_write_design_space(tmp_wd) -> None:
     """Test that a design space can be exported to a text or h5 file.
 
     Args:
@@ -639,13 +641,13 @@ def test_write_design_space(tmp_wd):
     write_design_space(design_space, "design_space.h5")
 
 
-def test_create_cache():
+def test_create_cache() -> None:
     """Test the creation of a cache."""
     cache = create_cache("MemoryFullCache")
     assert not cache
 
 
-def test_get_available_caches():
+def test_get_available_caches() -> None:
     """Test that the available caches are retrieved correctly."""
     caches = get_available_caches()
     # plugins may add classes
@@ -656,7 +658,7 @@ def test_get_available_caches():
     ("dataset_name", "expected_n_samples"),
     [("BurgersDataset", 30), ("IrisDataset", 150), ("RosenbrockDataset", 100)],
 )
-def test_create_benchmark_dataset(tmp_wd, dataset_name, expected_n_samples):
+def test_create_benchmark_dataset(tmp_wd, dataset_name, expected_n_samples) -> None:
     """Test the load_dataset method with the `BurgersDataset`.
 
     Args:
@@ -668,7 +670,7 @@ def test_create_benchmark_dataset(tmp_wd, dataset_name, expected_n_samples):
     assert len(dataset) == expected_n_samples
 
 
-def test_print_configuration(capfd):
+def test_print_configuration(capfd) -> None:
     """Check that the |g| configuration is shown to the user.
 
     Args:
@@ -716,7 +718,7 @@ def test_print_configuration(capfd):
         assert bool(re.search(expected, out))
 
 
-def test_get_schema_pretty_print(capfd):
+def test_get_schema_pretty_print(capfd) -> None:
     """Test that the post-processing options schemas are printed correctly.
 
     Args:
@@ -747,7 +749,7 @@ def variables_space():
     return design_space
 
 
-def test_compute_doe_transformed(variables_space):
+def test_compute_doe_transformed(variables_space) -> None:
     """Check the computation of a transformed DOE in a variables space."""
     points = compute_doe(
         variables_space, size=4, algo_name="fullfact", unit_sampling=True
@@ -755,13 +757,13 @@ def test_compute_doe_transformed(variables_space):
     assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
 
 
-def test_compute_doe_nontransformed(variables_space):
+def test_compute_doe_nontransformed(variables_space) -> None:
     """Check the computation of a non-transformed DOE in a variables space."""
     points = compute_doe(variables_space, size=4, algo_name="fullfact")
     assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
 
 
-def test_import_analytic_discipline(tmp_wd):
+def test_import_analytic_discipline(tmp_wd) -> None:
     """Check that an analytic discipline performs correctly after import."""
     file_path = "saved_discipline.pkl"
 
@@ -776,7 +778,7 @@ def test_import_analytic_discipline(tmp_wd):
     assert loaded_discipline.local_data["y"] == discipline.local_data["y"]
 
 
-def test_import_discipline(tmp_wd):
+def test_import_discipline(tmp_wd) -> None:
     """Check that a discipline performs correctly after import."""
     file_path = "saved_discipline.pkl"
 
@@ -804,7 +806,7 @@ def test_configure(
     activate_discipline_cache,
     check_input_data,
     check_output_data,
-):
+) -> None:
     """Check that the configuration of GEMSEO works correctly."""
     configure(
         activate_discipline_counters=activate_discipline_counters,
@@ -826,7 +828,7 @@ def test_configure(
     configure()
 
 
-def test_configure_default():
+def test_configure_default() -> None:
     """Check the default use of configure."""
     configure()
     assert MDOFunction.activate_counters is True
@@ -837,7 +839,7 @@ def test_configure_default():
     assert DriverLibrary.activate_progress_bar is True
 
 
-def test_algo_features():
+def test_algo_features() -> None:
     """Check that get_algorithm_features returns the features of an optimizer."""
     expected = AlgorithmFeatures(
         library_name="SciPy",
@@ -853,7 +855,7 @@ def test_algo_features():
     assert get_algorithm_features("SLSQP") == expected
 
 
-def test_algo_features_error():
+def test_algo_features_error() -> None:
     """Check that asking for the features of a wrong optimizer raises an error."""
     with pytest.raises(
         ValueError, match="wrong_name is not the name of an optimization algorithm."
@@ -861,7 +863,7 @@ def test_algo_features_error():
         assert get_algorithm_features("wrong_name")
 
 
-def test_wrap_discipline_in_job_scheduler(tmpdir):
+def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:
     """Test the job scheduler API."""
     disc = create_discipline("SobieskiMission")
     wrapped = wrap_discipline_in_job_scheduler(
@@ -878,37 +880,37 @@ def test_wrap_discipline_in_job_scheduler(tmpdir):
     assert "y_4" in wrapped.execute()
 
 
-def test_create_dataset_without_name():
+def test_create_dataset_without_name() -> None:
     """Check create_dataset without name."""
     assert create_dataset().name == "Dataset"
     assert create_dataset(class_name=DatasetClassName.IODataset).name == "IODataset"
 
 
-def test_create_dataset_class_name():
+def test_create_dataset_class_name() -> None:
     """Check create_dataset with class_name set from the enum DatasetClassName."""
     isinstance(create_dataset(class_name=DatasetClassName.IODataset), IODataset)
 
 
-def test_configure_logger():
+def test_configure_logger() -> None:
     """Check configure_logger() with default argument values."""
     logger = configure_logger()
     assert logger == logging.root
     assert logger.level == logging.INFO
 
 
-def test_configure_logger_name():
+def test_configure_logger_name() -> None:
     """Check configure_logger() with custom name."""
     logger = configure_logger(logger_name="foo")
     assert logger.name == "foo"
 
 
-def test_configure_logger_level():
+def test_configure_logger_level() -> None:
     """Check configure_logger() with custom level."""
     logger = configure_logger(level=logging.WARNING)
     assert logger.level == logging.WARNING
 
 
-def test_configure_logger_format(caplog):
+def test_configure_logger_format(caplog) -> None:
     """Check configure_logger() with custom message and date formats."""
     date_format = "foo"
     message_format = "%(levelname)8s / %(asctime)s: %(message)s"
@@ -921,7 +923,7 @@ def test_configure_logger_format(caplog):
     assert re.match(r"INFO     bar:test_gemseo\.py:\d+\d+\d+ baz\n", caplog.text)
 
 
-def test_configure_logger_file(tmp_wd):
+def test_configure_logger_file(tmp_wd) -> None:
     """Check configure_logger() with custom file."""
     logger = configure_logger(filename="foo.txt")
     stream_handler = logger.handlers[0]
@@ -935,7 +937,7 @@ def test_configure_logger_file(tmp_wd):
     assert file_handler.formatter == stream_handler.formatter
 
 
-def test_configure_logger_file_mode(tmp_wd):
+def test_configure_logger_file_mode(tmp_wd) -> None:
     """Check configure_logger() with custom file and file mode."""
     logger = configure_logger(filename="foo.txt", filemode="w")
     assert logger.handlers[-1].mode == "w"

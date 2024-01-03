@@ -41,7 +41,7 @@ def sobieski_aerodynamics():
     return SobieskiAerodynamics()
 
 
-def test_build_model(sobieski_aerodynamics):
+def test_build_model(sobieski_aerodynamics) -> None:
     """Test the build a 1D interpolation of Sobieski's drag wrt z."""
     sizes = {}
     for k, value in sobieski_aerodynamics.default_inputs.items():
@@ -91,7 +91,7 @@ def test_build_model(sobieski_aerodynamics):
     ScalableDiagonalApproximation(sizes, comp_dep, in_dep)
 
 
-def test_serialize(tmp_wd, sobieski_aerodynamics):
+def test_serialize(tmp_wd, sobieski_aerodynamics) -> None:
     """Test the serialization of a SobieskiAerodynamics instance."""
     s_file = "aero.o"
     sobieski_aerodynamics.to_pickle(s_file)

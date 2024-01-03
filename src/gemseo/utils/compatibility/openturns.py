@@ -110,10 +110,12 @@ elif version.parse(openturns.__version__) >= version.parse("1.19"):
         return openturns.CorrelationAnalysis.SRRC(x, y)
 
     def compute_kendall_tau(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
-        raise NotImplementedError("Requires openturns>=1.20")
+        msg = "Requires openturns>=1.20"
+        raise NotImplementedError(msg)
 
     def compute_squared_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
-        raise NotImplementedError("Requires openturns>=1.20")
+        msg = "Requires openturns>=1.20"
+        raise NotImplementedError(msg)
 
 else:
 
@@ -140,7 +142,9 @@ else:
         return openturns.CorrelationAnalysis_SRRC(x, y)
 
     def compute_kendall_tau(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
-        raise NotImplementedError("Requires openturns>=1.20")
+        msg = "Requires openturns>=1.20"
+        raise NotImplementedError(msg)
 
     def compute_squared_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
-        raise NotImplementedError("Requires openturns>=1.20")
+        msg = "Requires openturns>=1.20"
+        raise NotImplementedError(msg)

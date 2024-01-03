@@ -183,7 +183,8 @@ class GradientSensitivity(OptPostProcessor):
         """
         n_gradients = len(gradients)
         if n_gradients == 0:
-            raise ValueError("No gradients to plot at current iteration.")
+            msg = "No gradients to plot at current iteration."
+            raise ValueError(msg)
 
         n_cols = 2
         n_rows = sum(divmod(n_gradients, n_cols))

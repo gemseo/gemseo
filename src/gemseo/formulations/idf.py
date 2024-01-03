@@ -145,10 +145,11 @@ class IDF(MDOFormulation):
         variable_names = set(self.opt_problem.design_space.variable_names)
         if not strong_couplings.issubset(variable_names):
             missing = strong_couplings - variable_names
-            raise ValueError(
+            msg = (
                 "IDF formulation needs coupling variables as design variables, "
                 f"missing variables: {missing}."
             )
+            raise ValueError(msg)
         self._set_default_input_values_from_design_space()
 
     def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102

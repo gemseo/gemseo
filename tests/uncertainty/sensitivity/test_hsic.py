@@ -129,7 +129,7 @@ def openturns_hsic_indices(
 
 
 @pytest.mark.parametrize("outputs", [{}, {"outputs": ["y1", "y2"]}, {"outputs": "y2"}])
-def test_outputs(hsic_analysis: HSICAnalysis, outputs):
+def test_outputs(hsic_analysis: HSICAnalysis, outputs) -> None:
     """Check that outputs are taken into account."""
     hsic_analysis.compute_indices(**outputs)
     output_names = outputs.get("outputs", hsic_analysis.default_output)
@@ -140,7 +140,7 @@ def test_outputs(hsic_analysis: HSICAnalysis, outputs):
     )
 
 
-def test_methods(hsic_analysis_2: HSICAnalysis):
+def test_methods(hsic_analysis_2: HSICAnalysis) -> None:
     """Check the methods for which the indices have been computed."""
     all_methods = set(hsic_analysis_2.Method)
     available_methods = set(hsic_analysis_2.indices.keys())
@@ -149,7 +149,7 @@ def test_methods(hsic_analysis_2: HSICAnalysis):
 
 def test_outputs_names_and_size(
     hsic_analysis_2: HSICAnalysis, openturns_hsic_indices: FirstOrderIndicesType
-):
+) -> None:
     """Check the names and sizes of the outputs."""
     indices = hsic_analysis_2.indices
     hsic_index = indices["HSIC"]
@@ -161,7 +161,7 @@ def test_outputs_names_and_size(
 
 def test_inputs_names_and_size(
     hsic_analysis_2: HSICAnalysis, openturns_hsic_indices: FirstOrderIndicesType
-):
+) -> None:
     """Check the names and sizes of the inputs."""
     indices = hsic_analysis_2.indices
     hsic_index = indices["HSIC"]
@@ -173,7 +173,7 @@ def test_inputs_names_and_size(
 
 def test_method_names(
     hsic_analysis_2: HSICAnalysis, openturns_hsic_indices: FirstOrderIndicesType
-):
+) -> None:
     """Check that the property ``method`` is ``indices[algo.lower()]``."""
     indices = hsic_analysis_2.indices
     for method_name in hsic_analysis_2.Method:
@@ -185,7 +185,7 @@ def test_method_names(
 
 def test_hsic_indices_values(
     hsic_analysis_2: HSICAnalysis, openturns_hsic_indices: FirstOrderIndicesType
-):
+) -> None:
     """Check that the global HSIC indices are equal to the indices computed with
     OpenTURNS."""
     indices = hsic_analysis_2.indices

@@ -93,10 +93,11 @@ class ConstraintsHistory(OptPostProcessor):
         all_constraint_names = self.opt_problem.constraint_names.keys()
         for constraint_name in constraint_names:
             if constraint_name not in all_constraint_names:
-                raise ValueError(
+                msg = (
                     "Cannot build constraints history plot, "
                     f"{constraint_name} is not a constraint name."
                 )
+                raise ValueError(msg)
 
         constraint_names = self.opt_problem.get_function_names(constraint_names)
         constraint_histories, constraint_names, _ = self.database.get_history_array(

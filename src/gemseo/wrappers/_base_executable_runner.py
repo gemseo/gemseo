@@ -116,7 +116,7 @@ class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Create a unique execution directory."""
         return self.__directory_creator.create()
 
-    def __copy_files(self):
+    def __copy_files(self) -> None:
         """Copy the files into the execution directory."""
         if self.__directory_creator.last_directory:
             for file_ in self._files:

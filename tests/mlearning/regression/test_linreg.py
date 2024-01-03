@@ -77,7 +77,7 @@ def model_with_transform(dataset) -> LinearRegressor:
     return linreg
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     model_ = LinearRegressor(dataset)
     assert model_.algo is not None
@@ -89,7 +89,7 @@ def test_constructor(dataset):
     ("l2_penalty_ratio", "type_"),
     [(0.0, Lasso), (1.0, Ridge), (0.5, ElasticNet)],
 )
-def test_constructor_penalty(dataset, l2_penalty_ratio, type_):
+def test_constructor_penalty(dataset, l2_penalty_ratio, type_) -> None:
     """Test construction."""
     model_ = LinearRegressor(
         dataset, penalty_level=0.1, l2_penalty_ratio=l2_penalty_ratio
@@ -99,14 +99,14 @@ def test_constructor_penalty(dataset, l2_penalty_ratio, type_):
     assert model_._predict(array([[1, 2]])).shape == (1, 2)
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     model_ = LinearRegressor(dataset)
     model_.learn()
     assert model_.algo is not None
 
 
-def test_coefficients(model):
+def test_coefficients(model) -> None:
     """Test coefficients."""
     assert model.coefficients.shape[0] == 2
     assert model.coefficients.shape[1] == 2
@@ -117,7 +117,7 @@ def test_coefficients(model):
     assert allclose(coefficients["y_2"][0]["x_2"], array([-3.0]))
 
 
-def test_coefficients_with_transform(dataset, model_with_transform):
+def test_coefficients_with_transform(dataset, model_with_transform) -> None:
     """Test correct handling of get_coefficients with transformers."""
     model_with_transform.get_coefficients(as_dict=False)
     model_with_transform.get_coefficients(as_dict=True)
@@ -138,19 +138,19 @@ def test_coefficients_with_transform(dataset, model_with_transform):
         model_with_pca.get_coefficients()
 
 
-def test_intercept(model):
+def test_intercept(model) -> None:
     """Check the value returned by intercept when as_dict is True."""
     intercept = model.get_intercept()
     assert allclose(intercept["y_1"], array([1.0]))
     assert allclose(intercept["y_2"], array([-1.0]))
 
 
-def test_intercept_false(model):
+def test_intercept_false(model) -> None:
     """Check the value returned by intercept when as_dict is False."""
     assert_almost_equal(model.get_intercept(False), array([1.0, -1.0]))
 
 
-def test_intercept_with_output_dimension_change(dataset):
+def test_intercept_with_output_dimension_change(dataset) -> None:
     """Verify that an error is raised."""
     model = LinearRegressor(dataset, transformer={"outputs": PCA(n_components=2)})
     model.learn()
@@ -165,7 +165,7 @@ def test_intercept_with_output_dimension_change(dataset):
         model.get_intercept()
 
 
-def test_prediction(model):
+def test_prediction(model) -> None:
     """Test prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     another_input_value = {
@@ -182,7 +182,7 @@ def test_prediction(model):
     assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
 
 
-def test_prediction_with_transform(model_with_transform):
+def test_prediction_with_transform(model_with_transform) -> None:
     """Test prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     another_input_value = {
@@ -199,7 +199,7 @@ def test_prediction_with_transform(model_with_transform):
     assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
 
 
-def test_prediction_with_pls(dataset):
+def test_prediction_with_pls(dataset) -> None:
     """Test prediction."""
     model = LinearRegressor(dataset, transformer={"inputs": PLS(n_components=2)})
     model.learn()
@@ -218,7 +218,7 @@ def test_prediction_with_pls(dataset):
     assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
 
 
-def test_prediction_with_pls_failure(dataset):
+def test_prediction_with_pls_failure(dataset) -> None:
     """Test that PLS does not work with output group."""
     model = LinearRegressor(dataset, transformer={"outputs": PLS(n_components=2)})
     with pytest.raises(
@@ -231,7 +231,7 @@ def test_prediction_with_pls_failure(dataset):
         model.learn()
 
 
-def test_prediction_jacobian(model):
+def test_prediction_jacobian(model) -> None:
     """Test jacobian prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     jac = model.predict_jacobian(input_value)
@@ -242,7 +242,7 @@ def test_prediction_jacobian(model):
     assert allclose(jac["y_2"]["x_2"], array([[-3.0]]))
 
 
-def test_jacobian_transform(model_with_transform):
+def test_jacobian_transform(model_with_transform) -> None:
     """Test jacobian prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     jac = model_with_transform.predict_jacobian(input_value)
@@ -253,7 +253,7 @@ def test_jacobian_transform(model_with_transform):
     assert allclose(jac["y_2"]["x_2"], array([[-3.0]]))
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)

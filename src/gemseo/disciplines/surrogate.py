@@ -132,7 +132,8 @@ class SurrogateDiscipline(MDODiscipline):
             self.regression_model = surrogate
             name = self.regression_model.learning_set.name
         elif data is None:
-            raise ValueError("data is required to train the surrogate model.")
+            msg = "data is required to train the surrogate model."
+            raise ValueError(msg)
         else:
             factory = RegressionModelFactory()
             self.regression_model = factory.create(

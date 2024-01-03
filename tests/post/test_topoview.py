@@ -51,7 +51,7 @@ def scenario_and_dimensions():
 
 
 @image_comparison(["l_shape_solution"])
-def test_l_shape(scenario_and_dimensions):
+def test_l_shape(scenario_and_dimensions) -> None:
     """Test the plot of the solution of the L-shape topology optimization.
 
     Here we consider the design value.
@@ -66,7 +66,7 @@ def test_l_shape(scenario_and_dimensions):
 
 
 @image_comparison(["l_shape_solution_xphys"])
-def test_l_shape_xphys(scenario_and_dimensions):
+def test_l_shape_xphys(scenario_and_dimensions) -> None:
     """Test the plot of the solution of the L-shape topology optimization.
 
     Here we consider the value of an observable.
@@ -82,7 +82,7 @@ def test_l_shape_xphys(scenario_and_dimensions):
 
 
 @image_comparison(["l_shape_solution_last_iter"])
-def test_l_shape_last_iter(scenario_and_dimensions):
+def test_l_shape_last_iter(scenario_and_dimensions) -> None:
     """Test the plot of the solution of the L-shape topology optimization.
 
     Here we consider the last iteration.

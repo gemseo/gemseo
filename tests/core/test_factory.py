@@ -43,7 +43,7 @@ class MultitonFactory(metaclass=BaseABCMultiton):
     _MODULE_NAMES = ()
 
 
-def test_multiton():
+def test_multiton() -> None:
     """Verify the multiton behavior."""
 
     class MultitonFactory2(metaclass=BaseABCMultiton):
@@ -55,7 +55,7 @@ def test_multiton():
     assert a is not MultitonFactory2()
 
 
-def test_multiton_cache_clear():
+def test_multiton_cache_clear() -> None:
     """Verify the clearing of the cache of the multiton."""
     # The cache is not empty because of the Multiton* classes declared in the module.
     MultitonFactory()
@@ -64,7 +64,7 @@ def test_multiton_cache_clear():
     assert not BaseABCMultiton._BaseMultiton__keys_to_class_instances
 
 
-def test_print_configuration(reset_factory):
+def test_print_configuration(reset_factory) -> None:
     """Verify the string representation of a factory."""
     factory = MDOFormulationsFactory()
 
@@ -87,7 +87,7 @@ def test_print_configuration(reset_factory):
         assert re.findall(pattern, repr(factory))
 
 
-def test_create_error(reset_factory):
+def test_create_error(reset_factory) -> None:
     """Verify that Factory.create catches bad sub-classes."""
     factory = MDOFormulationsFactory()
     msg = "The class dummy is not available; the available ones are: "
@@ -95,7 +95,7 @@ def test_create_error(reset_factory):
         factory.create("dummy", "dummy", "dummy", "dummy")
 
 
-def test_create_bad_option(reset_factory):
+def test_create_bad_option(reset_factory) -> None:
     """Verify that a Factory.create catches bad options."""
     factory = MDOFormulationsFactory()
     with pytest.raises(TypeError):
@@ -105,7 +105,7 @@ def test_create_bad_option(reset_factory):
 @pytest.mark.parametrize(
     "formulation_name", ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]
 )
-def test_parse_docstrings(reset_factory, tmp_wd, formulation_name):
+def test_parse_docstrings(reset_factory, tmp_wd, formulation_name) -> None:
     factory = MDOFormulationsFactory()
     formulations = factory.class_names
 
@@ -136,7 +136,7 @@ def test_parse_docstrings(reset_factory, tmp_wd, formulation_name):
         assert item in opt_doc
 
 
-def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
+def test_ext_plugin_syspath_is_first(reset_factory, tmp_path) -> None:
     """Verify that plugins are not discovered from the first path in sys.path."""
     # This test requires to use subprocess such that python can
     # be called from a temporary directory that will be automatically
@@ -161,20 +161,20 @@ assert 'DummyBiLevel' in MDOFormulationsFactory().class_names
     assert "AssertionError" in str(exc_info.value.output)
 
 
-def test_ext_plugin_gemseo_path(monkeypatch, reset_factory):
+def test_ext_plugin_gemseo_path(monkeypatch, reset_factory) -> None:
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
     monkeypatch.setenv("GEMSEO_PATH", DATA)
     # There could be more classes available with the plugins
     assert "DummyBiLevel" in MDOFormulationsFactory().class_names
 
 
-def test_ext_plugin_gemseo_path_bad_package(monkeypatch, reset_factory):
+def test_ext_plugin_gemseo_path_bad_package(monkeypatch, reset_factory) -> None:
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
     monkeypatch.setenv("GEMSEO_PATH", DATA / "gemseo_dummy_plugins")
     assert MDOFormulationsFactory().failed_imports == {"bad": "division by zero"}
 
 
-def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
+def test_wanted_classes_with_entry_points(monkeypatch, reset_factory) -> None:
     """Verify that the classes found are the expected ones."""
 
     class DummyEntryPoint:
@@ -191,32 +191,32 @@ def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
     assert "DummyBiLevel" in MDOFormulationsFactory().class_names
 
 
-def test_get_library_name(reset_factory):
+def test_get_library_name(reset_factory) -> None:
     """Verify that the library names found are the expected ones."""
     factory = MDOFormulationsFactory()
     assert factory.get_library_name("MDF") == "gemseo"
 
 
-def test_concrete_classes():
+def test_concrete_classes() -> None:
     """Check that the factory considers only the concrete classes."""
     factory = MDOFormulationsFactory()
     assert "BiLevel" in factory.class_names
     assert factory._CLASS not in factory.class_names
 
 
-def test_str():
+def test_str() -> None:
     """Verify str() on a factory."""
     factory = MDOFormulationsFactory()
     assert str(factory) == "Factory of MDOFormulation objects"
 
 
-def test_positional_arguments():
+def test_positional_arguments() -> None:
     """Check that BaseFactory supports the positional arguments."""
     cache = CacheFactory().create("SimpleCache", 0.1)
     assert cache.tolerance == 0.1
 
 
-def test_creation_error(caplog):
+def test_creation_error(caplog) -> None:
     """Check that BaseFactory logs a message in the case of a creation error."""
     with pytest.raises(TypeError):
         CacheFactory().create("SimpleCache", 1, 2, 3, a=2)

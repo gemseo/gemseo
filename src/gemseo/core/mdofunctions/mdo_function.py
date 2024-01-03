@@ -332,7 +332,8 @@ class MDOFunction(Serializable):
         value: int,
     ) -> None:
         if not self.activate_counters:
-            raise RuntimeError("The function counters are disabled.")
+            msg = "The function counters are disabled."
+            raise RuntimeError(msg)
 
         with self._n_calls.get_lock():
             self._n_calls.value = value
@@ -733,17 +734,19 @@ class MDOFunction(Serializable):
             shapes_are_1d = approximation_is_1d and reference_is_1d
             flatten_diff = reference.flatten().shape != approximation.flatten().shape
             if not shapes_are_1d or (shapes_are_1d and flatten_diff):
-                raise ValueError(
+                msg = (
                     f"The Jacobian matrix computed by {self} has a wrong shape; "
                     f"got: {reference.shape} while expected: {approximation.shape}."
                 )
+                raise ValueError(msg)
 
         if self.rel_err(reference, approximation, error_max) > error_max:
             LOGGER.error("The Jacobian matrix computed by %s is wrong.", self)
             LOGGER.error("Error =\n%s", self.filt_0(reference - approximation))
             LOGGER.error("Analytic jacobian=\n%s", self.filt_0(reference))
             LOGGER.error("Approximate step gradient=\n%s", self.filt_0(approximation))
-            raise ValueError(f"The Jacobian matrix computed by {self} is wrong.")
+            msg = f"The Jacobian matrix computed by {self} is wrong."
+            raise ValueError(msg)
 
     @staticmethod
     def rel_err(a_vect: ArrayType, b_vect: ArrayType, error_max: float) -> float:
@@ -822,10 +825,11 @@ class MDOFunction(Serializable):
             attributes["input_names"] = args
         for attribute in attributes:
             if attribute not in serializable_attributes:
-                raise ValueError(
+                msg = (
                     f"Cannot initialize MDOFunction attribute: {attribute}, "
                     f"allowed ones are: {pretty_str(serializable_attributes)}."
                 )
+                raise ValueError(msg)
         return MDOFunction(func=None, **attributes)
 
     def set_pt_from_database(

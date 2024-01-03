@@ -44,12 +44,12 @@ def relative_norm(x, x_ref):
     return norm(x - x_ref) / norm(x_ref)
 
 
-def test_get_optimum_range(problem):
+def test_get_optimum_range(problem) -> None:
     reference_range = array([3963.98])
     assert problem.optimum_range == reference_range
 
 
-def test_get_sob_cstr(problem):
+def test_get_sob_cstr(problem) -> None:
     gs = problem.get_default_inputs(["g_1", "g_2", "g_3"])
     c1 = problem.get_sobieski_constraints(
         gs["g_1"], gs["g_2"], gs["g_3"], true_cstr=True
@@ -61,7 +61,7 @@ def test_get_sob_cstr(problem):
     assert len(c2) == 12
 
 
-def test_normalize(problem):
+def test_normalize(problem) -> None:
     x0 = problem.initial_design
     x0_adim = problem.normalize_inputs(x0)
     x0_dim = problem.unnormalize_inputs(x0_adim)
@@ -71,13 +71,13 @@ def test_normalize(problem):
 @pytest.mark.parametrize(
     ("dtype", "expected"), [("complex128", complex128), ("float64", float64)]
 )
-def test_design_space(dtype, expected):
+def test_design_space(dtype, expected) -> None:
     design_space = SobieskiProblem(dtype).design_space
     for variable in design_space.values():
         assert variable.value.dtype == expected
 
 
-def test_constants(problem):
+def test_constants(problem) -> None:
     cref = zeros(5)
     # Constants of problem
     cref[0] = 2000.0  # minimum fuel weight
@@ -89,7 +89,7 @@ def test_constants(problem):
     assert relative_norm(c, cref) == 0.0
 
 
-def test_init():
+def test_init() -> None:
     cmod = zeros(5)
     # Constants of problem
     cmod[0] = 2000.0  # minimum fuel weight
@@ -101,23 +101,23 @@ def test_init():
     assert (cmod == problem.constants).all()
 
 
-def test_wrong_dtype():
+def test_wrong_dtype() -> None:
     with pytest.raises(ValueError, match="foo"):
         SobieskiProblem("foo")
 
 
-def test_get_default_inputs_feasible(problem):
+def test_get_default_inputs_feasible(problem) -> None:
     indata = problem.get_default_inputs_feasible("x_1")
     refdata = problem.get_x0_feasible("x_1")
     assert (indata["x_1"] == refdata).all()
 
 
-def test_get_random_inputs(problem):
+def test_get_random_inputs(problem) -> None:
     problem.get_random_input(names=None, seed=1)
     assert len(problem.get_random_input(names=["x_1", "x_2"], seed=1)) == 2
 
 
-def test_get_bounds(problem):
+def test_get_bounds(problem) -> None:
     lb_ref = array((0.1, 0.75, 0.75, 0.1, 0.01, 30000.0, 1.4, 2.5, 40.0, 500.0))
     ub_ref = array((0.4, 1.25, 1.25, 1.0, 0.09, 60000.0, 1.8, 8.5, 70.0, 1500.0))
     l_b, u_b = problem.design_bounds
@@ -125,7 +125,7 @@ def test_get_bounds(problem):
     assert relative_norm(u_b, ub_ref) == 0.0
 
 
-def test_get_bounds_tuple(problem):
+def test_get_bounds_tuple(problem) -> None:
     """"""
     bounds = array([
         (0.1, 0.4),
@@ -144,7 +144,7 @@ def test_get_bounds_tuple(problem):
     assert_equal(upper, bounds[:, 1])
 
 
-def test_poly_approx(problem, dtype):
+def test_poly_approx(problem, dtype) -> None:
     """Test polynomial function approximation."""
     # Reference value from octave computation for polyApprox function
     ff_reference = 1.02046767  # Octave computation
@@ -164,7 +164,7 @@ def test_poly_approx(problem, dtype):
     assert ff == pytest.approx(ff_reference, abs=1e-6)
 
 
-def test_weight(problem, dtype):
+def test_weight(problem, dtype) -> None:
     """blackbox_structure function test."""
     # Reference value from octaves computation for blackbox_structure
     # function
@@ -201,7 +201,7 @@ def test_weight(problem, dtype):
     assert relative_norm(g_1, g_1_reference) == pytest.approx(0.0, abs=1e-2)
 
 
-def test_dragpolar(problem, dtype):
+def test_dragpolar(problem, dtype) -> None:
     """blackbox_aerodynamics function test."""
     # Reference value from octave computation for blackbox_structure
     # function
@@ -244,7 +244,7 @@ def test_dragpolar(problem, dtype):
     assert relative_norm(g_2, g_2_reference) == pytest.approx(0.0, abs=1e-6)
 
 
-def test_power(problem, dtype):
+def test_power(problem, dtype) -> None:
     """blackbox_propulsion function test."""
     # Reference value from octave computation for blackbox_structure
     # function
@@ -294,7 +294,7 @@ def test_power(problem, dtype):
     assert relative_norm(g_3, g_3_reference) == pytest.approx(0.0, abs=1e-6)
 
 
-def test_range(problem, dtype):
+def test_range(problem, dtype) -> None:
     """blackbox_mission function test."""
     # Reference value from octave computation for blackbox_structure
     # function
@@ -333,7 +333,7 @@ def test_range(problem, dtype):
     assert y_4[0] == pytest.approx(y_4_reference[0], abs=1e-3)
 
 
-def test_range_h35000(problem, dtype):
+def test_range_h35000(problem, dtype) -> None:
     """blackbox_mission function test."""
     # Reference value from octave computation for one MDA loop
     # function
@@ -372,7 +372,7 @@ def test_range_h35000(problem, dtype):
     assert y_4 == pytest.approx(y_4_reference, abs=1e-2)
 
 
-def test_optimum_gs(problem):
+def test_optimum_gs(problem) -> None:
     """MDA analysis of the optimum sample from Sobieski and check range value."""
     # Reference value from octave computation for blackbox_structure function
     #         y_4_reference = problem.get_sobieski_optimum_range()
@@ -382,7 +382,7 @@ def test_optimum_gs(problem):
     problem._SobieskiProblem__compute_mda(x_optimum)
 
 
-def test_constraints(problem):
+def test_constraints(problem) -> None:
     """MDA analysis of the optimum sample from Sobieski and check range value."""
     # Reference value from octave computation for blackbox_structure function
     #         y_4_reference = problem.get_sobieski_optimum_range()
@@ -411,7 +411,7 @@ def test_constraints(problem):
         assert constraint_values[i].real <= 0.0
 
 
-def test_ineq_constraints(problem):
+def test_ineq_constraints(problem) -> None:
     """"""
     #         y_4_reference = problem.get_sobieski_optimum_range()
 
@@ -423,7 +423,7 @@ def test_ineq_constraints(problem):
             assert g[i] <= 0.0
 
 
-def test_x0_gs(problem, dtype):
+def test_x0_gs(problem, dtype) -> None:
     """MDA analysis of the initial sample from Sobieski and check range value."""
     # Reference value from octave computation for MDA
     # function
@@ -451,7 +451,7 @@ def test_x0_gs(problem, dtype):
     assert int(y_4[0].real) == int(y_4_reference[0])
 
 
-def test_h35000(problem, dtype):
+def test_h35000(problem, dtype) -> None:
     """MDA analysis of the initial sample from Sobieski with modified altitude to test
     conditions on altitude in code."""
 
@@ -481,7 +481,7 @@ def test_h35000(problem, dtype):
     assert int(y_4[0].real) == int(y_4_reference[0])
 
 
-def test_x0_optimum(problem, dtype):
+def test_x0_optimum(problem, dtype) -> None:
     """MDA analysis of the initial sample from Sobieski and check range value."""
     # Reference value from octave computation for blackbox_structure
     # function
@@ -549,7 +549,7 @@ def test_x0_optimum(problem, dtype):
 )
 def test_original_design_variables_order(
     design_variables, physical_design_variables, use_original_order
-):
+) -> None:
     """Check the design space with original variables order."""
     problem = SobieskiProblem()
     problem.USE_ORIGINAL_DESIGN_VARIABLES_ORDER = use_original_order

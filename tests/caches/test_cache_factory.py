@@ -22,7 +22,7 @@ from __future__ import annotations
 from gemseo.caches.cache_factory import CacheFactory
 
 
-def test_cache_factory():
+def test_cache_factory() -> None:
     factory = CacheFactory()
     assert factory.is_available("SimpleCache")
     assert factory.is_available("HDF5Cache")

@@ -163,16 +163,18 @@ def create_disciplines_from_sizes(
             total number of inputs or outputs.
     """
     if nb_of_disc_inputs > nb_of_total_disc_io:
-        raise ValueError(
+        msg = (
             "The number of disciplines inputs must be lower "
             "or equal than the total number of disciplines io"
         )
+        raise ValueError(msg)
 
     if nb_of_disc_outputs > nb_of_total_disc_io:
-        raise ValueError(
+        msg = (
             "The number of disciplines outputs must be lower "
             "or equal than the total number of disciplines io"
         )
+        raise ValueError(msg)
 
     disc_names = _get_disc_names(nb_of_disc)
 

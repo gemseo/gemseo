@@ -166,10 +166,11 @@ class MDOLinearFunction(MDOFunction):
         elif isinstance(coefficients, array_classes) and coefficients.ndim == 1:
             self._coefficients = coefficients.reshape((1, -1))
         else:
-            raise ValueError(
+            msg = (
                 "Coefficients must be passed as a 2-dimensional "
                 "or a 1-dimensional ndarray."
             )
+            raise ValueError(msg)
 
     @property
     def value_at_zero(self) -> ArrayType:
@@ -190,7 +191,8 @@ class MDOLinearFunction(MDOFunction):
         elif isinstance(value_at_zero, Number):
             self._value_at_zero = array([value_at_zero] * output_dim)
         else:
-            raise ValueError("Value at zero must be an ndarray or a number.")
+            msg = "Value at zero must be an ndarray or a number."
+            raise ValueError(msg)
 
     def _generate_1d_expr(self, input_names: Sequence[str]) -> str:
         """Generate the literal expression of the linear function in scalar form.
@@ -316,9 +318,8 @@ class MDOLinearFunction(MDOFunction):
             ValueError: If the frozen indexes and values have different shapes.
         """
         if frozen_indexes.shape != frozen_values.shape:
-            raise ValueError(
-                "Arrays of frozen indexes and values must have same shape."
-            )
+            msg = "Arrays of frozen indexes and values must have same shape."
+            raise ValueError(msg)
         active_indexes = array([
             index
             for index in range(self.coefficients.shape[1])

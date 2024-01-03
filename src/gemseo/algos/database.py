@@ -187,10 +187,11 @@ class Database(Mapping):
                 original_array.copy_wrapped_array()
             return original_array
 
-        raise KeyError(
+        msg = (
             "A database key must be either a NumPy array of a HashableNdarray; "
             f"got {type(original_array)} instead."
         )
+        raise KeyError(msg)
 
     def __getitem__(self, x_vect: DatabaseKeyType) -> DatabaseValueType | None:
         return self.__data[self.get_hashable_ndarray(x_vect)]
@@ -260,10 +261,11 @@ class Database(Mapping):
         """
         n_iterations = len(self)
         if n > n_iterations:
-            raise ValueError(
+            msg = (
                 f"The number of last iterations ({n}) is greater "
                 f"than the number of iterations ({n_iterations})."
             )
+            raise ValueError(msg)
         return [
             x.wrapped_array
             for x in islice(self.__data.keys(), n_iterations - n, n_iterations)
@@ -495,7 +497,8 @@ class Database(Mapping):
             TypeError: If the argument is not a callable.
         """
         if not callable(function):
-            raise TypeError("Listener function is not callable")
+            msg = "Listener function is not callable"
+            raise TypeError(msg)
         self.__store_listeners.append(function)
 
     def add_new_iter_listener(self, function: Callable) -> None:
@@ -509,7 +512,8 @@ class Database(Mapping):
             TypeError: If the argument is not a callable.
         """
         if not callable(function):
-            raise TypeError("Listener function is not callable.")
+            msg = "Listener function is not callable."
+            raise TypeError(msg)
         self.__new_iter_listeners.append(function)
 
     def clear_listeners(self) -> None:
@@ -610,11 +614,12 @@ class Database(Mapping):
                     if len(not_function_names) == 1
                     else "are not output names"
                 )
-                raise ValueError(
+                msg = (
                     f"{pretty_repr(not_function_names, use_and=True)} {suffix}; "
                     f"available ones are "
                     f"{pretty_repr(all_function_names, use_and=True)}."
                 )
+                raise ValueError(msg)
 
         output_history = []
         input_history = []
@@ -847,10 +852,11 @@ class Database(Mapping):
         len_self = len(self)
 
         if iteration == 0 or not (-len_self <= iteration <= len_self):
-            raise ValueError(
+            msg = (
                 "The iteration must be within {-N, ..., -1, 1, ..., N} "
                 f"where N={len_self} is the number of iterations."
             )
+            raise ValueError(msg)
 
         if iteration > 0:
             return iteration - 1

@@ -119,9 +119,8 @@ class OptimizationLibrary(DriverLibrary):
             Whether the algorithm handles the passed type of constraints.
         """
         if algo_name not in self.descriptions:
-            raise KeyError(
-                f"Algorithm {algo_name} not in library {self.__class__.__name__}."
-            )
+            msg = f"Algorithm {algo_name} not in library {self.__class__.__name__}."
+            raise KeyError(msg)
 
         if eq_constraint:
             return self.descriptions[algo_name].handle_equality_constraints
@@ -218,7 +217,8 @@ class OptimizationLibrary(DriverLibrary):
         ):
             max_iter = options[self.OPTIONS_MAP[self.MAX_ITER]]
         else:
-            raise ValueError("Could not determine the maximum number of iterations.")
+            msg = "Could not determine the maximum number of iterations."
+            raise ValueError(msg)
 
         self._ftol_rel = options.get(self.F_TOL_REL, 0.0)
         self._ftol_abs = options.get(self.F_TOL_ABS, 0.0)

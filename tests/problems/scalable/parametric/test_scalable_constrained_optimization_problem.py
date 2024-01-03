@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class ScalableDiscipline(MDODiscipline):
-    def __init__(self, p: float):
+    def __init__(self, p: float) -> None:
         self.p = p
         super().__init__()
         self.input_grammar.update_from_names(["x"])
@@ -100,7 +100,9 @@ def scalable_optimization_problem_scenario(request, n, constraint_kind):
     return scenario
 
 
-def test_resolution(scalable_optimization_problem_scenario, algo, n, constraint_kind):
+def test_resolution(
+    scalable_optimization_problem_scenario, algo, n, constraint_kind
+) -> None:
     if constraint_kind == MDOFunction.ConstraintType.EQ and algo in [
         "SLSQP",
         "NLOPT_SLSQP",

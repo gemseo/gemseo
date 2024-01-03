@@ -58,7 +58,7 @@ def obj(x):
     return obj_f  # noqa: RET504
 
 
-def test_aggregation_discipline(disc_constr):
+def test_aggregation_discipline(disc_constr) -> None:
     """Tests the constraint aggregation discipline in a scenario, with analytic
     derivatives and adjoint."""
     obj_disc = create_discipline(
@@ -101,7 +101,7 @@ def test_aggregation_discipline(disc_constr):
     ["lower_bound_KS", "upper_bound_KS", "IKS", "POS_SUM", "SUM"],
 )
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
-def test_constr_jac(disc_constr, aggregation_function, indices, input_val):
+def test_constr_jac(disc_constr, aggregation_function, indices, input_val) -> None:
     """Checks the Jacobian of the AggregationDiscipline."""
     disc_agg = create_discipline(
         "ConstraintAggregation",
@@ -119,7 +119,7 @@ def test_constr_jac(disc_constr, aggregation_function, indices, input_val):
     ["lower_bound_KS", "upper_bound_KS", "IKS", "POS_SUM", "SUM"],
 )
 @pytest.mark.parametrize("input_val", [(1.0, 2.0), (0.0, 0.0), (-1.0, -2.0)])
-def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val):
+def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val) -> None:
     """Checks the Jacobian of the AggregationDiscipline with scale effect."""
     disc_agg = create_discipline(
         "ConstraintAggregation",
@@ -138,7 +138,7 @@ def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val):
         (ConstraintAggregation.EvaluationFunction.UPPER_BOUND_KS, "upper_bound_KS"),
     ],
 )
-def test_evaluation_function_as_enum(aggregation_attribute_value):
+def test_evaluation_function_as_enum(aggregation_attribute_value) -> None:
     """Check the use of EvaluationFunction."""
     discipline = create_discipline(
         "ConstraintAggregation",

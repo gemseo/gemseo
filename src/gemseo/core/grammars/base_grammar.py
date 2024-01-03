@@ -96,7 +96,8 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
             ValueError: If the name is empty.
         """  # noqa: D205, D212, D415
         if not name:
-            raise ValueError("The grammar name cannot be empty.")
+            msg = "The grammar name cannot be empty."
+            raise ValueError(msg)
         self.name = name
         self.clear()
         self.__create_data_converter(self.DATA_CONVERTER_CLASS)
@@ -442,7 +443,8 @@ class BaseGrammar(collections.abc.Mapping, metaclass=ABCGoogleDocstringInheritan
         self._check_name(name)
 
         if namespaces_separator in name:
-            raise ValueError(f"Variable {name} has already a namespace.")
+            msg = f"Variable {name} has already a namespace."
+            raise ValueError(msg)
 
         new_name = namespace + namespaces_separator + name
         self.rename_element(name, new_name)
