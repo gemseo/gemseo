@@ -14,8 +14,8 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
-MSE for regression models
-=========================
+RMSE for regression models
+==========================
 """
 
 from matplotlib import pyplot as plt
@@ -25,7 +25,7 @@ from numpy import newaxis
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.regression.rbf import RBFRegressor
 
@@ -35,17 +35,15 @@ from gemseo.mlearning.regression.rbf import RBFRegressor
 # :math:`y_i` is an output observation
 # and :math:`\hat{y}_i=\hat{f}(x_i)` is an output prediction
 # computed by a regression model :math:`\hat{f}`,
-# the mean squared error (MSE) metric is written
+# the root mean squared error (RMSE) metric is written
 #
 # .. math::
 #
-#   \text{MSE} = \frac{1}{N}\sum_{i=1}^N(y_i-\hat{y}_i)^2 \geq 0.
+#   \text{RMSE} = \sqrt{\frac{1}{N}\sum_{i=1}^N(y_i-\hat{y}_i)^2} \geq 0.
 #
 # The lower, the better.
 # From a quantitative point of view,
 # this depends on the order of magnitude of the outputs.
-# The square root of this average is often easier to interpret,
-# as it is expressed in the units of the output (see :class:`.RMSEMeasure`).
 #
 # To illustrate this quality measure,
 # let us consider the function :math:`f(x)=(6x-2)^2\sin(12x-4)` :cite:`forrester2008`:
@@ -80,10 +78,10 @@ polynomial.learn()
 
 # %%
 # Before using it,
-# we are going to measure its quality with the MSE metric:
-mse = MSEMeasure(polynomial)
-result = mse.compute_learning_measure()
-result, result**0.5 / (y_train.max() - y_train.min())
+# we are going to measure its quality with the RMSE metric:
+rmse = RMSEMeasure(polynomial)
+result = rmse.compute_learning_measure()
+result, result / (y_train.max() - y_train.min())
 
 # %%
 # This result is medium (14% of the learning output range),
@@ -96,8 +94,8 @@ y_test = f(x_test)
 dataset_test = IODataset()
 dataset_test.add_input_group(x_test[:, newaxis], ["x"])
 dataset_test.add_output_group(y_test[:, newaxis], ["y"])
-result = mse.compute_test_measure(dataset_test)
-result, result**0.5 / (y_test.max() - y_test.min())
+result = rmse.compute_test_measure(dataset_test)
+result, result / (y_test.max() - y_test.min())
 
 # %%
 # The quality is higher than 15% of the test output range, which is pretty mediocre.
@@ -119,8 +117,8 @@ y_test = f(x_test)
 dataset_test_in_learning_domain = IODataset()
 dataset_test_in_learning_domain.add_input_group(x_test[:, newaxis], ["x"])
 dataset_test_in_learning_domain.add_output_group(y_test[:, newaxis], ["y"])
-mse.compute_test_measure(dataset_test_in_learning_domain)
-result, result**0.5 / (y_test.max() - y_test.min())
+result = rmse.compute_test_measure(dataset_test_in_learning_domain)
+result, result / (y_test.max() - y_test.min())
 
 # %%
 # Lastly,
@@ -132,19 +130,19 @@ rbf.learn()
 # %%
 # The quality of this :class:`.RBFRegressor` is quite good,
 # both on the learning side:
-mse_rbf = MSEMeasure(rbf)
-result = mse_rbf.compute_learning_measure()
-result, result**0.5 / (y_train.max() - y_train.min())
+rmse_rbf = RMSEMeasure(rbf)
+result = rmse_rbf.compute_learning_measure()
+result, result / (y_train.max() - y_train.min())
 
 # %%
 # and on the validation side:
-result = mse_rbf.compute_test_measure(dataset_test_in_learning_domain)
-result, result**0.5 / (y_test.max() - y_test.min())
+result = rmse_rbf.compute_test_measure(dataset_test_in_learning_domain)
+result, result / (y_test.max() - y_test.min())
 
 # %%
 # including the larger domain:
-result = mse_rbf.compute_test_measure(dataset_test)
-result, result**0.5 / (y_test_in_large_domain.max() - y_test_in_large_domain.min())
+result = rmse_rbf.compute_test_measure(dataset_test)
+result, result / (y_test_in_large_domain.max() - y_test_in_large_domain.min())
 
 # %%
 # A final plot to convince us:

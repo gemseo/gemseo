@@ -14,8 +14,8 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
-MSE for regression models
-=========================
+R2 for regression models
+========================
 """
 
 from matplotlib import pyplot as plt
@@ -25,7 +25,7 @@ from numpy import newaxis
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.regression.rbf import RBFRegressor
 
@@ -35,17 +35,16 @@ from gemseo.mlearning.regression.rbf import RBFRegressor
 # :math:`y_i` is an output observation
 # and :math:`\hat{y}_i=\hat{f}(x_i)` is an output prediction
 # computed by a regression model :math:`\hat{f}`,
-# the mean squared error (MSE) metric is written
+# the :math:`R^2` metric (also known as :math:`Q^2`) is written
 #
 # .. math::
 #
-#   \text{MSE} = \frac{1}{N}\sum_{i=1}^N(y_i-\hat{y}_i)^2 \geq 0.
+#   R^2 = 1 - \frac{\sum_{i=1}^N(y_i-\hat{y}_i)^2}{\sum_{i=1}^N(y_i-\bar{y})^2} \leq 1
 #
-# The lower, the better.
-# From a quantitative point of view,
-# this depends on the order of magnitude of the outputs.
-# The square root of this average is often easier to interpret,
-# as it is expressed in the units of the output (see :class:`.RMSEMeasure`).
+# where :math:`\bar{y}=\frac{1}{N}\sum_{i=1}^Ny_i`.
+# The higher, the better.
+# From 0.9 it starts to look (very) good.
+# A negative value is very bad; a constant model would do better.
 #
 # To illustrate this quality measure,
 # let us consider the function :math:`f(x)=(6x-2)^2\sin(12x-4)` :cite:`forrester2008`:
@@ -80,14 +79,12 @@ polynomial.learn()
 
 # %%
 # Before using it,
-# we are going to measure its quality with the MSE metric:
-mse = MSEMeasure(polynomial)
-result = mse.compute_learning_measure()
-result, result**0.5 / (y_train.max() - y_train.min())
+# we are going to measure its quality with the :math:`R^2` metric:
+r2 = R2Measure(polynomial)
+r2.compute_learning_measure()
 
 # %%
-# This result is medium (14% of the learning output range),
-# and we can be expected to a poor generalization quality.
+# This result is medium, and we can be expected to a poor generalization quality.
 # As the cost of this academic function is zero,
 # we can approximate this generalization quality with a large test dataset
 # whereas the usual test size is about 20% of the training size.
@@ -96,11 +93,10 @@ y_test = f(x_test)
 dataset_test = IODataset()
 dataset_test.add_input_group(x_test[:, newaxis], ["x"])
 dataset_test.add_output_group(y_test[:, newaxis], ["y"])
-result = mse.compute_test_measure(dataset_test)
-result, result**0.5 / (y_test.max() - y_test.min())
+r2.compute_test_measure(dataset_test)
 
 # %%
-# The quality is higher than 15% of the test output range, which is pretty mediocre.
+# The quality is lower than 0.5, which is pretty mediocre.
 # This can be explained by a broader generalization domain
 # than that of learning, which highlights the difficulties of extrapolation:
 plt.plot(x_test, y_test, "-b", label="Reference")
@@ -114,13 +110,11 @@ plt.show()
 # %%
 # Using the learning domain would slightly improve the quality:
 x_test = linspace(x_train.min(), x_train.max(), 100)
-y_test_in_large_domain = y_test
 y_test = f(x_test)
 dataset_test_in_learning_domain = IODataset()
 dataset_test_in_learning_domain.add_input_group(x_test[:, newaxis], ["x"])
 dataset_test_in_learning_domain.add_output_group(y_test[:, newaxis], ["y"])
-mse.compute_test_measure(dataset_test_in_learning_domain)
-result, result**0.5 / (y_test.max() - y_test.min())
+r2.compute_test_measure(dataset_test_in_learning_domain)
 
 # %%
 # Lastly,
@@ -132,19 +126,16 @@ rbf.learn()
 # %%
 # The quality of this :class:`.RBFRegressor` is quite good,
 # both on the learning side:
-mse_rbf = MSEMeasure(rbf)
-result = mse_rbf.compute_learning_measure()
-result, result**0.5 / (y_train.max() - y_train.min())
+r2_rbf = R2Measure(rbf)
+r2_rbf.compute_learning_measure()
 
 # %%
 # and on the validation side:
-result = mse_rbf.compute_test_measure(dataset_test_in_learning_domain)
-result, result**0.5 / (y_test.max() - y_test.min())
+r2_rbf.compute_test_measure(dataset_test_in_learning_domain)
 
 # %%
 # including the larger domain:
-result = mse_rbf.compute_test_measure(dataset_test)
-result, result**0.5 / (y_test_in_large_domain.max() - y_test_in_large_domain.min())
+r2_rbf.compute_test_measure(dataset_test)
 
 # %%
 # A final plot to convince us:
