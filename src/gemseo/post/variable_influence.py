@@ -241,8 +241,8 @@ class VariableInfluence(OptPostProcessor):
                 f"{quantile} variables required "
                 f"to explain {round(level * 100)}% of {name} variations"
             )
-            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissas)
+            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
             axe.set_xlim(-1, len(sensitivity) + 1)
             axe.axhline(threshold, color="r")
             axe.axhline(-threshold, color="r")
@@ -271,8 +271,8 @@ class VariableInfluence(OptPostProcessor):
 
         if len(names_to_sensitivities) < n_rows * n_cols:
             axe = axes[i][j]
-            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissas)
+            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
 
         fig.suptitle(
             "Partial variation of the functions wrt design variables", fontsize=14

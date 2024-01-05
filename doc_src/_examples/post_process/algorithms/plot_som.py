@@ -100,7 +100,6 @@ scenario = create_scenario(
     design_space=design_space,
     scenario_type="DOE",
 )
-scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
@@ -125,7 +124,7 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
 scenario.post_process("SOM", save=False, show=True)
 
 # %%
-# Figure :ref:`fig-ssbj-mdf-som100` illustrates another :term:`SOM` on the Sobieski
+# The following figure illustrates another :term:`SOM` on the Sobieski
 # use case. The optimization method is a (costly) derivative free algorithm
 # (``NLOPT_COBYLA``), indeed all the relevant information for the optimization
 # is obtained at the cost of numerous evaluations of the functions. For
@@ -133,20 +132,14 @@ scenario.post_process("SOM", save=False, show=True)
 # :cite:`kumano2006multidisciplinary` on wing MDO post-processing
 # using SOM.
 #
-# .. _fig-ssbj-mdf-som100:
-#
 # .. figure:: /tutorials/ssbj/figs/MDOScenario_SOM_v100.png
-#     :scale: 10 %
 #
 #     SOM example on the Sobieski problem.
 #
 # A DOE may also be a good way to produce SOM maps.
-# Figure :ref:`fig-ssbj-mdf-som10000` shows an example with 10000 points on
+# The following figure shows an example with 10000 points on
 # the same test case. This produces more relevant SOM plots.
 #
-# .. _fig-ssbj-mdf-som10000:
-#
 # .. figure:: /tutorials/ssbj/figs/som_fine.png
-#     :scale: 55 %
 #
 #     SOM example on the Sobieski problem with a 10 000 samples DOE.
