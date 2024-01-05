@@ -87,7 +87,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all) -> None:
+def test_plot(kwargs, baseline_images, dataset) -> None:
     """Test images created by Surfaces._plot against references."""
     properties = kwargs.pop("properties", {})
     plot = Surfaces(dataset, mesh="mesh", variable="output", **kwargs)

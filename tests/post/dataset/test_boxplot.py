@@ -93,7 +93,6 @@ def test_plot(
     other_dataset,
     baseline_images,
     dataset,
-    pyplot_close_all,
     fig_and_axes,
 ) -> None:
     """Check Boxplot."""

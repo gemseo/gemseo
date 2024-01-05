@@ -55,7 +55,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_post(kwargs, baseline_images, problem, pyplot_close_all) -> None:
+def test_post(kwargs, baseline_images, problem) -> None:
     """Test the radar chart post-processing with the Power2 problem."""
     post = RadarChart(problem)
     post.execute(save=False, show=False, **kwargs)
@@ -101,7 +101,7 @@ TEST_PARAMETERS = {"default": ["RadarChart_common_problem"]}
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_common_scenario(baseline_images, common_problem, pyplot_close_all) -> None:
+def test_common_scenario(baseline_images, common_problem) -> None:
     """Check RadarChart."""
     opt = RadarChart(common_problem)
     opt.execute(constraint_names=["eq", "neg", "pos"], save=False)

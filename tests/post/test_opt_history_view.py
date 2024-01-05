@@ -74,10 +74,10 @@ def test_get_constraints() -> None:
     ],
 )
 @image_comparison(None)
-def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all) -> None:
+def test_opt_hist_const(baseline_images, obj_relative) -> None:
     """Test that a problem with constraints is properly rendered."""
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
-    post = execute_post(
+    execute_post(
         problem,
         "OptHistoryView",
         show=False,
@@ -88,7 +88,6 @@ def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all) -> None
         obj_max=5.0,
         obj_relative=obj_relative,
     )
-    post.figures  # noqa: B018
 
 
 @pytest.mark.parametrize(
@@ -119,23 +118,19 @@ def test_opt_hist_const(baseline_images, obj_relative, pyplot_close_all) -> None
 )
 @image_comparison(None)
 def test_opt_hist_from_database(
-    baseline_images, problem_path, pyplot_close_all
+    baseline_images,
+    problem_path,
 ) -> None:
     """Test the generation of the plots from databases.
 
     Args:
         baseline_images: The reference images to be compared.
         problem_path: The path to the hdf5 database of the problem to test.
-        pyplot_close_all: Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     problem = OptimizationProblem.from_hdf(problem_path)
     # The use of the default value is deliberate;
     # to check that the JSON grammar works properly.
-    post = execute_post(
-        problem, "OptHistoryView", variable_names=None, show=False, save=False
-    )
-    post.figures  # noqa: B018
+    execute_post(problem, "OptHistoryView", variable_names=None, show=False, save=False)
 
 
 def test_diag_with_nan(caplog) -> None:
@@ -191,7 +186,6 @@ def test_common_scenario(
     use_standardized_objective,
     baseline_images,
     three_length_common_problem,
-    pyplot_close_all,
 ) -> None:
     """Check OptHistoryView with objective, standardized or not."""
     opt = OptHistoryView(three_length_common_problem)
@@ -256,7 +250,7 @@ def test_461(case, baseline_images) -> None:
         "opt_history_view_ineq_constraints_variable_names",
     ]
 )
-def test_variable_names(pyplot_close_all) -> None:
+def test_variable_names() -> None:
     execute_post(
         Path(__file__).parent / "mdf_backup.h5",
         "OptHistoryView",

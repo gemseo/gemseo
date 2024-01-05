@@ -232,9 +232,7 @@ BARPLOT_TEST_PARAMETERS = {
     ids=BARPLOT_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot_bar(
-    kwargs, baseline_images, mock_sensitivity_analysis, pyplot_close_all
-) -> None:
+def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
     """Check that a Barplot is created with plot_bar."""
     mock_sensitivity_analysis.plot_bar(save=False, show=False, **kwargs)
 
@@ -258,9 +256,7 @@ RADAR_TEST_PARAMETERS = {
     ids=RADAR_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot_radar(
-    kwargs, baseline_images, mock_sensitivity_analysis, pyplot_close_all
-) -> None:
+def test_plot_radar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
     """Check that a RadarChart is created with plot_radar."""
     mock_sensitivity_analysis.plot_radar(save=False, show=False, **kwargs)
 
@@ -279,7 +275,7 @@ COMPARISON_TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_plot_comparison(
-    use_bar_plot, baseline_images, pyplot_close_all, discipline, parameter_space
+    use_bar_plot, baseline_images, discipline, parameter_space
 ) -> None:
     """Check if the comparison of sensitivity indices works."""
     spearman = CorrelationAnalysis([discipline], parameter_space, 10)
@@ -373,9 +369,7 @@ ONE_D_FIELD_TEST_PARAMETERS = {
     ids=ONE_D_FIELD_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot_1d_field(
-    kwargs, baseline_images, output, ishigami, pyplot_close_all
-) -> None:
+def test_plot_1d_field(kwargs, baseline_images, output, ishigami) -> None:
     """Check if a 1D field is well plotted."""
     ishigami.plot_field(output, save=False, show=False, **kwargs)
 
@@ -409,7 +403,7 @@ TWO_D_FIELD_TEST_PARAMETERS = {
     ids=TWO_D_FIELD_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot_2d_field(kwargs, baseline_images, ishigami, pyplot_close_all) -> None:
+def test_plot_2d_field(kwargs, baseline_images, ishigami) -> None:
     """Check if a 2D field is well plotted with mesh."""
     times = linspace(0, 1, 10)
     mesh = array([[time1, time2] for time1 in times for time2 in times])

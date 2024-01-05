@@ -45,11 +45,7 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective,
-    function,
-    baseline_images,
-    common_problem_,
-    pyplot_close_all,
+    use_standardized_objective, function, baseline_images, common_problem_
 ) -> None:
     """Check QuadApprox with objective, standardized or not."""
     opt = QuadApprox(common_problem_)

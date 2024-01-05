@@ -44,13 +44,11 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_scatter(tmp_wd, pyplot_close_all) -> None:
+def test_scatter(tmp_wd) -> None:
     """Test the scatter matrix post-processing for all functions.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     factory = PostFactory()
     problem = Power2()
@@ -66,13 +64,11 @@ def test_scatter(tmp_wd, pyplot_close_all) -> None:
         assert Path(outf).exists()
 
 
-def test_scatter_load(tmp_wd, pyplot_close_all) -> None:
+def test_scatter_load(tmp_wd) -> None:
     """Test scatter matrix post-processing with an imported problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER2)
@@ -118,19 +114,17 @@ def test_non_existent_var(tmp_wd) -> None:
     ],
 )
 @image_comparison(None)
-def test_scatter_plot(baseline_images, variables, pyplot_close_all) -> None:
+def test_scatter_plot(baseline_images, variables) -> None:
     """Test images created by the post_process method against references.
 
     Args:
         baseline_images: The reference images to be compared.
         variables: The list of variables to be plotted
             in each test case.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
 
     infile = CURRENT_DIR / (baseline_images[0] + ".h5")
-    post = execute_post(
+    execute_post(
         infile,
         "ScatterPlotMatrix",
         save=False,
@@ -138,16 +132,13 @@ def test_scatter_plot(baseline_images, variables, pyplot_close_all) -> None:
         file_extension="png",
         variable_names=variables,
     )
-    post.figures  # noqa: B018
 
 
-def test_maximized_func(tmp_wd, pyplot_close_all, sellar_disciplines) -> None:
+def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
     """Test if the method identifies maximized objectives properly.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     design_space = create_design_space()
     design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
@@ -185,16 +176,12 @@ def test_maximized_func(tmp_wd, pyplot_close_all, sellar_disciplines) -> None:
     [(True, ["power_2_filtered"]), (False, ["power_2_not_filtered"])],
 )
 @image_comparison(None)
-def test_filter_non_feasible(
-    filter_non_feasible, baseline_images, pyplot_close_all
-) -> None:
+def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
     """Test if the filter_non_feasible option works properly.
 
     Args:
         filter_non_feasible: If True, remove the non-feasible points from the data.
         baseline_images: The reference images to be compared.
-        pyplot_close_all: Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     factory = PostFactory()
     # Create a Power2 instance
@@ -216,7 +203,7 @@ def test_filter_non_feasible(
         array([0.5, 0.5, 0.5]),
         {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
     )
-    post = factory.execute(
+    factory.execute(
         problem,
         "ScatterPlotMatrix",
         file_extension="png",
@@ -224,7 +211,6 @@ def test_filter_non_feasible(
         filter_non_feasible=filter_non_feasible,
         variable_names=["x"],
     )
-    post.figures  # noqa: B018
 
 
 def test_filter_non_feasible_exception() -> None:
@@ -261,7 +247,7 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+    use_standardized_objective, baseline_images, common_problem
 ) -> None:
     """Check ScatterPlotMatrix with objective, standardized or not."""
     opt = ScatterPlotMatrix(common_problem)

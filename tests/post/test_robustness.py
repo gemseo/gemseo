@@ -37,10 +37,7 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective,
-    baseline_images,
-    common_problem,
-    pyplot_close_all,
+    use_standardized_objective, baseline_images, common_problem
 ) -> None:
     """Check Robustness with objective, standardized or not."""
     opt = Robustness(common_problem)
@@ -57,11 +54,7 @@ def test_common_scenario(
     ids=["stddev"],
 )
 @image_comparison(None)
-def test_common_scenario_std(
-    baseline_images,
-    common_problem,
-    pyplot_close_all,
-) -> None:
+def test_common_scenario_std(baseline_images, common_problem) -> None:
     """Check Robustness with a custom standard deviation."""
     opt = Robustness(common_problem)
     opt.execute(stddev=0.2, save=False)

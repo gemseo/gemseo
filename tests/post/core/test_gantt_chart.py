@@ -79,7 +79,7 @@ def test_stamps_error() -> None:
         create_gantt_chart()
 
 
-def test_save(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data) -> None:
+def test_save(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests file saving."""
     MDODiscipline.time_stamps = time_stamps_data
     file_path = Path("gantt_chart.png")
@@ -88,7 +88,7 @@ def test_save(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data) -
 
 
 @image_comparison(["gantt_chart"])
-def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data) -> None:
+def test_plot(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests the Gantt chart plot creation."""
     # If needed for figure regeneration:
     #
@@ -121,9 +121,7 @@ def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data) -
 
 
 @image_comparison(["gantt_chart_filtered"])
-def test_plot_filter(
-    tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data
-) -> None:
+def test_plot_filter(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests the Gantt chart plot creation with disciplines filter."""
     MDODiscipline.time_stamps = time_stamps_data
     create_gantt_chart(
@@ -133,9 +131,7 @@ def test_plot_filter(
     )
 
 
-def test_plot_filter_fail(
-    tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data
-) -> None:
+def test_plot_filter_fail(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests the Gantt chart disciplines filter failure."""
     MDODiscipline.time_stamps = time_stamps_data
     with pytest.raises(ValueError, match="have no time stamps"):

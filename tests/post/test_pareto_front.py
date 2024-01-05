@@ -57,24 +57,17 @@ pytestmark = pytest.mark.skipif(
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_pareto(
-    tmp_wd,
-    kwargs,
-    baseline_images,
-    pyplot_close_all,
-) -> None:
+def test_pareto(tmp_wd, kwargs, baseline_images) -> None:
     """Test the generation of Pareto front plots.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
         kwargs: The parametrized keyword arguments.
         baseline_images: The reference images to be compared.
-        pyplot_close_all: Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     problem = Power2()
     DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
-    post = PostFactory().execute(
+    PostFactory().execute(
         problem,
         "ParetoFront",
         save=False,
@@ -82,7 +75,6 @@ def test_pareto(
         objectives=problem.get_all_function_name(),
         **kwargs,
     )
-    post.figures  # noqa: B018
 
 
 def test_pareto_minimize(
@@ -145,24 +137,17 @@ def test_pareto_incorrect_objective_names() -> None:
     ids=TEST_PARAMETERS_BINHKORN.keys(),
 )
 @image_comparison(None)
-def test_pareto_binhkorn(
-    tmp_wd,
-    kwargs,
-    baseline_images,
-    pyplot_close_all,
-) -> None:
+def test_pareto_binhkorn(tmp_wd, kwargs, baseline_images) -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
         kwargs: The parametrized keyword arguments.
         baseline_images: The reference images to be compared.
-        pyplot_close_all: Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     problem = BinhKorn()
     DOEFactory().execute(problem, algo_name="fullfact", n_samples=100)
-    post = PostFactory().execute(
+    PostFactory().execute(
         problem,
         "ParetoFront",
         save=False,
@@ -170,20 +155,14 @@ def test_pareto_binhkorn(
         objectives=["compute_binhkorn"],
         **kwargs,
     )
-    post.figures  # noqa: B018
 
 
 @image_comparison(["binh_korn_design_variable"])
-def test_pareto_binhkorn_design_variable(pyplot_close_all) -> None:
-    """Test the generation of Pareto front plots using the Binh-Korn problem.
-
-    Args:
-        pyplot_close_all: Fixture that prevents figures aggregation
-            with matplotlib pyplot.
-    """
+def test_pareto_binhkorn_design_variable() -> None:
+    """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
     DOEFactory().execute(problem, algo_name="fullfact", n_samples=100)
-    post = PostFactory().execute(
+    PostFactory().execute(
         problem,
         "ParetoFront",
         save=False,
@@ -191,23 +170,16 @@ def test_pareto_binhkorn_design_variable(pyplot_close_all) -> None:
         objectives=["x", "compute_binhkorn"],
         objectives_labels=["xx", "compute_binhkorn1", "compute_binhkorn2"],
     )
-    post.figures  # noqa: B018
 
 
 @image_comparison(["binh_korn_no_obj"])
-def test_pareto_binhkorn_no_obj(pyplot_close_all) -> None:
-    """Test the generation of Pareto front plots using the Binh-Korn problem.
-
-    Args:
-        pyplot_close_all: Fixture that prevents figures aggregation
-            with matplotlib pyplot.
-    """
+def test_pareto_binhkorn_no_obj() -> None:
+    """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
     DOEFactory().execute(problem, algo_name="fullfact", n_samples=100)
-    post = PostFactory().execute(
+    PostFactory().execute(
         problem,
         "ParetoFront",
         save=False,
         file_path="binh_korn_no_obj",
     )
-    post.figures  # noqa: B018

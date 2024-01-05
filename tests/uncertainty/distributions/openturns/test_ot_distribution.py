@@ -225,7 +225,7 @@ def test_triangular() -> None:
     ],
 )
 @image_comparison(None)
-def test_plot_all_show(dimension, baseline_images, pyplot_close_all) -> None:
+def test_plot_all_show(dimension, baseline_images) -> None:
     """Check the figures returned by plot_all()."""
     distribution = OTTriangularDistribution("x", dimension=dimension)
     distribution.plot_all(show=False)
