@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test the creation of a plot with suplots."""
+"""Test the creation of a plot with subplots."""
 
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ def dataset() -> Dataset:
 
 
 @image_comparison(["Subplots"])
-def test_plot(dataset, pyplot_close_all) -> None:
+def test_plot(dataset) -> None:
     """Check the creation of a plot with subplots."""
     fig, (ax1, ax2) = plt.subplots(ncols=2)
     plot_1 = BarPlot(dataset, n_digits=2)

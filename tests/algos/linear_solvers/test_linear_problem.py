@@ -72,7 +72,7 @@ def test_size_checks(lhs, rhs) -> None:
 
 
 @image_comparison(["residuals0"])
-def test_plot_residuals(tmp_wd, pyplot_close_all) -> None:
+def test_plot_residuals(tmp_wd) -> None:
     """Tests the residuals plot creation."""
     rng = RandomState(1)
     n = 10

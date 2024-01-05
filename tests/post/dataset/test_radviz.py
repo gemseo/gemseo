@@ -65,9 +65,7 @@ def dataset() -> Dataset:
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
-def test_plot(
-    dataset, kwargs, properties, baseline_images, pyplot_close_all, fig_and_axes
-) -> None:
+def test_plot(dataset, kwargs, properties, baseline_images, fig_and_axes) -> None:
     """Test images created by Radar._plot against references."""
 
     plot = Radar(dataset, classifier="specy")

@@ -166,7 +166,7 @@ def test_morris_relative_sigma(morris, output, variable) -> None:
     ],
 )
 @image_comparison(None)
-def test_plot(morris, output_name, kwargs, baseline_images, pyplot_close_all) -> None:
+def test_plot(morris, output_name, kwargs, baseline_images) -> None:
     """Check the main visualization method."""
     morris.plot(output_name, save=False, **kwargs)
 

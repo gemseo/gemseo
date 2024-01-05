@@ -68,9 +68,7 @@ TEST_PARAMETERS = {
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
-def test_plot(
-    properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-) -> None:
+def test_plot(properties, baseline_images, dataset, fig_and_axes) -> None:
     """Test images created by AndrewsCurves._plot against references."""
     plot = AndrewsCurves(dataset, classifier="c")
     fig, axes = (

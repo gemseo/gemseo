@@ -161,9 +161,7 @@ def test_total_intervals(total_intervals, name, bound, expected) -> None:
     ],
 )
 @image_comparison(None)
-def test_plot(
-    name, sobol, sort, sort_by_total, kwargs, baseline_images, pyplot_close_all
-) -> None:
+def test_plot(name, sobol, sort, sort_by_total, kwargs, baseline_images) -> None:
     """Check the main visualization method."""
     sobol.plot(name, save=False, sort=sort, sort_by_total=sort_by_total, **kwargs)
 

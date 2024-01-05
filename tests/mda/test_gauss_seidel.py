@@ -97,7 +97,7 @@ def test_compatibility_setters_getters() -> None:
 
 
 @image_comparison(["sobieski"])
-def test_sobieski(tmp_wd, pyplot_close_all) -> None:
+def test_sobieski(tmp_wd) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
     mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
     mda.default_inputs["x_shared"] += 0.1
@@ -271,9 +271,7 @@ def test_parallel_doe(generate_parallel_doe_data) -> None:
     ],
 )
 @image_comparison(None, tol=0.098)
-def test_plot_residual_history(
-    baseline_images, n_iterations, logscale, caplog, pyplot_close_all
-) -> None:
+def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) -> None:
     """Test the residual history plot.
 
     Args:
@@ -281,8 +279,6 @@ def test_plot_residual_history(
         n_iterations: The number of iterations to plot.
         logscale: The limits of the ``y`` axis.
         caplog: Fixture to access and control log capturing.
-        pyplot_close_all: Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     mda = SobieskiMDAGaussSeidel(max_mda_iter=15)
     mda.execute()

@@ -59,7 +59,6 @@ def test_plot(
     kwargs,
     properties,
     baseline_images,
-    pyplot_close_all,
     fig_and_axes,
 ) -> None:
     """Test images created by ScatterMatrix._plot against references."""
@@ -83,7 +82,7 @@ def test_plot(
     ],
 )
 @image_comparison(None, tol=0.01)
-def test_trend(trend, quadratic_dataset, baseline_images, pyplot_close_all) -> None:
+def test_trend(trend, quadratic_dataset, baseline_images) -> None:
     """Check the use of a trend."""
     ScatterMatrix(quadratic_dataset, trend=trend).execute(save=False)
 

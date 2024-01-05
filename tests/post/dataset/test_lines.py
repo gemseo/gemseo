@@ -95,7 +95,7 @@ TEST_PARAMETERS = {
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
 def test_plot_matplotlib(
-    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
+    kwargs, properties, baseline_images, dataset, fig_and_axes
 ) -> None:
     """Test images created by Lines.execute against references for matplotlib."""
     plot = Lines(dataset, **kwargs)

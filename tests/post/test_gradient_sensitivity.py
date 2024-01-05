@@ -49,17 +49,13 @@ def factory():
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
-def test_import_gradient_sensitivity(
-    tmp_wd, factory, scale_gradients, pyplot_close_all
-) -> None:
+def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
     """Test the gradient sensitivity post-processing with an imported problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
         factory: Fixture that returns a post-processing factory.
         scale_gradients: If True, normalize each gradient w.r.t. design variables.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
@@ -87,14 +83,12 @@ def test_import_gradient_sensitivity(
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
-def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all) -> None:
+def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     """Test the gradient sensitivity post-processing with the Sobiesky problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
         scale_gradients: If True, normalize each gradient w.r.t. design variables.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     disc = SobieskiStructure()
     design_space = SobieskiDesignSpace()
@@ -144,14 +138,12 @@ def dfdxy(x1=0.0, x2=0.0):
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
-def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all) -> None:
+def test_scale_gradients(tmp_wd, scale_gradients) -> None:
     """Test the analytical results of the gradient normalization.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
         scale_gradients: If True, normalize each gradient w.r.t. design variables.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
@@ -184,15 +176,13 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all) -> None:
     [(True, ["grad_sens_scaled"]), (False, ["grad_sens"])],
 )
 @image_comparison(None)
-def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all) -> None:
+def test_plot(tmp_wd, baseline_images, scale_gradients) -> None:
     """Test images created by the post_process method against references.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
         baseline_images: The reference images to be compared.
         scale_gradients: If True, normalize each gradient w.r.t. design variables.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
@@ -204,14 +194,13 @@ def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all) -> Non
 
     scenario.execute(input_data={"max_iter": 10, "algo": "L-BFGS-B"})
 
-    post = scenario.post_process(
+    scenario.post_process(
         "GradientSensitivity",
         scale_gradients=scale_gradients,
         file_path="grad_sens_analytical",
         file_extension="png",
         save=False,
     )
-    post.figures  # noqa: B018
 
 
 TEST_PARAMETERS = {
@@ -228,10 +217,7 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective,
-    baseline_images,
-    common_problem,
-    pyplot_close_all,
+    use_standardized_objective, baseline_images, common_problem
 ) -> None:
     """Check GradientSensitivity with objective, standardized or not."""
     opt = GradientSensitivity(common_problem)
@@ -258,7 +244,6 @@ def test_compute_missing_gradients(
     opt_problem,
     baseline_images,
     factory,
-    pyplot_close_all,
     caplog,
 ) -> None:
     """Test the option to compute missing gradients for a given iteration.
@@ -268,8 +253,6 @@ def test_compute_missing_gradients(
         opt_problem: The path to an HDF5 file of the Sobieski problem.
         baseline_images: The references images for the image comparison test.
         factory: Fixture that returns a post-processing factory.
-        pyplot_close_all : Fixture that prevents figures aggregation
-                with matplotlib pyplot.
         caplog: Fixture to access and control log capturing.
     """
     problem = OptimizationProblem.from_hdf(str(opt_problem))
@@ -292,24 +275,21 @@ def test_compute_missing_gradients(
                 "functions cannot be computed." in caplog.text
             )
     else:
-        post = factory.execute(
+        factory.execute(
             problem,
             "GradientSensitivity",
             compute_missing_gradients=compute_missing_gradients,
             save=False,
             show=False,
         )
-        post.figures  # noqa: B018
 
 
 @image_comparison(["grad_sens_sobieski"])
-def test_compute_missing_gradients_with_eval(factory, pyplot_close_all) -> None:
+def test_compute_missing_gradients_with_eval(factory) -> None:
     """Test that the computation of the missing gradients works well with functions.
 
     Args:
         factory: Fixture that returns a post-processing factory.
-        pyplot_close_all : Fixture that prevents figures aggregation
-                with matplotlib pyplot.
     """
     problem = OptimizationProblem.from_hdf(str(SOBIESKI_MISSING_GRADIENTS))
 
@@ -318,7 +298,7 @@ def test_compute_missing_gradients_with_eval(factory, pyplot_close_all) -> None:
 
     with mock.patch.object(problem, "evaluate_functions") as mocked_evaluate_functions:
         mocked_evaluate_functions.return_value = (None, gradients)
-        post = factory.execute(
+        factory.execute(
             problem,
             "GradientSensitivity",
             compute_missing_gradients=True,
@@ -326,4 +306,3 @@ def test_compute_missing_gradients_with_eval(factory, pyplot_close_all) -> None:
             show=False,
         )
         mocked_evaluate_functions.assert_called()
-    post.figures  # noqa: B018

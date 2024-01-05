@@ -49,7 +49,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_som(is_annotated, h5_path, baseline_images, pyplot_close_all) -> None:
+def test_som(is_annotated, h5_path, baseline_images) -> None:
     """Test the SOM post-processing."""
     problem = OptimizationProblem.from_hdf(h5_path)
     PostFactory().execute(

@@ -40,7 +40,7 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+    use_standardized_objective, baseline_images, common_problem
 ) -> None:
     """Check ParallelCoordinates with objective, standardized or not."""
     opt = ParallelCoordinates(common_problem)

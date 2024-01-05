@@ -244,7 +244,7 @@ def test_check_jac_csapprox() -> None:
     aero.check_jacobian()
 
 
-def test_check_jac_approx_plot(tmp_wd, pyplot_close_all) -> None:
+def test_check_jac_approx_plot(tmp_wd) -> None:
     """Test the generation of the gradient plot."""
     aero = SobieskiAerodynamics()
     aero.linearize(compute_all_jacobians=True)
