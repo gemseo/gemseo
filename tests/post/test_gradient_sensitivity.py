@@ -228,7 +228,6 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_common_scenario(
-    tmp_wd,
     use_standardized_objective,
     baseline_images,
     common_problem,

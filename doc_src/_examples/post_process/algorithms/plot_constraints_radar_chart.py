@@ -102,7 +102,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #
 #    Each post-processing method requires different inputs and offers a variety
 #    of customization options. Use the API function
-#    :func:.get_post_processing_options_schema` to print a table with
+#    :func:`.get_post_processing_options_schema` to print a table with
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
