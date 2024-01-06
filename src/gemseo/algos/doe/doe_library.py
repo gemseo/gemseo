@@ -423,7 +423,7 @@ class DOELibrary(DriverLibrary):
     def compute_doe(
         self,
         variables_space: DesignSpace | int,
-        size: int | None = None,
+        n_samples: int | None = None,
         unit_sampling: bool = False,
         **options: DOELibraryOptionType,
     ) -> RealArray:
@@ -431,8 +431,9 @@ class DOELibrary(DriverLibrary):
 
         Args:
             variables_space: Either the variables space to be sampled or its dimension.
-            size: The size of the DOE.
-                If ``None``, the size is deduced from the ``options``.
+            n_samples: The number of samples.
+                If ``None``,
+                it is deduced from the ``variables_spaces`` and the ``options``.
             unit_sampling: Whether to sample in the unit hypercube.
                 If the value provided in ``variables_space`` is the dimension,
                 the samples will be generated in the unit hypercube
@@ -449,7 +450,7 @@ class DOELibrary(DriverLibrary):
 
         self.init_options_grammar(self.algo_name)
         if self.driver_has_option(self.N_SAMPLES):
-            options[self.N_SAMPLES] = size
+            options[self.N_SAMPLES] = n_samples
 
         unit_samples = self._generate_samples(
             design_space,

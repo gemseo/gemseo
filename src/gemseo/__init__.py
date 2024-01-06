@@ -1787,7 +1787,7 @@ def create_benchmark_dataset(
 def compute_doe(
     variables_space: DesignSpace | int,
     algo_name: str,
-    size: int | None = None,
+    n_samples: int | None = None,
     unit_sampling: bool = False,
     **options: DOELibraryOptionType,
 ) -> ndarray:
@@ -1795,8 +1795,10 @@ def compute_doe(
 
     Args:
         variables_space: Either the variables space to be sampled or its dimension.
-        size: The size of the DOE.
-            If ``None``, the size is deduced from the ``options``.
+        n_samples: The number of samples.
+            If ``None``,
+            it is deduced
+            from the ``algo_name``, the ``variables_spaces`` and the ``options``.
         algo_name: The DOE algorithm.
         unit_sampling: Whether to sample in the unit hypercube.
             If the value provided in ``variables_space`` is the dimension,
@@ -1812,7 +1814,7 @@ def compute_doe(
         >>> from gemseo import compute_doe, create_design_space
         >>> variables_space = create_design_space()
         >>> variables_space.add_variable("x", 2, l_b=-1.0, u_b=1.0)
-        >>> doe = compute_doe(variables_space, algo_name="lhs", size=5)
+        >>> doe = compute_doe(variables_space, algo_name="lhs", n_samples=5)
 
     See Also:
         get_available_doe_algorithms
@@ -1823,7 +1825,7 @@ def compute_doe(
 
     library = DOEFactory().create(algo_name)
     return library.compute_doe(
-        variables_space, size=size, unit_sampling=unit_sampling, **options
+        variables_space, n_samples=n_samples, unit_sampling=unit_sampling, **options
     )
 
 

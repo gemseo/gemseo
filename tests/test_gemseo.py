@@ -752,14 +752,14 @@ def variables_space():
 def test_compute_doe_transformed(variables_space) -> None:
     """Check the computation of a transformed DOE in a variables space."""
     points = compute_doe(
-        variables_space, size=4, algo_name="fullfact", unit_sampling=True
+        variables_space, n_samples=4, algo_name="fullfact", unit_sampling=True
     )
     assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
 
 
 def test_compute_doe_nontransformed(variables_space) -> None:
     """Check the computation of a non-transformed DOE in a variables space."""
-    points = compute_doe(variables_space, size=4, algo_name="fullfact")
+    points = compute_doe(variables_space, n_samples=4, algo_name="fullfact")
     assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
 
 

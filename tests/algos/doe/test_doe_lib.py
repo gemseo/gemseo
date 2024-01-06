@@ -159,7 +159,7 @@ def test_compute_doe_transformed(variables_space) -> None:
     """Check the computation of a transformed DOE in a variables space."""
     doe = PyDOE()
     doe.algo_name = "fullfact"
-    points = doe.compute_doe(variables_space, size=4, unit_sampling=True)
+    points = doe.compute_doe(variables_space, n_samples=4, unit_sampling=True)
     assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
 
 
@@ -167,7 +167,7 @@ def test_compute_doe_nontransformed(variables_space) -> None:
     """Check the computation of a non-transformed DOE in a variables space."""
     doe = PyDOE()
     doe.algo_name = "fullfact"
-    points = doe.compute_doe(variables_space, size=4)
+    points = doe.compute_doe(variables_space, n_samples=4)
     assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
 
 
