@@ -78,10 +78,10 @@ design_space = SobieskiDesignSpace()
 # the Monte Carlo DOE algorithm and 30 samples.
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
-    objective_name="y_4",
+    "MDF",
+    "y_4",
+    design_space,
     maximize_objective=True,
-    design_space=design_space,
     scenario_type="DOE",
 )
 scenario.set_differentiation_method()

@@ -81,9 +81,9 @@ design_space
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
-    objective_name="y_4",
-    design_space=design_space,
+    "MDF",
+    "y_4",
+    design_space,
     maximize_objective=True,
     scenario_type="DOE",
 )

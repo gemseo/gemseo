@@ -76,10 +76,10 @@ design_space = SobieskiDesignSpace()
 # equal to 100.
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
-    objective_name="y_4",
+    "MDF",
+    "y_4",
+    design_space,
     maximize_objective=True,
-    design_space=design_space,
 )
 # %%
 # The differentiation method used by default is ``"user"``, which means that the

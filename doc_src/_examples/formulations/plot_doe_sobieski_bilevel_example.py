@@ -81,7 +81,7 @@ sc_prop = create_scenario(
     propu,
     "DisciplinaryOpt",
     "y_34",
-    design_space=deepcopy(design_space).filter("x_3"),
+    design_space.filter("x_3", True),
     name="PropulsionScenario",
 )
 
@@ -93,7 +93,7 @@ sc_aero = create_scenario(
     aero,
     "DisciplinaryOpt",
     "y_24",
-    deepcopy(design_space).filter("x_2"),
+    design_space.filter("x_2", True),
     name="AerodynamicsScenario",
     maximize_objective=True,
 )
@@ -118,12 +118,11 @@ sc_str = create_scenario(
 # This scenario is based on the three previous sub-scenarios and on the
 # Mission and aims to maximize the range (Breguet).
 sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
-design_space = deepcopy(design_space).filter("x_shared")
 system_scenario = create_scenario(
     sub_disciplines,
     "BiLevel",
     "y_4",
-    design_space,
+    design_space.filter("x_shared", True),
     parallel_scenarios=False,
     reset_x0_before_opt=True,
     scenario_type="DOE",

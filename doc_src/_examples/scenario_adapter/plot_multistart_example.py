@@ -57,9 +57,9 @@ design_space.add_variable("x", l_b=-1.5, u_b=1.5, value=1.5)
 # -----------------------
 scenario = create_scenario(
     [objective, constraint],
-    formulation="DisciplinaryOpt",
-    objective_name="obj",
-    design_space=design_space,
+    "DisciplinaryOpt",
+    "obj",
+    design_space,
 )
 scenario.default_inputs = {"algo": "SLSQP", "max_iter": 10}
 scenario.add_constraint("cstr", "ineq")
@@ -77,9 +77,9 @@ adapter = MDOScenarioAdapter(
 # -----------------------
 scenario_doe = create_scenario(
     adapter,
-    formulation="DisciplinaryOpt",
-    objective_name="obj",
-    design_space=design_space,
+    "DisciplinaryOpt",
+    "obj",
+    design_space,
     scenario_type="DOE",
 )
 scenario_doe.add_constraint("cstr", "ineq")

@@ -130,8 +130,8 @@ design_space = design_space.filter(["x_shared", "y_24", "y_34"])
 scenario = create_scenario(
     [discipline],
     "DisciplinaryOpt",
-    objective_name="y_4",
-    design_space=design_space,
+    "y_4",
+    design_space,
     scenario_type="DOE",
 )
 
@@ -210,9 +210,9 @@ for i in range(5):
 design_space = design_space.filter(["y_24"])
 scenario = create_scenario(
     range_surrogate,
-    formulation="DisciplinaryOpt",
-    objective_name="y_4",
-    design_space=design_space,
+    "DisciplinaryOpt",
+    "y_4",
+    design_space,
     maximize_objective=True,
 )
 scenario.execute({"max_iter": 30, "algo": "L-BFGS-B"})

@@ -193,9 +193,7 @@ design_space.add_variable("y_2", l_b=-100.0, u_b=100.0, value=ones(1))
 # In this section,
 # we build the MDO scenario which links the disciplines with the formulation,
 # the design space and the objective function.
-scenario = create_scenario(
-    disciplines, formulation="IDF", objective_name="obj", design_space=design_space
-)
+scenario = create_scenario(disciplines, "IDF", "obj", design_space)
 
 # %%
 # Add the constraints
@@ -218,7 +216,7 @@ scenario.set_differentiation_method("finite_differences")
 # we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
-scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
+scenario.execute({"max_iter": 10, "algo": "SLSQP"})
 
 # %%
 # Post-process the scenario

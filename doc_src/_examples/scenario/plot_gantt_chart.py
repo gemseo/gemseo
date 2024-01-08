@@ -71,10 +71,10 @@ design_space = SobieskiDesignSpace()
 # and a maximum number of iterations equal to 100.
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
-    objective_name="y_4",
+    "MDF",
+    "y_4",
+    design_space,
     maximize_objective=True,
-    design_space=design_space,
 )
 
 for constraint in ["g_1", "g_2", "g_3"]:

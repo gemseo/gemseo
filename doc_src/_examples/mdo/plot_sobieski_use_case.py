@@ -159,10 +159,10 @@ get_all_inputs(disciplines)
 # we build the scenario:
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
+    "MDF",
+    "y_4",
+    design_space,
     maximize_objective=True,
-    objective_name="y_4",
-    design_space=design_space,
 )
 # %%
 # The range function (:math:`y\_4`) should be maximized. However, optimizers
