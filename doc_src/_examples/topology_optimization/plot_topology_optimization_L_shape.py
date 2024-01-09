@@ -77,9 +77,9 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 # Generate an :class:`.MDOScenario`:
 scenario = create_scenario(
     disciplines,
-    formulation="DisciplinaryOpt",
-    objective_name="compliance",
-    design_space=design_space,
+    "DisciplinaryOpt",
+    "compliance",
+    design_space,
 )
 # %%
 # Add the volume fraction constraint to the scenario:

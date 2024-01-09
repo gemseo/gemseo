@@ -74,7 +74,7 @@ jacobian_data
 # |g| uses :attr:`.MDODiscipline.default_inputs` as input data
 # for which to compute the Jacobian on.
 # We can change them with ``input_data``:
-jacobian_data = discipline.linearize(input_data={"a": array([1.0])})
+jacobian_data = discipline.linearize({"a": array([1.0])})
 jacobian_data
 
 # %%

@@ -79,8 +79,8 @@ design_space
 scenario = create_scenario(
     disciplines,
     "IDF",
-    objective_name="y_4",
-    design_space=design_space,
+    "y_4",
+    design_space,
     maximize_objective=True,
 )
 

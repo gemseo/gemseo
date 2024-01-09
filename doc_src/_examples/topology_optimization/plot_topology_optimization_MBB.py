@@ -78,9 +78,9 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 # Generate an :class:`.MDOScenario`
 scenario = create_scenario(
     disciplines,
-    formulation="DisciplinaryOpt",
-    objective_name="compliance",
-    design_space=design_space,
+    "DisciplinaryOpt",
+    "compliance",
+    design_space,
 )
 
 # %%
@@ -93,7 +93,7 @@ scenario.xdsmize()
 
 # %%
 # Execute the scenario
-scenario.execute(input_data={"max_iter": 200, "algo": "NLOPT_MMA"})
+scenario.execute({"max_iter": 200, "algo": "NLOPT_MMA"})
 
 # %%
 # Results

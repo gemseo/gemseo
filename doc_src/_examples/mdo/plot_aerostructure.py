@@ -24,8 +24,6 @@ MDO formulations for a toy example in aerostructure
 
 from __future__ import annotations
 
-from copy import deepcopy
-
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -85,10 +83,10 @@ generate_n2_plot(disciplines, save=False, show=True)
 # Then, we create an MDO scenario based on the MDF formulation
 design_space = AerostructureDesignSpace()
 scenario = create_scenario(
-    disciplines=disciplines,
-    formulation="MDF",
-    objective_name="range",
-    design_space=design_space,
+    disciplines,
+    "MDF",
+    "range",
+    design_space,
     maximize_objective=True,
 )
 scenario.add_constraint("reserve_fact", "ineq", value=0.5)
@@ -112,12 +110,11 @@ design_space_ref = AerostructureDesignSpace()
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # For this purpose, we create a first sub-scenario to maximize the range
 # with respect to the thick airfoils, based on the aerodynamics discipline.
-design_space_aero = deepcopy(design_space_ref).filter(["thick_airfoils"])
 aero_scenario = create_scenario(
-    disciplines=[aerodynamics, mission],
-    formulation="DisciplinaryOpt",
-    objective_name="range",
-    design_space=design_space_aero,
+    [aerodynamics, mission],
+    "DisciplinaryOpt",
+    "range",
+    design_space_ref.filter(["thick_airfoils"], True),
     maximize_objective=True,
 )
 aero_scenario.default_inputs = sub_scenario_options
@@ -127,12 +124,11 @@ aero_scenario.default_inputs = sub_scenario_options
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We create a second sub-scenario to maximize the range
 # with respect to the thick panels, based on the structure discipline.
-design_space_struct = deepcopy(design_space_ref).filter(["thick_panels"])
 struct_scenario = create_scenario(
-    disciplines=[structure, mission],
-    formulation="DisciplinaryOpt",
-    objective_name="range",
-    design_space=design_space_struct,
+    [structure, mission],
+    "DisciplinaryOpt",
+    "range",
+    design_space_ref.filter(["thick_panels"], True),
     maximize_objective=True,
 )
 struct_scenario.default_inputs = sub_scenario_options
@@ -142,12 +138,12 @@ struct_scenario.default_inputs = sub_scenario_options
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Lastly, we build a system scenario to maximize the range with respect to
 # the sweep, which is a shared variable, based on the previous sub-scenarios.
-design_space_system = deepcopy(design_space_ref).filter(["sweep"])
+design_space_system = design_space_ref.filter(["sweep"], True)
 system_scenario = create_scenario(
-    disciplines=[aero_scenario, struct_scenario, mission],
-    formulation="BiLevel",
-    objective_name="range",
-    design_space=design_space_system,
+    [aero_scenario, struct_scenario, mission],
+    "BiLevel",
+    "range",
+    design_space_system,
     maximize_objective=True,
     inner_mda_name="MDAJacobi",
     tolerance=1e-8,

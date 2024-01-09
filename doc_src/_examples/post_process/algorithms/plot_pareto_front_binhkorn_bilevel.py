@@ -101,8 +101,8 @@ disciplines = [
 sub_scenario = create_scenario(
     disciplines,
     "DisciplinaryOpt",
-    design_space=design_space,
-    objective_name="obj2",
+    "obj2",
+    design_space,
 )
 
 sub_scenario.default_inputs = {"algo": "NLOPT_SLSQP", "max_iter": 100}
@@ -133,9 +133,9 @@ system_design_space.add_variable(
 
 system_scenario = create_scenario(
     sub_scenario,
-    formulation="BiLevel",
-    objective_name="obj1",
-    design_space=system_design_space,
+    "BiLevel",
+    "obj1",
+    system_design_space,
     scenario_type="DOE",
     sub_scenarios_log_level=WARNING,
 )

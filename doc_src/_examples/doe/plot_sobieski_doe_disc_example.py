@@ -50,9 +50,9 @@ design_space.filter(["y_24", "y_34"])
 # The DOE algorithm.
 scenario = create_scenario(
     [discipline],
-    formulation="DisciplinaryOpt",
-    objective_name="y_4",
-    design_space=design_space,
+    "DisciplinaryOpt",
+    "y_4",
+    design_space,
     maximize_objective=True,
     scenario_type="DOE",
 )
