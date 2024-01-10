@@ -325,10 +325,10 @@ class ScalableProblem:
                 )
             sub_scenarios.append(
                 create_scenario(
-                    disciplines=sub_disciplines,
-                    formulation="DisciplinaryOpt",
-                    objective_name=obj,
-                    design_space=design_space,
+                    sub_disciplines,
+                    "DisciplinaryOpt",
+                    obj,
+                    design_space,
                     maximize_objective=max_obj,
                 )
             )
@@ -344,10 +344,10 @@ class ScalableProblem:
             )
         sub_disciplines = sub_scenarios + wk_cpl_disciplines
         return create_scenario(
-            disciplines=sub_disciplines,
-            formulation="BiLevel",
-            objective_name=obj,
-            design_space=design_space,
+            sub_disciplines,
+            "BiLevel",
+            obj,
+            design_space,
             maximize_objective=max_obj,
             mda_name="MDAJacobi",
             tolerance=1e-8,
@@ -427,7 +427,7 @@ class ScalableProblem:
                 )
             else:
                 taui = 0.0
-            self.scenario.add_constraint(constraint, "ineq", value=taui)
+            self.scenario.add_constraint(constraint, constraint_type="ineq", value=taui)
 
     def __add_eq_constraints(self, equilibrium) -> None:
         """Add equality constraints.
@@ -435,8 +435,9 @@ class ScalableProblem:
         :param dict equilibrium: starting point at equilibrium
         """
         for constraint in self.eq_constraints:
-            cstr_value = equilibrium.get(constraint, array([0.0]))[0]
-            self.scenario.add_constraint(constraint, "eq", value=cstr_value)
+            self.scenario.add_constraint(
+                constraint, value=equilibrium.get(constraint, array([0.0]))[0]
+            )
 
     def exec_time(self, do_sum: bool = True):
         """Get total execution time per discipline.

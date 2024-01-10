@@ -74,9 +74,9 @@ def build_mdo_scenario(
     design_space = SobieskiDesignSpace()
     return DOEScenario(
         disciplines,
-        formulation=formulation,
-        objective_name="y_4",
-        design_space=design_space,
+        formulation,
+        "y_4",
+        design_space,
         grammar_type=grammar_type,
         maximize_objective=True,
     )
@@ -234,11 +234,11 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines) -> None
         sellar_disciplines,
         "MDF",
         "obj",
+        SellarDesignSpace("float64"),
         main_mda_name="MDAChain",
         inner_mda_name="MDAJacobi",
         use_threading=use_threading,
         n_processes=2,
-        design_space=SellarDesignSpace("float64"),
     )
     scenario.execute({
         "algo": "CustomDOE",

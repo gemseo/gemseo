@@ -142,7 +142,7 @@ def objective_and_problem_for_tests(constraints_before_obj):
     problem = OptimizationProblem(design_space)
     problem.objective = f
     if constraints_before_obj:
-        problem.add_constraint(g, 0.0, "ineq")
+        problem.add_constraint(g, value=0.0, cstr_type="ineq")
     return f, problem
 
 

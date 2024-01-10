@@ -77,8 +77,8 @@ def optimization_result() -> OptimizationResult:
         "ineq_n_2": "x",
     })
     scenario = DOEScenario([disc], "DisciplinaryOpt", "y", design_space)
-    scenario.add_constraint("eq_1", constraint_type="eq")
-    scenario.add_constraint("eq_2", constraint_type="eq", value=0.25)
+    scenario.add_constraint("eq_1")
+    scenario.add_constraint("eq_2", value=0.25)
     scenario.add_constraint("ineq_p_1", constraint_type="ineq", positive=True)
     scenario.add_constraint("ineq_n_1", constraint_type="ineq", value=0.25)
     scenario.add_constraint(

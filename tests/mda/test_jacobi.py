@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from copy import deepcopy
-
 import pytest
 from numpy import array
 from numpy import isclose
@@ -174,7 +172,7 @@ def test_expected_workflow_with_adapter() -> None:
         discs,
         "DisciplinaryOpt",
         "y_4",
-        design_space=deepcopy(design_space).filter("x_3"),
+        design_space.filter("x_3", copy=True),
         name="PropulsionScenario",
     )
     adapter_propu = MDOScenarioAdapter(scn_propu, ["x_1", "x_2"], ["x_3"])
@@ -182,7 +180,7 @@ def test_expected_workflow_with_adapter() -> None:
         discs,
         "DisciplinaryOpt",
         "y_4",
-        design_space=deepcopy(design_space).filter("x_2"),
+        design_space.filter("x_2", copy=True),
         name="AeroScenario",
     )
     adapter_aero = MDOScenarioAdapter(scn_aero, ["x_1", "x_3"], ["x_2"])
@@ -190,7 +188,7 @@ def test_expected_workflow_with_adapter() -> None:
         discs,
         "DisciplinaryOpt",
         "y_4",
-        design_space=deepcopy(design_space).filter("x_1"),
+        design_space.filter("x_1", copy=True),
         name="StructureScenario",
     )
     adapter_struct = MDOScenarioAdapter(scn_struct, ["x_2", "x_3"], ["x_1"])

@@ -68,10 +68,10 @@ def scenario(request) -> Scenario:
     discipline.set_linear_relationships()
 
     scenario = create_scenario(
-        disciplines=[discipline],
-        formulation=request.param,
-        design_space=design_space,
-        objective_name="rho",
+        [discipline],
+        request.param,
+        "rho",
+        design_space,
     )
 
     scenario.add_constraint("eta", MDOFunction.ConstraintType.INEQ)

@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import pickle
-from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -77,9 +76,9 @@ def scenario():
     design_space.filter(["x_1", "x_2", "x_3"])
     mdo_scenario = MDOScenario(
         disciplines,
-        formulation="MDF",
-        objective_name="y_4",
-        design_space=design_space,
+        "MDF",
+        "y_4",
+        design_space,
         maximize_objective=True,
         name="MyScenario",
     )
@@ -287,10 +286,10 @@ def test_compute_jacobian_exceptions(scenario) -> None:
 def build_struct_scenario():
     ds = SobieskiDesignSpace()
     sc_str = MDOScenario(
-        disciplines=[SobieskiStructure()],
-        formulation="DisciplinaryOpt",
-        objective_name="y_11",
-        design_space=deepcopy(ds).filter("x_1"),
+        [SobieskiStructure()],
+        "DisciplinaryOpt",
+        "y_11",
+        ds.filter("x_1", copy=True),
         name="StructureScenario",
         maximize_objective=True,
     )
@@ -303,10 +302,10 @@ def build_struct_scenario():
 def build_prop_scenario():
     ds = SobieskiDesignSpace()
     sc_prop = MDOScenario(
-        disciplines=[SobieskiPropulsion()],
-        formulation="DisciplinaryOpt",
-        objective_name="y_34",
-        design_space=deepcopy(ds).filter("x_3"),
+        [SobieskiPropulsion()],
+        "DisciplinaryOpt",
+        "y_34",
+        ds.filter("x_3", copy=True),
         name="PropulsionScenario",
     )
     sc_prop.add_constraint("g_3", constraint_type="ineq")

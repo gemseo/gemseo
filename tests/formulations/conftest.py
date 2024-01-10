@@ -82,7 +82,7 @@ def build_and_run_idf_scenario_with_constraints(
         disciplines,
         "IDF",
         "y_4",
-        design_space=design_space,
+        design_space,
         normalize_constraints=normalize_cstr,
         n_processes=n_processes,
         use_threading=use_threading,
@@ -95,7 +95,7 @@ def build_and_run_idf_scenario_with_constraints(
         scenario.set_differentiation_method("complex_step", 1e-30)
     # Set the design constraints
     for c_name in ["g_1", "g_2", "g_3"]:
-        scenario.add_constraint(c_name, "ineq")
+        scenario.add_constraint(c_name, constraint_type="ineq")
 
     run_inputs = {
         "max_iter": max_iter,

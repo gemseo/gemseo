@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 
 import pytest
 
@@ -72,26 +71,26 @@ def dummy_bilevel_scenario() -> MDOScenario:
     sub_design_space_1 = create_design_space()
     sub_design_space_1.add_variable("x_1")
     sub_scenario_1 = create_scenario(
-        disciplines=[discipline_1, discipline_3],
-        formulation="MDF",
-        objective_name="obj",
-        design_space=sub_design_space_1,
+        [discipline_1, discipline_3],
+        "MDF",
+        "obj",
+        sub_design_space_1,
     )
 
     sub_design_space_2 = create_design_space()
     sub_design_space_2.add_variable("x_2")
     sub_scenario_2 = create_scenario(
-        disciplines=[discipline_2, discipline_3],
-        formulation="MDF",
-        objective_name="obj",
-        design_space=sub_design_space_2,
+        [discipline_2, discipline_3],
+        "MDF",
+        "obj",
+        sub_design_space_2,
     )
 
     return create_scenario(
-        disciplines=[sub_scenario_1, sub_scenario_2],
-        formulation="BiLevel",
-        objective_name="obj",
-        design_space=system_design_space,
+        [sub_scenario_1, sub_scenario_2],
+        "BiLevel",
+        "obj",
+        system_design_space,
     )
 
 
@@ -102,7 +101,7 @@ def test_execute(sobieski_bilevel_scenario) -> None:
     )
 
     for i in range(1, 4):
-        scenario.add_constraint(["g_" + str(i)], "ineq")
+        scenario.add_constraint(["g_" + str(i)], constraint_type="ineq")
     scenario.formulation.get_expected_workflow()
 
     for i in range(3):
@@ -113,7 +112,7 @@ def test_execute(sobieski_bilevel_scenario) -> None:
     cstrs_sys = scenario.formulation.opt_problem.constraints
     assert len(cstrs_sys) == 0
     with pytest.raises(ValueError):
-        scenario.add_constraint(["toto"], "ineq")
+        scenario.add_constraint(["toto"], constraint_type="ineq")
 
 
 def test_get_sub_options_grammar_errors() -> None:
@@ -172,38 +171,38 @@ def test_bilevel_aerostructure() -> None:
     }
     design_space_ref = AerostructureDesignSpace()
 
-    design_space_aero = deepcopy(design_space_ref).filter(["thick_airfoils"])
+    design_space_aero = design_space_ref.filter(["thick_airfoils"], copy=True)
     aero_scenario = create_scenario(
-        disciplines=[aerodynamics, mission],
-        formulation="DisciplinaryOpt",
-        objective_name="range",
-        design_space=design_space_aero,
+        [aerodynamics, mission],
+        "DisciplinaryOpt",
+        "range",
+        design_space_aero,
         maximize_objective=True,
     )
     aero_scenario.default_inputs = sub_scenario_options
 
-    design_space_struct = deepcopy(design_space_ref).filter(["thick_panels"])
+    design_space_struct = design_space_ref.filter(["thick_panels"], copy=True)
     struct_scenario = create_scenario(
-        disciplines=[structure, mission],
-        formulation="DisciplinaryOpt",
-        objective_name="range",
-        design_space=design_space_struct,
+        [structure, mission],
+        "DisciplinaryOpt",
+        "range",
+        design_space_struct,
         maximize_objective=True,
     )
     struct_scenario.default_inputs = sub_scenario_options
 
-    design_space_system = deepcopy(design_space_ref).filter(["sweep"])
+    design_space_system = design_space_ref.filter(["sweep"], copy=True)
     system_scenario = create_scenario(
-        disciplines=[aero_scenario, struct_scenario, mission],
-        formulation="BiLevel",
-        objective_name="range",
-        design_space=design_space_system,
+        [aero_scenario, struct_scenario, mission],
+        "BiLevel",
+        "range",
+        design_space_system,
         maximize_objective=True,
         main_mda_name="MDAJacobi",
         tolerance=1e-8,
     )
-    system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)
-    system_scenario.add_constraint("lift", "eq", value=0.5)
+    system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
+    system_scenario.add_constraint("lift", value=0.5)
     system_scenario.execute({
         "algo": "NLOPT_COBYLA",
         "max_iter": 5,

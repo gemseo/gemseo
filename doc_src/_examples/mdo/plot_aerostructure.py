@@ -89,8 +89,8 @@ scenario = create_scenario(
     design_space,
     maximize_objective=True,
 )
-scenario.add_constraint("reserve_fact", "ineq", value=0.5)
-scenario.add_constraint("lift", "eq", value=0.5)
+scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
+scenario.add_constraint("lift", value=0.5)
 scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 10, "algo_options": algo_options})
 scenario.post_process("OptHistoryView", save=False, show=True)
 
@@ -114,7 +114,7 @@ aero_scenario = create_scenario(
     [aerodynamics, mission],
     "DisciplinaryOpt",
     "range",
-    design_space_ref.filter(["thick_airfoils"], True),
+    design_space_ref.filter(["thick_airfoils"], copy=True),
     maximize_objective=True,
 )
 aero_scenario.default_inputs = sub_scenario_options
@@ -128,7 +128,7 @@ struct_scenario = create_scenario(
     [structure, mission],
     "DisciplinaryOpt",
     "range",
-    design_space_ref.filter(["thick_panels"], True),
+    design_space_ref.filter(["thick_panels"], copy=True),
     maximize_objective=True,
 )
 struct_scenario.default_inputs = sub_scenario_options
@@ -138,7 +138,7 @@ struct_scenario.default_inputs = sub_scenario_options
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Lastly, we build a system scenario to maximize the range with respect to
 # the sweep, which is a shared variable, based on the previous sub-scenarios.
-design_space_system = design_space_ref.filter(["sweep"], True)
+design_space_system = design_space_ref.filter(["sweep"], copy=True)
 system_scenario = create_scenario(
     [aero_scenario, struct_scenario, mission],
     "BiLevel",
@@ -148,8 +148,8 @@ system_scenario = create_scenario(
     inner_mda_name="MDAJacobi",
     tolerance=1e-8,
 )
-system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)
-system_scenario.add_constraint("lift", "eq", value=0.5)
+system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
+system_scenario.add_constraint("lift", value=0.5)
 system_scenario.execute({
     "algo": "NLOPT_COBYLA",
     "max_iter": 7,

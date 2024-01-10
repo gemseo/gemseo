@@ -78,7 +78,7 @@ scenario = create_scenario(
 )
 
 for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, "ineq")
+    scenario.add_constraint(constraint, constraint_type="ineq")
 
 # %%
 # Activate time stamps

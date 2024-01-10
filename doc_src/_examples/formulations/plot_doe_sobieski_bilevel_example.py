@@ -81,7 +81,7 @@ sc_prop = create_scenario(
     propu,
     "DisciplinaryOpt",
     "y_34",
-    design_space.filter("x_3", True),
+    design_space.filter("x_3", copy=True),
     name="PropulsionScenario",
 )
 
@@ -93,7 +93,7 @@ sc_aero = create_scenario(
     aero,
     "DisciplinaryOpt",
     "y_24",
-    design_space.filter("x_2", True),
+    design_space.filter("x_2", copy=True),
     name="AerodynamicsScenario",
     maximize_objective=True,
 )
@@ -122,7 +122,7 @@ system_scenario = create_scenario(
     sub_disciplines,
     "BiLevel",
     "y_4",
-    design_space.filter("x_shared", True),
+    design_space.filter("x_shared", copy=True),
     parallel_scenarios=False,
     reset_x0_before_opt=True,
     scenario_type="DOE",

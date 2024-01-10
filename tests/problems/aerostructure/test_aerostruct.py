@@ -200,9 +200,9 @@ class TestAerostructureScenarios(unittest.TestCase):
         design_space = AerostructureDesignSpace()
         return MDOScenario(
             disciplines,
-            formulation=formulation,
-            objective_name="range",
-            design_space=design_space,
+            formulation,
+            "range",
+            design_space,
         )
 
     @staticmethod
@@ -220,8 +220,8 @@ class TestAerostructureScenarios(unittest.TestCase):
         run_inputs = {"max_iter": 10, "algo": algo}
 
         # add constraints
-        scenario.add_constraint("c_lift", "eq")
-        scenario.add_constraint("c_rf", "ineq")
+        scenario.add_constraint("c_lift")
+        scenario.add_constraint("c_rf", constraint_type="ineq")
         # run the optimizer
         scenario.execute(run_inputs)
         obj_opt = scenario.optimization_result.f_opt

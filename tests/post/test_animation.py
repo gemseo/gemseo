@@ -100,11 +100,13 @@ def test_l_shape(tmp_wd) -> None:
     )
     scenario = create_scenario(
         disciplines,
-        formulation="DisciplinaryOpt",
-        objective_name="compliance",
-        design_space=design_space,
+        "DisciplinaryOpt",
+        "compliance",
+        design_space,
     )
-    scenario.add_constraint("volume fraction", "ineq", value=volume_fraction)
+    scenario.add_constraint(
+        "volume fraction", constraint_type="ineq", value=volume_fraction
+    )
     scenario.execute({"max_iter": 10, "algo": "NLOPT_MMA"})
     output_files = scenario.post_process(
         "Animation",

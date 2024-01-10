@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import json
 import unittest
-from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
@@ -100,9 +99,9 @@ class TestXDSMizer(unittest.TestCase):
         ]
         sc = MDOScenario(
             disciplines,
-            formulation=formulation,
-            objective_name="y_4",
-            design_space=SobieskiDesignSpace(),
+            formulation,
+            "y_4",
+            SobieskiDesignSpace(),
             **options,
         )
 
@@ -123,7 +122,7 @@ class TestXDSMizer(unittest.TestCase):
 
         # with constraints
         options["file_name"] = "xdsmized_sobieski_cstr_mdf"
-        scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+        scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
         assert_xdsm(scenario, **options)
 
         # without directory_path
@@ -151,7 +150,7 @@ class TestXDSMizer(unittest.TestCase):
         # with constraints
         options["file_name"] = "xdsmized_sobieski_cstr_idf"
         for c_name in ["g_1", "g_2", "g_3"]:
-            scenario.add_constraint(c_name, "ineq")
+            scenario.add_constraint(c_name, constraint_type="ineq")
         assert_xdsm(scenario, **options)
 
     def test_xdsmize_bilevel(self) -> None:
@@ -174,10 +173,10 @@ class TestXDSMizer(unittest.TestCase):
         sub_sc_opts = {"max_iter": 100, "algo": "SLSQP", "algo_options": algo_options}
         # Minimize SFC
         sc_prop = MDOScenario(
-            disciplines=[propulsion],
-            formulation="DisciplinaryOpt",
-            objective_name="y_34",
-            design_space=deepcopy(design_space).filter("x_3"),
+            [propulsion],
+            "DisciplinaryOpt",
+            "y_34",
+            design_space.filter("x_3", copy=True),
             name="PropulsionScenario",
         )
         sc_prop.default_inputs = sub_sc_opts
@@ -185,10 +184,10 @@ class TestXDSMizer(unittest.TestCase):
 
         # Maximize L/D
         sc_aero = MDOScenario(
-            disciplines=[aerodynamics],
-            formulation="DisciplinaryOpt",
-            objective_name="y_24",
-            design_space=deepcopy(design_space).filter("x_2"),
+            [aerodynamics],
+            "DisciplinaryOpt",
+            "y_24",
+            design_space.filter("x_2", copy=True),
             name="AerodynamicsScenario",
             maximize_objective=True,
         )
@@ -198,10 +197,10 @@ class TestXDSMizer(unittest.TestCase):
         # Maximize log(aircraft total weight / (aircraft total weight - fuel
         # weight))
         sc_str = MDOScenario(
-            disciplines=[structure],
-            formulation="DisciplinaryOpt",
-            objective_name="y_11",
-            design_space=deepcopy(design_space).filter("x_1"),
+            [structure],
+            "DisciplinaryOpt",
+            "y_11",
+            design_space.filter("x_1", copy=True),
             name="StructureScenario",
             maximize_objective=True,
         )
@@ -211,19 +210,19 @@ class TestXDSMizer(unittest.TestCase):
         sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 
         # Maximize range (Breguet)
-        design_space = deepcopy(design_space).filter("x_shared")
+        design_space = design_space.filter("x_shared", copy=True)
         system_scenario = MDOScenario(
             sub_disciplines,
-            formulation="BiLevel",
-            objective_name="y_4",
-            design_space=design_space,
+            "BiLevel",
+            "y_4",
+            design_space,
             maximize_objective=True,
             apply_cstr_tosub_scenarios=False,
             parallel_scenarios=False,
             apply_cstr_to_system=True,
             n_processes=5,
         )
-        system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+        system_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
         system_scenario.xdsmize(save_json=True)
         options = {
             "directory_path": ".",
@@ -236,9 +235,9 @@ class TestXDSMizer(unittest.TestCase):
 
         system_scenario_par = MDOScenario(
             sub_disciplines,
-            formulation="BiLevel",
-            objective_name="y_4",
-            design_space=design_space,
+            "BiLevel",
+            "y_4",
+            design_space,
             maximize_objective=True,
             apply_cstr_tosub_scenarios=False,
             apply_cstr_to_system=True,
@@ -246,7 +245,9 @@ class TestXDSMizer(unittest.TestCase):
             n_processes=4,
             use_threading=True,
         )
-        system_scenario_par.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+        system_scenario_par.add_constraint(
+            ["g_1", "g_2", "g_3"], constraint_type="ineq"
+        )
 
 
 @pytest.fixture()
@@ -290,9 +291,9 @@ def test_xdsmize_nested_chain(tmp_wd, elementary_discipline) -> None:
 
     nested_chains = MDOScenario(
         main_chain,
-        formulation="DisciplinaryOpt",
-        objective_name=get_name(5),
-        design_space=design_space,
+        "DisciplinaryOpt",
+        get_name(5),
+        design_space,
     )
 
     options = {
@@ -335,9 +336,9 @@ def test_xdsmize_nested_mda(tmp_wd) -> None:
 
     scenario = MDOScenario(
         [disciplines[2], inner_mda],
-        formulation="MDF",
-        objective_name="y3",
-        design_space=design_space,
+        "MDF",
+        "y3",
+        design_space,
     )
 
     options = {
@@ -368,9 +369,9 @@ def test_xdsmize_nested_adapter(tmp_wd) -> None:
 
     sce_depth3 = create_scenario(
         [disciplines[3]],
-        formulation="MDF",
-        objective_name="z4",
-        design_space=ds_depth3,
+        "MDF",
+        "z4",
+        ds_depth3,
     )
 
     # -- level 2
@@ -383,9 +384,9 @@ def test_xdsmize_nested_adapter(tmp_wd) -> None:
 
     sce_depth2 = create_scenario(
         [disciplines[2], adapter_depth2],
-        formulation="MDF",
-        objective_name="z3",
-        design_space=ds_depth2,
+        "MDF",
+        "z3",
+        ds_depth2,
     )
 
     # -- level 1
@@ -398,9 +399,9 @@ def test_xdsmize_nested_adapter(tmp_wd) -> None:
 
     sce_depth1 = create_scenario(
         [disciplines[1], adapter_depth1],
-        formulation="MDF",
-        objective_name="z2",
-        design_space=ds_depth1,
+        "MDF",
+        "z2",
+        ds_depth1,
     )
 
     # -- level 0
@@ -413,9 +414,9 @@ def test_xdsmize_nested_adapter(tmp_wd) -> None:
 
     sce_glob = create_scenario(
         [disciplines[0], adapter_depth0],
-        formulation="MDF",
-        objective_name="z2",
-        design_space=ds_depth0,
+        "MDF",
+        "z2",
+        ds_depth0,
     )
 
     options = {
@@ -439,10 +440,10 @@ def test_xdsmize_disciplinary_opt_with_adapter(tmp_wd) -> None:
     ])
 
     scenario = create_scenario(
-        disciplines=disciplines,
-        formulation="MDF",
-        objective_name="z",
-        design_space=design_space,
+        disciplines,
+        "MDF",
+        "z",
+        design_space,
         scenario_type="MDO",
     )
 
@@ -456,10 +457,10 @@ def test_xdsmize_disciplinary_opt_with_adapter(tmp_wd) -> None:
     design_space_discrete.add_variable("n", var_type="integer")
 
     top_scenario = create_scenario(
-        disciplines=[adapter],
-        formulation="DisciplinaryOpt",
-        objective_name="z",
-        design_space=design_space_discrete,
+        [adapter],
+        "DisciplinaryOpt",
+        "z",
+        design_space_discrete,
         scenario_type="DOE",
     )
 
@@ -497,9 +498,9 @@ def test_xdsmize_nested_parallel_chain(tmp_wd, elementary_discipline) -> None:
 
     nested_chains = MDOScenario(
         [beg_chain, inter_chain],
-        formulation="DisciplinaryOpt",
-        objective_name=get_name(5),
-        design_space=design_space,
+        "DisciplinaryOpt",
+        get_name(5),
+        design_space,
     )
 
     options = {
@@ -617,9 +618,9 @@ def test_xdsmize_mdf_mdoparallelchain(tmp_wd) -> None:
     mdachain_parallel_options = {"use_threading": True, "n_processes": 2}
     scenario = MDOScenario(
         disciplines,
-        formulation="MDF",
-        objective_name="y2",
-        design_space=design_space,
+        "MDF",
+        "y2",
+        design_space,
         mdachain_parallelize_tasks=True,
         mdachain_parallel_options=mdachain_parallel_options,
         inner_mda_name="MDAGaussSeidel",

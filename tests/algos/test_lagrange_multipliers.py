@@ -145,9 +145,9 @@ def test_lagrangian_validation_ineq_normalize() -> None:
 def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
     scenario = create_scenario(
         sellar_disciplines,
-        formulation="MDF",
-        objective_name="obj",
-        design_space=SellarDesignSpace(),
+        "MDF",
+        "obj",
+        SellarDesignSpace(),
     )
 
     scenario.add_constraint("c_1", constraint_type)

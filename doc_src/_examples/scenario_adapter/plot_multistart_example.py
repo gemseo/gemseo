@@ -62,7 +62,7 @@ scenario = create_scenario(
     design_space,
 )
 scenario.default_inputs = {"algo": "SLSQP", "max_iter": 10}
-scenario.add_constraint("cstr", "ineq")
+scenario.add_constraint("cstr", constraint_type="ineq")
 
 # %%
 # Create the scenario adapter
@@ -82,7 +82,7 @@ scenario_doe = create_scenario(
     design_space,
     scenario_type="DOE",
 )
-scenario_doe.add_constraint("cstr", "ineq")
+scenario_doe.add_constraint("cstr", constraint_type="ineq")
 run_inputs = {"n_samples": 10, "algo": "fullfact"}
 scenario_doe.execute(run_inputs)
 

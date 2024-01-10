@@ -216,10 +216,10 @@ def test_log_convergence() -> None:
 def test_weak_and_strong_couplings() -> None:
     """Test the Newton method on a simple Analytic case with strong and weak
     couplings."""
-    disc1 = AnalyticDiscipline(expressions={"z": "2*x"}, name="z=f(x) disc")
-    disc2 = AnalyticDiscipline(expressions={"i": "z + j"}, name="i=f(z,j) disc")
-    disc3 = AnalyticDiscipline(expressions={"j": "1 - 0.3*i"}, name="j=f(i) disc")
-    disc4 = AnalyticDiscipline(expressions={"obj": "i+j"}, name="obj=f(i,j) disc")
+    disc1 = AnalyticDiscipline({"z": "2*x"}, name="z=f(x) disc")
+    disc2 = AnalyticDiscipline({"i": "z + j"}, name="i=f(z,j) disc")
+    disc3 = AnalyticDiscipline({"j": "1 - 0.3*i"}, name="j=f(i) disc")
+    disc4 = AnalyticDiscipline({"obj": "i+j"}, name="obj=f(i,j) disc")
     disciplines = [disc1, disc2, disc3, disc4]
     mda = MDAChain(disciplines, inner_mda_name="MDANewtonRaphson")
     mda.execute({
@@ -238,13 +238,13 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
 
     Two strongly coupled cycles of disciplines are used in this test case.
     """
-    disc1 = AnalyticDiscipline(expressions={"z": "2*x"}, name=1)
-    disc2 = AnalyticDiscipline(expressions={"i": "z + 0.2*j"}, name=2)
-    disc3 = AnalyticDiscipline(expressions={"j": "1. - 0.3*i"}, name=3)
-    disc4 = AnalyticDiscipline(expressions={"k": "i+j"}, name=4)
-    disc5 = AnalyticDiscipline(expressions={"l": "k + 0.2*m"}, name=5)
-    disc6 = AnalyticDiscipline(expressions={"m": "1. - 0.3*l"}, name=6)
-    disc7 = AnalyticDiscipline(expressions={"obj": "l+m"}, name=7)
+    disc1 = AnalyticDiscipline({"z": "2*x"}, name=1)
+    disc2 = AnalyticDiscipline({"i": "z + 0.2*j"}, name=2)
+    disc3 = AnalyticDiscipline({"j": "1. - 0.3*i"}, name=3)
+    disc4 = AnalyticDiscipline({"k": "i+j"}, name=4)
+    disc5 = AnalyticDiscipline({"l": "k + 0.2*m"}, name=5)
+    disc6 = AnalyticDiscipline({"m": "1. - 0.3*l"}, name=6)
+    disc7 = AnalyticDiscipline({"obj": "l+m"}, name=7)
     disciplines = [disc1, disc2, disc3, disc4, disc5, disc6, disc7]
     mda = MDAChain(disciplines, inner_mda_name="MDANewtonRaphson", tolerance=1e-13)
     mda.warm_start = True

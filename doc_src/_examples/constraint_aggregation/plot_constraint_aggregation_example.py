@@ -90,7 +90,7 @@ original_scenario = create_scenario(
     ds,
     maximize_objective=False,
 )
-original_scenario.add_constraint("g", "ineq")
+original_scenario.add_constraint("g", constraint_type="ineq")
 
 original_scenario.execute(algo_options)
 # Without constraint aggregation MMA iterations become more expensive, when a
@@ -105,7 +105,7 @@ new_scenario = create_scenario(
     ds_new,
     maximize_objective=False,
 )
-new_scenario.add_constraint("g", "ineq")
+new_scenario.add_constraint("g", constraint_type="ineq")
 
 # %%
 # This method aggregates the constraints using the lower bound KS function

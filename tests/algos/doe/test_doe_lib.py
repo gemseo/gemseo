@@ -113,9 +113,9 @@ def test_evaluate_samples_multiproc_with_observables(doe) -> None:
 
     scenario = create_scenario(
         [disc],
-        design_space=design_space,
-        objective_name="obj",
-        formulation="DisciplinaryOpt",
+        "DisciplinaryOpt",
+        "obj",
+        design_space,
         scenario_type="DOE",
     )
 
@@ -308,9 +308,9 @@ def test_variable_types(doe, var_type1, var_type2) -> None:
 
     scenario = create_scenario(
         [Disc()],
-        design_space=design_space,
-        objective_name="z",
-        formulation="DisciplinaryOpt",
+        "DisciplinaryOpt",
+        "z",
+        design_space,
         scenario_type="DOE",
     )
 

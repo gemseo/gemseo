@@ -109,8 +109,8 @@ sub_scenario.default_inputs = {"algo": "NLOPT_SLSQP", "max_iter": 100}
 
 # %%
 # We add the Binh and Korn problem constraints.
-sub_scenario.add_constraint("cstr1", "ineq")
-sub_scenario.add_constraint("cstr2", "ineq")
+sub_scenario.add_constraint("cstr1", constraint_type="ineq")
+sub_scenario.add_constraint("cstr2", constraint_type="ineq")
 
 # %%
 # Creation of the design space for the system-level scenario
@@ -150,7 +150,7 @@ system_scenario = create_scenario(
 # `apply_cstr_tosub_scenarios=False` as an argument to `create_scenario`.
 # Note that `obj2` shall be added as an observable of `scenario_doe`,
 # otherwise it cannot be used by the ParetoFront post-processing.
-system_scenario.add_constraint("cstr3", "eq")
+system_scenario.add_constraint("cstr3")
 system_scenario.add_observable("obj2")
 system_scenario.xdsmize()
 # %%
