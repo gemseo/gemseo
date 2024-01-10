@@ -51,6 +51,7 @@ import numbers
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import inf
 
@@ -61,6 +62,8 @@ from gemseo.utils.logging_tools import LoggingContext
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.datasets.io_dataset import IODataset
@@ -79,19 +82,19 @@ class ScalabilityStudy:
 
     def __init__(
         self,
-        objective,
-        design_variables,
+        objective: str,
+        design_variables: Iterable[str],
         directory: str = "study",
         prefix: str = "",
-        eq_constraints=None,
-        ineq_constraints=None,
+        eq_constraints: Iterable[str] | None = None,
+        ineq_constraints: Iterable[str] | None = None,
         maximize_objective: bool = False,
         fill_factor: float = 0.7,
         active_probability: float = 0.1,
         feasibility_level: float = 0.8,
         start_at_equilibrium: bool = True,
         early_stopping: bool = True,
-        coupling_variables=None,
+        coupling_variables: Iterable[str] | None = None,
     ) -> None:
         """The constructor of the ScalabilityStudy class requires two mandatory
         arguments:
@@ -129,26 +132,24 @@ class ScalabilityStudy:
           earlier than final step ``early_stopping``.
 
         Args:
-        :param str objective: name of the objective
-        :param list(str) design_variables: names of the design variables
-        :param str directory: working directory of the study. Default: 'study'.
-        :param str prefix: prefix for the output filenames. Default: ''.
-        :param list(str) eq_constraints: names of the equality constraints.
-            Default: None.
-        :param list(str) ineq_constraints: names of the inequality constraints
-            Default: None.
-        :param bool maximize_objective: maximizing objective. Default: False.
-        :param float fill_factor: default fill factor of the input-output
-            dependency matrix. Default: 0.7.
-        :param float active_probability: probability to set the inequality
-            constraints as active at initial step of the optimization.
-            Default: 0.1
-        :param float feasibility_level: offset of satisfaction for inequality
-            constraints. Default: 0.8.
-        :param bool start_at_equilibrium: start at equilibrium
-            using a preliminary MDA. Default: True.
-        :param bool early_stopping: post-process the optimization database
-            to get results earlier than final step.
+            objective: The name of the objective.
+            design_variables: The names of the design variables.
+            directory: The working directory of the study.
+            prefix: The prefix for the output filenames.
+            eq_constraints: The names of the equality constraints, if any.
+            ineq_constraints: The names of the inequality constraints, if any.
+            maximize_objective: Whether to maximize the objective.
+            fill_factor: The default fill factor
+                of the input-output dependency matrix.
+            active_probability: The probability to set the inequality
+                constraints as active at initial step of the optimization.
+            feasibility_level: The offset of satisfaction
+                for the inequality constraints.
+            start_at_equilibrium: Whether to start at equilibrium
+                using a preliminary MDA.
+            early_stopping: Whether to post-process the optimization database
+                to get results earlier than final step.
+            coupling_variables: The names of the coupling variables.
         """
         LOGGER.info("Initialize the scalability study")
         self.prefix = prefix
@@ -231,7 +232,8 @@ class ScalabilityStudy:
     def add_discipline(self, data: IODataset) -> None:
         """This method adds a disciplinary dataset from a dataset.
 
-        :param Dataset data: dataset provided as a dataset.
+        Args:
+            data: The input-output dataset.
         """
         self._group_dep[data.name] = {}
         self._all_data = data.get_view().to_numpy()
@@ -256,31 +258,34 @@ class ScalabilityStudy:
         LOGGER.info("%s", msg)
 
     @property
-    def discipline_names(self):
-        """Get discipline names.
-
-        :return: list of discipline names
-        :rtype: list(str)
-        """
+    def discipline_names(self) -> list[str]:
+        """The names of the disciplines."""
         return [discipline.name for discipline in self.datasets]
 
-    def set_input_output_dependency(self, discipline, output, inputs) -> None:
+    def set_input_output_dependency(
+        self, discipline: str, output: str, inputs: Iterable[str]
+    ) -> None:
         """Set the dependency between an output and a set of inputs for a given
         discipline.
 
-        :param str discipline: name of the discipline
-        :param str output: name of the output
-        :param list(str) inputs: list of inputs names
+        Args:
+            discipline: The name of the discipline.
+            output: The name of the output.
+            inputs: The names of the inputs.
         """
         self.__check_discipline(discipline)
         self.__check_output(discipline, output)
         self.__check_inputs(discipline, inputs)
         self._group_dep[discipline][output] = inputs
 
-    def set_fill_factor(self, discipline, output, fill_factor) -> None:
-        """:param str discipline: name of the discipline
-        :param str output: name of the output function
-        :param float fill_factor: fill factor
+    def set_fill_factor(self, discipline: str, output: str, fill_factor: float) -> None:
+        """Set the fill factor.
+
+        Args:
+        Args:
+            discipline: The name of the discipline.
+            output: The name of the output.
+            fill_factor: The fill factor
         """
         self.__check_discipline(discipline)
         self.__check_output(discipline, output)
@@ -289,9 +294,16 @@ class ScalabilityStudy:
             self._fill_factor[discipline] = {}
         self._fill_factor[discipline][output] = fill_factor
 
-    def __check_discipline(self, discipline) -> None:
-        """Check if discipline is a string comprised in the list of disciplines
-        names."""
+    def __check_discipline(self, discipline: str) -> None:
+        """Check if discipline is a string comprised in the list of disciplines names.
+
+        Args:
+            discipline: The name of the discipline.
+
+        Raises:
+            TypeError: When the discipline is not a string.
+            ValueError: when the discipline is not available.
+        """
         if not isinstance(discipline, str):
             msg = "The argument discipline should be a string"
             raise TypeError(msg)
@@ -303,8 +315,17 @@ class ScalabilityStudy:
                 discipline_names,
             )
 
-    def __check_output(self, discipline, varname: str) -> None:
-        """Check if a variable is an output of a given discipline."""
+    def __check_output(self, discipline: str, varname: str) -> None:
+        """Check if a variable is an output of a given discipline.
+
+        Args:
+            discipline: The name of the discipline.
+            varname: The name of the variable.
+
+        Raises:
+            TypeError: When the output is not a string.
+            ValueError: When the output is not available.
+        """
         self.__check_discipline(discipline)
         if not isinstance(varname, str):
             msg = f"{varname} is not a string."
@@ -320,8 +341,17 @@ class ScalabilityStudy:
             )
             raise ValueError(msg)
 
-    def __check_inputs(self, discipline, inputs) -> None:
-        """Check if inputs is a list of inputs of discipline."""
+    def __check_inputs(self, discipline: str, inputs: list[str]) -> None:
+        """Check if inputs is a list of inputs of discipline.
+
+        Args:
+            discipline: The name of the discipline.
+            inputs: The names of the inputs.
+
+        Raises:
+            TypeError: When an input is not a string.
+            ValueError: When an input is not available.
+        """
         self.__check_discipline(discipline)
         if not isinstance(inputs, list):
             msg = "The argument 'inputs' must be a list of string."
@@ -341,10 +371,14 @@ class ScalabilityStudy:
                 )
                 raise ValueError(msg)
 
-    def __check_fill_factor(self, fill_factor) -> None:
+    def __check_fill_factor(self, fill_factor: float) -> None:
         """Check if fill factor is a proportion or a number equal to -1.
 
-        :param float fill_factor: a proportion or -1
+        Args:
+            fill_factor: Either a proportion or -1.
+
+        Raises:
+            TypeError: When the fill factor is neither a proportion nor -1.
         """
         try:
             self.__check_proportion(fill_factor)
@@ -357,10 +391,15 @@ class ScalabilityStudy:
                 raise TypeError(msg) from None
 
     @staticmethod
-    def __check_proportion(proportion) -> None:
-        """Check if a proportion is a float number comprised in 0 and 1.
+    def __check_proportion(proportion: float) -> None:
+        """Check if a proportion is a float number comprised in [0, 1].
 
-        :param float proportion: proportion comprised in 0 and 1.
+        Args:
+            proportion: A proportion comprised in [0, 1].
+
+        Raises:
+            TypeError: When the proportion is not a number.
+            ValueError: When the proportion is not a number comprised in [0, 1].
         """
         if not isinstance(proportion, numbers.Number):
             msg = "A proportion should be a float number comprised in 0 and 1."
@@ -371,25 +410,23 @@ class ScalabilityStudy:
 
     def add_optimization_strategy(
         self,
-        algo,
-        max_iter,
+        algo: str,
+        max_iter: int,
         formulation: str = "DisciplinaryOpt",
-        algo_options=None,
+        algo_options: Mapping[str, Any] | None = None,
         formulation_options: str | None = None,
         top_level_diff: str = "auto",
     ) -> None:
         """Add both optimization algorithm and MDO formulation, as well as their
         options.
 
-        :param str algo: name of the optimization algorithm.
-        :param int max_iter: maximum number of iterations
-            for the optimization algorithm.
-        :param str formulation: name of the MDO formulation.
-            Default: 'DisciplinaryOpt'.
-        :param dict algo_options: options of the optimization algorithm.
-        :param dict formulation_options: options of the MDO formulation.
-        :param str top_level_diff: differentiation method
-            for the top level disciplines. Default: 'auto'.
+        Args:
+            algo: The name of the optimization algorithm.
+            max_iter: The maximum number of iterations for the optimization algorithm.
+            formulation: The name of the MDO formulation.
+            algo_options: The options of the optimization algorithm.
+            formulation_options: The options of the MDO formulation.
+            top_level_diff: The differentiation method for the top level disciplines.
         """
         self.algorithms.append(algo)
         if algo_options is None:
@@ -421,23 +458,24 @@ class ScalabilityStudy:
 
     def add_scaling_strategies(
         self,
-        design_size=None,
-        coupling_size=None,
-        eq_cstr_size=None,
-        ineq_cstr_size=None,
+        design_size: int | list[int] | None = None,
+        coupling_size: int | list[int] | None = None,
+        eq_cstr_size: int | list[int] | None = None,
+        ineq_cstr_size: int | list[int] | None = None,
         variables: list[None] | None = None,
     ) -> None:
         """Add different scaling strategies.
 
-        :param design_size: size of the design variables. Default: None.
-        :type design_size: int or list(int)
-        :param coupling_size: size of the coupling variables. Default: None.
-        :type coupling_size: int or list(int)
-        :param eq_cstr_size: size of the equality constraints. Default: None.
-        :type eq_cstr_size: int or list(int)
-        :param ineq_cstr_size: size of the inequality constraints.
-            Default: None.
-        :type ineq_cstr_size: int or list(int)
+        Args:
+            design_size: The size of the design variables.
+                If ``None``, use 1.
+            coupling_size: The size of the coupling variables.
+                If ``None``, use 1.
+            eq_cstr_size: The size of the equality constraints.
+                If ``None``, use 1.
+            ineq_cstr_size: The size of the inequality constraints.
+                If ``None``, use 1.
+            variables: The size of the other variables.
         """
         n_design = self.__check_varsizes_type(design_size)
         n_coupling = self.__check_varsizes_type(coupling_size)
@@ -503,14 +541,16 @@ class ScalabilityStudy:
         LOGGER.info("%s", msg)
 
     @staticmethod
-    def __format_scaling(size: int, n_scaling):
+    def __format_scaling(size: int | list[int], n_scaling: int) -> list[int]:
         """Convert a scaling size in a list of integers whose length is equal to the
         number of scalings.
 
-        :param size: size(s) of a given variable
-        :type size: int or list(int)
-        :param int n_scaling: number of scalings
-        :return: formatted sizes
+        Args:
+            size: The size(s) of a given variable
+            n_scaling: The number of scalings.
+
+        Returns:
+            A size per scaling.
         """
         formatted_sizes = size
         if isinstance(formatted_sizes, int) or formatted_sizes is None:
@@ -520,33 +560,41 @@ class ScalabilityStudy:
         return formatted_sizes
 
     @staticmethod
-    def __update_var_scaling(scaling, size: int, varnames: Sequence[str]) -> None:
+    def __update_var_scaling(
+        scaling: dict[str, Mapping[str, Any]], size: int, varnames: Sequence[str]
+    ) -> None:
         """Update a scaling dictionary for a given list of variables and a given size.
 
-        :param dict scaling: scaling dictionary whose keys are variable names and values
-            are dictionary with scaling properties, e.g. {'size': val}
-        :param int size: size of the variable
-        :param list(str) varnames: list of variable names
+        Args:
+            scaling: The variable names bound to the scaling properties,
+                e.g. {'size': val}.
+            size: The size of the variable.
+            varnames: The names of the variables.
         """
         if size is not None:
             scaling.update({varname: size for varname in varnames})
 
     @staticmethod
-    def __check_scaling_consistency(n_var_scaling, n_scaling) -> None:
+    def __check_scaling_consistency(n_var_scaling: int, n_scaling: int) -> None:
         """Check that for the different types of variables, the number of scalings is
         the same or equal to 1.
 
-        :param int n_var_scaling: number of scalings
-        :param int n_scaling: expected number of scalings
+        Args:
+            n_var_scaling: The number of scalings.
+            n_scaling: The expected number of scalings.
         """
         assert n_var_scaling in {n_scaling, 1}
 
     @staticmethod
-    def __check_varsizes_type(varsizes: Sequence[int]):
+    def __check_varsizes_type(varsizes: Sequence[int]) -> int:
         """Check the type of scaling sizes. Integer, list of integers or None is
         expected. Return the number of scalings.
 
-        :return: length of scalings
+        Args:
+            varsizes: The sizes of the variables.
+
+        Returns:
+            The number of scalings.
         """
         length = 1
         if varsizes is not None:
@@ -563,11 +611,12 @@ class ScalabilityStudy:
                 length = 1
         return length
 
-    def execute(self, n_replicates: int = 1):
+    def execute(self, n_replicates: int = 1) -> list[ScalabilityResult]:
         """Execute the scalability study, one or several times to take into account the
         random features of the scalable problems.
 
-        :param int n_replicates: number of times the scalability study is repeated.
+        Args:
+            n_replicates: The number of times the scalability study is repeated.
         """
         plural = "s" if n_replicates > 1 else ""
         LOGGER.info("Execute scalability study %s time%s", n_replicates, plural)
@@ -641,11 +690,14 @@ class ScalabilityStudy:
                     LOGGER.debug("%s", msg)
         return self.results
 
-    def __get_statistics(self, problem, scaling):
+    def __get_statistics(
+        self, problem: ScalableProblem, scaling: Mapping[str, int]
+    ) -> dict[str, int | bool | dict[str, int] | dict[str, dict[str, int]]]:
         """Get statistics from an executed scalable problem.
 
-        :param ScalableProblem problem: scalable problem.
-        :param dict scaling: variables scaling.
+        Args:
+            problem: The scalable problem.
+            scaling: The variables scaling.
         """
         statistics = {}
         stopidx, n_iter = self.__get_stop_index(problem)
@@ -678,13 +730,16 @@ class ScalabilityStudy:
         statistics["old_varsizes"] = problem.varsizes
         return statistics
 
-    def __dep_mat_path(self, algo, formulation, id_scaling, replicate):
-        """Path to the directory containing the dependency matrices files.
+    def __dep_mat_path(
+        self, algo: str, formulation: str, id_scaling: int, replicate: int
+    ) -> Path:
+        """Define the path to the directory containing the dependency matrices files.
 
-        :param str algo: algo name.
-        :param str formulation: formulation name.
-        :param int id_scaling: scaling index.
-        :param int replicate: replicate number.
+        Args:
+            algo: The name of the algorithm.
+            formulation: The name of the formulation.
+            id_scaling: The index of the scaling.
+            replicate: The replicate number.
         """
         varnames = [algo, formulation, id_scaling + 1, replicate]
         name = "_".join([self.prefix] + [str(var) for var in varnames])
@@ -692,13 +747,16 @@ class ScalabilityStudy:
             name = name[1:]
         return self.directory / POSTSCAL_DIRECTORY / name
 
-    def __optview_path(self, algo, formulation, id_scaling, replicate):
-        """Path to the directory containing the dependency matrices files.
+    def __optview_path(
+        self, algo: str, formulation: str, id_scaling: int, replicate: int
+    ) -> Path:
+        """Define the path to the directory containing the dependency matrices files.
 
-        :param str algo: algo name.
-        :param str formulation: formulation name.
-        :param int id_scaling: scaling index.
-        :param int replicate: replicate number.
+        Args:
+            algo: The name of the algorithm.
+            formulation: The name of the formulation.
+            id_scaling: The index of the scaling.
+            replicate: The replicate number.
         """
         path = (
             self.directory
@@ -710,11 +768,15 @@ class ScalabilityStudy:
         path.mkdir(exist_ok=True, parents=True)
         return path
 
-    def __create_scalable_problem(self, scaling, seed: int):
+    def __create_scalable_problem(self, scaling: dict, seed: int) -> ScalableProblem:
         """Create a scalable problem.
 
-        :param dict scaling: scaling.
-        :param int seed: seed for random features.
+        Args:
+            scaling: The scaling.
+            seed: The seed for random features.
+
+        Returns:
+            The scalable problem.
         """
         return ScalableProblem(
             self.datasets,
@@ -731,12 +793,15 @@ class ScalabilityStudy:
             allow_unused_inputs=False,
         )
 
-    def __create_scenario(self, problem, formulation, opt_index) -> None:
+    def __create_scenario(
+        self, problem: ScalableProblem, formulation: str, opt_index: int
+    ) -> None:
         """Create scenario for a given formulation.
 
-        :param ScalableProblem problem: scalable problem.
-        :param str formulation: MDO formulation name.
-        :param int opt_index: optimization strategy index.
+        Args:
+            problem: The scalable problem.
+            formulation: The name of the formulation.
+            opt_index: The optimization strategy index.
         """
         form_opt = self.formulations_options[opt_index]
         formulation_options = {} if not isinstance(form_opt, dict) else form_opt
@@ -749,12 +814,15 @@ class ScalabilityStudy:
             **formulation_options,
         )
 
-    def __execute_scenario(self, problem, algo, opt_index):
+    def __execute_scenario(
+        self, problem: ScalableProblem, algo: str, opt_index: int
+    ) -> None:
         """Execute scenario.
 
-        :param ScalableProblem problem: scalable problem.
-        :param str algo: optimization algorithm name.
-        :param int opt_index: optimization strategy index.
+        Args:
+            problem: The scalable problem.
+            algo: The name of the optimization algorithm.
+            opt_index: The optimization strategy index.
         """
         top_level_disciplines = problem.scenario.formulation.get_top_level_disc()
         for disc in top_level_disciplines:
@@ -769,12 +837,14 @@ class ScalabilityStudy:
         })
         return algo_options
 
-    def __get_stop_index(self, problem):
+    def __get_stop_index(self, problem: ScalableProblem) -> tuple[int, int]:
         """Get stop index from a database.
 
-        :param ScalableProblem problem: scalable problem
-        :return: stop index, database length
-        :rtype: int, int
+        Args:
+            problem: The scalable problem.
+
+        Returns:
+            The stop index, the database length.
         """
         database = problem.scenario.formulation.opt_problem.database
         n_iter = len(database)

@@ -19,12 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
+
 import pytest
 
 from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.source_parsing import parse_google
-from gemseo.utils.source_parsing import parse_rest
 
 
 def function_with_google_docstring(arg1, arg2) -> None:
@@ -43,10 +44,9 @@ class ClassWithGoogleDocstring:
     """A class doing nothing."""
 
     def __init__(self, arg1=0.0, arg2=1.0) -> None:
-        """
-        Args:
-            arg1: The first argument.
-            arg2: The second argument.
+        """Args:
+        arg1: The first argument.
+        arg2: The second argument.
         """
 
 
@@ -80,15 +80,6 @@ Section title:
     Section description.
 """
 
-REST_DOCSTRING = """
-:param arg1: A one-line description.
-:param arg2: A multi-line
-    description.
-:param arg3: A description with a first paragraph.
-
-    And a second one.
-"""
-
 
 def test_google() -> None:
     """Test that the Google docstrings are correctly parsed."""
@@ -101,35 +92,31 @@ def test_google() -> None:
     }
 
 
-def test_rest() -> None:
-    """Test that the reST docstrings are correctly parsed."""
-    assert parse_rest(REST_DOCSTRING) == {
-        "arg1": "A one-line description.",
-        "arg2": "A multi-line description.",
-        "arg3": "A description with a first paragraph.\n\nAnd a second one.",
-    }
+def test_parsing_function_without_args_section(caplog) -> None:
+    """Test parsing a function without Args section."""
+
+    def function() -> None:
+        """Function without and without Args section."""
+
+    assert get_options_doc(function) == {}
+    assert not caplog.record_tuples
+
+    def function(x) -> None:
+        """Function with an argument and without Args section."""
+
+    assert get_options_doc(function) == {}
+    _, level, message = caplog.record_tuples[0]
+    assert level == logging.WARNING
+    assert message == "The Args section is missing."
 
 
-def test_google_without_parameters_block() -> None:
-    """Test that the arguments docstring cannot be parsed without 'Args' section."""
-    assert not parse_google(DOCSTRING.replace("Args", "Foo"))
+def test_no_docstring():
+    """Test parsing a function without docstring."""
 
+    def foo() -> None: ...
 
-def function_with_malformed_docstring(x) -> None:
-    """Function.
-
-    Foo:
-        x: Description.
-    """
-
-
-def test_parsing_with_malformed_docstring() -> None:
-    """Test an invalid docstring."""
     with pytest.raises(
         ValueError,
-        match=(
-            "The docstring of the arguments is malformed: "
-            "please use Google style docstrings"
-        ),
+        match=r"Empty doc for <function test_no_docstring.<locals>.foo at .*\.",
     ):
-        get_options_doc(function_with_malformed_docstring)
+        get_options_doc(foo)

@@ -28,4 +28,5 @@ block = Block(
     ],
     examples="examples/disciplines/index.html",
     info="discipline.html",
+    options="algorithms/discipline_algos.html",
 )

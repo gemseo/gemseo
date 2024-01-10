@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 import numpy as np
@@ -30,17 +31,26 @@ from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
+if TYPE_CHECKING:
+    from numpy._typing import NDArray
+
+    from gemseo.algos.opt.optimization_library import OptimizationLibrary
+    from gemseo.algos.opt_problem import OptimizationProblem
+
 
 class OptLibraryTestBase:
     """Main testing class."""
 
     @staticmethod
-    def relative_norm(x, x_ref):
-        """
+    def relative_norm(x: NDArray[float], x_ref: NDArray[float]) -> float:
+        """Compute a relative Euclidean norm between to vectors.
 
-        :param x: param x_ref:
-        :param x_ref:
+        Args:
+            x: The vector.
+            x_ref: The reference vector.
 
+        Returns:
+            The relative Euclidean norm between two vectors.
         """
         xr_norm = np.linalg.norm(x_ref)
         if xr_norm < 1e-8:
@@ -48,22 +58,32 @@ class OptLibraryTestBase:
         return np.linalg.norm(x - x_ref) / xr_norm
 
     @staticmethod
-    def norm(x):
-        """
+    def norm(x: NDArray[float]) -> float:
+        """Compute the Euclidean norm of a vector.
 
-        :param x:
+        Args:
+            x: The vector.
 
+        Returns:
+            The Euclidean norm of the vector.
         """
         return np.linalg.norm(x)
 
     @staticmethod
-    def generate_one_test(opt_lib_name, algo_name, **options):
-        """
+    def generate_one_test(
+        opt_lib_name: str, algo_name: str, **options: Any
+    ) -> OptimizationLibrary:
+        """Solve the Power 2 problem with an optimization library.
 
-        :param opt_lib_name: param algo_name:
-        :param algo_name:
-        :param **options:
+        This optimization problem has equality constraints.
 
+        Args:
+            opt_lib_name: The name of the optimization library.
+            algo_name: The name of the optimization algorithm.
+            **options: The options of the optimization algorithm.
+
+        Returns:
+            An optimization library after the resolution of the Power 2 problem.
         """
         problem = OptLibraryTestBase().get_pb_instance("Power2")
         opt_library = OptimizersFactory().create(opt_lib_name)
@@ -72,12 +92,17 @@ class OptLibraryTestBase:
 
     @staticmethod
     def generate_one_test_unconstrained(opt_lib_name, algo_name, **options):
-        """
+        """Solve the Rosenbrock problem with an optimization library.
 
-        :param opt_lib_name: param algo_name:
-        :param algo_name:
-        :param **options:
+        This optimization problem has no constraints.
 
+        Args:
+            opt_lib_name: The name of the optimization library.
+            algo_name: The name of the optimization algorithm.
+            **options: The options of the optimization algorithm.
+
+        Returns:
+            An optimization library after the resolution of the Rosenbrock problem.
         """
         problem = OptLibraryTestBase().get_pb_instance("Rosenbrock")
         opt_library = OptimizersFactory().create(opt_lib_name)
@@ -86,12 +111,19 @@ class OptLibraryTestBase:
 
     @staticmethod
     def generate_error_test(opt_lib_name, algo_name, **options):
-        """
+        """Solve the Power 2 problem with an optimization library.
 
-        :param opt_lib_name: param algo_name:
-        :param algo_name:
-        :param **options:
+        This optimization problem has constraints.
 
+        This problem raises an error when calling the objective.
+
+        Args:
+            opt_lib_name: The name of the optimization library.
+            algo_name: The name of the optimization algorithm.
+            **options: The options of the optimization algorithm.
+
+        Returns:
+            An optimization library after the resolution of the Rosenbrock problem.
         """
         problem = Power2(exception_error=True)
         opt_library = OptimizersFactory().create(opt_lib_name)
@@ -99,14 +131,20 @@ class OptLibraryTestBase:
         return opt_library
 
     @staticmethod
-    def run_and_test_problem(problem, opt_library, algo_name, **options):
-        """
+    def run_and_test_problem(
+        problem: OptimizationProblem, opt_library: str, algo_name: str, **options: Any
+    ) -> str | None:
+        """Run and test an optimization algorithm.
 
-        :param problem: param opt_library:
-        :param algo_name: param **options:
-        :param opt_library:
-        :param **options:
+        Args:
+            problem: The optimization problem.
+            opt_library: The name of the optimization library.
+            algo_name: The name of the optimization algorithm.
+            **options: The options of the optimization algorithm.
 
+        Returns:
+            The error message if the optimizer cannot find the solution,
+            otherwise ``None``.
         """
         opt = opt_library.execute(problem, algo_name=algo_name, **options)
         x_opt, f_opt = problem.get_solution()
@@ -126,18 +164,31 @@ class OptLibraryTestBase:
         return None
 
     @staticmethod
-    def create_test(problem, opt_library, algo_name, options):
+    def create_test(
+        problem: OptimizationProblem,
+        opt_library: str,
+        algo_name: str,
+        options: dict[str, Any],
+    ):
+        """Create a function to run and test an optimization algorithm.
+
+        Args:
+            problem: The optimization problem.
+            opt_library: The name of the optimization library.
+            algo_name: The name of the optimization algorithm.
+            options: The options of the optimization algorithm.
+
+        Returns:
+            The error message if the optimizer cannot find the solution,
+            otherwise ``None``.
         """
 
-        :param problem: param opt_library:
-        :param algo_name: param options:
-        :param opt_library:
-        :param options:
+        def test_algo(self=None) -> None:
+            """Test the algorithm.
 
-        """
-
-        def test_algo(self=None):
-            """"""
+            Raises:
+                RuntimeError: When the algorithm cannot find the solution.
+            """
             msg = OptLibraryTestBase.run_and_test_problem(
                 problem, opt_library, algo_name, **options
             )
@@ -151,10 +202,15 @@ class OptLibraryTestBase:
     def get_pb_instance(
         pb_name: str,
         pb_options: dict[str, Any] | None = None,
-    ) -> tuple[Rosenbrock, Power2, Rastrigin]:
-        """
-        :param pb_name: the name of the optimization problem
-        :param pb_options: the options to be passed to the optimization problem
+    ) -> Rosenbrock | Power2 | Rastrigin:
+        """Return an optimization problem.
+
+        Args:
+            pb_name: The name of the optimization problem.
+            pb_options: The options to be passed to the optimization problem.
+
+        Raises:
+            ValueError: When the problem is not available.
         """
         if pb_options is None:
             pb_options = {}
@@ -171,9 +227,13 @@ class OptLibraryTestBase:
         """Generates the tests for an opt library Filters algorithms adapted to the
         benchmark problems.
 
-        :param opt_lib_name: name of the library
-        :param get_options: Default value = None)
-        :returns: list of test methods to be attached to a unitest class
+        Args:
+            opt_lib_name: The name of the optimization library.
+            get_options: A function to get the options of the algorithm.
+            get_problem_options: A function to get the options of the problem.
+
+        Returns!
+            The test methods to be attached to a unitest class.
         """
         tests = []
         factory = OptimizersFactory()
