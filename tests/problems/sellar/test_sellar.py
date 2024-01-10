@@ -165,13 +165,13 @@ def test_exec(formulation, algo, lin_method, sellar_disciplines) -> None:
     """Scenario with MDF formulation, solver SLSQP and analytical gradients."""
     scenario = MDOScenario(
         sellar_disciplines,
-        formulation=formulation,
-        objective_name="obj",
-        design_space=SellarDesignSpace(),
+        formulation,
+        "obj",
+        SellarDesignSpace(),
     )
     scenario.set_differentiation_method(lin_method)
-    scenario.add_constraint(C_1, "ineq")
-    scenario.add_constraint(C_2, "ineq")
+    scenario.add_constraint(C_1, constraint_type="ineq")
+    scenario.add_constraint(C_2, constraint_type="ineq")
     scenario.execute({"max_iter": 10, "algo": algo})
 
     x_opt = scenario.design_space.get_current_value(as_dict=True)

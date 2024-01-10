@@ -200,8 +200,8 @@ scenario = create_scenario(disciplines, "IDF", "obj", design_space)
 # ^^^^^^^^^^^^^^^^^^^
 # Then,
 # we have to set the design constraints
-scenario.add_constraint("c_1", "ineq")
-scenario.add_constraint("c_2", "ineq")
+scenario.add_constraint("c_1", constraint_type="ineq")
+scenario.add_constraint("c_2", constraint_type="ineq")
 
 # %%
 # As previously mentioned,

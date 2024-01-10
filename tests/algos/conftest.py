@@ -35,38 +35,34 @@ def y0(request):
 @pytest.fixture()
 def analytical_test_2d_ineq(x0, y0):
     """Test for lagrange multiplier."""
-    disc = AnalyticDiscipline(
-        name="2D_test", expressions={"f": "(x-1)**2+(y-1)**2", "g": "x+y-1"}
-    )
+    disc = AnalyticDiscipline({"f": "(x-1)**2+(y-1)**2", "g": "x+y-1"}, name="2D_test")
     ds = DesignSpace()
     ds.add_variable("x", l_b=0.0, u_b=1.0, value=x0)
     ds.add_variable("y", l_b=0.0, u_b=1.0, value=y0)
     scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=ds,
+        [disc],
+        "DisciplinaryOpt",
+        "f",
+        ds,
     )
-    scenario.add_constraint("g", "ineq")
+    scenario.add_constraint("g", constraint_type="ineq")
     return scenario
 
 
 @pytest.fixture()
 def analytical_test_2d_eq(x0, y0):
     """Test for lagrange multiplier."""
-    disc = AnalyticDiscipline(
-        name="2D_test", expressions={"f": "(x)**2+(y)**2", "g": "x+y-1"}
-    )
+    disc = AnalyticDiscipline({"f": "(x)**2+(y)**2", "g": "x+y-1"}, name="2D_test")
     ds = DesignSpace()
     ds.add_variable("x", l_b=0.0, u_b=1.0, value=x0)
     ds.add_variable("y", l_b=0.0, u_b=1.0, value=y0)
     scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=ds,
+        [disc],
+        "DisciplinaryOpt",
+        "f",
+        ds,
     )
-    scenario.add_constraint("g", "eq")
+    scenario.add_constraint("g")
     return scenario
 
 
@@ -75,21 +71,21 @@ def analytical_test_2d__multiple_eq():
     """Test for lagrange multiplier."""
     x0 = 4.0
     disc = AnalyticDiscipline(
+        {"f": "(x)**2+(y)**2+(z)**2", "h1": "x-y", "h2": "y-z"},
         name="2D_test",
-        expressions={"f": "(x)**2+(y)**2+(z)**2", "h1": "x-y", "h2": "y-z"},
     )
     ds = DesignSpace()
     ds.add_variable("x", l_b=0.0, u_b=4.0, value=x0)
     ds.add_variable("y", l_b=1.0, u_b=4.0, value=x0)
     ds.add_variable("z", l_b=2.0, u_b=4.0, value=x0)
     scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=ds,
+        [disc],
+        "DisciplinaryOpt",
+        "f",
+        ds,
     )
-    scenario.add_constraint("h1", "eq")
-    scenario.add_constraint("h2", "eq")
+    scenario.add_constraint("h1")
+    scenario.add_constraint("h2")
     return scenario
 
 
@@ -97,23 +93,23 @@ def analytical_test_2d__multiple_eq():
 def analytical_test_2d_mixed_rank_deficient():
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline(
-        name="2D_test",
-        expressions={
+        {
             "f": "x**2+y**2+z**2",
             "g": "x+y+z-1",
             "h": "(x-1.)**2+(y-1)**2+(z-1)**2-4./3.",
         },
+        name="2D_test",
     )
     ds = DesignSpace()
     ds.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
     ds.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
     ds.add_variable("z", l_b=0.0, u_b=1.0, value=0.5)
     scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=ds,
+        [disc],
+        "DisciplinaryOpt",
+        "f",
+        ds,
     )
-    scenario.add_constraint("g", "ineq")
-    scenario.add_constraint("h", "eq")
+    scenario.add_constraint("g", constraint_type="ineq")
+    scenario.add_constraint("h")
     return scenario

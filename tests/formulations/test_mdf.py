@@ -55,7 +55,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         else:
             scenario.set_differentiation_method("complex_step", 1e-30)
         # Set the design constraints
-        scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+        scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
         scenario.execute({

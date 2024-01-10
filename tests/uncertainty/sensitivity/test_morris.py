@@ -225,9 +225,9 @@ def oat():
     space.add_variable("x2", l_b=-1.0, u_b=1.0, value=0)
     scenario = DOEScenario(
         [discipline],
-        formulation="MDF",
-        objective_name="y1",
-        design_space=space,
+        "MDF",
+        "y1",
+        space,
     )
     scenario.add_observable("y2")
 
@@ -281,9 +281,9 @@ def test_oat_with_wrong_step(step) -> None:
 
     scenario = DOEScenario(
         [discipline],
-        formulation="MDF",
-        objective_name="y",
-        design_space=space,
+        "MDF",
+        "y",
+        space,
     )
 
     expected = (

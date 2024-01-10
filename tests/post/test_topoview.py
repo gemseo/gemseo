@@ -40,12 +40,12 @@ def scenario_and_dimensions():
     )
     scenario = create_scenario(
         disciplines,
-        formulation="DisciplinaryOpt",
-        objective_name="compliance",
-        design_space=design_space,
+        "DisciplinaryOpt",
+        "compliance",
+        design_space,
     )
     scenario.add_observable("xPhys")
-    scenario.add_constraint("volume fraction", "ineq", value=vf0)
+    scenario.add_constraint("volume fraction", constraint_type="ineq", value=vf0)
     scenario.execute({"max_iter": 1, "algo": "NLOPT_MMA"})
     return scenario, n_el, n_el
 

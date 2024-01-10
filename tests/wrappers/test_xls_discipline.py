@@ -183,16 +183,16 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
 
     scenario = create_scenario(
         disciplines,
-        formulation="MDF",
+        "MDF",
+        "obj",
+        design_space,
         main_mda_name="MDAChain",
         inner_mda_name="MDAJacobi",
-        objective_name="obj",
-        design_space=design_space,
         scenario_type="DOE",
         tolerance=1e-14,
     )
-    scenario.add_constraint("c_1", "ineq")
-    scenario.add_constraint("c_2", "ineq")
+    scenario.add_constraint("c_1", constraint_type="ineq")
+    scenario.add_constraint("c_2", constraint_type="ineq")
     doe_input = {
         "algo": "DiagonalDOE",
         "n_samples": 2,

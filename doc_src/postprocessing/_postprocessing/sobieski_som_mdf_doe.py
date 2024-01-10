@@ -43,7 +43,7 @@ scenario.set_differentiation_method()
 algo_options = {"n_samples": num, "algo": "lhs"}
 
 for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, "ineq")
+    scenario.add_constraint(constraint, constraint_type="ineq")
 
 scenario.execute(algo_options)
 

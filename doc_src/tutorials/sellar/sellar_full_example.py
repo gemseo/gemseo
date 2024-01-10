@@ -109,8 +109,8 @@ def run_process() -> None:
     )
 
     # Set the design constraints
-    scenario.add_constraint("c_1", "ineq")
-    scenario.add_constraint("c_2", "ineq")
+    scenario.add_constraint("c_1", constraint_type="ineq")
+    scenario.add_constraint("c_2", constraint_type="ineq")
 
     # USe finite differences since the disciplines do not provide derivatives
     scenario.set_differentiation_method("finite_differences")

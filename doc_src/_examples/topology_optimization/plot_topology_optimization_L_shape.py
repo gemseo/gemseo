@@ -83,7 +83,9 @@ scenario = create_scenario(
 )
 # %%
 # Add the volume fraction constraint to the scenario:
-scenario.add_constraint("volume fraction", "ineq", value=volume_fraction)
+scenario.add_constraint(
+    "volume fraction", constraint_type="ineq", value=volume_fraction
+)
 
 # %%
 # Generate the XDSM

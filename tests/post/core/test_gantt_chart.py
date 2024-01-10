@@ -110,7 +110,7 @@ def test_plot(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     # maximize_objective=True,
     # )
     # for c_name in ["g_1", "g_2", "g_3"]:
-    # scenario.add_constraint(c_name, "ineq")
+    # scenario.add_constraint(c_name, constraint_type="ineq")
     # scenario.execute({"max_iter": 3, "algo": "SLSQP"})
     #
     # stamps = MDODiscipline.TIME_STAMPS

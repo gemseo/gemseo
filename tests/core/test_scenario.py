@@ -92,9 +92,9 @@ def build_mdo_scenario(
     design_space = SobieskiDesignSpace()
     return MDOScenario(
         disciplines,
-        formulation=formulation,
-        objective_name="y_4",
-        design_space=design_space,
+        formulation,
+        "y_4",
+        design_space,
         grammar_type=grammar_type,
         maximize_objective=True,
     )
@@ -581,10 +581,10 @@ def test_use_standardized_objective(
     discipline, design_space = sinus_use_case
     scenario = MDOScenario(
         [discipline],
-        formulation="MDF",
-        objective_name="y",
+        "MDF",
+        "y",
+        design_space,
         maximize_objective=maximize,
-        design_space=design_space,
     )
     assert scenario.use_standardized_objective
     scenario.use_standardized_objective = standardize
@@ -890,7 +890,7 @@ def scenario_for_linear_check(full_linear):
     ds.add_variable("x1", 1, l_b=0.0, u_b=1.0, value=0.5)
     if not full_linear:
         ds.add_variable("x2", 1, l_b=0.0, u_b=1.0, value=0.5)
-    return create_scenario(my_disc, "DisciplinaryOpt", "f", design_space=ds)
+    return create_scenario(my_disc, "DisciplinaryOpt", "f", ds)
 
 
 def test_function_problem_type(scenario_for_linear_check, full_linear) -> None:

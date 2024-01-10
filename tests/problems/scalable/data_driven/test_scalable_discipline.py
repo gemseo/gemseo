@@ -197,9 +197,9 @@ class ScalableProblem(unittest.TestCase):
 
         scenario = MDOScenario(
             ScalableProblem.scalable_disciplines,
-            formulation=formulation,
-            objective_name="y_4",
-            design_space=design_space,
+            formulation,
+            "y_4",
+            design_space,
             maximize_objective=True,
         )
         scenario.set_differentiation_method("finite_differences")
@@ -207,7 +207,7 @@ class ScalableProblem(unittest.TestCase):
         # add disciplinary constraints
         cstr_threshold = 0.5
         for cstr in ["g_1", "g_2", "g_3"]:
-            scenario.add_constraint(cstr, "ineq", value=cstr_threshold)
+            scenario.add_constraint(cstr, constraint_type="ineq", value=cstr_threshold)
 
         opt_pb = scenario.formulation.opt_problem
 

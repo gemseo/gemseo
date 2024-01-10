@@ -77,9 +77,9 @@ class TestPropaneScenario(unittest.TestCase):
         design_space = get_design_space()
         return MDOScenario(
             disciplines,
-            formulation=formulation,
-            objective_name="obj",
-            design_space=design_space,
+            formulation,
+            "obj",
+            design_space,
         )
 
     def build_and_run_scenario(self, formulation, algo, lin_method="complex_step"):
@@ -94,8 +94,8 @@ class TestPropaneScenario(unittest.TestCase):
         scenario.set_differentiation_method(lin_method)
         # add constraints
 
-        scenario.add_constraint(["f_2", "f_6"], "ineq")
-        scenario.add_constraint(["f_7", "f_9"], "ineq")
+        scenario.add_constraint(["f_2", "f_6"], constraint_type="ineq")
+        scenario.add_constraint(["f_7", "f_9"], constraint_type="ineq")
 
         run_inputs = {"max_iter": 50, "algo": algo}
         # run the optimizer

@@ -91,10 +91,10 @@ def scalable_optimization_problem_scenario(request, n, constraint_kind):
     ds = DesignSpace()
     ds.add_variable("x", size=n, l_b=0.1, u_b=n, value=n)
     scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        design_space=ds,
-        objective_name="f",
+        [disc],
+        "DisciplinaryOpt",
+        "f",
+        ds,
     )
     scenario.add_constraint("g", constraint_kind)
     return scenario

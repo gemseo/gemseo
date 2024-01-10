@@ -1725,12 +1725,12 @@ def test_observables_normalization(sellar_disciplines) -> None:
     )
     scenario = create_scenario(
         sellar_disciplines,
-        formulation="MDF",
-        objective_name="obj",
-        design_space=design_space,
+        "MDF",
+        "obj",
+        design_space,
     )
-    scenario.add_constraint("c_1", "ineq")
-    scenario.add_constraint("c_2", "ineq")
+    scenario.add_constraint("c_1", constraint_type="ineq")
+    scenario.add_constraint("c_2", constraint_type="ineq")
     scenario.add_observable("y_1")
     scenario.execute(input_data={"max_iter": 3, "algo": "SLSQP"})
     total_iter = len(scenario.formulation.opt_problem.database)

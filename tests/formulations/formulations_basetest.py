@@ -74,9 +74,9 @@ class FormulationsBaseTest(unittest.TestCase):
         design_space = SobieskiDesignSpace()
         return MDOScenario(
             disciplines,
-            formulation=formulation,
-            objective_name="y_4",
-            design_space=design_space,
+            formulation,
+            "y_4",
+            design_space,
             maximize_objective=True,
             **options,
         )

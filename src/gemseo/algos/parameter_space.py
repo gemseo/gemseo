@@ -69,7 +69,6 @@ from __future__ import annotations
 
 import collections
 import logging
-from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -969,7 +968,7 @@ class ParameterSpace(DesignSpace):
         Return:
             A :class:`.ParameterSpace` defined by the uncertain variables only.
         """
-        uncertain_space = deepcopy(self).filter(self.uncertain_variables)
+        uncertain_space = self.filter(self.uncertain_variables, copy=True)
         if as_design_space:
             return uncertain_space.to_design_space()
 

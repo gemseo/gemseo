@@ -216,8 +216,8 @@ scenario = create_scenario(
 # In our problem, we have two inequality constraints,
 # and their declaration reads:
 
-scenario.add_constraint("c_1", "ineq")
-scenario.add_constraint("c_2", "ineq")
+scenario.add_constraint("c_1", constraint_type="ineq")
+scenario.add_constraint("c_2", constraint_type="ineq")
 
 # %%
 # Execution of the scenario

@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import unittest
-from copy import deepcopy
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import AtomicExecSequence
@@ -203,10 +202,10 @@ class TestExecSequence(unittest.TestCase):
         d1 = SobieskiPropulsion()
         design_space = SobieskiDesignSpace()
         sc_prop = MDOScenario(
-            disciplines=[d1],
-            formulation="DisciplinaryOpt",
-            objective_name="y_34",
-            design_space=deepcopy(design_space).filter("x_3"),
+            [d1],
+            "DisciplinaryOpt",
+            "y_34",
+            design_space.filter("x_3", copy=True),
             name="PropulsionScenario",
         )
         d2 = MDOScenarioAdapter(sc_prop, [], [])
