@@ -22,55 +22,34 @@
 from __future__ import annotations
 
 import inspect
+import logging
 import re
 from inspect import getfullargspec
 from typing import Any
 from typing import Callable
 
+LOGGER = logging.getLogger(__name__)
+
 
 def get_options_doc(
-    method: Callable,
+    function: Callable,
 ) -> dict[str, str]:
-    """Get the documentation of a method.
+    """Get the documentation of a function.
 
     Args:
-        method: The method to retrieve the doc from.
+        function: The function to retrieve the doc from.
 
     Returns:
         The descriptions of the options.
     """
     # the docstring has all the leading and common white spaces removed
-    docstring = inspect.getdoc(method)
+    docstring = inspect.getdoc(function)
 
     if docstring is None:
-        msg = f"Empty doc for {method}"
+        msg = f"Empty doc for {function}."
         raise ValueError(msg)
 
-    for parse in (parse_google, parse_rest):
-        parsed_docstring = parse(docstring)
-        if parsed_docstring:
-            return parsed_docstring
-
-    msg = (
-        "The docstring of the arguments is malformed: "
-        "please use Google style docstrings"
-    )
-    raise ValueError(msg)
-
-
-# TODO: API: remove.
-def get_default_option_values(
-    cls: type,
-) -> dict[str, str]:
-    """Return the default values of the kwargs of a class constructor.
-
-    Args:
-        cls: The class.
-
-    Returns:
-        The defaults.
-    """
-    return get_callable_argument_defaults(cls.__init__)
+    return parse_google(docstring, len(getfullargspec(function)[0]))
 
 
 def get_callable_argument_defaults(
@@ -95,31 +74,10 @@ def get_callable_argument_defaults(
     return {args[-n_defaults:][i]: defaults[i] for i in range(n_defaults)}
 
 
-def parse_rest(
-    docstring: str,
-) -> dict[str, str]:
-    """Parse a reST docstring.
-
-    Args:
-        docstring: The docstring to be parsed.
-
-    Returns:
-        The parsed docstring.
-    """
-    pattern = r":param ([\*\w]+): (.*?)(?:(?=:param)|(?=:return)|\Z)"
-    param_re = re.compile(pattern, re.S)
-    strings = param_re.findall(docstring)
-    parsed_doc = {txt[0]: txt[1].replace(" " * 4, "").rstrip("\n") for txt in strings}
-    return {
-        name: description.replace("  ", " ").replace("\n", " ").replace("  ", "\n\n")
-        for name, description in parsed_doc.items()
-    }
-
-
 # regex pattern for finding the arguments section of a Google docstring
 # docstring-inheritance replaces the section title "Args" with "Parameters"
 RE_PATTERN_ARGS_SECTION = re.compile(
-    r"(?:Args|Parameters)\s*:\s*\n(.*?)(?:\n\n\S|$)", flags=re.DOTALL
+    r"(?:Args)\s*:\s*\n(.*?)(?:\n\n\S|$)", flags=re.DOTALL
 )
 
 # regex pattern for finding the arguments names and description of a Google docstring
@@ -128,11 +86,12 @@ RE_PATTERN_ARGS = re.compile(
 )
 
 
-def parse_google(docstring: str) -> dict[str, str]:
+def parse_google(docstring: str, n_arguments: int = 0) -> dict[str, str]:
     """Parse a Google docstring.
 
     Args:
         docstring: The docstring to be parsed.
+        n_arguments: The number of arguments of the function.
 
     Returns:
         The parsed docstring with the function arguments names bound to their
@@ -141,7 +100,8 @@ def parse_google(docstring: str) -> dict[str, str]:
     args_sections = RE_PATTERN_ARGS_SECTION.findall(docstring)
 
     if len(args_sections) != 1:
-        # This is not a Google docstring
+        if n_arguments:
+            LOGGER.warning("The Args section is missing.")
         return {}
 
     # remove leading common blank spaces

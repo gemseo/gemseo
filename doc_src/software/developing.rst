@@ -703,9 +703,6 @@ Style
 
 Use the Google Style Docstrings format for documenting the code.
 This :ref:`example module` shows how to write such docstrings.
-Older docstrings use the legacy *epydoc* docstrings format
-which is visually dense and hard to read.
-They will be overhauled progressively.
 
 Type hints
 ~~~~~~~~~~

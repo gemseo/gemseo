@@ -41,6 +41,7 @@ from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.post.post_factory import PostFactory
+from gemseo.problems.disciplines_factory import DisciplinesFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
@@ -519,6 +520,11 @@ def main(gen_opts_path: str | Path) -> None:
             "sensitivity",
             "Sensitivity analysis algorithms",
             SensitivityAnalysisFactory(),
+        ),
+        InitOptionsDoc(
+            "discipline",
+            "Disciplines",
+            DisciplinesFactory(),
         ),
     ]
     for algos_options_doc in algos_options_docs:

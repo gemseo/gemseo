@@ -46,6 +46,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Callable
 from typing import ClassVar
 
 import matplotlib.pyplot as plt
@@ -60,7 +62,10 @@ from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from collections.abc import Sequence
+
+    from numpy._typing import NDArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,11 +90,11 @@ class PostScalabilityStudy:
         "total_calls": "Total number of evaluations",
     }
 
-    def __init__(self, study_directory) -> None:
-        """Constructor.
-
-        :param str study_directory: directory of the scalability study."
+    def __init__(self, study_directory: str) -> None:
         """
+        Args:
+            study_directory: The directory of the scalability study.
+        """  # noqa: D205, D212, D415
         msg = MultiLineString()
         msg.add("Post-process for scalability study")
         msg.indent()
@@ -105,18 +110,24 @@ class PostScalabilityStudy:
             result.total_calls = sum(result.n_calls.values())
             result.total_calls += sum(result.n_calls_linearize.values())
 
-    def set_cost_function(self, formulation, cost) -> None:
+    def set_cost_function(
+        self,
+        formulation: str,
+        cost: Callable[[Mapping[str, int], int, int, int, int], float],
+    ) -> None:
         """Set cost function for each formulation.
 
-        :param str formulation: name of the formulation.
-        :param function cost: cost function
+        Args:
+            formulation: The name of the formulation.
+            cost: The cost function.
         """
         self.cost_function[formulation] = cost
 
-    def set_cost_unit(self, cost_unit) -> None:
+    def set_cost_unit(self, cost_unit: str) -> None:
         """Set the measurement unit for cost evaluation.
 
-        :param str cost_unit: cost unit, e.g. 'h', 'min', ...
+        Args:
+            cost_unit: The cost unit, e.g. 'h' or 'min'.
         """
         self.unit_cost = cost_unit
         description = self.descriptions["original_exec_time"].split(" (")[0]
@@ -124,63 +135,73 @@ class PostScalabilityStudy:
         self.descriptions["original_exec_time"] = description
 
     def labelize_exec_time(self, description: str) -> None:
-        """Change the description of execution time, used in plotting methods notably.
+        """Change the description of execution time.
 
-        :param str description: description.
+        Args:
+            description: The description.
         """
         self._update_descriptions("exec_time", description)
 
     def labelize_original_exec_time(self, description: str) -> None:
-        """Change the description of original execution time, used in plotting methods
-        notably.
+        """Change the description of original execution time.
 
-        :param str description: description.
+        Args:
+            description: The description.
         """
         self._update_descriptions("original_exec_time", description)
         if self.unit_cost is not None:
             self.set_cost_unit(self.unit_cost)
 
     def labelize_n_calls(self, description: str) -> None:
-        """Change the description of number of calls, used in plotting methods notably.
+        """Change the description of number of calls.
 
-        :param str description: description.
+        Args:
+            description: The description.
         """
         self._update_descriptions("n_calls", description)
 
     def labelize_n_calls_linearize(self, description: str) -> None:
-        """Change the description of number of calls for linearization, used in plotting
-        methods notably.
+        """Change the description of number of calls for linearization.
 
-        :param str description: description.
+        Args:
+            description: The description.
         """
         self._update_descriptions("n_calls_linearize", description)
 
     def labelize_status(self, description: str) -> None:
-        """Change the description of status, used in plotting methods notably.
+        """Change the description of status.
 
-        :param str description: description.
+        Args:
+            description: The description.
         """
         self._update_descriptions("status", description)
 
     def labelize_is_feasible(self, description: str) -> None:
-        """Change the description of feasibility, used in plotting methods notably.
+        """Change the description of feasibility.
 
-        :param str description: description.
+        Args:
+            description: The description.
         """
         self._update_descriptions("is_feasible", description)
 
     def labelize_scaling_strategy(self, description: str) -> None:
-        """Change the description of scaling strategy, used in plotting methods notably.
+        """Change the description of scaling strategy.
 
-        :param str description: description.
+        Args:
+            description: The description.
         """
         self._update_descriptions("scaling_strategy", description)
 
-    def _update_descriptions(self, keyword, description: str) -> None:
+    def _update_descriptions(self, keyword: str, description: str) -> None:
         """Update the description initialized with the NOMENCLATURE class attribute.
 
-        :param str keyword: keyword of the considered object.
-        :param str description: new description
+        Args:
+            keyword: The keyword of the considered object.
+            description: The description.
+
+        Raises:
+            ValueError: When the keyword is not available.
+            TypeError: When the description is not a string.
         """
         if not self.descriptions.get(keyword):
             keywords = ", ".join(list(self.descriptions.keys()))
@@ -195,8 +216,15 @@ class PostScalabilityStudy:
             raise TypeError(msg)
         self.descriptions[keyword] = description
 
-    def __load_results(self):
-        """Load results from the results directory of the study path."""
+    def __load_results(self) -> list[ScalabilityResult]:
+        """Load results from the results directory of the study path.
+
+        Returns:
+            The scalability results.
+
+        Raises:
+            ValueError: When the results directory does not exist or is empty.
+        """
         if not self.study_directory.is_dir():
             msg = f'Directory "{self.study_directory}" does not exist.'
             raise ValueError(msg)
@@ -223,19 +251,20 @@ class PostScalabilityStudy:
     def plot(
         self,
         legend_loc: str = "upper left",
-        xticks=None,
+        xticks: Sequence[float] | None = None,
         xticks_labels: Sequence[str] | None = None,
         xmargin: float = 0.0,
-        **options,
+        **options: Any,
     ) -> None:
         """Plot the results using different methods according to the presence or absence
         of replicate values.
 
-        :param str legend_loc: legend localization
-        :param list(float) xticks: list of xticks (default: None)
-        :param list(str) xticks_labels: list of xticks labels (default: None)
-        :param float xmargin: margin on left and right sides of the x-axis
-        :param options: options for the specialized plot methods
+        Args:
+            legend_loc: The location of the legend.
+            xticks: The x-ticks.
+            xticks_labels: The labels for the x-ticks.
+            xmargin: The margin on the left and right sides of the x-axis.
+            **options: The options for the specialized plot methods
         """
         msg = MultiLineString()
         msg.add("Execute post-processing")
@@ -253,10 +282,11 @@ class PostScalabilityStudy:
             self._plot_lines(legend_loc, xticks, xticks_labels, xmargin, **options)
         LOGGER.info("%s", msg)
 
-    def __has_scaling_dimension(self, value) -> None:
+    def __has_scaling_dimension(self, value: Any) -> None:
         """Assert if a value has the scaling dimension.
 
-        :param ndarray value: value.
+        Args:
+            value: A value to be tested.
         """
         if value is not None and hasattr(value, "__len__"):
             assert len(value) == len(self.get_scaling_strategies(True))
@@ -264,16 +294,17 @@ class PostScalabilityStudy:
     def _plot_lines(
         self,
         legend_loc: str = "upper left",
-        xticks=None,
+        xticks: Sequence[float] | None = None,
         xticks_labels: Sequence[str] | None = None,
         xmargin: float = 0.0,
     ) -> None:
-        """Deterministic plot.
+        """Plot lines.
 
-        :param str legend_loc: legend localization
-        :param list(float) xticks: list of xticks (default: None)
-        :param list(str) xticks_labels: list of xticks labels (default: None)
-        :param float xmargin: margin on left and right sides of the x-axis
+        Args:
+            legend_loc: The location of the legend.
+            xticks: The x-ticks.
+            xticks_labels: The labels for the x-ticks.
+            xmargin: The margin on the left and right sides of the x-axis.
         """
         colors = ["blue", "red", "green"]
         handles = [
@@ -293,17 +324,24 @@ class PostScalabilityStudy:
             plt.savefig(str(fpath))
 
     def __draw(
-        self, name: str, value, xticks, labels: Sequence[str], scales, color, xmargin
+        self,
+        name: str,
+        value: NDArray[float],
+        xticks: Sequence[float],
+        labels: Sequence[str],
+        scales: Sequence[float],
+        color: str,
+        xmargin: float,
     ) -> None:
         """Create plot for specific criterion when r=1 replicate.
 
-        :param str name: criterion name.
-        :param str value: criterion value.
-        :param list(float) xticks: list of xticks (default: None)
-        :param list(str) labels: list of xticks labels (default: None)
-        :param list(str) scales: scales
-        :param str color: line color.
-        :param float xmargin: margin on left and right sides of the x-axis
+        name: The name of the criterion.
+        value: The criterion value.
+        xticks: The x-ticks.
+        labels: The labels for the x-ticks.
+        scales: The scales.
+        color: line color.
+        xmargin: The margin on the left and right sides of the x-axis.
         """
         plt.figure(name)
         value = atleast_3d(value.T).T
@@ -329,13 +367,13 @@ class PostScalabilityStudy:
 
     @property
     def n_samples(self) -> int:
-        """Number of samples."""
+        """The number of samples."""
         return len(self.get_replicates(True))
 
     def _plot_boxes(
         self,
         legend_loc: str = "upper left",
-        xticks=None,
+        xticks: Sequence[float] | None = None,
         xticks_labels: Sequence[str] | None = None,
         xmargin: float = 0.0,
         minbox: int = 2,
@@ -343,16 +381,16 @@ class PostScalabilityStudy:
         widths: float = 0.25,
         whis: float = 1.5,
     ) -> None:
-        """Probabilistic plot.
+        """Plot results with boxplots.
 
-        :param str legend_loc: legend localization
-        :param list(float) xticks: list of xticks (default: None)
-        :param list(str) xticks_labels: list of xticks labels (default: None)
-        :param float xmargin: margin on left and right sides of the x-axis
-        :param int minbox: minimal number of values for boxplot (default: 2).
-        :param bool notch: if True, will produce a notched boxplot.
-        :param float whis: the reach of the whiskers to the beyond the first and third
-            quartiles (default: 1.5).
+        Args:
+            legend_loc: The location of the legend.
+            xticks: The x-ticks.
+            xticks_labels: The labels for the x-ticks.
+            xmargin: The margin on the left and right sides of the x-axis.
+            minbox: The minimal number of values for boxplot.
+            notch: Whether to use notched boxplots.
+            whis: The reach of the whiskers to the beyond the first and third quartiles.
         """
         if not hasattr(widths, "__len__"):
             widths = [widths] * len(self.get_scaling_strategies(True))
@@ -398,30 +436,30 @@ class PostScalabilityStudy:
     def __drawb(
         self,
         name: str,
-        index,
-        value,
-        xticks,
+        index: int,
+        value: NDArray[float],
+        xticks: Sequence[float],
         labels: Sequence[str],
-        scales,
+        scales: Sequence[float],
         widths: Sequence[int],
-        color,
-        notch,
-        whis,
-        xmargin,
+        color: str,
+        notch: bool,
+        whis: float,
+        xmargin: float,
     ) -> None:
         """Create plot for specific criterion when r=1 replicate.
 
-        :param str name: criterion name.
-        :param int index: strategy index.
-        :param str value: criterion value.
-        :param list(float) xticks: list of xticks (default: None)
-        :param list(str) labels: list of xticks labels (default: None)
-        :param list(str) scales: scales
-        :param str color: line color.
-        :param bool notch: if True, will produce a notched boxplot.
-        :param float whis: the reach of the whiskers to the beyond the first and third
-            quartiles (default: 1.5).
-        :param float xmargin: margin on left and right sides of the x-axis
+        Args:
+            name: The name of the criterion
+            index: The strategy index.
+            value: The value of the criterion
+            xticks: The x-ticks.
+            labels: The labels for the x-ticks.
+            scales: The scales
+            color: The line color.
+            notch: Whether to use notched boxplots.
+            whis: The reach of the whiskers to the beyond the first and third quartiles.
+            xmargin: The margin on the left and right sides of the x-axis.
         """
         plt.figure(name)
         xvalues = scales
@@ -450,18 +488,24 @@ class PostScalabilityStudy:
 
     @staticmethod
     def __draw_boxplot(
-        data, xticks, edge_color, fill_color, notch, widths: Sequence[int], whis
-    ):
+        data: NDArray[float],
+        xticks: Sequence[float],
+        edge_color: str,
+        fill_color: str,
+        notch: bool,
+        widths: Sequence[int],
+        whis: bool,
+    ) -> None:
         """Draw boxplot from a dataset.
 
-        :param array data: dataset array of dimension 2 or 3
-        :param list(float) xticks: values of xticks
-        :param str edge_color: edge color
-        :param str fill_color: fill color
-        :param bool notch: if True, will produce a notched boxplot.
-        :param list(float) widths: widths of boxplots
-        :param float whis: the reach of the whiskers to the beyond the first and third
-            quartiles
+        Args:
+            data: The data.
+            xticks: The values of the x-ticks.
+            edge_color: The edge color.
+            fill_color: The fill color.
+            notch: Whether to use notched boxplots.
+            widths: The widths of the boxplots.
+            whis: The reach of the whiskers to the beyond the first and third quartiles.
         """
         if len(data.shape) == 3:
             data = data[0, :, :]
@@ -490,13 +534,17 @@ class PostScalabilityStudy:
 
         return boxplot
 
-    def __get_scales_and_criteria(self, optim_strategy):
+    def __get_scales_and_criteria(
+        self, optim_strategy: str
+    ) -> tuple[list[int], dict[str, NDArray[float]]]:
         """Get values of criteria and corresponding scaling levels for a given
         optimization strategy and all replicates.
 
-        :param str optim_strategy: name of the optimization strategy.
-        :return: scaling levels, criteria values
-        :rtype: list(int), dict(array)
+        Args:
+            optim_strategy: The name of the optimization strategy.
+
+        Returns:
+            The scaling levels, the criteria values.
         """
         exec_time = []
         original_exec_time = []
@@ -535,14 +583,17 @@ class PostScalabilityStudy:
         values["is_feasible"] = array(is_feasible).T  # (n_scal, n_rep)
         return scaling_levels, values
 
-    def __get_replicate_values(self, optim_strategy, replicate):
+    def __get_replicate_values(
+        self, optim_strategy: str, replicate: int
+    ) -> tuple[list[int], dict[str, NDArray[float]]]:
         """Get values of criteria and corresponding scaling levels for a given
         optimization strategy and a given replicate.
 
-        :param str optim_strategy: optimization strategy.
-        :param int replicate: replicate index.
-        :return: scaling levels, criteria values
-        :rtype: list(int), dict(array-like)
+        Args:
+            optim_strategy: optimization strategy.
+            replicate: replicate index.
+
+        Returns:The scaling levels, the criteria values.
         """
         are_replicate = [value == replicate for value in self.get_replicates()]
         are_optim_strategy = [
@@ -580,17 +631,19 @@ class PostScalabilityStudy:
         return scaling_levels, values
 
     @property
-    def names(self):
-        """Get the names of the scalability results."""
+    def names(self) -> list[str]:
+        """The names of the scalability results."""
         return [value.name for value in self.scalability_results]
 
     def get_optimization_strategies(self, unique: bool = False) -> list[str]:
-        """Get the names of the optimization strategies.
+        """Return the names of the optimization strategies.
 
-        :param bool unique: return either unique values if True or one value per
-            scalability result if False (default: False).
-        :return: names of the optimization strategies.
-        :rtype: list(str)
+        Args:
+            unique: Whether to return unique values.
+                Otherwise, one value per scalability result.
+
+        Returns:
+            The names of the optimization strategies.
         """
         strategy_names = ["_".join(name.split("_")[0:-2]) for name in self.names]
         if unique:
@@ -600,15 +653,18 @@ class PostScalabilityStudy:
 
     @property
     def optimization_strategies(self) -> list[str]:
+        """The names of the optimization strategies."""
         return self.get_optimization_strategies(True)
 
     def get_scaling_strategies(self, unique: bool = False) -> list[int]:
-        """Get the identifiers of the scaling strategies.
+        """Return the identifiers of the scaling strategies.
 
-        :param bool unique: return either unique values if True or one value per
-            scalability result if False (default: False).
-        :return: identifiers of scaling strategies
-        :rtype: list(int)
+        Args:
+            unique: Whether to return unique values.
+                Otherwise, one value per scalability result.
+
+        Returns:
+            The names of the scaling strategies.
         """
         strategy_identifiers = [int(name.split("_")[-2]) for name in self.names]
         if unique:
@@ -617,25 +673,30 @@ class PostScalabilityStudy:
         return strategy_identifiers
 
     def get_replicates(self, unique: bool = False) -> list[int]:
-        """Get the replicate identifiants.
+        """Return the replicate identifiers.
 
-        :param bool unique: return either unique values if True or one value per
-            scalability result if False (default: False).
-        :return: identifiers of replicates.
-        :rtype: list(int)
+        Args:
+            unique: Whether to return unique values.
+                Otherwise, one value per scalability result.
+
+        Returns:
+            The names of the replicate identifiers.
         """
         rep = [int(name.split("_")[-1]) for name in self.names]
         if unique:
             rep = sorted(set(rep))
         return rep
 
-    def _estimate_original_time(self) -> None:
+    def _estimate_original_time(self) -> float:
         """Estimate the original execution time from the number of calls and
         linearizations of the different disciplines and top-level disciplines and from
         the cost functions provided by the user.
 
-        :return: original time
-        :rtype: float
+        Returns:
+            The original time.
+
+        Raises:
+            ValueError: When there is no cost function for the formulation.
         """
         for scalability_result in self.scalability_results:
             n_c = scalability_result.n_calls

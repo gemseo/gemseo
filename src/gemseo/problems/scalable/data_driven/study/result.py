@@ -24,8 +24,11 @@ from __future__ import annotations
 import pickle
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
 RESULTS_DIRECTORY = Path("results")
@@ -34,13 +37,13 @@ RESULTS_DIRECTORY = Path("results")
 class ScalabilityResult:
     """Scalability Result."""
 
-    def __init__(self, name: str, id_scaling, id_sample) -> None:
-        """Constructor.
-
-        :param str name: name of the scalability result.
-        :param int id_scaling: scaling identifier
-        :param int id_sample: sample identifier
+    def __init__(self, name: str, id_scaling: int, id_sample: int) -> None:
         """
+        Args:
+            name: The name of the scalability result.
+            id_scaling: The scaling identifier.
+            id_sample: The sample identifier.
+        """  # noqa: D205, D212, D415
         self.name = name
         self.id_scaling = id_scaling
         self.id_sample = id_sample
@@ -64,43 +67,43 @@ class ScalabilityResult:
 
     def get(
         self,
-        algo,
-        algo_options,
-        formulation,
-        formulation_options,
-        scaling,
-        n_calls: int,
-        n_calls_linearize,
-        n_calls_top_level,
-        n_calls_linearize_top_level,
-        exec_time,
-        status,
+        algo: str,
+        algo_options: Mapping[str, Any],
+        formulation: str,
+        formulation_options: Mapping[str, Any],
+        scaling: Mapping[str, Any],
+        n_calls: Iterable[int],
+        n_calls_linearize: Iterable[int],
+        n_calls_top_level: Iterable[int],
+        n_calls_linearize_top_level: Iterable[int],
+        exec_time: float,
+        status: int,
         is_feasible: bool,
         disc_names: Sequence[str],
         output_names: Sequence[str],
-        old_varsizes,
-        new_varsizes,
+        old_varsizes: Mapping[str, int],
+        new_varsizes: Mapping[str, int],
     ) -> None:
         """Get a scalability result for a given optimization strategy and a given
         scaling strategy.
 
-        :param str algo: name of the optimization algorithm
-        :param dict algo_options: options of the optimization algorithm
-        :param str formulation: name of the MDO formulation
-        :param dict formulation_options: options of the MDO formulation
-        :param scaling: scaling strategy
-        :param list(int) n_calls: number of calls for each discipline
-        :param list(int) n_calls_linearize: number of linearization for each discipline
-        :param list(int) n_calls_top_level: number of calls for each discipline
-        :param list(int) n_calls_linearize_top_level: number of linearization for each
-            discipline
-        :param float exec_time: execution time
-        :param int status: status of the optimization scenario
-        :param bool is_feasible: feasibility of the optimization solution
-        :param list(str) disc_names: list of discipline names
-        :param dict output_names: list of output names
-        :param dict old_varsizes: old variable sizes
-        :param dict new_varsizes: new variable sizes
+        Args:
+            algo: The name of the optimization algorithm.
+            algo_options: The options of the optimization algorithm.
+            formulation: The name of the MDO formulation.
+            formulation_options: The options of the MDO formulation.
+            scaling: The scaling strategy.
+            n_calls: The number of calls per discipline.
+            n_calls_linearize: The number of linearization per discipline
+            n_calls_top_level: The number of calls per discipline
+            n_calls_linearize_top_level: The number of linearizations per discipline.
+            exec_time: The execution time.
+            status: The status of the optimization scenario.
+            is_feasible: Whether the solution is feasible.
+            disc_names: The names of the disciplines.
+            output_names: The names of the outputs.
+            old_varsizes: The sizes of the original variables.
+            new_varsizes: The sizes of the new variables.
         """
         self.algo = algo
         self.algo_options = algo_options
@@ -119,10 +122,11 @@ class ScalabilityResult:
         self.old_varsizes = old_varsizes
         self.new_varsizes = new_varsizes
 
-    def get_file_path(self, study_directory) -> Path:
-        """Get file path.
+    def get_file_path(self, study_directory: str) -> Path:
+        """Return file path.
 
-        :param str study_directory: study directory name.
+        Args:
+            study_directory: The study directory name.
         """
         return (
             Path(study_directory)
@@ -130,11 +134,15 @@ class ScalabilityResult:
             / Path(self.name).with_suffix(".pkl")
         )
 
-    def to_pickle(self, study_directory) -> Path:
+    def to_pickle(self, study_directory: str) -> Path:
         """Save a scalability result into a pickle file whose name is the name of the
         ScalabilityResult instance.
 
-        :param str study_directory: study directory name.
+        Args:
+            study_directory: The study directory name.
+
+        Returns:
+            The path to the result.
         """
         fpath = self.get_file_path(study_directory)
         result = {
