@@ -104,7 +104,6 @@ from collections.abc import MutableMapping
 from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -117,6 +116,7 @@ from numpy import ndarray
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFactory
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
@@ -192,7 +192,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     FILENAME: ClassVar[str] = "ml_algo.pkl"
 
-    IDENTITY: Final[DefaultTransformerType] = MappingProxyType({})
+    IDENTITY: Final[DefaultTransformerType] = READ_ONLY_EMPTY_DICT
     """A transformer leaving the input and output variables as they are."""
 
     DEFAULT_TRANSFORMER: DefaultTransformerType = IDENTITY

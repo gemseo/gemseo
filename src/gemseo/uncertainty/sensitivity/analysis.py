@@ -39,7 +39,6 @@ from collections.abc import Mapping
 from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -60,6 +59,7 @@ from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -159,7 +159,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         n_samples: int | None = None,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
+        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
@@ -500,7 +500,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         directory_path: str | Path = "",
         file_name: str = "",
         file_format: str = "",
-        properties: Mapping[str, DatasetPlotPropertyType] = MappingProxyType({}),
+        properties: Mapping[str, DatasetPlotPropertyType] = READ_ONLY_EMPTY_DICT,
     ) -> Curves | Surfaces:
         """Plot the sensitivity indices related to a 1D or 2D functional output.
 

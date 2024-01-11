@@ -67,7 +67,6 @@ from collections.abc import Sequence
 from copy import deepcopy
 from functools import reduce
 from numbers import Number
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
@@ -124,6 +123,7 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator_factory import (
     GradientApproximatorFactory,
@@ -2609,7 +2609,7 @@ class OptimizationProblem(BaseProblem):
     def get_number_of_unsatisfied_constraints(
         self,
         design_variables: ndarray,
-        values: Mapping[str, float | ndarray] = MappingProxyType({}),
+        values: Mapping[str, float | ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> int:
         """Return the number of scalar constraints not satisfied by design variables.
 
