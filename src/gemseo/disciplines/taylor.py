@@ -17,10 +17,10 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -43,7 +43,7 @@ class TaylorDiscipline(MDODiscipline):
     def __init__(
         self,
         discipline: MDODiscipline,
-        input_data: Mapping[str, NDArray[float]] = MappingProxyType({}),
+        input_data: Mapping[str, NDArray[float]] = READ_ONLY_EMPTY_DICT,
         name: str = "",
     ) -> None:
         """

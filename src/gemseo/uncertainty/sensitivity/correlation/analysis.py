@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
@@ -48,6 +47,7 @@ from gemseo.utils.compatibility.openturns import compute_spearman_correlation
 from gemseo.utils.compatibility.openturns import compute_squared_src
 from gemseo.utils.compatibility.openturns import compute_src
 from gemseo.utils.compatibility.openturns import compute_srrc
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
 
@@ -138,7 +138,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         n_samples: int,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
+        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:

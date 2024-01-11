@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -42,6 +41,7 @@ from strenum import StrEnum
 
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -162,7 +162,7 @@ class HSICAnalysis(SensitivityAnalysis):
         n_samples: int,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
+        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:

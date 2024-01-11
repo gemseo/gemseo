@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from abc import ABC
 from abc import abstractmethod
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 from typing import Union
@@ -26,6 +25,8 @@ from typing import Union
 from numpy import array as np_array
 from numpy import concatenate
 from numpy import ndarray
+
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -136,7 +137,7 @@ class BaseDataConverter(ABC):
         self,
         names: Iterable[str],
         data: Data,
-        names_to_sizes: Mapping[str, int] = MappingProxyType({}),
+        names_to_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> tuple[dict[str, slice], int]:
         """Compute a mapping from data names to data value slices.
 

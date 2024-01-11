@@ -70,7 +70,6 @@ This methodology relies on the :class:`.MorrisAnalysis` class.
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -85,6 +84,7 @@ from gemseo.disciplines.utils import get_all_outputs
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -242,7 +242,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         n_samples: int | None,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
+        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
         n_replicates: int = 5,
         step: float = 0.05,
         formulation: str = "MDF",

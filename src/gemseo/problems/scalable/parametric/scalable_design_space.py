@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from gemseo.algos.parameter_space import ParameterSpace
@@ -36,6 +35,7 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -57,7 +57,7 @@ class ScalableDesignSpace(ParameterSpace):
             ScalableDisciplineSettings
         ] = DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
         d_0: int = DEFAULT_D_0,
-        names_to_default_values: Mapping[str, NDArray[float]] = MappingProxyType({}),
+        names_to_default_values: Mapping[str, NDArray[float]] = READ_ONLY_EMPTY_DICT,
         add_uncertain_variables: bool = False,
     ) -> None:
         r"""Args:

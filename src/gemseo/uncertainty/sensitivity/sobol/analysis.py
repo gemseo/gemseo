@@ -102,7 +102,6 @@ from collections.abc import Collection
 from collections.abc import Iterable
 from collections.abc import Mapping
 from collections.abc import Sequence
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -124,6 +123,7 @@ from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SecondOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
 
@@ -213,7 +213,7 @@ class SobolAnalysis(SensitivityAnalysis):
         n_samples: int,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
+        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
         formulation: str = "MDF",
         compute_second_order: bool = True,
         use_asymptotic_distributions: bool = True,
