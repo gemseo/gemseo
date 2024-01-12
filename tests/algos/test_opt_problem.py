@@ -1765,15 +1765,13 @@ def test_repr_constraint_linear_lower_ineq() -> None:
         ),
         positive=True,
     )
-    assert str(problem) == (
-        """Optimization problem:
+    assert str(problem) == ("""Optimization problem:
    minimize f(x!0, x!1) = x!0 + 2.00e+00*x!1
    with respect to x
    subject to constraints:
       g(x!0, x!1): [ 0.00e+00  1.00e+00][x!0] + [ 6.00e+00] >= 0.0
                    [ 2.00e+00  3.00e+00][x!1]   [ 7.00e+00]
-                   [ 4.00e+00  5.00e+00]        [ 8.00e+00]"""
-    )
+                   [ 4.00e+00  5.00e+00]        [ 8.00e+00]""")
 
 
 def test_get_original_observable(pow2_problem) -> None:

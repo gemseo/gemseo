@@ -57,10 +57,8 @@ class TaylorDiscipline(MDODiscipline):
                 is specified.
         """  # noqa: D205 D212
         input_names = set(discipline.get_input_data_names())
-        if (
-            (input_data and (input_data.keys() < input_names))
-            or not input_data
-            and discipline.default_inputs.keys() < input_names
+        if (input_data and (input_data.keys() < input_names)) or (
+            not input_data and discipline.default_inputs.keys() < input_names
         ):
             msg = (
                 "All the discipline input values must be "

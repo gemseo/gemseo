@@ -399,10 +399,8 @@ def check_obj_scenario_adapter(
 
     adapter.execute()
     local_value = adapter.local_data[output_names[0]]
-    assert (
-        minimize
-        and allclose(local_value, array(123.456))
-        or allclose(local_value, array(-123.456))
+    assert (minimize and allclose(local_value, array(123.456))) or allclose(
+        local_value, array(-123.456)
     )
 
     check_adapter_jacobian(
