@@ -83,6 +83,11 @@ TEST_PARAMETERS = {
         {"color": "red", "linestyle": "--", "marker": "v"},
         ["Lines_other_properties"],
     ),
+    "colormap": (
+        {"add_markers": True},
+        {"colormap": "viridis"},
+        ["Lines_colormap"],
+    ),
 }
 
 

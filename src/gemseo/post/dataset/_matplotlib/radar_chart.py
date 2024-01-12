@@ -50,6 +50,7 @@ class RadarChart(MatplotlibPlot):
 
         variable_names = self._common_dataset.get_columns()
         series_names = self._common_dataset.index
+        self._common_settings.set_colors(self._common_settings.color)
         for data, name, linestyle, color in zip(
             y_values,
             series_names,

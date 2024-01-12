@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from dataclasses import fields
 from pathlib import Path
 from unittest import mock
 
@@ -174,7 +173,7 @@ def test_save(yvsx, tmp_wd, kwargs, expected, relative) -> None:
     if "directory_path" in kwargs:
         Path(kwargs["directory_path"]).mkdir()
 
-    if "file_path" in kwargs and Path(kwargs["file_path"]).parent != Path("."):
+    if "file_path" in kwargs and Path(kwargs["file_path"]).parent != Path():
         Path(kwargs["file_path"]).parent.mkdir()
 
     yvsx.execute(save=True, **kwargs)
@@ -185,10 +184,10 @@ def test_save(yvsx, tmp_wd, kwargs, expected, relative) -> None:
 
 def test_plot_settings(yvsx) -> None:
     """Check that properties and setters read and write plot settings."""
-    for field in fields(yvsx._common_settings):
-        name = field.name
-        assert getattr(yvsx, name) == getattr(yvsx._common_settings, name)
-        setattr(yvsx, name, "foo")
+    for name in yvsx._common_settings.model_fields:
+        attribute_name = "_n_items" if name == "n_items" else name
+        assert getattr(yvsx, attribute_name) == getattr(yvsx._common_settings, name)
+        setattr(yvsx, attribute_name, "foo")
         assert getattr(yvsx._common_settings, name) == "foo"
 
 

@@ -62,6 +62,8 @@ TEST_PARAMETERS = {
             "xlabel": "The xlabel",
             "ylabel": "The ylabel",
             "title": "The title",
+            "color": ["red", "blue"],
+            "linestyle": "-",
         },
         ["Curves_properties"],
     ),

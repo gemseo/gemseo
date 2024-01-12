@@ -53,7 +53,7 @@ class Boxplot(MatplotlibPlot):
             opacity_level: The level of opacity.
         """  # noqa: D205, D212, D415
         fig, axes = self._get_figure_and_axes(fig, axes)
-        fig, axes = self._get_figure_and_axes(fig, axes)
+        self._common_settings.set_colors(self._common_settings.color)
         self.__draw_boxplot(
             self._common_dataset,
             axes,

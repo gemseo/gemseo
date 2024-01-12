@@ -66,15 +66,11 @@ class YvsX(DatasetPlot):
         """  # noqa: D205, D212, D415
         x, x_comp = self._specific_settings.x
         y, y_comp = self._specific_settings.y
-        self.color = self.color or "blue"
-        self.linestyle = self.linestyle or "o"
+        self.color = "blue"
+        self.linestyle = "o"
         variable_names_to_n_components = self.dataset.variable_names_to_n_components
-        self.xlabel = self.xlabel or (
-            x if variable_names_to_n_components[x] == 1 else f"{x}({x_comp})"
-        )
-        self.ylabel = self.ylabel or (
-            y if variable_names_to_n_components[y] == 1 else f"{y}({y_comp})"
-        )
+        self.xlabel = x if variable_names_to_n_components[x] == 1 else f"{x}({x_comp})"
+        self.ylabel = y if variable_names_to_n_components[y] == 1 else f"{y}({y_comp})"
         return (
             self.dataset.get_view(variable_names=x, components=x_comp).to_numpy(),
             self.dataset.get_view(variable_names=y, components=y_comp).to_numpy(),

@@ -32,7 +32,6 @@ from typing import TYPE_CHECKING
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
     from collections.abc import Sequence
 
     from numpy.typing import NDArray
@@ -78,18 +77,4 @@ class Curves(DatasetPlot):
             self._n_items = len(samples)
             y_values = y_values[samples, :]
 
-        self._set_color(self._n_items)
-        self._set_linestyle(self._n_items, list(self.__get_line_style_generator()))
         return y_values, [self.dataset.index[sample] for sample in samples]
-
-    def __get_line_style_generator(
-        self,
-    ) -> Generator[str | tuple[int, tuple[int, int, int, int]], None, None]:
-        """A line style generator.
-
-        Yields:
-            A line style.
-        """
-        yield "-"
-        for i in range(1, self._n_items):
-            yield 0, (i, 1, 1, 1)

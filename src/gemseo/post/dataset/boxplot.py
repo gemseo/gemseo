@@ -101,7 +101,7 @@ class Boxplot(DatasetPlot):
             the names of the variables,
             the level of opacity.
         """  # noqa: D205, D212, D415
-        self._set_color(self.__n_datasets)
+        self._n_items = self.__n_datasets
         return (
             self._specific_settings.variables or self.dataset.variable_names,
             [

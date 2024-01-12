@@ -75,7 +75,6 @@ class RadarChart(DatasetPlot):
         y_values = self.dataset.to_numpy()
         self.rmin = y_values.min()
         self.rmax = y_values.max()
-        self._set_color(self._n_items)
         dimension = self.dataset.shape[1]
         theta = (2 * pi * linspace(0, 1 - 1.0 / dimension, dimension)).tolist()
         theta.append(theta[0])

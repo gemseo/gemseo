@@ -35,6 +35,7 @@ def dataset() -> Dataset:
 
 TEST_PARAMETERS = {
     "default": ({}, {}, ["BarPlot"]),
+    "colormap": ({}, {"colormap": "viridis"}, ["BarPlot_colormap"]),
     "xtick_rotation": (
         {},
         {"xtick_rotation": 45, "color": ["red", "blue", "yellow", "black", "green"]},
