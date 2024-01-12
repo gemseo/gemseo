@@ -63,24 +63,26 @@ def other_dataset():
 
 
 TEST_PARAMETERS = {
-    "default": ({}, False, ["default"]),
-    "variables": ({"variables": ["y", "z"]}, False, ["variables"]),
-    "scale": ({"scale": True}, False, ["scale"]),
-    "center": ({"center": True}, False, ["center"]),
-    "horizontal": ({"use_vertical_bars": False}, False, ["horizontal"]),
+    "default": ({}, {}, False, ["default"]),
+    "variables": ({"variables": ["y", "z"]}, {}, False, ["variables"]),
+    "scale": ({"scale": True}, {}, False, ["scale"]),
+    "center": ({"center": True}, {}, False, ["center"]),
+    "horizontal": ({"use_vertical_bars": False}, {}, False, ["horizontal"]),
     "confidence_interval": (
         {"add_confidence_interval": True},
+        {},
         False,
         ["confidence_interval"],
     ),
-    "outliers": ({"add_outliers": False}, False, ["outliers"]),
-    "option": ({"showmeans": True}, False, ["option"]),
-    "datasets": ({}, True, ["datasets"]),
+    "outliers": ({"add_outliers": False}, {}, False, ["outliers"]),
+    "option": ({"showmeans": True}, {}, False, ["option"]),
+    "datasets": ({}, {}, True, ["datasets"]),
+    "color": ({}, {"color": ["red", "blue"]}, True, ["color"]),
 }
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "datasets", "baseline_images"),
+    ("kwargs", "properties", "datasets", "baseline_images"),
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
@@ -89,6 +91,7 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(
     kwargs,
+    properties,
     datasets,
     other_dataset,
     baseline_images,
@@ -101,4 +104,6 @@ def test_plot(
     fig, axes = (
         (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
     )
+    for k, v in properties.items():
+        setattr(plot, k, v)
     plot.execute(save=False, fig=fig, axes=axes)

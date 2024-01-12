@@ -98,7 +98,6 @@ class ZvsXY(DatasetPlot):
         """  # noqa: D205, D212, D415
         other_datasets = self._specific_settings.other_datasets or []
         self._n_items = 1 + len(other_datasets)
-        self._set_color(self._n_items)
         x, x_comp = self._specific_settings.x
         y, y_comp = self._specific_settings.y
         z, z_comp = self._specific_settings.z

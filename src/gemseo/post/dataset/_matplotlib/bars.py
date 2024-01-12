@@ -46,6 +46,7 @@ class BarPlot(MatplotlibPlot):
             feature_names: The names of the features.
         """  # noqa: D205, D212, D415
         fig, axes = self._get_figure_and_axes(fig, axes)
+        self._common_settings.set_colors(self._common_settings.color)
         n_series, n_features = data.shape
         axes.tick_params(labelsize=self._common_settings.font_size)
         first_series_positions = arange(n_features)

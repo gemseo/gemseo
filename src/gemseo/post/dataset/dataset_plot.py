@@ -68,12 +68,6 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     _common_settings: PlotSettings
     """The settings common to many plot classes."""
 
-    _n_items: int
-    """The number of items to plot.
-
-    This notion is specific to the class deriving from :class:`.DatasetPlot`.
-    """
-
     _specific_settings: NamedTuple
     """The settings specific to this plot class."""
 
@@ -130,7 +124,6 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         specific_settings = NamedTuple("SpecificSettings", parameter_names_to_types)
         self._common_settings = PlotSettings()
-        self._n_items = 0
         self._specific_settings = specific_settings(**parameters)
         self.__common_dataset = dataset
         self.__figure_file_paths = []
@@ -144,15 +137,16 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def color(self) -> str | list[str]:
-        """The colors for the series; if empty, use a default one."""
+        """The color.
+
+        Either a global one or one per item if ``n_items`` is non-zero.
+        If empty, use a default one.
+        """
         return self._common_settings.color
 
     @color.setter
     def color(self, value: str | list[str]) -> None:
-        if isinstance(value, str) and self._n_items:
-            self._common_settings.color = [value] * self._n_items
-        else:
-            self._common_settings.color = value
+        self._common_settings.set_colors(value)
 
     @property
     def colormap(self) -> str:
@@ -183,27 +177,29 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def linestyle(self) -> str | list[str]:
-        """The line style for the series; if empty, use a default one."""
+        """The line style.
+
+        Either a global one or one per item if ``n_items`` is non-zero.
+        If empty, use a default one.
+        """
         return self._common_settings.linestyle
 
     @linestyle.setter
     def linestyle(self, value: str | list[str]) -> None:
-        if isinstance(value, str) and self._n_items:
-            self._common_settings.linestyle = [value] * self._n_items
-        else:
-            self._common_settings.linestyle = value
+        self._common_settings.set_linestyles(value)
 
     @property
     def marker(self) -> str | list[str]:
-        """The marker for the series; if empty, use a default one."""
+        """The marker.
+
+        Either a global one or one per item if ``n_items`` is non-zero.
+        If empty, use a default one.
+        """
         return self._common_settings.marker
 
     @marker.setter
     def marker(self, value: str | list[str]) -> None:
-        if isinstance(value, str) and self._n_items:
-            self._common_settings.marker = [value] * self._n_items
-        else:
-            self._common_settings.marker = value
+        self._common_settings.set_markers(value)
 
     @property
     def title(self) -> str:
@@ -215,7 +211,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._common_settings.title = value
 
     @property
-    def xtick_rotation(self) -> str:
+    def xtick_rotation(self) -> float:
         """The rotation angle in degrees for the x-ticks."""
         return self._common_settings.xtick_rotation
 
@@ -473,6 +469,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return repr_variable(variable[1], variable[2]), variable
 
+    # TODO: API: remove _set_color, _set_linestyle and _set_marker
     def _set_color(
         self,
         n_items: int,
@@ -537,3 +534,20 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             variable = (variable, 0)
 
         return variable
+
+    @property
+    def _n_items(self) -> int:
+        """The number of items to plot.
+
+        The item definition is specific to the plot type and is used to define
+        properties, e.g. color and line style, for each item.
+
+        For example, items can correspond to curves or series of points.
+
+        By default, a graph has no item.
+        """
+        return self._common_settings.n_items
+
+    @_n_items.setter
+    def _n_items(self, n_items: int) -> None:
+        self._common_settings.n_items = n_items

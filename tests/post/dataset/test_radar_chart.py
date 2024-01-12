@@ -63,7 +63,7 @@ TEST_PARAMETERS = {
     ),
     "with_scientific_notation": (
         {"scientific_notation": False},
-        {},
+        {"colormap": "viridis"},
         ["RadarChart_scientific_notation"],
     ),
 }

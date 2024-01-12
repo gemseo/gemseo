@@ -53,11 +53,4 @@ class BarPlot(DatasetPlot):
         """  # noqa: D205, D212, D415
         data = self.dataset.to_numpy()
         self._n_items = len(data)
-        self.colormap = self.colormap
         return data, self.dataset.get_columns()
-
-    @DatasetPlot.colormap.setter
-    def colormap(self, value: str) -> None:  # noqa: D102
-        self._common_settings.colormap = value
-        self._common_settings.color = ""
-        self._set_color(self._n_items)
