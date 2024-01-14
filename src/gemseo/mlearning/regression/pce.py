@@ -395,7 +395,6 @@ class PCERegressor(MLRegressionAlgo):
                 self.__cleaning.max_considered_terms,
                 self.__cleaning.most_significant,
                 self.__cleaning.significance_factor,
-                True,
             )
         else:
             truncation_strategy = FixedStrategy(
