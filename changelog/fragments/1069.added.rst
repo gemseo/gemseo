@@ -1,0 +1,2 @@
+The ``Dataset`` class can now be created from a :class:`~pandas.DataFrame`
+using the new class method: ``from_dataframe``.

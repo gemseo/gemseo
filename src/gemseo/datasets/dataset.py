@@ -105,7 +105,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     It must be built from the methods
     :meth:`.add_variable`, :meth:`.add_group`,
     :meth:`.from_array`,
-    :meth:`.from_txt` and :meth:`.from_csv`.
+    :meth:`.from_txt`,
+    :meth:`.from_csv`
+    and :meth:`.from_dataframe`.
 
     Miscellaneous information that is not specific to an entry of the dataset
     can be stored in the dictionary :attr:`.misc`,
@@ -717,6 +719,58 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         )
 
     @classmethod
+    def from_dataframe(cls, dataframe: DataFrame) -> Dataset:
+        """Create a :class:`.Dataset` from a pandas :class:`~pandas.DataFrame`.
+
+        Args:
+            dataframe: The pandas :class:`~pandas.DataFrame`.
+                whose ``columns`` attribute is either a 3-depth ``~pandas.MultiIndex``
+                or a sequence of 3-length tuples and strings.
+                The items of the 3-length tuples and 3-depth ``~pandas.MultiIndex``
+                correspond to :attr:`~.Dataset.COLUMN_LEVEL_NAMES` in this order.
+                In the case of a string,
+                it corresponds to the variable name
+                and the :attr:`~.Dataset.DEFAULT_GROUP` is used.
+
+        Returns:
+            The dataset built from the pandas :class:`~pandas.DataFrame`.
+
+        Raises:
+            ValueError: If the ``columns`` attribute is
+                neither a 3-depth ``~pandas.MultiIndex``,
+                nor a sequence of 3-length tuples and strings.
+        """
+        dataset_multi_index_depth = len(cls.COLUMN_LEVEL_NAMES)
+        if isinstance(dataframe.columns, MultiIndex):
+            if dataframe.columns.nlevels == dataset_multi_index_depth:
+                dataframe.columns.names = cls.COLUMN_LEVEL_NAMES
+                return cls(dataframe)
+
+            msg = (
+                "The DataFrame must have "
+                f"a {dataset_multi_index_depth}-depth MultiIndex for its columns."
+            )
+            raise ValueError(msg)
+
+        columns = []
+        for column in dataframe.columns:
+            if isinstance(column, str):
+                columns.append((cls.DEFAULT_GROUP, column, 0))
+            elif len(column) == dataset_multi_index_depth:
+                columns.append(column)
+            else:
+                msg = (
+                    "The column name must either be a string or "
+                    "a (group_name, variable_name, variable_component) tuple."
+                )
+                raise ValueError(msg)
+
+        return cls(
+            dataframe.to_numpy(),
+            columns=MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES),
+        )
+
+    @classmethod
     def from_array(
         cls,
         data: DataType,
@@ -763,10 +817,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 for component in arange(n_components, dtype=np_int64)
             ])
 
-        index = MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES)
-        dataset = cls(data, columns=index)
-        dataset._reindex()
-        return dataset
+        return cls(
+            data, columns=MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES)
+        )
 
     @classmethod
     def from_txt(
@@ -842,7 +895,6 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         dataset = cls(dataframe)
         dataset.columns = dataset.columns.set_names(cls.COLUMN_LEVEL_NAMES)
-        dataset._reindex()
         return dataset
 
     @overload
