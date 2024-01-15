@@ -120,6 +120,87 @@ def file_dataset(
 
 
 @pytest.mark.parametrize(
+    ("df", "expected"),
+    [
+        (
+            DataFrame([[1, 2], [3, 4]], columns=["a", "b"]),
+            DataFrame(
+                [[1, 2], [3, 4]],
+                columns=MultiIndex.from_tuples(
+                    [("parameters", "a", 0), ("parameters", "b", 0)],
+                    names=Dataset.COLUMN_LEVEL_NAMES,
+                ),
+            ),
+        ),
+        (
+            DataFrame([[1, 2], [3, 4]], columns=[("group", "a", 0), "b"]),
+            DataFrame(
+                [[1, 2], [3, 4]],
+                columns=MultiIndex.from_tuples(
+                    [("group", "a", 0), ("parameters", "b", 0)],
+                    names=Dataset.COLUMN_LEVEL_NAMES,
+                ),
+            ),
+        ),
+        (
+            DataFrame(
+                [[1, 2], [3, 4]],
+                columns=MultiIndex.from_tuples(
+                    [("group", "a", 0), ("output", "b", 0)],
+                    names=Dataset.COLUMN_LEVEL_NAMES,
+                ),
+            ),
+            DataFrame(
+                [[1, 2], [3, 4]],
+                columns=MultiIndex.from_tuples(
+                    [("group", "a", 0), ("output", "b", 0)],
+                    names=Dataset.COLUMN_LEVEL_NAMES,
+                ),
+            ),
+        ),
+    ],
+)
+def test_from_dataframe(df, expected):
+    """Test the classmethod ``from_dataframe``."""
+    assert_frame_equal(Dataset.from_dataframe(df), expected)
+
+
+@pytest.mark.parametrize(
+    ("df", "expected_error_msg"),
+    [
+        (
+            DataFrame(
+                [[1, 2], [3, 4], [5, 6], [7, 8]],
+                columns=MultiIndex.from_tuples(
+                    [("group", "a", 0, 1), ("output", "b", 0, 1)],
+                ),
+            ),
+            "The DataFrame must have a 3-depth MultiIndex for its columns.",
+        ),
+        (
+            DataFrame([[1, 2], [3, 4]], columns=[("toto", 1), ("foo", "toto")]),
+            "The column name must either be a string or "
+            "a (group_name, variable_name, variable_component) tuple.",
+        ),
+        (
+            DataFrame(
+                [[1, 2], [3, 4]],
+                columns=MultiIndex.from_tuples(
+                    [("group", "a"), ("output", "b")],
+                ),
+            ),
+            "The DataFrame must have a 3-depth MultiIndex for its columns.",
+        ),
+    ],
+)
+def test_from_dataframe_error(df, expected_error_msg):
+    """Test the classmethod ``from_dataframe`` with malformed ``columns``."""
+    with pytest.raises(ValueError) as excinfo:
+        Dataset.from_dataframe(df)
+    assert str(excinfo.value) == expected_error_msg
+
+
+@pytest.mark.parametrize(
     (
         "update",
         "group_names",
