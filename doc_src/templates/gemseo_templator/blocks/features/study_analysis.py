@@ -29,6 +29,6 @@ block = Block(
         '(<a href="mdo/mdo_formulations.html#xdsm-visualization">XDSM</a>), '
         "even before wrapping any software."
     ),
-    info="interface/study_analysis.html",
-    examples="examples/study_analysis/index.html",
+    button_info_url="interface/study_analysis.html",
+    button_examples_url="examples/study_analysis/index.html",
 )

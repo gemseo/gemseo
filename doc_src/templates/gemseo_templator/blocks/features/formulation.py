@@ -23,7 +23,7 @@ block = Block(
         "and managed by the optimization or DOE algorithm."
     ),
     url="algorithms/formulation_algos.html",
-    examples="examples/formulations/index.html",
-    info="mdo/mdo_formulations.html",
-    options="algorithms/formulation_algos.html",
+    button_examples_url="examples/formulations/index.html",
+    button_info_url="mdo/mdo_formulations.html",
+    button_types_url="algorithms/formulation_algos.html",
 )

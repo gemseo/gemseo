@@ -24,7 +24,7 @@ block = Block(
     dependencies=[
         WebLink("SciPy", url="https://scipy.org/"),
     ],
-    options="algorithms/ode_algos.html",
-    info="ode.html",
-    examples="examples/ode/index.html",
+    button_info_url="ode.html",
+    button_examples_url="examples/ode/index.html",
+    button_types_url="algorithms/ode_algos.html",
 )

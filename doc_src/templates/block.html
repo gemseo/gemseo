@@ -17,9 +17,6 @@
         <div class="card-body">
           <h4 class="sk-card-title">{{block.title}}</h4>
           <p class="card-text">{{block.description}}</p>
-          {%- if block.algorithms %}
-          <p class="card-text"><strong>Algorithms:</strong>{{ display_weblinks(block.algorithms, "_self") }}</p>
-          {%- endif %}
           {%- if block.features %}
           <p class="card-text"><strong>Features:</strong>{{ display_weblinks(block.features, "_self") }}</p>
           {%- endif %}
@@ -28,9 +25,9 @@
           {%- endif %}
         </div>
         <div class="row">
-          {%- if block.info %}{{ display_button("Read more", block.info, "fas fa-info") }}{%- endif %}
-          {%- if block.examples %}{{ display_button("Examples", block.examples, "far fa-eye") }}{%- endif %}
-          {%- if block.options %}{{ display_button("Algorithms", block.options, "fa fa-cogs") }}{%- endif %}
+          {%- if block.button_info_url %}{{ display_button("Read more", block.button_info_url, "fas fa-info") }}{%- endif %}
+          {%- if block.button_examples_url %}{{ display_button("Examples", block.button_examples_url, "far fa-eye") }}{%- endif %}
+          {%- if block.button_types_url %}{{ display_button(block.button_types_name, block.button_types_url, "fa fa-cogs") }}{%- endif %}
         </div>
       </div>
     </div>

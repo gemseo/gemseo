@@ -15,10 +15,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
 
 
 @dataclass
@@ -26,16 +22,16 @@ class WebLink:
     """A weblink defined by a text, an URL and an anchor."""
 
     text: str
-    url: str | None = None
-    anchor: str | None = None
+    url: str = ""
+    anchor: str = ""
 
 
 @dataclass
 class Block:
     """A text block with at least a title and a description.
 
-    A block can also provide features, algorithms and dependencies as weblinks, with a
-    default URL to be used when the URL of a weblink is None.
+    A block can also provide features and dependencies as weblinks, with a default URL
+    to be used when the URL of a weblink is None.
 
     Finally, a block can contain additional URLs, to get more information, to discover
     examples or to read algorithms options.
@@ -43,26 +39,16 @@ class Block:
 
     title: str
     description: str
-    features: list[WebLink] | None = None
-    algorithms: list[WebLink] | None = None
-    dependencies: list[WebLink] | None = None
-    url: str | None = None
-    info: str | None = None
-    examples: str | None = None
-    options: str | None = None
+    features: tuple[WebLink] = ()
+    dependencies: tuple[WebLink] = ()
+    url: str = ""
+    button_info_url: str = ""
+    button_examples_url: str = ""
+    button_types_url: str = ""
+    button_types_name: str = "Algorithms"
 
     def __post_init__(self):
         """Update the unset URLs of algorithms, dependencies and features."""
-        for weblinks in [self.algorithms, self.dependencies, self.features]:
-            if weblinks is not None:
-                self.__update_weblinks(weblinks)
-
-    def __update_weblinks(self, weblinks: Iterable[WebLink]) -> None:
-        """Set the unset URLs with the URL of the block.
-
-        Args:
-            weblinks: The weblinks to be updated if the URL is unset.
-        """
-        for weblink in weblinks:
-            if weblink.url is None:
+        for weblinks in [self.dependencies, self.features]:
+            for weblink in weblinks:
                 weblink.url = f"{self.url}#{weblink.anchor}"
