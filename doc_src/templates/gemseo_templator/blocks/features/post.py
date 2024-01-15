@@ -20,7 +20,7 @@ block = Block(
     title="Visualization",
     description="Generate graphical post-processings of optimization histories.",
     url="algorithms/post_algos.html",
-    examples="examples/post_process/index.html",
-    info="postprocessing/index.html",
-    options="algorithms/post_algos.html",
+    button_info_url="postprocessing/index.html",
+    button_examples_url="examples/post_process/index.html",
+    button_types_url="algorithms/post_algos.html",
 )

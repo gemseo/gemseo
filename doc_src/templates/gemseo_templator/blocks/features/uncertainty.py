@@ -34,7 +34,7 @@ block = Block(
         WebLink("sensitivity analysis", url="uncertainty/sensitivity.html"),
     ],
     dependencies=[WebLink("OpenTURNS", url="https://openturns.github.io/www/")],
-    examples="examples/uncertainty/index.html",
-    info="uncertainty/index.html",
-    options="algorithms/uncertainty_algos.html",
+    button_info_url="uncertainty/index.html",
+    button_examples_url="examples/uncertainty/index.html",
+    button_types_url="algorithms/uncertainty_algos.html",
 )

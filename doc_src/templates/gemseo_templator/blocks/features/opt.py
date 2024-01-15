@@ -35,7 +35,7 @@ block = Block(
         WebLink("pymoo", url="https://pymoo.org/"),
         WebLink("SciPy", url="https://scipy.org/"),
     ],
-    examples="examples/optimization_problem/index.html",
-    info="optimization.html",
-    options="algorithms/opt_algos.html",
+    button_info_url="optimization.html",
+    button_examples_url="examples/optimization_problem/index.html",
+    button_types_url="algorithms/opt_algos.html",
 )

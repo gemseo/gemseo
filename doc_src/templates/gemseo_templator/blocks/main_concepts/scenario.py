@@ -27,6 +27,6 @@ block = Block(
         WebLink("DOE scenario", url="_modules/gemseo.core.doe_scenario.html"),
         WebLink("MDO scenario", url="_modules/gemseo.core.mdo_scenario.html"),
     ],
-    examples="examples/scenario/index.html",
-    info="scenario.html",
+    button_info_url="scenario.html",
+    button_examples_url="examples/scenario/index.html",
 )
