@@ -26,6 +26,7 @@ from numpy import array
 from numpy import complex128
 from numpy import concatenate
 from numpy import cos
+from numpy import log
 from numpy import sin
 from numpy import vstack
 
@@ -78,6 +79,38 @@ def create_pb_alleq():
     func = MDOFunction(cstr, "cstr", jac=jac, f_type="eq")
     problem.constraints = [func]
     return problem
+
+
+@pytest.mark.parametrize(
+    "x",
+    [
+        array([0.0, 1.0, 0.0]),
+        array([1.0, 0.0, 0.0]),
+        array([0.5, 0.0, 1.0]),
+        array([1.0, 0.0, 1.0]),
+    ],
+)
+def test_ks_constraint_aggregation_consistency(x):
+    problem_ref = create_problem()
+    out = problem_ref.evaluate_functions(x_vect=x)
+    rho = 10
+    offset = log(len(out[0]["cstr"])) / rho
+    g_max = max(out[0]["cstr"])
+    problem_upper_bound_ks = create_problem()
+    problem_upper_bound_ks.aggregate_constraint(
+        0, method="upper_bound_KS", rho=rho, scale=1.0
+    )
+    out_upper_bound_ks = problem_upper_bound_ks.evaluate_functions(x_vect=x)
+    upper_bound_ks = out_upper_bound_ks[0]["upper_bound_KS(cstr)"]
+    problem_lower_bound_ks = create_problem()
+    problem_lower_bound_ks.aggregate_constraint(
+        0, method="lower_bound_KS", rho=rho, scale=1.0
+    )
+    out_lower_bound_ks = problem_lower_bound_ks.evaluate_functions(x_vect=x)
+    lower_bound_ks = out_lower_bound_ks[0]["lower_bound_KS(cstr)"]
+    assert g_max - lower_bound_ks <= offset
+    assert pytest.approx(upper_bound_ks - lower_bound_ks) == offset
+    assert upper_bound_ks - g_max <= offset
 
 
 @pytest.mark.parametrize(
