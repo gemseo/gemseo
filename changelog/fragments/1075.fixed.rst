@@ -1,0 +1,1 @@
+The upper bound KS aggregation function is really called when aggregating constraints in an ``OptimizationProblem``

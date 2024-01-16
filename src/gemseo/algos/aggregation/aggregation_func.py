@@ -38,6 +38,7 @@ from gemseo.algos.aggregation.core import compute_total_iks_agg_jac
 from gemseo.algos.aggregation.core import compute_total_ks_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_positive_agg_jac
+from gemseo.algos.aggregation.core import compute_upper_bound_ks_agg
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
@@ -318,7 +319,7 @@ def aggregate_upper_bound_ks(
     """
 
     def compute(x):
-        return compute_lower_bound_ks_agg(
+        return compute_upper_bound_ks_agg(
             constr_fct(x), indices=indices, rho=rho, scale=scale
         )
 
