@@ -75,6 +75,7 @@ TEST_PARAMETERS = {
             "color": ["red", "black", "blue", "blue"],
             "linestyle": ["--", "-.", "-", "-"],
             "marker": ["o", "v", "<", "<"],
+            "grid": False,
         },
         ["Lines_properties"],
     ),

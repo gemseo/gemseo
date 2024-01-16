@@ -45,7 +45,11 @@ class RadarChart(MatplotlibPlot):
             fig = plt.figure(figsize=self._common_settings.fig_size)
             axes = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
 
-        axes.grid(True, color="k", linewidth=0.3, linestyle=":")
+        if self._common_settings.grid:
+            axes.grid(visible=True, color="k", linewidth=0.3, linestyle=":")
+        else:
+            axes.grid(visible=False)
+
         axes.tick_params(labelsize=self._common_settings.font_size)
 
         variable_names = self._common_dataset.get_columns()

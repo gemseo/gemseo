@@ -58,6 +58,7 @@ TEST_PARAMETERS = {
             "rmin": -1,
             "rmax": 4,
             "color": "red",
+            "grid": False,
         },
         ["RadarChart_properties"],
     ),

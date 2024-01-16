@@ -346,6 +346,15 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.fig_size = (self.fig_size_x, value)
 
     @property
+    def grid(self) -> bool:
+        """Whether to add a grid."""
+        return self._common_settings.grid
+
+    @grid.setter
+    def grid(self, value: bool) -> None:
+        self._common_settings.grid = value
+
+    @property
     def output_files(self) -> list[str]:
         """The paths to the output files."""
         return self.__figure_file_paths

@@ -94,5 +94,5 @@ class BarPlot(MatplotlibPlot):
         )
         axes.legend(fontsize=self._common_settings.font_size)
         axes.set_axisbelow(True)
-        axes.grid()
+        axes.grid(visible=self._common_settings.grid)
         return [fig]

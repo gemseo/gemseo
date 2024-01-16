@@ -60,6 +60,8 @@ class Curves(MatplotlibPlot):
             axes.plot(
                 mesh, sub_y_values, linestyle=line_style, color=color, label=label
             )
+
+        axes.grid(visible=self._common_settings.grid)
         axes.set_xlabel(self._common_settings.xlabel or mesh_name)
         axes.set_ylabel(
             self._common_settings.ylabel

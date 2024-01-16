@@ -40,6 +40,8 @@ class AndrewsCurves(MatplotlibPlot):
         """  # noqa: D205 D212 D415
         fig, axes = self._get_figure_and_axes(fig, axes)
         andrews_curves(self._common_dataset, column, ax=axes)
+        if not self._common_settings.grid:
+            plt.grid(visible=False)
         plt.xlabel(self._common_settings.xlabel)
         plt.ylabel(self._common_settings.ylabel)
         plt.title(self._common_settings.title)

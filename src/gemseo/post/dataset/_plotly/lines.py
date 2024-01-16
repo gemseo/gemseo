@@ -82,6 +82,8 @@ class Lines(PlotlyPlot):
             xaxis_title=self._common_settings.xlabel or default_xlabel,
             yaxis_title=self._common_settings.ylabel,
         )
+        fig.update_xaxes(showgrid=self._common_settings.grid)
+        fig.update_yaxes(showgrid=self._common_settings.grid)
         if self._specific_settings.set_xticks_from_data:
             fig.update_layout(xaxis={"tickvals": x_values})
         return fig

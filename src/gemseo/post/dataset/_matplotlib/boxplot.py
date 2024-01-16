@@ -118,13 +118,13 @@ class Boxplot(MatplotlibPlot):
             flierprops={"markeredgecolor": color},
             **self._specific_settings.boxplot_options,
         )
-
-        axes.xaxis.grid(
-            True, linestyle="-", which="major", color="lightgrey", alpha=0.5
-        )
-        axes.yaxis.grid(
-            True, linestyle="-", which="major", color="lightgrey", alpha=0.5
-        )
+        if self._common_settings.grid:
+            axes.xaxis.grid(
+                visible=True, linestyle="-", which="major", color="lightgrey", alpha=0.5
+            )
+            axes.yaxis.grid(
+                visible=True, linestyle="-", which="major", color="lightgrey", alpha=0.5
+            )
 
         plt.setp(boxplot["boxes"], color=color)
         plt.setp(boxplot["whiskers"], color=color)

@@ -70,6 +70,7 @@ class Lines(MatplotlibPlot):
                         marker=self._common_settings.marker[line_index],
                     )
 
+        axes.grid(visible=self._common_settings.grid)
         axes.set_xlabel(self._common_settings.xlabel or default_xlabel)
         axes.set_ylabel(self._common_settings.ylabel)
         axes.set_title(self._common_settings.title)
