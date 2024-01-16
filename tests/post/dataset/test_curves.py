@@ -64,6 +64,7 @@ TEST_PARAMETERS = {
             "title": "The title",
             "color": ["red", "blue"],
             "linestyle": "-",
+            "grid": False,
         },
         ["Curves_properties"],
     ),

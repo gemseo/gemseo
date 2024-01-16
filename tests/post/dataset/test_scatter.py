@@ -78,6 +78,7 @@ TEST_PARAMETERS = {
             "xlabel": "The xlabel",
             "ylabel": "The ylabel",
             "title": "The title",
+            "grid": False,
         },
         ["Scatter_properties"],
     ),

@@ -74,6 +74,9 @@ class ScatterMatrix(MatplotlibPlot):
             marker=marker,
             figsize=self._common_settings.fig_size,
             ax=axes,
+            # The grid argument is ignored because the subplots do not have axes.
+            # See the issue https://github.com/pandas-dev/pandas/issues/50818.
+            grid=self._common_settings.grid,
             **kwargs,
             **self._specific_settings.options,
         )

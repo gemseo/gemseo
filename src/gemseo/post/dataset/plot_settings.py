@@ -141,6 +141,9 @@ class PlotSettings(BaseModel):
     By default, a graph has no item.
     """
 
+    grid: bool = True
+    """Whether to add a grid."""
+
     def set_colors(self, color: Union[str, list[str]]) -> None:
         """Set one color per item if ``n_items`` is non-zero or a unique one.
 

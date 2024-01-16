@@ -77,7 +77,7 @@ TEST_PARAMETERS = {
     "outliers": ({"add_outliers": False}, {}, False, ["outliers"]),
     "option": ({"showmeans": True}, {}, False, ["option"]),
     "datasets": ({}, {}, True, ["datasets"]),
-    "color": ({}, {"color": ["red", "blue"]}, True, ["color"]),
+    "color": ({}, {"color": ["red", "blue"], "grid": False}, True, ["color"]),
 }
 
 
