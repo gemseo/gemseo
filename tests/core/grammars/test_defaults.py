@@ -21,7 +21,15 @@ from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 from ..test_discipline_data import to_df_key
-from .test_simple_grammar import exclude_names
+
+exclude_names = pytest.mark.parametrize(
+    "exclude_names",
+    [
+        (),
+        ["dummy"],
+        ["name"],
+    ],
+)
 
 
 @pytest.fixture()

@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import collections
-import logging
 from collections.abc import Collection
 from collections.abc import Iterable
 from collections.abc import Iterator
@@ -29,13 +28,13 @@ from typing import ClassVar
 from numpy import ndarray
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
-from gemseo.core.grammars.base_grammar import NamesToTypes
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline_data import Data
-    from gemseo.utils.string_tools import MultiLineString
+    from typing_extensions import Self
 
-LOGGER = logging.getLogger(__name__)
+    from gemseo.core.discipline_data import Data
+    from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
+    from gemseo.utils.string_tools import MultiLineString
 
 
 class SimpleGrammar(BaseGrammar):
@@ -44,6 +43,8 @@ class SimpleGrammar(BaseGrammar):
     The grammar could be empty, in that case the data validation always pass. If the
     type bound to a name is ``None`` then the type of the corresponding data name is
     always valid.
+
+    .. note:: This grammar cannot merge elements. Merging will raise an error.
     """
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "SimpleGrammarDataConverter"
@@ -51,13 +52,10 @@ class SimpleGrammar(BaseGrammar):
     __names_to_types: dict[str, type | None]
     """The mapping from element names to element types."""
 
-    __required_names: set[str]
-    """The required names."""
-
     def __init__(
         self,
         name: str,
-        names_to_types: NamesToTypes | None = None,
+        names_to_types: SimpleGrammarTypes | None = None,
         required_names: Iterable[str] | None = None,
         **kwargs: Any,
     ) -> None:
@@ -74,10 +72,10 @@ class SimpleGrammar(BaseGrammar):
         if names_to_types:
             self.update_from_types(names_to_types)
         if required_names is not None:
-            self._check_name(*required_names)
-            self.__required_names = set(required_names)
+            self._required_names.clear()
+            self._required_names |= set(required_names)
 
-    def __getitem__(self, name: str) -> type:
+    def __getitem__(self, name: str) -> type | None:
         return self.__names_to_types[name]
 
     def __len__(self) -> int:
@@ -88,64 +86,72 @@ class SimpleGrammar(BaseGrammar):
 
     def _delitem(self, name: str) -> None:  # noqa:D102
         del self.__names_to_types[name]
-        if name in self.__required_names:
-            self.__required_names.remove(name)
 
-    def _copy(self, grammar: SimpleGrammar) -> None:  # noqa:D102
+    def _copy(self, grammar: Self) -> None:  # noqa:D102
         grammar.__names_to_types = self.__names_to_types.copy()
-        grammar.__required_names = self.__required_names.copy()
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__names_to_types[new_name] = self.__names_to_types.pop(current_name)
-        if current_name in self.__required_names:
-            self.__required_names.remove(current_name)
-            self.__required_names.add(new_name)
 
-    def update(  # noqa: D102
+    def _update(  # noqa: D102
         self,
-        grammar: BaseGrammar,
-        exclude_names: Iterable[str] = (),
-    ) -> None:
-        if not grammar:
-            return
-        grammar = grammar.to_simple_grammar()
-        self.__update(grammar, grammar.__required_names, exclude_names)
-        super().update(grammar, exclude_names)
-
-    def update_from_names(  # noqa: D102
-        self,
-        names: Iterable[str],
-    ) -> None:
-        if not names:
-            return
-        self.__update(dict.fromkeys(names, ndarray), names)
-
-    def update_from_types(
-        self,
-        names_to_types: NamesToTypes,
-        merge: bool = False,
+        grammar: Self,
+        excluded_names: Iterable[str],
+        merge: bool,
     ) -> None:
         """
-        Notes:
-            For consistency with :class:`.__init__` behavior, it is assumed that all
-            of them are required.
+        Raises:
+            ValueError: When merge is ``True``,
+                since it is not supported for :class:`.SimpleGrammar`.
+        """  # noqa: D205, D212, D415
+        self.__check_merge(merge)
+        self.__update(grammar.to_simple_grammar(), excluded_names)
+
+    def _update_from_names(  # noqa: D102
+        self,
+        names: Iterable[str],
+        merge: bool,
+    ) -> None:
+        """
+        Raises:
+            ValueError: When merge is ``True``,
+                since it is not supported for :class:`.SimpleGrammar`.
+        """  # noqa: D205, D212, D415
+        self.__check_merge(merge)
+        self.__update(dict.fromkeys(names, ndarray))
+
+    def _update_from_types(
+        self,
+        names_to_types: SimpleGrammarTypes,
+        merge: bool,
+    ) -> None:
+        """
+        Raises:
+            ValueError: When merge is ``True``,
+                since it is not supported for :class:`.SimpleGrammar`.
+        """  # noqa: D205, D212, D415
+        self.__check_merge(merge)
+        self.__update(names_to_types)
+
+    @classmethod
+    def __check_merge(cls, merge: bool) -> None:
+        """Check that merge is not ``True`` since it is not supported.
+
+        Args:
+            merge: Whether to merge or update the grammar.
 
         Raises:
-            ValueError: When merge is True,
-                since it is not yet supported for SimpleGrammar.
-        """  # noqa: D205, D212, D415
+            ValueError: When merge is ``True``,
+                since it is not supported for :class:`.SimpleGrammar`.
+        """
         if merge:
-            msg = "Merge is not supported yet for SimpleGrammar."
+            msg = f"Merge is not supported for {cls.__name__}."
             raise ValueError(msg)
-        if not names_to_types:
-            return
-        self.__update(names_to_types, names_to_types.keys())
 
     def __update(
         self,
-        grammar: SimpleGrammar | Mapping[str, Any],
-        required_names: Iterable[str],
-        exclude_names: Iterable[str] = (),
+        grammar: Self | Mapping[str, Any],
+        excluded_names: Iterable[str] = (),
     ) -> None:
         """Update the elements from another grammar or elements.
 
@@ -156,14 +162,13 @@ class SimpleGrammar(BaseGrammar):
 
         Args:
             grammar: The grammar to take the elements from.
-            required_names: The names of the elements of `grammar` that are required.
-            exclude_names: The names of the elements that shall not be updated.
+            excluded_names: The names of the elements that shall not be updated.
 
         Raises:
             ValueError: If the types are bad.
         """
         for element_name, element_type in grammar.items():
-            if element_name in exclude_names:
+            if element_name in excluded_names:
                 continue
 
             self.__check_type(element_name, element_type)
@@ -174,13 +179,8 @@ class SimpleGrammar(BaseGrammar):
             else:
                 self.__names_to_types[element_name] = element_type
 
-        updated_element_names = grammar.keys() - exclude_names
-        self.__required_names |= updated_element_names.intersection(required_names)
-        self.__required_names -= updated_element_names.difference(required_names)
-
     def _clear(self) -> None:  # noqa: D102
         self.__names_to_types = {}
-        self.__required_names = set()
 
     def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
         repr_.add(f"Type: {properties}")
@@ -223,15 +223,13 @@ class SimpleGrammar(BaseGrammar):
     ) -> None:
         for element_name in self.__names_to_types.keys() - names:
             del self.__names_to_types[element_name]
-            if element_name in self.__required_names:
-                self.__required_names.remove(element_name)
 
-    def to_simple_grammar(self) -> SimpleGrammar:  # noqa: D102
+    def to_simple_grammar(self) -> Self:  # noqa: D102
         return self
 
-    @property
-    def required_names(self) -> set[str]:  # noqa: D102
-        return self.__required_names
+    def _get_names_to_types(self) -> SimpleGrammarTypes:  # pragma: no cover
+        # This method is never called but is abstract.
+        return self
 
     @staticmethod
     def __check_type(name: str, obj: Any) -> None:

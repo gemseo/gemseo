@@ -30,7 +30,7 @@ from gemseo.core.grammars.base_grammar import BaseGrammar
 LOGGER = logging.getLogger(__name__)
 
 
-class GrammarFactory(BaseFactory):
+class GrammarFactory(BaseFactory[BaseGrammar]):
     """A factory of :class:`.BaseGrammar`."""
 
     _CLASS = BaseGrammar
