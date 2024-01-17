@@ -19,6 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
+from numpy._typing._array_like import _ScalarType_co
 from typing_extensions import get_args
 from typing_extensions import get_origin
 
@@ -50,7 +51,7 @@ class PydanticGrammarDataConverter(BaseDataConverter):
         # This is X in NDArray[X].
         dtype = get_args(get_args(annotation)[1])[0]
 
-        return dtype in _NUMERIC_TYPES
+        return dtype in (*_NUMERIC_TYPES, _ScalarType_co)
 
     # @classmethod
     # def __is_collection_of_numbers(cls, type_: type) -> bool:

@@ -19,26 +19,27 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Final
 from typing import TypeVar
+from typing import cast
 
 from numpy import dtype
 from numpy import ndarray
+from numpy._typing._array_like import _DType_co
+from numpy._typing._array_like import _ScalarType_co
 from numpy.typing import NDArray
 from pydantic_core import CoreSchema
 from pydantic_core import core_schema
 from typing_extensions import get_args
 
+# This type is defined in a .pyi file of NumPy,
+# it cannot be imported, so it is defined here.
+_ShapeType = TypeVar("_ShapeType", bound=Any)
+
 if TYPE_CHECKING:
     from pydantic import GetCoreSchemaHandler
 
-# This is the default dtype of NDArray when it is used without dtype,
-# i.e. without NDArray[X].
-# We get it by runtime inspection because it is defined in a protected module.
-_ScalarType_co: Final[TypeVar] = get_args(get_args(NDArray)[1])[0]
 
-
-class _NDArrayPydantic(ndarray):
+class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):
     """A ndarray that can be used with pydantic.
 
     See pydantic docs for more information.
@@ -68,7 +69,7 @@ class _NDArrayPydantic(ndarray):
     @staticmethod
     def __get_validator(
         _source_type: Any,
-    ) -> Callable[[ndarray], ndarray]:
+    ) -> Callable[[NDArray[Any]], NDArray[Any]]:
         """Return a function that can validate NumPy array types.
 
         Args:
@@ -80,7 +81,7 @@ class _NDArrayPydantic(ndarray):
         # The dtype is located at X in ndarray[Any, dtype[X]]
         dtype_ = get_args(get_args(_source_type)[1])[0]
 
-        def validate(data: Any) -> NDArray:
+        def validate(data: Any) -> NDArray[Any]:
             """Validate a NumPy array.
 
             Args:
@@ -106,7 +107,7 @@ class _NDArrayPydantic(ndarray):
                 # TODO: use ValidationError
                 raise ValueError(msg)
 
-            return data
+            return cast(NDArray[Any], data)
 
         return validate
 
