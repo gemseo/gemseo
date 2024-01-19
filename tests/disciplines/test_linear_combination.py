@@ -97,3 +97,10 @@ def test_default_values(linear_combination) -> None:
         linear_combination.default_inputs,
         {"alpha": zeros(1), "beta": zeros(1)},
     )
+
+
+def test_linearization_after_execution_cache_none(linear_combination):
+    linear_combination.set_cache_policy(cache_type=linear_combination.CacheType.NONE)
+    input_data = {"alpha": array([1.0]), "beta": array([1.0])}
+    linear_combination.execute(input_data)
+    assert not linear_combination.linearize(input_data)

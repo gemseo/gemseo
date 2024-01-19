@@ -1312,7 +1312,10 @@ class MDODiscipline(Serializable):
                         if input_name not in inputs:
                             del jac[input_name]
 
-        self._check_jacobian_shape(inputs, outputs)
+        # The check of the jacobian shape is required only when some of its
+        # components are requested.
+        if inputs and outputs:
+            self._check_jacobian_shape(inputs, outputs)
 
         if self.cache is not None:
             self.cache.cache_jacobian(input_data, self.jac)
