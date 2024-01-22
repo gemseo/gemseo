@@ -38,12 +38,21 @@ class BarPlot(DatasetPlot):
         self,
         dataset: Dataset,
         n_digits: int = 1,
+        annotate: bool = True,
+        annotation_rotation: float = 0.0,
     ) -> None:
         """
         Args:
             n_digits: The number of digits to print the different bar values.
+            annotate: Whether to add annotations of the height value on each bar.
+            annotation_rotation: The angle by which annotations are rotated.
         """  # noqa: D205, D212, D415
-        super().__init__(dataset, n_digits=n_digits)
+        super().__init__(
+            dataset,
+            n_digits=n_digits,
+            annotate=annotate,
+            annotation_rotation=annotation_rotation,
+        )
 
     def _create_specific_data_from_dataset(self) -> tuple[NDArray[float], list[str]]:
         """

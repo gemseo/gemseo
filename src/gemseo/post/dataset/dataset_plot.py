@@ -216,7 +216,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._common_settings.xtick_rotation
 
     @xtick_rotation.setter
-    def xtick_rotation(self, value: str) -> None:
+    def xtick_rotation(self, value: float) -> None:
         self._common_settings.xtick_rotation = value
 
     @property
