@@ -128,5 +128,7 @@ def test_plot_plotly(kwargs, properties, baseline_images, dataset) -> None:
         setattr(plot, k, v)
 
     figure = plot.execute(save=False, show=False, file_format="html")[0]
-    ref = (Path(__file__).parent / "plotly" / baseline_images[0]).read_text()
+    ref = (
+        Path(__file__).parent / "plotly" / "test_lines" / baseline_images[0]
+    ).read_text()
     assert figure.to_json() == ref.strip()

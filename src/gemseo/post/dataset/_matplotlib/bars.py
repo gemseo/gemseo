@@ -67,23 +67,26 @@ class BarPlot(MatplotlibPlot):
                     feature_positions,
                     series_data.tolist(),
                     width,
-                    label=series_name,
+                    label=str(series_name),
                     color=series_color,
                 )
             )
 
-        for rects in subplots:
-            for rect in rects:
-                height = rect.get_height()
-                pos = 3 if height > 0 else -12
-                axes.annotate(
-                    f"{round(height, self._specific_settings.n_digits)}",
-                    xy=(rect.get_x() + rect.get_width() / 2, height),
-                    xytext=(0, pos),  # 3 points vertical offset
-                    textcoords="offset points",
-                    ha="center",
-                    va="bottom",
-                )
+        if self._specific_settings.annotate:
+            for rects in subplots:
+                for rect in rects:
+                    height = rect.get_height()
+                    pos = 3 if height > 0 else -12
+                    axes.annotate(
+                        f"{round(height, self._specific_settings.n_digits)}",
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, pos),  # 3 points vertical offset
+                        textcoords="offset points",
+                        ha="center",
+                        va="bottom",
+                        rotation=self._specific_settings.annotation_rotation,
+                        rotation_mode="anchor",
+                    )
 
         axes.set_xticks([position + 0.375 for position in first_series_positions])
         axes.set_xticklabels(feature_names)
