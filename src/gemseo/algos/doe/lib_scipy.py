@@ -215,6 +215,16 @@ class SciPyDOE(DOELibrary):
             self.__remove_recent_scipy_options(option_names, "scramble", "1.10")
             self.__remove_recent_scipy_options(option_names, "optimization", "1.8")
             self.__remove_recent_scipy_options(option_names, "strength", "1.8")
+            if version.parse("1.10") <= self.__SCIPY_VERSION and "centered" in options:
+                if options["centered"] == options["scramble"]:
+                    msg = (
+                        "centered must be the opposite of scramble; "
+                        "centered is deprecated from SciPy 1.10; "
+                        "please use scramble."
+                    )
+                    raise ValueError(msg)
+
+                option_names.remove("centered")
         elif self.algo_name == self.__POISSON_DISK_ALGO_NAME:
             self.__remove_recent_scipy_options(option_names, "optimization", "1.10")
 

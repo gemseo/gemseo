@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import re
 from unittest import mock
 
 import packaging
@@ -91,7 +92,7 @@ def check_option_filtering(
 
 
 @pytest.mark.parametrize("algo_name", ["Sobol", "Halton", "MC", "LHS", "PoissonDisk"])
-@pytest.mark.parametrize("version", ["1.7", "1.8", "1.9", "1.10"])
+@pytest.mark.parametrize("version", ["1.7", "1.8", "1.9", "1.10", "1.11", "1.12"])
 @pytest.mark.parametrize("seed", [None, 3])
 def test_generate_samples(library, algo_name, version, seed, caplog) -> None:
     """Check the generation of samples."""
@@ -103,6 +104,8 @@ def test_generate_samples(library, algo_name, version, seed, caplog) -> None:
 
     scipy_version = library._SciPyDOE__SCIPY_VERSION
     library._SciPyDOE__SCIPY_VERSION = packaging.version.parse(version)
+    if scipy_version >= packaging.version.parse("1.12") and "centered" in options:
+        del options["centered"]
     samples = library._generate_samples(dimension=dimension, **options)
     library._SciPyDOE__SCIPY_VERSION = scipy_version
 
@@ -149,3 +152,18 @@ def test_no_optimizer(library, kwargs) -> None:
     """Check that _get_options converts SciPyDOE.Optimizer.NONE to None."""
     library.init_options_grammar("HALTON")
     assert library._get_options(**kwargs)["optimization"] is None
+
+
+@pytest.mark.parametrize("value", [False, True])
+def test_lhs_centered(library, value) -> None:
+    """Check that an error is raised when centered == scramble in the case of LHS."""
+    library.algo_name = "LHS"
+    msg = (
+        "centered must be the opposite of scramble; "
+        "centered is deprecated from SciPy 1.10; "
+        "please use scramble."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        library._generate_samples(
+            dimension=2, n_samples=10, centered=value, scramble=value, seed=1
+        )

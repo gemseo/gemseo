@@ -33,7 +33,7 @@ import matplotlib as mpl
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.colors import ListedColormap
 
-__all__ = ["MAGMA", "INFERNO", "PLASMA", "VIRIDIS", "PARULA", "RG_SEISMIC"]
+__all__ = ["INFERNO", "MAGMA", "PARULA", "PLASMA", "RG_SEISMIC", "VIRIDIS"]
 
 MAGMA_DATA = [
     [0.001462, 0.000466, 0.013866],

@@ -620,9 +620,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
         diag = []
         count = 0
-        k = 0
         for s_k, y_k in self.iterate_s_k_y_k(x_hist, grad_hist):
-            k += 1
             if (s_k.T @ y_k) > angle_tol and norm(y_k, inf) < step_tol:
                 count += 1
                 self.iterate_inverse_approximation(

@@ -362,7 +362,7 @@ class OTDistributionFitter:
             select = measure >= level
             if select:
                 break
-            index += 1
+            index += 1  # noqa: SIM113
         if not select:
             index = cls.__find_opt_distribution(measures, fitting_criterion)
         return index
