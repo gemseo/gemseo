@@ -345,7 +345,7 @@ class ParametricStatistics(Statistics):
         labels = []
         x_value = 0
         for distribution, criterion in criteria.items():
-            x_value += 1
+            x_value += 1  # noqa: SIM113
             x_values.append(x_value)
             y_values.append(criterion)
             labels.append(distribution)
