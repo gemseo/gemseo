@@ -61,7 +61,6 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
     from collections.abc import Iterable
     from collections.abc import Iterator
     from collections.abc import Mapping
@@ -2063,7 +2062,7 @@ class MDODiscipline(Serializable):
     def get_inputs_by_name(
         self,
         data_names: Iterable[str],
-    ) -> list[Any]:
+    ) -> Iterator[Any]:
         """Return the local data associated with input variables.
 
         Args:
@@ -2085,8 +2084,8 @@ class MDODiscipline(Serializable):
     # the second argument such that it uses self._local_data
     def get_outputs_by_name(
         self,
-        data_names: Iterator[str],
-    ) -> list[Any]:
+        data_names: Iterable[str],
+    ) -> Iterator[Any]:
         """Return the local data associated with output variables.
 
         Args:
@@ -2147,8 +2146,8 @@ class MDODiscipline(Serializable):
             return list(in_outs)
         return remove_prefix_from_list(in_outs)
 
-    def get_all_inputs(self) -> list[Any]:
-        """Return the local input data as a list.
+    def get_all_inputs(self) -> Iterator[Any]:
+        """Return the local input data.
 
         The order is given by :meth:`.MDODiscipline.get_input_data_names`.
 
@@ -2157,8 +2156,8 @@ class MDODiscipline(Serializable):
         """
         return self.get_inputs_by_name(self.get_input_data_names())
 
-    def get_all_outputs(self) -> list[Any]:
-        """Return the local output data as a list.
+    def get_all_outputs(self) -> Iterator[Any]:
+        """Return the local output data.
 
         The order is given by :meth:`.MDODiscipline.get_output_data_names`.
 
@@ -2232,7 +2231,7 @@ class MDODiscipline(Serializable):
     def get_local_data_by_name(
         self,
         data_names: Iterable[str],
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         """Return the local data of the discipline associated with variables names.
 
         Args:
