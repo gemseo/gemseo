@@ -16,11 +16,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.data_converters.base import BaseDataConverter
 
+if TYPE_CHECKING:
+    from gemseo.core.grammars.base_grammar import BaseGrammar  # noqa: F401
 
-class DataConverterFactory(BaseFactory):
+
+class DataConverterFactory(BaseFactory[BaseDataConverter["BaseGrammar"]]):
     """Factory for converters of data values to NumPy arrays and vice versa."""
 
     _CLASS = BaseDataConverter

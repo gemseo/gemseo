@@ -366,7 +366,6 @@ class MDOFunction(Serializable):
     def func(self, f_pointer: WrappedFunctionType) -> None:
         if self.activate_counters:
             self._n_calls.value = 0
-
         self._func = f_pointer or NotImplementedCallable()
 
     def to_pickle(self, file_path: str | Path) -> None:

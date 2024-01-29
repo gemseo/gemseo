@@ -29,9 +29,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Optional
-from typing import cast
 
-from gemseo.core.data_converters.base import BaseDataConverter
 from gemseo.core.data_converters.factory import DataConverterFactory
 from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.errors import InvalidDataError
@@ -47,12 +45,13 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import KeysView
     from collections.abc import Mapping
-    from collections.abc import MutableMapping
 
     from typing_extensions import Self
 
+    from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
+    from gemseo.typing import DataMapping
 
     SimpleGrammarTypes = Mapping[str, Optional[type[Any]]]
 
@@ -83,13 +82,13 @@ class BaseGrammar(
     _defaults: Defaults
     """The mapping from the names to the default values, if any."""
 
-    _data_converter: BaseDataConverter
+    _data_converter: BaseDataConverter[BaseGrammar]
     """The converter of data values to NumPy arrays and vice-versa."""
 
     _required_names: RequiredNames
     """The names of the required elements."""
 
-    DATA_CONVERTER_CLASS: ClassVar[str | type[BaseDataConverter]]
+    DATA_CONVERTER_CLASS: ClassVar[str | type[BaseDataConverter[BaseGrammar]]]
     """The class or the class name of the data converter."""
 
     def __init__(
@@ -214,7 +213,7 @@ class BaseGrammar(
         return self._defaults
 
     @defaults.setter
-    def defaults(self, data: MutableMapping[str, Any]) -> None:
+    def defaults(self, data: DataMapping) -> None:
         self._defaults = Defaults(self, data)
 
     @property
@@ -423,7 +422,7 @@ class BaseGrammar(
         """
 
     @property
-    def data_converter(self) -> BaseDataConverter:
+    def data_converter(self) -> BaseDataConverter[BaseGrammar]:
         """The converter of data values to NumPy arrays and vice versa."""
         return self._data_converter
 
@@ -573,7 +572,7 @@ class BaseGrammar(
 
     def __create_data_converter(
         self,
-        cls: type[BaseDataConverter] | str,
+        cls: type[BaseDataConverter[BaseGrammar]] | str,
     ) -> None:
         """Create the data converter.
 
@@ -581,5 +580,5 @@ class BaseGrammar(
             cls: The class or the class name of the data
         """
         if isinstance(cls, str):
-            cls = cast(type[BaseDataConverter], DataConverterFactory().get_class(cls))
+            cls = DataConverterFactory().get_class(cls)
         self._data_converter = cls(grammar=self)

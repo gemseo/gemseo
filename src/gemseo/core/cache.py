@@ -22,20 +22,21 @@
 from __future__ import annotations
 
 import logging
-import sys
 from abc import abstractmethod
-from collections.abc import Generator
 from collections.abc import Iterable
-from collections.abc import Mapping
+from collections.abc import Iterator
 from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
 from itertools import chain
 from multiprocessing import RLock
 from multiprocessing import Value
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
+from typing import Literal
 from typing import NamedTuple
+from typing import Protocol
+from typing import cast
+from typing import overload
 
 from numpy import append
 from numpy import array
@@ -50,10 +51,14 @@ from numpy import ndarray
 from numpy import uint8
 from numpy import vstack
 from pandas import MultiIndex
+from strenum import StrEnum
 from xxhash import xxh3_64_hexdigest
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.typing import DataMapping
+from gemseo.typing import IntegerArray
+from gemseo.typing import RealArray
 from gemseo.utils.comparisons import DataToCompare
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
@@ -61,16 +66,32 @@ from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized
 from gemseo.utils.locks import synchronized_hashes
 from gemseo.utils.multiprocessing import get_multi_processing_manager
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline_data import Data
+    from multiprocessing.managers import DictProxy
+    from multiprocessing.sharedctypes import Synchronized
+    from multiprocessing.synchronize import RLock as RLockType
+
+    from gemseo.typing import JacobianData
+    from gemseo.typing import RealOrComplexArray
+
+    class DataComparator(Protocol):
+        """A structural type for data comparator."""
+
+        def __call__(  # noqa: D102
+            self,
+            dict_of_arrays: DataToCompare,
+            other_dict_of_arrays: DataToCompare,
+            tolerance: float = 0.0,
+        ) -> bool: ...
+
 
 LOGGER = logging.getLogger(__name__)
 
-JacobianData = Mapping[str, Mapping[str, ndarray]]
 
-DATA_COMPARATOR: Callable[[DataToCompare, DataToCompare], bool] = compare_dict_of_arrays
+DATA_COMPARATOR: DataComparator = compare_dict_of_arrays
 """The comparator of input data structures.
 
 It is used to check whether an input data has been cached in.
@@ -80,18 +101,19 @@ It is used to check whether an input data has been cached in.
 class CacheEntry(NamedTuple):
     """An entry of a cache."""
 
-    inputs: Mapping[str, ndarray]
+    # TODO: API: remove this since a mapping's value does not need to return its key.
+    inputs: DataMapping
     """The input data."""
 
-    outputs: Mapping[str, ndarray]
+    outputs: DataMapping
     """The output data."""
 
-    jacobian: Mapping[str, Mapping[str, ndarray]]
+    jacobian: JacobianData
     """The Jacobian data."""
 
 
 # TODO: API: rename to BaseCache
-class AbstractCache(ABCMapping):
+class AbstractCache(ABCMapping[DataMapping, CacheEntry]):
     """An abstract base class for caches with a dictionary-like interface.
 
     Caches are mainly used to store the :class:`.MDODiscipline` evaluations.
@@ -163,14 +185,26 @@ class AbstractCache(ABCMapping):
     tolerance: float
     """The tolerance below which two input arrays are considered equal."""
 
-    _INPUTS_GROUP: ClassVar[str] = "inputs"
-    """The label for the input variables."""
+    class Group(StrEnum):
+        """A data group."""
 
-    _OUTPUTS_GROUP: ClassVar[str] = "outputs"
-    """The label for the output variables."""
+        INPUTS = "inputs"
+        """The label for the input variables."""
 
-    _JACOBIAN_GROUP: ClassVar[str] = "jacobian"
-    """The label for the Jacobian."""
+        OUTPUTS = "outputs"
+        """The label for the output variables."""
+
+        JACOBIAN = "jacobian"
+        """The label for the Jacobian."""
+
+    __names_to_sizes: dict[str, int]
+    """The mapping from data names to sizes."""
+
+    __input_names: list[str]
+    """The names of the input data."""
+
+    _output_names: list[str]
+    """The names of the output data."""
 
     def __init__(
         self,
@@ -252,8 +286,8 @@ class AbstractCache(ABCMapping):
 
     def __setitem__(
         self,
-        input_data: Data,
-        data: tuple[Data | None, JacobianData | None],
+        input_data: DataMapping,
+        data: tuple[DataMapping, JacobianData],
     ) -> None:
         output_data, jacobian_data = data
         if not output_data and not jacobian_data:
@@ -268,16 +302,10 @@ class AbstractCache(ABCMapping):
             self.cache_jacobian(input_data, jacobian_data)
 
     @abstractmethod
-    def __getitem__(
-        self,
-        input_data: Data,
-    ) -> CacheEntry: ...
-
-    @abstractmethod
     def cache_outputs(
         self,
-        input_data: Data,
-        output_data: Data,
+        input_data: DataMapping,
+        output_data: DataMapping,
     ) -> None:
         """Cache input and output data.
 
@@ -289,7 +317,7 @@ class AbstractCache(ABCMapping):
     @abstractmethod
     def cache_jacobian(
         self,
-        input_data: Data,
+        input_data: DataMapping,
         jacobian_data: JacobianData,
     ) -> None:
         """Cache the input and Jacobian data.
@@ -336,6 +364,8 @@ class AbstractCache(ABCMapping):
             A dataset version of the cache.
         """
         dataset_name = name or self.name
+        dataset_class: type[Dataset]
+
         if categorize:
             dataset_class = IODataset
             input_group = IODataset.INPUT_GROUP
@@ -353,7 +383,7 @@ class AbstractCache(ABCMapping):
         ):
             for variable_name in variable_names:
                 cache_entries = []
-                for cache_entry in self:
+                for cache_entry in self.get_all_entries():
                     if cache_entry.outputs:
                         if is_output_group:
                             selected_cache_entry = cache_entry.outputs[variable_name]
@@ -376,8 +406,23 @@ class AbstractCache(ABCMapping):
             ),
         )
 
+    @abstractmethod
+    def get_all_entries(self) -> Iterator[CacheEntry]:
+        """Return an iterator over all the entries.
+
+        The tolerance is ignored.
+
+        Yields:
+            The entries.
+        """
+
+    # TODO: API: make it behave like mappings, ie. like .keys().
+    def __iter__(self) -> Iterator[CacheEntry]:  # type: ignore
+        return self.get_all_entries()
+
 
 # TODO: API: rename to BaseFullCache
+# TODO: API: move to a specific module
 class AbstractFullCache(AbstractCache):
     """Abstract cache to store all the data, either in memory or on the disk.
 
@@ -392,25 +437,25 @@ class AbstractFullCache(AbstractCache):
     E.g. ``"output!d$_$d!input"``.
     """
 
-    lock: RLock
+    lock: RLockType
     """The lock used for both multithreading and multiprocessing.
 
     Ensure safe multiprocessing and multithreading concurrent access to the cache.
     """
 
-    lock_hashes: RLock
+    lock_hashes: RLockType
     """The lock used for both multithreading and multiprocessing.
 
     Ensure safe multiprocessing and multithreading concurrent access to the cache.
     """
 
-    _hashes_to_indices: dict[int, ndarray]
+    _hashes_to_indices: DictProxy[int, IntegerArray]
     """The indices associated with the hashes."""
 
-    _max_index: Value
+    _max_index: Synchronized[int]
     """The maximum index of the data stored in the cache."""
 
-    _last_accessed_index: Value
+    _last_accessed_index: Synchronized[int]
     """The index of the last accessed data."""
 
     def __init__(  # noqa: D107
@@ -421,12 +466,12 @@ class AbstractFullCache(AbstractCache):
         super().__init__(tolerance, name)
         self.lock_hashes = RLock()
         self._hashes_to_indices = get_multi_processing_manager().dict()
-        self._max_index = Value("i", 0)
-        self._last_accessed_index = Value("i", 0)
+        self._max_index = cast("Synchronized[int]", Value("i", 0))
+        self._last_accessed_index = cast("Synchronized[int]", Value("i", 0))
         self.lock = self._set_lock()
 
     @abstractmethod
-    def _set_lock(self) -> RLock:
+    def _set_lock(self) -> RLockType:
         """Set a lock for multithreading.
 
         Either from an external object or internally by using RLock().
@@ -434,7 +479,7 @@ class AbstractFullCache(AbstractCache):
 
     def __ensure_input_data_exists(
         self,
-        input_data: Data,
+        input_data: DataMapping,
     ) -> bool:
         """Ensure ``input_data`` associated with ``data_hash`` exists.
 
@@ -466,7 +511,7 @@ class AbstractFullCache(AbstractCache):
 
         # If yes, look if there is a corresponding input data equal to ``input_data``.
         for index in indices:
-            if DATA_COMPARATOR(input_data, self._read_data(index, self._INPUTS_GROUP)):
+            if DATA_COMPARATOR(input_data, self._read_data(index, self.Group.INPUTS)):
                 # The input data is already cached => we don't store it again.
                 self._last_accessed_index.value = index
                 return False
@@ -493,13 +538,13 @@ class AbstractFullCache(AbstractCache):
     def _has_group(
         self,
         index: int,
-        group: str,
+        group: AbstractCache.Group,
     ) -> bool:
         """Check if an entry has data corresponding to a given group.
 
         Args:
             index: The index of the entry.
-            group: The name of the group.
+            group: The group.
 
         Returns:
             Whether the entry has data for this group.
@@ -508,25 +553,22 @@ class AbstractFullCache(AbstractCache):
     @abstractmethod
     def _write_data(
         self,
-        values: Data,
-        group: str,
+        values: DataMapping,
+        group: AbstractCache.Group,
         index: int,
     ) -> None:
         """Write the data associated with an index and a group.
 
         Args:
             values: The data containing the values of the names to cache.
-            group: The name of the group,
-                either :attr:`._INPUTS_GROUP`,
-                :attr:`._OUTPUTS_GROUP`
-                or :attr:`._JACOBIAN_GROUP`.
+            group: The group.
             index: The index of the entry in the cache.
         """
 
     def _cache_inputs(
         self,
-        input_data: Data,
-        group: str,
+        input_data: DataMapping,
+        group: AbstractCache.Group,
     ) -> bool:
         """Cache input data and increment group if needed.
 
@@ -537,14 +579,13 @@ class AbstractFullCache(AbstractCache):
 
         Args:
             input_data: The data containing the input data to cache.
-            group: The name of the group to check the existence,
-                either :attr:`._OUTPUTS_GROUP` or :attr:`._JACOBIAN_GROUP`.
+            group: The group.
 
         Returns:
             Whether ``group`` exists.
         """
         if self.__ensure_input_data_exists(input_data):
-            self._write_data(input_data, self._INPUTS_GROUP, self._max_index.value)
+            self._write_data(input_data, self.Group.INPUTS, self._max_index.value)
         elif self._has_group(self._last_accessed_index.value, group):
             return True
         return False
@@ -552,26 +593,26 @@ class AbstractFullCache(AbstractCache):
     @synchronized
     def cache_outputs(  # noqa: D102
         self,
-        input_data: Data,
-        output_data: Data,
+        input_data: DataMapping,
+        output_data: DataMapping,
     ) -> None:
-        if self._cache_inputs(input_data, self._OUTPUTS_GROUP):
+        if self._cache_inputs(input_data, self.Group.OUTPUTS):
             # There is already an output data corresponding to this input data.
             return
 
         self._write_data(
             output_data,
-            self._OUTPUTS_GROUP,
+            self.Group.OUTPUTS,
             self._last_accessed_index.value,
         )
 
     @synchronized
     def cache_jacobian(  # noqa: D102
         self,
-        input_data: Data,
+        input_data: DataMapping,
         jacobian_data: JacobianData,
     ) -> None:
-        if self._cache_inputs(input_data, self._JACOBIAN_GROUP):
+        if self._cache_inputs(input_data, self.Group.JACOBIAN):
             # There is already a Jacobian data corresponding to this input data.
             return
 
@@ -581,7 +622,7 @@ class AbstractFullCache(AbstractCache):
 
         self._write_data(
             flat_jacobian_data,
-            self._JACOBIAN_GROUP,
+            self.Group.JACOBIAN,
             self._last_accessed_index.value,
         )
 
@@ -599,28 +640,40 @@ class AbstractFullCache(AbstractCache):
             return CacheEntry({}, {}, {})
 
         return CacheEntry(
-            self._read_data(self._last_accessed_index.value, self._INPUTS_GROUP),
-            self._read_data(self._last_accessed_index.value, self._OUTPUTS_GROUP),
-            self._read_data(self._last_accessed_index.value, self._JACOBIAN_GROUP),
+            self._read_data(self._last_accessed_index.value, self.Group.INPUTS),
+            self._read_data(self._last_accessed_index.value, self.Group.OUTPUTS),
+            self._read_data(self._last_accessed_index.value, self.Group.JACOBIAN),
         )
 
     @synchronized
     def __len__(self) -> int:
         return self._max_index.value
 
+    @overload
+    def _read_data(
+        self,
+        index: int,
+        group: Literal[AbstractCache.Group.INPUTS, AbstractCache.Group.OUTPUTS],
+    ) -> DataMapping: ...
+
+    @overload
+    def _read_data(
+        self,
+        index: int,
+        group: Literal[AbstractCache.Group.JACOBIAN],
+    ) -> JacobianData: ...
+
     @abstractmethod
     def _read_data(
         self,
         index: int,
-        group: str,
-        **options,
-    ) -> Data | JacobianData:
+        group: AbstractCache.Group,
+    ) -> DataMapping | JacobianData:
         """Read the data of an entry.
 
         Args:
             index: The index of the entry.
-            group: The name of the group to read.
-            **options: The options passed to the overloaded methods.
+            group: The group.
 
         Returns:
             The output and Jacobian data corresponding to these index and group.
@@ -630,7 +683,7 @@ class AbstractFullCache(AbstractCache):
     def __has_hash(
         self,
         data_hash: int,
-    ) -> ndarray | None:
+    ) -> IntegerArray | None:
         """Get the indices corresponding to a data hash.
 
         Args:
@@ -644,7 +697,7 @@ class AbstractFullCache(AbstractCache):
     def _read_input_output_data(
         self,
         indices: Iterable[int],
-        input_data: Data,
+        input_data: DataMapping,
     ) -> CacheEntry:
         """Read the output and Jacobian data for a given input data.
 
@@ -656,9 +709,9 @@ class AbstractFullCache(AbstractCache):
             The output and Jacobian data if they exist, ``None`` otherwise.
         """
         for index in indices:
-            if DATA_COMPARATOR(input_data, self._read_data(index, self._INPUTS_GROUP)):
-                output_data = self._read_data(index, self._OUTPUTS_GROUP)
-                jacobian_data = self._read_data(index, self._JACOBIAN_GROUP)
+            if DATA_COMPARATOR(input_data, self._read_data(index, self.Group.INPUTS)):
+                output_data = self._read_data(index, self.Group.OUTPUTS)
+                jacobian_data = self._read_data(index, self.Group.JACOBIAN)
                 return CacheEntry(input_data, output_data, jacobian_data)
 
         return CacheEntry(input_data, {}, {})
@@ -666,7 +719,7 @@ class AbstractFullCache(AbstractCache):
     @synchronized
     def __getitem__(
         self,
-        input_data: Data,
+        input_data: DataMapping,
     ) -> CacheEntry:
         if self.tolerance == 0.0:
             data_hash = hash_data_dict(input_data)
@@ -678,10 +731,10 @@ class AbstractFullCache(AbstractCache):
 
         for indices in self._hashes_to_indices.values():
             for index in indices:
-                cached_input_data = self._read_data(index, self._INPUTS_GROUP)
+                cached_input_data = self._read_data(index, self.Group.INPUTS)
                 if DATA_COMPARATOR(input_data, cached_input_data, self.tolerance):
-                    output_data = self._read_data(index, self._OUTPUTS_GROUP)
-                    jacobian_data = self._read_data(index, self._JACOBIAN_GROUP)
+                    output_data = self._read_data(index, self.Group.OUTPUTS)
+                    jacobian_data = self._read_data(index, self.Group.JACOBIAN)
                     return CacheEntry(input_data, output_data, jacobian_data)
 
         return CacheEntry(input_data, {}, {})
@@ -692,20 +745,11 @@ class AbstractFullCache(AbstractCache):
         return sorted(chain(*(v.tolist() for v in self._hashes_to_indices.values())))
 
     @synchronized
-    def __iter__(self) -> Generator[CacheEntry]:
-        return self._all_data()
-
-    @synchronized
-    def _all_data(self, **options) -> Generator[CacheEntry]:
-        """Return an iterator of all data in the cache.
-
-        Yields:
-            The data position and the input, output and Jacobian data.
-        """
+    def get_all_entries(self) -> Iterator[CacheEntry]:  # noqa: D102
         for index in self._all_groups:
-            input_data = self._read_data(index, self._INPUTS_GROUP, **options)
-            output_data = self._read_data(index, self._OUTPUTS_GROUP, **options)
-            jacobian_data = self._read_data(index, self._JACOBIAN_GROUP, **options)
+            input_data = self._read_data(index, self.Group.INPUTS)
+            output_data = self._read_data(index, self.Group.OUTPUTS)
+            jacobian_data = self._read_data(index, self.Group.JACOBIAN)
             yield CacheEntry(input_data, output_data, jacobian_data)
 
     def to_ggobi(
@@ -727,13 +771,13 @@ class AbstractFullCache(AbstractCache):
             msg = "An empty cache cannot be exported to XML file."
             raise ValueError(msg)
 
-        shared_input_names = None
-        shared_output_names = None
+        shared_input_names: set[str] = set()
+        shared_output_names: set[str] = set()
         all_input_data = []
         all_output_data = []
         names_to_sizes = {}
 
-        for data in self:
+        for data in self.get_all_entries():
             input_data = data.inputs or {}
             output_data = data.outputs or {}
             try:
@@ -794,7 +838,7 @@ class AbstractFullCache(AbstractCache):
         Args:
             other_cache: The cache to update the current one.
         """
-        for input_data, output_data, jacobian_data in other_cache:
+        for input_data, output_data, jacobian_data in other_cache.get_all_entries():
             if output_data or jacobian_data:
                 self[input_data] = (output_data, jacobian_data)
 
@@ -822,7 +866,7 @@ class AbstractFullCache(AbstractCache):
 
 # TODO: API: remove dict from the method name.
 def hash_data_dict(
-    data: Mapping[str, ndarray | int | float],
+    data: DataMapping,
 ) -> int:
     """Hash data using xxh3_64 from the xxhash library.
 
@@ -850,7 +894,7 @@ def hash_data_dict(
 
         # xxh3_64 does not support int or float as input.
         if isinstance(value, ndarray):
-            if value.dtype == int32 and sys.platform.startswith("win"):
+            if value.dtype == int32 and PLATFORM_IS_WINDOWS:
                 value = value.astype(int64)
 
             # xxh3_64 only supports C-contiguous arrays.
@@ -861,16 +905,16 @@ def hash_data_dict(
 
         value = value.view(uint8)
 
-        hashed_value = xxh3_64_hexdigest(value)
+        hashed_value = xxh3_64_hexdigest(value)  # type: ignore
         hashed_name = xxh3_64_hexdigest(bytes(name, "utf-8"))
         names_with_hashed_values.append((hashed_name, hashed_value))
 
-    return int(xxh3_64_hexdigest(array(names_with_hashed_values)), 16)
+    return int(xxh3_64_hexdigest(array(names_with_hashed_values)), 16)  # type: ignore
 
 
 def to_real(
-    data: ndarray,
-) -> ndarray:
+    data: RealOrComplexArray,
+) -> RealArray:
     """Convert a NumPy array to a float NumPy array.
 
     Args:
@@ -882,4 +926,4 @@ def to_real(
     if data.dtype == complex128:
         return array(array(data, copy=False).real, dtype=float64)
 
-    return data
+    return cast(RealArray, data)

@@ -21,11 +21,15 @@
 from __future__ import annotations
 
 from multiprocessing import Manager as _Manager
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from multiprocessing.managers import SyncManager
 
 __manager = None
 
 
-def get_multi_processing_manager() -> _Manager:  # noqa: N802
+def get_multi_processing_manager() -> SyncManager:
     """Create a unique global multi-processing manager.
 
     Returns:

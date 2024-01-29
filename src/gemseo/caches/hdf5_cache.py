@@ -25,21 +25,22 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-
-import h5py
+from typing import Literal
+from typing import overload
 
 from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
 from gemseo.core.cache import AbstractFullCache
 from gemseo.core.cache import CacheEntry
-from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
-    from multiprocessing import RLock
+    from collections.abc import Iterator
+    from collections.abc import Mapping
+    from multiprocessing.synchronize import RLock as RLockType
 
-    from gemseo.core.discipline_data import Data
+    from gemseo.typing import DataMapping
+    from gemseo.typing import JacobianData
     from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -107,8 +108,8 @@ class HDF5Cache(AbstractFullCache):
             "name": self.name,
         }
 
-    def __setstate__(self, state) -> None:
-        self.__init__(**state)
+    def __setstate__(self, state: Mapping[str, Any]) -> None:
+        self.__class__.__init__(self, **state)
 
     def _copy_empty_cache(self) -> HDF5Cache:
         file_path = Path(self.__hdf_file.hdf_file_path)
@@ -119,7 +120,7 @@ class HDF5Cache(AbstractFullCache):
             name=self.name,
         )
 
-    def _set_lock(self) -> RLock:
+    def _set_lock(self) -> RLockType:
         return self.__hdf_file.lock
 
     @synchronized
@@ -140,7 +141,7 @@ class HDF5Cache(AbstractFullCache):
     def _has_group(
         self,
         index: int,
-        group: str,
+        group: AbstractFullCache.Group,
     ) -> bool:
         return self.__hdf_file.has_group(index, group, self.__hdf_node_path)
 
@@ -149,47 +150,51 @@ class HDF5Cache(AbstractFullCache):
         super().clear()
         self.__hdf_file.clear(self.__hdf_node_path)
 
+    @overload
     def _read_data(
         self,
         index: int,
-        group: str,
-        h5_open_file: h5py.File | None = None,
-        **options: Any,
-    ) -> tuple[Data, JacobianData]:
-        """
-        Args:
-            h5_open_file: The opened HDF file.
-                This improves performance
-                but is incompatible with multiprocess/treading.
-                If ``None``, open it.
-        """  # noqa: D205, D212, D415
-        data = self.__hdf_file.read_data(
-            index, group, self.__hdf_node_path, h5_open_file=h5_open_file
-        )[0]
-        if group == self._JACOBIAN_GROUP and data is not None:
-            data = nest_flat_bilevel_dict(data, separator=self._JACOBIAN_SEPARATOR)
+        group: Literal[AbstractFullCache.Group.INPUTS, AbstractFullCache.Group.OUTPUTS],
+    ) -> DataMapping: ...
 
+    @overload
+    def _read_data(
+        self,
+        index: int,
+        group: Literal[AbstractFullCache.Group.JACOBIAN],
+    ) -> JacobianData: ...
+
+    def _read_data(
+        self,
+        index: int,
+        group: AbstractFullCache.Group,
+    ) -> DataMapping | JacobianData:
+        data = self.__hdf_file.read_data(index, group, self.__hdf_node_path)
+        if group == self.Group.JACOBIAN and data:
+            data = nest_flat_bilevel_dict(data, separator=self._JACOBIAN_SEPARATOR)
         return data
 
     def _write_data(
         self,
-        data: Data,
-        group: str,
+        values: DataMapping,
+        group: AbstractFullCache.Group,
         index: int,
     ) -> None:
         self.__hdf_file.write_data(
-            data,
+            values,
             group,
             index,
             self.__hdf_node_path,
         )
 
     @synchronized
-    def __iter__(
-        self,
-    ) -> Generator[CacheEntry]:
-        with h5py.File(self.__hdf_file.hdf_file_path, "a") as h5_open_file:
-            yield from self._all_data(h5_open_file=h5_open_file)
+    def get_all_entries(self) -> Iterator[CacheEntry]:  # noqa: D102
+        with self.__hdf_file.keep_open():
+            for index in self._all_groups:
+                input_data = self._read_data(index, self.Group.INPUTS)
+                output_data = self._read_data(index, self.Group.OUTPUTS)
+                jacobian_data = self._read_data(index, self.Group.JACOBIAN)
+                yield CacheEntry(input_data, output_data, jacobian_data)
 
     @staticmethod
     def update_file_format(

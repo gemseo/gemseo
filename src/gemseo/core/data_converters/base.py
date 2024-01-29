@@ -20,12 +20,15 @@ from abc import ABC
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Final
+from typing import Generic
+from typing import TypeVar
 from typing import Union
+from typing import cast
 
 from numpy import array as np_array
 from numpy import concatenate
-from numpy import ndarray
 
+from gemseo.typing import NumberArray
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -35,14 +38,21 @@ if TYPE_CHECKING:
     from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.base_grammar import BaseGrammar
 
+    ValueType = Union[int, float, complex, NumberArray]
+
 # The following is needed since a bool is a numbers.Number.
-_NUMERIC_TYPES: Final[tuple[type]] = (int, float, complex)
+_NUMERIC_TYPES: Final[tuple[type[int], type[float], type[complex]]] = (
+    int,
+    float,
+    complex,
+)
 """The base types for numeric values."""
 
-ValueType = Union[int, float, complex, ndarray]
+
+T = TypeVar("T", bound="BaseGrammar")
 
 
-class BaseDataConverter(ABC):
+class BaseDataConverter(ABC, Generic[T]):
     """Base class for converting data values to NumPy arrays and vice versa.
 
     Typically,
@@ -75,10 +85,10 @@ class BaseDataConverter(ABC):
         Throughout this class, _NumPy array_ is equivalent to _1D numeric NumPy array_.
     """
 
-    _grammar: BaseGrammar
+    _grammar: T
     """The grammar providing the data types used for the conversions."""
 
-    def __init__(self, grammar: BaseGrammar) -> None:
+    def __init__(self, grammar: T) -> None:
         """
         Args:
             grammar: The grammar providing the data types used for the conversions.
@@ -89,7 +99,7 @@ class BaseDataConverter(ABC):
         self,
         name: str,
         value: ValueType,
-    ) -> ndarray:
+    ) -> NumberArray:
         """Convert a data value to a NumPy array.
 
         Args:
@@ -101,9 +111,9 @@ class BaseDataConverter(ABC):
         """
         if isinstance(value, _NUMERIC_TYPES):
             return np_array([value])
-        return value
+        return cast(NumberArray, value)
 
-    def convert_array_to_value(self, name: str, array: ndarray) -> ValueType:
+    def convert_array_to_value(self, name: str, array: NumberArray) -> ValueType:
         """Convert a NumPy array to a data value.
 
         Args:
@@ -131,7 +141,7 @@ class BaseDataConverter(ABC):
         """
         if isinstance(value, _NUMERIC_TYPES):
             return 1
-        return value.size
+        return cast(NumberArray, value).size
 
     def compute_names_to_slices(
         self,
@@ -191,7 +201,7 @@ class BaseDataConverter(ABC):
 
     def convert_array_to_data(
         self,
-        array: ndarray,
+        array: NumberArray,
         names_to_slices: Mapping[str, slice],
     ) -> dict[str, ValueType]:
         """Convert a NumPy array to a data structure.
@@ -215,7 +225,7 @@ class BaseDataConverter(ABC):
         self,
         names: Iterable[str],
         data: Data,
-    ) -> ndarray:
+    ) -> NumberArray:
         """Convert a part of a data structure to a NumPy array.
 
         .. seealso:: :meth:`.convert_value_to_array`
@@ -233,7 +243,7 @@ class BaseDataConverter(ABC):
         return concatenate(tuple(to_array(name, data[name]) for name in names))
 
     @abstractmethod
-    def _convert_array_to_value(self, name: str, array: ndarray) -> ValueType:
+    def _convert_array_to_value(self, name: str, array: NumberArray) -> ValueType:
         """Convert back a NumPy array to a data value.
 
         Args:
