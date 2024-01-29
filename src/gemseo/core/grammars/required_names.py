@@ -20,6 +20,7 @@ from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import MutableSet
 from typing import TYPE_CHECKING
+from typing import Any
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -59,7 +60,7 @@ class RequiredNames(MutableSet[str]):
         self.__grammar._check_name(name)
         self.__names.add(name)
 
-    def __contains__(self, name: str) -> bool:
+    def __contains__(self, name: Any) -> bool:
         return name in self.__names
 
     def __iter__(self) -> Iterator[str]:

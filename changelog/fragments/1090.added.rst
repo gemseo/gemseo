@@ -1,0 +1,2 @@
+- The method ``AbstractCache.get_all_entries`` that returns all the entries, whatever the tolerance.
+- The module ``gemseo.typing`` that contains common type annotations.

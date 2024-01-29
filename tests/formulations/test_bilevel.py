@@ -315,8 +315,8 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario) -> None:
     )
     mda1_cache = scenario.formulation.chain.disciplines[0].cache
     scenario.execute({"algo": "NLOPT_COBYLA", "max_iter": 3})
-    mda1_inputs = [entry.inputs for entry in mda1_cache]
-    chain_outputs = [entry.outputs for entry in bilevel_chain_cache]
+    mda1_inputs = [entry.inputs for entry in mda1_cache.get_all_entries()]
+    chain_outputs = [entry.outputs for entry in bilevel_chain_cache.get_all_entries()]
 
     assert mda1_inputs[1]["y_21"] == chain_outputs[0]["y_21"]
     assert (mda1_inputs[1]["y_12"] == chain_outputs[0]["y_12"]).all()

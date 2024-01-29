@@ -120,7 +120,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     PLUGIN_ENTRY_POINT: ClassVar[str] = "gemseo_plugins"
     """The name of the setuptools entry point for declaring plugins."""
 
-    _names_to_class_info: dict[str, _ClassInfo]
+    _names_to_class_info: dict[str, _ClassInfo[T]]
     """The class names bound to the class information."""
 
     failed_imports: dict[str, str]
@@ -321,9 +321,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         if class_info is None:
             names = ", ".join(self.class_names)
             msg = f"The class {name} is not available; the available ones are: {names}."
-            raise ImportError(
-                msg,
-            )
+            raise ImportError(msg)
         return class_info.class_
 
     def create(

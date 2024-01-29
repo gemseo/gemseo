@@ -28,10 +28,11 @@ from gemseo.core.data_converters.base import BaseDataConverter
 from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from gemseo.core.grammars.pydantic_grammar import PydanticGrammar  # noqa: F401
+    from gemseo.typing import NumberArray
 
 
-class PydanticGrammarDataConverter(BaseDataConverter):
+class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
     """Data values to NumPy arrays and vice versa from a :class:`.PydanticGrammar`."""
 
     def is_numeric(  # noqa:D102
@@ -79,7 +80,7 @@ class PydanticGrammarDataConverter(BaseDataConverter):
     #
     #     return type_arg in _NUMERIC_TYPES
 
-    def _convert_array_to_value(self, name: str, array: ndarray) -> Any:  # noqa: D102
+    def _convert_array_to_value(self, name: str, array: NumberArray) -> Any:  # noqa: D102
         if self._grammar[name].annotation in _NUMERIC_TYPES:
             return array[0]
         return array

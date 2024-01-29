@@ -22,11 +22,11 @@ from typing import Any
 from pandas import DataFrame
 
 from gemseo.core.discipline_data import DisciplineData
-from gemseo.core.discipline_data import MutableData
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.typing import DataMapping
 
 
 class Defaults(DisciplineData):
@@ -42,7 +42,7 @@ class Defaults(DisciplineData):
     def __init__(
         self,
         grammar: BaseGrammar,
-        data: MutableData,
+        data: DataMapping,
     ) -> None:
         """
         Args:

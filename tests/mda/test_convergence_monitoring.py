@@ -182,8 +182,8 @@ def get_gauss_seidel_reference_residuals(
     mda.scaling = MDA.ResidualScaling.NO_SCALING
     mda.execute()
 
-    _b = [value.outputs["b"] for value in disciplines[1].cache]
-    _y = [value.outputs["y"] for value in disciplines[2].cache]
+    _b = [value.outputs["b"] for value in disciplines[1].cache.get_all_entries()]
+    _y = [value.outputs["y"] for value in disciplines[2].cache.get_all_entries()]
 
     initial_residual = {"b": _b[1] - _b[0], "y": _y[1] - _y[0]}
     final_residual = {"b": _b[-1] - _b[-2], "y": _y[-1] - _y[-2]}

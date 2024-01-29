@@ -23,13 +23,15 @@ from typing import Final
 from gemseo.core.data_converters.base import BaseDataConverter
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from gemseo.core.grammars.json_grammar import JSONGrammar  # noqa: F401
+    from gemseo.core.grammars.json_schema import Property
+    from gemseo.typing import NumberArray
 
 
-class JSONGrammarDataConverter(BaseDataConverter):
+class JSONGrammarDataConverter(BaseDataConverter["JSONGrammar"]):
     """Data values to NumPy arrays and vice versa from a :class:`.JSONGrammar`."""
 
-    __NUMERIC_TYPE_NAMES: Final[tuple[str]] = ("number", "integer")
+    __NUMERIC_TYPE_NAMES: Final[tuple[str, ...]] = ("number", "integer")
     """The JSON types for numeric values."""
 
     def is_numeric(self, name: str) -> bool:  # noqa: D102
@@ -61,11 +63,11 @@ class JSONGrammarDataConverter(BaseDataConverter):
             return cls.__is_collection_of_numbers(sub_prop)
         return sub_prop.get("type") in cls.__NUMERIC_TYPE_NAMES
 
-    def _convert_array_to_value(self, name: str, array: ndarray) -> Any:  # noqa: D102
+    def _convert_array_to_value(self, name: str, array: NumberArray) -> Any:  # noqa: D102
         if self.__get_property(name).get("type") == "array":
             return array
         return array[0]
 
-    def __get_property(self, name: str) -> dict[str, str]:
+    def __get_property(self, name: str) -> Property:
         """Return a property of a schema given its name."""
-        return self._grammar.schema.get("properties").get(name)
+        return self._grammar.schema["properties"][name]

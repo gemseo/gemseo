@@ -37,7 +37,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
-    from gemseo.core.discipline_data import Data
+    from gemseo.typing import DataMapping
+
 
 STRING_SEPARATOR = "#&#"
 
@@ -249,9 +250,9 @@ def update_dict_of_arrays_from_array(
 
 
 def deepcopy_dict_of_arrays(
-    dict_of_arrays: Mapping[str, ndarray],
+    dict_of_arrays: DataMapping,
     names: Iterable[str] | None = None,
-) -> Data:
+) -> DataMapping:
     """Perform a deep copy of a dictionary of NumPy arrays.
 
     This treats the NumPy arrays specially
@@ -289,9 +290,9 @@ def deepcopy_dict_of_arrays(
 
 
 def nest_flat_bilevel_dict(
-    flat_dict: Mapping[str, Any],
+    flat_dict: DataMapping,
     separator: str = STRING_SEPARATOR,
-) -> dict[str, Any]:
+) -> DataMapping:
     """Nest a flat bi-level dictionary where sub-dictionaries will have the same keys.
 
     Examples:
@@ -320,10 +321,10 @@ def nest_flat_bilevel_dict(
 
 
 def nest_flat_dict(
-    flat_dict: Mapping[str, Any],
+    flat_dict: DataMapping,
     prefix: str = "",
     separator: str = STRING_SEPARATOR,
-) -> dict[str, Any]:
+) -> DataMapping:
     """Nest a flat dictionary.
 
     Examples:
@@ -350,7 +351,7 @@ def nest_flat_dict(
 
 
 def __nest_flat_mapping(
-    mapping: Mapping[str, Any],
+    mapping: DataMapping,
     key: str,
     value: Any,
     separator: str,
@@ -374,9 +375,9 @@ def __nest_flat_mapping(
 
 
 def flatten_nested_bilevel_dict(
-    nested_dict: Mapping[str, Any],
+    nested_dict: DataMapping,
     separator: str = STRING_SEPARATOR,
-) -> dict[str, Any]:
+) -> DataMapping:
     """Flatten a nested bi-level dictionary whose sub-dictionaries have the same keys.
 
     Examples:
@@ -402,10 +403,10 @@ def flatten_nested_bilevel_dict(
 
 
 def flatten_nested_dict(
-    nested_dict: Mapping[str, Any],
+    nested_dict: DataMapping,
     prefix: str = "",
     separator: str = STRING_SEPARATOR,
-) -> dict[str, Any]:
+) -> DataMapping:
     """Flatten a nested dictionary.
 
     Examples:
@@ -426,7 +427,7 @@ def flatten_nested_dict(
 
 
 def __flatten_nested_mapping(
-    nested_mapping: Mapping[str, Any],
+    nested_mapping: DataMapping,
     parent_key: str,
     separator: str,
 ) -> Generator[tuple[str, Any], None, None]:
