@@ -24,6 +24,7 @@ import logging
 from math import floor
 from math import sqrt
 from typing import TYPE_CHECKING
+from typing import Final
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -42,8 +43,9 @@ from numpy import nonzero
 from numpy import unique
 from numpy import zeros
 
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.som_settings import Settings
 from gemseo.third_party import sompy
 
 if TYPE_CHECKING:
@@ -52,13 +54,13 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class SOM(OptPostProcessor):
+class SOM(BasePost):
     """Self organizing map clustering optimization history.
 
     Options of the plot method are the x- and y- numbers of cells in the SOM.
     """
 
-    DEFAULT_FIG_SIZE = (12.0, 18.0)
+    Settings: Final[type[Settings]] = Settings
 
     def __init__(  # noqa:D107
         self,
@@ -101,18 +103,11 @@ class SOM(OptPostProcessor):
         var_som.train(verbose=verbose)
         return var_som
 
-    def _plot(
-        self,
-        n_x: int = 4,
-        n_y: int = 4,
-        annotate: bool = False,
-    ) -> None:
-        """
-        Args:
-            n_x: The number of grids in x.
-            n_y: The number of grids in y.
-            annotate: If ``True``, add label of neuron value to SOM plot.
-        """  # noqa: D205, D212, D415
+    def _plot(self, settings: Settings) -> None:
+        n_x = settings.n_x
+        n_y = settings.n_y
+        annotate = settings.annotate
+
         criteria = [
             self.optimization_problem.standardized_objective_name,
             *self.optimization_problem.constraints.get_names(),
@@ -122,7 +117,7 @@ class SOM(OptPostProcessor):
         for criterion in tuple(criteria):
             if criterion not in all_data:
                 criteria.remove(criterion)
-        figure = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        figure = plt.figure(figsize=settings.fig_size)
         figure.suptitle("Self Organizing Maps of the design space", fontsize=14)
         subplot_number = 0
         self.__compute(n_x, n_y)

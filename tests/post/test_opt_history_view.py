@@ -126,7 +126,7 @@ def test_opt_hist_from_database(
     problem = OptimizationProblem.from_hdf(problem_path)
     # The use of the default value is deliberate;
     # to check that the JSON grammar works properly.
-    execute_post(problem, "OptHistoryView", variable_names=None, show=False, save=False)
+    execute_post(problem, "OptHistoryView", show=False, save=False)
 
 
 TEST_PARAMETERS = {

@@ -22,18 +22,20 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import full
 from numpy import ndarray
 
 from gemseo.algos.pareto.utils import generate_pareto_plots
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.base_post import BasePost
+from gemseo.post.pareto_front_settings import Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class ParetoFront(OptPostProcessor):
+class ParetoFront(BasePost):
     """Compute the Pareto front for a multi-objective problem.
 
     The Pareto front of an optimization problem is the set of ``non-dominated`` points
@@ -48,28 +50,20 @@ class ParetoFront(OptPostProcessor):
     The latter are also called ``Pareto optimal points``.
     """
 
-    DEFAULT_FIG_SIZE = (10.0, 10.0)
+    Settings: Final[type[Settings]] = Settings
 
-    def _plot(
-        self,
-        objectives: Sequence[str] = (),
-        objectives_labels: Sequence[str] = (),
-        show_non_feasible: bool = True,
-    ) -> None:
+    def _plot(self, settings: Settings) -> None:
         """
-        Args:
-            objectives: The functions names or design variables to plot.
-                If empty, use the objective function (maybe a vector).
-            objectives_labels: The labels of the objective components.
-                If empty, use the objective name suffixed by an index.
-            show_non_feasible: If ``True``, show the non-feasible points in the plot.
-
         Raises:
             ValueError: If the numbers of objectives and objectives
                 labels are different.
         """  # noqa: D205, D212, D415
-        if not objectives:
+        objectives_labels = settings.objectives_labels
+
+        if not settings.objectives:
             objectives = [self.optimization_problem.objective.name]
+        else:
+            objectives = list(settings.objectives)
 
         all_funcs = self.optimization_problem.function_names
         all_dv_names = self.optimization_problem.design_space.variable_names
@@ -93,9 +87,9 @@ class ParetoFront(OptPostProcessor):
         fig = generate_pareto_plots(
             sample_values,
             all_labels,
-            fig_size=self.DEFAULT_FIG_SIZE,
+            fig_size=settings.fig_size,
             non_feasible_samples=non_feasible_samples,
-            show_non_feasible=show_non_feasible,
+            show_non_feasible=settings.show_non_feasible,
         )
 
         self._add_figure(fig)
@@ -104,7 +98,7 @@ class ParetoFront(OptPostProcessor):
         self,
         all_dv_names: Sequence[str],
         all_funcs: Sequence[str],
-        objectives: Sequence[str],
+        objectives: list[str],
     ) -> tuple[ndarray, list[str]]:
         """Compute the names and values of the objective and design variables.
 
@@ -156,7 +150,7 @@ class ParetoFront(OptPostProcessor):
         all_dv_names: Sequence[str],
         all_funcs: Sequence[str],
         func: str,
-        objectives: Sequence[str],
+        objectives: list[str],
     ) -> None:
         """Check that the objective name is valid.
 
@@ -187,7 +181,7 @@ class ParetoFront(OptPostProcessor):
         self,
         design_variables: Sequence[str],
         func: str,
-        objectives: Sequence[str],
+        objectives: list[str],
     ) -> None:
         """Move an objective to a design variable.
 

@@ -20,29 +20,26 @@
 
 from __future__ import annotations
 
-import inspect
+from abc import ABCMeta
 from abc import abstractmethod
 from collections.abc import Iterable
 from collections.abc import Sequence
-from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Optional
 from typing import Union
 
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.utils._signature_updater import update_signature
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
-from gemseo.utils.source_parsing import get_options_doc
-from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -55,8 +52,19 @@ PlotOutputType = list[
 ]
 
 
-class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
+class _MetaClass(
+    ABCMeta,
+    update_signature("Settings", "execute"),
+    GoogleDocstringInheritanceMeta,
+):
+    pass
+
+
+class BasePost(metaclass=_MetaClass):
     """Abstract class for optimization post-processing methods."""
+
+    Settings: ClassVar[type[BasePostSettings]] = BasePostSettings
+    """The grammar model for the settings."""
 
     opt_problem: OptimizationProblem
     """The optimization problem."""
@@ -66,9 +74,6 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     materials_for_plotting: dict[Any, Any]
     """The materials to eventually rebuild the plot in another framework."""
-
-    DEFAULT_FIG_SIZE = (11.0, 11.0)
-    """The default width and height of the figure, in inches."""
 
     _obj_name: str
     """The name of the objective function as passed by the user."""
@@ -102,13 +107,6 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._standardized_obj_name = opt_problem.standardized_objective_name
         self._neg_obj_name = f"-{self._obj_name}"
         self.database = opt_problem.database
-        self.option_grammar = JSONGrammar("OptPostProcessor")
-        self.option_grammar.update_from_file(
-            Path(inspect.getfile(OptPostProcessor)).parent / "OptPostProcessor.json"
-        )
-        self.option_grammar.set_descriptions(get_options_doc(self.execute))
-        self._update_grammar_from_class(self.__class__)
-
         # The data required to eventually rebuild the plot in another framework.
         self.materials_for_plotting = {}
         default_file_name = FilePathManager.to_snake_case(self.__class__.__name__)
@@ -118,31 +116,6 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._output_files = []
         self.__figures = {}
         self.__nameless_figure_counter = 0
-
-    def _update_grammar_from_class(self, cls: type) -> None:
-        """Update the grammar based on another class having a JSON grammar.
-
-        Args:
-            cls: The class.
-        """
-        name = f"{cls.__name__}_options"
-        class_dir_path = Path(inspect.getfile(cls)).parent
-        schema_file = class_dir_path / f"{name}.json"
-        if not schema_file.exists():
-            schema_file = class_dir_path / "options" / f"{name}.json"
-        if not schema_file.exists():
-            msg = (
-                "Options grammar for optimization post-processor does not exist, "
-                f"expected: {class_dir_path} or {class_dir_path / name}.json."
-            )
-            raise ValueError(msg)
-        descriptions = {}
-        if hasattr(self.__class__, "_run"):
-            descriptions.update(get_options_doc(self.__class__._run))
-        if hasattr(self.__class__, "_plot"):
-            descriptions.update(get_options_doc(self.__class__._plot))
-        self.option_grammar.update_from_file(schema_file)
-        self.option_grammar.set_descriptions(descriptions)
 
     @property
     def _change_obj(self) -> bool:
@@ -180,37 +153,11 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         self.__figures[file_name] = figure
 
-    def execute(
-        self,
-        save: bool = True,
-        show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
-        file_name: str = "",
-        file_extension: str = "",
-        fig_size: FigSizeType = (),
-        **options: OptPostProcessorOptionType,
-    ) -> dict[str, Figure]:
+    def execute(self, **settings: Any) -> dict[str, Figure]:
         """Post-process the optimization problem.
 
         Args:
-            save: If ``True``, save the figure.
-            show: If ``True``, display the figure.
-            file_path: The path of the file to save the figures.
-                If the extension is missing, use ``file_extension``.
-                If empty,
-                create a file path
-                from ``directory_path``, ``file_name`` and ``file_extension``.
-            directory_path: The path of the directory to save the figures.
-                If empty, use the current working directory.
-            file_name: The name of the file to save the figures.
-                If empty, use a default one generated by the post-processing.
-            file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
-                If empty, use a default file extension.
-            fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
-                If empty, use the :attr:`.OptPostProcessor.DEFAULT_FIG_SIZE`
-                of the post-processor.
-            **options: The options of the post-processor.
+            **settings: The settings of the post-processor.
 
         Returns:
             The figures, to be customized if not closed.
@@ -218,18 +165,6 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
         Raises:
             ValueError: If the ``opt_problem.database`` is empty.
         """
-        # convert file_path to string before grammar-based options checking
-
-        self.check_options(
-            save=save,
-            show=show,
-            file_path=file_path,
-            file_name=file_name,
-            directory_path=directory_path,
-            file_extension=file_extension,
-            fig_size=fig_size,
-            **options,
-        )
         if not self.optimization_problem.database:
             msg = (
                 f"The post-processor {self.__class__.__name__} cannot be solved "
@@ -237,82 +172,26 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             )
             raise ValueError(msg)
 
-        self.__figures = self._run(
-            save=save,
-            show=show,
-            file_path=file_path,
-            file_name=file_name,
-            file_extension=file_extension,
-            directory_path=directory_path,
-            fig_size=fig_size,
-            **options,
-        )
+        settings = self.Settings(**settings)
+        self._plot(settings)
+        self.__render(settings)
         return self.__figures
 
-    def check_options(self, **options: OptPostProcessorOptionType) -> None:
-        """Check the options of the post-processor.
+    def __render(self, settings: BasePost.Settings) -> None:
+        """Render the figures.
 
         Args:
-            **options: The options of the post-processor.
-
-        Raises:
-            InvalidDataError: If an option is invalid according to the grammar.
+            settings: The rendering settings.
         """
-        try:
-            self.option_grammar.validate(options)
-        except InvalidDataError as error:
-            msg = (
-                f"Invalid options for post-processor {self.__class__.__name__}; "
-                f"got {pretty_repr(options)}."
-            )
-            raise InvalidDataError(msg) from error
-
-    def _run(
-        self,
-        save: bool = True,
-        show: bool = False,
-        file_path: Path = "",
-        directory_path: Path = "",
-        file_name: str = "",
-        file_extension: str = "",
-        fig_size: FigSizeType = (),
-        **options: OptPostProcessorOptionType,
-    ) -> dict[str, Figure]:
-        """Run the post-processor.
-
-        Args:
-            save: If ``True``, save the figure.
-            show: If ``True``, display the figure.
-            file_path: The path of the file to save the figures.
-                If the extension is missing, use ``file_extension``.
-                If empty,
-                create a file path
-                from ``directory_path``, ``file_name`` and ``file_extension``.
-            directory_path: The path of the directory to save the figures.
-                If empty, use the current working directory.
-            file_name: The name of the file to save the figures.
-                If empty, use a default one generated by the post-processing.
-            file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
-                If empty, use a default file extension.
-            fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
-                If empty, use the :attr:`.OptPostProcessor.DEFAULT_FIG_SIZE`
-                of the post-processor.
-            **options: The options of the post-processor.
-
-        Returns:
-            The figures resulting from the post-processing of the optimization problem.
-        """
-        self._plot(**options)
-
         file_path = self.__file_path_manager.create_file_path(
-            file_path=file_path,
-            directory_path=directory_path,
-            file_name=file_name,
-            file_extension=file_extension,
+            file_path=settings.file_path,
+            directory_path=settings.directory_path,
+            file_name=settings.file_name,
+            file_extension=settings.file_extension,
         )
 
         for figure_name, figure in self.__figures.items():
-            if save:
+            if settings.save:
                 if len(self.__figures) > 1:
                     fig_file_path = self.__file_path_manager.add_suffix(
                         file_path, figure_name
@@ -321,24 +200,23 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
                     fig_file_path = file_path
 
                 self._output_files.append(str(fig_file_path))
-
             else:
                 fig_file_path = ""
 
-            save_show_figure(figure, show, fig_file_path, fig_size)
-
-        return self.__figures
+            save_show_figure(figure, settings.show, fig_file_path, settings.fig_size)
 
     @abstractmethod
-    def _plot(self, **options: OptPostProcessorOptionType) -> None:
+    def _plot(self, settings: BasePost.Settings) -> None:
         """Create the figures.
 
         Args:
-            **options: The post-processor options.
+            settings: The settings of the post-processor.
         """
 
     def _get_design_variable_names(
-        self, variables: Iterable[str] = (), simplify: bool = False
+        self,
+        variables: Iterable[str] = (),
+        simplify: bool = False,
     ) -> list[str]:
         """Create the names of the components of design variables as ``"name[i]"``.
 

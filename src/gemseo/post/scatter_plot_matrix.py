@@ -21,45 +21,35 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Final
 
 from matplotlib import pyplot
 from numpy import any as np_any
 from pandas.core.frame import DataFrame
 from pandas.plotting import scatter_matrix
 
-from gemseo.post.opt_post_processor import OptPostProcessor
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
+from gemseo.post.base_post import BasePost
+from gemseo.post.scatter_plot_matrix_settings import Settings
 
 
-class ScatterPlotMatrix(OptPostProcessor):
+class ScatterPlotMatrix(BasePost):
     """Scatter plot matrix among design variables, output functions and constraints.
 
     The list of variable names has to be passed as arguments of the plot method.
     """
 
-    DEFAULT_FIG_SIZE = (10.0, 10.0)
+    Settings: Final[type[Settings]] = Settings
 
-    def _plot(
-        self,
-        variable_names: Sequence[str],
-        filter_non_feasible: bool = False,
-    ) -> None:
+    def _plot(self, settings: Settings) -> None:
         """
-        Args:
-            variable_names: The functions names or design variables to plot.
-                If the list is empty,
-                plot all design variables.
-            filter_non_feasible: If ``True``, remove the non-feasible
-                points from the data.
-
         Raises:
             ValueError: If `filter_non_feasible` is set to True and no feasible
                 points exist. If an element from variable_names is not either
                 a function or a design variable.
         """  # noqa: D205, D212, D415
+        variable_names = settings.variable_names
+        filter_non_feasible = settings.filter_non_feasible
+
         problem = self.optimization_problem
         add_design_variables = False
         all_function_names = problem.function_names
@@ -161,7 +151,7 @@ class ScatterPlotMatrix(OptPostProcessor):
         scatter_matrix(
             DataFrame((list(x.real) for x in variable_values), columns=variable_labels),
             alpha=1.0,
-            figsize=self.DEFAULT_FIG_SIZE,
+            figsize=settings.fig_size,
             diagonal="kde",
         )
         fig = pyplot.gcf()

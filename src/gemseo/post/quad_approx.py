@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from math import ceil
 from typing import TYPE_CHECKING
+from typing import Final
 
 import numpy as np
 from matplotlib import pyplot
@@ -35,9 +36,10 @@ from numpy import array
 from numpy import e
 from numpy import ndarray
 
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.quad_approx_settings import Settings
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
@@ -45,7 +47,7 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 
-class QuadApprox(OptPostProcessor):
+class QuadApprox(BasePost):
     """Quadratic approximation of a function.
 
     And cuts of the approximation.
@@ -53,9 +55,7 @@ class QuadApprox(OptPostProcessor):
     The function index can be passed as option.
     """
 
-    DEFAULT_FIG_SIZE = (9.0, 6.0)
-
-    SR1_APPROX = "SR1"
+    Settings: Final[type[Settings]] = Settings
 
     def __init__(  # noqa:D107
         self,
@@ -64,19 +64,10 @@ class QuadApprox(OptPostProcessor):
         super().__init__(opt_problem)
         self.grad_opt = None
 
-    def _plot(
-        self,
-        function: str,
-        func_index: int | None = None,
-    ) -> None:
-        """Build the plot and save it.
+    def _plot(self, settings: Settings) -> None:
+        function = settings.function
+        func_index = settings.func_index
 
-        Args:
-            function: The function name to build the quadratic approximation.
-            func_index: The index of the output of interest
-                to be defined if the function has a multidimensional output.
-                If ``None`` and if the output is multidimensional, an error is raised.
-        """  # noqa: D205, D212, D415
         problem = self.optimization_problem
         if function == self._obj_name:
             b_mat = self.__build_approx(self._standardized_obj_name, func_index)
@@ -91,8 +82,12 @@ class QuadApprox(OptPostProcessor):
             b_mat = self.__build_approx(function, func_index)
 
         self.materials_for_plotting["b_mat"] = b_mat
-        self._add_figure(self.__plot_hessian(b_mat, function), "hess_approx")
-        self._add_figure(self.__plot_variations(b_mat), "quad_approx")
+        self._add_figure(
+            self.__plot_hessian(b_mat, function, settings.fig_size), "hess_approx"
+        )
+        self._add_figure(
+            self.__plot_variations(b_mat, settings.fig_size), "quad_approx"
+        )
 
     def __build_approx(
         self,
@@ -123,6 +118,7 @@ class QuadApprox(OptPostProcessor):
         self,
         hessian: ndarray,
         function: str,
+        fig_size: tuple[float, float],
     ) -> Figure:
         """Plot the Hessian of the function.
 
@@ -133,7 +129,7 @@ class QuadApprox(OptPostProcessor):
         Returns:
             The plot of the Hessian of the function.
         """
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         grid = self._get_grid_layout()
         ax1 = fig.add_subplot(grid[0, 0])
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
@@ -194,6 +190,7 @@ class QuadApprox(OptPostProcessor):
     def __plot_variations(
         self,
         hessian: ndarray,
+        fig_size: tuple[float, float],
     ) -> Figure:
         """Plot the variation plot of the function w.r.t. all variables.
 
@@ -210,7 +207,7 @@ class QuadApprox(OptPostProcessor):
         xn_vars = np.arange(-1.0, 1.0, 0.01)
         lower_bounds = self.optimization_problem.design_space.get_lower_bounds()
         upper_bounds = self.optimization_problem.design_space.get_upper_bounds()
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
 
         for i, design_variable_name in enumerate(self._get_design_variable_names()):
             ax_i = plt.subplot(nrows, ncols, i + 1)

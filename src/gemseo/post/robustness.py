@@ -23,22 +23,23 @@
 from __future__ import annotations
 
 from math import sqrt
-from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Final
 
 import matplotlib.pyplot as plt
 from numpy import zeros
 from numpy.random import default_rng
 
+from gemseo import SEED
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
-from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.seeder import SEED
+from gemseo.post.robustness_settings import Settings
 from gemseo.utils.string_tools import repr_variable
 
-if TYPE_CHECKING:
-    from matplotlib.figure import Figure
+LOGGER = logging.getLogger(__name__)
 
 
-class Robustness(OptPostProcessor):
+class Robustness(BasePost):
     """Uncertainty quantification at the optimum.
 
     Compute the quadratic approximations of all the output functions, propagate
@@ -47,36 +48,11 @@ class Robustness(OptPostProcessor):
     and plot the corresponding output boxplot.
     """
 
-    DEFAULT_FIG_SIZE = (8.0, 5.0)
+    SR1_APPROX: ClassVar[str] = "SR1"
+    Settings: Final[type[Settings]] = Settings
 
-    SR1_APPROX = "SR1"
-
-    def _plot(
-        self,
-        stddev: float = 0.01,
-    ) -> None:
-        """
-        Args:
-            stddev: The standard deviation of the normal uncertain variable
-                to be added to the optimal design value;
-                expressed as a fraction of the bounds of the design variables.
-        """  # noqa: D205, D212, D415
-        self._add_figure(self.__boxplot(stddev))
-
-    def __boxplot(
-        self,
-        standard_deviation: float = 0.01,
-    ) -> Figure:
-        """Plot the Hessian of the function.
-
-        Args:
-            standard_deviation: The standard deviation of the normal uncertain variable
-                to be added to the optimal design value;
-                expressed as a fraction of the bounds of the design variables.
-
-        Returns:
-            A plot of the Hessian of the function.
-        """
+    def _plot(self, settings: Settings) -> None:
+        standard_deviation = settings.stddev
         problem = self.optimization_problem
         design_space = problem.design_space
         bounds_range = design_space.get_upper_bounds() - design_space.get_lower_bounds()
@@ -113,7 +89,7 @@ class Robustness(OptPostProcessor):
                     )
                     function_names.append(repr_variable(func_name, func_index, dim))
 
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=settings.fig_size)
         fig.suptitle(
             "Boxplot of the optimization functions "
             f"with normalized stddev {standard_deviation}"

@@ -52,10 +52,9 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.datasets.dataset import Dataset
-    from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
-    from gemseo.post.factory import OptPostProcessorFactory
-    from gemseo.post.opt_post_processor import OptPostProcessor
-    from gemseo.post.opt_post_processor import OptPostProcessorOptionType
+    from gemseo.post.base_post import BasePost
+    from gemseo.post.base_post import OptPostProcessorOptionType
+    from gemseo.post.post_factory import PostFactory
     from gemseo.utils.xdsm import XDSM
 
 
@@ -176,11 +175,13 @@ class Scenario(MDODiscipline):
     def use_standardized_objective(self, value: bool) -> None:
         self.formulation.optimization_problem.use_standardized_objective = value
 
+    # TODO: API: the factory is a global object, remove this property.
     @property
     def post_factory(self) -> OptPostProcessorFactory:
         """The factory of post-processors."""
         return ScenarioResult.POST_FACTORY
 
+    # TODO: API: the factory is a global object, remove this property.
     @property
     def _formulation_factory(self) -> MDOFormulationFactory:
         """The factory of MDO formulations."""
@@ -451,12 +452,12 @@ class Scenario(MDODiscipline):
         self,
         post_name: str,
         **options: OptPostProcessorOptionType | Path,
-    ) -> OptPostProcessor:
+    ) -> BasePost:
         """Post-process the optimization history.
 
         Args:
             post_name: The name of the post-processor,
-                i.e. the name of a class inheriting from :class:`.OptPostProcessor`.
+                i.e. the name of a class inheriting from :class:`.BasePost`.
             **options: The options for the post-processor.
 
         Returns:

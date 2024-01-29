@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -30,9 +31,10 @@ from matplotlib.ticker import MaxNLocator
 from numpy import e
 from numpy import ndarray
 
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.obj_constr_hist_settings import Settings
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -42,7 +44,7 @@ if TYPE_CHECKING:
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
-class ObjConstrHist(OptPostProcessor):
+class ObjConstrHist(BasePost):
     """History of the maximum constraint and objective value.
 
     The objective history is plotted with a line
@@ -53,7 +55,7 @@ class ObjConstrHist(OptPostProcessor):
     - red: the inequality constraint is violated.
     """
 
-    DEFAULT_FIG_SIZE = (11.0, 6.0)
+    Settings: Final[type[Settings]] = Settings
 
     def __init__(  # noqa:D107
         self,
@@ -65,15 +67,12 @@ class ObjConstrHist(OptPostProcessor):
         self.ineq_cstr_cmap = RG_SEISMIC
         self.eq_cstr_cmap = "seismic"
 
-    def _plot(self, constraint_names: Sequence[str] = ()) -> None:
-        """
-        Args:
-            constraint_names: The names of the constraints to plot.
-                If empty, use all the constraints.
-        """  # noqa: D205, D212, D415
+    def _plot(self, settings: Settings) -> None:
+        constraint_names = settings.constraint_names
+
         # 0. Initialize the figure.
         grid = self._get_grid_layout()
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=settings.fig_size)
         ax1 = fig.add_subplot(grid[0, 0])
         n_iterations = len(self.database)
         ax1.set_xticks(range(n_iterations))

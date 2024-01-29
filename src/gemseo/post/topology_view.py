@@ -16,43 +16,31 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Final
 
 from matplotlib import colors
 from matplotlib import pyplot as plt
 
-from gemseo.post.opt_post_processor import OptPostProcessor
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
+from gemseo.post.base_post import BasePost
+from gemseo.post.topology_view_settings import Settings
 
 
-class TopologyView(OptPostProcessor):
+class TopologyView(BasePost):
     """Visualization of the solution of a 2D topology optimization problem."""
 
-    DEFAULT_FIG_SIZE = (11.0, 6.0)
+    Settings: Final[type[Settings]] = Settings
 
     def _plot(
         self,
-        n_x: int,
-        n_y: int,
-        observable: str = "",
-        iterations: int | Iterable[int] = (),
+        settings: Settings,
     ) -> None:
-        """Plot the design variable or an observable field patch plot.
+        iterations = settings.iterations
+        observable = settings.observable
+        n_x = settings.n_x
+        n_y = settings.n_y
 
-        Args:
-            n_x: The number of elements in the horizontal direction.
-            n_y: The number of elements in the vertical direction.
-            observable: The name of the observable to be plotted.
-                It should be of size ``n_x*n_y``.
-            iterations: The iterations of the optimization history.
-                If empty, the last iteration is taken.
-        """
-        if not iterations:
-            iterations = [len(self.database)]
-        elif isinstance(iterations, int):
-            iterations = [iterations]
+        iterations = [len(self.database)] if not iterations else [iterations]
+
         for iteration in iterations:
             plt.ion()  # Ensure that redrawing is possible
             design = self.database.get_x_vect(iteration)

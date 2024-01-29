@@ -19,9 +19,9 @@ from pathlib import Path
 import pytest
 
 from gemseo import create_scenario
-from gemseo import execute_post
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.animation import Animation
+from gemseo.post.post_factory import PostFactory
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
@@ -30,7 +30,7 @@ DIR_PATH = Path(__file__).parent
 POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
 
 
-@pytest.mark.parametrize("n_rep", [1, None])
+@pytest.mark.parametrize("n_rep", [1, 0])
 @pytest.mark.parametrize("keep_frames", [True, False])
 @pytest.mark.parametrize("tmp_file", ["tmp", "", Path("tmp")])
 @pytest.mark.parametrize("first_iteration", [-1, 1])
@@ -39,13 +39,17 @@ def test_common_scenario(
 ) -> None:
     """Check Animation with objective, standardized or not."""
     animation = Animation(common_problem)
-    output_files = animation.execute(
-        opt_post_processor="BasicHistory",
+    post_processing = PostFactory().create("BasicHistory", common_problem)
+    pp_settings = post_processing.Settings(
         variable_names=["obj", "eq", "neg", "pos", "x"],
+    )
+    output_files = animation.execute(
         n_repetitions=n_rep,
         remove_frames=not keep_frames,
-        temporary_database_file=tmp_file,
+        temporary_database_path=tmp_file,
         first_iteration=first_iteration,
+        post_processing=post_processing,
+        post_processing_settings=pp_settings,
     )
     for output_file in output_files:
         assert Path(output_file).exists()
@@ -54,9 +58,13 @@ def test_common_scenario(
 def test_large_common_scenario(large_common_problem, tmp_wd) -> None:
     """Check Animation with objective, standardized or not."""
     opt = Animation(large_common_problem)
-    output_files = opt.execute(
+    post_processing = PostFactory().create("BasicHistory", large_common_problem)
+    pp_settings = post_processing.Settings(
         variable_names=["obj", "eq", "neg", "pos", "x"],
-        opt_post_processor="BasicHistory",
+    )
+    output_files = opt.execute(
+        post_processing=post_processing,
+        post_processing_settings=pp_settings,
     )
     for output_file in output_files:
         assert Path(output_file).exists()
@@ -65,15 +73,18 @@ def test_large_common_scenario(large_common_problem, tmp_wd) -> None:
 def test_opt_hist_const(tmp_wd) -> None:
     """Test that a problem with constraints is properly rendered."""
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
-    output_files = execute_post(
-        problem,
-        "Animation",
-        opt_post_processor="OptHistoryView",
+    opt = Animation(problem)
+    post_processing = PostFactory().create("OptHistoryView", problem)
+    pp_settings = post_processing.Settings(
         variable_names=["x"],
         file_path="power2_2",
         obj_min=0.0,
         obj_max=5.0,
-    ).output_files
+    )
+    output_files = opt.execute(
+        post_processing=post_processing,
+        post_processing_settings=pp_settings,
+    )
     for output_file in output_files:
         assert Path(output_file).exists()
 
@@ -108,11 +119,14 @@ def test_l_shape(tmp_wd) -> None:
         "volume fraction", constraint_type="ineq", value=volume_fraction
     )
     scenario.execute({"max_iter": 10, "algo": "NLOPT_MMA"})
+    post_processing = PostFactory().create(
+        "TopologyView", scenario.formulation.opt_problem
+    )
+    pp_settings = post_processing.Settings(n_x=n_x, n_y=n_y)
     output_files = scenario.post_process(
         "Animation",
-        opt_post_processor="TopologyView",
-        n_x=n_x,
-        n_y=n_y,
+        post_processing=post_processing,
+        post_processing_settings=pp_settings,
     ).output_files
     for output_file in output_files:
         assert Path(output_file).exists()

@@ -20,53 +20,37 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import vstack
 from numpy import zeros
 
 from gemseo.datasets.dataset import Dataset
+from gemseo.post.base_post import BasePost
 from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
-from gemseo.post.opt_post_processor import OptPostProcessor
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
+from gemseo.post.radar_chart_settings import Settings
 
 
-class RadarChart(OptPostProcessor):
+class RadarChart(BasePost):
     """Plot the constraints on a radar chart at a given database index."""
 
-    OPTIMUM = "opt"
-    """str: The tag related to the database index at which the optimum is located."""
+    Settings: Final[type[Settings]] = Settings
 
-    def _plot(
-        self,
-        constraint_names: Iterable[str] = (),
-        iteration: int | RadarChart.OPTIMUM = OPTIMUM,
-        show_names_radially: bool = False,
-    ) -> None:
-        r"""
-        Args:
-            constraint_names: The names of the constraints.
-                If empty, use all the constraints.
-            iteration: Either an iteration in :math:`-N,\ldots,-1,1,`ldots,N`
-                or the tag :attr:`.OPTIMUM` for the iteration
-                at which the optimum is located,
-                where :math:`N` is the length of the database.
-            show_names_radially: Whether to write the names of the constraints
-                in the radial direction.
-                Otherwise, write them horizontally.
-                The radial direction can be useful for a high number of constraints.
-
+    def _plot(self, settings: Settings) -> None:
+        """
         Raises:
             ValueError: When a requested name is not a constraint
                 or when the requested iteration is neither a database index
                 nor the tag ``"opt"``.
         """  # noqa: D205, D212, D415
-        if constraint_names:
-            constraint_names = self.optimization_problem.get_function_names(
-                constraint_names
-            )
+        constraint_names = settings.constraint_names
+        iteration = settings.iteration
+        show_names_radially = settings.show_names_radially
+
+        if not constraint_names:
+            constraint_names = self.optimzation_problem.get_constraint_names()
+        else:
+            constraint_names = self.optimzation_problem.get_function_names(constraint_names)
             invalid_names = sorted(
                 set(constraint_names)
                 - set(self.optimization_problem.constraints.get_names())
@@ -82,17 +66,17 @@ class RadarChart(OptPostProcessor):
 
         # optimum_index is the zero-based position of the optimum.
         # while an iteration is a one-based position.
-        optimum_iteration = self.optimization_problem.solution.optimum_index + 1
-        is_optimum = iteration in {self.OPTIMUM, optimum_iteration}
-        if iteration == self.OPTIMUM:
+        optimum_iteration = self.optimzation_problem.solution.optimum_index + 1
+        if iteration is None:
             iteration = optimum_iteration
+        is_optimum = iteration == optimum_iteration
 
         n_iterations = len(self.database)
         if abs(iteration) not in range(1, n_iterations + 1):
             msg = (
                 f"The requested iteration {iteration} is neither "
                 f"in ({-n_iterations},...,-1,1,...,{n_iterations}) "
-                f"nor equal to the tag {self.OPTIMUM}."
+                f"nor None."
             )
             raise ValueError(msg)
 

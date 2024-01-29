@@ -26,6 +26,7 @@ import re
 from functools import partial
 from re import fullmatch
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -34,7 +35,8 @@ from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
 from numpy import ndarray
 
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.base_post import BasePost
+from gemseo.post.correlations_settings import Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -44,36 +46,27 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class Correlations(OptPostProcessor):
+class Correlations(BasePost):
     """Scatter plots of the correlated variables.
 
     These variables can be design variables, constraints, objective or observables. This
     post-processor considers all the correlations greater than a threshold.
     """
 
-    DEFAULT_FIG_SIZE = (15.0, 10.0)
     MAXIMUM_CORRELATION_COEFFICIENT = 1.0 - 1e-9
     """The maximum correlation coefficient above which the variable is not plotted."""
 
-    def _plot(
-        self,
-        func_names: Sequence[str] = (),
-        coeff_limit: float = 0.95,
-        n_plots_x: int = 5,
-        n_plots_y: int = 5,
-    ) -> None:
-        """
-        Args:
-            func_names: The names of the functions to be considered.
-                If empty, all functions are considered.
-            coeff_limit: The minimum correlation coefficient
-                below which the variable is not plotted.
-            n_plots_x: The number of horizontal plots.
-            n_plots_y: The number of vertical plots.
+    Settings: ClassVar[type[Settings]] = Settings
 
+    def _plot(self, settings: Settings) -> None:
+        """
         Raises:
-            ValueError: If an element of `func_names` is unknown.
+            ValueError: If an element of ``func_names`` is unknown.
         """  # noqa: D205, D212, D415
+        func_names = settings.func_names
+        coeff_limit = settings.coeff_limit
+        n_plots_x = settings.n_plots_x
+        n_plots_y = settings.n_plots_y
         problem = self.optimization_problem
 
         all_func_names = [func.name for func in problem.functions]
@@ -121,7 +114,7 @@ class Correlations(OptPostProcessor):
                 if fig is not None:
                     # Save previous plot
                     self._add_figure(fig)
-                fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+                fig = plt.figure(figsize=settings.fig_size)
                 mng = plt.get_current_fig_manager()
                 mng.resize(1200, 900)
                 ticker.MaxNLocator(nbins=3)

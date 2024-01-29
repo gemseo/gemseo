@@ -176,7 +176,7 @@ if TYPE_CHECKING:
     from gemseo.mda.base_mda import BaseMDA
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.post._graph_view import GraphView
-    from gemseo.post.opt_post_processor import OptPostProcessor
+    from gemseo.post.base_post import BasePost
     from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.scenarios.doe_scenario import DOEScenario as DOEScenario
@@ -1341,7 +1341,7 @@ def execute_post(
     to_post_proc: Scenario | OptimizationProblem | str | Path,
     post_name: str,
     **options: Any,
-) -> OptPostProcessor:
+) -> BasePost:
     """Post-process a result.
 
     Args:

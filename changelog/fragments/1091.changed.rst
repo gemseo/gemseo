@@ -1,0 +1,8 @@
+- Post-processing classes use ``Pydantic`` models instead of ``JSONGrammar``, the models are available via the class attribute ``Settings``..
+- API changes:
+    - Renamed the class ``OptPostProcessor`` to ``BasePost``.
+    - Removed the method ``OptPostProcessor.check_options``.
+    - Removed the attribute ``OptPostProcessor.opt_grammar``.
+    - Removed the attribute ``OptPostProcessor.DEFAULT_FIG_SIZE``, use the ``fig_size`` field of the ``Pydantic`` model instead.
+    - The arguments of the method ``OptPostProcessor.execute`` are all keyword arguments.
+    - The arguments of the method ``PostFactory.execute`` are keyword arguments in addition to the arguments ``opt_problem``, ``post_name``.

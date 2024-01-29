@@ -56,4 +56,6 @@ def test_shape_error() -> None:
             "The data shape (1, 1) is not equal to the expected one (2, 1)."
         ),
     ):
-        ParallelCoordinates.parallel_coordinates(array([[1]]), ["x"], [0.0, 0.5])
+        ParallelCoordinates.parallel_coordinates(
+            array([[1]]), ["x"], [0.0, 0.5], (0.0, 0.0)
+        )

@@ -97,7 +97,7 @@ class Database(Mapping):
 
     .. seealso:: :class:`.NormDBFunction`
 
-    It can also be post-processed by an :class:`.OptPostProcessor`
+    It can also be post-processed by an :class:`.BasePost`
     to visualize its content,
     e.g. :class:`.OptHistoryView` generating a series of graphs
     to visualize the histories of the objective, constraints and design variables.

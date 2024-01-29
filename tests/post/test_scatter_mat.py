@@ -31,7 +31,7 @@ from gemseo import execute_post
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.factory import OptPostProcessorFactory
-from gemseo.post.scatter_mat import ScatterPlotMatrix
+from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
 

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import Final
 
 from matplotlib import pyplot
 from numpy import arange
@@ -30,7 +31,8 @@ from numpy import atleast_2d
 from numpy import ndarray
 from numpy import where
 
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.base_post import BasePost
+from gemseo.post.gradient_sensitivity_settings import Settings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -42,37 +44,16 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class GradientSensitivity(OptPostProcessor):
+class GradientSensitivity(BasePost):
     """Derivatives of the objective and constraints at a given iteration."""
 
-    DEFAULT_FIG_SIZE = (10.0, 10.0)
+    Settings: Final[type[Settings]] = Settings
 
-    def _plot(
-        self,
-        iteration: int | None = None,
-        scale_gradients: bool = False,
-        compute_missing_gradients: bool = False,
-    ) -> None:
-        """
-        Args:
-            iteration: The iteration to plot the sensitivities.
-                Can use either positive or negative indexing,
-                e.g. ``5`` for the 5-th iteration
-                or ``-2`` for the penultimate one.
-                If ``None``, use the iteration of the optimum.
-            scale_gradients: If ``True``, normalize each gradient
-                w.r.t. the design variables.
-            compute_missing_gradients: Whether to compute the gradients at the
-                selected iteration if they were not computed by the algorithm.
+    def _plot(self, settings: Settings) -> None:
+        iteration = settings.iteration
+        scale_gradients = settings.scale_gradients
+        compute_missing_gradients = settings.compute_missing_gradients
 
-                .. warning::
-                   Activating this option may add considerable computation time
-                   depending on the cost of the gradient evaluation.
-                   This option will not compute the gradients if the
-                   :class:`.OptimizationProblem` instance was imported from an HDF5
-                   file. This option requires an :class:`.OptimizationProblem` with a
-                   gradient-based algorithm.
-        """  # noqa: D205, D212, D415
         if iteration is None:
             design_value = self.optimization_problem.solution.x_opt
         else:
@@ -86,7 +67,8 @@ class GradientSensitivity(OptPostProcessor):
                 scale_gradients=scale_gradients,
                 compute_missing_gradients=compute_missing_gradients,
             ),
-            scale_gradients=scale_gradients,
+            scale_gradients,
+            settings.fig_size,
         )
         self._add_figure(fig)
 
@@ -168,7 +150,8 @@ class GradientSensitivity(OptPostProcessor):
         design_names: Iterable[str],
         design_value: ndarray,
         gradients: Mapping[str, ndarray],
-        scale_gradients: bool = False,
+        scale_gradients: bool,
+        fig_size: tuple[float, float],
     ) -> Figure:
         """Generate the gradients subplots from the data.
 
@@ -178,6 +161,7 @@ class GradientSensitivity(OptPostProcessor):
             gradients: The gradients to plot indexed by the output names.
             scale_gradients: Whether to normalize the gradients
                 w.r.t. the design variables.
+            fig_size: The size of the figure.
 
         Returns:
             The gradients subplots.
@@ -194,7 +178,7 @@ class GradientSensitivity(OptPostProcessor):
         n_rows = sum(divmod(n_gradients, n_cols))
 
         fig, axes = pyplot.subplots(
-            nrows=n_rows, ncols=n_cols, sharex=True, figsize=self.DEFAULT_FIG_SIZE
+            nrows=n_rows, ncols=n_cols, sharex=True, figsize=fig_size
         )
 
         axes = atleast_2d(axes)

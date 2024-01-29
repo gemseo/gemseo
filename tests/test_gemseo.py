@@ -74,7 +74,6 @@ from gemseo import get_formulation_sub_options_schema
 from gemseo import get_formulations_options_defaults
 from gemseo import get_formulations_sub_options_defaults
 from gemseo import get_mda_options_schema
-from gemseo import get_post_processing_options_schema
 from gemseo import get_scenario_differentiation_modes
 from gemseo import get_scenario_inputs_schema
 from gemseo import get_scenario_options_schema
@@ -550,12 +549,6 @@ def test_get_scenario_differentiation_modes() -> None:
         assert isinstance(mode, str)
 
 
-def test_get_post_processing_options_schema() -> None:
-    """Test that the post-processing option schemas are retrieved correctly."""
-    for post in get_available_post_processings():
-        get_post_processing_options_schema(post)
-
-
 def test_get_formulation_options_schema() -> None:
     """Test that the formulation options schemas are retrieved correctly."""
     mdf_schema = get_formulation_options_schema("MDF")
@@ -707,7 +700,7 @@ def test_print_configuration(capfd) -> None:
         "BaseRegressor",
         "BaseMDOFormulation",
         "BaseMDA",
-        "OptPostProcessor",
+        "BasePost",
     ]
 
     for module in gemseo_modules:
@@ -720,28 +713,6 @@ def test_print_configuration(capfd) -> None:
         )
 
         expected = re.compile(header_patterns, re.MULTILINE)
-        assert bool(re.search(expected, out))
-
-
-def test_get_schema_pretty_print(capfd) -> None:
-    """Test that the post-processing options schemas are printed correctly.
-
-    Args:
-        capfd: Fixture capture outputs sent to `stdout` and
-            `stderr`.
-    """
-    # A pattern for table headers.
-    expected = re.compile(
-        r"\+-+\+-+\+-+\+$\n\|\s+Name\s+\|\s+Description\s+\|\s+Type\s+\|$\n",
-        re.MULTILINE,
-    )
-
-    for post in get_available_post_processings():
-        get_post_processing_options_schema(post, pretty_print=True)
-
-        out, err = capfd.readouterr()
-        assert not err
-
         assert bool(re.search(expected, out))
 
 

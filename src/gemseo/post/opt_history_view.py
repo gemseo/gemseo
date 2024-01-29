@@ -50,9 +50,10 @@ from numpy import vstack
 from numpy.linalg import norm
 
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.opt_history_view_settings import Settings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -68,7 +69,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class OptHistoryView(OptPostProcessor):
+class OptHistoryView(BasePost):
     """Plot the history of the design variables, objective and constraints.
 
     This post-processing generates one plot for the design variables, one plot for the
@@ -77,7 +78,7 @@ class OptHistoryView(OptPostProcessor):
     constraints (if any).
     """
 
-    DEFAULT_FIG_SIZE = (11.0, 6.0)
+    Settings: Final[type[Settings]] = Settings
 
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""
@@ -98,34 +99,15 @@ class OptHistoryView(OptPostProcessor):
         self.eq_cstr_cmap = "seismic"
         self.__indices = array([], dtype="int")
 
-    def _plot(
-        self,
-        variable_names: Sequence[str] = (),
-        obj_min: float | None = None,
-        obj_max: float | None = None,
-        obj_relative: bool = False,
-    ) -> None:
-        """
-        Args:
-            variable_names: The names of the variables to display.
-                If empty, use all design variables.
-            obj_max: The upper limit of the *y*-axis on which the objective is plotted.
-                This limit must be greater than or equal
-                to the maximum value of the objective history.
-                If ``None``, use the maximum value of the objective history.
-            obj_min: The lower limit of the *y*-axis on which the objective is plotted.
-                This limit must be less than or equal
-                to the minimum value of the objective history.
-                If ``None``, use the minimum value of the objective history.
-            obj_relative: Whether the difference
-                between the objective and its initial value is plotted
-                instead of the objective.
-        """  # noqa: D205, D212, D415
+    def _plot(self, settings: Settings) -> None:
+        variable_names = settings.variable_names
+        obj_min = settings.obj_min
+        obj_max = settings.obj_max
+        obj_relative = settings.obj_relative
         if variable_names:
-            self.__indices = (
-                self.optimization_problem.design_space.get_variables_indexes(
-                    variable_names
-                )
+            # TODO: API: remove None workaround.
+            self.__indices = self.opt_problem.design_space.get_variables_indexes(
+                variable_names or None
             )
 
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
@@ -137,19 +119,22 @@ class OptHistoryView(OptPostProcessor):
             - normalize(self.optimization_problem.history.optimum.design),
             axis=1,
         )
+        # design variables
+        self._create_variables_plot(x_history_to_display, variable_names, x_xstar)
 
         self._create_variables_plot(x_history_to_display, variable_names, x_xstar)
 
         self._create_obj_plot(
             obj_history,
             n_iter,
+            settings.fig_size,
             x_xstar,
             obj_min=obj_min,
             obj_max=obj_max,
             obj_relative=obj_relative,
         )
 
-        self._create_x_star_plot(x_history, n_iter, x_xstar)
+        self._create_x_star_plot(x_history, n_iter, settings.fig_size, x_xstar)
 
         for constraints, constraint_type in [
             (
@@ -233,7 +218,11 @@ class OptHistoryView(OptPostProcessor):
         return constraints_history
 
     def _create_variables_plot(
-        self, x_history: ndarray, variable_names: Sequence[str], x_xstar: RealArray
+        self,
+        x_history: ndarray,
+        variable_names: Sequence[str],
+        fig_size: tuple[float, float],
+        x_xstar: RealArray,
     ) -> None:
         """Create the design variables plot.
 
@@ -252,7 +241,7 @@ class OptHistoryView(OptPostProcessor):
         upper_bounds = design_space.get_upper_bounds(variable_names)
         norm_x_history = (x_history - lower_bounds) / (upper_bounds - lower_bounds)
 
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         grid = self._get_grid_layout()
 
         # design variables
@@ -291,6 +280,7 @@ class OptHistoryView(OptPostProcessor):
         self,
         obj_history: ndarray,
         n_iter: int,
+        fig_size: tuple[float, float],
         x_xstar: RealArray,
         obj_min: float | None = None,
         obj_max: float | None = None,
@@ -335,7 +325,7 @@ class OptHistoryView(OptPostProcessor):
         fmin = np_min(obj_history)
         fmax = np_max(obj_history)
 
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         # objective function
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("Objective value", fontsize=self.__AXIS_LABEL_SIZE)
@@ -369,7 +359,11 @@ class OptHistoryView(OptPostProcessor):
         self._add_figure(fig, "objective")
 
     def _create_x_star_plot(
-        self, x_history: ndarray, n_iter: int, x_xstar: RealArray
+        self,
+        x_history: ndarray,
+        n_iter: int,
+        fig_size: tuple[float, float],
+        x_xstar: RealArray,
     ) -> None:
         """Create the design variables plot.
 
@@ -378,7 +372,7 @@ class OptHistoryView(OptPostProcessor):
             n_iter: The number of iterations.
             x_xstar: The distance between the designs and the optimum design.
         """
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
         normalize = self.optimization_problem.design_space.normalize_vect
@@ -438,6 +432,7 @@ class OptHistoryView(OptPostProcessor):
         cstr_history: Iterable[ndarray],
         cstr_type: str,
         cstr_names: Sequence[str],
+        fig_size: tuple[float, float],
         x_xstar: RealArray,
     ) -> None:
         """Create the constraints plot: 1 line per constraint component.
@@ -496,7 +491,7 @@ class OptHistoryView(OptPostProcessor):
                         cstr_matrix = vstack((cstr_matrix, history_i_j))
 
         fig = self._build_cstr_fig(
-            cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels, x_xstar
+            cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels, fig_size, x_xstar
         )
 
         self._add_figure(fig, f"{cstr_type}_constraints")
@@ -508,6 +503,7 @@ class OptHistoryView(OptPostProcessor):
         vmax: float,
         n_cstr: int,
         cstr_labels: Sequence[str],
+        fig_size: tuple[float, float],
         x_xstar: RealArray,
     ) -> Figure:
         """Build the constraints figure.
@@ -537,7 +533,7 @@ class OptHistoryView(OptPostProcessor):
             cstr_matrix[idx_nan] = 0.0
 
         # generation of the image
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         grid = self._get_grid_layout()
         ax1 = fig.add_subplot(grid[0, 0])
         im1 = ax1.imshow(
@@ -592,3 +588,88 @@ class OptHistoryView(OptPostProcessor):
         # mng.full_screen_toggle()
         mng.resize(700, 1000)
         return fig
+
+    def _create_hessian_approx_plot(
+        self,
+        history: Database,
+        obj_name: str,
+        variable_names: Sequence[str] | None,
+    ) -> None:
+        """Create the plot of the Hessian approximation.
+
+        Args:
+            history: The optimization history.
+            obj_name: The objective function name.
+            variable_names: The names of the variables to display.
+                If ``None``, use all design variables.
+        """
+        try:
+            diag = SR1Approx(history).build_approximation(
+                funcname=obj_name, save_diag=True
+            )[1]
+        except ValueError:
+            LOGGER.warning("Failed to create Hessian approximation.", exc_info=True)
+            return
+
+        if isnan(diag).any():
+            LOGGER.warning("Failed to create Hessian approximation.")
+            LOGGER.warning("The approximated Hessian diagonal contains NaN.")
+            return
+
+        diag = [ones_like(diag[0]), *diag]  # Add first iteration blank
+        diag = array(diag).T
+
+        # if max problem, plot -Hessian
+        if self._change_obj:
+            diag = -diag
+
+        if variable_names:
+            diag = diag[self.__indices, :]
+
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        grid = self._get_grid_layout()
+
+        axe = fig.add_subplot(grid[0, 0])
+        axe.set_title("Hessian diagonal approximation")
+        axe.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
+        axe.set_yticks(arange(len(diag)))
+        axe.set_yticklabels(
+            self._get_design_variable_names(variable_names, simplify=True)
+        )
+        n_iterations = len(self.database)
+        axe.set_xticks(range(n_iterations))
+        axe.set_xticklabels(range(1, n_iterations + 1))
+        axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
+
+        # matrix
+        vmax = max(abs(np_max(diag)), abs(np_min(diag)))
+        linthresh = 10 ** (np_log10(vmax) - 5.0)
+        img = axe.imshow(
+            diag.real,
+            cmap=self.cmap,
+            interpolation="nearest",
+            aspect="auto",
+            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linthresh, base=e),
+        )
+
+        # colorbar
+        vmax = max(abs(np_max(diag)), abs(np_min(diag)))
+        thick_min = int(np_log10(linthresh))
+        thick_max = int(np_log10(vmax))
+        thick_num = thick_max - thick_min + 1
+        levels_pos = logspace(thick_min, thick_max, num=thick_num)
+        levels_pos = append(levels_pos, vmax)
+        levels_neg = np_sort(-levels_pos)
+        levels_neg = append(levels_neg, 0)
+        levels = concatenate((levels_neg, levels_pos))
+
+        cax = fig.add_subplot(grid[0, 1])
+        col_bar = fig.colorbar(
+            img, cax=cax, ticks=levels, format=LogFormatterSciNotation()
+        )
+        col_bar.ax.tick_params(labelsize=self.__TICK_LABEL_SIZE)
+
+        mng = plt.get_current_fig_manager()
+        # mng.full_screen_toggle()
+        mng.resize(700, 1000)
+        self._add_figure(fig, "hessian_approximation")

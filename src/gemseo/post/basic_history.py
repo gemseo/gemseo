@@ -21,43 +21,34 @@
 from __future__ import annotations
 
 import operator
-from typing import TYPE_CHECKING
 from typing import Final
 
 from matplotlib.ticker import MaxNLocator
 from numpy import arange
 from numpy import newaxis
 
+from gemseo.post.base_post import BasePost
+from gemseo.post.basic_history_settings import Settings
 from gemseo.post.dataset.lines import Lines
-from gemseo.post.opt_post_processor import OptPostProcessor
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 
 
-class BasicHistory(OptPostProcessor):
+class BasicHistory(BasePost):
     """Plot the history of selected constraint, objective and observable functions.
 
     This post-processor requires the names of these selected outputs.
     """
 
-    DEFAULT_FIG_SIZE = (11.0, 6.0)
+    Settings: Final[type[Settings]] = Settings
+
     __ITERATION_NAME: Final[str] = ",;:!"
     """The name for the variable iteration in the dataset.
 
     A name that a user cannot chose for its own variables. Only used in the background.
     """
 
-    def _plot(
-        self,
-        variable_names: Sequence[str],
-        normalize: bool = False,
-    ) -> None:
-        """
-        Args:
-            variable_names: The names of the variables.
-            normalize: Whether to normalize the data.
-        """  # noqa: D205, D212, D415
+    def _plot(self, settings: Settings) -> None:  # noqa: D205, D212, D415
+        variable_names = settings.variable_names
+        normalize = settings.normalize
         problem = self.optimization_problem
         dataset = problem.to_dataset(opt_naming=False)
         dataset.add_variable(
@@ -83,8 +74,8 @@ class BasicHistory(OptPostProcessor):
         )
         plot.font_size = 12
         plot.xlabel = "Iterations"
-        plot.fig_size_x = self.DEFAULT_FIG_SIZE[0]
-        plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
+        plot.fig_size_x = settings.fig_size[0]
+        plot.fig_size_y = settings.fig_size[1]
         plot.title = "History plot"
         figures = plot.execute(save=False)
         figures[-1].gca().get_xaxis().set_major_locator(MaxNLocator(integer=True))

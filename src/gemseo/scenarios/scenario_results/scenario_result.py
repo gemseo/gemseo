@@ -28,9 +28,9 @@ from gemseo.post.factory import OptPostProcessorFactory
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.post.opt_post_processor import OptPostProcessor
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.core.scenario import Scenario
+    from gemseo.post.base_post import BasePost
 
 
 class ScenarioResult:
@@ -49,7 +49,7 @@ class ScenarioResult:
     """The object to be post-processed."""
 
     _POST_FACTORY: ClassVar[OptPostProcessorFactory | None] = None
-    """The factory of :class:`.OptPostProcessor`, if created."""
+    """The factory of :class:`.BasePost`, if created."""
 
     def __init__(self, scenario: Scenario | str | Path) -> None:
         """
@@ -75,6 +75,7 @@ class ScenarioResult:
             self._MAIN_PROBLEM_LABEL: optimization_result
         }
 
+    # TODO: API: the factory is a global object, remove this property.
     @classmethod
     @property
     def POST_FACTORY(cls) -> OptPostProcessorFactory:  # noqa: N802
@@ -96,7 +97,7 @@ class ScenarioResult:
         """
         return self.optimization_problems_to_results[self._MAIN_PROBLEM_LABEL]
 
-    def plot(self, name: str, **options: Any) -> OptPostProcessor:
+    def plot(self, name: str, **options: Any) -> BasePost:
         """Visualize the result.
 
         Args:
