@@ -64,6 +64,14 @@ def test_is_numeric(converter) -> None:
         assert converter.is_numeric(name)
 
 
+def test_can_differentiate(converter) -> None:
+    """Verify is_continuous."""
+    for name in ("a_bool", "a_int"):
+        assert not converter.is_continuous(name)
+    for name in ("a_float", "a_complex", "a_ndarray"):
+        assert converter.is_continuous(name)
+
+
 @pytest.mark.parametrize(
     ("name", "value", "expected"),
     [

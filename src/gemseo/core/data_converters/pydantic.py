@@ -18,12 +18,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from numpy._typing._array_like import _ScalarType_co
 from typing_extensions import get_args
 from typing_extensions import get_origin
 
-from gemseo.core.data_converters.base import _NUMERIC_TYPES
 from gemseo.core.data_converters.base import BaseDataConverter
 from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
 
@@ -35,13 +35,26 @@ if TYPE_CHECKING:
 class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
     """Data values to NumPy arrays and vice versa from a :class:`.PydanticGrammar`."""
 
-    def is_numeric(  # noqa:D102
+    # For consistency with the other grammars, a NumPy array that has no dtype info is
+    # considered to be continuous, hence _ScalarType_co here.
+    _IS_CONTINUOUS_TYPES: ClassVar[tuple[type, type, object]] = (
+        float,
+        complex,
+        _ScalarType_co,
+    )
+    _IS_NUMERIC_TYPES: ClassVar[tuple[type, type, type, object]] = (
+        int,
+        *_IS_CONTINUOUS_TYPES,
+    )
+
+    def _has_type(  # noqa:D102
         self,
         name: str,
+        types: tuple[type, ...],
     ) -> bool:
         annotation = self._grammar[name].annotation
 
-        if annotation in _NUMERIC_TYPES or annotation is _NDArrayPydantic:
+        if annotation in types or annotation is _NDArrayPydantic:
             return True
 
         type_origin = get_origin(annotation)
@@ -52,7 +65,7 @@ class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
         # This is X in NDArray[X].
         dtype = get_args(get_args(annotation)[1])[0]
 
-        return dtype in (*_NUMERIC_TYPES, _ScalarType_co)
+        return dtype in types
 
     # @classmethod
     # def __is_collection_of_numbers(cls, type_: type) -> bool:
@@ -81,6 +94,6 @@ class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
     #     return type_arg in _NUMERIC_TYPES
 
     def _convert_array_to_value(self, name: str, array: NumberArray) -> Any:  # noqa: D102
-        if self._grammar[name].annotation in _NUMERIC_TYPES:
+        if self._grammar[name].annotation in self._NUMERIC_TYPES:
             return array[0]
         return array

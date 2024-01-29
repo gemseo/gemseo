@@ -573,26 +573,18 @@ class MDODiscipline(Serializable):
         self,
         inputs: Iterable[str] | None = None,
     ) -> None:
-        """Add the inputs against which to differentiate the outputs.
+        """Add the inputs for differentiation.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.JSON` and
-        an input is either a non-numeric array or not an array, it will be ignored.
-        If an input is declared as an array but the type of its items is not defined, it
-        is assumed as a numeric array.
-
-        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.SIMPLE` and
-        an input is not an array, it will be ignored. Keep in mind that in this case
-        the array subtype is not checked.
+        The inputs that do not represent continuous numbers are filtered out.
 
         Args:
             inputs: The input variables against which to differentiate the outputs.
                 If ``None``, all the inputs of the discipline are used.
 
         Raises:
-            ValueError: When the inputs wrt which differentiate the discipline
-                are not inputs of the latter.
+            ValueError: When ``inputs `` are not in the input grammar.
         """
-        if (inputs is not None) and not self.is_all_inputs_existing(inputs):
+        if not (inputs is None or self.is_all_inputs_existing(inputs)):
             msg = (
                 f"Cannot differentiate the discipline {self.name} w.r.t. the inputs "
                 "that are not among the discipline inputs: "
@@ -605,7 +597,7 @@ class MDODiscipline(Serializable):
 
         self._differentiated_inputs = list(
             set(self._differentiated_inputs).union(
-                filter(self.input_grammar.data_converter.is_numeric, inputs)
+                filter(self.input_grammar.data_converter.is_continuous, inputs)
             )
         )
 
@@ -613,23 +605,16 @@ class MDODiscipline(Serializable):
         self,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        """Add the outputs to be differentiated.
+        """Add the outputs for differentiation.
 
-        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.JSON` and
-        an output is either a non-numeric array or not an array, it will be ignored.
-        If an output is declared as an array but the type of its items is not defined,
-        it is assumed as a numeric array.
-
-        If the discipline grammar type is :attr:`.MDODiscipline.GrammarType.SIMPLE` and
-        an output is not an array, it will be ignored. Keep in mind that in this case
-        the array subtype is not checked.
+        The outputs that do not represent continuous numbers are filtered out.
 
         Args:
             outputs: The output variables to be differentiated.
                 If ``None``, all the outputs of the discipline are used.
 
         Raises:
-            ValueError: When the outputs to differentiate are not discipline outputs.
+            ValueError: When ``outputs `` are not in the output grammar.
         """
         if not (outputs is None or self.is_all_outputs_existing(outputs)):
             msg = (
@@ -644,7 +629,7 @@ class MDODiscipline(Serializable):
 
         self._differentiated_outputs = list(
             set(self._differentiated_outputs).union(
-                filter(self.output_grammar.data_converter.is_numeric, outputs)
+                filter(self.output_grammar.data_converter.is_continuous, outputs)
             )
         )
 
