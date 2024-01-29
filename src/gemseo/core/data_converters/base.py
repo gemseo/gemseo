@@ -19,7 +19,8 @@ from __future__ import annotations
 from abc import ABC
 from abc import abstractmethod
 from typing import TYPE_CHECKING
-from typing import Final
+from typing import Any
+from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
 from typing import Union
@@ -39,14 +40,6 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.base_grammar import BaseGrammar
 
     ValueType = Union[int, float, complex, NumberArray]
-
-# The following is needed since a bool is a numbers.Number.
-_NUMERIC_TYPES: Final[tuple[type[int], type[float], type[complex]]] = (
-    int,
-    float,
-    complex,
-)
-"""The base types for numeric values."""
 
 
 T = TypeVar("T", bound="BaseGrammar")
@@ -88,6 +81,15 @@ class BaseDataConverter(ABC, Generic[T]):
     _grammar: T
     """The grammar providing the data types used for the conversions."""
 
+    _NUMERIC_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex)
+    """The base types for numeric values."""
+
+    _IS_NUMERIC_TYPES: ClassVar[tuple[Any, ...]]
+    """The types used for `is_numeric`."""
+
+    _IS_CONTINUOUS_TYPES: ClassVar[tuple[Any, ...]]
+    """The types used for `is_continuous`."""
+
     def __init__(self, grammar: T) -> None:
         """
         Args:
@@ -109,7 +111,7 @@ class BaseDataConverter(ABC, Generic[T]):
         Returns:
             The NumPy array.
         """
-        if isinstance(value, _NUMERIC_TYPES):
+        if isinstance(value, self._NUMERIC_TYPES):
             return np_array([value])
         return cast(NumberArray, value)
 
@@ -125,8 +127,8 @@ class BaseDataConverter(ABC, Generic[T]):
         """
         return self._convert_array_to_value(name, array)
 
-    @staticmethod
-    def get_value_size(name: str, value: ValueType) -> int:
+    @classmethod
+    def get_value_size(cls, name: str, value: ValueType) -> int:
         """Return the size of a data value.
 
         The size is typically what is returned by ``ndarray.size`` or ``len(list)``.
@@ -139,7 +141,7 @@ class BaseDataConverter(ABC, Generic[T]):
         Returns:
             The size.
         """
-        if isinstance(value, _NUMERIC_TYPES):
+        if isinstance(value, cls._NUMERIC_TYPES):
             return 1
         return cast(NumberArray, value).size
 
@@ -254,13 +256,36 @@ class BaseDataConverter(ABC, Generic[T]):
             The data value.
         """
 
-    @abstractmethod
     def is_numeric(self, name: str) -> bool:
-        """Check that a data item can be converted to a NumPy array.
+        """Check that a data item is numeric.
 
         Args:
             name: The name of the data item.
 
         Returns:
-            Whether the data item can be converted to a NumPy array.
+            Whether the data item is numeric.
+        """
+        return self._has_type(name, self._IS_NUMERIC_TYPES)
+
+    def is_continuous(self, name: str) -> bool:
+        """Check that a data item has a type that can differentiate.
+
+        Args:
+            name: The name of the data item.
+
+        Returns:
+            Whether the data item can differentiate.
+        """
+        return self._has_type(name, self._IS_CONTINUOUS_TYPES)
+
+    @abstractmethod
+    def _has_type(self, name: str, types: tuple[Any, ...]) -> bool:
+        """Check the type of a data item against allowed types.
+
+        Args:
+            name: The name of the data item.
+            types: The allowed types.
+
+        Returns:
+            Whether the type of the data item is allowed.
         """

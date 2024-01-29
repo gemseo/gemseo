@@ -1039,13 +1039,6 @@ def test_get_sub_disciplines_recursive(recursive, expected) -> None:
             ["y"],
         ),
         (
-            {"x": array([1]), "in_path": "some_string"},
-            {"y": 1, "out_path": "another_string"},
-            MDODiscipline.GrammarType.SIMPLE,
-            ["x"],
-            ["y"],
-        ),
-        (
             {"x": array([1.0]), "in_path": array(["some_string"])},
             {"y": array([0.0]), "out_path": array(["another_string"])},
             MDODiscipline.GrammarType.JSON,
@@ -1055,13 +1048,6 @@ def test_get_sub_disciplines_recursive(recursive, expected) -> None:
         (
             {"x": array([1.0]), "in_path": "some_string"},
             {"y": array([0.0]), "out_path": "another_string"},
-            MDODiscipline.GrammarType.JSON,
-            ["x"],
-            ["y"],
-        ),
-        (
-            {"x": array([1]), "in_path": "some_string"},
-            {"y": 1, "out_path": "another_string"},
             MDODiscipline.GrammarType.JSON,
             ["x"],
             ["y"],

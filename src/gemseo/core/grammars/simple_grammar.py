@@ -38,13 +38,15 @@ if TYPE_CHECKING:
 
 
 class SimpleGrammar(BaseGrammar):
-    """A grammar only based on names and types with a dictionary-like interface.
+    """A grammar based on names and types with a dictionary-like interface.
+
+    The types are pure Python types, type annotations are not supported.
 
     The grammar could be empty, in that case the data validation always pass. If the
     type bound to a name is ``None`` then the type of the corresponding data name is
     always valid.
 
-    .. note:: This grammar cannot merge elements. Merging will raise an error.
+    .. warning:: This grammar cannot merge elements. Merging will raise an error.
     """
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "SimpleGrammarDataConverter"

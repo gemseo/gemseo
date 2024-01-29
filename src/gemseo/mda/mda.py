@@ -431,7 +431,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         return inputs, outputs
 
     def _check_coupling_types(self) -> None:
-        """Check that the coupling variables are of type array in the grammars.
+        """Check that the coupling variables are numeric.
 
         Raises:
             TypeError: When at least one of the coupling variables is not an array.
