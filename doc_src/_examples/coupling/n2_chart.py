@@ -54,11 +54,11 @@ descriptions = {
 disciplines = []
 data = ones(1)
 for discipline_name, (inputs, outputs) in descriptions.items():
-    inputs = {name: data for name in inputs}
-    outputs = {name: data for name in outputs}
+    inputs = dict.fromkeys(inputs, data)
+    outputs = dict.fromkeys(outputs, data)
     discipline = MDODiscipline(discipline_name)
-    discipline.input_grammar.update_from_data({name: data for name in inputs})
-    discipline.output_grammar.update_from_data({name: data for name in outputs})
+    discipline.input_grammar.update_from_data(dict.fromkeys(inputs, data))
+    discipline.output_grammar.update_from_data(dict.fromkeys(outputs, data))
     disciplines.append(discipline)
 
 # %%

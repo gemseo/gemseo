@@ -435,9 +435,7 @@ class ScalableProblem:
             equilibrium: The starting point at equilibrium.
         """
         if not hasattr(feasibility_level, "__len__"):
-            feasibility_level = {
-                constraint: feasibility_level for constraint in self.ineq_constraints
-            }
+            feasibility_level = dict.fromkeys(self.ineq_constraints, feasibility_level)
         for constraint, alphai in feasibility_level.items():
             if constraint in list(equilibrium.keys()):
                 sample = default_rng(SEED).random(len(equilibrium[constraint]))

@@ -572,7 +572,7 @@ class ScalabilityStudy:
             varnames: The names of the variables.
         """
         if size is not None:
-            scaling.update({varname: size for varname in varnames})
+            scaling.update(dict.fromkeys(varnames, size))
 
     @staticmethod
     def __check_scaling_consistency(n_var_scaling: int, n_scaling: int) -> None:

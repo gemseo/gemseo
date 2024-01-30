@@ -1639,7 +1639,8 @@ def test_repr_html(design_space_2) -> None:
         <td>inf</td>
         <td>float</td>
     </tr>
-</table>""")
+</table>"""
+    )
 
 
 def test_normalization_runtimewarning() -> None:

@@ -142,7 +142,7 @@ class ManyDisciplinesBenchmark(BaseBenchmark):
             disc: The discipline.
         """
         data = ones(1)
-        disc.local_data = {key: data for key in disc.get_output_data_names()}
+        disc.local_data = dict.fromkeys(disc.get_output_data_names(), data)
 
     def setup(self) -> None:  # noqa: D102
         disc_names = self.__get_disc_names(self.nb_of_disc)
@@ -160,9 +160,7 @@ class ManyDisciplinesBenchmark(BaseBenchmark):
             disc._run = self.__disc_run
             disc.input_grammar.initialize_from_data_names(in_names)
             disc.output_grammar.initialize_from_data_names(out_names)
-            disc.default_inputs = {
-                key: input_data for key in disc.get_input_data_names()
-            }
+            disc.default_inputs = dict.fromkeys(disc.get_input_data_names(), input_data)
             disciplines[disc_name] = disc
 
         self.disciplines = disciplines

@@ -124,8 +124,8 @@ class LinearDiscipline(MDODiscipline):
                 / self.size_in
             )
 
-        self.__sizes_d = {k: self.inputs_size for k in self.input_names}
-        self.__sizes_d.update({k: self.outputs_size for k in self.output_names})
+        self.__sizes_d = dict.fromkeys(self.input_names, self.inputs_size)
+        self.__sizes_d.update(dict.fromkeys(self.output_names, self.outputs_size))
 
         self.default_inputs = {k: 0.5 * ones(inputs_size) for k in input_names}
 

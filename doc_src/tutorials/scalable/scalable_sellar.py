@@ -33,7 +33,7 @@ var_lb = {name: design_space.get_lower_bound(name) for name in input_names}
 var_ub = {name: design_space.get_upper_bound(name) for name in input_names}
 
 variable_sizes = 5
-sizes = {name: variable_sizes for name in input_names + output_names}
+sizes = dict.fromkeys(input_names + output_names, variable_sizes)
 scalable_sellar = create_discipline(
     "ScalableFittedDiscipline",
     discipline=sellar,
@@ -49,7 +49,7 @@ input_data = {
 print(scalable_sellar.execute(input_data)["y_1"])
 
 variable_sizes = 3
-sizes = {name: variable_sizes for name in input_names + output_names}
+sizes = dict.fromkeys(input_names + output_names, variable_sizes)
 scalable_sellar = create_discipline(
     "ScalableFittedDiscipline",
     discipline=sellar,

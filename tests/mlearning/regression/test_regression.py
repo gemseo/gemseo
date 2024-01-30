@@ -95,7 +95,7 @@ def dataset_for_jacobian() -> IODataset:
 )
 def test_predict_jacobian(dataset_for_jacobian, groups) -> None:
     """Test predict Jacobian."""
-    transformer = None if not groups else {group: "MinMaxScaler" for group in groups}
+    transformer = None if not groups else dict.fromkeys(groups, "MinMaxScaler")
     ml_algo = LinearRegressor(dataset_for_jacobian, transformer=transformer)
     ml_algo.learn()
     jac = ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
