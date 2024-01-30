@@ -124,7 +124,7 @@ def test_getitem(namespace_mapping) -> None:
 def test_len() -> None:
     """Verify len()."""
     length = 2
-    df = DataFrame(data=dict.fromkeys(range(length), [0]))
+    df = DataFrame(data={key: [0] for key in range(length)})
     data = {"x": df, "y": None}
     d = DisciplineData(data)
     assert len(d) == length + 1
@@ -133,7 +133,7 @@ def test_len() -> None:
 def test_iter() -> None:
     """Verify __iter__()."""
     length = 2
-    df = DataFrame(data=dict.fromkeys(map(str, range(length)), [0]))
+    df = DataFrame(data={key: [0] for key in map(str, range(length))})
     data = {"x": df, "y": None}
     d = DisciplineData(data)
 

@@ -117,10 +117,9 @@ class ScalableDiagonalModel(ScalableModel):
             group_dep: The dependency between the inputs and outputs.
         """  # noqa: D205, D212, D415
         if isinstance(fill_factor, Number):
-            fill_factor = {
-                function_name: fill_factor
-                for function_name in data.get_variable_names(data.OUTPUT_GROUP)
-            }
+            fill_factor = dict.fromkeys(
+                data.get_variable_names(data.OUTPUT_GROUP), fill_factor
+            )
         elif not isinstance(fill_factor, dict):
             msg = (
                 "Fill factor must be either a number between 0 and 1, "

@@ -39,8 +39,8 @@ def graph() -> DependencyGraph:
     data = ones(1)
     for desc in description_list:
         name = desc[0]
-        input_d = {k: data for k in desc[1]}
-        output_d = {k: data for k in desc[2]}
+        input_d = dict.fromkeys(desc[1], data)
+        output_d = dict.fromkeys(desc[2], data)
         disc = MDODiscipline(name)
         disc.input_grammar.update_from_data(input_d)
         disc.output_grammar.update_from_data(output_d)
