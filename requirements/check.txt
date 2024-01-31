@@ -14,7 +14,7 @@ identify==2.5.33
     # via pre-commit
 nodeenv==1.8.0
     # via pre-commit
-platformdirs==4.1.0
+platformdirs==4.2.0
     # via virtualenv
 pre-commit==3.6.0
     # via -r requirements/check.in
