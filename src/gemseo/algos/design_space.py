@@ -1975,7 +1975,7 @@ class DesignSpace(collections.abc.MutableMapping):
             var_type = self.variable_types[name]
             curr = self.__current_value.get(name)
 
-            name_template = "{name}"
+            name_template = f"{name}"
             if with_index and size > 1:
                 name_template += "[{index}]"
 
