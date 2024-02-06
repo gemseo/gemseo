@@ -708,7 +708,7 @@ class ParameterSpace(DesignSpace):
             table.float_format = "%.16g"
             for name in self.variable_names:
                 size = self.variable_sizes[name]
-                name_template = "{name}"
+                name_template = f"{name}"
                 if with_index and size > 1:
                     name_template += "[{index}]"
 
