@@ -141,6 +141,9 @@ class DirectoryCreator(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
              The initial value of the counter.
         """
+        if not self.__root_directory.is_dir():
+            return 0
+
         # Only keep directories which are a number.
         out_dirs = [
             path.name
