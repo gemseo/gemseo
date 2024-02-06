@@ -869,7 +869,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         )
 
     @classmethod
-    def from_csv(cls, file_path: Path | str, delimiter: str = ",") -> Dataset:
+    def from_csv(
+        cls,
+        file_path: Path | str,
+        delimiter: str = ",",
+        first_column_as_index: bool = False,
+    ) -> Dataset:
         """Set the dataset from a CSV file.
 
         The first three rows contain the values of the multi-index
@@ -883,11 +888,16 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         Args:
             file_path: The path to the file containing the data.
             delimiter: The field delimiter.
+            first_column_as_index: Whether the first column is the data index.
 
         Returns:
             A dataset built from the CSV file.
         """
-        dataframe = read_csv(file_path, delimiter=delimiter, header=[0, 1, 2])
+        index_col = 0 if first_column_as_index else None
+
+        dataframe = read_csv(
+            file_path, delimiter=delimiter, header=[0, 1, 2], index_col=index_col
+        )
         dataframe.columns = dataframe.columns.set_levels(
             dataframe.columns.levels[cls.__COMPONENT_LEVEL].astype(np_int64),
             level=cls.__COMPONENT_LEVEL,
