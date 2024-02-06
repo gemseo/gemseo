@@ -52,6 +52,7 @@ from gemseo.core.mdofunctions._operations import _OperationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.serializable import Serializable
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator_factory import (
     GradientApproximatorFactory,
@@ -557,7 +558,7 @@ class MDOFunction(Serializable):
             self._jac, NotImplementedCallable
         )
 
-    def __add__(self, other: MDOFunction) -> MDOFunction:
+    def __add__(self, other: MDOFunction | Number) -> MDOFunction:
         """Operator defining the sum of the function and another one.
 
         This operator supports automatic differentiation
@@ -571,7 +572,7 @@ class MDOFunction(Serializable):
         """
         return _AdditionFunctionMaker(MDOFunction, self, other).function
 
-    def __sub__(self, other: MDOFunction) -> MDOFunction:
+    def __sub__(self, other: MDOFunction | Number) -> MDOFunction:
         """Operator defining the difference of the function and another one.
 
         This operator supports automatic differentiation
@@ -728,6 +729,10 @@ class MDOFunction(Serializable):
 
         approximation = gradient_approximator.f_gradient(x_vect).real
         reference = self._jac(x_vect).real
+
+        if isinstance(reference, sparse_classes):
+            reference = reference.todense()
+
         if approximation.shape != reference.shape:
             approximation_is_1d = approximation.ndim == 1 or approximation.shape[0] == 1
             reference_is_1d = reference.ndim == 1 or reference.shape[0] == 1
