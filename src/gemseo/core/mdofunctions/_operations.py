@@ -267,9 +267,12 @@ class _AdditionFunctionMaker(_OperationFunctionMaker):
         if self._second_operand_is_number:
             return self._first_operand._jac(input_value)
 
-        return self._operator(
-            self._first_operand._jac(input_value),
-            self._second_operand._jac(input_value),
+        if self._operator_repr == "+":
+            return self._first_operand._jac(input_value) + self._second_operand._jac(
+                input_value
+            )
+        return self._first_operand._jac(input_value) - self._second_operand._jac(
+            input_value
         )
 
 
@@ -333,4 +336,4 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
         if self._operator == mul:
             return first_jac * second_func + second_jac * first_func
 
-        return (first_jac * second_func - second_jac * first_func) / second_jac**2
+        return (first_jac * second_func - second_jac * first_func) / second_func**2
