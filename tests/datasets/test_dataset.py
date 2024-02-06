@@ -597,10 +597,15 @@ def test_add_group_error(dataset) -> None:
 
 
 @pytest.mark.parametrize("delimiter", [",", "/"])
-def test_from_csv(tmp_wd, io_dataset, delimiter) -> None:
+@pytest.mark.parametrize("first_column_as_index", [True, False])
+def test_from_csv(tmp_wd, io_dataset, delimiter, first_column_as_index) -> None:
     """Test the ``from_csv`` method."""
-    io_dataset.to_csv("io_dataset.csv", sep=delimiter, index=False)
-    dataset = Dataset.from_csv("io_dataset.csv", delimiter=delimiter)
+    io_dataset.to_csv("io_dataset.csv", sep=delimiter, index=first_column_as_index)
+    dataset = Dataset.from_csv(
+        "io_dataset.csv",
+        delimiter=delimiter,
+        first_column_as_index=first_column_as_index,
+    )
     assert_frame_equal(io_dataset.astype("int32"), dataset.astype("int32"))
 
 

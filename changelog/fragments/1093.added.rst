@@ -1,0 +1,2 @@
+``Dataset.from_csv`` has a new attribute ``first_column_as_index``,
+which permits to read ``csv`` files that contain the index as the first column.
