@@ -60,6 +60,13 @@ def test_get_unique_run_folder_path(directories) -> None:
     assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/4").absolute()
     assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/5").absolute()
 
+    # a director that does not exist
+    dir_creator = DirectoryCreator("resource_dir/foo/bar")
+    assert (
+        dir_creator.get_unique_run_folder_path()
+        == Path("resource_dir/foo/bar/1").absolute()
+    )
+
 
 def test_get_unique_run_folder_path_empty(empty_directory) -> None:
     """Test the method: ``create`` on empty directory."""
