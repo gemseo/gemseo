@@ -307,10 +307,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Compute the sensitivity indices.
 
         Args:
-            outputs: The output(s)
-                for which to display the sensitivity indices.
-                If ``None``,
-                use the default outputs set at instantiation.
+            outputs: The name(s) of the output(s)
+                for which to compute the sensitivity indices.
+                If empty,
+                use the names of the outputs set at instantiation.
 
         Returns:
             The sensitivity indices.

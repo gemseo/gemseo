@@ -1,0 +1,1 @@
+``HSICAnalysis.compute_indices`` also computes the p-values for screening purposes in two different ways: through permutations and from asymptotic formula.
