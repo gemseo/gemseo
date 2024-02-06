@@ -1,0 +1,1 @@
+``HSICAnalysis.compute_indices`` proposes two new sensitivity analysis (SA) types, namely conditional SA and target SA.
