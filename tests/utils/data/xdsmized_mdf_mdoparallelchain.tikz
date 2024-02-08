@@ -1,0 +1,227 @@
+
+%%% Preamble Requirements %%%
+% \usepackage{geometry}
+% \usepackage{amsfonts}
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{tikz}
+
+% Optional packages such as sfmath set through python interface
+% \usepackage{sfmath}
+
+% \usetikzlibrary{arrows,chains,positioning,scopes,shapes.geometric,shapes.misc,shadows}
+
+%%% End Preamble Requirements %%%
+
+\input{"C:/Users/nicolas.roussouly/Code/GEMSEO/gemseo_fork/.tox/py39/lib/site-packages/pyxdsm/diagram_styles"}
+\begin{tikzpicture}
+
+\matrix[MatrixSetup]{
+%Row 0
+&
+\node [DataIO] (output_Opt) {$x^{(0)}$};&
+&
+&
+&
+&
+&
+&
+&
+\\
+%Row 1
+\node [DataIO] (left_output_Opt) {$y2^*$};&
+\node [Optimization] (Opt) {$\text{1,7-2:Optimizer}$};&
+\node [DataInter] (Opt-Dis1) {$x$};&
+&
+&
+&
+&
+&
+&
+\\
+%Row 2
+\node [DataIO] (left_output_Dis1) {$a^*$};&
+&
+\node [Function] (Dis1) {$\text{2:0}$};&
+\node [DataInter] (Dis1-Dis2) {$a$};&
+&
+&
+\node [DataInter] (Dis1-Dis5) {$a$};&
+&
+&
+\\
+%Row 3
+&
+&
+&
+\node [MDA] (Dis2) {$\text{3,6-4:MDAGaussSeidel}$};&
+\node [DataInter] (Dis2-Dis3) {$x1$};&
+&
+&
+&
+&
+\\
+%Row 4
+\node [DataIO] (left_output_Dis3) {$y1^*,  b^*$};&
+&
+&
+&
+\node [Function] (Dis3) {$\text{4:1}$};&
+\node [DataInter] (Dis3-Dis4) {$y1$};&
+&
+&
+&
+\\
+%Row 5
+\node [DataIO] (left_output_Dis4) {$x1^*$};&
+&
+&
+\node [DataInter] (Dis4-Dis2) {$x1$};&
+&
+\node [Function] (Dis4) {$\text{5:2}$};&
+&
+&
+&
+\\
+%Row 6
+&
+\node [DataInter] (Dis5-Opt) {$y2$};&
+&
+&
+&
+&
+\node [MDA] (Dis5) {$\text{3,6-4:MDAGaussSeidel}$};&
+\node [DataInter] (Dis5-Dis6) {$x2$};&
+&
+\\
+%Row 7
+\node [DataIO] (left_output_Dis6) {$c^*$};&
+\node [DataInter] (Dis6-Opt) {$y2$};&
+&
+&
+&
+&
+&
+\node [Function] (Dis6) {$\text{4:3}$};&
+\node [DataInter] (Dis6-Dis7) {$y2$};&
+\\
+%Row 8
+\node [DataIO] (left_output_Dis7) {$x2^*$};&
+&
+&
+&
+&
+&
+\node [DataInter] (Dis7-Dis5) {$x2$};&
+&
+\node [Function] (Dis7) {$\text{5:4}$};&
+\\
+%Row 9
+&
+&
+&
+&
+&
+&
+&
+&
+&
+\\
+};
+
+% XDSM process chains
+{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Opt);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Dis2) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis2);
+\chainin (Dis3) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis3);
+\chainin (Dis4) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis4);
+\chainin (Dis2) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Dis5) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis5);
+\chainin (Dis6) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis6);
+\chainin (Dis7) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis7);
+\chainin (Dis5) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis2);
+\chainin (Opt) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis5);
+\chainin (Opt) [join=by ProcessHVA];
+\end{pgfonlayer}
+}
+
+\begin{pgfonlayer}{data}
+\path
+% Horizontal edges
+(Opt) edge [DataLine] (Opt-Dis1)
+(Dis5) edge [DataLine] (Dis5-Opt)
+(Dis6) edge [DataLine] (Dis6-Opt)
+(Dis6) edge [DataLine] (Dis6-Opt)
+(Dis1) edge [DataLine] (Dis1-Dis2)
+(Dis1) edge [DataLine] (Dis1-Dis5)
+(Dis2) edge [DataLine] (Dis2-Dis3)
+(Dis3) edge [DataLine] (Dis3-Dis4)
+(Dis4) edge [DataLine] (Dis4-Dis2)
+(Dis5) edge [DataLine] (Dis5-Dis6)
+(Dis6) edge [DataLine] (Dis6-Dis7)
+(Dis7) edge [DataLine] (Dis7-Dis5)
+(Opt) edge [DataLine] (left_output_Opt)
+(Dis1) edge [DataLine] (left_output_Dis1)
+(Dis3) edge [DataLine] (left_output_Dis3)
+(Dis4) edge [DataLine] (left_output_Dis4)
+(Dis6) edge [DataLine] (left_output_Dis6)
+(Dis7) edge [DataLine] (left_output_Dis7)
+% Vertical edges
+(Opt-Dis1) edge [DataLine] (Dis1)
+(Dis5-Opt) edge [DataLine] (Opt)
+(Dis6-Opt) edge [DataLine] (Opt)
+(Dis6-Opt) edge [DataLine] (Opt)
+(Dis1-Dis2) edge [DataLine] (Dis2)
+(Dis1-Dis5) edge [DataLine] (Dis5)
+(Dis2-Dis3) edge [DataLine] (Dis3)
+(Dis3-Dis4) edge [DataLine] (Dis4)
+(Dis4-Dis2) edge [DataLine] (Dis2)
+(Dis5-Dis6) edge [DataLine] (Dis6)
+(Dis6-Dis7) edge [DataLine] (Dis7)
+(Dis7-Dis5) edge [DataLine] (Dis5)
+(Opt) edge [DataLine] (output_Opt);
+\end{pgfonlayer}
+
+\end{tikzpicture}

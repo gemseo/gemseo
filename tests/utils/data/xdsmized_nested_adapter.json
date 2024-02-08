@@ -8,16 +8,11 @@
       },
       {
         "id": "Dis1",
-        "name": "MDAChain",
-        "type": "mda"
-      },
-      {
-        "id": "Dis2",
         "name": "D1",
         "type": "analysis"
       },
       {
-        "id": "Dis3",
+        "id": "Dis2",
         "name": "MDOScenario_scn-1-1",
         "type": "mdo",
         "subxdsm": "MDOScenario_scn-1-1"
@@ -41,22 +36,12 @@
       },
       {
         "from": "Dis1",
-        "to": "Opt",
-        "name": "z2"
-      },
-      {
-        "from": "Opt",
-        "to": "Dis2",
-        "name": "x0"
-      },
-      {
-        "from": "Dis2",
         "to": "_U_",
         "name": "z1^*, y1^*"
       },
       {
-        "from": "Dis2",
-        "to": "Dis3",
+        "from": "Dis1",
+        "to": "Dis2",
         "name": "y1"
       }
     ],
@@ -66,8 +51,7 @@
         "Opt",
         [
           "Dis1",
-          "Dis2",
-          "Dis3"
+          "Dis2"
         ]
       ]
     ],
@@ -82,21 +66,16 @@
       },
       {
         "id": "Dis1",
-        "name": "MDAChain",
-        "type": "mda"
-      },
-      {
-        "id": "Dis2",
         "name": "MDAJacobi",
         "type": "mda"
       },
       {
-        "id": "Dis3",
+        "id": "Dis2",
         "name": "D2",
         "type": "analysis"
       },
       {
-        "id": "Dis4",
+        "id": "Dis3",
         "name": "MDOScenario_scn-2-1",
         "type": "mdo",
         "subxdsm": "MDOScenario_scn-2-1"
@@ -134,53 +113,33 @@
         "name": "z2"
       },
       {
-        "from": "Opt",
-        "to": "Dis3",
-        "name": "x2"
-      },
-      {
-        "from": "Dis3",
-        "to": "Opt",
-        "name": "z2"
-      },
-      {
-        "from": "Dis3",
+        "from": "Dis2",
         "to": "_U_",
         "name": "y2^*"
       },
       {
-        "from": "Dis3",
+        "from": "Dis2",
         "to": "Opt",
         "name": "z2"
       },
       {
-        "from": "Dis2",
-        "to": "Dis3",
-        "name": "y3"
-      },
-      {
-        "from": "Dis2",
-        "to": "Dis4",
-        "name": "y2"
-      },
-      {
-        "from": "Dis3",
-        "to": "Dis2",
-        "name": "y2"
-      },
-      {
-        "from": "Dis3",
-        "to": "Dis4",
-        "name": "y2"
-      },
-      {
-        "from": "Dis4",
+        "from": "Dis1",
         "to": "Dis2",
         "name": "y3"
       },
       {
-        "from": "Dis4",
+        "from": "Dis2",
+        "to": "Dis1",
+        "name": "y2"
+      },
+      {
+        "from": "Dis1",
         "to": "Dis3",
+        "name": "y2"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis1",
         "name": "y3"
       }
     ],
@@ -190,13 +149,12 @@
         "Opt",
         [
           "Dis1",
-          "Dis2",
           [
             {
               "parallel": [
-                "Dis3",
+                "Dis2",
                 [
-                  "Dis4"
+                  "Dis3"
                 ]
               ]
             }
@@ -215,17 +173,12 @@
       },
       {
         "id": "Dis1",
-        "name": "MDAChain",
-        "type": "mda"
-      },
-      {
-        "id": "Dis2",
         "name": "MDOScenario_scn-3-1",
         "type": "mdo",
         "subxdsm": "MDOScenario_scn-3-1"
       },
       {
-        "id": "Dis3",
+        "id": "Dis2",
         "name": "D3",
         "type": "analysis"
       }
@@ -243,37 +196,27 @@
       },
       {
         "from": "Opt",
-        "to": "Dis1",
+        "to": "Dis2",
         "name": "x3"
       },
       {
-        "from": "Dis1",
-        "to": "Opt",
-        "name": "z3"
-      },
-      {
-        "from": "Opt",
-        "to": "Dis3",
-        "name": "x3"
-      },
-      {
-        "from": "Dis3",
-        "to": "Opt",
-        "name": "z3"
-      },
-      {
-        "from": "Dis3",
-        "to": "_U_",
-        "name": "y3^*"
-      },
-      {
-        "from": "Dis3",
+        "from": "Dis2",
         "to": "Opt",
         "name": "z3"
       },
       {
         "from": "Dis2",
-        "to": "Dis3",
+        "to": "_U_",
+        "name": "y3^*"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "z3"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis2",
         "name": "z4"
       }
     ],
@@ -283,8 +226,7 @@
         "Opt",
         [
           "Dis1",
-          "Dis2",
-          "Dis3"
+          "Dis2"
         ]
       ]
     ],
@@ -299,11 +241,6 @@
       },
       {
         "id": "Dis1",
-        "name": "MDAChain",
-        "type": "mda"
-      },
-      {
-        "id": "Dis2",
         "name": "D4",
         "type": "analysis"
       }
@@ -330,17 +267,7 @@
         "name": "z4"
       },
       {
-        "from": "Opt",
-        "to": "Dis2",
-        "name": "x4"
-      },
-      {
-        "from": "Dis2",
-        "to": "Opt",
-        "name": "z4"
-      },
-      {
-        "from": "Dis2",
+        "from": "Dis1",
         "to": "Opt",
         "name": "z4"
       }
@@ -350,8 +277,7 @@
       [
         "Opt",
         [
-          "Dis1",
-          "Dis2"
+          "Dis1"
         ]
       ]
     ],

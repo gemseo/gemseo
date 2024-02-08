@@ -196,6 +196,9 @@ class XDSMizer:
         save_html: bool = True,
         save_json: bool = False,
         save_pdf: bool = False,
+        pdf_build: bool = True,
+        pdf_cleanup: bool = True,
+        pdf_batchmode: bool = True,
     ) -> XDSM:
         """Generate a XDSM diagram of the :attr:`.scenario`.
 
@@ -210,6 +213,10 @@ class XDSMizer:
             save_html: Whether to save the XDSM as a HTML file.
             save_json: Whether to save the XDSM as a JSON file.
             save_pdf: Whether to save the XDSM as a PDF file.
+            pdf_build: Whether the standalone pdf of the XDSM will be built.
+            pdf_cleanup: Whether pdflatex built files will be cleaned up
+                after build is complete.
+            pdf_batchmode: Whether pdflatex is run in `batchmode`.
 
         Returns:
             A XDSM diagram.
@@ -218,12 +225,22 @@ class XDSMizer:
         xdsm_json = dumps(xdsm, indent=2, ensure_ascii=False)
 
         directory_path = Path(directory_path)
+        if not directory_path.exists():
+            directory_path.mkdir()
+
         if save_json:
             with (directory_path / f"{file_name}.json").open("w") as file_stream:
                 file_stream.write(xdsm_json)
 
         if save_pdf:
-            xdsm_data_to_pdf(xdsm, directory_path, file_name)
+            xdsm_data_to_pdf(
+                xdsm,
+                directory_path,
+                file_name,
+                pdf_build=pdf_build,
+                pdf_cleanup=pdf_cleanup,
+                pdf_batchmode=pdf_batchmode,
+            )
 
         html_file_path = None
         if save_html or show_html:
@@ -414,14 +431,17 @@ class XDSMizer:
         # Disciplines to/from optimization
         for atom in self.atoms:
             if atom is not self.root_atom:
-                varnames = set(atom.discipline.get_input_data_names()) & set(
-                    self.scenario.get_optim_variable_names()
+                varnames = sorted(
+                    set(atom.discipline.get_input_data_names())
+                    & set(self.scenario.get_optim_variable_names())
                 )
+
                 if varnames:
                     add_edge(OPT_ID, self.to_id[atom], varnames)
 
-                varnames = set(atom.discipline.get_output_data_names()) & set(
-                    function_varnames
+                varnames = sorted(
+                    set(atom.discipline.get_output_data_names())
+                    & set(function_varnames)
                 )
                 if varnames:
                     add_edge(self.to_id[atom], OPT_ID, varnames)
@@ -455,7 +475,7 @@ class XDSMizer:
             add_edge(
                 self.to_id[self._find_atom(disc1)],
                 self.to_id[self._find_atom(disc2)],
-                varnames,
+                sorted(varnames),
             )
 
         return edges

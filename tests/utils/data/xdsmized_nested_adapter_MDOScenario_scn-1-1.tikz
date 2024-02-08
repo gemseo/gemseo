@@ -1,0 +1,124 @@
+
+%%% Preamble Requirements %%%
+% \usepackage{geometry}
+% \usepackage{amsfonts}
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{tikz}
+
+% Optional packages such as sfmath set through python interface
+% \usepackage{sfmath}
+
+% \usetikzlibrary{arrows,chains,positioning,scopes,shapes.geometric,shapes.misc,shadows}
+
+%%% End Preamble Requirements %%%
+
+\input{"C:/Users/nicolas.roussouly/Code/GEMSEO/gemseo_fork/.tox/py39/lib/site-packages/pyxdsm/diagram_styles"}
+\begin{tikzpicture}
+
+\matrix[MatrixSetup]{
+%Row 0
+&
+\node [DataIO] (output_Opt) {$x2^{(0)}$};&
+&
+&
+&
+\\
+%Row 1
+\node [DataIO] (left_output_Opt) {$z2^*$};&
+\node [Optimization] (Opt) {$\text{1,5-2:Optimizer}$};&
+\node [DataInter] (Opt-Dis1) {$x2$};&
+\node [DataInter] (Opt-Dis2) {$x2$};&
+&
+\\
+%Row 2
+&
+\node [DataInter] (Dis1-Opt) {$z2$};&
+\node [MDA] (Dis1) {$\text{2,4-3:MDAJacobi}$};&
+\node [DataInter] (Dis1-Dis2) {$y3$};&
+\node [DataInter] (Dis1-Dis3) {$y2$};&
+\\
+%Row 3
+\node [DataIO] (left_output_Dis2) {$y2^*$};&
+\node [DataInter] (Dis2-Opt) {$z2$};&
+\node [DataInter] (Dis2-Dis1) {$y2$};&
+\node [Function] (Dis2) {$\text{3:D2}$};&
+&
+\\
+%Row 4
+&
+&
+\node [DataInter] (Dis3-Dis1) {$y3$};&
+&
+\node [SubOptimization] (Dis3) {$\text{3:MDOScenario\_scn-2-1}$};&
+\\
+%Row 5
+&
+&
+&
+&
+&
+\\
+};
+
+% XDSM process chains
+{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Opt);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Dis2) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Dis3) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis2);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis3);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Opt) [join=by ProcessHVA];
+\end{pgfonlayer}
+}
+
+\begin{pgfonlayer}{data}
+\path
+% Horizontal edges
+(Opt) edge [DataLine] (Opt-Dis1)
+(Dis1) edge [DataLine] (Dis1-Opt)
+(Opt) edge [DataLine] (Opt-Dis2)
+(Dis2) edge [DataLine] (Dis2-Opt)
+(Dis2) edge [DataLine] (Dis2-Opt)
+(Dis1) edge [DataLine] (Dis1-Dis2)
+(Dis2) edge [DataLine] (Dis2-Dis1)
+(Dis1) edge [DataLine] (Dis1-Dis3)
+(Dis3) edge [DataLine] (Dis3-Dis1)
+(Opt) edge [DataLine] (left_output_Opt)
+(Dis2) edge [DataLine] (left_output_Dis2)
+% Vertical edges
+(Opt-Dis1) edge [DataLine] (Dis1)
+(Dis1-Opt) edge [DataLine] (Opt)
+(Opt-Dis2) edge [DataLine] (Dis2)
+(Dis2-Opt) edge [DataLine] (Opt)
+(Dis2-Opt) edge [DataLine] (Opt)
+(Dis1-Dis2) edge [DataLine] (Dis2)
+(Dis2-Dis1) edge [DataLine] (Dis1)
+(Dis1-Dis3) edge [DataLine] (Dis3)
+(Dis3-Dis1) edge [DataLine] (Dis1)
+(Opt) edge [DataLine] (output_Opt);
+\end{pgfonlayer}
+
+\end{tikzpicture}

@@ -1,4 +1,4 @@
-exclude: ^src/gemseo/third_party
+exclude: ^(src/gemseo/third_party|tests/.*\.tikz)
 
 repos:
 

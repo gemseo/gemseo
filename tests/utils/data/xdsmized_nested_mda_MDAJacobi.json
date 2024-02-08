@@ -8,31 +8,26 @@
       },
       {
         "id": "Dis1",
-        "name": "MDAChain",
-        "type": "mda"
-      },
-      {
-        "id": "Dis2",
         "name": "MDAJacobi",
         "type": "mda"
       },
       {
-        "id": "Dis3",
+        "id": "Dis2",
         "name": "D3",
         "type": "analysis"
       },
       {
-        "id": "Dis4",
-        "name": "MDAGaussSeidel",
+        "id": "Dis3",
+        "name": "MDAJacobi",
         "type": "mda"
       },
       {
-        "id": "Dis5",
+        "id": "Dis4",
         "name": "D1",
         "type": "analysis"
       },
       {
-        "id": "Dis6",
+        "id": "Dis5",
         "name": "D2",
         "type": "analysis"
       }
@@ -74,11 +69,6 @@
         "name": "x0"
       },
       {
-        "from": "Dis3",
-        "to": "Opt",
-        "name": "y3"
-      },
-      {
         "from": "Opt",
         "to": "Dis4",
         "name": "x0"
@@ -89,78 +79,58 @@
         "name": "x0"
       },
       {
-        "from": "Opt",
-        "to": "Dis6",
-        "name": "x0"
-      },
-      {
-        "from": "Dis3",
+        "from": "Dis2",
         "to": "Opt",
         "name": "y3"
       },
       {
-        "from": "Dis5",
+        "from": "Dis4",
         "to": "_U_",
         "name": "y1^*"
       },
       {
-        "from": "Dis6",
+        "from": "Dis5",
         "to": "_U_",
         "name": "y2^*, y2_bis^*"
       },
       {
-        "from": "Dis2",
-        "to": "Dis3",
+        "from": "Dis1",
+        "to": "Dis2",
         "name": "y2_bis"
       },
       {
         "from": "Dis2",
-        "to": "Dis4",
-        "name": "y2, y3"
-      },
-      {
-        "from": "Dis3",
-        "to": "Dis2",
+        "to": "Dis1",
         "name": "y3"
       },
       {
-        "from": "Dis3",
-        "to": "Dis4",
-        "name": "y3"
-      },
-      {
-        "from": "Dis4",
-        "to": "Dis2",
-        "name": "y2, y2_bis"
-      },
-      {
-        "from": "Dis4",
+        "from": "Dis1",
         "to": "Dis3",
-        "name": "y2_bis"
+        "name": "y1, y2, y3"
       },
       {
-        "from": "Dis4",
-        "to": "Dis5",
+        "from": "Dis3",
+        "to": "Dis1",
+        "name": "y1, y2, y2_bis"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis4",
         "name": "y2"
       },
       {
         "from": "Dis4",
-        "to": "Dis6",
+        "to": "Dis3",
+        "name": "y1"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis5",
         "name": "y1"
       },
       {
         "from": "Dis5",
-        "to": "Dis6",
-        "name": "y1"
-      },
-      {
-        "from": "Dis6",
-        "to": "Dis4",
-        "name": "y2"
-      },
-      {
-        "from": "Dis6",
-        "to": "Dis5",
+        "to": "Dis3",
         "name": "y2"
       }
     ],
@@ -170,16 +140,19 @@
         "Opt",
         [
           "Dis1",
-          "Dis2",
           [
             {
               "parallel": [
-                "Dis3",
+                "Dis2",
                 [
-                  "Dis4",
+                  "Dis3",
                   [
-                    "Dis5",
-                    "Dis6"
+                    {
+                      "parallel": [
+                        "Dis4",
+                        "Dis5"
+                      ]
+                    }
                   ]
                 ]
               ]

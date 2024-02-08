@@ -553,10 +553,13 @@ class MDAChain(MDA):
         return self.mdo_chain.get_expected_dataflow()
 
     def get_expected_workflow(self) -> SerialExecSequence:  # noqa:D102
-        exec_s = SerialExecSequence(self)
+        exec_s = SerialExecSequence()
         workflow = self.mdo_chain.get_expected_workflow()
         exec_s.extend(workflow)
         return exec_s
+
+    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:  # noqa: D102
+        return self.mdo_chain.get_disciplines_in_dataflow_chain()
 
     def reset_statuses_for_run(self) -> None:  # noqa:D102
         super().reset_statuses_for_run()

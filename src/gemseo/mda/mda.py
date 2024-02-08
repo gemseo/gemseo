@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from gemseo.core.execution_sequence import LoopExecSequence
     from gemseo.utils.matplotlib_figure import FigSizeType
 
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -469,12 +470,31 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def get_expected_dataflow(  # noqa:D102
         self,
     ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        all_disc = [self, *self.disciplines]
+        all_disc = [self]
+        for disc in self.disciplines:
+            all_disc.extend(disc.get_disciplines_in_dataflow_chain())
         graph = DependencyGraph(all_disc)
-        res = graph.get_disciplines_couplings()
+        res = self._get_disciplines_couplings(graph)
         for discipline in self.disciplines:
             res.extend(discipline.get_expected_dataflow())
         return res
+
+    def _get_disciplines_couplings(
+        self, graph: DependencyGraph
+    ) -> list[tuple[str, str, list[str]]]:
+        """Return the couplings between disciplines.
+
+        Args:
+            graph: The dependency graph of the disciplines.
+
+        Returns:
+            The couplings between disciplines associated to the edges of the graph.
+            For each edge,
+            the first component corresponds to the *from* discipline,
+            the second component corresponds to the *to* discipline,
+            the third component corresponds to the list of coupling variables.
+        """
+        return graph.get_disciplines_couplings()
 
     def _compute_jacobian(
         self,

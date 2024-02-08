@@ -8,27 +8,27 @@
       },
       {
         "id": "Dis1",
-        "name": "MDAGaussSeidel",
+        "name": "MDAJacobi",
         "type": "mda"
       },
       {
         "id": "Dis2",
-        "name": "SobieskiPropulsion",
+        "name": "D3",
         "type": "analysis"
       },
       {
         "id": "Dis3",
-        "name": "SobieskiAerodynamics",
-        "type": "analysis"
+        "name": "MDAGaussSeidel",
+        "type": "mda"
       },
       {
         "id": "Dis4",
-        "name": "SobieskiStructure",
+        "name": "D1",
         "type": "analysis"
       },
       {
         "id": "Dis5",
-        "name": "SobieskiMission",
+        "name": "D2",
         "type": "analysis"
       }
     ],
@@ -36,102 +36,97 @@
       {
         "from": "_U_",
         "to": "Opt",
-        "name": "x_shared^(0), x_1^(0), x_2^(0), x_3^(0)"
+        "name": "x0^(0)"
       },
       {
         "from": "Opt",
         "to": "_U_",
-        "name": "y_4^*"
+        "name": "y3^*"
       },
       {
         "from": "Opt",
         "to": "Dis1",
-        "name": "x_1, x_2, x_3, x_shared"
+        "name": "x0"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y3"
       },
       {
         "from": "Opt",
         "to": "Dis2",
-        "name": "x_3, x_shared"
+        "name": "x0"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "y3"
       },
       {
         "from": "Opt",
         "to": "Dis3",
-        "name": "x_2, x_shared"
+        "name": "x0"
       },
       {
         "from": "Opt",
         "to": "Dis4",
-        "name": "x_1, x_shared"
+        "name": "x0"
       },
       {
         "from": "Opt",
         "to": "Dis5",
-        "name": "x_shared"
-      },
-      {
-        "from": "Dis5",
-        "to": "Opt",
-        "name": "y_4"
+        "name": "x0"
       },
       {
         "from": "Dis2",
-        "to": "_U_",
-        "name": "y_32^*, y_31^*, g_3^*, y_3^*, y_34^*"
-      },
-      {
-        "from": "Dis3",
-        "to": "_U_",
-        "name": "y_21^*, y_23^*, y_24^*, g_2^*, y_2^*"
+        "to": "Opt",
+        "name": "y3"
       },
       {
         "from": "Dis4",
         "to": "_U_",
-        "name": "y_1^*, y_11^*, y_14^*, g_1^*, y_12^*"
+        "name": "y1^*"
       },
       {
         "from": "Dis5",
-        "to": "Opt",
-        "name": "y_4"
-      },
-      {
-        "from": "Dis1",
-        "to": "Dis5",
-        "name": "y_14, y_24, y_34"
+        "to": "_U_",
+        "name": "y2^*, y2_bis^*"
       },
       {
         "from": "Dis1",
         "to": "Dis2",
-        "name": "y_23"
+        "name": "y2_bis"
       },
       {
         "from": "Dis2",
-        "to": "Dis3",
-        "name": "y_32"
+        "to": "Dis1",
+        "name": "y3"
       },
       {
         "from": "Dis1",
         "to": "Dis3",
-        "name": "y_12"
+        "name": "y2, y3"
       },
       {
         "from": "Dis3",
         "to": "Dis1",
-        "name": "y_23"
+        "name": "y2, y2_bis"
       },
       {
         "from": "Dis3",
         "to": "Dis4",
-        "name": "y_21"
-      },
-      {
-        "from": "Dis2",
-        "to": "Dis4",
-        "name": "y_31"
+        "name": "y2"
       },
       {
         "from": "Dis4",
-        "to": "Dis1",
-        "name": "y_12"
+        "to": "Dis5",
+        "name": "y1"
+      },
+      {
+        "from": "Dis5",
+        "to": "Dis3",
+        "name": "y2"
       }
     ],
     "workflow": [
@@ -141,14 +136,22 @@
         [
           "Dis1",
           [
-            "Dis2",
-            "Dis3",
-            "Dis4"
-          ],
-          "Dis5"
+            {
+              "parallel": [
+                "Dis2",
+                [
+                  "Dis3",
+                  [
+                    "Dis4",
+                    "Dis5"
+                  ]
+                ]
+              ]
+            }
+          ]
         ]
       ]
     ],
-    "optpb": "Optimization problem:\n   minimize y_4(x_shared, x_1, x_2, x_3)\n   with respect to x_1, x_2, x_3, x_shared"
+    "optpb": "Optimization problem:\n   minimize y3(x0)\n   with respect to x0"
   }
 }
