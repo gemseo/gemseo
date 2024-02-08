@@ -94,8 +94,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         mdf = MDF(disciplines, "y_4", DesignSpace(), inner_mda_name="MDAGaussSeidel")
         wkf = mdf.get_expected_workflow()
         assert (
-            str(wkf)
-            == "[MDAChain(None), {MDAGaussSeidel(None), [SobieskiStructure(None), "
+            str(wkf) == "[{MDAGaussSeidel(None), [SobieskiStructure(None), "
             "SobieskiPropulsion(None), SobieskiAerodynamics(None), ], }, "
             "SobieskiMission(None), ]"
         )

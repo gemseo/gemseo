@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.execution_sequence import LoopExecSequence
 
@@ -216,6 +217,20 @@ class MDAJacobi(BaseMDASolver):
             sub_workflow.extend(discipline.get_expected_workflow())
 
         return ExecutionSequenceFactory.loop(self, sub_workflow)
+
+    def _get_disciplines_couplings(
+        self, graph: DependencyGraph
+    ) -> list[tuple[str, str, list[str]]]:
+        couplings_results = []
+        for disc in self.disciplines:
+            in_data = graph.graph.get_edge_data(self, disc)
+            if in_data:
+                couplings_results.append((self, disc, sorted(in_data["io"])))
+            out_data = graph.graph.get_edge_data(disc, self)
+            if out_data:
+                couplings_results.append((disc, self, sorted(out_data["io"])))
+
+        return couplings_results
 
     def _run(self) -> None:
         super()._run()

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 
 from pyxdsm.XDSM import XDSM
 
@@ -36,16 +37,26 @@ class XDSMToPDFConverter:
         self.__xdsm = XDSM()
 
     def convert(
-        self, xdsm_data, directory_path, filename_without_ext, scenario
+        self,
+        xdsm_data: dict[str, Any],
+        directory_path: str | Path,
+        file_name: str,
+        scenario: str,
+        build: bool = True,
+        cleanup: bool = True,
+        batchmode: bool = True,
     ) -> None:
         """Convert a dictionary representation of a XDSM into a pdf.
 
         Args:
-            xdsm_data: XDSM dictionary representation.
-            directory_path (str): output directory.
-            filename_without_ext (str): output file name, default is 'xdsm'.
-            scenario (str): scenario name, default is 'root'.
-            quiet (bool): set to True to suppress output from pdflatex.
+            xdsm_data: The XDSM representation.
+            directory_path: The path to the output directory where the pdf is generated.
+            file_name: The name of the output file.
+            scenario: The name of the scenario.
+            build: Whether the standalone pdf of the XDSM will be built.
+            cleanup: Whether pdflatex built files will be cleaned up
+                after build is complete.
+            batchmode: Whether pdflatex is run in `batchmode`.
         """
         workflow = xdsm_data[scenario]["workflow"][1]
         numbers = {}
@@ -55,12 +66,17 @@ class XDSMToPDFConverter:
         self.__add_edges(xdsm_data[scenario]["edges"])
         self.__add_processes(workflow)
 
-        # workaround xdsm not well handling file path: latex expects posix path
-        file_path = str(directory_path / filename_without_ext).replace("\\", "/")
+        self.__xdsm.write(
+            file_name,
+            outdir=str(directory_path),
+            build=build,
+            cleanup=cleanup,
+            quiet=batchmode,
+        )
 
-        self.__xdsm.write(file_path)
-
-        if not Path(filename_without_ext).with_suffix(".pdf").exists():
+        if build and (
+            not (Path(directory_path) / file_name).with_suffix(".pdf").exists()
+        ):
             msg = (
                 "Something went wrong during the Latex compilation,"
                 " as xdsm.pdf has not been generated. Please have a look at the"
@@ -72,43 +88,64 @@ class XDSMToPDFConverter:
         if scenario == "root":
             subscenarios = [key for key in xdsm_data if "scn-" in key]
             for subscenario in subscenarios:
-                self.convert(
+                sub_xdsm = XDSMToPDFConverter()
+                sub_xdsm.convert(
                     xdsm_data,
                     directory_path,
-                    filename_without_ext=filename_without_ext + "_" + subscenario,
+                    file_name=f"{file_name}_{subscenario}",
                     scenario=subscenario,
+                    build=build,
+                    cleanup=cleanup,
+                    batchmode=batchmode,
                 )
 
-    def __add_processes(self, workflow, prev=None) -> None:
+    def __add_processes(
+        self, workflow: list[Any], prev: str | list[str] | None = None
+    ) -> None:
         """Create the pyXDSM processes from a given workflow in a recursive way.
 
         Args:
-            workflow (list): workflow component of the dictionary storing the XDSM.
-            prev (str): name of the previous node.
+            workflow: The workflow component of the dictionary storing the XDSM.
+            prev: The name of the previous node.
         """
-        systems = []
-        last_node = None
-        for idx, system in enumerate(workflow):
-            if isinstance(system, str):
-                # system is a node
-                systems.append(system)
+        last_node = prev
+        for system in workflow:
+            if isinstance(system, str):  # system is a node
+                if isinstance(last_node, list):  # case of previous parallel nodes
+                    for node in last_node:
+                        self.__xdsm.add_process([node, system])
+                else:
+                    if last_node:
+                        self.__xdsm.add_process([last_node, system])
                 last_node = system
-            elif isinstance(system, list):
-                # system is a group of nodes
-                if isinstance(system[0], str):
-                    # system[0] is a node
-                    if last_node is not None:
-                        self.__xdsm.add_process([last_node, system[0]])
-                    self.__add_processes(system, workflow[idx - 1])
-                elif isinstance(system[0], dict):
-                    # system[0] is a parallel sequence
-                    for sub_sys in system[0]["parallel"]:
-                        # add a sub-process for each parallel element
+            elif isinstance(system, list):  # system is a group of nodes (MDA, chain...)
+                self.__add_processes(system, last_node)
+            elif isinstance(system, dict):  # system is parallel
+                last_nodes = []
+                for sub_sys in system["parallel"]:
+                    # add a sub-process for each parallel element
+                    if isinstance(sub_sys, str):
                         sub_workflow = [last_node, sub_sys]
-                        self.__add_processes(sub_workflow, last_node)
-        if prev is not None:
-            systems.append(prev)
-        self.__xdsm.add_process(systems)
+                    elif isinstance(sub_sys, list):
+                        sub_workflow = [last_node, *sub_sys]
+                    self.__add_processes(sub_workflow)
+
+                    if isinstance(sub_sys, list):
+                        # take the last node when it is a chain (e.g. [d1, d2, d2...]),
+                        # but take the first node when it is an iterative struct
+                        # (e.g. MDA, [d1, [d2, d3]])
+                        last_nodes.append(
+                            sub_sys[0] if isinstance(sub_sys[-1], list) else sub_sys[-1]
+                        )
+                    else:
+                        last_nodes.append(sub_sys)
+                last_node = last_nodes
+
+        # return loop form last node to previous node
+        if prev:
+            last_node = [last_node] if not isinstance(last_node, list) else last_node
+            for node in last_node:
+                self.__xdsm.add_process([node, prev])
 
     def __get_numbers(
         self,
@@ -146,15 +183,22 @@ class XDSMToPDFConverter:
                 numbers[prev_node]["end"] = following
                 following += 1
             elif isinstance(node, dict):
+                init_following = following
+                followings = []
                 for sub_node in node["parallel"]:
                     if not isinstance(sub_node, list):
-                        following = self.__get_numbers(
-                            numbers, [sub_node], current, end, following
+                        followings.append(
+                            self.__get_numbers(
+                                numbers, [sub_node], current, end, init_following
+                            )
                         )
                     else:
-                        following = self.__get_numbers(
-                            numbers, sub_node, current, end, following
+                        followings.append(
+                            self.__get_numbers(
+                                numbers, sub_node, current, end, init_following
+                            )
                         )
+                following = max(followings)
         return following
 
     def __add_nodes(self, numbers: Sequence[int], nodes) -> None:
@@ -182,7 +226,7 @@ class XDSMToPDFConverter:
                 node_type = "MDA"
                 name = name_1
             elif node["type"] == "mdo":
-                node_type = "MDO"
+                node_type = "SubOptimization"
                 name = name_2
             elif node["type"] in {"analysis", "function"}:
                 node_type = "Function"
@@ -203,35 +247,14 @@ class XDSMToPDFConverter:
         """Add the edges called connections, inputs, outputs to the XDSM."""
         for edge in edges:
             old_names = edge["name"].split(",")
-            names = []
+            names = [
+                name.replace("_", r"\_").replace("(0)", "{(0)}") for name in old_names
+            ]
 
-            for name in old_names:
-                sub = sup = None
-                s_name = name.split("^")
-                if len(s_name) == 2:
-                    name = s_name[0]
-                    suffix = s_name[1]
-                    s_name = suffix.split("_")
-                    if len(s_name) == 1:
-                        s_name = name.split("_")
-                        if len(s_name) > 1:
-                            sup = suffix
-                            sub = s_name[-1]
-                            name = "".join(s_name[:-1])
-                    else:
-                        sub = s_name[0]
-                        sup = s_name[1]
-                else:
-                    s_name = name.split("_")
-                    if len(s_name) > 1:
-                        sub = s_name[-1]
-                        name = "".join(s_name[:-1])
-
-                sup = "" if sup is None else "^{" + sup + "}"
-                sub = "" if sub is None else "_{" + sub + "}"
-                names.append(name + sub + sup)
-
-            names = ", ".join(names)
+            if len(names) > 2:
+                names = f"{', '.join(names[:2])}..., ({len(names)})"
+            else:
+                names = ", ".join(names)
 
             if edge["to"] == "_U_":
                 self.__xdsm.add_output(edge["from"], r"" + names + "")
@@ -242,18 +265,33 @@ class XDSMToPDFConverter:
 
 
 def xdsm_data_to_pdf(
-    xdsm_data,
-    directory_path,
-    filename_without_ext: str = "xdsm",
+    xdsm_data: dict[str, Any],
+    directory_path: Path | str,
+    file_name: str = "xdsm",
     scenario: str = "root",
+    pdf_build: bool = True,
+    pdf_cleanup: bool = True,
+    pdf_batchmode: bool = True,
 ) -> None:
     """Convert a dictionary representation of a XDSM to a pdf.
 
     Args:
-        xdsm_data: XDSM dictionary representation.
-        directory_path (str): output directory.
-        filename_without_ext (str): output file name, default is 'xdsm'.
-        scenario (str): scenario name, default is 'root'.
+        xdsm_data: The XDSM representation.
+        directory_path: The output directory where the pdf is generated.
+        file_name: The output file name (without extension).
+        scenario: The name of the scenario name.
+        pdf_build: Whether the standalone pdf of the XDSM will be built.
+        pdf_cleanup: Whether pdflatex built files will be cleaned up
+            after build is complete.
+        pdf_batchmode: Whether pdflatex is run in `batchmode`.
     """
     converter = XDSMToPDFConverter()
-    converter.convert(xdsm_data, directory_path, filename_without_ext, scenario)
+    converter.convert(
+        xdsm_data,
+        str(directory_path),
+        file_name,
+        scenario,
+        pdf_build,
+        pdf_cleanup,
+        pdf_batchmode,
+    )

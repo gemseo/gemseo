@@ -532,6 +532,9 @@ class Scenario(MDODiscipline):
         save_html: bool = True,
         save_json: bool = False,
         save_pdf: bool = False,
+        pdf_build: bool = True,
+        pdf_cleanup: bool = True,
+        pdf_batchmode: bool = True,
     ) -> XDSM | None:
         """Create a XDSM diagram of the scenario.
 
@@ -547,6 +550,10 @@ class Scenario(MDODiscipline):
             save_html: Whether to save the XDSM as a HTML file.
             save_json: Whether to save the XDSM as a JSON file.
             save_pdf: Whether to save the XDSM as a PDF file.
+            pdf_build: Whether the standalone pdf of the XDSM will be built.
+            pdf_cleanup: Whether pdflatex built files will be cleaned up
+                after build is complete.
+            pdf_batchmode: Whether pdflatex is run in `batchmode`.
 
         Returns:
             A view of the XDSM if ``monitor`` is ``False``.
@@ -569,6 +576,9 @@ class Scenario(MDODiscipline):
             save_html=save_html,
             save_json=save_json,
             file_name=file_name,
+            pdf_build=pdf_build,
+            pdf_cleanup=pdf_cleanup,
+            pdf_batchmode=pdf_batchmode,
         )
 
     def get_expected_dataflow(  # noqa:D102
