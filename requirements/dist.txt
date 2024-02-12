@@ -83,7 +83,7 @@ tomli==2.0.1
     #   build
     #   check-wheel-contents
     #   pyproject-hooks
-twine==4.0.2
+twine==5.0.0
     # via -r requirements/dist.in
 typing-extensions==4.9.0
     # via
