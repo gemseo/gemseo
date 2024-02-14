@@ -39,7 +39,7 @@ repos:
       ]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.5.4
+  rev: v1.5.5
   hooks:
     - id: insert-license
       name: insert LGPL license
