@@ -134,7 +134,7 @@ sympy==1.12
     # via gemseo (pyproject.toml)
 tenacity==8.2.3
     # via plotly
-threadpoolctl==3.2.0
+threadpoolctl==3.3.0
     # via scikit-learn
 tqdm==4.66.1
     # via gemseo (pyproject.toml)
