@@ -40,7 +40,7 @@ class ShellExecutableDiscipline(_BaseDiscFromExe):
     def _parse_outputs(self) -> Mapping[str, np.ndarray]:
         data = {}
         with open(self.last_directory / "outputs.txt") as f:
-            for line in f.readlines():
+            for line in f:
                 if len(line) == 0:
                     continue
                 name, value = line.replace("\n", "").split("=")

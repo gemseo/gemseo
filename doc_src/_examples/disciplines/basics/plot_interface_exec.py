@@ -76,7 +76,7 @@ configure_logger()
 def parse_file(file_path):
     data = {}
     with open(file_path) as inf:
-        for line in inf.readlines():
+        for line in inf:
             if len(line) == 0:
                 continue
             name, value = line.replace("\n", "").split("=")
