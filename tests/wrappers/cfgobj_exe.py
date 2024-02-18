@@ -26,7 +26,7 @@ from ast import literal_eval
 def parse_cfgobj(infile):
     data = {}
     with open(infile) as inf:
-        for line in inf.readlines():
+        for line in inf:
             if "=" in line:
                 spl = line.strip().split("=")
                 if len(spl) != 2:
