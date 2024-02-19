@@ -2171,8 +2171,6 @@ class OptimizationProblem(BaseProblem):
             file_path: The path of the file to store the data.
             append: If ``True``, then the data are appended to the file if not empty.
         """
-        LOGGER.info("Export optimization problem to file: %s", str(file_path))
-
         mode = "a" if append else "w"
 
         with h5py.File(file_path, mode) as h5file:
@@ -2224,8 +2222,6 @@ class OptimizationProblem(BaseProblem):
         Returns:
             The read optimization problem.
         """
-        LOGGER.info("Import optimization problem from file: %s", file_path)
-
         design_space = DesignSpace.from_file(file_path)
         opt_pb = OptimizationProblem(design_space, input_database=file_path)
 
