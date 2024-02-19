@@ -72,7 +72,7 @@ def create_iris_dataset(
     """
     file_path = Path(__file__).parent / "iris.data"
     cls = IODataset if as_io else Dataset
-    dataset = cls.from_csv(file_path)
+    dataset = cls.from_csv(file_path, first_column_as_index=False)
     dataset.name = "Iris"
 
     if as_numeric:

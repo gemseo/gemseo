@@ -609,6 +609,13 @@ def test_from_csv(tmp_wd, io_dataset, delimiter, first_column_as_index) -> None:
     assert_frame_equal(io_dataset.astype("int32"), dataset.astype("int32"))
 
 
+def test_from_csv_defaults(tmp_wd, io_dataset) -> None:
+    """Test the ``from_csv`` method using only the default arguments."""
+    io_dataset.to_csv("io_dataset.csv")
+    dataset = Dataset.from_csv("io_dataset.csv")
+    assert_frame_equal(io_dataset.astype("int32"), dataset.astype("int32"))
+
+
 @from_array_parameters
 def test_from_txt(
     small_file_dataset,
@@ -1171,7 +1178,7 @@ def test_create_dataset_from_wrong_file_extension() -> None:
 def test_create_dataset_from_csv_file(tmp_wd) -> None:
     """Check the high-level function create_dataset from a .csv file."""
     dataset = create_dataset("foo", array([[1], [2]]))
-    dataset.to_csv("bar.csv", sep="#", index=False)
+    dataset.to_csv("bar.csv", sep="#")
     other_dataset = create_dataset("foo", "bar.csv", delimiter="#")
     assert_frame_equal(dataset.astype("int32"), other_dataset.astype("int32"))
 

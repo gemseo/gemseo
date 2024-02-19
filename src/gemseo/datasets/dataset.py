@@ -873,7 +873,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         cls,
         file_path: Path | str,
         delimiter: str = ",",
-        first_column_as_index: bool = False,
+        first_column_as_index: bool = True,
     ) -> Dataset:
         """Set the dataset from a CSV file.
 
