@@ -1,0 +1,4 @@
+The method ``Scenario.set_optimization_history_backup()`` now starts generating plots only after the first two
+iterations have been computed.
+The ``OptHistoryView`` plots created by ``Scenario.set_optimization_history_backup()`` with the option
+``generate_opt_plot``  are no longer updated at each ``Database.store()``, only at each new iteration.

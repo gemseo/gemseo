@@ -138,7 +138,6 @@ class Scenario(MDODiscipline):
         """  # noqa: D205, D212, D415
         self.optimization_result = None
         self._algo_factory = None
-        self._gen_opt_backup_plot = False
         self._algo_name = None
         self._lib = None
 
@@ -373,20 +372,22 @@ class Scenario(MDODiscipline):
 
         Args:
             file_path: The path to the file to save the history.
-            each_new_iter: If ``True``, callback at every iteration.
-            each_store: If ``True``, callback at every call to store() in the database.
-            erase: If ``True``, the backup file is erased before the run.
-            pre_load: If ``True``, the backup file is loaded before run,
+            each_new_iter: Whether the backup file is updated at every iteration
+                of the optimization to store the database.
+            each_store: Whether the backup file is updated at every function call
+                to store the database.
+            erase: Whether the backup file is erased before the run.
+            pre_load: Whether the backup file is loaded before run,
                 useful after a crash.
-            generate_opt_plot: If ``True``, generate the optimization history view
-                at backup.
+            generate_opt_plot: Whether to plot the optimization history view
+                at each iteration. The plots will be generated only after the first two
+                iterations.
 
         Raises:
-            ValueError: If both erase and pre_load are ``True``.
+            ValueError: If both ``erase`` and ``pre_load`` are ``True``.
         """
         opt_pb = self.formulation.opt_problem
         self._opt_hist_backup_path = Path(file_path)
-        self._gen_opt_backup_plot = generate_opt_plot
 
         if self._opt_hist_backup_path.exists():
             if erase and pre_load:
@@ -413,6 +414,11 @@ class Scenario(MDODiscipline):
             each_store=each_store,
         )
 
+        if generate_opt_plot:
+            opt_pb.add_callback(
+                self._execute_plot_callback, each_new_iter=True, each_store=False
+            )
+
     def _execute_backup_callback(self, option: Any = None) -> None:
         """A callback function to back up optimization history.
 
@@ -422,7 +428,16 @@ class Scenario(MDODiscipline):
                callback functions usage in :class:`.OptimizationProblem`.
         """
         self.save_optimization_history(self._opt_hist_backup_path, append=True)
-        if self._gen_opt_backup_plot and self.formulation.opt_problem.database:
+
+    def _execute_plot_callback(self, option: Any = None) -> None:
+        """A callback function to plot the OptHistoryView of the current history.
+
+        Args:
+            option: Any input value which is not used within the current function,
+               but need to be defined for the generic mechanism of the
+               callback functions usage in :class:`.OptimizationProblem`.
+        """
+        if len(self.formulation.opt_problem.database) > 2:
             self.post_process(
                 "OptHistoryView",
                 save=True,

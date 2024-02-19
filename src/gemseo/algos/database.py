@@ -791,8 +791,6 @@ class Database(Mapping):
         values_array, variable_names, function_names = self.get_history_array(
             function_names=function_names, add_missing_tag=True, input_names=input_names
         )
-        LOGGER.info("Export to ggobi for functions: %s", str(function_names))
-        LOGGER.info("Export to ggobi file: %s", file_path)
         save_data_arrays_to_xml(
             variable_names=variable_names,
             values_array=values_array,

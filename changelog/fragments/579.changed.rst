@@ -1,0 +1,3 @@
+The methods ``OptimizationProblem.from_hdf()`` and ``OptimizationProblem.to_hdf()`` no longer log messages when they are
+called.
+The method ``Database.to_ggobi()`` no longer logs messages when it is called.

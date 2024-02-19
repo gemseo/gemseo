@@ -42,6 +42,7 @@ from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscip
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
@@ -59,6 +60,9 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.dataset import Dataset
+
+PARENT_PATH = Path(__file__).parent
+SOBIESKI_HDF5_PATH = PARENT_PATH / "mdf_backup.h5"
 
 
 def build_mdo_scenario(
@@ -90,7 +94,7 @@ def build_mdo_scenario(
         ]
 
     design_space = SobieskiDesignSpace()
-    return MDOScenario(
+    scenario = MDOScenario(
         disciplines,
         formulation,
         "y_4",
@@ -98,6 +102,9 @@ def build_mdo_scenario(
         grammar_type=grammar_type,
         maximize_objective=True,
     )
+    for c_name in ["g_1", "g_2", "g_3"]:
+        scenario.add_constraint(c_name, constraint_type=MDOFunction.ConstraintType.INEQ)
+    return scenario
 
 
 @pytest.fixture()
@@ -208,27 +215,81 @@ def test_backup_error(tmp_wd, mdf_scenario) -> None:
         mdf_scenario.set_optimization_history_backup(__file__, pre_load=True)
 
 
-@pytest.mark.parametrize("each_iter", [False, True])
-def test_backup_0(tmp_wd, mdf_scenario, each_iter) -> None:
-    """Test the optimization backup with generation of plots during convergence.
+@pytest.mark.parametrize("pre_load", [True, False])
+def test_optimization_hist_backup_pre_load(tmp_wd, mdf_scenario, pre_load) -> None:
+    """Test the pre_load option of the optimization history backup."""
+    mdf_scenario.set_optimization_history_backup(SOBIESKI_HDF5_PATH, pre_load=pre_load)
+    database = mdf_scenario.formulation.opt_problem.database
+    assert len(database) == 4 if pre_load else len(database) == 0
 
-    Test that, when used, the backup does not call the original objective.
+
+@pytest.mark.parametrize("each_store", [True, False])
+def test_optimization_hist_backup_each_store(tmp_wd, mdf_scenario, each_store) -> None:
+    """Test the backup execution at each iteration."""
+    file_path = Path("opt_history.h5")
+    mdf_scenario.set_optimization_history_backup(
+        file_path, each_new_iter=False, each_store=each_store
+    )
+
+    inputs = array([
+        5.0e-02,
+        4.5e04,
+        1.6e00,
+        5.5e00,
+        5.5e01,
+        1.0e03,
+        2.5e-01,
+        1.0e00,
+        1.0e00,
+        5.0e-01,
+    ])
+    y_4 = {"-y_4": -535.7821319229388}
+    g_1 = {
+        "g_1": array([0.035, -0.00666667, -0.0275, -0.04, -0.04833333, -0.09, -0.15])
+    }
+
+    mdf_scenario.formulation.opt_problem.database.store(inputs, y_4)
+    mdf_scenario.formulation.opt_problem.database.store(inputs, g_1)
+
+    if each_store:
+        backup_problem = OptimizationProblem.from_hdf(file_path)
+        assert "-y_4" in backup_problem.database[inputs]
+        assert "g_1" in backup_problem.database[inputs]
+    else:
+        assert not file_path.exists()
+
+
+@pytest.mark.parametrize("erase", [False, True])
+def test_optimization_hist_backup_erase(tmp_wd, mdf_scenario, erase) -> None:
+    """Test that the erase option deletes the backup file as intended."""
+    file_path = Path("opt_history.h5")
+    with open(file_path, "w"):
+        pass
+    mdf_scenario.set_optimization_history_backup(file_path, erase=erase)
+    file_exists = file_path.exists()
+    assert not file_exists if erase else file_exists
+
+
+@pytest.mark.parametrize("generate_opt_plot", [True, False])
+def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, generate_opt_plot) -> None:
+    """Test the plot creation with the generate_opt_plot option.
+
+    Four iterations are needed to generate the Hessian approximation plot.
     """
     file_path = Path("opt_history.h5")
     mdf_scenario.set_optimization_history_backup(
-        file_path, erase=True, generate_opt_plot=True, each_new_iter=each_iter
+        file_path, generate_opt_plot=generate_opt_plot
     )
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
-    assert len(mdf_scenario.formulation.opt_problem.database) == 2
-
-    assert file_path.exists()
-
-    opt_read = OptimizationProblem.from_hdf(file_path)
-
-    assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
-
-    mdf_scenario.set_optimization_history_backup(file_path, erase=True)
-    assert not file_path.exists()
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 4})
+    for plot in [
+        "hessian_approximation",
+        "ineq_constraints",
+        "objective",
+        "variables",
+        "x_xstar",
+    ]:
+        file_exists = Path(f"opt_history_{plot}.png").exists()
+        assert file_exists if generate_opt_plot else not file_exists
 
 
 @pytest.mark.parametrize(
