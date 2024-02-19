@@ -89,6 +89,12 @@ class OptHistoryView(BasePost):
     __AXIS_LABEL_SIZE: Final[int] = 12
     """The font size of the axis labels."""
 
+    __X_MARGIN: ClassVar[float] = 0.1
+    """The left and right margin for the x-axis."""
+
+    __Y_MARGIN: ClassVar[float] = 0.05
+    """The left and right margin for the y-axis."""
+
     def __init__(  # noqa:D107
         self,
         opt_problem: OptimizationProblem,
@@ -342,9 +348,9 @@ class OptHistoryView(BasePost):
         if obj_max is not None and obj_max > fmax:
             fmax = obj_max
 
-        margin = (fmax - fmin) * self._Y_MARGIN
+        margin = (fmax - fmin) * self.__Y_MARGIN
         plt.ylim([fmin - margin, fmax + margin])
-        plt.xlim([0 - self._X_MARGIN, n_iter - 1 + self._X_MARGIN])
+        plt.xlim([0 - self.__X_MARGIN, n_iter - 1 + self.__X_MARGIN])
         ax1 = fig.gca()
         ax1.set_xticks(x_absc)
         ax1.set_xticklabels((x_absc + 1).tolist())
@@ -400,7 +406,7 @@ class OptHistoryView(BasePost):
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         plt.grid(True)
         plt.title("Evolution of the distance to the optimum")
-        plt.xlim([0 - self._X_MARGIN, n_iter - 1 + self._X_MARGIN])
+        plt.xlim([0 - self.__X_MARGIN, n_iter - 1 + self.__X_MARGIN])
 
         # Set window size
         mng = plt.get_current_fig_manager()

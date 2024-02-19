@@ -84,12 +84,6 @@ class BasePost(metaclass=_MetaClass):
     _neg_obj_name: str
     """The name of the objective function starting with a '-'."""
 
-    _X_MARGIN: ClassVar[float] = 0.1
-    """The left and right margin for the x-axis."""
-
-    _Y_MARGIN: ClassVar[float] = 0.05
-    """The left and right margin for the y-axis."""
-
     def __init__(
         self,
         opt_problem: OptimizationProblem,
