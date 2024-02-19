@@ -1,0 +1,1 @@
+Methods ``execute`` and ``linearize`` of ``gemseo.problems.sobieski.core.structure.SobieskiStructure`` catch the ``ValueError`` raised by the computation of the logarithm of a non-positive weight ratio. Method ``execute`` returns ``numpy.nan`` for the mass term.

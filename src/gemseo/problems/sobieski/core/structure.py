@@ -30,6 +30,7 @@ import logging
 
 from numpy import append
 from numpy import array
+from numpy import nan
 from numpy import ndarray
 from numpy import ones
 from numpy import zeros
@@ -1038,11 +1039,12 @@ class SobieskiStructure(SobieskiDiscipline):
         y_1[0] = c_1 + wing_w + y_1_i1 + engine_mass
 
         # This is the mass term in the Breguet range equation.
-        y_11 = array(
-            [self.math.log(self.__compute_weight_ratio(y_1[0], y_1[1]))],
-            dtype=self.dtype,
-        )
+        try:
+            logarithm = self.math.log(self.__compute_weight_ratio(y_1[0], y_1[1]))
+        except ValueError:
+            logarithm = nan
 
+        y_11 = array([logarithm], dtype=self.dtype)
         return y_1, y_11
 
     def __compute_wing_twist(
