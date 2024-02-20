@@ -1049,6 +1049,15 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 list_of_dict_of_arrays.append(dict_of_arrays)
 
         if by_entry:
+            if by_group:
+                return [
+                    {
+                        k1: {k2: v2.ravel() for k2, v2 in v1.items()}
+                        for k1, v1 in d.items()
+                    }
+                    for d in list_of_dict_of_arrays
+                ]
+
             return [
                 {k: v.ravel() for k, v in d.items()} for d in list_of_dict_of_arrays
             ]

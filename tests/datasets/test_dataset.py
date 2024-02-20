@@ -1070,48 +1070,60 @@ def dataset_for_to_dict_of_arrays() -> Dataset:
     return dataset
 
 
-def test_to_dict_of_arrays(dataset_for_to_dict_of_arrays) -> None:
-    """Test the method to_dict_of_arrays with default options."""
-    result = dataset_for_to_dict_of_arrays.to_dict_of_arrays()
-    expected = {
-        "A": {"x": array([[1, 1], [-1, -1]]), "y": array([[2], [-2]])},
-        "B": {"x": array([[3, 3, 3], [-3, -3, -3]]), "z": array([[4], [-4]])},
-    }
-    assert_equal(result, expected)
-
-
-def test_to_dict_of_arrays_by_variable_name(dataset_for_to_dict_of_arrays) -> None:
-    """Test the method to_dict_of_arrays without sorting by group."""
-    result = dataset_for_to_dict_of_arrays.to_dict_of_arrays(False)
-    expected = {
-        "y": array([[2], [-2]]),
-        "z": array([[4], [-4]]),
-        "A:x": array([[1, 1], [-1, -1]]),
-        "B:x": array([[3, 3, 3], [-3, -3, -3]]),
-    }
-    assert_equal(result, expected)
-
-
-def test_to_dict_of_arrays_by_entry_by_variable_name(
-    dataset_for_to_dict_of_arrays,
-) -> None:
-    """Test the method to_dict_of_arrays with sorting by entry and by variable name."""
-    result = dataset_for_to_dict_of_arrays.to_dict_of_arrays(False, True)
-    expected = [
-        {
-            "y": array([2]),
-            "z": array([4]),
-            "A:x": array([1, 1]),
-            "B:x": array([3, 3, 3]),
-        },
-        {
-            "y": array([-2]),
-            "z": array([-4]),
-            "A:x": array([-1, -1]),
-            "B:x": array([-3, -3, -3]),
-        },
-    ]
-    assert_equal(result, expected)
+@pytest.mark.parametrize(
+    ("kwargs", "expected"),
+    [
+        (
+            {},
+            {
+                "A": {"x": array([[1, 1], [-1, -1]]), "y": array([[2], [-2]])},
+                "B": {"x": array([[3, 3, 3], [-3, -3, -3]]), "z": array([[4], [-4]])},
+            },
+        ),
+        (
+            {"by_group": False},
+            {
+                "y": array([[2], [-2]]),
+                "z": array([[4], [-4]]),
+                "A:x": array([[1, 1], [-1, -1]]),
+                "B:x": array([[3, 3, 3], [-3, -3, -3]]),
+            },
+        ),
+        (
+            {"by_group": False, "by_entry": True},
+            [
+                {
+                    "y": array([2]),
+                    "z": array([4]),
+                    "A:x": array([1, 1]),
+                    "B:x": array([3, 3, 3]),
+                },
+                {
+                    "y": array([-2]),
+                    "z": array([-4]),
+                    "A:x": array([-1, -1]),
+                    "B:x": array([-3, -3, -3]),
+                },
+            ],
+        ),
+        (
+            {"by_entry": True},
+            [
+                {
+                    "A": {"x": array([1, 1]), "y": array([2])},
+                    "B": {"x": array([3, 3, 3]), "z": array([4])},
+                },
+                {
+                    "A": {"x": array([-1, -1]), "y": array([-2])},
+                    "B": {"x": array([-3, -3, -3]), "z": array([-4])},
+                },
+            ],
+        ),
+    ],
+)
+def test_to_dict_of_arrays(dataset_for_to_dict_of_arrays, kwargs, expected) -> None:
+    """Test the method to_dict_of_arrays with different options."""
+    assert_equal(dataset_for_to_dict_of_arrays.to_dict_of_arrays(**kwargs), expected)
 
 
 def test_summary() -> None:
