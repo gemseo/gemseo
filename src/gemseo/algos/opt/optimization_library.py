@@ -25,6 +25,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.driver_library import DriverDescription
@@ -97,16 +98,37 @@ class OptimizationLibrary(DriverLibrary):
     PG_TOL = "pg_tol"
     VERBOSE = "verbose"
 
+    __DEFAULT_FTOL_ABS: Final[float] = 0.0
+    """The default absolute tolerance for the objective."""
+
+    __DEFAULT_FTOL_REL: Final[float] = 0.0
+    """The default relative tolerance for the objective."""
+
+    __DEFAULT_XTOL_ABS: Final[float] = 0.0
+    """The default absolute tolerance for the design variables."""
+
+    __DEFAULT_XTOL_REL: Final[float] = 0.0
+    """The default relative tolerance for the design variables."""
+
+    __DEFAULT_KKT_ABS_TOL: Final[float] = 0.0
+    """The default absolute tolerance for the Karush-Kuhn-Tucker (KKT) conditions."""
+
+    __DEFAULT_KKT_REL_TOL: Final[float] = 0.0
+    """The default relative tolerance for the Karush-Kuhn-Tucker (KKT) conditions."""
+
+    __DEFAULT_STOP_CRIT_N_X: Final[int] = 3
+    """The default minimum number of iterations to assess tolerance."""
+
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
-        self._ftol_rel = 0.0
-        self._ftol_abs = 0.0
-        self._xtol_rel = 0.0
-        self._xtol_abs = 0.0
-        self.__kkt_abs_tol = 0.0
-        self.__kkt_rel_tol = 0.0
+        self._ftol_abs = self.__DEFAULT_FTOL_ABS
+        self._ftol_rel = self.__DEFAULT_FTOL_REL
+        self._xtol_abs = self.__DEFAULT_XTOL_ABS
+        self._xtol_rel = self.__DEFAULT_XTOL_REL
+        self.__kkt_abs_tol = self.__DEFAULT_KKT_ABS_TOL
+        self.__kkt_rel_tol = self.__DEFAULT_KKT_REL_TOL
         self.__ref_kkt_norm = None
-        self._stop_crit_n_x = 3
+        self._stop_crit_n_x = self.__DEFAULT_STOP_CRIT_N_X
 
     def __algorithm_handles(self, algo_name: str, eq_constraint: bool):
         """Check if the algorithm handles equality or inequality constraints.
@@ -127,6 +149,7 @@ class OptimizationLibrary(DriverLibrary):
 
         return self.descriptions[algo_name].handle_inequality_constraints
 
+    # TODO: API: rename to algorithm_handles_equality_constraints
     def algorithm_handles_eqcstr(self, algo_name: str) -> bool:
         """Check if an algorithm handles equality constraints.
 
@@ -138,6 +161,7 @@ class OptimizationLibrary(DriverLibrary):
         """
         return self.__algorithm_handles(algo_name, True)
 
+    # TODO: API: rename to algorithm_handles_inequality_constraints
     def algorithm_handles_ineqcstr(self, algo_name: str) -> bool:
         """Check if an algorithm handles inequality constraints.
 
@@ -149,6 +173,7 @@ class OptimizationLibrary(DriverLibrary):
         """
         return self.__algorithm_handles(algo_name, False)
 
+    # TODO: API: rename to is_algo_requires_positive_constraints
     def is_algo_requires_positive_cstr(self, algo_name: str) -> bool:
         """Check if an algorithm requires positive constraints.
 
@@ -220,12 +245,14 @@ class OptimizationLibrary(DriverLibrary):
             msg = "Could not determine the maximum number of iterations."
             raise ValueError(msg)
 
-        self._ftol_rel = options.get(self.F_TOL_REL, 0.0)
-        self._ftol_abs = options.get(self.F_TOL_ABS, 0.0)
-        self._xtol_rel = options.get(self.X_TOL_REL, 0.0)
-        self._xtol_abs = options.get(self.X_TOL_ABS, 0.0)
+        self._ftol_rel = options.get(self.F_TOL_REL, self.__DEFAULT_FTOL_REL)
+        self._ftol_abs = options.get(self.F_TOL_ABS, self.__DEFAULT_FTOL_ABS)
+        self._xtol_rel = options.get(self.X_TOL_REL, self.__DEFAULT_XTOL_REL)
+        self._xtol_abs = options.get(self.X_TOL_ABS, self.__DEFAULT_XTOL_ABS)
         self.__ineq_tolerance = options.get(self.INEQ_TOLERANCE, problem.ineq_tolerance)
-        self._stop_crit_n_x = options.get(self.STOP_CRIT_NX, 3)
+        self._stop_crit_n_x = options.get(
+            self.STOP_CRIT_NX, self.__DEFAULT_STOP_CRIT_N_X
+        )
         self.__kkt_abs_tol = options.get(self._KKT_TOL_ABS, None)
         self.__kkt_rel_tol = options.get(self._KKT_TOL_REL, None)
         self.init_iter_observer(max_iter)
@@ -236,9 +263,11 @@ class OptimizationLibrary(DriverLibrary):
             problem.add_callback(
                 self._check_kkt_from_database, each_new_iter=False, each_store=True
             )
+        problem.design_space.initialize_missing_current_values()
+        if problem.differentiation_method == self.DifferentiationMethod.COMPLEX_STEP:
+            problem.design_space.to_complex()
         # First, evaluate all functions at x_0. Some algorithms don't do this
-        self.problem.design_space.initialize_missing_current_values()
-        self.problem.evaluate_functions(
+        problem.evaluate_functions(
             eval_jac=require_gradient,
             eval_obj=True,
             eval_observables=False,

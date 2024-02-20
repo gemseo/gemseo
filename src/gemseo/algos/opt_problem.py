@@ -1580,7 +1580,7 @@ class OptimizationProblem(BaseProblem):
             func = NormFunction(func, is_function_input_normalized, round_ints, self)
 
         if self.differentiation_method in set(self.ApproximationMode):
-            self.__add_fd_jac(func, is_function_input_normalized)
+            self.__add_approximated_jac_function(func, is_function_input_normalized)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
         if use_database:
@@ -1635,27 +1635,18 @@ class OptimizationProblem(BaseProblem):
             value_at_zero,
         )
 
-    def __add_fd_jac(
+    def __add_approximated_jac_function(
         self,
         func: MDOFunction,
         normalize: bool,
     ) -> None:
-        """Add a pointer to the approached Jacobian of the function.
-
-        This Jacobian matrix is generated according :attr:`.differentiation_method`.
+        """Define the Jacobian function of an :class:`MDOFunction` as an approximator.
 
         Args:
-            func: The function to be derivated.
+            func: The function of interest.
             normalize: Whether to unnormalize the input vector of the function
                 before evaluate it.
-
-        Raises:
-            ValueError: When the current value is not defined.
         """
-        if not self.design_space.has_current_value():
-            msg = "The design space has no current value."
-            raise ValueError(msg)
-
         if self.differentiation_method not in set(self.ApproximationMode):
             return
 
