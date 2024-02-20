@@ -396,13 +396,6 @@ def _test_check_bounds(pow2_problem) -> None:
         problem.check()
 
 
-def test_differentiation_method_without_current_x(pow2_problem) -> None:
-    """Check that a ValueError is raised when the current x is not defined."""
-    pow2_problem.design_space.set_current_value({})
-    with pytest.raises(ValueError, match=r"The design space has no current value\."):
-        pow2_problem._OptimizationProblem__add_fd_jac("foo", False)
-
-
 def test_differentiation_method(pow2_problem) -> None:
     problem = pow2_problem
     problem.differentiation_method = problem.ApproximationMode.COMPLEX_STEP
@@ -1953,3 +1946,22 @@ def test_reformulate_with_slack_variables(constrained_problem) -> None:
         == constrained_problem.get_eq_constraints_number()
         + constrained_problem.get_ineq_constraints_number()
     )
+
+
+@pytest.mark.parametrize("value", [0.5, None])
+@pytest.mark.parametrize(
+    "differentiation_method",
+    [
+        OptimizationProblem.DifferentiationMethod.FINITE_DIFFERENCES,
+        OptimizationProblem.DifferentiationMethod.COMPLEX_STEP,
+    ],
+)
+def test_no_initial_value_with_approximated_gradient(value, differentiation_method):
+    """Check that gradient approximation works with and without current value."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=value)
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x**2, "f")
+    problem.differentiation_method = differentiation_method
+    optimization_result = execute_algo(problem, "SLSQP", max_iter=100)
+    assert optimization_result.x_opt == 0
