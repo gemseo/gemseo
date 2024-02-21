@@ -449,12 +449,13 @@ class DriverLibrary(AlgorithmLibrary):
                     log.add(line)
                 log.dedent()
                 LOGGER.info("%s", log)
-                LOGGER.info(
-                    "Solving optimization problem with algorithm %s:",
-                    self.algo_name,
-                )
+
+            progress_bar_title = "Solving optimization problem with algorithm %s:"
         else:
-            LOGGER.info("Running the algorithm %s:", self.algo_name)
+            progress_bar_title = "Running the algorithm %s:"
+
+        if self.__activate_progress_bar:
+            LOGGER.info(progress_bar_title, self.algo_name)
 
         with (
             OneLineLogging(TQDM_LOGGER) if use_one_line_progress_bar else nullcontext()
