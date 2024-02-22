@@ -22,7 +22,7 @@ pyyaml==6.0.1
     # via pre-commit
 ruff==0.2.2
     # via -r requirements/check.in
-virtualenv==20.25.0
+virtualenv==20.25.1
     # via pre-commit
 
 # The following packages are considered to be unsafe in a requirements file:
