@@ -85,7 +85,7 @@ tomli==2.0.1
     #   pyproject-hooks
 twine==5.0.0
     # via -r requirements/dist.in
-typing-extensions==4.9.0
+typing-extensions==4.10.0
     # via
     #   pydantic
     #   pydantic-core
