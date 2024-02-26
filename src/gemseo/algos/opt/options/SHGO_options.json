@@ -55,7 +55,18 @@
         "integer"
       ]
     },
-    "local_options": {}
+    "local_options": {},
+    "scaling_threshold": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",

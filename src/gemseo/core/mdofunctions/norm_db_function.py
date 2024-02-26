@@ -60,7 +60,6 @@ class NormDBFunction(MDOFunction):
             optimization_problem: The optimization problem object that contains
                 the function.
         """  # noqa: D205, D212, D415
-        self.__normalize = normalize
         self.__orig_func = orig_func
         self.__is_observable = is_observable
         self.__optimization_problem = optimization_problem
@@ -85,6 +84,7 @@ class NormDBFunction(MDOFunction):
             output_names=orig_func.output_names,
             special_repr=orig_func.special_repr,
             original_name=orig_func.original_name,
+            expects_normalized_inputs=normalize,
         )
 
     def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
@@ -106,7 +106,7 @@ class NormDBFunction(MDOFunction):
         if isnan(x_vect).any():
             msg = f"Design Variables contain a NaN value: {x_vect}"
             raise DesvarIsNan(msg)
-        normalize = self.__normalize
+        normalize = self.expects_normalized_inputs
         if normalize:
             xn_vect = x_vect
             xu_vect = self.__unnormalize_vect(xn_vect)
@@ -153,7 +153,7 @@ class NormDBFunction(MDOFunction):
         if isnan(x_vect).any():
             msg = f"Design Variables contain a NaN value: {x_vect}"
             raise FunctionIsNan(msg)
-        normalize = self.__normalize
+        normalize = self.expects_normalized_inputs
         if normalize:
             xn_vect = x_vect
             xu_vect = self.__unnormalize_vect(xn_vect)
@@ -173,7 +173,7 @@ class NormDBFunction(MDOFunction):
                 raise MaxIterReachedException
 
             # if not evaluated yet, evaluate
-            if self.__normalize:
+            if self.expects_normalized_inputs:
                 jac_n = self.__jac_orig_func(xn_vect)
                 jac_u = self.__unnormalize_grad(jac_n)
             else:
@@ -188,10 +188,6 @@ class NormDBFunction(MDOFunction):
         else:
             jac_n = design_space.normalize_grad(jac_u)
 
-        if self.__normalize:
+        if self.expects_normalized_inputs:
             return jac_n.real
         return jac_u.real
-
-    @property
-    def expects_normalized_inputs(self) -> bool:  # noqa:D102
-        return self.__normalize

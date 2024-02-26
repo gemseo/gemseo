@@ -23,6 +23,7 @@ from __future__ import annotations
 import re
 from operator import add
 from operator import mul
+from operator import sub
 from operator import truediv
 from unittest import mock
 
@@ -626,6 +627,27 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac) -> None:
     assert f_op_2.jac(2) == jac
 
 
+@pytest.fixture(scope="module")
+def multidimensional_function() -> MDOFunction:
+    return MDOFunction(lambda x: x[:-1], "f", jac=lambda x: eye(x.size)[:-1, :])
+
+
+def test_multiplication_by_array(multidimensional_function):
+    """Check the multiplication of a function by an array."""
+    product = multidimensional_function * array([2.0, 3.0])
+    inputs = array([4.0, 5.0, 6.0])
+    assert (product(inputs) == [8.0, 15.0]).all()
+    assert (product.jac(inputs) == array([[2, 0, 0], [0, 3, 0]])).all()
+
+
+def test_division_by_array(multidimensional_function):
+    """Check the division of a function by an array."""
+    quotient = multidimensional_function / array([2.0, 5.0])
+    inputs = array([4.0, 3.0, 6.0])
+    assert (quotient(inputs) == array([2.0, 0.6])).all()
+    assert (quotient.jac(inputs) == array([[0.5, 0, 0], [0, 0.2, 0]])).all()
+
+
 @pytest.mark.parametrize(
     ("expr_1", "expr_2", "op", "expected"),
     [
@@ -800,3 +822,17 @@ def test_default_repr(f_type, input_names, expr, neg, expected) -> None:
     if neg:
         f = -f
     assert f.default_repr == expected
+
+
+@pytest.mark.parametrize("operation", [add, sub, mul, truediv])
+def test_arithmetic_operation_with_incompatible_normalizations(
+    sinus, problem, operation
+):
+    """Check arithmetic operation on functions with incompatible normalizations."""
+    with pytest.raises(
+        RuntimeError,
+        match="The operation cannot be performed because "
+        "one function expects normalized inputs "
+        "while the other does not.",
+    ):
+        operation(sinus, NormFunction(sinus, True, False, problem))

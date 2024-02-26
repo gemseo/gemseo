@@ -27,6 +27,8 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 
+import numpy
+
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
@@ -40,7 +42,11 @@ from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from numpy import ndarray
+
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 @dataclass
@@ -96,6 +102,7 @@ class OptimizationLibrary(DriverLibrary):
     MAX_FUN_EVAL = "max_fun_eval"
     MAX_TIME = "max_time"
     PG_TOL = "pg_tol"
+    SCALING_THRESHOLD: Final[str] = "scaling_threshold"
     VERBOSE = "verbose"
 
     __DEFAULT_FTOL_ABS: Final[float] = 0.0
@@ -267,7 +274,7 @@ class OptimizationLibrary(DriverLibrary):
         if problem.differentiation_method == self.DifferentiationMethod.COMPLEX_STEP:
             problem.design_space.to_complex()
         # First, evaluate all functions at x_0. Some algorithms don't do this
-        problem.evaluate_functions(
+        function_values, _ = self.problem.evaluate_functions(
             eval_jac=require_gradient,
             eval_obj=True,
             eval_observables=False,
@@ -275,6 +282,25 @@ class OptimizationLibrary(DriverLibrary):
                 self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
             ),
         )
+        scaling_threshold = options.get(self.SCALING_THRESHOLD)
+        if scaling_threshold is not None:
+            self.problem.objective = self.__scale(
+                self.problem.objective,
+                function_values[self.problem.objective.name],
+                scaling_threshold,
+            )
+            self.problem.constraints = [
+                self.__scale(
+                    constraint, function_values[constraint.name], scaling_threshold
+                )
+                for constraint in self.problem.constraints
+            ]
+            self.problem.observables = [
+                self.__scale(
+                    observable, function_values[observable.name], scaling_threshold
+                )
+                for observable in self.problem.observables
+            ]
 
     @classmethod
     def _get_unsuitability_reason(
@@ -362,3 +388,32 @@ class OptimizationLibrary(DriverLibrary):
             reference_residual=self.__ref_kkt_norm,
         ):
             raise KKTReached
+
+    @staticmethod
+    def __scale(
+        function: MDOFunction,
+        function_value: Mapping[str, ndarray],
+        scaling_threshold: float,
+    ) -> MDOFunction:
+        """Scale a function based on its value on the current design values.
+
+        Args:
+            function: The function.
+            function_value: The function value of reference for scaling.
+            scaling_threshold: The threshold on the reference function value
+                that triggers scaling.
+
+        Returns:
+            The scaled function.
+        """
+        reference_values = numpy.absolute(function_value)
+        threshold_reached = reference_values > scaling_threshold
+        if not threshold_reached.any():
+            return function
+
+        scaled_function = function / numpy.where(
+            threshold_reached, reference_values, 1.0
+        )
+        # Use same function name for consistency with name used in database
+        scaled_function.name = function.name
+        return scaled_function

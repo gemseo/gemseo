@@ -261,6 +261,7 @@ class MDOFunction(Serializable):
         force_real: bool = False,
         special_repr: str = "",
         original_name: str = "",
+        expects_normalized_inputs: bool = False,
     ) -> None:
         """
         Args:
@@ -283,6 +284,7 @@ class MDOFunction(Serializable):
                 If empty, use :meth:`.default_repr`.
             original_name: The original name of the function.
                 If empty, use the same name than the ``name`` input.
+            expects_normalized_inputs: Whether the function expects normalized inputs.
         """  # noqa: D205, D212, D415
         super().__init__()
 
@@ -310,6 +312,7 @@ class MDOFunction(Serializable):
         self.force_real = force_real
         self.special_repr = special_repr or ""
         self.has_default_name = bool(self.name)
+        self.__expects_normalized_inputs = expects_normalized_inputs
 
     @property
     def original_name(self) -> str:
@@ -639,7 +642,7 @@ class MDOFunction(Serializable):
             special_repr=f"-({self.special_repr})" if self.special_repr else "",
         )
 
-    def __truediv__(self, other: MDOFunction | Number) -> MDOFunction:
+    def __truediv__(self, other: MDOFunction | OutputType) -> MDOFunction:
         """Define the division operation for MDOFunction.
 
         This operation supports automatic differentiation
@@ -655,7 +658,7 @@ class MDOFunction(Serializable):
             MDOFunction, self, other, inverse=True
         ).function
 
-    def __mul__(self, other: MDOFunction | Number) -> MDOFunction:
+    def __mul__(self, other: MDOFunction | OutputType) -> MDOFunction:
         """Define the multiplication operation for MDOFunction.
 
         This operation supports automatic differentiation
@@ -910,8 +913,8 @@ class MDOFunction(Serializable):
 
     @property
     def expects_normalized_inputs(self) -> bool:
-        """Whether the functions expect normalized inputs or not."""
-        return False
+        """Whether the function expects normalized inputs."""
+        return self.__expects_normalized_inputs
 
     def get_indexed_name(self, index: int) -> str:
         """Return the name of function component.
