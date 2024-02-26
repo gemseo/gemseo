@@ -1,0 +1,2 @@
+- The missing closing parenthesis in the expression of ``Rosenbrock`` is no longer missing.
+- Addition, substraction, multiplication and division of functions expecting normalized inputs yield functions expecting normalized inputs.

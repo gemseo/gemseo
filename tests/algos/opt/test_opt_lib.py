@@ -186,3 +186,31 @@ def test_execute_without_current_value() -> None:
     driver = OptimizersFactory().create("NLOPT_COBYLA")
     driver.execute(problem, "NLOPT_COBYLA", max_iter=1)
     assert design_space["x"].value == 0.0
+
+
+@pytest.mark.parametrize(
+    ("scaling_threshold", "pow2", "ineq1", "ineq2", "eq"),
+    [(None, 3, -0.5, -0.5, -0.1), (0.1, 1.0, -1.0, -1.0, -0.1)],
+)
+def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> None:
+    """Check the scaling of functions."""
+    with concretize_classes(OptimizationLibrary):
+        library = OptimizationLibrary()
+
+    library.descriptions["algorithm"] = OptimizationAlgorithmDescription(
+        algorithm_name="algorithm_name",
+        internal_algorithm_name="internal_algorithm_name",
+        handle_equality_constraints=True,
+        handle_inequality_constraints=True,
+    )
+    library.algo_name = "algorithm"
+    library.problem = power
+    library.problem.preprocess_functions()
+    library._pre_run(
+        power, "algorithm", max_iter=2, scaling_threshold=scaling_threshold
+    )
+    current_value = power.design_space.get_current_value()
+    assert library.problem.objective(current_value) == pow2
+    assert library.problem.constraints[0](current_value) == ineq1
+    assert library.problem.constraints[1](current_value) == ineq2
+    assert library.problem.constraints[2](current_value) == pytest.approx(eq, 0, 1e-16)
