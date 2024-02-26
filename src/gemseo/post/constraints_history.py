@@ -21,10 +21,10 @@
 from __future__ import annotations
 
 from math import ceil
-from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from matplotlib import pyplot
+from matplotlib.colors import ListedColormap
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
@@ -39,15 +39,13 @@ from numpy import max as np_max
 from numpy import sign
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.constraints_history_settings import Settings
-from gemseo.post.core.colormaps import PARULA
+from gemseo.post.constraints_history_settings import ConstraintsHistorySettings
 from gemseo.post.core.colormaps import RG_SEISMIC
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
 
-
-class ConstraintsHistory(BasePost):
+class ConstraintsHistory(BasePost[ConstraintsHistorySettings]):
     r"""A matrix of constraint history plots.
 
     A blue line represents the values of a constraint w.r.t. the iterations.
@@ -68,15 +66,9 @@ class ConstraintsHistory(BasePost):
     constraint is (or should be) active.
     """
 
-    Settings: ClassVar[type[Settings]] = Settings
+    Settings: ClassVar[type[ConstraintsHistorySettings]] = ConstraintsHistorySettings
 
-    def __init__(self, opt_problem: OptimizationProblem) -> None:  # noqa:D107
-        super().__init__(opt_problem)
-        self.cmap = PARULA
-        self.ineq_cstr_cmap = RG_SEISMIC
-        self.eq_cstr_cmap = "seismic"
-
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: ConstraintsHistorySettings) -> None:
         """
         Raises:
             ValueError: When an item of ``constraint_names`` is not a constraint name.
@@ -130,14 +122,15 @@ class ConstraintsHistory(BasePost):
         for constraint_history, constraint_name, axe in zip(
             constraint_histories.T, constraint_names, axes.ravel()
         ):
+            cmap: str | ListedColormap
             f_name = constraint_name.split("[")[0]
             is_eq_constraint = f_name in eq_constraint_names
             if is_eq_constraint:
-                cmap = self.eq_cstr_cmap
+                cmap = "seismic"
                 constraint_type = "equality"
                 tolerance = self.optimization_problem.tolerances.equality
             else:
-                cmap = self.ineq_cstr_cmap
+                cmap = RG_SEISMIC
                 constraint_type = "inequality"
                 tolerance = self.optimization_problem.tolerances.inequality
 

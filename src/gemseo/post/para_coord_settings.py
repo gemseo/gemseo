@@ -20,8 +20,8 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class ParaCoordSettings(BasePostSettings):  # noqa: D101
     ...
 
 
-update_field(Settings, "fig_size", default=(10.0, 5.0))
+update_field(ParaCoordSettings, "fig_size", default=(10.0, 5.0))

@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+import logging
+from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.algos.optimization_problem import OptimizationProblem
@@ -28,12 +30,22 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.post.base_post import BasePost
 from gemseo.post.base_post import OptPostProcessorOptionType
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
-class OptPostProcessorFactory(BaseFactory[BasePost]):
+    from gemseo.post.base_post_settings import BasePostSettings
+
+LOGGER = logging.getLogger(__name__)
+
+
+class OptPostProcessorFactory(BaseFactory[BasePost[Any]]):
     """A factory of post-processors."""
 
     _CLASS = BasePost
     _MODULE_NAMES = ("gemseo.post",)
+
+    executed_post: list[BasePost[Any]]
+    """The executed post processing."""
 
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
@@ -45,7 +57,7 @@ class OptPostProcessorFactory(BaseFactory[BasePost]):
         """The available post processors."""
         return self.class_names
 
-    def get_settings(self, class_name: str) -> type[BasePost.Settings]:
+    def get_settings(self, class_name: str) -> type[BasePostSettings]:
         """Return the settings of a class.
 
         Args:
@@ -61,7 +73,7 @@ class OptPostProcessorFactory(BaseFactory[BasePost]):
         class_name: str,
         opt_problem: OptimizationProblem,
         **options: OptPostProcessorOptionType,
-    ) -> BasePost:
+    ) -> BasePost[Any]:
         """Create a post-processor from its class name.
 
         Args:
@@ -76,7 +88,7 @@ class OptPostProcessorFactory(BaseFactory[BasePost]):
         opt_problem: str | OptimizationProblem,
         post_name: str,
         **options: Any,
-    ) -> BasePost:
+    ) -> BasePost[Any]:
         """Post-process an optimization problem.
 
         Args:
@@ -94,9 +106,10 @@ class OptPostProcessorFactory(BaseFactory[BasePost]):
         self.executed_post.append(post)
         return post
 
-    def list_generated_plots(self) -> set[str]:
+    # TODO: API: rename to get_output_file_paths
+    def list_generated_plots(self) -> set[Path]:
         """The generated plot files."""
-        plots = []
+        plots = set()
         for post in self.executed_post:
-            plots.extend(post.output_files)
-        return set(plots)
+            plots.update(post.output_files)
+        return plots

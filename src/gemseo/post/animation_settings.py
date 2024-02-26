@@ -15,6 +15,7 @@
 """Settings for post-processing."""
 
 from pathlib import Path
+from typing import Any
 from typing import Union
 
 from pydantic import ConfigDict
@@ -24,7 +25,7 @@ from gemseo.post.base_post import BasePost
 from gemseo.post.base_post_settings import BasePostSettings
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class AnimationSettings(BasePostSettings):  # noqa: D101
     # This is required to supporting the field post_processor.
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -56,7 +57,7 @@ class Settings(BasePostSettings):  # noqa: D101
         True,
         description="Whether to remove the frame images after the GIF generation.",
     )
-    post_processing: BasePost = Field(
+    post_processing: BasePost[Any] = Field(
         ...,
         description="The post processing object.",
     )

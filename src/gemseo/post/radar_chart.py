@@ -20,7 +20,7 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 from numpy import vstack
 from numpy import zeros
@@ -28,15 +28,15 @@ from numpy import zeros
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.base_post import BasePost
 from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
-from gemseo.post.radar_chart_settings import Settings
+from gemseo.post.radar_chart_settings import RadarChartSettings
 
 
-class RadarChart(BasePost):
+class RadarChart(BasePost[RadarChartSettings]):
     """Plot the constraints on a radar chart at a given database index."""
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[RadarChartSettings]] = RadarChartSettings
 
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: RadarChartSettings) -> None:
         """
         Raises:
             ValueError: When a requested name is not a constraint
@@ -45,7 +45,6 @@ class RadarChart(BasePost):
         """  # noqa: D205, D212, D415
         constraint_names = settings.constraint_names
         iteration = settings.iteration
-        show_names_radially = settings.show_names_radially
 
         if not constraint_names:
             constraint_names = self.optimzation_problem.get_constraint_names()
@@ -66,6 +65,8 @@ class RadarChart(BasePost):
 
         # optimum_index is the zero-based position of the optimum.
         # while an iteration is a one-based position.
+        assert self.opt_problem.solution is not None
+        assert self.opt_problem.solution.optimum_index is not None
         optimum_iteration = self.optimzation_problem.solution.optimum_index + 1
         if iteration is None:
             iteration = optimum_iteration
@@ -96,10 +97,10 @@ class RadarChart(BasePost):
             values,
             constraint_names,
         )
-        dataset.index = ["computed constraints", "limit constraint"]
+        dataset.index = ["computed constraints", "limit constraint"]  # type: ignore
 
         radar = RadarChartPost(
-            dataset, display_zero=False, radial_ticks=show_names_radially
+            dataset, display_zero=False, radial_ticks=settings.show_names_radially
         )
         radar.linestyle = ["-", "--"]
         radar.color = ["k", "r"]

@@ -129,4 +129,4 @@ def test_l_shape(tmp_wd) -> None:
         post_processing_settings=pp_settings,
     ).output_files
     for output_file in output_files:
-        assert Path(output_file).exists()
+        assert output_file.exists()

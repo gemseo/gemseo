@@ -21,46 +21,46 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+from typing import ClassVar
 from typing import Final
 
 from PIL import Image
 
 from gemseo.algos.database import Database
-from gemseo.post.animation_settings import Settings
+from gemseo.post.animation_settings import AnimationSettings
 from gemseo.post.base_post import BasePost
 
 
-class Animation(BasePost):
+class Animation(BasePost[AnimationSettings]):
     """Animated GIF maker from an :class:`.BasePost`."""
 
     __FRAME: Final[str] = "frame"
-    """The  prefix for frame images."""
+    """The prefix for frame images."""
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[AnimationSettings]] = AnimationSettings
 
     def _plot(
         self,
-        settings: Settings,
-    ) -> list[str]:
+        settings: AnimationSettings,
+    ) -> None:
         steps_to_frame_file_paths = self.__generate_frames(settings)
         output_files = self.__generate_gif(
             steps_to_frame_file_paths,
             settings,
         )
         self._output_files = output_files
+
         if settings.remove_frames:
             for file_paths in steps_to_frame_file_paths:
                 for file_path in file_paths:
                     Path(file_path).unlink()
-            return output_files
 
         self._output_files += steps_to_frame_file_paths
-        return output_files + steps_to_frame_file_paths
 
     def __generate_frames(
         self,
-        settings: Settings,
-    ) -> list[list[str]]:
+        settings: AnimationSettings,
+    ) -> list[list[Path]]:
         """Generate the frames of the animation.
 
         Args:
@@ -94,7 +94,7 @@ class Animation(BasePost):
 
         if temporary_database:
             opt_problem.database = Database().from_hdf(temporary_database)
-            temporary_database.unlink()
+            temporary_database.unlink()  # type:ignore
         else:
             opt_problem.database = database
 
@@ -102,8 +102,8 @@ class Animation(BasePost):
 
     def __generate_gif(
         self,
-        steps_to_frame_file_paths: list[list[str]],
-        settings: Settings,
+        steps_to_frame_file_paths: list[list[Path]],
+        settings: AnimationSettings,
     ) -> list[str]:
         """Generate and store the GIF using input frames.
 

@@ -167,7 +167,7 @@ def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
-        assert Path(outf).exists()
+        assert outf.exists()
 
 
 @pytest.mark.parametrize(

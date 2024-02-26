@@ -16,30 +16,35 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
+from typing import cast
 
 from matplotlib import colors
 from matplotlib import pyplot as plt
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.topology_view_settings import Settings
+from gemseo.post.topology_view_settings import TopologyViewSettings
+from gemseo.typing import RealArray
 
 
-class TopologyView(BasePost):
+class TopologyView(BasePost[TopologyViewSettings]):
     """Visualization of the solution of a 2D topology optimization problem."""
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[TopologyViewSettings]] = TopologyViewSettings
 
     def _plot(
         self,
-        settings: Settings,
+        settings: TopologyViewSettings,
     ) -> None:
         iterations = settings.iterations
         observable = settings.observable
         n_x = settings.n_x
         n_y = settings.n_y
 
-        iterations = [len(self.database)] if not iterations else [iterations]
+        if isinstance(iterations, int):
+            iterations = [iterations]
+        elif not iterations:
+            iterations = [len(self.database)]
 
         for iteration in iterations:
             plt.ion()  # Ensure that redrawing is possible
@@ -47,7 +52,9 @@ class TopologyView(BasePost):
             fig, ax = plt.subplots()
             if observable:
                 data = (
-                    -self.database.get_function_value(observable, design)
+                    -cast(
+                        RealArray, self.database.get_function_value(observable, design)
+                    )
                     .reshape((n_x, n_y))
                     .T
                 )

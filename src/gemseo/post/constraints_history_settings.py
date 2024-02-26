@@ -23,7 +23,7 @@ from pydantic import Field
 from gemseo.post.base_post_settings import BasePostSettings
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class ConstraintsHistorySettings(BasePostSettings):  # noqa: D101
     constraint_names: Sequence[str] = Field(
         ...,
         description="The names of the constraints.",

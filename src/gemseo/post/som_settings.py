@@ -22,7 +22,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class SOMSettings(BasePostSettings):  # noqa: D101
     n_x: int = Field(
         4,
         description="The number of grids in x.",
@@ -37,4 +37,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(12.0, 18.0))
+update_field(SOMSettings, "fig_size", default=(12.0, 18.0))

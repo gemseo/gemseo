@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 from matplotlib import pyplot
 from numpy import any as np_any
@@ -29,25 +29,25 @@ from pandas.core.frame import DataFrame
 from pandas.plotting import scatter_matrix
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.scatter_plot_matrix_settings import Settings
+from gemseo.post.scatter_plot_matrix_settings import ScatterPlotMatrixSettings
 
 
-class ScatterPlotMatrix(BasePost):
+class ScatterPlotMatrix(BasePost[ScatterPlotMatrixSettings]):
     """Scatter plot matrix among design variables, output functions and constraints.
 
     The list of variable names has to be passed as arguments of the plot method.
     """
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[ScatterPlotMatrixSettings]] = ScatterPlotMatrixSettings
 
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: ScatterPlotMatrixSettings) -> None:
         """
         Raises:
             ValueError: If `filter_non_feasible` is set to True and no feasible
                 points exist. If an element from variable_names is not either
                 a function or a design variable.
         """  # noqa: D205, D212, D415
-        variable_names = settings.variable_names
+        variable_names = list(settings.variable_names)
         filter_non_feasible = settings.filter_non_feasible
 
         problem = self.optimization_problem
@@ -98,9 +98,6 @@ class ScatterPlotMatrix(BasePost):
                     )
                 else:
                     function_names.append(variable_name)
-
-            if not design_names:
-                design_names = None
 
             if add_design_variables:
                 # Sort the design variables to be consistent with GEMSEO.

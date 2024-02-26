@@ -22,7 +22,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class RobustnessSettings(BasePostSettings):  # noqa: D101
     stddev: float = Field(
         0.01,
         description="The standard deviation of the normal uncertain variable to be "
@@ -33,4 +33,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(8.0, 5.0))
+update_field(RobustnessSettings, "fig_size", default=(8.0, 5.0))

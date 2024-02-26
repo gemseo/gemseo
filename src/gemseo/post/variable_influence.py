@@ -23,20 +23,20 @@ from __future__ import annotations
 
 import itertools
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Final
+from typing import ClassVar
 
 from matplotlib import pyplot
 from numpy import absolute
 from numpy import argsort
 from numpy import array
 from numpy import atleast_2d
-from numpy import ndarray
 from numpy import savetxt
 from numpy import stack
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.variable_influence_settings import Settings
+from gemseo.post.variable_influence_settings import VariableInfluenceSettings
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
@@ -45,10 +45,13 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
+    from gemseo.typing import RealArray
+
+
 LOGGER = logging.getLogger(__name__)
 
 
-class VariableInfluence(BasePost):
+class VariableInfluence(BasePost[VariableInfluenceSettings]):
     r"""First order variable influence analysis.
 
     This post-processing computes
@@ -65,9 +68,9 @@ class VariableInfluence(BasePost):
       in a NumPy file.
     """
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[VariableInfluenceSettings]] = VariableInfluenceSettings
 
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: VariableInfluenceSettings) -> None:
         level = settings.level
         absolute_value = settings.absolute_value
         log_scale = settings.log_scale
@@ -119,7 +122,7 @@ class VariableInfluence(BasePost):
 
     def __get_quantile(
         self,
-        sensitivity: ndarray,
+        sensitivity: RealArray,
         func: str,
         level: float = 0.99,
         save: bool = False,
@@ -167,13 +170,13 @@ class VariableInfluence(BasePost):
                 delimiter=" ; ",
                 header="name ; index",
             )
-            self.output_files.append(file_name)
+            self._output_file_paths.append(Path(file_name))
 
         return n_variables, absolute_sensitivity[n_variables - 1]
 
     def __generate_subplots(
         self,
-        names_to_sensitivities: Mapping[str, ndarray],
+        names_to_sensitivities: Mapping[str, RealArray],
         level: float,
         log_scale: bool,
         save: bool,

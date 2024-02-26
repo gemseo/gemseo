@@ -21,7 +21,7 @@ from pydantic import Field
 from gemseo.post.base_post_settings import BasePostSettings
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class KMeansSettings(BasePostSettings):  # noqa: D101
     n_clusters: int = Field(
         5,
         description="The number of clusters.",

@@ -23,7 +23,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class TopologyViewSettings(BasePostSettings):  # noqa: D101
     n_x: int = Field(
         ...,
         description="The number of elements in the horizontal direction.",
@@ -46,4 +46,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(6.4, 4.8))
+update_field(TopologyViewSettings, "fig_size", default=(6.4, 4.8))

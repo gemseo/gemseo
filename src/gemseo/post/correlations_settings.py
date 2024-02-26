@@ -22,7 +22,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class CorrelationsSettings(BasePostSettings):  # noqa: D101
     n_plots_x: int = Field(
         5,
         description="The number of horizontal plots.",
@@ -47,4 +47,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(15.0, 10.0))
+update_field(CorrelationsSettings, "fig_size", default=(15.0, 10.0))

@@ -23,6 +23,7 @@ import pytest
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.post.base_post import BasePost
+from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
@@ -34,10 +35,12 @@ def problem() -> Rosenbrock:
     return rosenbrock
 
 
-class NewBasePost(BasePost):
+class NewBasePost(BasePost[BasePostSettings]):
     """A new optimization post processor returning an empty figure."""
 
-    def _plot(self, settings: BasePost.Settings) -> None:
+    Settings = BasePostSettings
+
+    def _plot(self, settings: BasePostSettings) -> None:
         self._add_figure(plt.Figure(), "my_figure")
 
 

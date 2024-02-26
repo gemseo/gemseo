@@ -27,7 +27,9 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Generic
 from typing import Optional
+from typing import TypeVar
 from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -43,6 +45,8 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from gemseo.algos.database import Database
     from gemseo.algos.optimization_problem import OptimizationProblem
 
@@ -60,11 +64,17 @@ class _MetaClass(
     pass
 
 
-class BasePost(metaclass=_MetaClass):
+T = TypeVar("T", bound=BasePostSettings)
+
+
+class BasePost(Generic[T], metaclass=_MetaClass):
     """Abstract class for optimization post-processing methods."""
 
-    Settings: ClassVar[type[BasePostSettings]] = BasePostSettings
-    """The grammar model for the settings."""
+    # Silencing mypy since the root cause does not seem legit,
+    # and may be changed.
+    # See https://github.com/python/mypy/issues/5144.
+    Settings: ClassVar[type[T]]  # type: ignore
+    """The pydantic model for the settings."""
 
     opt_problem: OptimizationProblem
     """The optimization problem."""
@@ -83,6 +93,12 @@ class BasePost(metaclass=_MetaClass):
 
     _neg_obj_name: str
     """The name of the objective function starting with a '-'."""
+
+    _output_file_paths: list[Path]
+    """Paths to the output files."""
+
+    __figures: dict[str, Figure]
+    """The mapping from figure names or nameless figure counters to figures."""
 
     def __init__(
         self,
@@ -107,7 +123,7 @@ class BasePost(metaclass=_MetaClass):
         self.__file_path_manager = FilePathManager(
             FilePathManager.FileType.FIGURE, default_file_name
         )
-        self._output_files = []
+        self._output_file_paths = []
         self.__figures = {}
         self.__nameless_figure_counter = 0
 
@@ -125,9 +141,9 @@ class BasePost(metaclass=_MetaClass):
         return self.__figures
 
     @property
-    def output_files(self) -> list[str]:
+    def output_files(self) -> list[Path]:
         """The paths to the output files."""
-        return self._output_files
+        return self._output_file_paths
 
     def _add_figure(
         self,
@@ -166,12 +182,12 @@ class BasePost(metaclass=_MetaClass):
             )
             raise ValueError(msg)
 
-        settings = self.Settings(**settings)
-        self._plot(settings)
-        self.__render(settings)
+        _settings = self.Settings(**settings)
+        self._plot(_settings)
+        self.__render(_settings)
         return self.__figures
 
-    def __render(self, settings: BasePost.Settings) -> None:
+    def __render(self, settings: T) -> None:
         """Render the figures.
 
         Args:
@@ -185,6 +201,7 @@ class BasePost(metaclass=_MetaClass):
         )
 
         for figure_name, figure in self.__figures.items():
+            fig_file_path: str | Path
             if settings.save:
                 if len(self.__figures) > 1:
                     fig_file_path = self.__file_path_manager.add_suffix(
@@ -193,14 +210,14 @@ class BasePost(metaclass=_MetaClass):
                 else:
                     fig_file_path = file_path
 
-                self._output_files.append(str(fig_file_path))
+                self._output_file_paths.append(fig_file_path)
             else:
                 fig_file_path = ""
 
             save_show_figure(figure, settings.show, fig_file_path, settings.fig_size)
 
     @abstractmethod
-    def _plot(self, settings: BasePost.Settings) -> None:
+    def _plot(self, settings: T) -> None:
         """Create the figures.
 
         Args:

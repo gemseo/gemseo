@@ -23,7 +23,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class RadarChartSettings(BasePostSettings):  # noqa: D101
     iteration: Optional[int] = Field(
         None,
         description="Either an iteration in :math:`-N,\\\\ldots,-1,1,`ldots,N` or "
@@ -43,4 +43,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(6.4, 4.8))
+update_field(RadarChartSettings, "fig_size", default=(6.4, 4.8))

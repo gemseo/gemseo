@@ -24,7 +24,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class ParetoFrontSettings(BasePostSettings):  # noqa: D101
     show_non_feasible: bool = Field(
         True,
         description="Whether to show the non-feasible points in the plot.",
@@ -41,4 +41,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(10.0, 10.0))
+update_field(ParetoFrontSettings, "fig_size", default=(10.0, 10.0))

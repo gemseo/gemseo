@@ -22,7 +22,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class QuadApproxSettings(BasePostSettings):  # noqa: D101
     function: str = Field(
         ...,
         description="The function name to build the quadratic approximation.",
@@ -35,4 +35,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(9.0, 6.0))
+update_field(QuadApproxSettings, "fig_size", default=(9.0, 6.0))

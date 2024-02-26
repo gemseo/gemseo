@@ -24,7 +24,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class ScatterPlotMatrixSettings(BasePostSettings):  # noqa: D101
     filter_non_feasible: bool = Field(
         False,
         description="Whether to remove the non-feasible points from the data.",
@@ -36,4 +36,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(10.0, 10.0))
+update_field(ScatterPlotMatrixSettings, "fig_size", default=(10.0, 10.0))

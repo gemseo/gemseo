@@ -23,7 +23,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class OptHistoryViewSettings(BasePostSettings):  # noqa: D101
     variable_names: Sequence[str] = Field(
         (),
         description="The names of the variables to display. "
@@ -50,4 +50,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(11.0, 6.0))
+update_field(OptHistoryViewSettings, "fig_size", default=(11.0, 6.0))

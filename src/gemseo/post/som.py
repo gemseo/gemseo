@@ -24,7 +24,7 @@ import logging
 from math import floor
 from math import sqrt
 from typing import TYPE_CHECKING
-from typing import Final
+from typing import ClassVar
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -45,39 +45,37 @@ from numpy import zeros
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
-from gemseo.post.som_settings import Settings
+from gemseo.post.som_settings import SOMSettings
 from gemseo.third_party import sompy
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
+    from matplotlib.axes import Axes
+    from numpy.typing import ArrayLike
+
+    from gemseo.typing import IntegerArray
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SOM(BasePost):
+class SOM(BasePost[SOMSettings]):
     """Self organizing map clustering optimization history.
 
     Options of the plot method are the x- and y- numbers of cells in the SOM.
     """
 
-    Settings: Final[type[Settings]] = Settings
-
-    def __init__(  # noqa:D107
-        self,
-        opt_problem: OptimizationProblem,
-    ) -> None:
-        super().__init__(opt_problem)
-        self.som = None
-        self.cmap = PARULA
+    Settings: ClassVar[type[SOMSettings]] = SOMSettings
+    __CMAP = PARULA
 
     @staticmethod
     def __build_som_from_vars(
-        x_vars: ndarray,
+        x_vars: RealArray,
         som_grid_nx: int = 5,
         som_grid_ny: int = 5,
         initmethod: str = "pca",
         verbose: str = "off",
-    ) -> SOM:
+    ) -> sompy.SOM:
         """Builds the SOM from the design variables history.
 
         Args:
@@ -96,14 +94,14 @@ class SOM(BasePost):
         var_som = sompy.SOM(
             "som",
             x_vars,
-            mapsize=[som_grid_ny + 1, som_grid_nx + 1],
+            mapsize=[som_grid_ny + 1, som_grid_nx + 1],  # type: ignore
             initmethod=initmethod,
         )
         var_som.init_map()
         var_som.train(verbose=verbose)
         return var_som
 
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: SOMSettings) -> None:
         n_x = settings.n_x
         n_y = settings.n_y
         annotate = settings.annotate
@@ -176,13 +174,13 @@ class SOM(BasePost):
 
     def __plot_som_from_scalar_data(
         self,
-        f_hist_scalar: ndarray,
+        f_hist_scalar: ArrayLike,
         criteria: str,
         fig_indx: int,
         grid_size_x: int = 3,
         grid_size_y: int = 20,
         annotate: bool = False,
-    ):
+    ) -> Axes:
         """Builds the SOM plot after computation for a given criteria.
 
         Args:
@@ -217,7 +215,7 @@ class SOM(BasePost):
             mat_ij,
             vmin=minv - 0.01 * abs(minv),
             vmax=maxv + 0.01 * abs(maxv),
-            cmap=self.cmap,
+            cmap=self.__CMAP,
             interpolation="nearest",
             aspect="auto",
         )  # "spectral" "hot" "RdBu_r"
@@ -256,9 +254,10 @@ class SOM(BasePost):
         """
         x_history = self.database.get_x_vect_history()
         x_vars = array(x_history).real
-        self.som = self.__build_som_from_vars(x_vars, som_grid_nx, som_grid_ny)
-        som_cluster_index = self.som.project_data(x_vars)
-        som_coord = array(self.som.ind_to_xy(som_cluster_index), dtype=int32)
+        som = self.__build_som_from_vars(x_vars, som_grid_nx, som_grid_ny)
+        som_cluster_index = som.project_data(x_vars)  # type:ignore
+        som_cluster_xy = som.ind_to_xy(som_cluster_index)  # type:ignore
+        som_coord = array(som_cluster_xy, dtype=int32)
         coord_2d_offset = self.__coord2d_to_coords_offsets(som_coord)
         self.materials_for_plotting["SOM"] = coord_2d_offset
         for i, x_vars in enumerate(x_history):
@@ -275,9 +274,9 @@ class SOM(BasePost):
 
     @staticmethod
     def __coord2d_to_coords_offsets(
-        som_coord: ndarray,
+        som_coord: IntegerArray,
         max_ofset: float = 0.6,
-    ) -> ndarray:
+    ) -> RealArray:
         """Take a coord array from SOM and adds an offset.
 
         The offset is added to the coordinates of the

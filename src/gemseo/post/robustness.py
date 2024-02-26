@@ -24,7 +24,6 @@ from __future__ import annotations
 
 from math import sqrt
 from typing import ClassVar
-from typing import Final
 
 import matplotlib.pyplot as plt
 from numpy import zeros
@@ -33,13 +32,13 @@ from numpy.random import default_rng
 from gemseo import SEED
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
-from gemseo.post.robustness_settings import Settings
+from gemseo.post.robustness_settings import RobustnessSettings
 from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Robustness(BasePost):
+class Robustness(BasePost[RobustnessSettings]):
     """Uncertainty quantification at the optimum.
 
     Compute the quadratic approximations of all the output functions, propagate
@@ -49,9 +48,9 @@ class Robustness(BasePost):
     """
 
     SR1_APPROX: ClassVar[str] = "SR1"
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[RobustnessSettings]] = RobustnessSettings
 
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: RobustnessSettings) -> None:
         standard_deviation = settings.stddev
         problem = self.optimization_problem
         design_space = problem.design_space
@@ -95,4 +94,3 @@ class Robustness(BasePost):
             f"with normalized stddev {standard_deviation}"
         )
         plt.boxplot(function_samples, showfliers=False, labels=function_names)
-        return fig

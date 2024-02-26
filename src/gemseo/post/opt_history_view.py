@@ -28,6 +28,7 @@ from typing import ClassVar
 from typing import Final
 
 from matplotlib import pyplot as plt
+from matplotlib.colors import ListedColormap
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
@@ -44,7 +45,7 @@ from numpy import log10 as np_log10
 from numpy import logspace
 from numpy import max as np_max
 from numpy import min as np_min
-from numpy import ndarray
+from numpy import ones_like
 from numpy import sort as np_sort
 from numpy import vstack
 from numpy.linalg import norm
@@ -53,7 +54,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.opt_history_view_settings import Settings
+from gemseo.post.opt_history_view_settings import OptHistoryViewSettings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -63,13 +64,15 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.algos.database import Database
+    from gemseo.typing import IntegerArray
+    from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
 
-class OptHistoryView(BasePost):
+class OptHistoryView(BasePost[OptHistoryViewSettings]):
     """Plot the history of the design variables, objective and constraints.
 
     This post-processing generates one plot for the design variables, one plot for the
@@ -78,7 +81,7 @@ class OptHistoryView(BasePost):
     constraints (if any).
     """
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[OptHistoryViewSettings]] = OptHistoryViewSettings
 
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""
@@ -95,26 +98,24 @@ class OptHistoryView(BasePost):
     __Y_MARGIN: ClassVar[float] = 0.05
     """The left and right margin for the y-axis."""
 
-    def __init__(  # noqa:D107
-        self,
-        opt_problem: OptimizationProblem,
-    ) -> None:
-        super().__init__(opt_problem)
-        self.cmap = PARULA
-        self.ineq_cstr_cmap = RG_SEISMIC
-        self.eq_cstr_cmap = "seismic"
-        self.__indices = array([], dtype="int")
+    __CMAP: Final[ListedColormap] = PARULA
+    __INEQ_CSTR_CMAP: Final[ListedColormap] = RG_SEISMIC
+    __EQ_CSTR_CMAP: Final[str] = "seismic"
 
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: OptHistoryViewSettings) -> None:
         variable_names = settings.variable_names
-        obj_min = settings.obj_min
-        obj_max = settings.obj_max
-        obj_relative = settings.obj_relative
         if variable_names:
-            # TODO: API: remove None workaround.
-            self.__indices = self.opt_problem.design_space.get_variables_indexes(
-                variable_names or None
+            indices = self.opt_problem.design_space.get_variables_indexes(
+                variable_names
             )
+        else:
+            indices = array([], dtype=int)
+
+        # compute the names of the inequality and equality constraints
+        ineq_cstr = self.opt_problem.get_ineq_constraints()
+        ineq_cstr_names = [c.name for c in ineq_cstr]
+        eq_cstr = self.opt_problem.get_eq_constraints()
+        eq_cstr_names = [c.name for c in eq_cstr]
 
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
             self._standardized_obj_name, variable_names
@@ -135,9 +136,9 @@ class OptHistoryView(BasePost):
             n_iter,
             settings.fig_size,
             x_xstar,
-            obj_min=obj_min,
-            obj_max=obj_max,
-            obj_relative=obj_relative,
+            obj_min=settings.obj_min,
+            obj_max=settings.obj_max,
+            obj_relative=settings.obj_relative,
         )
 
         self._create_x_star_plot(x_history, n_iter, settings.fig_size, x_xstar)
@@ -164,8 +165,8 @@ class OptHistoryView(BasePost):
     def _get_history(
         self,
         function_name: str,
-        variable_names: Sequence[str],
-    ) -> tuple[ndarray, ndarray, int, ndarray]:
+        variable_names: Iterable[str],
+    ) -> tuple[RealArray, RealArray, int, RealArray]:
         """Access the optimization history of a function and the design variables.
 
         Args:
@@ -225,8 +226,8 @@ class OptHistoryView(BasePost):
 
     def _create_variables_plot(
         self,
-        x_history: ndarray,
-        variable_names: Sequence[str],
+        x_history: RealArray,
+        variable_names: Iterable[str],
         fig_size: tuple[float, float],
         x_xstar: RealArray,
     ) -> None:
@@ -254,7 +255,7 @@ class OptHistoryView(BasePost):
         ax1 = fig.add_subplot(grid[0, 0])
         im1 = ax1.imshow(
             norm_x_history.T,
-            cmap=self.cmap,
+            cmap=self.__CMAP,
             interpolation="nearest",
             vmin=0.0,
             vmax=1.0,
@@ -268,8 +269,8 @@ class OptHistoryView(BasePost):
         # ax1.invert_yaxis()
 
         ax1.set_title("Evolution of the optimization variables")
-        ax1.set_xticks(list(range(n_iterations)))
-        ax1.set_xticklabels(list(range(1, n_iterations + 1)))
+        ax1.set_xticks(range(n_iterations))
+        ax1.set_xticklabels(map(str, (range(1, n_iterations + 1))))
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
 
         # colorbar
@@ -278,13 +279,14 @@ class OptHistoryView(BasePost):
 
         # Set window size
         mng = plt.get_current_fig_manager()
+        assert mng is not None
         mng.resize(700, 1000)
 
         self._add_figure(fig, "variables")
 
     def _create_obj_plot(
         self,
-        obj_history: ndarray,
+        obj_history: RealArray,
         n_iter: int,
         fig_size: tuple[float, float],
         x_xstar: RealArray,
@@ -320,8 +322,8 @@ class OptHistoryView(BasePost):
         # Remove nans
         n_iterations = len(obj_history)
         x_absc = arange(n_iterations)
-        x_absc_nan = None
         idx_nan = isnan(obj_history)
+        assert idx_nan is not None
 
         if idx_nan.size > 0:
             obj_history = obj_history[~idx_nan]
@@ -360,13 +362,14 @@ class OptHistoryView(BasePost):
 
         # Set window size
         mng = plt.get_current_fig_manager()
+        assert mng is not None
         mng.resize(700, 1000)
 
         self._add_figure(fig, "objective")
 
     def _create_x_star_plot(
         self,
-        x_history: ndarray,
+        x_history: RealArray,
         n_iter: int,
         fig_size: tuple[float, float],
         x_xstar: RealArray,
@@ -389,7 +392,7 @@ class OptHistoryView(BasePost):
 
         # Draw a vertical line at the optimum
         n_iterations = len(x_history)
-        plt.axvline(x=argmin(x_xstar), color="r", label="Optimum")
+        plt.axvline(x=float(argmin(x_xstar)), color="r", label="Optimum")
         plt.legend()
         plt.semilogy(arange(n_iterations), x_xstar)
         plt.legend()
@@ -402,7 +405,7 @@ class OptHistoryView(BasePost):
         # ======================================================================
         ax1 = fig.gca()
         ax1.set_xticks(range(n_iterations))
-        ax1.set_xticklabels(range(1, n_iterations + 1))
+        ax1.set_xticklabels(map(str, range(1, n_iterations + 1)))
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         plt.grid(True)
         plt.title("Evolution of the distance to the optimum")
@@ -410,12 +413,13 @@ class OptHistoryView(BasePost):
 
         # Set window size
         mng = plt.get_current_fig_manager()
+        assert mng is not None
         mng.resize(700, 1000)
 
         self._add_figure(fig, "x_xstar")
 
     @staticmethod
-    def _cstr_number(constraint_history: Iterable[ndarray]) -> int:
+    def _cstr_number(constraint_history: Iterable[RealArray]) -> int:
         """Compute the total scalar constraints number.
 
         Args:
@@ -435,8 +439,8 @@ class OptHistoryView(BasePost):
 
     def _create_cstr_plot(
         self,
-        cstr_history: Iterable[ndarray],
-        cstr_type: str,
+        cstr_history: Iterable[RealArray],
+        cstr_type: MDOFunction.ConstraintType,
         cstr_names: Sequence[str],
         fig_size: tuple[float, float],
         x_xstar: RealArray,
@@ -445,7 +449,7 @@ class OptHistoryView(BasePost):
 
         Args:
             cstr_history: The history of the constraints.
-            cstr_type: The type of the constraints, either 'eq' or 'ineq'.
+            cstr_type: The type of the constraints.
             cstr_names: The names of the constraints.
             x_xstar: The distance between the designs and the optimum design.
         """
@@ -454,7 +458,7 @@ class OptHistoryView(BasePost):
             return
 
         # matrix of all constraints' values
-        cstr_matrix = None
+        init_cstr_matrix = True
         vmax = 0.0
         cstr_labels = []
 
@@ -490,8 +494,11 @@ class OptHistoryView(BasePost):
                     notnans = ~isnan(history_i_j)
                     vmax = max(vmax, np_max(np_abs(history_i_j[notnans])))
 
+                    cstr_matrix: NumberArray
+
                     # build the constraint matrix
-                    if cstr_matrix is None:
+                    if init_cstr_matrix:
+                        init_cstr_matrix = False
                         cstr_matrix = history_i_j
                     else:
                         cstr_matrix = vstack((cstr_matrix, history_i_j))
@@ -504,7 +511,7 @@ class OptHistoryView(BasePost):
 
     def _build_cstr_fig(
         self,
-        cstr_matrix: ndarray,
+        cstr_matrix: NumberArray,
         cstr_type: MDOFunction.ConstraintType,
         vmax: float,
         n_cstr: int,
@@ -526,11 +533,12 @@ class OptHistoryView(BasePost):
         Returns:
             The constraints figure.
         """
+        cmap: str | ListedColormap
         if cstr_type == MDOFunction.ConstraintType.EQ:
-            cmap = self.eq_cstr_cmap
+            cmap = self.__EQ_CSTR_CMAP
             constraint_type = "equality"
         else:
-            cmap = self.ineq_cstr_cmap
+            cmap = self.__INEQ_CSTR_CMAP
             constraint_type = "inequality"
 
         idx_nan = isnan(cstr_matrix)
@@ -563,7 +571,7 @@ class OptHistoryView(BasePost):
         ax1.set_title(f"Evolution of the {constraint_type} constraints")
         n_iterations = len(self.database)
         ax1.set_xticks(range(n_iterations))
-        ax1.set_xticklabels(range(1, n_iterations + 1))
+        ax1.set_xticklabels(map(str, range(1, n_iterations + 1)))
 
         ax1.hlines(
             list(range(len(cstr_matrix))),
@@ -592,6 +600,7 @@ class OptHistoryView(BasePost):
 
         mng = plt.get_current_fig_manager()
         # mng.full_screen_toggle()
+        assert mng is not None
         mng.resize(700, 1000)
         return fig
 
@@ -599,7 +608,8 @@ class OptHistoryView(BasePost):
         self,
         history: Database,
         obj_name: str,
-        variable_names: Sequence[str] | None,
+        variable_names: Iterable[str] | None,
+        indices: IntegerArray,
     ) -> None:
         """Create the plot of the Hessian approximation.
 
@@ -608,6 +618,7 @@ class OptHistoryView(BasePost):
             obj_name: The objective function name.
             variable_names: The names of the variables to display.
                 If ``None``, use all design variables.
+            indices: The indices.
         """
         try:
             diag = SR1Approx(history).build_approximation(
@@ -622,15 +633,15 @@ class OptHistoryView(BasePost):
             LOGGER.warning("The approximated Hessian diagonal contains NaN.")
             return
 
-        diag = [ones_like(diag[0]), *diag]  # Add first iteration blank
-        diag = array(diag).T
+        # Add first iteration blank.
+        diag = array([ones_like(diag[0]), *diag]).T
 
         # if max problem, plot -Hessian
         if self._change_obj:
             diag = -diag
 
         if variable_names:
-            diag = diag[self.__indices, :]
+            diag = diag[indices, :]
 
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = self._get_grid_layout()
@@ -644,7 +655,7 @@ class OptHistoryView(BasePost):
         )
         n_iterations = len(self.database)
         axe.set_xticks(range(n_iterations))
-        axe.set_xticklabels(range(1, n_iterations + 1))
+        axe.set_xticklabels(map(str, range(1, n_iterations + 1)))
         axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
 
         # matrix
@@ -652,7 +663,7 @@ class OptHistoryView(BasePost):
         linthresh = 10 ** (np_log10(vmax) - 5.0)
         img = axe.imshow(
             diag.real,
-            cmap=self.cmap,
+            cmap=self.__CMAP,
             interpolation="nearest",
             aspect="auto",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linthresh, base=e),
@@ -677,5 +688,6 @@ class OptHistoryView(BasePost):
 
         mng = plt.get_current_fig_manager()
         # mng.full_screen_toggle()
+        assert mng is not None
         mng.resize(700, 1000)
         self._add_figure(fig, "hessian_approximation")

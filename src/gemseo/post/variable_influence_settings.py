@@ -22,7 +22,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class Settings(BasePostSettings):  # noqa: D101
+class VariableInfluenceSettings(BasePostSettings):  # noqa: D101
     level: float = Field(
         0.99,
         description="The proportion of the total sensitivity to use as a threshold to "
@@ -43,4 +43,4 @@ class Settings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(Settings, "fig_size", default=(20.0, 5.0))
+update_field(VariableInfluenceSettings, "fig_size", default=(20.0, 5.0))

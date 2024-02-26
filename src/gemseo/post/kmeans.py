@@ -20,17 +20,17 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 from numpy import array
 from sklearn import cluster
 from sklearn.preprocessing import StandardScaler
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.kmeans_settings import Settings
+from gemseo.post.kmeans_settings import KMeansSettings
 
 
-class KMeans(BasePost):
+class KMeans(BasePost[KMeansSettings]):
     """Performs a k-means clustering on optimization history.
 
     The default number of clusters is 5 and can be modified in option.
@@ -42,9 +42,9 @@ class KMeans(BasePost):
     sklearn.cluster.MiniBatchKMeans.html>`_ .
     """
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[KMeansSettings]] = KMeansSettings
 
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: KMeansSettings) -> None:
         x_history = self.database.get_x_vect_history()
         x_vars = array(x_history)
         x_vars_sc = StandardScaler().fit_transform(x_vars)

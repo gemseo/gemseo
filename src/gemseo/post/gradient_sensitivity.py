@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Final
+from typing import ClassVar
 
 from matplotlib import pyplot
 from numpy import arange
@@ -32,42 +32,42 @@ from numpy import ndarray
 from numpy import where
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.gradient_sensitivity_settings import Settings
+from gemseo.post.gradient_sensitivity_settings import GradientSensitivitySettings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
 
     from matplotlib.figure import Figure
+
+    from gemseo.typing import NumberArray
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
 
-class GradientSensitivity(BasePost):
+class GradientSensitivity(BasePost[GradientSensitivitySettings]):
     """Derivatives of the objective and constraints at a given iteration."""
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[GradientSensitivitySettings]] = GradientSensitivitySettings
 
-    def _plot(self, settings: Settings) -> None:
-        iteration = settings.iteration
-        scale_gradients = settings.scale_gradients
+    def _plot(self, settings: GradientSensitivitySettings) -> None:
         compute_missing_gradients = settings.compute_missing_gradients
 
-        if iteration is None:
+        if settings.iteration is None:
             design_value = self.optimization_problem.solution.x_opt
         else:
-            design_value = self.optimization_problem.database.get_x_vect(iteration)
+            design_value = self.optimization_problem.database.get_x_vect(settings.iteration)
 
         fig = self.__generate_subplots(
             self._get_design_variable_names(),
             design_value,
             self.__get_output_gradients(
                 design_value,
-                scale_gradients=scale_gradients,
+                scale_gradients=settings.scale_gradients,
                 compute_missing_gradients=compute_missing_gradients,
             ),
-            scale_gradients,
+            settings.scale_gradients,
             settings.fig_size,
         )
         self._add_figure(fig)
@@ -77,7 +77,7 @@ class GradientSensitivity(BasePost):
         design_value: ndarray,
         scale_gradients: bool = False,
         compute_missing_gradients: bool = False,
-    ) -> dict[str, ndarray]:
+    ) -> dict[str, RealArray]:
         """Return the gradients of all the output variable at a given design value.
 
         Args:
@@ -148,8 +148,8 @@ class GradientSensitivity(BasePost):
     def __generate_subplots(
         self,
         design_names: Iterable[str],
-        design_value: ndarray,
-        gradients: Mapping[str, ndarray],
+        design_value: NumberArray,
+        gradients: dict[str, RealArray],
         scale_gradients: bool,
         fig_size: tuple[float, float],
     ) -> Figure:

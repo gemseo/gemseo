@@ -60,10 +60,10 @@ from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
-    from numbers import Number
     from pathlib import Path
 
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
+
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.typing import RealArray
@@ -778,7 +778,7 @@ class Database(Mapping):
         missing_tag: str | float = MISSING_VALUE_TAG,
         input_names: str | Iterable[str] = (),
         with_x_vect: bool = True,
-    ) -> tuple[NDArray[Number | str], list[str], Iterable[str]]:
+    ) -> tuple[NumberArray, list[str], Iterable[str]]:
         """Return the database as a 2D array shaped as ``(n_iterations, n_features)``.
 
         The features are the outputs of interest and possibly the input variables.

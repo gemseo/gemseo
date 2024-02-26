@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from math import ceil
 from typing import TYPE_CHECKING
-from typing import Final
+from typing import ClassVar
 
 import numpy as np
 from matplotlib import pyplot
@@ -34,12 +34,11 @@ from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
 from numpy import array
 from numpy import e
-from numpy import ndarray
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
-from gemseo.post.quad_approx_settings import Settings
+from gemseo.post.quad_approx_settings import QuadApproxSettings
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
@@ -47,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 
-class QuadApprox(BasePost):
+class QuadApprox(BasePost[QuadApproxSettings]):
     """Quadratic approximation of a function.
 
     And cuts of the approximation.
@@ -55,45 +54,41 @@ class QuadApprox(BasePost):
     The function index can be passed as option.
     """
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[QuadApproxSettings]] = QuadApproxSettings
 
-    def __init__(  # noqa:D107
-        self,
-        opt_problem: OptimizationProblem,
-    ) -> None:
-        super().__init__(opt_problem)
-        self.grad_opt = None
-
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: QuadApproxSettings) -> None:
         function = settings.function
         func_index = settings.func_index
 
         problem = self.optimization_problem
         if function == self._obj_name:
-            b_mat = self.__build_approx(self._standardized_obj_name, func_index)
+            b_mat, grad_opt = self.__build_approx(
+                self._standardized_obj_name, func_index
+            )
             if not (problem.minimize_objective or problem.use_standardized_objective):
-                self.grad_opt *= -1
+                grad_opt *= -1
                 b_mat *= -1
                 function = self._standardized_obj_name
         else:
             if function in problem.constraints.original_to_current_names:
                 function = problem.constraints.original_to_current_names[function][0]
 
-            b_mat = self.__build_approx(function, func_index)
+            b_mat, grad_opt = self.__build_approx(function, func_index)
 
         self.materials_for_plotting["b_mat"] = b_mat
         self._add_figure(
             self.__plot_hessian(b_mat, function, settings.fig_size), "hess_approx"
         )
         self._add_figure(
-            self.__plot_variations(b_mat, settings.fig_size), "quad_approx"
+            self.__plot_variations(b_mat, settings.fig_size, grad_opt),
+            "quad_approx",
         )
 
     def __build_approx(
         self,
         function: str,
         func_index: int | None,
-    ) -> ndarray:
+    ) -> tuple[NumberArray, NumberArray]:
         """Build the approximation.
 
         Args:
@@ -106,17 +101,18 @@ class QuadApprox(BasePost):
              The approximation.
         """
         # Avoid using alpha scaling for hessian otherwise diagonal is messy
-        b_mat, _, _, self.grad_opt = SR1Approx(self.database).build_approximation(
+        b_mat, _, _, grad_opt = SR1Approx(self.database).build_approximation(
             function,
             at_most_niter=int(1.5 * self.optimization_problem.design_space.dimension),
             return_x_grad=True,
             func_index=func_index,
         )
-        return b_mat
+        assert grad_opt is not None
+        return b_mat, grad_opt
 
     def __plot_hessian(
         self,
-        hessian: ndarray,
+        hessian: NumberArray,
         function: str,
         fig_size: tuple[float, float],
     ) -> Figure:
@@ -167,11 +163,11 @@ class QuadApprox(BasePost):
 
     @staticmethod
     def unnormalize_vector(
-        xn_array: ndarray,
+        xn_array: NumberArray,
         ivar: int,
-        lower_bounds: ndarray,
-        upper_bounds: ndarray,
-    ) -> ndarray:
+        lower_bounds: NumberArray,
+        upper_bounds: NumberArray,
+    ) -> NumberArray:
         """Unormalize a variable with respect to bounds.
 
         Args:
@@ -189,8 +185,9 @@ class QuadApprox(BasePost):
 
     def __plot_variations(
         self,
-        hessian: ndarray,
+        hessian: NumberArray,
         fig_size: tuple[float, float],
+        grad_opt: NumberArray,
     ) -> Figure:
         """Plot the variation plot of the function w.r.t. all variables.
 
@@ -211,7 +208,7 @@ class QuadApprox(BasePost):
 
         for i, design_variable_name in enumerate(self._get_design_variable_names()):
             ax_i = plt.subplot(nrows, ncols, i + 1)
-            f_vals = xn_vars**2 * hessian[i, i] + self.grad_opt[i] * xn_vars
+            f_vals = xn_vars**2 * hessian[i, i] + grad_opt[i] * xn_vars
             self.materials_for_plotting[i] = f_vals
 
             x_vars = self.unnormalize_vector(xn_vars, i, lower_bounds, upper_bounds)

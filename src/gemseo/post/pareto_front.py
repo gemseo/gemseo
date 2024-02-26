@@ -22,20 +22,25 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Final
+from typing import ClassVar
 
 from numpy import full
-from numpy import ndarray
 
 from gemseo.algos.pareto.utils import generate_pareto_plots
 from gemseo.post.base_post import BasePost
-from gemseo.post.pareto_front_settings import Settings
+from gemseo.post.pareto_front_settings import ParetoFrontSettings
 
 if TYPE_CHECKING:
+    from collections.abc import MutableSequence
     from collections.abc import Sequence
 
+    from gemseo.typing import BoolArray
+    from gemseo.typing import NumberArray
 
-class ParetoFront(BasePost):
+LOGGER = logging.getLogger(__name__)
+
+
+class ParetoFront(BasePost[ParetoFrontSettings]):
     """Compute the Pareto front for a multi-objective problem.
 
     The Pareto front of an optimization problem is the set of ``non-dominated`` points
@@ -50,16 +55,14 @@ class ParetoFront(BasePost):
     The latter are also called ``Pareto optimal points``.
     """
 
-    Settings: Final[type[Settings]] = Settings
+    Settings: ClassVar[type[ParetoFrontSettings]] = ParetoFrontSettings
 
-    def _plot(self, settings: Settings) -> None:
+    def _plot(self, settings: ParetoFrontSettings) -> None:
         """
         Raises:
             ValueError: If the numbers of objectives and objectives
                 labels are different.
         """  # noqa: D205, D212, D415
-        objectives_labels = settings.objectives_labels
-
         if not settings.objectives:
             objectives = [self.optimization_problem.objective.name]
         else:
@@ -68,11 +71,14 @@ class ParetoFront(BasePost):
         all_funcs = self.optimization_problem.function_names
         all_dv_names = self.optimization_problem.design_space.variable_names
 
+        all_labels: Sequence[str]
         sample_values, all_labels = self.__compute_names_and_values(
             all_dv_names, all_funcs, objectives
         )
 
         non_feasible_samples = self.__compute_non_feasible_samples(sample_values)
+
+        objectives_labels = settings.objectives_labels
 
         if objectives_labels:
             if len(all_labels) != len(objectives_labels):
@@ -99,7 +105,7 @@ class ParetoFront(BasePost):
         all_dv_names: Sequence[str],
         all_funcs: Sequence[str],
         objectives: list[str],
-    ) -> tuple[ndarray, list[str]]:
+    ) -> tuple[NumberArray, list[str]]:
         """Compute the names and values of the objective and design variables.
 
         Args:
@@ -110,7 +116,7 @@ class ParetoFront(BasePost):
         Returns:
             The sample values and the sample names.
         """
-        design_variables = []
+        design_variables: list[str] = []
         for func in list(objectives):
             self.__check_objective_name(all_dv_names, all_funcs, func, objectives)
             self.__move_objective_to_design_variable(design_variables, func, objectives)
@@ -179,7 +185,7 @@ class ParetoFront(BasePost):
 
     def __move_objective_to_design_variable(
         self,
-        design_variables: Sequence[str],
+        design_variables: MutableSequence[str],
         func: str,
         objectives: list[str],
     ) -> None:
@@ -197,7 +203,7 @@ class ParetoFront(BasePost):
             objectives.remove(func)
             design_variables.append(func)
 
-    def __compute_non_feasible_samples(self, sample_values: ndarray) -> ndarray:
+    def __compute_non_feasible_samples(self, sample_values: NumberArray) -> BoolArray:
         """Compute the non-feasible indexes.
 
         Args:
