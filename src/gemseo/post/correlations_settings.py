@@ -23,15 +23,13 @@ from gemseo.utils.pydantic import update_field
 
 
 class CorrelationsSettings(BasePostSettings):  # noqa: D101
-    n_plots_x: int = Field(
+    n_plots_x: PositiveInt = Field(
         5,
         description="The number of horizontal plots.",
-        ge=1,
     )
-    n_plots_y: int = Field(
+    n_plots_y: PositiveInt = Field(
         5,
         description="The number of vertical plots.",
-        ge=1,
     )
     coeff_limit: float = Field(
         0.95,

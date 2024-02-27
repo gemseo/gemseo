@@ -23,11 +23,11 @@ from gemseo.utils.pydantic import update_field
 
 
 class SOMSettings(BasePostSettings):  # noqa: D101
-    n_x: int = Field(
+    n_x: PositiveInt = Field(
         4,
         description="The number of grids in x.",
     )
-    n_y: int = Field(
+    n_y: PositiveInt = Field(
         4,
         description="The number of grids in y.",
     )

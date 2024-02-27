@@ -22,7 +22,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 
 
 class KMeansSettings(BasePostSettings):  # noqa: D101
-    n_clusters: int = Field(
+    n_clusters: PositiveInt = Field(
         5,
         description="The number of clusters.",
     )

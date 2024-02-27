@@ -24,15 +24,13 @@ from gemseo.utils.pydantic import update_field
 
 
 class TopologyViewSettings(BasePostSettings):  # noqa: D101
-    n_x: int = Field(
+    n_x: PositiveInt = Field(
         ...,
         description="The number of elements in the horizontal direction.",
-        ge=1,
     )
-    n_y: int = Field(
+    n_y: PositiveInt = Field(
         ...,
         description="The number of elements in the vertical direction.",
-        ge=1,
     )
     observable: str = Field(
         "",

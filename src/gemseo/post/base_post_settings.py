@@ -54,7 +54,7 @@ class BasePostSettings(BaseModel):
         description="A file extension, e.g. 'png', 'pdf', 'svg', ... "
         "If empty, use a default file extension.",
     )
-    fig_size: tuple[float, float] = Field(
+    fig_size: tuple[PositiveFloat, PositiveFloat] = Field(
         (11.0, 11.0),
         description="The width and height of the figure in inches, e.g. `(w, h)`.",
     )

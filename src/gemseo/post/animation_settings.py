@@ -29,17 +29,17 @@ class AnimationSettings(BasePostSettings):  # noqa: D101
     # This is required to supporting the field post_processor.
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    frame_rate: int = Field(
+    frame_rate: PositiveInt = Field(
         1,
         description="The number of iterations per time step.",
     )
     first_iteration: int = Field(
         -1, description="The iteration to begin the animation."
     )
-    time_step: int = Field(
+    time_step: PositiveFloat = Field(
         100, description="The time step between two frames in milliseconds."
     )
-    n_repetitions: int = Field(
+    n_repetitions: NonNegativeInt = Field(
         0,
         description="The number of times the animation is played. "
         "If ``0``, play infinitely.",
