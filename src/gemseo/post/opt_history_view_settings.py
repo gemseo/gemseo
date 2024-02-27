@@ -18,6 +18,8 @@ from collections.abc import Sequence
 from typing import Optional
 
 from pydantic import Field
+from pydantic import model_validator
+from typing_extensions import Self
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
@@ -48,6 +50,21 @@ class OptHistoryViewSettings(BasePostSettings):  # noqa: D101
         "value of the objective history. If ``None``, use the maximum "
         "value of the objective history.",
     )
+
+    @model_validator(mode="after")
+    def check_obj_min_max(self) -> Self:
+        """Check that obj_min <= obj_max."""
+        if (
+            self.obj_min is not None
+            and self.obj_max is not None
+            and self.obj_min > self.obj_max
+        ):
+            msg = (
+                f"The value of obj_min ({self.obj_min}) must be lower than the "
+                f"value of obj_max ({self.obj_max})."
+            )
+            raise ValueError(msg)
+        return self
 
 
 update_field(OptHistoryViewSettings, "fig_size", default=(11.0, 6.0))
