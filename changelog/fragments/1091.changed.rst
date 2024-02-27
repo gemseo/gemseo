@@ -1,4 +1,4 @@
-- Post-processing classes use ``Pydantic`` models instead of ``JSONGrammar``, the models are available via the class attribute ``Settings``..
+- Post-processing classes use ``Pydantic`` models instead of ``JSONGrammar``, the models are available via the class attribute ``Settings``.
 - API changes:
     - Renamed the class ``OptPostProcessor`` to ``BasePost``.
     - Removed the method ``OptPostProcessor.check_options``.
