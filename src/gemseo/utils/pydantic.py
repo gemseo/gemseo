@@ -30,7 +30,7 @@ def update_field(
     Args:
         model: The model.
         field_name: The name of the field.
-        **kwargs: The arguments of the field to be overriden.
+        **kwargs: The arguments of the field to be overridden.
             See :func:`.Field` for the description of the arguments.
     """
     model.model_fields[field_name] = FieldInfo.merge_field_infos(

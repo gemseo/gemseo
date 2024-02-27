@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-from abc import ABCMeta
 from abc import abstractmethod
 from collections.abc import Iterable
 from collections.abc import Sequence
@@ -32,13 +31,11 @@ from typing import Optional
 from typing import TypeVar
 from typing import Union
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.utils._signature_updater import update_signature
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -56,18 +53,10 @@ PlotOutputType = list[
 ]
 
 
-class _MetaClass(
-    ABCMeta,
-    update_signature("Settings", "execute"),
-    GoogleDocstringInheritanceMeta,
-):
-    pass
-
-
 T = TypeVar("T", bound=BasePostSettings)
 
 
-class BasePost(Generic[T], metaclass=_MetaClass):
+class BasePost(Generic[T]):
     """Abstract class for optimization post-processing methods."""
 
     # Silencing mypy since the root cause does not seem legit,
@@ -107,10 +96,6 @@ class BasePost(Generic[T], metaclass=_MetaClass):
         """
         Args:
             opt_problem: The optimization problem to be post-processed.
-
-        Raises:
-            ValueError: If the JSON grammar file
-                for the options of the post-processor does not exist.
         """  # noqa: D205, D212, D415
         self.optimization_problem = opt_problem
         self._obj_name = opt_problem.objective_name
@@ -163,11 +148,11 @@ class BasePost(Generic[T], metaclass=_MetaClass):
 
         self.__figures[file_name] = figure
 
-    def execute(self, **settings: Any) -> dict[str, Figure]:
+    def execute(self, **options: Any) -> dict[str, Figure]:
         """Post-process the optimization problem.
 
         Args:
-            **settings: The settings of the post-processor.
+            **options: The options of the post-processor.
 
         Returns:
             The figures, to be customized if not closed.
@@ -182,7 +167,7 @@ class BasePost(Generic[T], metaclass=_MetaClass):
             )
             raise ValueError(msg)
 
-        _settings = self.Settings(**settings)
+        _settings = self.Settings(**options)
         self._plot(_settings)
         self.__render(_settings)
         return self.__figures

@@ -28,11 +28,11 @@ from typing import Any
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.base_factory import BaseFactory
 from gemseo.post.base_post import BasePost
-from gemseo.post.base_post import OptPostProcessorOptionType
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.post.base_post_settings import BasePostSettings
 
 LOGGER = logging.getLogger(__name__)
@@ -72,20 +72,20 @@ class OptPostProcessorFactory(BaseFactory[BasePost[Any]]):
         self,
         class_name: str,
         opt_problem: OptimizationProblem,
-        **options: OptPostProcessorOptionType,
+        *args: Any,
+        **kwargs: Any,
     ) -> BasePost[Any]:
         """Create a post-processor from its class name.
 
         Args:
             class_name: The name of the post-processor.
             opt_problem: The optimization problem to be post-processed.
-            **options: The options of the post-processor.
         """
-        return super().create(class_name, opt_problem=opt_problem, **options)
+        return super().create(class_name, opt_problem=opt_problem)
 
     def execute(
         self,
-        opt_problem: str | OptimizationProblem,
+        opt_problem: OptimizationProblem,
         post_name: str,
         **options: Any,
     ) -> BasePost[Any]:
@@ -99,8 +99,6 @@ class OptPostProcessorFactory(BaseFactory[BasePost[Any]]):
         Returns:
             The post-processor.
         """
-        if isinstance(opt_problem, str):
-            opt_problem = OptimizationProblem.from_hdf(opt_problem)
         post = self.create(post_name, opt_problem)
         post.execute(**options)
         self.executed_post.append(post)

@@ -19,14 +19,12 @@
 from __future__ import annotations
 
 import unittest
-from os.path import dirname
-from os.path import join
+from pathlib import Path
 
 from gemseo.post.factory import OptPostProcessorFactory
 from gemseo.post.opt_history_view import OptHistoryView
 
-DIRNAME = dirname(__file__)
-POWER2 = join(DIRNAME, "power2_opt_pb.h5")
+POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 
 class TestPostFactory(unittest.TestCase):
@@ -44,5 +42,6 @@ class TestPostFactory(unittest.TestCase):
         assert OptPostProcessorFactory().is_available("Correlations")
 
     def test_execute_from_hdf(self) -> None:
-        post = OptPostProcessorFactory().execute(POWER2, "OptHistoryView", save=False)
+        opt_problem = OptimizationProblem.from_hdf(POWER2)
+        post = OptPostProcessorFactory().execute(opt_problem, "OptHistoryView", save=False)
         assert isinstance(post, OptHistoryView)

@@ -105,17 +105,15 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
     def _plot(self, settings: OptHistoryViewSettings) -> None:
         variable_names = settings.variable_names
         if variable_names:
-            indices = self.opt_problem.design_space.get_variables_indexes(
-                variable_names
-            )
+            self.opt_problem.design_space.get_variables_indexes(variable_names)
         else:
-            indices = array([], dtype=int)
+            array([], dtype=int)
 
         # compute the names of the inequality and equality constraints
         ineq_cstr = self.opt_problem.get_ineq_constraints()
-        ineq_cstr_names = [c.name for c in ineq_cstr]
+        [c.name for c in ineq_cstr]
         eq_cstr = self.opt_problem.get_eq_constraints()
-        eq_cstr_names = [c.name for c in eq_cstr]
+        [c.name for c in eq_cstr]
 
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
             self._standardized_obj_name, variable_names
