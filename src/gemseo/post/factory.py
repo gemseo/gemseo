@@ -33,7 +33,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.algos.opt_problem import OptimizationProblem
-    from gemseo.post.base_post_settings import BasePostSettings
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,17 +55,6 @@ class OptPostProcessorFactory(BaseFactory[BasePost[Any]]):
     def posts(self) -> list[str]:
         """The available post processors."""
         return self.class_names
-
-    def get_settings(self, class_name: str) -> type[BasePostSettings]:
-        """Return the settings of a class.
-
-        Args:
-            class_name: The name of a class.
-
-        Returns:
-            The settings of the class.
-        """
-        return self.get_class(class_name).Settings
 
     def create(
         self,
