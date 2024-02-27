@@ -23,7 +23,7 @@ import re
 import pytest
 from numpy import array
 
-from gemseo.post.para_coord import ParallelCoordinates
+from gemseo.post.parallel_coordinates import ParallelCoordinates
 from gemseo.utils.testing.helpers import image_comparison
 
 TEST_PARAMETERS = {
