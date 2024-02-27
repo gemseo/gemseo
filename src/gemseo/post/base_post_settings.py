@@ -19,6 +19,7 @@ from typing import Union
 
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import PositiveFloat
 
 
 class BasePostSettings(BaseModel):

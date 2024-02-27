@@ -17,6 +17,7 @@
 from typing import Optional
 
 from pydantic import Field
+from pydantic import NonNegativeInt
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field

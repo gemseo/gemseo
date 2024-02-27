@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from pydantic import Field
+from pydantic import PositiveInt
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field

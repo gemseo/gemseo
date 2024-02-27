@@ -20,6 +20,9 @@ from typing import Union
 
 from pydantic import ConfigDict
 from pydantic import Field
+from pydantic import NonNegativeInt
+from pydantic import PositiveFloat
+from pydantic import PositiveInt
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.base_post_settings import BasePostSettings
