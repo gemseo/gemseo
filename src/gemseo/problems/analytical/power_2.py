@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import logging
-
 from numpy import array
 from numpy import ndarray
 from numpy import sum as np_sum
@@ -30,8 +28,6 @@ from numpy import sum as np_sum
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Power2(OptimizationProblem):

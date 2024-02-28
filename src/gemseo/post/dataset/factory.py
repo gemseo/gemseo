@@ -28,7 +28,6 @@ if a cache type is available.
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -36,8 +35,6 @@ if TYPE_CHECKING:
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-
-LOGGER = logging.getLogger(__name__)
 
 
 class DatasetPlotFactory(BaseFactory):

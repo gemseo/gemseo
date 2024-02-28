@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from uuid import uuid4
@@ -32,7 +31,6 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-LOGGER = logging.getLogger(__name__)
 
 _ExecutionStatus = MDODiscipline.ExecutionStatus
 

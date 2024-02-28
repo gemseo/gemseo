@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import eye
@@ -40,8 +39,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.formulation import MDOFormulation
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ConsistencyCstr(LinearCandidateFunction):

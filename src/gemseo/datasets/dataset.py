@@ -37,7 +37,6 @@ and :meth:`.OptimizationProblem.to_dataset`.
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Iterable
 from numbers import Number
 from typing import TYPE_CHECKING
@@ -72,7 +71,6 @@ if TYPE_CHECKING:
     from pandas._typing import Axes
     from pandas._typing import Dtype
 
-LOGGER = logging.getLogger(__name__)
 
 StrColumnType = Union[str, Iterable[str]]
 IndexType = Union[str, int, Iterable[Union[str, int]]]

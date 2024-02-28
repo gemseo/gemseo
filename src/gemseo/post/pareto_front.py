@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import full
@@ -32,8 +31,6 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ParetoFront(OptPostProcessor):

@@ -26,15 +26,11 @@
 
 from __future__ import annotations
 
-import logging
-
 from numpy import array
 from numpy import ndarray
 from numpy import zeros
 
 from gemseo.problems.sobieski.core.discipline import SobieskiDiscipline
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SobieskiMission(SobieskiDiscipline):

@@ -26,7 +26,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from gemseo.problems.sobieski.core.utils import SobieskiBase
@@ -35,8 +34,6 @@ if TYPE_CHECKING:
     from types import ModuleType
 
     from numpy import ndarray
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SobieskiDiscipline:

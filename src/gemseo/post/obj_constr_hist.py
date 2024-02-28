@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -40,8 +39,6 @@ if TYPE_CHECKING:
 
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ObjConstrHist(OptPostProcessor):

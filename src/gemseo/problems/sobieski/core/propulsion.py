@@ -26,7 +26,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import append
@@ -38,8 +37,6 @@ from gemseo.problems.sobieski.core.discipline import SobieskiDiscipline
 
 if TYPE_CHECKING:
     from gemseo.problems.sobieski.core.utils import SobieskiBase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SobieskiPropulsion(SobieskiDiscipline):

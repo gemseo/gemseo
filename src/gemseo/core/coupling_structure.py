@@ -23,7 +23,6 @@
 from __future__ import annotations
 
 import itertools
-import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -42,8 +41,6 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
     from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.n2d3.n2_html import N2HTML
-
-LOGGER = logging.getLogger(__name__)
 
 NodeType = tuple[list[str], list[str]]
 EdgesType = dict[int, dict[int, list[str]]]

@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import empty
@@ -41,8 +40,6 @@ if TYPE_CHECKING:
 
     from gemseo.core.base_formulation import BaseFormulation
     from gemseo.core.discipline import MDODiscipline
-
-LOGGER = logging.getLogger(__name__)
 
 
 class FunctionFromDiscipline(LinearCandidateFunction):

@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-import logging
 import operator
 from typing import TYPE_CHECKING
 from typing import Final
@@ -34,8 +33,6 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-LOGGER = logging.getLogger(__name__)
 
 
 class BasicHistory(OptPostProcessor):

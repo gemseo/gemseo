@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-import logging
 from math import ceil
 from typing import TYPE_CHECKING
 
@@ -44,8 +43,6 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
     from gemseo.algos.opt_problem import OptimizationProblem
-
-LOGGER = logging.getLogger(__name__)
 
 
 class QuadApprox(OptPostProcessor):
