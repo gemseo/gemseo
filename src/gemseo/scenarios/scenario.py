@@ -635,6 +635,7 @@ class Scenario(MDODiscipline):
             self.input_grammar.update_from_types({"algo": str})
         self.input_grammar.required_names.add("algo")
 
+    # TODO: API: remove and check for base class instead.
     @staticmethod
     def is_scenario() -> bool:
         """Indicate if the current object is a :class:`.Scenario`.

@@ -108,7 +108,8 @@ def get_all_outputs(
 
 
 def get_sub_disciplines(
-    disciplines: list[MDODiscipline], recursive: bool = False
+    disciplines: Iterable[MDODiscipline],
+    recursive: bool = False,
 ) -> list[MDODiscipline]:
     """Determine the sub-disciplines.
 
