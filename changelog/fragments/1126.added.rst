@@ -1,0 +1,1 @@
+``OptimizationProblem.get_all_functions`` has a new argument ``original`` to return the original functions given to the problem.

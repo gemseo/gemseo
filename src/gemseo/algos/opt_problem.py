@@ -966,14 +966,24 @@ class OptimizationProblem(BaseProblem):
         """
         return self.design_space.variable_names
 
-    def get_all_functions(self) -> list[MDOFunction]:
+    def get_all_functions(self, original: bool = False) -> list[MDOFunction]:
         """Retrieve all the functions of the optimization problem.
 
         These functions are the constraints, the objective function and the observables.
 
+        Args:
+            original: Whether to return the original functions or the preprocessed ones.
+
         Returns:
             All the functions of the optimization problem.
         """
+        if self.__functions_are_preprocessed and original:
+            return [
+                self.nonproc_objective,
+                *self.nonproc_constraints,
+                *self.nonproc_observables,
+            ]
+
         return [self.objective, *self.constraints, *self.observables]
 
     def get_all_function_name(self) -> list[str]:
@@ -2683,6 +2693,10 @@ class OptimizationProblem(BaseProblem):
         if function_calls and MDOFunction.activate_counters:
             for func in self.get_all_functions():
                 func.n_calls = 0
+
+            if self.__functions_are_preprocessed:
+                for original_functions in self.get_all_functions(True):
+                    original_functions.n_calls = 0
 
         if preprocessing and self.__functions_are_preprocessed:
             self.objective = self.nonproc_objective
