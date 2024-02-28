@@ -15,15 +15,18 @@
 """Settings for post-processing."""
 
 from typing import Optional
+from typing import Union
 
 from pydantic import Field
+from pydantic import NegativeInt
+from pydantic import PositiveInt
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
 class GradientSensitivitySettings(BasePostSettings):  # noqa: D101
-    iteration: Optional[Union[NegativeInt,PositiveInt]] = Field(
+    iteration: Optional[Union[NegativeInt, PositiveInt]] = Field(
         None,
         description="The iteration to plot the sensitivities. "
         "Can use either positive or negative indexing, "

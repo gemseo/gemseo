@@ -25,6 +25,7 @@ from math import floor
 from math import sqrt
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Final
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -66,7 +67,7 @@ class SOM(BasePost[SOMSettings]):
     """
 
     Settings: ClassVar[type[SOMSettings]] = SOMSettings
-    __CMAP: Final[tuple[str,tuple[tuple[float,float,float],...]]] = PARULA
+    __CMAP: Final[tuple[str, tuple[tuple[float, float, float], ...]]] = PARULA
 
     @staticmethod
     def __build_som_from_vars(
