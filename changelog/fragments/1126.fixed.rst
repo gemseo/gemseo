@@ -1,0 +1,1 @@
+When ``function_calls`` is ``True``, ``OptimizationProblem.reset`` resets the number of calls of the original functions.

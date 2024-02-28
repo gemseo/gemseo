@@ -1272,6 +1272,8 @@ def test_reset(rosenbrock_lhs) -> None:
     ]
     for func, nonproc_func in zip(functions, nonproc_functions):
         assert id(func) == id(nonproc_func)
+        assert func.n_calls == 0
+        assert nonproc_func.n_calls == 0
 
     assert problem.nonproc_objective is None
     assert problem.nonproc_constraints == []
@@ -1965,3 +1967,32 @@ def test_no_initial_value_with_approximated_gradient(value, differentiation_meth
     problem.differentiation_method = differentiation_method
     optimization_result = execute_algo(problem, "SLSQP", max_iter=100)
     assert optimization_result.x_opt == 0
+
+
+@pytest.mark.parametrize("preprocess", [False, True])
+def test_get_all_functions(preprocess):
+    """Check get_all_functions."""
+    problem = Rosenbrock()
+    if preprocess:
+        problem.preprocess_functions()
+
+    functions = problem.get_all_functions()
+    assert functions == [
+        problem.objective,
+        *problem.constraints,
+        *problem.observables,
+    ]
+
+    functions = problem.get_all_functions(True)
+    if preprocess:
+        assert functions == [
+            problem.nonproc_objective,
+            *problem.nonproc_constraints,
+            *problem.nonproc_observables,
+        ]
+    else:
+        assert functions == [
+            problem.objective,
+            *problem.constraints,
+            *problem.observables,
+        ]
