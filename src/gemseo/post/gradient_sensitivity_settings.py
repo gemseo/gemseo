@@ -23,7 +23,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class GradientSensitivitySettings(BasePostSettings):  # noqa: D101
-    iteration: Optional[int] = Field(
+    iteration: Optional[Union[NegativeInt,PositiveInt]] = Field(
         None,
         description="The iteration to plot the sensitivities. "
         "Can use either positive or negative indexing, "

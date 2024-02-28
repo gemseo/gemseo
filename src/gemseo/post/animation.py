@@ -15,7 +15,7 @@
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Simone Coniglio
-"""Make an animated GIF from an :class:`.BasePost`."""
+"""Make an animated GIF from a :class:`.BasePost`."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ from gemseo.post.base_post import BasePost
 
 
 class Animation(BasePost[AnimationSettings]):
-    """Animated GIF maker from an :class:`.BasePost`."""
+    """Animated GIF maker from a :class:`.BasePost`."""
 
     __FRAME: Final[str] = "frame"
     """The prefix for frame images."""

@@ -66,7 +66,7 @@ class SOM(BasePost[SOMSettings]):
     """
 
     Settings: ClassVar[type[SOMSettings]] = SOMSettings
-    __CMAP = PARULA
+    __CMAP: Final[tuple[str,tuple[tuple[float,float,float],...]]] = PARULA
 
     @staticmethod
     def __build_som_from_vars(

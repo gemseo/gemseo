@@ -55,7 +55,7 @@ class ObjConstrHist(BasePost[ObjConstrHistSettings]):
 
     Settings: ClassVar[type[ObjConstrHistSettings]] = ObjConstrHistSettings
 
-    __Y_MARGIN: ClassVar[float] = 0.05
+    __Y_MARGIN: Final[float] = 0.05
     """The left and right margin for the y-axis."""
 
     def _plot(self, settings: ObjConstrHistSettings) -> None:

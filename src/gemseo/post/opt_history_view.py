@@ -92,10 +92,10 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
     __AXIS_LABEL_SIZE: Final[int] = 12
     """The font size of the axis labels."""
 
-    __X_MARGIN: ClassVar[float] = 0.1
+    __X_MARGIN: Final[float] = 0.1
     """The left and right margin for the x-axis."""
 
-    __Y_MARGIN: ClassVar[float] = 0.05
+    __Y_MARGIN: Final[float] = 0.05
     """The left and right margin for the y-axis."""
 
     __CMAP: Final[ListedColormap] = PARULA
