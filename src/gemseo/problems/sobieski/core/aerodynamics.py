@@ -26,7 +26,6 @@
 
 from __future__ import annotations
 
-import logging
 from math import pi
 
 from numpy import array
@@ -39,8 +38,6 @@ from numpy import zeros
 from gemseo.problems.sobieski.core.discipline import SobieskiDiscipline
 from gemseo.problems.sobieski.core.utils import DEG_TO_RAD
 from gemseo.problems.sobieski.core.utils import SobieskiBase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SobieskiAerodynamics(SobieskiDiscipline):

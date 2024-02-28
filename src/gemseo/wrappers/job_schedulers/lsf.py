@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from logging import getLogger
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -28,8 +27,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.core.discipline import MDODiscipline
-
-LOGGER = getLogger(__name__)
 
 
 class LSF(JobSchedulerDisciplineWrapper):

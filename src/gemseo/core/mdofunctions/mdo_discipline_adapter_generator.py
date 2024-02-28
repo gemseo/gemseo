@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from numbers import Number
 from typing import TYPE_CHECKING
 from typing import Callable
@@ -38,7 +37,6 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import MDODiscipline
 
-LOGGER = logging.getLogger(__name__)
 
 OperandType = Union[ndarray, Number]
 OperatorType = Callable[[OperandType, OperandType], OperandType]

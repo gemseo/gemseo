@@ -74,7 +74,6 @@ by means of the :meth:`.Distribution.compute_samples` method.
 
 from __future__ import annotations
 
-import logging
 from abc import abstractmethod
 from collections.abc import Iterable
 from collections.abc import Mapping
@@ -102,7 +101,6 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
     from gemseo.uncertainty.distributions.composed import ComposedDistribution
-LOGGER = logging.getLogger(__name__)
 
 StandardParametersType = Mapping[str, Union[str, int, float]]
 ParametersType = Union[tuple[str, int, float], StandardParametersType]

@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-import logging
 from math import sqrt
 from typing import TYPE_CHECKING
 
@@ -37,8 +36,6 @@ from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Robustness(OptPostProcessor):

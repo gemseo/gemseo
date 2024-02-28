@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from cmath import cos
 from cmath import pi
 from cmath import sin
@@ -33,8 +32,6 @@ from numpy import zeros
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Rastrigin(OptimizationProblem):

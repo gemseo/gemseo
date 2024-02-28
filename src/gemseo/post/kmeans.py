@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import array
@@ -33,8 +32,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.utils.matplotlib_figure import FigSizeType
-
-LOGGER = logging.getLogger(__name__)
 
 
 class KMeans(OptPostProcessor):

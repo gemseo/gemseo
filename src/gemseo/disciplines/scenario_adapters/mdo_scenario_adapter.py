@@ -23,11 +23,9 @@
 
 from __future__ import annotations
 
-import logging
 from copy import copy
 from copy import deepcopy
 from typing import TYPE_CHECKING
-from typing import Final
 
 from numpy import zeros
 from numpy.linalg import norm
@@ -51,8 +49,6 @@ if TYPE_CHECKING:
     from gemseo.algos.database import Database
     from gemseo.core.execution_sequence import LoopExecSequence
     from gemseo.core.scenario import Scenario
-
-LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 
 
 class MDOScenarioAdapter(MDODiscipline):

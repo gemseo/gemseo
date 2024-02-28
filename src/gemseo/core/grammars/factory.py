@@ -21,13 +21,10 @@
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.grammars.base_grammar import BaseGrammar
-
-LOGGER = logging.getLogger(__name__)
 
 
 class GrammarFactory(BaseFactory[BaseGrammar]):

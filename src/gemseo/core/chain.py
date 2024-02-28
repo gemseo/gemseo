@@ -23,7 +23,6 @@ Can be both sequential or parallel execution processes.
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from strenum import LowercaseStrEnum
@@ -51,8 +50,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from numpy import ndarray
-
-LOGGER = logging.getLogger(__name__)
 
 
 # TODO: One class per module.

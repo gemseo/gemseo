@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import logging
 import sys
 from ast import literal_eval
 from collections.abc import Iterable
@@ -56,7 +55,6 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-LOGGER = logging.getLogger(__name__)
 
 # Type of the values associated to the keys (values of input variables) in the database
 DatabaseKeyType = Union[ndarray, HashableNdarray]

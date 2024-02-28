@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -32,8 +31,6 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.algos.opt_problem import OptimizationProblem
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NormFunction(MDOFunction):
