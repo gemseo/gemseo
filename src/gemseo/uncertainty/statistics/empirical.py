@@ -251,7 +251,7 @@ class EmpiricalStatistics(Statistics):
         directory_path: str | Path = "",
         file_format: str = "png",
         **options: Any,
-    ):
+    ) -> dict[str, Lines]:
         """Visualize the empirical probability density function.
 
         Args:

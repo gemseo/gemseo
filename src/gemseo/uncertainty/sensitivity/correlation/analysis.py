@@ -355,7 +355,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         directory_path: str | Path = "",
         file_name: str = "",
         file_format: str = "",
-    ) -> None:
+    ) -> RadarChart:
         """
         Args:
             directory_path: The path to the directory where to save the plots.
@@ -404,6 +404,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
             file_format=file_format,
             directory_path=directory_path,
         )
+        return plot
 
     def plot_radar(  # noqa: D102
         self,

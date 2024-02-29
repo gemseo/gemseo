@@ -318,7 +318,7 @@ class ParametricStatistics(Statistics):
         directory: str | Path = ".",
         index: int = 0,
         fig_size: FigSizeType = (6.4, 3.2),
-    ) -> None:
+    ) -> Figure:
         """Plot criteria for a given variable name.
 
         Args:
@@ -386,6 +386,8 @@ class ParametricStatistics(Statistics):
             plt.suptitle(title)
 
         save_show_figure(fig, show, Path(directory) / "criteria.pdf" if save else "")
+
+        return fig
 
     def _select_best_distributions(
         self, distribution_names: Sequence[DistributionName]

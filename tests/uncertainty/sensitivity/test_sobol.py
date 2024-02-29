@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING
 from typing import Callable
 
 import pytest
+from matplotlib.figure import Figure
 from numpy import array
 from numpy import ndarray
 from numpy import pi
@@ -163,7 +164,8 @@ def test_total_intervals(total_intervals, name, bound, expected) -> None:
 @image_comparison(None)
 def test_plot(name, sobol, sort, sort_by_total, kwargs, baseline_images) -> None:
     """Check the main visualization method."""
-    sobol.plot(name, save=False, sort=sort, sort_by_total=sort_by_total, **kwargs)
+    fig = sobol.plot(name, save=False, sort=sort, sort_by_total=sort_by_total, **kwargs)
+    assert isinstance(fig, Figure)
 
 
 @pytest.mark.parametrize(

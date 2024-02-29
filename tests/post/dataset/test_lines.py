@@ -132,3 +132,19 @@ def test_plot_plotly(kwargs, properties, baseline_images, dataset) -> None:
         Path(__file__).parent / "plotly" / "test_lines" / baseline_images[0]
     ).read_text()
     assert figure.to_json() == ref.strip()
+
+
+def test_pass_existing_figure(dataset):
+    """Check that an existing figure can be modified."""
+    figure = Lines(dataset, variables="y", abscissa_variable="x").execute(
+        save=False, show=False, file_name="existing", file_format="html"
+    )[0]
+    figure = Lines(
+        dataset, variables="z", abscissa_variable="x", add_markers=True
+    ).execute(
+        save=False, show=False, file_name="final", fig=figure, file_format="html"
+    )[0]
+    ref = (
+        Path(__file__).parent / "plotly" / "test_lines" / "Lines_modified"
+    ).read_text()
+    assert figure.to_json() == ref.strip()
