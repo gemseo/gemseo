@@ -188,6 +188,11 @@ class MDAJacobi(BaseMDASolver):
                 self.get_input_data_names()
             )
         )
+
+        self._numeric_input_couplings = sorted(
+            set(self._input_couplings).difference(self._non_numeric_array_variables)
+        )
+
         return None
 
     def execute_all_disciplines(self, input_local_data: Mapping[str, NDArray]) -> None:

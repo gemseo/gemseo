@@ -276,6 +276,7 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self.strong_couplings = self.coupling_structure.strong_couplings
         self.all_couplings = self.coupling_structure.all_couplings
         self._input_couplings = []
+        self._non_numeric_array_variables = []
         self.matrix_type = JacobianAssembly.JacobianType.MATRIX
         self.use_lu_fact = use_lu_fact
         # By default don't use an approximate cache for linearization
@@ -429,13 +430,27 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             outputs = list(outputs)
             outputs.remove(self.RESIDUALS_NORM)
 
+        # Filter the non-numeric arrays
+        inputs = [
+            input_
+            for input_ in inputs
+            if self.input_grammar.data_converter.is_numeric(input_)
+        ]
+        outputs = [
+            output
+            for output in outputs
+            if self.output_grammar.data_converter.is_numeric(output)
+        ]
+
         return inputs, outputs
 
     def _check_coupling_types(self) -> None:
         """Check that the coupling variables are numeric.
 
-        Raises:
-            TypeError: When at least one of the coupling variables is not an array.
+        If non-numeric array coupling variables are present, they will be filtered and
+        not taken into account in the MDA residual. Yet, this method warns the user that
+        some of the coupling variables are non-numeric arrays, in case of this event
+        follows an improper setup.
         """
         not_arrays = set()
         for coupling_name in self.all_couplings:
@@ -448,9 +463,12 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                         not_arrays.add(coupling_name)
                         break
 
+        self._non_numeric_array_variables = not_arrays
         if not_arrays:
-            msg = f"The coupling variables {sorted(not_arrays)} must be numeric."
-            raise TypeError(msg)
+            LOGGER.debug(
+                "The coupling variable(s) %s is/are not an array of numeric values.",
+                not_arrays,
+            )
 
     def reset_disciplines_statuses(self) -> None:
         """Reset all the statuses of the disciplines."""
@@ -513,10 +531,13 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             residual_variables.update(disc.residual_variables)
 
         couplings_adjoint = sorted(
-            set(self.all_couplings)
+            set(self.all_couplings).difference(self._non_numeric_array_variables)
             - residual_variables.keys()
             - set(residual_variables.values())
         )
+
+        outputs = list(set(outputs).difference(self._non_numeric_array_variables))
+        inputs = list(set(inputs).difference(self._non_numeric_array_variables))
 
         self.jac = self.assembly.total_derivatives(
             self.local_data,
@@ -642,6 +663,18 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
         if self.RESIDUALS_NORM in outputs:
             outputs.remove(self.RESIDUALS_NORM)
+
+        # Remove non-numeric arrays that cannot be differentiated
+        inputs = [
+            input_
+            for input_ in inputs
+            if self.input_grammar.data_converter.is_numeric(input_)
+        ]
+        outputs = [
+            output
+            for output in outputs
+            if self.output_grammar.data_converter.is_numeric(output)
+        ]
 
         return super().check_jacobian(
             input_data=input_data,
