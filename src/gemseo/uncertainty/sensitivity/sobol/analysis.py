@@ -130,6 +130,7 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from matplotlib.figure import Figure
     from numpy.typing import NDArray
 
     from gemseo.algos.doe.doe_library import DOELibraryOptionType
@@ -577,7 +578,7 @@ class SobolAnalysis(SensitivityAnalysis):
         file_format: str = "",
         sort: bool = True,
         sort_by_total: bool = True,
-    ) -> None:
+    ) -> Figure:
         r"""Plot the first- and total-order Sobol' indices.
 
         For the :math:`i`-th uncertain input variable,
@@ -705,3 +706,4 @@ class SobolAnalysis(SensitivityAnalysis):
             file_format=file_format,
             directory_path=directory_path,
         )
+        return fig

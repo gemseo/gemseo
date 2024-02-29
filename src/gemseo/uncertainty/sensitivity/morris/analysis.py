@@ -94,6 +94,8 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
+    from matplotlib.figure import Figure
+
     from gemseo.algos.doe.doe_library import DOELibraryOptionType
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
@@ -403,7 +405,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         offset: float = 1,
         lower_mu: float | None = None,
         lower_sigma: float | None = None,
-    ) -> None:
+    ) -> Figure:
         r"""Plot the Morris indices for each input variable.
 
         For :math:`i\in\{1,\ldots,d\}`,
@@ -452,3 +454,4 @@ class MorrisAnalysis(SensitivityAnalysis):
             file_format=file_format,
             directory_path=directory_path,
         )
+        return fig

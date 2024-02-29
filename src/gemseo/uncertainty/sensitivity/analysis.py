@@ -74,6 +74,7 @@ if TYPE_CHECKING:
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.post.dataset.dataset_plot import DatasetPlot
     from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
     from gemseo.post.dataset.dataset_plot import VariableType
 
@@ -463,7 +464,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         show: bool = False,
         file_path: str | Path = "",
         file_format: str = "",
-    ) -> None:
+    ) -> DatasetPlot | Figure:
         """Plot the sensitivity indices.
 
         Args:
@@ -484,6 +485,9 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
                 Used when ``file_path`` does not have any extension.
                 If empty, use a default file extension.
+
+        Returns:
+            The plot figure.
         """
         raise NotImplementedError
 

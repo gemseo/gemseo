@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A bar plot based on matplotlib."""
+"""A bar plot based on plotly."""
 
 from __future__ import annotations
 
@@ -35,15 +35,16 @@ class BarPlot(PlotlyPlot):
 
     def _create_figure(
         self,
+        fig: Figure,
         data: NDArray,
         feature_names: Iterable[str],
     ) -> Figure:
         """
         Args:
+            fig: A Plotly figure.
             data: The data to be plotted.
             feature_names: The names of the features.
         """  # noqa: D205, D212, D415
-        fig = Figure()
         self._common_settings.set_colors(self._common_settings.color)
         n_series, n_features = data.shape
         first_series_positions = arange(n_features)

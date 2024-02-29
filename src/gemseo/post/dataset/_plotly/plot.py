@@ -22,19 +22,19 @@ from typing import Any
 from typing import Final
 from typing import NamedTuple
 
+from plotly.graph_objs import Figure
+
 from gemseo.post.dataset.base_plot import BasePlot
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from plotly.graph_objs import Figure
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.post.dataset.plot_settings import PlotSettings
 
 
 class PlotlyPlot(BasePlot):
-    """A base plot class relying on matplotlib."""
+    """A base plot class relying on plotly."""
 
     _PLOTLY_LINESTYLES: Final[dict[str, str]] = {
         "-": "solid",
@@ -52,19 +52,22 @@ class PlotlyPlot(BasePlot):
         common_settings: PlotSettings,
         specific_settings: NamedTuple,
         *specific_data: Any,
+        fig: Figure | None = None,
     ) -> None:
         """
         Args:
-            *args: The data to be plotted.
+            fig: A Plotly figure.
+                If ``None``, create a new one.
         """  # noqa: D205 D212 D415
-        super().__init__(dataset, common_settings, specific_settings)
-        self.__figure = self._create_figure(*specific_data)
+        super().__init__(dataset, common_settings, specific_settings, fig=fig)
+        self.__figure = self._create_figure(fig or Figure(), *specific_data)
 
     @abstractmethod
-    def _create_figure(self, *specific_data: Any) -> Figure:
+    def _create_figure(self, fig: Figure, *specific_data: Any) -> Figure:
         """Create the plotly figure.
 
         Args:
+            fig: A Plotly figure.
             *specific_data: The data specific to this plot class.
 
         Returns:

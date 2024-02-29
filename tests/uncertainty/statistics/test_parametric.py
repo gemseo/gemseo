@@ -221,7 +221,8 @@ def test_compute_margin(statistics) -> None:
 
 def test_plot_criteria(tmp_wd, statistics, dataset, tested_distributions) -> None:
     """Check plot_criteria()."""
-    statistics.plot_criteria("x_2", save=True, show=False)
+    fig = statistics.plot_criteria("x_2", save=True, show=False)
+    assert isinstance(fig, Figure)
     statistics.plot_criteria("x_2", title="title", save=True, show=False)
     with pytest.raises(
         ValueError,

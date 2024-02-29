@@ -22,6 +22,7 @@ from __future__ import annotations
 import re
 
 import pytest
+from matplotlib.figure import Figure
 from numpy import allclose
 from numpy import array
 from numpy import pi
@@ -168,7 +169,8 @@ def test_morris_relative_sigma(morris, output, variable) -> None:
 @image_comparison(None)
 def test_plot(morris, output_name, kwargs, baseline_images) -> None:
     """Check the main visualization method."""
-    morris.plot(output_name, save=False, **kwargs)
+    fig = morris.plot(output_name, save=False, **kwargs)
+    assert isinstance(fig, Figure)
 
 
 @pytest.mark.parametrize(

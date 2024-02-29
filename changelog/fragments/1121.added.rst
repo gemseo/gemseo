@@ -1,0 +1,2 @@
+- The plotting methods of ``SensitivityAnalysis`` and ``Statistics`` classes return ``DatasetPlot`` objects or figures from data visualization libraries, e.g. Matplotlib and Plotly.
+- A Plotly figure can be passed to a Plotly plot.
