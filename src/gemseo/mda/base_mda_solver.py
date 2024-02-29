@@ -220,7 +220,8 @@ class BaseMDASolver(MDA):
             residual_variables.update(discipline.residual_variables)
 
         state_variables = residual_variables.values()
-        resolved_variables = set(resolved_couplings) | set(state_variables)
+        resolved_variables = set(resolved_couplings).union(state_variables)
+        resolved_variables.difference_update(self._non_numeric_array_variables)
         self.__resolved_variable_names = tuple(sorted(resolved_variables))
 
         # State variable names are replaced with associated residual names
