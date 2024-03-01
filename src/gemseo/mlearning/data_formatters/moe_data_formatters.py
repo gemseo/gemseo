@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import functools
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
@@ -55,6 +56,7 @@ class MOEDataFormatters(RegressionDataFormatters):
             The evaluation will have the same type as the input data.
         """
 
+        @functools.wraps(func)
         def wrapper(
             algo: MOERegressor,
             input_data: DataType,
