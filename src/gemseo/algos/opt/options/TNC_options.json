@@ -41,7 +41,7 @@
       ]
     },
     "disp": {
-      "type": "number"
+      "type": "boolean"
     },
     "maxCGit": {
       "type": "integer",

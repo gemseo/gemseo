@@ -1,5 +1,5 @@
 {
-  "name": "SLSQP_options",
+  "name": "NELDER-MEAD_options",
   "required": [
     "max_iter"
   ],
@@ -24,17 +24,6 @@
       "type": "number",
       "minimum": 0.0
     },
-    "disp": {
-      "type": "boolean"
-    },
-    "eq_tolerance": {
-      "type": "number",
-      "minimum": 0.0
-    },
-    "ineq_tolerance": {
-      "type": "number",
-      "minimum": 0.0
-    },
     "max_iter": {
       "type": "integer",
       "minimum": 1
@@ -53,20 +42,29 @@
       ],
       "minimum": 0.0
     },
-    "scaling_threshold": {
-      "oneOf": [
-        {
-          "type": "number",
-          "minimum": 0
-        },
-        {
-          "type": "null"
+    "disp": {
+      "type": "boolean"
+    },
+    "adaptive": {
+      "type": "boolean"
+    },
+    "initial_simplex": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "minItems": 2,
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "number"
         }
-      ]
+      }
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "additionalProperties": false,
-  "id": "#SLSQP"
+  "id": "#NELDER-MEAD"
 }

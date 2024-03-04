@@ -54,7 +54,7 @@ class TestScipy(TestCase):
         """"""
         algo_name = "SLSQP"
         OptLibraryTestBase.generate_one_test(
-            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10, disp=10
+            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10, disp=True
         )
 
     def test_handles_cstr(self) -> None:
@@ -116,7 +116,7 @@ class TestScipy(TestCase):
             self.OPT_LIB_NAME,
             algo_name=algo_name,
             max_iter=100,
-            disp=1,
+            disp=True,
             maxCGit=178,
             pg_tol=1e-8,
             eta=-1.0,
@@ -133,7 +133,7 @@ class TestScipy(TestCase):
             self.OPT_LIB_NAME,
             algo_name=algo_name,
             max_iter=100,
-            disp=1,
+            disp=True,
             maxcor=12,
             pg_tol=1e-8,
             max_fun_eval=20,
@@ -144,7 +144,7 @@ class TestScipy(TestCase):
             self.OPT_LIB_NAME,
             algo_name=algo_name,
             max_iter="100",
-            disp=1,
+            disp=True,
             maxcor=12,
             pg_tol=1e-8,
             max_fun_eval=1000,
@@ -159,7 +159,11 @@ class TestScipy(TestCase):
         """"""
         algo_name = "SLSQP"
         OptLibraryTestBase.generate_one_test(
-            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=100, disp=1, ftol_rel=1e-10
+            self.OPT_LIB_NAME,
+            algo_name=algo_name,
+            max_iter=100,
+            disp=True,
+            ftol_rel=1e-10,
         )
 
     def test_normalization(self) -> None:
@@ -266,3 +270,17 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
     """
     optimization_result = OptimizersFactory().execute(opt_problem, "SLSQP", atol=1e-10)
     assert allclose(optimization_result.f_opt, -0.001, atol=1e-10)
+
+
+@pytest.mark.parametrize(
+    "initial_simplex", [None, [[0.6, 0.6], [0.625, 0.6], [0.6, 0.625]]]
+)
+def test_nelder_mead(initial_simplex) -> None:
+    """Test the Nelder-Mead algorithm on the Rosenbrock problem."""
+    problem = Rosenbrock()
+    opt = OptimizersFactory().execute(
+        problem, algo_name="NELDER-MEAD", max_iter=800, initial_simplex=initial_simplex
+    )
+    x_opt, f_opt = problem.get_solution()
+    assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
+    assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
