@@ -17,7 +17,7 @@ cycler==0.12.1
     # via matplotlib
 dill==0.3.8
     # via openturns
-docstring-inheritance==2.1.2
+docstring-inheritance==2.2.0
 et-xmlfile==1.1.0
     # via openpyxl
 exceptiongroup==1.2.0
@@ -78,7 +78,7 @@ pydantic-core==2.16.3
 pydoe2==1.3.0
 pyparsing==3.1.1
     # via matplotlib
-pytest==8.1.0
+pytest==8.0.2
     # via
     #   pytest-cov
     #   pytest-xdist
