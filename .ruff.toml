@@ -3,9 +3,9 @@ unsafe-fixes = true
 preview = true
 target-version = "py39"
 src = ["src"]
-task-tags = ["TODO"]
 
 [lint]
+task-tags = ["TODO"]
 ignore = [
     # Conflicts with ruff format.
     "E203",
