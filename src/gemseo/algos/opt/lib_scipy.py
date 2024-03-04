@@ -36,6 +36,8 @@ from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescripti
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.opt_result import OptimizationResult
 
 
@@ -93,11 +95,11 @@ class ScipyOpt(OptimizationLibrary):
             "L-BFGS-B": SciPyAlgorithmDescription(
                 algorithm_name="L-BFGS-B",
                 description=(
-                    "Limited-memory BFGS algorithm implemented in SciPy library"
+                    "Limited-memory BFGS algorithm implemented in the SciPy library"
                 ),
                 internal_algorithm_name="L-BFGS-B",
                 require_gradient=True,
-                website=f"{doc}generated/scipy.optimize.fmin_l_bfgs_b.html",
+                website=f"{doc}optimize.minimize-lbfgsb.html",
             ),
             "TNC": SciPyAlgorithmDescription(
                 algorithm_name="TNC",
@@ -107,6 +109,13 @@ class ScipyOpt(OptimizationLibrary):
                 internal_algorithm_name="TNC",
                 require_gradient=True,
                 website=f"{doc}optimize.minimize-tnc.html",
+            ),
+            "NELDER-MEAD": SciPyAlgorithmDescription(
+                algorithm_name="NELDER-MEAD",
+                description="Nelder-Mead algorithm implemented in the SciPy library",
+                internal_algorithm_name="Nelder-Mead",
+                require_gradient=False,
+                website=f"{doc}optimize.minimize-neldermead.html",
             ),
         }
 
@@ -122,7 +131,7 @@ class ScipyOpt(OptimizationLibrary):
         max_fun_eval: int = 999,
         max_time: float = 0,
         pg_tol: float = 1e-5,
-        disp: int = 0,
+        disp: bool = False,
         maxCGit: int = -1,  # noqa: N803
         eta: float = -1.0,
         factr: float = 1e7,
@@ -137,6 +146,8 @@ class ScipyOpt(OptimizationLibrary):
         offset: float | None = None,
         kkt_tol_abs: float | None = None,
         kkt_tol_rel: float | None = None,
+        adaptive: bool = False,
+        initial_simplex: Sequence[Sequence[float]] | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
         r"""Set the options default values.
@@ -189,6 +200,11 @@ class ScipyOpt(OptimizationLibrary):
                 If ``None`` this criterion is not activated.
             kkt_tol_rel: The relative tolerance on the KKT residual norm.
                 If ``None`` this criterion is not activated.
+            adaptive: Whether to adapt the Nelder-Mead algorithm parameters to the
+                dimensionality of the problem. Useful for high-dimensional minimization.
+            initial_simplex: If not ``None``, overrides x0 in the Nelder-Mead algorithm.
+                ``initial_simplex[j,:]`` should contain the coordinates of the jth
+                vertex of the N+1 vertices in the simplex, where N is the dimension.
             **kwargs: The other algorithm options.
         """
         return self._process_options(
@@ -215,6 +231,8 @@ class ScipyOpt(OptimizationLibrary):
             scale=scale,
             rescale=rescale,
             offset=offset,
+            adaptive=adaptive,
+            initial_simplex=initial_simplex,
             kkt_tol_abs=kkt_tol_abs,
             kkt_tol_rel=kkt_tol_rel,
             **kwargs,
@@ -277,8 +295,15 @@ class ScipyOpt(OptimizationLibrary):
         options.pop(self.MAX_ITER)
         options.pop(self._KKT_TOL_REL)
         options.pop(self._KKT_TOL_ABS)
+
         if self.algo_name != "TNC":
             options.pop("xtol")
+
+        if self.algo_name == "NELDER-MEAD":
+            options["fatol"] = 0.0
+            options["xatol"] = 0.0
+            options.pop("ftol")
+            jac = None
 
         opt_result = optimize.minimize(
             fun=fun,

@@ -5,8 +5,7 @@
   ],
   "properties": {
     "disp": {
-      "type": "integer",
-      "minimum": 0
+      "type": "boolean"
     },
     "maxcor": {
       "type": "integer"

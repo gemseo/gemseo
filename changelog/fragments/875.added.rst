@@ -1,0 +1,1 @@
+The SciPy implementation of the ``Nelder-Mead`` gradient-free algorithm is now available.
