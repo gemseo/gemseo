@@ -163,14 +163,8 @@ class DriverLibrary(AlgorithmLibrary):
     _start_time: float | None
     """The time at which the execution begins."""
 
-    __iter: int
-    """The current iteration."""
-
     __log_problem: bool
     """Whether to log the definition and result of the problem."""
-
-    __max_iter: int
-    """The maximum number of iterations."""
 
     __one_line_progress_bar: bool
     """Whether to log the progress bar on a single line."""
@@ -189,8 +183,6 @@ class DriverLibrary(AlgorithmLibrary):
         super().__init__()
         self.deactivate_progress_bar()
         self.__activate_progress_bar = self.activate_progress_bar
-        self.__max_iter = 0
-        self.__iter = 0
         self._start_time = None
         self._max_time = None
         self.__reset_iteration_counters = True
@@ -230,15 +222,16 @@ class DriverLibrary(AlgorithmLibrary):
         if max_iter < 1:
             msg = f"max_iter must be >=1, got {max_iter}"
             raise ValueError(msg)
-        self.problem.max_iter = self.__max_iter = max_iter
-        self.problem.current_iter = self.__iter = (
+        self.problem.max_iter = max_iter
+        self.problem.current_iter = (
             0 if self.__reset_iteration_counters else self.problem.current_iter
         )
         if self.__activate_progress_bar:
             cls = ProgressBar if self.__log_problem else UnsuffixedProgressBar
+            # TODO: API: use only self.problem
             self.__progress_bar = cls(
                 max_iter,
-                self.__iter,
+                self.problem.current_iter,
                 self.problem,
                 message,
             )
@@ -259,8 +252,7 @@ class DriverLibrary(AlgorithmLibrary):
                 execution time.
         """
         self.__progress_bar.set_objective_value(None, True)
-        self.__iter += 1
-        self.problem.current_iter = self.__iter
+        self.problem.current_iter += 1
         if 0 < self._max_time < time() - self._start_time:
             raise MaxTimeReached
 
