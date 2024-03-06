@@ -8,7 +8,7 @@
   "properties": {
     "n_samples": {
       "type": "integer",
-      "minimum": 1
+      "minimum": 2
     },
     "distribution_name": {
       "type": "string",

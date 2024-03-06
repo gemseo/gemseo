@@ -1,0 +1,1 @@
+Requesting an optimized LHS with size 1 raises an exception instead of a freeze.
