@@ -2481,9 +2481,12 @@ class DesignSpace(collections.abc.MutableMapping):
             self.normalize,
             self._lower_bounds,
             self._upper_bounds,
-            self._current_value,
         ]:
             dictionary[new_name] = dictionary.pop(current_name)
+
+        current_value = self._current_value.pop(current_name, None)
+        if current_value is not None:
+            self._current_value[new_name] = current_value
 
     def initialize_missing_current_values(self) -> None:
         """Initialize the current values of the design variables when missing.
