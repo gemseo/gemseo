@@ -388,3 +388,13 @@ def test_executed_twice(identity_problem, n_samples, seed) -> None:
         assert len(identity_problem.database) == 3 + n_samples
         assert identity_problem.max_iter == n_samples
         assert identity_problem.current_iter == n_samples
+
+
+def test_optimized_lhs_size_1():
+    """Check that size 1 is not allowed for optimized LHS."""
+    library = OpenTURNS()
+    library.init_options_grammar("OT_OPT_LHS")
+    with pytest.raises(
+        InvalidDataError, match="data.n_samples must be bigger than or equal to 2"
+    ):
+        library._get_options(n_samples=1)
