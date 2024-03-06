@@ -325,8 +325,8 @@ def test_parallel_execution(tmp_wd) -> None:
 
 
 @pytest.mark.parametrize("clean_after_execution", [True, False])
-def test_last_execution_directory(tmp_wd, clean_after_execution: bool) -> None:
-    """Test the property: ``last_execution_directory``."""
+def test_working_directory(tmp_wd, clean_after_execution: bool) -> None:
+    """Test the property: ``working_directory``."""
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
@@ -342,16 +342,15 @@ def test_last_execution_directory(tmp_wd, clean_after_execution: bool) -> None:
         clean_after_execution=clean_after_execution,
     )
 
-    indata = {
-        "input 1": array([1.015154]),
-        "input 2": array([3.0015151121254534242424]),
-        "input 3": array([2.001515112125]),
-    }
-    assert disc.last_execution_directory is None
-    disc.execute(indata)
-    assert disc.last_execution_directory == tmp_wd / "1"
+    assert disc._executable_runner.working_directory is None
+    disc.execute({
+        "input 1": array([1.0]),
+        "input 2": array([3.0]),
+        "input 3": array([2.0]),
+    })
+    assert disc._executable_runner.working_directory == tmp_wd / "1"
 
     if clean_after_execution:
-        assert not disc.last_execution_directory.is_dir()
+        assert not disc._executable_runner.working_directory.is_dir()
     else:
-        assert disc.last_execution_directory.is_dir()
+        assert disc._executable_runner.working_directory.is_dir()

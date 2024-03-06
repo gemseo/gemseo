@@ -19,7 +19,7 @@ class ShellExecutableDiscipline(_BaseDiscFromExe):
         # The unique directories are created where the script is run (".")
         # We copy the script ``run_discipline.bash`` into the directory to use it
         exec_runner = _BaseExecutableRunner(
-            ".", "bash ./run_discipline.bash", files=["./run_discipline.bash"]
+            "bash ./run_discipline.bash", ".", files=["./run_discipline.bash"]
         )
 
         super().__init__(exec_runner, name="ShellDisc")
