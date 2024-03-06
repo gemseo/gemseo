@@ -224,13 +224,15 @@ class DiscFromExe(_BaseDiscFromExe):
                 "The argument 'use_shell' is no longer used,"
                 "the executable is run without shell."
             )
-        executable_runner = _BaseExecutableRunner(
+        self._executable_runner = _BaseExecutableRunner(
             root_directory=output_folder_basepath,
             command_line=executable_command,
             directory_naming_method=folders_iter,
         )
         super().__init__(
-            executable_runner, name=name, clean_after_execution=clean_after_execution
+            self._executable_runner,
+            name=name,
+            clean_after_execution=clean_after_execution,
         )
 
         self.input_template = Path(input_template)
@@ -296,7 +298,7 @@ class DiscFromExe(_BaseDiscFromExe):
     def _create_inputs(self) -> None:
         """Write the input file."""
         self.write_input_file(
-            self._executable_runner.last_execution_directory / self.input_filename,
+            self._executable_runner.working_directory / self.input_filename,
             self.local_data,
             self._in_pos,
             self._in_lines,
@@ -305,7 +307,7 @@ class DiscFromExe(_BaseDiscFromExe):
     def _parse_outputs(self) -> Data:
         """Parse the output file."""
         with (
-            self._executable_runner.last_execution_directory / self.output_filename
+            self._executable_runner.working_directory / self.output_filename
         ).open() as outfile:
             out_lines = outfile.readlines()
 

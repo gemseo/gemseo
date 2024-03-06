@@ -44,7 +44,7 @@ class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
     command_line: str
     """The command line to run the executable."""
 
-    _files: Iterable[str | Path] = ()
+    _files: Iterable[str | Path]
     """The files to copy into the execution directory."""
 
     _working_directory: str | Path
@@ -58,8 +58,8 @@ class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        root_directory: str | Path,
         command_line: str,
+        root_directory: str | Path = "",
         directory_naming_method: DirectoryNamingMethod = DirectoryNamingMethod.UUID,
         files: Iterable[str | Path] = (),
         working_directory: str | Path = "",
@@ -67,11 +67,11 @@ class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
     ) -> None:
         """
         Args:
+            command_line: The command line to run the executable.
+                E.g. ``python my_script.py -i input.txt -o output.txt``
             root_directory: The path to the root directory,
                 wherein unique directories will be created at each execution.
                 If empty, use the current working directory.
-            command_line: The command line to run the executable.
-                E.g. ``python my_script.py -i input.txt -o output.txt``
             directory_naming_method: The method to create the execution directories.
             files: The files to copy into the execution directory.
             working_directory: The directory within to execute the command line.
@@ -112,25 +112,27 @@ class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
             raise KeyError(msg)
         self.__subprocess_run_options.update(subprocess_run_options)
 
-    def create_directory(self) -> Path:
-        """Create a unique execution directory."""
-        return self.__directory_creator.create()
-
     def __copy_files(self) -> None:
-        """Copy the files into the execution directory."""
-        if self.__directory_creator.last_directory:
+        """Copy the files into the working directory."""
+        working_directory = self.working_directory
+        if working_directory:
             for file_ in self._files:
                 copy2(
                     file_,
-                    self.__directory_creator.last_directory / Path(file_).name,
+                    working_directory / Path(file_).name,
                 )
+
+    @property
+    def working_directory(self) -> Path | None:
+        """The working directory within the command line is executed."""
+        if self._working_directory:
+            return Path(self._working_directory)
+
+        return self.__directory_creator.last_directory
 
     def execute(self) -> None:
         """Execute the command line."""
-        if self._working_directory:
-            working_directory = self._working_directory
-        else:
-            working_directory = self.__directory_creator.last_directory
+        working_directory = self.working_directory
 
         self.__copy_files()
 
@@ -169,6 +171,6 @@ class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @property
-    def last_execution_directory(self) -> Path | None:
-        """The last directory wherein the executable was executed, or ``None``."""
-        return self.__directory_creator.last_directory
+    def directory_creator(self) -> DirectoryCreator:
+        """The directory creator."""
+        return self.__directory_creator

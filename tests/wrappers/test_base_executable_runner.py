@@ -32,9 +32,9 @@ def test_create_directory(tmp_wd, root_directory, identifiers) -> None:
         command_line="echo hello world",
         identifiers=identifiers,
     )
-    path = base_exec_runner.create_directory()
+    path = base_exec_runner.directory_creator.create()
     assert path.exists()
-    assert path == base_exec_runner.last_execution_directory
+    assert path == base_exec_runner.directory_creator.last_directory
 
 
 @pytest.mark.parametrize("command", ["echo hello world", "ls"])
@@ -50,7 +50,7 @@ def test_change_working_directory(tmp_wd) -> None:
     """Test to use a different execution directory."""
     Path("toto").mkdir()
     _BaseExecutableRunner(
-        ".", "python -c open('toto.txt','w')", working_directory="toto"
+        "python -c open('toto.txt','w')", ".", working_directory="toto"
     ).execute()
     assert not Path("toto.txt").exists()
     assert Path("toto/toto.txt").exists()
@@ -64,9 +64,9 @@ def test_attached_files(tmp_wd) -> None:
         g.write("tata")
 
     exec_runner = _BaseExecutableRunner(
-        ".", "python --version", files=["toto.txt", Path("tata.txt")]
+        "python --version", ".", files=["toto.txt", Path("tata.txt")]
     )
-    wd = exec_runner.create_directory()
+    wd = exec_runner.directory_creator.create()
     exec_runner.execute()
 
     assert Path("toto.txt").exists()
@@ -79,8 +79,8 @@ def test_run_options(tmp_wd) -> None:
     log_file = Path("myfile_stdout.txt")
     with log_file.open("w") as outfile:
         exec_runner = _BaseExecutableRunner(
-            ".",
             "python --version",
+            ".",
             stdout=outfile,
         )
         exec_runner.execute()
@@ -107,7 +107,7 @@ def test_run_options_error(tmp_wd, options) -> None:
         match=msg,
     ):
         _BaseExecutableRunner(
-            ".",
             "python --version",
+            ".",
             **options,
         )
