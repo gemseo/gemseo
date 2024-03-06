@@ -1264,20 +1264,17 @@ def test_setitem_from_dict() -> None:
     assert design_space["x"].l_b == array([2.0])
 
 
-def test_rename_variable() -> None:
+@pytest.mark.parametrize("value", [array([1.0, 2.0]), None])
+def test_rename_variable(value) -> None:
     """Check the renaming of a variable."""
-    design_variable = DesignSpace.DesignVariable(
-        2, "integer", 0.0, 2.0, array([1.0, 2.0])
-    )
+    design_variable = DesignSpace.DesignVariable(2, "integer", 0.0, 2.0, value)
 
     design_space = DesignSpace()
     design_space["x"] = design_variable
     design_space.rename_variable("x", "y")
 
-    other_design_space = DesignSpace()
-    other_design_space["y"] = design_variable
-
-    assert design_space == other_design_space
+    assert "x" not in design_space
+    assert_equal(design_space["y"], design_variable)
 
 
 def test_rename_unknown_variable() -> None:
