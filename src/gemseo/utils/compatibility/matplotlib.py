@@ -16,11 +16,12 @@
 
 from __future__ import annotations
 
-import matplotlib
-import matplotlib.pyplot as plt
-from packaging import version
+from importlib.metadata import version
 
-if version.parse(matplotlib.__version__) < version.parse("3.5.0"):
+import matplotlib.pyplot as plt
+from packaging.version import parse as parse_version
+
+if parse_version(version("matplotlib")) < parse_version("3.5.0"):
 
     def get_color_map(colormap):  # noqa: N802, D103
         return plt.cm.get_cmap(colormap)

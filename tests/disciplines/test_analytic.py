@@ -21,11 +21,13 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version
+
 import pytest
 import sympy
 from numpy import array
 from numpy.testing import assert_equal
-from packaging import version
+from packaging.version import parse as parse_version
 
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -78,7 +80,7 @@ def test_failure_with_malformed_expressions() -> None:
 
 
 @pytest.mark.skipif(
-    version.parse(sympy.__version__) > version.parse("1.8.0"),
+    parse_version(version("sympy")) > parse_version("1.8.0"),
     reason="requires sympy 1.7.0 or lower",
 )
 def test_failure_for_log_zero_without_fast_evaluation() -> None:

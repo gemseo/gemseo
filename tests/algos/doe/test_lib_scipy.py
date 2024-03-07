@@ -19,13 +19,14 @@ from __future__ import annotations
 import re
 from unittest import mock
 
-import packaging
 import pytest
-import scipy
 from numpy.testing import assert_equal
+from packaging.version import parse as parse_version
 
+from gemseo.algos.doe import lib_scipy
 from gemseo.algos.doe.lib_scipy import SciPyDOE
 from gemseo.algos.doe.lib_scipy import _MonteCarlo
+from gemseo.utils.compatibility import scipy
 
 
 @pytest.fixture()
@@ -62,12 +63,13 @@ def test_remove_recent_scipy_options(library) -> None:
     original_option_names = ["a", "b", "c"]
     option_names = original_option_names.copy()
 
-    _version = packaging.version.parse(scipy.__version__)
-    release = _version.release
+    release = scipy.SCIPY_VERSION.release
     prev_release_name = f"{release[0]}.{release[1] - 1}.0"
     next_release_name = f"{release[0]}.{release[1] + 1}.0"
 
-    library._SciPyDOE__remove_recent_scipy_options(option_names, "b", _version.public)
+    library._SciPyDOE__remove_recent_scipy_options(
+        option_names, "b", scipy.SCIPY_VERSION.public
+    )
     assert option_names == original_option_names
 
     library._SciPyDOE__remove_recent_scipy_options(option_names, "b", prev_release_name)
@@ -85,16 +87,16 @@ def check_option_filtering(
         f"Removed the option {option_name} "
         f"which is only available from SciPy {target_version}."
     )
-    is_old_version = packaging.version.parse(current_version) < packaging.version.parse(
-        target_version
-    )
+    is_old_version = parse_version(current_version) < parse_version(target_version)
     assert (text in caplog.text) is is_old_version
 
 
 @pytest.mark.parametrize("algo_name", ["Sobol", "Halton", "MC", "LHS", "PoissonDisk"])
 @pytest.mark.parametrize("version", ["1.7", "1.8", "1.9", "1.10", "1.11", "1.12"])
 @pytest.mark.parametrize("seed", [None, 3])
-def test_generate_samples(library, algo_name, version, seed, caplog) -> None:
+def test_generate_samples(
+    library, algo_name, version, seed, caplog, monkeypatch
+) -> None:
     """Check the generation of samples."""
     dimension = 2
     n_samples = 3
@@ -102,12 +104,12 @@ def test_generate_samples(library, algo_name, version, seed, caplog) -> None:
     options = library._update_algorithm_options(n_samples=n_samples)
     options["seed"] = seed
 
-    scipy_version = library._SciPyDOE__SCIPY_VERSION
-    library._SciPyDOE__SCIPY_VERSION = packaging.version.parse(version)
-    if scipy_version >= packaging.version.parse("1.12") and "centered" in options:
+    scipy_version = lib_scipy.SCIPY_VERSION
+    lib_scipy.SCIPY_VERSION = parse_version(version)
+    if scipy_version >= parse_version("1.12") and "centered" in options:
         del options["centered"]
     samples = library._generate_samples(dimension=dimension, **options)
-    library._SciPyDOE__SCIPY_VERSION = scipy_version
+    lib_scipy.SCIPY_VERSION = scipy_version
 
     if algo_name == "Sobol":
         check_option_filtering("bits", "1.9", version, caplog)
