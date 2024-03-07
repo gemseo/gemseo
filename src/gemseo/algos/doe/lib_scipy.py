@@ -26,10 +26,9 @@ from typing import Optional
 from typing import TextIO
 from typing import Union
 
-import scipy
 from numpy import integer
 from numpy import ndarray
-from packaging import version
+from packaging.version import parse as parse_version
 from scipy.stats.qmc import Halton
 from scipy.stats.qmc import LatinHypercube
 from scipy.stats.qmc import PoissonDisk
@@ -40,11 +39,11 @@ from strenum import StrEnum
 from gemseo import SEED
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.utils.compatibility.scipy import SCIPY_VERSION
 
 if TYPE_CHECKING:
     from numpy.random import Generator
     from numpy.random import RandomState
-    from packaging.version import Version
 
 OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, ndarray]]
 
@@ -59,7 +58,7 @@ class _MonteCarlo(QMCEngine):
     ) -> None:
         super().__init__(d=d, seed=seed)
 
-    if version.parse(scipy.__version__) < version.parse("1.10"):
+    if parse_version("1.10") > SCIPY_VERSION:
 
         def random(self, n: int = 1) -> ndarray:
             self.num_generated += n
@@ -90,9 +89,6 @@ class SciPyDOE(DOELibrary):
         __SOBOL_ALGO_NAME: Sobol,
     }
     """The algorithm names bound to the SciPy classes."""
-
-    __SCIPY_VERSION: Final[Version] = version.parse(scipy.__version__)
-    """The version of SciPy."""
 
     __SCIPY_OPTION_NAMES: Final[list[str]] = [
         "bits",
@@ -215,7 +211,7 @@ class SciPyDOE(DOELibrary):
             self.__remove_recent_scipy_options(option_names, "scramble", "1.10")
             self.__remove_recent_scipy_options(option_names, "optimization", "1.8")
             self.__remove_recent_scipy_options(option_names, "strength", "1.8")
-            if version.parse("1.10") <= self.__SCIPY_VERSION and "centered" in options:
+            if parse_version("1.10") <= SCIPY_VERSION and "centered" in options:
                 if options["centered"] == options["scramble"]:
                     msg = (
                         "centered must be the opposite of scramble; "
@@ -246,7 +242,7 @@ class SciPyDOE(DOELibrary):
             option_name: The name of the option.
             version_name: The version of SciPy which introduced this option.
         """
-        if version.parse(version_name) > self.__SCIPY_VERSION:
+        if parse_version(version_name) > SCIPY_VERSION:
             scipy_option_names.remove(option_name)
             LOGGER.warning(
                 "Removed the option %s which is only available from SciPy %s.",

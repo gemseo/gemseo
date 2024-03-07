@@ -153,7 +153,6 @@ def test_main() -> None:
 
 def test_path_serialization(tmp_path) -> None:
     """Test the execution of a serialized discipline that contains Paths."""
-
     path_to_discipline = tmp_path / "discipline.pckl"
     discipline = PathDiscipline(tmp_path)
     discipline.to_pickle(path_to_discipline)

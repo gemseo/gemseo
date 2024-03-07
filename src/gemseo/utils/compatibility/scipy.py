@@ -16,13 +16,17 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version
+from typing import Final
 from typing import Union
 
-import scipy
 from numpy import ndarray
-from packaging import version
+from packaging.version import Version
+from packaging.version import parse as parse_version
 
-if version.parse(scipy.__version__) < version.parse("1.11"):
+SCIPY_VERSION: Final[Version] = parse_version(version("scipy"))
+
+if parse_version("1.11") > SCIPY_VERSION:
     from scipy.sparse import spmatrix
 
     sparse_classes = (spmatrix,)

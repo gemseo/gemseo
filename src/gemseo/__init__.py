@@ -133,7 +133,6 @@ High-level functions
 
 from __future__ import annotations
 
-import contextlib
 import logging
 import re
 from collections import namedtuple
@@ -146,7 +145,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 
-import pkg_resources as __pkg_resources
 from numpy import ndarray
 from strenum import StrEnum
 
@@ -156,11 +154,6 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
-
-# TODO: API: protect these import under TYPE_CHECKING.
-
-with contextlib.suppress(__pkg_resources.DistributionNotFound):
-    __version__ = __pkg_resources.get_distribution("package-name").version
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -193,7 +186,7 @@ if TYPE_CHECKING:
 # plugins is done once only
 
 LOGGER = logging.getLogger(__name__)
-# by default no logging is produced
+# By default, no logging is produced.
 LOGGER.addHandler(logging.NullHandler())
 
 SEED: int = 0
