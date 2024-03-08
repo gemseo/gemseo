@@ -477,12 +477,16 @@ def test_rename_variable() -> None:
     parameter_space.rename_variable("x", "y")
     parameter_space.rename_variable("u", "v")
 
-    other_parameter_space = ParameterSpace()
-    other_parameter_space["y"] = design_variable
-    other_parameter_space["v"] = random_variable
-    other_parameter_space["z"] = random_vector
+    expected_space = ParameterSpace()
+    expected_space["y"] = design_variable
+    expected_space["v"] = random_variable
+    expected_space["z"] = random_vector
 
-    assert parameter_space == other_parameter_space
+    assert parameter_space == expected_space
+    assert "u" not in parameter_space.distributions
+    assert str(parameter_space.distributions["v"]) == str(
+        expected_space.distributions["v"]
+    )
 
 
 @pytest.mark.parametrize(("first", "second"), [("SP", "OT"), ("OT", "SP")])
