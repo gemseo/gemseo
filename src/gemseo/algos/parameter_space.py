@@ -1129,3 +1129,5 @@ class ParameterSpace(DesignSpace):
             self.uncertain_variables[position] = new_name
             _dict = self.__uncertain_variables_to_definitions
             _dict[new_name] = _dict.pop(current_name)
+            _dict = self.distributions
+            _dict[new_name] = _dict.pop(current_name)
