@@ -505,12 +505,10 @@ def test_check_version_greater(h5_file) -> None:
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The file cache.h5 cannot be used because its file format version is {} "
-            "while the expected version is {}: "
-            "see HDFCache.update_file_format to convert it.".format(
-                HDF5FileSingleton.FILE_FORMAT_VERSION + 1,
-                HDF5FileSingleton.FILE_FORMAT_VERSION,
-            )
+            "The file cache.h5 cannot be used because its file format version is "
+            f"{HDF5FileSingleton.FILE_FORMAT_VERSION + 1}"
+            f"while the expected version is {HDF5FileSingleton.FILE_FORMAT_VERSION}: "
+            "see HDFCache.update_file_format to convert it."
         ),
     ):
         HDF5FileSingleton(CACHE_FILE_NAME)

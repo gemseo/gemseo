@@ -361,20 +361,17 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
         if version is None:
             msg = (
-                "The file {} cannot be used because it has no file format version: "
-                "see HDFCache.update_file_format to convert it.".format(
-                    self.hdf_file_path
-                )
+                f"The file {self.hdf_file_path} cannot be used because it has no file "
+                "format version: see HDFCache.update_file_format to convert it."
             )
             raise ValueError(msg)
 
         if version > self.FILE_FORMAT_VERSION:
             msg = (
-                "The file {} cannot be used because its file format version is {} "
-                "while the expected version is {}: "
-                "see HDFCache.update_file_format to convert it.".format(
-                    self.hdf_file_path, version, self.FILE_FORMAT_VERSION
-                )
+                f"The file {self.hdf_file_path} cannot be used because its file "
+                f"format version is {version}"
+                f"while the expected version is {self.FILE_FORMAT_VERSION}: "
+                "see HDFCache.update_file_format to convert it."
             )
             raise ValueError(msg)
 

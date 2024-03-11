@@ -357,10 +357,8 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             self.learning_set.data = {}
             self.learning_set.length = 0
 
-        default_directory_name = "{}_{}".format(
-            FilePathManager.to_snake_case(self.__class__.__name__),
-            self.learning_set.name,
-        )
+        prefix = FilePathManager.to_snake_case(self.__class__.__name__)
+        default_directory_name = f"{prefix}_{self.learning_set.name}"
         directory = Path(path) / (directory or default_directory_name)
         directory.mkdir(exist_ok=True)
 

@@ -346,10 +346,10 @@ class DriverLibrary(AlgorithmLibrary):
         ):
             if not force_execution:
                 msg = (
-                    "Algorithm {} is not adapted to the problem, it does not handle "
-                    "integer variables.\n"
+                    f"Algorithm {self.algo_name} is not adapted to the problem, "
+                    "it does not handle integer variables.\n"
                     "Execution may be forced setting the 'skip_int_check' "
-                    "argument to 'True'.".format(self.algo_name)
+                    "argument to 'True'."
                 )
                 raise ValueError(msg)
 

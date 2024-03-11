@@ -321,9 +321,7 @@ class XLSStudyParser:
             option_values = self.__get_series(frame, self.OPTION_VALUES, False)
 
             if len(formulation) != 1:
-                msg = "Scenario {} must have one {} value.".format(
-                    str(frame_name), self.FORMULATION
-                )
+                msg = f"Scenario {frame_name!s} must have one {self.FORMULATION} value."
                 raise ValueError(msg) from None
 
             if options is not None and len(options) != len(option_values):
