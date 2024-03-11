@@ -558,14 +558,18 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         data = self.__force_to_2d_array(data)
         n_rows, n_columns = data.shape
-        if not variable_names:
-            variables = [(self.DEFAULT_VARIABLE_NAME, i) for i in range(n_columns)]
-        else:
+        if variable_names:
+            variable_names = atleast_1d(variable_names)
             variables = []
-            variable_names_to_n_components = variable_names_to_n_components or {}
-            for variable in atleast_1d(variable_names):
-                n_components = variable_names_to_n_components.get(variable, 1)
-                variables.extend([(variable, i) for i in range(n_components)])
+            if len(variable_names) == 1:
+                variables.extend([(variable_names[0], i) for i in range(n_columns)])
+            else:
+                variable_names_to_n_components = variable_names_to_n_components or {}
+                for variable_name in atleast_1d(variable_names):
+                    n_components = variable_names_to_n_components.get(variable_name, 1)
+                    variables.extend([(variable_name, i) for i in range(n_components)])
+        else:
+            variables = [(self.DEFAULT_VARIABLE_NAME, i) for i in range(n_columns)]
 
         self.__check_data_shape_consistency(data, n_rows, len(variables))
         for (variable_name, component), data_column in zip(variables, data.T):

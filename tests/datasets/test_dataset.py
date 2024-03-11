@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import operator
 import re
-from importlib.metadata import version
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
@@ -34,9 +33,10 @@ from numpy import savetxt
 from numpy import unique
 from numpy import vstack
 from numpy.testing import assert_equal
-from packaging.version import parse as parse_version
+from packaging import version
 from pandas import DataFrame
 from pandas import MultiIndex
+from pandas import __version__ as pandas_version
 from pandas import concat
 from pandas.testing import assert_frame_equal
 
@@ -46,8 +46,6 @@ from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-
-PANDAS_VERSION = parse_version(version("pandas"))
 
 
 @pytest.fixture()
@@ -777,7 +775,7 @@ def test_rename_variable_group_name(data) -> None:
 
 
 @pytest.mark.skipif(
-    parse_version("2.0.0") <= PANDAS_VERSION,
+    version.parse(pandas_version) >= version.parse("2.0.0"),
     reason="DataFrame does not get the append method in Pandas >= 2.0.0",
 )
 def test_append(dataset, data) -> None:
@@ -929,7 +927,7 @@ def test_get_view(
 
 
 @pytest.mark.skipif(
-    parse_version("2.0.0") <= PANDAS_VERSION,
+    version.parse(pandas_version) >= version.parse("2.0.0"),
     reason="Does not work with Pandas >= 2.0.0",
 )
 @pytest.mark.parametrize("arg", ["group_names", "variable_names", "components"])
@@ -939,7 +937,7 @@ def test_get_view_empty(dataset, arg) -> None:
 
 
 @pytest.mark.skipif(
-    parse_version("2.0.0") > PANDAS_VERSION,
+    version.parse(pandas_version) < version.parse("2.0.0"),
     reason="Does not work with Pandas < 2.0.0",
 )
 @pytest.mark.parametrize("arg", ["group_names", "variable_names", "components"])
@@ -1223,3 +1221,21 @@ def test_create_dataset_from_txt_file(
         header=False,
     )
     assert_frame_equal(dataset, other_dataset)
+
+
+@pytest.mark.parametrize("variable_names", ["x", ["x"]])
+def test_add_group_with_single_variable_name(variable_names):
+    """Check that add_group works with a single variable name."""
+    data = array([[1, 2], [3, 4]])
+    dataset = Dataset()
+    dataset.add_group("A", data, variable_names)
+
+    columns = MultiIndex.from_tuples(
+        [
+            ("A", "x", 0),
+            ("A", "x", 1),
+        ],
+        names=["GROUP", "VARIABLE", "COMPONENT"],
+    )
+    dataframe = DataFrame(data=data, columns=columns)
+    assert_frame_equal(dataset, dataframe)
