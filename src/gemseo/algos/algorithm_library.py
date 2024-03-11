@@ -140,8 +140,8 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         library_directory = Path(inspect.getfile(self.__class__)).parent
         options_directory = library_directory / self.OPTIONS_DIR
         algo_schema_file = options_directory / f"{algo_name.upper()}_options.json"
-        lib_schema_file = options_directory / "{}_options.json".format(
-            self.__class__.__name__.upper()
+        lib_schema_file = (
+            options_directory / f"{self.__class__.__name__.upper()}_options.json"
         )
 
         if algo_schema_file.exists():
@@ -150,10 +150,10 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             schema_file = lib_schema_file
         else:
             msg = (
-                "Neither the options grammar file {} for the algorithm '{}' "
-                "nor the options grammar file {} for the library '{}' has been found."
-            ).format(
-                algo_schema_file, algo_name, lib_schema_file, self.__class__.__name__
+                f"Neither the options grammar file {algo_schema_file} for the "
+                f"algorithm '{algo_name}' "
+                f"nor the options grammar file {lib_schema_file} for the library "
+                f"'{self.__class__.__name__}' has been found."
             )
             raise ValueError(msg)
 

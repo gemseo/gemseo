@@ -430,11 +430,10 @@ class MorrisAnalysis(SensitivityAnalysis):
         ax.scatter(x_val, y_val)
         ax.set_xlabel(r"$\mu^*$")
         ax.set_ylabel(r"$\sigma$")
-        default_title = "Sampling: {}(size={}) - Relative step: {} - Output: {}".format(
-            self._algo_name,
-            self.__n_replicates,
-            self.__step,
-            repr_variable(*output, size=len(self.sigma[output[0]])),
+        default_title = (
+            f"Sampling: {self._algo_name}(size={self.__n_replicates}) - "
+            f"Relative step: {self.__step} - Output: "
+            f"{repr_variable(*output, size=len(self.sigma[output[0]]))}"
         )
         ax.set_xlim(left=lower_mu)
         ax.set_ylim(bottom=lower_sigma)

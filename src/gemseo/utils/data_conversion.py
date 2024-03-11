@@ -127,9 +127,9 @@ def split_array_to_dict_of_arrays(
         array_dimension_size = array.shape[dimension]
         if variables_size != array_dimension_size:
             msg = (
-                "The total size of the elements ({}) "
-                "and the size of the last dimension of the array ({}) "
-                "are different.".format(variables_size, array_dimension_size)
+                f"The total size of the elements ({variables_size}) "
+                f"and the size of the last dimension of the array "
+                f"({array_dimension_size}) are different."
             )
             raise ValueError(msg)
 

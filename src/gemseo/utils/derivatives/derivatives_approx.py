@@ -431,14 +431,9 @@ class DisciplineJacApprox:
                 if approx_jac.shape != computed_jac.shape:
                     succeed = False
                     msg = (
-                        "{} Jacobian: dp {}/dp {} is of wrong shape; "
-                        "got: {} while expected: {}.".format(
-                            discipline.name,
-                            output_name,
-                            input_name,
-                            computed_jac.shape,
-                            approx_jac.shape,
-                        )
+                        f"{discipline.name} Jacobian: dp {output_name}/dp {input_name} "
+                        "is of wrong shape; "
+                        f"got: {computed_jac.shape} while expected: {approx_jac.shape}."
                     )
                     LOGGER.error(msg)
                 else:

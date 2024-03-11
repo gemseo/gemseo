@@ -399,10 +399,9 @@ class MLSupervisedAlgo(MLAlgo):
 
         if not input_group:
             msg = (
-                "The transformer {} cannot be applied to the outputs "
-                "to build a supervised machine learning algorithm.".format(
-                    transformer.__class__.__name__
-                )
+                f"The transformer {transformer.__class__.__name__} "
+                "cannot be applied to the outputs "
+                "to build a supervised machine learning algorithm."
             )
             raise NotImplementedError(msg)
 

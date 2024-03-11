@@ -119,9 +119,7 @@ def update_options_from_rest_docstring(
             tmp = re.split(r":type ([*\w]+): (.*?)", option["description"])
         except KeyError:
             print(
-                "ERROR: failed to detect description for {} of algorithm {}".format(
-                    option_name, algo
-                )
+                f"ERROR: failed to detect description for {option_name} of algorithm {algo}"
             )
             tmp = [""] * 4
 

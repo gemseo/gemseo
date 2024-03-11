@@ -336,8 +336,9 @@ class ScalabilityStudy:
             if dataset.name == discipline
         )
         if varname not in output_names:
-            msg = "'{}' is not an output of {}; available outputs are: {}".format(
-                varname, discipline, output_names
+            msg = (
+                f"'{varname}' is not an output of {discipline}; "
+                f"available outputs are: {output_names}"
             )
             raise ValueError(msg)
 
@@ -366,8 +367,9 @@ class ScalabilityStudy:
                 msg = f"{inpt} is not a string."
                 raise TypeError(msg)
             if inpt not in input_names:
-                msg = "'{}' is not a discipline input; available inputs are: {}".format(
-                    inpt, input_names
+                msg = (
+                    f"'{inpt}' is not a discipline input; available inputs are: "
+                    f"{input_names}"
                 )
                 raise ValueError(msg)
 

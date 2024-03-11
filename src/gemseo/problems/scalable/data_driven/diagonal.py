@@ -372,8 +372,9 @@ class ScalableDiagonalModel(ScalableModel):
                 fig = plt.gcf()
                 if save:
                     extension = "png" if png else "pdf"
-                    file_path = Path(directory) / "{}_{}_1D_interpolation_{}.{}".format(
-                        self.name, func, index, extension
+                    file_path = (
+                        Path(directory)
+                        / f"{self.name}_{func}_1D_interpolation_{index}.{extension}"
                     )
                     fnames.append(str(file_path))
                 else:

@@ -775,8 +775,9 @@ class DesignSpace(collections.abc.MutableMapping):
         u_b = self._upper_bounds[name]
         inds = (u_b < l_b).nonzero()[0]
         if inds.size != 0:
-            msg = "The bounds of variable '{}'{} are not valid: {}!<{}.".format(
-                name, inds, l_b[inds], u_b[inds]
+            msg = (
+                f"The bounds of variable '{name}'{inds} are not valid: "
+                f"{l_b[inds]}!<{u_b[inds]}."
             )
             raise ValueError(msg)
 
@@ -804,10 +805,9 @@ class DesignSpace(collections.abc.MutableMapping):
         ).nonzero()[0]
         for index in indices:
             msg = (
-                "The current value of variable '{}' ({}) is not "
-                "between the lower bound {} and the upper bound {}.".format(
-                    name, current_value[index], l_b[index], u_b[index]
-                )
+                f"The current value of variable '{name}' ({current_value[index]}) is "
+                f"not between the lower bound {l_b[index]} and the upper bound "
+                f"{u_b[index]}."
             )
             raise ValueError(msg)
 
@@ -1069,8 +1069,9 @@ class DesignSpace(collections.abc.MutableMapping):
                 and the names of the variables of the design space are different.
         """
         if sorted(set(self.variable_names)) != sorted(self.__current_value.keys()):
-            msg = "Expected current_x variables: {}; got {}.".format(
-                self.variable_names, list(self.__current_value.keys())
+            msg = (
+                f"Expected current_x variables: {self.variable_names}; "
+                f"got {list(self.__current_value.keys())}."
             )
             raise ValueError(msg)
         self.check_membership(self.__current_value, variable_names)
