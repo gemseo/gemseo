@@ -303,7 +303,7 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
         ),
         "gemseo-fmu": ("GEMSEO plugin for FMU dynamic models", True),
         "gemseo-matlab": ("GEMSEO plugin for MATLAB.", False),
-        "gemseo-mlearning": ("Miscellaneous machine learning capabilities", False),
+        "gemseo-mlearning": ("Miscellaneous machine learning capabilities", True),
         "gemseo-mma": (
             "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
             False,
