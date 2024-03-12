@@ -895,6 +895,24 @@ def test_hdf5_export(tmp_wd) -> None:
     ref_ds.to_hdf(f_path)
 
 
+def test_hdf5_with_node(tmp_wd):
+    """Tests the hdf import/export of a Design space in a specific node."""
+    ref_ds = get_sobieski_design_space()
+    f_path = Path("ssbj_ds_node.h5")
+    node_ds = "node_ds"
+    ref_ds.to_hdf(f_path, hdf_node_path=node_ds)
+
+    with pytest.raises(KeyError):
+        DesignSpace().from_hdf(f_path)
+
+    with pytest.raises(KeyError):
+        DesignSpace().from_hdf(f_path, hdf_node_path="wrong_node")
+
+    imp_ds = DesignSpace().from_hdf(f_path, hdf_node_path=node_ds)
+
+    check_ds(ref_ds, imp_ds, f_path)
+
+
 @pytest.mark.parametrize("suffix", [".csv", ".h5", ".hdf", ".hdf5", ".txt"])
 def test_to_from_file(tmp_wd, suffix) -> None:
     """Check that the methods to_file() and from_file() work correctly."""

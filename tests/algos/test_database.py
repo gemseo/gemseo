@@ -234,7 +234,37 @@ def test_append_export(tmp_wd) -> None:
     assert len(Database.from_hdf(file_path_db)) == n_calls + 1
 
 
-def test_add_listeners() -> None:
+def test_append_export_node(tmp_wd):
+    database = Database()
+    file_path_db = "test_db_node_append.hdf5"
+    node_path = "node_path"
+    # Export empty file
+    database.to_hdf(file_path_db, hdf_node_path=node_path)
+    val = {"f": arange(2)}
+    n_calls = 200
+    for i in range(n_calls):
+        database.store(array([i]), val)
+
+    # should fail : no database at root
+    with pytest.raises(KeyError):
+        Database.from_hdf(file_path_db)
+    # Should fail : wrong node
+    with pytest.raises(KeyError):
+        Database.from_hdf(file_path_db, hdf_node_path="wrong_node")
+
+    # Export again with append mode
+    database.to_hdf(file_path_db, append=True, hdf_node_path=node_path)
+
+    assert len(Database.from_hdf(file_path_db, hdf_node_path=node_path)) == n_calls
+
+    i += 1
+    database.store(array([i]), val)
+    # Export again with append mode and check that it is much faster
+    database.to_hdf(file_path_db, append=True, hdf_node_path=node_path)
+    assert len(Database.from_hdf(file_path_db, hdf_node_path=node_path)) == n_calls + 1
+
+
+def test_add_listeners():
     database = Database()
     with pytest.raises(TypeError, match="Listener function is not callable"):
         database.add_store_listener("toto")

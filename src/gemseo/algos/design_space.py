@@ -2008,16 +2008,22 @@ class DesignSpace(collections.abc.MutableMapping):
         self,
         file_path: str | Path,
         append: bool = False,
+        hdf_node_path: str = "",
     ) -> None:
         """Export the design space to an HDF file.
 
         Args:
             file_path: The path to the file to export the design space.
             append: If ``True``, appends the data in the file.
+            hdf_node_path: The path of the HDF node in which
+                the design space should be exported.
+                If empty, the root node is considered.
         """
         mode = "a" if append else "w"
 
         with h5py.File(file_path, mode) as h5file:
+            if hdf_node_path:
+                h5file = h5file.require_group(hdf_node_path)
             design_vars_grp = h5file.require_group(self.DESIGN_SPACE_GROUP)
             design_vars_grp.create_dataset(
                 self.NAMES_GROUP, data=array(self.variable_names, dtype=bytes_)
@@ -2049,17 +2055,21 @@ class DesignSpace(collections.abc.MutableMapping):
                     var_grp.create_dataset(self.VALUE_GROUP, data=self.__to_real(value))
 
     @classmethod
-    def from_hdf(cls, file_path: str | Path) -> DesignSpace:
+    def from_hdf(cls, file_path: str | Path, hdf_node_path: str = "") -> DesignSpace:
         """Create a design space from an HDF file.
 
         Args:
             file_path: The path to the HDF file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
 
         Returns:
             The design space defined in the file.
         """
         design_space = cls()
         with h5py.File(file_path) as h5file:
+            h5file = get_hdf5_group(h5file, hdf_node_path)
             design_vars_grp = get_hdf5_group(h5file, design_space.DESIGN_SPACE_GROUP)
             variable_names = get_hdf5_group(design_vars_grp, design_space.NAMES_GROUP)
 
@@ -2126,20 +2136,25 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__update_common_dtype()
 
     @classmethod
-    def from_file(cls, file_path: str | Path, **options: Any) -> DesignSpace:
+    def from_file(
+        cls, file_path: str | Path, hdf_node_path: str = "", **options: Any
+    ) -> DesignSpace:
         """Create a design space from a file.
 
         Args:
             file_path: The path to the file.
                 If the extension starts with `"hdf"`,
                 the file will be considered as an HDF file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
             **options: The keyword reading options.
 
         Returns:
             The design space defined in the file.
         """
         if h5py.is_hdf5(file_path):
-            return cls.from_hdf(file_path)
+            return cls.from_hdf(file_path, hdf_node_path)
         return cls.from_csv(file_path, **options)
 
     def to_file(self, file_path: str | Path, **options) -> None:
