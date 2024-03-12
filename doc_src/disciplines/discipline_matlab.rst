@@ -11,15 +11,6 @@
 
 .. _discipline_matlab:
 
-
-Requirements
-************
-
-In order to use the :class:`.MatlabDiscipline`,
-you shall install the MATLAB plugin for |g|.
-Please refer to the plugin installation instructions.
-
-
 Build discipline from a MATLAB function
 ***************************************
 
@@ -39,6 +30,12 @@ compute and return output Jacobian matrices.
 
    MATLAB disciplines cannot be used with Python multiprocessing.
 
+Requirements
+============
+
+In order to use the :class:`.MatlabDiscipline`,
+you shall install the MATLAB plugin for |g|.
+Please refer to the plugin installation instructions.
 
 A first simple example with scalar inputs and outputs
 =====================================================
