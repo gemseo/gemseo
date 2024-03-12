@@ -329,7 +329,7 @@ class BaseMDASolver(MDA):
             self.residual_history = []
             self._starting_indices = []
 
-        residual = self.get_current_resolved_residual_vector().real
+        residual = self.get_current_resolved_residual_vector()
 
         scaling = self.scaling
         _scaling_data = self._scaling_data
