@@ -140,7 +140,10 @@ class Database(Mapping):
     __hdf_database: HDFDatabase
     """The handler to export the database to a HDF file."""
 
-    def __init__(self, name: str = "") -> None:
+    def __init__(
+        self,
+        name: str = "",
+    ) -> None:
         """
         Args:
             name: The name to be given to the database.
@@ -639,44 +642,60 @@ class Database(Mapping):
         self,
         file_path: str | Path = "optimization_history.h5",
         append: bool = False,
+        hdf_node_path: str = "",
     ) -> None:
         """Export the optimization database to an HDF file.
 
         Args:
             file_path: The path of the HDF file.
             append: Whether to append the data to the file.
+            hdf_node_path: The path of the HDF node in which
+                the database should be exported.
+                If empty, the root node is considered.
         """
-        self.__hdf_database.to_file(self, file_path, append)
+        self.__hdf_database.to_file(
+            self, file_path, append, hdf_node_path=hdf_node_path
+        )
 
     @classmethod
     def from_hdf(
         cls,
         file_path: str | Path = "optimization_history.h5",
         name: str = "",
+        hdf_node_path: str = "",
     ) -> Database:
         """Create a database from an HDF file.
 
         Args:
             file_path: The path of the HDF file.
             name: The name of the database.
+            hdf_node_path: The path of the HDF node from which
+                the database should be exported.
+                If empty, the root node is considered.
 
         Returns:
             The database defined in the file.
         """
         database = cls(name)
-        database.update_from_hdf(file_path)
+        database.update_from_hdf(file_path, hdf_node_path=hdf_node_path)
         return database
 
     def update_from_hdf(
         self,
         file_path: str | Path = "optimization_history.h5",
+        hdf_node_path: str = "",
     ) -> None:
         """Update the current database from an HDF file.
 
         Args:
             file_path: The path of the HDF file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
         """
-        self.__hdf_database.update_from_file(self, file_path)
+        self.__hdf_database.update_from_file(
+            self, file_path, hdf_node_path=hdf_node_path
+        )
 
     def get_history_array(
         self,

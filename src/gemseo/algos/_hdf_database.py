@@ -351,6 +351,7 @@ class HDFDatabase:
         database: Database,
         file_path: str | Path = "optimization_history.h5",
         append: bool = False,
+        hdf_node_path: str = "",
     ) -> None:
         """Export the optimization database to an HDF file.
 
@@ -358,8 +359,13 @@ class HDFDatabase:
             database: The database to export.
             file_path: The path of the HDF file.
             append: Whether to append the data to the file.
+            hdf_node_path: The path of the HDF node in which
+                the database should be exported.
+                If empty, the root node is considered.
         """
         with h5py.File(file_path, "a" if append else "w") as h5file:
+            if hdf_node_path:
+                h5file = h5file.require_group(hdf_node_path)
             design_vars_grp = h5file.require_group("x")
             keys_group = h5file.require_group("k")
             values_group = h5file.require_group("v")
@@ -413,14 +419,20 @@ class HDFDatabase:
     def update_from_file(
         database: Database,
         file_path: str | Path = "optimization_history.h5",
+        hdf_node_path: str = "",
     ) -> None:
         """Update the current database from an HDF file.
 
         Args:
             database: The database to update.
             file_path: The path of the HDF file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be exported.
+                If empty, the root node is considered.
         """
         with h5py.File(file_path) as h5file:
+            h5file = get_hdf5_group(h5file, hdf_node_path)
+
             design_vars_grp = h5file["x"]
             keys_group = h5file["k"]
             values_group = h5file["v"]
@@ -447,7 +459,6 @@ class HDFDatabase:
                     )
                 else:
                     scalar_dict = {}
-
                 scalar_dict.update(names_to_arrays)
                 database.store(array(design_vars_grp[str_index]), scalar_dict)
 

@@ -304,6 +304,7 @@ class OptimizationProblem(BaseProblem):
     """Whether to check if a point is in the design space before calling functions."""
 
     HDF5_FORMAT: Final[str] = "hdf5"
+    HDF_NODE_PATH: Final[str] = "hdf_node_path"
     GGOBI_FORMAT: Final[str] = "ggobi"
     KKT_RESIDUAL_NORM: Final[str] = "KKT residual norm"
 
@@ -316,6 +317,7 @@ class OptimizationProblem(BaseProblem):
         fd_step: float = 1e-7,
         parallel_differentiation: bool = False,
         use_standardized_objective: bool = True,
+        hdf_node_path: str = "",
         **parallel_differentiation_options: int | bool,
     ) -> None:
         """
@@ -331,6 +333,9 @@ class OptimizationProblem(BaseProblem):
             parallel.
             use_standardized_objective: Whether to use standardized objective
                 for logging and post-processing.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
             **parallel_differentiation_options: The options
                 to approximate the derivatives in parallel.
         """  # noqa: D205, D212, D415
@@ -358,7 +363,9 @@ class OptimizationProblem(BaseProblem):
         elif isinstance(input_database, Database):
             self.database = input_database
         else:
-            self.database = Database.from_hdf(input_database)
+            self.database = Database.from_hdf(
+                input_database, hdf_node_path=hdf_node_path
+            )
         self.solution = None
         self.design_space = design_space
         self.__initial_current_x = deepcopy(
@@ -2152,7 +2159,11 @@ class OptimizationProblem(BaseProblem):
             elif isinstance(value, bytes):
                 value = value.decode()
             elif isinstance(value, Mapping) and not isinstance(value, DesignSpace):
-                cls.__store_attr_h5data(value, group.require_group(f"/{name}"))
+                grname = f"/{name}"
+                if grname in group:
+                    del group[grname]
+                new_group = group.require_group(grname)
+                cls.__store_attr_h5data(value, new_group)
                 continue
             elif hasattr(value, "__iter__") and not (
                 isinstance(value, ndarray) and issubdtype(value.dtype, np_number)
@@ -2165,16 +2176,32 @@ class OptimizationProblem(BaseProblem):
 
             cls.__store_h5data(group, value, name, dtype)
 
-    def to_hdf(self, file_path: str | Path, append: bool = False) -> None:
+    def to_hdf(
+        self,
+        file_path: str | Path,
+        append: bool = False,
+        hdf_node_path: str = "",
+    ) -> None:
         """Export the optimization problem to an HDF file.
 
         Args:
             file_path: The path of the file to store the data.
             append: If ``True``, then the data are appended to the file if not empty.
+            hdf_node_path: The path of the HDF node in which
+                the database should be exported.
+                If empty, the root node is considered.
         """
+        LOGGER.info(
+            "Exporting the optimization problem to the file %s at node %s",
+            str(file_path),
+            str(hdf_node_path),
+        )
+
         mode = "a" if append else "w"
 
         with h5py.File(file_path, mode) as h5file:
+            if hdf_node_path:
+                h5file = h5file.require_group(hdf_node_path)
             no_design_space = DesignSpace.DESIGN_SPACE_GROUP not in h5file
 
             if not append or self.OPT_DESCR_GROUP not in h5file:
@@ -2204,29 +2231,46 @@ class OptimizationProblem(BaseProblem):
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 
-        self.database.to_hdf(file_path, append=True)
+        self.database.to_hdf(file_path, append=True, hdf_node_path=hdf_node_path)
 
         # Design space shall remain the same in append mode
         if not append or no_design_space:
-            self.design_space.to_hdf(file_path, append=True)
+            self.design_space.to_hdf(
+                file_path, append=True, hdf_node_path=hdf_node_path
+            )
 
     @classmethod
     def from_hdf(
-        cls, file_path: str | Path, x_tolerance: float = 0.0
+        cls,
+        file_path: str | Path,
+        x_tolerance: float = 0.0,
+        hdf_node_path: str = "",
     ) -> OptimizationProblem:
         """Import an optimization history from an HDF file.
 
         Args:
             file_path: The file containing the optimization history.
             x_tolerance: The tolerance on the design variables when reading the file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
 
         Returns:
             The read optimization problem.
         """
-        design_space = DesignSpace.from_file(file_path)
-        opt_pb = OptimizationProblem(design_space, input_database=file_path)
+        LOGGER.info(
+            "Importing the optimization problem from the file %s at node %s",
+            file_path,
+            hdf_node_path,
+        )
+
+        design_space = DesignSpace.from_file(file_path, hdf_node_path=hdf_node_path)
+        opt_pb = OptimizationProblem(
+            design_space, input_database=file_path, hdf_node_path=hdf_node_path
+        )
 
         with h5py.File(file_path) as h5file:
+            h5file = get_hdf5_group(h5file, hdf_node_path)
             if opt_pb.SOLUTION_GROUP in h5file:
                 group_data = cls.__h5_group_to_dict(h5file, opt_pb.SOLUTION_GROUP)
                 if "x_0_as_dict" in h5file:

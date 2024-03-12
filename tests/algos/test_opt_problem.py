@@ -1885,7 +1885,46 @@ def test_optimization_result_save_nested_dict(tmp_wd) -> None:
     assert compare_dict_of_arrays(x_opt_as_dict, problem.solution.x_opt_as_dict)
 
 
-def test_repr_html() -> None:
+def test_hdf_node_path(pow2_problem):
+    """Check the importation/exportation in a specific node."""
+    file_name = "test_hdf_node.hdf5"
+    node = "problem_node"
+    problem = pow2_problem
+    function_names = problem.get_all_function_name()
+    desvar_names = problem.get_design_variable_names()
+    problem.to_hdf(file_name, hdf_node_path=node)
+
+    # Should fail : no opt_problem saved at the root
+    with pytest.raises(KeyError):
+        OptimizationProblem.from_hdf(file_name)
+
+    # Should fail: node doesn't exist
+    with pytest.raises(KeyError):
+        OptimizationProblem.from_hdf(file_name, hdf_node_path="wrong_node")
+
+    # Should succeed : check if functions and design variables are correct
+    imp_prob = OptimizationProblem.from_hdf(file_name, hdf_node_path=node)
+    assert_equal(imp_prob.get_all_function_name(), function_names)
+    assert_equal(imp_prob.get_design_variable_names(), desvar_names)
+
+    # Test saving options in nested dict form
+    algo_opts = {"sub_problem_options": {"eq_tolerance": 1e-1}}
+    execute_algo(
+        problem,
+        "Augmented_Lagrangian_order_0",
+        sub_solver_algorithm="SLSQP",
+        algo_options=algo_opts,
+    )
+    problem.to_hdf(file_name, hdf_node_path=node)
+
+    # Test import
+    # Should succeed : check if functions and design variables are correct
+    imp_prob = OptimizationProblem.from_hdf(file_name, hdf_node_path=node)
+    assert_equal(imp_prob.get_all_function_name(), function_names)
+    assert_equal(imp_prob.get_design_variable_names(), desvar_names)
+
+
+def test_repr_html():
     """Check the string and HTML representation of an optimization problem."""
     problem = Power2()
     assert (
