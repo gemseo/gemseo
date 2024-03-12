@@ -40,6 +40,10 @@ class Alternate2Delta(SequenceTransformer):
     The method is introduced in: Isabelle Ramiere, Thomas Helfer, "Iterative residual-
     based vector methods to accelerate fixed point iterations", Computers and
     Mathematics with Applications, (2015) eq. (50).
+
+    The least squares problem that must be solved to perform the transformation may be
+    degenerated when the vectors :math:`x_{n+1} - x_n` and :math:`x_n - x_{n-1}` are
+    collinear.
     """
 
     _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 3
@@ -49,6 +53,9 @@ class Alternate2Delta(SequenceTransformer):
         dxn_2, dxn_1, dxn = self._residuals
         gxn_2, gxn_1, gxn = self._iterates
 
-        y, _, _, _ = lstsq(vstack([dxn - dxn_1, dxn_1 - dxn_2]).T, dxn, cond=1e-16)
+        y, _, rank, _ = lstsq(vstack([dxn - dxn_1, dxn_1 - dxn_2]).T, dxn, cond=1e-10)
+
+        if rank < 2:
+            return gxn
 
         return gxn - y[0] * (gxn - gxn_1) - y[1] * (gxn_1 - gxn_2)

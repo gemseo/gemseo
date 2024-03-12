@@ -166,3 +166,24 @@ def test_minimum_polynomial_parameters(window_size) -> None:
             )
     else:
         factory.create(AccelerationMethod.MINIMUM_POLYNOMIAL, window_size=window_size)
+
+
+def test_degenerated_alternate_2_delta() -> None:
+    """Tests the alternate 2-δ acceleration method with degenerated least squares.
+
+    The least squares problem is degenerated whenever the vectors :math:`x_{n+1} - x_n`
+    and :math:`x_n - x_{n-1}` are (almost) collinear. In this case, the alternate δ²
+    method does not perform any transformation of the iterate and simply returns
+    :math:`G(x_{n+1})`.
+    """
+    transformer = factory.create(AccelerationMethod.ALTERNATE_2_DELTA)
+    x_0 = INITIAL_VECTOR.copy()
+
+    x_1 = g(x_0)
+    transformer.compute_transformed_iterate(x_1, x_1 - x_0)
+
+    x_2 = g(x_1)
+    transformer.compute_transformed_iterate(x_2, x_2 - x_1)
+
+    new_iterate = transformer.compute_transformed_iterate(x_2, x_2 - x_1)
+    assert allclose(new_iterate, x_2)
