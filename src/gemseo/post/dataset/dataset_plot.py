@@ -39,7 +39,9 @@ from typing import ClassVar
 from typing import NamedTuple
 from typing import Union
 
+from matplotlib.figure import Figure as MatplotlibFigure
 from numpy import linspace
+from plotly.graph_objs import Figure as PlotlyFigure
 from strenum import StrEnum
 
 from gemseo.post.dataset.plot_factory_factory import PlotFactoryFactory
@@ -51,8 +53,6 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from matplotlib.figure import Figure
-
     from gemseo.datasets.dataset import Dataset
     from gemseo.utils.matplotlib_figure import FigSizeType
 
@@ -60,6 +60,8 @@ if TYPE_CHECKING:
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
 VariableType = Union[str, tuple[str, int]]
+
+FigureType = Union[MatplotlibFigure, PlotlyFigure]
 
 
 class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -76,6 +78,9 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     __figure_file_paths: list[str]
     """The figure file paths."""
+
+    __figures: list[FigureType]
+    """The figures."""
 
     __names_to_labels: Mapping[str, str]
     """The variable names bound to the variable labels."""
@@ -127,6 +132,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._specific_settings = specific_settings(**parameters)
         self.__common_dataset = dataset
         self.__figure_file_paths = []
+        self.__figures = []
         self.__names_to_labels = {}
         self.__specific_data = self._create_specific_data_from_dataset()
 
@@ -359,6 +365,11 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         """The paths to the output files."""
         return self.__figure_file_paths
 
+    @property
+    def figures(self) -> list[FigureType]:
+        """The figures."""
+        return self.__figures
+
     def execute(
         self,
         save: bool = True,
@@ -369,7 +380,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         file_format: str = "png",
         file_name_suffix: str = "",
         **engine_parameters: Any,
-    ) -> list[Figure]:
+    ) -> list[FigureType]:
         """Execute the post-processing.
 
         Args:
@@ -408,6 +419,8 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         if save:
             args = (file_path, directory_path, file_name, file_format, file_name_suffix)
             self.__figure_file_paths = list(plot.save(*args))
+
+        self.__figures = plot.figures
 
         return plot.figures
 
