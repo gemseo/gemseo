@@ -28,12 +28,22 @@ from typing_extensions import Protocol
 from typing_extensions import Self
 
 NumberArray = NDArray[number]
+"""A NumPy array of numbers."""
+
 IntegerArray = NDArray[integer]
+"""A NumPy array of integer numbers."""
+
 RealArray = NDArray[floating]
+"""A NumPy array of real numbers."""
+
 ComplexArray = NDArray[complexfloating]
+"""A NumPy array of complex numbers."""
+
 RealOrComplexArray = NDArray[inexact]
+"""A NumPy array of complex or real numbers."""
 
 JacobianData = dict[str, Mapping[str, RealOrComplexArray]]
+"""A Jacobian data structure of the form ``{output_name: {input_name: jacobian}}."""
 
 
 if TYPE_CHECKING:

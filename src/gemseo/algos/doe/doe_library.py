@@ -59,7 +59,10 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 DOELibraryOptionType = Union[str, float, int, bool, list[str], ndarray]
+"""The type of a DOE algorithm option."""
+
 DOELibraryOutputType = tuple[dict[str, Union[float, ndarray]], dict[str, ndarray]]
+"""The type of the output value in an input-output sample."""
 
 
 @dataclass
