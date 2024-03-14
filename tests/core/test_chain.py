@@ -29,11 +29,11 @@ from numpy import allclose
 from numpy import array
 from numpy import ones
 
-from gemseo import MDODiscipline
 from gemseo.core.chain import MDOAdditiveChain
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.chain import MDOWarmStartedChain
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ParallelExecSequence
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.splitter import Splitter

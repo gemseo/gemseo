@@ -50,7 +50,13 @@ class Timer:
         elapsed_time = timer.elapsed_time
     """
 
-    def __init__(self, log_level: str | int | None = None) -> None:
+    __log_level: int | None
+    """The logging level, ``None`` means no logging."""
+
+    __elapsed_time: float
+    """The elapsed time in seconds."""
+
+    def __init__(self, log_level: int | None = None) -> None:
         """
         Args:
             log_level: The level of the logger.

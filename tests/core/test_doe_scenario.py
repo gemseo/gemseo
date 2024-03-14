@@ -19,12 +19,12 @@
 from __future__ import annotations
 
 import pickle
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
 from numpy import ndarray
 
-from gemseo import MDODiscipline
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
@@ -41,6 +41,9 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 
 def build_mdo_scenario(

@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
     from typing import Any
 
@@ -49,7 +50,7 @@ class Boxplot(DatasetPlot):
         self,
         dataset: Dataset,
         *datasets: Dataset,
-        variables: Sequence[str] | None = None,
+        variables: Iterable[str] = (),
         center: bool = False,
         scale: bool = False,
         use_vertical_bars: bool = True,
@@ -62,7 +63,7 @@ class Boxplot(DatasetPlot):
         Args:
             *datasets: Datasets containing other series of data to plot.
             variables: The names of the variables to plot.
-                If ``None``, use all the variables.
+                If empty, use all the variables.
             center: Whether to center the variables so that they have a zero mean.
             scale: Whether to scale the variables so that they have a unit variance.
             use_vertical_bars: Whether to use vertical bars.

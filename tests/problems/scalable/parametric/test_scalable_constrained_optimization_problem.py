@@ -25,9 +25,9 @@ from numpy import diag
 from numpy import mean as np_mean
 from numpy import ones_like
 
-from gemseo import MDODiscipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:

@@ -29,9 +29,8 @@ from numpy import pi
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 
 class RadarChart(DatasetPlot):
@@ -64,7 +63,7 @@ class RadarChart(DatasetPlot):
             scientific_notation=scientific_notation,
         )
 
-    def _create_specific_data_from_dataset(self) -> tuple[NDArray[float], list[float]]:
+    def _create_specific_data_from_dataset(self) -> tuple[RealArray, list[float]]:
         """
         Returns:
             The values of the series on the y-axis (one series per row),

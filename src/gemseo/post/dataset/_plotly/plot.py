@@ -77,7 +77,7 @@ class PlotlyPlot(BasePlot):
     def show(self) -> None:  # noqa: D102
         self.__figure.show()
 
-    def _save(self, file_path: Path) -> tuple[str]:
+    def _save(self, file_path: Path) -> tuple[str, ...]:
         file_format = file_path.suffix[1:]
         if file_format == "html":
             self.__figure.write_html(file_path)

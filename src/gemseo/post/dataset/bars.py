@@ -26,9 +26,8 @@ from typing import TYPE_CHECKING
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 
 class BarPlot(DatasetPlot):
@@ -54,7 +53,7 @@ class BarPlot(DatasetPlot):
             annotation_rotation=annotation_rotation,
         )
 
-    def _create_specific_data_from_dataset(self) -> tuple[NDArray[float], list[str]]:
+    def _create_specific_data_from_dataset(self) -> tuple[RealArray, list[str]]:
         """
         Returns:
             The data,

@@ -34,9 +34,8 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from numpy.typing import NDArray
-
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 
 class Curves(DatasetPlot):
@@ -60,7 +59,7 @@ class Curves(DatasetPlot):
 
     def _create_specific_data_from_dataset(
         self,
-    ) -> tuple[NDArray[float], list[str]]:
+    ) -> tuple[RealArray, list[str]]:
         """
         Returns:
             The values of the points of the curves on the y-axis (one curve per row),

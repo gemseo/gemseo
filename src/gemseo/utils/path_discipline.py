@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from gemseo import MDODiscipline
+from gemseo.core.discipline import MDODiscipline
 
 
 class PathDiscipline(MDODiscipline):

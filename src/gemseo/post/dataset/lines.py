@@ -26,9 +26,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from numpy.typing import NDArray
-
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
@@ -71,7 +70,7 @@ class Lines(DatasetPlot):
 
     def _create_specific_data_from_dataset(
         self,
-    ) -> tuple[list[float], dict[str, NDArray[float]], str, int]:
+    ) -> tuple[list[float], dict[str, RealArray], str, int]:
         """
         Returns:
             The values on the x-axis,

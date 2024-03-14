@@ -911,16 +911,22 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     @overload
     def get_columns(
-        self, variable_names: Iterable[str] = (), as_tuple: Literal[False] = False
+        self,
+        variable_names: Iterable[str] = (),
+        as_tuple: Literal[False] = False,
     ) -> list[str]: ...
 
     @overload
     def get_columns(
-        self, variable_names: Iterable[str] = (), as_tuple: Literal[True] = True
+        self,
+        variable_names: Iterable[str] = (),
+        as_tuple: Literal[True] = True,
     ) -> list[tuple[str, str, int]]: ...
 
     def get_columns(
-        self, variable_names: Iterable[str] = (), as_tuple: bool = False
+        self,
+        variable_names: Iterable[str] = (),
+        as_tuple: bool = False,
     ) -> list[str | tuple[str, str, int]]:
         """Return the columns based on variable names.
 

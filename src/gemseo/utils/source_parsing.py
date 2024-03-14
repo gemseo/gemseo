@@ -32,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def get_options_doc(
-    function: Callable,
+    function: Callable[..., Any],
 ) -> dict[str, str]:
     """Get the documentation of a function.
 
@@ -53,7 +53,7 @@ def get_options_doc(
 
 
 def get_callable_argument_defaults(
-    callable_: Callable,
+    callable_: Callable[..., Any],
 ) -> dict[str, Any]:
     """Return the default values of the kwargs of a callable.
 

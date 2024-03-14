@@ -138,7 +138,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
     @property
     @abstractmethod
-    def _MODULE_NAMES(self) -> tuple[str]:  # noqa: N802
+    def _MODULE_NAMES(self) -> tuple[str, ...]:  # noqa: N802
         """The fully qualified names of the modules to search."""
 
     def update(self) -> None:

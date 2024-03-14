@@ -35,12 +35,12 @@ class SingleInstancePerAttributeId(type):
     The test if the instances are equal is made with the id(obj1)==id(obj2) operator
     """
 
-    instances: ClassVar[dict[tuple[id, str], Any]] = {}
+    instances: ClassVar[dict[tuple[int, int], Any]] = {}
 
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
     # function.MDODisciplineAdapterGenerator should have self as first parameter"
-    def __call__(cls, *args, **kwargs):  # noqa:D102
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:  # noqa:D102
         # id = memory address of the object, which is unique
         if not args:
             msg = (
@@ -65,11 +65,11 @@ class SingleInstancePerFileAttribute(type):
     The test if the instances are equal is made with the obj1 == obj2 operator
     """
 
-    instances: ClassVar[dict[tuple[id, str], Any]] = {}
+    instances: ClassVar[dict[tuple[int, str], Any]] = {}
 
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
-    def __call__(cls, *args, **kwargs):  # noqa:D102
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:  # noqa:D102
         if not args:
             msg = (
                 "SingleInstancePerAttribute subclasses need at"

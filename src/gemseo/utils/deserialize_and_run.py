@@ -24,13 +24,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Sequence
 
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.discipline_data import DisciplineData
 
 
-def _parse_inputs(args: Iterable[str] | None = None) -> tuple[Path, Path, Path, Path]:
+def _parse_inputs(args: Sequence[str] | None = None) -> tuple[Path, Path, Path, Path]:
     """Parse the arguments of the command.
 
     Args:
@@ -101,6 +101,8 @@ def _run_discipline_save_outputs(
     """
     cwd = Path.cwd()
     os.chdir(workdir_path)
+
+    outputs: DisciplineData | tuple[BaseException, str]
 
     try:
         outputs = discipline.execute(input_data)
