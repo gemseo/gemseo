@@ -14,6 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import pytest
+
+from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
+from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
 from gemseo.uncertainty.use_cases.ishigami.ishigami_function import IshigamiFunction
 from gemseo.uncertainty.use_cases.ishigami.ishigami_problem import IshigamiProblem
 from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
@@ -22,5 +26,17 @@ from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 def test_ishigami_problem() -> None:
     """Check the Ishigami problem."""
     problem = IshigamiProblem()
-    assert isinstance(problem.design_space, IshigamiSpace)
+    uncertain_space = problem.design_space
+    assert isinstance(uncertain_space, IshigamiSpace)
     assert isinstance(problem.objective, IshigamiFunction)
+    assert isinstance(uncertain_space.distribution, SPComposedDistribution)
+
+
+@pytest.mark.parametrize(
+    "uniform_distribution_name",
+    [IshigamiSpace.UniformDistribution.OPENTURNS, "OTUniformDistribution"],
+)
+def test_ishigami_problem_openturns(uniform_distribution_name) -> None:
+    """Check the Ishigami problem using OpenTURNS."""
+    problem = IshigamiProblem(uniform_distribution_name)
+    assert isinstance(problem.design_space.distribution, OTComposedDistribution)

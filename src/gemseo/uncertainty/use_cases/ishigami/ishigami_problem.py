@@ -37,6 +37,14 @@ from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 class IshigamiProblem(OptimizationProblem):
     """A problem connecting the Ishigami function with its uncertain space."""
 
-    def __init__(self) -> None:  # noqa: D107
-        super().__init__(IshigamiSpace())
+    def __init__(
+        self,
+        uniform_distribution_name: IshigamiSpace.UniformDistribution = IshigamiSpace.UniformDistribution.SCIPY,  # noqa: E501
+    ) -> None:
+        """
+        Args:
+            uniform_distribution_name: The name of the class
+                implementing the uniform distribution.
+        """  # noqa: D205, D212
+        super().__init__(IshigamiSpace(uniform_distribution_name))
         self.objective = IshigamiFunction()
