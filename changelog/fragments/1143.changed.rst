@@ -1,0 +1,1 @@
+The argument ``uniform_distribution_name`` of ``IshigamiProblem`` and ``IshigamiSpace`` allows to use a uniform distribution from a library other than SciPy, e.g. OpenTURNS.
