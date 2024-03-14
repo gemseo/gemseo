@@ -27,8 +27,8 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy.linalg import norm
 
-from gemseo import MDODiscipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda import MDA
 
 if TYPE_CHECKING:

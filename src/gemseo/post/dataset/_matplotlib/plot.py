@@ -90,7 +90,7 @@ class MatplotlibPlot(BasePlot):
         for sub_figure in self.__figures:
             save_show_figure(sub_figure, True, "")
 
-    def _save(self, file_path: Path) -> tuple[str]:
+    def _save(self, file_path: Path) -> tuple[str, ...]:
         file_paths = []
         for index, sub_figure in enumerate(self.__figures):
             if len(self.__figures) > 1:
@@ -99,7 +99,6 @@ class MatplotlibPlot(BasePlot):
                 fig_file_path = file_path
 
             file_paths.append(str(fig_file_path))
-
             save_show_figure(sub_figure, False, fig_file_path)
 
         return tuple(file_paths)

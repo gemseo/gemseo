@@ -21,10 +21,11 @@
 from __future__ import annotations
 
 import functools
+from typing import Any
 from typing import Callable
 
 
-def synchronized(wrapped: Callable[..., object]):
+def synchronized(wrapped: Callable[..., Any]) -> Callable[..., Any]:
     """A synchronization decorator to avoid concurrent access of critical sections.
 
     The wrapped function must be a method of an object
@@ -35,7 +36,7 @@ def synchronized(wrapped: Callable[..., object]):
     """
 
     @functools.wraps(wrapped)
-    def _wrapper(*args, **kwargs):
+    def _wrapper(*args: Any, **kwargs: Any) -> Any:
         """Definition of the synchronization decorator."""
         with args[0].lock:
             return wrapped(*args, **kwargs)
@@ -43,7 +44,9 @@ def synchronized(wrapped: Callable[..., object]):
     return _wrapper
 
 
-def synchronized_hashes(wrapped: Callable[..., object]):
+def synchronized_hashes(
+    wrapped: Callable[..., Any],
+) -> Callable[..., Any]:
     """A synchronization decorator to avoid concurrent access of critical sections.
 
     The wrapped function must be a method of an object
@@ -54,7 +57,7 @@ def synchronized_hashes(wrapped: Callable[..., object]):
     """
 
     @functools.wraps(wrapped)
-    def _wrapper(*args, **kwargs):
+    def _wrapper(*args: Any, **kwargs: Any) -> Any:
         """Definition of the synchronization decorator."""
         with args[0].lock_hashes:
             return wrapped(*args, **kwargs)

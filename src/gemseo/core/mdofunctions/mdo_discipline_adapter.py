@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from collections.abc import MutableMapping
     from collections.abc import Sequence
 
-    from gemseo import MDODiscipline
+    from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import ArrayType
 
 OperandType = Union[ndarray, Number]

@@ -31,12 +31,12 @@ from numpy import zeros
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
-from gemseo import MDODiscipline
 from gemseo import create_design_space
 from gemseo import create_mda
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline

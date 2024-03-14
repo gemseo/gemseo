@@ -17,7 +17,8 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
+from gemseo.core.base_factory import T
 
 
-class PlotFactory(BaseFactory):
+class PlotFactory(BaseFactory[T]):
     """A factory of plots."""

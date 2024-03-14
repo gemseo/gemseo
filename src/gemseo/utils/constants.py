@@ -15,7 +15,8 @@
 """Constants."""
 
 from types import MappingProxyType
+from typing import Any
 from typing import Final
 
-READ_ONLY_EMPTY_DICT: Final[MappingProxyType] = MappingProxyType({})
+READ_ONLY_EMPTY_DICT: Final[MappingProxyType[Any, Any]] = MappingProxyType({})
 """A read-only empty dictionary."""

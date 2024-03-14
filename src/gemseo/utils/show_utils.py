@@ -23,12 +23,8 @@ Minor modifications by Francois Gallard : merge the two methods a comment
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from gemseo.utils.xdsmizer import XdsmType
-
 from pathlib import Path
+from typing import Any
 
 from xdsmjs import bundlejs
 from xdsmjs import css
@@ -73,7 +69,7 @@ HTML_TEMPLATE = """
 
 
 def generate_xdsm_html(
-    xdsm: XdsmType,
+    xdsm: dict[str, Any],
     file_path: str | Path = "xdsm.html",
 ) -> None:
     """Generate an HTML file to visualize a dynamic and interactive XDSM.

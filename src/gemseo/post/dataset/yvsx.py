@@ -32,9 +32,8 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.dataset_plot import VariableType
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 
 class YvsX(DatasetPlot):
@@ -58,7 +57,7 @@ class YvsX(DatasetPlot):
 
     def _create_specific_data_from_dataset(
         self,
-    ) -> tuple[NDArray[float], NDArray[float]]:
+    ) -> tuple[RealArray, RealArray]:
         """
         Returns:
             The values of the points on the x-axis,

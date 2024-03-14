@@ -14,6 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Data for a plot."""
 
+from collections.abc import Mapping
 from collections.abc import Sequence
 from typing import Optional
 from typing import Union
@@ -49,7 +50,7 @@ class PlotSettings(BaseModel):
     legend_location: str = "best"
     """The location of the legend."""
 
-    linestyle: Union[str, list[str]] = ""
+    linestyle: Union[str, Sequence[str]] = ""
     """The line style.
 
     Either a global one or one per item if ``n_items`` is non-zero.
@@ -57,7 +58,7 @@ class PlotSettings(BaseModel):
     If empty, use a default one.
     """
 
-    marker: Union[str, list[str]] = ""
+    marker: Union[str, Sequence[str]] = ""
     """The marker.
 
     Either a global one or one per item if ``n_items`` is non-zero.
@@ -127,7 +128,7 @@ class PlotSettings(BaseModel):
     If ``None``, compute it from data.
     """
 
-    labels: dict[str, str] = Field(default_factory=dict)
+    labels: Mapping[str, str] = Field(default_factory=dict)
     """The labels for the variables."""
 
     n_items: int = 0
