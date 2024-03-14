@@ -82,7 +82,7 @@ update the requirements for the testing and ``doc`` environments of ``tox``:
 
 .. code-block:: shell
 
-    tox -e update-deps-test-py39,update-deps-test-py310,update-deps-test-py311,update-deps-doc
+    tox -e update-deps-test,update-deps-doc
 
 .. warning::
 
