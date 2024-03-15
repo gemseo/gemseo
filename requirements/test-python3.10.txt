@@ -9,7 +9,7 @@ charset-normalizer==3.3.2
 contourpy==1.2.0
     # via matplotlib
 covdefaults==2.3.0
-coverage==7.4.3
+coverage==7.4.4
     # via
     #   covdefaults
     #   pytest-cov
