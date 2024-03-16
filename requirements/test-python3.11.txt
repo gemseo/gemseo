@@ -23,7 +23,7 @@ et-xmlfile==1.1.0
 execnet==2.0.2
     # via pytest-xdist
 fastjsonschema==2.19.1
-fonttools==4.49.0
+fonttools==4.50.0
     # via matplotlib
 genson==1.2.2
 graphviz==0.20.1
