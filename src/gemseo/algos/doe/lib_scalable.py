@@ -21,6 +21,8 @@
 from __future__ import annotations
 
 from collections.abc import Container
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Optional
 from typing import Union
@@ -32,6 +34,9 @@ from numpy import newaxis
 
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+
+if TYPE_CHECKING:
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[Union[str, int, float, bool, Container[str]]]
 
@@ -62,6 +67,7 @@ class DiagonalDOE(DOELibrary):
         n_samples: int = 2,
         reverse: Container[str] | None = None,
         max_time: float = 0,
+        callbacks: Iterable[CallbackType] = (),
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:  # pylint: disable=W0221
         """Get the options.
@@ -79,6 +85,9 @@ class DiagonalDOE(DOELibrary):
                 upper bound.
             max_time: The maximum runtime in seconds.
                 If 0, no maximum runtime is set.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
             **kwargs: Additional arguments.
 
         Returns:
@@ -91,6 +100,7 @@ class DiagonalDOE(DOELibrary):
             n_samples=n_samples,
             reverse=reverse,
             max_time=max_time,
+            callbacks=callbacks,
             **kwargs,
         )
 

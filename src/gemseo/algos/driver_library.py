@@ -37,6 +37,7 @@ and :class:`.OptimizationLibrary`.
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
@@ -70,6 +71,7 @@ from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.logging_tools import OneLineLogging
@@ -79,7 +81,10 @@ if TYPE_CHECKING:
     from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
     from gemseo.algos.design_space import DesignSpace
 
-DriverLibOptionType = Union[str, float, int, bool, list[str], ndarray]
+# TODO: API: rename to DriverLibraryOptionType
+DriverLibOptionType = Union[
+    str, float, int, bool, list[str], ndarray, Iterable[CallbackType]
+]
 LOGGER = logging.getLogger(__name__)
 
 
@@ -240,12 +245,11 @@ class DriverLibrary(AlgorithmLibrary):
 
         self._start_time = time()
 
-    def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
+    def new_iteration_callback(self, x_vect: ndarray) -> None:
         """Iterate the progress bar, implement the stop criteria.
 
         Args:
-            x_vect: The design variables values. If ``None``, use the values of the
-                last iteration.
+            x_vect: The design variables values.
 
         Raises:
             MaxTimeReached: If the elapsed time is greater than the maximum

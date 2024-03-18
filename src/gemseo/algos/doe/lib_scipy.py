@@ -42,8 +42,12 @@ from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.utils.compatibility.scipy import SCIPY_VERSION
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy.random import Generator
     from numpy.random import RandomState
+
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, ndarray]]
 
@@ -141,6 +145,7 @@ class SciPyDOE(DOELibrary):
         bits: int | None = None,
         optimization: Optimizer = Optimizer.NONE,
         strength: Literal[1, 2] = 1,
+        callbacks: Iterable[CallbackType] = (),
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:
         """Set the options.
@@ -173,6 +178,9 @@ class SciPyDOE(DOELibrary):
                 If ``None``, use the DOE as is.
                 New in SciPy 1.10.0.
             strength: The strength of the LHS.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
             **kwargs: The additional arguments.
 
         Returns:
@@ -196,6 +204,7 @@ class SciPyDOE(DOELibrary):
             optimization=optimization,
             bits=bits,
             strength=strength,
+            callbacks=callbacks,
             **kwargs,
         )
 

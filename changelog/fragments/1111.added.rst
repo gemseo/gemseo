@@ -1,0 +1,1 @@
+Each DOE algorithm available in GEMSEO has a new option named ``"callbacks"`` to pass a list of functions to be evaluated after each call to ``OptimizationProblem.evaluate_functions``.

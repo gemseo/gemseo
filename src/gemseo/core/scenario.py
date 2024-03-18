@@ -419,23 +419,19 @@ class Scenario(MDODiscipline):
                 self._execute_plot_callback, each_new_iter=True, each_store=False
             )
 
-    def _execute_backup_callback(self, option: Any = None) -> None:
+    def _execute_backup_callback(self, x_vect: ndarray) -> None:
         """A callback function to back up optimization history.
 
         Args:
-            option: Any input value which is not used within the current function,
-               but need to be defined for the generic mechanism of the
-               callback functions usage in :class:`.OptimizationProblem`.
+            x_vect: The input value.
         """
         self.save_optimization_history(self._opt_hist_backup_path, append=True)
 
-    def _execute_plot_callback(self, option: Any = None) -> None:
+    def _execute_plot_callback(self, x_vect: ndarray) -> None:
         """A callback function to plot the OptHistoryView of the current history.
 
         Args:
-            option: Any input value which is not used within the current function,
-               but need to be defined for the generic mechanism of the
-               callback functions usage in :class:`.OptimizationProblem`.
+            x_vect: The input value.
         """
         if len(self.formulation.opt_problem.database) > 2:
             self.post_process(

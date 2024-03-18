@@ -332,7 +332,7 @@ class OptimizationLibrary(DriverLibrary):
 
         return reason
 
-    def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
+    def new_iteration_callback(self, x_vect: ndarray) -> None:
         """Verify the design variable and objective value stopping criteria.
 
         Raises:
@@ -353,7 +353,7 @@ class OptimizationLibrary(DriverLibrary):
         ):
             raise XtolReached
 
-    def _check_kkt_from_database(self, x_vect: ndarray | None = None) -> None:
+    def _check_kkt_from_database(self, x_vect: ndarray) -> None:
         """Verify, if required, KKT norm stopping criterion at each database storage.
 
         Raises:

@@ -55,6 +55,7 @@ def test_get_options(library) -> None:
         "optimization": None,
         "bits": None,
         "strength": 1,
+        "callbacks": (),
     }
 
 

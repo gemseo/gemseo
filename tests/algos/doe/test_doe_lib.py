@@ -32,6 +32,7 @@ from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.doe.lib_scipy import SciPyDOE
@@ -353,3 +354,53 @@ def test_uunormalized_components_with_parameter_space() -> None:
     library.algo_name = "MC"
     library.compute_doe(parameter_space, 3)
     library.execute(problem, n_samples=3)
+
+
+def f(x):
+    return 2 * x
+
+
+class Counter:
+    def __init__(self):
+        self.total = 0
+
+    def callback(self, index, data):
+        self.total += data[0]["f"]
+
+
+@pytest.fixture()
+def problem():
+    """A problem."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(f, "f")
+    return problem
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+def test_callback(n_processes, problem):
+    """Check the use of callbacks."""
+
+    counter = Counter()
+    CustomDOE().execute(
+        problem,
+        samples=array([[1.0], [2.0]]),
+        n_processes=n_processes,
+        callbacks=(counter.callback,),
+    )
+    assert counter.total == 6
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+@pytest.mark.parametrize("use_database", [False, True])
+def test_use_database(n_processes, problem, use_database):
+    """Check the option use_database."""
+    CustomDOE().execute(
+        problem,
+        samples=array([[1.0], [2.0]]),
+        n_processes=n_processes,
+        use_database=use_database,
+    )
+    assert bool(problem.database) is use_database
