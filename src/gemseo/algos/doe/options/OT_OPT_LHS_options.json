@@ -29,10 +29,7 @@
           "type": "null"
         },
         {
-          "type": [
-            "null",
-            "array"
-          ],
+          "type": "array",
           "minItems": 1,
           "items": {
             "type": "number",

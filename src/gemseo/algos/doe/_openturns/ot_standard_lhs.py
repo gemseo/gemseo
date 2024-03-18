@@ -16,13 +16,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import array
-from numpy import ndarray
 from openturns import LHSExperiment
 
 from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
 
 
 class OTStandardLHS(BaseOTDOE):
@@ -33,7 +36,7 @@ class OTStandardLHS(BaseOTDOE):
 
     def generate_samples(  # noqa: D102
         self, n_samples: int, dimension: int, **options: Any
-    ) -> ndarray:
+    ) -> RealArray:
         lhs_experiment = LHSExperiment(
             self._get_uniform_distribution(dimension), n_samples
         )

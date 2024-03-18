@@ -8,19 +8,23 @@
   ],
   "properties": {
     "n_samples": {
-      "type": [
-        "null",
-        "integer"
-      ],
-      "minimum": 1
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        }
+      ]
     },
     "levels": {
       "anyOf": [
         {
-          "type": [
-            "null",
-            "array"
-          ],
+          "type": "null"
+        },
+        {
+          "type": "array",
           "minItems": 1,
           "items": {
             "type": "integer",

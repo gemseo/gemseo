@@ -29,20 +29,20 @@ from typing import Optional
 from typing import Union
 
 import pyDOE2 as pyDOE
-from numpy import ndarray
 from numpy.random import RandomState
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.algos.doe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
+from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[
-    Union[str, int, float, bool, Sequence[int], tuple[int, int], ndarray]
+    Union[str, int, float, bool, Sequence[int], tuple[int, int], RealArray]
 ]
 
 
@@ -193,8 +193,8 @@ class PyDOE(DOELibrary):
 
     @staticmethod
     def __translate(
-        result: ndarray,
-    ) -> ndarray:
+        result: RealArray,
+    ) -> RealArray:
         """Translate the DOE design variables to [0,1].
 
         Args:
@@ -205,7 +205,7 @@ class PyDOE(DOELibrary):
         """
         return (result + 1.0) * 0.5
 
-    def _generate_samples(self, **options: OptionType) -> ndarray:
+    def _generate_samples(self, **options: OptionType) -> RealArray:
         """Generate the samples for the DOE.
 
         Args:

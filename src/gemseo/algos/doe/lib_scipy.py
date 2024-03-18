@@ -26,8 +26,6 @@ from typing import Optional
 from typing import TextIO
 from typing import Union
 
-from numpy import integer
-from numpy import ndarray
 from packaging.version import parse as parse_version
 from scipy.stats.qmc import Halton
 from scipy.stats.qmc import LatinHypercube
@@ -39,17 +37,19 @@ from strenum import StrEnum
 from gemseo import SEED
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.typing import RealArray
 from gemseo.utils.compatibility.scipy import SCIPY_VERSION
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from numpy import integer
     from numpy.random import Generator
     from numpy.random import RandomState
 
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
-OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, ndarray]]
+OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -64,12 +64,12 @@ class _MonteCarlo(QMCEngine):
 
     if parse_version("1.10") > SCIPY_VERSION:
 
-        def random(self, n: int = 1) -> ndarray:
+        def random(self, n: int = 1) -> RealArray:
             self.num_generated += n
             return self.rng.random((n, self.d))
     else:
 
-        def _random(self, n: int = 1, *, workers: int = 1) -> ndarray:
+        def _random(self, n: int = 1, *, workers: int = 1) -> RealArray:
             return self.rng.random((n, self.d))
 
 
@@ -208,7 +208,7 @@ class SciPyDOE(DOELibrary):
             **kwargs,
         )
 
-    def _generate_samples(self, **options: OptionType) -> ndarray:
+    def _generate_samples(self, **options: OptionType) -> RealArray:
         seed = options[self.SEED]
         option_names = self.__SCIPY_OPTION_NAMES.copy()
         if self.algo_name == self.__SOBOL_ALGO_NAME:

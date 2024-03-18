@@ -35,7 +35,6 @@ from numpy import array
 from numpy import dtype
 from numpy import hstack
 from numpy import int32
-from numpy import ndarray
 from numpy import savetxt
 from numpy import where
 
@@ -58,6 +57,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -86,10 +86,10 @@ class DOEAlgorithmDescription(DriverDescription):
 class DOELibrary(DriverLibrary):
     """Abstract class to use for DOE library link See DriverLibrary."""
 
-    unit_samples: ndarray
+    unit_samples: RealArray
     """The input samples transformed in :math:`[0,1]`."""
 
-    samples: ndarray
+    samples: RealArray
     """The input samples with the design space variable types stored as dtype
     metadata."""
 
@@ -159,7 +159,7 @@ class DOELibrary(DriverLibrary):
         self.samples = self.__create_samples()
         self.init_iter_observer(len(self.unit_samples))
 
-    def __create_samples(self) -> ndarray:
+    def __create_samples(self) -> RealArray:
         """Create the samples with the design variable types as dtype metadata.
 
         Returns:
@@ -186,7 +186,7 @@ class DOELibrary(DriverLibrary):
 
         return samples
 
-    def __generate_samples(self, **options: Any) -> ndarray:
+    def __generate_samples(self, **options: Any) -> RealArray:
         """Generate the samples of the input variables.
 
         Args:
@@ -207,7 +207,7 @@ class DOELibrary(DriverLibrary):
         return self.seed if seed is None else seed
 
     @abstractmethod
-    def _generate_samples(self, **options: Any) -> ndarray:
+    def _generate_samples(self, **options: Any) -> RealArray:
         """Generate the samples of the input variables.
 
         Args:
@@ -216,7 +216,7 @@ class DOELibrary(DriverLibrary):
 
     def __call__(
         self, n_samples: int | None, dimension: int, **options: Any
-    ) -> ndarray:
+    ) -> RealArray:
         """Generate a design of experiments in the unit hypercube.
 
         Args:
@@ -275,7 +275,7 @@ class DOELibrary(DriverLibrary):
 
         savetxt(doe_output_file, self.unit_samples, delimiter=",")
 
-    def _worker(self, sample: ndarray) -> EvaluationType:
+    def _worker(self, sample: RealArray) -> EvaluationType:
         """Wrap the evaluation of the functions for parallel execution.
 
         Args:
@@ -416,7 +416,7 @@ class DOELibrary(DriverLibrary):
         size: int | None = None,
         unit_sampling: bool = False,
         **options: DOELibraryOptionType,
-    ) -> ndarray:
+    ) -> RealArray:
         """Compute a design of experiments (DOE) in a variables space.
 
         Args:
