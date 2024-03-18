@@ -86,6 +86,8 @@ def test_get_raw_shapes(
     with concretize_classes(MLSupervisedAlgo):
         algo = MLSupervisedAlgo(io_dataset, transformer=transformer)
 
+    assert algo._reduced_input_dimension == n_in
+    assert algo._reduced_output_dimension == n_out
     assert algo._reduced_dimensions == (n_in, n_out)
 
 
