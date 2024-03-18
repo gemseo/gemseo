@@ -175,7 +175,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
 
         if kernel is None:
             kernel = sklearn.gaussian_process.kernels.Matern(
-                (1.0,) * self._reduced_dimensions[0],
+                (1.0,) * self._reduced_input_dimension,
                 self.__compute_parameter_length_scale_bounds(bounds),
                 nu=2.5,
             )
@@ -212,7 +212,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         Returns:
             The lower and upper bounds of the parameter length scales.
         """
-        dimension = self._reduced_dimensions[0]
+        dimension = self._reduced_input_dimension
         if bounds is None:
             return [self.__DEFAULT_BOUNDS] * dimension
 
@@ -261,10 +261,12 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         Returns:
             The standard deviation at the query points.
 
-        Warnings:
-            If the output variables are transformed before the training stage,
-            then the standard deviation is related to this transformed output space
-            unlike :meth:`.predict` which returns values in the original output space.
+        .. warning::
+
+           This statistic is expressed in relation to the transformed output space.
+           You can sample the :meth:`.predict` method
+           to estimate it in relation to the original output space
+           if it is different from the transformed output space.
         """
         if isinstance(input_data, Mapping):
             input_data = concatenate_dict_of_arrays_to_array(
@@ -278,6 +280,6 @@ class GaussianProcessRegressor(MLRegressionAlgo):
 
         output_data = self.algo.predict(input_data, return_std=True)[1]
         if output_data.ndim == 1:
-            return repeat(output_data[:, newaxis], self._reduced_dimensions[1], 1)
+            return repeat(output_data[:, newaxis], self._reduced_output_dimension, 1)
 
         return output_data

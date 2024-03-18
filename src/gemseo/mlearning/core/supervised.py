@@ -78,7 +78,6 @@ from typing import ClassVar
 from typing import NoReturn
 from typing import Union
 
-from numpy import array
 from numpy import hstack
 from numpy import ndarray
 
@@ -120,6 +119,42 @@ class MLSupervisedAlgo(MLAlgo):
     output_names: list[str]
     """The names of the output variables."""
 
+    __input_dimension: int
+    """The dimension of the input space."""
+
+    __groups_to_names: dict[str, str]
+    """The variable names associated with group names."""
+
+    __output_dimension: int
+    """The dimension of the output space."""
+
+    __reduced_input_dimension: int
+    """The dimension of the transformed input space."""
+
+    __reduced_output_dimension: int
+    """The dimension of the transformed output space."""
+
+    _input_variables_to_transform: list[str]
+    """The names of the input variables to transform."""
+
+    _output_variables_to_transform: list[str]
+    """The names of the output variables to transform."""
+
+    _transform_input_group: bool
+    """Whether to transform the variables of the input group."""
+
+    _transform_output_group: bool
+    """Whether to transform the variables of the output group."""
+
+    _transformed_input_sizes: dict[str, int]
+    """The sizes of the transformed input variables."""
+
+    _transformed_output_sizes: dict[str, int]
+    """The sizes of the transformed output variables."""
+
+    _transformed_variable_sizes: dict[str, int]
+    """The sizes of the variables in the transformed spaces."""
+
     SHORT_ALGO_NAME: ClassVar[str] = "MLSupervisedAlgo"
     DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType({
         IODataset.INPUT_GROUP: MinMaxScaler()
@@ -149,10 +184,11 @@ class MLSupervisedAlgo(MLAlgo):
             data.INPUT_GROUP: self.input_names,
             data.OUTPUT_GROUP: self.output_names,
         }
-        self.input_space_center = array([])
+        self.input_space_center = {}
         self.__input_dimension = 0
         self.__output_dimension = 0
-        self.__reduced_dimensions = (0, 0)
+        self.__reduced_input_dimension = 0
+        self.__reduced_output_dimension = 0
         self._transformed_variable_sizes = {}
         self._transformed_input_sizes = {}
         self._transformed_output_sizes = {}
@@ -168,12 +204,26 @@ class MLSupervisedAlgo(MLAlgo):
         )
 
     @property
+    def _reduced_input_dimension(self) -> int:
+        """The reduced input dimension."""
+        if not self.__reduced_input_dimension:
+            self.__set_reduced_dimensions()
+
+        return self.__reduced_input_dimension
+
+    @property
+    def _reduced_output_dimension(self) -> int:
+        """The reduced output dimension."""
+        if not self.__reduced_output_dimension:
+            self.__set_reduced_dimensions()
+
+        return self.__reduced_output_dimension
+
+    # TODO: API: remove
+    @property
     def _reduced_dimensions(self) -> tuple[int, int]:
         """The input and output reduced dimensions."""
-        if self.__reduced_dimensions == (0, 0):
-            self.__reduced_dimensions = self.__compute_reduced_dimensions()
-
-        return self.__reduced_dimensions
+        return self._reduced_input_dimension, self._reduced_output_dimension
 
     @property
     def input_dimension(self) -> int:
@@ -468,12 +518,8 @@ class MLSupervisedAlgo(MLAlgo):
             output_data: The output data with shape (n_samples, n_outputs).
         """
 
-    def __compute_reduced_dimensions(self) -> tuple[int, int]:
-        """Return the reduced input and output dimensions after transformations.
-
-        Returns:
-            The reduced input and output dimensions.
-        """
+    def __set_reduced_dimensions(self) -> None:
+        """Set the input and output dimensions after transformations."""
         input_dimension = 0
         output_dimension = 0
         input_names = [*self.input_names, IODataset.INPUT_GROUP]
@@ -501,9 +547,8 @@ class MLSupervisedAlgo(MLAlgo):
                         )
                     )
 
-        input_dimension = input_dimension or self.input_dimension
-        output_dimension = output_dimension or self.output_dimension
-        return input_dimension, output_dimension
+        self.__reduced_input_dimension = input_dimension or self.input_dimension
+        self.__reduced_output_dimension = output_dimension or self.output_dimension
 
     def __compute_transformed_variable_sizes(self) -> None:
         """Compute the sizes of the transformed variables."""
