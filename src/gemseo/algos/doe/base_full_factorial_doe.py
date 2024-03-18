@@ -26,7 +26,7 @@ from gemseo.algos.doe._base_doe import BaseDOE
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from numpy import ndarray
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class BaseFullFactorialDOE(BaseDOE):
 
     def generate_samples(
         self, n_samples: int, dimension: int, **options: Any
-    ) -> ndarray:
+    ) -> RealArray:
         """Generate samples.
 
         Args:
@@ -54,7 +54,7 @@ class BaseFullFactorialDOE(BaseDOE):
         n_samples: int | None,
         dimension: int,
         **options: int | Iterable[int] | None,
-    ) -> ndarray:
+    ) -> RealArray:
         """Generate a full-factorial DOE.
 
         Generate a full-factorial DOE based on either the number of samples,
@@ -110,7 +110,7 @@ class BaseFullFactorialDOE(BaseDOE):
         return self._generate_fullfact_from_levels(levels)
 
     @abstractmethod
-    def _generate_fullfact_from_levels(self, levels) -> ndarray:
+    def _generate_fullfact_from_levels(self, levels) -> RealArray:
         """Generate the full-factorial DOE from levels per input direction.
 
         Args:

@@ -42,11 +42,12 @@ from numpy import vstack
 
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
-OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, ndarray]]
+OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -102,7 +103,10 @@ class CustomDOE(DOELibrary):
     def _get_options(
         self,
         doe_file: str | Path | None = None,
-        samples: ndarray | dict[str, ndarray] | list[dict[str, ndarray]] | None = None,
+        samples: RealArray
+        | dict[str, RealArray]
+        | list[dict[str, RealArray]]
+        | None = None,
         delimiter: str | None = ",",
         comments: str | Sequence[str] | None = "#",
         skiprows: int = 0,
@@ -163,7 +167,7 @@ class CustomDOE(DOELibrary):
         delimiter: str | None = ",",
         comments: str | Sequence[str] | None = "#",
         skiprows: int = 0,
-    ) -> ndarray:
+    ) -> RealArray:
         """Read a file containing several samples (one per line) and return them.
 
         Args:
@@ -194,7 +198,7 @@ class CustomDOE(DOELibrary):
 
         return samples
 
-    def _generate_samples(self, **options: OptionType) -> ndarray:
+    def _generate_samples(self, **options: OptionType) -> RealArray:
         """
         Returns:
             The samples.

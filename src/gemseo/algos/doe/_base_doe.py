@@ -23,7 +23,7 @@ from typing import Any
 from gemseo.utils.base_multiton import BaseABCMultiton
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from gemseo.typing import RealArray
 
 
 class BaseDOE(metaclass=BaseABCMultiton):
@@ -32,7 +32,7 @@ class BaseDOE(metaclass=BaseABCMultiton):
     @abstractmethod
     def generate_samples(
         self, n_samples: int, dimension: int, **options: Any
-    ) -> ndarray:
+    ) -> RealArray:
         """Generate samples.
 
         Args:

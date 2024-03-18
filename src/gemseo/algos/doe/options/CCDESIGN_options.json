@@ -24,15 +24,19 @@
       ]
     },
     "center_cc": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": "integer",
-        "maxItems": 2,
-        "minItems": 2
-      }
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "maxItems": 2,
+            "minItems": 2
+          }
+        }
+      ]
     },
     "eval_jac": {
       "type": "boolean"

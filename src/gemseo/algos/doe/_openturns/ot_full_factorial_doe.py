@@ -20,13 +20,14 @@ from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import full
-from numpy import ndarray
 from openturns import Box
 
 from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from gemseo.typing import RealArray
 
 
 class OTFullFactorialDOE(BaseFullFactorialDOE):
@@ -35,7 +36,7 @@ class OTFullFactorialDOE(BaseFullFactorialDOE):
     .. note:: This class is a singleton.
     """
 
-    def _generate_fullfact_from_levels(self, levels: Iterable[int]) -> ndarray:
+    def _generate_fullfact_from_levels(self, levels: Iterable[int]) -> RealArray:
         # This method relies on openturns.Box.
         # This latter assumes that the levels provided correspond to the intermediate
         # levels between lower and upper bounds, while GEMSEO includes these bounds

@@ -25,14 +25,18 @@
       "minimum": 0.0
     },
     "reverse": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": "string",
-        "minItems": 1
-      }
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minItems": 1
+          }
+        }
+      ]
     },
     "callbacks": {}
   },

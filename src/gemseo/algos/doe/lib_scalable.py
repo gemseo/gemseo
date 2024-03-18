@@ -29,7 +29,6 @@ from typing import Union
 
 from numpy import hstack
 from numpy import linspace
-from numpy import ndarray
 from numpy import newaxis
 
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
@@ -37,6 +36,7 @@ from gemseo.algos.doe.doe_library import DOELibrary
 
 if TYPE_CHECKING:
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
+    from gemseo.typing import RealArray
 
 OptionType = Optional[Union[str, int, float, bool, Container[str]]]
 
@@ -104,7 +104,7 @@ class DiagonalDOE(DOELibrary):
             **kwargs,
         )
 
-    def _generate_samples(self, **options: OptionType) -> ndarray:
+    def _generate_samples(self, **options: OptionType) -> RealArray:
         """Generate the DOE samples.
 
         Args:

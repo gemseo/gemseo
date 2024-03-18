@@ -30,7 +30,6 @@ from typing import Optional
 from typing import Union
 
 import openturns
-from numpy import ndarray
 
 from gemseo.algos.doe._openturns.ot_axial_doe import OTAxialDOE
 from gemseo.algos.doe._openturns.ot_centered_lhs import OTCenteredLHS
@@ -50,12 +49,14 @@ from gemseo.algos.doe._openturns.ot_sobol_sequence import OTSobolSequence
 from gemseo.algos.doe._openturns.ot_standard_lhs import OTStandardLHS
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
     from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
+    from gemseo.typing import NumberArray
 
-OptionType = Optional[Union[str, int, float, bool, Sequence[int], ndarray]]
+OptionType = Optional[Union[str, int, float, bool, Sequence[int], RealArray]]
 
 
 _AlgoData = namedtuple("_AlgoData", ["description", "webpage", "doe_algo_class"])
@@ -133,8 +134,8 @@ class OpenTURNS(DOELibrary):
 
     def _get_options(
         self,
-        levels: int | Sequence[int] | None = None,
-        centers: Sequence[int] | None = None,
+        levels: float | Sequence[float] | None = None,
+        centers: Sequence[float] | float = 0.5,
         eval_jac: bool = False,
         n_samples: int | None = None,
         n_processes: int = 1,
@@ -152,15 +153,28 @@ class OpenTURNS(DOELibrary):
         r"""Set the options.
 
         Args:
-            levels: The levels. If there is a parameter ``n_samples``,
-                the latter can be specified
-                and the former set to its default value ``None``.
-            centers: The centers for axial, factorial and composite designs.
-                If ``None``, centers = 0.5.
+            levels: 1) In the case of axial, composite and factorial DOEs,
+                the positions of the levels relative to the center;
+                the levels will be equispaced and symmetrical relative to the center;
+                e.g. ``[0.2, 0.8]`` in dimension 1 will generate
+                the samples ``[0.15, 0.6, 0.75, 0.8, 0.95, 1]`` for an axial DOE;
+                the values must be in :math:`]0,1]`.
+                2) In the case of a full-factorial DOE,
+                the number of levels per input direction;
+                if scalar, this value is applied to each input direction.
+            centers: The center of the unit hypercube
+                that the axial, composite or factorial DOE algorithm will sample;
+                if scalar, this value is applied to each direction of the hypercube;
+                the values must be in :math:`]0,1[`.
             eval_jac: Whether to evaluate the jacobian.
-            n_samples: The number of samples. If there is a parameter ``levels``,
-                the latter can be specified
-                and the former set to its default value ``None``.
+            n_samples: The maximum number of samples required by the user;
+                for axial, composite and factorial DOEs,
+                a minimum number of samples is required
+                and depends on the dimension of the space to sample;
+                if ``None``
+                in the case of for axial, composite, factorial and full-factorial DOEs
+                the effective number of samples is computed
+                from this dimension and the number of levels.
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
@@ -190,7 +204,7 @@ class OpenTURNS(DOELibrary):
         """
         return self._process_options(
             levels=levels,
-            centers=centers or [0.5],
+            centers=centers,
             eval_jac=eval_jac,
             n_samples=n_samples,
             n_processes=n_processes,
@@ -212,7 +226,7 @@ class OpenTURNS(DOELibrary):
         n_samples: int | None = None,
         seed: int | None = None,
         **options: OptionType,
-    ) -> ndarray:
+    ) -> NumberArray:
         """Generate the samples.
 
         Args:
