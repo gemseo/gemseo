@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from collections import namedtuple
+from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Final
@@ -52,6 +53,7 @@ from gemseo.algos.doe.doe_library import DOELibrary
 
 if TYPE_CHECKING:
     from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[Union[str, int, float, bool, Sequence[int], ndarray]]
 
@@ -144,6 +146,7 @@ class OpenTURNS(DOELibrary):
         seed: int | None = None,
         max_time: float = 0,
         eval_second_order: bool = True,
+        callbacks: Iterable[CallbackType] = (),
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:
         r"""Set the options.
@@ -177,6 +180,9 @@ class OpenTURNS(DOELibrary):
                 to evaluate also the second-order indices;
                 otherwise,
                 the DOE is designed for first- and total-order indices only.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
             **kwargs: The additional arguments.
 
         Returns:
@@ -196,6 +202,7 @@ class OpenTURNS(DOELibrary):
             seed=seed,
             max_time=max_time,
             eval_second_order=eval_second_order,
+            callbacks=callbacks,
             **kwargs,
         )
 

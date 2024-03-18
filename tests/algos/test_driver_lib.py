@@ -148,8 +148,8 @@ def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected) -> None
     test_driver.problem = power_2
     test_driver._max_time = 0
     test_driver.init_iter_observer(max_iter=2, **kwargs)
-    test_driver.new_iteration_callback()
-    test_driver.new_iteration_callback()
+    test_driver.new_iteration_callback(array([0, 0]))
+    test_driver.new_iteration_callback(array([0, 0]))
     assert expected in caplog.text
 
 

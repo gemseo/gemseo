@@ -23,9 +23,11 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from collections.abc import Mapping
 from collections.abc import Sequence
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import Optional
@@ -40,6 +42,9 @@ from numpy import vstack
 
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+
+if TYPE_CHECKING:
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, ndarray]]
 
@@ -105,6 +110,7 @@ class CustomDOE(DOELibrary):
         eval_jac: bool = False,
         n_processes: int = 1,
         wait_time_between_samples: float = 0.0,
+        callbacks: Iterable[CallbackType] = (),
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:
         """Set the options.
@@ -129,6 +135,9 @@ class CustomDOE(DOELibrary):
             wait_time_between_samples: The waiting time between two samples.
             max_time: The maximum runtime in seconds,
                 disabled if 0.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
             **kwargs: The additional arguments.
 
         Returns:
@@ -144,6 +153,7 @@ class CustomDOE(DOELibrary):
             eval_jac=eval_jac,
             n_processes=n_processes,
             wait_time_between_samples=wait_time_between_samples,
+            callbacks=callbacks,
             **kwargs,
         )
 

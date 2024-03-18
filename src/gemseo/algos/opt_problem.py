@@ -73,6 +73,7 @@ from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import Optional
+from typing import Union
 
 import h5py
 import numpy
@@ -147,6 +148,8 @@ OptimumType = tuple[ndarray, ndarray, bool, dict[str, ndarray], dict[str, ndarra
 OptimumSolutionType = tuple[
     Optional[Sequence[ndarray]], ndarray, dict[str, ndarray], dict[str, ndarray]
 ]
+EvaluationType = tuple[dict[str, Union[float, ndarray]], dict[str, ndarray]]
+"""The type of the output value of an evaluation."""
 
 
 class OptimizationProblem(BaseProblem):
@@ -1192,19 +1195,27 @@ class OptimizationProblem(BaseProblem):
             for func in self.get_ineq_constraints()
         }
 
+    # TODO: API: rename callback_func to callback
     def add_callback(
         self,
-        callback_func: Callable,
+        callback_func: Callable[[ndarray], Any],
         each_new_iter: bool = True,
         each_store: bool = False,
     ) -> None:
-        """Add a callback function after each store operation or new iteration.
+        """Add a callback for some events.
+
+        The callback functions are attached to the database,
+        which means they are triggered when new values are stored
+        within the database of the optimization problem.
 
         Args:
-            callback_func: A function to be called after some event.
-            each_new_iter: If ``True``, then callback at every iteration.
-            each_store: If ``True``,
-                then callback at every call to :meth:`.Database.store`.
+            callback_func: A function to be called after some events,
+                whose argument is a design vector.
+            each_new_iter: Whether to evaluate the callback functions
+                after evaluating all functions of the optimization problem
+                for a given point and storing their values in the :attr:`.database`.
+            each_store: Whether to evaluate the callback functions
+                after storing any new value in the :attr:`.database`.
         """
         if each_store:
             self.database.add_store_listener(callback_func)
@@ -1226,7 +1237,7 @@ class OptimizationProblem(BaseProblem):
         constraint_names: Iterable[str] | None = None,
         observable_names: Iterable[str] | None = None,
         jacobian_names: Iterable[str] | None = None,
-    ) -> tuple[dict[str, float | ndarray], dict[str, ndarray]]:
+    ) -> EvaluationType:
         """Compute the functions of interest, and possibly their derivatives.
 
         These functions of interest are the constraints, and possibly the objective.

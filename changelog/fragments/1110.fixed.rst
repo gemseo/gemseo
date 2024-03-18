@@ -1,0 +1,1 @@
+``OptimizationProblem.database`` is not used when ``use_database`` is ``False`` in the case of a ``DOELibrary``.

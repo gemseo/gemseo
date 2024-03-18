@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -38,6 +39,7 @@ from gemseo.algos.doe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
 
 if TYPE_CHECKING:
     from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[
     Union[str, int, float, bool, Sequence[int], tuple[int, int], ndarray]
@@ -128,6 +130,7 @@ class PyDOE(DOELibrary):
         wait_time_between_samples: float = 0.0,
         seed: int | None = None,
         max_time: float = 0,
+        callbacks: Iterable[CallbackType] = (),
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:  # pylint: disable=W0221
         """Set the options.
@@ -160,6 +163,9 @@ class PyDOE(DOELibrary):
                 use the seed of the library,
                 namely :attr:`.PyDOE.seed`.
             max_time: The maximum runtime in seconds, disabled if 0.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
             **kwargs: The additional arguments.
 
         Returns:
@@ -181,6 +187,7 @@ class PyDOE(DOELibrary):
             wait_time_between_samples=wait_time_between_samples,
             seed=seed,
             max_time=max_time,
+            callbacks=callbacks,
             **kwargs,
         )
 

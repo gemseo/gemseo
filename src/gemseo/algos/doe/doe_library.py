@@ -27,9 +27,9 @@ from dataclasses import dataclass
 from multiprocessing import current_process
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Union
 
 from numpy import array
 from numpy import dtype
@@ -41,7 +41,9 @@ from numpy import where
 
 from gemseo import SEED
 from gemseo.algos.driver_library import DriverDescription
+from gemseo.algos.driver_library import DriverLibOptionType
 from gemseo.algos.driver_library import DriverLibrary
+from gemseo.algos.opt_problem import EvaluationType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.core.parallel_execution.callable_parallel_execution import (
@@ -49,6 +51,7 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import MutableMapping
     from pathlib import Path
 
@@ -58,11 +61,16 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-DOELibraryOptionType = Union[str, float, int, bool, list[str], ndarray]
+# TODO: API: remove DOELibraryOptionType
+DOELibraryOptionType = DriverLibOptionType
 """The type of a DOE algorithm option."""
 
-DOELibraryOutputType = tuple[dict[str, Union[float, ndarray]], dict[str, ndarray]]
+# TODO: API: remove and use EvaluationType directly.
+DOELibraryOutputType = EvaluationType
 """The type of the output value in an input-output sample."""
+
+CallbackType = Callable[[int, EvaluationType], Any]
+"""The type of a callback function in the context of a ."""
 
 
 @dataclass
@@ -137,9 +145,7 @@ class DOELibrary(DriverLibrary):
         options[self.DIMENSION] = self.problem.dimension
         options[self._VARIABLE_NAMES] = self.problem.design_space.variable_names
         options[self._VARIABLE_SIZES] = self.problem.design_space.variable_sizes
-
         self.unit_samples = self.__generate_samples(**options)
-
         LOGGER.debug(
             (
                 "The DOE algorithm %s of %s has generated %s samples "
@@ -150,15 +156,7 @@ class DOELibrary(DriverLibrary):
             len(self.unit_samples),
             self.unit_samples.shape[1],
         )
-
         self.samples = self.__create_samples()
-
-        if options.get(self.N_PROCESSES, 1) > 1:
-            # Initialize the order as it is not necessarily guaranteed
-            # when using parallel execution.
-            for sample in self.samples:
-                self.problem.database.store(sample, {})
-
         self.init_iter_observer(len(self.unit_samples))
 
     def __create_samples(self) -> ndarray:
@@ -234,11 +232,35 @@ class DOELibrary(DriverLibrary):
             **self.__get_algorithm_options(options, n_samples, dimension)
         )
 
-    def _run(self, **options: Any) -> OptimizationResult:
-        eval_jac = options.get(self.EVAL_JAC, False)
-        n_processes = options.get(self.N_PROCESSES, 1)
-        wait_time_between_samples = options.get(self.WAIT_TIME_BETWEEN_SAMPLES, 0)
-        self.evaluate_samples(eval_jac, n_processes, wait_time_between_samples)
+    def _run(
+        self,
+        eval_jac: bool = False,
+        n_processes: int = 1,
+        wait_time_between_samples: float = 0.0,
+        use_database: bool = True,
+        callbacks: Iterable[CallbackType] = (),
+        **options: Any,
+    ) -> OptimizationResult:
+        """
+        Args:
+            eval_jac: Whether to evaluate the Jacobian.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
+            wait_time_between_samples: The time to wait between each sample
+                evaluation, in seconds.
+            use_database: Whether to store the evaluations in the database.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
+            **options: These options are not used.
+        """  # noqa: D205, D212
+        self.evaluate_samples(
+            eval_jac=eval_jac,
+            n_processes=n_processes,
+            wait_time_between_samples=wait_time_between_samples,
+            use_database=use_database,
+            callbacks=callbacks,
+        )
         return self.get_optimum_from_database()
 
     def export_samples(self, doe_output_file: Path | str) -> None:
@@ -253,7 +275,7 @@ class DOELibrary(DriverLibrary):
 
         savetxt(doe_output_file, self.unit_samples, delimiter=",")
 
-    def _worker(self, sample: ndarray) -> DOELibraryOutputType:
+    def _worker(self, sample: ndarray) -> EvaluationType:
         """Wrap the evaluation of the functions for parallel execution.
 
         Args:
@@ -273,11 +295,14 @@ class DOELibrary(DriverLibrary):
             normalize=False,
         )
 
+    # TODO: API: remove and merge into _run as it cannot be used safely outside execute.
     def evaluate_samples(
         self,
         eval_jac: bool = False,
         n_processes: int = 1,
         wait_time_between_samples: float = 0.0,
+        use_database: bool = True,
+        callbacks: Iterable[CallbackType] = (),
     ) -> None:
         """Evaluate all the functions of the optimization problem at the samples.
 
@@ -287,6 +312,10 @@ class DOELibrary(DriverLibrary):
                 used to parallelize the execution.
             wait_time_between_samples: The time to wait between each sample
                 evaluation, in seconds.
+            use_database: Whether to store the evaluations in the database.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
 
         Warnings:
             This class relies on multiprocessing features when ``n_processes > 1``,
@@ -294,45 +323,34 @@ class DOELibrary(DriverLibrary):
             ``if __name__ == '__main__':`` statement when working on Windows.
         """
         self.eval_jac = eval_jac
+        callbacks = list(callbacks)
         if n_processes > 1:
-            LOGGER.info("Running DOE in parallel on n_processes = %s", str(n_processes))
-            # Create a list of tasks: execute functions
+            LOGGER.info("Running DOE in parallel on n_processes = %s", n_processes)
+            # Given a ndarray input value,
+            # the worker evaluates the functions attached to the problem
+            # with up to n_processes simultaneous processes.
             parallel = CallableParallelExecution(
-                [self._worker], n_processes=n_processes
+                [self._worker],
+                n_processes=n_processes,
+                wait_time_between_fork=wait_time_between_samples,
             )
-            parallel.wait_time_between_fork = wait_time_between_samples
-            # Define a callback function to store the samples on the fly
-            # during the parallel execution
             database = self.problem.database
-
-            # Initialize the order as it is not necessarily guaranteed
-            # when using parallel execution
-            for sample in self.samples:
-                database.store(sample, {})
-
-            def store_callback(
-                index: int,
-                outputs: DOELibraryOutputType,
-            ) -> None:
-                """Store the outputs in the database.
-
-                Args:
-                    index: The sample index.
-                    outputs: The outputs of the parallel execution.
-                """
-                out, jac = outputs
-                if jac:
-                    for key, val in jac.items():
-                        out[database.get_gradient_name(key)] = val
-
-                database.store(self.samples[index], out)
+            if use_database:
+                # Add a callback to store the samples in the database on the fly.
+                callbacks.append(self.__store_in_database)
+                # Initialize the order of samples
+                # as parallel execution does not guarantee it.
+                for sample in self.samples:
+                    database.store(sample, {})
 
             # The list of inputs of the tasks is the list of samples
-            parallel.execute(self.unit_samples, exec_callback=store_callback)
-            # We added empty entries by default to keep order in the database
-            # but when the DOE point is failed, this is not consistent
-            # with the serial exec, so we clean the DB
-            database.remove_empty_entries()
+            parallel.execute(self.unit_samples, exec_callback=callbacks)
+
+            if use_database:
+                # We added empty entries by default to keep order in the database
+                # but when the DOE point is failed, this is not consistent
+                # with the serial exec, so we clean the DB
+                database.remove_empty_entries()
 
         else:
             # Sequential execution
@@ -340,20 +358,39 @@ class DOELibrary(DriverLibrary):
                 LOGGER.warning(
                     "Wait time between samples option is ignored in sequential run."
                 )
-            for sample in self.samples:
+            for index, input_data in enumerate(self.samples):
                 try:
-                    self.problem.evaluate_functions(
-                        x_vect=sample,
+                    output_data, jacobian_data = self.problem.evaluate_functions(
+                        x_vect=input_data,
                         eval_jac=self.eval_jac,
                         normalize=False,
                     )
+                    for callback in callbacks:
+                        callback(index, (output_data, jacobian_data))
                 except ValueError:  # noqa: PERF203
                     LOGGER.exception(
                         "Problem with evaluation of sample :"
-                        "%s result is not taken into account "
-                        "in DOE.",
-                        sample,
+                        "%s result is not taken into account in DOE.",
+                        input_data,
                     )
+
+    def __store_in_database(
+        self,
+        index: int,
+        output_and_jacobian_data: EvaluationType,
+    ) -> None:
+        """Store the output and Jacobian data in the database.
+
+        Args:
+            index: The sample index.
+            output_and_jacobian_data: The output and Jacobian data.
+        """
+        data, jacobian_data = output_and_jacobian_data
+        if jacobian_data:
+            for output_name, jacobian in jacobian_data.items():
+                data[self.problem.database.get_gradient_name(output_name)] = jacobian
+
+        self.problem.database.store(self.samples[index], data)
 
     @classmethod
     def __check_unnormalization_capability(cls, design_space) -> None:
