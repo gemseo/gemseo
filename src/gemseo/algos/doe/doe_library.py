@@ -24,7 +24,9 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from dataclasses import dataclass
+from functools import singledispatchmethod
 from multiprocessing import current_process
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
@@ -39,6 +41,7 @@ from numpy import savetxt
 from numpy import where
 
 from gemseo import SEED
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibOptionType
 from gemseo.algos.driver_library import DriverLibrary
@@ -51,10 +54,8 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import MutableMapping
     from pathlib import Path
 
-    from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.typing import RealArray
@@ -87,11 +88,23 @@ class DOELibrary(DriverLibrary):
     """Abstract class to use for DOE library link See DriverLibrary."""
 
     unit_samples: RealArray
-    """The input samples transformed in :math:`[0,1]`."""
+    """The design vector samples projected in the unit hypercube.
+
+    In the case of a design space of dimension :math:`d`,
+    the unit hypercube is :math:`[0,1]^d`.
+
+    To access those in the design space,
+    use :attr:`.samples`.
+    """
 
     samples: RealArray
-    """The input samples with the design space variable types stored as dtype
-    metadata."""
+    """The design vector samples in the design space.
+
+    The design space variable types stored as dtype metadata.
+
+    To access those in the unit hypercube,
+    use :attr:`.unit_samples`.
+    """
 
     seed: int
     """The seed to be used for reproducibility reasons.
@@ -100,20 +113,24 @@ class DOELibrary(DriverLibrary):
     using it.
     """
 
+    # TODO: API: make the attribute eval_jac private.
     eval_jac: bool
     """Whether to evaluate the Jacobian."""
 
+    # TODO: API: remove unused DESIGN_ALGO_NAME attribute
     DESIGN_ALGO_NAME = "Design algorithm"
+    # TODO: API: remove unused SAMPLES_TAG attribute
     SAMPLES_TAG = "samples"
+    # TODO: API: remove unused PHIP_CRITERIA attribute
     PHIP_CRITERIA = "phi^p"
     N_SAMPLES = "n_samples"
+    # TODO: API: remove unused LEVEL_KEYWORD attribute
     LEVEL_KEYWORD = "levels"
     EVAL_JAC = "eval_jac"
     N_PROCESSES = "n_processes"
     WAIT_TIME_BETWEEN_SAMPLES = "wait_time_between_samples"
+    # TODO: API: remove unused DIMENSION attribute
     DIMENSION = "dimension"
-    _VARIABLE_NAMES = "variable_names"
-    _VARIABLE_SIZES = "variable_sizes"
     SEED = "seed"
     _NORMALIZE_DS = False
 
@@ -124,7 +141,7 @@ class DOELibrary(DriverLibrary):
     }
 
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
-    """Whether the algorithms use a unit hypercube to generate the input samples."""
+    """Whether the algorithms use a unit hypercube to generate the design samples."""
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
@@ -139,13 +156,11 @@ class DOELibrary(DriverLibrary):
         algo_name: str,
         **options: DOELibraryOptionType,
     ) -> None:
-        self.__check_unnormalization_capability(self.problem.design_space)
+        design_space = self.problem.design_space
+        self.__check_unnormalization_capability(design_space)
         super()._pre_run(problem, algo_name, **options)
         problem.stop_if_nan = False
-        options[self.DIMENSION] = self.problem.dimension
-        options[self._VARIABLE_NAMES] = self.problem.design_space.variable_names
-        options[self._VARIABLE_SIZES] = self.problem.design_space.variable_sizes
-        self.unit_samples = self.__generate_samples(**options)
+        self.unit_samples = self.__generate_unit_samples(design_space, **options)
         LOGGER.debug(
             (
                 "The DOE algorithm %s of %s has generated %s samples "
@@ -153,25 +168,23 @@ class DOELibrary(DriverLibrary):
             ),
             self.algo_name,
             self.__class__.__name__,
-            len(self.unit_samples),
-            self.unit_samples.shape[1],
+            *self.unit_samples.shape,
         )
-        self.samples = self.__create_samples()
+        self.samples = self.__convert_unit_samples_to_samples()
         self.init_iter_observer(len(self.unit_samples))
 
-    def __create_samples(self) -> RealArray:
-        """Create the samples with the design variable types as dtype metadata.
+    def __convert_unit_samples_to_samples(self) -> RealArray:
+        """Convert the unit design vector samples to design vector samples.
+
+        We also set the design variable types as dtype metadata.
 
         Returns:
-            The samples.
+            The design vector samples.
         """
-        samples = self.problem.design_space.untransform_vect(
-            self.unit_samples, no_check=True
-        )
-
-        variable_types = self.problem.design_space.variable_types
+        design_space = self.problem.design_space
+        samples = design_space.untransform_vect(self.unit_samples, no_check=True)
+        variable_types = design_space.variable_types
         unique_variable_types = {t[0] for t in variable_types.values()}
-
         if len(unique_variable_types) > 1:
             # When the design space have both float and integer variables,
             # the samples array has the float dtype.
@@ -180,20 +193,26 @@ class DOELibrary(DriverLibrary):
             python_var_types = {
                 name: self.__DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE[type_[0]]
                 for name, type_ in variable_types.items()
-                if type_[0] != "float"
+                if type_[0] != DesignSpace.DesignVariableType.FLOAT
             }
             samples.dtype = dtype(samples.dtype, metadata=python_var_types)
 
         return samples
 
-    def __generate_samples(self, **options: Any) -> RealArray:
-        """Generate the samples of the input variables.
+    def __generate_unit_samples(
+        self, design_space: DesignSpace, **options: Any
+    ) -> RealArray:
+        """Generate the samples of the design vector in the unit hypercube.
 
         Args:
+            design_space: The design space to be sampled.
             **options: The options of the DOE algorithm.
+
+        Returns:
+            The samples of the design vector in the unit hypercube.
         """
         self.seed += 1
-        return self._generate_samples(**options)
+        return self._generate_samples(design_space, **options)
 
     def _get_seed(self, seed: int | None) -> int:
         """Return a seed for the random number generator.
@@ -206,14 +225,20 @@ class DOELibrary(DriverLibrary):
         """
         return self.seed if seed is None else seed
 
+    # TODO:API:rename _generate_samples to _generate_unit_samples
     @abstractmethod
-    def _generate_samples(self, **options: Any) -> RealArray:
-        """Generate the samples of the input variables.
+    def _generate_samples(self, design_space: DesignSpace, **options: Any) -> RealArray:
+        """Generate the samples of the design vector in the unit hypercube.
 
         Args:
+            design_space: The design space to be sampled.
             **options: The options of the DOE algorithm.
+
+        Returns:
+            The samples of the design vector in the unit hypercube.
         """
 
+    # TODO: API: remove and use compute_doe instead
     def __call__(
         self, n_samples: int | None, dimension: int, **options: Any
     ) -> RealArray:
@@ -222,14 +247,17 @@ class DOELibrary(DriverLibrary):
         Args:
             n_samples: The number of samples.
                 If ``None``, the number of samples is deduced from the ``options``.
-            dimension: The dimension of the input space.
+            dimension: The dimension of the design space.
             **options: The options of the DOE algorithm.
 
         Returns:
             A design of experiments in the unit hypercube.
         """
-        return self.__generate_samples(
-            **self.__get_algorithm_options(options, n_samples, dimension)
+        design_space = DesignSpace()
+        design_space.add_variable("x", size=dimension)
+        return self.__generate_unit_samples(
+            design_space,
+            **self._update_algorithm_options(n_samples=n_samples, **options),
         )
 
     def _run(
@@ -243,7 +271,7 @@ class DOELibrary(DriverLibrary):
     ) -> OptimizationResult:
         """
         Args:
-            eval_jac: Whether to evaluate the Jacobian.
+            eval_jac: Whether to evaluate the Jacobian function.
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The time to wait between each sample
@@ -263,6 +291,8 @@ class DOELibrary(DriverLibrary):
         )
         return self.get_optimum_from_database()
 
+    # TODO: API: remove this unused method.
+    # Note: it would be more appropriate to save the samples instead of the unit ones.
     def export_samples(self, doe_output_file: Path | str) -> None:
         """Export the samples generated by DOE library to a CSV file.
 
@@ -307,7 +337,7 @@ class DOELibrary(DriverLibrary):
         """Evaluate all the functions of the optimization problem at the samples.
 
         Args:
-            eval_jac: Whether to evaluate the Jacobian.
+            eval_jac: Whether to evaluate the Jacobian function.
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The time to wait between each sample
@@ -344,8 +374,9 @@ class DOELibrary(DriverLibrary):
                     database.store(sample, {})
 
             # The list of inputs of the tasks is the list of samples
+            # A callback function stores the samples on the fly
+            # during the parallel execution.
             parallel.execute(self.unit_samples, exec_callback=callbacks)
-
             if use_database:
                 # We added empty entries by default to keep order in the database
                 # but when the DOE point is failed, this is not consistent
@@ -369,7 +400,7 @@ class DOELibrary(DriverLibrary):
                         callback(index, (output_data, jacobian_data))
                 except ValueError:  # noqa: PERF203
                     LOGGER.exception(
-                        "Problem with evaluation of sample :"
+                        "Problem with evaluation of sample:"
                         "%s result is not taken into account in DOE.",
                         input_data,
                     )
@@ -412,7 +443,7 @@ class DOELibrary(DriverLibrary):
 
     def compute_doe(
         self,
-        variables_space: DesignSpace,
+        variables_space: DesignSpace | int,
         size: int | None = None,
         unit_sampling: bool = False,
         **options: DOELibraryOptionType,
@@ -420,46 +451,76 @@ class DOELibrary(DriverLibrary):
         """Compute a design of experiments (DOE) in a variables space.
 
         Args:
-            variables_space: The variables space to be sampled.
+            variables_space: Either the variables space to be sampled or its dimension.
             size: The size of the DOE.
                 If ``None``, the size is deduced from the ``options``.
             unit_sampling: Whether to sample in the unit hypercube.
+                If the value provided in ``variables_space_or_dimension``
+                is the dimension,
+                the sample will be generated in the unit hypercube
+                whatever the value of ``unit_sampling``.
             **options: The options of the DOE algorithm.
 
         Returns:
             The design of experiments
             whose rows are the samples and columns the variables.
         """
+        design_space = self.__get_design_space(variables_space)
         if not unit_sampling:
-            self.__check_unnormalization_capability(variables_space)
+            self.__check_unnormalization_capability(design_space)
 
-        options = self.__get_algorithm_options(options, size, variables_space.dimension)
-        options[self._VARIABLE_NAMES] = variables_space.variable_names
-        options[self._VARIABLE_SIZES] = variables_space.variable_sizes
-        doe = self.__generate_samples(**options)
+        self.init_options_grammar(self.algo_name)
+        if self.driver_has_option(self.N_SAMPLES):
+            options[self.N_SAMPLES] = size
+
+        unit_samples = self.__generate_unit_samples(
+            design_space,
+            **self._update_algorithm_options(
+                initialize_options_grammar=False, **options
+            ),
+        )
         if unit_sampling:
-            return doe
+            return unit_samples
 
-        return variables_space.untransform_vect(doe, no_check=True)
+        return design_space.untransform_vect(unit_samples, no_check=True)
 
-    def __get_algorithm_options(
-        self,
-        options: MutableMapping[str, DOELibraryOptionType],
-        size: int | None,
-        dimension: int,
-    ) -> dict[str, DOELibraryOptionType]:
-        """Return the algorithm options from initial ones.
+    @singledispatchmethod
+    def __get_design_space(self, design_space):
+        """Return a design space.
 
         Args:
-            options: The user algorithm options.
-            size: The number of samples.
-                If ``None``, the number is deduced from the options.
-            dimension: The dimension of the variables space.
+            design_space: Either a design space or a design space dimension.
 
         Returns:
-            The algorithm options.
+            A design space.
         """
-        options[self.N_SAMPLES] = size
-        options = self._update_algorithm_options(**options)
-        options[self.DIMENSION] = dimension
-        return options
+        return design_space
+
+    @__get_design_space.register
+    def _(self, design_space: DesignSpace):
+        """Return a design space.
+
+        Args:
+            design_space: A design space
+
+        Returns:
+            The design space passed as argument.
+        """
+        return design_space
+
+    @__get_design_space.register
+    def _(self, design_space: int):
+        """Return a design space from a design space dimension.
+
+        Args:
+            design_space: A design space dimension.
+
+        Returns:
+            A design space
+            containing a single variable called ``"x"``
+            whose size is the dimension passed as argument
+            and lower and upper bounds are 0 and 1 respectively.
+        """
+        design_space_ = DesignSpace()
+        design_space_.add_variable("x", size=design_space, l_b=0.0, u_b=1.0)
+        return design_space_

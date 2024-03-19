@@ -35,16 +35,16 @@ from typing import TextIO
 from typing import Union
 
 from numpy import apply_along_axis
-from numpy import atleast_2d
-from numpy import loadtxt
 from numpy import ndarray
 from numpy import vstack
+from pandas import read_csv
 
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
@@ -131,7 +131,7 @@ class CustomDOE(DOELibrary):
                 If ``None``, use whitespace.
             comments:  The characters or list of characters
                 used to indicate the start of a comment.
-                None implies no comments.
+                ``None`` implies no comments.
             skiprows: The number of first lines to skip.
             eval_jac: Whether to evaluate the jacobian.
             n_processes: The maximum simultaneous number of processes
@@ -161,12 +161,14 @@ class CustomDOE(DOELibrary):
             **kwargs,
         )
 
+    # TODO: API: remove dimension
+    @staticmethod
     def read_file(
-        self,
         doe_file: str | Path | TextIO,
         delimiter: str | None = ",",
         comments: str | Sequence[str] | None = "#",
         skiprows: int = 0,
+        dimension: int = 0,
     ) -> RealArray:
         """Read a file containing several samples (one per line) and return them.
 
@@ -176,37 +178,35 @@ class CustomDOE(DOELibrary):
                 If ``None``, use whitespace.
             comments:  The characters or list of characters
                 used to indicate the start of a comment.
-                None implies no comments.
-            skiprows: Skip the first `skiprows` lines.
+                ``None`` implies no comments.
+            skiprows: Skip the first ``skiprows`` lines.
+            dimension: The dimension of the variables space if known.
 
         Returns:
             The samples.
         """
         try:
-            samples = loadtxt(
-                doe_file, comments=comments, delimiter=delimiter, skiprows=skiprows
-            )
-            samples = atleast_2d(samples)
-            if (
-                samples.shape[1] != self.problem.dimension
-                and self.problem.dimension == 1
-            ):
-                samples = samples.T
-        except ValueError:
-            LOGGER.exception("Failed to load DOE input file: %s", doe_file)
+            samples = read_csv(
+                doe_file,
+                delimiter=delimiter,
+                skiprows=skiprows,
+                header=None,
+                comment=comments,
+            ).to_numpy()
+        except Exception:
+            LOGGER.exception("Failed to load the DOE file %s", doe_file)
             raise
 
         return samples
 
-    def _generate_samples(self, **options: OptionType) -> RealArray:
+    def _generate_samples(
+        self, design_space: DesignSpace, **options: OptionType
+    ) -> RealArray:
         """
-        Returns:
-            The samples.
-
         Raises:
-            ValueError: If no `doe_file` and no `samples` are given.
-                If both `doe_file` and `samples` are given.
-                If the dimension of `samples` is different from the
+            ValueError: If no ``doe_file`` and no ``samples`` are given.
+                If both ``doe_file`` and ``samples`` are given.
+                If the dimension of ``samples`` is different from the
                 one of the problem.
         """  # noqa: D205, D212, D415
         error_message = (
@@ -214,6 +214,7 @@ class CustomDOE(DOELibrary):
             "either 'doe_file' or 'samples' as option."
         )
         samples = options.get(self.SAMPLES)
+        dimension = design_space.dimension
         if samples is None:
             doe_file = options.get(self.DOE_FILE)
             if doe_file is None:
@@ -223,24 +224,21 @@ class CustomDOE(DOELibrary):
                 comments=options[self.COMMENTS_KEYWORD],
                 delimiter=options[self.DELIMITER_KEYWORD],
                 skiprows=options[self.SKIPROWS_KEYWORD],
+                dimension=design_space.dimension,
             )
         elif options.get(self.DOE_FILE) is not None:
             raise ValueError(error_message)
 
         if isinstance(samples, Mapping):
-            samples = self.problem.design_space.dict_to_array(samples)
+            samples = design_space.dict_to_array(samples)
         elif not isinstance(samples, ndarray):
-            samples = vstack([
-                self.problem.design_space.dict_to_array(sample) for sample in samples
-            ])
+            samples = vstack([design_space.dict_to_array(sample) for sample in samples])
 
-        if samples.shape[1] != self.problem.dimension:
+        if samples.shape[1] != dimension:
             msg = (
-                f"Dimension mismatch between the problem ({self.problem.dimension}) "
+                f"Dimension mismatch between the variables space ({dimension}) "
                 f"and the samples ({samples.shape[1]})."
             )
             raise ValueError(msg)
 
-        return apply_along_axis(
-            self.problem.design_space.transform_vect, axis=1, arr=samples
-        )
+        return apply_along_axis(design_space.transform_vect, axis=1, arr=samples)

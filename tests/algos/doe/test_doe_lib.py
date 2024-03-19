@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy.testing import assert_equal
 
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -404,3 +405,9 @@ def test_use_database(n_processes, problem, use_database):
         use_database=use_database,
     )
     assert bool(problem.database) is use_database
+
+
+def test_compute_doe():
+    """Check DOELibrary.compute_doe from the dimension of the variables space."""
+    samples = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
+    assert_equal(CustomDOE().compute_doe(3, samples=samples), samples)

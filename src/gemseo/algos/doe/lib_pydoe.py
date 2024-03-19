@@ -38,6 +38,7 @@ from gemseo.algos.doe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
@@ -205,22 +206,15 @@ class PyDOE(DOELibrary):
         """
         return (result + 1.0) * 0.5
 
-    def _generate_samples(self, **options: OptionType) -> RealArray:
-        """Generate the samples for the DOE.
-
-        Args:
-            **options: The options for the algorithm,
-                see the associated JSON file.
-
-        Returns:
-            The samples for the DOE.
-        """
+    def _generate_samples(
+        self, design_space: DesignSpace, **options: OptionType
+    ) -> RealArray:
         if self.algo_name == self.PYDOE_LHS:
             seed = options[self.SEED]
             return pyDOE.lhs(
-                options[self.DIMENSION],
+                design_space.dimension,
                 random_state=RandomState(self._get_seed(seed)),
-                samples=options["n_samples"],
+                samples=options[self.N_SAMPLES],
                 criterion=options.get(self.CRITERION_KEYWORD),
                 iterations=options.get(self.ITERATION_KEYWORD),
             )
@@ -228,7 +222,7 @@ class PyDOE(DOELibrary):
         if self.algo_name == self.PYDOE_CCDESIGN:
             return self.__translate(
                 pyDOE.ccdesign(
-                    options[self.DIMENSION],
+                    design_space.dimension,
                     center=options[self.CENTER_CC_KEYWORD],
                     alpha=options[self.ALPHA_KEYWORD],
                     face=options[self.FACE_KEYWORD],
@@ -242,22 +236,23 @@ class PyDOE(DOELibrary):
             # entire design space. Default value of center depends on dv_size
             return self.__translate(
                 pyDOE.bbdesign(
-                    options[self.DIMENSION], center=options.get(self.CENTER_BB_KEYWORD)
+                    design_space.dimension,
+                    center=options.get(self.CENTER_BB_KEYWORD),
                 )
             )
 
         if self.algo_name == self.PYDOE_FULLFACT:
             return PyDOEFullFactorialDOE().generate_samples(
                 options.pop(self.N_SAMPLES),
-                options.pop(self.DIMENSION),
+                design_space.dimension,
                 **options,
             )
 
         if self.algo_name == self.PYDOE_2LEVELFACT:
-            return self.__translate(pyDOE.ff2n(options[self.DIMENSION]))
+            return self.__translate(pyDOE.ff2n(design_space.dimension))
 
         if self.algo_name == self.PYDOE_PBDESIGN:
-            return self.__translate(pyDOE.pbdesign(options[self.DIMENSION]))
+            return self.__translate(pyDOE.pbdesign(design_space.dimension))
 
         msg = f"Bad algo_name: {self.algo_name}"
         raise ValueError(msg)

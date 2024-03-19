@@ -1,0 +1,1 @@
+``DOELibrary.compute_doe`` and ``compute_doe`` can use a variables space dimension instead of a variables space.
