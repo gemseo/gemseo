@@ -362,3 +362,10 @@ def test_crossed_transformer(dataset) -> None:
     algo._fit = lambda x, y: None
     algo.learn()
     assert_close(algo.transformer["x"].algo.x_weights_, array([[1.0]]))
+
+    with concretize_classes(MLSupervisedAlgo):
+        algo = MLSupervisedAlgo(dataset, transformer=algo.transformer)
+
+    algo._fit = lambda x, y: None
+    algo.learn(fit_transformers=False)
+    assert_close(algo.transformer["x"].algo.x_weights_, array([[1.0]]))

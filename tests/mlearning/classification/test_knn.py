@@ -77,6 +77,18 @@ def model_1d(dataset) -> KNNClassifier:
     return knn
 
 
+@pytest.fixture(params=["parameters", "x_1"])
+def transformer_key(request):
+    """The name of the group or variable to transform."""
+    return request.param
+
+
+@pytest.fixture(params=[False, True])
+def fit_transformers(request):
+    """Whether to fit the transformers during the training stage."""
+    return request.param
+
+
 @pytest.fixture()
 def model(dataset) -> KNNClassifier:
     """A trained KNNClassifier with two outputs, y_1 and y_2."""
@@ -86,10 +98,13 @@ def model(dataset) -> KNNClassifier:
 
 
 @pytest.fixture()
-def model_with_transform(dataset) -> KNNClassifier:
+def model_with_transform(dataset, transformer_key, fit_transformers) -> KNNClassifier:
     """A trained KNNClassifier using input scaling."""
-    knn = KNNClassifier(dataset, transformer={"inputs": MinMaxScaler()})
+    knn = KNNClassifier(dataset, transformer={transformer_key: MinMaxScaler()})
     knn.learn()
+    if not fit_transformers:
+        knn = KNNClassifier(dataset, transformer=knn.transformer)
+        knn.learn(fit_transformers=fit_transformers)
     return knn
 
 
