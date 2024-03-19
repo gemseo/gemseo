@@ -444,6 +444,7 @@ class OptimizationProblem(BaseProblem):
         self,
         func: MDOFunction,
     ) -> None:
+        func.f_type = func.FunctionType.OBJ
         if self.pb_type == self.ProblemType.LINEAR and not isinstance(
             func, MDOLinearFunction
         ):
@@ -1540,8 +1541,7 @@ class OptimizationProblem(BaseProblem):
                 round_ints=round_ints,
                 support_sparse_jacobian=support_sparse_jacobian,
             )
-            self.objective.special_repr = self.objective.special_repr
-            self.objective.f_type = MDOFunction.FunctionType.OBJ
+            self._objective.special_repr = self.objective.special_repr
             self.__functions_are_preprocessed = True
             self.check()
             self.__eval_obs_jac = eval_obs_jac

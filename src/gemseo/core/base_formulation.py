@@ -218,7 +218,6 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         obs_fun = FunctionFromDiscipline(output_names, self, discipline=discipline)
         if observable_name is not None:
             obs_fun.name = observable_name
-        obs_fun.f_type = MDOFunction.FunctionType.OBS
         self.opt_problem.add_observable(obs_fun)
 
     def get_top_level_disc(self) -> list[MDODiscipline]:
@@ -538,7 +537,6 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                 obj_mdo_fun, zeros(obj_mdo_fun.input_dimension)
             )
 
-        obj_mdo_fun.f_type = MDOFunction.FunctionType.OBJ
         self.opt_problem.objective = obj_mdo_fun
         if self._maximize_objective:
             self.opt_problem.change_objective_sign()

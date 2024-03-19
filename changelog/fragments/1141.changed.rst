@@ -1,0 +1,1 @@
+``OptimizationProblem.objective = mdo_function`` sets ``mdo_function.f_type`` to ``mdo_function.FunctionType.OBJ``; no need to do it by hand anymore.

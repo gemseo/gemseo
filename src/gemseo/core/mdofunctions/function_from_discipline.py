@@ -31,8 +31,6 @@ from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFu
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
-from gemseo.core.mdofunctions.mdo_function import ArrayType
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -40,6 +38,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.base_formulation import BaseFormulation
     from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.mdofunctions.mdo_function import ArrayType
 
 
 class FunctionFromDiscipline(LinearCandidateFunction):
@@ -102,7 +101,6 @@ class FunctionFromDiscipline(LinearCandidateFunction):
             self._func_to_wrap,
             jac=self._jac_to_wrap,
             name=self.__out_x_func.name,
-            f_type=MDOFunction.FunctionType.OBJ,
             input_names=self.__x_names,
             expr=self.__out_x_func.expr,
             dim=self.__out_x_func.dim,
