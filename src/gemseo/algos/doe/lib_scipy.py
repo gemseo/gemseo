@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from numpy.random import Generator
     from numpy.random import RandomState
 
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
@@ -208,7 +209,9 @@ class SciPyDOE(DOELibrary):
             **kwargs,
         )
 
-    def _generate_samples(self, **options: OptionType) -> RealArray:
+    def _generate_samples(
+        self, design_space: DesignSpace, **options: OptionType
+    ) -> RealArray:
         seed = options[self.SEED]
         option_names = self.__SCIPY_OPTION_NAMES.copy()
         if self.algo_name == self.__SOBOL_ALGO_NAME:
@@ -235,7 +238,7 @@ class SciPyDOE(DOELibrary):
 
         scipy_options = {k: v for k, v in options.items() if k in option_names}
         algo = self.__NAMES_TO_CLASSES[self.algo_name](
-            options[self.DIMENSION],
+            design_space.dimension,
             seed=self.seed if seed is None else seed,
             **scipy_options,
         )

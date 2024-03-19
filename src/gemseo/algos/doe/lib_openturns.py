@@ -52,6 +52,7 @@ from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
     from gemseo.typing import NumberArray
@@ -222,13 +223,12 @@ class OpenTURNS(DOELibrary):
 
     def _generate_samples(
         self,
-        dimension: int,
+        design_space: DesignSpace,
         n_samples: int | None = None,
         seed: int | None = None,
         **options: OptionType,
     ) -> NumberArray:
-        """Generate the samples.
-
+        """
         Args:
             dimension: The dimension of the variables space.
             n_samples: The number of samples.
@@ -236,10 +236,7 @@ class OpenTURNS(DOELibrary):
             seed: The seed to be used.
                 If ``None``, use :attr:`.seed`.
             **options: The options for the DOE algorithm, see associated JSON file.
-
-        Returns:
-            The samples for the DOE.
-        """
+        """  # noqa: D205, D212, D415
         openturns.RandomGenerator.SetSeed(self._get_seed(seed))
         doe_algo = self.__ALGO_NAMES_TO_ALGO_DATA[self.algo_name].doe_algo_class()
-        return doe_algo.generate_samples(n_samples, dimension, **options)
+        return doe_algo.generate_samples(n_samples, design_space.dimension, **options)

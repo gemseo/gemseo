@@ -310,7 +310,9 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return result
 
-    def _update_algorithm_options(self, **options: Any) -> dict[str, Any]:
+    def _update_algorithm_options(
+        self, initialize_options_grammar: bool = True, **options: Any
+    ) -> dict[str, Any]:
         """Update the algorithm options.
 
         1. Load the grammar of algorithm options.
@@ -318,12 +320,14 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         3. Complete the initial algorithm options with the default algorithm options.
 
         Args:
+            initialize_options_grammar: Whether to initialize the grammar of options.
             **options: The initial algorithm options.
 
         Returns:
             The updated algorithm options.
         """
-        self.init_options_grammar(self.algo_name)
+        if initialize_options_grammar:
+            self.init_options_grammar(self.algo_name)
         self._check_ignored_options(options)
         return self._get_options(**options)
 

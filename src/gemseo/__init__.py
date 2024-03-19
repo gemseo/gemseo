@@ -1785,7 +1785,7 @@ def create_benchmark_dataset(
 
 
 def compute_doe(
-    variables_space: DesignSpace,
+    variables_space_or_dimension: DesignSpace | int,
     algo_name: str,
     size: int | None = None,
     unit_sampling: bool = False,
@@ -1794,7 +1794,8 @@ def compute_doe(
     """Compute a design of experiments (DOE) in a variables space.
 
     Args:
-        variables_space: The variables space to be sampled.
+        variables_space_or_dimension: The variables space to be sampled
+            or its dimension.
         size: The size of the DOE.
             If ``None``, the size is deduced from the ``options``.
         algo_name: The DOE algorithm.
@@ -1820,7 +1821,7 @@ def compute_doe(
 
     library = DOEFactory().create(algo_name)
     return library.compute_doe(
-        variables_space, size=size, unit_sampling=unit_sampling, **options
+        variables_space_or_dimension, size=size, unit_sampling=unit_sampling, **options
     )
 
 

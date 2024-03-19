@@ -23,6 +23,7 @@ import pytest
 from numpy.testing import assert_equal
 from packaging.version import parse as parse_version
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe import lib_scipy
 from gemseo.algos.doe.lib_scipy import SciPyDOE
 from gemseo.algos.doe.lib_scipy import _MonteCarlo
@@ -109,7 +110,9 @@ def test_generate_samples(
     lib_scipy.SCIPY_VERSION = parse_version(version)
     if scipy_version >= parse_version("1.12") and "centered" in options:
         del options["centered"]
-    samples = library._generate_samples(dimension=dimension, **options)
+    variables_space = DesignSpace()
+    variables_space.add_variable("x", size=dimension)
+    samples = library._generate_samples(variables_space, **options)
     lib_scipy.SCIPY_VERSION = scipy_version
 
     if algo_name == "Sobol":
@@ -168,5 +171,10 @@ def test_lhs_centered(library, value) -> None:
     )
     with pytest.raises(ValueError, match=re.escape(msg)):
         library._generate_samples(
-            dimension=2, n_samples=10, centered=value, scramble=value, seed=1
+            DesignSpace(),
+            dimension=2,
+            n_samples=10,
+            centered=value,
+            scramble=value,
+            seed=1,
         )

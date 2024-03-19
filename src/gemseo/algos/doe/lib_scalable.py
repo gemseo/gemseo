@@ -35,6 +35,7 @@ from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
 
 if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
     from gemseo.typing import RealArray
 
@@ -104,19 +105,13 @@ class DiagonalDOE(DOELibrary):
             **kwargs,
         )
 
-    def _generate_samples(self, **options: OptionType) -> RealArray:
-        """Generate the DOE samples.
-
-        Args:
-            **options: The options for the algorithm,
-                see the associated JSON file.
-
-        Returns:
-            The samples.
-
+    def _generate_samples(
+        self, design_space: DesignSpace, **options: OptionType
+    ) -> RealArray:
+        """
         Raises:
             ValueError: If the number of samples is not set, or is lower than 2.
-        """
+        """  # noqa: D205, D212, D415
         n_samples = options.get(self.N_SAMPLES)
         if n_samples is None or n_samples < 2:
             msg = (
@@ -128,16 +123,16 @@ class DiagonalDOE(DOELibrary):
         if reverse is None:
             reverse = []
 
-        sizes = options[self._VARIABLE_SIZES]
+        sizes = design_space.variable_sizes
         name_by_index = {}
         start = 0
-        for name in options[self._VARIABLE_NAMES]:
+        for name in design_space.variable_names:
             for index in range(start, start + sizes[name]):
                 name_by_index[index] = name
             start += sizes[name]
 
         samples = []
-        for index in range(options[self.DIMENSION]):
+        for index in range(design_space.dimension):
             if str(index) in reverse or name_by_index[index] in reverse:
                 start = 1.0
                 end = 0.0
