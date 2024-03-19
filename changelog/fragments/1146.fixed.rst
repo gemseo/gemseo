@@ -1,0 +1,1 @@
+The transformers passed to an ``MLAlgo`` are correctly applied when the ``fit_transformers`` argument of the ``learn`` method is ``False``.

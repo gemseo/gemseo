@@ -292,6 +292,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
+                Otherwise, use them as they are.
         """
         self.resampling_results = {}
         if samples is None:
@@ -314,6 +315,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             indices: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
+                Otherwise, use them as they are.
         """
 
     @property

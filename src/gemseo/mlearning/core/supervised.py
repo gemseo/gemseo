@@ -314,55 +314,58 @@ class MLSupervisedAlgo(MLAlgo):
             self.input_names,
         )
 
-        if fit_transformers:
-            if self._transform_input_group or self._input_variables_to_transform:
-                input_data = self.__fit_transformer(
-                    indices,
-                    True,
-                    self._input_variables_to_transform,
-                )
+        if self._transform_input_group or self._input_variables_to_transform:
+            input_data = self.__transform_data_from_group_or_names(
+                indices, True, self._input_variables_to_transform, fit_transformers
+            )
 
-            if self._transform_output_group or self._output_variables_to_transform:
-                output_data = self.__fit_transformer(
-                    indices,
-                    False,
-                    self._output_variables_to_transform,
-                )
+        if self._transform_output_group or self._output_variables_to_transform:
+            output_data = self.__transform_data_from_group_or_names(
+                indices, False, self._output_variables_to_transform, fit_transformers
+            )
 
         self._fit(input_data, output_data)
         self.__compute_transformed_variable_sizes()
 
-    def __fit_transformer(
+    def __transform_data_from_group_or_names(
         self,
         indices: Ellipsis | Sequence[int],
         input_group: bool,
         names: Sequence[str],
+        fit: bool,
     ) -> ndarray:
-        """Fit a transformer.
+        """Transform data from variable names or a group name.
 
         Args:
             indices: The indices of the learning samples.
             input_group: Whether to consider the input group.
                 Otherwise, consider the output one.
             names: The variable names having dedicated transformers.
+            fit: Whether to fit the transformers before applying transformation.
 
         Returns:
             The transformed data.
         """
         if names:
-            return self.__fit_transformer_from_names(input_group, names, indices)
-        return self.__fit_transformer_from_group(input_group, indices)
+            return self.__transform_data_from_names(input_group, names, indices, fit)
 
-    def __fit_transformer_from_names(
-        self, input_group: bool, names: Iterable[str], indices: Ellipsis | Sequence[int]
+        return self.__transform_data_from_group(input_group, indices, fit)
+
+    def __transform_data_from_names(
+        self,
+        input_group: bool,
+        names: Iterable[str],
+        indices: Ellipsis | Sequence[int],
+        fit: bool,
     ) -> ndarray:
-        """Fit a transformer from variable names.
+        """Transform data from variable names.
 
         Args:
             input_group: Whether to consider the input group.
                 Otherwise, consider the output one.
             names: The variable names having dedicated transformers.
             indices: The indices of the learning samples.
+            fit: Whether to fit the transformers before applying transformation.
 
         Returns:
             The transformed data.
@@ -381,8 +384,8 @@ class MLSupervisedAlgo(MLAlgo):
                 continue
 
             transformed_data.append(
-                self.__fit_and_transform_data(
-                    [name], self.transformer[name], indices, input_group
+                self.__transform_data(
+                    [name], self.transformer[name], indices, input_group, fit
                 )
             )
 
@@ -402,32 +405,38 @@ class MLSupervisedAlgo(MLAlgo):
             return self.learning_set.INPUT_GROUP
         return self.learning_set.OUTPUT_GROUP
 
-    def __fit_transformer_from_group(
-        self, input_group: bool, indices: Ellipsis | Sequence[int]
+    def __transform_data_from_group(
+        self, input_group: bool, indices: Ellipsis | Sequence[int], fit: bool
     ) -> ndarray:
-        """Fit a transformer from a group name.
+        """Transform data from a group name.
 
         Args:
             input_group: Whether to consider the input group.
                 Otherwise, consider the output one.
             indices: The indices of the learning samples.
+            fit: Whether to fit the transformers before applying transformation.
 
         Returns:
             The transformed data.
         """
         group = self.__get_group_name(input_group)
-        return self.__fit_and_transform_data(
-            self.__groups_to_names[group], self.transformer[group], indices, input_group
+        return self.__transform_data(
+            self.__groups_to_names[group],
+            self.transformer[group],
+            indices,
+            input_group,
+            fit,
         )
 
-    def __fit_and_transform_data(
+    def __transform_data(
         self,
         names: Iterable[str],
         transformer: Transformer,
         indices: Ellipsis | Sequence[int],
         input_group: bool,
+        fit: bool,
     ) -> ndarray:
-        """Fit and transform data.
+        """Transform data.
 
         Args:
             names: The names of the variables to be transformed.
@@ -435,6 +444,7 @@ class MLSupervisedAlgo(MLAlgo):
             indices: The indices of the learning samples.
             input_group: Whether to consider the input group.
                 Otherwise, consider the output one.
+            fit: Whether to fit the transformers before applying transformation.
 
         Returns:
             The transformed data.
@@ -445,7 +455,10 @@ class MLSupervisedAlgo(MLAlgo):
         """
         data = self.learning_set.get_view(variable_names=(names)).to_numpy()[indices]
         if not transformer.CROSSED:
-            return transformer.fit_transform(data)
+            if fit:
+                return transformer.fit_transform(data)
+
+            return transformer.transform(data)
 
         if not input_group:
             msg = (
@@ -455,12 +468,15 @@ class MLSupervisedAlgo(MLAlgo):
             )
             raise NotImplementedError(msg)
 
-        return transformer.fit_transform(
-            data,
-            self.learning_set.get_view(variable_names=self.output_names).to_numpy()[
-                indices
-            ],
-        )
+        if fit:
+            return transformer.fit_transform(
+                data,
+                self.learning_set.get_view(variable_names=self.output_names).to_numpy()[
+                    indices
+                ],
+            )
+
+        return transformer.transform(data)
 
     @abstractmethod
     def _fit(

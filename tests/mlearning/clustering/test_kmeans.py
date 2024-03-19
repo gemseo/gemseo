@@ -97,22 +97,36 @@ def dataset(samples) -> IODataset:
     return sample
 
 
+@pytest.fixture(params=["parameters", "x_1"])
+def transformer_key(request):
+    """The name of the group or variable to transform."""
+    return request.param
+
+
+@pytest.fixture(params=[False, True])
+def fit_transformers(request):
+    """Whether to fit the transformers during the training stage."""
+    return request.param
+
+
 @pytest.fixture()
-def model_with_transform(dataset):
+def model(dataset):
     """A trained KMeans with parameters scaling."""
-    n_clusters = 3
-    transformer = {"parameters": MinMaxScaler()}
-    kmeans = KMeans(dataset, transformer=transformer, n_clusters=n_clusters)
+    kmeans = KMeans(dataset, n_clusters=3)
     kmeans.learn()
     return kmeans
 
 
 @pytest.fixture()
-def model(dataset):
-    """A trained KMeans."""
-    n_clusters = 3
-    kmeans = KMeans(dataset, n_clusters=n_clusters)
+def model_with_transform(dataset, transformer_key, fit_transformers):
+    """A trained KMeans with parameters scaling."""
+    kmeans = KMeans(
+        dataset, transformer={transformer_key: MinMaxScaler()}, n_clusters=3
+    )
     kmeans.learn()
+    if not fit_transformers:
+        kmeans = KMeans(dataset, transformer=kmeans.transformer, n_clusters=3)
+        kmeans.learn(fit_transformers=False)
     return kmeans
 
 
