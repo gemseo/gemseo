@@ -101,7 +101,7 @@ strenum==0.4.15
 sympy==1.12
 tenacity==8.2.3
     # via plotly
-threadpoolctl==3.3.0
+threadpoolctl==3.4.0
     # via scikit-learn
 tqdm==4.66.2
 typing-extensions==4.10.0
