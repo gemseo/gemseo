@@ -81,7 +81,7 @@ pillow==10.2.0
     # via
     #   matplotlib
     #   sphinx-gallery
-plotly==5.19.0
+plotly==5.20.0
 psutil==5.9.8
     # via openturns
 pybtex==0.24.0

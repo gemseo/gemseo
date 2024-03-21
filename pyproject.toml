@@ -52,7 +52,7 @@ all = [
     "sympy >=1.5,<=1.12",
     "xlwings >=0.27.0,<=0.30.50 ; platform_system=='Windows'",
     "pillow >=9.5.0,<=10.2.0",
-    "plotly >=5.7.0,<=5.19.0"
+    "plotly >=5.7.0,<=5.20.0"
 ]
 test = [
     "covdefaults",

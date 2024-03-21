@@ -69,7 +69,7 @@ packaging==23.2
 pandas==2.2.1
 pillow==10.2.0
     # via matplotlib
-plotly==5.19.0
+plotly==5.20.0
 pluggy==1.4.0
     # via pytest
 psutil==5.9.8
