@@ -40,7 +40,6 @@ from numpy import int32
 from numpy import savetxt
 from numpy import where
 
-from gemseo import SEED
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibOptionType
@@ -51,6 +50,7 @@ from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCES
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+from gemseo.utils.seeder import Seeder
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -106,13 +106,6 @@ class DOELibrary(DriverLibrary):
     use :attr:`.unit_samples`.
     """
 
-    seed: int
-    """The seed to be used for reproducibility reasons.
-
-    This seed is initialized at 0 and each call to :meth:`.execute` increments it before
-    using it.
-    """
-
     # TODO: API: make the attribute eval_jac private.
     eval_jac: bool
     """Whether to evaluate the Jacobian."""
@@ -143,12 +136,20 @@ class DOELibrary(DriverLibrary):
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
     """Whether the algorithms use a unit hypercube to generate the design samples."""
 
+    _seeder: Seeder
+    """A seed generator."""
+
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
         self.unit_samples = array([])
         self.samples = array([])
-        self.seed = SEED
         self.eval_jac = False
+        self._seeder = Seeder()
+
+    @property
+    def seed(self) -> int:
+        """The default seed used for reproducibility reasons."""
+        return self._seeder.default_seed
 
     def _pre_run(
         self,
@@ -160,7 +161,7 @@ class DOELibrary(DriverLibrary):
         self.__check_unnormalization_capability(design_space)
         super()._pre_run(problem, algo_name, **options)
         problem.stop_if_nan = False
-        self.unit_samples = self.__generate_unit_samples(design_space, **options)
+        self.unit_samples = self._generate_samples(design_space, **options)
         LOGGER.debug(
             (
                 "The DOE algorithm %s of %s has generated %s samples "
@@ -199,32 +200,6 @@ class DOELibrary(DriverLibrary):
 
         return samples
 
-    def __generate_unit_samples(
-        self, design_space: DesignSpace, **options: Any
-    ) -> RealArray:
-        """Generate the samples of the design vector in the unit hypercube.
-
-        Args:
-            design_space: The design space to be sampled.
-            **options: The options of the DOE algorithm.
-
-        Returns:
-            The samples of the design vector in the unit hypercube.
-        """
-        self.seed += 1
-        return self._generate_samples(design_space, **options)
-
-    def _get_seed(self, seed: int | None) -> int:
-        """Return a seed for the random number generator.
-
-        Args:
-            seed: A seed if any.
-
-        Returns:
-            The seed for the random number generator.
-        """
-        return self.seed if seed is None else seed
-
     # TODO:API:rename _generate_samples to _generate_unit_samples
     @abstractmethod
     def _generate_samples(self, design_space: DesignSpace, **options: Any) -> RealArray:
@@ -255,7 +230,7 @@ class DOELibrary(DriverLibrary):
         """
         design_space = DesignSpace()
         design_space.add_variable("x", size=dimension)
-        return self.__generate_unit_samples(
+        return self._generate_samples(
             design_space,
             **self._update_algorithm_options(n_samples=n_samples, **options),
         )
@@ -473,7 +448,7 @@ class DOELibrary(DriverLibrary):
         if self.driver_has_option(self.N_SAMPLES):
             options[self.N_SAMPLES] = size
 
-        unit_samples = self.__generate_unit_samples(
+        unit_samples = self._generate_samples(
             design_space,
             **self._update_algorithm_options(
                 initialize_options_grammar=False, **options

@@ -40,8 +40,8 @@ from typing import Final
 
 from sklearn.svm import SVC
 
-from gemseo import SEED
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

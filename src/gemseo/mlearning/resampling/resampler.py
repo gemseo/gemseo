@@ -24,8 +24,8 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy import vstack
 
-from gemseo import SEED
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

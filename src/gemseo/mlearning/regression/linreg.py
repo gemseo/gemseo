@@ -65,13 +65,13 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression as LinReg
 from sklearn.linear_model import Ridge
 
-from gemseo import SEED
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

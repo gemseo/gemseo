@@ -23,12 +23,12 @@ from numpy import linspace
 from numpy import newaxis
 from numpy.testing import assert_equal
 
-from gemseo import SEED
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 from gemseo.mlearning.resampling.split import Split
 from gemseo.mlearning.resampling.splits import Splits
+from gemseo.utils.seeder import SEED
 
 
 @pytest.fixture(scope="module")

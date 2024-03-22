@@ -36,9 +36,9 @@ from numpy.typing import NDArray
 from scipy import optimize
 from scipy.optimize import NonlinearConstraint
 
-from gemseo import SEED
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

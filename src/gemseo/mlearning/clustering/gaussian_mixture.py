@@ -77,8 +77,8 @@ from typing import NoReturn
 
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 
-from gemseo import SEED
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

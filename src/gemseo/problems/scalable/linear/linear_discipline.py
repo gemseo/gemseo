@@ -25,11 +25,11 @@ from numpy.random import default_rng
 from scipy.sparse import rand as sp_rand
 from strenum import LowercaseStrEnum
 
-from gemseo import SEED
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

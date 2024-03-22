@@ -111,9 +111,9 @@ from numpy import ndarray
 from numpy import newaxis
 from numpy import repeat
 
-from gemseo import SEED
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from sklearn.gaussian_process.kernels import Kernel

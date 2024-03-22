@@ -81,8 +81,8 @@ from numpy import newaxis
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
 
-from gemseo import SEED
 from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

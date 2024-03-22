@@ -65,10 +65,10 @@ from numpy.random import Generator
 from numpy.random import default_rng
 from scipy.interpolate import InterpolatedUnivariateSpline
 
-from gemseo import SEED
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
