@@ -409,7 +409,7 @@ class BiLevel(MDOFormulation):
         if self._mda2:
             chain_dis += [self._mda2]
 
-        if not self.reset_x0_before_opt and self._mda1 is not None:
+        if not self.reset_x0_before_opt:
             self.chain = MDOWarmStartedChain(
                 chain_dis,
                 name="bilevel_chain",

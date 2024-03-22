@@ -1,0 +1,2 @@
+The BiLevel formulation can now be warm started even when the MDA1
+does not exist (case of weakly coupled disciplines).
