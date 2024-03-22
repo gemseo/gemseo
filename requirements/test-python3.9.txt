@@ -32,7 +32,7 @@ graphviz==0.20.1
 h5py==3.10.0
 idna==3.6
     # via requests
-importlib-resources==6.3.2
+importlib-resources==6.4.0
     # via matplotlib
 iniconfig==2.0.0
     # via pytest
