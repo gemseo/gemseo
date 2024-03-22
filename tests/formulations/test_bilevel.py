@@ -26,6 +26,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.chain import MDOWarmStartedChain
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
@@ -322,6 +323,17 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario) -> None:
     assert (mda1_inputs[1]["y_12"] == chain_outputs[0]["y_12"]).all()
     assert mda1_inputs[2]["y_21"] == chain_outputs[1]["y_21"]
     assert (mda1_inputs[2]["y_12"] == chain_outputs[1]["y_12"]).all()
+
+
+def test_bilevel_warm_start_no_mda1(dummy_bilevel_scenario) -> None:
+    """Test that a warm start chain is built even if the process does not include any
+    MDA1.
+
+    Args:
+        dummy_bilevel_scenario: Fixture to instantiate a dummy weakly
+            coupled scenario.
+    """
+    assert isinstance(dummy_bilevel_scenario.formulation.chain, MDOWarmStartedChain)
 
 
 @pytest.mark.parametrize(
