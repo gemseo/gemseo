@@ -263,9 +263,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         entry = self.__file[hdf_node_path].get(str(index))
         if entry is None:
             return False
-        if entry.get(group) is None:
-            return False
-        return True
+        return entry.get(group) is not None
 
     def has_group(
         self,
