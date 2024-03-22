@@ -29,10 +29,10 @@ import numpy as np
 from numpy.random import default_rng
 from strenum import StrEnum
 
-from gemseo import SEED
 from gemseo.post.core.hessians import BFGSApprox
 from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Sized

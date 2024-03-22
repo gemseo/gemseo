@@ -20,8 +20,8 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
-from gemseo import SEED
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
+from gemseo.utils.seeder import SEED
 
 
 @pytest.fixture(scope="module")

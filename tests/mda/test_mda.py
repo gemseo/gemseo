@@ -33,7 +33,6 @@ from numpy.random import default_rng
 from numpy.testing import assert_almost_equal
 from scipy.linalg import solve
 
-from gemseo import SEED
 from gemseo import create_discipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -56,6 +55,7 @@ from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar import get_inputs
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.helpers import concretize_classes
 
 DIRNAME = os.path.dirname(__file__)

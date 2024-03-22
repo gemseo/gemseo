@@ -29,9 +29,9 @@ import matplotlib.pyplot as plt
 from numpy import zeros
 from numpy.random import default_rng
 
-from gemseo import SEED
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:

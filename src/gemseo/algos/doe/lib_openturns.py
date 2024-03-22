@@ -185,10 +185,8 @@ class OpenTURNS(DOELibrary):
             annealing: If ``True``, use simulated annealing to optimize LHS. Otherwise,
                 use crude Monte Carlo.
             n_replicates: The number of Monte Carlo replicates to optimize LHS.
-            seed: The seed value.
-                If ``None``,
-                use the seed of the library,
-                namely :attr:`.OpenTURNS.seed`.
+            seed: The seed used for reproducibility reasons.
+                If ``None``, use :attr:`.seed`.
             max_time: The maximum runtime in seconds,
                 disabled if 0.
             eval_second_order: Whether to build a DOE
@@ -233,10 +231,10 @@ class OpenTURNS(DOELibrary):
             dimension: The dimension of the variables space.
             n_samples: The number of samples.
                 If ``None``, set from the options.
-            seed: The seed to be used.
+            seed: The seed used for reproducibility reasons.
                 If ``None``, use :attr:`.seed`.
             **options: The options for the DOE algorithm, see associated JSON file.
         """  # noqa: D205, D212, D415
-        openturns.RandomGenerator.SetSeed(self._get_seed(seed))
+        openturns.RandomGenerator.SetSeed(self._seeder.get_seed(seed))
         doe_algo = self.__ALGO_NAMES_TO_ALGO_DATA[self.algo_name].doe_algo_class()
         return doe_algo.generate_samples(n_samples, design_space.dimension, **options)

@@ -20,12 +20,12 @@ from numpy.random import default_rng
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 
-from gemseo import SEED
 from gemseo.problems.scalable.parametric.core.scalable_discipline_settings import (
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.scalable_problem import ScalableProblem
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.seeder import SEED
 
 
 @pytest.fixture(scope="module")

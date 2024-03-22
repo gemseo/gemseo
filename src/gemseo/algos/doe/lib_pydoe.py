@@ -159,10 +159,8 @@ class PyDOE(DOELibrary):
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
-            seed: The seed value.
-                If ``None``,
-                use the seed of the library,
-                namely :attr:`.PyDOE.seed`.
+            seed: The seed used for reproducibility reasons.
+                If ``None``, use :attr:`.seed`.
             max_time: The maximum runtime in seconds, disabled if 0.
             callbacks: The functions to be evaluated
                 after each call to :meth:`.OptimizationProblem.evaluate_functions`;
@@ -210,10 +208,9 @@ class PyDOE(DOELibrary):
         self, design_space: DesignSpace, **options: OptionType
     ) -> RealArray:
         if self.algo_name == self.PYDOE_LHS:
-            seed = options[self.SEED]
             return pyDOE.lhs(
                 design_space.dimension,
-                random_state=RandomState(self._get_seed(seed)),
+                random_state=RandomState(self._seeder.get_seed(options[self.SEED])),
                 samples=options[self.N_SAMPLES],
                 criterion=options.get(self.CRITERION_KEYWORD),
                 iterations=options.get(self.ITERATION_KEYWORD),

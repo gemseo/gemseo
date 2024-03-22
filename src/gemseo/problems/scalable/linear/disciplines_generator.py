@@ -39,9 +39,9 @@ from numpy import setdiff1d
 from numpy import unique
 from numpy.random import default_rng
 
-from gemseo import SEED
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.utils.seeder import SEED
 
 DESC_5_DISC = [
     ("A", ["b"], ["a", "c"]),

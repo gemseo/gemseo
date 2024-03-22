@@ -30,10 +30,10 @@ from numpy.random import default_rng
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
-from gemseo import SEED
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from gemseo.algos.database import Database

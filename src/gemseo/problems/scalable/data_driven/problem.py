@@ -58,7 +58,6 @@ from numpy import where
 from numpy import zeros
 from numpy.random import default_rng
 
-from gemseo import SEED
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import generate_coupling_graph
@@ -68,6 +67,7 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
+from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:

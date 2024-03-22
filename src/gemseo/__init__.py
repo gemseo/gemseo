@@ -155,6 +155,9 @@ from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 
+# TODO: API: remove this import
+from gemseo.utils.seeder import SEED  # noqa: F401
+
 if TYPE_CHECKING:
     from logging import Logger
 
@@ -188,9 +191,6 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 # By default, no logging is produced.
 LOGGER.addHandler(logging.NullHandler())
-
-SEED: int = 0
-"""The default seed for random number generators."""
 
 
 def generate_n2_plot(

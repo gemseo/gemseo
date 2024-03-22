@@ -36,7 +36,6 @@ from numpy import zeros
 from numpy.linalg import inv
 from numpy.random import default_rng
 
-from gemseo import SEED
 from gemseo.problems.scalable.parametric.core.default_settings import DEFAULT_D_0
 from gemseo.problems.scalable.parametric.core.disciplines.main_discipline import (
     MainDiscipline,
@@ -63,6 +62,7 @@ from gemseo.problems.scalable.parametric.core.variable_names import get_constrai
 from gemseo.problems.scalable.parametric.core.variable_names import get_coupling_name
 from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_name
 from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
+from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:

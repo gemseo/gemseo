@@ -44,11 +44,11 @@ from openturns import Sample
 from openturns import SquaredExponential
 from strenum import StrEnum
 
-from gemseo import SEED
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Collection
