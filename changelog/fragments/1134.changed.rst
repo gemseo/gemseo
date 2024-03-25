@@ -1,0 +1,1 @@
+``Database.clear_listeners`` returns the listeners after removing them from the ``Database``.

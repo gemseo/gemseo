@@ -55,14 +55,17 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-
-# Type of the values associated to the keys (values of input variables) in the database
 DatabaseKeyType = Union[ndarray, HashableNdarray]
+"""The type of a :class:`.Database` key."""
+
 FunctionOutputValueType = Union[float, ndarray, list[int]]
+"""The type of a function output value stored in a :class:`.Database`."""
+
 DatabaseValueType = Mapping[str, FunctionOutputValueType]
-ReturnedHdfMissingOutputType = tuple[
-    Mapping[str, FunctionOutputValueType], Union[None, Mapping[str, int]]
-]
+"""The type of a :class:`.Database` value."""
+
+ListenerType = Callable[[DatabaseKeyType], None]
+"""The type of a listener attached to an :class:`.Database`."""
 
 
 class Database(Mapping):
@@ -131,10 +134,10 @@ class Database(Mapping):
     __data: dict[HashableNdarray, DatabaseValueType]
     """The input values bound to the output values."""
 
-    __store_listeners: list[Callable]
+    __store_listeners: list[ListenerType]
     """The functions to be called when an item is stored to the database."""
 
-    __new_iter_listeners: list[Callable]
+    __new_iter_listeners: list[ListenerType]
     """The functions to be called when a new iteration is stored to the database."""
 
     __hdf_database: HDFDatabase
@@ -488,39 +491,90 @@ class Database(Mapping):
         if self.__new_iter_listeners and outputs and current_outputs_is_empty:
             self.notify_new_iter_listeners(x_vect)
 
-    def add_store_listener(self, function: Callable) -> None:
+    def add_store_listener(self, function: ListenerType) -> bool:
         """Add a function to be called when an item is stored to the database.
 
         Args:
             function: The function to be called.
 
-        Raises:
-            TypeError: If the argument is not a callable.
+        Returns:
+            Whether the function has been added;
+            otherwise, it was already attached to the database.
         """
-        if not callable(function):
-            msg = "Listener function is not callable"
-            raise TypeError(msg)
-        self.__store_listeners.append(function)
+        return self.__add_listener(function, self.__store_listeners)
 
-    def add_new_iter_listener(self, function: Callable) -> None:
+    def add_new_iter_listener(self, function: ListenerType) -> bool:
         """Add a function to be called when a new iteration is stored to the database.
 
         Args:
             function: The function to be called, it must have one argument that is
                 the current input value.
 
-        Raises:
-            TypeError: If the argument is not a callable.
+        Returns:
+            Whether the function has been added;
+            otherwise, it was already attached to the database.
         """
-        if not callable(function):
-            msg = "Listener function is not callable."
-            raise TypeError(msg)
-        self.__new_iter_listeners.append(function)
+        return self.__add_listener(function, self.__new_iter_listeners)
 
-    def clear_listeners(self) -> None:
-        """Clear all the listeners."""
-        self.__store_listeners = []
-        self.__new_iter_listeners = []
+    @staticmethod
+    def __add_listener(function: ListenerType, listeners: list[ListenerType]) -> bool:
+        """Add a function as listener.
+
+        Args:
+            function: The function.
+            listeners: The listeners to which to add the function.
+
+        Returns:
+            Whether the function has been added;
+            otherwise, it was already attached to the database.
+        """
+        if function in listeners:
+            return False
+
+        listeners.append(function)
+        return True
+
+    def clear_listeners(
+        self,
+        new_iter_listeners: Iterable[ListenerType] | None = (),
+        store_listeners: Iterable[ListenerType] | None = (),
+    ) -> tuple[Iterable[ListenerType], Iterable[ListenerType]]:
+        """Clear all the listeners.
+
+        Args:
+            new_iter_listeners: The functions to be removed
+                that were notified of a new iteration.
+                If empty, remove all such functions.
+                If ``None``, keep all these functions.
+            store_listeners: The functions to be removed
+                that were notified of a new entry in the database.
+                If empty, remove all such functions.
+                If ``None``, keep all these functions.
+
+        Returns:
+            The listeners that were notified of a new iteration
+            and the listeners that were notified of a new entry in the database.
+        """
+        if store_listeners is None:
+            store_listeners = set()
+        elif store_listeners:
+            for listener in store_listeners:
+                self.__store_listeners.remove(listener)
+        else:
+            store_listeners = self.__store_listeners
+            self.__store_listeners = []
+
+        if new_iter_listeners is None:
+            return set(), set(store_listeners)
+
+        if new_iter_listeners:
+            for listener in new_iter_listeners:
+                self.__new_iter_listeners.remove(listener)
+        else:
+            new_iter_listeners = self.__new_iter_listeners
+            self.__new_iter_listeners = []
+
+        return set(new_iter_listeners), set(store_listeners)
 
     def notify_store_listeners(self, x_vect: DatabaseKeyType | None = None) -> None:
         """Notify the listeners that a new entry was stored in the database.
@@ -542,7 +596,7 @@ class Database(Mapping):
 
     def __notify_listeners(
         self,
-        listeners: list[Callable],
+        listeners: set[ListenerType],
         x_vect: DatabaseKeyType | None,
     ) -> None:
         """Notify the listeners.

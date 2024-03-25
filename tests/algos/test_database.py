@@ -264,14 +264,6 @@ def test_append_export_node(tmp_wd):
     assert len(Database.from_hdf(file_path_db, hdf_node_path=node_path)) == n_calls + 1
 
 
-def test_add_listeners():
-    database = Database()
-    with pytest.raises(TypeError, match="Listener function is not callable"):
-        database.add_store_listener("toto")
-    with pytest.raises(TypeError, match="Listener function is not callable"):
-        database.add_new_iter_listener("toto")
-
-
 def test_append_export_after_store(tmp_wd) -> None:
     """Test that a database is correctly exported when it is appended after each storage
     call."""
@@ -793,3 +785,56 @@ def test_delitem() -> None:
     assert len(database) == 1
     assert not database.get(array([1.0]))
     assert database.get(array([2.0]))
+
+
+@pytest.mark.parametrize("name", ["store_listener", "new_iter_listener"])
+def test_add_listener_twice(name):
+    """Check that a listener cannot be added twice."""
+    database = Database()
+    listeners = getattr(database, f"_Database__{name}s")
+    assert not listeners
+
+    method = getattr(database, f"add_{name}")
+    assert method(sum)
+    assert listeners == [sum]
+    assert not method(sum)
+    assert listeners == [sum]
+
+
+def test_clear_listeners():
+    """Check default clear_listeners."""
+    database = Database()
+    database.add_new_iter_listener(sum)
+    database.add_store_listener(sorted)
+    assert database._Database__new_iter_listeners == [sum]
+    assert database._Database__store_listeners == [sorted]
+
+    new_iter_listeners, store_listeners = database.clear_listeners()
+    assert database._Database__new_iter_listeners == []
+    assert database._Database__store_listeners == []
+    assert new_iter_listeners == {sum}
+    assert store_listeners == {sorted}
+
+
+@pytest.mark.parametrize(
+    ("store_listeners", "new_iter_listeners", "expected"),
+    [
+        (None, None, (set(), set())),
+        ((), None, (set(), {sum, sorted})),
+        (None, (), ({sum, sorted}, set())),
+        ((), (), ({sum, sorted}, {sum, sorted})),
+        ([sum], [sorted], ({sorted}, {sum})),
+    ],
+)
+def test_clear_listeners_arguments(store_listeners, new_iter_listeners, expected):
+    """Check the arguments of clear_listeners."""
+    database = Database()
+    for func in [sum, sorted]:
+        database.add_new_iter_listener(func)
+        database.add_store_listener(func)
+    assert (
+        database.clear_listeners(
+            store_listeners=store_listeners, new_iter_listeners=new_iter_listeners
+        )
+        == expected
+    )
