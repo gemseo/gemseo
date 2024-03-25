@@ -1884,7 +1884,7 @@ def test_optimization_result_save_nested_dict(tmp_wd) -> None:
     assert compare_dict_of_arrays(x_opt_as_dict, problem.solution.x_opt_as_dict)
 
 
-def test_hdf_node_path(pow2_problem):
+def test_hdf_node_path(pow2_problem, tmp_wd):
     """Check the importation/exportation in a specific node."""
     file_name = "test_hdf_node.hdf5"
     node = "problem_node"

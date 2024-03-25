@@ -28,6 +28,7 @@ from numpy import array
 
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -221,3 +222,13 @@ def test_get_x0_and_bounds_vects_non_normalized(
         lower_bounds,
         upper_bounds,
     )
+
+
+@pytest.mark.parametrize("name", ["new_iter_listener", "store_listener"])
+def test_clear_listeners(name):
+    """Check clear_listeners."""
+    problem = Power2()
+    getattr(problem.database, f"add_{name}")(sum)
+    driver = CustomDOE()
+    driver.execute(problem, samples=array([[1, 2, 3]]))
+    assert getattr(problem.database, f"_Database__{name}s") == [sum]

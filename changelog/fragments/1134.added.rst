@@ -1,0 +1,1 @@
+``DriverLibrary.clear_listeners`` removes the listeners added by the ``DriverLibrary`` from the ``Database`` attached to the ``OptimizationProblem``.

@@ -79,6 +79,7 @@ from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
     from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
+    from gemseo.algos.database import ListenerType
     from gemseo.algos.design_space import DesignSpace
 
 # TODO: API: rename to DriverLibraryOptionType
@@ -187,6 +188,9 @@ class DriverLibrary(AlgorithmLibrary):
     problem: OptimizationProblem
     """The optimization problem the driver library is bonded to."""
 
+    __new_iter_listeners: set[ListenerType]
+    """The functions to be called when a new iteration is stored to the database."""
+
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
         self.deactivate_progress_bar()
@@ -196,6 +200,7 @@ class DriverLibrary(AlgorithmLibrary):
         self.__reset_iteration_counters = True
         self.__log_problem = True
         self.__one_line_progress_bar = False
+        self.__new_iter_listeners = set()
 
     @classmethod
     def _get_unsuitability_reason(
@@ -440,8 +445,20 @@ class DriverLibrary(AlgorithmLibrary):
             eval_obs_jac=eval_obs_jac,
             support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
         )
-        problem.database.add_new_iter_listener(problem.execute_observables_callback)
-        problem.database.add_new_iter_listener(self.new_iteration_callback)
+        # A database contains both shared listeners
+        # and listener specific to a DriverLibrary instance.
+        # At execution,
+        # a DriverLibrary instance must be able
+        # to list the listeners it has added to the database
+        # in order to remove them at the end of the execution.
+        for listener in [
+            problem.execute_observables_callback,
+            self.new_iteration_callback,
+        ]:
+            if problem.database.add_new_iter_listener(listener):
+                # The listener was not in the database.
+                self.__new_iter_listeners.add(listener)
+
         if self.__log_problem:
             LOGGER.info("%s", problem)
             if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
@@ -474,9 +491,16 @@ class DriverLibrary(AlgorithmLibrary):
         result.objective_name = problem.objective.name
         result.design_space = problem.design_space
         self.finalize_iter_observer()
-        problem.database.clear_listeners()
+        self.clear_listeners()
         self._post_run(problem, self.algo_name, result, **options)
         return result
+
+    def clear_listeners(self) -> None:
+        """Remove the listeners from the :attr:`.database`."""
+        self.problem.database.clear_listeners(
+            new_iter_listeners=self.__new_iter_listeners or None, store_listeners=None
+        )
+        self.__new_iter_listeners.clear()
 
     def _process_specific_option(self, options, option_key: str) -> None:
         """Process one option as a special treatment.
