@@ -160,8 +160,9 @@ class MDOChain(MDODiscipline):
 
                 # Make a copy of the keys because the dict is changed in the
                 # loop
-                existing_inputs = self.jac[output_name].keys()
-                common_inputs = set(existing_inputs) & set(discipline.jac)
+                common_inputs = sorted(
+                    set(self.jac[output_name].keys()).intersection(discipline.jac)
+                )
                 for input_name in common_inputs:
                     # Store reference to the current Jacobian
                     curr_jac = self.jac[output_name][input_name]
