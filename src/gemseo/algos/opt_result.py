@@ -23,11 +23,13 @@ from dataclasses import dataclass
 from dataclasses import field
 from dataclasses import fields
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 from typing import Union
 
 from numpy import ndarray
 
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
@@ -40,7 +42,7 @@ Value = Union[str, int, bool, ndarray]
 
 # TODO: API: Rename the module to optimization_result.
 @dataclass
-class OptimizationResult:
+class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The result of an optimization."""
 
     x_0: ndarray | None = None
@@ -258,6 +260,9 @@ class OptimizationResult:
             optimum_index = problem.database.get_iteration(x_opt) - 1
 
         fields_["objective_name"] = objective_name
+
+        fields_.update(cls._get_additional_fields(problem))
+
         return cls(
             x_0=x_0,
             x_0_as_dict=problem.design_space.array_to_dict(x_0),
@@ -271,3 +276,15 @@ class OptimizationResult:
             optimum_index=optimum_index,
             **fields_,
         )
+
+    @classmethod
+    def _get_additional_fields(cls, problem: OptimizationProblem) -> dict[str, Any]:
+        """Return the names and values of the additional fields.
+
+        Args:
+            problem: The optimization problem used to get the additional fields.
+
+        Returns:
+            The names and values of the additional fields.
+        """
+        return {}

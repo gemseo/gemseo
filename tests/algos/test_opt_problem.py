@@ -1364,7 +1364,6 @@ def test_function_string_representation_from_hdf() -> None:
     #     MDOFunction(lambda x: x[0] + x[1], "g", input_names=["x0", "x1"])
     # )
     # problem.to_hdf("opt_problem_to_check_string_representation.hdf5")
-
     new_problem = OptimizationProblem.from_hdf(
         DIRNAME / "opt_problem_to_check_string_representation.hdf5"
     )

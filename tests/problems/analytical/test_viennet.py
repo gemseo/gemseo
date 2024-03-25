@@ -12,31 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Multiprocessing tools."""
+"""Tests for the Viennet analytical problem."""
 
-from __future__ import annotations
+from numpy import array
 
-from multiprocessing import Manager as _Manager
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from multiprocessing.managers import SyncManager
-
-__manager = None
+from gemseo.problems.analytical.viennet import Viennet
 
 
-def get_multi_processing_manager() -> SyncManager:
-    """Create a unique global multi-processing manager.
-
-    Returns:
-        The manager.
-    """
-    global __manager
-    if __manager is None:
-        __manager = _Manager()
-
-    return __manager
+def test_obj_jacobian():
+    """Test the Jacobian of the Viennet objective function."""
+    viennet = Viennet(initial_guess=array([1.0, 1.0]))
+    viennet.objective.check_grad(array([0.0, 0.0]), step=1e-9, error_max=1e-6)
