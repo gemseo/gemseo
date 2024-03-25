@@ -84,7 +84,7 @@ pytest==8.1.1
     # via
     #   pytest-cov
     #   pytest-xdist
-pytest-cov==4.1.0
+pytest-cov==5.0.0
 pytest-xdist==3.5.0
 python-dateutil==2.9.0.post0
     # via
