@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.base_formulation import BaseFormulation
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.mdofunctions.mdo_function import ArrayType
+    from gemseo.typing import NumberArray
 
 
 class FunctionFromDiscipline(LinearCandidateFunction):
@@ -115,7 +115,7 @@ class FunctionFromDiscipline(LinearCandidateFunction):
     def input_dimension(self) -> int | None:  # noqa: D102
         return self.__out_x_func.input_dimension
 
-    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _func_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the outputs.
 
         Args:
@@ -130,7 +130,7 @@ class FunctionFromDiscipline(LinearCandidateFunction):
             )
         return self.__out_x_func(x_vect[self.__x_mask])
 
-    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the gradient of the outputs.
 
         Args:

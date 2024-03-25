@@ -24,7 +24,6 @@ from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
 
-from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import OutputType
 from gemseo.utils.compatibility.scipy import array_classes
@@ -32,6 +31,8 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from gemseo.typing import NumberArray
 
 
 class MDOLinearFunction(MDOFunction):
@@ -65,7 +66,7 @@ class MDOLinearFunction(MDOFunction):
 
     def __init__(
         self,
-        coefficients: ArrayType,
+        coefficients: NumberArray,
         name: str,
         f_type: str | None = None,
         input_names: Sequence[str] | None = None,
@@ -118,7 +119,7 @@ class MDOLinearFunction(MDOFunction):
             output_names=output_names,
         )
 
-    def _func_to_wrap(self, x_vect: ArrayType) -> OutputType:
+    def _func_to_wrap(self, x_vect: NumberArray) -> OutputType:
         """Return the linear combination with an offset.
 
         :math:`sum_{i=1}^n a_i * x_i + b`
@@ -131,7 +132,7 @@ class MDOLinearFunction(MDOFunction):
             value = value[0]
         return value
 
-    def _jac_to_wrap(self, _: Any) -> ArrayType:
+    def _jac_to_wrap(self, _: Any) -> NumberArray:
         """Set and return the coefficients.
 
         If the function is scalar, the gradient of the function is returned as a
@@ -146,7 +147,7 @@ class MDOLinearFunction(MDOFunction):
         return self._coefficients
 
     @property
-    def coefficients(self) -> ArrayType:
+    def coefficients(self) -> NumberArray:
         """The coefficients of the linear function.
 
         This is the matrix :math:`A` in the expression :math:`y=Ax+b`.
@@ -158,7 +159,7 @@ class MDOLinearFunction(MDOFunction):
         return self._coefficients
 
     @coefficients.setter
-    def coefficients(self, coefficients: Number | ArrayType) -> None:
+    def coefficients(self, coefficients: Number | NumberArray) -> None:
         if isinstance(coefficients, Number):
             self._coefficients = atleast_2d(coefficients)
         elif isinstance(coefficients, array_classes) and coefficients.ndim == 2:
@@ -173,7 +174,7 @@ class MDOLinearFunction(MDOFunction):
             raise ValueError(msg)
 
     @property
-    def value_at_zero(self) -> ArrayType:
+    def value_at_zero(self) -> NumberArray:
         """The value of the function at zero.
 
         This is the vector :math:`b` in the expression :math:`y=Ax+b`.
@@ -303,7 +304,7 @@ class MDOLinearFunction(MDOFunction):
         )
 
     def restrict(
-        self, frozen_indexes: ndarray[int], frozen_values: ArrayType
+        self, frozen_indexes: ndarray[int], frozen_values: NumberArray
     ) -> MDOLinearFunction:
         """Build a restriction of the linear function.
 

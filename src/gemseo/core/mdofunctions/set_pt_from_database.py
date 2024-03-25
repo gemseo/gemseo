@@ -21,8 +21,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.mdofunctions.mdo_function import ArrayType
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.typing import NumberArray
 
 
 class SetPtFromDatabase:
@@ -61,7 +61,7 @@ class SetPtFromDatabase:
         if jac:
             self.__mdo_function.jac = self._j_from_db
 
-    def __read_in_db(self, x_n: ArrayType, fname: str) -> ArrayType:
+    def __read_in_db(self, x_n: NumberArray, fname: str) -> NumberArray:
         """Read the value of a function in the database for a given input value.
 
         Args:
@@ -84,7 +84,7 @@ class SetPtFromDatabase:
             raise ValueError(msg)
         return val
 
-    def _f_from_db(self, x_n: ArrayType) -> ArrayType:
+    def _f_from_db(self, x_n: NumberArray) -> NumberArray:
         """Evaluate the function from the database.
 
         Args:
@@ -95,7 +95,7 @@ class SetPtFromDatabase:
         """
         return self.__read_in_db(x_n, self.__name)
 
-    def _j_from_db(self, x_n: ArrayType) -> ArrayType:
+    def _j_from_db(self, x_n: NumberArray) -> NumberArray:
         """Evaluate the Jacobian function from the database.
 
         Args:

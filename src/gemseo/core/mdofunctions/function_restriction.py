@@ -22,11 +22,12 @@ from numpy import array
 from numpy import empty
 from numpy import ndarray
 
-from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from gemseo.typing import NumberArray
 
 
 class FunctionRestriction(MDOFunction):
@@ -35,7 +36,7 @@ class FunctionRestriction(MDOFunction):
     def __init__(
         self,
         frozen_indexes: ndarray[int],
-        frozen_values: ArrayType,
+        frozen_values: NumberArray,
         input_dim: int,
         mdo_function: MDOFunction,
         name: str | None = None,
@@ -109,7 +110,7 @@ class FunctionRestriction(MDOFunction):
             original_name=mdo_function.original_name,
         )
 
-    def __extend_subvect(self, x_subvect: ArrayType) -> ArrayType:
+    def __extend_subvect(self, x_subvect: NumberArray) -> NumberArray:
         """Extend an input vector of the restriction with the frozen values.
 
         Args:
@@ -123,7 +124,7 @@ class FunctionRestriction(MDOFunction):
         x_vect[self.__frozen_indexes] = self.__frozen_values
         return x_vect
 
-    def _func_to_wrap(self, x_subvect: ArrayType) -> ArrayType:
+    def _func_to_wrap(self, x_subvect: NumberArray) -> NumberArray:
         """Evaluate the restriction.
 
         Args:
@@ -134,7 +135,7 @@ class FunctionRestriction(MDOFunction):
         """
         return self.__mdo_function.evaluate(self.__extend_subvect(x_subvect))
 
-    def _jac_to_wrap(self, x_subvect: ArrayType) -> ArrayType:
+    def _jac_to_wrap(self, x_subvect: NumberArray) -> NumberArray:
         """Compute the Jacobian matrix of the restriction.
 
         Args:

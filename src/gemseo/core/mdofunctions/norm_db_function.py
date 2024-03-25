@@ -31,11 +31,11 @@ from gemseo.algos.database import Database
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.algos.stop_criteria import MaxIterReachedException
-from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.typing import NumberArray
 
 
 class NormDBFunction(MDOFunction):
@@ -84,7 +84,7 @@ class NormDBFunction(MDOFunction):
             expects_normalized_inputs=normalize,
         )
 
-    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _func_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the function to be passed to the optimizer.
 
         Args:
@@ -133,7 +133,7 @@ class NormDBFunction(MDOFunction):
 
         return value
 
-    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the gradient of the function to be passed to the optimizer.
 
         Args:
