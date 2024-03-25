@@ -60,6 +60,7 @@ to an HDF file or to a :class:`.Dataset` for future post-processing.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from collections.abc import Iterable
 from collections.abc import Mapping
@@ -112,6 +113,8 @@ from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.opt_result_multiobj import MultiObjectiveOptimizationResult
+from gemseo.algos.pareto import ParetoFront
 from gemseo.core.mdofunctions.dense_jacobian_function import DenseJacobianFunction
 from gemseo.core.mdofunctions.func_operations import LinearComposition
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -2332,6 +2335,21 @@ class OptimizationProblem(BaseProblem):
                     group_data = cls.__h5_group_to_dict(group, observable_name)
                     attr = MDOFunction.init_from_dict_repr(**group_data)
                     opt_pb.observables.append(attr)
+
+            is_mono_objective = False
+            with contextlib.suppress(ValueError):
+                # Sometimes the dimension of the problem cannot be determined.
+                is_mono_objective = opt_pb.is_mono_objective
+
+            if not is_mono_objective and opt_pb.SOLUTION_GROUP in h5file:
+                pareto_front = (
+                    ParetoFront.from_optimization_problem(opt_pb)
+                    if opt_pb.solution.is_feasible
+                    else None
+                )
+                opt_pb.solution = MultiObjectiveOptimizationResult(
+                    **opt_pb.solution.__dict__, pareto_front=pareto_front
+                )
 
         return opt_pb
 

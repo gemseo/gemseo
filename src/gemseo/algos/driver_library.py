@@ -133,6 +133,9 @@ class DriverLibrary(AlgorithmLibrary):
     EVAL_OBS_JAC_OPTION = "eval_obs_jac"
     MAX_DS_SIZE_PRINT = 40
 
+    _RESULT_CLASS: ClassVar[type[OptimizationResult]] = OptimizationResult
+    """The class used to present the result of the optimization."""
+
     _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = False
     """Whether the library support sparse Jacobians."""
 
@@ -304,25 +307,30 @@ class DriverLibrary(AlgorithmLibrary):
             problem.design_space.set_current_value(result)
 
         if self.__log_problem:
-            opt_result_str = result._strings
-            LOGGER.info("%s", opt_result_str[0])
-            if result.constraint_values:
-                if result.is_feasible:
-                    LOGGER.info("%s", opt_result_str[1])
-                else:
-                    LOGGER.warning("%s", opt_result_str[1])
+            self._log_result()
 
-            LOGGER.info("%s", opt_result_str[2])
-            if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
-                log = MultiLineString()
-                log.indent()
-                log.indent()
-                log.add("Design space:")
-                log.indent()
-                for line in str(problem.design_space).split("\n")[1:]:
-                    log.add(line)
-                log.dedent()
-                LOGGER.info("%s", log)
+    def _log_result(self) -> None:
+        """Log the optimization result."""
+        problem = self.problem
+        result = problem.solution
+        opt_result_str = result._strings
+        LOGGER.info("%s", opt_result_str[0])
+        if result.constraint_values:
+            if result.is_feasible:
+                LOGGER.info("%s", opt_result_str[1])
+            else:
+                LOGGER.warning("%s", opt_result_str[1])
+        LOGGER.info("%s", opt_result_str[2])
+        if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+            log = MultiLineString()
+            log.indent()
+            log.indent()
+            log.add("Design space:")
+            log.indent()
+            for line in str(problem.design_space).split("\n")[1:]:
+                log.add(line)
+            log.dedent()
+            LOGGER.info("%s", log)
 
     def _check_integer_handling(
         self,
@@ -524,7 +532,7 @@ class DriverLibrary(AlgorithmLibrary):
         self, message=None, status=None
     ) -> OptimizationResult:
         """Return the optimization result from the database."""
-        return OptimizationResult.from_optimization_problem(
+        return self._RESULT_CLASS.from_optimization_problem(
             self.problem, message=message, status=status, optimizer_name=self.algo_name
         )
 

@@ -1,0 +1,7 @@
+Added the modified Normal Boundary Intersection (mNBI) multi-objective optimization algorithm, for use with ``"MNBI"`` as algorithm name.
+Added the class ``MultiObjectiveOptimizationResult`` to store and display results from optimization problems with more
+than one objective.
+Added the class ``ParetoFront`` to store the points of interest of a ``MultiObjectiveOptimizationResult``.
+Added the ``Poloni`` analytical multi-objective optimization problem.
+Added the ``FonsecaFlemming`` analytical multi-objective optimization problem.
+Added the ``Viennet`` analytical multi-objective optimization problem.
