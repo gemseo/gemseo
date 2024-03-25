@@ -30,10 +30,23 @@ from gemseo.core.mdofunctions.func_operations import RestrictedFunction
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import RosenMF
 
 
-def test_linear_composition() -> None:
+@pytest.mark.parametrize(
+    ("input_names", "expected_expr"),
+    [(["x"], "foo(A.x)"), (["x1", "x2"], "foo(A.(x1, x2)')")],
+)
+def test_linear_composition_expr(input_names, expected_expr):
+    """Check the expression of a LinearCombination."""
+    linear_composition = LinearComposition(
+        MDOFunction(lambda x: x, "foo", input_names=input_names), array([[1]])
+    )
+    assert linear_composition.expr == expected_expr
+
+
+def test_linear_composition():
     fg = MDODisciplineAdapterGenerator(RosenMF(3))
     f1 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": 0})
     f2 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": 1})
@@ -49,7 +62,7 @@ def test_linear_composition() -> None:
     f_1_2.check_grad(ones(1), error_max=1e-4)
 
 
-def test_restricted_function() -> None:
+def test_restricted_function():
     fg = MDODisciplineAdapterGenerator(RosenMF(3))
     x = zeros(3)
     f_ref = fg.get_function(["fidelity", "x"], ["rosen"])

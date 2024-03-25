@@ -33,10 +33,10 @@ from numpy import subtract as _subtract
 from numpy import tile
 
 if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_function import ArrayType
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.core.mdofunctions.mdo_function import OperatorType
     from gemseo.core.mdofunctions.mdo_function import OutputType
+    from gemseo.typing import NumberArray
 
 
 class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
@@ -203,7 +203,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
             True,
         )
 
-    def _compute_operation(self, input_value: ArrayType) -> OutputType:
+    def _compute_operation(self, input_value: NumberArray) -> OutputType:
         """Compute the result of the operation..
 
         Args:
@@ -219,7 +219,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         return self._operator(self._first_operand(input_value), second_operand)
 
     @abstractmethod
-    def _compute_operation_jacobian(self, input_value: ArrayType) -> OutputType:
+    def _compute_operation_jacobian(self, input_value: NumberArray) -> OutputType:
         """Compute the Jacobian of the operation..
 
         Args:
@@ -280,7 +280,7 @@ class _AdditionFunctionMaker(_OperationFunctionMaker):
             "-" if inverse else "+",
         )
 
-    def _compute_operation_jacobian(self, input_value: ArrayType) -> ArrayType:
+    def _compute_operation_jacobian(self, input_value: NumberArray) -> NumberArray:
         if self._second_operand_is_number:
             return self._first_operand._jac(input_value)
 
@@ -339,7 +339,7 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
 
         return super()._compute_name()
 
-    def _compute_operation_jacobian(self, input_value: ArrayType) -> ArrayType:
+    def _compute_operation_jacobian(self, input_value: NumberArray) -> NumberArray:
         first_jac = self._first_operand._jac(input_value)
         if self._second_operand_is_number:
             if not isinstance(self._second_operand, ndarray):

@@ -42,7 +42,6 @@ from numpy import ndarray
 from numpy import ufunc
 from numpy import where
 from numpy.linalg import norm
-from numpy.typing import NDArray
 from strenum import StrEnum
 
 from gemseo.algos.design_space import DesignSpace
@@ -52,6 +51,7 @@ from gemseo.core.mdofunctions._operations import _OperationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.serializable import Serializable
+from gemseo.typing import NumberArray
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator_factory import (
@@ -65,12 +65,11 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-ArrayType = NDArray[Number]
-OperandType = Union[ArrayType, Number]
+OperandType = Union[NumberArray, Number]
 OperatorType = Union[Callable[[OperandType, OperandType], OperandType], ufunc]
-OutputType = Union[ArrayType, Number]
-WrappedFunctionType = Callable[[ArrayType], OutputType]
-WrappedJacobianType = Callable[[ArrayType], ArrayType]
+OutputType = Union[NumberArray, Number]
+WrappedFunctionType = Callable[[NumberArray], OutputType]
+WrappedJacobianType = Callable[[NumberArray], NumberArray]
 
 
 class MDOFunction(Serializable):
@@ -347,7 +346,7 @@ class MDOFunction(Serializable):
         """The function to be evaluated from a given input vector."""
         return self.__counted_f
 
-    def __counted_f(self, x_vect: ArrayType) -> OutputType:
+    def __counted_f(self, x_vect: NumberArray) -> OutputType:
         """Evaluate the function and store the result in :attr:`.MDOFunction.last_eval`.
 
         This evaluation is both multiprocess- and multithread-safe,
@@ -399,7 +398,7 @@ class MDOFunction(Serializable):
         """Initialize the shared attributes in multiprocessing."""
         self._n_calls = Value("i", 0)
 
-    def __call__(self, x_vect: ArrayType) -> OutputType:
+    def __call__(self, x_vect: NumberArray) -> OutputType:
         """Evaluate the function.
 
         This method can cast the result to real value
@@ -413,7 +412,7 @@ class MDOFunction(Serializable):
         """
         return self.evaluate(x_vect)
 
-    def evaluate(self, x_vect: ArrayType) -> OutputType:
+    def evaluate(self, x_vect: NumberArray) -> OutputType:
         """Evaluate the function and store the dimension of the output space.
 
         Args:
@@ -588,7 +587,7 @@ class MDOFunction(Serializable):
         """
         return _AdditionFunctionMaker(MDOFunction, self, other, inverse=True).function
 
-    def _min_pt(self, x_vect: ArrayType) -> ArrayType:
+    def _min_pt(self, x_vect: NumberArray) -> NumberArray:
         """Evaluate the function and return its opposite value.
 
         Args:
@@ -599,7 +598,7 @@ class MDOFunction(Serializable):
         """
         return -self(x_vect)
 
-    def _min_jac(self, x_vect: ArrayType) -> ArrayType:
+    def _min_jac(self, x_vect: NumberArray) -> NumberArray:
         """Evaluate the Jacobian function and return its opposite value.
 
         Args:
@@ -705,7 +704,7 @@ class MDOFunction(Serializable):
 
     def check_grad(
         self,
-        x_vect: ArrayType,
+        x_vect: NumberArray,
         approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-6,
         error_max: float = 1e-8,
@@ -756,7 +755,7 @@ class MDOFunction(Serializable):
             raise ValueError(msg)
 
     @staticmethod
-    def rel_err(a_vect: ArrayType, b_vect: ArrayType, error_max: float) -> float:
+    def rel_err(a_vect: NumberArray, b_vect: NumberArray, error_max: float) -> float:
         """Compute the 2-norm of the difference between two vectors.
 
         Normalize it with the 2-norm of the reference vector
@@ -776,7 +775,7 @@ class MDOFunction(Serializable):
         return norm(a_vect - b_vect)
 
     @staticmethod
-    def filt_0(arr: ArrayType, floor_value: float = 1e-6) -> ArrayType:
+    def filt_0(arr: NumberArray, floor_value: float = 1e-6) -> NumberArray:
         """Set the non-significant components of a vector to zero.
 
         The component of a vector is non-significant

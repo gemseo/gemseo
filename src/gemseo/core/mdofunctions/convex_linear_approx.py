@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import absolute
 from numpy import atleast_2d
 from numpy import multiply
@@ -24,8 +26,10 @@ from numpy import ones_like
 from numpy import where
 from numpy import zeros_like
 
-from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from gemseo.typing import NumberArray
 
 
 class ConvexLinearApprox(MDOFunction):
@@ -33,7 +37,7 @@ class ConvexLinearApprox(MDOFunction):
 
     def __init__(
         self,
-        x_vect: ArrayType,
+        x_vect: NumberArray,
         mdo_function: MDOFunction,
         approx_indexes: ndarray[bool] | None = None,
         sign_threshold: float = 1e-9,
@@ -96,7 +100,7 @@ class ConvexLinearApprox(MDOFunction):
             original_name=mdo_function.original_name,
         )
 
-    def __get_steps(self, x_new: ArrayType) -> tuple[ArrayType, ArrayType]:
+    def __get_steps(self, x_new: NumberArray) -> tuple[NumberArray, NumberArray]:
         """Return the steps on the direct and reciprocal variables.
 
         Args:
@@ -112,7 +116,7 @@ class ConvexLinearApprox(MDOFunction):
         inv_step[nonzero_indexes] = 1.0 / step[nonzero_indexes]
         return step, inv_step
 
-    def _func_to_wrap(self, x_new: ArrayType) -> ArrayType:
+    def _func_to_wrap(self, x_new: NumberArray) -> NumberArray:
         """Return the value of the convex linearization function.
 
         Args:
@@ -132,7 +136,7 @@ class ConvexLinearApprox(MDOFunction):
             return value[0]
         return value
 
-    def _jac_to_wrap(self, x_new: ArrayType) -> ArrayType:
+    def _jac_to_wrap(self, x_new: NumberArray) -> NumberArray:
         """Return the Jacobian matrix of the convex linearization function.
 
         Args:

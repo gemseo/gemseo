@@ -26,13 +26,13 @@ from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.core.mdofunctions.mdo_function import ArrayType
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.typing import NumberArray
 
 
 def compute_linear_approximation(
     function: MDOFunction,
-    x_vect: ArrayType,
+    x_vect: NumberArray,
     name: str | None = None,
     f_type: str | None = None,
     input_names: Sequence[str] | None = None,
@@ -88,8 +88,8 @@ def compute_linear_approximation(
 
 def compute_quadratic_approximation(
     function: MDOFunction,
-    x_vect: ArrayType,
-    hessian_approx: ArrayType,
+    x_vect: NumberArray,
+    hessian_approx: NumberArray,
     input_names: Sequence[str] | None = None,
 ) -> MDOQuadraticFunction:
     r"""Build a quadratic approximation of a function at a given point.

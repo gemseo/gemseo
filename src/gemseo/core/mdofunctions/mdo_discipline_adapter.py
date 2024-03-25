@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.mdofunctions.mdo_function import ArrayType
+    from gemseo.typing import NumberArray
 
 OperandType = Union[ndarray, Number]
 OperatorType = Callable[[OperandType, OperandType], OperandType]
@@ -167,7 +167,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
             start = output_size
         return output_size
 
-    def _func_to_wrap(self, x_vect: ArrayType) -> ndarray | Number:
+    def _func_to_wrap(self, x_vect: NumberArray) -> ndarray | Number:
         """Compute an output vector from an input one.
 
         Args:
@@ -192,7 +192,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
 
         return output_array
 
-    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the Jacobian value from an input vector.
 
         Args:
