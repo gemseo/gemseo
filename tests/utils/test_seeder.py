@@ -16,8 +16,10 @@ from __future__ import annotations
 
 import pytest
 
+from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.utils.seeder import SEED
 from gemseo.utils.seeder import Seeder
+from gemseo.utils.testing.helpers import concretize_classes
 
 
 @pytest.mark.parametrize(
@@ -32,3 +34,15 @@ def test_seeder(kwargs, initial_seed):
     assert seeder.get_seed(134) == 134
     assert seeder.default_seed == initial_seed + 3
     assert seeder.get_seed() == seeder.default_seed == initial_seed + 4
+
+
+def test_setter():
+    """Check the default_seed setter."""
+    default_seed = 123
+    seeder = Seeder()
+    seeder.default_seed = default_seed
+    assert seeder.default_seed == default_seed
+    with concretize_classes(DOELibrary):
+        doe_library = DOELibrary()
+    doe_library.seed = default_seed
+    assert doe_library._seeder.default_seed == default_seed

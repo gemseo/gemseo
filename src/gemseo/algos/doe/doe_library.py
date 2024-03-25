@@ -151,6 +151,10 @@ class DOELibrary(DriverLibrary):
         """The default seed used for reproducibility reasons."""
         return self._seeder.default_seed
 
+    @seed.setter
+    def seed(self, value: int) -> None:
+        self._seeder.default_seed = value
+
     def _pre_run(
         self,
         problem: OptimizationProblem,
@@ -430,9 +434,8 @@ class DOELibrary(DriverLibrary):
             size: The size of the DOE.
                 If ``None``, the size is deduced from the ``options``.
             unit_sampling: Whether to sample in the unit hypercube.
-                If the value provided in ``variables_space_or_dimension``
-                is the dimension,
-                the sample will be generated in the unit hypercube
+                If the value provided in ``variables_space`` is the dimension,
+                the samples will be generated in the unit hypercube
                 whatever the value of ``unit_sampling``.
             **options: The options of the DOE algorithm.
 

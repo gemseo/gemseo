@@ -23,7 +23,7 @@ SEED: int = 0
 class Seeder:
     """A seed generator."""
 
-    __default_seed: int
+    default_seed: int
     """The default seed."""
 
     def __init__(self, default_seed: int = SEED) -> None:
@@ -31,7 +31,7 @@ class Seeder:
         Args:
             default_seed: The initial default seed.
         """  # noqa: D205, D212
-        self.__default_seed = default_seed
+        self.default_seed = default_seed
 
     def get_seed(self, seed: int | None = None) -> int:
         """Return a seed.
@@ -45,10 +45,5 @@ class Seeder:
         Returns:
             A seed.
         """
-        self.__default_seed += 1
-        return self.__default_seed if seed is None else seed
-
-    @property
-    def default_seed(self) -> int:
-        """The default seed."""
-        return self.__default_seed
+        self.default_seed += 1
+        return self.default_seed if seed is None else seed
