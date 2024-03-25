@@ -203,8 +203,9 @@ class PydanticGrammar(BaseGrammar):
     ) -> bool:
         self.__rebuild_model()
         try:
-            # The grammars shall be strict on typing and not coerce the data.
-            self.__model.model_validate(data, strict=True)
+            # The grammars shall be strict on typing and not coerce the data,
+            # pydantic requires a dict, using a mapping fails.
+            self.__model.model_validate(dict(data), strict=True)
         except ValidationError as errors:
             for line in str(errors).split("\n"):
                 error_message.add(line)
