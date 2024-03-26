@@ -18,7 +18,7 @@ ODE stands for Ordinary Differential Equation.
 
 .. seealso::
 
-   `The examples related to ODE resolution. <../examples/ode/index.html>`__
+   `The examples related to ODE resolution. <examples/ode/index.html>`__
 
 
 An :class:`.ODEProblem` represents a first order ordinary differential equation (ODE) with
