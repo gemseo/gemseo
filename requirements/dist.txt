@@ -21,7 +21,9 @@ docutils==0.20.1
 idna==3.6
     # via requests
 importlib-metadata==7.1.0
-    # via twine
+    # via
+    #   keyring
+    #   twine
 jaraco-classes==3.3.1
     # via keyring
 jaraco-context==4.3.0
@@ -76,6 +78,11 @@ rich==13.7.1
     # via twine
 secretstorage==3.3.3
     # via keyring
+tomli==2.0.1
+    # via
+    #   build
+    #   check-wheel-contents
+    #   pyproject-hooks
 twine==5.0.0
 typing-extensions==4.10.0
     # via
