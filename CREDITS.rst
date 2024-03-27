@@ -28,9 +28,6 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `Graphviz <https://github.com/xflr6/graphviz>`_
     MIT
 
-    .. image:: /_static/dependencies/graphviz-logo.png
-        :target: https://github.com/xflr6/graphviz
-
 `h5py <https://www.h5py.org/>`_
     BSD 3-Clause
 
@@ -40,53 +37,32 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `matplotlib <https://matplotlib.org/>`_
     matplotlib License
 
-    .. image:: /_static/dependencies/matplotlib-logo.svg
-        :target: https://matplotlib.org/
-
 `NetworkX <https://networkx.org/>`_
     BSD 3-Clause
 
 `nlopt <https://github.com/stevengj/nlopt>`_
     GNU LGPL v2.1
 
-    .. image:: /_static/dependencies/Nlopt-logo.png
-        :target: https://nlopt.readthedocs.io/
-
 `numpy <https://numpy.org/>`_
     BSD 3-Clause
-
-    .. image:: /_static/dependencies/numpy-logo.svg
-        :target: https://numpy.org/
 
 `OpenTURNS <https://github.com/openturns/openturns>`_
     GNU LGPL v3.0
 
-    .. image:: /_static/dependencies/openturns-logo.png
-        :target: https://github.com/openturns/openturns
-
 `Pandas <https://pandas.pydata.org/>`_
     BSD 3-Clause
 
-    .. image:: /_static/dependencies/pandas-logo.svg
-        :target: https://pandas.pydata.org/
+`Pillow <https://python-pillow.org/>`_
+    HPND
+
+`Plotly <https://plotly.com/python/>`_
+    MIT
 
 `pyDOE2 <https://github.com/clicumu/pyDOE2>`_
     BSD 3-Clause
 
-    .. image:: /_static/dependencies/pydoe-logo.png
-        :target: https://github.com/clicumu/pyDOE2
-
-`Pytest <https://pytest.org>`_
-    MIT
-
-    .. image:: /_static/dependencies/pytest-logo.svg
-        :target: https://pytest.org
-
 `Python <http://python.org/>`_
     Python Software License
-
-    .. image:: /_static/dependencies/python-logo.svg
-        :target: https://www.python.org/
 
 `pyXDSM <https://github.com/mdolab/pyXDSM>`_
     Apache v2.0
@@ -94,26 +70,14 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `requests <https://github.com/psf/requests>`_
     Apache v2.0
 
-    .. image:: /_static/dependencies/requests-logo.png
-        :target: https://github.com/psf/requests
-
 `scikit-learn <https://scikit-learn.org/>`_
     BSD 3-Clause
-
-    .. image:: /_static/dependencies/scikit-learn-logo.svg
-        :target: https://scikit-learn.org/
 
 `scipy <https://www.scipy.org/>`_
     BSD 3-Clause
 
-    .. image:: /_static/dependencies/scipy-logo.png
-        :target: https://www.scipy.org/
-
 `SymPy <https://www.sympy.org/>`_
     BSD 3-Clause
-
-    .. image:: /_static/dependencies/sympy-logo.svg
-        :target: https://www.sympy.org/
 
 `typing-extensions <https://pypi.org/project/typing-extensions>`_
     Python Software License
@@ -147,9 +111,6 @@ colormap
 `WhatsOpt-CLI <https://github.com/OneraHub/WhatsOpt-CLI>`_
     Apache v2.0
 
-    .. image:: /_static/dependencies/whatsopt-logo.svg
-        :target: https://github.com/OneraHub/WhatsOpt-CLI
-
 External applications
 ---------------------
 
@@ -159,16 +120,22 @@ for development,
 documentation generation,
 training or example purposes.
 
-`black <https://black.readthedocs.io>`_
-    MIT
-
-`flake8 <https://flake8.pycqa.org>`_
-    MIT
+`Jupyter <https://jupyter.org/>`_
+    BSD 3-Clause
 
 `pre-commit <https://pre-commit.com>`_
     MIT
 
-`reorder-python-imports <https://github.com/asottile/reorder_python_imports>`_
+`Pytest <https://pytest.org>`_
+    MIT
+
+`Pytest-cov <https://pytest-cov.readthedocs.io/>`_
+    MIT
+
+`Pytest-xdist <https://pytest-xdist.readthedocs.io/>`_
+    MIT
+
+`ruff <https://docs.astral.sh/ruff/>`_
     MIT
 
 `setuptools <https://setuptools.readthedocs.io/>`_
@@ -179,15 +146,6 @@ training or example purposes.
 
 `Sphinx <http://www.sphinx-doc.org/>`_
     Sphinx
-
-    .. image:: /_static/dependencies/sphinx-logo.png
-        :target: http://www.sphinx-doc.org/
-
-`Jupyter <https://jupyter.org/>`_
-    BSD 3-Clause
-
-    .. image:: /_static/dependencies/jupyter-logo.svg
-        :target: https://jupyter.org/
 
 Resources
 ---------
@@ -201,17 +159,8 @@ Some icons and fonts are used by GEMSEO or its documentation.
     BSD 3-Clause
     (Using Bootstrap, a CSS framework, under MIT license)
 
-    .. image:: /_static/dependencies/scikit-learn-logo.svg
-        :target: https://scikit-learn.org/
-
 `Font Awesome Free (fonts) <https://fontawesome.com/>`_
     SIL OFL 1.1
 
-    .. image:: /_static/dependencies/font-awesome-logo.svg
-        :target: https://fontawesome.com/
-
 `Font Awesome Free (icons) <https://fontawesome.com/>`_
     CC BY 4.0 License
-
-    .. image:: /_static/dependencies/font-awesome-logo.svg
-        :target: https://fontawesome.com/
