@@ -57,7 +57,7 @@ numpy==1.26.4
     #   scipy
 openpyxl==3.1.2
 openturns==1.22
-packaging==23.2
+packaging==24.0
     # via
     #   matplotlib
     #   plotly
