@@ -25,6 +25,7 @@ from openturns import GeometricProfile
 from openturns import LHSExperiment
 from openturns import LinearProfile
 from openturns import MonteCarloLHS
+from openturns import SimulatedAnnealingLHS
 from openturns import SpaceFillingC2
 from openturns import SpaceFillingImplementation
 from openturns import SpaceFillingMinDist
@@ -33,7 +34,6 @@ from openturns import TemperatureProfileImplementation
 from strenum import StrEnum
 
 from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
-from gemseo.utils.compatibility.openturns import get_simulated_annealing_for_lhs
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -82,10 +82,10 @@ class OTOptimalLHS(BaseOTDOE):
         )
         lhs_experiment.setAlwaysShuffle(True)
         if options[self.__ANNEALING]:
-            lhs_experiment = get_simulated_annealing_for_lhs(
+            lhs_experiment = SimulatedAnnealingLHS(
                 lhs_experiment,
-                self.__TEMPERATURE_PROFILES[options[self.__TEMPERATURE_PROFILE]],
                 self.__SPACE_FILLING_CRITERIA[options[self.__SPACE_FILLING_CRITERION]],
+                self.__TEMPERATURE_PROFILES[options[self.__TEMPERATURE_PROFILE]],
             )
         else:
             lhs_experiment = MonteCarloLHS(lhs_experiment, options[self.__N_REPLICATES])
