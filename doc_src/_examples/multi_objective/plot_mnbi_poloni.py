@@ -69,8 +69,8 @@ result = execute_algo(
     "MNBI",
     max_iter=10000,
     sub_optim_max_iter=50,
-    n_sub_optim=10,
-    sub_optim_algo="NLOPT_SLSQP",
+    n_sub_optim=50,
+    sub_optim_algo="SLSQP",
 )
 
 # %%
