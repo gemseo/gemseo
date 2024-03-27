@@ -31,33 +31,8 @@ OT_VERSION: Final[Version] = parse_version(version("openturns"))
 
 IS_OT_LOWER_THAN_1_20: Final[bool] = parse_version("1.20") > OT_VERSION
 
-if parse_version("1.17.0") > OT_VERSION:
 
-    def get_simulated_annealing_for_lhs(lhs, temperature, criteria):  # noqa:D103
-        return openturns.SimulatedAnnealingLHS(lhs, temperature, criteria)
-
-else:
-
-    def get_simulated_annealing_for_lhs(lhs, temperature, criteria):  # noqa:D103
-        return openturns.SimulatedAnnealingLHS(lhs, criteria, temperature)
-
-
-if parse_version("1.18") > OT_VERSION:
-
-    def get_eigenvalues(  # noqa:D103
-        result: openturns.KarhunenLoeveResult,
-    ) -> openturns.Point:
-        return result.getEigenValues()
-
-else:
-
-    def get_eigenvalues(  # noqa:D103
-        result: openturns.KarhunenLoeveResult,
-    ) -> openturns.Point:
-        return result.getEigenvalues()
-
-
-if parse_version("1.20") <= OT_VERSION:
+if not IS_OT_LOWER_THAN_1_20:
 
     def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis(x, y).computePCC()

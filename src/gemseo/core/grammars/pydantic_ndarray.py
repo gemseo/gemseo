@@ -24,8 +24,16 @@ from typing import cast
 
 from numpy import dtype
 from numpy import ndarray
-from numpy._typing._array_like import _DType_co
-from numpy._typing._array_like import _ScalarType_co
+
+try:
+    from numpy._typing._array_like import _DType_co
+    from numpy._typing._array_like import _ScalarType_co
+except (ModuleNotFoundError, ImportError):  # pragma: no cover
+    from numpy import generic
+
+    _ScalarType_co = TypeVar("_ScalarType_co", bound=generic, covariant=True)
+    _DType_co = TypeVar("_DType_co", covariant=True, bound=dtype)
+
 from numpy.typing import NDArray
 from pydantic_core import CoreSchema
 from pydantic_core import core_schema
