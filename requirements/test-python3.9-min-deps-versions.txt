@@ -85,7 +85,7 @@ python-dateutil==2.9.0.post0
 pytz==2024.1
     # via pandas
 pyxdsm==2.1.0
-requests==0.2.0
+requests==2.31.0
 scikit-learn==1.0
 scipy==1.9.0
     # via
