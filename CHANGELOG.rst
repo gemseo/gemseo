@@ -227,6 +227,7 @@ Added
   - ``ScenarioResultFactory`` is a factory of ``ScenarioResult``.
   - ``Scenario.get_result`` returns the result of the execution of the ``Scenario`` as a ``ScenarioResult``.
   - ``create_scenario_result`` stores the result of a ``Scenario`` from a ``Scenario`` or an HDF5 file.
+
   `#771 <https://gitlab.com/gemseo/dev/gemseo/-/issues/771>`_
 
 - The ``LinearCombination`` discipline now has a sparse Jacobian.
@@ -355,11 +356,14 @@ Changed
 -------
 
 - API:
+
   - The class ``RunFolderManager`` is renamed ``DirectoryGenerator``.
   - The class ``FoldersIter`` is renamed ``Identifiers``.
   - The signature of the class ``DirectoryGenerator`` has changed:
+
     - ``folders_iter`` is replaced by ``identifiers``
     - ``output_folder_basepath`` is replaced by ``root_directory``
+
   `#878 <https://gitlab.com/gemseo/dev/gemseo/-/issues/878>`_
 
 - The subpackage ``gemseo.mlearning.data_formatters`` includes the ``DataFormatters`` used by the learning and prediction methods of the machine learning algorithms.
@@ -441,10 +445,9 @@ Added
 - ``MLErrorMeasureFactory`` is a factory of ``MLErrorMeasure``.
 - ``SurrogateDiscipline.get_error_measure`` returns an ``MLErrorMeasure`` to assess the quality of a ``SurrogateDiscipline``; use one of its evaluation methods to compute it, e.g. ``evaluate_learn`` to compute a learning error.
   `#822 <https://gitlab.com/gemseo/dev/gemseo/-/issues/822>`_
-- - The ``DatasetFactory`` is a factory of ``Dataset``.
-  - The high-level function ``create_dataset`` can return any type of ``Dataset``.
+- The ``DatasetFactory`` is a factory of ``Dataset``.
+- The high-level function ``create_dataset`` can return any type of ``Dataset``.
   `#823 <https://gitlab.com/gemseo/dev/gemseo/-/issues/823>`_
-
 - ``Dataset`` has a string property ``summary`` returning some information, e.g. number of entries, number of variable identifiers, ...
   `#824 <https://gitlab.com/gemseo/dev/gemseo/-/issues/824>`_
 - ``MLAlgo.__repr__`` returns the same as ``MLAlgo.__str__`` before this change and ``MLAlgo.__str__`` does not overload ``MLAlgo.__repr__``.
