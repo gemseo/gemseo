@@ -1,6 +1,0 @@
-- ``MDOFunction`` supports elementwise multiplication and division by NumPy arrays.
-- Addition, substraction, multiplication and division of a function expecting normalized inputs with a function that does not raise ``RuntimeError``.
-- The function values :math:`f(x)` passed to optimizers can optionally be scaled relative to :math:`|f(x_0)|` where :math:`x_0` is the current value of the ``DesignSpace``.
-  This functionality is enabled by passing a positive value :math:`\epsilon` as the option ``scaling_threshold`` of any optimizer: the function values passed to the optimizer are then :math:`f(x) / \max\{ |f(x_0)|, \epsilon \}`.
-  The purpose of :math:`\epsilon` is to avoid division by a value close to zero.
-  The (default) value ``None`` for the option ``scaling_threshold`` disables the scaling.

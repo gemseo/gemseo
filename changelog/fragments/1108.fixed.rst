@@ -1,1 +1,0 @@
-The attribute ``ParameterSpace.distributions`` is correctly updated when renaming a random variable.

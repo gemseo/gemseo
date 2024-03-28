@@ -1,1 +1,0 @@
-API change: ``AbstractCache._{INPUTS,OUTPUTS,JACOBIAN}_GROUP`` has been replaced by ``AbstractCache.Group``.

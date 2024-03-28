@@ -1,1 +1,0 @@
-``Dataset.to_dict_of_arrays`` no longer raises an ``AttributeError`` when both ``by_entry`` and ``by_group`` are ``True`` and works properly.

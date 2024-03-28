@@ -1,2 +1,0 @@
-- Support for reStructuredText docstring format.
-- The function ``get_default_option_values``; use ``inspect.get_callable_argument_defaults(cls.__init__)`` instead of ``get_default_option_values(cls)``.

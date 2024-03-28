@@ -1,1 +1,0 @@
-``Lines`` and ``BarPlot`` have HTML-based interactive versions based on plotly.

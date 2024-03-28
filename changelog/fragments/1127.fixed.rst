@@ -1,1 +1,0 @@
-``DesignSpace.rename_variable`` can be applied to a variable without value.
