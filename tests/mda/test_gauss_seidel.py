@@ -280,6 +280,8 @@ def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) 
     """
     mda = SobieskiMDAGaussSeidel(max_mda_iter=15)
     mda.execute()
+    mda.default_inputs["x_shared"] += 0.1
+    mda.execute()
     mda.plot_residual_history(save=False, n_iterations=n_iterations, logscale=logscale)
 
     if n_iterations == 50:
