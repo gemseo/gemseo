@@ -60,6 +60,7 @@ to an HDF file or to a :class:`.Dataset` for future post-processing.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from collections.abc import Iterable
 from collections.abc import Mapping
@@ -67,13 +68,13 @@ from collections.abc import Sequence
 from copy import deepcopy
 from functools import reduce
 from numbers import Number
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import Optional
+from typing import Union
 
 import h5py
 import numpy
@@ -112,6 +113,8 @@ from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.opt_result_multiobj import MultiObjectiveOptimizationResult
+from gemseo.algos.pareto import ParetoFront
 from gemseo.core.mdofunctions.dense_jacobian_function import DenseJacobianFunction
 from gemseo.core.mdofunctions.func_operations import LinearComposition
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -124,6 +127,7 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator_factory import (
     GradientApproximatorFactory,
@@ -147,6 +151,8 @@ OptimumType = tuple[ndarray, ndarray, bool, dict[str, ndarray], dict[str, ndarra
 OptimumSolutionType = tuple[
     Optional[Sequence[ndarray]], ndarray, dict[str, ndarray], dict[str, ndarray]
 ]
+EvaluationType = tuple[dict[str, Union[float, ndarray]], dict[str, ndarray]]
+"""The type of the output value of an evaluation."""
 
 
 class OptimizationProblem(BaseProblem):
@@ -304,6 +310,7 @@ class OptimizationProblem(BaseProblem):
     """Whether to check if a point is in the design space before calling functions."""
 
     HDF5_FORMAT: Final[str] = "hdf5"
+    HDF_NODE_PATH: Final[str] = "hdf_node_path"
     GGOBI_FORMAT: Final[str] = "ggobi"
     KKT_RESIDUAL_NORM: Final[str] = "KKT residual norm"
 
@@ -316,6 +323,7 @@ class OptimizationProblem(BaseProblem):
         fd_step: float = 1e-7,
         parallel_differentiation: bool = False,
         use_standardized_objective: bool = True,
+        hdf_node_path: str = "",
         **parallel_differentiation_options: int | bool,
     ) -> None:
         """
@@ -331,6 +339,9 @@ class OptimizationProblem(BaseProblem):
             parallel.
             use_standardized_objective: Whether to use standardized objective
                 for logging and post-processing.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
             **parallel_differentiation_options: The options
                 to approximate the derivatives in parallel.
         """  # noqa: D205, D212, D415
@@ -358,7 +369,9 @@ class OptimizationProblem(BaseProblem):
         elif isinstance(input_database, Database):
             self.database = input_database
         else:
-            self.database = Database.from_hdf(input_database)
+            self.database = Database.from_hdf(
+                input_database, hdf_node_path=hdf_node_path
+            )
         self.solution = None
         self.design_space = design_space
         self.__initial_current_x = deepcopy(
@@ -372,13 +385,14 @@ class OptimizationProblem(BaseProblem):
         self.__eval_obs_jac = False
         self.__observable_names = set()
 
-    def __raise_exception_if_functions_are_already_preprocessed(self):
+    def __raise_exception_if_functions_are_already_preprocessed(self) -> None:
         """Raise an exception if the function have already been pre-processed."""
         if self.__functions_are_preprocessed:
-            raise RuntimeError(
+            msg = (
                 "The parallel differentiation cannot be changed "
                 "because the functions have already been pre-processed."
             )
+            raise RuntimeError(msg)
 
     def is_max_iter_reached(self) -> bool:
         """Check if the maximum amount of iterations has been reached.
@@ -433,6 +447,7 @@ class OptimizationProblem(BaseProblem):
         self,
         func: MDOFunction,
     ) -> None:
+        func.f_type = func.FunctionType.OBJ
         if self.pb_type == self.ProblemType.LINEAR and not isinstance(
             func, MDOLinearFunction
         ):
@@ -615,10 +630,11 @@ class OptimizationProblem(BaseProblem):
         n_constraints = len(self.constraints)
         self.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
         if constraint_index >= n_constraints:
-            raise KeyError(
+            msg = (
                 f"The index of the constraint ({constraint_index}) must be lower "
                 f"than the number of constraints ({n_constraints})."
             )
+            raise KeyError(msg)
 
         constraint = self.constraints[constraint_index]
         if callable(method):
@@ -964,14 +980,24 @@ class OptimizationProblem(BaseProblem):
         """
         return self.design_space.variable_names
 
-    def get_all_functions(self) -> list[MDOFunction]:
+    def get_all_functions(self, original: bool = False) -> list[MDOFunction]:
         """Retrieve all the functions of the optimization problem.
 
         These functions are the constraints, the objective function and the observables.
 
+        Args:
+            original: Whether to return the original functions or the preprocessed ones.
+
         Returns:
             All the functions of the optimization problem.
         """
+        if self.__functions_are_preprocessed and original:
+            return [
+                self.nonproc_objective,
+                *self.nonproc_constraints,
+                *self.nonproc_observables,
+            ]
+
         return [self.objective, *self.constraints, *self.observables]
 
     def get_all_function_name(self) -> list[str]:
@@ -1095,9 +1121,8 @@ class OptimizationProblem(BaseProblem):
             TypeError: If the function is not an :class:`.MDOFunction`.
         """
         if not isinstance(input_function, MDOFunction):
-            raise TypeError(
-                "Optimization problem functions must be instances of MDOFunction"
-            )
+            msg = "Optimization problem functions must be instances of MDOFunction"
+            raise TypeError(msg)
 
     def get_eq_cstr_total_dim(self) -> int:
         """Retrieve the total dimension of the equality constraints.
@@ -1141,10 +1166,11 @@ class OptimizationProblem(BaseProblem):
         n_cstr = 0
         for constraint in self.constraints:
             if not constraint.dim:
-                raise ValueError(
+                msg = (
                     "Constraint dimension not available yet, "
                     f"please call function {constraint} once"
                 )
+                raise ValueError(msg)
             if constraint.f_type == cstr_type:
                 n_cstr += constraint.dim
         return n_cstr
@@ -1173,19 +1199,27 @@ class OptimizationProblem(BaseProblem):
             for func in self.get_ineq_constraints()
         }
 
+    # TODO: API: rename callback_func to callback
     def add_callback(
         self,
-        callback_func: Callable,
+        callback_func: Callable[[ndarray], Any],
         each_new_iter: bool = True,
         each_store: bool = False,
     ) -> None:
-        """Add a callback function after each store operation or new iteration.
+        """Add a callback for some events.
+
+        The callback functions are attached to the database,
+        which means they are triggered when new values are stored
+        within the database of the optimization problem.
 
         Args:
-            callback_func: A function to be called after some event.
-            each_new_iter: If ``True``, then callback at every iteration.
-            each_store: If ``True``,
-                then callback at every call to :meth:`.Database.store`.
+            callback_func: A function to be called after some events,
+                whose argument is a design vector.
+            each_new_iter: Whether to evaluate the callback functions
+                after evaluating all functions of the optimization problem
+                for a given point and storing their values in the :attr:`.database`.
+            each_store: Whether to evaluate the callback functions
+                after storing any new value in the :attr:`.database`.
         """
         if each_store:
             self.database.add_store_listener(callback_func)
@@ -1207,7 +1241,7 @@ class OptimizationProblem(BaseProblem):
         constraint_names: Iterable[str] | None = None,
         observable_names: Iterable[str] | None = None,
         jacobian_names: Iterable[str] | None = None,
-    ) -> tuple[dict[str, float | ndarray], dict[str, ndarray]]:
+    ) -> EvaluationType:
         """Compute the functions of interest, and possibly their derivatives.
 
         These functions of interest are the constraints, and possibly the objective.
@@ -1303,10 +1337,11 @@ class OptimizationProblem(BaseProblem):
                 else:
                     message = "This name is"
 
-                raise ValueError(
+                msg = (
                     f"{message} not among the names of the functions: "
                     f"{pretty_str(unknown_names)}."
                 )
+                raise ValueError(msg)
 
             functions = self.__get_functions(
                 self.objective.name in jacobian_names,
@@ -1509,8 +1544,7 @@ class OptimizationProblem(BaseProblem):
                 round_ints=round_ints,
                 support_sparse_jacobian=support_sparse_jacobian,
             )
-            self.objective.special_repr = self.objective.special_repr
-            self.objective.f_type = MDOFunction.FunctionType.OBJ
+            self._objective.special_repr = self.objective.special_repr
             self.__functions_are_preprocessed = True
             self.check()
             self.__eval_obs_jac = eval_obs_jac
@@ -1577,7 +1611,7 @@ class OptimizationProblem(BaseProblem):
             func = NormFunction(func, is_function_input_normalized, round_ints, self)
 
         if self.differentiation_method in set(self.ApproximationMode):
-            self.__add_fd_jac(func, is_function_input_normalized)
+            self.__add_approximated_jac_function(func, is_function_input_normalized)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
         if use_database:
@@ -1603,7 +1637,8 @@ class OptimizationProblem(BaseProblem):
             TypeError: If the original function is not an :class:`.MDOLinearFunction`.
         """
         if not isinstance(orig_func, MDOLinearFunction):
-            raise TypeError("Original function must be linear")
+            msg = "Original function must be linear"
+            raise TypeError(msg)
         design_space = self.design_space
 
         # Get normalization factors and shift
@@ -1631,26 +1666,18 @@ class OptimizationProblem(BaseProblem):
             value_at_zero,
         )
 
-    def __add_fd_jac(
+    def __add_approximated_jac_function(
         self,
         func: MDOFunction,
         normalize: bool,
     ) -> None:
-        """Add a pointer to the approached Jacobian of the function.
-
-        This Jacobian matrix is generated according :attr:`.differentiation_method`.
+        """Define the Jacobian function of an :class:`MDOFunction` as an approximator.
 
         Args:
-            func: The function to be derivated.
+            func: The function of interest.
             normalize: Whether to unnormalize the input vector of the function
                 before evaluate it.
-
-        Raises:
-            ValueError: When the current value is not defined.
         """
-        if not self.design_space.has_current_value():
-            raise ValueError("The design space has no current value.")
-
         if self.differentiation_method not in set(self.ApproximationMode):
             return
 
@@ -1672,7 +1699,8 @@ class OptimizationProblem(BaseProblem):
             ValueError: If the objective function is missing.
         """
         if self.objective is None:
-            raise ValueError("Missing objective function in OptimizationProblem")
+            msg = "Missing objective function in OptimizationProblem"
+            raise ValueError(msg)
         self.design_space.check()
         self.__check_differentiation_method()
         self.check_format(self.objective)
@@ -1687,13 +1715,14 @@ class OptimizationProblem(BaseProblem):
         for cstr in self.constraints:
             self.check_format(cstr)
             if not cstr.is_constraint():
-                raise ValueError(
+                msg = (
                     f"Constraint type is not eq or ineq !, got {cstr.f_type}"
                     " instead "
                 )
+                raise ValueError(msg)
         self.check_format(self.objective)
 
-    def __check_differentiation_method(self):
+    def __check_differentiation_method(self) -> None:
         """Check that the differentiation method is in allowed ones.
 
         Available ones are: :attr:`.OptimizationProblem.DifferentiationMethod`.
@@ -1706,7 +1735,8 @@ class OptimizationProblem(BaseProblem):
         """
         if self.differentiation_method == self.ApproximationMode.COMPLEX_STEP:
             if self.fd_step == 0:
-                raise ValueError("ComplexStep step is null!")
+                msg = "ComplexStep step is null!"
+                raise ValueError(msg)
             if self.fd_step.imag != 0:
                 LOGGER.warning(
                     "Complex step method has an imaginary "
@@ -1716,7 +1746,8 @@ class OptimizationProblem(BaseProblem):
                 self.fd_step = self.fd_step.imag
         elif self.differentiation_method == self.ApproximationMode.FINITE_DIFFERENCES:
             if self.fd_step == 0:
-                raise ValueError("Finite differences step is null!")
+                msg = "Finite differences step is null!"
+                raise ValueError(msg)
             if self.fd_step.imag != 0:
                 LOGGER.warning(
                     "Finite differences method has a complex "
@@ -2007,7 +2038,8 @@ class OptimizationProblem(BaseProblem):
             ValueError: When the optimization database is empty.
         """
         if not self.database:
-            raise ValueError("Optimization history is empty")
+            msg = "Optimization history is empty"
+            raise ValueError(msg)
         feas_x, feas_f = self.get_feasible_points()
 
         if not feas_x:
@@ -2035,7 +2067,8 @@ class OptimizationProblem(BaseProblem):
             ValueError: When the optimization database is empty.
         """
         if not self.database:
-            raise ValueError("Optimization history is empty")
+            msg = "Optimization history is empty"
+            raise ValueError(msg)
         x_last = self.database.get_x_vect(-1)
         f_last = self.database.get_function_value(self.objective.name, -1)
         is_feas = self.is_point_feasible(self.database[x_last], self.constraints)
@@ -2140,7 +2173,11 @@ class OptimizationProblem(BaseProblem):
             elif isinstance(value, bytes):
                 value = value.decode()
             elif isinstance(value, Mapping) and not isinstance(value, DesignSpace):
-                cls.__store_attr_h5data(value, group.require_group(f"/{name}"))
+                grname = f"/{name}"
+                if grname in group:
+                    del group[grname]
+                new_group = group.require_group(grname)
+                cls.__store_attr_h5data(value, new_group)
                 continue
             elif hasattr(value, "__iter__") and not (
                 isinstance(value, ndarray) and issubdtype(value.dtype, np_number)
@@ -2153,18 +2190,32 @@ class OptimizationProblem(BaseProblem):
 
             cls.__store_h5data(group, value, name, dtype)
 
-    def to_hdf(self, file_path: str | Path, append: bool = False) -> None:
+    def to_hdf(
+        self,
+        file_path: str | Path,
+        append: bool = False,
+        hdf_node_path: str = "",
+    ) -> None:
         """Export the optimization problem to an HDF file.
 
         Args:
             file_path: The path of the file to store the data.
             append: If ``True``, then the data are appended to the file if not empty.
+            hdf_node_path: The path of the HDF node in which
+                the database should be exported.
+                If empty, the root node is considered.
         """
-        LOGGER.info("Export optimization problem to file: %s", str(file_path))
+        LOGGER.info(
+            "Exporting the optimization problem to the file %s at node %s",
+            str(file_path),
+            str(hdf_node_path),
+        )
 
         mode = "a" if append else "w"
 
         with h5py.File(file_path, mode) as h5file:
+            if hdf_node_path:
+                h5file = h5file.require_group(hdf_node_path)
             no_design_space = DesignSpace.DESIGN_SPACE_GROUP not in h5file
 
             if not append or self.OPT_DESCR_GROUP not in h5file:
@@ -2194,31 +2245,46 @@ class OptimizationProblem(BaseProblem):
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 
-        self.database.to_hdf(file_path, append=True)
+        self.database.to_hdf(file_path, append=True, hdf_node_path=hdf_node_path)
 
         # Design space shall remain the same in append mode
         if not append or no_design_space:
-            self.design_space.to_hdf(file_path, append=True)
+            self.design_space.to_hdf(
+                file_path, append=True, hdf_node_path=hdf_node_path
+            )
 
     @classmethod
     def from_hdf(
-        cls, file_path: str | Path, x_tolerance: float = 0.0
+        cls,
+        file_path: str | Path,
+        x_tolerance: float = 0.0,
+        hdf_node_path: str = "",
     ) -> OptimizationProblem:
         """Import an optimization history from an HDF file.
 
         Args:
             file_path: The file containing the optimization history.
             x_tolerance: The tolerance on the design variables when reading the file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
 
         Returns:
             The read optimization problem.
         """
-        LOGGER.info("Import optimization problem from file: %s", file_path)
+        LOGGER.info(
+            "Importing the optimization problem from the file %s at node %s",
+            file_path,
+            hdf_node_path,
+        )
 
-        design_space = DesignSpace.from_file(file_path)
-        opt_pb = OptimizationProblem(design_space, input_database=file_path)
+        design_space = DesignSpace.from_file(file_path, hdf_node_path=hdf_node_path)
+        opt_pb = OptimizationProblem(
+            design_space, input_database=file_path, hdf_node_path=hdf_node_path
+        )
 
         with h5py.File(file_path) as h5file:
+            h5file = get_hdf5_group(h5file, hdf_node_path)
             if opt_pb.SOLUTION_GROUP in h5file:
                 group_data = cls.__h5_group_to_dict(h5file, opt_pb.SOLUTION_GROUP)
                 if "x_0_as_dict" in h5file:
@@ -2269,6 +2335,21 @@ class OptimizationProblem(BaseProblem):
                     group_data = cls.__h5_group_to_dict(group, observable_name)
                     attr = MDOFunction.init_from_dict_repr(**group_data)
                     opt_pb.observables.append(attr)
+
+            is_mono_objective = False
+            with contextlib.suppress(ValueError):
+                # Sometimes the dimension of the problem cannot be determined.
+                is_mono_objective = opt_pb.is_mono_objective
+
+            if not is_mono_objective and opt_pb.SOLUTION_GROUP in h5file:
+                pareto_front = (
+                    ParetoFront.from_optimization_problem(opt_pb)
+                    if opt_pb.solution.is_feasible
+                    else None
+                )
+                opt_pb.solution = MultiObjectiveOptimizationResult(
+                    **opt_pb.solution.__dict__, pareto_front=pareto_front
+                )
 
         return opt_pb
 
@@ -2535,7 +2616,8 @@ class OptimizationProblem(BaseProblem):
             return obj_dim == 1
         n_outvars = len(self.objective.output_names)
         if n_outvars == 0:
-            raise ValueError("Cannot determine the dimension of the objective.")
+            msg = "Cannot determine the dimension of the objective."
+            raise ValueError(msg)
         return n_outvars == 1
 
     def get_functions_dimensions(
@@ -2576,7 +2658,8 @@ class OptimizationProblem(BaseProblem):
                 function = func
                 break
         else:
-            raise ValueError(f"The problem has no function named {name}.")
+            msg = f"The problem has no function named {name}."
+            raise ValueError(msg)
 
         # Get the dimension of the function output
         if function.dim:
@@ -2590,12 +2673,13 @@ class OptimizationProblem(BaseProblem):
 
             return atleast_1d(function(current_variables)).size
 
-        raise RuntimeError(f"The output dimension of function {name} is not available.")
+        msg = f"The output dimension of function {name} is not available."
+        raise RuntimeError(msg)
 
     def get_number_of_unsatisfied_constraints(
         self,
         design_variables: ndarray,
-        values: Mapping[str, float | ndarray] = MappingProxyType({}),
+        values: Mapping[str, float | ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> int:
         """Return the number of scalar constraints not satisfied by design variables.
 
@@ -2683,6 +2767,10 @@ class OptimizationProblem(BaseProblem):
             for func in self.get_all_functions():
                 func.n_calls = 0
 
+            if self.__functions_are_preprocessed:
+                for original_functions in self.get_all_functions(True):
+                    original_functions.n_calls = 0
+
         if preprocessing and self.__functions_are_preprocessed:
             self.objective = self.nonproc_objective
             self.nonproc_objective = None
@@ -2744,10 +2832,11 @@ class OptimizationProblem(BaseProblem):
             ValueError: If the name is not among the names of the available functions.
         """
         if name not in names:
-            raise ValueError(
+            msg = (
                 f"{name} is not among the names of the {group_name}: "
                 f"{pretty_str(names)}."
             )
+            raise ValueError(msg)
 
         if from_original_functions and self.__functions_are_preprocessed:
             functions = original_functions

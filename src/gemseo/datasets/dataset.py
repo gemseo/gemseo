@@ -37,7 +37,6 @@ and :meth:`.OptimizationProblem.to_dataset`.
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Iterable
 from numbers import Number
 from typing import TYPE_CHECKING
@@ -72,7 +71,6 @@ if TYPE_CHECKING:
     from pandas._typing import Axes
     from pandas._typing import Dtype
 
-LOGGER = logging.getLogger(__name__)
 
 StrColumnType = Union[str, Iterable[str]]
 IndexType = Union[str, int, Iterable[Union[str, int]]]
@@ -105,7 +103,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     It must be built from the methods
     :meth:`.add_variable`, :meth:`.add_group`,
     :meth:`.from_array`,
-    :meth:`.from_txt` and :meth:`.from_csv`.
+    :meth:`.from_txt`,
+    :meth:`.from_csv`
+    and :meth:`.from_dataframe`.
 
     Miscellaneous information that is not specific to an entry of the dataset
     can be stored in the dictionary :attr:`.misc`,
@@ -494,15 +494,16 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     def __check_existence_variable_components(
         self, group_name, variable_name, components
-    ):
+    ) -> None:
         """Check if the variable components are already in the dataset."""
         if isin(
             components, self.get_variable_components(group_name, variable_name)
         ).any():
-            raise ValueError(
+            msg = (
                 f"The group {group_name!r} "
                 f"has already a variable {variable_name!r} defined."
             )
+            raise ValueError(msg)
 
     @staticmethod
     def __force_to_2d_array(
@@ -552,18 +553,23 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             ValueError: If the group already exists.
         """
         if group_name in self.group_names:
-            raise ValueError(f"The group {group_name!r} is already defined.")
+            msg = f"The group {group_name!r} is already defined."
+            raise ValueError(msg)
 
         data = self.__force_to_2d_array(data)
         n_rows, n_columns = data.shape
-        if not variable_names:
-            variables = [(self.DEFAULT_VARIABLE_NAME, i) for i in range(n_columns)]
-        else:
+        if variable_names:
+            variable_names = atleast_1d(variable_names)
             variables = []
-            variable_names_to_n_components = variable_names_to_n_components or {}
-            for variable in atleast_1d(variable_names):
-                n_components = variable_names_to_n_components.get(variable, 1)
-                variables.extend([(variable, i) for i in range(n_components)])
+            if len(variable_names) == 1:
+                variables.extend([(variable_names[0], i) for i in range(n_columns)])
+            else:
+                variable_names_to_n_components = variable_names_to_n_components or {}
+                for variable_name in atleast_1d(variable_names):
+                    n_components = variable_names_to_n_components.get(variable_name, 1)
+                    variables.extend([(variable_name, i) for i in range(n_components)])
+        else:
+            variables = [(self.DEFAULT_VARIABLE_NAME, i) for i in range(n_columns)]
 
         self.__check_data_shape_consistency(data, n_rows, len(variables))
         for (variable_name, component), data_column in zip(variables, data.T):
@@ -589,11 +595,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             ValueError: When the shape of the data is inconsistent.
         """
         if data.shape not in {(n_rows, n_columns), (1, n_columns)}:
-            raise ValueError(
+            msg = (
                 "The data shape "
                 f"must be ({n_rows}, {n_columns}) or (1, {n_columns}); "
                 f"got {data.shape} instead."
             )
+            raise ValueError(msg)
 
     def get_view(
         self,
@@ -714,6 +721,58 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         )
 
     @classmethod
+    def from_dataframe(cls, dataframe: DataFrame) -> Dataset:
+        """Create a :class:`.Dataset` from a pandas :class:`~pandas.DataFrame`.
+
+        Args:
+            dataframe: The pandas :class:`~pandas.DataFrame`.
+                whose ``columns`` attribute is either a 3-depth ``~pandas.MultiIndex``
+                or a sequence of 3-length tuples and strings.
+                The items of the 3-length tuples and 3-depth ``~pandas.MultiIndex``
+                correspond to :attr:`~.Dataset.COLUMN_LEVEL_NAMES` in this order.
+                In the case of a string,
+                it corresponds to the variable name
+                and the :attr:`~.Dataset.DEFAULT_GROUP` is used.
+
+        Returns:
+            The dataset built from the pandas :class:`~pandas.DataFrame`.
+
+        Raises:
+            ValueError: If the ``columns`` attribute is
+                neither a 3-depth ``~pandas.MultiIndex``,
+                nor a sequence of 3-length tuples and strings.
+        """
+        dataset_multi_index_depth = len(cls.COLUMN_LEVEL_NAMES)
+        if isinstance(dataframe.columns, MultiIndex):
+            if dataframe.columns.nlevels == dataset_multi_index_depth:
+                dataframe.columns.names = cls.COLUMN_LEVEL_NAMES
+                return cls(dataframe)
+
+            msg = (
+                "The DataFrame must have "
+                f"a {dataset_multi_index_depth}-depth MultiIndex for its columns."
+            )
+            raise ValueError(msg)
+
+        columns = []
+        for column in dataframe.columns:
+            if isinstance(column, str):
+                columns.append((cls.DEFAULT_GROUP, column, 0))
+            elif len(column) == dataset_multi_index_depth:
+                columns.append(column)
+            else:
+                msg = (
+                    "The column name must either be a string or "
+                    "a (group_name, variable_name, variable_component) tuple."
+                )
+                raise ValueError(msg)
+
+        return cls(
+            dataframe.to_numpy(),
+            columns=MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES),
+        )
+
+    @classmethod
     def from_array(
         cls,
         data: DataType,
@@ -760,10 +819,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 for component in arange(n_components, dtype=np_int64)
             ])
 
-        index = MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES)
-        dataset = cls(data, columns=index)
-        dataset._reindex()
-        return dataset
+        return cls(
+            data, columns=MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES)
+        )
 
     @classmethod
     def from_txt(
@@ -813,7 +871,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         )
 
     @classmethod
-    def from_csv(cls, file_path: Path | str, delimiter: str = ",") -> Dataset:
+    def from_csv(
+        cls,
+        file_path: Path | str,
+        delimiter: str = ",",
+        first_column_as_index: bool = True,
+    ) -> Dataset:
         """Set the dataset from a CSV file.
 
         The first three rows contain the values of the multi-index
@@ -827,11 +890,16 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         Args:
             file_path: The path to the file containing the data.
             delimiter: The field delimiter.
+            first_column_as_index: Whether the first column is the data index.
 
         Returns:
             A dataset built from the CSV file.
         """
-        dataframe = read_csv(file_path, delimiter=delimiter, header=[0, 1, 2])
+        index_col = 0 if first_column_as_index else None
+
+        dataframe = read_csv(
+            file_path, delimiter=delimiter, header=[0, 1, 2], index_col=index_col
+        )
         dataframe.columns = dataframe.columns.set_levels(
             dataframe.columns.levels[cls.__COMPONENT_LEVEL].astype(np_int64),
             level=cls.__COMPONENT_LEVEL,
@@ -839,21 +907,26 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         dataset = cls(dataframe)
         dataset.columns = dataset.columns.set_names(cls.COLUMN_LEVEL_NAMES)
-        dataset._reindex()
         return dataset
 
     @overload
     def get_columns(
-        self, variable_names: Iterable[str] = (), as_tuple: Literal[False] = False
+        self,
+        variable_names: Iterable[str] = (),
+        as_tuple: Literal[False] = False,
     ) -> list[str]: ...
 
     @overload
     def get_columns(
-        self, variable_names: Iterable[str] = (), as_tuple: Literal[True] = True
+        self,
+        variable_names: Iterable[str] = (),
+        as_tuple: Literal[True] = True,
     ) -> list[tuple[str, str, int]]: ...
 
     def get_columns(
-        self, variable_names: Iterable[str] = (), as_tuple: bool = False
+        self,
+        variable_names: Iterable[str] = (),
+        as_tuple: bool = False,
     ) -> list[str | tuple[str, str, int]]:
         """Return the columns based on variable names.
 
@@ -984,6 +1057,15 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 list_of_dict_of_arrays.append(dict_of_arrays)
 
         if by_entry:
+            if by_group:
+                return [
+                    {
+                        k1: {k2: v2.ravel() for k2, v2 in v1.items()}
+                        for k1, v1 in d.items()
+                    }
+                    for d in list_of_dict_of_arrays
+                ]
+
             return [
                 {k: v.ravel() for k, v in d.items()} for d in list_of_dict_of_arrays
             ]

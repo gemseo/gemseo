@@ -54,6 +54,7 @@ TEST_PARAMETERS = {
             "xlabel": "The xlabel",
             "ylabel": "The ylabel",
             "title": "The title",
+            "grid": False,
         },
         ["AndrewsCurves_properties"],
     ),
@@ -68,7 +69,7 @@ TEST_PARAMETERS = {
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
-def test_plot(properties, baseline_images, dataset, pyplot_close_all, fig_and_axes):
+def test_plot(properties, baseline_images, dataset, fig_and_axes) -> None:
     """Test images created by AndrewsCurves._plot against references."""
     plot = AndrewsCurves(dataset, classifier="c")
     fig, axes = (
@@ -79,7 +80,7 @@ def test_plot(properties, baseline_images, dataset, pyplot_close_all, fig_and_ax
     plot.execute(save=False, fig=fig, axes=axes)
 
 
-def test_error(dataset):
+def test_error(dataset) -> None:
     """Test an error is raised when a wrong name is given."""
     expected = "Classifier must be one of these names: c, x, y and z."
     with pytest.raises(ValueError, match=re.escape(expected)):

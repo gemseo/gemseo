@@ -21,8 +21,6 @@ from typing import TYPE_CHECKING
 from gemseo.post.dataset._matplotlib.plot import MatplotlibPlot
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
     from numpy.typing import ArrayLike
@@ -36,7 +34,7 @@ class Curves(MatplotlibPlot):
         fig: Figure | None,
         axes: Axes | None,
         y_values: ArrayLike,
-        labels: Iterable[str],
+        labels: list[str],
     ) -> list[Figure]:
         """
         Args:
@@ -45,6 +43,12 @@ class Curves(MatplotlibPlot):
             labels: The labels of the curves.
         """  # noqa: D205 D212 D415
         fig, axes = self._get_figure_and_axes(fig, axes)
+        self._common_settings.set_colors(self._common_settings.color)
+        self._common_settings.set_linestyles(
+            self._common_settings.linestyle
+            or ["-"]
+            + [(0, (i, 1, 1, 1)) for i in range(1, self._common_settings.n_items)]
+        )
         mesh_name = self._specific_settings.mesh
         mesh = self._common_dataset.misc[mesh_name]
         for sub_y_values, line_style, color, label in zip(
@@ -56,6 +60,8 @@ class Curves(MatplotlibPlot):
             axes.plot(
                 mesh, sub_y_values, linestyle=line_style, color=color, label=label
             )
+
+        axes.grid(visible=self._common_settings.grid)
         axes.set_xlabel(self._common_settings.xlabel or mesh_name)
         axes.set_ylabel(
             self._common_settings.ylabel

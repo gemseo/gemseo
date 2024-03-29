@@ -30,7 +30,20 @@ from gemseo.core.mdofunctions.func_operations import RestrictedFunction
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import RosenMF
+
+
+@pytest.mark.parametrize(
+    ("input_names", "expected_expr"),
+    [(["x"], "foo(A.x)"), (["x1", "x2"], "foo(A.(x1, x2)')")],
+)
+def test_linear_composition_expr(input_names, expected_expr):
+    """Check the expression of a LinearCombination."""
+    linear_composition = LinearComposition(
+        MDOFunction(lambda x: x, "foo", input_names=input_names), array([[1]])
+    )
+    assert linear_composition.expr == expected_expr
 
 
 def test_linear_composition():

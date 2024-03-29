@@ -61,9 +61,8 @@ class SPComposedDistribution(ComposedDistribution):
             NotImplementedError: When the copula is not ``None``.
         """  # noqa: D205 D212 D415
         if copula is not None:
-            raise NotImplementedError(
-                "There is not copula distribution yet for SciPy-based distributions."
-            )
+            msg = "There is not copula distribution yet for SciPy-based distributions."
+            raise NotImplementedError(msg)
 
         super().__init__(distributions, copula=copula, variable=variable)
         self.distribution = distributions

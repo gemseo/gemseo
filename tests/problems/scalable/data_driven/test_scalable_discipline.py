@@ -51,7 +51,7 @@ class ScalableProblem(unittest.TestCase):
     scalable_disciplines = None
     scalable_model = "ScalableDiagonalModel"
 
-    def setUp(self):
+    def setUp(self) -> None:
         """At creation of unittest, initiate a Sobieski problem class."""
         if ScalableProblem.problem is not None:
             return
@@ -68,7 +68,7 @@ class ScalableProblem(unittest.TestCase):
             ScalableProblem.sizes = sizes
             ScalableProblem.scalable_disciplines = self.create_scalable_disciplines()
 
-    def test_serialize(self):
+    def test_serialize(self) -> None:
         disc = ScalableProblem.scalable_disciplines[0]
         outf = "scalable.o"
         disc.to_pickle(outf)
@@ -92,7 +92,8 @@ class ScalableProblem(unittest.TestCase):
             if name in out_d:
                 return out_d[name]
 
-            raise ValueError("Unknown data ", name)
+            msg = "Unknown data "
+            raise ValueError(msg, name)
         if name == "y_4":
             return 0.5 * np.ones(1)
         if name.startswith("y"):
@@ -146,7 +147,7 @@ class ScalableProblem(unittest.TestCase):
         return ScalableProblem.scalable_disciplines
 
     # TESTS
-    def test_plot_splines(self):
+    def test_plot_splines(self) -> None:
         """Test plot splines."""
         for discipline in ScalableProblem.scalable_disciplines:
             model = discipline.scalable_model
@@ -155,19 +156,19 @@ class ScalableProblem(unittest.TestCase):
             for fname in files:
                 assert exists(fname)
 
-    def test_execute(self):
+    def test_execute(self) -> None:
         """Verify that the scalable_models can be executed."""
         for disc in ScalableProblem.scalable_disciplines:
             disc.scalable_model.scalable_function()
             disc.scalable_model.scalable_derivatives()
 
-    def test_plot_dependency(self):
+    def test_plot_dependency(self) -> None:
         """Plot the dependency matrices."""
         for disc in ScalableProblem.scalable_disciplines:
             fname = disc.scalable_model.plot_dependency(show=False, save=True)
             assert exists(fname)
 
-    def test_grad_funcs(self):
+    def test_grad_funcs(self) -> None:
         """"""
         formulation = "MDF"
         dv_names = ["x_shared", "x_1", "x_2", "x_3"]
@@ -196,9 +197,9 @@ class ScalableProblem(unittest.TestCase):
 
         scenario = MDOScenario(
             ScalableProblem.scalable_disciplines,
-            formulation=formulation,
-            objective_name="y_4",
-            design_space=design_space,
+            formulation,
+            "y_4",
+            design_space,
             maximize_objective=True,
         )
         scenario.set_differentiation_method("finite_differences")
@@ -206,7 +207,7 @@ class ScalableProblem(unittest.TestCase):
         # add disciplinary constraints
         cstr_threshold = 0.5
         for cstr in ["g_1", "g_2", "g_3"]:
-            scenario.add_constraint(cstr, "ineq", value=cstr_threshold)
+            scenario.add_constraint(cstr, constraint_type="ineq", value=cstr_threshold)
 
         opt_pb = scenario.formulation.opt_problem
 
@@ -214,7 +215,7 @@ class ScalableProblem(unittest.TestCase):
         for func in opt_pb.get_all_functions():
             func.check_grad(opt_pb.design_space.get_current_value())
 
-    def test_grad(self):
+    def test_grad(self) -> None:
         """Verify the analytical gradients against finite differences."""
         for disc in ScalableProblem.scalable_disciplines:
             assert disc.check_jacobian(
@@ -224,7 +225,7 @@ class ScalableProblem(unittest.TestCase):
                 linearization_mode="auto",
             )
 
-    def test_group_dep(self):
+    def test_group_dep(self) -> None:
         hdf_node_path = ScalableProblem.original_disciplines[3].name
         with (Path(__file__).parent / f"{hdf_node_path}.pkl").open("rb") as f:
             pickler = pickle.Unpickler(f)

@@ -27,7 +27,6 @@
 from __future__ import annotations
 
 import cmath
-import logging
 import math
 import random
 from collections import namedtuple
@@ -53,8 +52,6 @@ from gemseo.problems.sobieski.core.utils import SobieskiBase
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
-
-LOGGER = logging.getLogger(__name__)
 
 
 _Disciplines = namedtuple(
@@ -236,7 +233,8 @@ class SobieskiProblem:
             self.__math = math
             self.__dtype = float64
         else:
-            raise ValueError(f"Unknown dtype: {dtype}.")
+            msg = f"Unknown dtype: {dtype}."
+            raise ValueError(msg)
 
         self.__base = SobieskiBase(dtype=dtype)
 

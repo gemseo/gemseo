@@ -81,7 +81,7 @@ sc_prop = create_scenario(
     propu,
     "DisciplinaryOpt",
     "y_34",
-    design_space=deepcopy(design_space).filter("x_3"),
+    design_space.filter("x_3", copy=True),
     name="PropulsionScenario",
 )
 sc_prop.default_inputs = sub_sc_opts
@@ -95,7 +95,7 @@ sc_aero = create_scenario(
     aero,
     "DisciplinaryOpt",
     "y_24",
-    deepcopy(design_space).filter("x_2"),
+    design_space.filter("x_2", copy=True),
     name="AerodynamicsScenario",
     maximize_objective=True,
 )
@@ -111,7 +111,7 @@ sc_str = create_scenario(
     struct,
     "DisciplinaryOpt",
     "y_11",
-    deepcopy(design_space).filter("x_1"),
+    design_space.filter("x_1", copy=True),
     name="StructureScenario",
     maximize_objective=True,
 )
@@ -123,13 +123,11 @@ sc_str.default_inputs = sub_sc_opts
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # This scenario is based on the three previous sub-scenarios and on the
 # Mission and aims to maximize the range (Breguet).
-sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
-design_space = deepcopy(design_space).filter("x_shared")
 system_scenario = create_scenario(
-    sub_disciplines,
+    [sc_prop, sc_aero, sc_str, mission],
     "BiLevel",
     "y_4",
-    design_space,
+    design_space.filter("x_shared", copy=True),
     apply_cstr_tosub_scenarios=False,
     parallel_scenarios=False,
     multithread_scenarios=True,
@@ -138,7 +136,7 @@ system_scenario = create_scenario(
     maximize_objective=True,
     sub_scenarios_log_level=WARNING,
 )
-system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+system_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
 
 # %%
 # Visualize the XDSM

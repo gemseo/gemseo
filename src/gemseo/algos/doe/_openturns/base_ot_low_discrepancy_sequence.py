@@ -21,12 +21,13 @@ from typing import Any
 from typing import ClassVar
 
 from numpy import array
-from numpy import ndarray
 
 from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
 
 if TYPE_CHECKING:
     from openturns import LowDiscrepancySequenceImplementation
+
+    from gemseo.typing import RealArray
 
 
 class BaseOTLowDiscrepancySequence(BaseOTDOE):
@@ -36,5 +37,5 @@ class BaseOTLowDiscrepancySequence(BaseOTDOE):
 
     def generate_samples(  # noqa: D102
         self, n_samples: int, dimension: int, **options: Any
-    ) -> ndarray:
+    ) -> RealArray:
         return array(self._ALGO_CLASS(dimension).generate(n_samples))

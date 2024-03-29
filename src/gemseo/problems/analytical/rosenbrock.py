@@ -88,9 +88,8 @@ class Rosenbrock(OptimizationProblem):
         self.objective = MDOFunction(
             rosen,
             name="rosen",
-            f_type=MDOFunction.FunctionType.OBJ,
             jac=rosen_der,
-            expr="sum(100*(x[1:] - x[:-1]**2)**2 + (1 - x[:-1])**2",
+            expr="sum( 100*(x[1:] - x[:-1]**2)**2 + (1 - x[:-1])**2 )",
             input_names=args,
         )
 

@@ -18,24 +18,25 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from numbers import Number
-from operator import mul
-from operator import truediv
 from re import Pattern
 from re import compile
 from re import search
 from typing import TYPE_CHECKING
 from typing import Final
 
+import numpy
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import add as _add
+from numpy import atleast_2d
 from numpy import ndarray
 from numpy import subtract as _subtract
+from numpy import tile
 
 if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_function import ArrayType
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.core.mdofunctions.mdo_function import OperatorType
     from gemseo.core.mdofunctions.mdo_function import OutputType
+    from gemseo.typing import NumberArray
 
 
 class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
@@ -52,7 +53,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         self,
         cls: type[MDOFunction],
         first_operand: MDOFunction,
-        second_operand: MDOFunction | Number,
+        second_operand: MDOFunction | ndarray | Number,
         operator: OperatorType,
         operator_repr: str,
     ) -> None:
@@ -67,6 +68,8 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             TypeError: When the second operand is
                 neither an :class:`.MDOFunction` nor a ``Number``.
+            RuntimeError: When one operand expects normalized inputs
+                while the other does not.
         """  # noqa: D205, D212, D415
         f_type = ""
         expr = ""
@@ -79,10 +82,24 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         self._operator = operator
         self._operator_repr = operator_repr
         if not self._second_operand_is_number and not self._second_operand_is_func:
-            raise TypeError(
+            msg = (
                 f"Unsupported {operator_repr} operator "
                 f"for MDOFunction and {type(self._second_operand)}."
             )
+            raise TypeError(msg)
+
+        if (
+            self._second_operand_is_func
+            and self._first_operand.expects_normalized_inputs
+            != self._second_operand.expects_normalized_inputs
+        ):
+            msg = (
+                "The operation cannot be performed because "
+                "one function expects normalized inputs "
+                "while the other does not."
+            )
+            raise RuntimeError(msg)
+
         if self._second_operand_is_func:
             self._second_operand_expr = self._second_operand.expr
             self._second_operand_name = self._second_operand.name
@@ -131,6 +148,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
             original_name=first_operand.original_name
             if self._second_operand_is_number
             else "",
+            expects_normalized_inputs=self._first_operand.expects_normalized_inputs,
         )
 
     @classmethod
@@ -185,7 +203,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
             True,
         )
 
-    def _compute_operation(self, input_value: ArrayType) -> OutputType:
+    def _compute_operation(self, input_value: NumberArray) -> OutputType:
         """Compute the result of the operation..
 
         Args:
@@ -201,7 +219,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         return self._operator(self._first_operand(input_value), second_operand)
 
     @abstractmethod
-    def _compute_operation_jacobian(self, input_value: ArrayType) -> OutputType:
+    def _compute_operation_jacobian(self, input_value: NumberArray) -> OutputType:
         """Compute the Jacobian of the operation..
 
         Args:
@@ -262,13 +280,16 @@ class _AdditionFunctionMaker(_OperationFunctionMaker):
             "-" if inverse else "+",
         )
 
-    def _compute_operation_jacobian(self, input_value: ArrayType) -> ArrayType:
+    def _compute_operation_jacobian(self, input_value: NumberArray) -> NumberArray:
         if self._second_operand_is_number:
             return self._first_operand._jac(input_value)
 
-        return self._operator(
-            self._first_operand._jac(input_value),
-            self._second_operand._jac(input_value),
+        if self._operator_repr == "+":
+            return self._first_operand._jac(input_value) + self._second_operand._jac(
+                input_value
+            )
+        return self._first_operand._jac(input_value) - self._second_operand._jac(
+            input_value
         )
 
 
@@ -283,7 +304,7 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
         self,
         cls: type[MDOFunction],
         first_operand: MDOFunction,
-        second_operand: MDOFunction | Number,
+        second_operand: MDOFunction | OutputType,
         inverse: bool = False,
     ) -> None:
         """
@@ -294,12 +315,12 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
             cls,
             first_operand,
             second_operand,
-            truediv if inverse else mul,
+            numpy.divide if inverse else numpy.multiply,
             "/" if inverse else "*",
         )
 
     def _compute_expr(self) -> str:
-        if self._second_operand_is_number and self._operator == mul:
+        if self._second_operand_is_number and self._operator == numpy.multiply:
             return (
                 self._second_operand_expr
                 + self._operator_repr
@@ -309,7 +330,7 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
         return super()._compute_expr()
 
     def _compute_name(self) -> str:
-        if self._second_operand_is_number and self._operator == mul:
+        if self._second_operand_is_number and self._operator == numpy.multiply:
             return (
                 self._second_operand_name
                 + self._operator_repr
@@ -318,18 +339,22 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
 
         return super()._compute_name()
 
-    def _compute_operation_jacobian(self, input_value: ArrayType) -> ArrayType:
+    def _compute_operation_jacobian(self, input_value: NumberArray) -> NumberArray:
+        first_jac = self._first_operand._jac(input_value)
         if self._second_operand_is_number:
+            if not isinstance(self._second_operand, ndarray):
+                return self._operator(first_jac, self._second_operand)
+
             return self._operator(
-                self._first_operand._jac(input_value), self._second_operand
+                first_jac,
+                tile(self._second_operand, (atleast_2d(first_jac).shape[1], 1)).T,
             )
 
         first_func = self._first_operand(input_value)
         second_func = self._second_operand(input_value)
-        first_jac = self._first_operand._jac(input_value)
         second_jac = self._second_operand._jac(input_value)
 
-        if self._operator == mul:
+        if self._operator == numpy.multiply:
             return first_jac * second_func + second_jac * first_func
 
-        return (first_jac * second_func - second_jac * first_func) / second_jac**2
+        return (first_jac * second_func - second_jac * first_func) / second_func**2

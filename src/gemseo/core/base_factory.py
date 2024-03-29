@@ -32,7 +32,10 @@ from inspect import isabstract
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import NamedTuple
+from typing import Generic
+from typing import TypeVar
+
+from typing_extensions import NamedTuple
 
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.base_multiton import BaseABCMultiton
@@ -42,23 +45,27 @@ from gemseo.utils.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from pathlib import Path
 
     from gemseo.core.grammars.json_grammar import JSONGrammar
 
 LOGGER = logging.getLogger(__name__)
 
 
-class _ClassInfo(NamedTuple):
+T = TypeVar("T", bound=object)
+
+
+class _ClassInfo(NamedTuple, Generic[T]):
     """Information about a class exposed via the factory."""
 
-    class_: type
+    class_: type[T]
     """The class."""
 
     library_name: str
     """The name of the library (the module) that contains the class."""
 
 
-class BaseFactory(metaclass=BaseABCMultiton):
+class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     """A base class for factory of objects.
 
     This factory can create objects from a base class
@@ -113,7 +120,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
     PLUGIN_ENTRY_POINT: ClassVar[str] = "gemseo_plugins"
     """The name of the setuptools entry point for declaring plugins."""
 
-    _names_to_class_info: dict[str, _ClassInfo]
+    _names_to_class_info: dict[str, _ClassInfo[T]]
     """The class names bound to the class information."""
 
     failed_imports: dict[str, str]
@@ -126,12 +133,12 @@ class BaseFactory(metaclass=BaseABCMultiton):
 
     @property
     @abstractmethod
-    def _CLASS(self) -> type:  # noqa: N802
+    def _CLASS(self) -> type[T]:  # noqa: N802
         """The base class that the factory can build."""
 
     @property
     @abstractmethod
-    def _MODULE_NAMES(self) -> list[str]:  # noqa: N802
+    def _MODULE_NAMES(self) -> tuple[str, ...]:  # noqa: N802
         """The fully qualified names of the modules to search."""
 
     def update(self) -> None:
@@ -224,7 +231,9 @@ class BaseFactory(metaclass=BaseABCMultiton):
             except BaseException as error:  # noqa: PERF203
                 self.__record_import_failure(mod_name, error)
 
-    def __record_import_failure(self, name: str, error: Exception | str = "") -> None:
+    def __record_import_failure(
+        self, name: str, error: BaseException | str = ""
+    ) -> None:
         """Record an import failure.
 
         Args:
@@ -234,7 +243,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
         LOGGER.debug("Failed to import module: %s", name, exc_info=True)
         self.failed_imports[name] = str(error)
 
-    def __get_sub_classes(self, cls: type) -> dict[str, type]:
+    def __get_sub_classes(self, cls: type[T]) -> dict[str, type[T]]:
         """Find all the subclasses of a class.
 
         The class names are unique,
@@ -246,7 +255,8 @@ class BaseFactory(metaclass=BaseABCMultiton):
         Returns:
             A mapping from the names to the unique subclasses.
         """
-        all_sub_classes = {}
+        all_sub_classes: dict[str, type[T]] = {}
+        sub_class: type[T]
         for sub_class in cls.__subclasses__():
             all_sub_classes[sub_class.__name__] = sub_class
             all_sub_classes.update(self.__get_sub_classes(sub_class))
@@ -295,7 +305,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
         """
         return self._names_to_class_info[name].library_name
 
-    def get_class(self, name: str) -> type:
+    def get_class(self, name: str) -> type[T]:
         """Return a class from its name.
 
         Args:
@@ -310,9 +320,8 @@ class BaseFactory(metaclass=BaseABCMultiton):
         class_info = self._names_to_class_info.get(name)
         if class_info is None:
             names = ", ".join(self.class_names)
-            raise ImportError(
-                f"The class {name} is not available; the available ones are: {names}.",
-            )
+            msg = f"The class {name} is not available; the available ones are: {names}."
+            raise ImportError(msg)
         return class_info.class_
 
     def create(
@@ -320,7 +329,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
         class_name: str,
         *args: Any,
         **kwargs: Any,
-    ) -> Any:
+    ) -> T:
         """Return an instance of a class.
 
         Args:
@@ -378,7 +387,7 @@ class BaseFactory(metaclass=BaseABCMultiton):
         self,
         name: str,
         write_schema: bool = False,
-        schema_path: str | None = None,
+        schema_path: Path | str = "",
     ) -> JSONGrammar:
         """Return the options JSON grammar for a class.
 
@@ -471,13 +480,11 @@ class BaseFactory(metaclass=BaseABCMultiton):
         for class_info in self._names_to_class_info.values():
             cls = class_info.class_
             msg = ""
-            try:
+            if cls.__doc__ is not None:
                 class_docstring_lines = cls.__doc__.split("\n")
                 while class_docstring_lines and not msg:
                     msg = class_docstring_lines[0]
                     del class_docstring_lines[0]
-            except BaseException:
-                pass
 
             class_name = cls.__name__
             names_to_import_statuses[class_name] = [class_name, "Yes", msg]

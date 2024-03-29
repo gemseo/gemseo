@@ -30,8 +30,16 @@ and to check is a type of scalable model is available
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+from typing import Any
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.problems.scalable.data_driven.model import ScalableModel
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.datasets.io_dataset import IODataset
 
 
 class ScalableModelFactory(BaseFactory):
@@ -44,24 +52,28 @@ class ScalableModelFactory(BaseFactory):
     _CLASS = ScalableModel
     _MODULE_NAMES = ("gemseo.problems.scalable",)
 
-    def create(self, model_name: str, data, sizes=None, **parameters):
+    def create(
+        self,
+        model_name: str,
+        data: IODataset,
+        sizes: Mapping[str, int] | None = None,
+        **parameters: Any,
+    ) -> ScalableModel:
         """Create a scalable model.
 
-        :param str model_name: name of the scalable model (its class name)
-        :param Dataset data: learning dataset.
-        :param dict sizes: sizes of input and output variables.
-            If ``None``, use the original sizes.
-            Default: None.
-        :param parameters: model parameters
-        :return: model_name scalable model
+        Args:
+            model_name: The name of the scalable model (its class name).
+            data: The input-output dataset.
+            sizes: The sizes of the inputs and outputs.
+                If ``None``, use the original sizes.
+            **parameters: model parameters
+
+        Returns:
+            The scalable model.
         """
         return super().create(model_name, data=data, sizes=sizes, **parameters)
 
     @property
     def scalable_models(self) -> list[str]:
-        """Lists the available classes for scalable models.
-
-        :returns: the list of classes names.
-        :rtype: list(str)
-        """
+        """The available scalable models."""
         return self.class_names

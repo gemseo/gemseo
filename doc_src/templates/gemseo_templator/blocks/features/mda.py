@@ -23,7 +23,7 @@ block = Block(
         "using a Multi-Disciplinary Analysis."
     ),
     url="algorithms/mda_algos.html",
-    examples="examples/mda/index.html",
-    info="mdo/mda.html",
-    options="algorithms/mda_algos.html",
+    button_examples_url="examples/mda/index.html",
+    button_info_url="mdo/mda.html",
+    button_types_url="algorithms/mda_algos.html",
 )

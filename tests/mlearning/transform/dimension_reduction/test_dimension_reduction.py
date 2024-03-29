@@ -26,7 +26,7 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
 from gemseo.utils.testing.helpers import concretize_classes
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test constructor."""
     with concretize_classes(DimensionReduction):
         transformer = DimensionReduction(n_components=3)

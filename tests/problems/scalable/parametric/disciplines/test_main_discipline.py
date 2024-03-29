@@ -57,12 +57,12 @@ def core_main_discipline(default_input_values) -> CoreMainDiscipline:
     )
 
 
-def test_wrapped_discipline(main_discipline):
+def test_wrapped_discipline(main_discipline) -> None:
     """Check that MainDiscipline is composed of a CoreMainDiscipline."""
     assert CoreMainDiscipline == main_discipline._CORE_DISCIPLINE_CLASS
 
 
-def test_execution(main_discipline, core_main_discipline):
+def test_execution(main_discipline, core_main_discipline) -> None:
     """Check the execution of MainDiscipline."""
     main_discipline.execute({
         "x_0": array([1.0, 2.0, 1.0, 2.0]),
@@ -74,7 +74,7 @@ def test_execution(main_discipline, core_main_discipline):
     )
 
 
-def test_differentiation(main_discipline, core_main_discipline):
+def test_differentiation(main_discipline, core_main_discipline) -> None:
     """Check the differentiation of MainDiscipline."""
     input_data = {"x_0": array([1.0, 2.0, 1.0, 2.0]), "y_2": array([1.0, 2.0])}
     assert_equal(

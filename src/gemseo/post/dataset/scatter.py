@@ -31,10 +31,9 @@ from typing import TYPE_CHECKING
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from gemseo.datasets.dataset import Dataset
     from gemseo.post.dataset.dataset_plot import VariableType
+    from gemseo.typing import RealArray
 
 from gemseo.post.dataset._trend import Trend as _Trend
 from gemseo.post.dataset._trend import TrendFunctionCreator
@@ -73,7 +72,7 @@ class Scatter(DatasetPlot):
 
     def _create_specific_data_from_dataset(
         self,
-    ) -> tuple[NDArray[float], NDArray[float]]:
+    ) -> tuple[RealArray, RealArray]:
         """
         Returns:
             The values of the points on the x-axis,

@@ -51,7 +51,7 @@ class RelaxationAcceleration(CompositeSequenceTransformer):
         self,
         over_relaxation_factor: float = 1.0,
         acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
-    ):
+    ) -> None:
         """
         Args:
             over_relaxation_factor: The over-relaxation factor.

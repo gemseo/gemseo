@@ -37,7 +37,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiMission
 class TestDataProcessor(unittest.TestCase):
     """"""
 
-    def test_float_data_processor(self):
+    def test_float_data_processor(self) -> None:
         """"""
         dp = FloatDataProcessor()
         in_data = {"a": array([1.1]), "b": array([3.1, 4.1])}
@@ -56,7 +56,7 @@ class TestDataProcessor(unittest.TestCase):
             assert k in in_data
             assert isinstance(v, ndarray)
 
-    def test_complex_data_processor(self):
+    def test_complex_data_processor(self) -> None:
         """"""
         dp = ComplexDataProcessor()
         in_data = {"a": array([1.1 + 2j]), "b": array([3.1, 4.1 + 3j])}
@@ -83,7 +83,7 @@ class TestDataProcessor(unittest.TestCase):
 
         assert sm.local_data["y_4"].dtype == complex128
 
-    def test_name_mapping(self):
+    def test_name_mapping(self) -> None:
         disc = LocalDisc()
         disc.data_processor = NameMapping({"A": "a", "B": "b", "O": "o"})
         out = disc.execute({"A": array([1]), "B": array([2])})
@@ -91,10 +91,10 @@ class TestDataProcessor(unittest.TestCase):
 
 
 class LocalDisc(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["A", "B"])
         self.output_grammar.update_from_names(["O"])
 
-    def _run(self):
+    def _run(self) -> None:
         self.local_data["o"] = self.local_data["a"] + self.local_data["b"]

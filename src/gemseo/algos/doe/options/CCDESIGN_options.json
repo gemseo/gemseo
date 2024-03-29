@@ -24,15 +24,19 @@
       ]
     },
     "center_cc": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": "integer",
-        "maxItems": 2,
-        "minItems": 2
-      }
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "maxItems": 2,
+            "minItems": 2
+          }
+        }
+      ]
     },
     "eval_jac": {
       "type": "boolean"
@@ -48,7 +52,8 @@
     "max_time": {
       "type": "number",
       "minimum": 0.0
-    }
+    },
+    "callbacks": {}
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,

@@ -84,7 +84,7 @@ def hdf5_cache(factory, tmp_wd):
 
 def test_jac_and_outputs_caching(
     simple_cache, memory_full_cache, memory_full_cache_loc, hdf5_cache
-):
+) -> None:
     for cache in [simple_cache, hdf5_cache, memory_full_cache, memory_full_cache_loc]:
         # Test the cache are empty
         assert not cache
@@ -129,7 +129,7 @@ def test_jac_and_outputs_caching(
         assert not cache
 
 
-def test_hdf_cache_read(tmp_wd):
+def test_hdf_cache_read(tmp_wd) -> None:
     cache = HDF5Cache(hdf_file_path="dummy.h5", hdf_node_path="DummyCache")
 
     with pytest.raises(ValueError):
@@ -175,7 +175,7 @@ def test_hdf_cache_read(tmp_wd):
         )
 
 
-def test_update_caches(tmp_wd):
+def test_update_caches(tmp_wd) -> None:
     c1 = HDF5Cache(hdf_file_path="out11.h5", hdf_node_path="DummyCache")
     c2 = HDF5Cache(hdf_file_path="out21.h5", hdf_node_path="DummyCache")
 
@@ -193,7 +193,7 @@ def test_update_caches(tmp_wd):
     assert (jacs["o"]["i"] == 3 * arange(4)).all()
 
 
-def test_collision(tmp_wd):
+def test_collision(tmp_wd) -> None:
     c1 = HDF5Cache(hdf_file_path="out7.h5", hdf_node_path="DummyCache")
     input_data = {"i": arange(3)}
     output_data = {"o": arange(3)}
@@ -213,7 +213,7 @@ def test_collision(tmp_wd):
     assert (c1_outs["o"] == output_data2["o"]).all()
 
 
-def test_hash_data_dict():
+def test_hash_data_dict() -> None:
     input_data = {"i": 10 * arange(3)}
     hash_0 = hash_data_dict(input_data)
     assert isinstance(hash_0, int)
@@ -235,7 +235,7 @@ def test_hash_data_dict():
         ),
     ],
 )
-def test_hash_discontiguous_array(input_c, input_f):
+def test_hash_discontiguous_array(input_c, input_f) -> None:
     """Test that the hashes are the same for discontiguous arrays.
 
     Args:
@@ -260,7 +260,7 @@ def func(x):
         ("float_linux.h5", array([1.0, 2.0, 3.0]), array([1.0, 2.0, 3.0])),
     ],
 )
-def test_det_hash(tmp_wd, hdf_name, inputs, expected):
+def test_det_hash(tmp_wd, hdf_name, inputs, expected) -> None:
     """Test that hashed values are the same across sessions.
 
     Args:
@@ -276,13 +276,13 @@ def test_det_hash(tmp_wd, hdf_name, inputs, expected):
     assert out["y"].all() == expected.all()
 
 
-def test_to_real():
+def test_to_real() -> None:
     assert to_real(1.0j * arange(3)).dtype == float64
     assert to_real(1.0 * arange(3)).dtype == float64
     assert (to_real(1.0j * arange(3) + arange(3)) == 1.0 * arange(3)).all()
 
 
-def test_write_data(tmp_wd):
+def test_write_data(tmp_wd) -> None:
     file_sing = HDF5FileSingleton("out2.h5")
     input_data = {"i": arange(3)}
     file_sing.write_data(input_data, "group", 1, "node")
@@ -299,7 +299,7 @@ def test_write_data(tmp_wd):
 #                               2, "node", h5_file)
 
 
-def test_read_hashes(tmp_wd):
+def test_read_hashes(tmp_wd) -> None:
     file_sing = HDF5FileSingleton("out1.h5")
     input_data = {"i": arange(3)}
     file_sing.write_data(input_data, "group", 1, "node")
@@ -313,7 +313,7 @@ def test_read_hashes(tmp_wd):
     file_sing.read_hashes(hashes_dict, "node")
 
 
-def test_read_group(tmp_wd):
+def test_read_group(tmp_wd) -> None:
     """Check that a group is correctly read."""
     cache = HDF5Cache(hdf_file_path="out3.h5")
     input_data = {"x": arange(3), "y": arange(3)}
@@ -326,12 +326,12 @@ def test_read_group(tmp_wd):
 
 def test_get_all_data(
     simple_cache, memory_full_cache, memory_full_cache_loc, hdf5_cache
-):
+) -> None:
     inputs = {"x": arange(3), "y": arange(3)}
     outputs = {"f": array([1])}
     for cache in [simple_cache, hdf5_cache, memory_full_cache, memory_full_cache_loc]:
         cache.cache_outputs(inputs, outputs)
-        all_data = list(cache)
+        all_data = list(cache.get_all_entries())
         assert len(all_data) == 1
         assert_items_equal(all_data[0].inputs, inputs)
         assert_items_equal(all_data[0].outputs, outputs)
@@ -342,13 +342,13 @@ def test_get_all_data(
     hdf5_cache.cache_jacobian({"x": arange(3), "y": arange(3)}, jac)
 
 
-def test_all_data(memory_full_cache, memory_full_cache_loc, hdf5_cache):
+def test_all_data(memory_full_cache, memory_full_cache_loc, hdf5_cache) -> None:
     for cache in [hdf5_cache, memory_full_cache, memory_full_cache_loc]:
         jac = {"f": {"x": eye(1, 3), "y": eye(1, 3)}}
         cache.cache_outputs({"x": arange(3), "y": arange(3)}, {"f": array([1])})
         cache.cache_jacobian({"x": arange(3), "y": arange(3)}, jac)
         cache.cache_outputs({"x": arange(3) * 2, "y": arange(3)}, {"f": array([2])})
-        all_data = iter(cache)
+        all_data = iter(cache.get_all_entries())
         data = next(all_data)
         assert_items_equal(data.inputs, {"x": arange(3), "y": arange(3)})
         assert_items_equal(data.outputs, {"f": array([1])})
@@ -357,14 +357,14 @@ def test_all_data(memory_full_cache, memory_full_cache_loc, hdf5_cache):
         assert_items_equal(data.outputs, {"f": array([2])})
 
 
-def assert_items_equal(data1, data2):
+def assert_items_equal(data1, data2) -> None:
     assert len(data1) == len(data2)
     for key, val in data1.items():
         assert key in data2
         assert (val == data2[key]).all()
 
 
-def test_addition():
+def test_addition() -> None:
     cache1 = CacheFactory().create("MemoryFullCache")
     cache1.cache_outputs({"x": arange(3), "y": arange(3)}, {"f": array([1])})
 
@@ -377,7 +377,7 @@ def test_addition():
     cache2.cache_outputs({"x": arange(3) * 2, "y": arange(3)}, {"f": array([1]) * 2})
     cache3 = cache1 + cache2
     assert len(cache3) == 2
-    all_data = iter(cache3)
+    all_data = iter(cache3.get_all_entries())
     data = next(all_data)
     assert_items_equal(data.inputs, {"x": arange(3), "y": arange(3)})
     assert_items_equal(data.outputs, {"f": array([1])})
@@ -386,7 +386,7 @@ def test_addition():
     assert_items_equal(data.outputs, {"f": array([2])})
 
 
-def test_duplicate_from_scratch(memory_full_cache, hdf5_cache):
+def test_duplicate_from_scratch(memory_full_cache, hdf5_cache) -> None:
     hdf5_cache._copy_empty_cache()
     memory_full_cache._copy_empty_cache()
 
@@ -398,7 +398,7 @@ def memory_cache(memory_full_cache, memory_full_cache_loc, request) -> MemoryFul
     return (memory_full_cache, memory_full_cache_loc)[request.param]
 
 
-def test_multithreading(memory_cache, sellar_disciplines):
+def test_multithreading(memory_cache, sellar_disciplines) -> None:
     s_1 = sellar_disciplines.sellar1
     s_s = sellar_disciplines.sellar_system
     s_1.cache = memory_cache
@@ -421,7 +421,7 @@ def test_multithreading(memory_cache, sellar_disciplines):
     assert nexec_2 == s_s.n_calls
 
 
-def test_copy(memory_full_cache):
+def test_copy(memory_full_cache) -> None:
     input_data = {"i": arange(3)}
     data_out = {"o": arange(4)}
     memory_full_cache.cache_outputs(input_data, data_out)
@@ -435,23 +435,23 @@ def test_copy(memory_full_cache):
     assert len(memory_full_cache) == 2
 
 
-def test_hdf5singleton(tmp_wd):
+def test_hdf5singleton(tmp_wd) -> None:
     node = "node"
     file_path = "singleton.h5"
     CacheFactory().create("HDF5Cache", hdf_file_path=file_path, hdf_node_path=node)
     singleton = HDF5FileSingleton(file_path)
     data = {"x": array([0.0])}
-    singleton.write_data(data, HDF5Cache._INPUTS_GROUP, 1, node)
+    singleton.write_data(data, HDF5Cache.Group.INPUTS, 1, node)
     with pytest.raises(RuntimeError):
         singleton.write_data(
             data,
-            HDF5Cache._INPUTS_GROUP,
+            HDF5Cache.Group.INPUTS,
             1,
             node,
         )
 
 
-def test_hash_data_dict_keys():
+def test_hash_data_dict_keys() -> None:
     """Check that hash considers the keys of the dictionary."""
     data = {"a": array([1]), "b": array([2])}
     assert hash_data_dict(data) == hash_data_dict({"a": array([1]), "b": array([2])})
@@ -473,18 +473,18 @@ def h5_file(tmp_wd) -> Iterator[h5py.File]:
     h5_file.close()
 
 
-def test_check_version_new_file():
-    """Verify that a non existing file passes the file format version check."""
+def test_check_version_new_file() -> None:
+    """Verify that a non-existing file passes the file format version check."""
     HDF5FileSingleton("foo")
 
 
-def test_check_version_empty_file(h5_file):
+def test_check_version_empty_file(h5_file) -> None:
     """Verify that an empty file passes the file format version check."""
     HDF5FileSingleton(CACHE_FILE_NAME)
 
 
-def test_check_version_missing(h5_file):
-    """Verify that an non empty file with no file format version raises."""
+def test_check_version_missing(h5_file) -> None:
+    """Verify that a non-empty file with no file format version raises."""
     h5_file["foo"] = "bar"
 
     with pytest.raises(
@@ -497,37 +497,35 @@ def test_check_version_missing(h5_file):
         HDF5FileSingleton(CACHE_FILE_NAME)
 
 
-def test_check_version_greater(h5_file):
-    """Verify that an non empty file with greater file format version raises."""
+def test_check_version_greater(h5_file) -> None:
+    """Verify that a non-empty file with greater file format version raises."""
     h5_file["foo"] = "bar"
     h5_file.attrs["version"] = HDF5FileSingleton.FILE_FORMAT_VERSION + 1
 
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The file cache.h5 cannot be used because its file format version is {} "
-            "while the expected version is {}: "
-            "see HDFCache.update_file_format to convert it.".format(
-                HDF5FileSingleton.FILE_FORMAT_VERSION + 1,
-                HDF5FileSingleton.FILE_FORMAT_VERSION,
-            )
+            "The file cache.h5 cannot be used because its file format version is "
+            f"{HDF5FileSingleton.FILE_FORMAT_VERSION + 1}"
+            f"while the expected version is {HDF5FileSingleton.FILE_FORMAT_VERSION}: "
+            "see HDFCache.update_file_format to convert it."
         ),
     ):
         HDF5FileSingleton(CACHE_FILE_NAME)
 
 
-def test_update_file_format(tmp_wd):
+def test_update_file_format(tmp_wd) -> None:
     """Check that updating format changes both hashes and version tag."""
     singleton = HDF5FileSingleton(CACHE_FILE_NAME)
     singleton.write_data(
         {"x": array([1.0]), "y": array([2.0, 3.0])},
-        HDF5Cache._INPUTS_GROUP,
+        HDF5Cache.Group.INPUTS,
         1,
         "foo",
     )
     singleton.write_data(
         {"x": array([2.0]), "y": array([3.0, 4.0])},
-        HDF5Cache._INPUTS_GROUP,
+        HDF5Cache.Group.INPUTS,
         2,
         "foo",
     )
@@ -544,7 +542,7 @@ def test_update_file_format(tmp_wd):
         assert h5_file["foo"]["2"][HDF5FileSingleton.HASH_TAG][0] != old_hash_2
 
 
-def test_update_file_format_from_deprecated_file(tmp_wd):
+def test_update_file_format_from_deprecated_file(tmp_wd) -> None:
     """Check that a file with a deprecated format can be correctly updated."""
     deprecated_cache_path = "cache_with_deprecated_format.h5"
     # This file has been obtained with GEMSEO 3.1.0:
@@ -560,8 +558,8 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
 
     file_format_version = HDF5FileSingleton.FILE_FORMAT_VERSION
     hash_tag = HDF5FileSingleton.HASH_TAG
-    inputs_group = HDF5Cache._INPUTS_GROUP
-    outputs_group = HDF5Cache._OUTPUTS_GROUP
+    inputs_group = HDF5Cache.Group.INPUTS
+    outputs_group = HDF5Cache.Group.OUTPUTS
     with h5py.File(str(cache_path), mode="a") as h5_file:  # noqa: SIM117
         with h5py.File(str(deprecated_cache_path), mode="a") as deprecated_h5_file:
             assert h5_file.attrs["version"] == file_format_version
@@ -573,24 +571,24 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
             assert new_h5[outputs_group]["y"][0] == old_h5[outputs_group]["y"][0]
 
 
-def test_iter(memory_full_cache):
+def test_get_entries(memory_full_cache) -> None:
     """Check that a cache can be iterated with namedtuple values."""
     memory_full_cache.cache_outputs({"x": array([0])}, {"y": array([0])})
     memory_full_cache.cache_outputs({"x": array([1])}, {"y": array([1])})
-    for index, data in enumerate(memory_full_cache):
+    for index, data in enumerate(memory_full_cache.get_all_entries()):
         assert data[0]["x"] == array([index])
         assert data[1]["y"] == array([index])
-        assert data[2] is None
+        assert not data[2]
         assert data.inputs["x"] == array([index])
         assert data.outputs["y"] == array([index])
-        assert data.jacobian is None
+        assert not data.jacobian
 
 
 @pytest.mark.parametrize(
     "jacobian_data",
     [None, {"y": {"x": array([[1]])}}],
 )
-def test_setitem_getitem(simple_cache, jacobian_data):
+def test_setitem_getitem(simple_cache, jacobian_data) -> None:
     """Check that a cache can be read and set with __getitem__ and __setitem__."""
     simple_cache[{"x": array([0])}] = ({"y": array([1])}, jacobian_data)
     assert simple_cache.last_entry.inputs["x"] == array([0])
@@ -602,7 +600,7 @@ def test_setitem_getitem(simple_cache, jacobian_data):
         assert not simple_cache.last_entry.jacobian
 
 
-def test_getitem_missing_entry(simple_cache):
+def test_getitem_missing_entry(simple_cache) -> None:
     """Verify that querying a missing entry returns an empty CacheEntry."""
     data = simple_cache[{"x": array([2])}]
     assert data.inputs["x"] == array([2])
@@ -610,7 +608,7 @@ def test_getitem_missing_entry(simple_cache):
     assert not data.jacobian
 
 
-def test_setitem_empty_data(simple_cache, caplog):
+def test_setitem_empty_data(simple_cache, caplog) -> None:
     """Verify that adding an empty data to the cache logs a warning."""
     with caplog.at_level(logging.WARNING):
         simple_cache[{"x": array([1.0])}] = (None, None)
@@ -626,7 +624,7 @@ def test_setitem_empty_data(simple_cache, caplog):
 @pytest.mark.parametrize("categorize", [False, True])
 def test_export_to_dataset_and_entries(
     simple_cache, first_jacobian, second_jacobian, first_outputs, categorize
-):
+) -> None:
     """Check exporting a simple cache to a dataset and entries.
 
     Only the last observation should be exported, without its Jacobian.
@@ -653,7 +651,7 @@ def test_export_to_dataset_and_entries(
     assert simple_cache.last_entry == last_entry
 
     # Check __iter__
-    entries = list(simple_cache)
+    entries = list(simple_cache.get_all_entries())
     assert len(entries) == 1
     assert entries[0] == last_entry
 
@@ -669,7 +667,7 @@ def test_export_to_dataset_and_entries(
         },
     ],
 )
-def test_names_to_sizes(simple_cache, data):
+def test_names_to_sizes(simple_cache, data) -> None:
     """Verify the ``names_to_sizes`` attribute."""
     simple_cache.cache_outputs({"index": 1}, {"o": data})
     assert simple_cache.names_to_sizes == {"index": 1, "o": 2}

@@ -3,17 +3,37 @@
   "description": "Axial DOE algorithm from the OpenTURNS library",
   "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.Axial.html",
   "required": [
+    "n_samples",
     "levels"
   ],
   "properties": {
+    "n_samples": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        }
+      ]
+    },
     "levels": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "number",
-        "minimum": 0,
-        "exclusiveMinimum": true
-      }
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "exclusiveMinimum": true
+          }
+        }
+      ]
     },
     "centers": {
       "type": [
@@ -22,7 +42,11 @@
       ],
       "items": {
         "type": "number",
-        "minItems": 1
+        "minItems": 1,
+        "minimum": 0,
+        "maximum": 1,
+        "exclusiveMinimum": true,
+        "exclusiveMaximum": true
       }
     },
     "eval_jac": {
@@ -50,7 +74,8 @@
     "max_time": {
       "type": "number",
       "minimum": 0.0
-    }
+    },
+    "callbacks": {}
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,

@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import empty
@@ -32,8 +31,6 @@ from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFu
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
-from gemseo.core.mdofunctions.mdo_function import ArrayType
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -41,8 +38,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.base_formulation import BaseFormulation
     from gemseo.core.discipline import MDODiscipline
-
-LOGGER = logging.getLogger(__name__)
+    from gemseo.typing import NumberArray
 
 
 class FunctionFromDiscipline(LinearCandidateFunction):
@@ -105,7 +101,6 @@ class FunctionFromDiscipline(LinearCandidateFunction):
             self._func_to_wrap,
             jac=self._jac_to_wrap,
             name=self.__out_x_func.name,
-            f_type=MDOFunction.FunctionType.OBJ,
             input_names=self.__x_names,
             expr=self.__out_x_func.expr,
             dim=self.__out_x_func.dim,
@@ -120,7 +115,7 @@ class FunctionFromDiscipline(LinearCandidateFunction):
     def input_dimension(self) -> int | None:  # noqa: D102
         return self.__out_x_func.input_dimension
 
-    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _func_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the outputs.
 
         Args:
@@ -135,7 +130,7 @@ class FunctionFromDiscipline(LinearCandidateFunction):
             )
         return self.__out_x_func(x_vect[self.__x_mask])
 
-    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the gradient of the outputs.
 
         Args:

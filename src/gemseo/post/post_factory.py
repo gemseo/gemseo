@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -31,8 +30,6 @@ from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-LOGGER = logging.getLogger(__name__)
 
 
 class PostFactory(BaseFactory):

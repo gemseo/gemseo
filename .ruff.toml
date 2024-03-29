@@ -3,14 +3,12 @@ unsafe-fixes = true
 preview = true
 target-version = "py39"
 src = ["src"]
-task-tags = ["TODO"]
 
 [lint]
+task-tags = ["TODO"]
 ignore = [
     # Conflicts with ruff format.
     "E203",
-    # Checks for undocumented magic method definitions.
-    "D105",
     # Checks for noqa directives that are no longer applicable.
     "RUF100",
     # Checks for long exception messages that are not defined in the exception class itself.
@@ -39,8 +37,16 @@ ignore = [
     "PLW1641",
     # Fixture does not return anything, add leading underscore.
     "PT004",
+    # Checks for undocumented magic method definitions.
+    "D105",
     # Missing argument description in the docstring.
     "D417",
+    # Missing type annotation for `self` in method.
+    "ANN101",
+    # Missing type annotation for `cls` in classmethod.
+    "ANN102",
+    # Dynamically typed expressions (typing.Any) are disallowed.
+    "ANN401",
 ]
 select = [
     "A",
@@ -55,8 +61,10 @@ select = [
     "N",
     "T",
     "W",
+    "EM",
     "UP",
     "PT",
+#    "ANN",
     "FLY",
     "ISC",
     "LOG",
@@ -75,9 +83,11 @@ select = [
     "SLOT",
     "FURB",
     "PERF",
+    "TRIO",
 #    "C",
 #    "S",
 #    "PL",
+#    "PD",
 #    "BLE",
 #    "FBT",
 ]

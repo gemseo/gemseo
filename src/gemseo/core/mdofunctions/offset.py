@@ -18,17 +18,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from numbers import Number
 
+    from gemseo.typing import NumberArray
+
 
 class Offset(MDOFunction):
     """Wrap an MDOFunction plus an offset value."""
 
-    def __init__(self, value: ArrayType | Number, mdo_function: MDOFunction) -> None:
+    def __init__(self, value: NumberArray | Number, mdo_function: MDOFunction) -> None:
         """
         Args:
             value: The offset value.

@@ -94,7 +94,7 @@ def compare_approximations(
     assert error <= ermax
 
 
-def test_scaling():
+def test_scaling() -> None:
     """Test that the scaling option works properly."""
     _, result, problem = build_history(ROSENBROCK_2_LB_UB_PATH)
 
@@ -145,7 +145,7 @@ def compute_error(
     return (norm(h_approx - h_ref) / norm(h_ref)) * 100
 
 
-def test_baseclass_methods():
+def test_baseclass_methods() -> None:
     """Test the different types of hessian approximation."""
     _, _, problem = build_history(ROSENBROCK_2_PATH)
     database = problem.database
@@ -207,7 +207,7 @@ def test_baseclass_methods():
         )
 
 
-def test_get_x_grad_history_on_sobieski():
+def test_get_x_grad_history_on_sobieski() -> None:
     """Test the gradient history on the Sobieski problem."""
     opt_pb = OptimizationProblem.from_hdf(MDF_HIST_PATH)
     apprx = HessianApproximation(opt_pb.database)
@@ -264,7 +264,7 @@ def test_get_x_grad_history_on_sobieski():
         apprx.get_x_grad_history("g_2")
 
 
-def test_n_2():
+def test_n_2() -> None:
     """Test the hessian approximation with the Rosenbrock problem at n=2."""
     h_ref, _, problem = build_history(ROSENBROCK_2_PATH)
     compare_approximations(h_ref, BFGSApprox, problem, first_iter=8, ermax=3.0)
@@ -275,7 +275,7 @@ def test_n_2():
     )
 
 
-def test_n_5():
+def test_n_5() -> None:
     """Test the hessian approximation with the Rosenbrock problem at n=5."""
     h_ref, _, problem = build_history(ROSENBROCK_5_PATH)
     compare_approximations(h_ref, BFGSApprox, problem, first_iter=5, ermax=30.0)
@@ -286,7 +286,7 @@ def test_n_5():
     )
 
 
-def test_n_35():
+def test_n_35() -> None:
     """Test the hessian approximation with the Rosenbrock problem at n=35."""
     h_ref, _, problem = build_history(ROSENBROCK_35_PATH)
     compare_approximations(h_ref, SR1Approx, problem, first_iter=5, ermax=40.0)
@@ -297,7 +297,7 @@ def test_n_35():
     )
 
 
-def test_build_inverse_approximation():
+def test_build_inverse_approximation() -> None:
     """Test the creation of an inverse approximation."""
     _, _, problem = build_history(ROSENBROCK_2_LB_UB_PATH)
     database = problem.database

@@ -123,9 +123,10 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
         if self._job_template_path is None:
             self._job_template_path = self.TEMPLATES_DIR_PATH / self.__class__.__name__
         if not self._job_template_path.exists():
-            raise FileNotFoundError(
+            msg = (
                 f"Job scheduler template file {self._job_template_path} does not exist."
             )
+            raise FileNotFoundError(msg)
         self.job_file_template = Template(self._job_template_path.read_text())
 
     def _generate_job_file_from_template(
@@ -160,7 +161,8 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
                 **self._options,
             )
         except KeyError as err:
-            raise KeyError(f"Value not passed to template for key: {err}") from err
+            msg = f"Value not passed to template for key: {err}"
+            raise KeyError(msg) from err
         dest_job_file_path = current_workdir / self._job_out_filename
         dest_job_file_path.write_text(job_file_content, encoding="utf8")
         return dest_job_file_path
@@ -231,10 +233,11 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
             FileNotFoundError: When the outputs contain an error.
         """
         if not outputs_path.exists():
-            raise FileNotFoundError(
+            msg = (
                 "The serialized outputs file of the discipline does not exist: "
                 f"{outputs_path}."
             )
+            raise FileNotFoundError(msg)
 
         with outputs_path.open("rb") as output_file:
             output = pickle.load(output_file)

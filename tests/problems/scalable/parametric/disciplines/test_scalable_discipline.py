@@ -84,12 +84,12 @@ def core_scalable_discipline(
     )
 
 
-def test_wrapped_discipline(scalable_discipline):
+def test_wrapped_discipline(scalable_discipline) -> None:
     """Check that ScalableDiscipline is composed of a CoreScalableDiscipline."""
     assert CoreScalableDiscipline == scalable_discipline._CORE_DISCIPLINE_CLASS
 
 
-def test_execution(scalable_discipline, core_scalable_discipline):
+def test_execution(scalable_discipline, core_scalable_discipline) -> None:
     """Check the execution of ScalableDiscipline."""
     core_output_data = core_scalable_discipline(
         x_0=array([1.0, 2.0]),
@@ -104,7 +104,7 @@ def test_execution(scalable_discipline, core_scalable_discipline):
     assert_equal(dict(scalable_discipline.get_output_data()), core_output_data)
 
 
-def test_differentiation(scalable_discipline, core_scalable_discipline):
+def test_differentiation(scalable_discipline, core_scalable_discipline) -> None:
     """Check the differentiation of ScalableDiscipline."""
     input_data = {
         "x_0": array([1.0, 2.0]),
@@ -128,7 +128,7 @@ def test_differentiation(scalable_discipline, core_scalable_discipline):
     )
 
 
-def test_random_variables(default_input_values, coefficients):
+def test_random_variables(default_input_values, coefficients) -> None:
     """Check the use of random variables."""
     scalable_discipline = ScalableDiscipline(
         1,

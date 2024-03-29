@@ -35,7 +35,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from .formulations_basetest import FakeDiscipline
 
 
-def test_build_func_from_disc():
+def test_build_func_from_disc() -> None:
     """"""
     pb = SobieskiProblem("complex128")
     disciplines = [
@@ -130,7 +130,7 @@ def test_idf_execution(
     expected_feasible,
     generate_idf_scenario,
     caplog,
-):
+) -> None:
     """Test the IDF formulation with an :class:`.MDOScenario`.
 
     Args:
@@ -154,7 +154,7 @@ def test_idf_execution(
         assert "Running IDF formulation in parallel on n_processes" in caplog.text
 
 
-def test_fail_idf_no_coupl(generate_idf_scenario):
+def test_fail_idf_no_coupl(generate_idf_scenario) -> None:
     """Test an exception when the coupling variables are not in the Design Space.
 
     Args:
@@ -175,7 +175,7 @@ def test_fail_idf_no_coupl(generate_idf_scenario):
         )
 
 
-def test_expected_workflow():
+def test_expected_workflow() -> None:
     """"""
     disc1 = FakeDiscipline("d1")
     disc2 = FakeDiscipline("d2")
@@ -185,7 +185,7 @@ def test_expected_workflow():
     assert str(idf.get_expected_workflow()) == expected
 
 
-def test_expected_dataflow():
+def test_expected_dataflow() -> None:
     """"""
     disc1 = FakeDiscipline("d1")
     disc2 = FakeDiscipline("d2")
@@ -194,7 +194,7 @@ def test_expected_dataflow():
     assert idf.get_expected_dataflow() == []
 
 
-def test_idf_start_equilibrium():
+def test_idf_start_equilibrium() -> None:
     """Initial value of coupling variables set at equilibrium."""
     disciplines = [
         SobieskiStructure(),
@@ -223,7 +223,7 @@ def test_idf_start_equilibrium():
         assert residual < 1e-3
 
 
-def test_grammar_type():
+def test_grammar_type() -> None:
     """Check that the grammar type is correctly used."""
     discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()

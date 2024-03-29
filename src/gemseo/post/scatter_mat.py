@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from matplotlib import pyplot
@@ -33,8 +32,6 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ScatterPlotMatrix(OptPostProcessor):
@@ -93,12 +90,13 @@ class ScatterPlotMatrix(OptPostProcessor):
                     and variable_name not in all_design_names
                     and variable_name not in problem.constraint_names
                 ):
-                    raise ValueError(
+                    msg = (
                         "Cannot build scatter plot matrix: "
                         f"function {variable_name} is neither among "
                         f"optimization problem functions: {all_function_names} "
                         f"nor design variables: {all_design_names}"
                     )
+                    raise ValueError(msg)
 
                 if variable_name in problem.design_space.variable_names:
                     add_design_variables = True
@@ -151,7 +149,8 @@ class ScatterPlotMatrix(OptPostProcessor):
             variable_values[:, index] *= -1
 
         if filter_non_feasible and not any(variable_values):
-            raise ValueError("No feasible points were found.")
+            msg = "No feasible points were found."
+            raise ValueError(msg)
 
         # Next line is a trick for a bug workaround in numpy/matplotlib
         # https://stackoverflow.com/questions/39180873/

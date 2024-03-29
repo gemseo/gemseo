@@ -95,7 +95,7 @@ Store persistent data produced by disciplines
 
 Use :term:`HDF5 <HDF>` caches to persist the discipline output on the disk.
 
-.. seealso:: We invite you to read our documentation:  :ref:`caching`.
+.. seealso:: We invite you to read our documentation:  :ref:`Cache <cache>`.
 
 Error when using a HDF5 cache
 -----------------------------
@@ -122,30 +122,13 @@ install it with:
 
    sudo yum install libnsl
 
-Some |g| tests fail under Windows without any reason
-----------------------------------------------------
-
-The user may face some issues with the last version of Windows 10, build 2004,
-while running the tests. The errors are located deep in either numpy or scipy,
-while performing some low-level linear algebra operations. The root cause of
-this issue is `well known
-<https://developercommunity.visualstudio.com/content/problem/1207405/fmod-after-an-update-to-windows-2004-is-causing-a.html>`_
-and comes from an incompatibility with Windows 10, build 2004 and some versions
-of OpenBlas. |g| users shall not encounter any issue in production.  Otherwise,
-please contact us in order to get some mitigation instructions.
-
 Parallel execution limitations on Windows
 -----------------------------------------
 
-When running parallel execution tasks on Windows, the features :class:`.MemoryFullCache`
-and :class:`.HDF5Cache` do not work properly. This is due to the way subprocesses are forked
-in this architecture. The method :meth:`.DOEScenario.set_optimization_history_backup`
+When running parallel execution tasks on Windows, the :class:`.HDF5Cache` does not work properly. This is due to the
+way subprocesses are forked in this architecture. The method :meth:`.DOEScenario.set_optimization_history_backup`
 is recommended as an alternative.
 
-The progress bar may show duplicated instances during the initialization of each subprocess, in some cases
-it may also print the conclusion of an iteration ahead of another one that was concluded first. This
-is a consequence of the pickling process and does not affect the computations of the scenario.
-
 The execution of any script using parallel execution on Windows including, but not limited to, :class:`.DOEScenario`
-with ``n_processes > 1``, :class:`.HDF5Cache`, :class:`.MemoryFullCache`, :class:`.ParallelExecution`,
+with ``n_processes > 1``, :class:`.HDF5Cache`, :class:`.MemoryFullCache`, :class:`.CallableParallelExecution`,
 :class:`.DiscParallelExecution`, must be protected by an ``if __name__ == '__main__':`` statement.

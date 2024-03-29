@@ -16,12 +16,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import array
-from numpy import ndarray
 
 from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
 
 
 class OTMonteCarlo(BaseOTDOE):
@@ -32,6 +35,6 @@ class OTMonteCarlo(BaseOTDOE):
 
     def generate_samples(  # noqa: D102
         self, n_samples: int, dimension: int, **options: Any
-    ) -> ndarray:
+    ) -> RealArray:
         samples = self._STANDARD_UNIFORM_DISTRIBUTION.getSample(dimension * n_samples)
         return array(samples).reshape((n_samples, dimension))

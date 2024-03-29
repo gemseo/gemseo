@@ -20,12 +20,13 @@ from typing import TYPE_CHECKING
 
 import pyDOE2
 from numpy import array
-from numpy import ndarray
 
 from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from gemseo.typing import RealArray
 
 
 class PyDOEFullFactorialDOE(BaseFullFactorialDOE):
@@ -34,7 +35,7 @@ class PyDOEFullFactorialDOE(BaseFullFactorialDOE):
     .. note:: This class is a singleton.
     """
 
-    def _generate_fullfact_from_levels(self, levels: int | Sequence[int]) -> ndarray:
+    def _generate_fullfact_from_levels(self, levels: int | Sequence[int]) -> RealArray:
         doe = pyDOE2.fullfact(levels)
         # Because pyDOE return the DOE where the values of levels are integers from 0 to
         # the maximum level number,

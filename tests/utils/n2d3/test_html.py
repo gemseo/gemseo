@@ -39,8 +39,8 @@ def graph() -> DependencyGraph:
     data = ones(1)
     for desc in description_list:
         name = desc[0]
-        input_d = {k: data for k in desc[1]}
-        output_d = {k: data for k in desc[2]}
+        input_d = dict.fromkeys(desc[1], data)
+        output_d = dict.fromkeys(desc[2], data)
         disc = MDODiscipline(name)
         disc.input_grammar.update_from_data(input_d)
         disc.output_grammar.update_from_data(output_d)
@@ -48,7 +48,7 @@ def graph() -> DependencyGraph:
     return DependencyGraph(disciplines)
 
 
-def test_from_graph(graph, tmp_wd):
+def test_from_graph(graph, tmp_wd) -> None:
     """Check that the content of the HTML file is correct when created from a graph.
 
     Args:
@@ -60,7 +60,7 @@ def test_from_graph(graph, tmp_wd):
     assert cmp(file_path, str(Path(__file__).parent / "expected_from_graph.html"))
 
 
-def test_from_json(tmp_wd):
+def test_from_json(tmp_wd) -> None:
     """Check that the content of the HTML file is correct when create from a JSON file.
 
     Args:

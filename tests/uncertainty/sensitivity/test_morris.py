@@ -22,6 +22,7 @@ from __future__ import annotations
 import re
 
 import pytest
+from matplotlib.figure import Figure
 from numpy import allclose
 from numpy import array
 from numpy import pi
@@ -80,19 +81,19 @@ def morris(discipline, parameter_space):
     return analysis
 
 
-def test_morris_main_indices_outputs(morris):
+def test_morris_main_indices_outputs(morris) -> None:
     """Check that all the outputs have main indices."""
     assert {"y1", "y2"} == set(morris.main_indices.keys())
 
 
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
-def test_morris_main_indices_outputs_content(morris, output):
+def test_morris_main_indices_outputs_content(morris, output) -> None:
     """Check that the main indices are well-formed."""
     assert len(morris.main_indices[output]) == 1
     assert set(morris.main_indices[output][0].keys()) == set(FUNCTION["variables"])
 
 
-def test_morris_main_indices(morris):
+def test_morris_main_indices(morris) -> None:
     """Check that the main indices are mu_star."""
     assert morris.main_indices == morris.indices["MU_STAR"]
 
@@ -101,7 +102,7 @@ def test_morris_main_indices(morris):
     "name",
     ["MU", "MU_STAR", "SIGMA", "RELATIVE_SIGMA", "MIN", "MAX"],
 )
-def test_morris_indices_outputs(morris, name):
+def test_morris_indices_outputs(morris, name) -> None:
     """Check that all the outputs have indices."""
     assert {"y1", "y2"} == set(morris.indices[name].keys())
 
@@ -111,7 +112,7 @@ def test_morris_indices_outputs(morris, name):
     ["MU", "MU_STAR", "SIGMA", "RELATIVE_SIGMA", "MIN", "MAX"],
 )
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
-def test_morris_indices_outputs_content(morris, name, output):
+def test_morris_indices_outputs_content(morris, name, output) -> None:
     """Check that all the outputs' indices are well-formed."""
     assert len(morris.indices[name][output]) == 1
     assert set(morris.indices[name][output][0].keys()) == set(FUNCTION["variables"])
@@ -119,14 +120,14 @@ def test_morris_indices_outputs_content(morris, name, output):
 
 @pytest.mark.parametrize("variable", FUNCTION["variables"])
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
-def test_morris_sigma(morris, output, variable):
+def test_morris_sigma(morris, output, variable) -> None:
     """Check that sigma is positive."""
     assert morris.indices["SIGMA"][output][0][variable] >= 0
 
 
 @pytest.mark.parametrize("variable", FUNCTION["variables"])
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
-def test_morris_mu(morris, output, variable):
+def test_morris_mu(morris, output, variable) -> None:
     """Check that mu_star is greater or equal to mu."""
     assert (
         morris.indices["MU_STAR"][output][0][variable]
@@ -136,7 +137,7 @@ def test_morris_mu(morris, output, variable):
 
 @pytest.mark.parametrize("variable", FUNCTION["variables"])
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
-def test_morris_min_max(morris, output, variable):
+def test_morris_min_max(morris, output, variable) -> None:
     """Check that the maximum is greater or equal to the minimum."""
     assert (
         morris.indices["MAX"][output][0][variable]
@@ -146,7 +147,7 @@ def test_morris_min_max(morris, output, variable):
 
 @pytest.mark.parametrize("variable", FUNCTION["variables"])
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
-def test_morris_relative_sigma(morris, output, variable):
+def test_morris_relative_sigma(morris, output, variable) -> None:
     """Check that the relative sigma is equal to sigma divided by mu_star."""
     relative_sigma = morris.indices["RELATIVE_SIGMA"][output][0][variable]
     sigma = morris.indices["SIGMA"][output][0][variable]
@@ -166,22 +167,23 @@ def test_morris_relative_sigma(morris, output, variable):
     ],
 )
 @image_comparison(None)
-def test_plot(morris, output_name, kwargs, baseline_images, pyplot_close_all):
+def test_plot(morris, output_name, kwargs, baseline_images) -> None:
     """Check the main visualization method."""
-    morris.plot(output_name, save=False, **kwargs)
+    fig = morris.plot(output_name, save=False, **kwargs)
+    assert isinstance(fig, Figure)
 
 
 @pytest.mark.parametrize(
     ("output", "expected"), [("y1", ["x2", "x3", "x1"]), ("y2", ["x3", "x2", "x1"])]
 )
-def test_morris_sort_parameters(morris, output, expected):
+def test_morris_sort_parameters(morris, output, expected) -> None:
     """Verify that the parameters are correctly sorted."""
     assert isinstance(morris.sort_parameters(output), list)
     assert set(morris.sort_parameters(output)) == set(FUNCTION["variables"])
     assert morris.sort_parameters(output) == expected
 
 
-def test_morris_with_bad_input_dimension():
+def test_morris_with_bad_input_dimension() -> None:
     """Check that a ValueError is raised if an input dimension is not equal to 1."""
     expressions = {"y": "x1+x2"}
     discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
@@ -194,7 +196,7 @@ def test_morris_with_bad_input_dimension():
         MorrisAnalysis(discipline, space, n_samples=None, n_replicates=100)
 
 
-def test_morris_with_nsamples():
+def test_morris_with_nsamples() -> None:
     """Check the number of replicates when the number of samples is specified."""
     expressions = {"y": "x1+x2"}
     discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
@@ -206,7 +208,7 @@ def test_morris_with_nsamples():
 
 
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
-def test_morris_outputs_bounds(morris, output):
+def test_morris_outputs_bounds(morris, output) -> None:
     assert morris.outputs_bounds[output][0] < morris.outputs_bounds[output][1]
 
 
@@ -225,21 +227,21 @@ def oat():
     space.add_variable("x2", l_b=-1.0, u_b=1.0, value=0)
     scenario = DOEScenario(
         [discipline],
-        formulation="MDF",
-        objective_name="y1",
-        design_space=space,
+        "MDF",
+        "y1",
+        space,
     )
     scenario.add_observable("y2")
 
     return _OATSensitivity(scenario, space, 0.2)
 
 
-def test_oat_get_io_names(oat):
+def test_oat_get_io_names(oat) -> None:
     """Check the input and output names obtained from a finite difference name."""
     assert oat.get_io_names("FD!output!input") == ["output", "input"]
 
 
-def test_oat_get_fd_name(oat):
+def test_oat_get_fd_name(oat) -> None:
     """Check the finite difference name obtained from input and output names."""
     assert oat.get_fd_name("input", "output") == "fd!output!input"
 
@@ -252,7 +254,7 @@ def test_oat_get_fd_name(oat):
         (0.7, 0.7, [-0.4, -0.4, -0.4, 0.4]),
     ],
 )
-def test_oat_execute(oat, x1, x2, fd):
+def test_oat_execute(oat, x1, x2, fd) -> None:
     """Check the execute method."""
     oat.execute({"x1": array([x1]), "x2": array([x2])})
     assert_almost_equal(oat.local_data["fd!y1!x1"], fd[0])
@@ -261,7 +263,7 @@ def test_oat_execute(oat, x1, x2, fd):
     assert_almost_equal(oat.local_data["fd!y2!x2"], fd[3])
 
 
-def test_oat_bounds(oat):
+def test_oat_bounds(oat) -> None:
     """Check the estimation of the output bounds."""
     oat.execute({"x1": array([-1.0]), "x2": array([-1.0])})
     oat.execute({"x1": array([1.0]), "x2": array([1.0])})
@@ -271,7 +273,7 @@ def test_oat_bounds(oat):
 
 
 @pytest.mark.parametrize("step", [-0.1, 0.0, 0.5, 0.6])
-def test_oat_with_wrong_step(step):
+def test_oat_with_wrong_step(step) -> None:
     """Check that a ValueError is raised when the step is not in ]0,0.5[."""
     expressions = {"y": "x1+x2"}
     discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
@@ -281,9 +283,9 @@ def test_oat_with_wrong_step(step):
 
     scenario = DOEScenario(
         [discipline],
-        formulation="MDF",
-        objective_name="y",
-        design_space=space,
+        "MDF",
+        "y",
+        space,
     )
 
     expected = (
@@ -295,7 +297,7 @@ def test_oat_with_wrong_step(step):
         _OATSensitivity(scenario, space, step=step)
 
 
-def test_normalize(morris):
+def test_normalize(morris) -> None:
     discipline = create_discipline(
         "AnalyticDiscipline",
         expressions=FUNCTION["expression"],
@@ -335,7 +337,7 @@ def test_normalize(morris):
             )
 
 
-def test_morris_multiple_disciplines():
+def test_morris_multiple_disciplines() -> None:
     """Test the Morris Analysis for more than one discipline."""
     expressions = [{"y1": "x1+x3+y2"}, {"y2": "x2+x3+2*y1"}, {"f": "x3+y1+y2"}]
     d1 = create_discipline("AnalyticDiscipline", expressions=expressions[0])
@@ -370,7 +372,7 @@ def test_morris_multiple_disciplines():
 @pytest.mark.parametrize(
     ("n_samples", "expected_n_samples"), [(None, 5), (8, 2), (9, 2)]
 )
-def test_n_samples(discipline, parameter_space, n_samples, expected_n_samples):
+def test_n_samples(discipline, parameter_space, n_samples, expected_n_samples) -> None:
     """Check the effect of n_samples."""
     n_calls = discipline.n_calls
     analysis = MorrisAnalysis([discipline], parameter_space, n_samples=n_samples)
@@ -378,7 +380,7 @@ def test_n_samples(discipline, parameter_space, n_samples, expected_n_samples):
     assert discipline.n_calls - n_calls == expected_n_samples * 4
 
 
-def test_save_load(morris, tmp_wd):
+def test_save_load(morris, tmp_wd) -> None:
     """Check saving and loading a MorrisAnalysis."""
     morris.to_pickle("foo.pkl")
     new_morris = MorrisAnalysis.from_pickle("foo.pkl")
@@ -388,12 +390,12 @@ def test_save_load(morris, tmp_wd):
     assert new_morris.outputs_bounds == morris.outputs_bounds
 
 
-def test_compute_indices_output_names(morris):
+def test_compute_indices_output_names(morris) -> None:
     """Check compute_indices with different types for output_names."""
     assert morris.compute_indices(["y1"]).keys() == morris.compute_indices("y1").keys()
 
 
-def test_too_few_samples(discipline, parameter_space):
+def test_too_few_samples(discipline, parameter_space) -> None:
     """Check that the MorrisAnalysis raises a ValueError is n_samples is too small."""
     with pytest.raises(
         ValueError,
@@ -405,7 +407,7 @@ def test_too_few_samples(discipline, parameter_space):
         MorrisAnalysis([discipline], parameter_space, n_samples=2)
 
 
-def test_output_names():
+def test_output_names() -> None:
     """Check that the argument output_names is correctly taken into account.
 
     See https://gitlab.com/gemseo/dev/gemseo/-/issues/866
@@ -425,7 +427,7 @@ def test_output_names():
     assert "z" not in mu_
 
 
-def test_log(caplog, discipline, parameter_space):
+def test_log(caplog, discipline, parameter_space) -> None:
     """Check the log generated by a Morris analysis."""
     MorrisAnalysis([discipline], parameter_space, None)
     result = "\n".join([line[2] for line in caplog.record_tuples])

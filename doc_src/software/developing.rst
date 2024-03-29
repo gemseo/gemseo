@@ -35,6 +35,7 @@
 .. _PyCharm: https://www.jetbrains.com/pycharm
 .. _pre-commit: https://pre-commit.com
 .. _pipx: https://pypa.github.io/pipx
+.. _vscode: https://code.visualstudio.com/
 
 .. _dev:
 
@@ -88,6 +89,8 @@ First time setup:
   tox -e check
 
 * `configure PyCharm`_
+
+* `configure VSCode`_
 
 Environments
 ------------
@@ -703,9 +706,6 @@ Style
 
 Use the Google Style Docstrings format for documenting the code.
 This :ref:`example module` shows how to write such docstrings.
-Older docstrings use the legacy *epydoc* docstrings format
-which is visually dense and hard to read.
-They will be overhauled progressively.
 
 Type hints
 ~~~~~~~~~~
@@ -850,3 +850,45 @@ so that the test environments do not open graphical windows during test executio
    (or click on the button in this field
    and add a new environment variable
    with *MPLBACKEND* as name and *AGG* as value).
+
+.. _configure VSCode:
+
+Configure VSCode
+----------------
+
+`vscode`_ could serve as an alternative to `PyCharm`_.
+To configure it for developing |g|,
+we offer the base ``settings.json`` and ``extensions.json``,
+which need to be placed within the local ``.vscode`` directory.
+
+Download Configuration Files
+++++++++++++++++++++++++++++
+
+* ``settings.json``: This file primarily contains Python rules for
+  code style, formatting, debugging, testing, and indexing.
+  You can download it :download:`here </_static/vscode/settings.json>`.
+
+* ``extensions.json``: This file provides useful extension recommendations
+  when browsing the Marketplace.
+  You can download it :download:`here </_static/vscode/extensions.json>`.
+
+Installation
+++++++++++++
+
+Place both downloaded files in the ``.vscode`` directory of your project.
+
+Configuration
++++++++++++++
+
+Modify ``settings.json`` according to your preferences.
+You can adjust the settings either
+globally (User parameters)
+or per project (Workspace parameters).
+
+Extensions
+++++++++++
+
+Ensure you install all recommended extensions mentioned in ``extensions.json``.
+These extensions enhance
+the functionality and productivity
+of `vscode`_ for Python development.

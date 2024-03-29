@@ -25,7 +25,7 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.core.cache import AbstractCache
 
 
-class CacheFactory(BaseFactory):
+class CacheFactory(BaseFactory[AbstractCache]):
     """A factory for :class:`.AbstractCache`."""
 
     _CLASS = AbstractCache

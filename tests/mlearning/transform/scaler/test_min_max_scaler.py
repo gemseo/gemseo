@@ -37,13 +37,13 @@ def data() -> ndarray:
     return arange(30).reshape((10, 3))
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test constructor."""
     scaler = MinMaxScaler()
     assert scaler.name == "MinMaxScaler"
 
 
-def test_fit(data):
+def test_fit(data) -> None:
     """Test fit method."""
     left = data.min(0)
     right = data.max(0)
@@ -53,7 +53,7 @@ def test_fit(data):
     assert allclose(scaler.coefficient, 1 / (data.max(0) - data.min(0)))
 
 
-def test_transform(data):
+def test_transform(data) -> None:
     """Test transform method."""
     left = data.min(0)
     right = data.max(0)
@@ -67,7 +67,7 @@ def test_transform(data):
     assert allclose(other_scaled_data, (data - left) / (right - left))
 
 
-def test_inverse_transform(data):
+def test_inverse_transform(data) -> None:
     """Test inverse_transform method."""
     left = data.min(0)
     right = data.max(0)
@@ -81,7 +81,7 @@ def test_inverse_transform(data):
     assert allclose(other_unscaled_data, left + (right - left) * data)
 
 
-def _test_transformer(data, transformed_data, coefficient, offset):
+def _test_transformer(data, transformed_data, coefficient, offset) -> None:
     """Test the MinMaxScaler transformer.
 
     Args:
@@ -101,7 +101,7 @@ def _test_transformer(data, transformed_data, coefficient, offset):
     "data",
     [array([[2.0], [2.0]]), array([[0.0], [0.0]])],
 )
-def test_with_only_constant(data):
+def test_with_only_constant(data) -> None:
     """Check scaling with only constant features."""
     if data[0] == 0:
         offset = array([0.5])
@@ -113,7 +113,7 @@ def test_with_only_constant(data):
     _test_transformer(data, transformed_data, coefficient, offset)
 
 
-def test_with_constant():
+def test_with_constant() -> None:
     """Check scaling with constant feature."""
     offset = zeros(4)
     coefficient = zeros(4)
@@ -132,7 +132,7 @@ def test_with_constant():
     "data",
     [array([[1.0, 2.0, 6.0], [4.0, 5.0, 3.0]]), array([[2.0], [4.0]])],
 )
-def test_without_constant(data):
+def test_without_constant(data) -> None:
     """Check scaling without constant feature."""
     minimum = data.min(0)
     delta = data.max(0) - minimum

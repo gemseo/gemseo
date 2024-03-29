@@ -23,24 +23,24 @@ from gemseo.post.dataset.factory import DatasetPlotFactory
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
 
-def test_instantiate_factory():
+def test_instantiate_factory() -> None:
     DatasetPlotFactory()
 
 
-def test_plots():
+def test_plots() -> None:
     factory = DatasetPlotFactory()
     plots = factory.plots
     assert "ScatterMatrix" in plots
     assert "ParallelCoordinates" in plots
 
 
-def test_is_available():
+def test_is_available() -> None:
     factory = DatasetPlotFactory()
     assert factory.is_available("ScatterMatrix")
     assert not factory.is_available("DummyPlot")
 
 
-def test_create():
+def test_create() -> None:
     factory = DatasetPlotFactory()
     dataset = create_rosenbrock_dataset()
     dataset = factory.create("ScatterMatrix", dataset=dataset)

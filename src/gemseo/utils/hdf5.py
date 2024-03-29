@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 def get_hdf5_group(
     h5py_data: h5py.File | h5py.Group,
-    name: str,
+    name: str = "",
 ) -> h5py.Group:
     """Return a group from a h5py data handle.
 
@@ -32,7 +32,7 @@ def get_hdf5_group(
 
     Args:
         h5py_data: The hdf5 data handle.
-        name: The name of the group.
+        name: The name of the group, if empty returns the root.
 
     Returns:
         The contents of the group.
@@ -40,9 +40,10 @@ def get_hdf5_group(
     Raises:
         KeyError: if the group does not exist.
     """
-    try:
-        return h5py_data[name]
-    except KeyError as err:
-        raise KeyError(
-            f"In HDF5 file {h5py_data.file}: no such group {err.args[0]}."
-        ) from None
+    if name:
+        try:
+            return h5py_data[name]
+        except KeyError as err:
+            msg = f"In HDF5 file {h5py_data.file}: no such group {err.args[0]}."
+            raise KeyError(msg) from None
+    return h5py_data

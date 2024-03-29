@@ -121,25 +121,25 @@ def model_without_intercept(dataset) -> PolynomialRegressor:
     return polyreg
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     model_ = PolynomialRegressor(dataset, degree=2)
     assert model_.algo is not None
 
 
-def test_degree(dataset):
+def test_degree(dataset) -> None:
     """Test correct handling of incorrect degree ( < 1)."""
     with pytest.raises(ValueError):
         PolynomialRegressor(dataset, degree=0)
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     model_ = PolynomialRegressor(dataset, degree=2)
     model_.learn()
     assert model_.algo is not None
 
 
-def test_get_coefficients(model):
+def test_get_coefficients(model) -> None:
     """Verify that an error is raised when getting coefficients as a dictionary."""
     with pytest.raises(
         NotImplementedError,
@@ -151,7 +151,7 @@ def test_get_coefficients(model):
         model.get_coefficients(as_dict=True)
 
 
-def test_intercept(model, model_without_intercept):
+def test_intercept(model, model_without_intercept) -> None:
     """Test intercept parameter from LinearRegressor class.
 
     Should be 0.0, as fit_intercept is False (replaced by include_bias).
@@ -160,14 +160,14 @@ def test_intercept(model, model_without_intercept):
     assert allclose(model_without_intercept.intercept, array([0, 0, 0]))
 
 
-def test_coefficients(model):
+def test_coefficients(model) -> None:
     """Test coefficients."""
     assert model.coefficients.shape == (N_OUTPUTS, N_POWERS)
     coefficients = model.get_coefficients(as_dict=False)
     assert allclose(coefficients, COEFFICIENTS, atol=1.0e-12)
 
 
-def test_prediction(model):
+def test_prediction(model) -> None:
     """Test prediction."""
     prediction = model.predict(INPUT_VALUE)
     another_prediction = model.predict(ANOTHER_INPUT_VALUE)
@@ -179,7 +179,7 @@ def test_prediction(model):
     assert allclose(another_prediction["y_1"], array([[1], [2], [6], [7]]))
 
 
-def test_prediction_jacobian(model):
+def test_prediction_jacobian(model) -> None:
     """Test jacobian prediction."""
     jacobian = model.predict_jacobian(INPUT_VALUE)
     another_jacobian = model.predict_jacobian(ANOTHER_INPUT_VALUE)
@@ -194,7 +194,7 @@ def test_prediction_jacobian(model):
     assert allclose(another_jacobian["y_1"]["x_2"], array([0, 2, 4, 4])[:, None, None])
 
 
-def test_jacobian_constant(dataset):
+def test_jacobian_constant(dataset) -> None:
     """Test Jacobians linear polynomials."""
     model_ = PolynomialRegressor(dataset, degree=1)
     model_.learn()
@@ -202,7 +202,7 @@ def test_jacobian_constant(dataset):
     model_.predict_jacobian(ANOTHER_INPUT_VALUE)
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)

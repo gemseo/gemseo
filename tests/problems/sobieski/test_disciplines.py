@@ -29,44 +29,44 @@ from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 
-def test_init_range():
+def test_init_range() -> None:
     SobieskiMission("float64")
 
 
-def test_init_weight():
+def test_init_weight() -> None:
     SobieskiStructure("float64")
 
 
-def test_init_aero():
+def test_init_aero() -> None:
     SobieskiAerodynamics("float64")
 
 
-def test_init_power():
+def test_init_power() -> None:
     SobieskiPropulsion("float64")
 
 
-def test_execute_range():
+def test_execute_range() -> None:
     sr = SobieskiMission("complex128")
     sr.execute()
     sr.get_local_data_by_name(sr.get_output_data_names())
     sr.check_jacobian(derr_approx="complex_step", step=1e-30)
 
 
-def test_execute_weight():
+def test_execute_weight() -> None:
     sr = SobieskiStructure("complex128")
     sr.execute()
     _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
     sr.check_jacobian(derr_approx="complex_step", step=1e-30)
 
 
-def test_execute_power():
+def test_execute_power() -> None:
     sr = SobieskiPropulsion("complex128")
     sr.execute()
     _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
     sr.check_jacobian(derr_approx="complex_step", step=1e-30)
 
 
-def test_execute_aerodynamics():
+def test_execute_aerodynamics() -> None:
     sr = SobieskiAerodynamics("complex128")
     sr.execute()
     _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
@@ -76,23 +76,23 @@ def test_execute_aerodynamics():
 DV_NAMES = ["x_shared", "x_1", "x_2", "x_3"]
 
 
-def test_init_range_sg():
+def test_init_range_sg() -> None:
     SobieskiMissionSG("float64")
 
 
-def test_init_weight_sg():
+def test_init_weight_sg() -> None:
     SobieskiStructureSG("float64")
 
 
-def test_init_aero_sg():
+def test_init_aero_sg() -> None:
     SobieskiAerodynamicsSG("float64")
 
 
-def test_init_power_sg():
+def test_init_power_sg() -> None:
     SobieskiPropulsionSG("float64")
 
 
-def test_execute_range_sg():
+def test_execute_range_sg() -> None:
     sr = SobieskiMissionSG("complex128")
     indata = SobieskiProblem("complex128").get_default_inputs(
         names=sr.get_input_data_names()
@@ -102,7 +102,7 @@ def test_execute_range_sg():
     sr.linearize(indata, compute_all_jacobians=True)
 
 
-def test_execute_weight_sg():
+def test_execute_weight_sg() -> None:
     sr = SobieskiStructureSG("float64")
     indata = SobieskiProblem("float64").get_default_inputs(
         names=sr.get_input_data_names()
@@ -112,7 +112,7 @@ def test_execute_weight_sg():
     sr.linearize(indata, compute_all_jacobians=True)
 
 
-def test_execute_power_sg():
+def test_execute_power_sg() -> None:
     sr = SobieskiPropulsionSG("float64")
     indata = SobieskiProblem("float64").get_default_inputs(
         names=sr.get_input_data_names()
@@ -122,7 +122,7 @@ def test_execute_power_sg():
     sr.linearize(indata, compute_all_jacobians=True)
 
 
-def test_execute_aerodynamics_sg():
+def test_execute_aerodynamics_sg() -> None:
     sr = SobieskiAerodynamicsSG("float64")
     indata = SobieskiProblem("float64").get_default_inputs(
         names=sr.get_input_data_names()

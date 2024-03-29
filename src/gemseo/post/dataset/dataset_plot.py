@@ -51,14 +51,13 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from matplotlib.figure import Figure
-
     from gemseo.datasets.dataset import Dataset
+    from gemseo.post.dataset.base_plot import BasePlot
+    from gemseo.post.dataset.plot_factory import PlotFactory
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
-
 VariableType = Union[str, tuple[str, int]]
 
 
@@ -67,12 +66,6 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     _common_settings: PlotSettings
     """The settings common to many plot classes."""
-
-    _n_items: int
-    """The number of items to plot.
-
-    This notion is specific to the class deriving from :class:`.DatasetPlot`.
-    """
 
     _specific_settings: NamedTuple
     """The settings specific to this plot class."""
@@ -83,10 +76,13 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     __figure_file_paths: list[str]
     """The figure file paths."""
 
+    __figures: list[BasePlot]
+    """The figures."""
+
     __names_to_labels: Mapping[str, str]
     """The variable names bound to the variable labels."""
 
-    __specific_data: tuple
+    __specific_data: tuple[Any, ...]
     """The data pre-processed specifically for this :class:`.DatasetPlot`."""
 
     class PlotEngine(StrEnum):
@@ -122,17 +118,18 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: If the dataset is empty.
         """  # noqa: D205, D212, D415
         if dataset.empty:
-            raise ValueError("Dataset is empty.")
+            msg = "Dataset is empty."
+            raise ValueError(msg)
 
-        annotations = getfullargspec(self.__init__).annotations
+        annotations = getfullargspec(self.__class__.__init__).annotations
         parameter_names_to_types = [(name, annotations[name]) for name in parameters]
 
-        specific_settings = NamedTuple("SpecificSettings", parameter_names_to_types)
+        specific_settings = NamedTuple("specific_settings", parameter_names_to_types)  # type:ignore
         self._common_settings = PlotSettings()
-        self._n_items = 0
         self._specific_settings = specific_settings(**parameters)
         self.__common_dataset = dataset
         self.__figure_file_paths = []
+        self.__figures = []
         self.__names_to_labels = {}
         self.__specific_data = self._create_specific_data_from_dataset()
 
@@ -143,15 +140,16 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def color(self) -> str | list[str]:
-        """The colors for the series; if empty, use a default one."""
+        """The color.
+
+        Either a global one or one per item if ``n_items`` is non-zero.
+        If empty, use a default one.
+        """
         return self._common_settings.color
 
     @color.setter
     def color(self, value: str | list[str]) -> None:
-        if isinstance(value, str) and self._n_items:
-            self._common_settings.color = [value] * self._n_items
-        else:
-            self._common_settings.color = value
+        self._common_settings.set_colors(value)
 
     @property
     def colormap(self) -> str:
@@ -181,28 +179,30 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._common_settings.legend_location = value
 
     @property
-    def linestyle(self) -> str | list[str]:
-        """The line style for the series; if empty, use a default one."""
+    def linestyle(self) -> str | Sequence[str]:
+        """The line style.
+
+        Either a global one or one per item if ``n_items`` is non-zero.
+        If empty, use a default one.
+        """
         return self._common_settings.linestyle
 
     @linestyle.setter
-    def linestyle(self, value: str | list[str]) -> None:
-        if isinstance(value, str) and self._n_items:
-            self._common_settings.linestyle = [value] * self._n_items
-        else:
-            self._common_settings.linestyle = value
+    def linestyle(self, value: str | Sequence[str]) -> None:
+        self._common_settings.set_linestyles(value)
 
     @property
-    def marker(self) -> str | list[str]:
-        """The marker for the series; if empty, use a default one."""
+    def marker(self) -> str | Sequence[str]:
+        """The marker.
+
+        Either a global one or one per item if ``n_items`` is non-zero.
+        If empty, use a default one.
+        """
         return self._common_settings.marker
 
     @marker.setter
     def marker(self, value: str | list[str]) -> None:
-        if isinstance(value, str) and self._n_items:
-            self._common_settings.marker = [value] * self._n_items
-        else:
-            self._common_settings.marker = value
+        self._common_settings.set_markers(value)
 
     @property
     def title(self) -> str:
@@ -214,12 +214,12 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._common_settings.title = value
 
     @property
-    def xtick_rotation(self) -> str:
+    def xtick_rotation(self) -> float:
         """The rotation angle in degrees for the x-ticks."""
         return self._common_settings.xtick_rotation
 
     @xtick_rotation.setter
-    def xtick_rotation(self, value: str) -> None:
+    def xtick_rotation(self, value: float) -> None:
         self._common_settings.xtick_rotation = value
 
     @property
@@ -273,7 +273,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._common_settings.ymax
 
     @ymax.setter
-    def ymax(self, value):
+    def ymax(self, value: float) -> None:
         self._common_settings.ymax = value
 
     @property
@@ -282,7 +282,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._common_settings.zmin
 
     @zmin.setter
-    def zmin(self, value: float | None):
+    def zmin(self, value: float | None) -> None:
         self._common_settings.zmin = value
 
     @property
@@ -349,34 +349,48 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.fig_size = (self.fig_size_x, value)
 
     @property
+    def grid(self) -> bool:
+        """Whether to add a grid."""
+        return self._common_settings.grid
+
+    @grid.setter
+    def grid(self, value: bool) -> None:
+        self._common_settings.grid = value
+
+    @property
     def output_files(self) -> list[str]:
         """The paths to the output files."""
         return self.__figure_file_paths
+
+    @property
+    def figures(self) -> list[BasePlot]:
+        """The figures."""
+        return self.__figures
 
     def execute(
         self,
         save: bool = True,
         show: bool = False,
         file_path: str | Path = "",
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
+        directory_path: str | Path = "",
+        file_name: str = "",
         file_format: str = "png",
         file_name_suffix: str = "",
         **engine_parameters: Any,
-    ) -> list[Figure]:
+    ) -> list[BasePlot]:
         """Execute the post-processing.
 
         Args:
-            save: If ``True``, save the plot.
-            show: If ``True``, display the plot.
+            save: Whether to save the plot.
+            show: Whether to display the plot.
             file_path: The path of the file to save the figures.
                 If empty,
                 create a file path
                 from ``directory_path``, ``file_name`` and ``file_format``.
             directory_path: The path of the directory to save the figures.
-                If ``None``, use the current working directory.
+                If empty, use the current working directory.
             file_name: The name of the file to save the figures.
-                If ``None``, use a default one generated by the post-processing.
+                If empty, use a default one generated by the post-processing.
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
             file_name_suffix: The suffix to be added to the file name.
             **engine_parameters: The parameters specific to the plot engine.
@@ -387,8 +401,8 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         engine = self.FILE_FORMATS_TO_PLOT_ENGINES.get(
             file_format, self.DEFAULT_PLOT_ENGINE
         )
-        plot_factory = PlotFactoryFactory().create(engine)
-        plot = plot_factory.create(
+        plot_factory: PlotFactory[Any] = PlotFactoryFactory().create(engine)
+        plot: BasePlot = plot_factory.create(
             self.__class__.__name__,
             self.dataset,
             self._common_settings,
@@ -400,12 +414,17 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             plot.show()
 
         if save:
-            args = (file_path, directory_path, file_name, file_format, file_name_suffix)
-            self.__figure_file_paths = list(plot.save(*args))
+            self.__figure_file_paths = list(
+                plot.save(
+                    file_path, directory_path, file_name, file_format, file_name_suffix
+                )
+            )
 
-        return plot.figures
+        self.__figures = plot.figures
 
-    def _create_specific_data_from_dataset(self) -> tuple:
+        return self.__figures
+
+    def _create_specific_data_from_dataset(self) -> tuple[Any, ...]:
         """Pre-process the dataset specifically for this type of :class:`.DatasetPlot`.
 
         Returns:
@@ -415,7 +434,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _get_variable_names(
         self,
-        dataframe_columns: Iterable[tuple],
+        dataframe_columns: Iterable[tuple[str, str, int]],
     ) -> list[str]:
         """Return the names of the variables from the columns of a pandas DataFrame.
 
@@ -472,6 +491,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return repr_variable(variable[1], variable[2]), variable
 
+    # TODO: API: remove _set_color, _set_linestyle and _set_marker
     def _set_color(
         self,
         n_items: int,
@@ -501,13 +521,13 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _set_marker(
         self,
         n_items: int,
-        marker: str | Sequence[str] | None,
+        marker: str | Sequence[str],
     ) -> None:
         """Set the marker of the items to be plotted.
 
         Args:
             n_items: The number of items to be plotted.
-            marker: The default marker to use when :attr:`.marker` is ``None``.
+            marker: The default marker to use when :attr:`.marker` is empty.
         """
         self.marker = self.marker or marker
         if isinstance(self.marker, str):
@@ -536,3 +556,20 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             variable = (variable, 0)
 
         return variable
+
+    @property
+    def _n_items(self) -> int:
+        """The number of items to plot.
+
+        The item definition is specific to the plot type and is used to define
+        properties, e.g. color and line style, for each item.
+
+        For example, items can correspond to curves or series of points.
+
+        By default, a graph has no item.
+        """
+        return self._common_settings.n_items
+
+    @_n_items.setter
+    def _n_items(self, n_items: int) -> None:
+        self._common_settings.n_items = n_items

@@ -23,7 +23,6 @@
 from __future__ import annotations
 
 import itertools
-import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -42,8 +41,6 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
     from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.n2d3.n2_html import N2HTML
-
-LOGGER = logging.getLogger(__name__)
 
 NodeType = tuple[list[str], list[str]]
 EdgesType = dict[int, dict[int, list[str]]]
@@ -308,7 +305,8 @@ class MDOCouplingStructure:
             if discipline.is_output_existing(output):
                 return discipline
 
-        raise ValueError(f"{output} is not the output of a discipline.")
+        msg = f"{output} is not the output of a discipline."
+        raise ValueError(msg)
 
     def __draw_n2_chart(
         self,
@@ -433,7 +431,8 @@ class MDOCouplingStructure:
             ValueError: When there is less than two disciplines.
         """
         if len(self.disciplines) < 2:
-            raise ValueError("N2 diagrams need at least two disciplines.")
+            msg = "N2 diagrams need at least two disciplines."
+            raise ValueError(msg)
 
         html_file_path = Path(file_path).parent / "n2.html"
         self_coupled_discipline = [

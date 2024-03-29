@@ -162,10 +162,11 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         lib_name = self.__algo_name_to_lib_name.get(name)
         if lib_name is None:
             if name not in self.libraries:
-                raise ImportError(
+                msg = (
                     f"No algorithm or library of algorithms named '{name}' is available"
                     f"; available algorithms are {pretty_str(self.algorithms)}."
                 )
+                raise ImportError(msg)
             lib_name = name
             algo_name = ""
         else:

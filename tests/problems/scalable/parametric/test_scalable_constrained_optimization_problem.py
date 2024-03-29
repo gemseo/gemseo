@@ -25,9 +25,9 @@ from numpy import diag
 from numpy import mean as np_mean
 from numpy import ones_like
 
-from gemseo import MDODiscipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class ScalableDiscipline(MDODiscipline):
-    def __init__(self, p: float):
+    def __init__(self, p: float) -> None:
         self.p = p
         super().__init__()
         self.input_grammar.update_from_names(["x"])
@@ -91,16 +91,18 @@ def scalable_optimization_problem_scenario(request, n, constraint_kind):
     ds = DesignSpace()
     ds.add_variable("x", size=n, l_b=0.1, u_b=n, value=n)
     scenario = create_scenario(
-        disciplines=[disc],
-        formulation="DisciplinaryOpt",
-        design_space=ds,
-        objective_name="f",
+        [disc],
+        "DisciplinaryOpt",
+        "f",
+        ds,
     )
     scenario.add_constraint("g", constraint_kind)
     return scenario
 
 
-def test_resolution(scalable_optimization_problem_scenario, algo, n, constraint_kind):
+def test_resolution(
+    scalable_optimization_problem_scenario, algo, n, constraint_kind
+) -> None:
     if constraint_kind == MDOFunction.ConstraintType.EQ and algo in [
         "SLSQP",
         "NLOPT_SLSQP",

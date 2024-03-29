@@ -40,22 +40,22 @@ from gemseo.problems.scalable.parametric.core.variable_names import get_u_local_
 from gemseo.problems.scalable.parametric.core.variable_names import get_x_local_name
 
 
-def test_get_u_local_name():
+def test_get_u_local_name() -> None:
     """Check the function get_u_local_name."""
     assert get_u_local_name(1) == "u_1"
 
 
-def test_get_x_local_name():
+def test_get_x_local_name() -> None:
     """Check the function get_x_local_name."""
     assert get_x_local_name(1) == "x_1"
 
 
-def test_get_coupling_name():
+def test_get_coupling_name() -> None:
     """Check the function get_coupling_name."""
     assert get_coupling_name(1) == "y_1"
 
 
-def test_get_constraint_name():
+def test_get_constraint_name() -> None:
     """Check the function get_constraint_name."""
     assert get_constraint_name(1) == "c_1"
 
@@ -71,6 +71,6 @@ def test_get_constraint_name():
         (COUPLING_VARIABLE_BASE_NAME, "y"),
     ],
 )
-def test_names(variable, value):
+def test_names(variable, value) -> None:
     """Check the names of the variables."""
     assert variable == value

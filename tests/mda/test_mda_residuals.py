@@ -178,7 +178,7 @@ def res_disciplines() -> list[MDODiscipline]:
     return [d1, d2, d3]
 
 
-def test_residuals_mda(res_disciplines):
+def test_residuals_mda(res_disciplines) -> None:
     """Test MDA execution with residuals variables in disciplines."""
     coupling_structure = MDOCouplingStructure(res_disciplines)
     for disc in res_disciplines:
@@ -210,7 +210,7 @@ def test_residuals_mda(res_disciplines):
     "matrix_type",
     JacobianAssembly.JacobianType,
 )
-def test_adjoint(res_disciplines, mode, matrix_type):
+def test_adjoint(res_disciplines, mode, matrix_type) -> None:
     """Test the coupled adjoint with residual variables in disciplines."""
     mda = create_mda("MDAChain", disciplines=res_disciplines)
     mda.linearization_mode = mode

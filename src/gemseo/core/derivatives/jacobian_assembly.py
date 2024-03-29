@@ -175,7 +175,7 @@ class JacobianAssembly:
     __last_diff_inouts: tuple[set[str], set[str]]
     """The last diff in-outs stored."""
 
-    __minimal_couplings: list[str]
+    __minimal_couplings: set[str]
     """The minimal couplings."""
 
     coupled_system: CoupledSystem
@@ -267,13 +267,14 @@ class JacobianAssembly:
                 disc.get_input_data_names()
                 for disc in self.coupling_structure.disciplines
             ]
-            raise ValueError(
+            msg = (
                 "Some of the specified variables are not "
                 "inputs of the disciplines: "
                 f"{unknown_dvars}"
                 " possible inputs are: "
                 f"{inputs}"
             )
+            raise ValueError(msg)
 
         if unknown_outs:
             raise ValueError(
@@ -296,11 +297,12 @@ class JacobianAssembly:
         matrix_type = self.JacobianType(matrix_type)
 
         if use_lu_fact and matrix_type == self.JacobianType.LINEAR_OPERATOR:
-            raise ValueError(
+            msg = (
                 "Unsupported LU factorization for "
                 "LinearOperators! Please use Sparse matrices"
                 " instead"
             )
+            raise ValueError(msg)
 
     def compute_sizes(
         self,
@@ -355,9 +357,8 @@ class JacobianAssembly:
                             break
 
             if variable not in self.sizes:
-                raise ValueError(
-                    f"Failed to determine the size of input variable {variable}"
-                )
+                msg = f"Failed to determine the size of input variable {variable}"
+                raise ValueError(msg)
 
     # TODO: API: give a better name like get_derivation_mode for instance.
     @classmethod
@@ -546,15 +547,16 @@ class JacobianAssembly:
                 is_residual,
             )
 
-        raise ValueError(f"Bad jacobian_type: {jacobian_type}")
+        msg = f"Bad jacobian_type: {jacobian_type}"
+        raise ValueError(msg)
 
-    def _compute_diff_ios_and_couplings(
+    def __compute_diff_ios_and_couplings(
         self,
         variables: Iterable[str],
         functions: Iterable[str],
         states: Iterable[str],
         coupling_structure: MDOCouplingStructure,
-    ) -> list[str]:
+    ) -> set[str]:
         """Compute the minimal differentiated inputs, outputs and couplings.
 
         This is done form the
@@ -592,9 +594,7 @@ class JacobianAssembly:
             )
             # The state variables are not coupling variables, although they are inputs
             # and outputs of the disciplines with residuals.
-            minimal_couplings = sorted(minimal_couplings.difference(states))
-
-            self.__minimal_couplings = minimal_couplings
+            self.__minimal_couplings = minimal_couplings.difference(states)
         return self.__minimal_couplings
 
     def total_derivatives(
@@ -653,13 +653,25 @@ class JacobianAssembly:
         # Retrieve states variables and local residuals if provided
         states = list(residual_variables.values()) if residual_variables else []
 
-        couplings_minimal = self._compute_diff_ios_and_couplings(
+        couplings_minimal = self.__compute_diff_ios_and_couplings(
             variables,
             functions,
             states,
             self.coupling_structure,
         )
 
+        # Exclude the non-numeric couplings from the coupling minimal list
+        for discipline in self.coupling_structure.disciplines:
+            inputs_couplings = couplings_minimal.intersection(
+                discipline.get_input_data_names()
+            )
+            couplings_minimal.difference_update(
+                itertools.filterfalse(
+                    discipline.input_grammar.data_converter.is_numeric, inputs_couplings
+                )
+            )
+
+        couplings_minimal = sorted(couplings_minimal)
         couplings_and_res = couplings_minimal.copy()
         couplings_and_states = couplings_minimal.copy()
         # linearize all the disciplines

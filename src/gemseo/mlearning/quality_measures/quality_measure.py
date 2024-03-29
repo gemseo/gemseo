@@ -32,10 +32,11 @@ from numpy import array
 from numpy import ndarray
 from strenum import StrEnum
 
-from gemseo import SEED
 from gemseo.core.base_factory import BaseFactory
 from gemseo.datasets.dataset import Dataset
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.seeder import SEED
+from gemseo.utils.seeder import Seeder
 
 if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import MLAlgo
@@ -70,6 +71,9 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     If ``False``, use the transformers fitted with the whole learning dataset.
     """
+
+    __seeder: Seeder
+    """A seed generator."""
 
     class EvaluationMethod(StrEnum):
         """The evaluation method."""
@@ -127,7 +131,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
         """  # noqa: D205 D212
         self.algo = algo
         self._fit_transformers = fit_transformers
-        self.__default_seed = SEED
+        self.__seeder = Seeder()
 
     @abstractmethod
     def compute_learning_measure(
@@ -312,8 +316,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
             samples = self.algo.learning_samples_indices
 
         if update_seed:
-            self.__default_seed += 1
-            seed = self.__default_seed if seed is None else seed
+            seed = self.__seeder.get_seed(seed)
 
         return array(samples), seed
 

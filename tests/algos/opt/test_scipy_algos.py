@@ -44,20 +44,20 @@ class TestScipy(TestCase):
 
     OPT_LIB_NAME = "ScipyOpt"
 
-    def test_init(self):
+    def test_init(self) -> None:
         """"""
         factory = OptimizersFactory()
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
 
-    def test_display(self):
+    def test_display(self) -> None:
         """"""
         algo_name = "SLSQP"
         OptLibraryTestBase.generate_one_test(
-            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10, disp=10
+            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10, disp=True
         )
 
-    def test_handles_cstr(self):
+    def test_handles_cstr(self) -> None:
         """"""
         algo_name = "TNC"
         self.assertRaises(
@@ -68,7 +68,7 @@ class TestScipy(TestCase):
             max_iter=10,
         )
 
-    def test_algorithm_suited(self):
+    def test_algorithm_suited(self) -> None:
         """"""
         algo_name = "SLSQP"
         opt_library = OptLibraryTestBase.generate_one_test(
@@ -87,7 +87,7 @@ class TestScipy(TestCase):
             opt_library.descriptions["SLSQP"], opt_library.problem
         )
 
-    def test_positive_constraints(self):
+    def test_positive_constraints(self) -> None:
         """"""
         algo_name = "SLSQP"
         opt_library = OptLibraryTestBase.generate_one_test(
@@ -96,7 +96,7 @@ class TestScipy(TestCase):
         assert opt_library.is_algo_requires_positive_cstr(algo_name)
         assert not opt_library.is_algo_requires_positive_cstr("TNC")
 
-    def test_fail_opt(self):
+    def test_fail_opt(self) -> None:
         """"""
         algo_name = "SLSQP"
         problem = Rosenbrock()
@@ -109,14 +109,14 @@ class TestScipy(TestCase):
         problem.objective = MDOFunction(i_fail, "rosen")
         self.assertRaises(Exception, OptimizersFactory().execute, problem, algo_name)
 
-    def test_tnc_options(self):
+    def test_tnc_options(self) -> None:
         """"""
         algo_name = "TNC"
         OptLibraryTestBase.generate_one_test_unconstrained(
             self.OPT_LIB_NAME,
             algo_name=algo_name,
             max_iter=100,
-            disp=1,
+            disp=True,
             maxCGit=178,
             pg_tol=1e-8,
             eta=-1.0,
@@ -126,14 +126,14 @@ class TestScipy(TestCase):
             minfev=4,
         )
 
-    def test_lbfgsb_options(self):
+    def test_lbfgsb_options(self) -> None:
         """"""
         algo_name = "L-BFGS-B"
         OptLibraryTestBase.generate_one_test_unconstrained(
             self.OPT_LIB_NAME,
             algo_name=algo_name,
             max_iter=100,
-            disp=1,
+            disp=True,
             maxcor=12,
             pg_tol=1e-8,
             max_fun_eval=20,
@@ -144,7 +144,7 @@ class TestScipy(TestCase):
             self.OPT_LIB_NAME,
             algo_name=algo_name,
             max_iter="100",
-            disp=1,
+            disp=True,
             maxcor=12,
             pg_tol=1e-8,
             max_fun_eval=1000,
@@ -155,14 +155,18 @@ class TestScipy(TestCase):
         )
         assert opt_library.problem.solution.message.startswith("Maximum time reached")
 
-    def test_slsqp_options(self):
+    def test_slsqp_options(self) -> None:
         """"""
         algo_name = "SLSQP"
         OptLibraryTestBase.generate_one_test(
-            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=100, disp=1, ftol_rel=1e-10
+            self.OPT_LIB_NAME,
+            algo_name=algo_name,
+            max_iter=100,
+            disp=True,
+            ftol_rel=1e-10,
         )
 
-    def test_normalization(self):
+    def test_normalization(self) -> None:
         """Runs a problem with one variable to be normalized and three not to be
         normalized."""
         design_space = DesignSpace()
@@ -183,7 +187,7 @@ class TestScipy(TestCase):
         OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
         OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=False)
 
-    def test_xtol_ftol_activation(self):
+    def test_xtol_ftol_activation(self) -> None:
         def run_pb(algo_options):
             design_space = DesignSpace()
             design_space.add_variable(
@@ -211,7 +215,7 @@ for test_method in suite_tests.generate_test("SCIPY"):
     setattr(TestScipy, test_method.__name__, test_method)
 
 
-def test_library_name():
+def test_library_name() -> None:
     """Check the library name."""
     assert ScipyOpt.LIBRARY_NAME == "SciPy"
 
@@ -257,7 +261,7 @@ def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
     return problem
 
 
-def test_recasting_sparse_jacobians(opt_problem):
+def test_recasting_sparse_jacobians(opt_problem) -> None:
     """Test that sparse Jacobians are recasted as dense arrays.
 
     The SLSQP algorithm from SciPy does not support sparse Jacobians. The fact that the
@@ -266,3 +270,17 @@ def test_recasting_sparse_jacobians(opt_problem):
     """
     optimization_result = OptimizersFactory().execute(opt_problem, "SLSQP", atol=1e-10)
     assert allclose(optimization_result.f_opt, -0.001, atol=1e-10)
+
+
+@pytest.mark.parametrize(
+    "initial_simplex", [None, [[0.6, 0.6], [0.625, 0.6], [0.6, 0.625]]]
+)
+def test_nelder_mead(initial_simplex) -> None:
+    """Test the Nelder-Mead algorithm on the Rosenbrock problem."""
+    problem = Rosenbrock()
+    opt = OptimizersFactory().execute(
+        problem, algo_name="NELDER-MEAD", max_iter=800, initial_simplex=initial_simplex
+    )
+    x_opt, f_opt = problem.get_solution()
+    assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
+    assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)

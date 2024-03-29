@@ -28,8 +28,8 @@ if a cache type is available.
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
+from typing import Any
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
@@ -37,10 +37,8 @@ if TYPE_CHECKING:
 from gemseo.core.base_factory import BaseFactory
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-LOGGER = logging.getLogger(__name__)
 
-
-class DatasetPlotFactory(BaseFactory):
+class DatasetPlotFactory(BaseFactory[DatasetPlot]):
     """This factory instantiates a :class:`.DatasetPlot` from its class name."""
 
     _CLASS = DatasetPlot
@@ -50,7 +48,7 @@ class DatasetPlotFactory(BaseFactory):
         self,
         plot_name: str,
         dataset: Dataset,
-        **options,
+        **options: Any,
     ) -> DatasetPlot:
         """Create a plot for dataset.
 

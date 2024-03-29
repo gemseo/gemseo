@@ -23,11 +23,9 @@
 
 from __future__ import annotations
 
-import logging
 from copy import copy
 from copy import deepcopy
 from typing import TYPE_CHECKING
-from typing import Final
 
 from numpy import zeros
 from numpy.linalg import norm
@@ -51,8 +49,6 @@ if TYPE_CHECKING:
     from gemseo.algos.database import Database
     from gemseo.core.execution_sequence import LoopExecSequence
     from gemseo.core.scenario import Scenario
-
-LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 
 
 class MDOScenarioAdapter(MDODiscipline):
@@ -135,7 +131,8 @@ class MDOScenarioAdapter(MDODiscipline):
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
         """  # noqa: D205, D212, D415
         if reset_x0_before_opt and set_x0_before_opt:
-            raise ValueError("Inconsistent options for MDOScenarioAdapter.")
+            msg = "Inconsistent options for MDOScenarioAdapter."
+            raise ValueError(msg)
         self.scenario = scenario
         self._set_x0_before_opt = set_x0_before_opt
         self._set_bounds_before_opt = set_bounds_before_opt
@@ -210,11 +207,10 @@ class MDOScenarioAdapter(MDODiscipline):
             missing_inputs = set(self._input_names) - set(self.input_grammar.keys())
 
             if missing_inputs:
-                raise ValueError(
-                    "Can't compute inputs from scenarios: {}.".format(
-                        ", ".join(sorted(missing_inputs))
-                    )
-                ) from None
+                msg = "Can't compute inputs from scenarios: {}.".format(
+                    ", ".join(sorted(missing_inputs))
+                )
+                raise ValueError(msg) from None
 
         # Add the design variables bounds to the input grammar
         if self._set_bounds_before_opt:
@@ -246,11 +242,10 @@ class MDOScenarioAdapter(MDODiscipline):
             missing_outputs = set(self._output_names) - set(self.output_grammar.keys())
 
             if missing_outputs:
-                raise ValueError(
-                    "Can't compute outputs from scenarios: {}.".format(
-                        ", ".join(sorted(missing_outputs))
-                    )
-                ) from None
+                msg = "Can't compute outputs from scenarios: {}.".format(
+                    ", ".join(sorted(missing_outputs))
+                )
+                raise ValueError(msg) from None
 
         # Add the Lagrange multipliers to the output grammar
         if self._output_multipliers:
@@ -482,7 +477,8 @@ class MDOScenarioAdapter(MDODiscipline):
         opt_problem = self.scenario.formulation.opt_problem
         objective_names = self.scenario.formulation.opt_problem.objective.output_names
         if len(objective_names) != 1:
-            raise ValueError("The objective must be single-valued.")
+            msg = "The objective must be single-valued."
+            raise ValueError(msg)
 
         # Check the required inputs
         if inputs is None:
@@ -490,11 +486,10 @@ class MDOScenarioAdapter(MDODiscipline):
         else:
             not_inputs = set(inputs) - set(self._input_names) - set(self._bound_names)
             if not_inputs:
-                raise ValueError(
-                    "The following are not inputs of the adapter: {}.".format(
-                        ", ".join(sorted(not_inputs))
-                    )
+                msg = "The following are not inputs of the adapter: {}.".format(
+                    ", ".join(sorted(not_inputs))
                 )
+                raise ValueError(msg)
         # N.B the adapter is assumed constant w.r.t. bounds
         bound_inputs = set(inputs) & set(self._bound_names)
 
@@ -504,19 +499,17 @@ class MDOScenarioAdapter(MDODiscipline):
         else:
             not_outputs = sorted(set(outputs) - set(self._output_names))
             if not_outputs:
-                raise ValueError(
-                    "The following are not outputs of the adapter: {}.".format(
-                        ", ".join(not_outputs)
-                    )
+                msg = "The following are not outputs of the adapter: {}.".format(
+                    ", ".join(not_outputs)
                 )
+                raise ValueError(msg)
 
         non_differentiable_outputs = sorted(set(outputs) - set(objective_names))
         if non_differentiable_outputs:
-            raise ValueError(
-                "Post-optimal Jacobians of {} cannot be computed.".format(
-                    ", ".join(non_differentiable_outputs)
-                )
+            msg = "Post-optimal Jacobians of {} cannot be computed.".format(
+                ", ".join(non_differentiable_outputs)
             )
+            raise ValueError(msg)
 
         # Initialize the Jacobian
         diff_inputs = [name for name in inputs if name not in bound_inputs]

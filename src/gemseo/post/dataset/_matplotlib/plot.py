@@ -90,7 +90,7 @@ class MatplotlibPlot(BasePlot):
         for sub_figure in self.__figures:
             save_show_figure(sub_figure, True, "")
 
-    def _save(self, file_path: Path) -> tuple[str]:
+    def _save(self, file_path: Path) -> tuple[str, ...]:
         file_paths = []
         for index, sub_figure in enumerate(self.__figures):
             if len(self.__figures) > 1:
@@ -99,7 +99,6 @@ class MatplotlibPlot(BasePlot):
                 fig_file_path = file_path
 
             file_paths.append(str(fig_file_path))
-
             save_show_figure(sub_figure, False, fig_file_path)
 
         return tuple(file_paths)
@@ -129,9 +128,8 @@ class MatplotlibPlot(BasePlot):
         """
         if fig is None:
             if axes is not None:
-                raise ValueError(
-                    "The figure associated with the given axes is missing."
-                )
+                msg = "The figure associated with the given axes is missing."
+                raise ValueError(msg)
 
             return plt.subplots(
                 nrows=n_rows,
@@ -140,7 +138,8 @@ class MatplotlibPlot(BasePlot):
             )
 
         if axes is None:
-            raise ValueError("The axes associated with the given figure are missing.")
+            msg = "The axes associated with the given figure are missing."
+            raise ValueError(msg)
 
         return fig, axes
 

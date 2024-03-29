@@ -65,7 +65,7 @@ class ProgressOpt(OptimizationLibrary):
     OPTIONS_MAP: ClassVar[dict[Any, str]] = {}
     LIBRARY_NAME = "Test"
 
-    def __init__(self, offsets, constraints_before_obj):
+    def __init__(self, offsets, constraints_before_obj) -> None:
         super().__init__()
         self.descriptions = {
             "TestDriver": TestDesc(
@@ -94,7 +94,7 @@ class ProgressOpt(OptimizationLibrary):
 
 def test_progress_bar(
     caplog, offsets, constraints_before_obj, objective_and_problem_for_tests
-):
+) -> None:
     with caplog.at_level(logging.INFO):
         lib = ProgressOpt(offsets, constraints_before_obj)
         f, problem = objective_and_problem_for_tests
@@ -142,11 +142,11 @@ def objective_and_problem_for_tests(constraints_before_obj):
     problem = OptimizationProblem(design_space)
     problem.objective = f
     if constraints_before_obj:
-        problem.add_constraint(g, 0.0, "ineq")
+        problem.add_constraint(g, value=0.0, cstr_type="ineq")
     return f, problem
 
 
-def test_parallel_doe(caplog, offsets, objective_and_problem_for_tests):
+def test_parallel_doe(caplog, offsets, objective_and_problem_for_tests) -> None:
     with caplog.at_level(logging.INFO):
         _, problem = objective_and_problem_for_tests
         custom_doe = CustomDOE()
@@ -181,7 +181,7 @@ def dummy_sleep_function(x):
         (60 * 60 * 24 + 1, " 1.00 it/day"),
     ],
 )
-def test_rate_expression(e, r):
+def test_rate_expression(e, r) -> None:
     """Check CustomTqdmProgressBar.__get_rate_expression."""
     f = CustomTqdmProgressBar._CustomTqdmProgressBar__get_rate_expression
     assert f(1, e) == r

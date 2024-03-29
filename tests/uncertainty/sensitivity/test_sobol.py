@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING
 from typing import Callable
 
 import pytest
+from matplotlib.figure import Figure
 from numpy import array
 from numpy import ndarray
 from numpy import pi
@@ -91,7 +92,7 @@ def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     return sobol.get_intervals(False)
 
 
-def test_algo(discipline, uncertain_space):
+def test_algo(discipline, uncertain_space) -> None:
     """Check that algorithm can be passed either as a str or an Algorithm."""
     analysis = SobolAnalysis([discipline], uncertain_space, 100)
     indices = analysis.compute_indices(algo=analysis.Algorithm.JANSEN)["first"]["y"][0]
@@ -101,7 +102,7 @@ def test_algo(discipline, uncertain_space):
 
 
 @pytest.mark.parametrize("method", ["total", SobolAnalysis.Method.TOTAL])
-def test_method(sobol, method):
+def test_method(sobol, method) -> None:
     """Check the use of the main method."""
     assert sobol.main_method == "first"
     assert compare_dict_of_arrays(
@@ -126,7 +127,7 @@ def test_method(sobol, method):
         ("x23", 1, [0.1, 0.2]),
     ],
 )
-def test_first_intervals(first_intervals, name, bound, expected):
+def test_first_intervals(first_intervals, name, bound, expected) -> None:
     """Check the values of the intervals for the first-order indices."""
     assert_almost_equal(
         first_intervals["y"][0][name][bound], array(expected), decimal=1
@@ -142,7 +143,7 @@ def test_first_intervals(first_intervals, name, bound, expected):
         ("x23", 1, [0.7, 0.9]),
     ],
 )
-def test_total_intervals(total_intervals, name, bound, expected):
+def test_total_intervals(total_intervals, name, bound, expected) -> None:
     """Check the values of the intervals for the total-order indices."""
     assert_almost_equal(
         total_intervals["y"][0][name][bound], array(expected), decimal=1
@@ -161,11 +162,10 @@ def test_total_intervals(total_intervals, name, bound, expected):
     ],
 )
 @image_comparison(None)
-def test_plot(
-    name, sobol, sort, sort_by_total, kwargs, baseline_images, pyplot_close_all
-):
+def test_plot(name, sobol, sort, sort_by_total, kwargs, baseline_images) -> None:
     """Check the main visualization method."""
-    sobol.plot(name, save=False, sort=sort, sort_by_total=sort_by_total, **kwargs)
+    fig = sobol.plot(name, save=False, sort=sort, sort_by_total=sort_by_total, **kwargs)
+    assert isinstance(fig, Figure)
 
 
 @pytest.mark.parametrize(
@@ -191,7 +191,7 @@ def test_plot(
         ),
     ],
 )
-def test_indices(sobol, order, reference):
+def test_indices(sobol, order, reference) -> None:
     """Check the values of the indices."""
     assert compare_dict_of_arrays(sobol.indices[order]["y"][0], reference, 0.1)
     assert compare_dict_of_arrays(
@@ -199,7 +199,7 @@ def test_indices(sobol, order, reference):
     )
 
 
-def test_save_load(sobol, tmp_wd):
+def test_save_load(sobol, tmp_wd) -> None:
     """Check saving and loading a SobolAnalysis."""
     sobol.to_pickle("foo.pkl")
     new_sobol = SobolAnalysis.from_pickle("foo.pkl")
@@ -208,7 +208,7 @@ def test_save_load(sobol, tmp_wd):
 
 
 @pytest.mark.parametrize("compute_second_order", [False, True])
-def test_second_order(discipline, uncertain_space, compute_second_order):
+def test_second_order(discipline, uncertain_space, compute_second_order) -> None:
     """Check the computation of second-order indices."""
     analysis = SobolAnalysis(
         [discipline], uncertain_space, 100, compute_second_order=compute_second_order
@@ -219,7 +219,7 @@ def test_second_order(discipline, uncertain_space, compute_second_order):
     assert len(analysis.dataset) == (96 if compute_second_order else 100)
 
 
-def test_asymptotic_or_bootstrap_intervals(discipline, uncertain_space):
+def test_asymptotic_or_bootstrap_intervals(discipline, uncertain_space) -> None:
     """Check the method to compute the confidence intervals."""
     analysis = SobolAnalysis([discipline], uncertain_space, 100)
     analysis.compute_indices()
@@ -235,7 +235,7 @@ def test_asymptotic_or_bootstrap_intervals(discipline, uncertain_space):
     assert asymptotic_interval[1][0] != bootstrap_interval[1][0]
 
 
-def test_confidence_level_default(discipline, uncertain_space):
+def test_confidence_level_default(discipline, uncertain_space) -> None:
     """Check the default confidence level used by the algorithm."""
     analysis = SobolAnalysis([discipline], uncertain_space, 100)
     analysis.compute_indices()
@@ -243,7 +243,7 @@ def test_confidence_level_default(discipline, uncertain_space):
     assert algos["y"][0].getConfidenceLevel() == 0.95
 
 
-def test_confidence_level_custom(discipline, uncertain_space):
+def test_confidence_level_custom(discipline, uncertain_space) -> None:
     """Check setting a custom confidence level."""
     analysis = SobolAnalysis([discipline], uncertain_space, 100)
     analysis.compute_indices(confidence_level=0.90)
@@ -251,7 +251,7 @@ def test_confidence_level_custom(discipline, uncertain_space):
     assert algos["y"][0].getConfidenceLevel() == 0.90
 
 
-def test_output_variances(sobol):
+def test_output_variances(sobol) -> None:
     """Check SobolAnalysis.output_variances."""
     dataset = sobol.dataset
     assert compare_dict_of_arrays(
@@ -266,7 +266,7 @@ def test_output_variances(sobol):
     )
 
 
-def test_output_standard_deviations(sobol):
+def test_output_standard_deviations(sobol) -> None:
     """Check SobolAnalysis.output_standard_deviations."""
     dataset = sobol.dataset
     assert compare_dict_of_arrays(
@@ -283,7 +283,7 @@ def test_output_standard_deviations(sobol):
 
 @pytest.mark.parametrize("use_variance", [False, True])
 @pytest.mark.parametrize("order", ["first", "second", "total"])
-def test_unscale_indices(sobol, use_variance, order):
+def test_unscale_indices(sobol, use_variance, order) -> None:
     """Check SobolAnalysis.unscaled_indices()."""
     orders_to_indices = {
         "first": sobol.first_order_indices,
@@ -334,12 +334,12 @@ def test_unscale_indices(sobol, use_variance, order):
             )
 
 
-def test_compute_indices_output_names(sobol):
+def test_compute_indices_output_names(sobol) -> None:
     """Check compute_indices with different types for output_names."""
     assert sobol.compute_indices(["y"]).keys() == sobol.compute_indices("y").keys()
 
 
-def test_to_dataset(sobol):
+def test_to_dataset(sobol) -> None:
     """Check that the second-order indices are stored in Dataset.misc."""
     dataset = sobol.to_dataset()
     assert "first" in dataset.group_names

@@ -24,7 +24,7 @@ from numpy import allclose
 from gemseo.problems.dataset.burgers import create_burgers_dataset
 
 
-def test_constructor():
+def test_constructor() -> None:
     dataset = create_burgers_dataset()
     assert dataset.name == "Burgers"
     assert len(dataset) == 30
@@ -32,7 +32,7 @@ def test_constructor():
     assert "outputs" in dataset.group_names
 
 
-def test_constructor_categorize():
+def test_constructor_categorize() -> None:
     dataset = create_burgers_dataset(categorize=False)
     assert dataset.name == "Burgers"
     assert len(dataset) == 30
@@ -40,7 +40,7 @@ def test_constructor_categorize():
     assert "outputs" not in dataset.group_names
 
 
-def test_constructor_parameters():
+def test_constructor_parameters() -> None:
     nu = 0.03
     dataset = create_burgers_dataset(n_samples=50, n_x=100, fluid_viscosity=nu)
     assert dataset.name == "Burgers"

@@ -16,15 +16,18 @@
 
 from __future__ import annotations
 
+import re
 from unittest import mock
 
-import packaging
 import pytest
-import scipy
 from numpy.testing import assert_equal
+from packaging.version import parse as parse_version
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe import lib_scipy
 from gemseo.algos.doe.lib_scipy import SciPyDOE
 from gemseo.algos.doe.lib_scipy import _MonteCarlo
+from gemseo.utils.compatibility import scipy
 
 
 @pytest.fixture()
@@ -33,7 +36,7 @@ def library() -> SciPyDOE:
     return SciPyDOE()
 
 
-def test_get_options(library):
+def test_get_options(library) -> None:
     """Check that _get_options passed the right values to _process_options."""
     with mock.patch.object(library, "_process_options") as mock_method:
         library._get_options()
@@ -53,20 +56,22 @@ def test_get_options(library):
         "optimization": None,
         "bits": None,
         "strength": 1,
+        "callbacks": (),
     }
 
 
-def test_remove_recent_scipy_options(library):
+def test_remove_recent_scipy_options(library) -> None:
     """Check that the method removing not yet available SciPy options works."""
     original_option_names = ["a", "b", "c"]
     option_names = original_option_names.copy()
 
-    _version = packaging.version.parse(scipy.__version__)
-    release = _version.release
+    release = scipy.SCIPY_VERSION.release
     prev_release_name = f"{release[0]}.{release[1] - 1}.0"
     next_release_name = f"{release[0]}.{release[1] + 1}.0"
 
-    library._SciPyDOE__remove_recent_scipy_options(option_names, "b", _version.public)
+    library._SciPyDOE__remove_recent_scipy_options(
+        option_names, "b", scipy.SCIPY_VERSION.public
+    )
     assert option_names == original_option_names
 
     library._SciPyDOE__remove_recent_scipy_options(option_names, "b", prev_release_name)
@@ -76,22 +81,24 @@ def test_remove_recent_scipy_options(library):
     assert option_names == ["a", "c"]
 
 
-def check_option_filtering(option_name, target_version, current_version, caplog):
+def check_option_filtering(
+    option_name, target_version, current_version, caplog
+) -> None:
     """Check that the options not yet available in SciPy are correctly removed."""
     text = (
         f"Removed the option {option_name} "
         f"which is only available from SciPy {target_version}."
     )
-    is_old_version = packaging.version.parse(current_version) < packaging.version.parse(
-        target_version
-    )
+    is_old_version = parse_version(current_version) < parse_version(target_version)
     assert (text in caplog.text) is is_old_version
 
 
 @pytest.mark.parametrize("algo_name", ["Sobol", "Halton", "MC", "LHS", "PoissonDisk"])
-@pytest.mark.parametrize("version", ["1.7", "1.8", "1.9", "1.10"])
+@pytest.mark.parametrize("version", ["1.7", "1.8", "1.9", "1.10", "1.11", "1.12"])
 @pytest.mark.parametrize("seed", [None, 3])
-def test_generate_samples(library, algo_name, version, seed, caplog):
+def test_generate_samples(
+    library, algo_name, version, seed, caplog, monkeypatch
+) -> None:
     """Check the generation of samples."""
     dimension = 2
     n_samples = 3
@@ -99,10 +106,14 @@ def test_generate_samples(library, algo_name, version, seed, caplog):
     options = library._update_algorithm_options(n_samples=n_samples)
     options["seed"] = seed
 
-    scipy_version = library._SciPyDOE__SCIPY_VERSION
-    library._SciPyDOE__SCIPY_VERSION = packaging.version.parse(version)
-    samples = library._generate_samples(dimension=dimension, **options)
-    library._SciPyDOE__SCIPY_VERSION = scipy_version
+    scipy_version = lib_scipy.SCIPY_VERSION
+    lib_scipy.SCIPY_VERSION = parse_version(version)
+    if scipy_version >= parse_version("1.12") and "centered" in options:
+        del options["centered"]
+    variables_space = DesignSpace()
+    variables_space.add_variable("x", size=dimension)
+    samples = library._generate_samples(variables_space, **options)
+    lib_scipy.SCIPY_VERSION = scipy_version
 
     if algo_name == "Sobol":
         check_option_filtering("bits", "1.9", version, caplog)
@@ -119,7 +130,7 @@ def test_generate_samples(library, algo_name, version, seed, caplog):
     assert samples.shape == (n_samples, dimension)
 
 
-def test_monte_carlo():
+def test_monte_carlo() -> None:
     """Check that the class _MonteCarlo works properly."""
     monte_carlo = _MonteCarlo(3, 4)
     samples = monte_carlo.random(2)
@@ -143,7 +154,27 @@ def test_monte_carlo():
 @pytest.mark.parametrize(
     "kwargs", [{}, {"optimization": SciPyDOE.Optimizer.NONE}, {"optimization": ""}]
 )
-def test_no_optimizer(library, kwargs):
+def test_no_optimizer(library, kwargs) -> None:
     """Check that _get_options converts SciPyDOE.Optimizer.NONE to None."""
     library.init_options_grammar("HALTON")
     assert library._get_options(**kwargs)["optimization"] is None
+
+
+@pytest.mark.parametrize("value", [False, True])
+def test_lhs_centered(library, value) -> None:
+    """Check that an error is raised when centered == scramble in the case of LHS."""
+    library.algo_name = "LHS"
+    msg = (
+        "centered must be the opposite of scramble; "
+        "centered is deprecated from SciPy 1.10; "
+        "please use scramble."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        library._generate_samples(
+            DesignSpace(),
+            dimension=2,
+            n_samples=10,
+            centered=value,
+            scramble=value,
+            seed=1,
+        )

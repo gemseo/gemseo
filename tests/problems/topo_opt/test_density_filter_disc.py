@@ -32,7 +32,7 @@ def density_filter() -> DensityFilter:
     return DensityFilter(n_x=4, n_y=4)
 
 
-def test_run(density_filter):
+def test_run(density_filter) -> None:
     """"""
     output_data = density_filter.execute(
         input_data={"x": ones(density_filter.n_x * density_filter.n_y)}
@@ -42,7 +42,7 @@ def test_run(density_filter):
     )
 
 
-def test_jacobian(density_filter):
+def test_jacobian(density_filter) -> None:
     """Check the analytic Jacobian by finite differences."""
     input_data = density_filter.get_input_data()
     assert density_filter.check_jacobian(

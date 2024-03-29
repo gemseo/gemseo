@@ -63,7 +63,8 @@ class RemappingDiscipline(MDODiscipline):
             ValueError: When the original discipline has no default input values.
         """  # noqa: D205, D212, D415
         if not discipline.default_inputs:
-            raise ValueError("The original discipline has no default input values.")
+            msg = "The original discipline has no default input values."
+            raise ValueError(msg)
 
         self._discipline = discipline
         self._empty_original_input_data = {
@@ -100,9 +101,10 @@ class RemappingDiscipline(MDODiscipline):
                 with a string as first component and an integer or iterable of integers
                 as second one.
         """
-        raise ValueError(
+        msg = (
             "The values of a name mapping should be either a str or a tuple[str, Any]."
         )
+        raise ValueError(msg)
 
     @staticmethod
     @__cast_mapping_value.register

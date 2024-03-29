@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import logging
 import sys
 from ast import literal_eval
 from collections.abc import Iterable
@@ -56,15 +55,17 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-LOGGER = logging.getLogger(__name__)
-
-# Type of the values associated to the keys (values of input variables) in the database
 DatabaseKeyType = Union[ndarray, HashableNdarray]
+"""The type of a :class:`.Database` key."""
+
 FunctionOutputValueType = Union[float, ndarray, list[int]]
+"""The type of a function output value stored in a :class:`.Database`."""
+
 DatabaseValueType = Mapping[str, FunctionOutputValueType]
-ReturnedHdfMissingOutputType = tuple[
-    Mapping[str, FunctionOutputValueType], Union[None, Mapping[str, int]]
-]
+"""The type of a :class:`.Database` value."""
+
+ListenerType = Callable[[DatabaseKeyType], None]
+"""The type of a listener attached to an :class:`.Database`."""
 
 
 class Database(Mapping):
@@ -133,16 +134,19 @@ class Database(Mapping):
     __data: dict[HashableNdarray, DatabaseValueType]
     """The input values bound to the output values."""
 
-    __store_listeners: list[Callable]
+    __store_listeners: list[ListenerType]
     """The functions to be called when an item is stored to the database."""
 
-    __new_iter_listeners: list[Callable]
+    __new_iter_listeners: list[ListenerType]
     """The functions to be called when a new iteration is stored to the database."""
 
     __hdf_database: HDFDatabase
     """The handler to export the database to a HDF file."""
 
-    def __init__(self, name: str = "") -> None:
+    def __init__(
+        self,
+        name: str = "",
+    ) -> None:
         """
         Args:
             name: The name to be given to the database.
@@ -187,10 +191,11 @@ class Database(Mapping):
                 original_array.copy_wrapped_array()
             return original_array
 
-        raise KeyError(
+        msg = (
             "A database key must be either a NumPy array of a HashableNdarray; "
             f"got {type(original_array)} instead."
         )
+        raise KeyError(msg)
 
     def __getitem__(self, x_vect: DatabaseKeyType) -> DatabaseValueType | None:
         return self.__data[self.get_hashable_ndarray(x_vect)]
@@ -260,10 +265,11 @@ class Database(Mapping):
         """
         n_iterations = len(self)
         if n > n_iterations:
-            raise ValueError(
+            msg = (
                 f"The number of last iterations ({n}) is greater "
                 f"than the number of iterations ({n_iterations})."
             )
+            raise ValueError(msg)
         return [
             x.wrapped_array
             for x in islice(self.__data.keys(), n_iterations - n, n_iterations)
@@ -485,37 +491,90 @@ class Database(Mapping):
         if self.__new_iter_listeners and outputs and current_outputs_is_empty:
             self.notify_new_iter_listeners(x_vect)
 
-    def add_store_listener(self, function: Callable) -> None:
+    def add_store_listener(self, function: ListenerType) -> bool:
         """Add a function to be called when an item is stored to the database.
 
         Args:
             function: The function to be called.
 
-        Raises:
-            TypeError: If the argument is not a callable.
+        Returns:
+            Whether the function has been added;
+            otherwise, it was already attached to the database.
         """
-        if not callable(function):
-            raise TypeError("Listener function is not callable")
-        self.__store_listeners.append(function)
+        return self.__add_listener(function, self.__store_listeners)
 
-    def add_new_iter_listener(self, function: Callable) -> None:
+    def add_new_iter_listener(self, function: ListenerType) -> bool:
         """Add a function to be called when a new iteration is stored to the database.
 
         Args:
             function: The function to be called, it must have one argument that is
                 the current input value.
 
-        Raises:
-            TypeError: If the argument is not a callable.
+        Returns:
+            Whether the function has been added;
+            otherwise, it was already attached to the database.
         """
-        if not callable(function):
-            raise TypeError("Listener function is not callable.")
-        self.__new_iter_listeners.append(function)
+        return self.__add_listener(function, self.__new_iter_listeners)
 
-    def clear_listeners(self) -> None:
-        """Clear all the listeners."""
-        self.__store_listeners = []
-        self.__new_iter_listeners = []
+    @staticmethod
+    def __add_listener(function: ListenerType, listeners: list[ListenerType]) -> bool:
+        """Add a function as listener.
+
+        Args:
+            function: The function.
+            listeners: The listeners to which to add the function.
+
+        Returns:
+            Whether the function has been added;
+            otherwise, it was already attached to the database.
+        """
+        if function in listeners:
+            return False
+
+        listeners.append(function)
+        return True
+
+    def clear_listeners(
+        self,
+        new_iter_listeners: Iterable[ListenerType] | None = (),
+        store_listeners: Iterable[ListenerType] | None = (),
+    ) -> tuple[Iterable[ListenerType], Iterable[ListenerType]]:
+        """Clear all the listeners.
+
+        Args:
+            new_iter_listeners: The functions to be removed
+                that were notified of a new iteration.
+                If empty, remove all such functions.
+                If ``None``, keep all these functions.
+            store_listeners: The functions to be removed
+                that were notified of a new entry in the database.
+                If empty, remove all such functions.
+                If ``None``, keep all these functions.
+
+        Returns:
+            The listeners that were notified of a new iteration
+            and the listeners that were notified of a new entry in the database.
+        """
+        if store_listeners is None:
+            store_listeners = set()
+        elif store_listeners:
+            for listener in store_listeners:
+                self.__store_listeners.remove(listener)
+        else:
+            store_listeners = self.__store_listeners
+            self.__store_listeners = []
+
+        if new_iter_listeners is None:
+            return set(), set(store_listeners)
+
+        if new_iter_listeners:
+            for listener in new_iter_listeners:
+                self.__new_iter_listeners.remove(listener)
+        else:
+            new_iter_listeners = self.__new_iter_listeners
+            self.__new_iter_listeners = []
+
+        return set(new_iter_listeners), set(store_listeners)
 
     def notify_store_listeners(self, x_vect: DatabaseKeyType | None = None) -> None:
         """Notify the listeners that a new entry was stored in the database.
@@ -537,7 +596,7 @@ class Database(Mapping):
 
     def __notify_listeners(
         self,
-        listeners: list[Callable],
+        listeners: set[ListenerType],
         x_vect: DatabaseKeyType | None,
     ) -> None:
         """Notify the listeners.
@@ -610,11 +669,12 @@ class Database(Mapping):
                     if len(not_function_names) == 1
                     else "are not output names"
                 )
-                raise ValueError(
+                msg = (
                     f"{pretty_repr(not_function_names, use_and=True)} {suffix}; "
                     f"available ones are "
                     f"{pretty_repr(all_function_names, use_and=True)}."
                 )
+                raise ValueError(msg)
 
         output_history = []
         input_history = []
@@ -636,44 +696,60 @@ class Database(Mapping):
         self,
         file_path: str | Path = "optimization_history.h5",
         append: bool = False,
+        hdf_node_path: str = "",
     ) -> None:
         """Export the optimization database to an HDF file.
 
         Args:
             file_path: The path of the HDF file.
             append: Whether to append the data to the file.
+            hdf_node_path: The path of the HDF node in which
+                the database should be exported.
+                If empty, the root node is considered.
         """
-        self.__hdf_database.to_file(self, file_path, append)
+        self.__hdf_database.to_file(
+            self, file_path, append, hdf_node_path=hdf_node_path
+        )
 
     @classmethod
     def from_hdf(
         cls,
         file_path: str | Path = "optimization_history.h5",
         name: str = "",
+        hdf_node_path: str = "",
     ) -> Database:
         """Create a database from an HDF file.
 
         Args:
             file_path: The path of the HDF file.
             name: The name of the database.
+            hdf_node_path: The path of the HDF node from which
+                the database should be exported.
+                If empty, the root node is considered.
 
         Returns:
             The database defined in the file.
         """
         database = cls(name)
-        database.update_from_hdf(file_path)
+        database.update_from_hdf(file_path, hdf_node_path=hdf_node_path)
         return database
 
     def update_from_hdf(
         self,
         file_path: str | Path = "optimization_history.h5",
+        hdf_node_path: str = "",
     ) -> None:
         """Update the current database from an HDF file.
 
         Args:
             file_path: The path of the HDF file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
         """
-        self.__hdf_database.update_from_file(self, file_path)
+        self.__hdf_database.update_from_file(
+            self, file_path, hdf_node_path=hdf_node_path
+        )
 
     def get_history_array(
         self,
@@ -786,8 +862,6 @@ class Database(Mapping):
         values_array, variable_names, function_names = self.get_history_array(
             function_names=function_names, add_missing_tag=True, input_names=input_names
         )
-        LOGGER.info("Export to ggobi for functions: %s", str(function_names))
-        LOGGER.info("Export to ggobi file: %s", file_path)
         save_data_arrays_to_xml(
             variable_names=variable_names,
             values_array=values_array,
@@ -847,10 +921,11 @@ class Database(Mapping):
         len_self = len(self)
 
         if iteration == 0 or not (-len_self <= iteration <= len_self):
-            raise ValueError(
+            msg = (
                 "The iteration must be within {-N, ..., -1, 1, ..., N} "
                 f"where N={len_self} is the number of iterations."
             )
+            raise ValueError(msg)
 
         if iteration > 0:
             return iteration - 1

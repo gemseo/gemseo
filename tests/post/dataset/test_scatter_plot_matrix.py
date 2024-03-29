@@ -59,9 +59,8 @@ def test_plot(
     kwargs,
     properties,
     baseline_images,
-    pyplot_close_all,
     fig_and_axes,
-):
+) -> None:
     """Test images created by ScatterMatrix._plot against references."""
     plot = ScatterMatrix(dataset, **kwargs)
     fig, axes = (
@@ -83,18 +82,18 @@ def test_plot(
     ],
 )
 @image_comparison(None, tol=0.01)
-def test_trend(trend, quadratic_dataset, baseline_images, pyplot_close_all):
+def test_trend(trend, quadratic_dataset, baseline_images) -> None:
     """Check the use of a trend."""
     ScatterMatrix(quadratic_dataset, trend=trend).execute(save=False)
 
 
 @image_comparison(["ScatterMatrix_pandas_option"])
-def test_pandas_option(dataset):
+def test_pandas_option(dataset) -> None:
     """Check the use of a pandas option."""
     ScatterMatrix(dataset, alpha=1.0).execute(save=False)
 
 
-def test_plot_error(dataset):
+def test_plot_error(dataset) -> None:
     """Check that an error is raised when the classifier is not variable name."""
     with pytest.raises(
         ValueError,

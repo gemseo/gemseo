@@ -93,13 +93,13 @@ def model_with_1d_output(dataset) -> RBFRegressor:
     return rbf
 
 
-def test_get_available_functions():
+def test_get_available_functions() -> None:
     """Test available RBFs."""
     for function in RBFRegressor.Function:
         assert hasattr(Rbf, f"_h_{function}")
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     model_ = RBFRegressor(dataset)
     assert model_.algo is None
@@ -107,7 +107,7 @@ def test_constructor(dataset):
     assert model_.LIBRARY == "SciPy"
 
 
-def test_jacobian_not_implemented(dataset):
+def test_jacobian_not_implemented(dataset) -> None:
     """Test cases where the Jacobian is not implemented."""
     # Test unimplemented norm
     rbf = RBFRegressor(dataset, norm="canberra")
@@ -122,14 +122,14 @@ def test_jacobian_not_implemented(dataset):
         rbf.predict_jacobian(INPUT_VALUE)
 
 
-def test_learn(dataset):
+def test_learn(dataset) -> None:
     """Test learn."""
     model_ = RBFRegressor(dataset)
     model_.learn()
     assert model_.algo is not None
 
 
-def test_average(model):
+def test_average(model) -> None:
     """Test average."""
     avg_dict = {"y_1": 3.5, "y_2": -3.5, "y_3": 3}
     y_average = array([0.0, 0.0, 0.0])
@@ -138,7 +138,7 @@ def test_average(model):
     assert allclose(model.y_average, y_average)
 
 
-def test_prediction(model):
+def test_prediction(model) -> None:
     """Test prediction."""
     prediction = model.predict(INPUT_VALUE)
     predictions = model.predict(INPUT_VALUES)
@@ -150,7 +150,7 @@ def test_prediction(model):
     assert allclose(predictions["y_3"], 3)
 
 
-def test_prediction_custom(model_with_custom_function):
+def test_prediction_custom(model_with_custom_function) -> None:
     """Test prediction."""
     prediction = model_with_custom_function.predict(INPUT_VALUE)
     predictions = model_with_custom_function.predict(INPUT_VALUES)
@@ -162,7 +162,7 @@ def test_prediction_custom(model_with_custom_function):
     assert allclose(predictions["y_3"], 3)
 
 
-def test_pred_single_out(model_with_1d_output):
+def test_pred_single_out(model_with_1d_output) -> None:
     """Test predict with one output variable."""
     prediction = model_with_1d_output.predict(INPUT_VALUE)
     predictions = model_with_1d_output.predict(INPUT_VALUES)
@@ -174,7 +174,7 @@ def test_pred_single_out(model_with_1d_output):
     assert predictions.shape == (3, 1)
 
 
-def test_predict_jacobian(dataset):
+def test_predict_jacobian(dataset) -> None:
     """Test prediction."""
     for function in RBFRegressor.Function:
         model_ = RBFRegressor(dataset, function=function)
@@ -189,7 +189,7 @@ def test_predict_jacobian(dataset):
         assert allclose(jacobians["y_1"]["x_2"], -jacobians["y_2"]["x_2"])
 
 
-def test_predict_jacobian_custom(model_with_custom_function):
+def test_predict_jacobian_custom(model_with_custom_function) -> None:
     """Test prediction."""
     jacobian = model_with_custom_function.predict_jacobian(INPUT_VALUE)
     jacobians = model_with_custom_function.predict_jacobian(INPUT_VALUES)
@@ -201,7 +201,7 @@ def test_predict_jacobian_custom(model_with_custom_function):
     assert allclose(jacobians["y_1"]["x_2"], -jacobians["y_2"]["x_2"])
 
 
-def test_save_and_load(model, tmp_wd):
+def test_save_and_load(model, tmp_wd) -> None:
     """Test save and load."""
     dirname = model.to_pickle()
     imported_model = import_regression_model(dirname)

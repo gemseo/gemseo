@@ -32,7 +32,7 @@ from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrar
 
 @pytest.mark.parametrize("is_symmetric", [False, True])
 @pytest.mark.parametrize("lhs_must_be_symmetric", [False, True])
-def test_linear_solver_for_symmetric_lhs(is_symmetric, lhs_must_be_symmetric):
+def test_linear_solver_for_symmetric_lhs(is_symmetric, lhs_must_be_symmetric) -> None:
     """Check is_algorithm_suited with linear solver requiring symmetric LHS."""
     description = LinearSolverDescription(
         algorithm_name="foo",
@@ -53,7 +53,7 @@ def test_linear_solver_for_symmetric_lhs(is_symmetric, lhs_must_be_symmetric):
 @pytest.mark.parametrize("lhs_must_be_positive_definite", [False, True])
 def test_linear_solver_for_positive_definite_lhs(
     is_positive_def, lhs_must_be_positive_definite
-):
+) -> None:
     """Check is_algorithm_suited with linear solver requiring positive definite LHS."""
     description = LinearSolverDescription(
         algorithm_name="foo",
@@ -72,7 +72,7 @@ def test_linear_solver_for_positive_definite_lhs(
 
 @pytest.mark.parametrize("lhs_must_be_linear_operator", [False, True])
 @pytest.mark.parametrize("lhs", [aslinearoperator(eye(2)), eye(2)])
-def test_linear_solver_for_linear_operator(lhs, lhs_must_be_linear_operator):
+def test_linear_solver_for_linear_operator(lhs, lhs_must_be_linear_operator) -> None:
     """Check is_algorithm_suited with linear solver requiring linear operator."""
     description = LinearSolverDescription(
         algorithm_name="foo",

@@ -31,7 +31,7 @@ DATA = Path(__file__).parent / "data"
 # place
 
 
-def test_init(monkeypatch, reset_factory):
+def test_init(monkeypatch, reset_factory) -> None:
     monkeypatch.setenv("GEMSEO_PATH", DATA)
 
     fact1 = DisciplinesFactory()
@@ -54,7 +54,7 @@ def test_init(monkeypatch, reset_factory):
     fact2.update()
 
 
-def test_create(monkeypatch, reset_factory):
+def test_create(monkeypatch, reset_factory) -> None:
     monkeypatch.setenv("GEMSEO_PATH", DATA)
     fact = DisciplinesFactory()
     dummy = fact.create("DummyDisciplineIMP", opts1=1)

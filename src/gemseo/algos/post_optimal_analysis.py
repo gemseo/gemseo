@@ -104,10 +104,11 @@ class PostOptimalAnalysis:
             ValueError: If the optimization problem is not solved.
         """  # noqa: D205, D212, D415
         if opt_problem.solution is None:
-            raise ValueError(
+            msg = (
                 "The post-optimal analysis can only be conducted after the "
                 "optimization problem is solved."
             )
+            raise ValueError(msg)
         self.lagrange_computer = LagrangeMultipliers(opt_problem)
         # N.B. at creation LagrangeMultipliers checks the optimization problem
         self.opt_problem = opt_problem
@@ -116,7 +117,8 @@ class PostOptimalAnalysis:
         # Get the objective name
         output_names = self.opt_problem.objective.output_names
         if len(output_names) != 1:
-            raise ValueError("The objective must be single-valued.")
+            msg = "The objective must be single-valued."
+            raise ValueError(msg)
         self.output_names = output_names
         # Set the tolerance on inequality constraints
         if ineq_tol is None:
@@ -236,10 +238,11 @@ class PostOptimalAnalysis:
         nondifferentiable_outputs = set(outputs) - set(self.output_names)
         if nondifferentiable_outputs:
             nondifferentiable_outputs = ", ".join(nondifferentiable_outputs)
-            raise ValueError(
+            msg = (
                 f"Only the post-optimal Jacobian of {self.output_names[0]} can be "
                 f"computed, not the one(s) of {nondifferentiable_outputs}."
             )
+            raise ValueError(msg)
 
         # Check the inputs and Jacobians consistency
         func_names = self.output_names + [
@@ -276,24 +279,28 @@ class PostOptimalAnalysis:
         for output_name in func_names:
             jac_out = functions_jac.get(output_name)
             if jac_out is None:
-                raise ValueError(f"Jacobian of {output_name} is missing.")
+                msg = f"Jacobian of {output_name} is missing."
+                raise ValueError(msg)
             for input_name in inputs:
                 jac_block = jac_out.get(input_name)
                 if jac_block is None:
-                    raise ValueError(
+                    msg = (
                         f"Jacobian of {output_name} "
                         f"with respect to {input_name} is missing."
                     )
+                    raise ValueError(msg)
                 if not isinstance(jac_block, array_classes):
-                    raise TypeError(
+                    msg = (
                         f"Jacobian of {output_name} "
                         f"with respect to {input_name} must be of type ndarray."
                     )
+                    raise TypeError(msg)
                 if len(jac_block.shape) != 2:
-                    raise ValueError(
+                    msg = (
                         f"Jacobian of {output_name} "
                         f"with respect to {input_name} must be a 2-dimensional ndarray."
                     )
+                    raise ValueError(msg)
 
     def _compute_lagrange_multipliers(self) -> None:
         """Compute the Lagrange multipliers at the optimum."""

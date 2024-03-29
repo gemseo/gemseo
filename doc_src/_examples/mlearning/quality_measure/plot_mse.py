@@ -13,155 +13,145 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Syver Doving Agdestein
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-MSE example - test-train split
-==============================
-
-In this example we consider a polynomial linear regression, splitting the data
-into two sets. We measure the quality of the regression by comparing the
-predictions with the output on the test set.
-
+MSE for regression models
+=========================
 """
 
-from __future__ import annotations
-
-import matplotlib.pyplot as plt
-from numpy import arange
-from numpy import argmin
-from numpy import hstack
+from matplotlib import pyplot as plt
+from numpy import array
 from numpy import linspace
-from numpy import sort
-from numpy.random import default_rng
+from numpy import newaxis
+from numpy import sin
 
-from gemseo import configure_logger
-from gemseo import create_dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-
-configure_logger()
-
-# %%
-# Define parameters
-# -----------------
-rng = default_rng(12345)
-n_samples = 10
-noise = 0.3**2
-max_pow = 5
-amount_train = 0.8
+from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.rbf import RBFRegressor
 
 # %%
-# Construct data
-# --------------
-# We construct a parabola with added noise, on the interval [0, 1].
+# Given a dataset :math:`(x_i,y_i,\hat{y}_i)_{1\leq i \leq N}`
+# where :math:`x_i` is an input point,
+# :math:`y_i` is an output observation
+# and :math:`\hat{y}_i=\hat{f}(x_i)` is an output prediction
+# computed by a regression model :math:`\hat{f}`,
+# the mean squared error (MSE) metric is written
+#
+# .. math::
+#
+#   \text{MSE} = \frac{1}{N}\sum_{i=1}^N(y_i-\hat{y}_i)^2 \geq 0.
+#
+# The lower, the better.
+# From a quantitative point of view,
+# this depends on the order of magnitude of the outputs.
+# The square root of this average is often easier to interpret,
+# as it is expressed in the units of the output (see :class:`.RMSEMeasure`).
+#
+# To illustrate this quality measure,
+# let us consider the function :math:`f(x)=(6x-2)^2\sin(12x-4)` :cite:`forrester2008`:
 
 
 def f(x):
-    return -4 * (x - 0.5) ** 2 + 3
+    return (6 * x - 2) ** 2 * sin(12 * x - 4)
 
-
-x = linspace(0, 1, n_samples)
-y = f(x) + rng.normal(0, noise, n_samples)
 
 # %%
-# Indices for test-train split
-# ----------------------------
-samples = arange(n_samples)
-n_train = int(amount_train * n_samples)
-n_test = n_samples - n_train
-train = sort(rng.choice(samples, n_train, False))
-test = sort([sample for sample in samples if sample not in train])
-train, test
+# and try to approximate it with a polynomial of order 3.
+#
+# For this,
+# we can take these 7 learning input points
+x_train = array([0.1, 0.3, 0.5, 0.6, 0.8, 0.9, 0.95])
 
 # %%
-# Build datasets
-# --------------
-data = hstack([x[:, None], y[:, None]])
-variables = ["x", "y"]
-groups = {"x": IODataset.INPUT_GROUP, "y": IODataset.OUTPUT_GROUP}
-dataset = create_dataset(
-    "synthetic_data",
-    data[train],
-    variables,
-    variable_names_to_group_names=groups,
-    class_name="IODataset",
-)
-dataset_test = create_dataset(
-    "synthetic_data",
-    data[test],
-    variables,
-    variable_names_to_group_names=groups,
-    class_name="IODataset",
-)
+# and evaluate the model ``f`` over this design of experiments (DOE):
+y_train = f(x_train)
 
 # %%
-# Build regression model
-# ----------------------
-model = create_regression_model("PolynomialRegressor", dataset, degree=max_pow)
-model
+# Then,
+# we create an :class:`.IODataset` from these 7 learning samples:
+dataset_train = IODataset()
+dataset_train.add_input_group(x_train[:, newaxis], ["x"])
+dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
-# Predictions errors
-# ------------------
-measure = MSEMeasure(model)
-
-mse_train = measure.compute_learning_measure()
-mse_test = measure.compute_test_measure(dataset_test)
-mse_train, mse_test
+# and build a :class:`.PolynomialRegressor` with ``degree=3`` from it:
+polynomial = PolynomialRegressor(dataset_train, 3)
+polynomial.learn()
 
 # %%
-# Compute predictions
-# -------------------
-measure = MSEMeasure(model)
-model.learn()
-
-n_refined = 1000
-x_refined = linspace(0, 1, n_refined)
-y_refined = model.predict({"x": x_refined[:, None]})["y"].flatten()
+# Before using it,
+# we are going to measure its quality with the MSE metric:
+mse = MSEMeasure(polynomial)
+result = mse.compute_learning_measure()
+result, result**0.5 / (y_train.max() - y_train.min())
 
 # %%
-# Plot data points
-# ----------------
-plt.plot(x_refined, f(x_refined), label="Exact function")
-plt.scatter(x, y, label="Data points")
+# This result is medium (14% of the learning output range),
+# and we can be expected to a poor generalization quality.
+# As the cost of this academic function is zero,
+# we can approximate this generalization quality with a large test dataset
+# whereas the usual test size is about 20% of the training size.
+x_test = linspace(0.0, 1.0, 100)
+y_test = f(x_test)
+dataset_test = IODataset()
+dataset_test.add_input_group(x_test[:, newaxis], ["x"])
+dataset_test.add_output_group(y_test[:, newaxis], ["y"])
+result = mse.compute_test_measure(dataset_test)
+result, result**0.5 / (y_test.max() - y_test.min())
+
+# %%
+# The quality is higher than 15% of the test output range, which is pretty mediocre.
+# This can be explained by a broader generalization domain
+# than that of learning, which highlights the difficulties of extrapolation:
+plt.plot(x_test, y_test, "-b", label="Reference")
+plt.plot(x_train, y_train, "ob")
+plt.plot(x_test, polynomial.predict(x_test[:, newaxis]), "-r", label="Prediction")
+plt.plot(x_train, polynomial.predict(x_train[:, newaxis]), "or")
 plt.legend()
+plt.grid()
 plt.show()
 
 # %%
-# Plot predictions
-# ----------------
-plt.plot(x_refined, y_refined, label=f"Prediction (x^{max_pow})")
-plt.scatter(x[train], y[train], label="Train")
-plt.scatter(x[test], y[test], color="r", label="Test")
-plt.legend()
-plt.show()
+# Using the learning domain would slightly improve the quality:
+x_test = linspace(x_train.min(), x_train.max(), 100)
+y_test_in_large_domain = y_test
+y_test = f(x_test)
+dataset_test_in_learning_domain = IODataset()
+dataset_test_in_learning_domain.add_input_group(x_test[:, newaxis], ["x"])
+dataset_test_in_learning_domain.add_output_group(y_test[:, newaxis], ["y"])
+mse.compute_test_measure(dataset_test_in_learning_domain)
+result, result**0.5 / (y_test.max() - y_test.min())
 
 # %%
-# Compare different parameters
-# ----------------------------
-powers = [1, 2, 3, 4, 5, 7]
-test_errors = []
-for power in powers:
-    model = create_regression_model("PolynomialRegressor", dataset, degree=power)
-    measure = MSEMeasure(model)
-
-    test_mse = measure.compute_test_measure(dataset_test)
-    test_errors += [test_mse]
-
-    y_refined = model.predict({"x": x_refined[:, None]})["y"].flatten()
-
-    plt.plot(x_refined, y_refined, label=f"x^{power}")
-
-plt.scatter(x[train], y[train], label="Train")
-plt.scatter(x[test], y[test], color="r", label="Test")
-plt.legend()
-plt.show()
+# Lastly,
+# to get better results without new learning points,
+# we would have to change the regression model:
+rbf = RBFRegressor(dataset_train)
+rbf.learn()
 
 # %%
-# Grid search
-test_errors, f"Power for minimal test error: {argmin(test_errors)}"
+# The quality of this :class:`.RBFRegressor` is quite good,
+# both on the learning side:
+mse_rbf = MSEMeasure(rbf)
+result = mse_rbf.compute_learning_measure()
+result, result**0.5 / (y_train.max() - y_train.min())
+
+# %%
+# and on the validation side:
+result = mse_rbf.compute_test_measure(dataset_test_in_learning_domain)
+result, result**0.5 / (y_test.max() - y_test.min())
+
+# %%
+# including the larger domain:
+result = mse_rbf.compute_test_measure(dataset_test)
+result, result**0.5 / (y_test_in_large_domain.max() - y_test_in_large_domain.min())
+
+# %%
+# A final plot to convince us:
+plt.plot(x_test, y_test, "-b", label="Reference")
+plt.plot(x_train, y_train, "ob")
+plt.plot(x_test, rbf.predict(x_test[:, newaxis]), "-r", label="Prediction")
+plt.plot(x_train, rbf.predict(x_train[:, newaxis]), "or")
+plt.legend()
+plt.grid()
+plt.show()

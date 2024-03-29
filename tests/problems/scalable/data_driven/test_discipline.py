@@ -37,5 +37,5 @@ def dataset():
     return data
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     ScalableDiscipline("ScalableDiagonalModel", dataset)

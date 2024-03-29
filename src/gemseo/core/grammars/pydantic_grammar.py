@@ -21,30 +21,31 @@ from collections.abc import Collection
 from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Mapping
-from collections.abc import Sequence
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Union
+from typing import cast
 
 from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import ValidationError
 from pydantic import create_model
 from pydantic.fields import FieldInfo
+from typing_extensions import Self
 from typing_extensions import get_origin
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
-from gemseo.core.grammars.base_grammar import NamesToTypes
 from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
 from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline_data import MutableData
-    from gemseo.core.grammars.json_grammar import DictSchemaType
+    from gemseo.core.discipline_data import Data
+    from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
+    from gemseo.core.grammars.json_schema import Schema
     from gemseo.utils.string_tools import MultiLineString
+
 
 ModelType = type[BaseModel]
 
@@ -70,7 +71,7 @@ class PydanticGrammar(BaseGrammar):
     not reflect any of the changes done after.
     """
 
-    __SIMPLE_TYPES: ClassVar[tuple[type]] = {
+    __SIMPLE_TYPES: ClassVar[set[type]] = {
         _NDArrayPydantic,
         list,
         tuple,
@@ -88,7 +89,7 @@ class PydanticGrammar(BaseGrammar):
         name: str,
         model: ModelType | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """
         Args:
             model: A pydantic model.
@@ -98,9 +99,11 @@ class PydanticGrammar(BaseGrammar):
         super().__init__(name)
         if model is not None:
             self.__model = model
-        # Set the defaults.
+        # Set the defaults and required names.
         for name, field in self.__model.model_fields.items():
-            if not field.is_required():
+            if field.is_required():
+                self._required_names.add(name)
+            else:
                 self._defaults[name] = field.get_default(call_default_factory=True)
 
     def __getitem__(self, name: str) -> FieldInfo:
@@ -116,7 +119,7 @@ class PydanticGrammar(BaseGrammar):
         del self.__model.model_fields[name]
         self.__model_needs_rebuild = True
 
-    def _copy(self, grammar: PydanticGrammar) -> None:  # noqa:D102
+    def _copy(self, grammar: Self) -> None:  # noqa:D102
         grammar.__model = copy(self.__model)
         grammar.__model_needs_rebuild = self.__model_needs_rebuild
 
@@ -125,70 +128,84 @@ class PydanticGrammar(BaseGrammar):
         fields[new_name] = fields.pop(current_name)
         self.__model_needs_rebuild = True
 
-    def update(  # noqa:D102
+    def _update(  # noqa:D102
         self,
-        grammar: PydanticGrammar,
-        exclude_names: Iterable[str] = (),
+        grammar: Self,
+        excluded_names: Iterable[str],
+        merge: bool,
     ) -> None:
-        if not grammar:
-            return
-        fields = self.__model.model_fields
-        for field_name, field in grammar.__model.model_fields.items():
-            if field_name in exclude_names:
-                continue
-            fields[field_name] = copy(field)
-            self.__model_needs_rebuild = True
-        super().update(grammar, exclude_names)
+        names_to_annotations = {}
+        for field_name, field_info in grammar.__model.model_fields.items():
+            if field_name not in excluded_names:
+                names_to_annotations[field_name] = field_info.annotation
+        self.__update_from_annotations(names_to_annotations, merge)
 
-    def update_from_names(  # noqa:D102
+    def _update_from_names(  # noqa:D102
         self,
         names: Iterable[str],
+        merge: bool,
     ) -> None:
-        if not names:
-            return
-        fields = self.__model.model_fields
-        for name in names:
-            fields[name] = FieldInfo(name=name, annotation=NDArrayPydantic)
-        self.__model_needs_rebuild = True
+        self.__update_from_annotations(dict.fromkeys(names, NDArrayPydantic), merge)
 
-    def update_from_types(  # noqa:D102
+    def _update_from_types(
         self,
-        names_to_types: NamesToTypes,
-        merge: bool = False,
+        names_to_types: SimpleGrammarTypes,
+        merge: bool,
     ) -> None:
         """Update the grammar from names bound to types.
 
-        The updated elements are required.
         For convenience, when a type is exactly ``ndarray``,
         it is automatically converted to ``NDArrayPydantic``.
         """
-        if not names_to_types:
-            return
-        fields = self.__model.model_fields
+        names_to_annotations = dict(names_to_types)
         for name, annotation in names_to_types.items():
             if annotation is ndarray:
-                annotation = _NDArrayPydantic
+                names_to_annotations[name] = NDArrayPydantic
+        self.__update_from_annotations(names_to_annotations, merge)
+
+    def __update_from_annotations(
+        self,
+        names_to_annotations: SimpleGrammarTypes,
+        merge: bool,
+    ) -> None:
+        """Update the grammar from names bound to annotations.
+
+        Args:
+            names_to_annotations: The mapping from names to annotations.
+            merge: Whether to merge or update the grammar.
+        """
+        fields = self.__model.model_fields
+        for name, annotation in names_to_annotations.items():
             if merge and name in fields:
-                annotation = Union[fields[name].annotation, annotation]
-            fields[name] = FieldInfo(name=name, annotation=annotation)
+                # pydantic typing for the argument annotation does not handle Union,
+                # we cast it.
+                annotation = cast(type[Any], Union[fields[name].annotation, annotation])
+            fields[name] = FieldInfo(annotation=annotation)
         self.__model_needs_rebuild = True
 
     def _clear(self) -> None:  # noqa:D102
         self.__model = create_model("Model")
         self.__model_needs_rebuild = False
+        # The sole purpose of the following attribute is to identify a model created
+        # here,
+        # and not from an external class deriving from BaseModel,
+        self.__model.__internal__ = None  # type: ignore
+        # This is another workaround for pickling a created model.
+        self.__model.__pydantic_parent_namespace__ = {}
 
     def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
         repr_.add(f"Type: {properties.annotation}")
 
     def _validate(  # noqa: D102
         self,
-        data: MutableData,
+        data: Data,
         error_message: MultiLineString,
     ) -> bool:
         self.__rebuild_model()
         try:
-            # The grammars shall be strict on typing and not coerce the data.
-            self.__model.model_validate(data, strict=True)
+            # The grammars shall be strict on typing and not coerce the data,
+            # pydantic requires a dict, using a mapping fails.
+            self.__model.model_validate(dict(data), strict=True)
         except ValidationError as errors:
             for line in str(errors).split("\n"):
                 error_message.add(line)
@@ -213,13 +230,13 @@ class PydanticGrammar(BaseGrammar):
 
     def _restrict_to(  # noqa:D102
         self,
-        names: Sequence[str],
+        names: Iterable[str],
     ) -> None:
         for name in self.keys() - names:
             del self.__model.model_fields[name]
             self.__model_needs_rebuild = True
 
-    def to_simple_grammar(self) -> SimpleGrammar:
+    def _get_names_to_types(self) -> SimpleGrammarTypes:
         """
         Notes:
             For the elements for which types definitions cannot be expressed as a unique
@@ -241,22 +258,10 @@ class PydanticGrammar(BaseGrammar):
 
             names_to_types[name] = pydantic_type
 
-        return SimpleGrammar(
-            self.name,
-            names_to_types=names_to_types,
-            required_names=self.required_names,
-        )
+        return names_to_types
 
     @property
-    def required_names(self) -> set[str]:  # noqa:D102
-        return {
-            name
-            for name, field in self.__model.model_fields.items()
-            if field.is_required()
-        }
-
-    @property
-    def schema(self) -> dict[str, DictSchemaType]:
+    def schema(self) -> dict[str, Schema]:
         """The dictionary representation of the schema."""
         return self.__model.model_json_schema()
 
@@ -282,13 +287,37 @@ class PydanticGrammar(BaseGrammar):
         self.__rebuild_model()
 
     def _check_name(self, *names: str) -> None:
+        if not names:
+            return
+
         fields = self.__model.model_fields
         for name in names:
             if name not in fields:
-                raise KeyError(f"The name {name} is not in the grammar.")
+                msg = f"The name {name} is not in the grammar."
+                raise KeyError(msg)
 
     def __rebuild_model(self) -> None:
         """Rebuild the model if needed."""
         if self.__model_needs_rebuild:
             self.__model.model_rebuild(force=True)
             self.__model_needs_rebuild = False
+
+    def __getstate__(self) -> dict[str, Any]:
+        self.__rebuild_model()
+        state = self.__dict__.copy()
+        if hasattr(self.__model, "__internal__"):
+            # Workaround for pickling models created at runtime in _clear,
+            # the fields info are pickled instead in order to recreate the model later.
+            model_arg_name = f"_{self.__class__.__name__}__model"
+            state[model_arg_name] = self.__model.model_fields
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        if not isinstance(self.__model, type(BaseModel)):
+            # Recreate the model from the fields' info.
+            fields_info = self.__model
+            self._clear()
+            self.__model.model_fields = cast(dict[str, FieldInfo], fields_info)
+            self.__model_needs_rebuild = True
+            self.__rebuild_model()

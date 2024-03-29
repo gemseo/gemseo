@@ -37,13 +37,13 @@ def data() -> ndarray:
     return arange(30).reshape((10, 3))
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test constructor."""
     scaler = StandardScaler()
     assert scaler.name == "StandardScaler"
 
 
-def test_fit(data):
+def test_fit(data) -> None:
     """Test fit method."""
     _mean = data.mean(0)
     _std = data.std(0)
@@ -53,7 +53,7 @@ def test_fit(data):
     assert allclose(scaler.coefficient, 1 / _std)
 
 
-def test_transform(data):
+def test_transform(data) -> None:
     """Test transform method."""
     _mean = data.mean(0)
     _std = data.std(0)
@@ -67,7 +67,7 @@ def test_transform(data):
     assert allclose(other_scaled_data, (data - _mean) / _std)
 
 
-def test_inverse_transform(data):
+def test_inverse_transform(data) -> None:
     """Test inverse_transform method."""
     _mean = data.mean(0)
     _std = data.std(0)
@@ -81,7 +81,7 @@ def test_inverse_transform(data):
     assert allclose(other_unscaled_data, _mean + _std * data)
 
 
-def _test_transformer(data, transformed_data, coefficient, offset):
+def _test_transformer(data, transformed_data, coefficient, offset) -> None:
     """Test the StandardScaler transformer.
 
     Args:
@@ -101,7 +101,7 @@ def _test_transformer(data, transformed_data, coefficient, offset):
     "data",
     [array([[2.0], [2.0]]), array([[0.0], [0.0]])],
 )
-def test_with_only_constant(data):
+def test_with_only_constant(data) -> None:
     """Check scaling with only constant features."""
     if data[0] == 0:
         offset = array([0])
@@ -113,7 +113,7 @@ def test_with_only_constant(data):
     _test_transformer(data, transformed_data, coefficient, offset)
 
 
-def test_with_constant(data):
+def test_with_constant(data) -> None:
     """Check scaling with constant features."""
     offset = zeros(4)
     coefficient = zeros(4)
@@ -131,7 +131,7 @@ def test_with_constant(data):
     "data",
     [array([[1.0, 2.0, 6.0], [2.0, 5.0, 2.0]]), array([[2.0], [4.0]])],
 )
-def test_without_constant(data):
+def test_without_constant(data) -> None:
     """Check scaling without constant feature."""
     std = data.std(0)
     offset = -data.mean(0) / std

@@ -32,7 +32,7 @@ TEST_PATH = Path(__file__).parent / "data"
 class _MyDisciplineA(MDODiscipline):
     """A test class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["A"])
         self.output_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
@@ -41,13 +41,13 @@ class _MyDisciplineA(MDODiscipline):
 class _MyDisciplineB(MDODiscipline):
     """A test class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
         self.output_grammar.update_from_names(["B"])
 
 
-def test_bug142():
+def test_bug142() -> None:
     """This test is a reproducer for issue #142.
 
     An AttributeError was raised at the MDOChain construction,

@@ -49,7 +49,7 @@ def g(x: ndarray) -> ndarray:
     return MEAN_ANOMALY + EXCENTRICITY * sin(x)
 
 
-def test_no_acceleration():
+def test_no_acceleration() -> None:
     """Tests the case where no acceleration is applied."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.NONE)
@@ -59,7 +59,7 @@ def test_no_acceleration():
     assert new_iterate is x_1
 
 
-def test_alternate_2_delta():
+def test_alternate_2_delta() -> None:
     """Tests the alternate 2-δ acceleration method."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.ALTERNATE_2_DELTA)
@@ -84,7 +84,7 @@ def test_alternate_2_delta():
     assert allclose(new_iterate, new_iterate_ref)
 
 
-def test_alternate_delta_squared():
+def test_alternate_delta_squared() -> None:
     """Tests the alternate δ² acceleration method."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.ALTERNATE_DELTA_SQUARED)
@@ -110,7 +110,7 @@ def test_alternate_delta_squared():
     assert allclose(new_iterate, new_iterate_ref)
 
 
-def test_secant():
+def test_secant() -> None:
     """Tests the secant method."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.SECANT)
@@ -132,7 +132,7 @@ def test_secant():
     assert allclose(new_iterate, new_iterate_ref)
 
 
-def test_aitken():
+def test_aitken() -> None:
     """Tests the Aitken method."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = factory.create(AccelerationMethod.AITKEN)
@@ -157,7 +157,7 @@ def test_aitken():
     "window_size",
     [0, 2, "foo"],
 )
-def test_minimum_polynomial_parameters(window_size):
+def test_minimum_polynomial_parameters(window_size) -> None:
     """Tests the window size argument of MinimumPolynomial."""
     if window_size in [0, "foo"]:
         with pytest.raises(ValueError):
@@ -166,3 +166,24 @@ def test_minimum_polynomial_parameters(window_size):
             )
     else:
         factory.create(AccelerationMethod.MINIMUM_POLYNOMIAL, window_size=window_size)
+
+
+def test_degenerated_alternate_2_delta() -> None:
+    """Tests the alternate 2-δ acceleration method with degenerated least squares.
+
+    The least squares problem is degenerated whenever the vectors :math:`x_{n+1} - x_n`
+    and :math:`x_n - x_{n-1}` are (almost) collinear. In this case, the alternate δ²
+    method does not perform any transformation of the iterate and simply returns
+    :math:`G(x_{n+1})`.
+    """
+    transformer = factory.create(AccelerationMethod.ALTERNATE_2_DELTA)
+    x_0 = INITIAL_VECTOR.copy()
+
+    x_1 = g(x_0)
+    transformer.compute_transformed_iterate(x_1, x_1 - x_0)
+
+    x_2 = g(x_1)
+    transformer.compute_transformed_iterate(x_2, x_2 - x_1)
+
+    new_iterate = transformer.compute_transformed_iterate(x_2, x_2 - x_1)
+    assert allclose(new_iterate, x_2)

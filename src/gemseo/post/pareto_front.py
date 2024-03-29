@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import full
@@ -32,8 +31,6 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ParetoFront(OptPostProcessor):
@@ -85,10 +82,11 @@ class ParetoFront(OptPostProcessor):
 
         if objectives_labels is not None:
             if len(all_labels) != len(objectives_labels):
-                raise ValueError(
+                msg = (
                     "objective_labels shall have the same dimension as the number"
                     " of objectives to plot."
                 )
+                raise ValueError(msg)
             all_labels = objectives_labels
 
         fig = generate_pareto_plots(

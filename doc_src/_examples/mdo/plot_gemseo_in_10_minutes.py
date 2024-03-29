@@ -184,10 +184,10 @@ design_space
 
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
+    "MDF",
+    "obj",
+    design_space,
     inner_mda_name="MDAGaussSeidel",
-    objective_name="obj",
-    design_space=design_space,
 )
 
 # %%
@@ -216,8 +216,8 @@ scenario = create_scenario(
 # In our problem, we have two inequality constraints,
 # and their declaration reads:
 
-scenario.add_constraint("c_1", "ineq")
-scenario.add_constraint("c_2", "ineq")
+scenario.add_constraint("c_1", constraint_type="ineq")
+scenario.add_constraint("c_2", constraint_type="ineq")
 
 # %%
 # Execution of the scenario
@@ -228,7 +228,7 @@ scenario.add_constraint("c_2", "ineq")
 # the maximum number of iterations to perform.
 # The execution of the scenario reads:
 
-scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
+scenario.execute({"max_iter": 10, "algo": "SLSQP"})
 
 # %%
 # The scenario converged after 7 iterations.

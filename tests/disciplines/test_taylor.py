@@ -39,7 +39,7 @@ def discipline(linear_combination, input_data) -> TaylorDiscipline:
     return TaylorDiscipline(linear_combination, input_data=input_data)
 
 
-def test_io_names(linear_combination, discipline):
+def test_io_names(linear_combination, discipline) -> None:
     """Test the input and output names."""
     assert set(linear_combination.get_input_data_names()) == set(
         discipline.get_input_data_names()
@@ -49,12 +49,12 @@ def test_io_names(linear_combination, discipline):
     )
 
 
-def test_execute(linear_combination, discipline, input_data):
+def test_execute(linear_combination, discipline, input_data) -> None:
     """Test the execute() method."""
     assert_equal(discipline.execute(input_data), linear_combination.execute(input_data))
 
 
-def test_linearize(linear_combination, discipline):
+def test_linearize(linear_combination, discipline) -> None:
     """Test the linearize() method."""
     assert_equal(
         discipline.linearize(compute_all_jacobians=True),

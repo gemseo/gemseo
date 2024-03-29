@@ -1,0 +1,70 @@
+{
+  "name": "NELDER-MEAD_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "xtol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "kkt_tol_abs": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "minimum": 0.0
+    },
+    "kkt_tol_rel": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "minimum": 0.0
+    },
+    "disp": {
+      "type": "boolean"
+    },
+    "adaptive": {
+      "type": "boolean"
+    },
+    "initial_simplex": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "minItems": 2,
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "id": "#NELDER-MEAD"
+}

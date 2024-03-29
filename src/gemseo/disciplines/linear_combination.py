@@ -93,7 +93,7 @@ class LinearCombination(MDODiscipline):
             input_name: zeros(default_size) for input_name in input_names
         })
 
-        self.__coefficients = {input_name: 1.0 for input_name in input_names}
+        self.__coefficients = dict.fromkeys(input_names, 1.0)
         if input_coefficients:
             self.__coefficients.update(input_coefficients)
 

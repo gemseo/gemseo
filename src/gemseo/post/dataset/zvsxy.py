@@ -21,7 +21,7 @@ r"""Draw a variable versus two others from a :class:`.Dataset`.
 
 A :class:`.ZvsXY` plot represents the variable :math:`z` with respect to
 :math:`x` and :math:`y` as a surface plot, based on a set of points
-:points :math:`\{x_i,y_i,z_i\}_{1\leq i \leq n}`. This interpolation is
+:points :math:`\{x_i,y_i,z_i\}_{1\leq i \leq n}`. This interpolation
 relies on the Delaunay triangulation of :math:`\{x_i,y_i\}_{1\leq i \leq n}`
 """
 
@@ -36,9 +36,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from numpy.typing import NDArray
-
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 
 class ZvsXY(DatasetPlot):
@@ -88,7 +87,7 @@ class ZvsXY(DatasetPlot):
 
     def _create_specific_data_from_dataset(
         self,
-    ) -> tuple[NDArray[float], NDArray[float], NDArray[float], Iterable[Dataset]]:
+    ) -> tuple[RealArray, RealArray, RealArray, Iterable[Dataset]]:
         """
         Returns:
             The values of the points on the x-axis,
@@ -98,7 +97,6 @@ class ZvsXY(DatasetPlot):
         """  # noqa: D205, D212, D415
         other_datasets = self._specific_settings.other_datasets or []
         self._n_items = 1 + len(other_datasets)
-        self._set_color(self._n_items)
         x, x_comp = self._specific_settings.x
         y, y_comp = self._specific_settings.y
         z, z_comp = self._specific_settings.z

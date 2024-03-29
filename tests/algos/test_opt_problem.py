@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import operator
 from copy import deepcopy
 from functools import partial
 from math import sqrt
@@ -106,12 +107,12 @@ def pow2_problem() -> OptimizationProblem:
     return problem
 
 
-def test_init():
+def test_init() -> None:
     design_space = DesignSpace()
     OptimizationProblem(design_space)
 
 
-def test_checks():
+def test_checks() -> None:
     n = 3
     design_space = DesignSpace()
     problem = OptimizationProblem(design_space)
@@ -131,7 +132,7 @@ def test_checks():
     problem.check()
 
 
-def test_callback():
+def test_callback() -> None:
     """Test the execution of a callback."""
     n = 3
     design_space = DesignSpace()
@@ -150,7 +151,7 @@ def test_callback():
     call_me.assert_called_once()
 
 
-def test_add_constraints(pow2_problem):
+def test_add_constraints(pow2_problem) -> None:
     problem = pow2_problem
     ineq1 = MDOFunction(
         Power2.ineq_constraint1,
@@ -181,7 +182,7 @@ def test_add_constraints(pow2_problem):
         problem.check()
 
 
-def test_linear_problem_type_switch():
+def test_linear_problem_type_switch() -> None:
     n = 3
     design_space = DesignSpace()
     design_space.add_variable("x", n, l_b=-1.0, u_b=1.0)
@@ -197,7 +198,7 @@ def test_linear_problem_type_switch():
     assert problem_c.pb_type == OptimizationProblem.ProblemType.NON_LINEAR
 
 
-def test_getmsg_ineq_constraints(pow2_problem):
+def test_getmsg_ineq_constraints(pow2_problem) -> None:
     expected = []
     problem = pow2_problem
 
@@ -264,7 +265,7 @@ def test_getmsg_ineq_constraints(pow2_problem):
         assert elem in msg
 
 
-def test_getmsg_eq_constraints(pow2_problem):
+def test_getmsg_eq_constraints(pow2_problem) -> None:
     expected = []
     problem = pow2_problem
 
@@ -302,7 +303,7 @@ def test_getmsg_eq_constraints(pow2_problem):
         assert elem in msg
 
 
-def test_get_dimension(pow2_problem):
+def test_get_dimension(pow2_problem) -> None:
     problem = pow2_problem
     problem.u_bounds = None
     problem.l_bounds = None
@@ -314,13 +315,13 @@ def test_get_dimension(pow2_problem):
     assert problem.get_dimension() == dim
 
 
-def test_check_format(pow2_problem):
+def test_check_format(pow2_problem) -> None:
     problem = pow2_problem
     with pytest.raises(TypeError):
         problem.check_format("1")
 
 
-def test_constraints_dim(pow2_problem):
+def test_constraints_dim(pow2_problem) -> None:
     problem = pow2_problem
     ineq1 = MDOFunction(
         Power2.ineq_constraint1,
@@ -339,7 +340,7 @@ def test_constraints_dim(pow2_problem):
     assert len(problem.get_nonproc_constraints()) == 1
 
 
-def test_check():
+def test_check() -> None:
     # Objective is missing!
     design_space = DesignSpace()
     design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
@@ -349,7 +350,7 @@ def test_check():
         problem.check()
 
 
-def test_missing_constjac(pow2_problem):
+def test_missing_constjac(pow2_problem) -> None:
     problem = pow2_problem
     ineq1 = MDOFunction(
         sum, name="sum", f_type="ineq", expr="sum(x)", input_names=["x"]
@@ -360,7 +361,7 @@ def test_missing_constjac(pow2_problem):
         problem.evaluate_functions(ones(3), eval_jac=True)
 
 
-def _test_check_bounds(pow2_problem):
+def _test_check_bounds(pow2_problem) -> None:
     dim = 3
     problem = pow2_problem
     problem.x_0 = np.ones(dim)
@@ -395,14 +396,7 @@ def _test_check_bounds(pow2_problem):
         problem.check()
 
 
-def test_differentiation_method_without_current_x(pow2_problem):
-    """Check that a ValueError is raised when the current x is not defined."""
-    pow2_problem.design_space.set_current_value({})
-    with pytest.raises(ValueError, match=r"The design space has no current value\."):
-        pow2_problem._OptimizationProblem__add_fd_jac("foo", False)
-
-
-def test_differentiation_method(pow2_problem):
+def test_differentiation_method(pow2_problem) -> None:
     problem = pow2_problem
     problem.differentiation_method = problem.ApproximationMode.COMPLEX_STEP
     problem.fd_step = 0.0
@@ -421,13 +415,13 @@ def test_differentiation_method(pow2_problem):
     problem.check()
 
 
-def test_get_dv_names():
+def test_get_dv_names() -> None:
     problem = Power2()
     OptimizersFactory().execute(problem, "SLSQP")
     assert problem.design_space.variable_names == ["x"]
 
 
-def test_get_best_infeasible_point():
+def test_get_best_infeasible_point() -> None:
     problem = Power2()
     x_opt, f_opt, is_opt_feasible, _ = problem.get_best_infeasible_point()
     assert x_opt is None
@@ -461,7 +455,7 @@ def test_get_best_infeasible_point():
     )
 
 
-def test_feasible_optimum_points():
+def test_feasible_optimum_points() -> None:
     problem = Power2()
     with pytest.raises(ValueError):
         problem.get_optimum()
@@ -482,7 +476,7 @@ def test_feasible_optimum_points():
     assert is_feasible
 
 
-def test_nan():
+def test_nan() -> None:
     problem = Power2()
     problem.preprocess_functions()
 
@@ -499,7 +493,7 @@ def test_nan():
         problem.objective.jac(array([0.1, 0.2, 0.3]))
 
 
-def test_preprocess_functions():
+def test_preprocess_functions() -> None:
     """Test the pre-processing of a problem functions."""
     problem = Power2()
     obs1 = MDOFunction(norm, "design Euclidean norm")
@@ -529,7 +523,7 @@ def test_preprocess_functions():
     assert nonproc_constraints == constraints
 
 
-def test_normalize_linear_function():
+def test_normalize_linear_function() -> None:
     """Test the normalization of linear functions."""
     design_space = DesignSpace()
     lower_bounds = array([-5.0, -7.0])
@@ -550,13 +544,13 @@ def test_normalize_linear_function():
     assert allclose(problem.objective(0.8 * ones(2)), initial_value)
 
 
-def test_export_hdf(tmp_wd):
+def test_export_hdf(tmp_wd) -> None:
     file_path = Path("power2.h5")
     problem = Power2()
     OptimizersFactory().execute(problem, "SLSQP")
     problem.to_hdf(file_path, append=True)  # Shall still work now
 
-    def check_pb(imp_pb):
+    def check_pb(imp_pb) -> None:
         assert file_path.exists()
         assert str(imp_pb) == str(problem)
         assert str(imp_pb.solution) == str(problem.solution)
@@ -581,7 +575,7 @@ def test_export_hdf(tmp_wd):
         imp_pb.objective(array([1.1254]))
 
 
-def test_evaluate_functions():
+def test_evaluate_functions() -> None:
     """Evaluate the functions of the Power2 problem."""
     problem = Power2()
     func, grad = problem.evaluate_functions(
@@ -600,7 +594,7 @@ def test_evaluate_functions():
     assert grad["eq"] == pytest.approx(array([0.0, 0.0, -0.12]))
 
 
-def test_evaluate_functions_no_gradient():
+def test_evaluate_functions_no_gradient() -> None:
     """Evaluate the functions of the Power2 problem without computing the gradients."""
     problem = Power2()
 
@@ -614,7 +608,7 @@ def test_evaluate_functions_no_gradient():
     assert func["eq"] == pytest.approx(array([-0.1]))
 
 
-def test_evaluate_functions_only_gradients():
+def test_evaluate_functions_only_gradients() -> None:
     """Evaluate the gradients of the Power2 problem without evaluating the functions."""
     func, grad = Power2().evaluate_functions(
         normalize=False,
@@ -631,7 +625,7 @@ def test_evaluate_functions_only_gradients():
 
 
 @pytest.mark.parametrize("no_db_no_norm", [True, False])
-def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm):
+def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm) -> None:
     """Test the evaluation of the fuctions of a problem with observables."""
     problem = pow2_problem
     design_norm = "design norm"
@@ -647,7 +641,7 @@ def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm):
     assert out[0]["design norm"] == pytest.approx(sqrt(3.0))
 
 
-def test_evaluate_functions_non_preprocessed(constrained_problem):
+def test_evaluate_functions_non_preprocessed(constrained_problem) -> None:
     """Check the evaluation of non-preprocessed functions."""
     values, jacobians = constrained_problem.evaluate_functions(
         normalize=False, no_db_no_norm=True, eval_observables=False
@@ -668,7 +662,7 @@ def test_evaluate_functions_non_preprocessed(constrained_problem):
         (True, True, array([0.55, 0.6, 0.65])),
     ],
 )
-def test_evaluate_functions_preprocessed(pre_normalize, eval_normalize, x_vect):
+def test_evaluate_functions_preprocessed(pre_normalize, eval_normalize, x_vect) -> None:
     """Check the evaluation of preprocessed functions."""
     constrained_problem = Power2()
     constrained_problem.preprocess_functions(is_function_input_normalized=pre_normalize)
@@ -689,7 +683,7 @@ def test_evaluate_functions_preprocessed(pre_normalize, eval_normalize, x_vect):
 )
 def test_evaluate_constraints_subset(
     constrained_problem, preprocess_functions, no_db_no_norm, constraint_names, keys
-):
+) -> None:
     """Check the evaluation of a subset of constraints."""
     if preprocess_functions:
         constrained_problem.preprocess_functions()
@@ -715,7 +709,7 @@ def test_evaluate_constraints_subset(
 )
 def test_evaluate_observables_subset(
     constrained_problem, observable_names, eval_observables, keys
-):
+) -> None:
     """Check the evaluation of a subset of observables."""
     values, _ = constrained_problem.evaluate_functions(
         array([0, 0]),
@@ -734,7 +728,9 @@ def test_evaluate_observables_subset(
         (["h", "b"], True, {"h", "b"}),
     ],
 )
-def test_evaluate_jacobians_subset(constrained_problem, jacobian_names, eval_jac, keys):
+def test_evaluate_jacobians_subset(
+    constrained_problem, jacobian_names, eval_jac, keys
+) -> None:
     """Check the evaluation of the Jacobian matrices for a subset of the functions."""
     _, jacobians = constrained_problem.evaluate_functions(
         x_vect=array([0, 0]),
@@ -749,7 +745,9 @@ def test_evaluate_jacobians_subset(constrained_problem, jacobian_names, eval_jac
     ("jacobian_names", "message"),
     [(["unknown"], "This name is"), (["other unknown", "unknown"], "These names are")],
 )
-def test_evaluate_unknown_jacobians(constrained_problem, jacobian_names, message):
+def test_evaluate_unknown_jacobians(
+    constrained_problem, jacobian_names, message
+) -> None:
     """Check the evaluation of the Jacobian matrices of unknown functions."""
     with pytest.raises(
         ValueError,
@@ -765,7 +763,9 @@ def test_evaluate_unknown_jacobians(constrained_problem, jacobian_names, message
 @pytest.mark.parametrize(
     ("jacobian_names", "keys"), [(("h"), {"h"}), ([], set()), (None, set())]
 )
-def test_evaluate_jacobians_alone(constrained_problem, eval_jac, jacobian_names, keys):
+def test_evaluate_jacobians_alone(
+    constrained_problem, eval_jac, jacobian_names, keys
+) -> None:
     """Check the evaluation of Jacobian matrices alone."""
     values, jacobians = constrained_problem.evaluate_functions(
         x_vect=array([0, 0]),
@@ -779,7 +779,7 @@ def test_evaluate_jacobians_alone(constrained_problem, eval_jac, jacobian_names,
     assert jacobians.keys() == keys
 
 
-def test_no_normalization():
+def test_no_normalization() -> None:
     problem = Power2()
     OptimizersFactory().execute(problem, "SLSQP", normalize_design_space=False)
     f_opt, _, is_feas, _, _ = problem.get_optimum()
@@ -787,7 +787,7 @@ def test_no_normalization():
     assert abs(f_opt - 2.192) < 0.01
 
 
-def test_nan_func():
+def test_nan_func() -> None:
     problem = Power2()
 
     def nan_func(_):
@@ -799,12 +799,12 @@ def test_nan_func():
         problem.objective(zeros(3))
 
 
-def test_fail_import():
+def test_fail_import() -> None:
     with pytest.raises(KeyError):
         OptimizationProblem.from_hdf(FAIL_HDF)
 
 
-def test_append_export(tmp_wd):
+def test_append_export(tmp_wd) -> None:
     """Test the export of an HDF5 file with append mode.
 
     Args:
@@ -836,7 +836,7 @@ def test_append_export(tmp_wd):
     assert len(read_db) == n_calls + 1
 
 
-def test_grad_normalization(pow2_problem):
+def test_grad_normalization(pow2_problem) -> None:
     problem = pow2_problem
     x_vec = ones(3)
     grad = problem.objective.jac(x_vec)
@@ -849,7 +849,7 @@ def test_grad_normalization(pow2_problem):
     assert pytest.approx(norm(unnorm_grad - grad)) == 0.0
 
 
-def test_2d_objective():
+def test_2d_objective() -> None:
     disc = SobieskiStructure()
     design_space = SobieskiDesignSpace()
     inputs = disc.get_input_data_names()
@@ -858,7 +858,7 @@ def test_2d_objective():
     doe_scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
 
 
-def test_observable(pow2_problem):
+def test_observable(pow2_problem) -> None:
     """Test the handling of observables.
 
     Args:
@@ -947,7 +947,7 @@ def test_observable(pow2_problem):
         ),
     ],
 )
-def test_get_data_by_names(filter_non_feasible, as_dict, expected):
+def test_get_data_by_names(filter_non_feasible, as_dict, expected) -> None:
     """Test if the data is filtered correctly.
 
     Args:
@@ -986,7 +986,7 @@ def test_get_data_by_names(filter_non_feasible, as_dict, expected):
         assert np.array_equal(data, expected)
 
 
-def test_gradient_with_random_variables():
+def test_gradient_with_random_variables() -> None:
     """Check that the Jacobian is correctly computed with random variable."""
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable("x", "OTUniformDistribution")
@@ -1000,7 +1000,7 @@ def test_gradient_with_random_variables():
     assert array_equal(data, array([0.0, 3.0, 6.0]))
 
 
-def test_is_mono_objective():
+def test_is_mono_objective() -> None:
     """Check the boolean OptimizationProblem.is_mono_objective."""
     design_space = DesignSpace()
     design_space.add_variable("")
@@ -1031,21 +1031,23 @@ def problem() -> OptimizationProblem:
     return opt_problem
 
 
-def test_parallel_differentiation(problem):
+def test_parallel_differentiation(problem) -> None:
     """Check that parallel_differentiation is taken into account."""
     assert not problem.parallel_differentiation
     problem.parallel_differentiation = True
     assert problem.parallel_differentiation
 
 
-def test_parallel_differentiation_options(problem):
+def test_parallel_differentiation_options(problem) -> None:
     """Check that parallel_differentiation_options is taken into account."""
     assert not problem.parallel_differentiation_options
     problem.parallel_differentiation_options = {"step": 1e-10}
     assert problem.parallel_differentiation_options == {"step": 1e-10}
 
 
-def test_parallel_differentiation_setting_after_functions_preprocessing(problem):
+def test_parallel_differentiation_setting_after_functions_preprocessing(
+    problem,
+) -> None:
     """Check that parallel differentiation cannot be changed after preprocessing."""
     problem.preprocess_functions()
     expected_message = (
@@ -1064,7 +1066,7 @@ def test_parallel_differentiation_setting_after_functions_preprocessing(problem)
         problem.parallel_differentiation_options = {}
 
 
-def test_database_name(problem):
+def test_database_name(problem) -> None:
     """Check the name of the database."""
     DOEFactory().execute(problem, "fullfact", n_samples=1)
     problem.database.name = "my_database"
@@ -1091,7 +1093,7 @@ def test_database_name(problem):
         ),
     ],
 )
-def test_int_opt_problem(skip_int_check, expected_message, caplog):
+def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
     """Test the execution of an optimization problem with integer variables.
 
     Args:
@@ -1140,7 +1142,7 @@ def constrained_problem() -> OptimizationProblem:
         MDOFunction(lambda x: x, "h", jac=lambda _: np.eye(2)), cstr_type="eq"
     )
     problem.add_observable(MDOFunction(lambda x: x[1], "a", jac=lambda x: [0, 1]))
-    problem.add_observable(MDOFunction(lambda x: -x, "b", jac=lambda x: -np.eye(2)))
+    problem.add_observable(MDOFunction(operator.neg, "b", jac=lambda x: -np.eye(2)))
     return problem
 
 
@@ -1148,7 +1150,7 @@ def constrained_problem() -> OptimizationProblem:
     ("names", "dimensions"),
     [(None, {"f": 1, "g": 1, "h": 2}), (["g", "h"], {"g": 1, "h": 2})],
 )
-def test_get_functions_dimensions(constrained_problem, names, dimensions):
+def test_get_functions_dimensions(constrained_problem, names, dimensions) -> None:
     """Check the computation of the functions dimensions."""
     assert constrained_problem.get_functions_dimensions(names) == dimensions
 
@@ -1167,7 +1169,7 @@ parametrize_unsatisfied_constraints = pytest.mark.parametrize(
 @parametrize_unsatisfied_constraints
 def test_get_number_of_unsatisfied_constraints(
     constrained_problem, design, n_unsatisfied
-):
+) -> None:
     """Check the computation of the number of unsatisfied constraints."""
     constrained_problem.evaluate_functions = mock.Mock(
         return_value=({"g": design[0], "h": design}, {})
@@ -1184,7 +1186,7 @@ def test_get_number_of_unsatisfied_constraints(
 @parametrize_unsatisfied_constraints
 def test_get_number_of_unsatisfied_constraints_from_passed_values(
     constrained_problem, design, n_unsatisfied
-):
+) -> None:
     """Check the computation of the number of unsatisfied constraints from values."""
     constrained_problem.evaluate_functions = mock.Mock()
     assert (
@@ -1196,7 +1198,7 @@ def test_get_number_of_unsatisfied_constraints_from_passed_values(
     constrained_problem.evaluate_functions.assert_not_called()
 
 
-def test_get_scalar_constraint_names(constrained_problem):
+def test_get_scalar_constraint_names(constrained_problem) -> None:
     """Check the computation of the scalar constraints names."""
     scalar_names = constrained_problem.get_scalar_constraint_names()
     assert set(scalar_names) == {
@@ -1206,7 +1208,7 @@ def test_get_scalar_constraint_names(constrained_problem):
     }
 
 
-def test_observables_callback():
+def test_observables_callback() -> None:
     """Test that the observables are called properly."""
     problem = Power2()
     obs1 = MDOFunction(norm, "design_norm")
@@ -1224,7 +1226,7 @@ def test_observables_callback():
     assert obs1.n_calls == 1
 
 
-def test_approximated_jacobian_wrt_uncertain_variables():
+def test_approximated_jacobian_wrt_uncertain_variables() -> None:
     """Check that the approximated Jacobian wrt uncertain variables is correct."""
     uspace = ParameterSpace()
     uspace.add_random_variable("u", "OTNormalDistribution")
@@ -1247,7 +1249,7 @@ def rosenbrock_lhs() -> tuple[Rosenbrock, dict[str, ndarray]]:
     return problem, start_point
 
 
-def test_reset(rosenbrock_lhs):
+def test_reset(rosenbrock_lhs) -> None:
     """Check the default behavior of OptimizationProblem.reset."""
     problem, start_point = rosenbrock_lhs
     nonproc_functions = [
@@ -1270,6 +1272,8 @@ def test_reset(rosenbrock_lhs):
     ]
     for func, nonproc_func in zip(functions, nonproc_functions):
         assert id(func) == id(nonproc_func)
+        assert func.n_calls == 0
+        assert nonproc_func.n_calls == 0
 
     assert problem.nonproc_objective is None
     assert problem.nonproc_constraints == []
@@ -1277,21 +1281,21 @@ def test_reset(rosenbrock_lhs):
     assert problem.nonproc_new_iter_observables == []
 
 
-def test_reset_database(rosenbrock_lhs):
+def test_reset_database(rosenbrock_lhs) -> None:
     """Check OptimizationProblem.reset without database reset."""
     problem, _ = rosenbrock_lhs
     problem.reset(database=False)
     assert len(problem.database) == 3
 
 
-def test_reset_current_iter(rosenbrock_lhs):
+def test_reset_current_iter(rosenbrock_lhs) -> None:
     """Check OptimizationProblem.reset without current_iter reset."""
     problem, _ = rosenbrock_lhs
     problem.reset(current_iter=False)
     assert len(problem.database) == 0
 
 
-def test_reset_design_space(rosenbrock_lhs):
+def test_reset_design_space(rosenbrock_lhs) -> None:
     """Check OptimizationProblem.reset without design_space reset."""
     problem, start_point = rosenbrock_lhs
     problem.reset(design_space=False)
@@ -1299,14 +1303,14 @@ def test_reset_design_space(rosenbrock_lhs):
         assert (start_point[key] != val).any()
 
 
-def test_reset_functions(rosenbrock_lhs):
+def test_reset_functions(rosenbrock_lhs) -> None:
     """Check OptimizationProblem.reset without reset the number of function calls."""
     problem, _ = rosenbrock_lhs
     problem.reset(function_calls=False)
     assert problem.objective.n_calls == 3
 
 
-def test_reset_wo_current_value():
+def test_reset_wo_current_value() -> None:
     """Check OptimizationProblem.reset when the default design value is missing."""
     design_space = DesignSpace()
     design_space.add_variable("x")
@@ -1317,7 +1321,7 @@ def test_reset_wo_current_value():
     assert problem.design_space.get_current_value(as_dict=True) == {}
 
 
-def test_reset_preprocess(rosenbrock_lhs):
+def test_reset_preprocess(rosenbrock_lhs) -> None:
     """Check OptimizationProblem.reset without functions pre-processing reset."""
     problem, _ = rosenbrock_lhs
     problem.reset(preprocessing=False)
@@ -1345,7 +1349,7 @@ def test_reset_preprocess(rosenbrock_lhs):
     )
 
 
-def test_function_string_representation_from_hdf():
+def test_function_string_representation_from_hdf() -> None:
     """Check the string representation of a function when importing a HDF5 file.
 
     The commented code is the one used for creating the HDF5 file.
@@ -1360,7 +1364,6 @@ def test_function_string_representation_from_hdf():
     #     MDOFunction(lambda x: x[0] + x[1], "g", input_names=["x0", "x1"])
     # )
     # problem.to_hdf("opt_problem_to_check_string_representation.hdf5")
-
     new_problem = OptimizationProblem.from_hdf(
         DIRNAME / "opt_problem_to_check_string_representation.hdf5"
     )
@@ -1369,12 +1372,12 @@ def test_function_string_representation_from_hdf():
 
 
 @pytest.mark.parametrize(("name", "dimension"), [("f", 1), ("g", 1), ("h", 2)])
-def test_get_function_dimension(constrained_problem, name, dimension):
+def test_get_function_dimension(constrained_problem, name, dimension) -> None:
     """Check the output dimension of a problem function."""
     assert constrained_problem.get_function_dimension(name) == dimension
 
 
-def test_get_function_dimension_unknown(constrained_problem):
+def test_get_function_dimension_unknown(constrained_problem) -> None:
     """Check the output dimension of an unknown problem function."""
     with pytest.raises(ValueError, match="The problem has no function named unknown."):
         constrained_problem.get_function_dimension("unknown")
@@ -1397,7 +1400,9 @@ def function() -> mock.Mock:
 
 
 @pytest.mark.parametrize("expects_normalized", [(True,), (False,)])
-def test_get_function_dimension_no_dim(function, design_space, expects_normalized):
+def test_get_function_dimension_no_dim(
+    function, design_space, expects_normalized
+) -> None:
     """Check the implicitly defined output dimension of a problem function."""
     function.dim = 0
     function.expects_normalized_inputs = expects_normalized
@@ -1414,7 +1419,7 @@ def test_get_function_dimension_no_dim(function, design_space, expects_normalize
         assert design_space.get_current_value.call_count == 2
 
 
-def test_get_function_dimension_unavailable(function, design_space):
+def test_get_function_dimension_unavailable(function, design_space) -> None:
     """Check the unavailable output dimension of a problem function."""
     function.dim = 0
     design_space.has_current_value = mock.Mock(return_value=False)
@@ -1429,7 +1434,7 @@ def test_get_function_dimension_unavailable(function, design_space):
 
 @pytest.mark.parametrize("categorize", [True, False])
 @pytest.mark.parametrize("export_gradients", [True, False])
-def test_dataset_missing_values(categorize, export_gradients):
+def test_dataset_missing_values(categorize, export_gradients) -> None:
     """Test the export of a database with missing values to a dataset.
 
     Args:
@@ -1528,14 +1533,14 @@ def problem_for_eval_obs_jac() -> OptimizationProblem:
     ],
 )
 @pytest.mark.parametrize("eval_obs_jac", [True, False])
-def test_observable_jac(problem_for_eval_obs_jac, options, eval_obs_jac):
+def test_observable_jac(problem_for_eval_obs_jac, options, eval_obs_jac) -> None:
     """Check that the observable derivatives are computed when eval_obs_jac is True."""
     execute_algo(problem_for_eval_obs_jac, eval_obs_jac=eval_obs_jac, **options)
     database = problem_for_eval_obs_jac.database
     assert ("@o" in database.get_function_names(False)) is eval_obs_jac
 
 
-def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
+def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     """Check if the observables can be retrieved in an HDF file after export and
     import."""
     # Add observables to the optimization problem.
@@ -1565,7 +1570,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
         (array([[1.0], [2.0], [1.0]]), array([[1.0], [2.0], [1.0]])),
     ],
 )
-def test_export_to_dataset(input_values, expected):
+def test_export_to_dataset(input_values, expected) -> None:
     """Check the export of the database."""
     design_space = DesignSpace()
     design_space.add_variable("dv")
@@ -1588,7 +1593,7 @@ def test_export_to_dataset(input_values, expected):
 
 @pytest.mark.skip("Input names are sorted.")
 @pytest.mark.parametrize("name", ["a", "c"])
-def test_export_to_dataset_input_names_order(name):
+def test_export_to_dataset_input_names_order(name) -> None:
     """Check that the order of the input names is not changed in the dataset."""
     design_space = DesignSpace()
     design_space.add_variable("b")
@@ -1625,14 +1630,14 @@ def problem_with_complex_value() -> OptimizationProblem:
 )
 def test_get_x0_normalized_complex(
     problem_with_complex_value, cast_to_real, as_dict, x0
-):
+) -> None:
     """Check the getting of a normalized complex initial value."""
     assert_equal(
         problem_with_complex_value.get_x0_normalized(cast_to_real, as_dict), x0
     )
 
 
-def test_objective_name():
+def test_objective_name() -> None:
     """Check the name of the objective."""
     problem = OptimizationProblem(DesignSpace())
     problem.objective = MDOFunction(lambda x: x, "f")
@@ -1658,7 +1663,7 @@ def test_objective_name():
         (-1.0, False, "[c+1.0]"),
     ],
 )
-def test_constraint_names(has_default_name, value, positive, cstr_type, name):
+def test_constraint_names(has_default_name, value, positive, cstr_type, name) -> None:
     """Check the name of a constraint."""
     problem = OptimizationProblem(DesignSpace())
     original_name = "c"
@@ -1680,7 +1685,7 @@ def test_constraint_names(has_default_name, value, positive, cstr_type, name):
         assert cstr_name == "c"
 
 
-def test_constraint_names_with_aggregation():
+def test_constraint_names_with_aggregation() -> None:
     """Check the name of the constraints when some are aggregated."""
     problem = OptimizationProblem(DesignSpace())
     nb_constr = 5
@@ -1705,7 +1710,7 @@ def test_constraint_names_with_aggregation():
             assert problem.constraint_names[name] == [name]
 
 
-def test_observables_normalization(sellar_disciplines):
+def test_observables_normalization(sellar_disciplines) -> None:
     """Test that the observables are called at each iteration."""
     design_space = DesignSpace()
     design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
@@ -1714,12 +1719,12 @@ def test_observables_normalization(sellar_disciplines):
     )
     scenario = create_scenario(
         sellar_disciplines,
-        formulation="MDF",
-        objective_name="obj",
-        design_space=design_space,
+        "MDF",
+        "obj",
+        design_space,
     )
-    scenario.add_constraint("c_1", "ineq")
-    scenario.add_constraint("c_2", "ineq")
+    scenario.add_constraint("c_1", constraint_type="ineq")
+    scenario.add_constraint("c_2", constraint_type="ineq")
     scenario.add_observable("y_1")
     scenario.execute(input_data={"max_iter": 3, "algo": "SLSQP"})
     total_iter = len(scenario.formulation.opt_problem.database)
@@ -1732,7 +1737,7 @@ def test_observables_normalization(sellar_disciplines):
     assert total_iter == n_obj_eval == n_obs_eval
 
 
-def test_observable_cannot_be_added_twice(caplog):
+def test_observable_cannot_be_added_twice(caplog) -> None:
     """Check that an observable cannot be added twice."""
     problem = OptimizationProblem(DesignSpace())
     problem.add_observable(MDOFunction(lambda x: x, "obs"))
@@ -1742,7 +1747,7 @@ def test_observable_cannot_be_added_twice(caplog):
     assert len(problem.observables) == 1
 
 
-def test_repr_constraint_linear_lower_ineq():
+def test_repr_constraint_linear_lower_ineq() -> None:
     """Check the representation of a linear lower inequality-constraint."""
     design_space = DesignSpace()
     design_space.add_variable("x", 2)
@@ -1765,14 +1770,14 @@ def test_repr_constraint_linear_lower_ineq():
     )
 
 
-def test_get_original_observable(pow2_problem):
+def test_get_original_observable(pow2_problem) -> None:
     """Check the accessor to an original observable."""
     function = MDOFunction(None, "f")
     pow2_problem.add_observable(function)
     assert pow2_problem.get_observable(function.name) is function
 
 
-def test_get_preprocessed_observable(pow2_problem):
+def test_get_preprocessed_observable(pow2_problem) -> None:
     """Check the accessor to a pre-processed observable."""
     function = MDOFunction(None, "f")
     pow2_problem.add_observable(function)
@@ -1780,7 +1785,7 @@ def test_get_preprocessed_observable(pow2_problem):
     assert pow2_problem.get_observable(function.name) is pow2_problem.observables[-1]
 
 
-def test_get_missing_observable(constrained_problem):
+def test_get_missing_observable(constrained_problem) -> None:
     """Check the accessor to a missing observable."""
     match = "missing_observable_name is not among the names of the observables: a, b."
     with pytest.raises(ValueError, match=match):
@@ -1788,12 +1793,12 @@ def test_get_missing_observable(constrained_problem):
 
 
 @pytest.mark.parametrize("name", ["obj", "cstr"])
-def test_execute_twice(problem_executed_twice, name):
+def test_execute_twice(problem_executed_twice, name) -> None:
     """Check that the second evaluations of an OptimizationProblem works."""
     assert len(problem_executed_twice.database.get_function_history(name)) == 2
 
 
-def test_avoid_complex_in_dataset():
+def test_avoid_complex_in_dataset() -> None:
     """Check that exporting database to dataset casts complex numbers to real."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
@@ -1823,7 +1828,7 @@ def test_avoid_complex_in_dataset():
         (False, 13.0, [3.0, 4.0]),
     ],
 )
-def test_get_violation_criteria(cstr_type, is_feasible, violation, cstr):
+def test_get_violation_criteria(cstr_type, is_feasible, violation, cstr) -> None:
     """Test get_violation_criteria."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
@@ -1842,7 +1847,7 @@ def test_get_violation_criteria(cstr_type, is_feasible, violation, cstr):
     ))
 
 
-def test_is_multi_objective():
+def test_is_multi_objective() -> None:
     assert not BinhKorn().is_mono_objective
 
     design_space = create_design_space()
@@ -1867,7 +1872,7 @@ def test_is_multi_objective():
     assert not problem.is_mono_objective
 
 
-def test_optimization_result_save_nested_dict(tmp_wd):
+def test_optimization_result_save_nested_dict(tmp_wd) -> None:
     """Check that the nested dictionaries of OptimizationResult are correctly saved."""
     problem = Power2()
     execute_algo(problem, "SLSQP")
@@ -1877,6 +1882,45 @@ def test_optimization_result_save_nested_dict(tmp_wd):
     problem = OptimizationProblem.from_hdf("problem.hdf5")
     assert compare_dict_of_arrays(x_0_as_dict, problem.solution.x_0_as_dict)
     assert compare_dict_of_arrays(x_opt_as_dict, problem.solution.x_opt_as_dict)
+
+
+def test_hdf_node_path(pow2_problem, tmp_wd):
+    """Check the importation/exportation in a specific node."""
+    file_name = "test_hdf_node.hdf5"
+    node = "problem_node"
+    problem = pow2_problem
+    function_names = problem.get_all_function_name()
+    desvar_names = problem.get_design_variable_names()
+    problem.to_hdf(file_name, hdf_node_path=node)
+
+    # Should fail : no opt_problem saved at the root
+    with pytest.raises(KeyError):
+        OptimizationProblem.from_hdf(file_name)
+
+    # Should fail: node doesn't exist
+    with pytest.raises(KeyError):
+        OptimizationProblem.from_hdf(file_name, hdf_node_path="wrong_node")
+
+    # Should succeed : check if functions and design variables are correct
+    imp_prob = OptimizationProblem.from_hdf(file_name, hdf_node_path=node)
+    assert_equal(imp_prob.get_all_function_name(), function_names)
+    assert_equal(imp_prob.get_design_variable_names(), desvar_names)
+
+    # Test saving options in nested dict form
+    algo_opts = {"sub_problem_options": {"eq_tolerance": 1e-1}}
+    execute_algo(
+        problem,
+        "Augmented_Lagrangian_order_0",
+        sub_solver_algorithm="SLSQP",
+        algo_options=algo_opts,
+    )
+    problem.to_hdf(file_name, hdf_node_path=node)
+
+    # Test import
+    # Should succeed : check if functions and design variables are correct
+    imp_prob = OptimizationProblem.from_hdf(file_name, hdf_node_path=node)
+    assert_equal(imp_prob.get_all_function_name(), function_names)
+    assert_equal(imp_prob.get_design_variable_names(), desvar_names)
 
 
 def test_repr_html():
@@ -1909,7 +1953,7 @@ def test_repr_html():
 
 
 @pytest.mark.parametrize("minimize", [True, False])
-def test_minimize_objective(pow2_problem, minimize):
+def test_minimize_objective(pow2_problem, minimize) -> None:
     """Test the minimize objective setter."""
     initial_minimize = pow2_problem.minimize_objective
     x_0 = np.ones(3)
@@ -1926,7 +1970,7 @@ def test_minimize_objective(pow2_problem, minimize):
         assert f_0 == -f_1
 
 
-def test_reformulate_with_slack_variables(constrained_problem):
+def test_reformulate_with_slack_variables(constrained_problem) -> None:
     """Test the reformulation of the optimization problem with slack variables."""
     reformulated_problem = (
         constrained_problem.get_reformulated_problem_with_slack_variables()
@@ -1942,3 +1986,51 @@ def test_reformulate_with_slack_variables(constrained_problem):
         == constrained_problem.get_eq_constraints_number()
         + constrained_problem.get_ineq_constraints_number()
     )
+
+
+@pytest.mark.parametrize("value", [0.5, None])
+@pytest.mark.parametrize(
+    "differentiation_method",
+    [
+        OptimizationProblem.DifferentiationMethod.FINITE_DIFFERENCES,
+        OptimizationProblem.DifferentiationMethod.COMPLEX_STEP,
+    ],
+)
+def test_no_initial_value_with_approximated_gradient(value, differentiation_method):
+    """Check that gradient approximation works with and without current value."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=value)
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x**2, "f")
+    problem.differentiation_method = differentiation_method
+    optimization_result = execute_algo(problem, "SLSQP", max_iter=100)
+    assert optimization_result.x_opt == 0
+
+
+@pytest.mark.parametrize("preprocess", [False, True])
+def test_get_all_functions(preprocess):
+    """Check get_all_functions."""
+    problem = Rosenbrock()
+    if preprocess:
+        problem.preprocess_functions()
+
+    functions = problem.get_all_functions()
+    assert functions == [
+        problem.objective,
+        *problem.constraints,
+        *problem.observables,
+    ]
+
+    functions = problem.get_all_functions(True)
+    if preprocess:
+        assert functions == [
+            problem.nonproc_objective,
+            *problem.nonproc_constraints,
+            *problem.nonproc_observables,
+        ]
+    else:
+        assert functions == [
+            problem.objective,
+            *problem.constraints,
+            *problem.observables,
+        ]

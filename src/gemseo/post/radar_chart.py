@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import vstack
@@ -32,8 +31,6 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
-LOGGER = logging.getLogger(__name__)
 
 
 class RadarChart(OptPostProcessor):
@@ -74,10 +71,11 @@ class RadarChart(OptPostProcessor):
                 set(constraint_names) - set(self.opt_problem.get_constraint_names())
             )
             if invalid_names:
-                raise ValueError(
+                msg = (
                     f"The names {invalid_names} are not names of constraints "
                     "stored in the database."
                 )
+                raise ValueError(msg)
 
         # optimum_index is the zero-based position of the optimum.
         # while an iteration is a one-based position.
@@ -88,11 +86,12 @@ class RadarChart(OptPostProcessor):
 
         n_iterations = len(self.database)
         if abs(iteration) not in range(1, n_iterations + 1):
-            raise ValueError(
+            msg = (
                 f"The requested iteration {iteration} is neither "
                 f"in ({-n_iterations},...,-1,1,...,{n_iterations}) "
                 f"nor equal to the tag {self.OPTIMUM}."
             )
+            raise ValueError(msg)
 
         if iteration < 0:
             iteration = n_iterations + iteration + 1

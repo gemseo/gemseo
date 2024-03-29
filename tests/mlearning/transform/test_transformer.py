@@ -37,7 +37,7 @@ def data() -> ndarray:
     return arange(30).reshape((10, 3))
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test constructor."""
     with concretize_classes(Transformer):
         transformer = Transformer()
@@ -48,7 +48,7 @@ def test_constructor():
     assert not transformer.is_fitted
 
 
-def test_fit(data):
+def test_fit(data) -> None:
     """Test fit method.
 
     fit calls _fit which is an abstract method and then sets is_fitted as True.
@@ -61,7 +61,7 @@ def test_fit(data):
     assert transformer.is_fitted
 
 
-def test_str():
+def test_str() -> None:
     """Test string representation."""
     with concretize_classes(Transformer):
         transformer = Transformer()
@@ -70,7 +70,7 @@ def test_str():
 
 
 @pytest.mark.parametrize("data", [array([1, 1, 1]), array([[1], [1], [1]])])
-def test_fit_shape(data):
+def test_fit_shape(data) -> None:
     """Check that fit() handles both 1D and 2D NumPy arrays."""
     with concretize_classes(Transformer):
         transformer = Transformer()

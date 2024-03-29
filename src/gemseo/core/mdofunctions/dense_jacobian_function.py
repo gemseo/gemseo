@@ -24,13 +24,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Callable
 
-from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import OutputType
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from numpy import ndarray
+
+    from gemseo.typing import NumberArray
 
 
 class DenseJacobianFunction(MDOFunction):
@@ -39,7 +40,7 @@ class DenseJacobianFunction(MDOFunction):
     __original_function: MDOFunction
     """The wrapped function."""
 
-    __evaluate_original_function: Callable[[ArrayType], OutputType]
+    __evaluate_original_function: Callable[[NumberArray], OutputType]
     """The wrapped function evaluation callable."""
 
     def __init__(
@@ -82,10 +83,11 @@ class DenseJacobianFunction(MDOFunction):
             ValueError: If the original function does not provide a Jacobian matrix.
         """
         if not self.__original_function.has_jac:
-            raise ValueError(
+            msg = (
                 f"Selected user gradient, but function {self.__original_function} "
                 "has no Jacobian matrix."
             )
+            raise ValueError(msg)
 
         original_jacobian = self.__original_function.jac(x_vect)
         if isinstance(original_jacobian, sparse_classes):

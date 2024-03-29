@@ -254,7 +254,8 @@ class OTDistributionFitter:
         if distribution in self.DistributionName.__members__:
             distribution = self.fit(distribution)
         if distribution.dimension > 1:
-            raise TypeError("A 1D distribution is required.")
+            msg = "A 1D distribution is required."
+            raise TypeError(msg)
         distribution = distribution.marginals[0]
         fitting_test = self._get_fitting_test(criterion)
         if criterion in self.SignificanceTest.__members__:
@@ -361,7 +362,7 @@ class OTDistributionFitter:
             select = measure >= level
             if select:
                 break
-            index += 1
+            index += 1  # noqa: SIM113
         if not select:
             index = cls.__find_opt_distribution(measures, fitting_criterion)
         return index

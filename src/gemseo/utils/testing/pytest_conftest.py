@@ -25,10 +25,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 
-import matplotlib.pyplot as plt
 import matplotlib.testing.decorators
 import pytest
-from packaging import version
 
 from gemseo.core.base_factory import BaseFactory
 
@@ -106,13 +104,6 @@ def baseline_images(request):
     Used when the compare_images decorator has indirect set.
     """
     return request.param
-
-
-@pytest.fixture()
-def pyplot_close_all() -> None:
-    """Fixture that prevents figures aggregation with matplotlib pyplot."""
-    if version.parse(matplotlib.__version__) < version.parse("3.6.0"):
-        plt.close("all")
 
 
 @pytest.fixture()

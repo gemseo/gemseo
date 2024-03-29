@@ -132,7 +132,8 @@ class PolynomialRegressor(LinearRegressor):
             ValueError: If the degree is lower than one.
         """  # noqa: D205 D212
         if degree < 1:
-            raise ValueError("Degree must be >= 1.")
+            msg = "Degree must be >= 1."
+            raise ValueError(msg)
         super().__init__(
             data,
             degree=degree,
@@ -239,10 +240,11 @@ class PolynomialRegressor(LinearRegressor):
             NotImplementedError: If the coefficients are required as a dictionary.
         """
         if as_dict:
-            raise NotImplementedError(
+            msg = (
                 "For now the coefficients can only be obtained "
                 "in the form of a NumPy array"
             )
+            raise NotImplementedError(msg)
         return self.coefficients
 
     def _save_algo(

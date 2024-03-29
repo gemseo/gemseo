@@ -45,16 +45,11 @@
       },
       {
         "id": "Dis1",
-        "name": "MDAChain",
-        "type": "mda"
-      },
-      {
-        "id": "Dis2",
         "name": "D1",
         "type": "analysis"
       },
       {
-        "id": "Dis3",
+        "id": "Dis2",
         "name": "D2",
         "type": "analysis"
       }
@@ -76,33 +71,23 @@
         "name": "x"
       },
       {
-        "from": "Dis1",
-        "to": "Opt",
-        "name": "z"
-      },
-      {
-        "from": "Opt",
-        "to": "Dis2",
-        "name": "x"
-      },
-      {
-        "from": "Dis3",
-        "to": "Opt",
-        "name": "z"
-      },
-      {
         "from": "Dis2",
+        "to": "Opt",
+        "name": "z"
+      },
+      {
+        "from": "Dis1",
         "to": "_U_",
         "name": "y^*"
       },
       {
-        "from": "Dis3",
+        "from": "Dis2",
         "to": "Opt",
         "name": "z"
       },
       {
-        "from": "Dis2",
-        "to": "Dis3",
+        "from": "Dis1",
+        "to": "Dis2",
         "name": "y"
       }
     ],
@@ -112,8 +97,7 @@
         "Opt",
         [
           "Dis1",
-          "Dis2",
-          "Dis3"
+          "Dis2"
         ]
       ]
     ],

@@ -87,9 +87,10 @@ class AndrewsCurves(DatasetPlot):
         """  # noqa: D205 D212 D415
         classifier = self._specific_settings.classifier
         if classifier not in self.dataset.variable_names:
-            raise ValueError(
+            msg = (
                 "Classifier must be one of these names: "
                 f"{pretty_str(self.dataset.variable_names, use_and=True)}."
             )
+            raise ValueError(msg)
 
         return (self._get_label(classifier)[1],)

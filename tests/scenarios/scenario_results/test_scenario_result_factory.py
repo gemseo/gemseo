@@ -21,7 +21,7 @@ from gemseo.scenarios.scenario_results.scenario_result_factory import (
 )
 
 
-def test_factory():
+def test_factory() -> None:
     """Check that the base class and another one are available."""
     assert ScenarioResultFactory().is_available("ScenarioResult")
     assert ScenarioResultFactory().is_available("BiLevelScenarioResult")

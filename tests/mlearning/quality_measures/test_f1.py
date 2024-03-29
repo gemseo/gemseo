@@ -54,7 +54,7 @@ def dataset_test() -> IODataset:
     return dataset_
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     with concretize_classes(MLAlgo):
         algo = MLAlgo(dataset)
@@ -64,35 +64,35 @@ def test_constructor(dataset):
     assert measure.algo.learning_set is dataset
 
 
-def test_compute_learning_measure(dataset):
+def test_compute_learning_measure(dataset) -> None:
     """Test evaluate learn method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
     measure.compute_learning_measure(multioutput=False)
 
 
-def test_compute_test_measure(dataset, dataset_test):
+def test_compute_test_measure(dataset, dataset_test) -> None:
     """Test evaluate test method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
     measure.compute_test_measure(test_data=dataset_test, multioutput=False)
 
 
-def test_compute_leave_one_out_measure(dataset):
+def test_compute_leave_one_out_measure(dataset) -> None:
     """Test evaluate leave one out method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
     measure.compute_leave_one_out_measure(multioutput=False)
 
 
-def test_compute_cross_validation_measure(dataset):
+def test_compute_cross_validation_measure(dataset) -> None:
     """Test evaluate k-folds method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)
     measure.compute_cross_validation_measure(multioutput=False)
 
 
-def test_compute_bootstrap_measure(dataset):
+def test_compute_bootstrap_measure(dataset) -> None:
     """Test evaluate bootstrap method."""
     algo = KNNClassifier(dataset)
     measure = F1Measure(algo)

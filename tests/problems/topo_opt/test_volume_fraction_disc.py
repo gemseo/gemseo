@@ -33,7 +33,7 @@ def volume_fraction() -> VolumeFraction:
     return VolumeFraction(n_x=10, n_y=10)
 
 
-def test_run(volume_fraction):
+def test_run(volume_fraction) -> None:
     """"""
     output_data = volume_fraction.execute({
         "rho": ones(volume_fraction.n_x * volume_fraction.n_y)
@@ -41,7 +41,7 @@ def test_run(volume_fraction):
     assert output_data["volume fraction"] == array([1])
 
 
-def test_jacobian(volume_fraction):
+def test_jacobian(volume_fraction) -> None:
     """Check the analytic Jacobian by finite differences."""
     assert volume_fraction.check_jacobian(
         volume_fraction.get_input_data(), threshold=THRESHOLD, step=1e-5

@@ -28,7 +28,7 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
 from gemseo.problems.scalable.parametric.core.variable import Variable
 
 
-def test_default():
+def test_default() -> None:
     """Check the default configuration of the design space."""
     variables = ScalableDesignSpace().variables
     assert variables == [
@@ -37,7 +37,7 @@ def test_default():
     ]
 
 
-def test_custom_sizes():
+def test_custom_sizes() -> None:
     """Check the design spaces with custom variable sizes."""
     assert_equal(
         ScalableDesignSpace(

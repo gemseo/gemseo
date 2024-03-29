@@ -28,13 +28,13 @@ from gemseo.utils.linear_solver import LinearSolver
 
 
 class TestLinearSolver(unittest.TestCase):
-    def test_init(self):
+    def test_init(self) -> None:
         LinearSolver()
 
-    def test_solve(self):
+    def test_solve(self) -> None:
         LinearSolver().solve(diag(list(range(1, 4))), ones(3))
 
-    def test_fail_and_branches(self):
+    def test_fail_and_branches(self) -> None:
         LinearSolver().solve(diag(list(range(2))), ones(2), maxiter=1)
 
         self.assertRaises(

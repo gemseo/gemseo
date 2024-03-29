@@ -18,35 +18,41 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Final
+from typing import ClassVar
 
 from gemseo.core.data_converters.base import BaseDataConverter
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from gemseo.core.grammars.json_grammar import JSONGrammar  # noqa: F401
+    from gemseo.core.grammars.json_schema import Property
+    from gemseo.typing import NumberArray
 
 
-class JSONGrammarDataConverter(BaseDataConverter):
+class JSONGrammarDataConverter(BaseDataConverter["JSONGrammar"]):
     """Data values to NumPy arrays and vice versa from a :class:`.JSONGrammar`."""
 
-    __NUMERIC_TYPE_NAMES: Final[tuple[str]] = ("number", "integer")
-    """The JSON types for numeric values."""
+    _IS_CONTINUOUS_TYPES: ClassVar[tuple[str, ...]] = ("number",)
+    _IS_NUMERIC_TYPES: ClassVar[tuple[str, ...]] = (
+        *_IS_CONTINUOUS_TYPES,
+        "integer",
+    )
 
-    def is_numeric(self, name: str) -> bool:  # noqa: D102
+    def _has_type(self, name: str, types: tuple[str, ...]) -> bool:
         prop = self.__get_property(name)
         type_ = prop.get("type")
         if type_ == "array":
-            return self.__is_collection_of_numbers(prop)
-        return type_ in self.__NUMERIC_TYPE_NAMES
+            return self.__is_collection_of_numbers(prop, types)
+        return type_ in types
 
     @classmethod
-    def __is_collection_of_numbers(cls, prop: Any) -> bool:
+    def __is_collection_of_numbers(cls, prop: Any, types: tuple[str, ...]) -> bool:
         """Whether the property contains numeric values.
 
         This method is recursive in order to be able to take into account nested arrays.
 
         Args:
             prop: The grammar property.
+            types: The names of the expected number type.
 
         Returns:
             Whether the property contains numeric values at the end.
@@ -58,14 +64,14 @@ class JSONGrammarDataConverter(BaseDataConverter):
             return True
         sub_prop_type = sub_prop.get("type")
         if sub_prop_type == "array":
-            return cls.__is_collection_of_numbers(sub_prop)
-        return sub_prop.get("type") in cls.__NUMERIC_TYPE_NAMES
+            return cls.__is_collection_of_numbers(sub_prop, types)
+        return sub_prop.get("type") in types
 
-    def _convert_array_to_value(self, name: str, array: ndarray) -> Any:  # noqa: D102
+    def _convert_array_to_value(self, name: str, array: NumberArray) -> Any:  # noqa: D102
         if self.__get_property(name).get("type") == "array":
             return array
         return array[0]
 
-    def __get_property(self, name: str) -> dict[str, str]:
+    def __get_property(self, name: str) -> Property:
         """Return a property of a schema given its name."""
-        return self._grammar.schema.get("properties").get(name)
+        return self._grammar.schema["properties"][name]

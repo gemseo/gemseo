@@ -30,7 +30,7 @@ from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 DIRNAME = os.path.dirname(__file__)
 
 
-def test_compare_mda_jacobi_gs():
+def test_compare_mda_jacobi_gs() -> None:
     """Compare the results of Jacobi and Gauss-Seidel."""
     mda = SobieskiMDAJacobi()
     out1 = mda.execute()
@@ -46,7 +46,7 @@ def test_compare_mda_jacobi_gs():
         )
 
 
-def test_mda_jacobi_newton_hybrid(sellar_disciplines):
+def test_mda_jacobi_newton_hybrid(sellar_disciplines) -> None:
     """Compare Newton and Gauss-Seidel MDA."""
     mda_j = MDAChain(sellar_disciplines, inner_mda_name="MDAJacobi")
     out1 = mda_j.execute()

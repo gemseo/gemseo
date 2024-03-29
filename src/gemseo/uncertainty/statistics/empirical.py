@@ -62,6 +62,7 @@ from numpy import quantile
 from numpy import std
 from numpy import unique
 from numpy import var
+from numpy import vstack
 from scipy.stats import gaussian_kde
 from scipy.stats import moment
 
@@ -250,7 +251,7 @@ class EmpiricalStatistics(Statistics):
         directory_path: str | Path = "",
         file_format: str = "png",
         **options: Any,
-    ):
+    ) -> dict[str, Lines]:
         """Visualize the empirical probability density function.
 
         Args:
@@ -269,12 +270,16 @@ class EmpiricalStatistics(Statistics):
             for index, samples in enumerate(
                 self.dataset.get_view(variable_names=name).to_numpy().T
             ):
-                kde = gaussian_kde(samples)
                 x = linspace(samples.min(), samples.max(), 1000)
-                dataset = Dataset()
-                dataset.add_variable(name, x)
-                dataset.add_variable(self.__PDF_LABEL, kde(x))
-                plot = Lines(dataset, [self.__PDF_LABEL], name, **options)
+                plot = Lines(
+                    Dataset.from_array(
+                        vstack((x, gaussian_kde(samples)(x))).T,
+                        variable_names=[name, self.__PDF_LABEL],
+                    ),
+                    [self.__PDF_LABEL],
+                    name,
+                    **options,
+                )
                 xlabel = repr_variable(name, index, size)
                 plot.xlabel = xlabel
                 plot.ylabel = "Probability density function"
@@ -314,11 +319,15 @@ class EmpiricalStatistics(Statistics):
             for index, samples in enumerate(
                 self.dataset.get_view(variable_names=name).to_numpy().T
             ):
-                x, y = self.__evaluate_ecdf(samples)
-                dataset = Dataset()
-                dataset.add_variable(self.__CDF_LABEL, x)
-                dataset.add_variable(name, y)
-                plot = Lines(dataset, [self.__CDF_LABEL], name, **options)
+                plot = Lines(
+                    Dataset.from_array(
+                        vstack(self.__evaluate_ecdf(samples)).T,
+                        variable_names=[name, self.__CDF_LABEL],
+                    ),
+                    [self.__CDF_LABEL],
+                    name,
+                    **options,
+                )
                 xlabel = repr_variable(name, index, size)
                 plot.xlabel = xlabel
                 plot.ylabel = "Cumulative probability function"

@@ -154,9 +154,9 @@ class DesignSpace(collections.abc.MutableMapping):
         """A design variable."""
 
         size: int | None = 1
-        var_type: NDArray[
-            _DesignVariableType
-        ] | _DesignVariableType | None = _DesignVariableType.FLOAT
+        var_type: NDArray[_DesignVariableType] | _DesignVariableType | None = (
+            _DesignVariableType.FLOAT
+        )
         l_b: ndarray | None = None
         u_b: ndarray | None = None
         value: ndarray | None = None
@@ -353,7 +353,8 @@ class DesignSpace(collections.abc.MutableMapping):
                 design_space.remove_variable(name)
         for name in keep_variables:
             if name not in self.variable_names:
-                raise ValueError(f"Variable '{name}' is not known.")
+                msg = f"Variable '{name}' is not known."
+                raise ValueError(msg)
         return design_space
 
     def filter_dim(
@@ -389,9 +390,8 @@ class DesignSpace(collections.abc.MutableMapping):
         for dimension in keep_dimensions:
             if dimension in bad_dimensions:
                 self.remove_variable(variable)
-                raise ValueError(
-                    f"Dimension {dimension} of variable '{variable}' is not known."
-                )
+                msg = f"Dimension {dimension} of variable '{variable}' is not known."
+                raise ValueError(msg)
             types.append(self.variable_types[variable][dimension])
         self.variable_types[variable] = array(types)
 
@@ -439,7 +439,8 @@ class DesignSpace(collections.abc.MutableMapping):
         """
         self._check_variable_name(name)
         if size <= 0 or int(size) != size:
-            raise ValueError(f"The size of '{name}' should be a positive integer.")
+            msg = f"The size of '{name}' should be a positive integer."
+            raise ValueError(msg)
 
         # name and size
         current_index = self.dimension
@@ -491,7 +492,8 @@ class DesignSpace(collections.abc.MutableMapping):
             ValueError: When the variable already exists.
         """
         if name in self.variable_names:
-            raise ValueError(f"The variable '{name}' already exists.")
+            msg = f"The variable '{name}' already exists."
+            raise ValueError(msg)
 
     @property
     def names_to_indices(self) -> dict[str, range]:
@@ -522,9 +524,8 @@ class DesignSpace(collections.abc.MutableMapping):
             var_type = [var_type] * size
 
         if len(var_type) != size:
-            raise ValueError(
-                f"The list of types for variable '{name}' should be of size {size}."
-            )
+            msg = f"The list of types for variable '{name}' should be of size {size}."
+            raise ValueError(msg)
 
         var_types = []
 
@@ -562,15 +563,18 @@ class DesignSpace(collections.abc.MutableMapping):
         """
         # Check that the variable is in the design space:
         if name not in self.variable_names:
-            raise ValueError(f"Variable '{name}' is not known.")
+            msg = f"Variable '{name}' is not known."
+            raise ValueError(msg)
         # Check that the variable size is set:
         size = self.get_size(name)
         if size is None:
-            raise ValueError(f"The size of variable '{name}' is not set.")
+            msg = f"The size of variable '{name}' is not set."
+            raise ValueError(msg)
         # Check that the variables types are set:
         variable_types = self.variable_types.get(name, None)
         if variable_types is None:
-            raise ValueError(f"The components types of variable '{name}' are not set.")
+            msg = f"The components types of variable '{name}' are not set."
+            raise ValueError(msg)
         # Set the normalization policy:
         normalize = empty(size)
         for i in range(size):
@@ -667,12 +671,13 @@ class DesignSpace(collections.abc.MutableMapping):
         all_indices = set(range(len(value)))
         # OK if the variable value is one-dimensional
         if len(value.shape) > 1:
-            raise ValueError(
+            msg = (
                 f"Value {value} of variable '{name}' has dimension greater than 1 "
                 "while a float or a 1d iterable object "
                 "(array, list, tuple, ...) "
                 "while a scalar was expected."
             )
+            raise ValueError(msg)
 
         # OK if all components are None
         if all(equal(value, None)):
@@ -681,25 +686,26 @@ class DesignSpace(collections.abc.MutableMapping):
         test = vectorize(self.__is_numeric)(value)
         indices = all_indices - set(test.nonzero()[0])
         for idx in indices:
-            raise ValueError(
-                f"Value {value[idx]} of variable '{name}' is not numerizable."
-            )
+            msg = f"Value {value[idx]} of variable '{name}' is not numerizable."
+            raise ValueError(msg)
 
         test = vectorize(self.__is_not_nan)(value)
         indices = all_indices - set(test.nonzero()[0])
         for idx in indices:
-            raise ValueError(f"Value {value[idx]} of variable '{name}' is NaN.")
+            msg = f"Value {value[idx]} of variable '{name}' is NaN."
+            raise ValueError(msg)
 
         # Check if some components of an integer variable are not integer.
         if self.variable_types[name][0] == self.DesignVariableType.INTEGER:
             indices = all_indices - set(self.__is_integer(value).nonzero()[0])
             for idx in indices:
-                raise ValueError(
+                msg = (
                     f"Component value {value[idx]} of variable '{name}'"
                     " is not an integer "
                     "while variable is of type integer "
                     f"(index: {idx})."
                 )
+                raise ValueError(msg)
 
         return True
 
@@ -748,9 +754,8 @@ class DesignSpace(collections.abc.MutableMapping):
             bound_to_update = full(size, bound)
         elif len(bound_to_update) != size:
             bound_prefix = "lower" if is_lower else "upper"
-            raise ValueError(
-                f"The {bound_prefix} bounds of '{name}' should be of size {size}."
-            )
+            msg = f"The {bound_prefix} bounds of '{name}' should be of size {size}."
+            raise ValueError(msg)
 
         bounds.update({name: bound_to_update})
 
@@ -770,11 +775,11 @@ class DesignSpace(collections.abc.MutableMapping):
         u_b = self._upper_bounds[name]
         inds = (u_b < l_b).nonzero()[0]
         if inds.size != 0:
-            raise ValueError(
-                "The bounds of variable '{}'{} are not valid: {}!<{}.".format(
-                    name, inds, l_b[inds], u_b[inds]
-                )
+            msg = (
+                f"The bounds of variable '{name}'{inds} are not valid: "
+                f"{l_b[inds]}!<{u_b[inds]}."
             )
+            raise ValueError(msg)
 
     def _check_current_value(
         self,
@@ -799,12 +804,12 @@ class DesignSpace(collections.abc.MutableMapping):
             )
         ).nonzero()[0]
         for index in indices:
-            raise ValueError(
-                "The current value of variable '{}' ({}) is not "
-                "between the lower bound {} and the upper bound {}.".format(
-                    name, current_value[index], l_b[index], u_b[index]
-                )
+            msg = (
+                f"The current value of variable '{name}' ({current_value[index]}) is "
+                f"not between the lower bound {l_b[index]} and the upper bound "
+                f"{u_b[index]}."
             )
+            raise ValueError(msg)
 
     def has_current_value(self) -> bool:
         """Check if each variable has a current value.
@@ -832,7 +837,8 @@ class DesignSpace(collections.abc.MutableMapping):
             ValueError: If the design space is empty.
         """
         if not self.variable_names:
-            raise ValueError("The design space is empty.")
+            msg = "The design space is empty."
+            raise ValueError(msg)
 
         for name in self.variable_names:
             self._check_variable_bounds(name)
@@ -862,9 +868,10 @@ class DesignSpace(collections.abc.MutableMapping):
             self.__check_membership(x_vect, variable_names)
         elif isinstance(x_vect, ndarray):
             if x_vect.size != self.dimension:
-                raise ValueError(
+                msg = (
                     f"The array should be of size {self.dimension}; got {x_vect.size}."
                 )
+                raise ValueError(msg)
             if variable_names is None:
                 if self.__lower_bounds_array is None:
                     self.__lower_bounds_array = self.get_lower_bounds()
@@ -881,10 +888,11 @@ class DesignSpace(collections.abc.MutableMapping):
                     variable_names,
                 )
         else:
-            raise TypeError(
+            msg = (
                 "The input vector should be an array or a dictionary; "
                 f"got a {type(x_vect)} instead."
             )
+            raise TypeError(msg)
 
     def __check_membership_x_vect(self, x_vect: ndarray) -> None:
         """Check whether a vector is comprised between the lower and upper bounds.
@@ -901,21 +909,23 @@ class DesignSpace(collections.abc.MutableMapping):
         if len(indices):
             value = x_vect[indices]
             lower_bound = l_b[indices]
-            raise ValueError(
+            msg = (
                 f"The components {indices} of the given array ({value}) "
                 f"are lower than the lower bound ({lower_bound}) "
                 f"by {lower_bound - value}."
             )
+            raise ValueError(msg)
 
         indices = (x_vect > u_b + self.__bound_tol).nonzero()[0]
         if len(indices):
             value = x_vect[indices]
             upper_bound = u_b[indices]
-            raise ValueError(
+            msg = (
                 f"The components {indices} of the given array ({value}) "
                 f"are greater than the upper bound ({upper_bound}) "
                 f"by {value - upper_bound}."
             )
+            raise ValueError(msg)
 
     def __check_membership(
         self,
@@ -945,35 +955,39 @@ class DesignSpace(collections.abc.MutableMapping):
             u_b = self._upper_bounds.get(name, None)
 
             if value.size != size:
-                raise ValueError(
+                msg = (
                     f"The variable {name} of size {size} "
                     f"cannot be set with an array of size {value.size}."
                 )
+                raise ValueError(msg)
 
             for i in range(size):
                 x_real = value[i].real
 
                 if l_b is not None and x_real < l_b[i] - self.__bound_tol:
-                    raise ValueError(
+                    msg = (
                         f"The component {name}[{i}] of the given array ({x_real}) "
                         f"is lower than the lower bound ({l_b[i]}) "
                         f"by {l_b[i] - x_real:.1e}."
                     )
+                    raise ValueError(msg)
 
                 if u_b is not None and u_b[i] + self.__bound_tol < x_real:
-                    raise ValueError(
+                    msg = (
                         f"The component {name}[{i}] of the given array ({x_real}) "
                         f"is greater than the upper bound ({l_b[i]}) "
                         f"by {x_real - u_b[i]:.1e}."
                     )
+                    raise ValueError(msg)
 
                 if (
                     self.variable_types[name][0] == self.DesignVariableType.INTEGER
                 ) and not self.__is_integer(x_real):
-                    raise ValueError(
+                    msg = (
                         f"The variable {name} is of type integer; "
                         f"got {name}[{i}] = {x_real}."
                     )
+                    raise ValueError(msg)
 
     def get_active_bounds(
         self,
@@ -1022,9 +1036,8 @@ class DesignSpace(collections.abc.MutableMapping):
         elif isinstance(x_vec, dict):
             current_x = x_vec
         else:
-            raise TypeError(
-                f"Expected dict or array for x_vec argument; got {type(x_vec)}."
-            )
+            msg = f"Expected dict or array for x_vec argument; got {type(x_vec)}."
+            raise TypeError(msg)
 
         active_l_b = {}
         active_u_b = {}
@@ -1056,11 +1069,11 @@ class DesignSpace(collections.abc.MutableMapping):
                 and the names of the variables of the design space are different.
         """
         if sorted(set(self.variable_names)) != sorted(self.__current_value.keys()):
-            raise ValueError(
-                "Expected current_x variables: {}; got {}.".format(
-                    self.variable_names, list(self.__current_value.keys())
-                )
+            msg = (
+                f"Expected current_x variables: {self.variable_names}; "
+                f"got {list(self.__current_value.keys())}."
             )
+            raise ValueError(msg)
         self.check_membership(self.__current_value, variable_names)
 
     def get_current_value(
@@ -1110,10 +1123,11 @@ class DesignSpace(collections.abc.MutableMapping):
 
             not_variable_names = set(variable_names) - set(self.variable_names)
             if not_variable_names:
-                raise ValueError(
+                msg = (
                     "There are no such variables named: "
                     f"{pretty_str(not_variable_names)}."
                 )
+                raise ValueError(msg)
 
         if self.__has_current_value and not len(self.__current_value_array):
             self.__current_value_array = self.dict_to_array(self.__current_value)
@@ -1140,10 +1154,11 @@ class DesignSpace(collections.abc.MutableMapping):
 
             if not self.__has_current_value:
                 variables = set(self.variable_names) - current_x_dict.keys()
-                raise KeyError(
+                msg = (
                     "There is no current value for the design variables: "
                     f"{pretty_str(variables)}."
                 )
+                raise KeyError(msg)
 
             if variable_names is None or list(variable_names) == self.variable_names:
                 if complex_to_real:
@@ -1566,25 +1581,28 @@ class DesignSpace(collections.abc.MutableMapping):
             self.__current_value = value
         elif isinstance(value, ndarray):
             if value.size != self.dimension:
-                raise ValueError(
+                msg = (
                     "Invalid current_x, "
                     f"dimension mismatch: {self.dimension} != {value.size}."
                 )
+                raise ValueError(msg)
             self.__current_value = self.array_to_dict(value)
         elif isinstance(value, OptimizationResult):
             if value.x_opt.size != self.dimension:
-                raise ValueError(
+                msg = (
                     "Invalid x_opt, "
                     f"dimension mismatch: {self.dimension} != {value.x_opt.size}."
                 )
+                raise ValueError(msg)
             self.__current_value = self.array_to_dict(value.x_opt)
         else:
-            raise TypeError(
+            msg = (
                 "The current design value should be either an array, "
                 "a dictionary of arrays "
                 "or an optimization result; "
                 f"got {type(value)} instead."
             )
+            raise TypeError(msg)
 
         for name, value in self.__current_value.items():
             if value is not None:
@@ -1614,7 +1632,8 @@ class DesignSpace(collections.abc.MutableMapping):
             self.__current_value[name] = current_value
             self.__update_current_metadata()
         else:
-            raise ValueError(f"Variable '{name}' is not known.")
+            msg = f"Variable '{name}' is not known."
+            raise ValueError(msg)
 
     def get_size(
         self,
@@ -1805,7 +1824,8 @@ class DesignSpace(collections.abc.MutableMapping):
             ValueError: If the variable does not exist.
         """
         if name not in self.variable_names:
-            raise ValueError(f"Variable '{name}' is not known.")
+            msg = f"Variable '{name}' is not known."
+            raise ValueError(msg)
 
         self._add_bound(name, self.variable_sizes[name], lower_bound)
         self._add_norm_policy(name)
@@ -1825,7 +1845,8 @@ class DesignSpace(collections.abc.MutableMapping):
             ValueError: If the variable does not exist.
         """
         if name not in self.variable_names:
-            raise ValueError(f"Variable '{name}' is not known.")
+            msg = f"Variable '{name}' is not known."
+            raise ValueError(msg)
 
         self._add_bound(name, self.variable_sizes[name], upper_bound, is_lower=False)
         self._add_norm_policy(name)
@@ -1871,7 +1892,8 @@ class DesignSpace(collections.abc.MutableMapping):
         has_int = False
         for val_arr in x_dict.values():
             if not isinstance(val_arr, ndarray):
-                raise TypeError("x_dict values must be ndarray.")
+                msg = "x_dict values must be ndarray."
+                raise TypeError(msg)
 
             if val_arr.dtype.kind == "c":
                 return cls.__COMPLEX_DTYPE
@@ -1954,7 +1976,7 @@ class DesignSpace(collections.abc.MutableMapping):
             var_type = self.variable_types[name]
             curr = self.__current_value.get(name)
 
-            name_template = "{name}"
+            name_template = f"{name}"
             if with_index and size > 1:
                 name_template += "[{index}]"
 
@@ -1987,16 +2009,22 @@ class DesignSpace(collections.abc.MutableMapping):
         self,
         file_path: str | Path,
         append: bool = False,
+        hdf_node_path: str = "",
     ) -> None:
         """Export the design space to an HDF file.
 
         Args:
             file_path: The path to the file to export the design space.
             append: If ``True``, appends the data in the file.
+            hdf_node_path: The path of the HDF node in which
+                the design space should be exported.
+                If empty, the root node is considered.
         """
         mode = "a" if append else "w"
 
         with h5py.File(file_path, mode) as h5file:
+            if hdf_node_path:
+                h5file = h5file.require_group(hdf_node_path)
             design_vars_grp = h5file.require_group(self.DESIGN_SPACE_GROUP)
             design_vars_grp.create_dataset(
                 self.NAMES_GROUP, data=array(self.variable_names, dtype=bytes_)
@@ -2028,17 +2056,21 @@ class DesignSpace(collections.abc.MutableMapping):
                     var_grp.create_dataset(self.VALUE_GROUP, data=self.__to_real(value))
 
     @classmethod
-    def from_hdf(cls, file_path: str | Path) -> DesignSpace:
+    def from_hdf(cls, file_path: str | Path, hdf_node_path: str = "") -> DesignSpace:
         """Create a design space from an HDF file.
 
         Args:
             file_path: The path to the HDF file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
 
         Returns:
             The design space defined in the file.
         """
         design_space = cls()
         with h5py.File(file_path) as h5file:
+            h5file = get_hdf5_group(h5file, hdf_node_path)
             design_vars_grp = get_hdf5_group(h5file, design_space.DESIGN_SPACE_GROUP)
             variable_names = get_hdf5_group(design_vars_grp, design_space.NAMES_GROUP)
 
@@ -2105,23 +2137,28 @@ class DesignSpace(collections.abc.MutableMapping):
         self.__update_common_dtype()
 
     @classmethod
-    def from_file(cls, file_path: str | Path, **options: Any) -> DesignSpace:
+    def from_file(
+        cls, file_path: str | Path, hdf_node_path: str = "", **options: Any
+    ) -> DesignSpace:
         """Create a design space from a file.
 
         Args:
             file_path: The path to the file.
                 If the extension starts with `"hdf"`,
                 the file will be considered as an HDF file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
             **options: The keyword reading options.
 
         Returns:
             The design space defined in the file.
         """
         if h5py.is_hdf5(file_path):
-            return cls.from_hdf(file_path)
+            return cls.from_hdf(file_path, hdf_node_path)
         return cls.from_csv(file_path, **options)
 
-    def to_file(self, file_path: str | Path, **options):
+    def to_file(self, file_path: str | Path, **options) -> None:
         """Save the design space.
 
         Args:
@@ -2190,11 +2227,12 @@ class DesignSpace(collections.abc.MutableMapping):
         else:
             start_read = 0
         if not set(cls.MINIMAL_FIELDS).issubset(set(header)):
-            raise ValueError(
+            msg = (
                 f"Malformed DesignSpace input file {file_path} does not contain "
                 "minimal variables in header:"
                 f"{cls.MINIMAL_FIELDS}; got instead: {header}."
             )
+            raise ValueError(msg)
         col_map = {field: i for i, field in enumerate(header)}
         var_names = str_data[start_read:, 0].tolist()
         unique_names = []
@@ -2204,10 +2242,11 @@ class DesignSpace(collections.abc.MutableMapping):
                 unique_names.append(name)
                 prev_name = name
             elif prev_name != name:
-                raise ValueError(
+                msg = (
                     f"Malformed DesignSpace input file {file_path} contains some "
                     f"variables ({file_path}) in a non-consecutive order."
                 )
+                raise ValueError(msg)
 
         k = start_read
         lower_bounds_field = cls.MINIMAL_FIELDS[1]
@@ -2366,7 +2405,8 @@ class DesignSpace(collections.abc.MutableMapping):
             ValueError: If the variable name does not exist.
         """
         if name not in self.variable_names:
-            raise KeyError(f"Variable '{name}' is not known.")
+            msg = f"Variable '{name}' is not known."
+            raise KeyError(msg)
 
         try:
             value = self.get_current_value([name])
@@ -2447,7 +2487,8 @@ class DesignSpace(collections.abc.MutableMapping):
             new_name: The new name of the variable.
         """
         if current_name not in self.variable_names:
-            raise ValueError(f"The variable {current_name} is not in the design space.")
+            msg = f"The variable {current_name} is not in the design space."
+            raise ValueError(msg)
 
         self.variable_names[self.variable_names.index(current_name)] = new_name
         for dictionary in [
@@ -2456,9 +2497,12 @@ class DesignSpace(collections.abc.MutableMapping):
             self.normalize,
             self._lower_bounds,
             self._upper_bounds,
-            self._current_value,
         ]:
             dictionary[new_name] = dictionary.pop(current_name)
+
+        current_value = self._current_value.pop(current_name, None)
+        if current_value is not None:
+            self._current_value[new_name] = current_value
 
     def initialize_missing_current_values(self) -> None:
         """Initialize the current values of the design variables when missing.

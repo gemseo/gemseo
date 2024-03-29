@@ -42,7 +42,6 @@ from numpy import ndarray
 from numpy import ufunc
 from numpy import where
 from numpy.linalg import norm
-from numpy.typing import NDArray
 from strenum import StrEnum
 
 from gemseo.algos.design_space import DesignSpace
@@ -52,6 +51,8 @@ from gemseo.core.mdofunctions._operations import _OperationFunctionMaker
 from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.serializable import Serializable
+from gemseo.typing import NumberArray
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.gradient_approximator_factory import (
     GradientApproximatorFactory,
@@ -64,12 +65,11 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-ArrayType = NDArray[Number]
-OperandType = Union[ArrayType, Number]
+OperandType = Union[NumberArray, Number]
 OperatorType = Union[Callable[[OperandType, OperandType], OperandType], ufunc]
-OutputType = Union[ArrayType, Number]
-WrappedFunctionType = Callable[[ArrayType], OutputType]
-WrappedJacobianType = Callable[[ArrayType], ArrayType]
+OutputType = Union[NumberArray, Number]
+WrappedFunctionType = Callable[[NumberArray], OutputType]
+WrappedJacobianType = Callable[[NumberArray], NumberArray]
 
 
 class MDOFunction(Serializable):
@@ -260,6 +260,7 @@ class MDOFunction(Serializable):
         force_real: bool = False,
         special_repr: str = "",
         original_name: str = "",
+        expects_normalized_inputs: bool = False,
     ) -> None:
         """
         Args:
@@ -282,6 +283,7 @@ class MDOFunction(Serializable):
                 If empty, use :meth:`.default_repr`.
             original_name: The original name of the function.
                 If empty, use the same name than the ``name`` input.
+            expects_normalized_inputs: Whether the function expects normalized inputs.
         """  # noqa: D205, D212, D415
         super().__init__()
 
@@ -309,6 +311,7 @@ class MDOFunction(Serializable):
         self.force_real = force_real
         self.special_repr = special_repr or ""
         self.has_default_name = bool(self.name)
+        self.__expects_normalized_inputs = expects_normalized_inputs
 
     @property
     def original_name(self) -> str:
@@ -332,7 +335,8 @@ class MDOFunction(Serializable):
         value: int,
     ) -> None:
         if not self.activate_counters:
-            raise RuntimeError("The function counters are disabled.")
+            msg = "The function counters are disabled."
+            raise RuntimeError(msg)
 
         with self._n_calls.get_lock():
             self._n_calls.value = value
@@ -342,7 +346,7 @@ class MDOFunction(Serializable):
         """The function to be evaluated from a given input vector."""
         return self.__counted_f
 
-    def __counted_f(self, x_vect: ArrayType) -> OutputType:
+    def __counted_f(self, x_vect: NumberArray) -> OutputType:
         """Evaluate the function and store the result in :attr:`.MDOFunction.last_eval`.
 
         This evaluation is both multiprocess- and multithread-safe,
@@ -365,7 +369,6 @@ class MDOFunction(Serializable):
     def func(self, f_pointer: WrappedFunctionType) -> None:
         if self.activate_counters:
             self._n_calls.value = 0
-
         self._func = f_pointer or NotImplementedCallable()
 
     def to_pickle(self, file_path: str | Path) -> None:
@@ -395,7 +398,7 @@ class MDOFunction(Serializable):
         """Initialize the shared attributes in multiprocessing."""
         self._n_calls = Value("i", 0)
 
-    def __call__(self, x_vect: ArrayType) -> OutputType:
+    def __call__(self, x_vect: NumberArray) -> OutputType:
         """Evaluate the function.
 
         This method can cast the result to real value
@@ -409,7 +412,7 @@ class MDOFunction(Serializable):
         """
         return self.evaluate(x_vect)
 
-    def evaluate(self, x_vect: ArrayType) -> OutputType:
+    def evaluate(self, x_vect: NumberArray) -> OutputType:
         """Evaluate the function and store the dimension of the output space.
 
         Args:
@@ -556,7 +559,7 @@ class MDOFunction(Serializable):
             self._jac, NotImplementedCallable
         )
 
-    def __add__(self, other: MDOFunction) -> MDOFunction:
+    def __add__(self, other: MDOFunction | Number) -> MDOFunction:
         """Operator defining the sum of the function and another one.
 
         This operator supports automatic differentiation
@@ -570,7 +573,7 @@ class MDOFunction(Serializable):
         """
         return _AdditionFunctionMaker(MDOFunction, self, other).function
 
-    def __sub__(self, other: MDOFunction) -> MDOFunction:
+    def __sub__(self, other: MDOFunction | Number) -> MDOFunction:
         """Operator defining the difference of the function and another one.
 
         This operator supports automatic differentiation
@@ -584,7 +587,7 @@ class MDOFunction(Serializable):
         """
         return _AdditionFunctionMaker(MDOFunction, self, other, inverse=True).function
 
-    def _min_pt(self, x_vect: ArrayType) -> ArrayType:
+    def _min_pt(self, x_vect: NumberArray) -> NumberArray:
         """Evaluate the function and return its opposite value.
 
         Args:
@@ -595,7 +598,7 @@ class MDOFunction(Serializable):
         """
         return -self(x_vect)
 
-    def _min_jac(self, x_vect: ArrayType) -> ArrayType:
+    def _min_jac(self, x_vect: NumberArray) -> NumberArray:
         """Evaluate the Jacobian function and return its opposite value.
 
         Args:
@@ -638,7 +641,7 @@ class MDOFunction(Serializable):
             special_repr=f"-({self.special_repr})" if self.special_repr else "",
         )
 
-    def __truediv__(self, other: MDOFunction | Number) -> MDOFunction:
+    def __truediv__(self, other: MDOFunction | OutputType) -> MDOFunction:
         """Define the division operation for MDOFunction.
 
         This operation supports automatic differentiation
@@ -654,7 +657,7 @@ class MDOFunction(Serializable):
             MDOFunction, self, other, inverse=True
         ).function
 
-    def __mul__(self, other: MDOFunction | Number) -> MDOFunction:
+    def __mul__(self, other: MDOFunction | OutputType) -> MDOFunction:
         """Define the multiplication operation for MDOFunction.
 
         This operation supports automatic differentiation
@@ -701,7 +704,7 @@ class MDOFunction(Serializable):
 
     def check_grad(
         self,
-        x_vect: ArrayType,
+        x_vect: NumberArray,
         approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-6,
         error_max: float = 1e-8,
@@ -727,26 +730,32 @@ class MDOFunction(Serializable):
 
         approximation = gradient_approximator.f_gradient(x_vect).real
         reference = self._jac(x_vect).real
+
+        if isinstance(reference, sparse_classes):
+            reference = reference.todense()
+
         if approximation.shape != reference.shape:
             approximation_is_1d = approximation.ndim == 1 or approximation.shape[0] == 1
             reference_is_1d = reference.ndim == 1 or reference.shape[0] == 1
             shapes_are_1d = approximation_is_1d and reference_is_1d
             flatten_diff = reference.flatten().shape != approximation.flatten().shape
             if not shapes_are_1d or (shapes_are_1d and flatten_diff):
-                raise ValueError(
+                msg = (
                     f"The Jacobian matrix computed by {self} has a wrong shape; "
                     f"got: {reference.shape} while expected: {approximation.shape}."
                 )
+                raise ValueError(msg)
 
         if self.rel_err(reference, approximation, error_max) > error_max:
             LOGGER.error("The Jacobian matrix computed by %s is wrong.", self)
             LOGGER.error("Error =\n%s", self.filt_0(reference - approximation))
             LOGGER.error("Analytic jacobian=\n%s", self.filt_0(reference))
             LOGGER.error("Approximate step gradient=\n%s", self.filt_0(approximation))
-            raise ValueError(f"The Jacobian matrix computed by {self} is wrong.")
+            msg = f"The Jacobian matrix computed by {self} is wrong."
+            raise ValueError(msg)
 
     @staticmethod
-    def rel_err(a_vect: ArrayType, b_vect: ArrayType, error_max: float) -> float:
+    def rel_err(a_vect: NumberArray, b_vect: NumberArray, error_max: float) -> float:
         """Compute the 2-norm of the difference between two vectors.
 
         Normalize it with the 2-norm of the reference vector
@@ -766,7 +775,7 @@ class MDOFunction(Serializable):
         return norm(a_vect - b_vect)
 
     @staticmethod
-    def filt_0(arr: ArrayType, floor_value: float = 1e-6) -> ArrayType:
+    def filt_0(arr: NumberArray, floor_value: float = 1e-6) -> NumberArray:
         """Set the non-significant components of a vector to zero.
 
         The component of a vector is non-significant
@@ -822,10 +831,11 @@ class MDOFunction(Serializable):
             attributes["input_names"] = args
         for attribute in attributes:
             if attribute not in serializable_attributes:
-                raise ValueError(
+                msg = (
                     f"Cannot initialize MDOFunction attribute: {attribute}, "
                     f"allowed ones are: {pretty_str(serializable_attributes)}."
                 )
+                raise ValueError(msg)
         return MDOFunction(func=None, **attributes)
 
     def set_pt_from_database(
@@ -902,8 +912,8 @@ class MDOFunction(Serializable):
 
     @property
     def expects_normalized_inputs(self) -> bool:
-        """Whether the functions expect normalized inputs or not."""
-        return False
+        """Whether the function expects normalized inputs."""
+        return self.__expects_normalized_inputs
 
     def get_indexed_name(self, index: int) -> str:
         """Return the name of function component.

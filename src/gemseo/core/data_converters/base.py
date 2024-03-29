@@ -18,14 +18,19 @@ from __future__ import annotations
 
 from abc import ABC
 from abc import abstractmethod
-from types import MappingProxyType
 from typing import TYPE_CHECKING
-from typing import Final
+from typing import Any
+from typing import ClassVar
+from typing import Generic
+from typing import TypeVar
 from typing import Union
+from typing import cast
 
 from numpy import array as np_array
 from numpy import concatenate
-from numpy import ndarray
+
+from gemseo.typing import NumberArray
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -34,14 +39,13 @@ if TYPE_CHECKING:
     from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.base_grammar import BaseGrammar
 
-# The following is needed since a bool is a numbers.Number.
-_NUMERIC_TYPES: Final[tuple[type]] = (int, float, complex)
-"""The base types for numeric values."""
-
-ValueType = Union[int, float, complex, ndarray]
+    ValueType = Union[int, float, complex, NumberArray]
 
 
-class BaseDataConverter(ABC):
+T = TypeVar("T", bound="BaseGrammar")
+
+
+class BaseDataConverter(ABC, Generic[T]):
     """Base class for converting data values to NumPy arrays and vice versa.
 
     Typically,
@@ -74,10 +78,19 @@ class BaseDataConverter(ABC):
         Throughout this class, _NumPy array_ is equivalent to _1D numeric NumPy array_.
     """
 
-    _grammar: BaseGrammar
+    _grammar: T
     """The grammar providing the data types used for the conversions."""
 
-    def __init__(self, grammar: BaseGrammar) -> None:
+    _NUMERIC_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex)
+    """The base types for numeric values."""
+
+    _IS_NUMERIC_TYPES: ClassVar[tuple[Any, ...]]
+    """The types used for `is_numeric`."""
+
+    _IS_CONTINUOUS_TYPES: ClassVar[tuple[Any, ...]]
+    """The types used for `is_continuous`."""
+
+    def __init__(self, grammar: T) -> None:
         """
         Args:
             grammar: The grammar providing the data types used for the conversions.
@@ -88,7 +101,7 @@ class BaseDataConverter(ABC):
         self,
         name: str,
         value: ValueType,
-    ) -> ndarray:
+    ) -> NumberArray:
         """Convert a data value to a NumPy array.
 
         Args:
@@ -98,11 +111,11 @@ class BaseDataConverter(ABC):
         Returns:
             The NumPy array.
         """
-        if isinstance(value, _NUMERIC_TYPES):
+        if isinstance(value, self._NUMERIC_TYPES):
             return np_array([value])
-        return value
+        return cast(NumberArray, value)
 
-    def convert_array_to_value(self, name: str, array: ndarray) -> ValueType:
+    def convert_array_to_value(self, name: str, array: NumberArray) -> ValueType:
         """Convert a NumPy array to a data value.
 
         Args:
@@ -114,8 +127,8 @@ class BaseDataConverter(ABC):
         """
         return self._convert_array_to_value(name, array)
 
-    @staticmethod
-    def get_value_size(name: str, value: ValueType) -> int:
+    @classmethod
+    def get_value_size(cls, name: str, value: ValueType) -> int:
         """Return the size of a data value.
 
         The size is typically what is returned by ``ndarray.size`` or ``len(list)``.
@@ -128,15 +141,15 @@ class BaseDataConverter(ABC):
         Returns:
             The size.
         """
-        if isinstance(value, _NUMERIC_TYPES):
+        if isinstance(value, cls._NUMERIC_TYPES):
             return 1
-        return value.size
+        return cast(NumberArray, value).size
 
     def compute_names_to_slices(
         self,
         names: Iterable[str],
         data: Data,
-        names_to_sizes: Mapping[str, int] = MappingProxyType({}),
+        names_to_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> tuple[dict[str, slice], int]:
         """Compute a mapping from data names to data value slices.
 
@@ -190,7 +203,7 @@ class BaseDataConverter(ABC):
 
     def convert_array_to_data(
         self,
-        array: ndarray,
+        array: NumberArray,
         names_to_slices: Mapping[str, slice],
     ) -> dict[str, ValueType]:
         """Convert a NumPy array to a data structure.
@@ -214,7 +227,7 @@ class BaseDataConverter(ABC):
         self,
         names: Iterable[str],
         data: Data,
-    ) -> ndarray:
+    ) -> NumberArray:
         """Convert a part of a data structure to a NumPy array.
 
         .. seealso:: :meth:`.convert_value_to_array`
@@ -232,7 +245,7 @@ class BaseDataConverter(ABC):
         return concatenate(tuple(to_array(name, data[name]) for name in names))
 
     @abstractmethod
-    def _convert_array_to_value(self, name: str, array: ndarray) -> ValueType:
+    def _convert_array_to_value(self, name: str, array: NumberArray) -> ValueType:
         """Convert back a NumPy array to a data value.
 
         Args:
@@ -243,13 +256,36 @@ class BaseDataConverter(ABC):
             The data value.
         """
 
-    @abstractmethod
     def is_numeric(self, name: str) -> bool:
-        """Check that a data item can be converted to a NumPy array.
+        """Check that a data item is numeric.
 
         Args:
             name: The name of the data item.
 
         Returns:
-            Whether the data item can be converted to a NumPy array.
+            Whether the data item is numeric.
+        """
+        return self._has_type(name, self._IS_NUMERIC_TYPES)
+
+    def is_continuous(self, name: str) -> bool:
+        """Check that a data item has a type that can differentiate.
+
+        Args:
+            name: The name of the data item.
+
+        Returns:
+            Whether the data item can differentiate.
+        """
+        return self._has_type(name, self._IS_CONTINUOUS_TYPES)
+
+    @abstractmethod
+    def _has_type(self, name: str, types: tuple[Any, ...]) -> bool:
+        """Check the type of a data item against allowed types.
+
+        Args:
+            name: The name of the data item.
+            types: The allowed types.
+
+        Returns:
+            Whether the type of the data item is allowed.
         """

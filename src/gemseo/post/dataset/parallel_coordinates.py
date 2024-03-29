@@ -88,10 +88,6 @@ class ParallelCoordinates(DatasetPlot):
     ) -> tuple[
         Dataset,
         tuple[str, str, int],
-        list[tuple[str, str, int]],
-        float,
-        float,
-        dict[str, Any],
     ]:
         """
         Returns:
@@ -102,24 +98,25 @@ class ParallelCoordinates(DatasetPlot):
         upper = self._specific_settings.upper
         lower = self._specific_settings.lower
         if classifier not in self.dataset.variable_names:
-            raise ValueError(
+            msg = (
                 "Classifier must be one of these names: "
                 f"{pretty_str(self.dataset.variable_names, use_and=True)}."
             )
+            raise ValueError(msg)
         label, varname = self._get_label(classifier)
         dataframe = self.dataset.copy()
         cluster = varname
 
-        def is_btw(row):
+        def is_btw(row: Dataset) -> bool:
             return lower < row.loc[varname] < upper
 
         if lower != -inf or upper != inf:
-            cluster = ("classifiers", f"{lower} < {label} < {upper}", "0")
+            cluster = ("classifiers", f"{lower} < {label} < {upper}", 0)
             dataframe[cluster] = dataframe.apply(is_btw, axis=1)
 
-        if lower != -inf or upper != inf:
-            default_title = f"Cobweb plot based on the classifier: {cluster[1]}"
-        else:
-            default_title = None
-        self.title = self.title or default_title
+        if not self.title:
+            if lower != -inf or upper != inf:
+                self.title = f"Cobweb plot based on the classifier: {cluster[1]}"
+            else:
+                self.title = ""
         return dataframe, cluster

@@ -16,10 +16,11 @@
 
 from __future__ import annotations
 
-import sklearn
-from packaging import version
+from importlib.metadata import version
 
-if version.parse(sklearn.__version__) < version.parse("0.24"):
+from packaging.version import parse as parse_version
+
+if parse_version(version("scikit-learn")) < parse_version("0.24"):
 
     def get_n_input_features_(polynomial_regressor):  # noqa: D103
         return polynomial_regressor.n_input_features_

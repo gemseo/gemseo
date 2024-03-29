@@ -17,10 +17,10 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -43,7 +43,7 @@ class TaylorDiscipline(MDODiscipline):
     def __init__(
         self,
         discipline: MDODiscipline,
-        input_data: Mapping[str, NDArray[float]] = MappingProxyType({}),
+        input_data: Mapping[str, NDArray[float]] = READ_ONLY_EMPTY_DICT,
         name: str = "",
     ) -> None:
         """
@@ -57,15 +57,14 @@ class TaylorDiscipline(MDODiscipline):
                 is specified.
         """  # noqa: D205 D212
         input_names = set(discipline.get_input_data_names())
-        if (
-            (input_data and (input_data.keys() < input_names))
-            or not input_data
-            and discipline.default_inputs.keys() < input_names
+        if (input_data and (input_data.keys() < input_names)) or (
+            not input_data and discipline.default_inputs.keys() < input_names
         ):
-            raise ValueError(
+            msg = (
                 "All the discipline input values must be "
                 "specified either in input_data or in discipline.default_inputs."
             )
+            raise ValueError(msg)
 
         discipline.linearize(compute_all_jacobians=True, input_data=input_data)
         super().__init__(name=name)

@@ -45,27 +45,27 @@ def dataset() -> IODataset:
     )
 
 
-def test_input_names(dataset):
+def test_input_names(dataset) -> None:
     """Test the property input_names."""
     assert dataset.input_names == ["in_1", "in_2"]
 
 
-def test_output_names(dataset):
+def test_output_names(dataset) -> None:
     """Test the property input_names."""
     assert dataset.output_names == ["out_1"]
 
 
-def test_n_samples(dataset):
+def test_n_samples(dataset) -> None:
     """Test the property n_samples."""
     assert dataset.n_samples == 10
 
 
-def test_samples(dataset):
+def test_samples(dataset) -> None:
     """Test the property samples."""
     assert_equal(dataset.samples, arange(10))
 
 
-def test_add_input_variable():
+def test_add_input_variable() -> None:
     """Test the method add_input_variable."""
     io_dataset = IODataset()
     io_dataset.add_input_variable("x", [[1.0], [2.0]])
@@ -77,7 +77,7 @@ def test_add_input_variable():
     assert_frame_equal(io_dataset, dataset)
 
 
-def test_add_output_variable():
+def test_add_output_variable() -> None:
     """Test the method add_input_variable."""
     io_dataset = IODataset()
     io_dataset.add_output_variable("x", [[1.0], [2.0]])
@@ -89,7 +89,7 @@ def test_add_output_variable():
     assert_frame_equal(io_dataset, dataset)
 
 
-def test_add_input_group():
+def test_add_input_group() -> None:
     """Test the method add_input_group."""
     io_dataset = IODataset()
     io_dataset.add_input_group([[1.0], [2.0]], ["x"])
@@ -101,7 +101,7 @@ def test_add_input_group():
     assert_frame_equal(io_dataset.input_dataset, dataset)
 
 
-def test_add_output_group():
+def test_add_output_group() -> None:
     """Test the method add_output_group."""
     io_dataset = IODataset()
     io_dataset.add_output_group([[1.0], [2.0]], ["x"])
@@ -113,13 +113,13 @@ def test_add_output_group():
     assert_frame_equal(io_dataset.output_dataset, dataset)
 
 
-def test_input_dataset(dataset):
+def test_input_dataset(dataset) -> None:
     """Test the method input_dataset."""
     input_dataset = dataset.get_view(group_names=dataset.INPUT_GROUP)
     assert_frame_equal(dataset.input_dataset, input_dataset)
 
 
-def test_output_dataset(dataset):
+def test_output_dataset(dataset) -> None:
     """Test the property output_dataset."""
     output_dataset = dataset.get_view(group_names=dataset.OUTPUT_GROUP)
     assert_frame_equal(dataset.output_dataset, output_dataset)

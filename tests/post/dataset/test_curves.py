@@ -62,6 +62,9 @@ TEST_PARAMETERS = {
             "xlabel": "The xlabel",
             "ylabel": "The ylabel",
             "title": "The title",
+            "color": ["red", "blue"],
+            "linestyle": "-",
+            "grid": False,
         },
         ["Curves_properties"],
     ),
@@ -76,9 +79,7 @@ TEST_PARAMETERS = {
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
-def test_plot(
-    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-):
+def test_plot(kwargs, properties, baseline_images, dataset, fig_and_axes) -> None:
     """Test images created by Curves._plot against references."""
     plot = Curves(dataset, mesh="mesh", variable="output", **kwargs)
     fig, axes = (

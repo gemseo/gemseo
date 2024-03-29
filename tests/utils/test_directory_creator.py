@@ -31,7 +31,7 @@ BASE_DIR = Path("resource_dir")
 
 
 @pytest.fixture()
-def directories(tmp_wd):
+def directories(tmp_wd) -> None:
     """Generate three directories and a file to test the ``NUMBERED``
     directory_naming_method.
 
@@ -49,25 +49,32 @@ def directories(tmp_wd):
 
 
 @pytest.fixture()
-def empty_directory(tmp_wd):
+def empty_directory(tmp_wd) -> None:
     """Generate an empty directory."""
     Path("empty_resource_dir").mkdir()
 
 
-def test_get_unique_run_folder_path(directories):
+def test_get_unique_run_folder_path(directories) -> None:
     """Test the method: ``get_unique_run_folder_path``."""
     dir_creator = DirectoryCreator("resource_dir")
     assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/4").absolute()
     assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/5").absolute()
 
+    # a director that does not exist
+    dir_creator = DirectoryCreator("resource_dir/foo/bar")
+    assert (
+        dir_creator.get_unique_run_folder_path()
+        == Path("resource_dir/foo/bar/1").absolute()
+    )
 
-def test_get_unique_run_folder_path_empty(empty_directory):
+
+def test_get_unique_run_folder_path_empty(empty_directory) -> None:
     """Test the method: ``create`` on empty directory."""
     dir_creator = DirectoryCreator("empty_resource_dir")
     assert dir_creator.create() == Path("empty_resource_dir/1").absolute()
 
 
-def test_uuid_folder(tmp_wd, directories):
+def test_uuid_folder(tmp_wd, directories) -> None:
     """Test that unique folder based on ``UUID`` can be written in a non empty
     directory."""
 
@@ -79,7 +86,7 @@ def test_uuid_folder(tmp_wd, directories):
         assert match("[0-9a-fA-F]{12}$", str(folder_name.name)) is not None
 
 
-def test_run_dir_creator_serialization(tmp_wd):
+def test_run_dir_creator_serialization(tmp_wd) -> None:
     """Test that a :class:`~.DirectoryCreator` can be serialized and deserialized in
     ``UUID`` mode."""
 
@@ -94,7 +101,7 @@ def test_run_dir_creator_serialization(tmp_wd):
         assert loaded_dir_creator.__dict__ == unique_dir_generator.__dict__
 
 
-def test_last_directory(tmp_wd):
+def test_last_directory(tmp_wd) -> None:
     """Test the method: ``get_unique_run_folder_path``."""
     dir_creator = DirectoryCreator(".")
     assert dir_creator.last_directory is None
@@ -111,7 +118,7 @@ def test_last_directory(tmp_wd):
         ("NUMBERED", DirectoryNamingMethod.NUMBERED),
     ],
 )
-def test_create(tmp_wd, directory_naming_method):
+def test_create(tmp_wd, directory_naming_method) -> None:
     """Test the method: ``create``."""
     dir_creator = DirectoryCreator(
         ".", directory_naming_method=directory_naming_method[0]

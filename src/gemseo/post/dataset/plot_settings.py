@@ -14,22 +14,26 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Data for a plot."""
 
-from __future__ import annotations
+from collections.abc import Mapping
+from collections.abc import Sequence
+from typing import Optional
+from typing import Union
 
-from dataclasses import dataclass
-from dataclasses import field
-from typing import TYPE_CHECKING
+from numpy import linspace
+from pydantic import BaseModel
+from pydantic import Field
 
-if TYPE_CHECKING:
-    from gemseo.utils.matplotlib_figure import FigSizeType
+from gemseo.utils.compatibility.matplotlib import get_color_map
+from gemseo.utils.matplotlib_figure import FigSizeType
 
 
-@dataclass
-class PlotSettings:
+class PlotSettings(BaseModel):
     """The settings of a plot."""
 
-    color: str | list[str] = ""
-    """The color(s) for the series.
+    color: Union[str, list[str]] = ""
+    """The color.
+
+    Either a global one or one per item if ``n_items`` is non-zero.
 
     If empty, use a default one.
     """
@@ -46,15 +50,18 @@ class PlotSettings:
     legend_location: str = "best"
     """The location of the legend."""
 
-    linestyle: str | list[str] = ""
-    """The line style(s) for the series.
+    linestyle: Union[str, Sequence[str]] = ""
+    """The line style.
+
+    Either a global one or one per item if ``n_items`` is non-zero.
 
     If empty, use a default one.
     """
 
-    marker: str | list[str] = ""
-    """The marker(s) for the series.
+    marker: Union[str, Sequence[str]] = ""
+    """The marker.
 
+    Either a global one or one per item if ``n_items`` is non-zero.
     If empty, use a default one.
     """
 
@@ -67,13 +74,13 @@ class PlotSettings:
     xlabel: str = ""
     """The label for the x-axis."""
 
-    xmin: float | None = None
+    xmin: Optional[float] = None
     """The minimum value on the x-axis.
 
     If ``None``, compute it from data.
     """
 
-    xmax: float | None = None
+    xmax: Optional[float] = None
     """The maximum value on the x-axis.".
 
     If ``None``, compute it from data.
@@ -82,13 +89,13 @@ class PlotSettings:
     ylabel: str = ""
     """The label for the y-axis."""
 
-    ymin: float | None = None
+    ymin: Optional[float] = None
     """The minimum value on the y-axis.
 
     If ``None``, compute it from data.
     """
 
-    ymax: float | None = None
+    ymax: Optional[float] = None
     """The maximum value on the y-axis.
 
     If ``None``, compute it from data.
@@ -97,29 +104,86 @@ class PlotSettings:
     zlabel: str = ""
     """The label for the z-axis."""
 
-    zmin: float | None = None
+    zmin: Optional[float] = None
     """The minimum value on the z-axis.
 
     If ``None``, compute it from data.
     """
 
-    zmax: float | None = None
+    zmax: Optional[float] = None
     """The maximum value on the z-axis.
 
     If ``None``, compute it from data.
     """
 
-    rmin: float | None = None
+    rmin: Optional[float] = None
     """The minimum value on the r-axis.
 
     If ``None``, compute it from data.
     """
 
-    rmax: float | None = None
+    rmax: Optional[float] = None
     """The maximum value on the r-axis.
 
     If ``None``, compute it from data.
     """
 
-    labels: dict[str, str] = field(default_factory=dict)
+    labels: Mapping[str, str] = Field(default_factory=dict)
     """The labels for the variables."""
+
+    n_items: int = 0
+    """The number of items.
+
+    The item definition is specific to the plot type and is used to define properties,
+    e.g. color and line style, for each item.
+
+    For example, items can correspond to curves or series of points.
+
+    By default, a graph has no item.
+    """
+
+    grid: bool = True
+    """Whether to add a grid."""
+
+    def set_colors(self, color: Union[str, list[str]]) -> None:
+        """Set one color per item if ``n_items`` is non-zero or a unique one.
+
+        Args:
+            color: The color(s).
+        """
+        self.color = color
+        if not self.n_items:
+            return
+
+        if not self.color:
+            color_map = get_color_map(self.colormap)
+            self.color = [color_map(c) for c in linspace(0, 1, self.n_items)]
+
+        if isinstance(self.color, str):
+            self.color = [self.color] * self.n_items
+
+    def set_linestyles(self, linestyle: Union[str, Sequence[str]]) -> None:
+        """Set the line style(s) if ``n_items`` is non-zero or a unique one.
+
+        Args:
+            linestyle: The line style(s).
+        """
+        self.linestyle = linestyle
+        if not self.n_items:
+            return
+
+        if isinstance(self.linestyle, str):
+            self.linestyle = [self.linestyle] * self.n_items
+
+    def set_markers(self, marker: Union[str, Sequence[str]]) -> None:
+        """Set the marker(s) if ``n_items`` is non-zero or a unique one.
+
+        Args:
+            marker: The marker(s).
+        """
+        self.marker = marker
+        if not self.n_items:
+            return
+
+        if isinstance(self.marker, str):
+            self.marker = [self.marker] * self.n_items

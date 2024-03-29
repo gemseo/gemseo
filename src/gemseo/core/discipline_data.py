@@ -160,10 +160,11 @@ class DisciplineData(
             self.__data = {}
         else:
             if not isinstance(data, MutableMapping):
-                raise TypeError(
+                msg = (
                     f"Invalid type for data, got {type(data)},"
                     " while expected a MutableMapping."
                 )
+                raise TypeError(msg)
             self.__check_keys(*data)
             self.__data = data
 
@@ -212,10 +213,11 @@ class DisciplineData(
         df = self.__data[df_key]
 
         if not isinstance(df, DataFrame):
-            raise KeyError(
+            msg = (
                 f"Cannot set {key} because {df_key} is not bound to a "
                 "pandas DataFrame."
             )
+            raise KeyError(msg)
 
         self.__data[df_key][column] = value
 

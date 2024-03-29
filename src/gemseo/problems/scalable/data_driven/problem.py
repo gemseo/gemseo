@@ -49,6 +49,7 @@ import logging
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import array
 from numpy import full
@@ -57,7 +58,6 @@ from numpy import where
 from numpy import zeros
 from numpy.random import default_rng
 
-from gemseo import SEED
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import generate_coupling_graph
@@ -67,11 +67,15 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
+from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
+
+    from numpy._typing import NDArray
 
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.scenario import Scenario
@@ -86,26 +90,26 @@ class ScalableProblem:
     def __init__(
         self,
         datasets: Iterable[IODataset],
-        design_variables,
-        objective_function,
-        eq_constraints=None,
-        ineq_constraints=None,
+        design_variables: Iterable[str],
+        objective_function: str,
+        eq_constraints: Iterable[str] | None = None,
+        ineq_constraints: Iterable[str] | None = None,
         maximize_objective: bool = False,
-        sizes=None,
-        **parameters,
+        sizes: Mapping[str, int] | None = None,
+        **parameters: Any,
     ) -> None:
-        """Constructor.
-
-        :param list(Dataset) datasets: disciplinary datasets.
-        :param list(str) design_variables: list of design variable names
-        :param str objective_function: objective function
-        :param list(str) eq_constraints: equality constraints. Default: None.
-        :param list(str) eq_constraints: inequality constraints. Default: None.
-        :param bool maximize_objective: maximize objective. Default: False.
-        :param dict sizes: sizes of input and output variables. If ``None``, use the
-            original sizes. Default: None.
-        :param parameters: optional parameters for the scalable model.
         """
+        Args:
+            datasets: One input-output dataset per discipline.
+            design_variables: The names of the design variables.
+            objective_function: The name of the objective.
+            eq_constraints: The names of the equality constraints, if any.
+            ineq_constraints: The names of the inequality constraints, if any.
+            maximize_objective: Whether to maximize the objective.
+            sizes: The sizes of the inputs and outputs.
+                If ``None``, use the original sizes.
+            **parameters: The optional parameters of the scalable model.
+        """  # noqa: D205, D212, D415
         self.disciplines = [dataset.name for dataset in datasets]
         self.data = {dataset.name: dataset for dataset in datasets}
         self.inputs = {
@@ -130,11 +134,6 @@ class ScalableProblem:
         self.scenario = None
 
     def __str__(self) -> str:
-        """String representation of information about the scalable problem.
-
-        :return: scalable problem description
-        :rtype: str
-        """
         disciplines = ", ".join(self.disciplines)
         design_variables = None
         if self.design_variables is not None:
@@ -162,8 +161,9 @@ class ScalableProblem:
     def plot_n2_chart(self, save: bool = True, show: bool = False) -> None:
         """Plot a N2 chart.
 
-        :param bool save: save plot. Default: True.
-        :param bool show: show plot. Default: False.
+        Args:
+            save: Whether to save the figure.
+            show: Whether to display the figure.
         """
         generate_n2_plot(self.scaled_disciplines, save=save, show=show)
 
@@ -182,15 +182,14 @@ class ScalableProblem:
     ):
         """Plot 1d interpolations.
 
-        :param bool save: save plot. Default: True.
-        :param bool show: show plot. Default: False.
-        :param bool step: Step to evaluate the 1d interpolation function
-            Default: 0.01.
-        :param list(str) varnames: names of the variable to plot;
-            if None, all variables are plotted. Default: None.
-        :param str directory: directory path. Default: '.'.
-        :param bool png: if True, the file format is PNG. Otherwise, use PDF.
-            Default: False.
+        Args:
+            save: Whether to save the figure.
+            show: Whether to display the figure.
+            step: The step to evaluate the 1d interpolation function.
+            varnames: The names of the variable to plot.
+                If ``None``, all the variables are plotted.
+            directory: The directory path.
+            png: Whether to use PNG file format instead of PDF.
         """
         directory = Path(directory)
         directory.mkdir(exist_ok=True)
@@ -206,9 +205,10 @@ class ScalableProblem:
     ):
         """Plot dependency matrices.
 
-        :param bool save: save plot (default: True)
-        :param bool show: show plot (default: False)
-        :param str directory: directory path (default: '.')
+        Args:
+            save: Whether to save the figure.
+            show: Whether to display the figure.
+            directory: The directory path.
         """
         fnames = []
         for scalable_discipline in self.scaled_disciplines:
@@ -220,11 +220,14 @@ class ScalableProblem:
             fnames.append(fname)
         return fnames
 
-    def _build_scalable_disciplines(self, sizes=None, **parameters) -> None:
-        """Build scalable disciplines.
+    def _build_scalable_disciplines(
+        self, sizes: Mapping[str, int] | None = None, **parameters: Any
+    ) -> None:
+        """Build the scalable disciplines.
 
-        :param dict sizes: dictionary whose keys are variable names and variables sizes.
-        :param parameters: options.
+        Args:
+            size: The sizes of the inputs and outputs.
+            **parameters: The options of the scalable disciplines.
         """
         copied_parameters = deepcopy(parameters)
         for disc in self.disciplines:
@@ -298,9 +301,14 @@ class ScalableProblem:
     def _create_bilevel_scenario(
         self, disciplines: Iterable[MDODiscipline], **sub_scenario_options
     ) -> Scenario:
-        """Create a bilevel scenario from disciplines.
+        """Create a bi-level scenario from disciplines.
 
-        :param list(MDODiscipline) disciplines: list of MDODiscipline
+        Args:
+            disciplines: The disciplines.
+            **sub_scenario_options: The options of the sub-scenarios.
+
+        Returns:
+            A scenario using a bi-level formulation.
         """
         cpl_structure = MDOCouplingStructure(disciplines)
         st_cpl_disciplines = cpl_structure.strongly_coupled_disciplines
@@ -325,10 +333,10 @@ class ScalableProblem:
                 )
             sub_scenarios.append(
                 create_scenario(
-                    disciplines=sub_disciplines,
-                    formulation="DisciplinaryOpt",
-                    objective_name=obj,
-                    design_space=design_space,
+                    sub_disciplines,
+                    "DisciplinaryOpt",
+                    obj,
+                    design_space,
                     maximize_objective=max_obj,
                 )
             )
@@ -344,22 +352,26 @@ class ScalableProblem:
             )
         sub_disciplines = sub_scenarios + wk_cpl_disciplines
         return create_scenario(
-            disciplines=sub_disciplines,
-            formulation="BiLevel",
-            objective_name=obj,
-            design_space=design_space,
+            sub_disciplines,
+            "BiLevel",
+            obj,
+            design_space,
             maximize_objective=max_obj,
             mda_name="MDAJacobi",
             tolerance=1e-8,
         )
 
     def _create_design_space(
-        self, disciplines=None, formulation: str = "DisciplinaryOpt"
+        self, disciplines: Sequence[MDODiscipline], formulation: str = "DisciplinaryOpt"
     ) -> DesignSpace:
         """Create a design space into the unit hypercube.
 
-        :param list(MDODiscipline) disciplines: list of MDODiscipline
-        :param str formulation: MDO formulation (default: 'DisciplinaryOpt')
+        Args:
+            disciplines: The disciplines.
+            formulation: The name of the formulation.
+
+        Returns:
+            The design space.
         """
         design_space = create_design_space()
         for name in self.design_variables:
@@ -389,12 +401,16 @@ class ScalableProblem:
 
         return design_space
 
-    def __get_equilibrium(self, mda_name: str = "MDAJacobi", **options):
+    def __get_equilibrium(
+        self, mda_name: str = "MDAJacobi", **options: Any
+    ) -> dict[str, NDArray[float]]:
         """Get the equilibrium point from an MDA method.
 
-        :param str mda_name: MDA name (default: 'MDAJacobi')
-        :return: equilibrium point
-        :rtype: dict
+        Args:
+            mda_name: The name of the MDA.
+
+        Returns:
+            The equilibrium point.
         """
         LOGGER.info("Build a preliminary MDA to start at equilibrium")
         factory = MDAFactory()
@@ -404,20 +420,22 @@ class ScalableProblem:
         return mda.execute()
 
     def __add_ineq_constraints(
-        self, active_probability, feasibility_level, equilibrium
+        self,
+        active_probability: float,
+        feasibility_level: float,
+        equilibrium: Mapping[str, NDArray[float]],
     ) -> None:
-        """Add inequality constraints.
+        """Add the inequality constraints.
 
-        :param float active_probability: probability to set the inequality constraints
-            as active at initial step of the optimization
-        :param float feasibility_level: offset of satisfaction for inequality
-            constraints
-        :param dict equilibrium: starting point at equilibrium
+        Args:
+            active_probability: The probability to set the inequality constraints
+                as active at initial step of the optimization.
+            feasibility_level: The offset of satisfaction
+                for the inequality constraints.
+            equilibrium: The starting point at equilibrium.
         """
         if not hasattr(feasibility_level, "__len__"):
-            feasibility_level = {
-                constraint: feasibility_level for constraint in self.ineq_constraints
-            }
+            feasibility_level = dict.fromkeys(self.ineq_constraints, feasibility_level)
         for constraint, alphai in feasibility_level.items():
             if constraint in list(equilibrium.keys()):
                 sample = default_rng(SEED).random(len(equilibrium[constraint]))
@@ -427,23 +445,28 @@ class ScalableProblem:
                 )
             else:
                 taui = 0.0
-            self.scenario.add_constraint(constraint, "ineq", value=taui)
+            self.scenario.add_constraint(constraint, constraint_type="ineq", value=taui)
 
-    def __add_eq_constraints(self, equilibrium) -> None:
+    def __add_eq_constraints(self, equilibrium: Mapping[str, NDArray[float]]) -> None:
         """Add equality constraints.
 
-        :param dict equilibrium: starting point at equilibrium
+        Args:
+            equilibrium: The starting point at equilibrium.
         """
         for constraint in self.eq_constraints:
-            cstr_value = equilibrium.get(constraint, array([0.0]))[0]
-            self.scenario.add_constraint(constraint, "eq", value=cstr_value)
+            self.scenario.add_constraint(
+                constraint, value=equilibrium.get(constraint, array([0.0]))[0]
+            )
 
-    def exec_time(self, do_sum: bool = True):
-        """Get total execution time per discipline.
+    def exec_time(self, do_sum: bool = True) -> float | list[float]:
+        """Get the total execution time.
 
-        :param bool do_sum: sum over disciplines (default: True)
-        :return: execution time
-        :rtype: list(float) or float
+        Args:
+            do_sum: Whether to sum the disciplinary execution times.
+
+        Returns:
+            Either the total execution time
+            or the total execution times per disciplines.
         """
         exec_time = [discipline.exec_time for discipline in self.scenario.disciplines]
         if do_sum:
@@ -451,57 +474,41 @@ class ScalableProblem:
         return exec_time
 
     @property
-    def n_calls_top_level(self):
-        """Get number of top level disciplinary calls per discipline.
-
-        :return: number of top level disciplinary calls per discipline
-        :rtype: list(int) or int
-        """
+    def n_calls_top_level(self) -> dict[str, int]:
+        """The number of top-level disciplinary calls per discipline."""
         disciplines = self.scenario.formulation.get_top_level_disc()
         return {discipline.name: discipline.n_calls for discipline in disciplines}
 
     @property
-    def n_calls_linearize_top_level(self):
-        """Get number of top level disciplinary calls per discipline.
-
-        :return: number of top level disciplinary calls per discipline
-        :rtype: list(int) or int
-        """
+    def n_calls_linearize_top_level(self) -> dict[str, int]:
+        """The number of top-level disciplinary linearizations per discipline."""
         disciplines = self.scenario.formulation.get_top_level_disc()
         return {
             discipline.name: discipline.n_calls_linearize for discipline in disciplines
         }
 
     @property
-    def n_calls(self):
-        """Get number of disciplinary calls per discipline.
-
-        :return: number of disciplinary calls per discipline
-        :rtype: list(int) or int
-        """
+    def n_calls(self) -> dict[str, int]:
+        """The number of disciplinary calls per discipline."""
         return {
             discipline.name: discipline.n_calls
             for discipline in self.scenario.disciplines
         }
 
     @property
-    def n_calls_linearize(self):
-        """Get number of disciplinary calls per discipline.
-
-        :return: number of disciplinary calls per discipline
-        :rtype: list(int) or int
-        """
+    def n_calls_linearize(self) -> dict[str, int]:
+        """The number of disciplinary linearizations per discipline."""
         return {
             discipline.name: discipline.n_calls_linearize
             for discipline in self.scenario.disciplines
         }
 
     @property
-    def status(self):
-        """Get the status of the scenario."""
+    def status(self) -> int:
+        """The status of the scenario."""
         return self.scenario.optimization_result.status
 
     @property
-    def is_feasible(self):
-        """Get the feasibility property of the scenario."""
+    def is_feasible(self) -> bool:
+        """Whether the solution is feasible."""
         return self.scenario.optimization_result.is_feasible

@@ -38,7 +38,8 @@
     },
     "eval_second_order": {
       "type": "boolean"
-    }
+    },
+    "callbacks": {}
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,

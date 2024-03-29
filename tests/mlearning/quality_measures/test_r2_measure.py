@@ -69,7 +69,7 @@ def dataset_test() -> IODataset:
     return MODEL.cache.to_dataset()
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     with concretize_classes(MLAlgo):
         algo = MLAlgo(dataset)
@@ -79,7 +79,7 @@ def test_constructor(dataset):
     assert measure.algo.learning_set is dataset
 
 
-def test_compute_learning_measure(dataset):
+def test_compute_learning_measure(dataset) -> None:
     """Test evaluate learn method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
@@ -101,7 +101,7 @@ def test_compute_learning_measure(dataset):
     assert r2_train > 1 - TOL_DEG_2
 
 
-def test_compute_test_measure(dataset, dataset_test):
+def test_compute_test_measure(dataset, dataset_test) -> None:
     """Test evaluate test method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
@@ -123,7 +123,7 @@ def test_compute_test_measure(dataset, dataset_test):
     assert r2_test > 1 - TOL_DEG_2
 
 
-def test_compute_leave_one_out_measure(dataset):
+def test_compute_leave_one_out_measure(dataset) -> None:
     """Test evaluate leave one out method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
@@ -136,7 +136,7 @@ def test_compute_leave_one_out_measure(dataset):
     assert r2_loo < 1 - TOL_DEG_3
 
 
-def test_compute_cross_validation_measure(dataset):
+def test_compute_cross_validation_measure(dataset) -> None:
     """Test evaluate k-folds method."""
     algo = PolynomialRegressor(dataset, degree=2)
     measure = R2Measure(algo)
@@ -158,14 +158,14 @@ def test_compute_cross_validation_measure(dataset):
     assert r2_kfolds > 1 - TOL_DEG_2
 
 
-def test_compute_bootstrap_measure(dataset):
+def test_compute_bootstrap_measure(dataset) -> None:
     """Test evaluate bootstrap method."""
     r2_measure = R2Measure(PolynomialRegressor(dataset, degree=2))
     assert r2_measure.compute_bootstrap_measure() == pytest.approx(1.0)
 
 
 @pytest.mark.parametrize("fit", [False, True])
-def test_fit_transformers(algo_for_transformer, fit):
+def test_fit_transformers(algo_for_transformer, fit) -> None:
     """Check that the transformers are fitted with the sub-datasets.
 
     By default, the transformers are fitted with the sub-datasets. If False, use the

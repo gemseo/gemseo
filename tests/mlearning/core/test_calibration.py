@@ -44,7 +44,7 @@ def dataset() -> Dataset:
     return create_rosenbrock_dataset(opt_naming=False)
 
 
-def test_discipline_multioutput_fail(dataset):
+def test_discipline_multioutput_fail(dataset) -> None:
     """Verify that MLAlgoAssessor raises an error if multioutput option is True."""
     with pytest.raises(
         ValueError,
@@ -61,7 +61,7 @@ def test_discipline_multioutput_fail(dataset):
 
 
 @pytest.mark.parametrize("options", [{"multioutput": False}, {}])
-def test_discipline_multioutput(dataset, options):
+def test_discipline_multioutput(dataset, options) -> None:
     """Verify that MLAlgoAssessor works correctly when multioutput option is False."""
     assessor = MLAlgoAssessor(
         "PolynomialRegressor",
@@ -74,7 +74,7 @@ def test_discipline_multioutput(dataset, options):
     assert not assessor.measure_options["multioutput"]
 
 
-def test_discipline(dataset):
+def test_discipline(dataset) -> None:
     """Test discipline."""
     disc = MLAlgoAssessor(
         "PolynomialRegressor",
@@ -102,7 +102,7 @@ def calibration_space() -> DesignSpace:
 @pytest.mark.parametrize(
     "algo", [("fullfact", "n_samples"), ("NLOPT_COBYLA", "max_iter")]
 )
-def test_calibration(dataset, calibration_space, algo):
+def test_calibration(dataset, calibration_space, algo) -> None:
     """Test calibration."""
     n_samples = 2
     calibration = MLAlgoCalibration(

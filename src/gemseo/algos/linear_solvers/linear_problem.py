@@ -140,12 +140,14 @@ class LinearProblem(BaseProblem):
             ValueError: If :attr:`.solution` is ``None`` and ``current_x`` is ``None``.
         """
         if self.rhs is None:
-            raise ValueError("Missing RHS.")
+            msg = "Missing RHS."
+            raise ValueError(msg)
 
         if current_x is None:
             current_x = self.solution
             if self.solution is None:
-                raise ValueError("Missing solution.")
+                msg = "Missing solution."
+                raise ValueError(msg)
 
         res = norm(self.lhs.dot(current_x) - self.rhs)
 
@@ -169,10 +171,11 @@ class LinearProblem(BaseProblem):
             ValueError: When the residuals' history is empty.
         """
         if self.residuals_history is None or len(self.residuals_history) == 0:
-            raise ValueError(
+            msg = (
                 "Residuals history is empty. "
                 " Use the 'store_residuals' option for the solver."
             )
+            raise ValueError(msg)
 
         fig = plt.figure(figsize=(11.0, 6.0))
         plt.plot(self.residuals_history, color="black", lw=2)
@@ -197,9 +200,12 @@ class LinearProblem(BaseProblem):
             or (lhs_shape[0] != rhs_shape[0])
             or (len(rhs_shape) != 1 and rhs_shape[-1] != 1)
         ):
-            raise ValueError(
+            msg = (
                 "Incompatible dimensions in linear system Ax=b,"
-                " A shape is %s and b shape is %s",
+                " A shape is %s and b shape is %s"
+            )
+            raise ValueError(
+                msg,
                 self.lhs.shape,
                 self.rhs.shape,
             )

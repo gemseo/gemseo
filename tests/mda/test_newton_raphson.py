@@ -68,7 +68,7 @@ def compute_reference_n_iter(sobiesky_disciplines):
 @pytest.mark.parametrize("acceleration_method", AccelerationMethod)
 def test_acceleration_methods(
     sobiesky_disciplines, compute_reference_n_iter, acceleration_method
-):
+) -> None:
     """Tests the acceleration methods."""
     mda = MDANewtonRaphson(
         sobiesky_disciplines,
@@ -83,7 +83,7 @@ def test_acceleration_methods(
 
 
 # TODO: Remove tests once the old attributes are removed
-def test_compatibility(sobiesky_disciplines):
+def test_compatibility(sobiesky_disciplines) -> None:
     """Tests that the compatibility with previous behavior is ensured."""
     mda_1 = MDANewtonRaphson(
         sobiesky_disciplines,
@@ -115,7 +115,7 @@ def test_compatibility(sobiesky_disciplines):
 
 
 # TODO: Remove tests once the old attributes are removed
-def test_compatibility_setters_getters(sobiesky_disciplines):
+def test_compatibility_setters_getters(sobiesky_disciplines) -> None:
     """Tests that the compatibility with previous behavior is ensured."""
     mda = MDANewtonRaphson(
         sobiesky_disciplines,
@@ -127,7 +127,7 @@ def test_compatibility_setters_getters(sobiesky_disciplines):
 
 
 @pytest.mark.parametrize("coupl_scaling", ["n_coupling_variables", "no_scaling"])
-def test_raphson_sobieski(coupl_scaling):
+def test_raphson_sobieski(coupl_scaling) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
     disciplines = [SobieskiAerodynamics(), SobieskiStructure(), SobieskiPropulsion()]
     mda = MDANewtonRaphson(disciplines)
@@ -142,7 +142,7 @@ def test_raphson_sobieski(coupl_scaling):
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
-def test_raphson_sobieski_sparse():
+def test_raphson_sobieski_sparse() -> None:
     """Test the execution of Newton-Raphson MDA on Sobieski."""
     disciplines = [SobieskiAerodynamics(), SobieskiStructure(), SobieskiPropulsion()]
     mda = MDANewtonRaphson(disciplines)
@@ -151,7 +151,7 @@ def test_raphson_sobieski_sparse():
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
-def test_raphson_sellar_sparse_complex():
+def test_raphson_sellar_sparse_complex() -> None:
     """Test the execution of Newton-Raphson MDA on Sellar with complex numbers."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDANewtonRaphson(disciplines)
@@ -164,7 +164,7 @@ def test_raphson_sellar_sparse_complex():
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_raphson_sellar_without_cache(use_cache):
+def test_raphson_sellar_without_cache(use_cache) -> None:
     """Test the execution of Newton on Sellar case.
 
     This test also checks that each Newton step implies one disciplinary call, and one
@@ -185,7 +185,7 @@ def test_raphson_sellar_without_cache(use_cache):
 
 
 @pytest.mark.parametrize("parallel", [False, True])
-def test_raphson_sellar(parallel):
+def test_raphson_sellar(parallel) -> None:
     """Test the execution of Newton on Sobieski."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDANewtonRaphson(disciplines, parallel=parallel)
@@ -195,7 +195,7 @@ def test_raphson_sellar(parallel):
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
-def test_sellar_linop():
+def test_sellar_linop() -> None:
     """Test residuals jacobian as a linear operator."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDANewtonRaphson(disciplines)
@@ -204,7 +204,7 @@ def test_sellar_linop():
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
-def test_log_convergence():
+def test_log_convergence() -> None:
     """Check that the boolean log_convergence is correctly set."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDANewtonRaphson(disciplines)
@@ -213,13 +213,13 @@ def test_log_convergence():
     assert mda.log_convergence
 
 
-def test_weak_and_strong_couplings():
+def test_weak_and_strong_couplings() -> None:
     """Test the Newton method on a simple Analytic case with strong and weak
     couplings."""
-    disc1 = AnalyticDiscipline(expressions={"z": "2*x"}, name="z=f(x) disc")
-    disc2 = AnalyticDiscipline(expressions={"i": "z + j"}, name="i=f(z,j) disc")
-    disc3 = AnalyticDiscipline(expressions={"j": "1 - 0.3*i"}, name="j=f(i) disc")
-    disc4 = AnalyticDiscipline(expressions={"obj": "i+j"}, name="obj=f(i,j) disc")
+    disc1 = AnalyticDiscipline({"z": "2*x"}, name="z=f(x) disc")
+    disc2 = AnalyticDiscipline({"i": "z + j"}, name="i=f(z,j) disc")
+    disc3 = AnalyticDiscipline({"j": "1 - 0.3*i"}, name="j=f(i) disc")
+    disc4 = AnalyticDiscipline({"obj": "i+j"}, name="obj=f(i,j) disc")
     disciplines = [disc1, disc2, disc3, disc4]
     mda = MDAChain(disciplines, inner_mda_name="MDANewtonRaphson")
     mda.execute({
@@ -233,18 +233,18 @@ def test_weak_and_strong_couplings():
     assert mda.local_data["obj"] == pytest.approx(array([2.0 / 1.3]))
 
 
-def test_weak_and_strong_couplings_two_cycles():
+def test_weak_and_strong_couplings_two_cycles() -> None:
     """Test the Newton method on a simple Analytic case.
 
     Two strongly coupled cycles of disciplines are used in this test case.
     """
-    disc1 = AnalyticDiscipline(expressions={"z": "2*x"}, name=1)
-    disc2 = AnalyticDiscipline(expressions={"i": "z + 0.2*j"}, name=2)
-    disc3 = AnalyticDiscipline(expressions={"j": "1. - 0.3*i"}, name=3)
-    disc4 = AnalyticDiscipline(expressions={"k": "i+j"}, name=4)
-    disc5 = AnalyticDiscipline(expressions={"l": "k + 0.2*m"}, name=5)
-    disc6 = AnalyticDiscipline(expressions={"m": "1. - 0.3*l"}, name=6)
-    disc7 = AnalyticDiscipline(expressions={"obj": "l+m"}, name=7)
+    disc1 = AnalyticDiscipline({"z": "2*x"}, name=1)
+    disc2 = AnalyticDiscipline({"i": "z + 0.2*j"}, name=2)
+    disc3 = AnalyticDiscipline({"j": "1. - 0.3*i"}, name=3)
+    disc4 = AnalyticDiscipline({"k": "i+j"}, name=4)
+    disc5 = AnalyticDiscipline({"l": "k + 0.2*m"}, name=5)
+    disc6 = AnalyticDiscipline({"m": "1. - 0.3*l"}, name=6)
+    disc7 = AnalyticDiscipline({"obj": "l+m"}, name=7)
     disciplines = [disc1, disc2, disc3, disc4, disc5, disc6, disc7]
     mda = MDAChain(disciplines, inner_mda_name="MDANewtonRaphson", tolerance=1e-13)
     mda.warm_start = True
@@ -299,7 +299,7 @@ def test_pass_dedicated_newton_options(
     mda_linear_solver_options,
     newton_linear_solver_name,
     newton_linear_solver_options,
-):
+) -> None:
     """Test that the linear solver type and options for the Adjoint method and the
     newton method can be controlled independently in a newton based MDA. A mock is used
     to unitary test the arguments passed to the Newton step.
@@ -349,7 +349,7 @@ def test_pass_dedicated_newton_options(
 def test_mda_newton_convergence_passing_dedicated_newton_options(
     newton_linear_solver_name,
     newton_linear_solver_options,
-):
+) -> None:
     """Test that Newton MDA converges toward expected value for various linear solver
     algorithms for the Newton method.
 
@@ -370,7 +370,7 @@ def test_mda_newton_convergence_passing_dedicated_newton_options(
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
-def test_mda_newton_serialization(tmp_wd):
+def test_mda_newton_serialization(tmp_wd) -> None:
     """Test serialization and deserialization of a Newton based MDA."""
     options = {"atol": 1e-6}
     mda = create_mda(
@@ -389,7 +389,7 @@ def test_mda_newton_serialization(tmp_wd):
     assert_disc_data_equal(mda_d.local_data, out)
 
 
-def test_mda_newton_weak_couplings():
+def test_mda_newton_weak_couplings() -> None:
     """Test the check when there are weakly coupled disciplines."""
     match = (
         "The MDANewtonRaphson has weakly coupled disciplines, which is not supported."
@@ -399,7 +399,7 @@ def test_mda_newton_weak_couplings():
         create_mda("MDANewtonRaphson", disciplines=[Sellar1(), SellarSystem()])
 
 
-def test_mda_newton_no_couplings():
+def test_mda_newton_no_couplings() -> None:
     """Test the check when there are no coupled disciplines."""
     match = "There is no couplings to compute. Please consider using MDAChain."
 
@@ -407,7 +407,7 @@ def test_mda_newton_no_couplings():
         create_mda("MDANewtonRaphson", disciplines=[Sellar1()])
 
 
-def test_linear_solver_not_converged(caplog):
+def test_linear_solver_not_converged(caplog) -> None:
     """Test the warning message when the linear solver does not converge."""
     solver = "LGMRES"
     mda = create_mda(

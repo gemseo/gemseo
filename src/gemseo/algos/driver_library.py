@@ -37,6 +37,7 @@ and :class:`.OptimizationLibrary`.
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
@@ -70,6 +71,7 @@ from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.logging_tools import OneLineLogging
@@ -77,9 +79,13 @@ from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
     from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
+    from gemseo.algos.database import ListenerType
     from gemseo.algos.design_space import DesignSpace
 
-DriverLibOptionType = Union[str, float, int, bool, list[str], ndarray]
+# TODO: API: rename to DriverLibraryOptionType
+DriverLibOptionType = Union[
+    str, float, int, bool, list[str], ndarray, Iterable[CallbackType]
+]
 LOGGER = logging.getLogger(__name__)
 
 
@@ -128,6 +134,9 @@ class DriverLibrary(AlgorithmLibrary):
     EVAL_OBS_JAC_OPTION = "eval_obs_jac"
     MAX_DS_SIZE_PRINT = 40
 
+    _RESULT_CLASS: ClassVar[type[OptimizationResult]] = OptimizationResult
+    """The class used to present the result of the optimization."""
+
     _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = False
     """Whether the library support sparse Jacobians."""
 
@@ -163,14 +172,8 @@ class DriverLibrary(AlgorithmLibrary):
     _start_time: float | None
     """The time at which the execution begins."""
 
-    __iter: int
-    """The current iteration."""
-
     __log_problem: bool
     """Whether to log the definition and result of the problem."""
-
-    __max_iter: int
-    """The maximum number of iterations."""
 
     __one_line_progress_bar: bool
     """Whether to log the progress bar on a single line."""
@@ -185,17 +188,19 @@ class DriverLibrary(AlgorithmLibrary):
     problem: OptimizationProblem
     """The optimization problem the driver library is bonded to."""
 
+    __new_iter_listeners: set[ListenerType]
+    """The functions to be called when a new iteration is stored to the database."""
+
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
         self.deactivate_progress_bar()
         self.__activate_progress_bar = self.activate_progress_bar
-        self.__max_iter = 0
-        self.__iter = 0
         self._start_time = None
         self._max_time = None
         self.__reset_iteration_counters = True
         self.__log_problem = True
         self.__one_line_progress_bar = False
+        self.__new_iter_listeners = set()
 
     @classmethod
     def _get_unsuitability_reason(
@@ -228,16 +233,18 @@ class DriverLibrary(AlgorithmLibrary):
             ValueError: If ``max_iter`` is lower than one.
         """
         if max_iter < 1:
-            raise ValueError(f"max_iter must be >=1, got {max_iter}")
-        self.problem.max_iter = self.__max_iter = max_iter
-        self.problem.current_iter = self.__iter = (
+            msg = f"max_iter must be >=1, got {max_iter}"
+            raise ValueError(msg)
+        self.problem.max_iter = max_iter
+        self.problem.current_iter = (
             0 if self.__reset_iteration_counters else self.problem.current_iter
         )
         if self.__activate_progress_bar:
             cls = ProgressBar if self.__log_problem else UnsuffixedProgressBar
+            # TODO: API: use only self.problem
             self.__progress_bar = cls(
                 max_iter,
-                self.__iter,
+                self.problem.current_iter,
                 self.problem,
                 message,
             )
@@ -246,20 +253,18 @@ class DriverLibrary(AlgorithmLibrary):
 
         self._start_time = time()
 
-    def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
+    def new_iteration_callback(self, x_vect: ndarray) -> None:
         """Iterate the progress bar, implement the stop criteria.
 
         Args:
-            x_vect: The design variables values. If ``None``, use the values of the
-                last iteration.
+            x_vect: The design variables values.
 
         Raises:
             MaxTimeReached: If the elapsed time is greater than the maximum
                 execution time.
         """
         self.__progress_bar.set_objective_value(None, True)
-        self.__iter += 1
-        self.problem.current_iter = self.__iter
+        self.problem.current_iter += 1
         if 0 < self._max_time < time() - self._start_time:
             raise MaxTimeReached
 
@@ -307,25 +312,30 @@ class DriverLibrary(AlgorithmLibrary):
             problem.design_space.set_current_value(result)
 
         if self.__log_problem:
-            opt_result_str = result._strings
-            LOGGER.info("%s", opt_result_str[0])
-            if result.constraint_values:
-                if result.is_feasible:
-                    LOGGER.info("%s", opt_result_str[1])
-                else:
-                    LOGGER.warning("%s", opt_result_str[1])
+            self._log_result()
 
-            LOGGER.info("%s", opt_result_str[2])
-            if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
-                log = MultiLineString()
-                log.indent()
-                log.indent()
-                log.add("Design space:")
-                log.indent()
-                for line in str(problem.design_space).split("\n")[1:]:
-                    log.add(line)
-                log.dedent()
-                LOGGER.info("%s", log)
+    def _log_result(self) -> None:
+        """Log the optimization result."""
+        problem = self.problem
+        result = problem.solution
+        opt_result_str = result._strings
+        LOGGER.info("%s", opt_result_str[0])
+        if result.constraint_values:
+            if result.is_feasible:
+                LOGGER.info("%s", opt_result_str[1])
+            else:
+                LOGGER.warning("%s", opt_result_str[1])
+        LOGGER.info("%s", opt_result_str[2])
+        if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+            log = MultiLineString()
+            log.indent()
+            log.indent()
+            log.add("Design space:")
+            log.indent()
+            for line in str(problem.design_space).split("\n")[1:]:
+                log.add(line)
+            log.dedent()
+            LOGGER.info("%s", log)
 
     def _check_integer_handling(
         self,
@@ -352,12 +362,13 @@ class DriverLibrary(AlgorithmLibrary):
             and not self.descriptions[self.algo_name].handle_integer_variables
         ):
             if not force_execution:
-                raise ValueError(
-                    "Algorithm {} is not adapted to the problem, it does not handle "
-                    "integer variables.\n"
+                msg = (
+                    f"Algorithm {self.algo_name} is not adapted to the problem, "
+                    "it does not handle integer variables.\n"
                     "Execution may be forced setting the 'skip_int_check' "
-                    "argument to 'True'.".format(self.algo_name)
+                    "argument to 'True'."
                 )
+                raise ValueError(msg)
 
             LOGGER.warning(
                 "Forcing the execution of an algorithm that does not handle "
@@ -396,10 +407,11 @@ class DriverLibrary(AlgorithmLibrary):
             self.algo_name = algo_name
 
         if self.algo_name is None:
-            raise ValueError(
+            msg = (
                 "Algorithm name must be either passed as "
                 "argument or set by the attribute 'algo_name'."
             )
+            raise ValueError(msg)
 
         self._check_algorithm(self.algo_name, problem)
         self._check_integer_handling(problem.design_space, skip_int_check)
@@ -433,8 +445,20 @@ class DriverLibrary(AlgorithmLibrary):
             eval_obs_jac=eval_obs_jac,
             support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
         )
-        problem.database.add_new_iter_listener(problem.execute_observables_callback)
-        problem.database.add_new_iter_listener(self.new_iteration_callback)
+        # A database contains both shared listeners
+        # and listener specific to a DriverLibrary instance.
+        # At execution,
+        # a DriverLibrary instance must be able
+        # to list the listeners it has added to the database
+        # in order to remove them at the end of the execution.
+        for listener in [
+            problem.execute_observables_callback,
+            self.new_iteration_callback,
+        ]:
+            if problem.database.add_new_iter_listener(listener):
+                # The listener was not in the database.
+                self.__new_iter_listeners.add(listener)
+
         if self.__log_problem:
             LOGGER.info("%s", problem)
             if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
@@ -446,16 +470,17 @@ class DriverLibrary(AlgorithmLibrary):
                     log.add(line)
                 log.dedent()
                 LOGGER.info("%s", log)
-                LOGGER.info(
-                    "Solving optimization problem with algorithm %s:",
-                    self.algo_name,
-                )
-        else:
-            LOGGER.info("Running the algorithm %s:", self.algo_name)
 
-        with OneLineLogging(
-            TQDM_LOGGER
-        ) if use_one_line_progress_bar else nullcontext():
+            progress_bar_title = "Solving optimization problem with algorithm %s:"
+        else:
+            progress_bar_title = "Running the algorithm %s:"
+
+        if self.__activate_progress_bar:
+            LOGGER.info(progress_bar_title, self.algo_name)
+
+        with (
+            OneLineLogging(TQDM_LOGGER) if use_one_line_progress_bar else nullcontext()
+        ):
             # Term criteria such as max iter or max_time can be triggered in pre_run
             try:
                 self._pre_run(problem, self.algo_name, **options)
@@ -466,9 +491,16 @@ class DriverLibrary(AlgorithmLibrary):
         result.objective_name = problem.objective.name
         result.design_space = problem.design_space
         self.finalize_iter_observer()
-        problem.database.clear_listeners()
+        self.clear_listeners()
         self._post_run(problem, self.algo_name, result, **options)
         return result
+
+    def clear_listeners(self) -> None:
+        """Remove the listeners from the :attr:`.database`."""
+        self.problem.database.clear_listeners(
+            new_iter_listeners=self.__new_iter_listeners or None, store_listeners=None
+        )
+        self.__new_iter_listeners.clear()
 
     def _process_specific_option(self, options, option_key: str) -> None:
         """Process one option as a special treatment.
@@ -524,7 +556,7 @@ class DriverLibrary(AlgorithmLibrary):
         self, message=None, status=None
     ) -> OptimizationResult:
         """Return the optimization result from the database."""
-        return OptimizationResult.from_optimization_problem(
+        return self._RESULT_CLASS.from_optimization_problem(
             self.problem, message=message, status=status, optimizer_name=self.algo_name
         )
 
@@ -538,7 +570,8 @@ class DriverLibrary(AlgorithmLibrary):
             Whether the driver requires the gradient.
         """
         if driver_name not in self.descriptions:
-            raise ValueError(f"Algorithm {driver_name} is not available.")
+            msg = f"Algorithm {driver_name} is not available."
+            raise ValueError(msg)
 
         return self.descriptions[driver_name].require_gradient
 

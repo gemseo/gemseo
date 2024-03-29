@@ -23,11 +23,12 @@ from numpy import atleast_2d
 from numpy import concatenate
 from numpy import vstack
 
-from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from gemseo.typing import NumberArray
 
 
 class Concatenate(MDOFunction):
@@ -63,7 +64,7 @@ class Concatenate(MDOFunction):
             output_names=output_names,
         )
 
-    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _func_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Concatenate the values of the outputs of the functions.
 
         Args:
@@ -74,7 +75,7 @@ class Concatenate(MDOFunction):
         """
         return concatenate([atleast_1d(func(x_vect)) for func in self.__functions])
 
-    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Concatenate the outputs of the Jacobian functions.
 
         Args:

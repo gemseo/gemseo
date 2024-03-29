@@ -21,12 +21,13 @@ from typing import Final
 
 from numpy import poly1d
 from numpy import polyfit
-from numpy.typing import NDArray
 from scipy.interpolate import Rbf
 from strenum import StrEnum
 
+from gemseo.typing import RealArray
+
 TrendFunctionCreator = Callable[
-    [NDArray[float], NDArray[float]], Callable[[NDArray[float]], NDArray[float]]
+    [RealArray, RealArray], Callable[[RealArray], RealArray]
 ]
 
 
@@ -41,8 +42,8 @@ def _create_polynomial_trend_function_creator(degree: int = 1) -> TrendFunctionC
     """
 
     def create_polynomial_trend_function(
-        x: NDArray[float], y: NDArray[float]
-    ) -> Callable[[NDArray[float]], NDArray[float]]:
+        x: RealArray, y: RealArray
+    ) -> Callable[[RealArray], RealArray]:
         """Create a polynomial trend function from y data depending on x data.
 
         Args:
@@ -58,8 +59,8 @@ def _create_polynomial_trend_function_creator(degree: int = 1) -> TrendFunctionC
 
 
 def _create_radial_basis_function(
-    x: NDArray[float], y: NDArray[float]
-) -> Callable[[NDArray[float]], NDArray[float]]:
+    x: RealArray, y: RealArray
+) -> Callable[[RealArray], RealArray]:
     """Create a radial basis function.
 
     Args:
@@ -69,7 +70,7 @@ def _create_radial_basis_function(
     Returns:
         The radial basis function.
     """
-    return Rbf(x, y)
+    return Rbf(x, y)  # type: ignore
 
 
 class Trend(StrEnum):

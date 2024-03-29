@@ -33,6 +33,7 @@ and possibly :meth:`.Transformer.inverse_transform` methods.
 from __future__ import annotations
 
 from abc import abstractmethod
+from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -90,7 +91,7 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             A deepcopy of the current instance.
         """
-        return self.__class__(self.name, **self.parameters)
+        return deepcopy(self)
 
     def fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
         """Fit the transformer to the data.

@@ -85,17 +85,15 @@ design_space.add_variable(
 # In this section,
 # we build the MDO scenario which links the disciplines with the formulation,
 # the design space and the objective function.
-scenario = create_scenario(
-    disciplines, formulation="MDF", objective_name="obj", design_space=design_space
-)
+scenario = create_scenario(disciplines, "MDF", "obj", design_space)
 
 # %%
 # Add the constraints
 # ^^^^^^^^^^^^^^^^^^^
 # Then,
 # we have to set the design constraints
-scenario.add_constraint("c_1", "ineq")
-scenario.add_constraint("c_2", "ineq")
+scenario.add_constraint("c_1", constraint_type="ineq")
+scenario.add_constraint("c_2", constraint_type="ineq")
 
 # %%
 # Add the observables
@@ -120,7 +118,7 @@ scenario.add_observable("y_2", observable_name="y2")
 # we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
-scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
+scenario.execute({"max_iter": 10, "algo": "SLSQP"})
 
 # %%
 # Access the observable variables

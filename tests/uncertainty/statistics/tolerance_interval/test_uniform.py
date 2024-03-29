@@ -31,7 +31,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.uniform import (
 )
 
 
-def test__quantile_both():
+def test__quantile_both() -> None:
     """Check the bounds of two-sided TI for the standard uniform distribution."""
     tolerance_interval = UniformToleranceInterval(1000000, minimum=0.0, maximum=1.0)
     lower, upper = tolerance_interval.compute(0.95, 0.9)
@@ -39,7 +39,7 @@ def test__quantile_both():
     assert pytest.approx(upper, 0.001) == 0.975
 
 
-def test_uniform_quantile_lower():
+def test_uniform_quantile_lower() -> None:
     """Check the bounds of lower-sided TI for the standard uniform distribution."""
     tolerance_interval = UniformToleranceInterval(1000000, minimum=0.0, maximum=1.0)
     lower, _ = tolerance_interval.compute(
@@ -48,7 +48,7 @@ def test_uniform_quantile_lower():
     assert pytest.approx(lower, 0.001) == 0.025
 
 
-def test_uniform_quantile_upper():
+def test_uniform_quantile_upper() -> None:
     """Check the bounds of upper-sided TI for the standard uniform distribution."""
     tolerance_interval = UniformToleranceInterval(1000000, minimum=0.0, maximum=1.0)
     _, upper = tolerance_interval.compute(

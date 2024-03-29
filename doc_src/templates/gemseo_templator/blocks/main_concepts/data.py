@@ -24,6 +24,6 @@ block = Block(
         'Use a <a href="data_persistence/dataset.html">dataset</a> to store many kinds of data '
         "and make them easy to handle for visualization, display and query purposes."
     ),
-    examples="examples/cache/index.html",
-    info="data_persistence/index.html",
+    button_info_url="data_persistence/index.html",
+    button_examples_url="examples/cache/index.html",
 )

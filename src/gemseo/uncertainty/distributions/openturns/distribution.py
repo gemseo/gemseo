@@ -249,17 +249,17 @@ class OTDistribution(Distribution):
         try:
             create_distribution = getattr(ot, distribution)
         except AttributeError:
-            raise ValueError(
-                f"{distribution} is an unknown OpenTURNS distribution."
-            ) from None
+            msg = f"{distribution} is an unknown OpenTURNS distribution."
+            raise ValueError(msg) from None
 
         try:
             distributions = [create_distribution(*parameters)] * self.dimension
         except BaseException:
-            raise ValueError(
+            msg = (
                 f"Arguments are wrong in {distribution}({pretty_str(parameters)}); "
                 f"more details on: {OT_WEBSITE}."
-            ) from None
+            )
+            raise ValueError(msg) from None
 
         self.__set_bounds(distributions)
         if transformation is not None:
@@ -356,7 +356,8 @@ class OTDistribution(Distribution):
                 "Truncate distribution of component %s above %s.", index, upper_bound
             )
             if upper_bound > self.math_upper_bound[index]:
-                raise ValueError("u_b is greater than the current upper bound.")
+                msg = "u_b is greater than the current upper bound."
+                raise ValueError(msg)
             args = (
                 distribution,
                 upper_bound,
@@ -368,7 +369,8 @@ class OTDistribution(Distribution):
                 "Truncate distribution of component %s below %s.", index, lower_bound
             )
             if lower_bound < self.math_lower_bound[index]:
-                raise ValueError("l_b is less than the current lower bound.")
+                msg = "l_b is less than the current lower bound."
+                raise ValueError(msg)
             args = (
                 distribution,
                 lower_bound,
@@ -383,9 +385,11 @@ class OTDistribution(Distribution):
                 upper_bound,
             )
             if lower_bound < self.math_lower_bound[index]:
-                raise ValueError("l_b is less than the current lower bound.")
+                msg = "l_b is less than the current lower bound."
+                raise ValueError(msg)
             if upper_bound > self.math_upper_bound[index]:
-                raise ValueError("u_b is greater than the current upper bound.")
+                msg = "u_b is greater than the current upper bound."
+                raise ValueError(msg)
             args = (distribution, ot.Interval(lower_bound, upper_bound), threshold)
 
         return ot.TruncatedDistribution(*args)

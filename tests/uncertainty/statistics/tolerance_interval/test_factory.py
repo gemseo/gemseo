@@ -28,7 +28,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.normal import (
 )
 
 
-def test_create():
+def test_create() -> None:
     """Check the creation of a ToleranceInterval from the ToleranceIntervalFactory."""
     factory = ToleranceIntervalFactory()
     tolerance_interval = factory.create("Normal", 100000, 0, 1)
@@ -37,7 +37,7 @@ def test_create():
     assert tolerance_interval._NormalToleranceInterval__std == 1.0
 
 
-def test_create_fail():
+def test_create_fail() -> None:
     """Check the creation of a ToleranceInterval from the ToleranceIntervalFactory."""
     factory = ToleranceIntervalFactory()
 

@@ -36,7 +36,7 @@ from __future__ import annotations
 import docutils
 
 
-def add_toctree_functions(app, pagename, templatename, context, doctree):
+def add_toctree_functions(app, pagename, templatename, context, doctree) -> None:
     """Add functions so Jinja templates can add toctree objects.
 
     This converts the docutils nodes into a nested dictionary that Jinja can use in our

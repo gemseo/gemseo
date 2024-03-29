@@ -56,14 +56,14 @@ def custom_design_space() -> DesignSpace:
     return design_space
 
 
-def test_dtype(default_design_space):
+def test_dtype(default_design_space) -> None:
     """Check the use of a custom NumPy data type."""
     _design_space = ScalableDesignSpace()
     for name in default_design_space:
         assert _design_space.variable_types[name] == array(["float"])
 
 
-def test_default_design_space(default_design_space):
+def test_default_design_space(default_design_space) -> None:
     """Check the default configuration of the design space."""
     _design_space = ScalableDesignSpace()
     assert len(default_design_space) == len(_design_space)
@@ -72,7 +72,7 @@ def test_default_design_space(default_design_space):
         assert default_design_space[name] == _design_space[name]
 
 
-def test_default_design_space_with_uncertainties(default_design_space):
+def test_default_design_space_with_uncertainties(default_design_space) -> None:
     """Check the default configuration of the design space with uncertainties."""
     _design_space = ScalableDesignSpace(add_uncertain_variables=True)
     assert len(default_design_space) + 2 == len(_design_space)
@@ -83,7 +83,7 @@ def test_default_design_space_with_uncertainties(default_design_space):
     assert _design_space["u_2"] == RandomVariable("OTNormalDistribution", 1)
 
 
-def test_custom_design_space(custom_design_space):
+def test_custom_design_space(custom_design_space) -> None:
     """Check the custom configuration of the design space."""
     _design_space = ScalableDesignSpace(
         [
@@ -105,7 +105,7 @@ def test_custom_design_space(custom_design_space):
         assert_equal(custom_design_space[name], _design_space[name])
 
 
-def test_custom_design_space_with_uncertainties(custom_design_space):
+def test_custom_design_space_with_uncertainties(custom_design_space) -> None:
     """Check the custom configuration of the design space with uncertainties."""
     _design_space = ScalableDesignSpace(
         [

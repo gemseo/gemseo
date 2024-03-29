@@ -19,91 +19,76 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Scaler example
-==============
-
-In this example, we will create a scaler to transform data.
+Scalers
+=======
 """
 
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
 from numpy import linspace
-from numpy import max as npmax
-from numpy import mean
-from numpy import min as npmin
-from numpy import sin
-from numpy import std
 
-from gemseo import configure_logger
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
 
-configure_logger()
-
+# %%
+# Scaling data may be important, as discussed in another example.
+# Different scalers are available
+# and this example illustrate them with these simple data:
+data = linspace(-2, 2, 100)
 
 # %%
-# Create dataset
-# --------------
-x = linspace(0, 1, 100)[:, None]
-data = (x < 0.3) * 5 * x + (x > 0.3) * sin(20 * x)
-
+# First,
+# a :class:`.Scaler` transforms a value :math:`x` into a new value :math:`\tilde{x}`
+# based on the linear function :math:`\tilde{x}=a+bx`.
+# By default, the offset :math:`a` is zero and the coefficient :math:`b` is one:
+default_scaler = Scaler()
 
 # %%
-# Create transformers
-# -------------------
-same_scaler = Scaler()
-scaler = Scaler(offset=-2, coefficient=0.5)
+# We can set these coefficient and offset at instantiation:
+custom_scaler = Scaler(offset=-1, coefficient=0.5)
+
+# %%
+# or use a specific :class:`.Scaler` for that,
+# e.g. a :class:`.MinMaxScaler`:
 min_max_scaler = MinMaxScaler()
+
+# %%
+# or a :class:`.StandardScaler`:
 standard_scaler = StandardScaler()
 
 # %%
-# Transform data
-# --------------
-same_data = same_scaler.fit_transform(data)
-scaled_data = scaler.fit_transform(data)
+# In this case,
+# the coefficient and offset will be computed from ``data``.
+
+# %%
+# Now,
+# we fit each scaler from ``data`` and transform these ``data``:
+same_data = default_scaler.fit_transform(data)
+scaled_data = custom_scaler.fit_transform(data)
 min_max_scaled_data = min_max_scaler.fit_transform(data)
 standard_scaled_data = standard_scaler.fit_transform(data)
 
-# %%
-# Compute jacobian
-# ----------------
-jac_same = same_scaler.compute_jacobian(data)
-jac_scaled = scaler.compute_jacobian(data)
-jac_min_max_scaled = min_max_scaler.compute_jacobian(data)
-jac_standard_scaled = standard_scaler.compute_jacobian(data)
-jac_standard_scaled
-
-# %%
-# Print properties
-# ----------------
-# We may print the min, max, mean and standard deviation of the transformed
-# data. This reveals some of the properties of the different scalers: The
-# scaler without arguments has an offset of 0 and a scaling coefficient of 1,
-# which turns this transformer into the identity function. The min-max scaler
-# has a min of 0 and a max of 1. The standard scaler has a mean of zero and
-# a standard deviation of 1.
-names = [
-    "Original data  ",
-    "Same scaler    ",
-    "Scaler(-2, 0.5)",
-    "Min-max scaler ",
-    "Standard scaler",
-]
-print("{:^18}{:^8}{:^8}{:^8}{:^8}".format("", "min", "max", "mean", "std"))
-for name, y in zip(
-    names, [data, same_data, scaled_data, min_max_scaled_data, standard_scaled_data]
-):
-    print(f"{name} : {npmin(y): .3f}, {npmax(y): .3f}, {mean(y): .3f}, {std(y): .3f}")
-
-# %%
-# Plot data
-# ---------
-plt.plot(x, data, label="Original")
-plt.plot(x, same_data, label="Identity scaled", linestyle="--")
-plt.plot(x, scaled_data, label="Scaled(-2, 0.5)")
-plt.plot(x, min_max_scaled_data, label="Min-max")
-plt.plot(x, standard_scaled_data, label="Standard")
+#
+# We can plot the transformed data versus the original one:
+plt.plot(data, default_scaler.fit_transform(data), label="Default scaler")
+plt.plot(data, custom_scaler.fit_transform(data), label="Custom scaler")
+plt.plot(data, min_max_scaler.fit_transform(data), label="Min-max scaler")
+plt.plot(data, standard_scaler.fit_transform(data), label="Standard scaler")
 plt.legend()
+plt.grid()
 plt.show()
+
+# %%
+# The specific features of the different scalers are clearly visible.
+# In particular,
+# the :class:`.MinMaxScaler` projects the data onto the interval :math:`[0,1]`
+# as long as this data is included in the fitting interval.
+# The :class:`.StandardScaler` guarantees that
+# the transformed ``data`` have zero mean and unit variance.
+#
+# Lastly,
+# every scaler can compute the Jacobian,
+# e.g.
+custom_scaler.compute_jacobian(data)

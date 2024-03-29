@@ -16,46 +16,23 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version
 from typing import TYPE_CHECKING
 from typing import Final
 
 import openturns
-from packaging import version
+from packaging.version import Version
+from packaging.version import parse as parse_version
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-OT_VERSION: Final[version.Version] = version.parse(openturns.__version__)
+OT_VERSION: Final[Version] = parse_version(version("openturns"))
 
-IS_OT_LOWER_THAN_1_20: Final[bool] = version.parse("1.20") > OT_VERSION
-
-if version.parse("1.17.0") > OT_VERSION:
-
-    def get_simulated_annealing_for_lhs(lhs, temperature, criteria):  # noqa:D103
-        return openturns.SimulatedAnnealingLHS(lhs, temperature, criteria)
-
-else:
-
-    def get_simulated_annealing_for_lhs(lhs, temperature, criteria):  # noqa:D103
-        return openturns.SimulatedAnnealingLHS(lhs, criteria, temperature)
+IS_OT_LOWER_THAN_1_20: Final[bool] = parse_version("1.20") > OT_VERSION
 
 
-if version.parse("1.18") > OT_VERSION:
-
-    def get_eigenvalues(  # noqa:D103
-        result: openturns.KarhunenLoeveResult,
-    ) -> openturns.Point:
-        return result.getEigenValues()
-
-else:
-
-    def get_eigenvalues(  # noqa:D103
-        result: openturns.KarhunenLoeveResult,
-    ) -> openturns.Point:
-        return result.getEigenvalues()
-
-
-if version.parse(openturns.__version__) >= version.parse("1.20"):
+if not IS_OT_LOWER_THAN_1_20:
 
     def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis(x, y).computePCC()
@@ -85,7 +62,7 @@ if version.parse(openturns.__version__) >= version.parse("1.20"):
     def compute_squared_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis(x, y).computeSquaredSRC()
 
-elif version.parse(openturns.__version__) >= version.parse("1.19"):
+elif parse_version("1.19") <= OT_VERSION:
 
     def compute_pcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis.PCC(x, y)
@@ -110,10 +87,12 @@ elif version.parse(openturns.__version__) >= version.parse("1.19"):
         return openturns.CorrelationAnalysis.SRRC(x, y)
 
     def compute_kendall_tau(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
-        raise NotImplementedError("Requires openturns>=1.20")
+        msg = "Requires openturns>=1.20"
+        raise NotImplementedError(msg)
 
     def compute_squared_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
-        raise NotImplementedError("Requires openturns>=1.20")
+        msg = "Requires openturns>=1.20"
+        raise NotImplementedError(msg)
 
 else:
 
@@ -140,7 +119,9 @@ else:
         return openturns.CorrelationAnalysis_SRRC(x, y)
 
     def compute_kendall_tau(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
-        raise NotImplementedError("Requires openturns>=1.20")
+        msg = "Requires openturns>=1.20"
+        raise NotImplementedError(msg)
 
     def compute_squared_src(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
-        raise NotImplementedError("Requires openturns>=1.20")
+        msg = "Requires openturns>=1.20"
+        raise NotImplementedError(msg)

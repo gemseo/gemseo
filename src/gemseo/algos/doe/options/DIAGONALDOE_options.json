@@ -25,15 +25,20 @@
       "minimum": 0.0
     },
     "reverse": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": "string",
-        "minItems": 1
-      }
-    }
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minItems": 1
+          }
+        }
+      ]
+    },
+    "callbacks": {}
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,

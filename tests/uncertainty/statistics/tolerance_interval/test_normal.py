@@ -31,7 +31,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.normal import (
 )
 
 
-def test_normal_quantile_both():
+def test_normal_quantile_both() -> None:
     """Check the bounds of two-sided TI for the standard normal distribution."""
     tolerance_interval = NormalToleranceInterval(1000000, mean=0.0, std=1.0)
     lower, upper = tolerance_interval.compute(0.95, 0.9)
@@ -39,7 +39,7 @@ def test_normal_quantile_both():
     assert pytest.approx(upper, 0.01) == 1.96
 
 
-def test_normal_quantile_lower():
+def test_normal_quantile_lower() -> None:
     """Check the bounds of lower-sided TI for the standard normal distribution."""
     tolerance_interval = NormalToleranceInterval(1000000, mean=0.0, std=1.0)
     lower, _ = tolerance_interval.compute(
@@ -48,7 +48,7 @@ def test_normal_quantile_lower():
     assert pytest.approx(lower, 0.01) == -1.96
 
 
-def test_normal_quantile_upper():
+def test_normal_quantile_upper() -> None:
     """Check the bounds of upper-sided TI for the standard normal distribution."""
     tolerance_interval = NormalToleranceInterval(1000000, mean=0.0, std=1.0)
     _, upper = tolerance_interval.compute(

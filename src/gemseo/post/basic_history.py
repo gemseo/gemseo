@@ -20,7 +20,7 @@
 
 from __future__ import annotations
 
-import logging
+import operator
 from typing import TYPE_CHECKING
 from typing import Final
 
@@ -33,8 +33,6 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-LOGGER = logging.getLogger(__name__)
 
 
 class BasicHistory(OptPostProcessor):
@@ -71,7 +69,7 @@ class BasicHistory(OptPostProcessor):
                 variable_names[obj_index] = self._neg_obj_name
 
             if self._change_obj:
-                dataset.transform_data(lambda x: -x, variable_names=self._neg_obj_name)
+                dataset.transform_data(operator.neg, variable_names=self._neg_obj_name)
                 dataset.rename_variable(self._neg_obj_name, self._obj_name)
 
         if normalize:

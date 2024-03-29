@@ -23,7 +23,7 @@ class A(metaclass=BaseMultiton):
     """A class using a BaseMultiton metaclass."""
 
 
-def test_multiton():
+def test_multiton() -> None:
     """Check that a class using a BaseMultiton metaclass can create only one
     instance."""
     obj_1 = A()
@@ -31,7 +31,7 @@ def test_multiton():
     assert id(obj_1) == id(obj_2)
 
 
-def test_multiton_cache_clear():
+def test_multiton_cache_clear() -> None:
     """Verify the clearing of the cache of the multiton."""
     A()
     assert A._BaseMultiton__keys_to_class_instances

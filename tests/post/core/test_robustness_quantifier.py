@@ -30,10 +30,10 @@ from numpy.random import default_rng
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
-from gemseo import SEED
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from gemseo.algos.database import Database
@@ -49,25 +49,25 @@ def database() -> Database:
     return problem.database
 
 
-def test_init():
+def test_init() -> None:
     """"""
     RobustnessQuantifier(None)
 
 
 @pytest.mark.parametrize("args", [(), ("BFGS",), ("LEAST_SQUARES",)])
-def test_init_methods(database, args):
+def test_init_methods(database, args) -> None:
     """"""
     RobustnessQuantifier(database, *args)
 
 
-def test_build_approx(database):
+def test_build_approx(database) -> None:
     """"""
     for method in RobustnessQuantifier.Approximation:
         rq = RobustnessQuantifier(database, method)
         rq.compute_approximation(funcname="rosen", last_iter=-1)
 
 
-def test_function_error(database):
+def test_function_error(database) -> None:
     """"""
     n = 2
     rq = RobustnessQuantifier(database)
@@ -81,7 +81,7 @@ def test_function_error(database):
 
 
 @pytest.mark.parametrize("method", ["SR1", "BFGS"])
-def test_approximation_precision(database, method):
+def test_approximation_precision(database, method) -> None:
     """"""
     n = 2
     rq = RobustnessQuantifier(database, method)
@@ -99,7 +99,7 @@ def test_approximation_precision(database, method):
     outg = rq.compute_gradient_approximation(x)
 
 
-def test_mc_average(database):
+def test_mc_average(database) -> None:
     """"""
     rq = RobustnessQuantifier(database)
     rq.compute_approximation(funcname="rosen")
@@ -112,7 +112,7 @@ def test_mc_average(database):
         rq.montecarlo_average_var(mu, cov)
 
 
-def test_compute_expected_value(database):
+def test_compute_expected_value(database) -> None:
     """"""
     rq = RobustnessQuantifier(database)
     rq.compute_approximation(funcname="rosen")
@@ -139,7 +139,7 @@ def test_compute_expected_value(database):
         rq.compute_expected_value(mu, cov)
 
 
-def test_compute_variance_error(database):
+def test_compute_variance_error(database) -> None:
     """"""
     rq = RobustnessQuantifier(database)
     rq.compute_approximation(funcname="rosen")

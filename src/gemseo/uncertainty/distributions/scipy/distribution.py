@@ -49,7 +49,6 @@ The constructor has also optional arguments:
 from __future__ import annotations
 
 import logging
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
@@ -64,6 +63,7 @@ from numpy import vstack
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.uncertainty.distributions.distribution import StandardParametersType
 from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -111,7 +111,7 @@ class SPDistribution(Distribution):
         self,
         variable: str = Distribution.DEFAULT_VARIABLE_NAME,
         interfaced_distribution: str = "uniform",
-        parameters: Mapping[str, Any] = MappingProxyType({}),
+        parameters: Mapping[str, Any] = READ_ONLY_EMPTY_DICT,
         dimension: int = 1,
         standard_parameters: StandardParametersType | None = None,
     ) -> None:
@@ -200,19 +200,19 @@ class SPDistribution(Distribution):
         try:
             create_distribution = getattr(sp_stats, distribution)
         except BaseException:
-            raise ValueError(
-                f"{distribution} is an unknown scipy distribution."
-            ) from None
+            msg = f"{distribution} is an unknown scipy distribution."
+            raise ValueError(msg) from None
 
         try:
             parameters = parameters or {}
             create_distribution(**parameters)
             distributions = [create_distribution(**parameters)] * self.dimension
         except BaseException:
-            raise ValueError(
+            msg = (
                 f"Arguments are wrong in {distribution}({pretty_str(parameters)}); "
                 f"more details on: {SP_WEBSITE}."
-            ) from None
+            )
+            raise ValueError(msg) from None
 
         self.__set_bounds(distributions)
         return distributions

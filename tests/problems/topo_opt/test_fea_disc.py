@@ -56,7 +56,7 @@ def default_finite_element_analysis():
     return FininiteElementAnalysis()
 
 
-def test_run(finite_element_analysis):
+def test_run(finite_element_analysis) -> None:
     """"""
     output_data = finite_element_analysis.execute(
         input_data={"E": ones(finite_element_analysis.N_elements)}
@@ -64,7 +64,7 @@ def test_run(finite_element_analysis):
     assert output_data["compliance"] > 0.0
 
 
-def test_run_default(default_finite_element_analysis):
+def test_run_default(default_finite_element_analysis) -> None:
     """"""
     output_data = default_finite_element_analysis.execute(
         input_data={"E": ones(default_finite_element_analysis.N_elements)}
@@ -72,7 +72,7 @@ def test_run_default(default_finite_element_analysis):
     assert output_data["compliance"] > 0.0
 
 
-def test_jacobian(finite_element_analysis):
+def test_jacobian(finite_element_analysis) -> None:
     """Check the analytic Jacobian by finite differences."""
     indata = finite_element_analysis.get_input_data()
     assert finite_element_analysis.check_jacobian(

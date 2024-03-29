@@ -34,20 +34,20 @@ def distribution_factory() -> DistributionFactory:
     return DistributionFactory()
 
 
-def test_available_distributions(distribution_factory):
+def test_available_distributions(distribution_factory) -> None:
     """Check the property available_distributions."""
     distributions = distribution_factory.available_distributions
     assert distributions == distribution_factory.class_names
     assert "OTNormalDistribution" in distributions
 
 
-def test_is_available(distribution_factory):
+def test_is_available(distribution_factory) -> None:
     """Check is_available()."""
     assert distribution_factory.is_available("OTNormalDistribution")
     assert not distribution_factory.is_available("foo")
 
 
-def test_create_marginal_distribution(distribution_factory):
+def test_create_marginal_distribution(distribution_factory) -> None:
     """Check create_marginal_distribution() to instantiate a marginal distribution."""
     distribution = distribution_factory.create_marginal_distribution(
         "OTNormalDistribution", variable="x"
@@ -59,7 +59,7 @@ def test_create_marginal_distribution(distribution_factory):
     )
 
 
-def test_create_composed_distribution(distribution_factory):
+def test_create_composed_distribution(distribution_factory) -> None:
     """Check create_composed_distribution() to instantiate a composed distribution."""
     normal = distribution_factory.create("OTNormalDistribution", variable="x")
     uniform = distribution_factory.create("OTUniformDistribution", variable="y")
@@ -72,7 +72,9 @@ def test_create_composed_distribution(distribution_factory):
     assert composed.variable_name == "foo"
 
 
-def test_create_composed_distribution_with_different_identifiers(distribution_factory):
+def test_create_composed_distribution_with_different_identifiers(
+    distribution_factory,
+) -> None:
     """Check create_composed_distribution() with different distribution identifiers."""
     normal = distribution_factory.create("OTNormalDistribution", variable="x")
     uniform = distribution_factory.create("SPUniformDistribution", variable="y")

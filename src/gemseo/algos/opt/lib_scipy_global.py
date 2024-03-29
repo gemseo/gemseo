@@ -36,9 +36,9 @@ from numpy.typing import NDArray
 from scipy import optimize
 from scipy.optimize import NonlinearConstraint
 
-from gemseo import SEED
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -315,7 +315,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 constraints=self.__get_non_linear_constraints(),
             )
         else:  # pragma: no cover
-            raise ValueError(f"Unknown algorithm: {self.internal_algo_name}.")
+            msg = f"Unknown algorithm: {self.internal_algo_name}."
+            raise ValueError(msg)
 
         return self.get_optimum_from_database(opt_result.message, opt_result.success)
 

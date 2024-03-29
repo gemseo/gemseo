@@ -8,41 +8,36 @@
       },
       {
         "id": "Dis1",
-        "name": "MDAChain",
-        "type": "mda"
-      },
-      {
-        "id": "Dis2",
         "name": "0",
         "type": "analysis"
       },
       {
-        "id": "Dis3",
+        "id": "Dis2",
         "name": "MDAGaussSeidel",
         "type": "mda"
       },
       {
-        "id": "Dis4",
+        "id": "Dis3",
         "name": "1",
         "type": "analysis"
       },
       {
-        "id": "Dis5",
+        "id": "Dis4",
         "name": "2",
         "type": "analysis"
       },
       {
-        "id": "Dis6",
+        "id": "Dis5",
         "name": "MDAGaussSeidel",
         "type": "mda"
       },
       {
-        "id": "Dis7",
+        "id": "Dis6",
         "name": "3",
         "type": "analysis"
       },
       {
-        "id": "Dis8",
+        "id": "Dis7",
         "name": "4",
         "type": "analysis"
       }
@@ -64,14 +59,9 @@
         "name": "x"
       },
       {
-        "from": "Dis1",
+        "from": "Dis5",
         "to": "Opt",
         "name": "y2"
-      },
-      {
-        "from": "Opt",
-        "to": "Dis2",
-        "name": "x"
       },
       {
         "from": "Dis6",
@@ -79,98 +69,73 @@
         "name": "y2"
       },
       {
-        "from": "Dis7",
-        "to": "Opt",
-        "name": "y2"
-      },
-      {
-        "from": "Dis2",
+        "from": "Dis1",
         "to": "_U_",
         "name": "a^*"
       },
       {
-        "from": "Dis4",
+        "from": "Dis3",
         "to": "_U_",
         "name": "y1^*, b^*"
       },
       {
-        "from": "Dis5",
+        "from": "Dis4",
         "to": "_U_",
         "name": "x1^*"
       },
       {
-        "from": "Dis7",
+        "from": "Dis6",
         "to": "_U_",
         "name": "c^*"
       },
       {
-        "from": "Dis7",
+        "from": "Dis6",
         "to": "Opt",
         "name": "y2"
       },
       {
-        "from": "Dis8",
+        "from": "Dis7",
         "to": "_U_",
         "name": "x2^*"
       },
       {
+        "from": "Dis1",
+        "to": "Dis2",
+        "name": "a"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis5",
+        "name": "a"
+      },
+      {
         "from": "Dis2",
         "to": "Dis3",
-        "name": "a"
-      },
-      {
-        "from": "Dis2",
-        "to": "Dis6",
-        "name": "a"
-      },
-      {
-        "from": "Dis3",
-        "to": "Dis4",
         "name": "x1"
       },
       {
         "from": "Dis3",
-        "to": "Dis5",
+        "to": "Dis4",
         "name": "y1"
       },
       {
         "from": "Dis4",
-        "to": "Dis5",
-        "name": "y1"
-      },
-      {
-        "from": "Dis5",
-        "to": "Dis3",
+        "to": "Dis2",
         "name": "x1"
       },
       {
         "from": "Dis5",
-        "to": "Dis4",
-        "name": "x1"
-      },
-      {
-        "from": "Dis6",
-        "to": "Dis7",
-        "name": "x2"
-      },
-      {
-        "from": "Dis6",
-        "to": "Dis8",
-        "name": "y2"
-      },
-      {
-        "from": "Dis7",
-        "to": "Dis8",
-        "name": "y2"
-      },
-      {
-        "from": "Dis8",
         "to": "Dis6",
         "name": "x2"
       },
       {
-        "from": "Dis8",
+        "from": "Dis6",
         "to": "Dis7",
+        "name": "y2"
+      },
+      {
+        "from": "Dis7",
+        "to": "Dis5",
         "name": "x2"
       }
     ],
@@ -180,21 +145,20 @@
         "Opt",
         [
           "Dis1",
-          "Dis2",
           {
             "parallel": [
               [
-                "Dis3",
+                "Dis2",
                 [
-                  "Dis4",
-                  "Dis5"
+                  "Dis3",
+                  "Dis4"
                 ]
               ],
               [
-                "Dis6",
+                "Dis5",
                 [
-                  "Dis7",
-                  "Dis8"
+                  "Dis6",
+                  "Dis7"
                 ]
               ]
             ]

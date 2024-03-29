@@ -43,7 +43,7 @@ def _execute_doe_scenario(scenario: DOEScenario) -> None:
 class ResamplingBenchmark(BaseBenchmark):
     """To benchmark scenario-based sampling."""
 
-    def __init__(self, use_configure: bool):  # noqa: D107
+    def __init__(self, use_configure: bool) -> None:  # noqa: D107
         if use_configure:
             from gemseo import configure
 
@@ -52,13 +52,13 @@ class ResamplingBenchmark(BaseBenchmark):
         self.scenario = None
         super().__init__()
 
-    def setup(self):  # noqa: D102
+    def setup(self) -> None:  # noqa: D102
         discipline = AnalyticDiscipline({"y": "u"}, "func")
         space = DesignSpace()
         space.add_variable("u", l_b=0.0, u_b=1.0, value=0.5)
         self.scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", space)
 
-    def run(self):  # noqa: D102
+    def run(self) -> None:  # noqa: D102
         _execute_doe_scenario(self.scenario)
 
 

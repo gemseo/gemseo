@@ -154,7 +154,8 @@ class MLAlgoAssessor(MDODiscipline):
         self.transformer = transformer
         self.algos = []
         if self.measure_options.get("multioutput", False):
-            raise ValueError("MLAlgoAssessor does not support multioutput.")
+            msg = "MLAlgoAssessor does not support multioutput."
+            raise ValueError(msg)
 
         self.measure_options[self.MULTIOUTPUT] = False
 

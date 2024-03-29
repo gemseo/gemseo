@@ -49,7 +49,7 @@ DISC_DESCR_SELF_STRONG_C = [
 DISC_DESCR_SELF_C = [("A", ["x", "y"], ["y", "o"])]
 
 
-def test_traverse_add_diff_io_basic():
+def test_traverse_add_diff_io_basic() -> None:
     """Test the differentiated inputs and outputs graph calculations."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1)
     coupl = MDOCouplingStructure(disciplines)
@@ -80,7 +80,7 @@ def test_traverse_add_diff_io_basic():
 @pytest.mark.parametrize(
     "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
-def test_chain_jac_basic_grammars(grammar_type):
+def test_chain_jac_basic_grammars(grammar_type) -> None:
     """Test the jacobian from the MDOChain on a basic case with different grammars."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1, grammar_type=grammar_type)
     mda = MDAChain(disciplines, grammar_type=grammar_type)
@@ -89,7 +89,7 @@ def test_chain_jac_basic_grammars(grammar_type):
 
 @pytest.mark.parametrize("input_", [["x1"], ["x2"], ["x1", "x2"]])
 @pytest.mark.parametrize("output", [["o1"], ["o2"], ["o1", "o2"]])
-def test_chain_jac_basic(input_, output):
+def test_chain_jac_basic(input_, output) -> None:
     """Test the jacobian from the MDOChain on a basic case."""
     disciplines = create_disciplines_from_desc(
         DISC_DESCR_1, grammar_type=MDODiscipline.GrammarType.SIMPLE
@@ -99,14 +99,14 @@ def test_chain_jac_basic(input_, output):
 
 
 @pytest.mark.parametrize("descriptions", [DISC_DESCR_SELF_C, DISC_DESCR_SELF_STRONG_C])
-def test_chain_jac_self_coupled(descriptions):
+def test_chain_jac_self_coupled(descriptions) -> None:
     """Test the jacobian with self-couplings."""
     disciplines = create_disciplines_from_desc(descriptions)
     mda = MDAChain(disciplines, tolerance=1e-14)
     assert mda.check_jacobian(inputs=["x"], outputs=["o"])
 
 
-def test_double_mda():
+def test_double_mda() -> None:
     disciplines = analytic_disciplines_from_desc((
         {"a": "x"},
         {"y1": "x1", "b": "a+1"},
@@ -124,7 +124,7 @@ def test_double_mda():
 @pytest.mark.parametrize("nb_of_disc", [1, 5, 10, 20])
 @pytest.mark.parametrize("nb_of_total_disc_io", [3, 10, 20, 100])
 @pytest.mark.parametrize("nb_of_disc_ios", [1, 2, 10])
-def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios):
+def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios) -> None:
     """Test the Jacobian of MDA with various IOs variables set sizes."""
     if nb_of_disc_ios > nb_of_total_disc_io:
         return
@@ -147,7 +147,7 @@ def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios):
 
 @pytest.mark.parametrize("inputs_size", [1, 2])
 @pytest.mark.parametrize("outputs_size", [1, 3])
-def test_chain_jac_io_sizes(inputs_size, outputs_size):
+def test_chain_jac_io_sizes(inputs_size, outputs_size) -> None:
     """Test the Jacobian of MDA with various IOs sizes."""
     disciplines = create_disciplines_from_sizes(
         5,

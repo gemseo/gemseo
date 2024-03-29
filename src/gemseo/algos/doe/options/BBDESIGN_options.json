@@ -4,11 +4,15 @@
   "id": "https://pythonhosted.org/pyDOE/rsm.html#box-behnken",
   "properties": {
     "center_bb": {
-      "type": [
-        "null",
-        "integer"
-      ],
-      "minimum": 1
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        }
+      ]
     },
     "eval_jac": {
       "type": "boolean"
@@ -24,7 +28,8 @@
     "max_time": {
       "type": "number",
       "minimum": 0.0
-    }
+    },
+    "callbacks": {}
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,

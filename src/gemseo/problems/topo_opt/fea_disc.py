@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
+# TODO: API: rename to FiniteElementAnalysis.
 class FininiteElementAnalysis(MDODiscipline):
     """Finite Element Analysis for 2D topology optimization problems.
 

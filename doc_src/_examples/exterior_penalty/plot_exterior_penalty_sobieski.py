@@ -153,10 +153,10 @@ get_all_inputs(disciplines)
 # we build the scenario:
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
+    "MDF",
+    "y_4",
+    design_space,
     maximize_objective=True,
-    objective_name="y_4",
-    design_space=design_space,
 )
 # %%
 # The range function (:math:`y\_4`) should be maximized. However, optimizers
@@ -202,7 +202,7 @@ scenario.set_differentiation_method()
 # the formulation. To do that, we use the method
 # :meth:`~gemseo.core.scenario.Scenario.add_constraint`:
 for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, "ineq")
+    scenario.add_constraint(constraint, constraint_type="ineq")
 # %%
 # Step 3: Apply the exterior penalty and execute the scenario
 # -----------------------------------------------------------
@@ -231,13 +231,13 @@ scenario.post_process(
 design_space.set_current_value(x_0)
 scenario_2 = create_scenario(
     disciplines,
-    formulation="MDF",
+    "MDF",
+    "y_4",
+    design_space,
     maximize_objective=True,
-    objective_name="y_4",
-    design_space=design_space,
 )
 for constraint in ["g_1", "g_2", "g_3"]:
-    scenario_2.add_constraint(constraint, "ineq")
+    scenario_2.add_constraint(constraint, constraint_type="ineq")
 scenario_2.set_differentiation_method()
 scenario_2.formulation.opt_problem.apply_exterior_penalty(
     objective_scale=1000.0, scale_inequality=1000.0

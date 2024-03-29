@@ -64,12 +64,12 @@ def parameter_space() -> ParameterSpace:
 class Ishigami1D(MDODiscipline):
     """A version of the Ishigami function indexed by a 1D variable."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x1", "x2", "x3"])
         self.output_grammar.update_from_names(["out"])
 
-    def _run(self):
+    def _run(self) -> None:
         x_1, x_2, x_3 = self.get_local_data_by_name(["x1", "x2", "x3"])
         time = linspace(0, 1, 100)
         output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3**4 * sin(x_1) * time
@@ -83,7 +83,7 @@ class MockSensitivityAnalysis(SensitivityAnalysis):
     of dimension i.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.dataset = IODataset()
         data = array([[1, 2, 3]])
         self._input_names = ["x1", "x2"]
@@ -130,7 +130,7 @@ class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
 class MockMorrisAnalysisIndices(MorrisAnalysis):
     """A mock of a Morris sensitivity analysis, from which a dataset can be exported."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.dataset = IODataset()
         self.dataset.sizes = {
             "x1": 1,
@@ -232,7 +232,7 @@ BARPLOT_TEST_PARAMETERS = {
     ids=BARPLOT_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis, pyplot_close_all):
+def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
     """Check that a Barplot is created with plot_bar."""
     mock_sensitivity_analysis.plot_bar(save=False, show=False, **kwargs)
 
@@ -256,9 +256,7 @@ RADAR_TEST_PARAMETERS = {
     ids=RADAR_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot_radar(
-    kwargs, baseline_images, mock_sensitivity_analysis, pyplot_close_all
-):
+def test_plot_radar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
     """Check that a RadarChart is created with plot_radar."""
     mock_sensitivity_analysis.plot_radar(save=False, show=False, **kwargs)
 
@@ -277,8 +275,8 @@ COMPARISON_TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_plot_comparison(
-    use_bar_plot, baseline_images, pyplot_close_all, discipline, parameter_space
-):
+    use_bar_plot, baseline_images, discipline, parameter_space
+) -> None:
     """Check if the comparison of sensitivity indices works."""
     spearman = CorrelationAnalysis([discipline], parameter_space, 10)
     spearman.compute_indices()
@@ -291,7 +289,7 @@ def test_plot_comparison(
     assert plot.title == "foo"
 
 
-def test_input_names(mock_sensitivity_analysis):
+def test_input_names(mock_sensitivity_analysis) -> None:
     """Check the value of the attribute input_names.
 
     Args:
@@ -301,7 +299,7 @@ def test_input_names(mock_sensitivity_analysis):
 
 
 @pytest.mark.parametrize("output", ["y1", ("y1", 0), ("y2", 0)])
-def test_sort_parameters(mock_sensitivity_analysis, output):
+def test_sort_parameters(mock_sensitivity_analysis, output) -> None:
     """Check if the parameters are well sorted.
 
     Args:
@@ -312,7 +310,7 @@ def test_sort_parameters(mock_sensitivity_analysis, output):
     assert parameters == ["x2", "x1"]
 
 
-def test_convert_to_dataset(mock_sensitivity_analysis):
+def test_convert_to_dataset(mock_sensitivity_analysis) -> None:
     """Check if the sensitivity indices are well converted to Dataset.
 
     Args:
@@ -371,7 +369,7 @@ ONE_D_FIELD_TEST_PARAMETERS = {
     ids=ONE_D_FIELD_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot_1d_field(kwargs, baseline_images, output, ishigami, pyplot_close_all):
+def test_plot_1d_field(kwargs, baseline_images, output, ishigami) -> None:
     """Check if a 1D field is well plotted."""
     ishigami.plot_field(output, save=False, show=False, **kwargs)
 
@@ -405,14 +403,14 @@ TWO_D_FIELD_TEST_PARAMETERS = {
     ids=TWO_D_FIELD_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_plot_2d_field(kwargs, baseline_images, ishigami, pyplot_close_all):
+def test_plot_2d_field(kwargs, baseline_images, ishigami) -> None:
     """Check if a 2D field is well plotted with mesh."""
     times = linspace(0, 1, 10)
     mesh = array([[time1, time2] for time1 in times for time2 in times])
     ishigami.plot_field("out", save=False, show=False, mesh=mesh, **kwargs)
 
 
-def test_standardize_indices():
+def test_standardize_indices() -> None:
     """Check that the method standardize_indices() works."""
     indices = {
         "y1": [{"x1": array([-2.0]), "x2": array([0.5]), "x3": array([1.0])}],
@@ -432,7 +430,7 @@ def test_standardize_indices():
     assert standardized_indices == expected_standardized_indices
 
 
-def test_multiple_disciplines(parameter_space):
+def test_multiple_disciplines(parameter_space) -> None:
     """Test a SensitivityAnalysis with multiple disciplines.
 
     Args:

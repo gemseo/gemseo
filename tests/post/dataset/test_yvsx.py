@@ -82,6 +82,7 @@ TEST_PARAMETERS = {
             "xlabel": "The xlabel",
             "ylabel": "The ylabel",
             "title": "The title",
+            "grid": False,
         },
         ["YvsX_properties"],
     ),
@@ -96,9 +97,7 @@ TEST_PARAMETERS = {
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
-def test_plot(
-    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-):
+def test_plot(kwargs, properties, baseline_images, dataset, fig_and_axes) -> None:
     """Test images created by YvsX._plot against references."""
     plot = YvsX(dataset, **kwargs)
     fig, axes = (

@@ -3,7 +3,6 @@ git+https://gitlab.com/gemseo/dev/gemseo-java.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-petsc.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-pymoo.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-calibration.git@develop
-git+https://gitlab.com/gemseo/dev/gemseo-mlearning.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-mma.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-matlab.git@develop
 git+https://gitlab.com/gemseo/dev/gemseo-pdfo.git@develop

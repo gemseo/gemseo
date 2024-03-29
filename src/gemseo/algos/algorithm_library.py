@@ -140,8 +140,8 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         library_directory = Path(inspect.getfile(self.__class__)).parent
         options_directory = library_directory / self.OPTIONS_DIR
         algo_schema_file = options_directory / f"{algo_name.upper()}_options.json"
-        lib_schema_file = options_directory / "{}_options.json".format(
-            self.__class__.__name__.upper()
+        lib_schema_file = (
+            options_directory / f"{self.__class__.__name__.upper()}_options.json"
         )
 
         if algo_schema_file.exists():
@@ -150,10 +150,10 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             schema_file = lib_schema_file
         else:
             msg = (
-                "Neither the options grammar file {} for the algorithm '{}' "
-                "nor the options grammar file {} for the library '{}' has been found."
-            ).format(
-                algo_schema_file, algo_name, lib_schema_file, self.__class__.__name__
+                f"Neither the options grammar file {algo_schema_file} for the "
+                f"algorithm '{algo_name}' "
+                f"nor the options grammar file {lib_schema_file} for the library "
+                f"'{self.__class__.__name__}' has been found."
             )
             raise ValueError(msg)
 
@@ -291,10 +291,11 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             self.algo_name = algo_name
 
         if self.algo_name is None:
-            raise ValueError(
+            msg = (
                 "Algorithm name must be either passed as "
                 "argument or set by the attribute self.algo_name"
             )
+            raise ValueError(msg)
 
         self._check_algorithm(self.algo_name, problem)
         options = self._update_algorithm_options(**options)
@@ -309,7 +310,9 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return result
 
-    def _update_algorithm_options(self, **options: Any) -> dict[str, Any]:
+    def _update_algorithm_options(
+        self, initialize_options_grammar: bool = True, **options: Any
+    ) -> dict[str, Any]:
         """Update the algorithm options.
 
         1. Load the grammar of algorithm options.
@@ -317,12 +320,14 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         3. Complete the initial algorithm options with the default algorithm options.
 
         Args:
+            initialize_options_grammar: Whether to initialize the grammar of options.
             **options: The initial algorithm options.
 
         Returns:
             The updated algorithm options.
         """
-        self.init_options_grammar(self.algo_name)
+        if initialize_options_grammar:
+            self.init_options_grammar(self.algo_name)
         self._check_ignored_options(options)
         return self._get_options(**options)
 
@@ -368,19 +373,21 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             problem: The problem to be solved.
         """
         if algo_name not in self.descriptions:
-            raise KeyError(
+            msg = (
                 f"The algorithm {algo_name} is unknown; "
                 f"available ones are: {pretty_str(self.descriptions.keys())}."
             )
+            raise KeyError(msg)
 
         unsuitability_reason = self._get_unsuitability_reason(
             self.descriptions[self.algo_name], problem
         )
         if unsuitability_reason:
-            raise ValueError(
+            msg = (
                 f"The algorithm {algo_name} is not adapted to the problem "
                 f"because {unsuitability_reason}."
             )
+            raise ValueError(msg)
 
     @classmethod
     def _get_unsuitability_reason(

@@ -1,4 +1,4 @@
-exclude: ^src/gemseo/third_party
+exclude: ^(src/gemseo/third_party|tests/.*\.tikz)
 
 repos:
 
@@ -39,7 +39,7 @@ repos:
       ]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.5.4
+  rev: v1.5.5
   hooks:
     - id: insert-license
       name: insert LGPL license
@@ -65,7 +65,7 @@ repos:
         - ..|   |
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.1.8
+  rev: v0.3.4
   hooks:
     - id: ruff
       args: [
@@ -75,12 +75,12 @@ repos:
       ]
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.1.8
+  rev: v0.3.4
   hooks:
     - id: ruff-format
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v3.13.0
+  rev: v3.20.0
   hooks:
     - id: commitizen
       stages: [commit-msg]

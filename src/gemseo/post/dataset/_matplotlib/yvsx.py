@@ -48,6 +48,7 @@ class YvsX(MatplotlibPlot):
             self._common_settings.linestyle,
             color=self._common_settings.color,
         )
+        axes.grid(visible=self._common_settings.grid)
         axes.set_xlabel(self._common_settings.xlabel)
         axes.set_ylabel(self._common_settings.ylabel)
         axes.set_title(self._common_settings.title)

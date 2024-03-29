@@ -378,15 +378,15 @@ class RBFRegressor(MLRegressionAlgo):
                 or if the derivative of the radial basis function is missing.
         """
         if self.algo.norm != self.EUCLIDEAN:
-            raise NotImplementedError(
-                "Jacobian is only implemented for Euclidean norm."
-            )
+            msg = "Jacobian is only implemented for Euclidean norm."
+            raise NotImplementedError(msg)
 
         if callable(self.function) and self.der_function is None:
-            raise NotImplementedError(
+            msg = (
                 "No der_function is provided."
                 "Add der_function in RBFRegressor constructor."
             )
+            raise NotImplementedError(msg)
 
     def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
         objects = super()._get_objects_to_save()

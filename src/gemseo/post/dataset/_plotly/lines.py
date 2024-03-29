@@ -34,17 +34,23 @@ class Lines(PlotlyPlot):
 
     def _create_figure(
         self,
+        fig: Figure,
         x_values: ArrayLike,
         y_names_to_values: Mapping[str, ArrayLike],
         default_xlabel: str,
+        n_lines: int,
     ) -> Figure:
         """
         Args:
+            fig: A Plotly figure.
             x_values: The values on the x-axis.
             y_names_to_values: The variable names bound to the values on the y-axis.
             default_xlabel: The default x-label.
+            n_lines: The number of lines.
         """  # noqa: D205 D212 D415
-        fig = Figure()
+        self._common_settings.set_colors(self._common_settings.color)
+        self._common_settings.set_linestyles(self._common_settings.linestyle or "-")
+        self._common_settings.set_markers(self._common_settings.marker or "o")
         line_index = -1
         for y_name, y_values in y_names_to_values.items():
             for yi_name, yi_values in zip(
@@ -77,6 +83,8 @@ class Lines(PlotlyPlot):
             xaxis_title=self._common_settings.xlabel or default_xlabel,
             yaxis_title=self._common_settings.ylabel,
         )
+        fig.update_xaxes(showgrid=self._common_settings.grid)
+        fig.update_yaxes(showgrid=self._common_settings.grid)
         if self._specific_settings.set_xticks_from_data:
             fig.update_layout(xaxis={"tickvals": x_values})
         return fig

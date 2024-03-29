@@ -19,12 +19,12 @@
 from __future__ import annotations
 
 import pickle
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
 from numpy import ndarray
 
-from gemseo import MDODiscipline
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
@@ -41,6 +41,9 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 
 def build_mdo_scenario(
@@ -74,9 +77,9 @@ def build_mdo_scenario(
     design_space = SobieskiDesignSpace()
     return DOEScenario(
         disciplines,
-        formulation=formulation,
-        objective_name="y_4",
-        design_space=design_space,
+        formulation,
+        "y_4",
+        design_space,
         grammar_type=grammar_type,
         maximize_objective=True,
     )
@@ -95,7 +98,7 @@ def mdf_variable_grammar_doe_scenario(request):
 
 @pytest.mark.usefixtures("tmp_wd")
 @pytest.mark.skip_under_windows()
-def test_parallel_doe_hdf_cache(caplog):
+def test_parallel_doe_hdf_cache(caplog) -> None:
     disciplines = create_discipline([
         "SobieskiStructure",
         "SobieskiPropulsion",
@@ -142,7 +145,7 @@ def test_parallel_doe_hdf_cache(caplog):
     [DOEScenario.GrammarType.SIMPLE, DOEScenario.GrammarType.JSON],
     indirect=True,
 )
-def test_doe_scenario(mdf_variable_grammar_doe_scenario):
+def test_doe_scenario(mdf_variable_grammar_doe_scenario) -> None:
     """Test the execution of a DOEScenario with different grammars.
 
     Args:
@@ -194,7 +197,7 @@ def doe_scenario(unit_design_space, double_discipline) -> DOEScenario:
     )
 
 
-def test_warning_when_missing_option(caplog, doe_scenario):
+def test_warning_when_missing_option(caplog, doe_scenario) -> None:
     """Check that a warning is correctly logged when an option is unknown.
 
     Args:
@@ -212,14 +215,15 @@ def test_warning_when_missing_option(caplog, doe_scenario):
 def f_sellar_1(x_local: float, y_2: float, x_shared: ndarray) -> float:
     """Function for discipline 1."""
     if x_local == 0.0:
-        raise ValueError("Undefined")
+        msg = "Undefined"
+        raise ValueError(msg)
 
     y_1 = (x_shared[0] ** 2 + x_shared[1] + x_local - 0.2 * y_2) ** 0.5
     return y_1  # noqa: RET504
 
 
 @pytest.mark.parametrize("use_threading", [True, False])
-def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines):
+def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines) -> None:
     """Check that a DOE scenario does not crash with a ValueError and MDAJacobi.
 
     Args:
@@ -233,11 +237,11 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines):
         sellar_disciplines,
         "MDF",
         "obj",
+        SellarDesignSpace("float64"),
         main_mda_name="MDAChain",
         inner_mda_name="MDAJacobi",
         use_threading=use_threading,
         n_processes=2,
-        design_space=SellarDesignSpace("float64"),
     )
     scenario.execute({
         "algo": "CustomDOE",
@@ -248,7 +252,7 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines):
     assert "Undefined" in caplog.text
 
 
-def test_other_exceptions_caught(caplog):
+def test_other_exceptions_caught(caplog) -> None:
     """Check that exceptions that are not ValueErrors are not re-raised.
 
     Args:
@@ -270,7 +274,7 @@ def test_other_exceptions_caught(caplog):
     assert "0.0 cannot be raised to a negative power" in caplog.text
 
 
-def test_export_to_dataset_with_repeated_inputs():
+def test_export_to_dataset_with_repeated_inputs() -> None:
     """Check the export of the database with repeated inputs."""
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
@@ -283,7 +287,7 @@ def test_export_to_dataset_with_repeated_inputs():
     assert (dataset.get_view(variable_names="obj").to_numpy() == samples * 2).all()
 
 
-def test_export_to_dataset_normalized_integers():
+def test_export_to_dataset_normalized_integers() -> None:
     """Check the export of the database with normalized integers."""
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
@@ -296,7 +300,7 @@ def test_export_to_dataset_normalized_integers():
     assert (dataset.get_view(variable_names="obj").to_numpy() == samples * 2).all()
 
 
-def test_lib_serialization(tmp_wd, doe_scenario):
+def test_lib_serialization(tmp_wd, doe_scenario) -> None:
     """Test the serialization of a DOEScenario with an instantiated DOELibrary.
 
     Args:
@@ -354,7 +358,7 @@ def test_partial_execution_from_backup(
     samples_2,
     reset_iteration_counters,
     expected,
-):
+) -> None:
     """Test the execution of a DOEScenario from a backup.
 
     Args:
@@ -379,7 +383,7 @@ def test_partial_execution_from_backup(
     assert len(other_doe_scenario.formulation.opt_problem.database) == expected
 
 
-def test_scenario_without_initial_design_value():
+def test_scenario_without_initial_design_value() -> None:
     """Check that a DOEScenario can work without initial design value."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)

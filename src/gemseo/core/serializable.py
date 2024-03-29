@@ -30,15 +30,14 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
-
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.portable_path import to_os_specific
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-class Serializable(metaclass=GoogleDocstringInheritanceMeta):
+class Serializable(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base class to handle serialization of |g| objects.
 
     The methods ``__setstate__`` and ``__getstate__`` used by pickle to serialize and

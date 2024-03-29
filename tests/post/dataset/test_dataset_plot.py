@@ -19,14 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from dataclasses import fields
 from pathlib import Path
 from unittest import mock
 
 import pytest
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+from matplotlib.figure import Figure as MatplotlibFigure
 from numpy import array
 
 from gemseo.datasets.dataset import Dataset
@@ -48,13 +47,13 @@ def yvsx() -> YvsX:
     return YvsX(dataset, x="x", y="y")
 
 
-def test_empty_dataset():
+def test_empty_dataset() -> None:
     dataset = Dataset()
     with pytest.raises(ValueError):
         YvsX(dataset, x="x", y="y")
 
 
-def test_get_label():
+def test_get_label() -> None:
     dataset = Dataset.from_array(
         array([[1, 2]]), variable_names=["x"], variable_names_to_n_components={"x": 2}
     )
@@ -95,7 +94,7 @@ def dataset_plot(dataset):
         ("labels", {}),
     ],
 )
-def test_property_default_values(dataset_plot, attribute, default_value):
+def test_property_default_values(dataset_plot, attribute, default_value) -> None:
     """Check the default values of properties."""
     assert getattr(dataset_plot, attribute) == default_value
 
@@ -111,13 +110,13 @@ def test_property_default_values(dataset_plot, attribute, default_value):
         ("labels", {"x": "dummy_label"}),
     ],
 )
-def test_setters(dataset_plot, attribute, value):
+def test_setters(dataset_plot, attribute, value) -> None:
     """Check the attribute setters."""
     setattr(dataset_plot, attribute, value)
     assert getattr(dataset_plot, attribute) == value
 
 
-def test_get_figure_and_axes_from_existing_fig_and_axes(dataset_plot, dataset):
+def test_get_figure_and_axes_from_existing_fig_and_axes(dataset_plot, dataset) -> None:
     """Check that get_figure_and_axes using fig and axes returns fig and axes."""
     fig, axes = plt.subplots()
     plot = Lines(dataset)
@@ -128,16 +127,16 @@ def test_get_figure_and_axes_from_existing_fig_and_axes(dataset_plot, dataset):
     assert axes.get_xlabel() == "foo"
 
 
-def test_get_figure_and_axes_from_scratch(dataset, dataset_plot):
+def test_get_figure_and_axes_from_scratch(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes without fig and axes returns new fig and axes."""
     with concretize_classes(MatplotlibPlot):
         plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, None)
     fig, axes = plot._get_figure_and_axes(None, None)
-    assert isinstance(fig, Figure)
+    assert isinstance(fig, MatplotlibFigure)
     assert isinstance(axes, Axes)
 
 
-def test_get_figure_and_axes_from_axes_only(dataset, dataset_plot):
+def test_get_figure_and_axes_from_axes_only(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes with axes and without fig raises a ValueError."""
     _, axes = plt.subplots()
     with concretize_classes(MatplotlibPlot):
@@ -148,7 +147,7 @@ def test_get_figure_and_axes_from_axes_only(dataset, dataset_plot):
         plot._get_figure_and_axes(None, axes)
 
 
-def test_get_figure_and_axes_from_figure_only(dataset, dataset_plot):
+def test_get_figure_and_axes_from_figure_only(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes without axes and with fig raises a ValueError."""
     fig, _ = plt.subplots()
     with concretize_classes(MatplotlibPlot):
@@ -169,12 +168,12 @@ def test_get_figure_and_axes_from_figure_only(dataset, dataset_plot):
         ({"file_path": Path("foo") / "bar.png"}, True, Path("foo") / "bar.png"),
     ],
 )
-def test_save(yvsx, tmp_wd, kwargs, expected, relative):
+def test_save(yvsx, tmp_wd, kwargs, expected, relative) -> None:
     """Check that saving works correctly."""
     if "directory_path" in kwargs:
         Path(kwargs["directory_path"]).mkdir()
 
-    if "file_path" in kwargs and Path(kwargs["file_path"]).parent != Path("."):
+    if "file_path" in kwargs and Path(kwargs["file_path"]).parent != Path():
         Path(kwargs["file_path"]).parent.mkdir()
 
     yvsx.execute(save=True, **kwargs)
@@ -183,12 +182,12 @@ def test_save(yvsx, tmp_wd, kwargs, expected, relative):
     assert yvsx.output_files == [str(file_path)]
 
 
-def test_plot_settings(yvsx):
+def test_plot_settings(yvsx) -> None:
     """Check that properties and setters read and write plot settings."""
-    for field in fields(yvsx._common_settings):
-        name = field.name
-        assert getattr(yvsx, name) == getattr(yvsx._common_settings, name)
-        setattr(yvsx, name, "foo")
+    for name in yvsx._common_settings.model_fields:
+        attribute_name = "_n_items" if name == "n_items" else name
+        assert getattr(yvsx, attribute_name) == getattr(yvsx._common_settings, name)
+        setattr(yvsx, attribute_name, "foo")
         assert getattr(yvsx._common_settings, name) == "foo"
 
 
@@ -203,14 +202,14 @@ def lines() -> Lines:
     )
 
 
-def test_save_plotly(lines, tmp_wd):
+def test_save_plotly(lines, tmp_wd) -> None:
     """Check that a plotly-based plot can be saved."""
     lines.execute(file_format="html")
     assert lines.output_files == [str(tmp_wd / "lines.html")]
     assert Path("lines.html").exists()
 
 
-def test_save_plotly_as_image(lines, tmp_wd):
+def test_save_plotly_as_image(lines, tmp_wd) -> None:
     """Check that a plotly-based plot can be saved as an image."""
     lines.DEFAULT_PLOT_ENGINE = lines.PlotEngine.PLOTLY
     with mock.patch.object(PlotlyFigure, "write_image") as write_image:
@@ -224,7 +223,7 @@ def test_save_plotly_as_image(lines, tmp_wd):
     }
 
 
-def test_show_plotly(lines):
+def test_show_plotly(lines) -> None:
     """Check that a plotly-based plot can be displayed."""
     with mock.patch.object(PlotlyFigure, "show") as show:
         lines.execute(save=False, show=True, file_format="html")
@@ -232,10 +231,24 @@ def test_show_plotly(lines):
     assert show.called
 
 
-def test_show_matplotlib(lines):
+def test_show_matplotlib(lines) -> None:
     """Check that a matplotlib-based plot can be displayed."""
     with mock.patch.object(plot, "save_show_figure") as save_show_figure:
         figures = lines.execute(save=False, show=True)
 
     assert save_show_figure.assert_called_once
     assert save_show_figure.call_args.args == (figures[0], True, "")
+
+
+@pytest.mark.parametrize(
+    ("file_format", "expected_figure_type"),
+    [
+        ("", MatplotlibFigure),
+        ("html", PlotlyFigure),
+    ],
+)
+def test_figures_property(lines, file_format, expected_figure_type):
+    """Check that the figures generated by the DatasetPlot can be accessed."""
+    lines.execute(save=False, show=False, file_format=file_format)
+    for fig in lines.figures:
+        assert isinstance(fig, expected_figure_type)

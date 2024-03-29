@@ -45,13 +45,8 @@ from gemseo.utils.testing.helpers import image_comparison
 )
 @image_comparison(None)
 def test_common_scenario(
-    variable_names,
-    use_standardized_objective,
-    options,
-    baseline_images,
-    common_problem,
-    pyplot_close_all,
-):
+    variable_names, use_standardized_objective, options, baseline_images, common_problem
+) -> None:
     """Check BasicHistory with objective, standardized or not."""
     opt = BasicHistory(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
@@ -60,7 +55,7 @@ def test_common_scenario(
 
 @pytest.mark.parametrize("baseline_images", [("BasicHistory_many_iterations",)])
 @image_comparison(None)
-def test_large_common_scenario(baseline_images, large_common_problem, pyplot_close_all):
+def test_large_common_scenario(baseline_images, large_common_problem) -> None:
     """Check BasicHistory with a common problem and many iterations."""
     opt = BasicHistory(large_common_problem)
     opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)

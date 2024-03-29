@@ -28,6 +28,7 @@ from numpy import array
 
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -48,7 +49,7 @@ def power_2() -> Power2:
 
 
 class MyDriver(DriverLibrary):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.descriptions = {"algo_name": None}
 
@@ -64,7 +65,7 @@ def optimization_problem():
     return problem
 
 
-def test_empty_design_space():
+def test_empty_design_space() -> None:
     """Check that a driver cannot be executed with an empty design space."""
     with concretize_classes(MyDriver):
         driver = MyDriver()
@@ -79,7 +80,7 @@ def test_empty_design_space():
         driver._check_algorithm("algo_name", OptimizationProblem(DesignSpace()))
 
 
-def test_max_iter_fail(optimization_problem):
+def test_max_iter_fail(optimization_problem) -> None:
     """Check that a ValueError is raised for an invalid `max_iter` input."""
     with concretize_classes(MyDriver):
         MyDriver()._pre_run(optimization_problem, None)
@@ -88,34 +89,40 @@ def test_max_iter_fail(optimization_problem):
             MyDriver().init_iter_observer(max_iter=-1)
 
 
-def test_no_algo_fail(optimization_problem):
+def test_no_algo_fail(optimization_problem) -> None:
     """Check that a ValueError is raised when no algorithm name is set."""
-    with pytest.raises(
-        ValueError,
-        match="Algorithm name must be either passed as "
-        "argument or set by the attribute 'algo_name'.",
-    ), concretize_classes(MyDriver):
+    with (
+        pytest.raises(
+            ValueError,
+            match="Algorithm name must be either passed as "
+            "argument or set by the attribute 'algo_name'.",
+        ),
+        concretize_classes(MyDriver),
+    ):
         MyDriver().execute(optimization_problem)
 
 
-def test_grammar_fail():
+def test_grammar_fail() -> None:
     """Check that a ValueError is raised when the grammar file is not found."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            "Neither the options grammar file .+ for the algorithm 'unknown' "
-            "nor the options grammar file .+ for the library 'DriverLibrary' "
-            "has been found."
+    with (
+        pytest.raises(
+            ValueError,
+            match=(
+                "Neither the options grammar file .+ for the algorithm 'unknown' "
+                "nor the options grammar file .+ for the library 'DriverLibrary' "
+                "has been found."
+            ),
         ),
-    ), concretize_classes(DriverLibrary):
+        concretize_classes(DriverLibrary),
+    ):
         DriverLibrary().init_options_grammar("unknown")
 
 
-def test_require_grad():
+def test_require_grad() -> None:
     """Check that an error is raised when a particular gradient method is not given."""
 
     class MyDriver(DriverLibrary):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.descriptions = {
                 "SLSQP": DriverDescription(
@@ -135,20 +142,20 @@ def test_require_grad():
 @pytest.mark.parametrize(
     ("kwargs", "expected"), [({}, "    50%|"), ({"message": "foo"}, "foo  50%|")]
 )
-def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected):
+def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected) -> None:
     """Test the new iteration callback."""
     with concretize_classes(DriverLibrary):
         test_driver = DriverLibrary()
     test_driver.problem = power_2
     test_driver._max_time = 0
     test_driver.init_iter_observer(max_iter=2, **kwargs)
-    test_driver.new_iteration_callback()
-    test_driver.new_iteration_callback()
+    test_driver.new_iteration_callback(array([0, 0]))
+    test_driver.new_iteration_callback(array([0, 0]))
     assert expected in caplog.text
 
 
 @pytest.mark.parametrize("activate_progress_bar", [False, True])
-def test_progress_bar(activate_progress_bar):
+def test_progress_bar(activate_progress_bar, caplog) -> None:
     """Check the activation of the progress bar from the options of a DriverLibrary."""
     driver = OptimizersFactory().create("SLSQP")
     driver.execute(Power2(), activate_progress_bar=activate_progress_bar)
@@ -156,9 +163,12 @@ def test_progress_bar(activate_progress_bar):
         isinstance(driver._DriverLibrary__progress_bar, ProgressBar)
         is activate_progress_bar
     )
+    assert (
+        "Solving optimization problem with algorithm SLSQP" in caplog.text
+    ) is activate_progress_bar
 
 
-def test_common_options():
+def test_common_options() -> None:
     """Check that the options common to all the drivers are in the option grammar."""
     with concretize_classes(MyDriver):
         driver = MyDriver()
@@ -190,7 +200,7 @@ def driver_library() -> DriverLibrary:
 )
 def test_get_x0_and_bounds_vects_normalized_as_ndarrays(
     driver_library, as_dict, x0, lower_bounds, upper_bounds
-):
+) -> None:
     """Check the getting of the normalized initial values and bounds."""
     assert driver_library.get_x0_and_bounds_vects(True, as_dict) == (
         pytest.approx(x0),
@@ -205,10 +215,20 @@ def test_get_x0_and_bounds_vects_normalized_as_ndarrays(
 )
 def test_get_x0_and_bounds_vects_non_normalized(
     driver_library, as_dict, x0, lower_bounds, upper_bounds
-):
+) -> None:
     """Check the getting of the non-normalized initial values and bounds."""
     assert driver_library.get_x0_and_bounds_vects(False, as_dict) == (
         x0,
         lower_bounds,
         upper_bounds,
     )
+
+
+@pytest.mark.parametrize("name", ["new_iter_listener", "store_listener"])
+def test_clear_listeners(name):
+    """Check clear_listeners."""
+    problem = Power2()
+    getattr(problem.database, f"add_{name}")(sum)
+    driver = CustomDOE()
+    driver.execute(problem, samples=array([[1, 2, 3]]))
+    assert getattr(problem.database, f"_Database__{name}s") == [sum]

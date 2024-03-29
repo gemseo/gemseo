@@ -39,7 +39,7 @@ class FakeDiscipline(MDODiscipline):
         input_grammar_file,
         output_grammar_file,
         grammar_type=MDODiscipline.GrammarType.JSON,
-    ):
+    ) -> None:
         """
 
         :param input_grammar_file: param output_grammar_file:
@@ -74,9 +74,9 @@ class FormulationsBaseTest(unittest.TestCase):
         design_space = SobieskiDesignSpace()
         return MDOScenario(
             disciplines,
-            formulation=formulation,
-            objective_name="y_4",
-            design_space=design_space,
+            formulation,
+            "y_4",
+            design_space,
             maximize_objective=True,
             **options,
         )

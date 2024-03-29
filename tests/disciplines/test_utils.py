@@ -68,7 +68,7 @@ def disciplines_and_scenario() -> list[MDODiscipline]:
     ("skip_scenarios", "expected"),
     [(True, ["x1", "x2"]), (False, ["x1", "x2", "xa", "xb"])],
 )
-def test_get_all_inputs(disciplines_and_scenario, skip_scenarios, expected):
+def test_get_all_inputs(disciplines_and_scenario, skip_scenarios, expected) -> None:
     """Check get_all_inputs."""
     assert get_all_inputs(disciplines_and_scenario, skip_scenarios) == expected
 
@@ -77,7 +77,7 @@ def test_get_all_inputs(disciplines_and_scenario, skip_scenarios, expected):
     ("skip_scenarios", "expected"),
     [(True, ["y1", "y2"]), (False, ["y1", "y2", "ya", "yb"])],
 )
-def test_get_all_outputs(disciplines_and_scenario, skip_scenarios, expected):
+def test_get_all_outputs(disciplines_and_scenario, skip_scenarios, expected) -> None:
     """Check get_all_outputs."""
     assert get_all_outputs(disciplines_and_scenario, skip_scenarios) == expected
 
@@ -86,14 +86,14 @@ def test_get_all_outputs(disciplines_and_scenario, skip_scenarios, expected):
 @pytest.mark.parametrize("raise_error", [False, True])
 def test_check_disciplines_consistency(
     consistent_disciplines, log_message, raise_error
-):
+) -> None:
     """Test check_disciplines_consistency with consistent disciplines."""
     assert check_disciplines_consistency(
         consistent_disciplines, log_message, raise_error
     )
 
 
-def test_check_disciplines_consistency_log(inconsistent_disciplines, caplog):
+def test_check_disciplines_consistency_log(inconsistent_disciplines, caplog) -> None:
     """Test check_disciplines_consistency with inconsistent disciplines and log mode."""
     assert not check_disciplines_consistency(inconsistent_disciplines, True, False)
     record = caplog.record_tuples[0]
@@ -103,7 +103,7 @@ def test_check_disciplines_consistency_log(inconsistent_disciplines, caplog):
     )
 
 
-def test_check_disciplines_consistency_error(inconsistent_disciplines, caplog):
+def test_check_disciplines_consistency_error(inconsistent_disciplines, caplog) -> None:
     """Test check_disciplines_consistency with inconsistent disciplines and log mode."""
     with pytest.raises(
         ValueError,

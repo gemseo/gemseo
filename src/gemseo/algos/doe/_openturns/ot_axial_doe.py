@@ -16,11 +16,15 @@
 
 from __future__ import annotations
 
+import logging
+from typing import ClassVar
 from typing import Final
 
 from openturns import Axial
 
 from gemseo.algos.doe._openturns.base_ot_stratified_doe import BaseOTStratifiedDOE
+
+LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 
 
 class OTAxialDOE(BaseOTStratifiedDOE):
@@ -29,4 +33,32 @@ class OTAxialDOE(BaseOTStratifiedDOE):
     .. note:: This class is a singleton.
     """
 
-    _ALGO_CLASS: Final[type[Axial]] = Axial
+    _ALGO_CLASS: ClassVar[type[Axial]] = Axial
+
+    @staticmethod
+    def _compute_n_levels(n_samples: int, dimension: int) -> int:
+        """
+        Raises:
+            ValueError: When the number of samples is too small.
+        """  # noqa: D205, D212
+        n_levels = int((n_samples - 1) / 2 / dimension)
+        if n_levels < 1:
+            msg = (
+                f"An axial DOE in dimension d={dimension} "
+                f"requires at least 1+2*d={1 + 2 * dimension} samples; got {n_samples}."
+            )
+            raise ValueError(msg)
+
+        final_n_samples = 1 + 2 * dimension * n_levels
+        if n_samples > final_n_samples:
+            LOGGER.warning(
+                (
+                    "An axial DOE of %s samples in dimension %s does not exist; "
+                    "use %s samples instead."
+                ),
+                n_samples,
+                dimension,
+                final_n_samples,
+            )
+
+        return n_levels

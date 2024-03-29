@@ -122,7 +122,9 @@ def untrained_pce(dataset, probability_space) -> PCERegressor:
     return PCERegressor(dataset, probability_space)
 
 
-def test_discipline_and_data_with_quadrature(dataset, discipline, probability_space):
+def test_discipline_and_data_with_quadrature(
+    dataset, discipline, probability_space
+) -> None:
     """Check that quadrature cannot be used with both a dataset and a discipline."""
     with pytest.raises(
         ValueError,
@@ -135,7 +137,7 @@ def test_discipline_and_data_with_quadrature(dataset, discipline, probability_sp
         )
 
 
-def test_no_discipline_and_no_data_with_quadrature(probability_space):
+def test_no_discipline_and_no_data_with_quadrature(probability_space) -> None:
     """Check that quadrature requires either a dataset or a discipline."""
     with pytest.raises(
         ValueError,
@@ -144,7 +146,7 @@ def test_no_discipline_and_no_data_with_quadrature(probability_space):
         PCERegressor(None, probability_space, discipline=None, use_quadrature=True)
 
 
-def test_lars_with_quadrature(discipline, probability_space):
+def test_lars_with_quadrature(discipline, probability_space) -> None:
     """Check that LARS is not applicable with quadrature."""
     with pytest.raises(
         ValueError,
@@ -159,7 +161,7 @@ def test_lars_with_quadrature(discipline, probability_space):
         )
 
 
-def test_no_dataset_with_least_square(probability_space, discipline):
+def test_no_dataset_with_least_square(probability_space, discipline) -> None:
     """Check that least square requires a dataset."""
     with pytest.raises(
         ValueError,
@@ -168,7 +170,7 @@ def test_no_dataset_with_least_square(probability_space, discipline):
         PCERegressor(None, probability_space)
 
 
-def test_discipline_with_least_square(probability_space, dataset, discipline):
+def test_discipline_with_least_square(probability_space, dataset, discipline) -> None:
     """Check that least square does not require a discipline."""
     with pytest.raises(
         ValueError,
@@ -177,12 +179,12 @@ def test_discipline_with_least_square(probability_space, dataset, discipline):
         PCERegressor(dataset, probability_space, discipline=discipline)
 
 
-def test_input_names_with_least_square(dataset, probability_space):
+def test_input_names_with_least_square(dataset, probability_space) -> None:
     """Check the input names with least square."""
     assert PCERegressor(dataset, probability_space).input_names == ["x1", "x2"]
 
 
-def test_input_names_with_quadrature(discipline, probability_space):
+def test_input_names_with_quadrature(discipline, probability_space) -> None:
     """Check the input names with quadrature."""
     pce = PCERegressor(
         None, probability_space, discipline=discipline, use_quadrature=True
@@ -190,7 +192,7 @@ def test_input_names_with_quadrature(discipline, probability_space):
     assert pce.input_names == ["x1", "x2"]
 
 
-def test_missing_random_variables(dataset):
+def test_missing_random_variables(dataset) -> None:
     """Check that a ValueError is raised when a random variable has no distribution."""
     probability_space = ParameterSpace()
     probability_space.add_random_variable("x1", "SPNormalDistribution")
@@ -205,7 +207,7 @@ def test_missing_random_variables(dataset):
 
 
 @pytest.mark.parametrize("key", ["inputs", "x1", "x2"])
-def test_transformer(dataset, probability_space, key):
+def test_transformer(dataset, probability_space, key) -> None:
     """Check that transforming the input data raises an error."""
     with pytest.raises(
         ValueError, match="PCERegressor does not support input transformers."
@@ -213,7 +215,7 @@ def test_transformer(dataset, probability_space, key):
         PCERegressor(dataset, probability_space, transformer={key: "MinMaxScaler"})
 
 
-def test_ot_distribution(dataset):
+def test_ot_distribution(dataset) -> None:
     """Check that PCERegressor handles only the OTDistribution instances."""
     probability_space = ParameterSpace()
     probability_space.add_random_variable("x1", "SPUniformDistribution")
@@ -228,14 +230,14 @@ def test_ot_distribution(dataset):
         PCERegressor(dataset, probability_space)
 
 
-def test_initialized_attributes(dataset, probability_space):
+def test_initialized_attributes(dataset, probability_space) -> None:
     """Check the value of some attributes after instantiation."""
     pce = PCERegressor(dataset, probability_space)
     assert pce._PCERegressor__input_dimension == 2
     assert pce._PCERegressor__cleaning == CleaningOptions()
 
 
-def test_set_cleaning_options(dataset, probability_space):
+def test_set_cleaning_options(dataset, probability_space) -> None:
     """Check the setting of cleaning options."""
     cleaning_options = CleaningOptions(
         max_considered_terms=128, most_significant=24, significance_factor=1e-3
@@ -253,7 +255,7 @@ def test_learn_linear_model_with_least_square(
     use_lars,
     use_cleaning,
     hyperbolic_parameter,
-):
+) -> None:
     """Check the learning stage with least square regression.
 
     A PCE with a degree equal to 1 shall be able to the linear very precisely whatever
@@ -282,7 +284,7 @@ def test_learn_linear_model_with_quadrature_and_discipline(
     hyperbolic_parameter,
     dataset_is_none,
     n_quadrature_points,
-):
+) -> None:
     """Check the learning stage with quadrature rule and discipline.
 
     A PCE with a degree equal to 1 shall be able to the linear very precisely whatever
@@ -306,7 +308,7 @@ def test_learn_linear_model_with_quadrature_and_discipline(
 @pytest.mark.parametrize("hyperbolic_parameter", [0.4, 1.0])
 def test_learn_linear_model_with_quadrature_and_quadrature_points(
     quadrature_points, probability_space, use_cleaning, hyperbolic_parameter
-):
+) -> None:
     """Check the learning stage with quadrature rule and quadrature points.
 
     A PCE with a degree equal to 1 shall be able to the linear very precisely whatever
@@ -328,7 +330,7 @@ def test_learn_linear_model_with_quadrature_and_quadrature_points(
 )
 def test_learning_hyperbolic_parameter(
     ishigami_dataset, ishigami_probability_space, hyperbolic_parameter, n_coefficients
-):
+) -> None:
     """Check that the larger the hyperbolic parameter, the fewer the coefficients."""
     pce = PCERegressor(
         ishigami_dataset,
@@ -343,7 +345,7 @@ def test_learning_hyperbolic_parameter(
 @pytest.mark.parametrize(("use_lars", "n_coefficients"), [(False, 20), (True, 5)])
 def test_learning_lars(
     ishigami_dataset, ishigami_probability_space, use_lars, n_coefficients
-):
+) -> None:
     """Check that the LARS algorithm removes terms to the PCE."""
     pce = PCERegressor(
         ishigami_dataset,
@@ -358,7 +360,7 @@ def test_learning_lars(
 @pytest.mark.parametrize(("use_cleaning", "n_coefficients"), [(False, 20), (True, 5)])
 def test_learning_cleaning(
     ishigami_dataset, ishigami_probability_space, use_cleaning, n_coefficients
-):
+) -> None:
     """Check that the cleaning algorithm removes terms to the PCE."""
     pce = PCERegressor(
         ishigami_dataset,
@@ -389,7 +391,7 @@ def test_learning_cleaning_options_logging(
     most_significant,
     messages,
     caplog,
-):
+) -> None:
     """Check the messages logged when the cleaning options are inconsistent."""
     caplog.set_level("WARNING")
     pce = PCERegressor(
@@ -413,7 +415,7 @@ def test_learning_cleaning_options_logging(
 @pytest.mark.parametrize(("max_considered_terms", "n_coefficients"), [(18, 5), (10, 3)])
 def test_learning_cleaning_max_considered_terms(
     ishigami_dataset, ishigami_probability_space, max_considered_terms, n_coefficients
-):
+) -> None:
     """Check the effect of the cleaning option ``max_considered_terms``."""
     pce = PCERegressor(
         ishigami_dataset,
@@ -433,7 +435,7 @@ def test_learning_cleaning_max_considered_terms(
 )
 def test_learning_cleaning_most_significant(
     ishigami_dataset, ishigami_probability_space, most_significant, n_coefficients
-):
+) -> None:
     """Check the effect of the cleaning option ``most_significant``."""
     pce = PCERegressor(
         ishigami_dataset,
@@ -454,7 +456,7 @@ def test_learning_cleaning_most_significant(
 )
 def test_learning_cleaning_significance_factor(
     ishigami_dataset, ishigami_probability_space, significance_factor, n_coefficients
-):
+) -> None:
     """Check the effect of the cleaning option ``significance_factor``."""
     pce = PCERegressor(
         ishigami_dataset,
@@ -470,7 +472,7 @@ def test_learning_cleaning_significance_factor(
 
 
 @pytest.mark.parametrize("after", [False, True])
-def test_deepcopy(dataset, probability_space, after):
+def test_deepcopy(dataset, probability_space, after) -> None:
     """Check that a model can be deepcopied before or after learning."""
     model = PCERegressor(dataset, probability_space)
     if after:
@@ -484,7 +486,7 @@ def test_deepcopy(dataset, probability_space, after):
     assert_equal(model.predict(input_data), model_copy.predict(input_data))
 
 
-def test_prediction_jacobian(pce):
+def test_prediction_jacobian(pce) -> None:
     """Check the prediction of the Jacobian."""
     assert compare_dict_of_arrays(
         pce.predict_jacobian({"x1": array([1.0]), "x2": array([2.0])}),
@@ -507,7 +509,7 @@ def test_prediction_jacobian(pce):
         ("total", [{"x1": 0.31, "x2": 0.69}, {"x1": 0.31, "x2": 0.69}]),
     ],
 )
-def test_sobol(pce, order, expected):
+def test_sobol(pce, order, expected) -> None:
     """Check the computation of Sobol' indices."""
     computed = getattr(pce, f"{order}_sobol_indices")
     assert len(computed) == len(expected)
@@ -515,7 +517,7 @@ def test_sobol(pce, order, expected):
         assert compare_dict_of_arrays(value1, value2, 0.01)
 
 
-def test_mean_cov_var_std(pce):
+def test_mean_cov_var_std(pce) -> None:
     """Check the mean, covariance, variance and standard deviation."""
     vector = FunctionalChaosRandomVector(pce.algo)
     mean = pce.mean
@@ -547,7 +549,7 @@ def test_mean_cov_var_std(pce):
         "total_sobol_indices",
     ],
 )
-def test_check_is_trained(untrained_pce, name):
+def test_check_is_trained(untrained_pce, name) -> None:
     """Check that a RuntimeError is raised when accessing properties before training."""
     with pytest.raises(
         RuntimeError,
@@ -556,7 +558,7 @@ def test_check_is_trained(untrained_pce, name):
         getattr(untrained_pce, name)
 
 
-def test_save_load_with_pickle(pce, tmp_wd):
+def test_save_load_with_pickle(pce, tmp_wd) -> None:
     """Check some attributes are correctly with pickle."""
     with open("model.pkl", "wb") as f:
         dump(pce, f)
@@ -574,7 +576,7 @@ def test_save_load_with_pickle(pce, tmp_wd):
     assert model._total_order_sobol_indices
 
 
-def test_save_load(pce, tmp_wd):
+def test_save_load(pce, tmp_wd) -> None:
     """Check some attributes are correctly loaded."""
     directory_path = pce.to_pickle("my_model")
     model = import_regression_model(directory_path)
@@ -588,7 +590,7 @@ def test_save_load(pce, tmp_wd):
     assert model._total_order_sobol_indices
 
 
-def test_multidimensional_variables():
+def test_multidimensional_variables() -> None:
     """Check that a PCERegressor can be built from multidimensional variables."""
 
     # First,

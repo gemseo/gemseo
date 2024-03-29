@@ -25,11 +25,11 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.scalable.data_driven.factory import ScalableModelFactory
 
 
-def test_constructor():
+def test_constructor() -> None:
     ScalableModelFactory()
 
 
-def test_create():
+def test_create() -> None:
     factory = ScalableModelFactory()
     dataset = IODataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])
@@ -39,11 +39,11 @@ def test_create():
     factory.create("ScalableDiagonalModel", data=dataset)
 
 
-def test_list_available():
+def test_list_available() -> None:
     factory = ScalableModelFactory()
     assert "ScalableDiagonalModel" in factory.scalable_models
 
 
-def test_is_available():
+def test_is_available() -> None:
     factory = ScalableModelFactory()
     assert factory.is_available("ScalableDiagonalModel")

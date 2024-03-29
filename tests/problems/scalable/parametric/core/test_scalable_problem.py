@@ -20,12 +20,12 @@ from numpy.random import default_rng
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 
-from gemseo import SEED
 from gemseo.problems.scalable.parametric.core.scalable_discipline_settings import (
     ScalableDisciplineSettings,
 )
 from gemseo.problems.scalable.parametric.core.scalable_problem import ScalableProblem
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.seeder import SEED
 
 
 @pytest.fixture(scope="module")
@@ -47,7 +47,7 @@ def custom_scalable_problem() -> ScalableProblem():
     )
 
 
-def test_str(default_scalable_problem):
+def test_str(default_scalable_problem) -> None:
     """Check the string representation of a scalable problem."""
     expected = """Scalable problem
    MainDiscipline
@@ -76,7 +76,7 @@ def test_str(default_scalable_problem):
     assert repr(default_scalable_problem) == str(default_scalable_problem) == expected
 
 
-def test_repr_html(default_scalable_problem):
+def test_repr_html(default_scalable_problem) -> None:
     """Check the string representation of a scalable problem."""
     assert default_scalable_problem._repr_html_() == REPR_HTML_WRAPPER.format(
         "Scalable problem<br/>"
@@ -135,7 +135,7 @@ def test_repr_html(default_scalable_problem):
     )
 
 
-def test_instance_seed(default_scalable_problem):
+def test_instance_seed(default_scalable_problem) -> None:
     """Check the use of the NumPy seed for reproducibility."""
     beta = ScalableProblem()._ScalableProblem__beta.sum()
 
@@ -146,12 +146,12 @@ def test_instance_seed(default_scalable_problem):
     assert ScalableProblem(seed=2)._ScalableProblem__beta.sum() != beta
 
 
-def test_total_output_size(custom_scalable_problem):
+def test_total_output_size(custom_scalable_problem) -> None:
     """Check the total output size."""
     assert custom_scalable_problem._p == 6
 
 
-def test_discipline_names(custom_scalable_problem):
+def test_discipline_names(custom_scalable_problem) -> None:
     """Check the disciplines of the custom scalable problem."""
     assert [discipline.name for discipline in custom_scalable_problem.disciplines] == [
         "MainDiscipline",
@@ -161,7 +161,7 @@ def test_discipline_names(custom_scalable_problem):
     ]
 
 
-def test_main_discipline(default_scalable_problem):
+def test_main_discipline(default_scalable_problem) -> None:
     """Check the property main_discipline."""
     assert (
         default_scalable_problem.main_discipline
@@ -169,7 +169,7 @@ def test_main_discipline(default_scalable_problem):
     )
 
 
-def test_scalable_disciplines(default_scalable_problem):
+def test_scalable_disciplines(default_scalable_problem) -> None:
     """Check the property scalable_disciplines."""
     assert (
         default_scalable_problem.scalable_disciplines
@@ -177,7 +177,7 @@ def test_scalable_disciplines(default_scalable_problem):
     )
 
 
-def test_scalable_discipline_coefficients(default_scalable_problem):
+def test_scalable_discipline_coefficients(default_scalable_problem) -> None:
     """Check the coefficients of the scalable disciplines."""
     rng = default_rng(SEED)
     for scalable_discipline, coupling_name in zip(
@@ -190,13 +190,13 @@ def test_scalable_discipline_coefficients(default_scalable_problem):
         assert_equal(coefficients.a_i, rng.random(1))
 
 
-def test_main_discipline_coefficients(default_scalable_problem):
+def test_main_discipline_coefficients(default_scalable_problem) -> None:
     """Check the coefficients of the main disciplines."""
     coefficients = default_scalable_problem.main_discipline._MainDiscipline__t_i
     assert_almost_equal(coefficients, array([[-0.519], [-0.519]]), decimal=3)
 
 
-def test_coefficients_custom(custom_scalable_problem):
+def test_coefficients_custom(custom_scalable_problem) -> None:
     """Check the coefficients."""
     rng = default_rng(SEED)
     for p_i, d_i, scalable_discipline, couplings in zip(
@@ -219,7 +219,7 @@ def test_coefficients_custom(custom_scalable_problem):
     assert_almost_equal(coefficients[2], array([-0.59]), decimal=3)
 
 
-def test_qp_problem(default_scalable_problem):
+def test_qp_problem(default_scalable_problem) -> None:
     """Check the quadratic programming problem resulting from the scalable one."""
     problem = default_scalable_problem.qp_problem
     assert_almost_equal(
@@ -250,7 +250,7 @@ def test_qp_problem(default_scalable_problem):
     )
 
 
-def test_compute_y(default_scalable_problem):
+def test_compute_y(default_scalable_problem) -> None:
     """Check the method compute_y."""
     x = array([1.0, 1.0, 1.0])
     alpha = default_scalable_problem._ScalableProblem__alpha
@@ -260,7 +260,7 @@ def test_compute_y(default_scalable_problem):
     assert_almost_equal(output, alpha + beta @ x)
 
 
-def test_feasibility(default_scalable_problem):
+def test_feasibility(default_scalable_problem) -> None:
     """Check the feasibility level."""
     assert (
         ScalableProblem(alpha=0.9).main_discipline()["c_1"]
@@ -269,7 +269,7 @@ def test_feasibility(default_scalable_problem):
     )
 
 
-def test_add_random_variables():
+def test_add_random_variables() -> None:
     """Check add_random_variables."""
     problem = ScalableProblem()
     assert "u_1" not in problem.scalable_disciplines[0].input_names_to_default_values

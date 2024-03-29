@@ -75,11 +75,11 @@ are estimated either by least-squares regression or a quadrature rule.
 In the case of least-squares regression,
 a sparse strategy can be considered with the `LARS`_ algorithm
 and in both cases,
-the `CleaningStrategy` can also remove the non-significant coefficients.
+the ``CleaningStrategy`` can also remove the non-significant coefficients.
 
 Dependence
 ----------
-The PCE model relies on the OpenTURNS class `FunctionalChaosAlgorithm`_.
+The PCE model relies on the OpenTURNS class ``FunctionalChaosAlgorithm``.
 """  # noqa: E501
 
 from __future__ import annotations
@@ -221,29 +221,28 @@ class PCERegressor(MLRegressionAlgo):
 
         if use_quadrature:
             if discipline is None and data is None:
-                raise ValueError(
-                    "The quadrature rule requires either data or discipline."
-                )
+                msg = "The quadrature rule requires either data or discipline."
+                raise ValueError(msg)
 
             if discipline is not None and data is not None and len(data):
-                raise ValueError(
-                    "The quadrature rule requires data or discipline but not both."
-                )
+                msg = "The quadrature rule requires data or discipline but not both."
+                raise ValueError(msg)
 
             if use_lars:
-                raise ValueError("LARS is not applicable with the quadrature rule.")
+                msg = "LARS is not applicable with the quadrature rule."
+                raise ValueError(msg)
 
             if data is None:
                 data = IODataset()
 
         else:
             if data is None:
-                raise ValueError("The least-squares regression requires data.")
+                msg = "The least-squares regression requires data."
+                raise ValueError(msg)
 
             if discipline is not None:
-                raise ValueError(
-                    "The least-squares regression does not require a discipline."
-                )
+                msg = "The least-squares regression does not require a discipline."
+                raise ValueError(msg)
 
         super().__init__(
             data,
@@ -265,18 +264,20 @@ class PCERegressor(MLRegressionAlgo):
         if not data.empty:
             missing = set(self.input_names) - set(probability_space.uncertain_variables)
             if missing:
-                raise ValueError(
+                msg = (
                     "The probability space does not contain "
                     "the probability distributions "
                     f"of the random input variables: {pretty_str(missing)}."
                 )
+                raise ValueError(msg)
 
         if [
             key
             for key in self.transformer
             if key in self.input_names or key == IODataset.INPUT_GROUP
         ]:
-            raise ValueError("PCERegressor does not support input transformers.")
+            msg = "PCERegressor does not support input transformers."
+            raise ValueError(msg)
 
         distributions = probability_space.distributions
         wrongly_distributed_random_variable_names = [
@@ -287,11 +288,12 @@ class PCERegressor(MLRegressionAlgo):
             )
         ]
         if wrongly_distributed_random_variable_names:
-            raise ValueError(
+            msg = (
                 "The probability distributions of the random variables "
                 f"{pretty_str(wrongly_distributed_random_variable_names)} "
                 "are not instances of OTComposedDistribution."
             )
+            raise ValueError(msg)
 
         self.__variable_sizes = probability_space.variable_sizes
         self.__input_dimension = sum(
@@ -393,7 +395,6 @@ class PCERegressor(MLRegressionAlgo):
                 self.__cleaning.max_considered_terms,
                 self.__cleaning.most_significant,
                 self.__cleaning.significance_factor,
-                True,
             )
         else:
             truncation_strategy = FixedStrategy(
@@ -513,7 +514,7 @@ class PCERegressor(MLRegressionAlgo):
                 }
                 for first_name in self.input_names
             }
-            for output_index in range(self.output_dimension)
+            for output_index in range(self._reduced_output_dimension)
         ]
         for names_to_names_to_indices in self._second_order_sobol_indices:
             for input_name, names_to_indices in names_to_names_to_indices.items():
@@ -547,7 +548,7 @@ class PCERegressor(MLRegressionAlgo):
                 ])
                 for input_name in self.input_names
             }
-            for output_index in range(self.output_dimension)
+            for output_index in range(self._reduced_output_dimension)
         ]
         if use_first:
             self._first_order_sobol_indices = indices
@@ -618,8 +619,11 @@ class PCERegressor(MLRegressionAlgo):
         input_data: ndarray,
     ) -> ndarray:
         gradient = self._prediction_function.gradient
-        input_size, output_size = self._reduced_dimensions
-        jac = zeros((input_data.shape[0], output_size, input_size))
+        jac = zeros((
+            len(input_data),
+            self._reduced_output_dimension,
+            self._reduced_input_dimension,
+        ))
         for index, data in enumerate(input_data):
             jac[index] = array(gradient(Point(data))).T
 
@@ -627,43 +631,99 @@ class PCERegressor(MLRegressionAlgo):
 
     @property
     def mean(self) -> ndarray:
-        """The mean vector of the PCE model output."""
+        """The mean vector of the PCE model output.
+
+        .. warning::
+
+           This statistic is expressed in relation to the transformed output space.
+           You can sample the :meth:`.predict` method
+           to estimate it in relation to the original output space
+           if it is different from the transformed output space.
+        """
         self._check_is_trained()
         return self._mean
 
     @property
     def covariance(self) -> ndarray:
-        """The covariance matrix of the PCE model output."""
+        """The covariance matrix of the PCE model output.
+
+        .. warning::
+
+           This statistic is expressed in relation to the transformed output space.
+           You can sample the :meth:`.predict` method
+           to estimate it in relation to the original output space
+           if it is different from the transformed output space.
+        """
         self._check_is_trained()
         return self._covariance
 
     @property
     def variance(self) -> ndarray:
-        """The variance vector of the PCE model output."""
+        """The variance vector of the PCE model output.
+
+        .. warning::
+
+           This statistic is expressed in relation to the transformed output space.
+           You can sample the :meth:`.predict` method
+           to estimate it in relation to the original output space
+           if it is different from the transformed output space.
+        """
         self._check_is_trained()
         return self._variance
 
     @property
     def standard_deviation(self) -> ndarray:
-        """The standard deviation vector of the PCE model output."""
+        """The standard deviation vector of the PCE model output.
+
+        .. warning::
+
+           This statistic is expressed in relation to the transformed output space.
+           You can sample the :meth:`.predict` method
+           to estimate it in relation to the original output space
+           if it is different from the transformed output space.
+        """
         self._check_is_trained()
         return self._standard_deviation
 
     @property
     def first_sobol_indices(self) -> list[dict[str, float]]:
-        """The first-order Sobol' indices for the different output dimensions."""
+        """The first-order Sobol' indices for the different output components.
+
+        .. warning::
+
+           These statistics are expressed in relation to the transformed output space.
+           You can use a :class:`.SobolAnalysis`
+           to estimate them in relation to the original output space
+           if it is different from the transformed output space.
+        """
         self._check_is_trained()
         return self._first_order_sobol_indices
 
     @property
     def second_sobol_indices(self) -> list[dict[str, dict[str, float]]]:
-        """The second-order Sobol' indices for the different output dimensions."""
+        """The second-order Sobol' indices for the different output components.
+
+        .. warning::
+
+           These statistics are expressed in relation to the transformed output space.
+           You can use a :class:`.SobolAnalysis`
+           to estimate them in relation to the original output space
+           if it is different from the transformed output space.
+        """
         self._check_is_trained()
         return self._second_order_sobol_indices
 
     @property
     def total_sobol_indices(self) -> list[dict[str, float]]:
-        """The total Sobol' indices for the different output dimensions."""
+        """The total Sobol' indices for the different output components.
+
+        .. warning::
+
+           These statistics are expressed in relation to the transformed output space.
+           You can use a :class:`.SobolAnalysis`
+           to estimate them in relation to the original output space
+           if it is different from the transformed output space.
+        """
         self._check_is_trained()
         return self._total_order_sobol_indices
 

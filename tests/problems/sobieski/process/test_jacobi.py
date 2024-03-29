@@ -23,7 +23,7 @@ import pytest
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
 
-def test_exec_mda():
+def test_exec_mda() -> None:
     mda = SobieskiMDAJacobi()
     mda.execute()
     assert mda.get_outputs_by_name("y_4")[0] == pytest.approx(535.78213193, abs=1e-4)

@@ -34,7 +34,7 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
 
 
-def test_update_dict_from_val_arr():
+def test_update_dict_from_val_arr() -> None:
     """"""
     x = np.zeros(2)
     d = {"x": x}
@@ -50,7 +50,7 @@ def test_update_dict_from_val_arr():
         update_dict_of_arrays_from_array(*args)
 
 
-def test_get_values_array_from_dict():
+def test_get_values_array_from_dict() -> None:
     """"""
     x = np.zeros(2)
     data_dict = {"x": x}
@@ -60,7 +60,7 @@ def test_get_values_array_from_dict():
     assert out_x.size == 0
 
 
-def test_get_function():
+def test_get_function() -> None:
     """"""
     sr = SobieskiMission()
     gen = MDODisciplineAdapterGenerator(sr)
@@ -91,12 +91,12 @@ def test_get_function():
         gen.get_function(*args)
 
 
-def test_instanciation():
+def test_instanciation() -> None:
     """"""
     MDODisciplineAdapterGenerator(None)
 
 
-def test_range_discipline():
+def test_range_discipline() -> None:
     """"""
     sr = SobieskiMission()
     gen = MDODisciplineAdapterGenerator(sr)
@@ -109,7 +109,7 @@ def test_range_discipline():
     assert range_ == range2
 
 
-def test_grad_ko():
+def test_grad_ko() -> None:
     """"""
     sr = SobieskiMission()
     gen = MDODisciplineAdapterGenerator(sr)
@@ -122,7 +122,7 @@ def test_grad_ko():
         range_f_z.check_grad(x_shared, approximation_mode="toto")
 
 
-def test_wrong_default_inputs():
+def test_wrong_default_inputs() -> None:
     sr = SobieskiMission()
     sr.default_inputs = {"y_34": array([1])}
     gen = MDODisciplineAdapterGenerator(sr)
@@ -131,10 +131,10 @@ def test_wrong_default_inputs():
         range_f_z(array([1.0]))
 
 
-def test_wrong_jac():
+def test_wrong_jac() -> None:
     sr = SobieskiMission()
 
-    def _compute_jacobian_short(inputs, outputs):
+    def _compute_jacobian_short(inputs, outputs) -> None:
         SobieskiMission._compute_jacobian(sr, inputs, outputs)
         sr.jac["y_4"]["x_shared"] = sr.jac["y_4"]["x_shared"][:, :1]
 
@@ -145,10 +145,10 @@ def test_wrong_jac():
         range_f_z.jac(sr.default_inputs["x_shared"])
 
 
-def test_wrong_jac2():
+def test_wrong_jac2() -> None:
     sr = SobieskiMission()
 
-    def _compute_jacobian_long(inputs, outputs):
+    def _compute_jacobian_long(inputs, outputs) -> None:
         SobieskiMission._compute_jacobian(sr, inputs, outputs)
         sr.jac["y_4"]["x_shared"] = ones((1, 20))
 

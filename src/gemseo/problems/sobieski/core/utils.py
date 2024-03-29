@@ -27,7 +27,6 @@
 from __future__ import annotations
 
 import cmath
-import logging
 import math
 from typing import TYPE_CHECKING
 
@@ -43,8 +42,6 @@ from strenum import StrEnum
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from types import ModuleType
-
-LOGGER = logging.getLogger(__name__)
 
 
 DEG_TO_RAD = math.pi / 180.0
@@ -125,7 +122,8 @@ class SobieskiBase:
             self.math = math
             self.dtype = float64
         else:
-            raise ValueError(f"Unknown dtype: {dtype}.")
+            msg = f"Unknown dtype: {dtype}."
+            raise ValueError(msg)
 
         self.__constants = _CONSTANTS.astype(self.dtype)
         self.__coeff_mtrix = array(

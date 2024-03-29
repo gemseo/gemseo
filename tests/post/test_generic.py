@@ -31,7 +31,7 @@ from gemseo import execute_post
         ("ConstraintsHistory", {"constraint_names": ["g_1"]}, [6, 7]),
     ],
 )
-def test_xticks(class_name, kwargs, indices):
+def test_xticks(class_name, kwargs, indices) -> None:
     """Test that the xticks are sufficiently spaced (typically by using MaxNLocator).
 
     This is important when the iterations are represented on the x-axis
