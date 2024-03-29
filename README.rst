@@ -20,7 +20,7 @@
 .. image:: https://img.shields.io/badge/code%20style-black-000000
    :target: https://black.readthedocs.io
    :alt: Code Style
-.. image:: https://img.shields.io/codecov/c/gitlab/AntoineD/gemseo/develop
+.. image:: https://img.shields.io/codecov/c/gitlab/gemseo:dev/gemseo/develop
    :target: https://app.codecov.io/gl/gemseo:dev/gemseo/branch/develop
    :alt: Codecov branch
 .. image:: https://img.shields.io/badge/DOI-10.2514%2F6.2018--0657-blue
