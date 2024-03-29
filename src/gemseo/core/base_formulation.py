@@ -218,7 +218,6 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         obs_fun = FunctionFromDiscipline(output_names, self, discipline=discipline)
         if observable_name is not None:
             obs_fun.name = observable_name
-        obs_fun.f_type = MDOFunction.FunctionType.OBS
         self.opt_problem.add_observable(obs_fun)
 
     def get_top_level_disc(self) -> list[MDODiscipline]:
@@ -284,10 +283,11 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                     discipline, self.design_space.variable_sizes
                 )
 
-        raise ValueError(
+        msg = (
             f"No discipline known by formulation {type(self).__name__}"
             f" has all outputs named {output_names}"
         )
+        raise ValueError(msg)
 
     def _get_generator_with_inputs(
         self,
@@ -316,10 +316,11 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                     discipline, self.design_space.variable_sizes
                 )
 
-        raise ValueError(
+        msg = (
             f"No discipline known by formulation {type(self).__name__}"
             f" has all inputs named {input_names}"
         )
+        raise ValueError(msg)
 
     def _get_dv_length(
         self,
@@ -478,11 +479,12 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                 x_mask[i_masked_min:i_masked_max] = arange(i_min, i_max)
                 i_masked_min = i_masked_max
         except KeyError as err:
-            raise ValueError(
+            msg = (
                 "Inconsistent inputs of masking. "
                 f"Key {err} is in masking_data_names {masking_data_names} "
                 f"but not in provided all_data_names : {all_data_names}!"
-            ) from None
+            )
+            raise ValueError(msg) from None
 
         return x_mask
 
@@ -535,7 +537,6 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                 obj_mdo_fun, zeros(obj_mdo_fun.input_dimension)
             )
 
-        obj_mdo_fun.f_type = MDOFunction.FunctionType.OBJ
         self.opt_problem.objective = obj_mdo_fun
         if self._maximize_objective:
             self.opt_problem.change_objective_sign()

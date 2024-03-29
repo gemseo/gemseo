@@ -21,11 +21,13 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version
+
 import pytest
 import sympy
 from numpy import array
 from numpy.testing import assert_equal
-from packaging import version
+from packaging.version import parse as parse_version
 
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -46,7 +48,7 @@ def expressions():
     return expr_dict
 
 
-def test_independent_default_inputs():
+def test_independent_default_inputs() -> None:
     """Test that the default inputs are independent.
 
     Reproducer for #406.
@@ -58,19 +60,19 @@ def test_independent_default_inputs():
     assert disc.local_data["x2"] == pytest.approx(0.0)
 
 
-def test_fast_expression_evaluation(expressions):
+def test_fast_expression_evaluation(expressions) -> None:
     disc = AnalyticDiscipline(expressions)
     input_data = {"x": array([1.0]), "z": array([1.0])}
     disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
 
 
-def test_standard_expression_evaluation(expressions):
+def test_standard_expression_evaluation(expressions) -> None:
     disc = AnalyticDiscipline(expressions, fast_evaluation=False)
     input_data = {"x": array([1.0]), "z": array([1.0])}
     disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
 
 
-def test_failure_with_malformed_expressions():
+def test_failure_with_malformed_expressions() -> None:
     with pytest.raises(
         TypeError, match="Expression must be a SymPy expression or a string."
     ):
@@ -78,10 +80,10 @@ def test_failure_with_malformed_expressions():
 
 
 @pytest.mark.skipif(
-    version.parse(sympy.__version__) > version.parse("1.8.0"),
+    parse_version(version("sympy")) > parse_version("1.8.0"),
     reason="requires sympy 1.7.0 or lower",
 )
-def test_failure_for_log_zero_without_fast_evaluation():
+def test_failure_for_log_zero_without_fast_evaluation() -> None:
     # For sympy 1.8.0 and higher,
     # sympy.parsing.sympy_parser.parse_expr("log(x)").evalf(subs={"x":0.0})
     # returns -oo which is converted into the float -inf."""
@@ -92,7 +94,7 @@ def test_failure_for_log_zero_without_fast_evaluation():
 
 
 @pytest.mark.parametrize("fast_evaluation", [False, True])
-def test_absolute_value(fast_evaluation):
+def test_absolute_value(fast_evaluation) -> None:
     """Check that AnalyticDiscipline handles absolute value."""
     discipline = AnalyticDiscipline({"y": "Abs(x)"}, fast_evaluation=fast_evaluation)
     assert (
@@ -113,7 +115,7 @@ def test_absolute_value(fast_evaluation):
 
 
 @pytest.mark.parametrize("fast_evaluation", [False, True])
-def test_serialize(tmp_wd, fast_evaluation):
+def test_serialize(tmp_wd, fast_evaluation) -> None:
     """Check the serialization of an AnalyticDiscipline."""
     input_data = {"x": array([2.0])}
     file_path = "discipline.h5"
@@ -138,7 +140,7 @@ def test_linearize(
     add_differentiated_outputs,
     compute_all_jacobians,
     caplog,
-):
+) -> None:
     """Check AnalyticDiscipline.linearize()."""
     discipline = AnalyticDiscipline(
         {"y": "2*a+3*b", "z": "-2*a-3*b"}, fast_evaluation=fast_evaluation
@@ -164,7 +166,7 @@ def test_linearize(
 
 
 @pytest.mark.parametrize("fast_evaluation", [False, True])
-def test_complex_outputs(fast_evaluation):
+def test_complex_outputs(fast_evaluation) -> None:
     """Check that complex outputs are supported."""
     discipline = AnalyticDiscipline({"y": "x*I"}, fast_evaluation=fast_evaluation)
     discipline.execute({"x": array([1.0])})
@@ -173,7 +175,7 @@ def test_complex_outputs(fast_evaluation):
 
 @pytest.mark.parametrize("fast_evaluation", [False, True])
 @pytest.mark.parametrize("linearization_mode", ApproximationMode)
-def test_jacobian_approximation(fast_evaluation, linearization_mode):
+def test_jacobian_approximation(fast_evaluation, linearization_mode) -> None:
     """Check that Jacobian approximation is supported."""
     discipline = AnalyticDiscipline({"y": "exp(x)"}, fast_evaluation=fast_evaluation)
     discipline.linearization_mode = linearization_mode

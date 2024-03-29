@@ -78,7 +78,6 @@ from typing import ClassVar
 from typing import NoReturn
 from typing import Union
 
-from numpy import array
 from numpy import hstack
 from numpy import ndarray
 
@@ -120,6 +119,42 @@ class MLSupervisedAlgo(MLAlgo):
     output_names: list[str]
     """The names of the output variables."""
 
+    __input_dimension: int
+    """The dimension of the input space."""
+
+    __groups_to_names: dict[str, str]
+    """The variable names associated with group names."""
+
+    __output_dimension: int
+    """The dimension of the output space."""
+
+    __reduced_input_dimension: int
+    """The dimension of the transformed input space."""
+
+    __reduced_output_dimension: int
+    """The dimension of the transformed output space."""
+
+    _input_variables_to_transform: list[str]
+    """The names of the input variables to transform."""
+
+    _output_variables_to_transform: list[str]
+    """The names of the output variables to transform."""
+
+    _transform_input_group: bool
+    """Whether to transform the variables of the input group."""
+
+    _transform_output_group: bool
+    """Whether to transform the variables of the output group."""
+
+    _transformed_input_sizes: dict[str, int]
+    """The sizes of the transformed input variables."""
+
+    _transformed_output_sizes: dict[str, int]
+    """The sizes of the transformed output variables."""
+
+    _transformed_variable_sizes: dict[str, int]
+    """The sizes of the variables in the transformed spaces."""
+
     SHORT_ALGO_NAME: ClassVar[str] = "MLSupervisedAlgo"
     DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType({
         IODataset.INPUT_GROUP: MinMaxScaler()
@@ -149,10 +184,11 @@ class MLSupervisedAlgo(MLAlgo):
             data.INPUT_GROUP: self.input_names,
             data.OUTPUT_GROUP: self.output_names,
         }
-        self.input_space_center = array([])
+        self.input_space_center = {}
         self.__input_dimension = 0
         self.__output_dimension = 0
-        self.__reduced_dimensions = (0, 0)
+        self.__reduced_input_dimension = 0
+        self.__reduced_output_dimension = 0
         self._transformed_variable_sizes = {}
         self._transformed_input_sizes = {}
         self._transformed_output_sizes = {}
@@ -168,12 +204,26 @@ class MLSupervisedAlgo(MLAlgo):
         )
 
     @property
+    def _reduced_input_dimension(self) -> int:
+        """The reduced input dimension."""
+        if not self.__reduced_input_dimension:
+            self.__set_reduced_dimensions()
+
+        return self.__reduced_input_dimension
+
+    @property
+    def _reduced_output_dimension(self) -> int:
+        """The reduced output dimension."""
+        if not self.__reduced_output_dimension:
+            self.__set_reduced_dimensions()
+
+        return self.__reduced_output_dimension
+
+    # TODO: API: remove
+    @property
     def _reduced_dimensions(self) -> tuple[int, int]:
         """The input and output reduced dimensions."""
-        if self.__reduced_dimensions == (0, 0):
-            self.__reduced_dimensions = self.__compute_reduced_dimensions()
-
-        return self.__reduced_dimensions
+        return self._reduced_input_dimension, self._reduced_output_dimension
 
     @property
     def input_dimension(self) -> int:
@@ -264,55 +314,58 @@ class MLSupervisedAlgo(MLAlgo):
             self.input_names,
         )
 
-        if fit_transformers:
-            if self._transform_input_group or self._input_variables_to_transform:
-                input_data = self.__fit_transformer(
-                    indices,
-                    True,
-                    self._input_variables_to_transform,
-                )
+        if self._transform_input_group or self._input_variables_to_transform:
+            input_data = self.__transform_data_from_group_or_names(
+                indices, True, self._input_variables_to_transform, fit_transformers
+            )
 
-            if self._transform_output_group or self._output_variables_to_transform:
-                output_data = self.__fit_transformer(
-                    indices,
-                    False,
-                    self._output_variables_to_transform,
-                )
+        if self._transform_output_group or self._output_variables_to_transform:
+            output_data = self.__transform_data_from_group_or_names(
+                indices, False, self._output_variables_to_transform, fit_transformers
+            )
 
         self._fit(input_data, output_data)
         self.__compute_transformed_variable_sizes()
 
-    def __fit_transformer(
+    def __transform_data_from_group_or_names(
         self,
         indices: Ellipsis | Sequence[int],
         input_group: bool,
         names: Sequence[str],
+        fit: bool,
     ) -> ndarray:
-        """Fit a transformer.
+        """Transform data from variable names or a group name.
 
         Args:
             indices: The indices of the learning samples.
             input_group: Whether to consider the input group.
                 Otherwise, consider the output one.
             names: The variable names having dedicated transformers.
+            fit: Whether to fit the transformers before applying transformation.
 
         Returns:
             The transformed data.
         """
         if names:
-            return self.__fit_transformer_from_names(input_group, names, indices)
-        return self.__fit_transformer_from_group(input_group, indices)
+            return self.__transform_data_from_names(input_group, names, indices, fit)
 
-    def __fit_transformer_from_names(
-        self, input_group: bool, names: Iterable[str], indices: Ellipsis | Sequence[int]
+        return self.__transform_data_from_group(input_group, indices, fit)
+
+    def __transform_data_from_names(
+        self,
+        input_group: bool,
+        names: Iterable[str],
+        indices: Ellipsis | Sequence[int],
+        fit: bool,
     ) -> ndarray:
-        """Fit a transformer from variable names.
+        """Transform data from variable names.
 
         Args:
             input_group: Whether to consider the input group.
                 Otherwise, consider the output one.
             names: The variable names having dedicated transformers.
             indices: The indices of the learning samples.
+            fit: Whether to fit the transformers before applying transformation.
 
         Returns:
             The transformed data.
@@ -331,8 +384,8 @@ class MLSupervisedAlgo(MLAlgo):
                 continue
 
             transformed_data.append(
-                self.__fit_and_transform_data(
-                    [name], self.transformer[name], indices, input_group
+                self.__transform_data(
+                    [name], self.transformer[name], indices, input_group, fit
                 )
             )
 
@@ -352,32 +405,38 @@ class MLSupervisedAlgo(MLAlgo):
             return self.learning_set.INPUT_GROUP
         return self.learning_set.OUTPUT_GROUP
 
-    def __fit_transformer_from_group(
-        self, input_group: bool, indices: Ellipsis | Sequence[int]
+    def __transform_data_from_group(
+        self, input_group: bool, indices: Ellipsis | Sequence[int], fit: bool
     ) -> ndarray:
-        """Fit a transformer from a group name.
+        """Transform data from a group name.
 
         Args:
             input_group: Whether to consider the input group.
                 Otherwise, consider the output one.
             indices: The indices of the learning samples.
+            fit: Whether to fit the transformers before applying transformation.
 
         Returns:
             The transformed data.
         """
         group = self.__get_group_name(input_group)
-        return self.__fit_and_transform_data(
-            self.__groups_to_names[group], self.transformer[group], indices, input_group
+        return self.__transform_data(
+            self.__groups_to_names[group],
+            self.transformer[group],
+            indices,
+            input_group,
+            fit,
         )
 
-    def __fit_and_transform_data(
+    def __transform_data(
         self,
         names: Iterable[str],
         transformer: Transformer,
         indices: Ellipsis | Sequence[int],
         input_group: bool,
+        fit: bool,
     ) -> ndarray:
-        """Fit and transform data.
+        """Transform data.
 
         Args:
             names: The names of the variables to be transformed.
@@ -385,6 +444,7 @@ class MLSupervisedAlgo(MLAlgo):
             indices: The indices of the learning samples.
             input_group: Whether to consider the input group.
                 Otherwise, consider the output one.
+            fit: Whether to fit the transformers before applying transformation.
 
         Returns:
             The transformed data.
@@ -395,22 +455,28 @@ class MLSupervisedAlgo(MLAlgo):
         """
         data = self.learning_set.get_view(variable_names=(names)).to_numpy()[indices]
         if not transformer.CROSSED:
-            return transformer.fit_transform(data)
+            if fit:
+                return transformer.fit_transform(data)
+
+            return transformer.transform(data)
 
         if not input_group:
-            raise NotImplementedError(
-                "The transformer {} cannot be applied to the outputs "
-                "to build a supervised machine learning algorithm.".format(
-                    transformer.__class__.__name__
-                )
+            msg = (
+                f"The transformer {transformer.__class__.__name__} "
+                "cannot be applied to the outputs "
+                "to build a supervised machine learning algorithm."
+            )
+            raise NotImplementedError(msg)
+
+        if fit:
+            return transformer.fit_transform(
+                data,
+                self.learning_set.get_view(variable_names=self.output_names).to_numpy()[
+                    indices
+                ],
             )
 
-        return transformer.fit_transform(
-            data,
-            self.learning_set.get_view(variable_names=self.output_names).to_numpy()[
-                indices
-            ],
-        )
+        return transformer.transform(data)
 
     @abstractmethod
     def _fit(
@@ -468,12 +534,8 @@ class MLSupervisedAlgo(MLAlgo):
             output_data: The output data with shape (n_samples, n_outputs).
         """
 
-    def __compute_reduced_dimensions(self) -> tuple[int, int]:
-        """Return the reduced input and output dimensions after transformations.
-
-        Returns:
-            The reduced input and output dimensions.
-        """
+    def __set_reduced_dimensions(self) -> None:
+        """Set the input and output dimensions after transformations."""
         input_dimension = 0
         output_dimension = 0
         input_names = [*self.input_names, IODataset.INPUT_GROUP]
@@ -501,9 +563,8 @@ class MLSupervisedAlgo(MLAlgo):
                         )
                     )
 
-        input_dimension = input_dimension or self.input_dimension
-        output_dimension = output_dimension or self.output_dimension
-        return input_dimension, output_dimension
+        self.__reduced_input_dimension = input_dimension or self.input_dimension
+        self.__reduced_output_dimension = output_dimension or self.output_dimension
 
     def __compute_transformed_variable_sizes(self) -> None:
         """Compute the sizes of the transformed variables."""
@@ -513,9 +574,9 @@ class MLSupervisedAlgo(MLAlgo):
         for name in self.input_names + self.output_names:
             transformer = self.transformer.get(name)
             if transformer is None or not isinstance(transformer, DimensionReduction):
-                self._transformed_variable_sizes[
-                    name
-                ] = self.learning_set.variable_names_to_n_components[name]
+                self._transformed_variable_sizes[name] = (
+                    self.learning_set.variable_names_to_n_components[name]
+                )
             else:
                 self._transformed_variable_sizes[name] = transformer.n_components
 

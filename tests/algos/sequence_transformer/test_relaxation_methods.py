@@ -48,7 +48,7 @@ def g(x: ndarray) -> ndarray:
     "factor",
     [0.5, 1.0, 1.5],
 )
-def test_overrelaxation(factor):
+def test_overrelaxation(factor) -> None:
     """Tests the over relaxation method."""
     x_0 = INITIAL_VECTOR.copy()
     transformer = SequenceTransformerFactory().create("OverRelaxation", factor=factor)
@@ -70,7 +70,7 @@ def test_overrelaxation(factor):
     "factor",
     [-1, 1, 3, "foo"],
 )
-def test_relaxation_factor(factor):
+def test_relaxation_factor(factor) -> None:
     """Tests the relaxation factor argument of OverRelaxation."""
     if factor in [-1, 3]:
         with pytest.raises(ValueError):

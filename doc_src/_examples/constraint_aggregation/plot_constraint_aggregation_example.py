@@ -84,13 +84,13 @@ algo_options = {
 # %%
 # Build the optimization scenario
 original_scenario = create_scenario(
-    disciplines=[disc, concat],
-    formulation="DisciplinaryOpt",
-    objective_name="o",
-    design_space=ds,
+    [disc, concat],
+    "DisciplinaryOpt",
+    "o",
+    ds,
     maximize_objective=False,
 )
-original_scenario.add_constraint("g", "ineq")
+original_scenario.add_constraint("g", constraint_type="ineq")
 
 original_scenario.execute(algo_options)
 # Without constraint aggregation MMA iterations become more expensive, when a
@@ -99,13 +99,13 @@ original_scenario.execute(algo_options)
 # %%
 # exploiting constraint aggregation on the same scenario:
 new_scenario = create_scenario(
-    disciplines=[disc, concat],
-    formulation="DisciplinaryOpt",
-    objective_name="o",
-    design_space=ds_new,
+    [disc, concat],
+    "DisciplinaryOpt",
+    "o",
+    ds_new,
     maximize_objective=False,
 )
-new_scenario.add_constraint("g", "ineq")
+new_scenario.add_constraint("g", constraint_type="ineq")
 
 # %%
 # This method aggregates the constraints using the lower bound KS function

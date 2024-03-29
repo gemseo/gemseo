@@ -46,16 +46,18 @@ class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
             bound: The absolute bound for the trust parameter.
         """  # noqa: D205, D212, D415
         if not isinstance(thresholds, tuple):
-            raise TypeError(
+            msg = (
                 "The thresholds must be input as a tuple; "
                 f"input of type {type(thresholds)} was provided."
             )
+            raise TypeError(msg)
         self._ratio_thresholds = thresholds
         if not isinstance(multipliers, tuple):
-            raise TypeError(
+            msg = (
                 "The multipliers must be input as a tuple; "
                 f"input of type {type(multipliers)} was provided."
             )
+            raise TypeError(msg)
         self._param_multipliers = multipliers
         self._param_bound = bound
 
@@ -93,34 +95,37 @@ class PenaltyUpdater(TrustUpdater):
     def _check(self) -> None:
         # Check the thresholds:
         if len(self._ratio_thresholds) != 2:
-            raise ValueError(
+            msg = (
                 "There must be exactly two thresholds for the "
                 f"decreases ratio; {len(self._ratio_thresholds)} were given."
             )
+            raise ValueError(msg)
         update_thresh = self._ratio_thresholds[0]
         nonexp_thresh = self._ratio_thresholds[1]
         if update_thresh > nonexp_thresh:
-            raise ValueError(
+            msg = (
                 f"The update threshold ({update_thresh}) must be lower than or equal "
                 f"to the non-expansion threshold ({nonexp_thresh})."
             )
+            raise ValueError(msg)
         # Check the multipliers:
         if len(self._param_multipliers) != 2:
-            raise ValueError(
+            msg = (
                 "There must be exactly two multipliers for the "
                 f"penalty parameter; {len(self._ratio_thresholds)} were given."
             )
+            raise ValueError(msg)
         contract_fact = self._param_multipliers[0]
         expan_fact = self._param_multipliers[1]
         if contract_fact >= 1.0:
-            raise ValueError(
-                f"The contraction factor ({contract_fact}) must be lower than one."
-            )
+            msg = f"The contraction factor ({contract_fact}) must be lower than one."
+            raise ValueError(msg)
         if expan_fact < 1.0:
-            raise ValueError(
+            msg = (
                 f"The expansion factor ({expan_fact}) "
                 "must be greater than or equal to one."
             )
+            raise ValueError(msg)
 
     def update(self, ratio: float, parameter: float) -> tuple[float, bool]:  # noqa:D102
         # The iteration is declared successful if and only if the ratio is
@@ -154,34 +159,37 @@ class RadiusUpdater(TrustUpdater):
     def _check(self) -> None:
         # Check the thresholds:
         if len(self._ratio_thresholds) != 2:
-            raise ValueError(
+            msg = (
                 "There must be exactly two thresholds for the "
                 f"decreases ratio; {len(self._ratio_thresholds)} were given."
             )
+            raise ValueError(msg)
         update_thresh = self._ratio_thresholds[0]
         noncontract_thresh = self._ratio_thresholds[1]
         if update_thresh > noncontract_thresh:
-            raise ValueError(
+            msg = (
                 f"The update threshold ({update_thresh}) must be lower than or equal "
                 f"to the non-contraction threshold ({noncontract_thresh})."
             )
+            raise ValueError(msg)
         # Check the multipliers:
         if len(self._param_multipliers) != 2:
-            raise ValueError(
+            msg = (
                 "There must be exactly two multipliers for the region radius; "
                 f"{len(self._ratio_thresholds)} were given."
             )
+            raise ValueError(msg)
         contract_fact = self._param_multipliers[0]
         expan_fact = self._param_multipliers[1]
         if contract_fact > 1.0:
-            raise ValueError(
+            msg = (
                 f"The contraction factor ({contract_fact}) "
                 f"must be lower than or equal to one."
             )
+            raise ValueError(msg)
         if expan_fact <= 1.0:
-            raise ValueError(
-                f"The expansion factor ({expan_fact}) must be greater than one."
-            )
+            msg = f"The expansion factor ({expan_fact}) must be greater than one."
+            raise ValueError(msg)
 
     def update(self, ratio: float, parameter: float) -> tuple[float, bool]:  # noqa:D102
         # The iteration is declared successful if and only if the ratio is

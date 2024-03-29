@@ -27,7 +27,7 @@ from gemseo.core.monitoring import Monitoring
 
 
 class FakeScenario:
-    def __init__(self, disc1, disc2):
+    def __init__(self, disc1, disc2) -> None:
         self.disc1 = disc1
         self.disc2 = disc2
 
@@ -38,26 +38,26 @@ class FakeScenario:
 
 
 class TestMonitoring(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.sc = FakeScenario(MDODiscipline(), MDODiscipline())
         self.monitor = Monitoring(self.sc)
         self.monitor.add_observer(self)
         self._statuses = self.monitor.get_statuses()
         self._updated_uuid = None
 
-    def update(self, atom):
+    def update(self, atom) -> None:
         self._statuses = self.monitor.get_statuses()
         self._updated_uuid = atom.uuid
 
-    def _assert_update_status(self, disc, expected):
+    def _assert_update_status(self, disc, expected) -> None:
         disc.status = expected
         assert expected == self._statuses[self._updated_uuid]
 
-    def test_singleton(self):
+    def test_singleton(self) -> None:
         self.info = None
 
         class Observer2:
-            def update(self, atom):
+            def update(self, atom) -> None:
                 self.info = atom
 
         observer2 = Observer2()
@@ -66,18 +66,18 @@ class TestMonitoring(unittest.TestCase):
         monitor2.add_observer(observer2)
         assert id(monitor2) == id(self.monitor)
 
-    def test_status_update(self):
+    def test_status_update(self) -> None:
         self._assert_update_status(self.sc.disc1, MDODiscipline.ExecutionStatus.RUNNING)
         self._assert_update_status(self.sc.disc1, MDODiscipline.ExecutionStatus.DONE)
 
-    def test_remove_observer(self):
+    def test_remove_observer(self) -> None:
         self.monitor.remove_observer(self)
         self.sc.disc1.status = MDODiscipline.ExecutionStatus.RUNNING
         assert None is self._updated_uuid  # no update received
         # check second remove works
         self.monitor.remove_observer(self)
 
-    def test_remove_observers(self):
+    def test_remove_observers(self) -> None:
         self.monitor.remove_all_observers()
         self.sc.disc1.status = MDODiscipline.ExecutionStatus.RUNNING
         assert None is self._updated_uuid  # no update received

@@ -56,7 +56,8 @@
     "max_time": {
       "type": "number",
       "minimum": 0.0
-    }
+    },
+    "callbacks": {}
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,

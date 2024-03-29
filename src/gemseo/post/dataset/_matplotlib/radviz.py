@@ -46,6 +46,8 @@ class Radar(MatplotlibPlot):
         """  # noqa: D205, D212, D415
         fig, axes = self._get_figure_and_axes(fig, axes)
         radviz(dataset, classifier_name, ax=axes)
+        axes.set_axisbelow(True)
+        axes.grid(visible=self._common_settings.grid)
         axes.set_xlabel(self._common_settings.xlabel)
         axes.set_ylabel(self._common_settings.ylabel)
         axes.set_title(self._common_settings.title)

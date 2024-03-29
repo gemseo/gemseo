@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -32,8 +31,6 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.algos.opt_problem import OptimizationProblem
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NormFunction(MDOFunction):
@@ -58,7 +55,6 @@ class NormFunction(MDOFunction):
         Raises:
             ValueError: If the original function does not provide a Jacobian matrix.
         """  # noqa: D205, D212, D415
-        self.__normalize = normalize
         self.__orig_func = orig_func
         self.__round_ints = round_ints
         self.__optimization_problem = optimization_problem
@@ -80,6 +76,7 @@ class NormFunction(MDOFunction):
             output_names=orig_func.output_names,
             special_repr=orig_func.special_repr,
             original_name=orig_func.original_name,
+            expects_normalized_inputs=normalize,
         )
 
     def _func_to_wrap(
@@ -94,7 +91,7 @@ class NormFunction(MDOFunction):
         Returns:
             The value of the function at this input vector.
         """
-        if self.__normalize:
+        if self.expects_normalized_inputs:
             x_vect = self.__unnormalize_vect(x_vect)
         if self.__round_ints:
             x_vect = self.__round_vect(x_vect)
@@ -116,19 +113,16 @@ class NormFunction(MDOFunction):
             ValueError: If the original function does not provide a Jacobian matrix.
         """
         if not self.__orig_func.has_jac:
-            raise ValueError(
+            msg = (
                 f"Selected user gradient but function {self.__orig_func} "
                 "has no Jacobian matrix !"
             )
-        if self.__normalize:
+            raise ValueError(msg)
+        if self.expects_normalized_inputs:
             x_vect = self.__unnormalize_vect(x_vect)
         if self.__round_ints:
             x_vect = self.__round_vect(x_vect)
         g_u = self.__orig_func.jac(x_vect)
-        if self.__normalize:
+        if self.expects_normalized_inputs:
             return self.__normalize_grad(g_u)
         return g_u
-
-    @property
-    def expects_normalized_inputs(self) -> bool:  # noqa:D102
-        return self.__normalize

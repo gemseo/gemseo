@@ -44,6 +44,6 @@ block = Block(
             url="scalable_models/index.html#scalable-diagonal-model",
         ),
     ],
-    examples="examples/scalable/index.html",
-    info="scalable.html",
+    button_info_url="scalable.html",
+    button_examples_url="examples/scalable/index.html",
 )

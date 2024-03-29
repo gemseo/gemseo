@@ -28,10 +28,11 @@ from numpy import array
 from numpy import eye
 from numpy import ndarray
 from numpy import ones
+from numpy import zeros
 from numpy.random import default_rng
+from numpy.testing import assert_almost_equal
 from scipy.linalg import solve
 
-from gemseo import SEED
 from gemseo import create_discipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -54,6 +55,7 @@ from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar import get_inputs
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.helpers import concretize_classes
 
 DIRNAME = os.path.dirname(__file__)
@@ -70,7 +72,7 @@ def sellar_inputs():
     return get_inputs()
 
 
-def test_reset(sellar_mda, sellar_inputs):
+def test_reset(sellar_mda, sellar_inputs) -> None:
     """Test that the MDA successfully resets its disciplines after their executions."""
     disciplines = sellar_mda.disciplines
     for discipline in disciplines:
@@ -82,7 +84,7 @@ def test_reset(sellar_mda, sellar_inputs):
         assert discipline.status == MDODiscipline.ExecutionStatus.PENDING
 
 
-def test_input_couplings():
+def test_input_couplings() -> None:
     with concretize_classes(BaseMDASolver):
         mda = BaseMDASolver([Sellar1()])
         mda._set_resolved_variables([])
@@ -103,7 +105,7 @@ def test_input_couplings():
         assert mda._input_couplings == sorted_c
 
 
-def test_resolved_couplings():
+def test_resolved_couplings() -> None:
     """Tests the resolved coupling names."""
     disciplines = create_disciplines_from_desc(
         [
@@ -123,7 +125,7 @@ def test_resolved_couplings():
         mda._resolved_variable_names = "a"
 
 
-def test_jacobian(sellar_mda, sellar_inputs):
+def test_jacobian(sellar_mda, sellar_inputs) -> None:
     """Check the Jacobian computation."""
     sellar_mda.use_lu_fact = True
     sellar_mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
@@ -145,7 +147,7 @@ def test_jacobian(sellar_mda, sellar_inputs):
     sellar_mda.linearize(sellar_inputs)
 
 
-def test_expected_workflow(sellar_mda):
+def test_expected_workflow(sellar_mda) -> None:
     """"""
     expected = (
         "{MDAGaussSeidel(None), [Sellar1(None), Sellar2(None), "
@@ -154,7 +156,7 @@ def test_expected_workflow(sellar_mda):
     assert str(sellar_mda.get_expected_workflow()) == expected
 
 
-def test_warm_start():
+def test_warm_start() -> None:
     """Check that the warm start does not fail even at first execution."""
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     mda_sellar = MDAGaussSeidel(disciplines)
@@ -162,7 +164,7 @@ def test_warm_start():
     mda_sellar.execute()
 
 
-def test_weak_strong_coupling_mda_jac():
+def test_weak_strong_coupling_mda_jac() -> None:
     """Tests a particular coupling structure jacobian."""
     disciplines = analytic_disciplines_from_desc((
         {"y1": "x"},
@@ -198,7 +200,7 @@ def analytic_disciplines_from_desc(descriptions):
         ),
     ],
 )
-def test_consistency_fail(desc, log_message, caplog):
+def test_consistency_fail(desc, log_message, caplog) -> None:
     """Test that the consistency check is done properly.
 
     Args:
@@ -215,7 +217,7 @@ def test_consistency_fail(desc, log_message, caplog):
 @pytest.mark.parametrize(
     "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
 )
-def test_array_couplings(mda_class, grammar_type):
+def test_array_couplings(mda_class, grammar_type) -> None:
     disciplines = create_disciplines_from_desc(
         [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
         grammar_type=grammar_type,
@@ -230,7 +232,7 @@ def test_array_couplings(mda_class, grammar_type):
         a_disc.execute({"x": 2.0})
 
 
-def test_convergence_warning(caplog):
+def test_convergence_warning(caplog) -> None:
     with concretize_classes(BaseMDASolver):
         mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
     mda.tolerance = 1.0
@@ -261,7 +263,7 @@ def test_convergence_warning(caplog):
     assert residual_is_small
 
 
-def test_coupling_structure(sellar_disciplines):
+def test_coupling_structure(sellar_disciplines) -> None:
     """Check that an MDA is correctly instantiated from a coupling structure."""
     coupling_structure = MDOCouplingStructure(sellar_disciplines)
     mda_sellar = MDAGaussSeidel(
@@ -270,7 +272,7 @@ def test_coupling_structure(sellar_disciplines):
     assert mda_sellar.coupling_structure == coupling_structure
 
 
-def test_log_convergence(caplog):
+def test_log_convergence(caplog) -> None:
     """Check that the boolean log_convergence is correctly set."""
     with concretize_classes(BaseMDASolver):
         mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
@@ -297,8 +299,9 @@ def test_log_convergence(caplog):
     )
 
 
-def test_not_numeric_couplings():
-    """Test that an exception is raised if strings are used as couplings in MDA."""
+def test_not_numeric_couplings(caplog) -> None:
+    """Test that a message is logged when an MDA includes non-numeric couplings."""
+    caplog.set_level("DEBUG")
     sellar1 = Sellar1()
     # Tweak the output grammar and set y_1 as an array of string
     prop = sellar1.output_grammar.schema.get("properties").get("y_1")
@@ -311,16 +314,16 @@ def test_not_numeric_couplings():
     sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
-    with pytest.raises(
-        TypeError, match=r"The coupling variables \['y\_1'\] must be numeric\."
-    ), concretize_classes(MDA):
+    with concretize_classes(MDA):
         MDA([sellar1, sellar2])
+        msg = "The coupling variable(s) {'y_1'} is/are not an array of numeric values."
+        assert msg in caplog.text
 
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
 def test_get_sub_disciplines(
     mda_class,
-):
+) -> None:
     """Test the get_sub_disciplines method.
 
     Args:
@@ -331,7 +334,7 @@ def test_get_sub_disciplines(
     assert mda.get_sub_disciplines() == mda.disciplines == disciplines
 
 
-def test_sequence_transformers_setters(sellar_mda):
+def test_sequence_transformers_setters(sellar_mda) -> None:
     assert sellar_mda.acceleration_method == AccelerationMethod.NONE
     sellar_mda.acceleration_method = AccelerationMethod.SECANT
     assert sellar_mda.acceleration_method == AccelerationMethod.SECANT
@@ -369,7 +372,7 @@ def reference_mda_jacobian(disciplines) -> dict[str, dict[str, ndarray]]:
 @pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
 def test_matrix_free_linearization(
     mode, matrix_type, disciplines, reference_mda_jacobian, caplog
-):
+) -> None:
     disciplines[1].matrix_free_jacobian = True
 
     mda = MDANewtonRaphson(
@@ -396,7 +399,7 @@ def test_matrix_free_linearization(
 
 
 class LinearImplicitDiscipline(MDODiscipline):
-    def __init__(self, name, input_names, output_names, size=1):
+    def __init__(self, name, input_names, output_names, size=1) -> None:
         super().__init__(name=name)
         self.size = size
 
@@ -433,7 +436,7 @@ def coupled_disciplines():
     ]
 
 
-def test_mda_with_residuals(coupled_disciplines):
+def test_mda_with_residuals(coupled_disciplines) -> None:
     coupled_disciplines[1].run_solves_residuals = True
     mda = MDANewtonRaphson(
         coupled_disciplines,
@@ -455,3 +458,145 @@ def test_mda_with_residuals(coupled_disciplines):
     output_ref = mda.execute()
 
     assert compare_dict_of_arrays(output, output_ref, tolerance=1e-12)
+
+
+class DiscWithNonNumericInputs1(MDODiscipline):
+    def __init__(self):
+        super().__init__()
+        self.input_grammar.update_from_data({"x": zeros(1)})
+        self.input_grammar.update_from_data({"a": zeros(1)})
+        self.input_grammar.update_from_data({"b_file": array(["my_b_file"])})
+
+        self.output_grammar.update_from_data({"y": zeros(1)})
+        self.output_grammar.update_from_data({"b": zeros(1)})
+        self.output_grammar.update_from_data({"a_file": "my_a_file"})
+
+        self.default_inputs["x"] = array([0.5])
+        self.default_inputs["a"] = array([0.5])
+        self.default_inputs["b_file"] = array(["my_b_file"])
+
+    def _run(self) -> None:
+        x = self.local_data["x"]
+        a = self.local_data["a"]
+        y = x
+        b = 2 * a
+        self.local_data.update({"y": y, "a_file": "my_a_file", "b": b})
+
+    def _compute_jacobian(
+        self,
+        inputs,
+        outputs,
+    ) -> None:
+        self.jac = {}
+        self.jac["y"] = {}
+        self.jac["b"] = {}
+        self.jac["y"]["x"] = array([[1.0]])
+        self.jac["y"]["a"] = array([[0.0]])
+        self.jac["b"]["x"] = array([[0.0]])
+        self.jac["b"]["a"] = array([[2.0]])
+
+
+class DiscWithNonNumericInputs2(MDODiscipline):
+    def __init__(self):
+        super().__init__()
+        self.input_grammar.update_from_data({"y": zeros(1)})
+        self.input_grammar.update_from_data({"a_file": "my_a_file"})
+        self.output_grammar.update_from_data({"x": zeros(1)})
+        self.output_grammar.update_from_data({"b_file": array(["my_b_file"])})
+        self.default_inputs["y"] = array([0.5])
+        self.default_inputs["a_file"] = "my_a_file"
+
+    def _run(self) -> None:
+        y = self.local_data["y"]
+        x = 1.0 - 0.3 * y
+        self.local_data.update({"x": x, "b_file": array(["my_b_file"])})
+
+    def _compute_jacobian(
+        self,
+        inputs,
+        outputs,
+    ) -> None:
+        self.jac = {}
+        self.jac["x"] = {}
+        self.jac["x"]["y"] = array([[-0.3]])
+
+
+class DiscWithNonNumericInputs3(MDODiscipline):
+    def __init__(self):
+        super().__init__()
+        self.input_grammar.update_from_data({"x": zeros(1)})
+        self.input_grammar.update_from_data({"y": zeros(1)})
+        self.input_grammar.update_from_data({"b": zeros(1)})
+        self.input_grammar.update_from_data({"a_file": "my_a_file"})
+
+        self.output_grammar.update_from_data({"obj": zeros(1)})
+        self.output_grammar.update_from_data({"out_file_2": "my_a_file"})
+        self.default_inputs["x"] = array([0.5])
+        self.default_inputs["y"] = array([0.5])
+        self.default_inputs["b"] = array([0.5])
+        self.default_inputs["a_file"] = "my_a_file"
+
+    def _run(self) -> None:
+        x = self.local_data["x"]
+        y = self.local_data["y"]
+        obj = x - y
+        self.local_data.update({"obj": obj, "out_file_2": "my_out_file"})
+
+    def _compute_jacobian(
+        self,
+        inputs,
+        outputs,
+    ) -> None:
+        x = self.local_data["x"][0]
+        y = self.local_data["y"][0]
+        self.jac = {}
+        self.jac["obj"] = {}
+        self.jac["obj"]["x"] = array([[1.0]])
+        self.jac["obj"]["y"] = array([[-1.0]])
+        self.jac["obj"]["b"] = array([[x - y]])
+
+
+@pytest.mark.parametrize(
+    ("mda_class", "include_weak_couplings"),
+    [(MDAJacobi, True), (MDAGaussSeidel, True), (MDANewtonRaphson, False)],
+)
+def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
+    """Test that MDAs can handle non-numeric couplings.
+
+    Args:
+        mda_class: The specific MDA to be tested.
+        include_weak_couplings: Whether to include weak couplings in the MDA. The Newton
+            method does not support weak couplings.
+    """
+    disciplines = [
+        DiscWithNonNumericInputs1(),
+        DiscWithNonNumericInputs2(),
+    ]
+
+    if include_weak_couplings:
+        disciplines.append(DiscWithNonNumericInputs3())
+
+    mda = mda_class(disciplines)
+    mda.add_differentiated_inputs(["a"])
+    mda.add_differentiated_outputs([
+        "obj"
+    ]) if include_weak_couplings else mda.add_differentiated_outputs(["b"])
+
+    inputs = {
+        "a_file": "test",
+        "b_file": array(["test"]),
+    }
+    mda_output = mda.execute(inputs)
+
+    if include_weak_couplings:
+        assert_almost_equal(mda_output["obj"], 0.0, decimal=5)
+    else:
+        assert_almost_equal(mda_output["b"], 1.0, decimal=5)
+
+    assert mda.check_jacobian(
+        input_data=inputs,
+        inputs=["a"],
+        outputs=["obj"] if include_weak_couplings else ["b"],
+        linearization_mode="adjoint",
+        threshold=1e-3,
+    )

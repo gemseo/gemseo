@@ -35,7 +35,7 @@ configure_logger()
 
 
 class SellarSystem(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # Initialize the grammars to define inputs and outputs
         self.input_grammar.update_from_names(["x", "z", "y_0", "y_1"])
@@ -46,7 +46,7 @@ class SellarSystem(MDODiscipline):
     #         self.default_inputs = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
 
-    def _run(self):
+    def _run(self) -> None:
         # The run method defines what happens at execution
         # ie how outputs are computed from inputs
         x, z, y_0, y_1 = self.get_inputs_by_name(["x", "z", "y_0", "y_1"])
@@ -57,7 +57,7 @@ class SellarSystem(MDODiscipline):
 
 
 class Sellar1(MDODiscipline):
-    def __init__(self, residual_form=False):
+    def __init__(self, residual_form=False) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x", "z", "y_1"])
         self.output_grammar.update_from_names(["y_0"])
@@ -65,7 +65,7 @@ class Sellar1(MDODiscipline):
     #         self.default_inputs = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
 
-    def _run(self):
+    def _run(self) -> None:
         x, z, y_1 = self.get_inputs_by_name(["x", "z", "y_1"])
         self.local_data["y_0"] = array([
             (z[0] ** 2 + z[1] + x[0] - 0.2 * y_1[0]) ** 0.5
@@ -73,7 +73,7 @@ class Sellar1(MDODiscipline):
 
 
 class Sellar2(MDODiscipline):
-    def __init__(self, residual_form=False):
+    def __init__(self, residual_form=False) -> None:
         super().__init__()
         self.input_grammar.update_from_names_from_names(["z", "y_0"])
         self.output_grammar.update_from_names_from_names(["y_1"])
@@ -81,12 +81,12 @@ class Sellar2(MDODiscipline):
     #         self.default_inputs = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
 
-    def _run(self):
+    def _run(self) -> None:
         z, y_0 = self.get_inputs_by_name(["z", "y_0"])
         self.local_data["y_1"] = array([abs(y_0[0]) + z[0] + z[1]])
 
 
-def run_process():
+def run_process() -> None:
     # Instantiate disciplines
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 
@@ -109,8 +109,8 @@ def run_process():
     )
 
     # Set the design constraints
-    scenario.add_constraint("c_1", "ineq")
-    scenario.add_constraint("c_2", "ineq")
+    scenario.add_constraint("c_1", constraint_type="ineq")
+    scenario.add_constraint("c_2", constraint_type="ineq")
 
     # USe finite differences since the disciplines do not provide derivatives
     scenario.set_differentiation_method("finite_differences")

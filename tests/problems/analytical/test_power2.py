@@ -60,21 +60,21 @@ def equality(problem) -> MDOFunction:
     return problem.constraints[2]
 
 
-def test_design_space(problem):
+def test_design_space(problem) -> None:
     """Check the design space of the problem."""
     design_space = DesignSpace()
     design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0, value=1.0)
     assert problem.design_space == design_space
 
 
-def test_initial_value():
+def test_initial_value() -> None:
     """Check the passing of an initial value."""
     assert_equal(
         Power2(initial_value=0.12).design_space.get_current_value(), [0.12, 0.12, 0.12]
     )
 
 
-def test_constraint_names(problem):
+def test_constraint_names(problem) -> None:
     """Check the names of the constraints."""
     assert problem.get_constraint_names() == ["ineq1", "ineq2", "eq"]
 
@@ -88,7 +88,7 @@ def test_constraint_names(problem):
         ("equality", "eq"),
     ],
 )
-def test_function_name(request, function, name):
+def test_function_name(request, function, name) -> None:
     """Check the name of a function."""
     assert request.getfixturevalue(function).name == name
 
@@ -102,7 +102,7 @@ def test_function_name(request, function, name):
         ("equality", "eq"),
     ],
 )
-def test_function_type(request, function, type_):
+def test_function_type(request, function, type_) -> None:
     """Check the type of a function."""
     assert request.getfixturevalue(function).f_type == type_
 
@@ -116,7 +116,7 @@ def test_function_type(request, function, type_):
         ("equality", "0.9 - x[2]**3", 27.9),
     ],
 )
-def test_function_expression(request, function, expr, value):
+def test_function_expression(request, function, expr, value) -> None:
     """Check the consistency between the expression of a function and its value."""
     func = request.getfixturevalue(function)
     assert func.expr == expr
@@ -126,7 +126,7 @@ def test_function_expression(request, function, expr, value):
 @pytest.mark.parametrize(
     "function", ["objective", "inequality_1", "inequality_2", "equality"]
 )
-def test_function_input_names(request, function):
+def test_function_input_names(request, function) -> None:
     """Check the name of the input of a function.."""
     assert request.getfixturevalue(function).input_names == ["x"]
 
@@ -140,7 +140,7 @@ def test_function_input_names(request, function):
         ("equality", [0, 0, -27]),
     ],
 )
-def test_function_gradient(request, function, gradient):
+def test_function_gradient(request, function, gradient) -> None:
     """Check the gradient of a function."""
     assert_equal(
         request.getfixturevalue(function).jac(numpy.array([-1, -2, -3])), gradient
@@ -148,14 +148,14 @@ def test_function_gradient(request, function, gradient):
 
 
 @pytest.mark.parametrize(("exception_error", "iter_error"), [(False, 0), (True, 1)])
-def test_iter_error(exception_error, iter_error):
+def test_iter_error(exception_error, iter_error) -> None:
     """Check the `iter_error` attribute."""
     power2 = Power2(exception_error)
     power2.objective(numpy.zeros(3))
     assert power2.iter_error == iter_error
 
 
-def test_exception_error():
+def test_exception_error() -> None:
     """Check the `exception_error` mechanism."""
     power2 = Power2(True)
     power2.objective(numpy.zeros(3))
@@ -167,7 +167,7 @@ def test_exception_error():
         power2.objective(numpy.zeros(3))
 
 
-def test_solution(problem):
+def test_solution(problem) -> None:
     """Check the objective value at the solution."""
     x_opt, f_opt = problem.get_solution()
     assert problem.objective(x_opt) == pytest.approx(f_opt)

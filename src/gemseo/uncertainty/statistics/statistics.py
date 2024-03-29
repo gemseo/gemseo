@@ -346,7 +346,8 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: When :math:`n\notin\{0,1,2,...100\}`.
         """
         if not isinstance(order, int) or order > 100 or order < 0:
-            raise TypeError("Percentile order must be in {0, 1, 2, ..., 100}.")
+            msg = "Percentile order must be in {0, 1, 2, ..., 100}."
+            raise TypeError(msg)
         return self.compute_quantile(order / 100.0)
 
     SYMBOLS["percentile"] = "p"
@@ -421,7 +422,8 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: When :math:`n\notin\{1,2,3\}`.
         """
         if order not in self.__QUARTILE_ORDERS:
-            raise ValueError("Quartile order must be in {1, 2, 3}.")
+            msg = "Quartile order must be in {1, 2, 3}."
+            raise ValueError(msg)
 
         return self.compute_quantile(self.__QUARTILE_LEVELS[order - 1])
 

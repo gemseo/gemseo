@@ -76,14 +76,14 @@ TYPES_TO_VALUES = {
 
 
 @pytest.mark.parametrize(("type_", "data"), TYPES_TO_VALUES.items())
-def test_valid_data(type_, data):
+def test_valid_data(type_, data) -> None:
     """Verify valid models built from annotate or the base class."""
     model = create_model("Model", name=(type_, ...))
     model(name=data.valid)
 
 
 @pytest.mark.parametrize(("type_", "data"), TYPES_TO_VALUES.items())
-def test_invalid_data(type_, data):
+def test_invalid_data(type_, data) -> None:
     """Verify invalid models built from annotate or the base class."""
     model = create_model("Model", name=(type_, ...))
     for invalid_data in data.invalid:

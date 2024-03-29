@@ -16,16 +16,22 @@
 
 from __future__ import annotations
 
-import matplotlib
+from importlib.metadata import version
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
-from packaging import version
+from packaging.version import parse as parse_version
 
-if version.parse(matplotlib.__version__) < version.parse("3.5.0"):
+if TYPE_CHECKING:
+    from matplotlib.colors import Colormap
+    from matplotlib.colors import ListedColormap
 
-    def get_color_map(colormap):  # noqa: N802, D103
+if parse_version(version("matplotlib")) < parse_version("3.5.0"):
+
+    def get_color_map(colormap: Colormap | str | None) -> ListedColormap:  # noqa: D103
         return plt.cm.get_cmap(colormap)
 
 else:
 
-    def get_color_map(colormap):  # noqa: N802, D103
+    def get_color_map(colormap: str) -> ListedColormap:  # noqa: D103
         return plt.colormaps[colormap]

@@ -31,7 +31,7 @@ from gemseo.problems.scalable.parametric.core.scalable_discipline_settings impor
 )
 
 
-def test_scalable_discipline_settings():
+def test_scalable_discipline_settings() -> None:
     """Check the named tupled ScalableDisciplineSettings."""
     settings = ScalableDisciplineSettings(3, 5)
     assert settings.d_i == 3
@@ -42,7 +42,7 @@ def test_scalable_discipline_settings():
     )
 
 
-def test_default_scalable_discipline_settings():
+def test_default_scalable_discipline_settings() -> None:
     """Check the tuple DEFAULT_SCALABLE_DISCIPLINE_SETTINGS."""
     assert (
         ScalableDisciplineSettings(),

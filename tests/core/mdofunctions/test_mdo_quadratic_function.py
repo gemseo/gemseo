@@ -45,7 +45,7 @@ def quadratic_without_linear_term() -> MDOQuadraticFunction:
 
 
 @pytest.mark.parametrize("coefficients", ["test", array([1, 2]), array([[1, 2]])])
-def test_init(coefficients):
+def test_init(coefficients) -> None:
     """Check the initialization of the quadratic function."""
     with pytest.raises(
         ValueError,
@@ -64,7 +64,7 @@ def test_init(coefficients):
         ("quadratic_without_linear_term", 34.0, [12.0, 21.0]),
     ],
 )
-def test_values(function, value, gradient, request):
+def test_values(function, value, gradient, request) -> None:
     """Check the value of a quadratic function."""
     x_vect = array([1.0, 2.0])
     assert request.getfixturevalue(function)(x_vect) == value
@@ -94,6 +94,6 @@ def test_values(function, value, gradient, request):
         ),
     ],
 )
-def test_expression(function, expr, request):
+def test_expression(function, expr, request) -> None:
     """Check the expression of a quadratic function."""
     assert request.getfixturevalue(function).expr == expr

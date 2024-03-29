@@ -25,7 +25,7 @@ from numpy.testing import assert_equal
 from gemseo.uncertainty.distributions.openturns.dirac import OTDiracDistribution
 
 
-def test_default():
+def test_default() -> None:
     """Check the Dirac distribution with the default variable value."""
     distribution = OTDiracDistribution("x", dimension=3)
     assert_equal(
@@ -33,7 +33,7 @@ def test_default():
     )
 
 
-def test_custom():
+def test_custom() -> None:
     """Check the Dirac distribution with a custom variable value."""
     distribution = OTDiracDistribution("x", variable_value=2.0, dimension=3)
     assert_equal(

@@ -48,7 +48,8 @@ class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):
         if not opt_problem.minimize_objective:
             f_opt = -f_opt
         if not opt_problem.is_mono_objective:
-            raise ValueError("The objective function must be single-valued.")
+            msg = "The objective function must be single-valued."
+            raise ValueError(msg)
 
         # Overwrite the adapter local data
         objective = opt_problem.objective.output_names[0]

@@ -24,7 +24,7 @@ from gemseo.post.constraints_history import ConstraintsHistory
 from gemseo.utils.testing.helpers import image_comparison
 
 
-def test_function_error(common_problem):
+def test_function_error(common_problem) -> None:
     """Test a ValueError is raised for a non-existent function."""
     with pytest.raises(
         ValueError,
@@ -50,7 +50,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None)
-def test_common_scenario(baseline_images, options, common_problem, pyplot_close_all):
+def test_common_scenario(baseline_images, options, common_problem) -> None:
     """Check ConstraintsHistory."""
     post = ConstraintsHistory(common_problem)
     post.execute(constraint_names=["eq", "neg", "pos"], save=False, **options)

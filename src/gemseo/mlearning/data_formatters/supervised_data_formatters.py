@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from functools import wraps
 from typing import TYPE_CHECKING
 
 from numpy import atleast_2d
@@ -55,6 +56,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
             The evaluation will have the same type as the input data.
         """
 
+        @wraps(func)
         def wrapper(
             algo: MLSupervisedAlgo,
             input_data: DataType,
@@ -123,6 +125,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
             The evaluation will have the same dimension as the input data.
         """
 
+        @wraps(func)
         def wrapper(
             algo: MLSupervisedAlgo,
             input_data: DataType,
@@ -196,6 +199,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 and/or before transforming its output data.
             """
 
+            @wraps(func)
             def wrapper(
                 algo: MLSupervisedAlgo,
                 input_data: ndarray,
@@ -279,6 +283,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
             and applying input and/or output data transformation if required.
         """
 
+        @wraps(func)
         @cls.format_dict
         @cls.format_samples
         @cls.format_transform()

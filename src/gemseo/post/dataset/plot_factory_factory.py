@@ -17,10 +17,11 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
+from gemseo.core.base_factory import T
 from gemseo.post.dataset.plot_factory import PlotFactory
 
 
-class PlotFactoryFactory(BaseFactory):
+class PlotFactoryFactory(BaseFactory[PlotFactory[T]]):
     """A factory of factories of plots.
 
     A factory of plots is used to create plots from a visualization library,

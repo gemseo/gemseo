@@ -48,13 +48,21 @@ class ParallelCoordinates(MatplotlibPlot):
         fig, axes = self._get_figure_and_axes(fig, axes)
         columns = self._common_dataset.get_columns(as_tuple=True)
         axes = parallel_coordinates(
-            dataframe, cluster, cols=columns, ax=axes, **self._specific_settings.kwargs
+            dataframe,
+            cluster,
+            cols=columns,
+            ax=axes,
+            **self._specific_settings.kwargs,
         )
+        if not self._common_settings.grid:
+            axes.grid(visible=False)
+
         if (
             self._specific_settings.lower == -inf
             and self._specific_settings.upper == inf
         ):
             axes.get_legend().remove()
+
         axes.set_xticklabels(self._get_variable_names(columns))
         axes.set_xlabel(self._common_settings.xlabel)
         axes.set_ylabel(self._common_settings.ylabel)

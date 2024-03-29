@@ -23,20 +23,30 @@ from __future__ import annotations
 
 from multiprocessing import RLock
 from typing import TYPE_CHECKING
-from typing import Any
+from typing import Literal
+from typing import cast
+from typing import overload
 
 from gemseo.core.cache import AbstractFullCache
-from gemseo.core.cache import JacobianData
+from gemseo.typing import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multiprocessing import get_multi_processing_manager
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline_data import Data
+    from multiprocessing.managers import DictProxy
+    from multiprocessing.synchronize import RLock as RLockType
+
+    from gemseo.typing import DataMapping
 
 
 class MemoryFullCache(AbstractFullCache):
     """Cache using memory to cache all the data."""
+
+    __data: (
+        DictProxy[int, dict[AbstractFullCache.Group, DataMapping | JacobianData]]
+        | dict[int, dict[AbstractFullCache.Group, DataMapping | JacobianData]]
+    )
 
     def __init__(
         self,
@@ -76,37 +86,51 @@ class MemoryFullCache(AbstractFullCache):
     ) -> None:
         self.__data[index] = {}
 
-    def _set_lock(self) -> RLock:
+    def _set_lock(self) -> RLockType:
         return RLock()
 
     def _has_group(
         self,
         index: int,
-        group: str,
+        group: AbstractFullCache.Group,
     ) -> bool:
-        return group in self.__data.get(index)
+        return group in self.__data[index]
 
     @synchronized
     def clear(self) -> None:  # noqa:D102
         super().clear()
         self.__data.clear()
 
+    @overload
     def _read_data(
         self,
         index: int,
-        group: str,
-        **options: Any,
-    ) -> Data | JacobianData:
-        data = self.__data[index].get(group)
-        if group == self._JACOBIAN_GROUP and data is not None:
-            return nest_flat_bilevel_dict(data, separator=self._JACOBIAN_SEPARATOR)
+        group: Literal[AbstractFullCache.Group.INPUTS, AbstractFullCache.Group.OUTPUTS],
+    ) -> DataMapping: ...
 
+    @overload
+    def _read_data(
+        self,
+        index: int,
+        group: Literal[AbstractFullCache.Group.JACOBIAN],
+    ) -> JacobianData: ...
+
+    def _read_data(
+        self,
+        index: int,
+        group: AbstractFullCache.Group,
+    ) -> DataMapping | JacobianData:
+        data = self.__data[index].get(group, {})
+        if group == self.Group.JACOBIAN and data:
+            return nest_flat_bilevel_dict(
+                cast(JacobianData, data), separator=self._JACOBIAN_SEPARATOR
+            )
         return data
 
     def _write_data(
         self,
-        values: Data,
-        group: str,
+        values: DataMapping,
+        group: AbstractFullCache.Group,
         index: int,
     ) -> None:
         data = self.__data[index]

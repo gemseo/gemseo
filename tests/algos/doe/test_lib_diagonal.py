@@ -33,14 +33,14 @@ from .utils import execute_problem
 DOE_LIB_NAME = "DiagonalDOE"
 
 
-def test_init():
+def test_init() -> None:
     """Check the creation of the library."""
     factory = DOEFactory()
     if factory.is_available(DOE_LIB_NAME):
         factory.create(DOE_LIB_NAME)
 
 
-def test_invalid_algo():
+def test_invalid_algo() -> None:
     """Check the request of an invalid algorithm."""
     algo_name = "invalid_algo"
     with pytest.raises(
@@ -52,7 +52,7 @@ def test_invalid_algo():
         execute_problem(DOE_LIB_NAME, algo_name=algo_name, n_samples=100)
 
 
-def test_diagonal_doe():
+def test_diagonal_doe() -> None:
     """Check the computation of a diagonal DOE."""
     dim = 3
     n_samples = 10
@@ -65,7 +65,7 @@ def test_diagonal_doe():
 
 
 @pytest.mark.parametrize("dimension", [1, 5])
-def test_diagonal_doe_on_rosenbrock(dimension):
+def test_diagonal_doe_on_rosenbrock(dimension) -> None:
     """Check the diagonal DOE on the Rosenbrock problem."""
     assert (
         check_problem_execution(
@@ -89,7 +89,7 @@ def variables_space():
     return design_space
 
 
-def test_compute_doe(variables_space):
+def test_compute_doe(variables_space) -> None:
     """Check the computation of a DOE out of a variables space."""
     library = DOEFactory().create(DOE_LIB_NAME)
     doe = library.compute_doe(variables_space, 3, unit_sampling=True)
@@ -103,13 +103,13 @@ def test_compute_doe(variables_space):
         (["1"], array([[0.0, 1.0], array([0.5, 0.5]), array([1.0, 0.0])])),
     ],
 )
-def test_reverse(variables_space, reverse, samples):
+def test_reverse(variables_space, reverse, samples) -> None:
     """Check the sampling of variables in reverse order."""
     library = DOEFactory().create(DOE_LIB_NAME)
     doe = library.compute_doe(variables_space, 3, unit_sampling=True, reverse=reverse)
     assert_equal(doe, samples)
 
 
-def test_library_name():
+def test_library_name() -> None:
     """Check the library name."""
     assert DiagonalDOE.LIBRARY_NAME == "GEMSEO"

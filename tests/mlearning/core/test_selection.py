@@ -50,7 +50,7 @@ def dataset() -> IODataset:
     )
 
 
-def test_init(dataset):
+def test_init(dataset) -> None:
     """Test construction."""
     selector = MLAlgoSelection(dataset, MSEMeasure)
     assert selector.dataset.equals(dataset)
@@ -60,13 +60,13 @@ def test_init(dataset):
 
 
 @pytest.mark.parametrize("measure", ["MSEMeasure", MSEMeasure])
-def test_init_with_measure(dataset, measure):
+def test_init_with_measure(dataset, measure) -> None:
     """Check that the measure can be passed either as a str or a MLQualityMeasure."""
     selector = MLAlgoSelection(dataset, measure)
     assert selector.measure == MSEMeasure
 
 
-def test_init_fails_if_multioutput_(dataset):
+def test_init_fails_if_multioutput_(dataset) -> None:
     expected = (
         "MLAlgoSelection does not support multioutput; "
         "the measure shall return one value."
@@ -75,7 +75,7 @@ def test_init_fails_if_multioutput_(dataset):
         MLAlgoSelection(dataset, MSEMeasure, multioutput=True)
 
 
-def test_add_candidate(dataset):
+def test_add_candidate(dataset) -> None:
     """Test add candidate method."""
     selector = MLAlgoSelection(dataset, MSEMeasure)
 
@@ -112,7 +112,7 @@ def test_add_candidate(dataset):
 
 
 @pytest.mark.parametrize("measure_evaluation_method_name", ["KFOLDS", "LEARN"])
-def test_select(dataset, measure_evaluation_method_name):
+def test_select(dataset, measure_evaluation_method_name) -> None:
     """Test select method."""
     measure = MSEMeasure
     selector = MLAlgoSelection(

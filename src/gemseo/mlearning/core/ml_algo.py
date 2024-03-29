@@ -104,7 +104,6 @@ from collections.abc import MutableMapping
 from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -117,6 +116,7 @@ from numpy import ndarray
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFactory
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
@@ -192,7 +192,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     FILENAME: ClassVar[str] = "ml_algo.pkl"
 
-    IDENTITY: Final[DefaultTransformerType] = MappingProxyType({})
+    IDENTITY: Final[DefaultTransformerType] = READ_ONLY_EMPTY_DICT
     """A transformer leaving the input and output variables as they are."""
 
     DEFAULT_TRANSFORMER: DefaultTransformerType = IDENTITY
@@ -245,11 +245,12 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         for group in self.learning_set.group_names:
             names = self.learning_set.get_variable_names(group)
             if group in self.transformer and transformer_keys & set(names):
-                raise ValueError(
+                msg = (
                     "An MLAlgo cannot have both a transformer "
                     "for all variables of a group and a transformer "
                     "for one variable of this group."
                 )
+                raise ValueError(msg)
 
     @staticmethod
     def __create_transformer(transformer: SubTransformerType) -> Transformer:
@@ -262,12 +263,13 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         if isinstance(transformer, str):
             return TransformerFactory().create(transformer)
 
-        raise ValueError(
+        msg = (
             "Transformer type must be "
             "either Transformer, "
             "Tuple[str, Mapping[str, Any]] "
             "or str."
         )
+        raise ValueError(msg)
 
     @property
     def is_trained(self) -> bool:
@@ -290,6 +292,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             samples: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
+                Otherwise, use them as they are.
         """
         self.resampling_results = {}
         if samples is None:
@@ -312,6 +315,7 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             indices: The indices of the learning samples.
                 If ``None``, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
+                Otherwise, use them as they are.
         """
 
     @property
@@ -355,10 +359,8 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             self.learning_set.data = {}
             self.learning_set.length = 0
 
-        default_directory_name = "{}_{}".format(
-            FilePathManager.to_snake_case(self.__class__.__name__),
-            self.learning_set.name,
-        )
+        prefix = FilePathManager.to_snake_case(self.__class__.__name__)
+        default_directory_name = f"{prefix}_{self.learning_set.name}"
         directory = Path(path) / (directory or default_directory_name)
         directory.mkdir(exist_ok=True)
 
@@ -417,7 +419,8 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             RuntimeError: If the algorithm is not trained.
         """
         if not self.is_trained:
-            raise RuntimeError(
+            msg = (
                 f"The {self.__class__.__name__} must be trained "
                 f"to access {inspect.stack()[1].function}."
             )
+            raise RuntimeError(msg)

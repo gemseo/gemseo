@@ -47,18 +47,18 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
         ),
     ],
 )
-def test_reason_values(name, value):
+def test_reason_values(name, value) -> None:
     """Check the value of a _UnsuitabilityReason."""
     assert _UnsuitabilityReason[name].value == value
 
 
-def test_str():
+def test_str() -> None:
     """Check that the string representation of an _UnsuitabilityReason is its value."""
     reason = _UnsuitabilityReason.EMPTY_DESIGN_SPACE
     assert str(reason) == reason.value
 
 
-def test_bool():
+def test_bool() -> None:
     """Check that a _UnsuitabilityReason is False only if equal to NO_REASON."""
     for reason in _UnsuitabilityReason:
         if reason == _UnsuitabilityReason.NO_REASON:

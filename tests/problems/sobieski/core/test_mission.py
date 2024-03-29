@@ -32,7 +32,7 @@ def problem():
     return SobieskiProblem("complex128")
 
 
-def test_dweightratio_dwt(problem):
+def test_dweightratio_dwt(problem) -> None:
     h = 1e-30
     sr = problem.mission
     indata = problem.get_default_inputs_equilibrium(
@@ -47,7 +47,7 @@ def test_dweightratio_dwt(problem):
     )
 
 
-def test_dlnweightratio_dwt(problem):
+def test_dlnweightratio_dwt(problem) -> None:
     h = 1e-30
     sr = problem.mission
     indata = problem.get_default_inputs_equilibrium(
@@ -64,7 +64,7 @@ def test_dlnweightratio_dwt(problem):
     )
 
 
-def test_d_range_d_wt(problem):
+def test_d_range_d_wt(problem) -> None:
     h = 1e-30
     sr = problem.mission
     indata = problem.get_default_inputs_equilibrium(
@@ -88,7 +88,7 @@ def test_d_range_d_wt(problem):
     )
 
 
-def test_d_range_d_wf(problem):
+def test_d_range_d_wf(problem) -> None:
     h = 1e-30
     sr = problem.mission
     indata = problem.get_default_inputs_equilibrium(
@@ -112,7 +112,7 @@ def test_d_range_d_wf(problem):
     )
 
 
-def test_jac_mission(problem):
+def test_jac_mission(problem) -> None:
     sr = SobieskiMission("complex128")
     assert sr.check_jacobian(
         threshold=THRESHOLD, derr_approx="complex_step", step=1e-30

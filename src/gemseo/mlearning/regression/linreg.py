@@ -65,13 +65,13 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression as LinReg
 from sklearn.linear_model import Ridge
 
-from gemseo import SEED
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -211,11 +211,12 @@ class LinearRegressor(MLRegressionAlgo):
             isinstance(transformer, DimensionReduction)
             for transformer in self.transformer.values()
         ):
-            raise ValueError(
+            msg = (
                 "Coefficients are only representable in dictionary "
                 "form if the transformers do not change the "
                 "dimensions of the variables."
             )
+            raise ValueError(msg)
         return self.__convert_array_to_dict(coefficients)
 
     def get_intercept(
@@ -240,11 +241,12 @@ class LinearRegressor(MLRegressionAlgo):
             return intercept
 
         if IODataset.OUTPUT_GROUP in self.transformer:
-            raise ValueError(
+            msg = (
                 "Intercept is only representable in dictionary "
                 "form if the transformers do not change the "
                 "dimensions of the output variables."
             )
+            raise ValueError(msg)
         intercept = split_array_to_dict_of_arrays(
             intercept,
             self.learning_set.variable_names_to_n_components,

@@ -35,7 +35,7 @@ from .test_gauss_seidel import SelfCoupledDisc
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
 
 
-def test_quasi_newton_invalid_method():
+def test_quasi_newton_invalid_method() -> None:
     """Test invalid method names for quasi Newton."""
     with pytest.raises(
         ValueError, match="Method 'unknown_method' is not a valid quasi-Newton method."
@@ -43,7 +43,7 @@ def test_quasi_newton_invalid_method():
         MDAQuasiNewton([Sellar1(), Sellar2()], method="unknown_method")
 
 
-def test_broyden_sellar():
+def test_broyden_sellar() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.BROYDEN1)
     mda.reset_history_each_run = True
@@ -55,7 +55,7 @@ def test_broyden_sellar():
     mda.execute({X_SHARED: mda.default_inputs[X_SHARED] + 0.1})
 
 
-def test_hybrid_sellar():
+def test_hybrid_sellar() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDAQuasiNewton(disciplines, use_gradient=True)
@@ -65,7 +65,7 @@ def test_hybrid_sellar():
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
-def test_lm_sellar():
+def test_lm_sellar() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDAQuasiNewton(
@@ -76,7 +76,7 @@ def test_lm_sellar():
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
 
-def test_dfsane_sellar():
+def test_dfsane_sellar() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.DF_SANE)
     mda.execute()
@@ -88,7 +88,7 @@ def test_dfsane_sellar():
         MDAQuasiNewton([Sellar1(), Sellar2()], method="unknown_method")
 
 
-def test_broyden_sellar2():
+def test_broyden_sellar2() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), SellarSystem()]
     mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.BROYDEN1)
@@ -98,7 +98,7 @@ def test_broyden_sellar2():
     assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-6
 
 
-def test_self_coupled():
+def test_self_coupled() -> None:
     """Test MDAQuasiNewton with a self-coupled discipline."""
     sc_disc = SelfCoupledDisc()
     mda = MDAQuasiNewton([sc_disc], tolerance=1e-14, max_mda_iter=40)

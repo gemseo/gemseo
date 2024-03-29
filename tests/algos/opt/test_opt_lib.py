@@ -47,20 +47,21 @@ def lib() -> OptimizersFactory:
     if factory.is_available(OPT_LIB_NAME):
         return factory.create(OPT_LIB_NAME)
 
-    raise ImportError("SciPy is not available.")
+    msg = "SciPy is not available."
+    raise ImportError(msg)
 
 
 @pytest.mark.parametrize(
     ("name", "handle_eq", "handle_ineq"),
     [("L-BFGS-B", False, False), ("SLSQP", True, True)],
 )
-def test_algorithm_handles_constraints(lib, name, handle_eq, handle_ineq):
+def test_algorithm_handles_constraints(lib, name, handle_eq, handle_ineq) -> None:
     """Check algorithm_handles_eqcstr() and algorithm_handles_ineqcstr()."""
     assert lib.algorithm_handles_eqcstr(name) is handle_eq
     assert lib.algorithm_handles_ineqcstr(name) is handle_ineq
 
 
-def test_is_algorithm_suited():
+def test_is_algorithm_suited() -> None:
     """Check is_algorithm_suited when True."""
     description = OptimizationAlgorithmDescription("foo", "bar")
     design_space = DesignSpace()
@@ -69,7 +70,7 @@ def test_is_algorithm_suited():
     assert OptimizationLibrary.is_algorithm_suited(description, problem)
 
 
-def test_is_algorithm_suited_design_space():
+def test_is_algorithm_suited_design_space() -> None:
     """Check is_algorithm_suited with unhandled empty design space."""
     description = OptimizationAlgorithmDescription("foo", "bar")
     problem = OptimizationProblem(DesignSpace())
@@ -80,7 +81,7 @@ def test_is_algorithm_suited_design_space():
     )
 
 
-def test_is_algorithm_suited_has_eq_constraints():
+def test_is_algorithm_suited_has_eq_constraints() -> None:
     """Check is_algorithm_suited with unhandled equality constraints."""
     description = OptimizationAlgorithmDescription(
         "foo", "bar", handle_equality_constraints=False
@@ -96,7 +97,7 @@ def test_is_algorithm_suited_has_eq_constraints():
     )
 
 
-def test_is_algorithm_suited_has_ineq_constraints():
+def test_is_algorithm_suited_has_ineq_constraints() -> None:
     """Check is_algorithm_suited with unhandled inequality constraints."""
     description = OptimizationAlgorithmDescription(
         "foo", "bar", handle_inequality_constraints=False
@@ -112,7 +113,7 @@ def test_is_algorithm_suited_has_ineq_constraints():
     )
 
 
-def test_is_algorithm_suited_pbm_type():
+def test_is_algorithm_suited_pbm_type() -> None:
     """Check is_algorithm_suited with unhandled problem type."""
     description = OptimizationAlgorithmDescription(
         "foo", "bar", problem_type=OptimizationProblem.ProblemType.LINEAR
@@ -128,7 +129,7 @@ def test_is_algorithm_suited_pbm_type():
     )
 
 
-def test_pre_run_fail(lib, power):
+def test_pre_run_fail(lib, power) -> None:
     """Check that pre_run raises an exception if maxiter cannot be determined."""
     with pytest.raises(
         ValueError, match="Could not determine the maximum number of iterations."
@@ -136,7 +137,7 @@ def test_pre_run_fail(lib, power):
         lib._pre_run(power, "SLSQP")
 
 
-def test_check_constraints_handling_fail(lib, power):
+def test_check_constraints_handling_fail(lib, power) -> None:
     """Test that check_constraints_handling can raise an exception."""
     with pytest.raises(
         ValueError,
@@ -148,13 +149,13 @@ def test_check_constraints_handling_fail(lib, power):
         lib._check_constraints_handling("L-BFGS-B", power)
 
 
-def test_algorithm_handles_eqcstr_fail(lib, power):
+def test_algorithm_handles_eqcstr_fail(lib, power) -> None:
     """Test that algorithm_handles_eqcstr can raise an exception."""
     with pytest.raises(KeyError, match="Algorithm TOTO not in library ScipyOpt."):
         lib.algorithm_handles_eqcstr("TOTO")
 
 
-def test_optimization_algorithm():
+def test_optimization_algorithm() -> None:
     """Check the default settings of OptimizationAlgorithmDescription."""
     with concretize_classes(OptimizationLibrary):
         lib = OptimizationLibrary()
@@ -175,7 +176,7 @@ def test_optimization_algorithm():
     assert algo.library_name == ""
 
 
-def test_execute_without_current_value():
+def test_execute_without_current_value() -> None:
     """Check that the driver can be executed when a current design value is missing."""
     design_space = DesignSpace()
     design_space.add_variable("x")
@@ -185,3 +186,31 @@ def test_execute_without_current_value():
     driver = OptimizersFactory().create("NLOPT_COBYLA")
     driver.execute(problem, "NLOPT_COBYLA", max_iter=1)
     assert design_space["x"].value == 0.0
+
+
+@pytest.mark.parametrize(
+    ("scaling_threshold", "pow2", "ineq1", "ineq2", "eq"),
+    [(None, 3, -0.5, -0.5, -0.1), (0.1, 1.0, -1.0, -1.0, -0.1)],
+)
+def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> None:
+    """Check the scaling of functions."""
+    with concretize_classes(OptimizationLibrary):
+        library = OptimizationLibrary()
+
+    library.descriptions["algorithm"] = OptimizationAlgorithmDescription(
+        algorithm_name="algorithm_name",
+        internal_algorithm_name="internal_algorithm_name",
+        handle_equality_constraints=True,
+        handle_inequality_constraints=True,
+    )
+    library.algo_name = "algorithm"
+    library.problem = power
+    library.problem.preprocess_functions()
+    library._pre_run(
+        power, "algorithm", max_iter=2, scaling_threshold=scaling_threshold
+    )
+    current_value = power.design_space.get_current_value()
+    assert library.problem.objective(current_value) == pow2
+    assert library.problem.constraints[0](current_value) == ineq1
+    assert library.problem.constraints[1](current_value) == ineq2
+    assert library.problem.constraints[2](current_value) == pytest.approx(eq, 0, 1e-16)

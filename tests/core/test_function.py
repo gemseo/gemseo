@@ -20,23 +20,25 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import math
 import re
 from operator import add
 from operator import mul
+from operator import sub
 from operator import truediv
 from unittest import mock
 
-import numpy as np
 import pytest
 from numpy import allclose
 from numpy import array
+from numpy import cos
 from numpy import eye
 from numpy import matmul
 from numpy import ndarray
 from numpy import ones
+from numpy import sin
 from numpy import zeros
 from numpy.linalg import norm
+from scipy.sparse import csr_array
 
 from gemseo.core.mdofunctions.concatenate import Concatenate
 from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
@@ -48,19 +50,20 @@ from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
 from gemseo.core.mdofunctions.taylor_polynomials import compute_quadratic_approximation
 from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 
 @pytest.fixture(scope="module")
 def sinus() -> MDOFunction:
     """The sinus function."""
-    return MDOFunction(math.sin, "sin")
+    return MDOFunction(sin, "sin")
 
 
 @pytest.fixture(scope="module")
 def sinus_eq_output_names() -> MDOFunction:
     """The sinus function of type ConstraintType.EQ with output_names."""
     return MDOFunction(
-        math.sin,
+        sin,
         "sin",
         output_names=array(["sin"]),
         f_type=MDOFunction.ConstraintType.EQ,
@@ -68,19 +71,19 @@ def sinus_eq_output_names() -> MDOFunction:
 
 
 @pytest.mark.parametrize("x", [0, 1])
-def test_call(sinus, x):
+def test_call(sinus, x) -> None:
     """Check MDOFunction.__call__()."""
-    assert sinus(x) == math.sin(x)
+    assert sinus(x) == sin(x)
 
 
-def test_output_names_error():
+def test_output_names_error() -> None:
     """Check that TypeError is raised when output_names has a wrong type."""
     with pytest.raises(TypeError):
         # TypeError: 'float' object is not iterable
-        MDOFunction(math.sin, "sin", output_names=1.3)
+        MDOFunction(sin, "sin", output_names=1.3)
 
 
-def test_f_type(sinus, sinus_eq_output_names):
+def test_f_type(sinus, sinus_eq_output_names) -> None:
     """Check that the sum of a ConstraintType.EQ function with another function has
     FunctionType.EQ."""
     assert (sinus + sinus_eq_output_names).f_type == MDOFunction.ConstraintType.EQ
@@ -88,7 +91,7 @@ def test_f_type(sinus, sinus_eq_output_names):
 
 
 @pytest.mark.parametrize(("operator", "symbol"), [(mul, "*"), (add, "+")])
-def test_operation_error(sinus, operator, symbol):
+def test_operation_error(sinus, operator, symbol) -> None:
     """Check that errors are raised with operations mixing MDOFunction and operators."""
     with pytest.raises(
         TypeError,
@@ -99,7 +102,7 @@ def test_operation_error(sinus, operator, symbol):
         operator(sinus, "foo")
 
 
-def test_init_from_dict_repr():
+def test_init_from_dict_repr() -> None:
     """Check that initializing a MDOFunction with an unknown arg raised an error."""
     with pytest.raises(
         ValueError,
@@ -116,72 +119,105 @@ def test_init_from_dict_repr():
 def get_full_sin_func():
     """"""
     return MDOFunction(
-        math.sin, name="F", f_type="obj", jac=math.cos, expr="sin(x)", input_names=["x"]
+        sin, name="F", f_type="obj", jac=cos, expr="sin(x)", input_names=["x"]
     )
 
 
-def test_check_format():
+def test_check_format() -> None:
     """xxx."""
-    MDOFunction(
-        math.sin, f_type="obj", name=None, jac=math.cos, expr="sin(x)", input_names="x"
-    )
+    MDOFunction(sin, f_type="obj", name=None, jac=cos, expr="sin(x)", input_names="x")
 
 
-def test_func_error(sinus):
+def test_func_error(sinus) -> None:
     """Check func() with a string argument."""
     with pytest.raises(TypeError):
         sinus.func("toto")
 
 
-def test_add_sub_neg():
-    """"""
+@pytest.mark.parametrize("jacobian_type_1", ["dense", "sparse"])
+@pytest.mark.parametrize("jacobian_type_2", ["dense", "sparse"])
+def test_mdofunctions_algebra(jacobian_type_1, jacobian_type_2) -> None:
+    """Test algebraic operations with MDOFunctions."""
+    array_ = array if jacobian_type_1 == "dense" else csr_array
     f = MDOFunction(
-        np.sin,
-        name="sin",
-        jac=lambda x: np.array(np.cos(x)),
-        expr="sin(x)",
+        lambda x: norm(x) ** 2,
+        name="f",
+        jac=lambda x: 2 * array_(x),
+        expr="f(x)",
         input_names=["x"],
-        f_type=MDOFunction.ConstraintType.EQ,
         dim=1,
     )
+
+    array_ = array if jacobian_type_2 == "dense" else csr_array
     g = MDOFunction(
-        np.cos,
+        lambda x: sum(cos(x)),
         name="cos",
-        jac=lambda x: -np.array(np.sin(x)),
+        jac=lambda x: -array_(sin(x)),
         expr="cos(x)",
         input_names=["x"],
+        dim=1,
     )
 
+    x = array([1.0, 2.0])
+
+    f_x = norm(x) ** 2
+    g_x = sum(cos(x))
+
+    df_x = 2 * x
+    dg_x = -sin(x)
+
     h = f + g
-    k = f - g
-    mm = f * g
-    mm_c = f * 3.5
-    x = 1.0
-    assert h(x) == math.sin(x) + math.cos(x)
-    assert h.jac(x) == math.cos(x) - math.sin(x)
+    assert allclose(h(x), f_x + g_x)
+    assert allclose(h.jac(x).data, (df_x + dg_x).data)
+    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
-    n = -f
-    assert n(x) == -math.sin(x)
-    assert n.jac(x) == -math.cos(x)
+    h = f - g
+    assert allclose(h(x), f_x - g_x)
+    assert allclose(h.jac(x).data, (df_x - dg_x).data)
+    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
-    assert k(x) == math.sin(x) - math.cos(x)
-    assert k.jac(x) == math.cos(x) + math.sin(x)
+    h = f * g
+    assert allclose(h(x), f_x * g_x)
+    assert allclose(h.jac(x).data, (g_x * df_x + f_x * dg_x).data)
+    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
-    assert mm.jac(x) == math.cos(x) ** 2 + -(math.sin(x) ** 2)
+    h = f / g
+    assert allclose(h(x), f_x / g_x)
+    assert allclose(h.jac(x).data, (g_x * df_x - f_x * dg_x).data / g_x**2)
+    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
-    fplu = f + 3.5
-    fmin = f - 5.0
+    h = f + 3.0
+    assert allclose(h(x), f_x + 3.0)
+    assert allclose(h.jac(x).data, df_x.data)
+    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
-    for func in [f, g, h, k, mm, mm_c, fplu, fmin]:
-        func.check_grad(np.array([x]), "ComplexStep")
+    h = f - 3.0
+    assert allclose(h(x), f_x - 3.0)
+    assert allclose(h.jac(x).data, df_x.data)
+    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+
+    h = f * 3.0
+    assert allclose(h(x), f_x * 3.0)
+    assert allclose(h.jac(x).data, (df_x * 3.0).data)
+    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+
+    h = f / 3.0
+    assert allclose(h(x), f_x / 3.0)
+    assert allclose(h.jac(x).data, (df_x / 3.0).data)
+    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+
+    h = -f
+    assert allclose(h(x), -f_x)
+    assert allclose(h.jac(x).data, (-df_x).data)
+    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
 
-def test_todict_fromdict():
+def test_todict_fromdict() -> None:
     """Check to_dict() and init_from_dict_repr()."""
     original_function = MDOFunction(
-        np.sin,
+        sin,
         name="sin",
-        jac=lambda x: np.array(np.cos(x)),
+        jac=lambda x: array(cos(x)),
         expr="sin(x)",
         input_names=["x"],
         f_type=MDOFunction.ConstraintType.EQ,
@@ -198,44 +234,44 @@ def test_todict_fromdict():
         assert getattr(new_function, name) == getattr(original_function, name)
 
 
-def test_repr_1(get_full_sin_func):
+def test_repr_1(get_full_sin_func) -> None:
     """xxx."""
     assert str(get_full_sin_func) == "F(x) = sin(x)"
 
 
-def test_repr_2():
+def test_repr_2() -> None:
     """xxx."""
     g = MDOFunction(
-        math.sin,
+        sin,
         name="G",
         f_type="ineq",
-        jac=math.cos,
+        jac=cos,
         expr="sin(x)",
         input_names=["x", "y"],
     )
     assert str(g) == "sin(x) <= 0.0"
 
 
-def test_repr_3():
+def test_repr_3() -> None:
     """xxx."""
-    h = MDOFunction(math.sin, name="H", input_names=["x", "y", "x_shared"])
+    h = MDOFunction(sin, name="H", input_names=["x", "y", "x_shared"])
     assert str(h) == "H(x, y, x_shared)"
 
 
-def test_repr_4():
+def test_repr_4() -> None:
     """xxx."""
     g = MDOFunction(
-        math.sin,
+        sin,
         name="G",
         expr="sin(x)",
         input_names=["x"],
     )
-    i = MDOFunction(math.sin, name="I", input_names=["y"], expr="sin(y)")
+    i = MDOFunction(sin, name="I", input_names=["y"], expr="sin(y)")
     assert str(g + i) == "[G+I](x, y) = sin(x)+sin(y)"
     assert str(g - i) == "[G-I](x, y) = sin(x)-sin(y)"
 
 
-def test_repr_5(get_full_sin_func):
+def test_repr_5(get_full_sin_func) -> None:
     """Test the representation of many sign changes on an MDOFunction."""
     sin = get_full_sin_func
     minus_sin = -sin
@@ -243,8 +279,8 @@ def test_repr_5(get_full_sin_func):
     assert str(plus_sin) == "--F(x) = -(-(sin(x)))"
 
 
-def test_wrong_jac_shape():
-    f = MDOFunction(np.sin, name="sin", jac=lambda x: np.array([np.cos(x), 1.0]))
+def test_wrong_jac_shape() -> None:
+    f = MDOFunction(sin, name="sin", jac=lambda x: array([cos(x), 1.0]))
     with pytest.raises(ValueError):
         f.check_grad(array([0.0]))
 
@@ -260,7 +296,7 @@ def test_wrong_jac_shape():
         ),
     ],
 )
-def test_restriction(function):
+def test_restriction(function) -> None:
     """Test the restriction of a function."""
     x_vect = array([1.0, 2.0, 3.0])
     sub_x_vect = x_vect[array([0, 2])]
@@ -272,7 +308,7 @@ def test_restriction(function):
     restriction.check_grad(sub_x_vect, error_max=1e-6)
 
 
-def test_linearization():
+def test_linearization() -> None:
     """Test the linearization of a function."""
     function = MDOFunction(
         lambda x: 0.5 * array([norm(x) ** 2, -(norm(x) ** 2)]),
@@ -285,7 +321,7 @@ def test_linearization():
     linearization.check_grad(array([2.0, 2.0, 2.0]))
 
 
-def test_convex_linearization():
+def test_convex_linearization() -> None:
     """Test the convex linearization of a function."""
     # Vectorial function
     function = MDOFunction(
@@ -335,7 +371,9 @@ def function_for_quadratic_approximation() -> MDOFunction:
 
 
 @pytest.mark.parametrize("x_vect", [(ones(2), ones(3)), (eye(3), ones(2))])
-def test_quadratic_approximation_error(function_for_quadratic_approximation, x_vect):
+def test_quadratic_approximation_error(
+    function_for_quadratic_approximation, x_vect
+) -> None:
     """Test the second-order polynomial of a function with inconsistent input."""
     with pytest.raises(
         ValueError, match="Hessian approximation must be a square ndarray."
@@ -343,7 +381,7 @@ def test_quadratic_approximation_error(function_for_quadratic_approximation, x_v
         compute_quadratic_approximation(function_for_quadratic_approximation, *x_vect)
 
 
-def test_quadratic_approximation(function_for_quadratic_approximation):
+def test_quadratic_approximation(function_for_quadratic_approximation) -> None:
     """Test the second-order polynomial of a function."""
     approx = compute_quadratic_approximation(
         function_for_quadratic_approximation, ones(3), eye(3)
@@ -353,7 +391,7 @@ def test_quadratic_approximation(function_for_quadratic_approximation):
     approx.check_grad(zeros(3), error_max=1e-6)
 
 
-def test_concatenation():
+def test_concatenation() -> None:
     """Test the concatenation of functions."""
     dim = 2
     f = MDOFunction(lambda x: norm(x) ** 2, "f", jac=lambda x: 2 * x, dim=1)
@@ -366,19 +404,19 @@ def test_concatenation():
 
 
 @pytest.mark.parametrize("normalize", [False, True])
-def test_set_pt_from_database(normalize):
+def test_set_pt_from_database(normalize) -> None:
     problem = Power2()
     problem.preprocess_functions(is_function_input_normalized=normalize)
-    x = np.zeros(3)
+    x = zeros(3)
     problem.evaluate_functions(x, normalize=normalize)
-    function = MDOFunction(np.sum, problem.objective.name)
+    function = MDOFunction(sum, problem.objective.name)
     function.set_pt_from_database(
         problem.database, problem.design_space, normalize=normalize, jac=False
     )
     function(x)
 
 
-def test_linear_approximation():
+def test_linear_approximation() -> None:
     """Tests the linear approximation of a standard MDOFunction."""
     # Define the (affine) function f(x, y) = [1 2] [x] + [5]
     #                                        [3 4] [y]   [6]
@@ -449,7 +487,7 @@ def function():
 )
 def test_offset_name_and_expr(
     function, neg, neg_after, value, expected_n, expected_e, expected_sr
-):
+) -> None:
     """Check the name and expression of a function after 1) __neg__ and 2) offset."""
     if neg_after:
         function = function.offset(value)
@@ -467,7 +505,7 @@ def test_offset_name_and_expr(
     assert function.special_repr == expected_sr
 
 
-def test_expects_normalized_inputs(function):
+def test_expects_normalized_inputs(function) -> None:
     """Check the inputs normalization expectation."""
     assert not function.expects_normalized_inputs
 
@@ -493,27 +531,27 @@ def database():
 @pytest.mark.parametrize("normalize", [False, True])
 def test_expect_normalized_inputs_from_database(
     function, design_space, database, normalize
-):
+) -> None:
     """Check the inputs normalization expectation."""
     func = SetPtFromDatabase(database, design_space, function, normalize=normalize)
     assert func.expects_normalized_inputs == normalize
 
 
 @pytest.mark.parametrize("normalize", [False, True])
-def test_expect_normalized_inputs_normfunction(function, problem, normalize):
+def test_expect_normalized_inputs_normfunction(function, problem, normalize) -> None:
     """Check the inputs normalization expectation."""
     func = NormFunction(function, normalize, False, problem)
     assert func.expects_normalized_inputs == normalize
 
 
 @pytest.mark.parametrize("normalize", [False, True])
-def test_expect_normalized_inputs_normdbfunction(function, problem, normalize):
+def test_expect_normalized_inputs_normdbfunction(function, problem, normalize) -> None:
     """Check the inputs normalization expectation."""
     func = NormDBFunction(function, normalize, False, problem)
     assert func.expects_normalized_inputs == normalize
 
 
-def test_activate_counters():
+def test_activate_counters() -> None:
     """Check that the function counter is active by default."""
     func = MDOFunction(lambda x: x, "func")
     assert func.n_calls == 0
@@ -521,7 +559,7 @@ def test_activate_counters():
     assert func.n_calls == 1
 
 
-def test_deactivate_counters():
+def test_deactivate_counters() -> None:
     """Check that the function counter is set to None when deactivated."""
     activate_counters = MDOFunction.activate_counters
 
@@ -536,7 +574,7 @@ def test_deactivate_counters():
     MDOFunction.activate_counters = activate_counters
 
 
-def test_get_indexed_name(function):
+def test_get_indexed_name(function) -> None:
     """Check the indexed function name."""
     assert function.get_indexed_name(3) == "n!3"
 
@@ -545,9 +583,9 @@ def test_get_indexed_name(function):
 @pytest.mark.parametrize("gexpr", [None, "x**3"])
 @pytest.mark.parametrize(
     ("op", "op_name", "func", "jac"),
-    [(mul, "*", 32, 80), (truediv, "/", 0.5, -1.0 / 9)],
+    [(mul, "*", 32, 80), (truediv, "/", 0.5, -0.25)],
 )
-def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac):
+def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac) -> None:
     """Check the multiplication of a function by a function or its inverse."""
     f = MDOFunction(
         lambda x: x**2, "f", jac=lambda x: 2 * x, input_names=["x"], expr=fexpr
@@ -570,7 +608,7 @@ def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac):
 @pytest.mark.parametrize(
     ("op", "op_name", "func", "jac"), [(mul, "*", 16, 24), (truediv, "/", 4, 6)]
 )
-def test_multiplication_by_scalar(expr, op, op_name, func, jac):
+def test_multiplication_by_scalar(expr, op, op_name, func, jac) -> None:
     """Check the multiplication of a function by a scalar or its inverse."""
     f = MDOFunction(
         lambda x: x**3, "f", jac=lambda x: 3 * x**2, input_names=["x"], expr=expr
@@ -589,6 +627,27 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac):
     assert f_op_2.jac(2) == jac
 
 
+@pytest.fixture(scope="module")
+def multidimensional_function() -> MDOFunction:
+    return MDOFunction(lambda x: x[:-1], "f", jac=lambda x: eye(x.size)[:-1, :])
+
+
+def test_multiplication_by_array(multidimensional_function):
+    """Check the multiplication of a function by an array."""
+    product = multidimensional_function * array([2.0, 3.0])
+    inputs = array([4.0, 5.0, 6.0])
+    assert (product(inputs) == [8.0, 15.0]).all()
+    assert (product.jac(inputs) == array([[2, 0, 0], [0, 3, 0]])).all()
+
+
+def test_division_by_array(multidimensional_function):
+    """Check the division of a function by an array."""
+    quotient = multidimensional_function / array([2.0, 5.0])
+    inputs = array([4.0, 3.0, 6.0])
+    assert (quotient(inputs) == array([2.0, 0.6])).all()
+    assert (quotient.jac(inputs) == array([[0.5, 0, 0], [0, 0.2, 0]])).all()
+
+
 @pytest.mark.parametrize(
     ("expr_1", "expr_2", "op", "expected"),
     [
@@ -598,7 +657,7 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac):
         ("((x-4)-9)", "x", truediv, "[f/g](x) = ((x-4)-9)/x"),
     ],
 )
-def test_repr_mult_sum(expr_1, expr_2, op, expected):
+def test_repr_mult_sum(expr_1, expr_2, op, expected) -> None:
     """Test the str repr of the product of two functions."""
     f = MDOFunction(simple_function, "f", expr=expr_1, input_names=["x"])
     g = MDOFunction(simple_function, "g", expr=expr_2, input_names=["x"])
@@ -626,10 +685,10 @@ def simple_function(x: ndarray) -> ndarray:
         (
             MDOFunction,
             {
-                "func": math.sin,
+                "func": sin,
                 "f_type": "obj",
                 "name": "obj",
-                "jac": math.cos,
+                "jac": cos,
                 "expr": "sin(x)",
                 "input_names": ["x"],
             },
@@ -647,7 +706,9 @@ def simple_function(x: ndarray) -> ndarray:
         ),
     ],
 )
-def test_serialize_deserialize(activate_counters, mdo_function, kwargs, value, tmp_wd):
+def test_serialize_deserialize(
+    activate_counters, mdo_function, kwargs, value, tmp_wd
+) -> None:
     """Test the serialization/deserialization method.
 
     Args:
@@ -682,7 +743,7 @@ def test_serialize_deserialize(activate_counters, mdo_function, kwargs, value, t
 @pytest.mark.parametrize(
     ("force_real", "expected"), [(False, array([1j])), (True, array([0.0]))]
 )
-def test_force_real(force_real, expected):
+def test_force_real(force_real, expected) -> None:
     """Verify the use of force_real."""
     f = MDOFunction(lambda x: x, "f", force_real=force_real)
     assert f.evaluate(array([1j])) == expected
@@ -691,7 +752,7 @@ def test_force_real(force_real, expected):
 @pytest.mark.parametrize(
     ("ft1", "ft2", "ft"), [("", "", ""), ("obj", "", "obj"), ("", "obj", "obj")]
 )
-def test_f_type_sum_two_functions(ft1, ft2, ft):
+def test_f_type_sum_two_functions(ft1, ft2, ft) -> None:
     """Verify the f_type of the sum of two functions."""
     f = MDOFunction(lambda x: x, "f1", f_type=ft1) + MDOFunction(
         lambda x: x, "f2", f_type=ft2
@@ -700,7 +761,7 @@ def test_f_type_sum_two_functions(ft1, ft2, ft):
 
 
 @pytest.mark.parametrize("f_type", ["", "obj"])
-def test_f_type_sum_function_and_number(f_type):
+def test_f_type_sum_function_and_number(f_type) -> None:
     """Verify the f_type of the sum of a function and a number."""
     f = MDOFunction(lambda x: x, "f", f_type=f_type) + 1.0
     assert f.f_type == f_type
@@ -715,7 +776,7 @@ def test_f_type_sum_function_and_number(f_type):
         (["a"], ["b"], ["a", "b"]),
     ],
 )
-def test_concatenate(f_out, g_out, h_out):
+def test_concatenate(f_out, g_out, h_out) -> None:
     """Check ``Concatenate.output_names``."""
     f = Concatenate(
         [
@@ -748,7 +809,7 @@ def test_concatenate(f_out, g_out, h_out):
         (MDOFunction.FunctionType.INEQ, ["y", "x"], "", True, "-f(y, x) <= 0.0"),
     ],
 )
-def test_default_repr(f_type, input_names, expr, neg, expected):
+def test_default_repr(f_type, input_names, expr, neg, expected) -> None:
     """Check default_repr.
 
     Special cases:
@@ -761,3 +822,17 @@ def test_default_repr(f_type, input_names, expr, neg, expected):
     if neg:
         f = -f
     assert f.default_repr == expected
+
+
+@pytest.mark.parametrize("operation", [add, sub, mul, truediv])
+def test_arithmetic_operation_with_incompatible_normalizations(
+    sinus, problem, operation
+):
+    """Check arithmetic operation on functions with incompatible normalizations."""
+    with pytest.raises(
+        RuntimeError,
+        match="The operation cannot be performed because "
+        "one function expects normalized inputs "
+        "while the other does not.",
+    ):
+        operation(sinus, NormFunction(sinus, True, False, problem))

@@ -31,7 +31,7 @@ def problem():
     return SobieskiProblem("complex128")
 
 
-def test_d_esf_ddrag(problem):
+def test_d_esf_ddrag(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -46,7 +46,7 @@ def test_d_esf_ddrag(problem):
     )
 
 
-def test_d_esf_dthrottle(problem):
+def test_d_esf_dthrottle(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -61,7 +61,7 @@ def test_d_esf_dthrottle(problem):
     )
 
 
-def test_blackbox_propulsion(problem):
+def test_blackbox_propulsion(problem) -> None:
     indata = problem.get_default_inputs(names=["x_shared", "y_23", "x_3"])
     x_shared = indata["x_shared"]
     y_23 = indata["y_23"]
@@ -81,7 +81,7 @@ def test_blackbox_propulsion(problem):
     problem.propulsion.linearize(x_shared, y_23, x_3, true_cstr=True)
 
 
-def test_d_we_dthrottle(problem):
+def test_d_we_dthrottle(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -100,7 +100,7 @@ def test_d_we_dthrottle(problem):
     )
 
 
-def test_d_we_ddrag(problem):
+def test_d_we_ddrag(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -119,7 +119,7 @@ def test_d_we_ddrag(problem):
     )
 
 
-def test_d_sfc_dthrottle(problem):
+def test_d_sfc_dthrottle(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -140,7 +140,7 @@ def test_d_sfc_dthrottle(problem):
     )
 
 
-def test_d_sfc_dh(problem):
+def test_d_sfc_dh(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -161,7 +161,7 @@ def test_d_sfc_dh(problem):
     )
 
 
-def test_d_sfc_d_m(problem):
+def test_d_sfc_d_m(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -182,7 +182,7 @@ def test_d_sfc_d_m(problem):
     )
 
 
-def test_dthrottle_constraint_dthrottle(problem):
+def test_dthrottle_constraint_dthrottle(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -203,7 +203,7 @@ def test_dthrottle_constraint_dthrottle(problem):
     )
 
 
-def test_dthrottle_constraint_dh(problem):
+def test_dthrottle_constraint_dh(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -224,7 +224,7 @@ def test_dthrottle_constraint_dh(problem):
     )
 
 
-def test_dthrottle_constraint_dmach(problem):
+def test_dthrottle_constraint_dmach(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
     indata = problem.get_default_inputs(
@@ -245,7 +245,7 @@ def test_dthrottle_constraint_dmach(problem):
     )
 
 
-def test_jac_prop(problem):
+def test_jac_prop(problem) -> None:
     sr = SobieskiPropulsion("complex128")
     indata = problem.get_default_inputs(names=sr.get_input_data_names())
     assert sr.check_jacobian(

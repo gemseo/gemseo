@@ -20,13 +20,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from gemseo import MDODiscipline
+from gemseo.core.discipline import MDODiscipline
 
 
 class PathDiscipline(MDODiscipline):
     """A toy discipline that takes Path as input and stores a Path attribute."""
 
-    def __init__(self, tmp_path: Path):
+    def __init__(self, tmp_path: Path) -> None:
         """Constructor.
 
         Args:
@@ -38,5 +38,5 @@ class PathDiscipline(MDODiscipline):
         self.default_inputs["x"] = tmp_path
         self.local_path = tmp_path
 
-    def _run(self):
+    def _run(self) -> None:
         self.local_data["y"] = 1

@@ -27,14 +27,15 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from enum import Enum
+    from enum import EnumMeta
 
 
 def merge_enums(
     name: str,
-    base_enum_class: type[Enum],
+    base_enum_class: EnumMeta,
     *enums: type[Enum],
     doc: str = "",
-) -> type[Enum]:
+) -> EnumMeta:
     """Create an enum from other ones.
 
     This is useful because an enum class cannot be derived for extension with other

@@ -5,8 +5,7 @@
   ],
   "properties": {
     "disp": {
-      "type": "integer",
-      "minimum": 0
+      "type": "boolean"
     },
     "maxcor": {
       "type": "integer"
@@ -55,6 +54,17 @@
         "number"
       ],
       "minimum": 0.0
+    },
+    "scaling_threshold": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",

@@ -88,7 +88,7 @@ class CouplingStudyAnalysis:
     disciplines: dict[str, MDODiscipline]
     """The disciplines."""
 
-    def __init__(self, xls_study_path: str | Path) -> None:
+    def __init__(self, xls_study_path: str) -> None:
         """
         Args:
             xls_study_path: The path to the Excel file describing the study.

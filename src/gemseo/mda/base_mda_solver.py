@@ -27,8 +27,8 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy.linalg import norm
 
-from gemseo import MDODiscipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda import MDA
 
 if TYPE_CHECKING:
@@ -220,7 +220,8 @@ class BaseMDASolver(MDA):
             residual_variables.update(discipline.residual_variables)
 
         state_variables = residual_variables.values()
-        resolved_variables = set(resolved_couplings) | set(state_variables)
+        resolved_variables = set(resolved_couplings).union(state_variables)
+        resolved_variables.difference_update(self._non_numeric_array_variables)
         self.__resolved_variable_names = tuple(sorted(resolved_variables))
 
         # State variable names are replaced with associated residual names
@@ -263,20 +264,20 @@ class BaseMDASolver(MDA):
 
         if input_coupling_names:
             converter = self.input_grammar.data_converter
-            self.__resolved_variable_names_to_slices[
-                converter
-            ] = converter.compute_names_to_slices(
-                input_coupling_names, self._local_data
-            )[0]
+            self.__resolved_variable_names_to_slices[converter] = (
+                converter.compute_names_to_slices(
+                    input_coupling_names, self._local_data
+                )[0]
+            )
 
         if output_coupling_names:
             converter = self.output_grammar.data_converter
-            self.__resolved_variable_names_to_slices[
-                converter
-            ] = converter.compute_names_to_slices(
-                output_coupling_names,
-                self._local_data,
-            )[0]
+            self.__resolved_variable_names_to_slices[converter] = (
+                converter.compute_names_to_slices(
+                    output_coupling_names,
+                    self._local_data,
+                )[0]
+            )
 
         self.__resolved_residual_names_to_slices = {}
         for (
@@ -328,7 +329,7 @@ class BaseMDASolver(MDA):
             self.residual_history = []
             self._starting_indices = []
 
-        residual = self.get_current_resolved_residual_vector().real
+        residual = self.get_current_resolved_residual_vector()
 
         scaling = self.scaling
         _scaling_data = self._scaling_data

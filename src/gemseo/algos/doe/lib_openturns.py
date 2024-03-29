@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from collections import namedtuple
+from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Final
@@ -29,7 +30,6 @@ from typing import Optional
 from typing import Union
 
 import openturns
-from numpy import ndarray
 
 from gemseo.algos.doe._openturns.ot_axial_doe import OTAxialDOE
 from gemseo.algos.doe._openturns.ot_centered_lhs import OTCenteredLHS
@@ -49,11 +49,15 @@ from gemseo.algos.doe._openturns.ot_sobol_sequence import OTSobolSequence
 from gemseo.algos.doe._openturns.ot_standard_lhs import OTStandardLHS
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
+    from gemseo.typing import NumberArray
 
-OptionType = Optional[Union[str, int, float, bool, Sequence[int], ndarray]]
+OptionType = Optional[Union[str, int, float, bool, Sequence[int], RealArray]]
 
 
 _AlgoData = namedtuple("_AlgoData", ["description", "webpage", "doe_algo_class"])
@@ -131,8 +135,8 @@ class OpenTURNS(DOELibrary):
 
     def _get_options(
         self,
-        levels: int | Sequence[int] | None = None,
-        centers: Sequence[int] | None = None,
+        levels: float | Sequence[float] | None = None,
+        centers: Sequence[float] | float = 0.5,
         eval_jac: bool = False,
         n_samples: int | None = None,
         n_processes: int = 1,
@@ -144,20 +148,34 @@ class OpenTURNS(DOELibrary):
         seed: int | None = None,
         max_time: float = 0,
         eval_second_order: bool = True,
+        callbacks: Iterable[CallbackType] = (),
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:
         r"""Set the options.
 
         Args:
-            levels: The levels. If there is a parameter ``n_samples``,
-                the latter can be specified
-                and the former set to its default value ``None``.
-            centers: The centers for axial, factorial and composite designs.
-                If ``None``, centers = 0.5.
+            levels: 1) In the case of axial, composite and factorial DOEs,
+                the positions of the levels relative to the center;
+                the levels will be equispaced and symmetrical relative to the center;
+                e.g. ``[0.2, 0.8]`` in dimension 1 will generate
+                the samples ``[0.15, 0.6, 0.75, 0.8, 0.95, 1]`` for an axial DOE;
+                the values must be in :math:`]0,1]`.
+                2) In the case of a full-factorial DOE,
+                the number of levels per input direction;
+                if scalar, this value is applied to each input direction.
+            centers: The center of the unit hypercube
+                that the axial, composite or factorial DOE algorithm will sample;
+                if scalar, this value is applied to each direction of the hypercube;
+                the values must be in :math:`]0,1[`.
             eval_jac: Whether to evaluate the jacobian.
-            n_samples: The number of samples. If there is a parameter ``levels``,
-                the latter can be specified
-                and the former set to its default value ``None``.
+            n_samples: The maximum number of samples required by the user;
+                for axial, composite and factorial DOEs,
+                a minimum number of samples is required
+                and depends on the dimension of the space to sample;
+                if ``None``
+                in the case of for axial, composite, factorial and full-factorial DOEs
+                the effective number of samples is computed
+                from this dimension and the number of levels.
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
@@ -167,16 +185,17 @@ class OpenTURNS(DOELibrary):
             annealing: If ``True``, use simulated annealing to optimize LHS. Otherwise,
                 use crude Monte Carlo.
             n_replicates: The number of Monte Carlo replicates to optimize LHS.
-            seed: The seed value.
-                If ``None``,
-                use the seed of the library,
-                namely :attr:`.OpenTURNS.seed`.
+            seed: The seed used for reproducibility reasons.
+                If ``None``, use :attr:`.seed`.
             max_time: The maximum runtime in seconds,
                 disabled if 0.
             eval_second_order: Whether to build a DOE
                 to evaluate also the second-order indices;
                 otherwise,
                 the DOE is designed for first- and total-order indices only.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
             **kwargs: The additional arguments.
 
         Returns:
@@ -184,7 +203,7 @@ class OpenTURNS(DOELibrary):
         """
         return self._process_options(
             levels=levels,
-            centers=centers or [0.5],
+            centers=centers,
             eval_jac=eval_jac,
             n_samples=n_samples,
             n_processes=n_processes,
@@ -196,29 +215,26 @@ class OpenTURNS(DOELibrary):
             seed=seed,
             max_time=max_time,
             eval_second_order=eval_second_order,
+            callbacks=callbacks,
             **kwargs,
         )
 
     def _generate_samples(
         self,
-        dimension: int,
+        design_space: DesignSpace,
         n_samples: int | None = None,
         seed: int | None = None,
         **options: OptionType,
-    ) -> ndarray:
-        """Generate the samples.
-
+    ) -> NumberArray:
+        """
         Args:
             dimension: The dimension of the variables space.
             n_samples: The number of samples.
                 If ``None``, set from the options.
-            seed: The seed to be used.
+            seed: The seed used for reproducibility reasons.
                 If ``None``, use :attr:`.seed`.
             **options: The options for the DOE algorithm, see associated JSON file.
-
-        Returns:
-            The samples for the DOE.
-        """
-        openturns.RandomGenerator.SetSeed(self._get_seed(seed))
+        """  # noqa: D205, D212, D415
+        openturns.RandomGenerator.SetSeed(self._seeder.get_seed(seed))
         doe_algo = self.__ALGO_NAMES_TO_ALGO_DATA[self.algo_name].doe_algo_class()
-        return doe_algo.generate_samples(n_samples, dimension, **options)
+        return doe_algo.generate_samples(n_samples, design_space.dimension, **options)

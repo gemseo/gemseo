@@ -26,9 +26,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from numpy.typing import NDArray
-
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
@@ -71,11 +70,13 @@ class Lines(DatasetPlot):
 
     def _create_specific_data_from_dataset(
         self,
-    ) -> tuple[list[float], dict[str, NDArray[float]], str]:
+    ) -> tuple[list[float], dict[str, RealArray], str, int]:
         """
         Returns:
             The values on the x-axis,
-            the variable names bound to the values on the y-axis.
+            the variable names bound to the values on the y-axis,
+            the name of the x-label,
+            the number of lines.
         """  # noqa: D205 D212 D415
         abscissa_variable = self._specific_settings.abscissa_variable
         if abscissa_variable is None:
@@ -108,8 +109,5 @@ class Lines(DatasetPlot):
         n_lines = sum(
             self.dataset.variable_names_to_n_components[name] for name in variable_names
         )
-        self._set_color(n_lines)
-        self._set_linestyle(n_lines, "-")
-        self._set_marker(n_lines, "o")
         self._n_items = n_lines
-        return x_values, y_names_to_values, abscissa_variable or "Index"
+        return x_values, y_names_to_values, abscissa_variable or "Index", n_lines

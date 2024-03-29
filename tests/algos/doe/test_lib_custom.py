@@ -19,12 +19,16 @@
 from __future__ import annotations
 
 import re
+from logging import ERROR
 from pathlib import Path
 from typing import Any
 
 import pytest
 from numpy import array
+from numpy.testing import assert_equal
+from pandas.errors import ParserError
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_custom import CustomDOE
 
@@ -48,7 +52,7 @@ def test_check_dimension_inconsistency():
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Dimension mismatch between the problem (4) and the samples (3)."
+            "Dimension mismatch between the variables space (4) and the samples (3)."
         ),
     ):
         execute_problem(
@@ -186,3 +190,23 @@ def test_use_custom_doe_directly():
     problem = get_problem(2)
     CustomDOE().execute(problem, samples=array([[0.0, 0.0]]))
     assert len(problem.database) == 1
+
+
+def test_compute_doe():
+    """Check that CustomDOE.compute_doe works."""
+    variables_space = DesignSpace()
+    variables_space.add_variable("x", size=2)
+    assert_equal(
+        CustomDOE().compute_doe(variables_space, samples=array([[1.0, 2.0]])),
+        array([[1.0, 2.0]]),
+    )
+
+
+def test_malformed_file(caplog):
+    """Check that an error message is logged when reading a file raises an exception."""
+    with pytest.raises(ParserError):
+        CustomDOE().compute_doe(3, doe_file=Path(__file__).parent / "malformed_doe.csv")
+
+    _, level, message = caplog.record_tuples[0]
+    assert level == ERROR
+    assert re.match(r"Failed to load the DOE file .+malformed_doe\.csv", message)

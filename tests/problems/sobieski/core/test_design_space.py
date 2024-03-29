@@ -33,7 +33,7 @@ def test_filter_variables(
     design_variable_name,
     coupling_variable_name,
     filter_coupling_variables,
-):
+) -> None:
     """Check filter_design_variables and filter_coupling_variables."""
     original_design_space = SobieskiDesignSpace(use_original_names)
     v_type = "coupling" if filter_coupling_variables else "design"

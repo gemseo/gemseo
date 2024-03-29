@@ -87,7 +87,7 @@ configure_logger()
 
 
 class SellarSystem(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # Initialize the grammars to define inputs and outputs
         self.input_grammar.update_from_names(["x", "z", "y_1", "y_2"])
@@ -101,7 +101,7 @@ class SellarSystem(MDODiscipline):
             "y_2": ones(1),
         }
 
-    def _run(self):
+    def _run(self) -> None:
         # The run method defines what happens at execution
         # ie how outputs are computed from inputs
         x, z, y_1, y_2 = self.get_inputs_by_name(["x", "z", "y_1", "y_2"])
@@ -117,7 +117,7 @@ class SellarSystem(MDODiscipline):
 
 
 class Sellar1(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x", "z", "y_2"])
         self.output_grammar.update_from_names(["y_1"])
@@ -127,7 +127,7 @@ class Sellar1(MDODiscipline):
             "y_2": ones(1),
         }
 
-    def _run(self):
+    def _run(self) -> None:
         x, z, y_2 = self.get_inputs_by_name(["x", "z", "y_2"])
         self.local_data["y_1"] = array([
             (z[0] ** 2 + z[1] + x[0] - 0.2 * y_2[0]) ** 0.5
@@ -140,7 +140,7 @@ class Sellar1(MDODiscipline):
 
 
 class Sellar2(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["z", "y_1"])
         self.output_grammar.update_from_names(["y_2"])
@@ -149,7 +149,7 @@ class Sellar2(MDODiscipline):
             "y_1": ones(1),
         }
 
-    def _run(self):
+    def _run(self) -> None:
         z, y_1 = self.get_inputs_by_name(["z", "y_1"])
         self.local_data["y_2"] = array([abs(y_1[0]) + z[0] + z[1]])
 
@@ -193,17 +193,15 @@ design_space.add_variable("y_2", l_b=-100.0, u_b=100.0, value=ones(1))
 # In this section,
 # we build the MDO scenario which links the disciplines with the formulation,
 # the design space and the objective function.
-scenario = create_scenario(
-    disciplines, formulation="IDF", objective_name="obj", design_space=design_space
-)
+scenario = create_scenario(disciplines, "IDF", "obj", design_space)
 
 # %%
 # Add the constraints
 # ^^^^^^^^^^^^^^^^^^^
 # Then,
 # we have to set the design constraints
-scenario.add_constraint("c_1", "ineq")
-scenario.add_constraint("c_2", "ineq")
+scenario.add_constraint("c_1", constraint_type="ineq")
+scenario.add_constraint("c_2", constraint_type="ineq")
 
 # %%
 # As previously mentioned,
@@ -218,7 +216,7 @@ scenario.set_differentiation_method("finite_differences")
 # we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
-scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
+scenario.execute({"max_iter": 10, "algo": "SLSQP"})
 
 # %%
 # Post-process the scenario

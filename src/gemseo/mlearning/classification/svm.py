@@ -40,8 +40,8 @@ from typing import Final
 
 from sklearn.svm import SVC
 
-from gemseo import SEED
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -119,8 +119,9 @@ class SVMClassifier(MLClassificationAlgo):
         input_data: ndarray,
     ) -> ndarray:
         if not self.parameters["probability"]:
-            raise NotImplementedError(
+            msg = (
                 "SVMClassifier soft probability prediction is only available if the "
                 "parameter 'probability' is set to True."
             )
+            raise NotImplementedError(msg)
         return self.algo.predict_proba(input_data)[..., None]

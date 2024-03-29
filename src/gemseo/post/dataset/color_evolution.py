@@ -27,9 +27,8 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from numpy.typing import NDArray
-
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 
 class ColorEvolution(DatasetPlot):
@@ -57,7 +56,7 @@ class ColorEvolution(DatasetPlot):
             opacity: The level of opacity (0 = transparent; 1 = opaque).
             **options: The options for the matplotlib function :meth:`imshow`.
         """  # noqa: D205, D212, D415
-        options_ = {
+        options_: dict[str, bool | float | str | None] = {
             "interpolation": "nearest",
             "aspect": "auto",
         }
@@ -70,7 +69,7 @@ class ColorEvolution(DatasetPlot):
             options=options_,
         )
 
-    def _create_specific_data_from_dataset(self) -> tuple[NDArray[float], list[str]]:
+    def _create_specific_data_from_dataset(self) -> tuple[RealArray, list[str]]:
         """
         Returns:
             The data to be plotted,

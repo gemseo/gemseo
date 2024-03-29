@@ -128,18 +128,16 @@ class MDF(MDOFormulation):
     def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:  # noqa:D102
         main_mda = options.get("main_mda_name")
         if main_mda is None:
-            raise ValueError(
-                "main_mda_name option required to deduce the sub options of MDF."
-            )
+            msg = "main_mda_name option required to deduce the sub options of MDF."
+            raise ValueError(msg)
         return MDAFactory().get_options_grammar(main_mda)
 
     @classmethod
     def get_default_sub_option_values(cls, **options: str) -> dict:  # noqa:D102
         main_mda = options.get("main_mda_name")
         if main_mda is None:
-            raise ValueError(
-                "main_mda_name option required to deduce the sub options of MDF."
-            )
+            msg = "main_mda_name option required to deduce the sub options of MDF."
+            raise ValueError(msg)
         return MDAFactory().get_default_option_values(main_mda)
 
     def _build_objective(self) -> None:

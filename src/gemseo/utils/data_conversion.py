@@ -37,7 +37,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
-    from gemseo.core.discipline_data import Data
+    from gemseo.typing import DataMapping
+
 
 STRING_SEPARATOR = "#&#"
 
@@ -125,11 +126,12 @@ def split_array_to_dict_of_arrays(
         variables_size = sum(names_to_sizes[name] for name in names[0])
         array_dimension_size = array.shape[dimension]
         if variables_size != array_dimension_size:
-            raise ValueError(
-                "The total size of the elements ({}) "
-                "and the size of the last dimension of the array ({}) "
-                "are different.".format(variables_size, array_dimension_size)
+            msg = (
+                f"The total size of the elements ({variables_size}) "
+                f"and the size of the last dimension of the array "
+                f"({array_dimension_size}) are different."
             )
+            raise ValueError(msg)
 
     result = {}
     first_index = 0
@@ -200,7 +202,8 @@ def update_dict_of_arrays_from_array(
               with the shapes of the values of ``dict_of_arrays``.
     """
     if not isinstance(array, ndarray):
-        raise TypeError(f"The array must be a NumPy one, got instead: {type(array)}.")
+        msg = f"The array must be a NumPy one, got instead: {type(array)}."
+        raise TypeError(msg)
 
     data = deepcopy(dict_of_arrays) if copy else dict_of_arrays
 
@@ -223,31 +226,33 @@ def update_dict_of_arrays_from_array(
             i_min = i_max
     except IndexError:
         if full_size < i_max:
-            raise ValueError(
+            msg = (
                 f"Inconsistent input array size of values array {array} "
                 f"with reference data shape {data_value.shape} "
                 f"for data named: {data_name}."
-            ) from None
+            )
+            raise ValueError(msg) from None
 
         raise
 
     if i_max != full_size:
         shapes = [(data_name, dict_of_arrays[data_name].shape) for data_name in names]
-        raise ValueError(
+        msg = (
             "Inconsistent data shapes: "
             f"could not use the whole data array of shape {array.shape} "
             f"(only reached max index = {i_max}), "
             f"while updating data dictionary names {names} "
             f"of shapes: {shapes}."
         )
+        raise ValueError(msg)
 
     return data
 
 
 def deepcopy_dict_of_arrays(
-    dict_of_arrays: Mapping[str, ndarray],
+    dict_of_arrays: DataMapping,
     names: Iterable[str] | None = None,
-) -> Data:
+) -> DataMapping:
     """Perform a deep copy of a dictionary of NumPy arrays.
 
     This treats the NumPy arrays specially
@@ -285,9 +290,9 @@ def deepcopy_dict_of_arrays(
 
 
 def nest_flat_bilevel_dict(
-    flat_dict: Mapping[str, Any],
+    flat_dict: DataMapping,
     separator: str = STRING_SEPARATOR,
-) -> dict[str, Any]:
+) -> DataMapping:
     """Nest a flat bi-level dictionary where sub-dictionaries will have the same keys.
 
     Examples:
@@ -316,10 +321,10 @@ def nest_flat_bilevel_dict(
 
 
 def nest_flat_dict(
-    flat_dict: Mapping[str, Any],
+    flat_dict: DataMapping,
     prefix: str = "",
     separator: str = STRING_SEPARATOR,
-) -> dict[str, Any]:
+) -> DataMapping:
     """Nest a flat dictionary.
 
     Examples:
@@ -346,7 +351,7 @@ def nest_flat_dict(
 
 
 def __nest_flat_mapping(
-    mapping: Mapping[str, Any],
+    mapping: DataMapping,
     key: str,
     value: Any,
     separator: str,
@@ -370,9 +375,9 @@ def __nest_flat_mapping(
 
 
 def flatten_nested_bilevel_dict(
-    nested_dict: Mapping[str, Any],
+    nested_dict: DataMapping,
     separator: str = STRING_SEPARATOR,
-) -> dict[str, Any]:
+) -> DataMapping:
     """Flatten a nested bi-level dictionary whose sub-dictionaries have the same keys.
 
     Examples:
@@ -398,10 +403,10 @@ def flatten_nested_bilevel_dict(
 
 
 def flatten_nested_dict(
-    nested_dict: Mapping[str, Any],
+    nested_dict: DataMapping,
     prefix: str = "",
     separator: str = STRING_SEPARATOR,
-) -> dict[str, Any]:
+) -> DataMapping:
     """Flatten a nested dictionary.
 
     Examples:
@@ -422,7 +427,7 @@ def flatten_nested_dict(
 
 
 def __flatten_nested_mapping(
-    nested_mapping: Mapping[str, Any],
+    nested_mapping: DataMapping,
     parent_key: str,
     separator: str,
 ) -> Generator[tuple[str, Any], None, None]:

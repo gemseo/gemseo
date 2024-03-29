@@ -39,7 +39,6 @@ from collections.abc import Mapping
 from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -60,6 +59,7 @@ from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -74,6 +74,7 @@ if TYPE_CHECKING:
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.post.dataset.dataset_plot import DatasetPlot
     from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
     from gemseo.post.dataset.dataset_plot import VariableType
 
@@ -159,7 +160,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         n_samples: int | None = None,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
+        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
@@ -307,10 +308,10 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Compute the sensitivity indices.
 
         Args:
-            outputs: The output(s)
-                for which to display the sensitivity indices.
-                If ``None``,
-                use the default outputs set at instantiation.
+            outputs: The name(s) of the output(s)
+                for which to compute the sensitivity indices.
+                If empty,
+                use the names of the outputs set at instantiation.
 
         Returns:
             The sensitivity indices.
@@ -463,7 +464,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         show: bool = False,
         file_path: str | Path = "",
         file_format: str = "",
-    ) -> None:
+    ) -> DatasetPlot | Figure:
         """Plot the sensitivity indices.
 
         Args:
@@ -484,6 +485,9 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
                 Used when ``file_path`` does not have any extension.
                 If empty, use a default file extension.
+
+        Returns:
+            The plot figure.
         """
         raise NotImplementedError
 
@@ -500,7 +504,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         directory_path: str | Path = "",
         file_name: str = "",
         file_format: str = "",
-        properties: Mapping[str, DatasetPlotPropertyType] = MappingProxyType({}),
+        properties: Mapping[str, DatasetPlotPropertyType] = READ_ONLY_EMPTY_DICT,
     ) -> Curves | Surfaces:
         """Plot the sensitivity indices related to a 1D or 2D functional output.
 

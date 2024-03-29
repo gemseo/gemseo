@@ -53,7 +53,7 @@ class _BaseDiscFromExe(MDODiscipline):
         """
         Args:
             executable_runner: The attached executable runner.
-            clean_after_execution: Whether to clean the working directory after
+            clean_after_execution: Whether to clean the last created directory after
                 execution.
         """  # noqa: D205, D212, D415
         super().__init__(
@@ -81,15 +81,10 @@ class _BaseDiscFromExe(MDODiscipline):
         """
 
     def _run(self) -> None:
-        self._executable_runner.create_directory()
+        self._executable_runner.directory_creator.create()
         self._create_inputs()
         self._executable_runner.execute()
         self.store_local_data(**self._parse_outputs())
 
         if self.__clean_after_execution:
-            rmtree(self.last_execution_directory)
-
-    @property
-    def last_execution_directory(self) -> Path | None:
-        """The last directory wherein the executable was executed, or ``None``."""
-        return self._executable_runner.last_execution_directory
+            rmtree(self._executable_runner.directory_creator.last_directory)

@@ -26,10 +26,7 @@ from typing import Optional
 from typing import TextIO
 from typing import Union
 
-import scipy
-from numpy import integer
-from numpy import ndarray
-from packaging import version
+from packaging.version import parse as parse_version
 from scipy.stats.qmc import Halton
 from scipy.stats.qmc import LatinHypercube
 from scipy.stats.qmc import PoissonDisk
@@ -37,16 +34,23 @@ from scipy.stats.qmc import QMCEngine
 from scipy.stats.qmc import Sobol
 from strenum import StrEnum
 
-from gemseo import SEED
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.typing import RealArray
+from gemseo.utils.compatibility.scipy import SCIPY_VERSION
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from numpy import integer
     from numpy.random import Generator
     from numpy.random import RandomState
-    from packaging.version import Version
 
-OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, ndarray]]
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
+
+OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -59,14 +63,14 @@ class _MonteCarlo(QMCEngine):
     ) -> None:
         super().__init__(d=d, seed=seed)
 
-    if version.parse(scipy.__version__) < version.parse("1.10"):
+    if parse_version("1.10") > SCIPY_VERSION:
 
-        def random(self, n: int = 1) -> ndarray:
+        def random(self, n: int = 1) -> RealArray:
             self.num_generated += n
             return self.rng.random((n, self.d))
     else:
 
-        def _random(self, n: int = 1, *, workers: int = 1) -> ndarray:
+        def _random(self, n: int = 1, *, workers: int = 1) -> RealArray:
             return self.rng.random((n, self.d))
 
 
@@ -90,9 +94,6 @@ class SciPyDOE(DOELibrary):
         __SOBOL_ALGO_NAME: Sobol,
     }
     """The algorithm names bound to the SciPy classes."""
-
-    __SCIPY_VERSION: Final[Version] = version.parse(scipy.__version__)
-    """The version of SciPy."""
 
     __SCIPY_OPTION_NAMES: Final[list[str]] = [
         "bits",
@@ -145,6 +146,7 @@ class SciPyDOE(DOELibrary):
         bits: int | None = None,
         optimization: Optimizer = Optimizer.NONE,
         strength: Literal[1, 2] = 1,
+        callbacks: Iterable[CallbackType] = (),
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:
         """Set the options.
@@ -155,10 +157,8 @@ class SciPyDOE(DOELibrary):
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
-            seed: The seed value.
-                If ``None``,
-                use the seed of the library,
-                namely :attr:`.SciPyDOE.seed`.
+            seed: The seed used for reproducibility reasons.
+                If ``None``, use :attr:`.seed`.
             n_samples: The number of samples.
             centered: Whether to center the samples
                 within the cells of a multi-dimensional grid.
@@ -177,6 +177,9 @@ class SciPyDOE(DOELibrary):
                 If ``None``, use the DOE as is.
                 New in SciPy 1.10.0.
             strength: The strength of the LHS.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
             **kwargs: The additional arguments.
 
         Returns:
@@ -200,11 +203,13 @@ class SciPyDOE(DOELibrary):
             optimization=optimization,
             bits=bits,
             strength=strength,
+            callbacks=callbacks,
             **kwargs,
         )
 
-    def _generate_samples(self, **options: OptionType) -> ndarray:
-        seed = options[self.SEED]
+    def _generate_samples(
+        self, design_space: DesignSpace, **options: OptionType
+    ) -> RealArray:
         option_names = self.__SCIPY_OPTION_NAMES.copy()
         if self.algo_name == self.__SOBOL_ALGO_NAME:
             self.__remove_recent_scipy_options(option_names, "bits", "1.9")
@@ -215,19 +220,29 @@ class SciPyDOE(DOELibrary):
             self.__remove_recent_scipy_options(option_names, "scramble", "1.10")
             self.__remove_recent_scipy_options(option_names, "optimization", "1.8")
             self.__remove_recent_scipy_options(option_names, "strength", "1.8")
+            if parse_version("1.10") <= SCIPY_VERSION and "centered" in options:
+                if options["centered"] == options["scramble"]:
+                    msg = (
+                        "centered must be the opposite of scramble; "
+                        "centered is deprecated from SciPy 1.10; "
+                        "please use scramble."
+                    )
+                    raise ValueError(msg)
+
+                option_names.remove("centered")
         elif self.algo_name == self.__POISSON_DISK_ALGO_NAME:
             self.__remove_recent_scipy_options(option_names, "optimization", "1.10")
 
-        scipy_options = {k: v for k, v in options.items() if k in option_names}
         algo = self.__NAMES_TO_CLASSES[self.algo_name](
-            options[self.DIMENSION],
-            seed=self.seed if seed is None else seed,
-            **scipy_options,
+            design_space.dimension,
+            seed=self._seeder.get_seed(options[self.SEED]),
+            **{k: v for k, v in options.items() if k in option_names},
         )
         return algo.random(options[self.N_SAMPLES])
 
+    @staticmethod
     def __remove_recent_scipy_options(
-        self, scipy_option_names: list[str], option_name: str, version_name: str
+        scipy_option_names: list[str], option_name: str, version_name: str
     ) -> None:
         """Remove the SciPy options not yet available in the current SciPy version.
 
@@ -236,7 +251,7 @@ class SciPyDOE(DOELibrary):
             option_name: The name of the option.
             version_name: The version of SciPy which introduced this option.
         """
-        if version.parse(version_name) > self.__SCIPY_VERSION:
+        if parse_version(version_name) > SCIPY_VERSION:
             scipy_option_names.remove(option_name)
             LOGGER.warning(
                 "Removed the option %s which is only available from SciPy %s.",

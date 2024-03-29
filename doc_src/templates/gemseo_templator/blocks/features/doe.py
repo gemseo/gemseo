@@ -28,7 +28,7 @@ block = Block(
         WebLink("OpenTURNS", url="https://openturns.github.io/www/"),
         WebLink("pyDOE", url="https://pythonhosted.org/pyDOE/"),
     ],
-    examples="examples/doe/index.html",
-    info="doe.html",
-    options="algorithms/doe_algos.html",
+    button_info_url="doe.html",
+    button_examples_url="examples/doe/index.html",
+    button_types_url="algorithms/doe_algos.html",
 )

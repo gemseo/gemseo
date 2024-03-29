@@ -73,5 +73,6 @@ class F1Measure(MLErrorMeasure):
         multioutput: bool = True,
     ) -> MeasureType:
         if multioutput:
-            raise NotImplementedError("F1 is only defined for single target.")
+            msg = "F1 is only defined for single target."
+            raise NotImplementedError(msg)
         return f1_score(outputs, predictions, average="weighted")

@@ -16,13 +16,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import array
-from numpy import ndarray
 from openturns import SobolIndicesExperiment
 
 from gemseo.algos.doe._openturns.base_ot_doe import BaseOTDOE
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
 
 
 class OTSobolDOE(BaseOTDOE):
@@ -33,7 +36,7 @@ class OTSobolDOE(BaseOTDOE):
 
     def generate_samples(  # noqa: D102
         self, n_samples: int, dimension: int, **options: Any
-    ) -> ndarray:
+    ) -> RealArray:
         # If eval_second_order is set to False, the input design is of size N(2+n_X).
         # If eval_second_order is set to False,
         #   if n_X = 2, the input design is of size N(2+n_X).

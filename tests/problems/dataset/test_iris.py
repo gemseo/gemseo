@@ -22,7 +22,7 @@ from __future__ import annotations
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 
-def test_constructor():
+def test_constructor() -> None:
     dataset = create_iris_dataset()
     assert dataset.name == "Iris"
     assert len(dataset) == 150

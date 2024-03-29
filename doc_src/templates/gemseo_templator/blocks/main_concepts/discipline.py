@@ -26,6 +26,8 @@ block = Block(
         WebLink("surrogate model", url="surrogate.html"),
         WebLink("much more", url="interface/software_connection.html"),
     ],
-    examples="examples/disciplines/index.html",
-    info="discipline.html",
+    button_examples_url="examples/disciplines/index.html",
+    button_info_url="discipline.html",
+    button_types_url="algorithms/discipline_algos.html",
+    button_types_name="Types",
 )

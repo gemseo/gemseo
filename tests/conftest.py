@@ -29,7 +29,7 @@ from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
 
 if TYPE_CHECKING:
-    from gemseo import MDODiscipline
+    from gemseo.core.discipline import MDODiscipline
 
 MARK = "doc_examples"
 

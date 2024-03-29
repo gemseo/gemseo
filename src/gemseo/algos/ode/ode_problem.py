@@ -115,7 +115,8 @@ class ODEProblem(BaseProblem):
             self.result.state_vector.size != 0
             and self.result.state_vector.shape[1] != self.result.time_vector.size
         ):
-            raise ValueError("Inconsistent state and time shapes.")
+            msg = "Inconsistent state and time shapes."
+            raise ValueError(msg)
 
     def _func(self, state) -> ndarray:
         return asarray(self.rhs_function(self.result.time_vector, state))

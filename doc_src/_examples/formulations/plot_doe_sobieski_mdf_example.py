@@ -81,9 +81,9 @@ design_space
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
-    objective_name="y_4",
-    design_space=design_space,
+    "MDF",
+    "y_4",
+    design_space,
     maximize_objective=True,
     scenario_type="DOE",
 )
@@ -92,7 +92,7 @@ scenario = create_scenario(
 # Set the design constraints
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, "ineq")
+    scenario.add_constraint(constraint, constraint_type="ineq")
 
 # %%
 # Visualize the XDSM

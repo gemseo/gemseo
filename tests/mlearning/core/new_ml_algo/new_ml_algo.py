@@ -22,9 +22,9 @@ class NewMLAlgo(MLAlgo):
 
     LIBRARY = "NewLibrary"
 
-    def learn(self, samples=None):
+    def learn(self, samples=None) -> None:
         super().learn(samples=samples)
         self._trained = True
 
-    def _learn(self, indices, fit_transformers):
+    def _learn(self, indices, fit_transformers) -> None:
         pass

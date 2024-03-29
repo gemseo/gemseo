@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import Callable
 
 from gemseo.core.mdo_scenario import MDOScenario
@@ -55,19 +54,19 @@ def create_sobieski_bilevel_scenario(
 
         ds = SobieskiProblem().design_space
         sc_prop = MDOScenario(
-            disciplines=[propulsion],
-            formulation="DisciplinaryOpt",
-            objective_name="y_34",
-            design_space=deepcopy(ds).filter("x_3"),
+            [propulsion],
+            "DisciplinaryOpt",
+            "y_34",
+            ds.filter("x_3", copy=True),
             name="PropulsionScenario",
         )
 
         # Maximize L/D
         sc_aero = MDOScenario(
-            disciplines=[aerodynamics],
-            formulation="DisciplinaryOpt",
-            objective_name="y_24",
-            design_space=deepcopy(ds).filter("x_2"),
+            [aerodynamics],
+            "DisciplinaryOpt",
+            "y_24",
+            ds.filter("x_2", copy=True),
             name="AerodynamicsScenario",
             maximize_objective=True,
         )
@@ -75,10 +74,10 @@ def create_sobieski_bilevel_scenario(
         # Maximize log(aircraft total weight / (aircraft total weight - fuel
         # weight))
         sc_str = MDOScenario(
-            disciplines=[struct],
-            formulation="DisciplinaryOpt",
-            objective_name="y_11",
-            design_space=deepcopy(ds).filter("x_1"),
+            [struct],
+            "DisciplinaryOpt",
+            "y_11",
+            ds.filter("x_1", copy=True),
             name="StructureScenario",
             maximize_objective=True,
         )
@@ -91,9 +90,9 @@ def create_sobieski_bilevel_scenario(
         ds = SobieskiProblem().design_space
         sc_system = MDOScenario(
             sub_disciplines,
-            formulation=scenario_formulation,
-            objective_name="y_4",
-            design_space=ds.filter(["x_shared", "y_14"]),
+            scenario_formulation,
+            "y_4",
+            ds.filter(["x_shared", "y_14"]),
             maximize_objective=True,
             **options,
         )

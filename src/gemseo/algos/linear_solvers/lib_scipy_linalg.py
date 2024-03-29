@@ -188,10 +188,11 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
             raise ValueError(msg.format(x0.shape, self.problem.rhs.shape))
 
         if use_ilu_precond and preconditioner is not None:
-            raise ValueError(
+            msg = (
                 "Use either 'use_ilu_precond' or provide 'preconditioner',"
                 " but not both."
             )
+            raise ValueError(msg)
 
         return self._process_options(
             max_iter=max_iter,

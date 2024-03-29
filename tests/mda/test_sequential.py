@@ -32,7 +32,7 @@ from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import get_y_opt
 
 
-def test_sequential_mda_sellar(tmp_wd):
+def test_sequential_mda_sellar(tmp_wd) -> None:
     disciplines = [Sellar1(), Sellar2()]
     mda1 = MDAJacobi(disciplines, max_mda_iter=1)
     mda2 = MDANewtonRaphson(disciplines)
@@ -56,7 +56,7 @@ def test_sequential_mda_sellar(tmp_wd):
     assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-6
 
 
-def test_log_convergence():
+def test_log_convergence() -> None:
     """Check that the boolean log_convergence is correctly set."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDAGSNewton(disciplines)
@@ -81,7 +81,7 @@ def test_log_convergence():
         assert not sub_mda.log_convergence
 
 
-def test_parallel_doe(generate_parallel_doe_data):
+def test_parallel_doe(generate_parallel_doe_data) -> None:
     """Test the execution of GaussSeidel in parallel.
 
     Args:

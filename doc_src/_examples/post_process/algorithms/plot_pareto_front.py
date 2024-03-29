@@ -77,16 +77,17 @@ design_space = SobieskiDesignSpace()
 # inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
 # the SLSQP optimization algorithm
 # and a maximum number of iterations equal to 100.
+# and a maximum number of iterations equal to 100.
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
-    objective_name="y_4",
+    "MDF",
+    "y_4",
+    design_space,
     maximize_objective=True,
-    design_space=design_space,
 )
 scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, "ineq")
+    scenario.add_constraint(constraint, constraint_type="ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
 # %%

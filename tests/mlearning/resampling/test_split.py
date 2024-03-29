@@ -29,13 +29,13 @@ def split() -> Split:
     return Split(array([1, 2]), array([3, 4]))
 
 
-def test_fields(split):
+def test_fields(split) -> None:
     """Check the fields of a train-test split."""
     assert_array_equal(split.train, array([1, 2]))
     assert_array_equal(split.test, array([3, 4]))
 
 
-def test_eq(split):
+def test_eq(split) -> None:
     """Check the method Split.__eq__."""
     assert split == Split(array([1, 2]), array([3, 4]))
     assert split != Split(array([1, 2]), array([3, 5]))

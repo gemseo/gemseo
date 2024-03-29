@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import numpy
 import pytest
 from numpy import array
 
@@ -34,7 +35,7 @@ def problem():
     return SobieskiProblem("complex128")
 
 
-def test_dfuelweightdtoverc(problem):
+def test_dfuelweightdtoverc(problem) -> None:
     h = 1e-30
     sr = problem.structure
     indata = problem.get_default_inputs(
@@ -52,7 +53,7 @@ def test_dfuelweightdtoverc(problem):
     )
 
 
-def test_dfuelweightd_ar(problem):
+def test_dfuelweightd_ar(problem) -> None:
     h = 1e-30
     sr = problem.structure
     indata = problem.get_default_inputs(
@@ -72,7 +73,7 @@ def test_dfuelweightd_ar(problem):
     )
 
 
-def test_dfuelweightdsref(problem):
+def test_dfuelweightdsref(problem) -> None:
     h = 1e-30
     sr = problem.structure
     indata = problem.get_default_inputs(
@@ -92,7 +93,7 @@ def test_dfuelweightdsref(problem):
     )
 
 
-def test_jac_structure(problem):
+def test_jac_structure(problem) -> None:
     """"""
     sr = SobieskiStructure("complex128")
     indata = problem.get_default_inputs(names=sr.get_input_data_names())
@@ -138,7 +139,7 @@ def test_jac_structure(problem):
     )
 
 
-def test_jac2_sobieski_struct(problem):
+def test_jac2_sobieski_struct(problem) -> None:
     inpt_data = {
         "y_31": array([6555.68459235 + 0j]),
         "y_21": array([50606.9742 + 0j]),
@@ -155,3 +156,26 @@ def test_jac2_sobieski_struct(problem):
 
     st = SobieskiStructure("complex128")
     assert st.check_jacobian(inpt_data, derr_approx="complex_step", step=1e-30)
+
+
+def test_logarithm_invalid_domain():
+    """Test that the mass term is not a number when the weight ratio is not positive.
+
+    In this test, the arguments of `SobieskiStructure._execute` are chosen so that
+    the weight ratio is negative.
+    """
+    assert numpy.isnan(
+        CoreStructure(SobieskiBase(SobieskiBase.DataType.FLOAT))._execute(
+            tc_ratio=0.01,
+            aspect_ratio=8.5,
+            sweep=70.0,
+            wing_area=1000.0,
+            taper_ratio=0.1,
+            wingbox_area=0.7700018565802997,
+            lift=124646.13088472793,
+            engine_mass=7671.188123402499,
+            c_0=2000.0,
+            c_1=25000.0,
+            c_2=6.0,
+        )[1]
+    )

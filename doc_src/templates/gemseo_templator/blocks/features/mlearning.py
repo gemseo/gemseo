@@ -42,7 +42,7 @@ block = Block(
         WebLink("OpenTURNS", url="https://openturns.github.io/www/"),
         WebLink("scikit-learn", url="https://scikit-learn.org/stable/"),
     ],
-    examples="examples/mlearning/index.html",
-    info="machine_learning/index.html",
-    options="algorithms/mlearning_algos.html",
+    button_examples_url="examples/mlearning/index.html",
+    button_info_url="machine_learning/index.html",
+    button_types_url="algorithms/mlearning_algos.html",
 )

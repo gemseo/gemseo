@@ -31,7 +31,7 @@ block = Block(
             url="https://scikit-learn.org/stable/",
         ),
     ],
-    examples="examples/surrogate/index.html",
-    info="surrogate.html",
-    options="algorithms/surrogate_algos.html",
+    button_info_url="surrogate.html",
+    button_examples_url="examples/surrogate/index.html",
+    button_types_url="algorithms/surrogate_algos.html",
 )

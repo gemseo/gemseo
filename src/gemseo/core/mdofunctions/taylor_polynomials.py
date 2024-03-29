@@ -26,13 +26,13 @@ from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.core.mdofunctions.mdo_function import ArrayType
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.typing import NumberArray
 
 
 def compute_linear_approximation(
     function: MDOFunction,
-    x_vect: ArrayType,
+    x_vect: NumberArray,
     name: str | None = None,
     f_type: str | None = None,
     input_names: Sequence[str] | None = None,
@@ -68,7 +68,8 @@ def compute_linear_approximation(
         AttributeError: If the function does not have a Jacobian function.
     """
     if not function.has_jac:
-        raise AttributeError("Function Jacobian unavailable for linear approximation.")
+        msg = "Function Jacobian unavailable for linear approximation."
+        raise AttributeError(msg)
 
     coefficients = function.jac(x_vect)
     func_val = function.evaluate(x_vect)
@@ -87,8 +88,8 @@ def compute_linear_approximation(
 
 def compute_quadratic_approximation(
     function: MDOFunction,
-    x_vect: ArrayType,
-    hessian_approx: ArrayType,
+    x_vect: NumberArray,
+    hessian_approx: NumberArray,
     input_names: Sequence[str] | None = None,
 ) -> MDOQuadraticFunction:
     r"""Build a quadratic approximation of a function at a given point.
@@ -128,13 +129,16 @@ def compute_quadratic_approximation(
         or hessian_approx.ndim != 2
         or hessian_approx.shape[0] != hessian_approx.shape[1]
     ):
-        raise ValueError("Hessian approximation must be a square ndarray.")
+        msg = "Hessian approximation must be a square ndarray."
+        raise ValueError(msg)
 
     if hessian_approx.shape[1] != x_vect.size:
-        raise ValueError("Hessian approximation and vector must have same dimension.")
+        msg = "Hessian approximation and vector must have same dimension."
+        raise ValueError(msg)
 
     if not function.has_jac:
-        raise AttributeError("Jacobian unavailable.")
+        msg = "Jacobian unavailable."
+        raise AttributeError(msg)
 
     gradient = function.jac(x_vect)
     hess_dot_vect = hessian_approx @ x_vect

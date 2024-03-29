@@ -46,7 +46,7 @@ DESCRIPTIONS = [
 ]
 
 
-def test_fail_no_output():
+def test_fail_no_output() -> None:
     """Test that the LinearDiscipline fails when there are no inputs or outputs in the
     description."""
     with pytest.raises(ValueError, match="output_names must not be empty."):
@@ -56,7 +56,7 @@ def test_fail_no_output():
 
 
 @pytest.mark.parametrize("descriptions", DESCRIPTIONS)
-def test_creation(descriptions):
+def test_creation(descriptions) -> None:
     """Test that the disciplines are well generated according to spec."""
     disciplines = create_disciplines_from_desc(descriptions)
     assert len(disciplines) == len(descriptions)
@@ -67,7 +67,7 @@ def test_creation(descriptions):
 
 
 @pytest.mark.parametrize("desc", DESCRIPTIONS[:-1])
-def test_mda_convergence(desc):
+def test_mda_convergence(desc) -> None:
     """Test that the generated disciplines have an equilibrium point."""
     disciplines = create_disciplines_from_desc(desc)
     tolerance = 1e-12
@@ -79,7 +79,7 @@ def test_mda_convergence(desc):
     assert mda.normed_residual <= tolerance
 
 
-def test_lin_disc_jac():
+def test_lin_disc_jac() -> None:
     """Test _compute_jacobian."""
     desc = [("A", ["x"], ["a"]), ("B", ["a", "x"], ["b", "c"])]
     disciplines = create_disciplines_from_desc(desc)
@@ -90,7 +90,7 @@ def test_lin_disc_jac():
 @pytest.mark.parametrize(
     "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
 )
-def test_create_disciplines_from_sizes(grammar_type):
+def test_create_disciplines_from_sizes(grammar_type) -> None:
     """Test that the disciplines are well created according to the specifications."""
     nb_of_disc = 2
     nb_of_total_disc_io = 10
@@ -129,7 +129,7 @@ def test_create_disciplines_from_sizes(grammar_type):
         (1, 3, "outputs"),
     ],
 )
-def test_sizes_errors(nb_of_disc_inputs, nb_of_disc_outputs, kind):
+def test_sizes_errors(nb_of_disc_inputs, nb_of_disc_outputs, kind) -> None:
     """Test that the inputs consistency errors."""
     with pytest.raises(ValueError, match=f"The number of disciplines {kind}"):
         create_disciplines_from_sizes(
@@ -141,7 +141,7 @@ def test_sizes_errors(nb_of_disc_inputs, nb_of_disc_outputs, kind):
 
 
 @pytest.mark.parametrize("nb_of_names", [1, 27])
-def test_get_disc_names(nb_of_names):
+def test_get_disc_names(nb_of_names) -> None:
     """Test names generator."""
     names = _get_disc_names(nb_of_names)
     assert len(set(names)) == nb_of_names
@@ -151,7 +151,7 @@ def test_get_disc_names(nb_of_names):
     "matrix_format",
     LinearDiscipline.MatrixFormat,
 )
-def test_jacobian_format(matrix_format: LinearDiscipline.MatrixFormat):
+def test_jacobian_format(matrix_format: LinearDiscipline.MatrixFormat) -> None:
     """Test that the Jacobian matrices have the specified format."""
     disciplines = create_disciplines_from_desc(
         DESC_16_DISC,

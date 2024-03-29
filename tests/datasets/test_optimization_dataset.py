@@ -36,37 +36,37 @@ def dataset() -> OptimizationDataset:
     return dataset
 
 
-def test_design_variable_names(dataset):
+def test_design_variable_names(dataset) -> None:
     """Test the property design_variable_names."""
     assert dataset.design_variable_names == ["x"]
 
 
-def test_constraint_names(dataset):
+def test_constraint_names(dataset) -> None:
     """Test the property constraint_names."""
     assert dataset.constraint_names == ["c"]
 
 
-def test_objective_names(dataset):
+def test_objective_names(dataset) -> None:
     """Test the property objective_names."""
     assert dataset.objective_names == ["f"]
 
 
-def test_observable_names(dataset):
+def test_observable_names(dataset) -> None:
     """Test the property observable_names."""
     assert dataset.observable_names == ["o"]
 
 
-def test_n_iterations(dataset):
+def test_n_iterations(dataset) -> None:
     """Test the property n_iterations."""
     assert dataset.n_iterations == 1
 
 
-def tset_iterations(dataset):
+def tset_iterations(dataset) -> None:
     """Test the property iterations."""
     assert_equal(dataset.iterations, arange(1))
 
 
-def test_add_design_variable():
+def test_add_design_variable() -> None:
     """Test the method add_design_variable."""
     o_dataset = OptimizationDataset()
     o_dataset.add_design_variable("x", [[1.0], [2.0]])
@@ -81,7 +81,7 @@ def test_add_design_variable():
     assert_frame_equal(o_dataset, dataset)
 
 
-def test_add_observable_variable():
+def test_add_observable_variable() -> None:
     """Test the method add_observable_variable."""
     o_dataset = OptimizationDataset()
     o_dataset.add_observable_variable("x", [[1.0], [2.0]])
@@ -96,7 +96,7 @@ def test_add_observable_variable():
     assert_frame_equal(o_dataset, dataset)
 
 
-def test_add_objective_variable():
+def test_add_objective_variable() -> None:
     """Test the method add_objective_variable."""
     o_dataset = OptimizationDataset()
     o_dataset.add_objective_variable("x", [[1.0], [2.0]])
@@ -111,7 +111,7 @@ def test_add_objective_variable():
     assert_frame_equal(o_dataset, dataset)
 
 
-def test_add_constraint_variable():
+def test_add_constraint_variable() -> None:
     """Test the method add_constraint_variable."""
     o_dataset = OptimizationDataset()
     o_dataset.add_constraint_variable("x", [[1.0], [2.0]])
@@ -126,7 +126,7 @@ def test_add_constraint_variable():
     assert_frame_equal(o_dataset, dataset)
 
 
-def test_add_design_group():
+def test_add_design_group() -> None:
     """Test the method add_design_group."""
     o_dataset = OptimizationDataset()
     o_dataset.add_design_group([[1.0], [2.0]], ["x"])
@@ -139,7 +139,7 @@ def test_add_design_group():
     assert_frame_equal(o_dataset, dataset)
 
 
-def test_add_objective_group():
+def test_add_objective_group() -> None:
     """Test the method add_objective_group."""
     o_dataset = OptimizationDataset()
     o_dataset.add_objective_group([[1.0], [2.0]], ["x"])
@@ -152,7 +152,7 @@ def test_add_objective_group():
     assert_frame_equal(o_dataset, dataset)
 
 
-def test_add_observable_group():
+def test_add_observable_group() -> None:
     """Test the method add_observable_group."""
     o_dataset = OptimizationDataset()
     o_dataset.add_observable_group([[1.0], [2.0]], ["x"])
@@ -165,7 +165,7 @@ def test_add_observable_group():
     assert_frame_equal(o_dataset, dataset)
 
 
-def test_add_constraint_group():
+def test_add_constraint_group() -> None:
     """Test the method add_constraint_group."""
     o_dataset = OptimizationDataset()
     o_dataset.add_constraint_group([[1.0], [2.0]], ["x"])
@@ -178,30 +178,30 @@ def test_add_constraint_group():
     assert_frame_equal(o_dataset, dataset)
 
 
-def test_design_dataset(dataset):
+def test_design_dataset(dataset) -> None:
     """Test the property design_dataset."""
     design_dataset = dataset.get_view(group_names=dataset.DESIGN_GROUP)
     assert_frame_equal(dataset.design_dataset, design_dataset)
 
 
-def test_objective_dataset(dataset):
+def test_objective_dataset(dataset) -> None:
     """Test the property objective_dataset."""
     objective_dataset = dataset.get_view(group_names=dataset.OBJECTIVE_GROUP)
     assert_frame_equal(dataset.objective_dataset, objective_dataset)
 
 
-def test_observable_dataset(dataset):
+def test_observable_dataset(dataset) -> None:
     """Test the property observable_dataset."""
     observable_dataset = dataset.get_view(group_names=dataset.OBSERVABLE_GROUP)
     assert_frame_equal(dataset.observable_dataset, observable_dataset)
 
 
-def test_constraint_dataset(dataset):
+def test_constraint_dataset(dataset) -> None:
     """Test the property constraint_dataset."""
     constraint_dataset = dataset.get_view(group_names=dataset.CONSTRAINT_GROUP)
     assert_frame_equal(dataset.constraint_dataset, constraint_dataset)
 
 
-def test_iterations(dataset):
+def test_iterations(dataset) -> None:
     """Test the property iterations."""
     assert_equal(dataset.iterations, [1])

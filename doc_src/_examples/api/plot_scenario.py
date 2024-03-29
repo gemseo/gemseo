@@ -134,7 +134,7 @@ get_scenario_differentiation_modes()
 class Observer:
     """Observer."""
 
-    def update(self, atom):
+    def update(self, atom) -> None:
         """Update method.
 
         :param AtomicExecSequence atom: atomic execution sequence.

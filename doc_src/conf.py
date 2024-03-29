@@ -191,7 +191,7 @@ html_favicon = "_static/favicon.ico"
 html_static_path = ["_static"]
 
 
-def setup(app):
+def setup(app) -> None:
     app.add_css_file("css/gemseo.css")
     app.add_css_file("css/all.css")
     app.add_css_file("xdsm/fontello.css")
@@ -303,7 +303,7 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
         ),
         "gemseo-fmu": ("GEMSEO plugin for FMU dynamic models", True),
         "gemseo-matlab": ("GEMSEO plugin for MATLAB.", False),
-        "gemseo-mlearning": ("Miscellaneous machine learning capabilities", False),
+        "gemseo-mlearning": ("Miscellaneous machine learning capabilities", True),
         "gemseo-mma": (
             "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
             False,

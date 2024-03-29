@@ -76,7 +76,7 @@ configure_logger()
 def parse_file(file_path):
     data = {}
     with open(file_path) as inf:
-        for line in inf.readlines():
+        for line in inf:
             if len(line) == 0:
                 continue
             name, value = line.replace("\n", "").split("=")
@@ -85,20 +85,20 @@ def parse_file(file_path):
     return data
 
 
-def write_file(data, file_path):
+def write_file(data, file_path) -> None:
     with open(file_path, "w") as outf:
         for name, value in list(data.items()):
             outf.write(name + "=" + str(value[0]) + "\n")
 
 
 class ShellExecutableDiscipline(MDODiscipline):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("ShellDisc")
         self.input_grammar.update_from_names(["a", "b"])
         self.output_grammar.update_from_names(["c"])
         self.default_inputs = {"a": array([1.0]), "b": array([2.0])}
 
-    def _run(self):
+    def _run(self) -> None:
         cwd = os.getcwd()
         inputs_file = os.path.join(cwd, "inputs.txt")
         outputs_file = os.path.join(cwd, "outputs.txt")

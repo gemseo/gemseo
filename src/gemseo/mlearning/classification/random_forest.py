@@ -40,8 +40,8 @@ from numpy import newaxis
 from numpy import stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
-from gemseo import SEED
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

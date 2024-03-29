@@ -1,0 +1,409 @@
+
+%%% Preamble Requirements %%%
+% \usepackage{geometry}
+% \usepackage{amsfonts}
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{tikz}
+
+% Optional packages such as sfmath set through python interface
+% \usepackage{sfmath}
+
+% \usetikzlibrary{arrows,chains,positioning,scopes,shapes.geometric,shapes.misc,shadows}
+
+%%% End Preamble Requirements %%%
+
+\input{"C:/Users/nicolas.roussouly/Code/GEMSEO/gemseo_fork/.tox/py39/lib/site-packages/pyxdsm/diagram_styles"}
+\begin{tikzpicture}
+
+\matrix[MatrixSetup]{
+%Row 0
+&
+\node [DataIO] (output_Opt) {$x\_shared^{(0)}$};&
+&
+&
+&
+&
+&
+&
+&
+&
+&
+\\
+%Row 1
+\node [DataIO] (left_output_Opt) {$-y\_4^*,  g\_1\_g\_2\_g\_3^*$};&
+\node [Optimization] (Opt) {$\text{1,12-2:Optimizer}$};&
+\node [DataInter] (Opt-Dis1) {$x\_shared$};&
+\node [DataInter] (Opt-Dis2) {$x\_shared$};&
+\node [DataInter] (Opt-Dis3) {$x\_shared$};&
+\node [DataInter] (Opt-Dis4) {$x\_shared$};&
+&
+&
+&
+\node [DataInter] (Opt-Dis8) {$x\_shared$};&
+\node [DataInter] (Opt-Dis12) {$x\_shared$};&
+\\
+%Row 2
+&
+\node [DataInter] (Dis1-Opt) {$g\_1,  g\_2..., (3)$};&
+\node [MDA] (Dis1) {$\text{2,4-3:MDAJacobi}$};&
+\node [DataInter] (Dis1-Dis2) {$y\_23$};&
+\node [DataInter] (Dis1-Dis3) {$y\_12,  y\_32$};&
+\node [DataInter] (Dis1-Dis4) {$y\_21,  y\_31$};&
+\node [DataInter] (Dis1-Dis5) {$y\_23$};&
+\node [DataInter] (Dis1-Dis6) {$y\_12,  y\_32$};&
+\node [DataInter] (Dis1-Dis7) {$y\_21,  y\_31$};&
+\node [DataInter] (Dis1-Dis8) {$y\_12,  y\_21..., (5)$};&
+\node [DataInter] (Dis1-Dis12) {$y\_14,  y\_24..., (3)$};&
+\\
+%Row 3
+\node [DataIO] (left_output_Dis2) {$y\_32^*,  y\_31^*..., (4)$};&
+\node [DataInter] (Dis2-Opt) {$g\_3$};&
+\node [DataInter] (Dis2-Dis1) {$y\_31,  y\_32$};&
+\node [Function] (Dis2) {$\text{3,9:SobieskiPropulsion}$};&
+&
+&
+&
+&
+&
+\node [DataInter] (Dis2-Dis8) {$y\_31,  y\_32$};&
+&
+\\
+%Row 4
+\node [DataIO] (left_output_Dis3) {$y\_21^*,  y\_23^*..., (4)$};&
+\node [DataInter] (Dis3-Opt) {$g\_2$};&
+\node [DataInter] (Dis3-Dis1) {$y\_21,  y\_23$};&
+&
+\node [Function] (Dis3) {$\text{3,9:SobieskiAerodynamics}$};&
+&
+&
+&
+&
+\node [DataInter] (Dis3-Dis8) {$y\_21,  y\_23$};&
+&
+\\
+%Row 5
+\node [DataIO] (left_output_Dis4) {$y\_1^*,  y\_11^*..., (4)$};&
+\node [DataInter] (Dis4-Opt) {$g\_1$};&
+\node [DataInter] (Dis4-Dis1) {$y\_12$};&
+&
+&
+\node [Function] (Dis4) {$\text{3,9:SobieskiStructure}$};&
+&
+&
+&
+\node [DataInter] (Dis4-Dis8) {$y\_12$};&
+&
+\\
+%Row 6
+&
+&
+\node [DataInter] (Dis5-Dis1) {$x\_3,  y\_31..., (3)$};&
+&
+&
+&
+\node [SubOptimization] (Dis5) {$\text{5:PropulsionScenario\_scn-1-1}$};&
+\node [DataInter] (Dis5-Dis6) {$y\_32$};&
+\node [DataInter] (Dis5-Dis7) {$y\_31$};&
+\node [DataInter] (Dis5-Dis8) {$x\_3,  y\_31..., (3)$};&
+\node [DataInter] (Dis5-Dis12) {$y\_34$};&
+\\
+%Row 7
+&
+&
+\node [DataInter] (Dis6-Dis1) {$x\_2,  y\_21..., (3)$};&
+&
+&
+&
+\node [DataInter] (Dis6-Dis5) {$y\_23$};&
+\node [SubOptimization] (Dis6) {$\text{6:AerodynamicsScenario\_scn-1-2}$};&
+\node [DataInter] (Dis6-Dis7) {$y\_21$};&
+\node [DataInter] (Dis6-Dis8) {$x\_2,  y\_21..., (3)$};&
+\node [DataInter] (Dis6-Dis12) {$y\_24$};&
+\\
+%Row 8
+&
+&
+\node [DataInter] (Dis7-Dis1) {$x\_1,  y\_12$};&
+&
+&
+&
+&
+\node [DataInter] (Dis7-Dis6) {$y\_12$};&
+\node [SubOptimization] (Dis7) {$\text{7:StructureScenario\_scn-1-3}$};&
+\node [DataInter] (Dis7-Dis8) {$x\_1,  y\_12$};&
+\node [DataInter] (Dis7-Dis12) {$y\_14$};&
+\\
+%Row 9
+&
+\node [DataInter] (Dis8-Opt) {$g\_1,  g\_2..., (3)$};&
+\node [DataInter] (Dis8-Dis1) {$y\_12,  y\_21..., (5)$};&
+\node [DataInter] (Dis8-Dis2) {$y\_23$};&
+\node [DataInter] (Dis8-Dis3) {$y\_12,  y\_32$};&
+\node [DataInter] (Dis8-Dis4) {$y\_21,  y\_31$};&
+\node [DataInter] (Dis8-Dis5) {$y\_23$};&
+\node [DataInter] (Dis8-Dis6) {$y\_12,  y\_32$};&
+\node [DataInter] (Dis8-Dis7) {$y\_21,  y\_31$};&
+\node [MDA] (Dis8) {$\text{8,10-9:MDAJacobi}$};&
+\node [DataInter] (Dis8-Dis12) {$y\_14,  y\_24..., (3)$};&
+\\
+%Row 10
+&
+\node [DataInter] (Dis12-Opt) {$y\_4$};&
+&
+&
+&
+&
+&
+&
+&
+&
+\node [Function] (Dis12) {$\text{11:SobieskiMission}$};&
+\\
+%Row 11
+&
+&
+&
+&
+&
+&
+&
+&
+&
+&
+&
+\\
+};
+
+% XDSM process chains
+{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Opt);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Dis2) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Dis3) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Dis4) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis2);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis3);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis4);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Dis5) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis5);
+\chainin (Dis6) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis6);
+\chainin (Dis7) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis7);
+\chainin (Dis8) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis8);
+\chainin (Dis2) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis8);
+\chainin (Dis3) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis8);
+\chainin (Dis4) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis2);
+\chainin (Dis8) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis3);
+\chainin (Dis8) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis4);
+\chainin (Dis8) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis8);
+\chainin (Dis12) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis12);
+\chainin (Opt) [join=by ProcessHVA];
+\end{pgfonlayer}
+}
+
+\begin{pgfonlayer}{data}
+\path
+% Horizontal edges
+(Opt) edge [DataLine] (Opt-Dis1)
+(Dis1) edge [DataLine] (Dis1-Opt)
+(Opt) edge [DataLine] (Opt-Dis2)
+(Dis2) edge [DataLine] (Dis2-Opt)
+(Opt) edge [DataLine] (Opt-Dis3)
+(Dis3) edge [DataLine] (Dis3-Opt)
+(Opt) edge [DataLine] (Opt-Dis4)
+(Dis4) edge [DataLine] (Dis4-Opt)
+(Opt) edge [DataLine] (Opt-Dis8)
+(Dis8) edge [DataLine] (Dis8-Opt)
+(Opt) edge [DataLine] (Opt-Dis2)
+(Dis2) edge [DataLine] (Dis2-Opt)
+(Opt) edge [DataLine] (Opt-Dis3)
+(Dis3) edge [DataLine] (Dis3-Opt)
+(Opt) edge [DataLine] (Opt-Dis4)
+(Dis4) edge [DataLine] (Dis4-Opt)
+(Opt) edge [DataLine] (Opt-Dis12)
+(Dis12) edge [DataLine] (Dis12-Opt)
+(Dis2) edge [DataLine] (Dis2-Opt)
+(Dis3) edge [DataLine] (Dis3-Opt)
+(Dis4) edge [DataLine] (Dis4-Opt)
+(Dis2) edge [DataLine] (Dis2-Opt)
+(Dis3) edge [DataLine] (Dis3-Opt)
+(Dis4) edge [DataLine] (Dis4-Opt)
+(Dis12) edge [DataLine] (Dis12-Opt)
+(Dis1) edge [DataLine] (Dis1-Dis5)
+(Dis1) edge [DataLine] (Dis1-Dis6)
+(Dis1) edge [DataLine] (Dis1-Dis7)
+(Dis1) edge [DataLine] (Dis1-Dis8)
+(Dis1) edge [DataLine] (Dis1-Dis12)
+(Dis5) edge [DataLine] (Dis5-Dis1)
+(Dis5) edge [DataLine] (Dis5-Dis6)
+(Dis5) edge [DataLine] (Dis5-Dis7)
+(Dis5) edge [DataLine] (Dis5-Dis8)
+(Dis5) edge [DataLine] (Dis5-Dis12)
+(Dis6) edge [DataLine] (Dis6-Dis1)
+(Dis6) edge [DataLine] (Dis6-Dis5)
+(Dis6) edge [DataLine] (Dis6-Dis7)
+(Dis6) edge [DataLine] (Dis6-Dis8)
+(Dis6) edge [DataLine] (Dis6-Dis12)
+(Dis7) edge [DataLine] (Dis7-Dis1)
+(Dis7) edge [DataLine] (Dis7-Dis6)
+(Dis7) edge [DataLine] (Dis7-Dis8)
+(Dis7) edge [DataLine] (Dis7-Dis12)
+(Dis8) edge [DataLine] (Dis8-Dis1)
+(Dis8) edge [DataLine] (Dis8-Dis5)
+(Dis8) edge [DataLine] (Dis8-Dis6)
+(Dis8) edge [DataLine] (Dis8-Dis7)
+(Dis8) edge [DataLine] (Dis8-Dis12)
+(Dis1) edge [DataLine] (Dis1-Dis2)
+(Dis2) edge [DataLine] (Dis2-Dis1)
+(Dis1) edge [DataLine] (Dis1-Dis3)
+(Dis3) edge [DataLine] (Dis3-Dis1)
+(Dis1) edge [DataLine] (Dis1-Dis4)
+(Dis4) edge [DataLine] (Dis4-Dis1)
+(Dis8) edge [DataLine] (Dis8-Dis2)
+(Dis2) edge [DataLine] (Dis2-Dis8)
+(Dis8) edge [DataLine] (Dis8-Dis3)
+(Dis3) edge [DataLine] (Dis3-Dis8)
+(Dis8) edge [DataLine] (Dis8-Dis4)
+(Dis4) edge [DataLine] (Dis4-Dis8)
+(Opt) edge [DataLine] (left_output_Opt)
+(Dis2) edge [DataLine] (left_output_Dis2)
+(Dis3) edge [DataLine] (left_output_Dis3)
+(Dis4) edge [DataLine] (left_output_Dis4)
+% Vertical edges
+(Opt-Dis1) edge [DataLine] (Dis1)
+(Dis1-Opt) edge [DataLine] (Opt)
+(Opt-Dis2) edge [DataLine] (Dis2)
+(Dis2-Opt) edge [DataLine] (Opt)
+(Opt-Dis3) edge [DataLine] (Dis3)
+(Dis3-Opt) edge [DataLine] (Opt)
+(Opt-Dis4) edge [DataLine] (Dis4)
+(Dis4-Opt) edge [DataLine] (Opt)
+(Opt-Dis8) edge [DataLine] (Dis8)
+(Dis8-Opt) edge [DataLine] (Opt)
+(Opt-Dis2) edge [DataLine] (Dis2)
+(Dis2-Opt) edge [DataLine] (Opt)
+(Opt-Dis3) edge [DataLine] (Dis3)
+(Dis3-Opt) edge [DataLine] (Opt)
+(Opt-Dis4) edge [DataLine] (Dis4)
+(Dis4-Opt) edge [DataLine] (Opt)
+(Opt-Dis12) edge [DataLine] (Dis12)
+(Dis12-Opt) edge [DataLine] (Opt)
+(Dis2-Opt) edge [DataLine] (Opt)
+(Dis3-Opt) edge [DataLine] (Opt)
+(Dis4-Opt) edge [DataLine] (Opt)
+(Dis2-Opt) edge [DataLine] (Opt)
+(Dis3-Opt) edge [DataLine] (Opt)
+(Dis4-Opt) edge [DataLine] (Opt)
+(Dis12-Opt) edge [DataLine] (Opt)
+(Dis1-Dis5) edge [DataLine] (Dis5)
+(Dis1-Dis6) edge [DataLine] (Dis6)
+(Dis1-Dis7) edge [DataLine] (Dis7)
+(Dis1-Dis8) edge [DataLine] (Dis8)
+(Dis1-Dis12) edge [DataLine] (Dis12)
+(Dis5-Dis1) edge [DataLine] (Dis1)
+(Dis5-Dis6) edge [DataLine] (Dis6)
+(Dis5-Dis7) edge [DataLine] (Dis7)
+(Dis5-Dis8) edge [DataLine] (Dis8)
+(Dis5-Dis12) edge [DataLine] (Dis12)
+(Dis6-Dis1) edge [DataLine] (Dis1)
+(Dis6-Dis5) edge [DataLine] (Dis5)
+(Dis6-Dis7) edge [DataLine] (Dis7)
+(Dis6-Dis8) edge [DataLine] (Dis8)
+(Dis6-Dis12) edge [DataLine] (Dis12)
+(Dis7-Dis1) edge [DataLine] (Dis1)
+(Dis7-Dis6) edge [DataLine] (Dis6)
+(Dis7-Dis8) edge [DataLine] (Dis8)
+(Dis7-Dis12) edge [DataLine] (Dis12)
+(Dis8-Dis1) edge [DataLine] (Dis1)
+(Dis8-Dis5) edge [DataLine] (Dis5)
+(Dis8-Dis6) edge [DataLine] (Dis6)
+(Dis8-Dis7) edge [DataLine] (Dis7)
+(Dis8-Dis12) edge [DataLine] (Dis12)
+(Dis1-Dis2) edge [DataLine] (Dis2)
+(Dis2-Dis1) edge [DataLine] (Dis1)
+(Dis1-Dis3) edge [DataLine] (Dis3)
+(Dis3-Dis1) edge [DataLine] (Dis1)
+(Dis1-Dis4) edge [DataLine] (Dis4)
+(Dis4-Dis1) edge [DataLine] (Dis1)
+(Dis8-Dis2) edge [DataLine] (Dis2)
+(Dis2-Dis8) edge [DataLine] (Dis8)
+(Dis8-Dis3) edge [DataLine] (Dis3)
+(Dis3-Dis8) edge [DataLine] (Dis8)
+(Dis8-Dis4) edge [DataLine] (Dis4)
+(Dis4-Dis8) edge [DataLine] (Dis8)
+(Opt) edge [DataLine] (output_Opt);
+\end{pgfonlayer}
+
+\end{tikzpicture}

@@ -50,6 +50,7 @@ class ZvsXY(MatplotlibPlot):
             other_datasets: Other datasets.
         """  # noqa: D205, D212, D415
         fig, axes = self._get_figure_and_axes(fig, axes)
+        self._common_settings.set_colors(self._common_settings.color)
         grid = mtri.Triangulation(x_values, y_values)
         options = {"cmap": self._common_settings.colormap}
         if self._specific_settings.levels is not None:

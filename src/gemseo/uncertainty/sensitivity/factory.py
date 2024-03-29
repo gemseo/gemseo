@@ -21,12 +21,12 @@
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -93,7 +93,7 @@ class SensitivityAnalysisFactory(BaseFactory):
         n_samples: int | None = None,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
+        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> SensitivityAnalysis:

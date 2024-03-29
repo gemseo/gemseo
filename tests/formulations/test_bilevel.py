@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 
 import pytest
 
@@ -27,6 +26,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.chain import MDOWarmStartedChain
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
@@ -72,37 +72,37 @@ def dummy_bilevel_scenario() -> MDOScenario:
     sub_design_space_1 = create_design_space()
     sub_design_space_1.add_variable("x_1")
     sub_scenario_1 = create_scenario(
-        disciplines=[discipline_1, discipline_3],
-        formulation="MDF",
-        objective_name="obj",
-        design_space=sub_design_space_1,
+        [discipline_1, discipline_3],
+        "MDF",
+        "obj",
+        sub_design_space_1,
     )
 
     sub_design_space_2 = create_design_space()
     sub_design_space_2.add_variable("x_2")
     sub_scenario_2 = create_scenario(
-        disciplines=[discipline_2, discipline_3],
-        formulation="MDF",
-        objective_name="obj",
-        design_space=sub_design_space_2,
+        [discipline_2, discipline_3],
+        "MDF",
+        "obj",
+        sub_design_space_2,
     )
 
     return create_scenario(
-        disciplines=[sub_scenario_1, sub_scenario_2],
-        formulation="BiLevel",
-        objective_name="obj",
-        design_space=system_design_space,
+        [sub_scenario_1, sub_scenario_2],
+        "BiLevel",
+        "obj",
+        system_design_space,
     )
 
 
-def test_execute(sobieski_bilevel_scenario):
+def test_execute(sobieski_bilevel_scenario) -> None:
     """Test the execution of the Sobieski BiLevel Scenario."""
     scenario = sobieski_bilevel_scenario(
         apply_cstr_tosub_scenarios=True, apply_cstr_to_system=False
     )
 
     for i in range(1, 4):
-        scenario.add_constraint(["g_" + str(i)], "ineq")
+        scenario.add_constraint(["g_" + str(i)], constraint_type="ineq")
     scenario.formulation.get_expected_workflow()
 
     for i in range(3):
@@ -113,10 +113,10 @@ def test_execute(sobieski_bilevel_scenario):
     cstrs_sys = scenario.formulation.opt_problem.constraints
     assert len(cstrs_sys) == 0
     with pytest.raises(ValueError):
-        scenario.add_constraint(["toto"], "ineq")
+        scenario.add_constraint(["toto"], constraint_type="ineq")
 
 
-def test_get_sub_options_grammar_errors():
+def test_get_sub_options_grammar_errors() -> None:
     """Test that errors are raised if no MDA name is provided."""
     with pytest.raises(ValueError):
         BiLevel.get_sub_options_grammar()
@@ -124,7 +124,7 @@ def test_get_sub_options_grammar_errors():
         BiLevel.get_default_sub_option_values()
 
 
-def test_get_sub_options_grammar():
+def test_get_sub_options_grammar() -> None:
     """Test that the MDAJacobi sub-options can be retrieved."""
     sub_options_schema = BiLevel.get_sub_options_grammar(main_mda_name="MDAJacobi")
     assert sub_options_schema.name == "MDAJacobi"
@@ -133,7 +133,7 @@ def test_get_sub_options_grammar():
     assert "acceleration" in sub_option_values
 
 
-def test_bilevel_aerostructure():
+def test_bilevel_aerostructure() -> None:
     """Test the Bi-level formulation on the aero-structure problem."""
     algo_options = {
         "xtol_rel": 1e-8,
@@ -172,38 +172,38 @@ def test_bilevel_aerostructure():
     }
     design_space_ref = AerostructureDesignSpace()
 
-    design_space_aero = deepcopy(design_space_ref).filter(["thick_airfoils"])
+    design_space_aero = design_space_ref.filter(["thick_airfoils"], copy=True)
     aero_scenario = create_scenario(
-        disciplines=[aerodynamics, mission],
-        formulation="DisciplinaryOpt",
-        objective_name="range",
-        design_space=design_space_aero,
+        [aerodynamics, mission],
+        "DisciplinaryOpt",
+        "range",
+        design_space_aero,
         maximize_objective=True,
     )
     aero_scenario.default_inputs = sub_scenario_options
 
-    design_space_struct = deepcopy(design_space_ref).filter(["thick_panels"])
+    design_space_struct = design_space_ref.filter(["thick_panels"], copy=True)
     struct_scenario = create_scenario(
-        disciplines=[structure, mission],
-        formulation="DisciplinaryOpt",
-        objective_name="range",
-        design_space=design_space_struct,
+        [structure, mission],
+        "DisciplinaryOpt",
+        "range",
+        design_space_struct,
         maximize_objective=True,
     )
     struct_scenario.default_inputs = sub_scenario_options
 
-    design_space_system = deepcopy(design_space_ref).filter(["sweep"])
+    design_space_system = design_space_ref.filter(["sweep"], copy=True)
     system_scenario = create_scenario(
-        disciplines=[aero_scenario, struct_scenario, mission],
-        formulation="BiLevel",
-        objective_name="range",
-        design_space=design_space_system,
+        [aero_scenario, struct_scenario, mission],
+        "BiLevel",
+        "range",
+        design_space_system,
         maximize_objective=True,
         main_mda_name="MDAJacobi",
         tolerance=1e-8,
     )
-    system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)
-    system_scenario.add_constraint("lift", "eq", value=0.5)
+    system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
+    system_scenario.add_constraint("lift", value=0.5)
     system_scenario.execute({
         "algo": "NLOPT_COBYLA",
         "max_iter": 5,
@@ -211,7 +211,7 @@ def test_bilevel_aerostructure():
     })
 
 
-def test_grammar_type():
+def test_grammar_type() -> None:
     """Check that the grammar type is correctly used."""
     discipline = AnalyticDiscipline({"y1": "z+x1+y2", "y2": "z+x2+2*y1"})
     design_space = DesignSpace()
@@ -243,7 +243,7 @@ def test_grammar_type():
     assert formulation.mda2.grammar_type == grammar_type
 
 
-def test_bilevel_weak_couplings(dummy_bilevel_scenario):
+def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
     """Test that the adapters contains the discipline weak couplings.
 
     This test generates a bi-level scenario which does not aim to be run as it has no
@@ -266,14 +266,14 @@ def test_bilevel_weak_couplings(dummy_bilevel_scenario):
     assert "b" in disciplines[1].get_output_data_names()
 
 
-def test_bilevel_mda_getter(dummy_bilevel_scenario):
+def test_bilevel_mda_getter(dummy_bilevel_scenario) -> None:
     """Test that the user can access the MDA1 and MDA2."""
     # In the Dummy scenario, there's not strongly coupled disciplines -> No MDA1
     assert dummy_bilevel_scenario.formulation.mda1 is None
     assert "obj" in dummy_bilevel_scenario.formulation.mda2.get_output_data_names()
 
 
-def test_bilevel_mda_setter(dummy_bilevel_scenario):
+def test_bilevel_mda_setter(dummy_bilevel_scenario) -> None:
     """Test that the user cannot modify the MDA1 and MDA2 after instantiation."""
     discipline = create_discipline("SellarSystem")
     with pytest.raises(AttributeError):
@@ -282,7 +282,7 @@ def test_bilevel_mda_setter(dummy_bilevel_scenario):
         dummy_bilevel_scenario.formulation.mda2 = discipline
 
 
-def test_get_sub_disciplines(sobieski_bilevel_scenario):
+def test_get_sub_disciplines(sobieski_bilevel_scenario) -> None:
     """Test the get_sub_disciplines method with the BiLevel formulation.
 
     Args:
@@ -302,7 +302,7 @@ def test_get_sub_disciplines(sobieski_bilevel_scenario):
     }
 
 
-def test_bilevel_warm_start(sobieski_bilevel_scenario):
+def test_bilevel_warm_start(sobieski_bilevel_scenario) -> None:
     """Test the warm start of the BiLevel chain.
 
     Args:
@@ -316,13 +316,24 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario):
     )
     mda1_cache = scenario.formulation.chain.disciplines[0].cache
     scenario.execute({"algo": "NLOPT_COBYLA", "max_iter": 3})
-    mda1_inputs = [entry.inputs for entry in mda1_cache]
-    chain_outputs = [entry.outputs for entry in bilevel_chain_cache]
+    mda1_inputs = [entry.inputs for entry in mda1_cache.get_all_entries()]
+    chain_outputs = [entry.outputs for entry in bilevel_chain_cache.get_all_entries()]
 
     assert mda1_inputs[1]["y_21"] == chain_outputs[0]["y_21"]
     assert (mda1_inputs[1]["y_12"] == chain_outputs[0]["y_12"]).all()
     assert mda1_inputs[2]["y_21"] == chain_outputs[1]["y_21"]
     assert (mda1_inputs[2]["y_12"] == chain_outputs[1]["y_12"]).all()
+
+
+def test_bilevel_warm_start_no_mda1(dummy_bilevel_scenario) -> None:
+    """Test that a warm start chain is built even if the process does not include any
+    MDA1.
+
+    Args:
+        dummy_bilevel_scenario: Fixture to instantiate a dummy weakly
+            coupled scenario.
+    """
+    assert isinstance(dummy_bilevel_scenario.formulation.chain, MDOWarmStartedChain)
 
 
 @pytest.mark.parametrize(
@@ -334,7 +345,7 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario):
         {"sub_scenarios_log_level": logging.WARNING},
     ],
 )
-def test_scenario_log_level(caplog, options):
+def test_scenario_log_level(caplog, options) -> None:
     """Check scenario_log_level."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)

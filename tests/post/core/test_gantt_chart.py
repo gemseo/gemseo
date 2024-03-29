@@ -48,7 +48,7 @@ def time_stamps_data():
         return pickle.load(infile)
 
 
-def test_time_stamps(reset_time_stamping):
+def test_time_stamps(reset_time_stamping) -> None:
     """Tests the time stamps storage."""
     mission = create_discipline("SobieskiMission", enable_delay=True)
     mission.execute()
@@ -71,7 +71,7 @@ def test_time_stamps(reset_time_stamping):
     assert mission_stamps[2][-1]
 
 
-def test_stamps_error():
+def test_stamps_error() -> None:
     """Tests that the error is raised when time stamps are deactivated."""
     with pytest.raises(
         ValueError, match="Time stamps are not activated in MDODiscipline"
@@ -79,7 +79,7 @@ def test_stamps_error():
         create_gantt_chart()
 
 
-def test_save(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
+def test_save(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests file saving."""
     MDODiscipline.time_stamps = time_stamps_data
     file_path = Path("gantt_chart.png")
@@ -88,7 +88,7 @@ def test_save(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
 
 
 @image_comparison(["gantt_chart"])
-def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
+def test_plot(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests the Gantt chart plot creation."""
     # If needed for figure regeneration:
     #
@@ -110,7 +110,7 @@ def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     # maximize_objective=True,
     # )
     # for c_name in ["g_1", "g_2", "g_3"]:
-    # scenario.add_constraint(c_name, "ineq")
+    # scenario.add_constraint(c_name, constraint_type="ineq")
     # scenario.execute({"max_iter": 3, "algo": "SLSQP"})
     #
     # stamps = MDODiscipline.TIME_STAMPS
@@ -121,7 +121,7 @@ def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
 
 
 @image_comparison(["gantt_chart_filtered"])
-def test_plot_filter(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
+def test_plot_filter(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests the Gantt chart plot creation with disciplines filter."""
     MDODiscipline.time_stamps = time_stamps_data
     create_gantt_chart(
@@ -131,9 +131,7 @@ def test_plot_filter(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_
     )
 
 
-def test_plot_filter_fail(
-    tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data
-):
+def test_plot_filter_fail(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests the Gantt chart disciplines filter failure."""
     MDODiscipline.time_stamps = time_stamps_data
     with pytest.raises(ValueError, match="have no time stamps"):

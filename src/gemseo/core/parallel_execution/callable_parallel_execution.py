@@ -42,6 +42,7 @@ from gemseo.utils.multiprocessing import get_multi_processing_manager
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
 
 SUBPROCESS_NAME: Final[str] = "subprocess"
@@ -49,6 +50,10 @@ SUBPROCESS_NAME: Final[str] = "subprocess"
 LOGGER = logging.getLogger(__name__)
 
 _QueueType = TypeVar("_QueueType", queue.Queue, mp.Queue)
+
+
+CallbackType = Callable[[int, Any], Any]
+"""The type of a callback function."""
 
 
 def _execute_workers(
@@ -129,9 +134,9 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
     :attr:`.MultiProcessingStartMethod.FORK` otherwise.
     """
 
-    if PLATFORM_IS_WINDOWS:
+    if PLATFORM_IS_WINDOWS:  # pragma: win32 cover
         MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.SPAWN
-    else:
+    else:  # pragma: win32 no cover
         MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.FORK
 
     N_CPUS: Final[int] = mp.cpu_count()
@@ -205,25 +210,26 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
         if self.use_threading:
             ids = {id(obj) for obj in objects}
             if len(ids) != len(objects):
-                raise ValueError(
+                msg = (
                     "When using multithreading, all workers shall be different objects."
                 )
+                raise ValueError(msg)
 
     def execute(
         self,
         inputs: Sequence[Any],
-        exec_callback: Callable[[int, Any], Any] | None = None,
+        exec_callback: CallbackType | Iterable[CallbackType] = (),
         task_submitted_callback: Callable | None = None,
     ) -> list[Any]:
         """Execute all the processes.
 
         Args:
             inputs: The input values.
-            exec_callback: A callback called with the
+            exec_callback: Callback functions called with the
                 pair (index, outputs) as arguments when an item is retrieved
                 from the processing. Index is the associated index
                 in inputs of the input used to compute the outputs.
-                If ``None``, no function is called.
+                If empty, no function is called.
             task_submitted_callback: A callback function called when all the
                 tasks are submitted, but not done yet. If ``None``, no function
                 is called.
@@ -231,22 +237,16 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The computed outputs.
 
-        Raises:
-            TypeError: If the `exec_callback` is not callable.
-                If the `task_submitted_callback` is not callable.
-
         Warnings:
             This class relies on multiprocessing features, it is therefore
             necessary to protect its execution with an ``if __name__ == '__main__':``
             statement when working on Windows.
         """
-        if exec_callback is not None and not callable(exec_callback):
-            raise TypeError("exec_callback function must be callable.")
+        if exec_callback is None:
+            exec_callback = []
 
-        if task_submitted_callback is not None and not callable(
-            task_submitted_callback
-        ):
-            raise TypeError("task_submitted_callback function must be callable.")
+        if callable(exec_callback):
+            exec_callback = [exec_callback]
 
         n_tasks = len(inputs)
 
@@ -310,8 +310,8 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
                     stop = True
             else:
                 ordered_outputs[index] = output
-                if exec_callback is not None:
-                    exec_callback(index, output)
+                for callback in exec_callback:
+                    callback(index, output)
             got_n_outs += 1
 
         # Terminate the threads or processes.
@@ -326,7 +326,7 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
 
         return ordered_outputs
 
-    def __check_multiprocessing_start_method(self):
+    def __check_multiprocessing_start_method(self) -> None:
         """Check the multiprocessing start method with respect to the platform.
 
         Raises:
@@ -337,10 +337,11 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             PLATFORM_IS_WINDOWS
             and self.MULTI_PROCESSING_START_METHOD
             != self.MultiProcessingStartMethod.SPAWN
-        ):
-            raise ValueError(
+        ):  # pragma: win32 cover
+            msg = (
                 f"The multiprocessing start method "
                 f"{self.MULTI_PROCESSING_START_METHOD.value} "
                 f"cannot be used on the Windows platform. "
                 f"Only {self.MultiProcessingStartMethod.SPAWN.value} is available."
             )
+            raise ValueError(msg)

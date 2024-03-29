@@ -45,7 +45,7 @@ def viewer() -> MLRegressorQualityViewer:
 
 
 @image_comparison(["residuals"], tol=0.01)
-def test_residuals(viewer, pyplot_close_all):
+def test_residuals(viewer) -> None:
     """Check the method plot_residuals_vs_observations."""
     viewer.plot_residuals_vs_observations("y", save=False, show=False)
 
@@ -53,7 +53,7 @@ def test_residuals(viewer, pyplot_close_all):
 @image_comparison(
     [f"residuals_scatter_{chr(x)}" for x in range(ord("a"), ord("a") + 12)], tol=0.01
 )
-def test_residuals_scatter_no_filter(viewer, pyplot_close_all):
+def test_residuals_scatter_no_filter(viewer) -> None:
     """Check the method plot_residuals_vs_observations with a list of scatters.
 
     Do not filter the scatter plots without the residuals.
@@ -75,7 +75,9 @@ def test_residuals_scatter_no_filter(viewer, pyplot_close_all):
     ],
     tol=0.01,
 )
-def test_residuals_scatter(viewer, pyplot_close_all):
+def test_residuals_scatter(
+    viewer,
+) -> None:
     """Check the method plot_residuals_vs_observations with a list of scatters."""
     viewer.plot_residuals_vs_observations(
         "y", use_scatter_matrix=False, save=False, show=False
@@ -83,7 +85,9 @@ def test_residuals_scatter(viewer, pyplot_close_all):
 
 
 @image_comparison(["predictions"], tol=0.01)
-def test_predictions(viewer, pyplot_close_all):
+def test_predictions(
+    viewer,
+) -> None:
     """Check the method plot_predictions_vs_observations."""
     viewer.plot_predictions_vs_observations("y", save=False, show=False)
 
@@ -91,7 +95,9 @@ def test_predictions(viewer, pyplot_close_all):
 @image_comparison(
     [f"predictions_scatter_{chr(x)}" for x in range(ord("a"), ord("a") + 12)], tol=0.01
 )
-def test_predictions_scatter_no_filter(viewer, pyplot_close_all):
+def test_predictions_scatter_no_filter(
+    viewer,
+) -> None:
     """Check the method plot_predictions_vs_observations with a list of scatters.
 
     Do not filter the scatter plots without the predictions.
@@ -113,7 +119,9 @@ def test_predictions_scatter_no_filter(viewer, pyplot_close_all):
     ],
     tol=0.01,
 )
-def test_predictions_scatter(viewer, pyplot_close_all):
+def test_predictions_scatter(
+    viewer,
+) -> None:
     """Check the method plot_predictions_vs_observations with a list of scatters."""
     viewer.plot_predictions_vs_observations(
         "y", use_scatter_matrix=False, save=False, show=False
@@ -122,7 +130,7 @@ def test_predictions_scatter(viewer, pyplot_close_all):
 
 @pytest.mark.parametrize("input_names", [["x"], "x", ()])
 @image_comparison(["inputs"], tol=0.01)
-def test_inputs(viewer, pyplot_close_all, input_names):
+def test_inputs(viewer, input_names) -> None:
     """Check the method plot_residuals_vs_inputs."""
     viewer.plot_residuals_vs_inputs("y", input_names, save=False, show=False)
 
@@ -130,7 +138,9 @@ def test_inputs(viewer, pyplot_close_all, input_names):
 @image_comparison(
     [f"inputs_scatter_{chr(x)}" for x in range(ord("a"), ord("a") + 6)], tol=0.01
 )
-def test_inputs_scatter(viewer, pyplot_close_all):
+def test_inputs_scatter(
+    viewer,
+) -> None:
     """Check the method plot_residuals_vs_inputs with a list of scatters."""
     viewer.plot_residuals_vs_inputs(
         "y", ["x"], use_scatter_matrix=False, save=False, show=False
@@ -138,26 +148,32 @@ def test_inputs_scatter(viewer, pyplot_close_all):
 
 
 @image_comparison(["input"], tol=0.01)
-def test_input(viewer, pyplot_close_all):
+def test_input(
+    viewer,
+) -> None:
     """Check the method plot_residuals_vs_inputs with an input as str."""
     viewer.plot_residuals_vs_inputs("y", "x", save=False, show=False)
 
 
 @image_comparison(["output"], tol=0.01)
-def test_output(viewer, pyplot_close_all):
+def test_output(
+    viewer,
+) -> None:
     """Check the method plot_residuals_vs_observations with output as tuple."""
     viewer.plot_residuals_vs_observations(("y", 0), save=False, show=False)
 
 
 @image_comparison(["output_scatter_a", "output_scatter_b"], tol=0.01)
-def test_output_scatter(viewer, pyplot_close_all):
+def test_output_scatter(
+    viewer,
+) -> None:
     """Check the method plot_residuals_vs_observations with a list of scatters."""
     viewer.plot_residuals_vs_observations(
         ("y", 0), use_scatter_matrix=False, save=False, show=False
     )
 
 
-def test_output_scatter_default_file_names(viewer, tmp_wd):
+def test_output_scatter_default_file_names(viewer, tmp_wd) -> None:
     """Check the values of the default file names."""
     viewer.plot_residuals_vs_observations(("y", 0))
     assert Path("residuals_vs_observations.png").exists()
@@ -168,13 +184,17 @@ def test_output_scatter_default_file_names(viewer, tmp_wd):
 
 
 @image_comparison(["trend"], tol=0.01)
-def test_trend(viewer, pyplot_close_all):
+def test_trend(
+    viewer,
+) -> None:
     """Check plot_residuals_vs_observations with trend."""
     viewer.plot_predictions_vs_observations("y", save=False, show=False, trend="rbf")
 
 
 @image_comparison(["observations"], tol=0.01)
-def test_observations(viewer, pyplot_close_all):
+def test_observations(
+    viewer,
+) -> None:
     """Check plot_residuals_vs_observations with a validation dataset."""
     observations = IODataset()
     x = linspace(0, 1, 5)[:, newaxis]
@@ -194,7 +214,7 @@ def test_observations(viewer, pyplot_close_all):
         ("residuals", "plot_residuals_vs_inputs", "input_names"),
     ],
 )
-def test_signatures(viewer, model_data, method_name, input_names):
+def test_signatures(viewer, model_data, method_name, input_names) -> None:
     """Check that the plot methods pass the right values to the core private method."""
     tmp = (input_names,) if input_names else ()
     args = (

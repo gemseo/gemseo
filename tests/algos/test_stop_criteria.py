@@ -30,7 +30,7 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from .opt.problems.constant import Constant
 
 
-def test_is_x_tol_reached():
+def test_is_x_tol_reached() -> None:
     pb = Rosenbrock(l_b=0, u_b=1.0)
     pb.preprocess_functions()
     pb.objective(0 * ones(2))
@@ -45,7 +45,7 @@ def test_is_x_tol_reached():
     assert is_x_tol_reached(pb, x_tol_rel=0.1, x_tol_abs=0.0)
 
 
-def test_is_f_tol_reached():
+def test_is_f_tol_reached() -> None:
     pb = Rosenbrock(l_b=0, u_b=1.0)
     pb.preprocess_functions()
 
@@ -69,7 +69,7 @@ def test_is_f_tol_reached():
 
 
 @pytest.mark.parametrize("n_stop_crit_x", [2, 4, 6, 10, 20])
-def test_n_stop_crit_x(n_stop_crit_x):
+def test_n_stop_crit_x(n_stop_crit_x) -> None:
     """Test that the parameter n_stop_crit_x behave as expected.
 
     As the :class:`.Constant` problem always returns a constant objective value, The

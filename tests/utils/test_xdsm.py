@@ -38,29 +38,29 @@ def xdsm_without_html_file() -> XDSM:
     return XDSM({"foo": "bar"}, None)
 
 
-def test_html_file(xdsm):
+def test_html_file(xdsm) -> None:
     """Check HTML file path."""
     assert xdsm.html_file_path == Path("xdsm_path")
 
 
-def test_no_html_file(xdsm_without_html_file):
+def test_no_html_file(xdsm_without_html_file) -> None:
     """Check HTML file path when missing."""
     assert xdsm_without_html_file.html_file_path is None
 
 
-def test_json_schema(xdsm):
+def test_json_schema(xdsm) -> None:
     """Check the JSON schema."""
     assert xdsm.json_schema == {"foo": "bar"}
 
 
-def test_visualize(xdsm):
+def test_visualize(xdsm) -> None:
     """Check the visualization of a XDSM."""
     with mock.patch.object(xdsm_module, "webbrowser") as mock_object:
         xdsm.visualize()
         assert mock_object.open.call_args.args == ("file://xdsm_path",)
 
 
-def test_visualize_without_html_file(xdsm_without_html_file):
+def test_visualize_without_html_file(xdsm_without_html_file) -> None:
     """Check the visualization without HTML file."""
     with pytest.raises(
         ValueError,
@@ -71,7 +71,7 @@ def test_visualize_without_html_file(xdsm_without_html_file):
         xdsm_without_html_file.visualize()
 
 
-def test__repr_html_(xdsm):
+def test__repr_html_(xdsm) -> None:
     """Check the HTML representation."""
     html = xdsm._repr_html_()
     expected = (

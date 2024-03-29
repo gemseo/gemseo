@@ -138,7 +138,6 @@ class Scenario(MDODiscipline):
         """  # noqa: D205, D212, D415
         self.optimization_result = None
         self._algo_factory = None
-        self._gen_opt_backup_plot = False
         self._algo_name = None
         self._lib = None
 
@@ -312,10 +311,11 @@ class Scenario(MDODiscipline):
                 to be passed to the :class:`.MDOFormulation`.
         """
         if not isinstance(formulation, str):
-            raise TypeError(
+            msg = (
                 "Formulation must be specified by its name; "
                 "please use GEMSEO_PATH to specify custom formulations."
             )
+            raise TypeError(msg)
         self.formulation = self._form_factory.create(
             formulation,
             disciplines=self.disciplines,
@@ -356,9 +356,8 @@ class Scenario(MDODiscipline):
         elif file_format == OptimizationProblem.GGOBI_FORMAT:
             opt_pb.database.to_ggobi(file_path=file_path)
         else:
-            raise ValueError(
-                f"Cannot export optimization history to file format: {file_format}."
-            )
+            msg = f"Cannot export optimization history to file format: {file_format}."
+            raise ValueError(msg)
 
     def set_optimization_history_backup(
         self,
@@ -373,27 +372,30 @@ class Scenario(MDODiscipline):
 
         Args:
             file_path: The path to the file to save the history.
-            each_new_iter: If ``True``, callback at every iteration.
-            each_store: If ``True``, callback at every call to store() in the database.
-            erase: If ``True``, the backup file is erased before the run.
-            pre_load: If ``True``, the backup file is loaded before run,
+            each_new_iter: Whether the backup file is updated at every iteration
+                of the optimization to store the database.
+            each_store: Whether the backup file is updated at every function call
+                to store the database.
+            erase: Whether the backup file is erased before the run.
+            pre_load: Whether the backup file is loaded before run,
                 useful after a crash.
-            generate_opt_plot: If ``True``, generate the optimization history view
-                at backup.
+            generate_opt_plot: Whether to plot the optimization history view
+                at each iteration. The plots will be generated only after the first two
+                iterations.
 
         Raises:
-            ValueError: If both erase and pre_load are ``True``.
+            ValueError: If both ``erase`` and ``pre_load`` are ``True``.
         """
         opt_pb = self.formulation.opt_problem
         self._opt_hist_backup_path = Path(file_path)
-        self._gen_opt_backup_plot = generate_opt_plot
 
         if self._opt_hist_backup_path.exists():
             if erase and pre_load:
-                raise ValueError(
+                msg = (
                     "Conflicting options for history backup, "
                     "cannot pre load optimization history and erase it!"
                 )
+                raise ValueError(msg)
             if erase:
                 LOGGER.warning(
                     "Erasing optimization history in %s",
@@ -412,16 +414,26 @@ class Scenario(MDODiscipline):
             each_store=each_store,
         )
 
-    def _execute_backup_callback(self, option: Any = None) -> None:
+        if generate_opt_plot:
+            opt_pb.add_callback(
+                self._execute_plot_callback, each_new_iter=True, each_store=False
+            )
+
+    def _execute_backup_callback(self, x_vect: ndarray) -> None:
         """A callback function to back up optimization history.
 
         Args:
-            option: Any input value which is not used within the current function,
-               but need to be defined for the generic mechanism of the
-               callback functions usage in :class:`.OptimizationProblem`.
+            x_vect: The input value.
         """
         self.save_optimization_history(self._opt_hist_backup_path, append=True)
-        if self._gen_opt_backup_plot and self.formulation.opt_problem.database:
+
+    def _execute_plot_callback(self, x_vect: ndarray) -> None:
+        """A callback function to plot the OptHistoryView of the current history.
+
+        Args:
+            x_vect: The input value.
+        """
+        if len(self.formulation.opt_problem.database) > 2:
             self.post_process(
                 "OptHistoryView",
                 save=True,
@@ -531,6 +543,9 @@ class Scenario(MDODiscipline):
         save_html: bool = True,
         save_json: bool = False,
         save_pdf: bool = False,
+        pdf_build: bool = True,
+        pdf_cleanup: bool = True,
+        pdf_batchmode: bool = True,
     ) -> XDSM | None:
         """Create a XDSM diagram of the scenario.
 
@@ -546,6 +561,10 @@ class Scenario(MDODiscipline):
             save_html: Whether to save the XDSM as a HTML file.
             save_json: Whether to save the XDSM as a JSON file.
             save_pdf: Whether to save the XDSM as a PDF file.
+            pdf_build: Whether the standalone pdf of the XDSM will be built.
+            pdf_cleanup: Whether pdflatex built files will be cleaned up
+                after build is complete.
+            pdf_batchmode: Whether pdflatex is run in `batchmode`.
 
         Returns:
             A view of the XDSM if ``monitor`` is ``False``.
@@ -568,6 +587,9 @@ class Scenario(MDODiscipline):
             save_html=save_html,
             save_json=save_json,
             file_name=file_name,
+            pdf_build=pdf_build,
+            pdf_cleanup=pdf_cleanup,
+            pdf_batchmode=pdf_batchmode,
         )
 
     def get_expected_dataflow(  # noqa:D102

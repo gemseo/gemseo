@@ -318,7 +318,7 @@ class ParametricStatistics(Statistics):
         directory: str | Path = ".",
         index: int = 0,
         fig_size: FigSizeType = (6.4, 3.2),
-    ) -> None:
+    ) -> Figure:
         """Plot criteria for a given variable name.
 
         Args:
@@ -334,17 +334,18 @@ class ParametricStatistics(Statistics):
             ValueError: If the variable is missing from the dataset.
         """
         if variable not in self.names:
-            raise ValueError(
+            msg = (
                 f"The variable '{variable}' is missing from the dataset; "
                 f"available ones are: {pretty_str(self.names)}."
             )
+            raise ValueError(msg)
         criteria, is_p_value = self.get_criteria(variable, index)
         x_values = []
         y_values = []
         labels = []
         x_value = 0
         for distribution, criterion in criteria.items():
-            x_value += 1
+            x_value += 1  # noqa: SIM113
             x_values.append(x_value)
             y_values.append(criterion)
             labels.append(distribution)
@@ -385,6 +386,8 @@ class ParametricStatistics(Statistics):
             plt.suptitle(title)
 
         save_show_figure(fig, show, Path(directory) / "criteria.pdf" if save else "")
+
+        return fig
 
     def _select_best_distributions(
         self, distribution_names: Sequence[DistributionName]
@@ -562,10 +565,12 @@ class ParametricStatistics(Statistics):
         side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
     ) -> dict[str, list[ToleranceInterval.Bounds]]:
         if not 0.0 <= coverage <= 1.0:
-            raise ValueError("The argument 'coverage' must be a number in [0,1].")
+            msg = "The argument 'coverage' must be a number in [0,1]."
+            raise ValueError(msg)
 
         if not 0.0 <= confidence <= 1.0:
-            raise ValueError("The argument 'confidence' must be a number in [0,1].")
+            msg = "The argument 'confidence' must be a number in [0,1]."
+            raise ValueError(msg)
 
         tolerance_interval_factory = ToleranceIntervalFactory()
         return {

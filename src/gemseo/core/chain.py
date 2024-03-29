@@ -23,7 +23,6 @@ Can be both sequential or parallel execution processes.
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from strenum import LowercaseStrEnum
@@ -51,8 +50,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from numpy import ndarray
-
-LOGGER = logging.getLogger(__name__)
 
 
 # TODO: One class per module.
@@ -163,8 +160,9 @@ class MDOChain(MDODiscipline):
 
                 # Make a copy of the keys because the dict is changed in the
                 # loop
-                existing_inputs = self.jac[output_name].keys()
-                common_inputs = set(existing_inputs) & set(discipline.jac)
+                common_inputs = sorted(
+                    set(self.jac[output_name].keys()).intersection(discipline.jac)
+                )
                 for input_name in common_inputs:
                     # Store reference to the current Jacobian
                     curr_jac = self.jac[output_name][input_name]
@@ -629,18 +627,20 @@ class MDOWarmStartedChain(MDOChain):
             missing_output_names = set(variable_names_to_warm_start).difference(
                 all_output_names
             )
-            raise ValueError(
+            msg = (
                 "The following variable names are not "
                 f"outputs of the chain: {missing_output_names}."
                 f" Available outputs are: {all_output_names}."
             )
+            raise ValueError(msg)
 
     def _compute_jacobian(
         self,
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        raise NotImplementedError(f"{self.__class__.__name__} cannot be linearized.")
+        msg = f"{self.__class__.__name__} cannot be linearized."
+        raise NotImplementedError(msg)
 
     def _run(self) -> None:
         if self._warm_start_variable_names_to_values:

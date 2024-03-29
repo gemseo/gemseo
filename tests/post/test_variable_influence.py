@@ -34,13 +34,11 @@ POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 SSBJ_HDF5_PATH = Path(__file__).parent / "mdf_backup.h5"
 
 
-def test_variable_influence(tmp_wd, pyplot_close_all):
+def test_variable_influence(tmp_wd) -> None:
     """Test the variable influence post-processing.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
@@ -64,13 +62,11 @@ def test_variable_influence(tmp_wd, pyplot_close_all):
     #     assert Path(outf).exists()
 
 
-def test_variable_influence_doe(tmp_wd, pyplot_close_all):
+def test_variable_influence_doe(tmp_wd) -> None:
     """Test the variable influence post-processing on a DOE.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     disc = SobieskiStructure()
     design_space = SobieskiDesignSpace()
@@ -90,13 +86,11 @@ def test_variable_influence_doe(tmp_wd, pyplot_close_all):
         )
 
 
-def test_variable_influence_ssbj(tmp_wd, pyplot_close_all):
+def test_variable_influence_ssbj(tmp_wd) -> None:
     """Test the variable influence post-processing on the SSBJ problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        pyplot_close_all : Fixture that prevents figures aggregation
-            with matplotlib pyplot.
     """
     factory = PostFactory()
     problem = OptimizationProblem.from_hdf(SSBJ_HDF5_PATH)
@@ -128,8 +122,8 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
-):
+    use_standardized_objective, baseline_images, common_problem
+) -> None:
     """Check VariableInfluence with objective, standardized or not."""
     opt = VariableInfluence(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective

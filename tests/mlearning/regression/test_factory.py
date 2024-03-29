@@ -49,7 +49,7 @@ def dataset() -> Dataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test factory constructor."""
     assert {
         "GaussianProcessRegressor",
@@ -62,14 +62,14 @@ def test_constructor():
     } <= set(RegressionModelFactory().models)
 
 
-def test_create(dataset):
+def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     factory = RegressionModelFactory()
     linreg = factory.create("LinearRegressor", data=dataset)
     assert hasattr(linreg, "parameters")
 
 
-def test_load(dataset, tmp_wd):
+def test_load(dataset, tmp_wd) -> None:
     """Test the loading of a model from data."""
     factory = RegressionModelFactory()
     linreg = factory.create("LinearRegressor", data=dataset)
@@ -79,13 +79,13 @@ def test_load(dataset, tmp_wd):
     assert hasattr(loaded_linreg, "parameters")
 
 
-def test_available_models():
+def test_available_models() -> None:
     """Test the getter of available regression models."""
     factory = RegressionModelFactory()
     assert "LinearRegressor" in factory.models
 
 
-def test_is_available():
+def test_is_available() -> None:
     """Test the existence of a regression model."""
     factory = RegressionModelFactory()
     assert factory.is_available("LinearRegressor")

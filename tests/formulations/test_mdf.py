@@ -55,7 +55,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         else:
             scenario.set_differentiation_method("complex_step", 1e-30)
         # Set the design constraints
-        scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+        scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
         scenario.execute({
@@ -68,7 +68,7 @@ class TestMDFFormulation(FormulationsBaseTest):
 
     # Tests with SCIPY ONLY ! Other libraries are optional...
 
-    def test_exec_mdf_cstr(self):
+    def test_exec_mdf_cstr(self) -> None:
         """"""
         options = {
             "tolerance": 1e-12,
@@ -84,7 +84,7 @@ class TestMDFFormulation(FormulationsBaseTest):
 
         assert_allclose(-obj, 3964.0, atol=1.0, rtol=0)
 
-    def test_expected_workflow(self):
+    def test_expected_workflow(self) -> None:
         """"""
         disc1 = SobieskiStructure()
         disc2 = SobieskiPropulsion()
@@ -94,19 +94,18 @@ class TestMDFFormulation(FormulationsBaseTest):
         mdf = MDF(disciplines, "y_4", DesignSpace(), inner_mda_name="MDAGaussSeidel")
         wkf = mdf.get_expected_workflow()
         assert (
-            str(wkf)
-            == "[MDAChain(None), {MDAGaussSeidel(None), [SobieskiStructure(None), "
+            str(wkf) == "[{MDAGaussSeidel(None), [SobieskiStructure(None), "
             "SobieskiPropulsion(None), SobieskiAerodynamics(None), ], }, "
             "SobieskiMission(None), ]"
         )
         mdf.get_expected_dataflow()
 
-    def test_getsuboptions(self):
+    def test_getsuboptions(self) -> None:
         self.assertRaises(ValueError, MDF.get_sub_options_grammar)
         self.assertRaises(ValueError, MDF.get_default_sub_option_values)
 
 
-def test_grammar_type():
+def test_grammar_type() -> None:
     """Check that the grammar type is correctly used."""
     discipline = AnalyticDiscipline({"y1": "x+y2", "y2": "x+2*y1"})
     design_space = DesignSpace()

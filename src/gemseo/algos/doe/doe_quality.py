@@ -21,6 +21,7 @@ from operator import ge
 from operator import gt
 from operator import le
 from operator import lt
+from operator import neg
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
@@ -33,7 +34,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from numbers import Real
 
-    from numpy import ndarray
+    from gemseo.typing import RealArray
+
 
 __EUCLIDEAN: Final[str] = "euclidean"
 _DEFAULT_DISCREPANCY_TYPE_NAME: Final[str] = "CD"
@@ -52,7 +54,7 @@ except for the minimum-distance criterion for which the larger it is the better.
 
 _measure_transformations: tuple[Callable[[float], float]] = (
     lambda x: x,
-    lambda x: -x,
+    neg,
     lambda x: x,
 )
 """Transformations of quality measures into quantities to minimize."""
@@ -68,7 +70,7 @@ class DOEQuality:
 
     def __init__(
         self,
-        samples: ndarray,
+        samples: RealArray,
         power: int = _DEFAULT_POWER,
         discrepancy_type_name: DiscrepancyTypeNameType = _DEFAULT_DISCREPANCY_TYPE_NAME,
         **discrepancy_options: Any,
@@ -135,7 +137,7 @@ class DOEQuality:
         )
 
 
-def compute_mindist_criterion(samples: ndarray) -> float:
+def compute_mindist_criterion(samples: RealArray) -> float:
     """Compute the minimum-distance criterion of a sample set (the higher, the better).
 
     This criterion is also called *mindist*.
@@ -150,7 +152,7 @@ def compute_mindist_criterion(samples: ndarray) -> float:
 
 
 def compute_discrepancy(
-    samples: ndarray,
+    samples: RealArray,
     type_name: DiscrepancyTypeNameType = _DEFAULT_DISCREPANCY_TYPE_NAME,
     **options: Any,
 ) -> float:
@@ -167,7 +169,7 @@ def compute_discrepancy(
     return qmc.discrepancy(samples, method=type_name, **options)
 
 
-def compute_phip_criterion(samples: ndarray, power: float = _DEFAULT_POWER) -> float:
+def compute_phip_criterion(samples: RealArray, power: float = _DEFAULT_POWER) -> float:
     r"""Compute the math:`\phi^p` criterion of a sample set (the smaller, the better).
 
     See :cite:`morris1995`.

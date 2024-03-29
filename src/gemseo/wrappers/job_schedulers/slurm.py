@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from logging import getLogger
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -28,8 +27,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.core.discipline import MDODiscipline
-
-LOGGER = getLogger(__name__)
 
 
 class SLURM(JobSchedulerDisciplineWrapper):
@@ -49,7 +46,7 @@ class SLURM(JobSchedulerDisciplineWrapper):
         scheduler_run_command: str = "sbatch --wait",
         job_out_filename: str = "batch.sh",
         job_template_path: Path | str | None = None,
-        use_template=True,
+        use_template: bool = True,
         setup_cmd: str = "",
         user_email: str = "",
         wall_time: str = "24:00:00",

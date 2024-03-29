@@ -61,7 +61,7 @@ and standard deviation
 
 .. math::
 
-   \sigma_i = \frac{1}{r}\sum_{j=1}^r\left(|df_i^{(j)}|-\mu_i\right)^2
+   \sigma_i = \sqrt{\frac{1}{r}\sum_{j=1}^r\left(|df_i^{(j)}|-\mu_i\right)^2}
 
 where :math:`\mu_i = \frac{1}{r}\sum_{j=1}^rdf_i^{(j)}`.
 
@@ -70,7 +70,6 @@ This methodology relies on the :class:`.MorrisAnalysis` class.
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -85,6 +84,7 @@ from gemseo.disciplines.utils import get_all_outputs
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -93,6 +93,8 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
     from pathlib import Path
+
+    from matplotlib.figure import Figure
 
     from gemseo.algos.doe.doe_library import DOELibraryOptionType
     from gemseo.algos.parameter_space import ParameterSpace
@@ -242,7 +244,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         n_samples: int | None,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = MappingProxyType({}),
+        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
         n_replicates: int = 5,
         step: float = 0.05,
         formulation: str = "MDF",
@@ -261,7 +263,8 @@ class MorrisAnalysis(SensitivityAnalysis):
             ValueError: If at least one input dimension is not equal to 1.
         """  # noqa: D205, D212, D415
         if parameter_space.dimension != len(parameter_space.variable_names):
-            raise ValueError("Each input dimension must be equal to 1.")
+            msg = "Each input dimension must be equal to 1."
+            raise ValueError(msg)
 
         self.mu_ = {}
         self.mu_star = {}
@@ -275,11 +278,12 @@ class MorrisAnalysis(SensitivityAnalysis):
         else:
             self.__n_replicates = n_samples // (parameter_space.dimension + 1)
             if self.__n_replicates == 0:
-                raise ValueError(
+                msg = (
                     f"The number of samples ({n_samples}) must be "
                     "at least equal to the dimension of the input space plus one "
                     f"({parameter_space.dimension}+1={parameter_space.dimension + 1})."
                 )
+                raise ValueError(msg)
 
         disciplines = list(disciplines)
         if not output_names:
@@ -401,7 +405,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         offset: float = 1,
         lower_mu: float | None = None,
         lower_sigma: float | None = None,
-    ) -> None:
+    ) -> Figure:
         r"""Plot the Morris indices for each input variable.
 
         For :math:`i\in\{1,\ldots,d\}`,
@@ -426,11 +430,10 @@ class MorrisAnalysis(SensitivityAnalysis):
         ax.scatter(x_val, y_val)
         ax.set_xlabel(r"$\mu^*$")
         ax.set_ylabel(r"$\sigma$")
-        default_title = "Sampling: {}(size={}) - Relative step: {} - Output: {}".format(
-            self._algo_name,
-            self.__n_replicates,
-            self.__step,
-            repr_variable(*output, size=len(self.sigma[output[0]])),
+        default_title = (
+            f"Sampling: {self._algo_name}(size={self.__n_replicates}) - "
+            f"Relative step: {self.__step} - Output: "
+            f"{repr_variable(*output, size=len(self.sigma[output[0]]))}"
         )
         ax.set_xlim(left=lower_mu)
         ax.set_ylim(bottom=lower_sigma)
@@ -450,3 +453,4 @@ class MorrisAnalysis(SensitivityAnalysis):
             file_format=file_format,
             directory_path=directory_path,
         )
+        return fig

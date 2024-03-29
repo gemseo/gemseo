@@ -26,7 +26,7 @@ from gemseo.post.basic_history import BasicHistory
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 
 
-def test_scenario_result_before_execution(scenario):
+def test_scenario_result_before_execution(scenario) -> None:
     """Check ScenarioResult before execution."""
     with pytest.raises(
         ValueError,
@@ -35,7 +35,7 @@ def test_scenario_result_before_execution(scenario):
         ScenarioResult(scenario)
 
 
-def test_scenario_result(scenario):
+def test_scenario_result(scenario) -> None:
     """Check ScenarioResult."""
     scenario.execute()
     scenario_result = ScenarioResult(scenario)
@@ -51,13 +51,13 @@ def test_scenario_result(scenario):
     assert optimum_design == {"x": array([0.0])}
 
 
-def test_hdf_file():
+def test_hdf_file() -> None:
     """Check ScenarioResult with an HDF file instead of a Scenario."""
     scenario_result = ScenarioResult(Path(__file__).parent / "scenario.hdf5")
     assert scenario_result.design_variable_names_to_values == {"x": array([0.0])}
 
 
-def test_plot(scenario):
+def test_plot(scenario) -> None:
     """Check ScenarioResult.plot."""
     scenario.execute()
     assert isinstance(

@@ -43,7 +43,7 @@ class TestScipyGlobalOpt(TestCase):
     def get_problem():
         return Rosenbrock()
 
-    def test_init(self):
+    def test_init(self) -> None:
         factory = OptimizersFactory()
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
@@ -58,7 +58,7 @@ def pow2_database() -> Database:
 
 
 @pytest.mark.parametrize("name", ["pow2", "ineq1", "ineq2", "eq"])
-def test_function_history_length(name, pow2_database):
+def test_function_history_length(name, pow2_database) -> None:
     assert len(pow2_database.get_function_history(name)) == len(pow2_database)
 
 
@@ -84,6 +84,6 @@ for test_method in suite_tests.generate_test("ScipyGlobalOpt", get_options):
     setattr(TestScipyGlobalOpt, test_method.__name__, test_method)
 
 
-def test_library_name():
+def test_library_name() -> None:
     """Check the library name."""
     assert ScipyGlobalOpt.LIBRARY_NAME == "SciPy"

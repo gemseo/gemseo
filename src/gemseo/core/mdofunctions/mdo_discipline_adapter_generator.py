@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from numbers import Number
 from typing import TYPE_CHECKING
 from typing import Callable
@@ -38,7 +37,6 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import MDODiscipline
 
-LOGGER = logging.getLogger(__name__)
 
 OperandType = Union[ndarray, Number]
 OperatorType = Callable[[OperandType, OperandType], OperandType]
@@ -114,18 +112,20 @@ class MDODisciplineAdapterGenerator:
             output_names = self.discipline.get_output_data_names()
 
         if not self.discipline.is_all_inputs_existing(input_names):
-            raise ValueError(
+            msg = (
                 f"Some elements of {input_names} "
                 f"are not inputs of the discipline {self.discipline.name}; "
                 f"available inputs are: {self.discipline.get_input_data_names()}."
             )
+            raise ValueError(msg)
 
         if not self.discipline.is_all_outputs_existing(output_names):
-            raise ValueError(
+            msg = (
                 f"Some elements of {output_names} "
                 f"are not outputs of the discipline {self.discipline.name}; "
                 f"available outputs are: {self.discipline.get_output_data_names()}."
             )
+            raise ValueError(msg)
 
         # adds inputs and outputs to the list of variables to be
         # differentiated

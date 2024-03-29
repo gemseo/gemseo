@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -28,19 +29,21 @@ from typing import Optional
 from typing import Union
 
 import pyDOE2 as pyDOE
-from numpy import ndarray
 from numpy.random import RandomState
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
 from gemseo.algos.doe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
+from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[
-    Union[str, int, float, bool, Sequence[int], tuple[int, int], ndarray]
+    Union[str, int, float, bool, Sequence[int], tuple[int, int], RealArray]
 ]
 
 
@@ -128,6 +131,7 @@ class PyDOE(DOELibrary):
         wait_time_between_samples: float = 0.0,
         seed: int | None = None,
         max_time: float = 0,
+        callbacks: Iterable[CallbackType] = (),
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:  # pylint: disable=W0221
         """Set the options.
@@ -155,11 +159,12 @@ class PyDOE(DOELibrary):
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
-            seed: The seed value.
-                If ``None``,
-                use the seed of the library,
-                namely :attr:`.PyDOE.seed`.
+            seed: The seed used for reproducibility reasons.
+                If ``None``, use :attr:`.seed`.
             max_time: The maximum runtime in seconds, disabled if 0.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
             **kwargs: The additional arguments.
 
         Returns:
@@ -181,13 +186,14 @@ class PyDOE(DOELibrary):
             wait_time_between_samples=wait_time_between_samples,
             seed=seed,
             max_time=max_time,
+            callbacks=callbacks,
             **kwargs,
         )
 
     @staticmethod
     def __translate(
-        result: ndarray,
-    ) -> ndarray:
+        result: RealArray,
+    ) -> RealArray:
         """Translate the DOE design variables to [0,1].
 
         Args:
@@ -198,22 +204,14 @@ class PyDOE(DOELibrary):
         """
         return (result + 1.0) * 0.5
 
-    def _generate_samples(self, **options: OptionType) -> ndarray:
-        """Generate the samples for the DOE.
-
-        Args:
-            **options: The options for the algorithm,
-                see the associated JSON file.
-
-        Returns:
-            The samples for the DOE.
-        """
+    def _generate_samples(
+        self, design_space: DesignSpace, **options: OptionType
+    ) -> RealArray:
         if self.algo_name == self.PYDOE_LHS:
-            seed = options[self.SEED]
             return pyDOE.lhs(
-                options[self.DIMENSION],
-                random_state=RandomState(self._get_seed(seed)),
-                samples=options["n_samples"],
+                design_space.dimension,
+                random_state=RandomState(self._seeder.get_seed(options[self.SEED])),
+                samples=options[self.N_SAMPLES],
                 criterion=options.get(self.CRITERION_KEYWORD),
                 iterations=options.get(self.ITERATION_KEYWORD),
             )
@@ -221,7 +219,7 @@ class PyDOE(DOELibrary):
         if self.algo_name == self.PYDOE_CCDESIGN:
             return self.__translate(
                 pyDOE.ccdesign(
-                    options[self.DIMENSION],
+                    design_space.dimension,
                     center=options[self.CENTER_CC_KEYWORD],
                     alpha=options[self.ALPHA_KEYWORD],
                     face=options[self.FACE_KEYWORD],
@@ -235,24 +233,26 @@ class PyDOE(DOELibrary):
             # entire design space. Default value of center depends on dv_size
             return self.__translate(
                 pyDOE.bbdesign(
-                    options[self.DIMENSION], center=options.get(self.CENTER_BB_KEYWORD)
+                    design_space.dimension,
+                    center=options.get(self.CENTER_BB_KEYWORD),
                 )
             )
 
         if self.algo_name == self.PYDOE_FULLFACT:
             return PyDOEFullFactorialDOE().generate_samples(
                 options.pop(self.N_SAMPLES),
-                options.pop(self.DIMENSION),
+                design_space.dimension,
                 **options,
             )
 
         if self.algo_name == self.PYDOE_2LEVELFACT:
-            return self.__translate(pyDOE.ff2n(options[self.DIMENSION]))
+            return self.__translate(pyDOE.ff2n(design_space.dimension))
 
         if self.algo_name == self.PYDOE_PBDESIGN:
-            return self.__translate(pyDOE.pbdesign(options[self.DIMENSION]))
+            return self.__translate(pyDOE.pbdesign(design_space.dimension))
 
-        raise ValueError(f"Bad algo_name: {self.algo_name}")
+        msg = f"Bad algo_name: {self.algo_name}"
+        raise ValueError(msg)
 
     @classmethod
     def _get_unsuitability_reason(

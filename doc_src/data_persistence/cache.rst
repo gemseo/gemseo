@@ -135,13 +135,11 @@ A cache can be handled as a dictionary:
 Cache data in an HDF file
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`HDF5  <https://portal.hdfgroup.org/display/support>`_ is a standard file format for storing simulation data.
-The following description is proposed by the `HDF5 website <https://portal.hdfgroup.org/display/support>`_:
+`HDF5 <https://portal.hdfgroup.org>`_ is a standard file format for storing simulation data:
 
     *"HDF5 is a data model, library, and file format for storing and managing data. It supports an unlimited variety of datatypes, and is designed for flexible and efficient I/O and for high volume and complex data. HDF5 is portable and is extensible, allowing applications to evolve in their use of HDF5. The HDF5 Technology suite includes tools and applications for managing, manipulating, viewing, and analyzing data in the HDF5 format."*
 
-The `HDFView application <https://portal.hdfgroup.org/display/HDFVIEW/HDFView>`_ can be used
-to explore the data of the cache.
+The HDFView application can be used to explore the data of the cache.
 
 .. figure:: /_images/HDFView_cache.png
     :scale: 70 %

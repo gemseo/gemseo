@@ -22,12 +22,12 @@ from gemseo.uncertainty.use_cases.ishigami.functions import compute_gradient
 from gemseo.uncertainty.use_cases.ishigami.functions import compute_output
 
 
-def test_compute_output():
+def test_compute_output() -> None:
     """Check the output of the Ishigami function."""
     assert compute_output(array([1.0, 1.0, 1.0])) == pytest.approx(5.9, abs=0.1)
 
 
-def test_compute_gradient():
+def test_compute_gradient() -> None:
     """Check the gradient of the Ishigami function."""
     assert_almost_equal(
         compute_gradient(array([1.0, 1.0, 1.0])), array([0.6, 6.4, 0.3]), decimal=1

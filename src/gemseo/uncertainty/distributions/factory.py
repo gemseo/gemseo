@@ -106,10 +106,11 @@ class DistributionFactory(BaseFactory):
         """
         identifiers = {dist.__class__.__name__[0:2] for dist in distributions}
         if len(identifiers) > 1:
-            raise ValueError(
+            msg = (
                 "A composed probability distribution cannot mix distributions "
                 f"with different identifiers; got {pretty_str(identifiers)}."
             )
+            raise ValueError(msg)
 
         return super().create(
             f"{next(iter(identifiers))}ComposedDistribution",

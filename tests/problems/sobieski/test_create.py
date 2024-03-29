@@ -32,7 +32,7 @@ DISCIPLINES = [
 
 
 @pytest.mark.parametrize("dtype", ["float64", "complex128"])
-def test_create_disciplines(dtype):
+def test_create_disciplines(dtype) -> None:
     """Check the creation of the disciplines."""
     disciplines = create_disciplines(dtype)
     assert [discipline.name for discipline in disciplines] == DISCIPLINES
@@ -42,7 +42,7 @@ def test_create_disciplines(dtype):
 
 
 @pytest.mark.parametrize("dtype", ["float64", "complex128"])
-def test_create_design_space(dtype):
+def test_create_design_space(dtype) -> None:
     """Check the creation of the design space."""
     design_space = create_design_space(dtype)
     assert "x_shared" in design_space

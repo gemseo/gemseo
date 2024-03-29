@@ -18,7 +18,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Binh and Korn multi-objective problem.
 
-This module implements the Binh and Korn multi-objective problem:
+This module implements the Binh and Korn multi-objective problem as defined in
+:cite:`binh1997mobes`:
 
 .. math::
 
@@ -37,7 +38,6 @@ This module implements the Binh and Korn multi-objective problem:
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import array
@@ -50,8 +50,6 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from gemseo.utils.matplotlib_figure import FigSizeType
-
-LOGGER = logging.getLogger(__name__)
 
 
 class BinhKorn(OptimizationProblem):
@@ -72,39 +70,39 @@ class BinhKorn(OptimizationProblem):
 
         super().__init__(design_space)
         self.objective = MDOFunction(
-            self.__compute_binhkorn,
+            self._compute_binhkorn,
             name="compute_binhkorn",
             f_type="obj",
-            jac=self.__compute_binhkorn_jac,
+            jac=self._compute_binhkorn_jac,
             expr="(4*x**2+ 4*y**2, (x-5.)**2 + (y-5.)**2)",
             input_names=["x", "y"],
             dim=2,
         )
         ineq1 = MDOFunction(
-            self.__compute_ineq_constraint1,
+            self._compute_ineq_constraint1,
             name="ineq1",
             f_type="ineq",
-            jac=self.__compute_ineq_constraint1_jac,
+            jac=self._compute_ineq_constraint1_jac,
             expr="(x-5.)**2 + y**2 <= 25.",
             input_names=["x", "y"],
         )
         self.add_ineq_constraint(ineq1)
 
         ineq2 = MDOFunction(
-            self.__compute_ineq_constraint2,
+            self._compute_ineq_constraint2,
             name="ineq2",
             f_type="ineq",
-            jac=self.__compute_ineq_constraint2_jac,
+            jac=self._compute_ineq_constraint2_jac,
             expr="(x-8.)**2 + (y+3)**2 >= 7.7",
             input_names=["x", "y"],
         )
         self.add_ineq_constraint(ineq2)
 
     @staticmethod
-    def __compute_binhkorn(
+    def _compute_binhkorn(
         x_dv: ndarray,
     ) -> ndarray:
-        """Compute the objective of analytical function.
+        """Compute the objective of the BinhKorn problem.
 
         Args:
             x_dv: The design variable vector.
@@ -118,10 +116,10 @@ class BinhKorn(OptimizationProblem):
         return obj
 
     @staticmethod
-    def __compute_ineq_constraint1(
+    def _compute_ineq_constraint1(
         x_dv: ndarray,
     ) -> ndarray:
-        """Compute the first constraint function.
+        """Compute the first constraint.
 
         Args:
             x_dv: The design variable vector.
@@ -132,10 +130,10 @@ class BinhKorn(OptimizationProblem):
         return array([(x_dv[0] - 5.0) ** 2 + x_dv[1] - 25.0])
 
     @staticmethod
-    def __compute_ineq_constraint2(
+    def _compute_ineq_constraint2(
         x_dv: ndarray,
     ) -> ndarray:
-        """Compute the first constraint function.
+        """Compute the second constraint.
 
         Args:
             x_dv: The design variable vector.
@@ -146,10 +144,10 @@ class BinhKorn(OptimizationProblem):
         return array([-((x_dv[0] - 8.0) ** 2) - (x_dv[1] + 3) + 7.7])
 
     @staticmethod
-    def __compute_binhkorn_jac(
+    def _compute_binhkorn_jac(
         x_dv: ndarray,
     ) -> ndarray:
-        """Compute the gradient of objective.
+        """Compute the gradient of the objective.
 
         Args:
             x_dv: The design variables vector.
@@ -166,10 +164,10 @@ class BinhKorn(OptimizationProblem):
         return jac
 
     @staticmethod
-    def __compute_ineq_constraint1_jac(
+    def _compute_ineq_constraint1_jac(
         x_dv: ndarray,
     ):  # (...) -> ndarray
-        """Compute the first inequality constraint jacobian.
+        """Compute the first inequality constraint Jacobian.
 
         Args:
             x_dv: The design variables vector.
@@ -184,10 +182,10 @@ class BinhKorn(OptimizationProblem):
         return jac
 
     @staticmethod
-    def __compute_ineq_constraint2_jac(
+    def _compute_ineq_constraint2_jac(
         x_dv: ndarray,
     ):  # (...) -> ndarray
-        """Compute the second inequality constraint jacobian.
+        """Compute the second inequality constraint Jacobian.
 
         Args:
             x_dv: The design variables vector.

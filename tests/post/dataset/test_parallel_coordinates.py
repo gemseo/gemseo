@@ -61,6 +61,7 @@ TEST_PARAMETERS = {
             "xlabel": "The xlabel",
             "ylabel": "The ylabel",
             "title": "The title",
+            "grid": False,
         },
         ["ParallelCoordinates_properties"],
     ),
@@ -75,9 +76,7 @@ TEST_PARAMETERS = {
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
-def test_plot(
-    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-):
+def test_plot(kwargs, properties, baseline_images, dataset, fig_and_axes) -> None:
     """Test images created by ParallelCoordinates._plot against references."""
     plot = ParallelCoordinates(dataset, classifier="x1", **kwargs)
     fig, axes = (
@@ -88,7 +87,7 @@ def test_plot(
     plot.execute(save=False, fig=fig, axes=axes)
 
 
-def test_wrong_classifier_name(dataset):
+def test_wrong_classifier_name(dataset) -> None:
     """Check that the message of the error raised when the classifier name is wrong."""
     with pytest.raises(
         ValueError,

@@ -39,9 +39,9 @@ from numpy import setdiff1d
 from numpy import unique
 from numpy.random import default_rng
 
-from gemseo import SEED
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.utils.seeder import SEED
 
 DESC_5_DISC = [
     ("A", ["b"], ["a", "c"]),
@@ -163,16 +163,18 @@ def create_disciplines_from_sizes(
             total number of inputs or outputs.
     """
     if nb_of_disc_inputs > nb_of_total_disc_io:
-        raise ValueError(
+        msg = (
             "The number of disciplines inputs must be lower "
             "or equal than the total number of disciplines io"
         )
+        raise ValueError(msg)
 
     if nb_of_disc_outputs > nb_of_total_disc_io:
-        raise ValueError(
+        msg = (
             "The number of disciplines outputs must be lower "
             "or equal than the total number of disciplines io"
         )
+        raise ValueError(msg)
 
     disc_names = _get_disc_names(nb_of_disc)
 

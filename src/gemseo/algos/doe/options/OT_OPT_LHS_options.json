@@ -8,7 +8,7 @@
   "properties": {
     "n_samples": {
       "type": "integer",
-      "minimum": 1
+      "minimum": 2
     },
     "distribution_name": {
       "type": "string",
@@ -29,10 +29,7 @@
           "type": "null"
         },
         {
-          "type": [
-            "null",
-            "array"
-          ],
+          "type": "array",
           "minItems": 1,
           "items": {
             "type": "number",
@@ -105,7 +102,8 @@
     "max_time": {
       "type": "number",
       "minimum": 0.0
-    }
+    },
+    "callbacks": {}
   },
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,

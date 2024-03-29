@@ -75,6 +75,7 @@ TEST_PARAMETERS = {
             "color": ["red", "black", "blue", "blue"],
             "linestyle": ["--", "-.", "-", "-"],
             "marker": ["o", "v", "<", "<"],
+            "grid": False,
         },
         ["Lines_properties"],
     ),
@@ -82,6 +83,11 @@ TEST_PARAMETERS = {
         {"add_markers": True},
         {"color": "red", "linestyle": "--", "marker": "v"},
         ["Lines_other_properties"],
+    ),
+    "colormap": (
+        {"add_markers": True},
+        {"colormap": "viridis"},
+        ["Lines_colormap"],
     ),
 }
 
@@ -95,8 +101,8 @@ TEST_PARAMETERS = {
 @pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None)
 def test_plot_matplotlib(
-    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
-):
+    kwargs, properties, baseline_images, dataset, fig_and_axes
+) -> None:
     """Test images created by Lines.execute against references for matplotlib."""
     plot = Lines(dataset, **kwargs)
     fig, axes = (
@@ -114,7 +120,7 @@ def test_plot_matplotlib(
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-def test_plot_plotly(kwargs, properties, baseline_images, dataset):
+def test_plot_plotly(kwargs, properties, baseline_images, dataset) -> None:
     """Test images created by Lines.execute against references for plotly."""
     pytest.importorskip("plotly")
     plot = Lines(dataset, **kwargs)
@@ -122,5 +128,23 @@ def test_plot_plotly(kwargs, properties, baseline_images, dataset):
         setattr(plot, k, v)
 
     figure = plot.execute(save=False, show=False, file_format="html")[0]
-    ref = (Path(__file__).parent / "plotly" / baseline_images[0]).read_text()
+    ref = (
+        Path(__file__).parent / "plotly" / "test_lines" / baseline_images[0]
+    ).read_text()
+    assert figure.to_json() == ref.strip()
+
+
+def test_pass_existing_figure(dataset):
+    """Check that an existing figure can be modified."""
+    figure = Lines(dataset, variables="y", abscissa_variable="x").execute(
+        save=False, show=False, file_name="existing", file_format="html"
+    )[0]
+    figure = Lines(
+        dataset, variables="z", abscissa_variable="x", add_markers=True
+    ).execute(
+        save=False, show=False, file_name="final", fig=figure, file_format="html"
+    )[0]
+    ref = (
+        Path(__file__).parent / "plotly" / "test_lines" / "Lines_modified"
+    ).read_text()
     assert figure.to_json() == ref.strip()

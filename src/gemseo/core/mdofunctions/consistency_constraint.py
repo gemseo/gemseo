@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import eye
@@ -33,15 +32,13 @@ from numpy import zeros
 
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
-from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.formulation import MDOFormulation
-
-LOGGER = logging.getLogger(__name__)
+    from gemseo.typing import NumberArray
 
 
 class ConsistencyCstr(LinearCandidateFunction):
@@ -96,7 +93,7 @@ class ConsistencyCstr(LinearCandidateFunction):
     def input_dimension(self) -> int | None:  # noqa: D102
         return self.__coupl_func.input_dimension
 
-    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _func_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the consistency constraints.
 
         Args:
@@ -112,7 +109,7 @@ class ConsistencyCstr(LinearCandidateFunction):
             return (coupl - x_sw) / self.__norm_fact
         return coupl - x_sw
 
-    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the gradient of the consistency constraints.
 
         Args:

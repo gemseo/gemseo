@@ -54,7 +54,7 @@ def non_feasible_points() -> ndarray:
 def test_select_pareto_optimal(
     tmp_wd,
     objective_points: objective_points,
-):
+) -> None:
     """Test the selection of Pareto optimal points.
 
     Args:
@@ -67,7 +67,7 @@ def test_select_pareto_optimal(
 def test_select_pareto_optimal_w_non_feasible_points(
     objective_points: objective_points,
     non_feasible_points: non_feasible_points,
-):
+) -> None:
     """Test the selection of Pareto optimal points, with non-feasible points.
 
     Args:
@@ -80,7 +80,7 @@ def test_select_pareto_optimal_w_non_feasible_points(
     assert_array_equal(inds, array([True, False, True, False, False, False, True]))
 
 
-def test_pareto_front(tmp_wd, objective_points):
+def test_pareto_front(tmp_wd, objective_points) -> None:
     """Test the generation of Pareto fronts.
 
     Args:
@@ -93,7 +93,7 @@ def test_pareto_front(tmp_wd, objective_points):
     assert exists(outfile)
 
 
-def test_raise_error_if_dimension_mismatch(tmp_wd, objective_points):
+def test_raise_error_if_dimension_mismatch(tmp_wd, objective_points) -> None:
     """Check that a value error is raised if there is a mismatch between the objective
     values and the objective names.
 
@@ -110,7 +110,7 @@ def test_raise_error_if_dimension_mismatch(tmp_wd, objective_points):
 @pytest.mark.parametrize("show_non_feasible", [True, False])
 def test_pareto_front_w_non_feasible(
     tmp_wd, objective_points, non_feasible_points, show_non_feasible
-):
+) -> None:
     """Generate Pareto fronts with non-feasible points.
 
     Args:
@@ -130,7 +130,7 @@ def test_pareto_front_w_non_feasible(
     assert exists(outfile)
 
 
-def test_5d(tmp_wd):
+def test_5d(tmp_wd) -> None:
     """Generate a Pareto Front using random points."""
     rng = default_rng(1)
     n_obj = 5

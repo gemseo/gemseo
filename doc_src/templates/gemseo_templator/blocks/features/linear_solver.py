@@ -27,5 +27,5 @@ block = Block(
         WebLink("PETSc", url="https://petsc.org/release/"),
         WebLink("SciPy", url="https://scipy.org/"),
     ],
-    options="algorithms/linear_solver_algos.html",
+    button_types_url="algorithms/linear_solver_algos.html",
 )

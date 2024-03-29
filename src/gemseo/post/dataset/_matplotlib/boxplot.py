@@ -53,7 +53,7 @@ class Boxplot(MatplotlibPlot):
             opacity_level: The level of opacity.
         """  # noqa: D205, D212, D415
         fig, axes = self._get_figure_and_axes(fig, axes)
-        fig, axes = self._get_figure_and_axes(fig, axes)
+        self._common_settings.set_colors(self._common_settings.color)
         self.__draw_boxplot(
             self._common_dataset,
             axes,
@@ -118,13 +118,13 @@ class Boxplot(MatplotlibPlot):
             flierprops={"markeredgecolor": color},
             **self._specific_settings.boxplot_options,
         )
-
-        axes.xaxis.grid(
-            True, linestyle="-", which="major", color="lightgrey", alpha=0.5
-        )
-        axes.yaxis.grid(
-            True, linestyle="-", which="major", color="lightgrey", alpha=0.5
-        )
+        if self._common_settings.grid:
+            axes.xaxis.grid(
+                visible=True, linestyle="-", which="major", color="lightgrey", alpha=0.5
+            )
+            axes.yaxis.grid(
+                visible=True, linestyle="-", which="major", color="lightgrey", alpha=0.5
+            )
 
         plt.setp(boxplot["boxes"], color=color)
         plt.setp(boxplot["whiskers"], color=color)

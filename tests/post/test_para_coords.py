@@ -40,15 +40,15 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
-):
+    use_standardized_objective, baseline_images, common_problem
+) -> None:
     """Check ParallelCoordinates with objective, standardized or not."""
     opt = ParallelCoordinates(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
     opt.execute(save=False)
 
 
-def test_shape_error():
+def test_shape_error() -> None:
     """Check the error raised by parallel_coordinates if shapes are inconsistent."""
     with pytest.raises(
         ValueError,

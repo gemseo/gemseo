@@ -35,13 +35,13 @@ def data() -> ndarray:
     return arange(1.0, 31.0, 1.0).reshape((10, 3))
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test the constructor."""
     transform = BoxCox()
     assert transform.name == "BoxCox"
 
 
-def test_fit(data):
+def test_fit(data) -> None:
     """Test the fit method.
 
     Args:
@@ -55,7 +55,7 @@ def test_fit(data):
     assert allclose(transformer.lambdas_, sk_transformer.lambdas_)
 
 
-def test_transform(data):
+def test_transform(data) -> None:
     """Test the transform method.
 
     Args:
@@ -72,7 +72,7 @@ def test_transform(data):
     assert allclose(transformed_data, sk_transformed_data)
 
 
-def test_inverse_transform(data):
+def test_inverse_transform(data) -> None:
     """Test the inverse_transform method.
 
     Args:

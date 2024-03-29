@@ -100,8 +100,8 @@ design_space
 scenario = create_scenario(
     disciplines,
     "MDF",
-    objective_name="y_4",
-    design_space=design_space,
+    "y_4",
+    design_space,
     maximize_objective=True,
     **formulation_options,
 )
@@ -110,7 +110,7 @@ scenario = create_scenario(
 # Set the design constraints
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 for c_name in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(c_name, "ineq")
+    scenario.add_constraint(c_name, constraint_type="ineq")
 
 # %%
 # XDSMIZE the scenario

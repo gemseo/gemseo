@@ -60,7 +60,7 @@ DISC_DESCR_16D = [
 ]
 
 
-def test_set_tolerances(sellar_disciplines):
+def test_set_tolerances(sellar_disciplines) -> None:
     """Test that the MDA tolerances can be set at the object instantiation."""
     mda_chain = MDAChain(
         sellar_disciplines, tolerance=1e-3, linear_solver_tolerance=1e-6
@@ -72,7 +72,7 @@ def test_set_tolerances(sellar_disciplines):
     assert mda_chain.mdo_chain.disciplines[0].linear_solver_tolerance == 1e-6
 
 
-def test_set_solver(sellar_disciplines):
+def test_set_solver(sellar_disciplines) -> None:
     """Test that the MDA tolerances can be set at the object instantiation."""
     mda_chain = MDAChain(
         sellar_disciplines,
@@ -91,7 +91,9 @@ def test_set_solver(sellar_disciplines):
     assert mda_chain.mdo_chain.disciplines[0].linear_solver_options == {"restart": 5}
 
 
-def test_set_linear_solver_tolerance_from_options_constructor(sellar_disciplines):
+def test_set_linear_solver_tolerance_from_options_constructor(
+    sellar_disciplines,
+) -> None:
     """Test that the tolerance cannot be set from the linear_solver_options dictionary.
 
     In this test, we check that an exception is raised at the MDA instantiation.
@@ -109,7 +111,9 @@ def test_set_linear_solver_tolerance_from_options_constructor(sellar_disciplines
         )
 
 
-def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplines):
+def test_set_linear_solver_tolerance_from_options_set_attribute(
+    sellar_disciplines,
+) -> None:
     """Test that the tolerance cannot be set from the linear_solver_options dictionary.
 
     In this test, we check that the exception is raised when linearizing the MDA.
@@ -130,7 +134,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplin
         mda_chain.linearize(input_data)
 
 
-def test_sellar(tmp_wd, sellar_disciplines):
+def test_sellar(tmp_wd, sellar_disciplines) -> None:
     """"""
     mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
     input_data = get_inputs()
@@ -148,7 +152,7 @@ def test_sellar(tmp_wd, sellar_disciplines):
     assert Path(res_file).exists()
 
 
-def test_sellar_chain_linearize(sellar_disciplines):
+def test_sellar_chain_linearize(sellar_disciplines) -> None:
     inputs = ["x_local", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     mda_chain = MDAChain(
@@ -170,7 +174,7 @@ def test_sellar_chain_linearize(sellar_disciplines):
     assert mda_chain.local_data[mda_chain.RESIDUALS_NORM][0] < 1e-13
 
 
-def test_16_disc_parallel():
+def test_16_disc_parallel() -> None:
     disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
     MDAChain(disciplines)
 
@@ -178,7 +182,7 @@ def test_16_disc_parallel():
 @pytest.mark.parametrize(
     "in_gtype", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
 )
-def test_simple_grammar_type(in_gtype):
+def test_simple_grammar_type(in_gtype) -> None:
     disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
 
@@ -188,7 +192,7 @@ def test_simple_grammar_type(in_gtype):
         assert isinstance(inner_mda.input_grammar, SimpleGrammar)
 
 
-def test_mix_sim_jsongrammar(sellar_disciplines):
+def test_mix_sim_jsongrammar(sellar_disciplines) -> None:
     mda_chain_s = MDAChain(
         sellar_disciplines,
         grammar_type=MDODiscipline.GrammarType.SIMPLE,
@@ -214,7 +218,7 @@ def test_mix_sim_jsongrammar(sellar_disciplines):
         JacobianAssembly.DerivationMode.ADJOINT,
     ],
 )
-def test_self_coupled_mda_jacobian(matrix_type, linearization_mode):
+def test_self_coupled_mda_jacobian(matrix_type, linearization_mode) -> None:
     """Tests a particular coupling structure."""
     disciplines = analytic_disciplines_from_desc((
         {"c1": "x+1.-0.2*c1"},
@@ -229,14 +233,14 @@ def test_self_coupled_mda_jacobian(matrix_type, linearization_mode):
     assert mda.normed_residual == mda.inner_mdas[0].normed_residual
 
 
-def test_no_coupling_jac():
+def test_no_coupling_jac() -> None:
     """Tests a particular coupling structure."""
     disciplines = analytic_disciplines_from_desc(({"obj": "x"},))
     mda = MDAChain(disciplines)
     assert mda.check_jacobian(inputs=["x"], outputs=["obj"])
 
 
-def test_sub_coupling_structures(sellar_disciplines):
+def test_sub_coupling_structures(sellar_disciplines) -> None:
     """Check that an MDA is correctly instantiated from a coupling structure."""
     coupling_structure = MDOCouplingStructure(sellar_disciplines)
     sub_coupling_structures = [MDOCouplingStructure(sellar_disciplines)]
@@ -252,7 +256,7 @@ def test_sub_coupling_structures(sellar_disciplines):
     )
 
 
-def test_log_convergence(sellar_disciplines):
+def test_log_convergence(sellar_disciplines) -> None:
     mda_chain = MDAChain(sellar_disciplines)
     assert not mda_chain.log_convergence
     for mda in mda_chain.inner_mdas:
@@ -264,7 +268,7 @@ def test_log_convergence(sellar_disciplines):
         assert mda.log_convergence
 
 
-def test_parallel_doe(generate_parallel_doe_data):
+def test_parallel_doe(generate_parallel_doe_data) -> None:
     """Test the execution of MDAChain in parallel.
 
     Args:
@@ -276,7 +280,7 @@ def test_parallel_doe(generate_parallel_doe_data):
     assert isclose(array([-obj]), array([608.175]), atol=1e-3)
 
 
-def test_mda_chain_self_coupling():
+def test_mda_chain_self_coupling() -> None:
     """Test that a nested MDAChain is not detected as a self-coupled discipline."""
     disciplines = analytic_disciplines_from_desc((
         {"y1": "x"},
@@ -291,7 +295,7 @@ def test_mda_chain_self_coupling():
     assert len(mdachain_root.mdo_chain.disciplines) == 1
 
 
-def test_mdachain_parallelmdochain():
+def test_mdachain_parallelmdochain() -> None:
     """Test that the MDAChain creates MDOParallelChain for parallel tasks, if
     requested."""
     disciplines = analytic_disciplines_from_desc((
@@ -337,7 +341,7 @@ PARALLEL_OPTIONS = [
 
 
 @pytest.mark.parametrize("parallel_options", PARALLEL_OPTIONS)
-def test_mdachain_parallelmdochain_options(parallel_options):
+def test_mdachain_parallelmdochain_options(parallel_options) -> None:
     """Test the parallel MDO chain in a MDAChain with various arguments."""
     disciplines = analytic_disciplines_from_desc((
         {"a": "x"},
@@ -360,7 +364,7 @@ def test_mdachain_parallelmdochain_options(parallel_options):
     assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])
 
 
-def test_max_mda_iter(sellar_disciplines):
+def test_max_mda_iter(sellar_disciplines) -> None:
     """Test that changing the max_mda_iter of a chain modifies all the inner mdas."""
     mda_chain = MDAChain(
         sellar_disciplines,
@@ -379,7 +383,7 @@ def test_max_mda_iter(sellar_disciplines):
         assert mda.max_mda_iter == 10
 
 
-def test_initialize_defaults():
+def test_initialize_defaults() -> None:
     """Test the automated initialization of the default_inputs."""
     disciplines = create_disciplines_from_desc([
         ("A", ["x", "y"], ["z"]),

@@ -35,7 +35,7 @@ def setup(app):
     }
 
 
-def builder_inited(app):
+def builder_inited(app) -> None:
     gen_opts_path = Path(app.srcdir) / "algorithms" / "gen_opts"
     with mock(app.config.autodoc_mock_imports):
         # Mock the dependencies that are optional and the ones from the plugins.

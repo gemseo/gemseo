@@ -28,7 +28,7 @@ from gemseo.utils.logging_tools import LoggingContext
 from gemseo.utils.logging_tools import OneLineLogging
 
 
-def test_default():
+def test_default() -> None:
     """Check the default configuration of the LoggingContext."""
     context = LoggingContext(logging.root)
     assert context.logger == logging.root
@@ -37,7 +37,7 @@ def test_default():
     assert context.close
 
 
-def test_custom():
+def test_custom() -> None:
     """Check the default configuration of the LoggingContext."""
     context = LoggingContext(
         logging.getLogger("foo"), level=logging.ERROR, close=False, handler="bar"
@@ -49,7 +49,7 @@ def test_custom():
 
 
 @pytest.mark.parametrize("close", [False, True])
-def test_handler(tmp_wd, close):
+def test_handler(tmp_wd, close) -> None:
     """Check the use of a handler."""
     file_path = Path("log.txt")
     handler = logging.FileHandler(file_path)
@@ -67,7 +67,7 @@ def test_handler(tmp_wd, close):
     assert (handler.name in logging._handlers) is not close
 
 
-def test_selective_logging(caplog):
+def test_selective_logging(caplog) -> None:
     """Check logging with LoggingContext.
 
     The LoggingContext changes the level of the logger that is passed to it to WARNING:
@@ -98,7 +98,7 @@ def test_selective_logging(caplog):
 
 
 @pytest.mark.parametrize(("propagate", "name"), [(False, "foo"), (True, "root")])
-def test_propagate(propagate, name):
+def test_propagate(propagate, name) -> None:
     """Check that the while-loop breaks when logger.propagate is False."""
     logger = logging.getLogger("foo")
     logger.propagate = propagate
@@ -110,7 +110,7 @@ def test_propagate(propagate, name):
     assert context._OneLineLogging__logger.name == name
 
 
-def test_while_false():
+def test_while_false() -> None:
     """Check that the while-loop stops when logger.parent is None."""
     context = OneLineLogging(logging.root)
     with context:

@@ -44,7 +44,7 @@ def data() -> tuple[ndarray, ndarray]:
     return input_data, output_data
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test constructor."""
     n_components = 3
     pca = PLS(n_components=n_components)
@@ -53,7 +53,7 @@ def test_constructor():
     assert pca.n_components == n_components
 
 
-def test_learn(data):
+def test_learn(data) -> None:
     """Test learn with the default number of components (None)."""
     input_data, output_data = data
     pca = PLS()
@@ -61,7 +61,7 @@ def test_learn(data):
     assert pca.n_components == 1
 
 
-def test_learn_custom(data):
+def test_learn_custom(data) -> None:
     """Test learn with a custom number of components."""
     input_data, output_data = data
     n_components = 3
@@ -70,7 +70,7 @@ def test_learn_custom(data):
     assert pls.n_components == n_components
 
 
-def test_transform(data):
+def test_transform(data) -> None:
     """Test transform."""
     input_data, output_data = data
     n_components = 3
@@ -81,7 +81,7 @@ def test_transform(data):
     assert reduced_data.shape[1] == n_components
 
 
-def test_inverse_transform(data):
+def test_inverse_transform(data) -> None:
     """Test inverse transform."""
     input_data, output_data = data
     n_components = 3
@@ -93,7 +93,7 @@ def test_inverse_transform(data):
     assert restored_data.shape[1] == N_FEATURES
 
 
-def test_shape(data):
+def test_shape(data) -> None:
     """Check the shapes of the data."""
     input_data, output_data = data
     pls = PLS(n_components=3)

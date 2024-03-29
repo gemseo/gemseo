@@ -107,10 +107,11 @@ class _OATSensitivity(MDODiscipline):
                 or greater than or equal to 0.5.
         """  # noqa: D205, D212, D415
         if not 0 < step < 0.5:
-            raise ValueError(
+            msg = (
                 "Relative variation step must be "
                 f"strictly comprised between 0 and 0.5; got {step}."
             )
+            raise ValueError(msg)
         super().__init__()
         input_names = parameter_space.variable_names
         self.input_grammar.update_from_names(input_names)

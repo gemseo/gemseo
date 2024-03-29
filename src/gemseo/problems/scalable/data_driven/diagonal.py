@@ -43,6 +43,7 @@ from __future__ import annotations
 from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Callable
 
 import matplotlib.pyplot as plt
 from numpy import arange
@@ -64,14 +65,19 @@ from numpy.random import Generator
 from numpy.random import default_rng
 from scipy.interpolate import InterpolatedUnivariateSpline
 
-from gemseo import SEED
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
+
+    from numpy._typing import NDArray
+
+    from gemseo.datasets.io_dataset import IODataset
 
 
 class ScalableDiagonalModel(ScalableModel):
@@ -84,46 +90,42 @@ class ScalableDiagonalModel(ScalableModel):
 
     def __init__(
         self,
-        data,
+        data: IODataset,
         sizes: Sequence[int] | None = None,
-        fill_factor=-1,
-        comp_dep=None,
-        inpt_dep=None,
+        fill_factor: float = -1,
+        comp_dep: NDArray[float] = None,
+        inpt_dep: NDArray[float] = None,
         force_input_dependency: bool = False,
         allow_unused_inputs: bool = True,
         seed: int = SEED,
-        group_dep=None,
+        group_dep: Mapping[str, Iterable[str]] | None = None,
     ) -> None:
-        """Constructor.
-
-        :param Dataset data: learning dataset.
-        :param dict sizes: sizes of input and output variables.
-            If ``None``, use the original sizes.
-            Default: None.
-        :param fill_factor: degree of sparsity of the dependency matrix.
-            Default: -1.
-        :param comp_dep: matrix that establishes the selection
-            of a single original component for each scalable component
-        :param inpt_dep: dependency matrix that establishes the
-            dependency of outputs wrt inputs
-        :param bool force_input_dependency: for any output, force dependency
-            with at least on input.
-        :param bool allow_unused_inputs: possibility to have an input
-            with no dependence with any output
-        :param int seed: seed
-        :param dict(list(str)) group_dep: dependency
-            between inputs and outputs
         """
+        Args:
+            data: The input-output dataset.
+            sizes: The sizes of the inputs and outputs.
+                If ``None``, use the original sizes.
+            fill_factor: The degree of sparsity of the dependency matrix.
+            comp_dep: The matrix defining the selection
+                of a single original component for each scalable component.
+            inpt_dep: The input-output dependency matrix.
+            force_input_dependency: Whether to force the dependency of each output
+                with at least one input.
+            bool allow_unused_inputs: The possibility to have an input
+                with no dependence with any output.
+            seed: The seed for reproducible results.
+            group_dep: The dependency between the inputs and outputs.
+        """  # noqa: D205, D212, D415
         if isinstance(fill_factor, Number):
-            fill_factor = {
-                function_name: fill_factor
-                for function_name in data.get_variable_names(data.OUTPUT_GROUP)
-            }
+            fill_factor = dict.fromkeys(
+                data.get_variable_names(data.OUTPUT_GROUP), fill_factor
+            )
         elif not isinstance(fill_factor, dict):
-            raise TypeError(
+            msg = (
                 "Fill factor must be either a number between 0 and 1, "
                 "a number equal to -1 or a dictionary."
             )
+            raise TypeError(msg)
         parameters = {
             "fill_factor": fill_factor,
             "comp_dep": comp_dep,
@@ -137,13 +139,13 @@ class ScalableDiagonalModel(ScalableModel):
         super().__init__(data, sizes, **parameters)
         self.t_scaled, self.f_scaled = self.__build_scalable_functions()
 
-    def __build_dependencies(self):
+    def __build_dependencies(self) -> tuple[NDArray[float], NDArray[float]]:
         """Build dependencies.
 
-        :return: matrix that establishes the selection of a single original component
-            for each scalable component, dependency matrix that establishes the
-            dependency of outputs wrt inputs.
-        :rtype: ndarray, ndarray
+        Returns:
+            The matrix defining the selection of a single original component
+            for each scalable component,
+            and the dependency matrix between the inputs and the outputs.
         """
         comp_dep = self.parameters["comp_dep"]
         inpt_dep = self.parameters["inpt_dep"]
@@ -151,24 +153,32 @@ class ScalableDiagonalModel(ScalableModel):
             comp_dep, inpt_dep = self.generate_random_dependency()
         return comp_dep, inpt_dep
 
-    def scalable_function(self, input_value=None):
-        """Evaluate the scalable functions.
+    def scalable_function(
+        self, input_value: Mapping[str, NDArray[float]] | None = None
+    ) -> dict[str, NDArray[float]]:
+        """Compute the outputs.
 
-        :param dict input_value: input values. If ``None``, use default inputs.
-        :return: evaluation of the scalable functions.
-        :rtype: dict
+        Args:
+            input_value: The input values.
+
+        Returns:
+            The values of the outputs.
         """
         input_value = input_value or self.default_inputs
         input_value = concatenate_dict_of_arrays_to_array(input_value, self.input_names)
         scal_func = self.model.get_scalable_function
         return {fname: scal_func(fname)(input_value) for fname in self.output_names}
 
-    def scalable_derivatives(self, input_value=None):
-        """Evaluate the scalable derivatives.
+    def scalable_derivatives(
+        self, input_value: Mapping[str, NDArray[float]] | None = None
+    ) -> dict[str, NDArray[float]]:
+        """Compute the derivatives.
 
-        :param dict input_value: input values. If ``None``, use default inputs.
-        :return: evaluation of the scalable derivatives.
-        :rtype: dict
+        Args:
+            input_value: The input values.
+
+        Returns:
+            The values of the derivatives.
         """
         input_value = input_value or self.default_inputs
         input_value = concatenate_dict_of_arrays_to_array(input_value, self.input_names)
@@ -176,17 +186,23 @@ class ScalableDiagonalModel(ScalableModel):
         return {fname: scal_der(fname)(input_value) for fname in self.output_names}
 
     def build_model(self) -> ScalableDiagonalApproximation:
-        """Build model with original sizes for input and output variables.
+        """Build the model with the original sizes for input and output variables.
 
-        :return: scalable approximation.
-        :rtype: ScalableDiagonalApproximation
+        Returns:
+            The scalable approximation.
         """
         comp_dep, inpt_dep = self.__build_dependencies()
         seed = self.parameters["seed"]
         return ScalableDiagonalApproximation(self.sizes, comp_dep, inpt_dep, seed)
 
-    def __build_scalable_functions(self):
-        """Builds all the required functions from the original dataset."""
+    def __build_scalable_functions(
+        self,
+    ) -> tuple[dict[str, list[NDArray[float]]], dict[str, NDArray[float]]]:
+        """Build all the required functions from the original dataset.
+
+        Returns:
+            The output names bound to the input and output samples scaled in [0, 1].
+        """
         t_scaled = {}
         f_scaled = {}
         for function_name in self.output_names:
@@ -197,13 +213,14 @@ class ScalableDiagonalModel(ScalableModel):
             f_scaled[function_name] = f_sc
         return t_scaled, f_scaled
 
-    def __get_variables_locations(self, names: Sequence[str]):
+    def __get_variables_locations(self, names: Sequence[str]) -> list[int]:
         """Get the locations of first component of each variable.
 
-        :param names: list of variables names.
-        :type names: list(str)
-        :return: list of locations.
-        :rtype: list(int)
+        Args:
+            names: The names of the variables
+
+        Returns:
+            The locations of the first component of each variable.
         """
         positions = []
         current_position = 0
@@ -212,14 +229,14 @@ class ScalableDiagonalModel(ScalableModel):
             current_position += self.sizes[name]
         return positions
 
-    def __convert_dependency_to_array(self, dependency):
-        """Convert a dependency object of type dictionary into a dependency object of
-        type array.
+    def __convert_dependency_to_array(self, dependency) -> NDArray[float]:
+        """Convert a dictionary-like dependency structure into an array-like one.
 
-        :param dependency: input-output dependency structure.
-        :type dependency: dict
-        :return: dependency matrix.
-        :rtype: ndarray
+        Args:
+            dependency: The dictionary-like dependency structure.
+
+        Returns:
+            The array-like dependency structure.
         """
         matrix = None
         for output_name in self.output_names:
@@ -239,15 +256,12 @@ class ScalableDiagonalModel(ScalableModel):
         chessboard, where rows represent inputs, columns represent output and gray scale
         represent the dependency level between inputs and outputs.
 
-        :param bool add_levels: add values of dependency levels in percentage.
-            Default: True.
-        :param bool save: if True, export the plot into a file.
-            Default: True.
-        :param bool show: if True, display the plot.
-            Default: False.
-        :param str directory: directory path. Default: '.'.
-        :param bool png: if True, the file format is PNG. Otherwise, use PDF.
-            Default: False.
+        Args:
+            add_levels: Whether to add the dependency levels in percentage.
+            save: Whether to save the figure.
+            show: Whether to display the figure.
+            directory: The directory path.
+            png: Whether to use PNG file format instead of PDF.
         """
         inputs_positions = self.__get_variables_locations(self.input_names)
         outputs_positions = self.__get_variables_locations(self.output_names)
@@ -318,16 +332,17 @@ class ScalableDiagonalModel(ScalableModel):
         We can also specify the discretization ``step``
         whose default value is ``0.01``.
 
-        :param bool save: if True, export the plot as a PDF file
-            (Default value = False)
-        :param bool show: if True, display the plot (Default value = False)
-        :param bool step: Step to evaluate the 1d interpolation function
-            (Default value = 0.01)
-        :param list(str) varnames: names of the variable to plot;
-            if None, all variables are plotted (Default value = None)
-        :param str directory: directory path. Default: '.'.
-        :param bool png: if True, the file format is PNG. Otherwise, use PDF.
-            Default: False.
+        Args:
+            save: Whether to save the figure.
+            show: Whether to display the figure.
+            step: The step to evaluate the 1d interpolation function.
+            varnames: The names of the variable to plot.
+                If ``None``, all the variables are plotted.
+            directory: The directory path.
+            png: Whether to use PNG file format instead of PDF.
+
+        Returns:
+            The names of the files.
         """
         function_names = varnames or self.output_names
         x_vals = arange(0.0, 1.0 + step, step)
@@ -357,8 +372,9 @@ class ScalableDiagonalModel(ScalableModel):
                 fig = plt.gcf()
                 if save:
                     extension = "png" if png else "pdf"
-                    file_path = Path(directory) / "{}_{}_1D_interpolation_{}.{}".format(
-                        self.name, func, index, extension
+                    file_path = (
+                        Path(directory)
+                        / f"{self.name}_{func}_1D_interpolation_{index}.{extension}"
                     )
                     fnames.append(str(file_path))
                 else:
@@ -366,11 +382,13 @@ class ScalableDiagonalModel(ScalableModel):
                 save_show_figure(fig, show, file_path)
         return fnames
 
-    def generate_random_dependency(self):
-        """Generates a random dependency structure for use in scalable discipline.
+    def generate_random_dependency(
+        self,
+    ) -> tuple[dict[str, NDArray[int]], dict[str, dict[str, NDArray[float]]]]:
+        """Generate a random dependency structure for use in scalable discipline.
 
-        :return: output component dependency and input-output dependency
-        :rtype: dict(int), dict(dict(ndarray))
+        Returns:
+            The dependency structure.
         """
         io_dependency = self.parameters["group_dep"] or {}
         for function_name in self.output_names:
@@ -402,15 +420,16 @@ class ScalableDiagonalModel(ScalableModel):
                     )
         return out_map, io_dep
 
-    def __generate_random_io_dep(self, io_dependency):
+    def __generate_random_io_dep(
+        self, io_dependency: Mapping[str, Iterable[str]]
+    ) -> dict[str, dict[str, NDArray[float]]]:
         """Generate the dependency between the new inputs and the new outputs.
 
-        :param io_dependency: input-output dependency structure. If ``None``,
-            all output components can depend on all input components.
-            Default: None.
-        :type io_dependency: dict(list(str))
-        :return: random input-output dependencies
-        :rtype: dict(dict(ndarray))
+        Args:
+            io_dependency: The input-output dependency structure.
+
+        Returns:
+            The dependencies between the inputs and the outputs.
         """
         error_msg = (
             "Fill factor must be a number, "
@@ -440,12 +459,11 @@ class ScalableDiagonalModel(ScalableModel):
                     r_io_dependency[function_name][input_name] = zeros_dep
         return r_io_dependency
 
-    def __generate_random_output_map(self):
-        """Generate the dependency between the original and new output components for
-        the different outputs.
+    def __generate_random_output_map(self) -> dict[str, NDArray[int]]:
+        """Generate the dependency between the original and new output components.
 
-        :return: component dependencies
-        :rtype: dict(int)
+        Returns:
+            The output names bound to the original output components.
         """
         out_map = {}
         for function_name in self.output_names:
@@ -456,18 +474,23 @@ class ScalableDiagonalModel(ScalableModel):
             )
         return out_map
 
-    def __complete_random_dep(self, r_io_dep, dataname: str, index, io_dep) -> None:
+    def __complete_random_dep(
+        self,
+        r_io_dep: NDArray[float],
+        dataname: str,
+        index: int,
+        io_dep: Mapping[Iterable[str]] | None,
+    ) -> None:
         """Complete random dependency if row (input name) or column (function name) of
         the random dependency matrix is empty.
 
-        :param ndarray r_io_dep: input-output dependency.
-        :param str dataname: name of the variable to check
-            if component is empty.
-        :param int index: component index of the variable.
-        :param io_dep: input-output dependency structure. If ``None``,
-            all output components can depend on all input components.
-            Default: None.
-        :type io_dep: dict(list(str))
+        Args:
+            r_io_dep: The dependency between inputs and outputs.
+            dataname: The name of the variable whose component must be check.
+            index: The index of the component of the variable.
+            io_dep: The dependency between the inputs and the outputs.
+                If ``None``,
+                all output components can depend on all input components.
         """
         is_input = dataname in self.input_names
         if is_input:
@@ -503,18 +526,21 @@ class ScalableDiagonalApproximation:
     all inputs and outputs have the same names; only their dimensions vary.
     """
 
+    # TODO: API: remove the argument "seed" which is not used.
     def __init__(
-        self, sizes, output_dependency, io_dependency, seed: int = SEED
+        self,
+        sizes: Mapping[str, int],
+        output_dependency,
+        io_dependency,
+        seed: int = SEED,
     ) -> None:
-        """Constructor:
-
-        :param sizes: sizes of both input and output variables.
-        :type sizes: dict
-        :param output_dependency: dependency between old and new outputs.
-        :type output_dependency: dict
-        :param io_dependency: dependency between new inputs and new outputs.
-        :type io_dependency: dict
         """
+        Args:
+            sizes: The sizes of the inputs and outputs.
+            output_dependency: The dependency between the original and new outputs.
+            io_dependency: The dependency between the new inputs and outputs.
+            seed: The seed for reproducible results.
+        """  # noqa: D205, D212, D415
         super().__init__()
         self.sizes = sizes
         # dependency matrices
@@ -528,15 +554,22 @@ class ScalableDiagonalApproximation:
         self.scalable_dfunctions = {}
 
     def build_scalable_function(
-        self, function_name: str, dataset, input_names: Iterable[str], degree: int = 3
-    ):
-        """Build interpolation from a 1D input and output function. Add the model to the
-        local dictionary.
+        self,
+        function_name: str,
+        dataset: IODataset,
+        input_names: Iterable[str],
+        degree: int = 3,
+    ) -> tuple[list[NDArray[float]], NDArray[float]]:
+        """Create the interpolation functions for a specific output.
 
-        :param str function_name: name of the output function
-        :param Dataset dataset: the input-output dataset
-        :param list(str) input_names: names of the input variables
-        :param int degree: degree of interpolation (Default value = 3)
+        Args:
+            function_name: The name of the output.
+            dataset: The input-output dataset.
+            input_names: The names of the inputs.
+            degree: The degree of interpolation.
+
+        Returns:
+            The input and output samples scaled in [0, 1].
         """
         x2_scaled = nan_to_num(
             dataset.get_view(group_names=dataset.INPUT_GROUP).to_numpy() ** 2
@@ -563,29 +596,41 @@ class ScalableDiagonalApproximation:
 
         return t_scaled, f_scaled
 
-    def get_scalable_function(self, output_function):
-        """Retrieve the scalable function generated from the original discipline.
+    def get_scalable_function(
+        self, output_function: str
+    ) -> Callable[[Iterable[float]], NDArray[float]]:
+        """Return the function computing an output.
 
-        :param str output_function: name of the output function
+        Args:
+            output_function: The name of the output.
+
+        Returns:
+            The function computing the output.
         """
         return self.scalable_functions[output_function]
 
-    def get_scalable_derivative(self, output_function):
-        """Retrieve the (scalable) gradient of the scalable function generated from the
-        original discipline.
+    def get_scalable_derivative(
+        self, output_function: str
+    ) -> Callable[[Iterable[float]], NDArray[float]]:
+        """Return the function computing the derivatives of an output.
 
-        :param str output_function: name of the output function
+        Args:
+            output_function: The name of the output.
+
+        Returns:
+            The function computing the derivatives of this output.
         """
         return self.scalable_dfunctions[output_function]
 
     @staticmethod
-    def scale_samples(samples):
-        """Scale samples of array into [0, 1].
+    def scale_samples(samples: Iterable[NDArray[float]]) -> NDArray[float]:
+        """Scale array samples into [0, 1].
 
-        :param samples: samples of multivariate array
-        :type samples: list(ndarray)
-        :return: samples of multivariate array
-        :rtype: ndarray
+        Args:
+            samples: The samples.
+
+        Returns:
+            The samples with components scaled in [0, 1].
         """
         samples = array(samples)
         col_min = np_min(samples, 0)
@@ -597,14 +642,19 @@ class ScalableDiagonalApproximation:
         return scaled_samples
 
     def _interpolate(
-        self, function_name: str, t_scaled, f_scaled, degree: int = 3
+        self,
+        function_name: str,
+        t_scaled: Iterable[float],
+        f_scaled: Iterable[float],
+        degree: int = 3,
     ) -> None:
         """Interpolate a set of samples (t, y(t)) with a polynomial spline.
 
-        :param str function_name: name of the interpolated function
-        :param list(list(float)) t_scaled: set of points
-        :param list(list(float)) f_scaled: set of images
-        :param int degree: degree of the polynomial interpolation
+        Args:
+            function_name: The name of the output.
+            t_scaled: The input values.
+            f_scaled: The output values.
+            degree: The degree of the polynomial interpolation.
         """
         nb_components = f_scaled[0].size
         list_interpolations = []
@@ -622,11 +672,17 @@ class ScalableDiagonalApproximation:
         self.interpolation_dict[function_name] = list_interpolations
         self.d_interpolation_dict[function_name] = list_derivatives
 
-    def _compute_sizes(self, function_name: str, input_names: Sequence[str]):
-        """Determine the size of the vector input and output.
+    def _compute_sizes(
+        self, function_name: str, input_names: Sequence[str]
+    ) -> tuple[int, int]:
+        """Compute the sizes of the input and output vectors.
 
-        :param str function_name: function name
-        :param list(str) input_names: input names
+        Args:
+            function_name: The name of the output.
+            input_names: The names of the inputs.
+
+        Returns:
+            The sizes of the input and output vectors.
         """
         input_size = 0
         for input_name in input_names:
@@ -641,14 +697,18 @@ class ScalableDiagonalApproximation:
         input_size: int,
         output_size: int,
     ) -> None:
-        """Extrapolate a 1D function to arbitrary input and output dimensions. Generate
-        a function that produces an output with a given size from an input with a given
-        size, and its derivative.
+        """Extrapolate a 1D function to arbitrary input and output dimensions.
 
-        :param str function_name: name of the output function
-        :param list(str) input_names: names of the inputs
-        :param int input_size: size of the input vector
-        :param int output_size: size of the output vector
+        Generate a function
+        that produces an output with a given size
+        from an input with a given size,
+        as well as its derivative.
+
+        Args:
+            function_name: The name of the output.
+            input_names: The names of the inputs.
+            input_size: The size of the input vector.
+            output_size: The size of the output vector.
         """
         # crop the matrices to the correct sizes and convert to array
         io_dependency = {
@@ -671,11 +731,14 @@ class ScalableDiagonalApproximation:
         # associated with the components of the new output.
         outputs_to_original_ones = self.output_dependency[function_name]
 
-        def scalable_function(input_data):
-            """N-dimensional to size_output-dimensional extrapolated function.
+        def scalable_function(input_data: Iterable[float]) -> NDArray[float]:
+            """Compute the output vector.
 
-            :param list(float) input_data: vector of inputs
-            :returns: size_output extrapolated output
+            Args:
+                input_data: The input vector.
+
+            Returns:
+                The output vector.
             """
             result = zeros(output_size)
             for output_index in range(output_size):
@@ -688,11 +751,14 @@ class ScalableDiagonalApproximation:
 
             return result
 
-        def scalable_derivative(input_data):
-            """N-dimensional to size_output-dimensional extrapolated function Jacobian.
+        def scalable_derivative(input_data: Iterable[float]) -> NDArray[float]:
+            """Compute the Jacobian matrix.
 
-            :param list(float) input_data: vector of inputs
-            :returns: size_output - sizeof input_vars extrapolated output
+            Args:
+                input_data: The input vector.
+
+            Returns:
+                The Jacobian matrix.
             """
             result = zeros([output_size, input_size])
             for output_index in range(output_size):

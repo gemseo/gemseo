@@ -9,4 +9,10 @@
 Data transformation
 ~~~~~~~~~~~~~~~~~~~
 
-How to transform the data before training.
+Fitting a model from transformed data rather than raw data can facilitate the training
+and improve the quality of the machine learning model.
+Every machine learning model has a ``transformer`` argument to set the transformation policy (none by default).
+In the special case of regression models,
+the function :func:`.create_surrogate` and the :class:`.SurrogateDiscipline` class
+use :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` by default,
+i.e. :class:`.MinMaxScaler` for both inputs and outputs.

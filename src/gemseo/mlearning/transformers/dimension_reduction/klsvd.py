@@ -42,7 +42,6 @@ from openturns import Sample
 from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.utils.compatibility.openturns import get_eigenvalues
 
 if TYPE_CHECKING:
     from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
@@ -109,7 +108,7 @@ class KLSVD(DimensionReduction):
 
         klsvd.run()
         self.algo = klsvd.getResult()
-        self.parameters["n_components"] = len(get_eigenvalues(self.algo))
+        self.parameters["n_components"] = len(self.algo.getEigenvalues())
 
     def __update_resource_map(self) -> None:
         """Update OpenTURNS constants by using its ResourceMap."""
@@ -149,7 +148,7 @@ class KLSVD(DimensionReduction):
     @property
     def eigenvalues(self) -> ndarray:
         """The eigen values."""
-        return array(get_eigenvalues(self.algo))
+        return array(self.algo.getEigenvalues())
 
     def _get_process_sample(self, data: ndarray) -> openturns.ProcessSample:
         """Convert numpy.ndarray data to an openturns.ProcessSample.

@@ -56,12 +56,20 @@ def converter(request) -> BaseDataConverter:
     return request.param
 
 
-def test_is_numeric(converter):
+def test_is_numeric(converter) -> None:
     """Verify is_numeric."""
     for name in ("a_bool",):
         assert not converter.is_numeric(name)
     for name in ("a_float", "a_int", "a_complex", "a_ndarray"):
         assert converter.is_numeric(name)
+
+
+def test_can_differentiate(converter) -> None:
+    """Verify is_continuous."""
+    for name in ("a_bool", "a_int"):
+        assert not converter.is_continuous(name)
+    for name in ("a_float", "a_complex", "a_ndarray"):
+        assert converter.is_continuous(name)
 
 
 @pytest.mark.parametrize(
@@ -73,7 +81,7 @@ def test_is_numeric(converter):
         ("a_ndarray", array([0.0]), array([0.0])),
     ],
 )
-def test_convert_value_to_array(converter, name, value, expected):
+def test_convert_value_to_array(converter, name, value, expected) -> None:
     """Verify convert_value_to_array."""
     assert_array_equal(converter.convert_value_to_array(name, value), expected)
 
@@ -87,7 +95,7 @@ def test_convert_value_to_array(converter, name, value, expected):
         ("a_ndarray", array([0.0]), array([0.0])),
     ],
 )
-def test_convert_array_to_value(converter, name, value, expected):
+def test_convert_array_to_value(converter, name, value, expected) -> None:
     """Verify convert_array_to_value."""
     assert converter.convert_array_to_value(name, value) == expected
 
@@ -101,7 +109,7 @@ def test_convert_array_to_value(converter, name, value, expected):
         ("a_ndarray", array([0.0] * 2), 2),
     ],
 )
-def test_get_value_size(converter, name, value, expected):
+def test_get_value_size(converter, name, value, expected) -> None:
     """Verify get_value_size."""
     assert converter.get_value_size(name, value) == expected
 
@@ -121,7 +129,7 @@ NAMES_TO_SLICES = {
 ARRAY = array([0.0, 0.0, 1.0j, 0.0, 0.0])
 
 
-def test_compute_name_to_slices(converter):
+def test_compute_name_to_slices(converter) -> None:
     """Verify compute_name_to_slices."""
     # Without names_to_sizes.
     names_to_slices, end = converter.compute_names_to_slices(DATA.keys(), DATA)
@@ -142,7 +150,7 @@ def test_compute_name_to_slices(converter):
     assert end == 5
 
 
-def test_compute_name_to_sizes(converter):
+def test_compute_name_to_sizes(converter) -> None:
     """Verify compute_name_to_sizes."""
     expected = {
         "a_float": 1,
@@ -156,13 +164,13 @@ def test_compute_name_to_sizes(converter):
     assert names_to_sizes == expected
 
 
-def test_convert_array_to_data(converter):
+def test_convert_array_to_data(converter) -> None:
     """Verify convert_array_to_data."""
     data = converter.convert_array_to_data(ARRAY, NAMES_TO_SLICES)
     assert compare_dict_of_arrays(data, DATA)
 
 
-def test_convert_data_to_array(converter):
+def test_convert_data_to_array(converter) -> None:
     """Verify convert_data_to_array."""
     # Full data.
     array_ = converter.convert_data_to_array(DATA.keys(), DATA)

@@ -38,7 +38,7 @@ def data() -> ndarray:
     return arange(30).reshape((10, 3))
 
 
-def test_constructor():
+def test_constructor() -> None:
     """Test constructor."""
     scaler = Scaler()
     assert scaler.name == "Scaler"
@@ -46,7 +46,7 @@ def test_constructor():
     assert allclose(scaler.coefficient, 1)
 
 
-def test_duplicate(data):
+def test_duplicate(data) -> None:
     """Test duplicate method."""
     scaler = Scaler()
     scaler.fit(data)
@@ -63,13 +63,13 @@ def test_duplicate(data):
     assert allclose(scaler_dup.offset, 5)
 
 
-def test_fit(data):
+def test_fit(data) -> None:
     """Test fit method."""
     scaler = Scaler()
     scaler.fit(data)
 
 
-def test_transform(data):
+def test_transform(data) -> None:
     """Test transform method."""
     scaler = Scaler()
     scaler.fit(data)
@@ -90,7 +90,7 @@ def test_transform(data):
     assert allclose(yet_another_scaled, array([5, 10, 30]) + array([1, -1, 100]) * data)
 
 
-def test_inverse_transform(data):
+def test_inverse_transform(data) -> None:
     """Test inverse_transform method."""
     scaler = Scaler()
     another_scaler = Scaler(offset=3, coefficient=2)
@@ -111,7 +111,7 @@ def test_inverse_transform(data):
     )
 
 
-def test_compute_jacobian(data):
+def test_compute_jacobian(data) -> None:
     """Test compute_jacobian method."""
     iden = eye(data.shape[1])
 
@@ -133,7 +133,7 @@ def test_compute_jacobian(data):
     assert allclose(yet_another_jac, diag(array([1, -1, 100])))
 
 
-def test_compute_jacobian_inverse(data):
+def test_compute_jacobian_inverse(data) -> None:
     """Test compute_jacobian_inverse method."""
     iden = eye(data.shape[1])
 
@@ -166,7 +166,7 @@ def test_jacobian_vs_shape(
     transformation_size,
     dimension,
     flatten_data_to_derive,
-):
+) -> None:
     """Check the shape of data returned by compute_jacobian{_inverse}."""
     scaler = Scaler()
     scaler.fit(ones((fitting_size, dimension)))
@@ -192,7 +192,7 @@ def test_transform_vs_shape(
     transformation_size,
     dimension,
     flatten_data_to_transform,
-):
+) -> None:
     """Check the shape of data returned by compute{_inverse}_transform."""
     scaler = Scaler()
     scaler.fit(ones((fitting_size, dimension)))

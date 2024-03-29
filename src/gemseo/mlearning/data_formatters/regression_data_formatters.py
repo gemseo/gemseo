@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from functools import wraps
 from typing import TYPE_CHECKING
 
 from numpy import eye
@@ -58,6 +59,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
             The return value will have the same type as the input data.
         """
 
+        @wraps(func)
         def wrapper(
             algo: MLRegressionAlgo, input_data: DataType, *args: Any, **kwargs: Any
         ) -> DataType:
@@ -122,6 +124,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
             and/or before transforming its output data.
         """
 
+        @wraps(func)
         def wrapper(
             algo: MLRegressionAlgo, input_data: ndarray, *args: Any, **kwargs: Any
         ) -> ndarray:
@@ -155,12 +158,13 @@ class RegressionDataFormatters(SupervisedDataFormatters):
                 or algo._output_variables_to_transform
             ):
                 # TODO: implement this case
-                raise NotImplementedError(
+                msg = (
                     "The Jacobian of regression models cannot be computed "
                     "when the transformed quantities are variables; "
                     "please transform the whole group 'inputs' or 'outputs' "
                     "or do not use data transformation."
                 )
+                raise NotImplementedError(msg)
 
             inputs = algo.learning_set.INPUT_GROUP
             if inputs in algo.transformer:

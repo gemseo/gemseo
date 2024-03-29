@@ -223,8 +223,9 @@ def generate_pareto_plots(
     nb_pareto_pts = obj_values.shape[0]
     obj_names_length = len(obj_names)
     if obj_names_length != n_obj:
-        msg = "Inconsistent objective values size and objective names: {} != {}".format(
-            n_obj, obj_names_length
+        msg = (
+            f"Inconsistent objective values size and objective names: "
+            f"{n_obj} != {obj_names_length}"
         )
         raise ValueError(msg)
 

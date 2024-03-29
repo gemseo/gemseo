@@ -91,7 +91,8 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
     ) -> None:
         super()._learn(indices, fit_transformers=fit_transformers)
         if self.labels is None:
-            raise ValueError("self._fit() shall assign labels.")
+            msg = "self._fit() shall assign labels."
+            raise ValueError(msg)
         self.n_clusters = unique(self.labels).shape[0]
 
     def _get_objects_to_save(self) -> dict[str, SavedObjectType]:

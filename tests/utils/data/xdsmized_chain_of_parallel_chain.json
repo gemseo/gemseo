@@ -1,0 +1,144 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis2",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis3",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis4",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis5",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis6",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x_1^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "x_7^*, x_5^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x_1"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "x_5"
+      },
+      {
+        "from": "Dis6",
+        "to": "Opt",
+        "name": "x_7"
+      },
+      {
+        "from": "Dis1",
+        "to": "_U_",
+        "name": "x_2^*"
+      },
+      {
+        "from": "Dis2",
+        "to": "_U_",
+        "name": "x_3^*"
+      },
+      {
+        "from": "Dis3",
+        "to": "_U_",
+        "name": "x_4^*"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "x_5"
+      },
+      {
+        "from": "Dis5",
+        "to": "_U_",
+        "name": "x_6^*"
+      },
+      {
+        "from": "Dis6",
+        "to": "Opt",
+        "name": "x_7"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis2",
+        "name": "x_2"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis3",
+        "name": "x_2"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis5",
+        "name": "x_3"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis4",
+        "name": "x_4"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis6",
+        "name": "x_5"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          {
+            "parallel": [
+              "Dis2",
+              [
+                "Dis3",
+                "Dis4"
+              ]
+            ]
+          },
+          "Dis5",
+          "Dis6"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   minimize x_7(x_1)\n   with respect to x_1\n   subject to constraints:\n      x_5(x_1) == 0.0"
+  }
+}

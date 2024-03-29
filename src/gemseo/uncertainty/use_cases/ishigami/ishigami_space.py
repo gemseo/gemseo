@@ -16,14 +16,10 @@
 
 from __future__ import annotations
 
-from typing import Final
-
 from numpy import pi
+from strenum import StrEnum
 
 from gemseo.algos.parameter_space import ParameterSpace
-
-_DISTRIBUTION_NAME: Final[str] = "SPUniformDistribution"
-"""The probability distribution for the different random variables."""
 
 
 class IshigamiSpace(ParameterSpace):
@@ -37,9 +33,22 @@ class IshigamiSpace(ParameterSpace):
     See :cite:`ishigami1990`.
     """
 
-    def __init__(self) -> None:  # noqa: D107
+    class UniformDistribution(StrEnum):
+        """The name of the class implementing the uniform distribution."""
+
+        OPENTURNS = "OTUniformDistribution"
+        SCIPY = "SPUniformDistribution"
+
+    def __init__(
+        self, uniform_distribution_name: UniformDistribution = UniformDistribution.SCIPY
+    ) -> None:
+        """
+        Args:
+            uniform_distribution_name: The name of the class
+                implementing the uniform distribution.
+        """  # noqa: D205, D212
         super().__init__()
         for index in range(3):
             self.add_random_variable(
-                f"x{index + 1}", _DISTRIBUTION_NAME, minimum=-pi, maximum=pi
+                f"x{index + 1}", uniform_distribution_name, minimum=-pi, maximum=pi
             )

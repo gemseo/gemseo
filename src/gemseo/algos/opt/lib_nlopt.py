@@ -47,6 +47,7 @@ from typing import Union
 
 import nlopt
 from nlopt import RoundoffLimited
+from numpy import array
 from numpy import atleast_1d
 from numpy import atleast_2d
 from numpy import ndarray
@@ -332,7 +333,7 @@ class Nlopt(OptimizationLibrary):
         obj_func = self.problem.objective
         if grad.size > 0:
             grad[:] = obj_func.jac(xn_vect)
-        return float(obj_func.func(xn_vect).real)
+        return array(obj_func.func(xn_vect).real).ravel()[0]
 
     def __make_constraint(
         self,
@@ -490,9 +491,8 @@ class Nlopt(OptimizationLibrary):
         nlopt_problem.set_upper_bounds(u_b.real)
 
         nlopt_problem.set_min_objective(self.__opt_objective_grad_nlopt)
-        if self.CTOL_ABS in options:
-            ctol = options[self.CTOL_ABS]
-        self.__add_constraints(nlopt_problem, ctol)
+
+        self.__add_constraints(nlopt_problem, options[self.CTOL_ABS])
         nlopt_problem = self.__set_prob_options(nlopt_problem, **options)
         try:
             nlopt_problem.optimize(x_0.real)

@@ -19,7 +19,7 @@ from gemseo.uncertainty.use_cases.ishigami.functions import compute_output
 from gemseo.uncertainty.use_cases.ishigami.ishigami_function import IshigamiFunction
 
 
-def test_ishigami_function():
+def test_ishigami_function() -> None:
     """Check that the IshigamiFunction has the right name, function and jacobian."""
     function = IshigamiFunction()
     assert function.name == "Ishigami"

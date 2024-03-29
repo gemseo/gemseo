@@ -31,6 +31,7 @@ from numpy import ndarray
 from numpy import where
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -147,16 +148,15 @@ class GradientSensitivity(OptPostProcessor):
             if gradient_value is None:
                 continue
 
-            if gradient_value.ndim == 1:
-                if scale_gradients:
-                    gradient_value = scale_gradient(gradient_value, minus_lb=False)
-                function_names_to_gradients[function_name] = gradient_value
-                continue
-
+            gradient_value = atleast_2d(gradient_value)
+            size = len(gradient_value)
             for i, _gradient_value in enumerate(gradient_value):
                 if scale_gradients:
                     _gradient_value = scale_gradient(_gradient_value, minus_lb=False)
-                function_names_to_gradients[f"{function_name}_{i}"] = _gradient_value
+                function_names_to_gradients[repr_variable(function_name, i, size)] = (
+                    _gradient_value
+                )
+
         return function_names_to_gradients
 
     def __generate_subplots(
@@ -183,7 +183,8 @@ class GradientSensitivity(OptPostProcessor):
         """
         n_gradients = len(gradients)
         if n_gradients == 0:
-            raise ValueError("No gradients to plot at current iteration.")
+            msg = "No gradients to plot at current iteration."
+            raise ValueError(msg)
 
         n_cols = 2
         n_rows = sum(divmod(n_gradients, n_cols))
@@ -211,8 +212,8 @@ class GradientSensitivity(OptPostProcessor):
             axe.grid()
             axe.set_axisbelow(True)
             axe.set_title(output_name)
-            axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissa)
+            axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
             # Update y labels spacing
             vis_labels = [
                 label for label in axe.get_yticklabels() if label.get_visible() is True
@@ -226,8 +227,8 @@ class GradientSensitivity(OptPostProcessor):
 
         if j == n_cols - 1:
             axe = axes[i][j]
-            axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissa)
+            axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
 
         title = (
             "Derivatives of objective and constraints with respect to design variables"

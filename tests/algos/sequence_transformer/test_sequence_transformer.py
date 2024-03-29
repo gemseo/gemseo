@@ -107,7 +107,7 @@ def compute_reference_n_iter():
         "OverRelaxation",
     ],
 )
-def test_sequence_transformer(compute_reference_n_iter, transformer):
+def test_sequence_transformer(compute_reference_n_iter, transformer) -> None:
     """Tests that the sequence transform reduces the number of iterations."""
     _transformer = factory.create(transformer)
 
@@ -117,7 +117,7 @@ def test_sequence_transformer(compute_reference_n_iter, transformer):
     assert n_iter <= n_iter_ref
 
 
-def test_clear():
+def test_clear() -> None:
     """Tests the clear mechanism of the double-ended queue."""
     transformer = SequenceTransformerFactory().create(
         AccelerationMethod.ALTERNATE_2_DELTA
@@ -137,7 +137,7 @@ def test_clear():
     assert len(transformer._residuals) == 0
 
 
-def test_composite(compute_reference_n_iter):
+def test_composite(compute_reference_n_iter) -> None:
     """Tests that the Composite structure reduces the number of iterations."""
     aitken = factory.create(AccelerationMethod.AITKEN)
     relaxation = factory.create("OverRelaxation", factor=0.8)

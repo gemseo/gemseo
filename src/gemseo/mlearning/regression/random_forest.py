@@ -36,8 +36,8 @@ from typing import Final
 
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
-from gemseo import SEED
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

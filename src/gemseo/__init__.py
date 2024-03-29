@@ -133,7 +133,6 @@ High-level functions
 
 from __future__ import annotations
 
-import contextlib
 import logging
 import re
 from collections import namedtuple
@@ -146,7 +145,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 
-import pkg_resources as __pkg_resources
 from numpy import ndarray
 from strenum import StrEnum
 
@@ -157,10 +155,8 @@ from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 
-# TODO: API: protect these import under TYPE_CHECKING.
-
-with contextlib.suppress(__pkg_resources.DistributionNotFound):
-    __version__ = __pkg_resources.get_distribution("package-name").version
+# TODO: API: remove this import
+from gemseo.utils.seeder import SEED  # noqa: F401
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -193,11 +189,8 @@ if TYPE_CHECKING:
 # plugins is done once only
 
 LOGGER = logging.getLogger(__name__)
-# by default no logging is produced
+# By default, no logging is produced.
 LOGGER.addHandler(logging.NullHandler())
-
-SEED: int = 0
-"""The default seed for random number generators."""
 
 
 def generate_n2_plot(
@@ -464,7 +457,8 @@ def get_algorithm_options_schema(
             algo_lib = factory.create(algorithm_name)
             opts_gram = algo_lib.init_options_grammar(algorithm_name)
             return _get_schema(opts_gram, output_json, pretty_print)
-    raise ValueError(f"Algorithm named {algorithm_name} is not available.")
+    msg = f"Algorithm named {algorithm_name} is not available."
+    raise ValueError(msg)
 
 
 def get_discipline_inputs_schema(
@@ -783,7 +777,8 @@ def get_scenario_options_schema(
         get_scenario_differentiation_modes
     """
     if scenario_type not in get_available_scenario_types():
-        raise ValueError(f"Unknown scenario type {scenario_type}")
+        msg = f"Unknown scenario type {scenario_type}"
+        raise ValueError(msg)
     scenario_class = {"MDO": "MDOScenario", "DOE": "DOEScenario"}[scenario_type]
     return get_discipline_options_schema(scenario_class, output_json, pretty_print)
 
@@ -1060,9 +1055,8 @@ def create_scenario(
     elif scenario_type == "DOE":
         cls = DOEScenario
     else:
-        raise ValueError(
-            f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
-        )
+        msg = f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
+        raise ValueError(msg)
 
     return cls(
         disciplines,
@@ -1369,7 +1363,8 @@ def execute_post(
     elif isinstance(to_post_proc, (str, PathLike)):
         opt_problem = OptimizationProblem.from_hdf(to_post_proc)
     else:
-        raise TypeError(f"Cannot post process type: {type(to_post_proc)}")
+        msg = f"Cannot post process type: {type(to_post_proc)}"
+        raise TypeError(msg)
     return PostFactory().execute(opt_problem, post_name, **options)
 
 
@@ -1415,7 +1410,8 @@ def execute_algo(
 
         factory = DOEFactory()
     else:
-        raise ValueError(f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !")
+        msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
+        raise ValueError(msg)
 
     return factory.execute(opt_problem, algo_name, **options)
 
@@ -1734,15 +1730,17 @@ def create_dataset(
                 header,
             )
         else:
-            raise ValueError(
+            msg = (
                 "The dataset can be created from a file with a .csv or .txt extension, "
                 f"not {extension}."
             )
+            raise ValueError(msg)
     else:
-        raise ValueError(
+        msg = (
             "The dataset can be created from an array or a .csv or .txt file, "
             f"not a {type(data)}."
         )
+        raise ValueError(msg)
 
     if name:
         dataset.name = name
@@ -1787,7 +1785,7 @@ def create_benchmark_dataset(
 
 
 def compute_doe(
-    variables_space: DesignSpace,
+    variables_space: DesignSpace | int,
     algo_name: str,
     size: int | None = None,
     unit_sampling: bool = False,
@@ -1796,11 +1794,14 @@ def compute_doe(
     """Compute a design of experiments (DOE) in a variables space.
 
     Args:
-        variables_space: The variables space to be sampled.
+        variables_space: Either the variables space to be sampled or its dimension.
         size: The size of the DOE.
             If ``None``, the size is deduced from the ``options``.
         algo_name: The DOE algorithm.
         unit_sampling: Whether to sample in the unit hypercube.
+            If the value provided in ``variables_space`` is the dimension,
+            the samples will be generated in the unit hypercube
+            whatever the value of ``unit_sampling``.
         **options: The options of the DOE algorithm.
 
     Returns:
@@ -1906,9 +1907,8 @@ def get_algorithm_features(
 
     factory = OptimizersFactory()
     if not factory.is_available(algorithm_name):
-        raise ValueError(
-            f"{algorithm_name} is not the name of an optimization algorithm."
-        )
+        msg = f"{algorithm_name} is not the name of an optimization algorithm."
+        raise ValueError(msg)
 
     driver = factory.create(algorithm_name)
     description = driver.descriptions[algorithm_name]

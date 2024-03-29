@@ -51,17 +51,17 @@ from gemseo.utils.derivatives.gradient_approximator_factory import (
 )
 
 
-def test_init_first_order_fd():
+def test_init_first_order_fd() -> None:
     """"""
     FirstOrderFD(rosen)
 
 
-def test_init_centred_differences():
+def test_init_centred_differences() -> None:
     """"""
     CenteredDifferences(rosen)
 
 
-def test_init_complex_step():
+def test_init_complex_step() -> None:
     """"""
     cplx = ComplexStep(rosen, 1e-30j)
     assert cplx.step == 1e-30
@@ -84,7 +84,7 @@ def x():
     ]
 
 
-def run_tests(xs, fd_app):
+def run_tests(xs, fd_app) -> None:
     """
 
     :param xs: param fd_app:
@@ -99,31 +99,31 @@ def run_tests(xs, fd_app):
         assert err < 1e-4
 
 
-def test_approx_first_order_fd(x):
+def test_approx_first_order_fd(x) -> None:
     run_tests(x, FirstOrderFD(rosen, 1e-8))
 
 
-def test_approx_centred_differences(x):
+def test_approx_centred_differences(x) -> None:
     run_tests(x, CenteredDifferences(rosen, 1e-8))
 
 
-def test_approx_complex_step(x):
+def test_approx_complex_step(x) -> None:
     run_tests(x, ComplexStep(rosen))
 
 
-def test_approx_complex_step_diff_steps_e60(x):
+def test_approx_complex_step_diff_steps_e60(x) -> None:
     run_tests(x, ComplexStep(rosen, 1e-60))
 
 
-def test_approx_complex_step_diff_steps_e200(x):
+def test_approx_complex_step_diff_steps_e200(x) -> None:
     run_tests(x, ComplexStep(rosen, 1e-200))
 
 
-def test_approx_complex_step_diff_steps_e30(x):
+def test_approx_complex_step_diff_steps_e30(x) -> None:
     run_tests(x, ComplexStep(rosen, 1e-30))
 
 
-def test_abs_der():
+def test_abs_der() -> None:
     discipline = AnalyticDiscipline({"y": "x", "z": "x"})
     discipline.execute()
     apprx = DisciplineJacApprox(discipline)
@@ -140,7 +140,7 @@ def test_abs_der():
     assert not apprx.check_jacobian(discipline.jac, ["z"], ["x"], discipline)
 
 
-def test_complex_fail():
+def test_complex_fail() -> None:
     discipline = SobieskiMission("complex128")
     assert discipline.check_jacobian(
         derr_approx=discipline.ApproximationMode.COMPLEX_STEP
@@ -159,7 +159,7 @@ def test_complex_fail():
     "method",
     [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
 )
-def test_auto_step(parallel, method, sellar_disciplines):
+def test_auto_step(parallel, method, sellar_disciplines) -> None:
     for discipline in sellar_disciplines:
         assert discipline.check_jacobian(
             auto_set_step=True,
@@ -170,7 +170,7 @@ def test_auto_step(parallel, method, sellar_disciplines):
         )
 
 
-def test_opt_step():
+def test_opt_step() -> None:
     x = 0.1
     step = 1e-6
     funcs = [sin, cos, exp]
@@ -206,7 +206,9 @@ def test_opt_step():
         ({}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
     ],
 )
-def test_compute_io_indices(indices, expected_sequence, expected_variable_indices):
+def test_compute_io_indices(
+    indices, expected_sequence, expected_variable_indices
+) -> None:
     """Check that input and output indices are correctly computed from indices."""
     (
         indices_sequence,
@@ -222,7 +224,7 @@ def test_compute_io_indices(indices, expected_sequence, expected_variable_indice
     "method",
     [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
 )
-def test_load_and_dump(tmp_wd, method):
+def test_load_and_dump(tmp_wd, method) -> None:
     """Check the loading and dumping of a reference Jacobian."""
     discipline = AnalyticDiscipline({"y": "x", "z": "x"})
     discipline.execute()
@@ -250,7 +252,7 @@ def test_load_and_dump(tmp_wd, method):
 
 
 class ToyDiscipline(MDODiscipline):
-    def __init__(self, dtype):
+    def __init__(self, dtype) -> None:
         super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
         self.input_grammar.update_from_types({"x1": dtype, "x2": ndarray})
         self.output_grammar.update_from_types({"y1": dtype, "y2": ndarray})
@@ -260,7 +262,7 @@ class ToyDiscipline(MDODiscipline):
         }
         self.dtype = dtype
 
-    def _run(self):
+    def _run(self) -> None:
         self.local_data["y1"] = self.local_data["x1"] + 2 * self.local_data["x2"][0]
         self.local_data["y2"] = array([
             self.local_data["x1"]
@@ -271,7 +273,7 @@ class ToyDiscipline(MDODiscipline):
             + 6 * self.local_data["x2"][1],
         ])
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(self, inputs=None, outputs=None) -> None:
         self.jac = {
             "y1": {
                 "x1": array([[1.0]], dtype=self.dtype),
@@ -302,7 +304,7 @@ class ToyDiscipline(MDODiscipline):
     "method",
     [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
 )
-def test_indices(inputs, outputs, indices, dtype, method):
+def test_indices(inputs, outputs, indices, dtype, method) -> None:
     """Test the option to check the Jacobian by indices.
 
     Args:
@@ -323,7 +325,7 @@ def test_indices(inputs, outputs, indices, dtype, method):
     "method",
     [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
 )
-def test_wrong_step(dtype, method):
+def test_wrong_step(dtype, method) -> None:
     """Test that an exception is raised if the step size length does not match inputs.
 
     Args:
@@ -336,7 +338,7 @@ def test_wrong_step(dtype, method):
         apprx.compute_approx_jac(outputs=["y1", "y2"], inputs=["x1", "x2"])
 
 
-def test_factory():
+def test_factory() -> None:
     factory = GradientApproximatorFactory()
     assert "ComplexStep" in factory.gradient_approximators
     assert factory.is_available("ComplexStep")
@@ -374,7 +376,7 @@ def test_factory():
 )
 def test_derivatives_on_design_boundaries(
     caplog, normalize, lower_bound, upper_bound, method
-):
+) -> None:
     """Check that finite differences on the design boundaries use a backward step."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=lower_bound, u_b=upper_bound, value=2.0)
@@ -398,7 +400,7 @@ def test_derivatives_on_design_boundaries(
 
 
 @pytest.mark.parametrize("output_size", [1, 10])
-def test_derivatives_with_sparse_jacobians(tmp_wd, output_size):
+def test_derivatives_with_sparse_jacobians(tmp_wd, output_size) -> None:
     """Test check Jacobians with sparse Jacobians."""
     discipline = LinearDiscipline(
         "A", ["x"], ["y"], inputs_size=10, outputs_size=output_size, matrix_format="csr"

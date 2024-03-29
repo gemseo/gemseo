@@ -35,6 +35,7 @@ from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Iterator
 
 # to store the raw ingredients of a string to be formatted later
 MessageLine = namedtuple("MessageLine", "str_format level args kwargs")
@@ -168,6 +169,8 @@ class MultiLineString:
 
     INDENTATION = " " * 3
     DEFAULT_LEVEL = 0
+    __level: int
+    """The indentation level."""
 
     def __init__(
         self,
@@ -181,8 +184,6 @@ class MultiLineString:
             self.__lines = []
         else:
             self.__lines = list(lines)
-
-        self.__level = None
         self.reset()
 
     def add(
@@ -294,7 +295,7 @@ class MultiLineString:
 
     @classmethod
     @contextmanager
-    def offset(cls) -> None:
+    def offset(cls) -> Iterator[None]:
         """Create a temporary offset with a context manager."""
         cls.DEFAULT_LEVEL += 1
         try:

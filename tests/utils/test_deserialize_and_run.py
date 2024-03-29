@@ -59,7 +59,7 @@ def sys_argv(discipline_and_data):
     ]
 
 
-def test_parse_inputs(discipline_and_data, sys_argv):
+def test_parse_inputs(discipline_and_data, sys_argv) -> None:
     """Test the input parsing for the deserialize_and_run executable."""
     (
         path_to_discipline,
@@ -77,7 +77,7 @@ def test_parse_inputs(discipline_and_data, sys_argv):
     assert Path(outputs_path) == path_to_outputs
 
 
-def test_parse_inputs_fail(tmpdir):
+def test_parse_inputs_fail(tmpdir) -> None:
     """Test the input parsing failure handling."""
     with pytest.raises(SystemExit):
         _parse_inputs(["1"])
@@ -99,7 +99,7 @@ def test_parse_inputs_fail(tmpdir):
     _parse_inputs([i_exist, i_exist, i_exist, i_exist])
 
 
-def test_run_discipline_save_outputs(discipline_and_data):
+def test_run_discipline_save_outputs(discipline_and_data) -> None:
     """Test the run and save outputs."""
     (
         path_to_discipline,
@@ -118,11 +118,11 @@ def test_run_discipline_save_outputs(discipline_and_data):
     assert compare_dict_of_arrays(outputs, discipline.execute())
 
 
-def test_run_discipline_save_outputs_errors(discipline_and_data):
+def test_run_discipline_save_outputs_errors(discipline_and_data) -> None:
     """Test the outputs saving error handling."""
     error_message = "I failed"
 
-    def _run_and_fail():
+    def _run_and_fail() -> None:
         raise ValueError(error_message)
 
     (
@@ -145,15 +145,14 @@ def test_run_discipline_save_outputs_errors(discipline_and_data):
         assert error.args[0] == error_message
 
 
-def test_main():
+def test_main() -> None:
     """Test the main entry point."""
     with pytest.raises(SystemExit):
         main()
 
 
-def test_path_serialization(tmp_path):
+def test_path_serialization(tmp_path) -> None:
     """Test the execution of a serialized discipline that contains Paths."""
-
     path_to_discipline = tmp_path / "discipline.pckl"
     discipline = PathDiscipline(tmp_path)
     discipline.to_pickle(path_to_discipline)

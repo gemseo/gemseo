@@ -28,14 +28,14 @@ from numpy import zeros
 from gemseo.problems.sobieski.core.utils import SobieskiBase
 
 
-def test_init():
+def test_init() -> None:
     assert SobieskiBase("float64").dtype == float64
     assert SobieskiBase("complex128").dtype == complex128
     with pytest.raises(ValueError, match="foo"):
         SobieskiBase("foo")
 
 
-def test_compute_a():
+def test_compute_a() -> None:
     base = SobieskiBase("float64")
     mtx_shifted = eye(3)
     f_bound = array([[1], [2], [3.1]])
@@ -52,12 +52,12 @@ def test_compute_a():
     )
 
 
-def test_compute_fbound():
+def test_compute_fbound() -> None:
     base = SobieskiBase("float64")
     base._SobieskiBase__compute_fbound([0], 1, 1, 1, 0)
 
 
-def test_get_bounds():
+def test_get_bounds() -> None:
     base = SobieskiBase("float64")
     lb1, ub1 = base.get_bounds_by_name("x_shared")
     lb, ub = base.get_bounds_by_name(["x_shared", "x_1"])

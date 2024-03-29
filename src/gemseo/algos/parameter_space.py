@@ -69,7 +69,6 @@ from __future__ import annotations
 
 import collections
 import logging
-from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -264,10 +263,11 @@ class ParameterSpace(DesignSpace):
         distribution_family_id = distribution_class.__name__[0:2]
         if self.__distribution_family_id:
             if distribution_family_id != self.__distribution_family_id:
-                raise ValueError(
+                msg = (
                     f"A parameter space cannot mix {self.__distribution_family_id} "
                     f"and {distribution_family_id} distributions."
                 )
+                raise ValueError(msg)
         else:
             self.__distribution_family_id = distribution_family_id
 
@@ -434,10 +434,11 @@ class ParameterSpace(DesignSpace):
             or (n_sizes == 2 and sizes != {1, size})
             or (n_sizes == 1 and not sizes.issubset({1, size}))
         ):
-            raise ValueError(
+            msg = (
                 "The lengths of the distribution parameter collections "
                 "are not consistent."
             )
+            raise ValueError(msg)
 
         return size
 
@@ -531,13 +532,14 @@ class ParameterSpace(DesignSpace):
         """
         if "parameters" in parameters:
             if interfaced_distribution_parameters:
-                raise ValueError(
+                msg = (
                     "'interfaced_distribution_parameters' "
                     "is the new name of 'parameters' "
                     "which will be removed in the next major release; "
                     "you cannot use both names at the same time; "
                     "please use 'interfaced_distribution_parameters'."
                 )
+                raise ValueError(msg)
 
             return parameters.pop("parameters")
 
@@ -706,7 +708,7 @@ class ParameterSpace(DesignSpace):
             table.float_format = "%.16g"
             for name in self.variable_names:
                 size = self.variable_sizes[name]
-                name_template = "{name}"
+                name_template = f"{name}"
                 if with_index and size > 1:
                     name_template += "[{index}]"
 
@@ -849,7 +851,8 @@ class ParameterSpace(DesignSpace):
             return super().unnormalize_vect(x_vect, no_check=no_check, out=out)
 
         if x_vect.ndim not in {1, 2}:
-            raise ValueError("x_vect must be either a 1D or a 2D NumPy array.")
+            msg = "x_vect must be either a 1D or a 2D NumPy array."
+            raise ValueError(msg)
 
         return self.__unnormalize_vect(x_vect, no_check)
 
@@ -917,7 +920,8 @@ class ParameterSpace(DesignSpace):
             return super().normalize_vect(x_vect, out=out)
 
         if x_vect.ndim not in {1, 2}:
-            raise ValueError("x_vect must be either a 1D or a 2D NumPy array.")
+            msg = "x_vect must be either a 1D or a 2D NumPy array."
+            raise ValueError(msg)
 
         return self.__normalize_vect(x_vect)
 
@@ -964,7 +968,7 @@ class ParameterSpace(DesignSpace):
         Return:
             A :class:`.ParameterSpace` defined by the uncertain variables only.
         """
-        uncertain_space = deepcopy(self).filter(self.uncertain_variables)
+        uncertain_space = self.filter(self.uncertain_variables, copy=True)
         if as_design_space:
             return uncertain_space.to_design_space()
 
@@ -1063,7 +1067,8 @@ class ParameterSpace(DesignSpace):
         name: str,
     ) -> DesignSpace.DesignVariable | RandomVariable | RandomVector:
         if name not in self.variable_names:
-            raise KeyError(f"Variable '{name}' is not known.")
+            msg = f"Variable '{name}' is not known."
+            raise KeyError(msg)
 
         if self.is_uncertain(name):
             if self.__uncertain_variables_to_definitions[name][2]:
@@ -1123,4 +1128,6 @@ class ParameterSpace(DesignSpace):
             position = self.uncertain_variables.index(current_name)
             self.uncertain_variables[position] = new_name
             _dict = self.__uncertain_variables_to_definitions
+            _dict[new_name] = _dict.pop(current_name)
+            _dict = self.distributions
             _dict[new_name] = _dict.pop(current_name)

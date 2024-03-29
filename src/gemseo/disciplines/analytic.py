@@ -138,7 +138,8 @@ class AnalyticDiscipline(MDODiscipline):
                     string_output_expression, local_dict=real_input_symbols
                 )
             else:
-                raise TypeError("Expression must be a SymPy expression or a string.")
+                msg = "Expression must be a SymPy expression or a string."
+                raise TypeError(msg)
 
             self._sympy_exprs[output_name] = output_expression
             all_real_input_symbols.extend(real_input_symbols.values())

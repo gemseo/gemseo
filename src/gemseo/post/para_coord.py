@@ -63,10 +63,11 @@ class ParallelCoordinates(OptPostProcessor):
         _, n_cols = y_data.shape
         expected_shape = (len(color_criteria), len(x_names))
         if y_data.shape != expected_shape:
-            raise ValueError(
+            msg = (
                 f"The data shape {y_data.shape} is not equal "
                 f"to the expected one {expected_shape}."
             )
+            raise ValueError(msg)
 
         x_values = list(range(n_cols))
         fig = plt.figure(figsize=cls.DEFAULT_FIG_SIZE)

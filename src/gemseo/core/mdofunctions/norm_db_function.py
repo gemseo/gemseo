@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from numpy import isnan
@@ -32,13 +31,11 @@ from gemseo.algos.database import Database
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.algos.stop_criteria import MaxIterReachedException
-from gemseo.core.mdofunctions.mdo_function import ArrayType
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from gemseo.algos.opt_problem import OptimizationProblem
-
-LOGGER = logging.getLogger(__name__)
+    from gemseo.typing import NumberArray
 
 
 class NormDBFunction(MDOFunction):
@@ -60,7 +57,6 @@ class NormDBFunction(MDOFunction):
             optimization_problem: The optimization problem object that contains
                 the function.
         """  # noqa: D205, D212, D415
-        self.__normalize = normalize
         self.__orig_func = orig_func
         self.__is_observable = is_observable
         self.__optimization_problem = optimization_problem
@@ -85,9 +81,10 @@ class NormDBFunction(MDOFunction):
             output_names=orig_func.output_names,
             special_repr=orig_func.special_repr,
             original_name=orig_func.original_name,
+            expects_normalized_inputs=normalize,
         )
 
-    def _func_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _func_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the function to be passed to the optimizer.
 
         Args:
@@ -104,8 +101,9 @@ class NormDBFunction(MDOFunction):
         """
         # TODO: Add a dedicated function check_has_nan().
         if isnan(x_vect).any():
-            raise DesvarIsNan(f"Design Variables contain a NaN value: {x_vect}")
-        normalize = self.__normalize
+            msg = f"Design Variables contain a NaN value: {x_vect}"
+            raise DesvarIsNan(msg)
+        normalize = self.expects_normalized_inputs
         if normalize:
             xn_vect = x_vect
             xu_vect = self.__unnormalize_vect(xn_vect)
@@ -128,13 +126,14 @@ class NormDBFunction(MDOFunction):
             else:
                 value = self.__evaluate_orig_func(xu_vect)
             if self.__optimization_problem.stop_if_nan and isnan(value).any():
-                raise FunctionIsNan(f"The function {self.name} is NaN for x={xu_vect}")
+                msg = f"The function {self.name} is NaN for x={xu_vect}"
+                raise FunctionIsNan(msg)
             # store (x, f(x)) in database
             database.store(hashed_xu, {self.name: value})
 
         return value
 
-    def _jac_to_wrap(self, x_vect: ArrayType) -> ArrayType:
+    def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the gradient of the function to be passed to the optimizer.
 
         Args:
@@ -149,8 +148,9 @@ class NormDBFunction(MDOFunction):
         """
         # TODO: Add a dedicated function check_has_nan().
         if isnan(x_vect).any():
-            raise FunctionIsNan(f"Design Variables contain a NaN value: {x_vect}")
-        normalize = self.__normalize
+            msg = f"Design Variables contain a NaN value: {x_vect}"
+            raise FunctionIsNan(msg)
+        normalize = self.expects_normalized_inputs
         if normalize:
             xn_vect = x_vect
             xu_vect = self.__unnormalize_vect(xn_vect)
@@ -170,26 +170,21 @@ class NormDBFunction(MDOFunction):
                 raise MaxIterReachedException
 
             # if not evaluated yet, evaluate
-            if self.__normalize:
+            if self.expects_normalized_inputs:
                 jac_n = self.__jac_orig_func(xn_vect)
                 jac_u = self.__unnormalize_grad(jac_n)
             else:
                 jac_u = self.__jac_orig_func(xu_vect)
                 jac_n = None
             if isnan(jac_u.data).any() and self.__optimization_problem.stop_if_nan:
-                raise FunctionIsNan(
-                    f"Function {self.name}'s Jacobian is NaN for x={xu_vect}"
-                )
+                msg = f"Function {self.name}'s Jacobian is NaN for x={xu_vect}"
+                raise FunctionIsNan(msg)
             func_name_to_value = {Database.get_gradient_name(self.name): jac_u}
             # store (x, j(x)) in database
             database.store(xu_vect, func_name_to_value)
         else:
             jac_n = design_space.normalize_grad(jac_u)
 
-        if self.__normalize:
+        if self.expects_normalized_inputs:
             return jac_n.real
         return jac_u.real
-
-    @property
-    def expects_normalized_inputs(self) -> bool:  # noqa:D102
-        return self.__normalize

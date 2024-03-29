@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import pickle
-from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -77,9 +76,9 @@ def scenario():
     design_space.filter(["x_1", "x_2", "x_3"])
     mdo_scenario = MDOScenario(
         disciplines,
-        formulation="MDF",
-        objective_name="y_4",
-        design_space=design_space,
+        "MDF",
+        "y_4",
+        design_space,
         maximize_objective=True,
         name="MyScenario",
     )
@@ -87,20 +86,20 @@ def scenario():
     return mdo_scenario
 
 
-def test_default_name(scenario):
+def test_default_name(scenario) -> None:
     """Check the default name of an MDOScenarioAdapter."""
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"])
     assert adapter.name == "MyScenario_adapter"
 
 
-def test_name(scenario):
+def test_name(scenario) -> None:
     """Check that the name of the MDOScenarioAdapter is correctly set."""
     name = "MyAdapter"
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"], name=name)
     assert adapter.name == name
 
 
-def test_adapter(scenario):
+def test_adapter(scenario) -> None:
     """Test the MDOAdapter."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
@@ -117,7 +116,7 @@ def test_adapter(scenario):
     assert f_x3 > 4947.0
 
 
-def test_adapter_set_x0_before_opt(scenario):
+def test_adapter_set_x0_before_opt(scenario) -> None:
     """Test the MDOScenarioAdapter with set_x0_before_opt."""
     inputs = ["x_1", "x_2", "x_3", "x_shared"]
     outputs = ["y_4"]
@@ -129,7 +128,7 @@ def test_adapter_set_x0_before_opt(scenario):
     assert f_x3 > 4947.0
 
 
-def test_adapter_set_and_reset_x0(scenario):
+def test_adapter_set_and_reset_x0(scenario) -> None:
     """Test that set and reset x_0 cannot be done at MDOScenarioAdapter
     instantiation."""
     inputs = ["x_shared"]
@@ -141,14 +140,14 @@ def test_adapter_set_and_reset_x0(scenario):
         )
 
 
-def test_adapter_miss_dvs(scenario):
+def test_adapter_miss_dvs(scenario) -> None:
     inputs = ["x_shared"]
     outputs = ["y_4", "missing_dv"]
     scenario.design_space.add_variable("missing_dv")
     MDOScenarioAdapter(scenario, inputs, outputs)
 
 
-def test_adapter_reset_x0_before_opt(scenario):
+def test_adapter_reset_x0_before_opt(scenario) -> None:
     """Check MDOScenarioAdapter.reset_x0_before_opt()."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
@@ -180,7 +179,7 @@ def test_adapter_reset_x0_before_opt(scenario):
     assert not np_all(initial_x == initial_design)
 
 
-def test_adapter_set_bounds(scenario):
+def test_adapter_set_bounds(scenario) -> None:
     inputs = ["x_shared"]
     outputs = ["y_4"]
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, set_bounds_before_opt=True)
@@ -208,7 +207,7 @@ def test_adapter_set_bounds(scenario):
     assert np_all(ds.get_upper_bounds() == ones(4))
 
 
-def test_chain(scenario):
+def test_chain(scenario) -> None:
     """"""
     mda = scenario.formulation.mda
     inputs = list(mda.get_input_data_names()) + scenario.design_space.variable_names
@@ -227,7 +226,7 @@ def test_chain(scenario):
     assert y_4 > 2908.0
 
 
-def test_compute_jacobian(scenario):
+def test_compute_jacobian(scenario) -> None:
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"])
     adapter.execute()
     adapter._compute_jacobian()
@@ -239,7 +238,7 @@ def test_compute_jacobian(scenario):
         assert set(adapter.jac[output_name].keys()) == {"x_shared"}
 
 
-def test_compute_jacobian_with_bound_inputs(scenario):
+def test_compute_jacobian_with_bound_inputs(scenario) -> None:
     adapter = MDOScenarioAdapter(
         scenario, ["x_shared"], ["y_4"], set_bounds_before_opt=True
     )
@@ -254,7 +253,7 @@ def test_compute_jacobian_with_bound_inputs(scenario):
         assert set(adapter.jac[output_name].keys()) == set(expected_input_names)
 
 
-def test_compute_jacobian_exceptions(scenario):
+def test_compute_jacobian_exceptions(scenario) -> None:
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"])
 
     # Pass invalid inputs
@@ -287,10 +286,10 @@ def test_compute_jacobian_exceptions(scenario):
 def build_struct_scenario():
     ds = SobieskiDesignSpace()
     sc_str = MDOScenario(
-        disciplines=[SobieskiStructure()],
-        formulation="DisciplinaryOpt",
-        objective_name="y_11",
-        design_space=deepcopy(ds).filter("x_1"),
+        [SobieskiStructure()],
+        "DisciplinaryOpt",
+        "y_11",
+        ds.filter("x_1", copy=True),
         name="StructureScenario",
         maximize_objective=True,
     )
@@ -303,10 +302,10 @@ def build_struct_scenario():
 def build_prop_scenario():
     ds = SobieskiDesignSpace()
     sc_prop = MDOScenario(
-        disciplines=[SobieskiPropulsion()],
-        formulation="DisciplinaryOpt",
-        objective_name="y_34",
-        design_space=deepcopy(ds).filter("x_3"),
+        [SobieskiPropulsion()],
+        "DisciplinaryOpt",
+        "y_34",
+        ds.filter("x_3", copy=True),
         name="PropulsionScenario",
     )
     sc_prop.add_constraint("g_3", constraint_type="ineq")
@@ -315,7 +314,9 @@ def build_prop_scenario():
     return sc_prop
 
 
-def check_adapter_jacobian(adapter, inputs, objective_threshold, lagrangian_threshold):
+def check_adapter_jacobian(
+    adapter, inputs, objective_threshold, lagrangian_threshold
+) -> None:
     opt_problem = adapter.scenario.formulation.opt_problem
     output_names = opt_problem.objective.output_names
     constraints = opt_problem.get_constraint_names()
@@ -336,7 +337,7 @@ def check_adapter_jacobian(adapter, inputs, objective_threshold, lagrangian_thre
     )
 
 
-def test_adapter_jacobian():
+def test_adapter_jacobian() -> None:
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     struct_adapter = MDOScenarioAdapter(
@@ -362,7 +363,7 @@ def test_adapter_jacobian():
     )
 
 
-def test_add_outputs():
+def test_add_outputs() -> None:
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     struct_adapter = MDOScenarioAdapter(
@@ -379,7 +380,7 @@ def test_add_outputs():
 
 def check_obj_scenario_adapter(
     scenario, outputs, minimize, objective_threshold, lagrangian_threshold
-):
+) -> None:
     dim = scenario.design_space.dimension
     problem = scenario.formulation.opt_problem
     objective = problem.objective
@@ -398,10 +399,8 @@ def check_obj_scenario_adapter(
 
     adapter.execute()
     local_value = adapter.local_data[output_names[0]]
-    assert (
-        minimize
-        and allclose(local_value, array(123.456))
-        or allclose(local_value, array(-123.456))
+    assert (minimize and allclose(local_value, array(123.456))) or allclose(
+        local_value, array(-123.456)
     )
 
     check_adapter_jacobian(
@@ -409,7 +408,7 @@ def check_obj_scenario_adapter(
     )
 
 
-def test_obj_scenario_adapter():
+def test_obj_scenario_adapter() -> None:
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     check_obj_scenario_adapter(
@@ -431,7 +430,7 @@ def test_obj_scenario_adapter():
     )
 
 
-def test_lagrange_multipliers_outputs():
+def test_lagrange_multipliers_outputs() -> None:
     """Test the output of Lagrange multipliers."""
     struct_scenario = build_struct_scenario()
     x1_low_mult_name = MDOScenarioAdapter.get_bnd_mult_name("x_1", False)
@@ -457,7 +456,7 @@ def test_lagrange_multipliers_outputs():
 
 
 @pytest.mark.parametrize("export_name", ["", "local_database"])
-def test_keep_opt_history(tmp_wd, scenario, export_name):
+def test_keep_opt_history(tmp_wd, scenario, export_name) -> None:
     """Test the option that keeps the local history of sub optimizations, with and
     without the export option."""
     adapter = MDOScenarioAdapter(
@@ -483,7 +482,7 @@ def test_keep_opt_history(tmp_wd, scenario, export_name):
 
 
 @pytest.mark.parametrize("set_x0_before_opt", [True, False])
-def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt):
+def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> None:
     """Test that an MDOScenarioAdapter can be serialized, loaded and executed.
 
     The focus of this test is to guarantee that the loaded MDOChain instance can be
@@ -515,7 +514,7 @@ class DisciplineMain(MDODiscipline):
     Jacobians are computed in _run method.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["alpha"])
         self.output_grammar.update_from_names(["beta"])
@@ -533,7 +532,7 @@ class DisciplineMainWithJacobian(MDODiscipline):
     Jacobian are computed _compute_jacobian method.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["alpha"])
         self.output_grammar.update_from_names(["beta"])
@@ -555,7 +554,7 @@ class DisciplineMainWithJacobian(MDODiscipline):
 class DisciplineSub1(MDODiscipline):
     """Discipline that takes as inputs x and computes f=3*x."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x"])
         self.output_grammar.update_from_names(["f"])
@@ -570,7 +569,7 @@ class DisciplineSub1(MDODiscipline):
 class DisciplineSub2(MDODiscipline):
     """Discipline that takes x and beta and compute g=x+beta."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x", "beta"])
         self.output_grammar.update_from_names(["g"])
@@ -619,7 +618,7 @@ def scenario_fixture(disciplines_fixture):
     return MDOScenarioAdapter(scenario, dv_names, ["f"], set_x0_before_opt=True)
 
 
-def test_scenario_adapter(scenario_fixture):
+def test_scenario_adapter(scenario_fixture) -> None:
     """Test the scenario execution."""
     design_space = create_design_space()
     design_space.add_variable("alpha", l_b=-1.5, u_b=1.5, value=array([1.0]), size=1)
@@ -634,13 +633,13 @@ def test_scenario_adapter(scenario_fixture):
     assert scenario.formulation.opt_problem.solution is not None
 
 
-def test_run_scenario_adapter(scenario_fixture):
+def test_run_scenario_adapter(scenario_fixture) -> None:
     """Test te execution of the scenario adapter."""
     out = scenario_fixture.execute({"alpha": array([0.0])})
     assert "f" in out
 
 
-def test_linearize_scenario_adapter(scenario_fixture):
+def test_linearize_scenario_adapter(scenario_fixture) -> None:
     """Test the linearization of the scenario adapter."""
     out = scenario_fixture.linearize(
         {"alpha": array([0.0])}, compute_all_jacobians=True
@@ -648,7 +647,7 @@ def test_linearize_scenario_adapter(scenario_fixture):
     assert "f" in out
 
 
-def test_multiple_linearize():
+def test_multiple_linearize() -> None:
     """Tests two linearizations and linearize in the _run method."""
     disc2 = MDOChain([DisciplineMain(), DisciplineSub1(), DisciplineSub2()])
     disc2.default_inputs = {"x": array([0.0]), "alpha": array([0.0])}

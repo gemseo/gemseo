@@ -1,0 +1,70 @@
+
+%%% Preamble Requirements %%%
+% \usepackage{geometry}
+% \usepackage{amsfonts}
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{tikz}
+
+% Optional packages such as sfmath set through python interface
+% \usepackage{sfmath}
+
+% \usetikzlibrary{arrows,chains,positioning,scopes,shapes.geometric,shapes.misc,shadows}
+
+%%% End Preamble Requirements %%%
+
+\input{"C:/Users/nicolas.roussouly/Code/GEMSEO/gemseo_fork/.tox/py39/lib/site-packages/pyxdsm/diagram_styles"}
+\begin{tikzpicture}
+
+\matrix[MatrixSetup]{
+%Row 0
+&
+\node [DataIO] (output_Opt) {$x\_3^{(0)}$};&
+&
+\\
+%Row 1
+\node [DataIO] (left_output_Opt) {$y\_34^*,  g\_3^*$};&
+\node [Optimization] (Opt) {$\text{1,3-2:Optimizer}$};&
+\node [DataInter] (Opt-Dis1) {$x\_3$};&
+\\
+%Row 2
+\node [DataIO] (left_output_Dis1) {$y\_32^*,  y\_31^*..., (3)$};&
+\node [DataInter] (Dis1-Opt) {$g\_3,  y\_34$};&
+\node [Function] (Dis1) {$\text{2:SobieskiPropulsion}$};&
+\\
+%Row 3
+&
+&
+&
+\\
+};
+
+% XDSM process chains
+{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Opt);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Opt) [join=by ProcessHVA];
+\end{pgfonlayer}
+}
+
+\begin{pgfonlayer}{data}
+\path
+% Horizontal edges
+(Opt) edge [DataLine] (Opt-Dis1)
+(Dis1) edge [DataLine] (Dis1-Opt)
+(Dis1) edge [DataLine] (Dis1-Opt)
+(Opt) edge [DataLine] (left_output_Opt)
+(Dis1) edge [DataLine] (left_output_Dis1)
+% Vertical edges
+(Opt-Dis1) edge [DataLine] (Dis1)
+(Dis1-Opt) edge [DataLine] (Opt)
+(Dis1-Opt) edge [DataLine] (Opt)
+(Opt) edge [DataLine] (output_Opt);
+\end{pgfonlayer}
+
+\end{tikzpicture}

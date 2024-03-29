@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from copy import deepcopy
-
 import pytest
 from numpy import array
 from numpy import isclose
@@ -37,7 +35,7 @@ from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 from .test_gauss_seidel import SelfCoupledDisc
 
 
-def test_jacobi_sobieski():
+def test_jacobi_sobieski() -> None:
     """Test the execution of Jacobi on Sobieski."""
     mda = SobieskiMDAJacobi()
     mda.execute()
@@ -63,7 +61,7 @@ def compute_reference_n_iter():
 
 
 @pytest.mark.parametrize("acceleration_method", AccelerationMethod)
-def test_acceleration_methods(compute_reference_n_iter, acceleration_method):
+def test_acceleration_methods(compute_reference_n_iter, acceleration_method) -> None:
     """Tests the acceleration methods."""
     mda = SobieskiMDAJacobi(
         tolerance=1e-12, max_mda_iter=30, acceleration_method=acceleration_method
@@ -75,7 +73,7 @@ def test_acceleration_methods(compute_reference_n_iter, acceleration_method):
 
 
 # TODO: Remove tests once the old attributes are removed
-def test_compatibility():
+def test_compatibility() -> None:
     """Tests that the compatibility with previous behavior is ensured."""
     mda_1 = SobieskiMDAJacobi(acceleration="m2d")
     mda_1.reset_history_each_run = True
@@ -99,7 +97,7 @@ def test_compatibility():
 
 
 # TODO: Remove tests once the old attributes are removed
-def test_compatibility_setters_getters():
+def test_compatibility_setters_getters() -> None:
     """Tests that the compatibility with previous behavior is ensured."""
     mda = SobieskiMDAJacobi(acceleration="")
     assert mda.acceleration == AccelerationMethod.ALTERNATE_2_DELTA
@@ -114,7 +112,7 @@ def test_compatibility_setters_getters():
     assert mda.acceleration_method == AccelerationMethod.SECANT
 
 
-def test_mda_jacobi_parallel():
+def test_mda_jacobi_parallel() -> None:
     """Comparison of Jacobi on Sobieski problem: 1 and 5 processes."""
     mda_seq = SobieskiMDAJacobi()
     sorted_c = ["y_12", "y_14", "y_21", "y_23", "y_24", "y_31", "y_32", "y_34"]
@@ -130,7 +128,7 @@ def test_mda_jacobi_parallel():
         assert array(outdata_parallel[key] == value).all()
 
 
-def test_jacobi_sellar(sellar_disciplines):
+def test_jacobi_sellar(sellar_disciplines) -> None:
     """Test the execution of Jacobi on Sobieski."""
     mda = MDAJacobi(sellar_disciplines)
     mda.execute()
@@ -139,7 +137,7 @@ def test_jacobi_sellar(sellar_disciplines):
     assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
 
 
-def test_expected_workflow():
+def test_expected_workflow() -> None:
     """Test MDAJacobi workflow should be list of one tuple of disciplines (meaning
     parallel execution)"""
     disc1 = MDODiscipline()
@@ -162,7 +160,7 @@ def test_expected_workflow():
     assert str(mda.get_expected_workflow()) == expected
 
 
-def test_expected_workflow_with_adapter():
+def test_expected_workflow_with_adapter() -> None:
     discs = create_discipline([
         "SobieskiPropulsion",
         "SobieskiStructure",
@@ -174,7 +172,7 @@ def test_expected_workflow_with_adapter():
         discs,
         "DisciplinaryOpt",
         "y_4",
-        design_space=deepcopy(design_space).filter("x_3"),
+        design_space.filter("x_3", copy=True),
         name="PropulsionScenario",
     )
     adapter_propu = MDOScenarioAdapter(scn_propu, ["x_1", "x_2"], ["x_3"])
@@ -182,7 +180,7 @@ def test_expected_workflow_with_adapter():
         discs,
         "DisciplinaryOpt",
         "y_4",
-        design_space=deepcopy(design_space).filter("x_2"),
+        design_space.filter("x_2", copy=True),
         name="AeroScenario",
     )
     adapter_aero = MDOScenarioAdapter(scn_aero, ["x_1", "x_3"], ["x_2"])
@@ -190,7 +188,7 @@ def test_expected_workflow_with_adapter():
         discs,
         "DisciplinaryOpt",
         "y_4",
-        design_space=deepcopy(design_space).filter("x_1"),
+        design_space.filter("x_1", copy=True),
         name="StructureScenario",
     )
     adapter_struct = MDOScenarioAdapter(scn_struct, ["x_2", "x_3"], ["x_1"])
@@ -215,14 +213,14 @@ def test_expected_workflow_with_adapter():
     assert str(mda.get_expected_workflow()) == expected
 
 
-def test_self_coupled():
+def test_self_coupled() -> None:
     sc_disc = SelfCoupledDisc()
     mda = MDAJacobi([sc_disc], tolerance=1e-14, max_mda_iter=40)
     out = mda.execute()
     assert abs(out["y"] - 2.0 / 3.0) < 1e-6
 
 
-def test_log_convergence(sellar_disciplines):
+def test_log_convergence(sellar_disciplines) -> None:
     """Check that the boolean log_convergence is correctly set."""
     mda = MDAJacobi(sellar_disciplines)
     assert not mda._log_convergence
@@ -230,7 +228,7 @@ def test_log_convergence(sellar_disciplines):
     assert mda._log_convergence
 
 
-def test_parallel_doe(generate_parallel_doe_data):
+def test_parallel_doe(generate_parallel_doe_data) -> None:
     """Test the execution of Jacobi in parallel.
 
     Args:

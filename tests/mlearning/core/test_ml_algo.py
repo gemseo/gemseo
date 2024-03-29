@@ -50,7 +50,7 @@ def dataset() -> IODataset:
     return samples
 
 
-def test_constructor(dataset):
+def test_constructor(dataset) -> None:
     """Test construction."""
     with concretize_classes(MLAlgo):
         ml_algo = MLAlgo(dataset)
@@ -65,7 +65,7 @@ def test_constructor(dataset):
 @pytest.mark.parametrize(
     ("kwargs", "expected"), [({}, list(range(10))), ({"samples": [0, 1]}, [0, 1])]
 )
-def test_learning_samples_indices(dataset, kwargs, expected):
+def test_learning_samples_indices(dataset, kwargs, expected) -> None:
     algo = NewMLAlgo(dataset)
     assert algo.learning_samples_indices == list(range(10))
     algo.learn(**kwargs)
@@ -76,7 +76,7 @@ def test_learning_samples_indices(dataset, kwargs, expected):
     ("kwargs", "expected"),
     [({}, ["a", "b", "c"]), ({"samples": ["c", "a"]}, ["c", "a"])],
 )
-def test_learning_samples_indices_with_abc_indices(kwargs, expected):
+def test_learning_samples_indices_with_abc_indices(kwargs, expected) -> None:
     dataset = IODataset.from_array(arange(3).reshape(3, 1))
     names = ["a", "b", "c"]
     dataset.index = names
@@ -88,7 +88,7 @@ def test_learning_samples_indices_with_abc_indices(kwargs, expected):
 
 @pytest.mark.parametrize("samples", [range(10), [1, 2]])
 @pytest.mark.parametrize("trained", [False, True])
-def test_repr_str(dataset, samples, trained):
+def test_repr_str(dataset, samples, trained) -> None:
     """Test string representations."""
     ml_algo = NewMLAlgo(dataset)
     ml_algo._learning_samples_indices = samples
@@ -101,7 +101,7 @@ def test_repr_str(dataset, samples, trained):
     assert str(ml_algo) == expected
 
 
-def test_repr_html(dataset):
+def test_repr_html(dataset) -> None:
     """Check the HTML representation of an ML algorithm."""
     assert NewMLAlgo(dataset)._repr_html_() == REPR_HTML_WRAPPER.format(
         "NewMLAlgo()<br/><ul><li>based on the NewLibrary library</li></ul>"
@@ -111,7 +111,7 @@ def test_repr_html(dataset):
 @pytest.mark.parametrize(
     "transformer", ["Scaler", ("Scaler", {"offset": 2.0}), Scaler()]
 )
-def test_transformer(dataset, transformer):
+def test_transformer(dataset, transformer) -> None:
     """Check if transformers are correctly passed."""
     with concretize_classes(MLAlgo):
         ml_algo = MLAlgo(dataset, transformer={"parameters": transformer})
@@ -121,19 +121,22 @@ def test_transformer(dataset, transformer):
         assert ml_algo.transformer["parameters"].offset == 2.0
 
 
-def test_transformer_wrong_type(dataset):
+def test_transformer_wrong_type(dataset) -> None:
     """Check that using a wrong transformer type raises a ValueError."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Transformer type must be "
-            "either Transformer, Tuple[str, Mapping[str, Any]] or str."
+    with (
+        pytest.raises(
+            ValueError,
+            match=re.escape(
+                "Transformer type must be "
+                "either Transformer, Tuple[str, Mapping[str, Any]] or str."
+            ),
         ),
-    ), concretize_classes(MLAlgo):
+        concretize_classes(MLAlgo),
+    ):
         MLAlgo(dataset, transformer={"parameters": 1})
 
 
-def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory):
+def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory) -> None:
     """Test save and load."""
     # Let the factory find NewMLAlgo
     monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "new_ml_algo")
@@ -157,16 +160,19 @@ def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory):
     assert imported_model.sizes == dataset.variable_names_to_n_components
 
 
-def test_transformers_error(dataset):
+def test_transformers_error(dataset) -> None:
     """Check that MLAlgo cannot use a transformer for both group and variable."""
     dataset = IODataset()
     dataset.add_variable("x", array([[1.0]]), group_name="foo")
-    with pytest.raises(
-        ValueError,
-        match=(
-            "An MLAlgo cannot have both a transformer "
-            "for all variables of a group and a transformer "
-            "for one variable of this group."
+    with (
+        pytest.raises(
+            ValueError,
+            match=(
+                "An MLAlgo cannot have both a transformer "
+                "for all variables of a group and a transformer "
+                "for one variable of this group."
+            ),
         ),
-    ), concretize_classes(MLAlgo):
+        concretize_classes(MLAlgo),
+    ):
         MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})

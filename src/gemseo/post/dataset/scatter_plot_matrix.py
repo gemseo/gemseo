@@ -125,11 +125,12 @@ class ScatterMatrix(DatasetPlot):
         """  # noqa: D205, D212, D415
         classifier = self._specific_settings.classifier
         if classifier is not None and classifier not in self.dataset.variable_names:
-            raise ValueError(
+            msg = (
                 f"{classifier} cannot be used as a classifier "
                 f"because it is not a variable name; "
                 f"available ones are: {self.dataset.variable_names}."
             )
+            raise ValueError(msg)
 
         if self._specific_settings.classifier is not None:
             return (self._get_label(self._specific_settings.classifier)[1],)

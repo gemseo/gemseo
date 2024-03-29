@@ -43,7 +43,7 @@ DISC_DESCR_1 = [
 ]
 
 
-def test_matrix_free_chain_rule():
+def test_matrix_free_chain_rule() -> None:
     """Tests the chain rule with a matrix-free Jacobian."""
     disciplines = create_disciplines_from_desc(
         [
@@ -75,7 +75,7 @@ def test_matrix_free_chain_rule():
     )
 
 
-def test_traverse_add_diff_io_basic():
+def test_traverse_add_diff_io_basic() -> None:
     """Test the differentiated inputs and outputs graph calculations."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1)
     graph = DependencyGraph(disciplines).graph
@@ -111,7 +111,7 @@ def test_traverse_add_diff_io_basic():
     assert disciplines[6]._differentiated_outputs == []
 
 
-def test_chain_jac_basic():
+def test_chain_jac_basic() -> None:
     """Test the jacobian from the MDOChain on a basic case."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1)
     chain = MDOChain(disciplines)
@@ -121,7 +121,7 @@ def test_chain_jac_basic():
 @pytest.mark.parametrize("nb_of_disc", [1, 5, 10, 20])
 @pytest.mark.parametrize("nb_of_total_disc_io", [3, 10, 20, 100])
 @pytest.mark.parametrize("nb_of_disc_ios", [1, 2, 10])
-def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios):
+def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios) -> None:
     if nb_of_disc_ios > nb_of_total_disc_io:
         return
 
@@ -145,7 +145,7 @@ def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios):
 @pytest.mark.parametrize("inputs_size", [1, 2])
 @pytest.mark.parametrize("outputs_size", [1, 3])
 @pytest.mark.parametrize("unique_disc_per_output", [True, False])
-def test_chain_jac_io_sizes(inputs_size, outputs_size, unique_disc_per_output):
+def test_chain_jac_io_sizes(inputs_size, outputs_size, unique_disc_per_output) -> None:
     disciplines = create_disciplines_from_sizes(
         5,
         nb_of_total_disc_io=20,
@@ -170,7 +170,7 @@ def test_chain_jac_random_with_couplings(
     nb_of_disc,
     nb_of_total_disc_io,
     no_self_coupled,
-):
+) -> None:
     disciplines = create_disciplines_from_sizes(
         nb_of_disc,
         nb_of_total_disc_io=nb_of_total_disc_io,

@@ -49,7 +49,7 @@ def io_dataset():
     return dataset
 
 
-def test_predict(io_dataset):
+def test_predict(io_dataset) -> None:
     """Test prediction."""
     ml_algo = GaussianProcessRegressor(io_dataset)
     ml_algo.learn()
@@ -93,9 +93,9 @@ def dataset_for_jacobian() -> IODataset:
 @pytest.mark.parametrize(
     "groups", [None, ["inputs"], ["outputs"], ["inputs", "outputs"]]
 )
-def test_predict_jacobian(dataset_for_jacobian, groups):
+def test_predict_jacobian(dataset_for_jacobian, groups) -> None:
     """Test predict Jacobian."""
-    transformer = None if not groups else {group: "MinMaxScaler" for group in groups}
+    transformer = None if not groups else dict.fromkeys(groups, "MinMaxScaler")
     ml_algo = LinearRegressor(dataset_for_jacobian, transformer=transformer)
     ml_algo.learn()
     jac = ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
@@ -104,7 +104,7 @@ def test_predict_jacobian(dataset_for_jacobian, groups):
 
 
 @pytest.mark.parametrize("variable", ["x_1", "y_1"])
-def test_predict_jacobian_failure(dataset_for_jacobian, variable):
+def test_predict_jacobian_failure(dataset_for_jacobian, variable) -> None:
     """Test predict Jacobian when the transformer uses a variable name."""
     expected = re.escape(
         "The Jacobian of regression models cannot be computed "

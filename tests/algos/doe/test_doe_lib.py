@@ -26,12 +26,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy.testing import assert_equal
 
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.doe.lib_scipy import SciPyDOE
@@ -55,17 +57,17 @@ def doe():
     return FACTORY.create("PyDOE")
 
 
-def test_fail_sample(doe):
+def test_fail_sample(doe) -> None:
     problem = Power2(exception_error=True)
     doe.execute(problem, "lhs", n_samples=4)
 
 
-def test_evaluate_samples(doe):
+def test_evaluate_samples(doe) -> None:
     problem = Power2()
     doe.execute(problem, "fullfact", n_samples=2, wait_time_between_samples=1)
 
 
-def test_evaluate_samples_multiproc(doe):
+def test_evaluate_samples_multiproc(doe) -> None:
     problem = Power2()
     n_samples = 8
     doe.execute(
@@ -104,7 +106,7 @@ def compute_obj_and_obs(x: float = 0.0) -> tuple[float, float]:
     return obj, obs
 
 
-def test_evaluate_samples_multiproc_with_observables(doe):
+def test_evaluate_samples_multiproc_with_observables(doe) -> None:
     """Evaluate a DoE in // with multiprocessing and with observables."""
     disc = create_discipline("AutoPyDiscipline", py_func=compute_obj_and_obs)
     disc.cache = None
@@ -113,9 +115,9 @@ def test_evaluate_samples_multiproc_with_observables(doe):
 
     scenario = create_scenario(
         [disc],
-        design_space=design_space,
-        objective_name="obj",
-        formulation="DisciplinaryOpt",
+        "DisciplinaryOpt",
+        "obj",
+        design_space,
         scenario_type="DOE",
     )
 
@@ -153,7 +155,7 @@ def variables_space():
     return design_space
 
 
-def test_compute_doe_transformed(variables_space):
+def test_compute_doe_transformed(variables_space) -> None:
     """Check the computation of a transformed DOE in a variables space."""
     doe = PyDOE()
     doe.algo_name = "fullfact"
@@ -161,7 +163,7 @@ def test_compute_doe_transformed(variables_space):
     assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
 
 
-def test_compute_doe_nontransformed(variables_space):
+def test_compute_doe_nontransformed(variables_space) -> None:
     """Check the computation of a non-transformed DOE in a variables space."""
     doe = PyDOE()
     doe.algo_name = "fullfact"
@@ -189,7 +191,7 @@ def doe_database(request) -> Database:
 
 @pytest.mark.parametrize("doe_database", [True, False], indirect=["doe_database"])
 @pytest.mark.parametrize("var", [-2.0, 0.0, 1.0])
-def test_transformation(doe_database, var):
+def test_transformation(doe_database, var) -> None:
     """Check that the transformation of variables works correctly.
 
     For the deterministic variables, the transformation is affine, based on the bounds
@@ -201,7 +203,7 @@ def test_transformation(doe_database, var):
     assert doe_database[array([var])]["func"] == array([var])
 
 
-def test_pre_run_debug(doe, caplog):
+def test_pre_run_debug(doe, caplog) -> None:
     """Check a DEBUG message logged just after sampling the input unit hypercube."""
     caplog.set_level("DEBUG")
     problem = Power2()
@@ -221,7 +223,7 @@ def test_pre_run_debug(doe, caplog):
 
 
 @pytest.mark.parametrize("algo_name", ["OT_MONTE_CARLO", "lhs"])
-def test_seed(algo_name):
+def test_seed(algo_name) -> None:
     """Check the use of the seed at the DOELibrary level."""
     problem = Power2()
     library = PyDOE() if algo_name == "lhs" else OpenTURNS()
@@ -281,14 +283,14 @@ def test_seed(algo_name):
         ("float", "float"),
     ],
 )
-def test_variable_types(doe, var_type1, var_type2):
+def test_variable_types(doe, var_type1, var_type2) -> None:
     """Verify that input data provided to a discipline match the design space types."""
     design_variable_type_to_python_type = (
         DesignSpace._DesignSpace__VARIABLE_TYPES_TO_DTYPES
     )
 
     class Disc(MDODiscipline):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__("foo")
             self.input_grammar.update_from_names(("x", "y"))
             self.output_grammar.update_from_names(("z",))
@@ -308,9 +310,9 @@ def test_variable_types(doe, var_type1, var_type2):
 
     scenario = create_scenario(
         [Disc()],
-        design_space=design_space,
-        objective_name="z",
-        formulation="DisciplinaryOpt",
+        "DisciplinaryOpt",
+        "z",
+        design_space,
         scenario_type="DOE",
     )
 
@@ -318,7 +320,7 @@ def test_variable_types(doe, var_type1, var_type2):
 
 
 @pytest.mark.parametrize(("l_b", "u_b"), [(None, None), (1, None), (None, 1)])
-def test_uunormalized_components(l_b, u_b):
+def test_uunormalized_components(l_b, u_b) -> None:
     """Check that an error is raised when the design space is unbounded."""
     design_space = DesignSpace()
     design_space.add_variable("x", 2, l_b=1, u_b=3)
@@ -338,7 +340,7 @@ def test_uunormalized_components(l_b, u_b):
         library.execute(problem, n_samples=3)
 
 
-def test_uunormalized_components_with_parameter_space():
+def test_uunormalized_components_with_parameter_space() -> None:
     """Check that an error is not raised when the design space is a parameter space."""
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable("x", "OTNormalDistribution")
@@ -353,3 +355,59 @@ def test_uunormalized_components_with_parameter_space():
     library.algo_name = "MC"
     library.compute_doe(parameter_space, 3)
     library.execute(problem, n_samples=3)
+
+
+def f(x):
+    return 2 * x
+
+
+class Counter:
+    def __init__(self):
+        self.total = 0
+
+    def callback(self, index, data):
+        self.total += data[0]["f"]
+
+
+@pytest.fixture()
+def problem():
+    """A problem."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(f, "f")
+    return problem
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+def test_callback(n_processes, problem):
+    """Check the use of callbacks."""
+
+    counter = Counter()
+    CustomDOE().execute(
+        problem,
+        samples=array([[1.0], [2.0]]),
+        n_processes=n_processes,
+        callbacks=(counter.callback,),
+    )
+    assert counter.total == 6
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+@pytest.mark.parametrize("use_database", [False, True])
+def test_use_database(n_processes, problem, use_database):
+    """Check the option use_database."""
+    CustomDOE().execute(
+        problem,
+        samples=array([[1.0], [2.0]]),
+        n_processes=n_processes,
+        use_database=use_database,
+    )
+    assert bool(problem.database) is use_database
+
+
+def test_compute_doe():
+    """Check DOELibrary.compute_doe from the dimension of the variables space."""
+    samples = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
+    assert_equal(CustomDOE().compute_doe(3, samples=samples), samples)

@@ -244,10 +244,11 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
         # otherwise this means there is a cross dependency between
         # scenarios
         if len(self.scenarios) != n_study_scenarios:
-            raise ValueError(
+            msg = (
                 "Scenarios dependencies cannot be resolved, "
                 "check for cycling dependencies between scenarios."
             )
+            raise ValueError(msg)
 
         self.disciplines = {}
         # Preserves the order of disciplines in the original Excel file

@@ -77,7 +77,7 @@ class TestAerostructure(unittest.TestCase):
             "thick_panels": np.array([1.0]),
         }
 
-    def test_run_aero(self):
+    def test_run_aero(self) -> None:
         """Evaluate discipline Aero."""
         aero = Aerodynamics()
         aero.execute()
@@ -86,7 +86,7 @@ class TestAerostructure(unittest.TestCase):
         self.assertAlmostEqual(forces[0], 10.0, 8)
         self.assertAlmostEqual(lift[0], -0.00026667, 8)
 
-    def test_run_struct(self):
+    def test_run_struct(self) -> None:
         """Evaluate discipline Struct."""
         struct = Structure()
         struct.execute()
@@ -99,7 +99,7 @@ class TestAerostructure(unittest.TestCase):
         self.assertAlmostEqual(reserve_fact[0], 46.1, 10)
         self.assertAlmostEqual(displ[0], 3.0, 10)
 
-    def test_run_mission(self):
+    def test_run_mission(self) -> None:
         """Evaluate objective function."""
         mission = Mission()
         design_space = AerostructureDesignSpace()
@@ -111,19 +111,19 @@ class TestAerostructure(unittest.TestCase):
         obj = mission.get_outputs_by_name("range")
         self.assertAlmostEqual(obj, 4915369.8826625682, 10)
 
-    def test_jac_mission(self):
+    def test_jac_mission(self) -> None:
         """Test linearization of objective and constraints."""
         mission = Mission()
         indata = TestAerostructure.get_input_data_linearization()
         assert mission.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
-    def test_jac_aerodynamics(self):
+    def test_jac_aerodynamics(self) -> None:
         """Test linearization of discipline Aerodynamics."""
         aero = Aerodynamics()
         indata = TestAerostructure.get_input_data_linearization()
         assert aero.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
-    def test_jac_structure(self):
+    def test_jac_structure(self) -> None:
         """Test linearization of discipline Structure."""
         struct = Structure()
         indata = TestAerostructure.get_input_data_linearization()
@@ -131,7 +131,7 @@ class TestAerostructure(unittest.TestCase):
         assert struct.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
         assert struct.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
-    def test_mda_gauss_seidel_jac(self):
+    def test_mda_gauss_seidel_jac(self) -> None:
         """Test linearization of GS MDA."""
         aerodynamics = Aerodynamics()
         structure = Structure()
@@ -151,7 +151,7 @@ class TestAerostructure(unittest.TestCase):
             indata, threshold=1e-4, derr_approx="complex_step", step=1e-30
         )
 
-    def test_mda_jacobi_jac(self):
+    def test_mda_jacobi_jac(self) -> None:
         """Test linearization of Jacobi MDA."""
         aerodynamics = Aerodynamics()
         structure = Structure()
@@ -163,7 +163,7 @@ class TestAerostructure(unittest.TestCase):
         mda.max_iter = 40
         assert mda.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
-    def test_residual_form_jacs(self):
+    def test_residual_form_jacs(self) -> None:
         """"""
         aerodynamics = Aerodynamics()
         structure = Structure()
@@ -173,7 +173,7 @@ class TestAerostructure(unittest.TestCase):
         for disc in disciplines:
             assert disc.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
-    def test_get_inputs(self):
+    def test_get_inputs(self) -> None:
         get_inputs()
         get_inputs("drag", "forces")
         get_inputs("bad_inputs")
@@ -200,9 +200,9 @@ class TestAerostructureScenarios(unittest.TestCase):
         design_space = AerostructureDesignSpace()
         return MDOScenario(
             disciplines,
-            formulation=formulation,
-            objective_name="range",
-            design_space=design_space,
+            formulation,
+            "range",
+            design_space,
         )
 
     @staticmethod
@@ -220,8 +220,8 @@ class TestAerostructureScenarios(unittest.TestCase):
         run_inputs = {"max_iter": 10, "algo": algo}
 
         # add constraints
-        scenario.add_constraint("c_lift", "eq")
-        scenario.add_constraint("c_rf", "ineq")
+        scenario.add_constraint("c_lift")
+        scenario.add_constraint("c_rf", constraint_type="ineq")
         # run the optimizer
         scenario.execute(run_inputs)
         obj_opt = scenario.optimization_result.f_opt
@@ -236,7 +236,7 @@ class TestAerostructureScenarios(unittest.TestCase):
 
         return obj_opt, x_opt
 
-    def test_exec_mdf_slsqp_usergrad(self):
+    def test_exec_mdf_slsqp_usergrad(self) -> None:
         """Scenario with MDF formulation, solver SLSQP and analytical gradients."""
         f_ref = 3733.1194596682094
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
@@ -246,7 +246,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         self.assertAlmostEqual(obj_opt, f_ref, 1)
         self.assertAlmostEqual(rel_err, 0.0, 4)
 
-    def test_exec_mdf_slsqp_cplx_grad(self):
+    def test_exec_mdf_slsqp_cplx_grad(self) -> None:
         """Scenario with MDF formulation, solver SLSQP and complex step."""
         f_ref = 3733.1202599332164
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
@@ -256,7 +256,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         self.assertAlmostEqual(obj_opt, f_ref, 1)
         self.assertAlmostEqual(rel_err, 0.0, 4)
 
-    def test_exec_idf_slsqp_cplxstep(self):
+    def test_exec_idf_slsqp_cplxstep(self) -> None:
         """Scenario with IDF formulation, solver SLSQP and complex step."""
         f_ref = 3733.1202599332164
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
@@ -268,7 +268,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         self.assertAlmostEqual(obj_opt, f_ref, 3)
         self.assertAlmostEqual(rel_err, 0.0, 4)
 
-    def test_exec_idf_slsqp_usergrad(self):
+    def test_exec_idf_slsqp_usergrad(self) -> None:
         """Scenario with IDF formulation, solver SLSQP and analytical gradients."""
         f_ref = 3733.1201817980523
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(

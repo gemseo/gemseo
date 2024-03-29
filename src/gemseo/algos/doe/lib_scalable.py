@@ -21,17 +21,23 @@
 from __future__ import annotations
 
 from collections.abc import Container
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Optional
 from typing import Union
 
 from numpy import hstack
 from numpy import linspace
-from numpy import ndarray
 from numpy import newaxis
 
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_library import DOELibrary
+
+if TYPE_CHECKING:
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
+    from gemseo.typing import RealArray
 
 OptionType = Optional[Union[str, int, float, bool, Container[str]]]
 
@@ -62,6 +68,7 @@ class DiagonalDOE(DOELibrary):
         n_samples: int = 2,
         reverse: Container[str] | None = None,
         max_time: float = 0,
+        callbacks: Iterable[CallbackType] = (),
         **kwargs: OptionType,
     ) -> dict[str, OptionType]:  # pylint: disable=W0221
         """Get the options.
@@ -79,6 +86,9 @@ class DiagonalDOE(DOELibrary):
                 upper bound.
             max_time: The maximum runtime in seconds.
                 If 0, no maximum runtime is set.
+            callbacks: The functions to be evaluated
+                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                to be called as ``callback(index, (output, jacobian))``.
             **kwargs: Additional arguments.
 
         Returns:
@@ -91,42 +101,38 @@ class DiagonalDOE(DOELibrary):
             n_samples=n_samples,
             reverse=reverse,
             max_time=max_time,
+            callbacks=callbacks,
             **kwargs,
         )
 
-    def _generate_samples(self, **options: OptionType) -> ndarray:
-        """Generate the DOE samples.
-
-        Args:
-            **options: The options for the algorithm,
-                see the associated JSON file.
-
-        Returns:
-            The samples.
-
+    def _generate_samples(
+        self, design_space: DesignSpace, **options: OptionType
+    ) -> RealArray:
+        """
         Raises:
             ValueError: If the number of samples is not set, or is lower than 2.
-        """
+        """  # noqa: D205, D212, D415
         n_samples = options.get(self.N_SAMPLES)
         if n_samples is None or n_samples < 2:
-            raise ValueError(
+            msg = (
                 "The number of samples must set to a value greater than or equal to 2."
             )
+            raise ValueError(msg)
 
         reverse = options.get("reverse", [])
         if reverse is None:
             reverse = []
 
-        sizes = options[self._VARIABLE_SIZES]
+        sizes = design_space.variable_sizes
         name_by_index = {}
         start = 0
-        for name in options[self._VARIABLE_NAMES]:
+        for name in design_space.variable_names:
             for index in range(start, start + sizes[name]):
                 name_by_index[index] = name
             start += sizes[name]
 
         samples = []
-        for index in range(options[self.DIMENSION]):
+        for index in range(design_space.dimension):
             if str(index) in reverse or name_by_index[index] in reverse:
                 start = 1.0
                 end = 0.0

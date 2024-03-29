@@ -81,22 +81,22 @@ class MLUnsupervisedAlgo(MLAlgo):
         fit_transformers: bool,
     ) -> None:
         if set(self.var_names) == set(self.learning_set.variable_names):
-            data = []
-            for group in self.learning_set.group_names:
-                sub_data = self.learning_set.get_view(group_names=group).to_numpy()
-                if fit_transformers and group in self.transformer:
-                    sub_data = self.transformer[group].fit_transform(sub_data)
-                data.append(sub_data)
-            data = hstack(data)
+            names = self.learning_set.group_names
+            arg_name = "group_names"
         else:
-            data = []
-            for name in self.var_names:
-                sub_data = self.learning_set.get_view(variable_names=name).to_numpy()
-                if fit_transformers and name in self.transformer:
-                    sub_data = self.transformer[name].fit_transform(sub_data)
-                data.append(sub_data)
-            data = hstack(data)
+            names = self.var_names
+            arg_name = "variable_names"
 
+        data = []
+        method_name = "fit_transform" if fit_transformers else "transform"
+        for name in names:
+            sub_data = self.learning_set.get_view(**{arg_name: name}).to_numpy()
+            if name in self.transformer:
+                sub_data = getattr(self.transformer[name], method_name)(sub_data)
+
+            data.append(sub_data)
+
+        data = hstack(data)
         if indices is not None:
             data = data[indices]
 

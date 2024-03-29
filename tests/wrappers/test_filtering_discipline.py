@@ -34,7 +34,7 @@ def discipline():
     return disc
 
 
-def test_standard(discipline):
+def test_standard(discipline) -> None:
     fdisc = FilteringDiscipline(discipline)
     assert set(fdisc.get_input_data_names()) == set(discipline.get_input_data_names())
     assert set(fdisc.get_output_data_names()) == set(discipline.get_output_data_names())
@@ -48,7 +48,7 @@ def test_standard(discipline):
             assert input_name in fdisc.jac[output_name]
 
 
-def test_keep_in_keep_out(discipline):
+def test_keep_in_keep_out(discipline) -> None:
     fdisc = FilteringDiscipline(discipline, input_names=["x1"], output_names=["y1"])
     assert set(fdisc.get_input_data_names()) == {"x1"}
     assert set(fdisc.get_output_data_names()) == {"y1"}
@@ -61,7 +61,7 @@ def test_keep_in_keep_out(discipline):
         assert input_name not in fdisc.jac["y1"]
 
 
-def test_remove_in_keep_out(discipline):
+def test_remove_in_keep_out(discipline) -> None:
     fdisc = FilteringDiscipline(
         discipline, input_names=["x1"], output_names=["y1"], keep_in=False
     )
@@ -75,7 +75,7 @@ def test_remove_in_keep_out(discipline):
     assert "x1" not in fdisc.jac["y1"]
 
 
-def test_keep_in_remove_out(discipline):
+def test_keep_in_remove_out(discipline) -> None:
     fdisc = FilteringDiscipline(
         discipline, input_names=["x1"], output_names=["y1"], keep_out=False
     )

@@ -9,4 +9,7 @@
 Quality
 ~~~~~~~
 
-How to assess the quality of a machine learning model.
+It is important to
+evaluate the quality of a machine learning model
+before using it.
+|g| proposes numerical measures and visualizations for this purpose.

@@ -31,6 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
+    from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
 
@@ -169,3 +170,39 @@ class MDAGaussSeidel(BaseMDASolver):
 
             if self._stop_criterion_is_reached:
                 break
+        for discipline in self.disciplines:  # Update all outputs without relax
+            self.local_data.update(discipline.get_output_data())
+
+    def _get_disciplines_couplings(
+        self, graph: DependencyGraph
+    ) -> list[tuple[str, str, list[str]]]:
+        couplings_results = []
+        disc_already_seen = set()
+
+        disciplines = []
+        for disc in self.disciplines:
+            disciplines.extend(disc.get_disciplines_in_dataflow_chain())
+
+        for disc in disciplines:
+            couplings_with_mda_to_be_removed = set()
+            predecessors = (
+                set(graph.graph.predecessors(disc)) - {self} & disc_already_seen
+            )
+            for predecessor in sorted(predecessors, key=lambda p: p.name):
+                current_couplings = graph.graph.get_edge_data(predecessor, disc)["io"]
+                couplings_results.append((predecessor, disc, sorted(current_couplings)))
+                couplings_with_mda_to_be_removed.update(current_couplings)
+
+            in_data = graph.graph.get_edge_data(self, disc)
+            if in_data:
+                couplings_with_mda = in_data["io"] - couplings_with_mda_to_be_removed
+                if couplings_with_mda:
+                    couplings_results.append((self, disc, sorted(couplings_with_mda)))
+
+            out_data = graph.graph.get_edge_data(disc, self)
+            if out_data:
+                couplings_results.append((disc, self, sorted(out_data["io"])))
+
+            disc_already_seen.add(disc)
+
+        return couplings_results

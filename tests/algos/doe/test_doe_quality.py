@@ -20,6 +20,7 @@ from operator import ge
 from operator import gt
 from operator import le
 from operator import lt
+from operator import neg
 
 import pytest
 from numpy import array
@@ -50,7 +51,7 @@ def other_samples() -> ndarray:
     return array([[0.0], [0.1], [1.0]])
 
 
-def test_doe_measures_str(doe_measures):
+def test_doe_measures_str(doe_measures) -> None:
     """Check DOEMeasures string representations."""
     assert (
         repr(doe_measures)
@@ -59,7 +60,7 @@ def test_doe_measures_str(doe_measures):
     )
 
 
-def test_doe_quality_str(samples, doe_measures):
+def test_doe_quality_str(samples, doe_measures) -> None:
     """Check DOEQuality string representations."""
     quality = DOEQuality(samples)
     # Mock the measures with custom values for test purposes.
@@ -71,7 +72,7 @@ def test_doe_quality_str(samples, doe_measures):
     )
 
 
-def test_doe_measures_fields(doe_measures):
+def test_doe_measures_fields(doe_measures) -> None:
     """Check the fields of DOEMeasures."""
     assert doe_measures.discrepancy == 1.0
     assert doe_measures.mindist == 2.0
@@ -86,7 +87,7 @@ def test_doe_measures_fields(doe_measures):
 @pytest.mark.parametrize("discr_2", [0.0, 1.0])
 def test_measures_comparison(
     phip_1, phip_2, mindist_1, mindist_2, discr_1, discr_2, samples
-):
+) -> None:
     """Check the logical operators of DOEQuality."""
     quality_1 = DOEQuality(samples)
     quality_2 = DOEQuality(samples)
@@ -97,7 +98,7 @@ def test_measures_comparison(
         (phip_1, mindist_1, discr_1) == (phip_2, mindist_2, discr_2)
     )
 
-    transformations = [lambda x: x, lambda x: -x, lambda x: x]
+    transformations = [lambda x: x, neg, lambda x: x]
     for operator, other_operator in {lt: gt, le: ge, gt: lt, ge: le}.items():
         if (
             sum(
@@ -112,7 +113,7 @@ def test_measures_comparison(
             assert other_operator(quality_1, quality_2)
 
 
-def test_doe_quality_measures(samples, other_samples):
+def test_doe_quality_measures(samples, other_samples) -> None:
     """Check the values of the measures associated with DOEQuality."""
     quality_1 = DOEQuality(samples)
     quality_2 = DOEQuality(other_samples)
@@ -122,32 +123,32 @@ def test_doe_quality_measures(samples, other_samples):
     assert quality_1.measures.discrepancy < quality_2.measures.discrepancy
 
 
-def test_compute_phip_criterion_default(samples):
+def test_compute_phip_criterion_default(samples) -> None:
     """Check compute_phip_criterion with default power."""
     assert compute_phip_criterion(samples) == pytest.approx(2.5, abs=0.1)
 
 
-def test_compute_phip_criterion_custom(samples):
+def test_compute_phip_criterion_custom(samples) -> None:
     """Check compute_phip_criterion with custom power."""
     assert compute_phip_criterion(samples, power=5) == pytest.approx(2.6, abs=0.1)
 
 
-def test_compute_mindist_criterion(samples):
+def test_compute_mindist_criterion(samples) -> None:
     """Check compute_mindist_criterion."""
     assert compute_mindist_criterion(samples) == 0.4
 
 
-def test_compute_discrepancy_default(samples):
+def test_compute_discrepancy_default(samples) -> None:
     """Check compute_discrepancy."""
     assert compute_discrepancy(samples) == pytest.approx(0.03, abs=0.01)
 
 
-def test_compute_discrepancy_method(samples):
+def test_compute_discrepancy_method(samples) -> None:
     """Check compute_discrepancy with custom method."""
     assert compute_discrepancy(samples, type_name="MD") == pytest.approx(0.05, abs=0.01)
 
 
-def test_compute_discrepancy_option(samples):
+def test_compute_discrepancy_option(samples) -> None:
     """Check compute_discrepancy with custom option."""
     assert compute_discrepancy(
         samples, type_name="MD", iterative=True

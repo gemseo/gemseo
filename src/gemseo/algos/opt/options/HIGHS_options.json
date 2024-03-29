@@ -25,6 +25,17 @@
     "ipm_optimality_tolerance": {
       "type": "number",
       "minimum": 1e-12
+    },
+    "scaling_threshold": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",

@@ -54,7 +54,7 @@ def input_data():
     }
 
 
-def test_run_1():
+def test_run_1() -> None:
     """Evaluate discipline 1."""
     discipline1 = Sellar1()
     discipline1.execute()
@@ -62,7 +62,7 @@ def test_run_1():
     assert y_1 == pytest.approx(0.89442719, 1.0e-8)
 
 
-def test_serialize(tmp_wd):
+def test_serialize(tmp_wd) -> None:
     """Verify the serialization."""
     fname = "Sellar1.pkl"
     for disc in [Sellar1(), Sellar2(), SellarSystem()]:
@@ -70,7 +70,7 @@ def test_serialize(tmp_wd):
         assert os.path.exists(fname)
 
 
-def test_jac_sellar_system(input_data, sellar_disciplines):
+def test_jac_sellar_system(input_data, sellar_disciplines) -> None:
     """Test linearization of objective and constraints."""
     system = sellar_disciplines.sellar_system
     input_data[Y_1] = 1.0
@@ -78,7 +78,7 @@ def test_jac_sellar_system(input_data, sellar_disciplines):
     assert system.check_jacobian(input_data, derr_approx="complex_step", step=1e-30)
 
 
-def test_jac_sellar1(input_data, sellar_disciplines):
+def test_jac_sellar1(input_data, sellar_disciplines) -> None:
     """Test linearization of discipline 1."""
     discipline1 = sellar_disciplines.sellar1
     assert discipline1.check_jacobian(
@@ -86,7 +86,7 @@ def test_jac_sellar1(input_data, sellar_disciplines):
     )
 
 
-def test_jac_sellar2(input_data, sellar_disciplines):
+def test_jac_sellar2(input_data, sellar_disciplines) -> None:
     """Test linearization of discipline 2."""
     discipline2 = sellar_disciplines.sellar2
     assert discipline2.check_jacobian(
@@ -104,7 +104,7 @@ def test_jac_sellar2(input_data, sellar_disciplines):
     )
 
 
-def test_mda_gauss_seidel_jac(input_data, sellar_disciplines):
+def test_mda_gauss_seidel_jac(input_data, sellar_disciplines) -> None:
     """Test linearization of GS MDA."""
     discipline1 = sellar_disciplines.sellar1
     discipline2 = sellar_disciplines.sellar2
@@ -130,7 +130,7 @@ def test_mda_gauss_seidel_jac(input_data, sellar_disciplines):
     )
 
 
-def test_mda_jacobi_jac(input_data, sellar_disciplines):
+def test_mda_jacobi_jac(input_data, sellar_disciplines) -> None:
     """Test linearization of Jacobi MDA."""
     discipline1 = sellar_disciplines.sellar1
     discipline2 = sellar_disciplines.sellar2
@@ -161,17 +161,17 @@ F_REF = 3.18339
         ("IDF", "SLSQP", "user"),
     ],
 )
-def test_exec(formulation, algo, lin_method, sellar_disciplines):
+def test_exec(formulation, algo, lin_method, sellar_disciplines) -> None:
     """Scenario with MDF formulation, solver SLSQP and analytical gradients."""
     scenario = MDOScenario(
         sellar_disciplines,
-        formulation=formulation,
-        objective_name="obj",
-        design_space=SellarDesignSpace(),
+        formulation,
+        "obj",
+        SellarDesignSpace(),
     )
     scenario.set_differentiation_method(lin_method)
-    scenario.add_constraint(C_1, "ineq")
-    scenario.add_constraint(C_2, "ineq")
+    scenario.add_constraint(C_1, constraint_type="ineq")
+    scenario.add_constraint(C_2, constraint_type="ineq")
     scenario.execute({"max_iter": 10, "algo": algo})
 
     x_opt = scenario.design_space.get_current_value(as_dict=True)

@@ -25,11 +25,11 @@ from numpy.random import default_rng
 from scipy.sparse import rand as sp_rand
 from strenum import LowercaseStrEnum
 
-from gemseo import SEED
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -89,9 +89,11 @@ class LinearDiscipline(MDODiscipline):
             ValueError: if ``input_names`` or ``output_names`` are empty.
         """  # noqa: D205, D212, D415
         if not input_names:
-            raise ValueError("input_names must not be empty.")
+            msg = "input_names must not be empty."
+            raise ValueError(msg)
         if not output_names:
-            raise ValueError("output_names must not be empty.")
+            msg = "output_names must not be empty."
+            raise ValueError(msg)
         super().__init__(name, grammar_type=grammar_type)
         self.input_names = input_names
         self.output_names = output_names
@@ -122,8 +124,8 @@ class LinearDiscipline(MDODiscipline):
                 / self.size_in
             )
 
-        self.__sizes_d = {k: self.inputs_size for k in self.input_names}
-        self.__sizes_d.update({k: self.outputs_size for k in self.output_names})
+        self.__sizes_d = dict.fromkeys(self.input_names, self.inputs_size)
+        self.__sizes_d.update(dict.fromkeys(self.output_names, self.outputs_size))
 
         self.default_inputs = {k: 0.5 * ones(inputs_size) for k in input_names}
 

@@ -30,7 +30,7 @@ from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
     "matrix_format",
     LinearDiscipline.MatrixFormat,
 )
-def test_jacobian_format(matrix_format: LinearDiscipline.MatrixFormat):
+def test_jacobian_format(matrix_format: LinearDiscipline.MatrixFormat) -> None:
     """Test that the Jacobian matrix has the specified size."""
     discipline = LinearDiscipline(
         name="A",

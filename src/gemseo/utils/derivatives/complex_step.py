@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 from numpy import bool_
@@ -41,8 +40,6 @@ from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-    from gemseo.algos.design_space import DesignSpace
 
 
 class ComplexStep(GradientApproximator):
@@ -66,30 +63,6 @@ class ComplexStep(GradientApproximator):
 
     _DEFAULT_STEP: ClassVar[complex] = 1e-20
 
-    # TODO: API: remove normalize argument which is not used.
-    def __init__(  # noqa:D107
-        self,
-        f_pointer: Callable[[ndarray], ndarray],
-        step: complex | None = None,
-        design_space: DesignSpace | None = None,
-        normalize: bool = True,
-        parallel: bool = False,
-        **parallel_args: int | bool | float,
-    ) -> None:
-        """
-        Args:
-            normalize: This argument is not used.
-        """  # noqa:D205 D212 D415
-        if design_space is not None:
-            design_space.to_complex()
-        super().__init__(
-            f_pointer,
-            step=step,
-            parallel=parallel,
-            design_space=design_space,
-            **parallel_args,
-        )
-
     @GradientApproximator.step.setter
     def step(self, value) -> None:  # noqa:D102
         if value.imag != 0:
@@ -105,10 +78,11 @@ class ComplexStep(GradientApproximator):
         **kwargs: Any,
     ) -> ndarray:
         if norm(x_vect.imag) != 0.0:
-            raise ValueError(
+            msg = (
                 "Impossible to check the gradient at a complex "
                 "point using the complex step method."
             )
+            raise ValueError(msg)
         return super().f_gradient(x_vect, step=step, x_indices=x_indices, **kwargs)
 
     def _compute_parallel_grad(

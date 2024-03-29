@@ -50,7 +50,7 @@ def study_analysis() -> CouplingStudyAnalysis:
     return CouplingStudyAnalysis(INPUT_DIR / "disciplines_spec_without_scenario.xlsx")
 
 
-def test_generate_n2(tmp_wd):
+def test_generate_n2(tmp_wd) -> None:
     analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
     fpath = Path("xls_n2.pdf")
     analysis.generate_n2(fpath, fig_size=(5, 5))
@@ -58,12 +58,12 @@ def test_generate_n2(tmp_wd):
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
-def test_xdsm_mdf(tmp_wd):
+def test_xdsm_mdf(tmp_wd) -> None:
     analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
     analysis.generate_xdsm(".", save_pdf=True)
 
 
-def test_discipline_self_coupled_two_disciplines(tmp_wd):
+def test_discipline_self_coupled_two_disciplines(tmp_wd) -> None:
     """Test that a GEMSEO study can be performed with a self-coupled discipline.
 
     In this test, two disciplines with one self-coupled discipline are present in the
@@ -76,7 +76,7 @@ def test_discipline_self_coupled_two_disciplines(tmp_wd):
     assert fpath.exists()
 
 
-def test_discipline_self_coupled_one_disc(tmp_wd):
+def test_discipline_self_coupled_one_disc(tmp_wd) -> None:
     """Test that a GEMSEO study can be done with a self-coupled discipline.
 
     In this test, only one self-coupled discipline is present in the MDO process.
@@ -90,13 +90,13 @@ def test_discipline_self_coupled_one_disc(tmp_wd):
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
-def test_xdsm_mdf_special_characters(tmp_wd):
+def test_xdsm_mdf_special_characters(tmp_wd) -> None:
     analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec_special_characters.xlsx")
     analysis.generate_xdsm(".", save_pdf=True)
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
-def test_xdsm_idf(tmp_wd):
+def test_xdsm_idf(tmp_wd) -> None:
     analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec2.xlsx")
     dnames = ["Discipline1", "Discipline2"]
     assert list(analysis.study.disciplines) == dnames
@@ -106,7 +106,7 @@ def test_xdsm_idf(tmp_wd):
     analysis.generate_xdsm("", save_pdf=True)
 
 
-def test_xdsm_bilevel(tmp_wd):
+def test_xdsm_bilevel(tmp_wd) -> None:
     analysis = MDOStudyAnalysis(INPUT_DIR / "study_bielvel_sobieski.xlsx")
     dnames = [
         "SobieskiAerodynamics",
@@ -122,25 +122,25 @@ def test_xdsm_bilevel(tmp_wd):
     analysis.generate_xdsm(".")
 
 
-def test_xdsm_bilevel_d(tmp_wd):
+def test_xdsm_bilevel_d(tmp_wd) -> None:
     analysis = MDOStudyAnalysis(INPUT_DIR / "bilevel_d.xlsx")
     analysis.generate_n2("n2_d.pdf")
     analysis.generate_xdsm(".")
 
 
-def test_none_inputs():
+def test_none_inputs() -> None:
     with pytest.raises(IOError):
         MDOStudyAnalysis(INPUT_DIR / "None.xlsx")
 
 
 @pytest.mark.parametrize("file_index", range(1, 19))
-def test_wrong_inputs(tmp_wd, file_index):
+def test_wrong_inputs(tmp_wd, file_index) -> None:
     fname = f"disciplines_spec_fail{file_index}.xlsx"
     with pytest.raises(ValueError):
         MDOStudyAnalysis(INPUT_DIR / fname)
 
 
-def test_options():
+def test_options() -> None:
     """Test that prescribed options are taken into account.
 
     This test also enables to make sure that there is no need to put '' when prescribing
@@ -158,7 +158,7 @@ def test_options():
     assert mda.max_mda_iter == pytest.approx(20)
 
 
-def test_xls_study_parser(tmp_wd, caplog):
+def test_xls_study_parser(tmp_wd, caplog) -> None:
     """Check the log of the XLSStudyParser."""
     XLSStudyParser(INPUT_DIR / "disciplines_spec.xlsx")
     expected_lines = [
@@ -185,14 +185,14 @@ def test_xls_study_parser(tmp_wd, caplog):
         assert line == expected_line
 
 
-def test_coupling_study_analysis_n2_chart(study_analysis, tmp_wd):
+def test_coupling_study_analysis_n2_chart(study_analysis, tmp_wd) -> None:
     """Check CouplingStudyAnalysis."""
     """Check that the N2 graph is generated correctly from a study analysis."""
     study_analysis.generate_n2()
     assert Path("n2.pdf").exists()
 
 
-def test_coupling_study_analysis_coupling_graph(study_analysis):
+def test_coupling_study_analysis_coupling_graph(study_analysis) -> None:
     """Check that the coupling graph is generated correctly from a study analysis."""
     file_path = Path("a.pdf")
     with mock.patch.object(coupling_study_analysis, "generate_coupling_graph") as meth:

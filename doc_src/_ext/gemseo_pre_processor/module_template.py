@@ -64,7 +64,7 @@ def underline(title, char="="):
     return len(title) * char
 
 
-def create_tree_file(modules_path, dct, parents, root):
+def create_tree_file(modules_path, dct, parents, root) -> None:
     """Create a rst tree file.
 
     :param dict dct: dictionary
@@ -187,7 +187,7 @@ def create_tree_file(modules_path, dct, parents, root):
                     f.write(data)
 
 
-def main(modules_path, name):
+def main(modules_path, name) -> None:
     tree = initialize_file_tree([
         f.name
         for f in modules_path.iterdir()

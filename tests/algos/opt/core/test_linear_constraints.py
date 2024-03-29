@@ -32,7 +32,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 
 
-def test_upper_bounds_matrices():
+def test_upper_bounds_matrices() -> None:
     """Test the building of matrices for upper bound-constraints."""
     upper_bounds = array([1.0, inf, 0.0, inf])
     lhs_mat, rhs_vec = build_bounds_matrices(upper_bounds, upper=True)
@@ -43,7 +43,7 @@ def test_upper_bounds_matrices():
     assert rhs_vec is None
 
 
-def test_lower_bounds_matrices():
+def test_lower_bounds_matrices() -> None:
     """Test the building of matrices for lower bound-constraints."""
     lower_bounds = array([1.0, -inf, 0.0, -inf])
     lhs_mat, rhs_vec = build_bounds_matrices(lower_bounds, upper=False)
@@ -96,7 +96,7 @@ def get_eq_constraints():
     return eq_cstr_1, eq_cstr_2
 
 
-def test_constraint_check():
+def test_constraint_check() -> None:
     """Test the checking of the constraints."""
     ineq_cstr_1, _ = get_ineq_constraints()
     # Check function type
@@ -105,7 +105,7 @@ def test_constraint_check():
         build_constraints_matrices([ineq_cstr_1, nonlinear_ineq_cstr], "ineq")
 
 
-def test_inequality_constraints_matrices():
+def test_inequality_constraints_matrices() -> None:
     """Test the building of matrices for inequality-constraints."""
     ineq_cstr_1, ineq_cstr_2 = get_ineq_constraints()
     eq_cstr_1, eq_cstr_2 = get_eq_constraints()
