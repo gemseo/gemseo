@@ -446,15 +446,16 @@ class DriverLibrary(AlgorithmLibrary):
             support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
         )
         # A database contains both shared listeners
-        # and listener specific to a DriverLibrary instance.
+        # and listeners specific to a DriverLibrary instance.
         # At execution,
         # a DriverLibrary instance must be able
         # to list the listeners it has added to the database
         # in order to remove them at the end of the execution.
-        for listener in [
-            problem.execute_observables_callback,
-            self.new_iteration_callback,
-        ]:
+        listeners = []
+        if problem.new_iter_observables:
+            listeners.append(problem.execute_observables_callback)
+        listeners.append(self.new_iteration_callback)
+        for listener in listeners:
             if problem.database.add_new_iter_listener(listener):
                 # The listener was not in the database.
                 self.__new_iter_listeners.add(listener)
