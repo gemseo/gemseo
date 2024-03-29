@@ -1557,13 +1557,10 @@ class OptimizationProblem(BaseProblem):
         Args:
             last_x: The design variables values from the last evaluation.
         """
-        if not self.new_iter_observables:
-            return
-
-        for func in self.new_iter_observables:
-            func(last_x)
+        for new_iter_observable in self.new_iter_observables:
+            new_iter_observable(last_x)
             if self.__eval_obs_jac:
-                func.jac(last_x)
+                new_iter_observable.jac(last_x)
 
     def __preprocess_func(
         self,
