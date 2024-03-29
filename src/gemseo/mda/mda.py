@@ -762,9 +762,10 @@ class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             n_iterations = history_length
 
         # red dot for first iteration
-        colors = ["black"] * n_iterations
-        for index in self._starting_indices:
-            colors[index] = "red"
+        colors = [
+            "red" if index in self._starting_indices else "black"
+            for index in range(n_iterations)
+        ]
 
         fig_ax.scatter(
             list(range(n_iterations)),
