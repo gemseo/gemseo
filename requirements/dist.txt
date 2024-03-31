@@ -52,7 +52,7 @@ packaging==24.0
     #   check-wheel-contents
 pkginfo==1.10.0
     # via twine
-pycparser==2.21
+pycparser==2.22
     # via cffi
 pydantic==2.6.4
     # via check-wheel-contents
