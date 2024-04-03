@@ -33,12 +33,12 @@ from numpy.testing import assert_equal
 from openturns import RandomGenerator
 
 from gemseo.uncertainty.distributions import distribution
-from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.exponential import (
     OTExponentialDistribution,
 )
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
+from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 from gemseo.uncertainty.distributions.openturns.triangular import (
     OTTriangularDistribution,
@@ -47,9 +47,9 @@ from gemseo.uncertainty.distributions.openturns.uniform import OTUniformDistribu
 from gemseo.utils.testing.helpers import image_comparison
 
 
-def test_composed_distribution() -> None:
-    """Check the composed distribution associated with a OTDistribution."""
-    assert OTComposedDistribution == OTDistribution.COMPOSED_DISTRIBUTION_CLASS
+def test_joint_distribution() -> None:
+    """Check the joint distribution associated with a OTDistribution."""
+    assert OTJointDistribution == OTDistribution.JOINT_DISTRIBUTION_CLASS
 
 
 def test_constructor() -> None:

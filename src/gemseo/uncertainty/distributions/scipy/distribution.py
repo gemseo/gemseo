@@ -62,7 +62,7 @@ from numpy import vstack
 
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.uncertainty.distributions.distribution import StandardParametersType
-from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
+from gemseo.uncertainty.distributions.scipy.joint import SPJointDistribution
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -74,7 +74,7 @@ if TYPE_CHECKING:
 
     from numpy.random import RandomState
 
-    from gemseo.uncertainty.distributions.composed import ComposedDistribution
+    from gemseo.uncertainty.distributions.joint import JointDistribution
 
 LOGGER = logging.getLogger(__name__)
 
@@ -103,8 +103,8 @@ class SPDistribution(Distribution):
         expon(loc=3, scale=0.5)
     """
 
-    COMPOSED_DISTRIBUTION_CLASS: ClassVar[type[ComposedDistribution] | None] = (
-        SPComposedDistribution
+    JOINT_DISTRIBUTION_CLASS: ClassVar[type[JointDistribution] | None] = (
+        SPJointDistribution
     )
 
     def __init__(  # noqa: D107

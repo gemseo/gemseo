@@ -21,7 +21,7 @@ Interfaced distributions
 ------------------------
 
 This package implements the abstract classes :class:`.Distribution`
-and :class:`.ComposedDistribution`.
+and :class:`.JointDistribution`.
 
 Classical distributions
 -----------------------
@@ -42,9 +42,9 @@ are documented in such a way that a newbie could easily apprehend them.
 Composed distribution
 ---------------------
 
-A ``SPDistribution`` has a :attr:`.SPDistribution.COMPOSED_DISTRIBUTION_CLASS`
-attribute referencing :class:`.SPComposedDistribution`
-which is a class to build a composed distribution
+A ``SPDistribution`` has a :attr:`.SPDistribution.JOINT_DISTRIBUTION_CLASS`
+attribute referencing :class:`.SPJointDistribution`
+which is a class to build a joint probability distribution
 related to given random variables from a list of :class:`.SPDistribution` objects
 implementing the probability distributions of these variables
 based on the SciPy library and from a copula name.

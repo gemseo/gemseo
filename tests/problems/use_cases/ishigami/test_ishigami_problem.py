@@ -19,8 +19,8 @@ import pytest
 from gemseo.problems.uncertainty.ishigami.ishigami_function import IshigamiFunction
 from gemseo.problems.uncertainty.ishigami.ishigami_problem import IshigamiProblem
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
-from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
+from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
+from gemseo.uncertainty.distributions.scipy.joint import SPJointDistribution
 
 
 def test_ishigami_problem() -> None:
@@ -29,7 +29,7 @@ def test_ishigami_problem() -> None:
     uncertain_space = problem.design_space
     assert isinstance(uncertain_space, IshigamiSpace)
     assert isinstance(problem.objective, IshigamiFunction)
-    assert isinstance(uncertain_space.distribution, SPComposedDistribution)
+    assert isinstance(uncertain_space.distribution, SPJointDistribution)
 
 
 @pytest.mark.parametrize(
@@ -39,4 +39,4 @@ def test_ishigami_problem() -> None:
 def test_ishigami_problem_openturns(uniform_distribution_name) -> None:
     """Check the Ishigami problem using OpenTURNS."""
     problem = IshigamiProblem(uniform_distribution_name)
-    assert isinstance(problem.design_space.distribution, OTComposedDistribution)
+    assert isinstance(problem.design_space.distribution, OTJointDistribution)

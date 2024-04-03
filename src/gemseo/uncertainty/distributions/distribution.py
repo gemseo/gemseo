@@ -100,7 +100,7 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.uncertainty.distributions.composed import ComposedDistribution
+    from gemseo.uncertainty.distributions.joint import JointDistribution
 
 StandardParametersType = Mapping[str, Union[str, int, float]]
 ParametersType = Union[tuple[str, int, float], StandardParametersType]
@@ -160,10 +160,10 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     DEFAULT_VARIABLE_NAME: Final[str] = "x"
     """The default name of the variable."""
 
-    COMPOSED_DISTRIBUTION_CLASS: ClassVar[type[ComposedDistribution] | None] = None
+    JOINT_DISTRIBUTION_CLASS: ClassVar[type[JointDistribution] | None] = None
     """The class of the joint distribution associated with this distribution, if any."""
 
-    # TODO: remove the argument dimension / use ComposedDistribution for random vectors
+    # TODO: remove the argument dimension / use JointDistribution for random vectors
 
     def __init__(
         self,
@@ -186,7 +186,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
                 to all components of the random variable under the hypothesis
                 that these components are stochastically independent.
                 To be removed in a future version;
-                use a :class:`.ComposedDistribution` instead.
+                use a :class:`.JointDistribution` instead.
             standard_parameters: The parameters of the probability distribution
                 used for string representation only
                 (use ``parameters`` for computation).

@@ -22,7 +22,7 @@ r"""Joint probability distribution.
 Overview
 --------
 
-:class:`.ComposedDistribution` is an abstract class
+:class:`.JointDistribution` is an abstract class
 implementing the concept of `joint probability distribution
 <https://en.wikipedia.org/wiki/Joint_probability_distribution>`_.
 
@@ -34,7 +34,7 @@ It takes into account
 both the marginal probability distributions of these random variables
 and their dependency structure.
 
-A :class:`.ComposedDistribution` is defined
+A :class:`.JointDistribution` is defined
 from a list of :class:`.Distribution` instances
 defining the marginals of the random variables
 and a copula defining the dependency structure between them.
@@ -46,13 +46,13 @@ and a copula defining the dependency structure between them.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`_.
 
 By definition, a joint probability distribution is a probability distribution
-Therefore, :class:`.ComposedDistribution` inherits
+Therefore, :class:`.JointDistribution` inherits
 from the abstract class :class:`.Distribution`.
 
 Construction
 ------------
 
-The :class:`.ComposedDistribution` of a list of given uncertain variables is built
+The :class:`.JointDistribution` of a list of given uncertain variables is built
 from a list of :class:`.Distribution` objects
 implementing the probability distributions of these variables
 and from a copula.
@@ -60,11 +60,11 @@ and from a copula.
 Capabilities
 ------------
 
-Because :class:`.ComposedDistribution` inherits from :class:`.Distribution`,
-we can easily get statistics, such as :attr:`.ComposedDistribution.mean`,
-:attr:`.ComposedDistribution.standard_deviation`.
-We can also get the numerical :attr:`.ComposedDistribution.range` and
-mathematical :attr:`.ComposedDistribution.support`.
+Because :class:`.JointDistribution` inherits from :class:`.Distribution`,
+we can easily get statistics, such as :attr:`.JointDistribution.mean`,
+:attr:`.JointDistribution.standard_deviation`.
+We can also get the numerical :attr:`.JointDistribution.range` and
+mathematical :attr:`.JointDistribution.support`.
 
 .. note::
 
@@ -75,15 +75,15 @@ mathematical :attr:`.ComposedDistribution.support`.
     Both support and range are described in terms of lower and upper bounds
 
 We can also evaluate the cumulative density function
-(:meth:`.ComposedDistribution.compute_cdf`)
+(:meth:`.JointDistribution.compute_cdf`)
 for the different marginals of the random variable,
 as well as the inverse cumulative density function
-(:meth:`.ComposedDistribution.compute_inverse_cdf`). We can plot them,
-either for a given marginal (:meth:`.ComposedDistribution.plot`)
-or for all marginals (:meth:`.ComposedDistribution.plot_all`).
+(:meth:`.JointDistribution.compute_inverse_cdf`). We can plot them,
+either for a given marginal (:meth:`.JointDistribution.plot`)
+or for all marginals (:meth:`.JointDistribution.plot_all`).
 
 Lastly, we can compute realizations of the random variable
-by means of the :meth:`.ComposedDistribution.compute_samples` method.
+by means of the :meth:`.JointDistribution.compute_samples` method.
 """
 
 from __future__ import annotations
@@ -107,7 +107,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class ComposedDistribution(Distribution):
+class JointDistribution(Distribution):
     """Joint probability distribution."""
 
     _COMPOSED = "Composed"
