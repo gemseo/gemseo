@@ -21,8 +21,8 @@ from typing import TYPE_CHECKING
 from numpy import array
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_gradient
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_output
+from gemseo.problems.uncertainty.ishigami.functions import compute_gradient
+from gemseo.problems.uncertainty.ishigami.functions import compute_output
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

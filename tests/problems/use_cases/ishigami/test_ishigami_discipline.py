@@ -19,9 +19,9 @@ from numpy import array
 from numpy import ndarray
 from numpy.testing import assert_equal
 
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_gradient
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_output
-from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
+from gemseo.problems.uncertainty.ishigami.functions import compute_gradient
+from gemseo.problems.uncertainty.ishigami.functions import compute_output
+from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 
 
 @pytest.fixture(scope="module")
