@@ -38,13 +38,13 @@ from gemseo.mlearning.transformers.transformer import Transformer
 from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from gemseo.typing import RealArray
 
 
 class Power(Transformer):
     """A power transformation."""
 
-    lambdas_: ndarray
+    lambdas_: RealArray
     """The parameters of the power transformation for the selected features."""
 
     _TRANSFORMER_NAME: ClassVar[str] = "yeo-johnson"
@@ -63,14 +63,14 @@ class Power(Transformer):
             standardize=standardize,
         )
 
-    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+    def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
         self.__power_transformer.fit(data)
         self.lambdas_ = self.__power_transformer.lambdas_
 
     @Transformer._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.__power_transformer.transform(data)
 
     @Transformer._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.__power_transformer.inverse_transform(data)

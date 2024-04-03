@@ -141,8 +141,8 @@ def test_coefficients_with_transform(dataset, model_with_transform) -> None:
 def test_intercept(model) -> None:
     """Check the value returned by intercept when as_dict is True."""
     intercept = model.get_intercept()
-    assert allclose(intercept["y_1"], array([1.0]))
-    assert allclose(intercept["y_2"], array([-1.0]))
+    assert intercept["y_1"] == pytest.approx([1.0])
+    assert intercept["y_2"] == pytest.approx([-1.0])
 
 
 def test_intercept_false(model) -> None:

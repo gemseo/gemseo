@@ -39,9 +39,8 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
 )
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-
     from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+    from gemseo.typing import RealArray
 
 
 class KPCA(DimensionReduction):
@@ -71,14 +70,14 @@ class KPCA(DimensionReduction):
             **parameters,
         )
 
-    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+    def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
         self.algo.fit(data)
         self.parameters["n_components"] = len(self.algo.eigenvalues_)
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.algo.transform(data)
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.algo.inverse_transform(data)

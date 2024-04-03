@@ -26,10 +26,9 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import Callable
 
-    from numpy import ndarray
-
     from gemseo import MLRegressionAlgo
     from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.typing import RealArray
 
 from gemseo.mlearning.data_formatters.supervised_data_formatters import (
     SupervisedDataFormatters,
@@ -44,7 +43,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
     @classmethod
     def format_dict_jacobian(
         cls,
-        func: Callable[[MLRegressionAlgo, ndarray, Any, ...], ndarray],
+        func: Callable[[MLRegressionAlgo, RealArray, Any, ...], RealArray],
     ) -> Callable[[MLRegressionAlgo, DataType, Any, ...], DataType]:
         """Make an array-based function callable with a dictionary of NumPy arrays.
 
@@ -111,8 +110,8 @@ class RegressionDataFormatters(SupervisedDataFormatters):
     @classmethod
     def transform_jacobian(
         cls,
-        func: Callable[[MLRegressionAlgo, ndarray, Any, ...], ndarray],
-    ) -> Callable[[MLRegressionAlgo, ndarray, Any, ...], ndarray]:
+        func: Callable[[MLRegressionAlgo, RealArray, Any, ...], RealArray],
+    ) -> Callable[[MLRegressionAlgo, RealArray, Any, ...], RealArray]:
         """Apply transformation to inputs and inverse transformation to outputs.
 
         Args:
@@ -126,8 +125,8 @@ class RegressionDataFormatters(SupervisedDataFormatters):
 
         @wraps(func)
         def wrapper(
-            algo: MLRegressionAlgo, input_data: ndarray, *args: Any, **kwargs: Any
-        ) -> ndarray:
+            algo: MLRegressionAlgo, input_data: RealArray, *args: Any, **kwargs: Any
+        ) -> RealArray:
             """Evaluate ``func`` after or before data transformation.
 
             Firstly,

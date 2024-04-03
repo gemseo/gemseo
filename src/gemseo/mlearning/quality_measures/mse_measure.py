@@ -44,10 +44,9 @@ from sklearn.metrics import mean_squared_error
 from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-
     from gemseo.mlearning.quality_measures.quality_measure import MeasureType
     from gemseo.mlearning.regression.regression import MLRegressionAlgo
+    from gemseo.typing import RealArray
 
 
 class MSEMeasure(MLErrorMeasure):
@@ -66,8 +65,8 @@ class MSEMeasure(MLErrorMeasure):
 
     def _compute_measure(
         self,
-        outputs: ndarray,
-        predictions: ndarray,
+        outputs: RealArray,
+        predictions: RealArray,
         multioutput: bool = True,
     ) -> MeasureType:
         return mean_squared_error(

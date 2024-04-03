@@ -1,0 +1,1 @@
+``OTGaussianProcessRegressor`` has a new method ``compute_samples`` to generate samples from the conditioned Gaussian process.

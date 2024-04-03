@@ -76,12 +76,11 @@ from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from numpy import ndarray
-
     from gemseo.mlearning.core.ml_algo import DataType
     from gemseo.mlearning.core.ml_algo import DefaultTransformerType
     from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
     from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 
 class MLRegressionAlgo(MLSupervisedAlgo):
@@ -117,8 +116,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     def predict_raw(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         """Predict output data from input data.
 
         Args:
@@ -162,7 +161,7 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     def _predict_jacobian(
         self,
-        input_data: ndarray,
+        input_data: RealArray,
     ) -> NoReturn:
         """Predict the Jacobian matrices of the regression model at input_data.
 

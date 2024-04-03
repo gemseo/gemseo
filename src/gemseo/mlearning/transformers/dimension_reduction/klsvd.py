@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING
 
 import openturns
 from numpy import array
-from numpy import ndarray
 from openturns import Field
 from openturns import KarhunenLoeveSVDAlgorithm
 from openturns import Mesh
@@ -45,6 +44,7 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
 
 if TYPE_CHECKING:
     from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+    from gemseo.typing import RealArray
 
 
 class KLSVD(DimensionReduction):
@@ -58,7 +58,7 @@ class KLSVD(DimensionReduction):
 
     def __init__(
         self,
-        mesh: ndarray,
+        mesh: RealArray,
         n_components: int | None = None,
         name: str = "",
         use_random_svd: bool = False,
@@ -91,11 +91,11 @@ class KLSVD(DimensionReduction):
         self.ot_mesh = Mesh(Sample(mesh))
 
     @property
-    def mesh(self) -> ndarray:
+    def mesh(self) -> RealArray:
         """The mesh."""
         return self.parameters["mesh"]
 
-    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+    def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
         self.__update_resource_map()
         klsvd = KarhunenLoeveSVDAlgorithm(
             self._get_process_sample(data),
@@ -125,11 +125,11 @@ class KLSVD(DimensionReduction):
         )
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return array(self.algo.project(self._get_process_sample(data)))
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return array([
             list(self.algo.liftAsSample(Point(list(coefficients))))
             for coefficients in data
@@ -141,17 +141,17 @@ class KLSVD(DimensionReduction):
         return len(self.algo.getModes())
 
     @property
-    def components(self) -> ndarray:
+    def components(self) -> RealArray:
         """The principal components."""
         return array(self.algo.getScaledModesAsProcessSample())[:, :, 0].T
 
     @property
-    def eigenvalues(self) -> ndarray:
+    def eigenvalues(self) -> RealArray:
         """The eigen values."""
         return array(self.algo.getEigenvalues())
 
-    def _get_process_sample(self, data: ndarray) -> openturns.ProcessSample:
-        """Convert numpy.ndarray data to an openturns.ProcessSample.
+    def _get_process_sample(self, data: RealArray) -> openturns.ProcessSample:
+        """Convert a ``RealArray`` data to an ``openturns.ProcessSample``.
 
         Args:
             data: The data to be fitted.

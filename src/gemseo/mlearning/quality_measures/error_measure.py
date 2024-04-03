@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import atleast_1d
-from numpy import ndarray
 
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
@@ -43,6 +42,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.supervised import MLSupervisedAlgo
+    from gemseo.typing import RealArray
 
 
 class MLErrorMeasure(MLQualityMeasure):
@@ -235,8 +235,8 @@ class MLErrorMeasure(MLQualityMeasure):
     @abstractmethod
     def _compute_measure(
         self,
-        outputs: ndarray,
-        predictions: ndarray,
+        outputs: RealArray,
+        predictions: RealArray,
         multioutput: bool = True,
     ) -> MeasureType:
         """Compute the quality measure.
@@ -253,7 +253,7 @@ class MLErrorMeasure(MLQualityMeasure):
         """
 
     def _post_process_measure(
-        self, measure: float | ndarray, multioutput: bool, as_dict: bool
+        self, measure: float | RealArray, multioutput: bool, as_dict: bool
     ) -> MeasureType:
         """Post-process a measure.
 

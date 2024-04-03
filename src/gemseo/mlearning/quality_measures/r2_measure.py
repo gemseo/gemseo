@@ -51,10 +51,9 @@ from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-
     from gemseo.mlearning.quality_measures.quality_measure import MeasureType
     from gemseo.mlearning.regression.regression import MLRegressionAlgo
+    from gemseo.typing import RealArray
 
 
 class R2Measure(MLErrorMeasure):
@@ -75,8 +74,8 @@ class R2Measure(MLErrorMeasure):
 
     def _compute_measure(
         self,
-        outputs: ndarray,
-        predictions: ndarray,
+        outputs: RealArray,
+        predictions: RealArray,
         multioutput: bool = True,
     ) -> MeasureType:
         return r2_score(

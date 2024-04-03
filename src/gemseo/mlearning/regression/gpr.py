@@ -107,11 +107,12 @@ from typing import Final
 
 import sklearn.gaussian_process
 from numpy import atleast_2d
-from numpy import ndarray
 from numpy import newaxis
 from numpy import repeat
 
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.base_random_process_regressor import (
+    BaseRandomProcessRegressor,
+)
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.seeder import SEED
 
@@ -121,26 +122,27 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.ml_algo import DataType
     from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 __Bounds = tuple[float, float]
 
 
-class GaussianProcessRegressor(MLRegressionAlgo):
+class GaussianProcessRegressor(BaseRandomProcessRegressor):
     """Gaussian process regression model."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "GPR"
-    LIBRARY: Final[str] = "scikit-learn"
+    LIBRARY: ClassVar[str] = "scikit-learn"
     __DEFAULT_BOUNDS: Final[tuple[float, float]] = (0.01, 100.0)
 
     def __init__(
         self,
         data: IODataset,
-        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
+        transformer: TransformerType = BaseRandomProcessRegressor.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         kernel: Kernel | None = None,
         bounds: __Bounds | Mapping[str, __Bounds] | None = None,
-        alpha: float | ndarray = 1e-10,
+        alpha: float | RealArray = 1e-10,
         optimizer: str | Callable = "fmin_l_bfgs_b",
         n_restarts_optimizer: int = 10,
         random_state: int | None = SEED,
@@ -228,46 +230,18 @@ class GaussianProcessRegressor(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data: ndarray,
-        output_data: ndarray,
+        input_data: RealArray,
+        output_data: RealArray,
     ) -> None:
         self.algo.fit(input_data, output_data)
 
     def _predict(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         return self.algo.predict(input_data).reshape((len(input_data), -1))
 
-    def predict_std(
-        self,
-        input_data: DataType,
-    ) -> ndarray:
-        """Predict the standard deviation from input data.
-
-        The user can specify these input data either as a NumPy array,
-        e.g. ``array([1., 2., 3.])``
-        or as a dictionary of NumPy arrays,
-        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
-
-        If the NumPy arrays are of dimension 2,
-        their i-th rows represent the input data of the i-th sample;
-        while if the NumPy arrays are of dimension 1,
-        there is a single sample.
-
-        Args:
-            input_data: The input data.
-
-        Returns:
-            The standard deviation at the query points.
-
-        .. warning::
-
-           This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
-           to estimate it in relation to the original output space
-           if it is different from the transformed output space.
-        """
+    def predict_std(self, input_data: DataType) -> RealArray:  # noqa: D102
         if isinstance(input_data, Mapping):
             input_data = concatenate_dict_of_arrays_to_array(
                 input_data, self.input_names
@@ -283,3 +257,12 @@ class GaussianProcessRegressor(MLRegressionAlgo):
             return repeat(output_data[:, newaxis], self._reduced_output_dimension, 1)
 
         return output_data
+
+    def compute_samples(  # noqa: D102
+        self, input_data: RealArray, n_samples: int, seed: int = SEED
+    ) -> tuple[RealArray]:
+        samples = self.algo.sample_y(input_data, n_samples=n_samples, random_state=seed)
+        if samples.ndim == 2:
+            return (samples,)
+
+        return tuple(samples[:, i, :] for i in range(self._reduced_dimensions[1]))

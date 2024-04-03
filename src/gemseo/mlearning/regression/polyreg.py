@@ -83,7 +83,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from numpy import concatenate
-from numpy import ndarray
 from numpy import newaxis
 from numpy import zeros
 from sklearn.preprocessing import PolynomialFeatures
@@ -97,6 +96,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.ml_algo import DataType
     from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 
 class PolynomialRegressor(LinearRegressor):
@@ -150,21 +150,21 @@ class PolynomialRegressor(LinearRegressor):
 
     def _fit(
         self,
-        input_data: ndarray,
-        output_data: ndarray,
+        input_data: RealArray,
+        output_data: RealArray,
     ) -> None:
         super()._fit(self._poly.fit_transform(input_data), output_data)
 
     def _predict(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         return super()._predict(self._poly.transform(input_data))
 
     def _predict_jacobian(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         # Dimensions:
         # powers:        (           ,            ,  n_powers ,  n_inputs )
         # coefs:         (           ,  n_outputs ,  n_powers ,           )

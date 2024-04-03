@@ -78,13 +78,13 @@ class MLAlgoAssessor(MDODiscipline):
     algo: str
     """The name of a machine learning algorithm."""
 
-    measure: MLQualityMeasure
+    measure: type[MLQualityMeasure]
     """The measure to assess the machine learning algorithm."""
 
     measure_options: dict[str, int | Dataset]
     """The options of the quality measure."""
 
-    parameters: list[str]
+    parameters: dict[str, MLAlgoParameterType]
     """The parameters of the machine learning algorithm."""
 
     dataset: Dataset
@@ -200,20 +200,20 @@ class MLAlgoCalibration:
     maximize_objective: bool
     """Whether to maximize the quality measure."""
 
-    dataset: Dataset
-    """The learning dataset."""
+    dataset: Dataset | None
+    """The learning dataset after execution."""
 
-    optimal_parameters: dict[str, ndarray]
-    """The optimal parameters for the machine learning algorithm."""
+    optimal_parameters: dict[str, ndarray] | None
+    """The optimal parameters for the machine learning algorithm after execution."""
 
-    optimal_criterion: float
-    """The optimal quality measure."""
+    optimal_criterion: float | None
+    """The optimal quality measure after execution."""
 
-    optimal_algorithm: MLAlgo
-    """The optimal machine learning algorithm."""
+    optimal_algorithm: MLAlgo | None
+    """The optimal machine learning algorithm after execution."""
 
-    scenario: Scenario
-    """The scenario used to calibrate the machine learning algorithm."""
+    scenario: Scenario | None
+    """The scenario used to calibrate the machine learning algorithm after execution."""
 
     def __init__(
         self,
@@ -221,7 +221,7 @@ class MLAlgoCalibration:
         dataset: Dataset,
         parameters: Iterable[str],
         calibration_space: DesignSpace,
-        measure: MLQualityMeasure,
+        measure: type[MLQualityMeasure],
         measure_evaluation_method_name: str
         | MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,
         measure_options: MeasureOptionsType | None = None,
@@ -308,20 +308,21 @@ class MLAlgoCalibration:
     def get_history(
         self,
         name: str,
-    ) -> ndarray:
+    ) -> ndarray | None:
         """Return the history of a variable.
 
         Args:
             name: The name of the variable.
 
         Returns:
-            The history of the variable.
+            The history of the variable if the dataset is not empty.
         """
-        if self.dataset is not None:
-            if name == self.algo_assessor.CRITERION and self.maximize_objective:
-                return -self.dataset.get_view(variable_names="-" + name).to_numpy()
-            return self.dataset.get_view(variable_names=name).to_numpy()
-        return None
+        if self.dataset is None:
+            return None
+
+        if name == self.algo_assessor.CRITERION and self.maximize_objective:
+            return -self.dataset.get_view(variable_names="-" + name).to_numpy()
+        return self.dataset.get_view(variable_names=name).to_numpy()
 
     @property
     def algos(self) -> MLAlgo:

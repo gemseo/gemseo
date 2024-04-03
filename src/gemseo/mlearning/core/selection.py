@@ -73,7 +73,7 @@ class MLAlgoSelection:
     dataset: Dataset
     """The learning dataset."""
 
-    measure: str
+    measure: type[MLQualityMeasure]
     """The name of a quality measure to measure the quality of the machine learning
     algorithms."""
 
@@ -90,7 +90,7 @@ class MLAlgoSelection:
     def __init__(
         self,
         dataset: Dataset,
-        measure: str | MLQualityMeasure,
+        measure: str | type[MLQualityMeasure],
         measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
         samples: Sequence[int] | None = None,
         **measure_options: MeasureOptionType,
