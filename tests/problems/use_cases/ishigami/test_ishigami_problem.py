@@ -16,11 +16,11 @@ from __future__ import annotations
 
 import pytest
 
+from gemseo.problems.uncertainty.ishigami.ishigami_function import IshigamiFunction
+from gemseo.problems.uncertainty.ishigami.ishigami_problem import IshigamiProblem
+from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
 from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
-from gemseo.uncertainty.use_cases.ishigami.ishigami_function import IshigamiFunction
-from gemseo.uncertainty.use_cases.ishigami.ishigami_problem import IshigamiProblem
-from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
 
 
 def test_ishigami_problem() -> None:

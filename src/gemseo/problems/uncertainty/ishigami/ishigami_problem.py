@@ -30,8 +30,8 @@ See Also:
 from __future__ import annotations
 
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.uncertainty.use_cases.ishigami.ishigami_function import IshigamiFunction
-from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
+from gemseo.problems.uncertainty.ishigami.ishigami_function import IshigamiFunction
+from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
 
 
 class IshigamiProblem(OptimizationProblem):

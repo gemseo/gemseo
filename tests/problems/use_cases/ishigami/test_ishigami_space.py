@@ -14,21 +14,19 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import pytest
-from numpy import array
-from numpy.testing import assert_almost_equal
+from numpy import pi
 
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_gradient
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_output
+from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
 
 
-def test_compute_output() -> None:
-    """Check the output of the Ishigami function."""
-    assert compute_output(array([1.0, 1.0, 1.0])) == pytest.approx(5.9, abs=0.1)
-
-
-def test_compute_gradient() -> None:
-    """Check the gradient of the Ishigami function."""
-    assert_almost_equal(
-        compute_gradient(array([1.0, 1.0, 1.0])), array([0.6, 6.4, 0.3]), decimal=1
-    )
+def test_ishigami_space() -> None:
+    """Check the Ishigami space."""
+    space = IshigamiSpace()
+    assert space.dimension == 3
+    assert space.variable_names == ["x1", "x2", "x3"]
+    for distribution in space.distributions.values():
+        assert len(distribution.marginals) == 1
+        assert len(distribution.marginals[0].marginals) == 1
+        distribution = distribution.marginals[0].marginals[0]
+        assert distribution.kwds == {"loc": -pi, "scale": 2 * pi}
+        assert distribution.dist.__class__.__name__ == "uniform_gen"

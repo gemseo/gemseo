@@ -12,24 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""The Ishigami function."""
-
 from __future__ import annotations
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_gradient
-from gemseo.uncertainty.use_cases.ishigami.functions import compute_output
+from gemseo.problems.uncertainty.ishigami.functions import compute_gradient
+from gemseo.problems.uncertainty.ishigami.functions import compute_output
+from gemseo.problems.uncertainty.ishigami.ishigami_function import IshigamiFunction
 
 
-class IshigamiFunction(MDOFunction):
-    r"""The Ishigami function.
-
-    .. math::
-
-       f(x_1,_2,x_3) = \sin(x_1)+ 7\sin(x_2)^2 + 0.1x_3^4\sin(X_1)
-
-    See :cite:`ishigami1990`.
-    """
-
-    def __init__(self) -> None:  # noqa: D107
-        super().__init__(compute_output, "Ishigami", jac=compute_gradient)
+def test_ishigami_function() -> None:
+    """Check that the IshigamiFunction has the right name, function and jacobian."""
+    function = IshigamiFunction()
+    assert function.name == "Ishigami"
+    assert function._func == compute_output
+    assert function._jac == compute_gradient
