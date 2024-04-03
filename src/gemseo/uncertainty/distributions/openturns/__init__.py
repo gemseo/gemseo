@@ -21,7 +21,7 @@ Interfaced distributions
 ------------------------
 
 This package implements the abstract classes :class:`.Distribution`
-and :class:`.ComposedDistribution`.
+and :class:`.JointDistribution`.
 
 Classical distributions
 -----------------------
@@ -42,9 +42,9 @@ are documented in such a way that a newbie could easily apprehend them.
 Composed distribution
 ---------------------
 
-A ``OTDistribution`` has a :attr:`.OTDistribution.COMPOSED_DISTRIBUTION_CLASS`
-attribute referencing :class:`.OTComposedDistribution`
-which is a class to build a composed distribution
+A ``OTDistribution`` has a :attr:`.OTDistribution.JOINT_DISTRIBUTION_CLASS`
+attribute referencing :class:`.OTJointDistribution`
+which is a class to build a joint probability distribution
 related to given random variables from a list of :class:`.OTDistribution` objects
 implementing the probability distributions of these variables
 based on the OpenTURNS library and from a copula name.

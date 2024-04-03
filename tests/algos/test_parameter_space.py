@@ -502,11 +502,11 @@ def test_mix_different_distribution_families(first, second) -> None:
 
 
 def test_copula() -> None:
-    """Check build_composed_distribution."""
+    """Check build_joint_distribution."""
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable("x", "OTNormalDistribution")
     parameter_space.add_random_variable("y", "OTNormalDistribution", 2)
-    parameter_space.build_composed_distribution(NormalCopula(3))
+    parameter_space.build_joint_distribution(NormalCopula(3))
     assert (
         parameter_space.distribution.distribution.getCopula().getName()
         == "NormalCopula"

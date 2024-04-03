@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.uncertainty.distributions.factory import DistributionFactory
-from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
+from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 
 
@@ -59,32 +59,31 @@ def test_create_marginal_distribution(distribution_factory) -> None:
     )
 
 
-def test_create_composed_distribution(distribution_factory) -> None:
-    """Check create_composed_distribution() to instantiate a composed distribution."""
+def test_create_joint_distribution(distribution_factory) -> None:
+    """Check create_joint_distribution() to instantiate a joint probability
+    distribution."""
     normal = distribution_factory.create("OTNormalDistribution", variable="x")
     uniform = distribution_factory.create("OTUniformDistribution", variable="y")
-    composed = distribution_factory.create_composed_distribution(
+    joint_distribution = distribution_factory.create_joint_distribution(
         distributions=[normal, uniform], variable="foo"
     )
-    assert isinstance(composed, OTComposedDistribution)
-    assert composed.marginals[0] == normal
-    assert composed.marginals[1] == uniform
-    assert composed.variable_name == "foo"
+    assert isinstance(joint_distribution, OTJointDistribution)
+    assert joint_distribution.marginals[0] == normal
+    assert joint_distribution.marginals[1] == uniform
+    assert joint_distribution.variable_name == "foo"
 
 
-def test_create_composed_distribution_with_different_identifiers(
+def test_create_joint_distribution_with_different_identifiers(
     distribution_factory,
 ) -> None:
-    """Check create_composed_distribution() with different distribution identifiers."""
+    """Check create_joint_distribution() with different distribution identifiers."""
     normal = distribution_factory.create("OTNormalDistribution", variable="x")
     uniform = distribution_factory.create("SPUniformDistribution", variable="y")
     with pytest.raises(
         ValueError,
         match=(
-            "A composed probability distribution cannot mix distributions "
+            "A joint probability distribution cannot mix distributions "
             "with different identifiers; got OT, SP."
         ),
     ):
-        distribution_factory.create_composed_distribution(
-            distributions=[normal, uniform]
-        )
+        distribution_factory.create_joint_distribution(distributions=[normal, uniform])

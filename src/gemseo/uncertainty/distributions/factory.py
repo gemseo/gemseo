@@ -31,7 +31,7 @@ from gemseo.utils.string_tools import pretty_str
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.uncertainty.distributions.composed import ComposedDistribution
+    from gemseo.uncertainty.distributions.joint import JointDistribution
 
 
 class DistributionFactory(BaseFactory):
@@ -83,13 +83,13 @@ class DistributionFactory(BaseFactory):
 
     create = create_marginal_distribution
 
-    def create_composed_distribution(
+    def create_joint_distribution(
         self,
         distributions: Sequence[Distribution],
         copula: Any = None,
         variable: str = "",
-    ) -> ComposedDistribution:
-        """Create a composed probability distribution from marginal ones.
+    ) -> JointDistribution:
+        """Create a joint probability distribution from marginal ones.
 
         Args:
             distributions: The marginal distributions.
@@ -102,18 +102,18 @@ class DistributionFactory(BaseFactory):
                 defined by ``distributions``.
 
         Returns:
-            The composed probability distribution.
+            The joint probability distribution.
         """
         identifiers = {dist.__class__.__name__[0:2] for dist in distributions}
         if len(identifiers) > 1:
             msg = (
-                "A composed probability distribution cannot mix distributions "
+                "A joint probability distribution cannot mix distributions "
                 f"with different identifiers; got {pretty_str(identifiers)}."
             )
             raise ValueError(msg)
 
         return super().create(
-            f"{next(iter(identifiers))}ComposedDistribution",
+            f"{next(iter(identifiers))}JointDistribution",
             distributions=distributions,
             copula=copula,
             variable=variable,

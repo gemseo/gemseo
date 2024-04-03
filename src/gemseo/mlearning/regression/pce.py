@@ -115,7 +115,7 @@ from openturns import StandardDistributionPolynomialFactory
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
+from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
@@ -283,15 +283,13 @@ class PCERegressor(MLRegressionAlgo):
         wrongly_distributed_random_variable_names = [
             input_name
             for input_name in self.input_names
-            if not isinstance(
-                distributions.get(input_name, None), OTComposedDistribution
-            )
+            if not isinstance(distributions.get(input_name, None), OTJointDistribution)
         ]
         if wrongly_distributed_random_variable_names:
             msg = (
                 "The probability distributions of the random variables "
                 f"{pretty_str(wrongly_distributed_random_variable_names)} "
-                "are not instances of OTComposedDistribution."
+                "are not instances of OTJointDistribution."
             )
             raise ValueError(msg)
 

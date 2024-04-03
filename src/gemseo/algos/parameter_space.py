@@ -78,7 +78,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.uncertainty.distributions.composed import ComposedDistribution
+    from gemseo.uncertainty.distributions.joint import JointDistribution
 
 from numpy import array
 from numpy import ndarray
@@ -110,13 +110,13 @@ class ParameterSpace(DesignSpace):
     uncertain_variables: list[str]
     """The names of the uncertain variables."""
 
-    distributions: dict[str, ComposedDistribution]
+    distributions: dict[str, JointDistribution]
     """The marginal probability distributions of the uncertain variables.
 
     These variables are defined as random vectors with independent components.
     """
 
-    distribution: ComposedDistribution
+    distribution: JointDistribution
     """The joint probability distribution of the uncertain variables."""
 
     _INITIAL_DISTRIBUTION = "Initial distribution"
@@ -146,7 +146,7 @@ class ParameterSpace(DesignSpace):
         self.__uncertain_variables_to_definitions = {}
         self.__distribution_family_id = ""
 
-    def build_composed_distribution(self, copula: Any = None) -> None:
+    def build_joint_distribution(self, copula: Any = None) -> None:
         """Build the joint probability distribution.
 
         Args:
@@ -160,7 +160,7 @@ class ParameterSpace(DesignSpace):
                 for name in self.uncertain_variables
                 for marginal in self.distributions[name].marginals
             ]
-            self.distribution = distributions[0].COMPOSED_DISTRIBUTION_CLASS(
+            self.distribution = distributions[0].JOINT_DISTRIBUTION_CLASS(
                 distributions, copula
             )
 
@@ -334,15 +334,15 @@ class ParameterSpace(DesignSpace):
             marginals.append(distribution_class(**kwargs))
 
         # Define the distribution of the random vector with a joint distribution.
-        composed_distribution_class = distribution_class.COMPOSED_DISTRIBUTION_CLASS
-        self.distributions[name] = composed_distribution_class(marginals)
+        joint_distribution_class = distribution_class.JOINT_DISTRIBUTION_CLASS
+        self.distributions[name] = joint_distribution_class(marginals)
 
         # Update the uncertain variables.
         self.uncertain_variables.append(name)
 
         # Update the full joint distribution,
         # i.e. the joint distribution of all the uncertain variables.
-        self.build_composed_distribution()
+        self.build_joint_distribution()
 
         # Update the parameter space as subclass of a DesignSpace.
         l_b = self.distributions[name].math_lower_bound
@@ -586,7 +586,7 @@ class ParameterSpace(DesignSpace):
             del self.distributions[name]
             self.uncertain_variables.remove(name)
             if self.uncertain_variables:
-                self.build_composed_distribution()
+                self.build_joint_distribution()
         super().remove_variable(name)
 
     def compute_samples(
@@ -1034,7 +1034,7 @@ class ParameterSpace(DesignSpace):
                 else:
                     parameter_space.add_variable(name, size, "float", l_b, u_b, value)
 
-        parameter_space.build_composed_distribution(copula)
+        parameter_space.build_joint_distribution(copula)
         return parameter_space
 
     def to_design_space(self) -> DesignSpace:

@@ -1,0 +1,12 @@
+API changes from old to new:
+
+- ``ComposedDistribution``: ``JointDistribution``
+- ``OTComposedDistribution``: ``OTJointDistribution``
+- ``SPComposedDistribution``: ``SPJointDistribution``
+- ``ParameterSpace.build_composed_distribution``: ``ParameterSpace.build_joint_distribution``
+- ``Distribution.COMPOSED_DISTRIBUTION_CLASS``: ``Distribution.JOINT_DISTRIBUTION_CLASS``
+- ``DistributionFactory.create_composed_distribution``: ``DistributionFactory.create_joint_distribution``
+- ``gemseo.uncertainty.distributions.composed``: ``gemseo.uncertainty.distributions.joint``
+- ``gemseo.uncertainty.distributions.scipy.composed``: ``gemseo.uncertainty.distributions.scipy.joint``
+- ``gemseo.uncertainty.distributions.openturns.composed``: ``gemseo.uncertainty.distributions.openturns.joint``
+- ``gemseo.algos.parameter_space.build_composed_distribution``: ``gemseo.algos.parameter_space.build_joint_distribution``

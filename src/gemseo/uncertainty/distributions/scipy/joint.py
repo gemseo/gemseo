@@ -19,15 +19,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The SciPy-based joint probability distribution.
 
-:class:`.SPComposedDistribution` is a :class:`.ComposedDistribution`
+:class:`.SPJointDistribution` is a :class:`.JointDistribution`
 based on the `SciPy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_ library.
 
 .. warning::
 
    For the moment,
-   there is no copula that can be used with :class:`.SPComposedDistribution`;
+   there is no copula that can be used with :class:`.SPJointDistribution`;
    if you want to introduce dependency between random variables,
-   please consider :class:`.OTComposedDistribution`.
+   please consider :class:`.OTJointDistribution`.
 """
 
 from __future__ import annotations
@@ -44,10 +44,10 @@ if TYPE_CHECKING:
 from numpy import array
 from numpy import ndarray
 
-from gemseo.uncertainty.distributions.composed import ComposedDistribution
+from gemseo.uncertainty.distributions.joint import JointDistribution
 
 
-class SPComposedDistribution(ComposedDistribution):
+class SPJointDistribution(JointDistribution):
     """The SciPy-based joint probability distribution."""
 
     def __init__(  # noqa: D107

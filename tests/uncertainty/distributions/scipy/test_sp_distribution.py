@@ -26,17 +26,17 @@ from numpy import inf
 from numpy import ndarray
 from numpy.random import RandomState
 
-from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 from gemseo.uncertainty.distributions.scipy.exponential import SPExponentialDistribution
+from gemseo.uncertainty.distributions.scipy.joint import SPJointDistribution
 from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
 from gemseo.uncertainty.distributions.scipy.triangular import SPTriangularDistribution
 from gemseo.uncertainty.distributions.scipy.uniform import SPUniformDistribution
 
 
-def test_composed_distribution() -> None:
-    """Check the composed distribution associated with a SPDistribution."""
-    assert SPComposedDistribution == SPDistribution.COMPOSED_DISTRIBUTION_CLASS
+def test_joint_distribution() -> None:
+    """Check the joint probability distribution associated with a SPDistribution."""
+    assert SPJointDistribution == SPDistribution.JOINT_DISTRIBUTION_CLASS
 
 
 def test_constructor() -> None:

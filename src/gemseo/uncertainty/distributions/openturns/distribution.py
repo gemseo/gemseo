@@ -68,14 +68,14 @@ from numpy import ndarray
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.uncertainty.distributions.distribution import ParametersType
 from gemseo.uncertainty.distributions.distribution import StandardParametersType
-from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
+from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.uncertainty.distributions.composed import ComposedDistribution
+    from gemseo.uncertainty.distributions.joint import JointDistribution
 
 OT_WEBSITE = (
     "http://openturns.github.io/openturns/latest/user_manual/"
@@ -100,8 +100,8 @@ class OTDistribution(Distribution):
         Exponential(3, 2)
     """
 
-    COMPOSED_DISTRIBUTION_CLASS: ClassVar[type[ComposedDistribution] | None] = (
-        OTComposedDistribution
+    JOINT_DISTRIBUTION_CLASS: ClassVar[type[JointDistribution] | None] = (
+        OTJointDistribution
     )
 
     marginals: list[ot.Distribution]
