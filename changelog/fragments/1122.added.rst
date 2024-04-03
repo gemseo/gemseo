@@ -1,0 +1,1 @@
+The quality of an ``MLRegressorAlgo`` can be assessed by plotting its cross-validation error.
