@@ -93,7 +93,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Final
 
 from numpy import ndarray
 from numpy import newaxis
@@ -113,7 +112,7 @@ class KNNClassifier(MLClassificationAlgo):
     """The k-nearest neighbors classification algorithm."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "KNN"
-    LIBRARY: Final[str] = "scikit-learn"
+    LIBRARY: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,

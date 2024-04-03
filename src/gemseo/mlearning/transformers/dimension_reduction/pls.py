@@ -40,7 +40,7 @@ from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction impor
 )
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from gemseo.typing import RealArray
 
 
 class PLS(DimensionReduction):
@@ -61,7 +61,7 @@ class PLS(DimensionReduction):
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = PLSRegression(n_components, **parameters)
 
-    def _fit(self, data: ndarray, other_data: ndarray) -> None:
+    def _fit(self, data: RealArray, other_data: RealArray) -> None:
         """Fit the transformer to the data.
 
         Args:
@@ -75,9 +75,9 @@ class PLS(DimensionReduction):
         self.parameters["n_components"] = self.algo.n_components
 
     @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.algo.transform(data)
 
     @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.algo.inverse_transform(data)

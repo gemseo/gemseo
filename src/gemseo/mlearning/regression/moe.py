@@ -98,6 +98,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.quality_measures.quality_measure import (
         OptionType as EvalOptionType,
     )
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -444,8 +445,8 @@ class MOERegressor(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data: ndarray,
-        output_data: ndarray,
+        input_data: RealArray,
+        output_data: RealArray,
     ) -> None:
         dataset = IODataset(dataset_name="training_set")
         dataset.add_group(
@@ -562,8 +563,8 @@ class MOERegressor(MLRegressionAlgo):
 
     def _predict_all(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         """Predict output of each regression model for given input data.
 
         This method stacks the different outputs along a new axis.
@@ -587,8 +588,8 @@ class MOERegressor(MLRegressionAlgo):
 
     def _predict(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         # dim(probas)         = (n_samples, n_clusters,     1    )
         # dim(local_outputs)  = (n_samples, n_clusters, n_outputs)
         # dim(contributions)  = (n_samples, n_clusters, n_outputs)
@@ -600,8 +601,8 @@ class MOERegressor(MLRegressionAlgo):
 
     def _predict_jacobian(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         if self.hard:
             return self._predict_jacobian_hard(input_data)
 
@@ -609,8 +610,8 @@ class MOERegressor(MLRegressionAlgo):
 
     def _predict_jacobian_hard(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         """Predict the Jacobian matrices of the regression model at input_data.
 
         This method uses a hard classification.
@@ -637,7 +638,7 @@ class MOERegressor(MLRegressionAlgo):
 
     def _predict_jacobian_soft(
         self,
-        input_data: ndarray,
+        input_data: RealArray,
     ) -> NoReturn:
         """Predict the Jacobian matrices of the regression model at input_data.
 

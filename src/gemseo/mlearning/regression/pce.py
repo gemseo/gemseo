@@ -93,7 +93,6 @@ from typing import Final
 from numpy import array
 from numpy import atleast_1d
 from numpy import concatenate
-from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
 from openturns import LARS
@@ -127,6 +126,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
     from gemseo.mlearning.core.ml_algo import TransformerType
     from gemseo.mlearning.core.supervised import SavedObjectType
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -153,7 +153,7 @@ class PCERegressor(MLRegressionAlgo):
     """
 
     SHORT_ALGO_NAME: ClassVar[str] = "PCE"
-    LIBRARY: Final[str] = "OpenTURNS"
+    LIBRARY: ClassVar[str] = "OpenTURNS"
     __WEIGHT: Final[str] = "weight"
 
     def __init__(
@@ -339,7 +339,7 @@ class PCERegressor(MLRegressionAlgo):
         self._prediction_function = None
 
     def __instantiate_functional_chaos_algorithm(
-        self, input_data: ndarray, output_data: ndarray
+        self, input_data: RealArray, output_data: RealArray
     ) -> FunctionalChaosAlgorithm:
         """Instantiate the :class:`FunctionalChaosAlgorithm`.
 
@@ -443,8 +443,8 @@ class PCERegressor(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data: ndarray,
-        output_data: ndarray,
+        input_data: RealArray,
+        output_data: RealArray,
     ) -> None:
         # Create and train the PCE.
         algo = self.__instantiate_functional_chaos_algorithm(input_data, output_data)
@@ -555,12 +555,12 @@ class PCERegressor(MLRegressionAlgo):
         else:
             self._total_order_sobol_indices = indices
 
-    def _predict(self, input_data: ndarray) -> ndarray:
+    def _predict(self, input_data: RealArray) -> RealArray:
         return array(self._prediction_function(input_data))
 
     def _get_quadrature_points(
         self, n_quadrature_points: int, discipline: MDODiscipline
-    ) -> tuple[ndarray, ndarray]:
+    ) -> tuple[RealArray, RealArray]:
         """Return the quadrature points for PCE construction.
 
         Args:
@@ -616,8 +616,8 @@ class PCERegressor(MLRegressionAlgo):
 
     def _predict_jacobian(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         gradient = self._prediction_function.gradient
         jac = zeros((
             len(input_data),
@@ -630,7 +630,7 @@ class PCERegressor(MLRegressionAlgo):
         return jac
 
     @property
-    def mean(self) -> ndarray:
+    def mean(self) -> RealArray:
         """The mean vector of the PCE model output.
 
         .. warning::
@@ -644,7 +644,7 @@ class PCERegressor(MLRegressionAlgo):
         return self._mean
 
     @property
-    def covariance(self) -> ndarray:
+    def covariance(self) -> RealArray:
         """The covariance matrix of the PCE model output.
 
         .. warning::
@@ -658,7 +658,7 @@ class PCERegressor(MLRegressionAlgo):
         return self._covariance
 
     @property
-    def variance(self) -> ndarray:
+    def variance(self) -> RealArray:
         """The variance vector of the PCE model output.
 
         .. warning::
@@ -672,7 +672,7 @@ class PCERegressor(MLRegressionAlgo):
         return self._variance
 
     @property
-    def standard_deviation(self) -> ndarray:
+    def standard_deviation(self) -> RealArray:
         """The standard deviation vector of the PCE model output.
 
         .. warning::

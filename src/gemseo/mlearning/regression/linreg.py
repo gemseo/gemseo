@@ -54,10 +54,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Final
 
 from numpy import array
-from numpy import ndarray
 from numpy import repeat
 from numpy import zeros
 from sklearn.linear_model import ElasticNet
@@ -76,15 +74,15 @@ from gemseo.utils.seeder import SEED
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.mlearning.core.ml_algo import DataType
     from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 
 class LinearRegressor(MLRegressionAlgo):
     """Linear regression model."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "LinReg"
-    LIBRARY: Final[str] = "scikit-learn"
+    LIBRARY: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,
@@ -156,30 +154,30 @@ class LinearRegressor(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data: ndarray,
-        output_data: ndarray,
+        input_data: RealArray,
+        output_data: RealArray,
     ) -> None:
         self.algo.fit(input_data, output_data)
 
     def _predict(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         return self.algo.predict(input_data).reshape((len(input_data), -1))
 
     def _predict_jacobian(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         return repeat(self.algo.coef_[None], len(input_data), axis=0)
 
     @property
-    def coefficients(self) -> ndarray:
+    def coefficients(self) -> RealArray:
         """The regression coefficients of the linear model."""
         return self.algo.coef_
 
     @property
-    def intercept(self) -> ndarray:
+    def intercept(self) -> RealArray:
         """The regression intercepts of the linear model."""
         if self.parameters["fit_intercept"]:
             return self.algo.intercept_
@@ -189,7 +187,7 @@ class LinearRegressor(MLRegressionAlgo):
     def get_coefficients(
         self,
         as_dict: bool = True,
-    ) -> DataType:
+    ) -> RealArray | dict[str, list[dict[str, list[float]]]]:
         """Return the regression coefficients of the linear model.
 
         Args:
@@ -219,10 +217,7 @@ class LinearRegressor(MLRegressionAlgo):
             raise ValueError(msg)
         return self.__convert_array_to_dict(coefficients)
 
-    def get_intercept(
-        self,
-        as_dict: bool = True,
-    ) -> DataType:
+    def get_intercept(self, as_dict: bool = True) -> RealArray | dict[str, list[float]]:
         """Return the regression intercepts of the linear model.
 
         Args:
@@ -256,8 +251,8 @@ class LinearRegressor(MLRegressionAlgo):
 
     def __convert_array_to_dict(
         self,
-        data: ndarray,
-    ) -> dict[str, ndarray]:
+        data: RealArray,
+    ) -> dict[str, list[dict[str, list[float]]]]:
         """Convert a data array into a dictionary.
 
         Args:

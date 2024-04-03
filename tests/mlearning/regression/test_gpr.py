@@ -28,6 +28,7 @@ from numpy import allclose
 from numpy import array
 from numpy import array_equal
 from numpy import ndarray
+from numpy.testing import assert_almost_equal
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
@@ -164,3 +165,62 @@ def test_kernel(dataset) -> None:
     assert id(model.kernel) == id(model.algo.kernel)
     model.learn()
     assert id(model.kernel) == id(model.algo.kernel_)
+
+
+@pytest.mark.parametrize(
+    ("compute_options", "init_options", "expected_samples"),
+    [
+        (
+            {},
+            {},
+            (
+                array([
+                    [1.793727, 1.6737006],
+                    [4.7481523, 4.7274054],
+                    [4.1133087, 4.0414895],
+                ]),
+                array([
+                    [-1.9714888, -1.9169749],
+                    [-4.610077, -4.6684153],
+                    [-3.9723156, -3.9135493],
+                ]),
+            ),
+        ),
+        (
+            {"seed": 2},
+            {},
+            (
+                array([
+                    [1.9019072, 1.8469586],
+                    [4.6702036, 4.8555419],
+                    [3.88026, 4.0085456],
+                ]),
+                array([
+                    [-1.9195439, -1.826369],
+                    [-4.5784073, -4.7704947],
+                    [-4.0406025, -3.9173866],
+                ]),
+            ),
+        ),
+        (
+            {},
+            {"output_names": ["y_1"]},
+            (
+                array([
+                    [1.793727, 1.6737006],
+                    [4.7481523, 4.7274054],
+                    [4.1133087, 4.0414895],
+                ]),
+            ),
+        ),
+    ],
+)
+def test_compute_samples(dataset, compute_options, init_options, expected_samples):
+    """Test the method compute_samples."""
+    model = GaussianProcessRegressor(dataset, **init_options)
+    model.learn()
+    input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
+    samples = model.compute_samples(input_data, 2, **compute_options)
+    assert_almost_equal(samples[0], expected_samples[0])
+    if not init_options:
+        assert_almost_equal(samples[1], expected_samples[1])

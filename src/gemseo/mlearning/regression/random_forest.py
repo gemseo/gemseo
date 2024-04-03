@@ -32,7 +32,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Final
 
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
@@ -42,17 +41,16 @@ from gemseo.utils.seeder import SEED
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from numpy import ndarray
-
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 
 class RandomForestRegressor(MLRegressionAlgo):
     """Random forest regression."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "RF"
-    LIBRARY: Final[str] = "scikit-learn"
+    LIBRARY: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,
@@ -85,10 +83,10 @@ class RandomForestRegressor(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data: ndarray,
-        output_data: ndarray,
+        input_data: RealArray,
+        output_data: RealArray,
     ) -> None:
-        # SKLearn RandomForestReressor does not like output
+        # SKLearn RandomForestRegressor does not like output
         # shape (n_samples, 1), prefers (n_samples,).
         # The shape (n_samples, n_outputs) with n_outputs >= 2 is fine.
         if output_data.shape[1] == 1:
@@ -97,6 +95,6 @@ class RandomForestRegressor(MLRegressionAlgo):
 
     def _predict(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         return self.algo.predict(input_data).reshape((len(input_data), -1))

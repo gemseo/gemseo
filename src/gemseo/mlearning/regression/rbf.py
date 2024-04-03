@@ -49,7 +49,6 @@ from numpy import average
 from numpy import exp
 from numpy import finfo
 from numpy import log
-from numpy import ndarray
 from numpy import newaxis
 from numpy import sqrt
 from numpy.linalg import norm
@@ -64,6 +63,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 SavedObjectType = Union[_SavedObjectType, float, Callable]
 
@@ -74,14 +74,14 @@ class RBFRegressor(MLRegressionAlgo):
     This model relies on the SciPy class :class:`scipy.interpolate.Rbf`.
     """
 
-    der_function: Callable[[ndarray], ndarray]
+    der_function: Callable[[RealArray], RealArray]
     """The derivative of the radial basis function."""
 
-    y_average: ndarray
+    y_average: RealArray
     """The mean of the learning output data."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "RBF"
-    LIBRARY: Final[str] = "SciPy"
+    LIBRARY: ClassVar[str] = "SciPy"
 
     EUCLIDEAN: Final[str] = "euclidean"
 
@@ -103,10 +103,10 @@ class RBFRegressor(MLRegressionAlgo):
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         function: Function | Callable[[float, float], float] = Function.MULTIQUADRIC,
-        der_function: Callable[[ndarray], ndarray] | None = None,
+        der_function: Callable[[RealArray], RealArray] | None = None,
         epsilon: float | None = None,
         smooth: float = 0.0,
-        norm: str | Callable[[ndarray, ndarray], float] = "euclidean",
+        norm: str | Callable[[RealArray, RealArray], float] = "euclidean",
     ) -> None:
         r"""
         Args:
@@ -182,10 +182,10 @@ class RBFRegressor(MLRegressionAlgo):
         @classmethod
         def der_multiquadric(
             cls,
-            input_data: ndarray,
+            input_data: RealArray,
             norm_input_data: float,
             eps: float,
-        ) -> ndarray:
+        ) -> RealArray:
             r"""Compute derivative of :math:`f(r) = \sqrt{r^2 + 1}` w.r.t. :math:`x`.
 
             Args:
@@ -201,10 +201,10 @@ class RBFRegressor(MLRegressionAlgo):
         @classmethod
         def der_inverse_multiquadric(
             cls,
-            input_data: ndarray,
+            input_data: RealArray,
             norm_input_data: float,
             eps: float,
-        ) -> ndarray:
+        ) -> RealArray:
             r"""Compute derivative of :math:`f(r)=1/\sqrt{r^2 + 1}` w.r.t. :math:`x`.
 
             Args:
@@ -220,10 +220,10 @@ class RBFRegressor(MLRegressionAlgo):
         @classmethod
         def der_gaussian(
             cls,
-            input_data: ndarray,
+            input_data: RealArray,
             norm_input_data: float,
             eps: float,
-        ) -> ndarray:
+        ) -> RealArray:
             r"""Compute derivative of :math:`f(r)=\exp(-r^2)` w.r.t. :math:`x`.
 
             Args:
@@ -239,10 +239,10 @@ class RBFRegressor(MLRegressionAlgo):
         @classmethod
         def der_linear(
             cls,
-            input_data: ndarray,
+            input_data: RealArray,
             norm_input_data: float,
             eps: float,
-        ) -> ndarray:
+        ) -> RealArray:
             """Compute derivative of :math:`f(r)=r` w.r.t. :math:`x`.
 
             If :math:`x=0`, return 0 (determined up to a tolerance).
@@ -265,10 +265,10 @@ class RBFRegressor(MLRegressionAlgo):
         @classmethod
         def der_cubic(
             cls,
-            input_data: ndarray,
+            input_data: RealArray,
             norm_input_data: float,
             eps: float,
-        ) -> ndarray:
+        ) -> RealArray:
             """Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r^3`.
 
             Args:
@@ -284,10 +284,10 @@ class RBFRegressor(MLRegressionAlgo):
         @classmethod
         def der_quintic(
             cls,
-            input_data: ndarray,
+            input_data: RealArray,
             norm_input_data: float,
             eps: float,
-        ) -> ndarray:
+        ) -> RealArray:
             """Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r^5`.
 
             Args:
@@ -303,10 +303,10 @@ class RBFRegressor(MLRegressionAlgo):
         @classmethod
         def der_thin_plate(
             cls,
-            input_data: ndarray,
+            input_data: RealArray,
             norm_input_data: float,
             eps: float,
-        ) -> ndarray:
+        ) -> RealArray:
             r"""Compute derivative of :math:`f(r) = r^2\log(r)` w.r.t. :math:`x`.
 
             If :math:`x=0`, return 0 (determined up to a tolerance).
@@ -328,8 +328,8 @@ class RBFRegressor(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data: ndarray,
-        output_data: ndarray,
+        input_data: RealArray,
+        output_data: RealArray,
     ) -> None:
         self.y_average = average(output_data, axis=0)
         output_data -= self.y_average
@@ -345,14 +345,14 @@ class RBFRegressor(MLRegressionAlgo):
 
     def _predict(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         return self.algo(*input_data.T).reshape((len(input_data), -1)) + self.y_average
 
     def _predict_jacobian(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         self._check_available_jacobian()
         der_func = self.der_function or getattr(
             self.RBFDerivatives, f"der_{self.function}"

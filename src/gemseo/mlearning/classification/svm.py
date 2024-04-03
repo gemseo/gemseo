@@ -36,7 +36,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
-from typing import Final
 
 from sklearn.svm import SVC
 
@@ -56,7 +55,7 @@ class SVMClassifier(MLClassificationAlgo):
     """The Support Vector Machine algorithm for classification."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "SVM"
-    LIBRARY: Final[str] = "scikit-learn"
+    LIBRARY: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,
