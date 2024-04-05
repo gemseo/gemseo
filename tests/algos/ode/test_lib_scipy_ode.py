@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
 import pytest
 from numpy import arange
 from numpy import array
@@ -38,7 +39,7 @@ from gemseo.problems.ode.orbital_dynamics import OrbitalDynamics
 from gemseo.problems.ode.van_der_pol import VanDerPol
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
 
 parametrized_algo_names = pytest.mark.parametrize(
     "algo_name",
@@ -76,10 +77,10 @@ def test_ode_problem_1d(time_vector) -> None:
     bewteen analytical and     approximated solutions should be small.
     """
 
-    def _func(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
+    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return array(state)
 
-    def _jac(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
+    def _jac(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return array(1)
 
     _initial_state = [1]
@@ -131,10 +132,10 @@ def test_ode_problem_2d() -> None:
     :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
     """
 
-    def _func(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
+    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return state
 
-    def _jac(time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
+    def _jac(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return array([[1, 0], [0, 1]])
 
     problem = ODEProblem(
@@ -152,6 +153,30 @@ def test_ode_problem_2d() -> None:
     assert problem.result.is_converged
     assert problem.result.solver_name == algo_name
     assert problem.result.state_vector is not None
+
+    analytical_solution = exp(problem.result.time_vector)
+    assert sqrt(sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+
+
+def test_ode_problem_jacobian_as_array() -> None:
+    """Test the resolution of an ODE problem when the Jacobian is defined with an array.
+
+    Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
+    :math:`f(0, 0) = 1`. The Jacobian of this problem is the identity matrix.
+    """
+
+    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+        return state
+
+    problem = ODEProblem(
+        _func,
+        jac=array([[1, 0], [0, 1]]),
+        initial_state=[1, 1],
+        initial_time=0,
+        final_time=1,
+        time_vector=arange(0, 1, 0.1),
+    )
+    ODESolversFactory().execute(problem, "BDF", first_step=1e-6, atol=1e-12, rtol=1e-12)
 
     analytical_solution = exp(problem.result.time_vector)
     assert sqrt(sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
@@ -294,3 +319,62 @@ def test_check_ode_problem(problem) -> None:
         pass
     else:
         raise ValueError
+
+
+def test_ode_problem_with_adjoint_attributes():
+    """Test the declaration of a problem with the attributes for using the adjoint."""
+
+    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+        return array(state)
+
+    def _jac(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+        return array([[1, 0], [0, 1]])
+
+    def _jac_desvar(time: float, state: NumberArray) -> NumberArray:
+        return array([[0, 0], [0, 0]])
+
+    problem = ODEProblem(
+        _func,
+        jac=_jac,
+        initial_state=[1],
+        initial_time=0,
+        final_time=1,
+        time_vector=np.linspace(0, 1, 30),
+        jac_desvar=_jac_desvar,
+        adjoint_wrt_state=array([[1, 0], [0, 1]]),
+        adjoint_wrt_desvar=array([0, 0]),
+    )
+
+    ODESolversFactory().execute(problem)
+
+    assert problem.result.is_converged
+
+
+def test_ode_problem_2d_empty_params() -> None:
+    r"""Test the definition and resolution of an ODE problem.
+
+    Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
+    :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
+    """
+
+    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+        return state
+
+    problem = ODEProblem(
+        _func,
+        jac=None,
+        initial_state=[1, 1],
+        initial_time=0,
+        final_time=1,
+        time_vector=None,
+    )
+    algo_name = "DOP853"
+    ODESolversFactory().execute(problem, algo_name, first_step=1e-6)
+    state_vect = [0.0, 1.0]
+    problem.check_jacobian(state_vect)
+    assert problem.result.is_converged
+    assert problem.result.solver_name == algo_name
+    assert problem.result.state_vector is not None
+
+    analytical_solution = exp(problem.result.time_vector)
+    assert sqrt(sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
