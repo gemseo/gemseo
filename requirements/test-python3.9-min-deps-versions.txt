@@ -48,7 +48,7 @@ numpy==1.22.0
     #   matplotlib
     #   nlopt
     #   pandas
-    #   pydoe2
+    #   pydoe3
     #   pyxdsm
     #   scikit-learn
     #   scipy
@@ -69,7 +69,7 @@ py==1.11.0
 pydantic==2.1.0
 pydantic-core==2.4.0
     # via pydantic
-pydoe2==1.0.2
+pydoe3==1.0.1
 pyparsing==3.1.2
     # via matplotlib
 pytest==7.0.0
@@ -89,7 +89,7 @@ requests==0.2.0
 scikit-learn==1.0
 scipy==1.9.0
     # via
-    #   pydoe2
+    #   pydoe3
     #   scikit-learn
 six==1.16.0
     # via

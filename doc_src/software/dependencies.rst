@@ -74,7 +74,7 @@ All these tools are open source with non-viral licenses
    - nlopt >=2.7.0,<=2.7.1: optimization library
    - openpyxl <=3.1.2: Excel reading with pandas
    - openturns >=1.16,<=1.21: designs of experiments, machine learning, uncertainty quantification
-   - pydoe2 >=1.0.2,<=1.3.0: design of experiments
+   - pydoe3 == 1.0.1: design of experiments
    - scikit-learn >=0.18,<=1.3.2: machine learning
    - sympy >=1.5,<=1.12: symbolic calculations for analytic disciplines
    - xlwings >=0.27.0,<=0.30.13: Excel reading on Windows

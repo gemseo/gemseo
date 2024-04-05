@@ -58,7 +58,7 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `Plotly <https://plotly.com/python/>`_
     MIT
 
-`pyDOE2 <https://github.com/clicumu/pyDOE2>`_
+`pyDOE3 <https://github.com/relf/pyDOE3>`_
     BSD 3-Clause
 
 `Python <http://python.org/>`_

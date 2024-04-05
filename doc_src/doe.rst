@@ -62,7 +62,7 @@ Algorithms
 ----------
 
 |g| wraps different kinds of DOE algorithms
-from the libraries `PyDOE <https://github.com/clicumu/pyDOE2>`__ and `OpenTURNS <https://openturns.github.io/www/>`__.
+from the libraries `PyDOE <https://github.com/relf/pyDOE3>`__ and `OpenTURNS <https://openturns.github.io/www/>`__.
 
 .. note::
 
