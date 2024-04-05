@@ -18,8 +18,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pyDOE2
 from numpy import array
+from pyDOE3.doe_factorial import fullfact
 
 from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
 
@@ -36,7 +36,7 @@ class PyDOEFullFactorialDOE(BaseFullFactorialDOE):
     """
 
     def _generate_fullfact_from_levels(self, levels: int | Sequence[int]) -> RealArray:
-        doe = pyDOE2.fullfact(levels)
+        doe = fullfact(levels)
         # Because pyDOE return the DOE where the values of levels are integers from 0 to
         # the maximum level number,
         # we need to divide by levels - 1.

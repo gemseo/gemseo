@@ -28,8 +28,12 @@ from typing import ClassVar
 from typing import Optional
 from typing import Union
 
-import pyDOE2 as pyDOE
 from numpy.random import RandomState
+from pyDOE3.doe_box_behnken import bbdesign
+from pyDOE3.doe_composite import ccdesign
+from pyDOE3.doe_factorial import ff2n
+from pyDOE3.doe_lhs import lhs
+from pyDOE3.doe_plackett_burman import pbdesign
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
@@ -208,7 +212,7 @@ class PyDOE(DOELibrary):
         self, design_space: DesignSpace, **options: OptionType
     ) -> RealArray:
         if self.algo_name == self.PYDOE_LHS:
-            return pyDOE.lhs(
+            return lhs(
                 design_space.dimension,
                 random_state=RandomState(self._seeder.get_seed(options[self.SEED])),
                 samples=options[self.N_SAMPLES],
@@ -218,7 +222,7 @@ class PyDOE(DOELibrary):
 
         if self.algo_name == self.PYDOE_CCDESIGN:
             return self.__translate(
-                pyDOE.ccdesign(
+                ccdesign(
                     design_space.dimension,
                     center=options[self.CENTER_CC_KEYWORD],
                     alpha=options[self.ALPHA_KEYWORD],
@@ -232,7 +236,7 @@ class PyDOE(DOELibrary):
             # uniform estimate of the prediction variance over the
             # entire design space. Default value of center depends on dv_size
             return self.__translate(
-                pyDOE.bbdesign(
+                bbdesign(
                     design_space.dimension,
                     center=options.get(self.CENTER_BB_KEYWORD),
                 )
@@ -246,10 +250,10 @@ class PyDOE(DOELibrary):
             )
 
         if self.algo_name == self.PYDOE_2LEVELFACT:
-            return self.__translate(pyDOE.ff2n(design_space.dimension))
+            return self.__translate(ff2n(design_space.dimension))
 
         if self.algo_name == self.PYDOE_PBDESIGN:
-            return self.__translate(pyDOE.pbdesign(design_space.dimension))
+            return self.__translate(pbdesign(design_space.dimension))
 
         msg = f"Bad algo_name: {self.algo_name}"
         raise ValueError(msg)
