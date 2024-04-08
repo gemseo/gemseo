@@ -20,7 +20,7 @@ dill==0.3.8
 docstring-inheritance==1.0.0
 et-xmlfile==1.1.0
     # via openpyxl
-execnet==2.0.2
+execnet==2.1.0
     # via pytest-xdist
 fastjsonschema==2.14.5
 genson==1.2.2
