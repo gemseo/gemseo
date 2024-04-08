@@ -1,0 +1,1 @@
+API change: the attribute ``DriverLibrary.MAX_DS_SIZE_PRINT`` no longer exists; it is replaced by the argument ``max_design_space_dimension_to_log`` of ``DriverLibrary.execute``.

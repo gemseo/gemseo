@@ -847,5 +847,5 @@ class MNBI(OptimizationLibrary):
             self._debug_results.to_hdf(self.__debug_file_path)
         return self.get_optimum_from_database()
 
-    def _log_result(self) -> None:
+    def _log_result(self, max_design_space_dimension_to_log: int) -> None:
         LOGGER.info("%s", self.problem.solution)

@@ -21,10 +21,12 @@
 
 from __future__ import annotations
 
+import logging
 from unittest import mock
 
 import pytest
 from numpy import array
+from numpy import full
 
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
 from gemseo.algos.design_space import DesignSpace
@@ -232,3 +234,35 @@ def test_clear_listeners(name):
     driver = CustomDOE()
     driver.execute(problem, samples=array([[1, 2, 3]]))
     assert getattr(problem.database, f"_Database__{name}s") == [sum]
+
+
+@pytest.mark.parametrize("max_dimension", [1, 3])
+def test_max_design_space_dimension_to_log(max_dimension, caplog):
+    """Check the cap on the dimension of a design space to log."""
+    problem = Power2()
+    initial_space_string = problem.design_space._get_string_representation(
+        False, "   over the design space"
+    ).replace("\n", "\n      ")
+    CustomDOE().execute(
+        problem,
+        samples=full((1, 3), pow(0.9, 1.0 / 3.0)),
+        max_design_space_dimension_to_log=max_dimension,
+    )
+
+    # Check the logging of the initial design space
+    assert (max_dimension >= 3) == (
+        ("gemseo.algos.driver_library", logging.INFO, initial_space_string)
+        in caplog.record_tuples
+    )
+
+    # Check the logging of the final design space
+    assert (max_dimension >= 3) == (
+        (
+            "gemseo.algos.driver_library",
+            logging.INFO,
+            problem.design_space._get_string_representation(False)
+            .replace("Design space", "      Design space")
+            .replace("\n", "\n         "),
+        )
+        in caplog.record_tuples
+    )

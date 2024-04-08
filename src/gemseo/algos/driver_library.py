@@ -132,7 +132,6 @@ class DriverLibrary(AlgorithmLibrary):
     _NORMALIZE_DS = True
     ROUND_INTS_OPTION = "round_ints"
     EVAL_OBS_JAC_OPTION = "eval_obs_jac"
-    MAX_DS_SIZE_PRINT = 40
 
     _RESULT_CLASS: ClassVar[type[OptimizationResult]] = OptimizationResult
     """The class used to present the result of the optimization."""
@@ -297,6 +296,7 @@ class DriverLibrary(AlgorithmLibrary):
         problem: OptimizationProblem,
         algo_name: str,
         result: OptimizationResult,
+        max_design_space_dimension_to_log: int,
         **options: Any,
     ) -> None:
         """To be overridden by subclasses.
@@ -305,6 +305,10 @@ class DriverLibrary(AlgorithmLibrary):
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
             result: The result of the run.
+            max_design_space_dimension_to_log: The maximum dimension of a design space
+                to be logged.
+                If this number is higher than the dimension of the design space
+                then the design space will not be logged.
             **options: The options of the algorithm.
         """
         problem.solution = result
@@ -312,10 +316,17 @@ class DriverLibrary(AlgorithmLibrary):
             problem.design_space.set_current_value(result)
 
         if self.__log_problem:
-            self._log_result()
+            self._log_result(max_design_space_dimension_to_log)
 
-    def _log_result(self) -> None:
-        """Log the optimization result."""
+    def _log_result(self, max_design_space_dimension_to_log: int) -> None:
+        """Log the optimization result.
+
+        Args:
+            max_design_space_dimension_to_log: The maximum dimension of a design space
+                to be logged.
+                If this number is higher than the dimension of the design space
+                then the design space will not be logged.
+        """
         problem = self.problem
         result = problem.solution
         opt_result_str = result._strings
@@ -326,7 +337,7 @@ class DriverLibrary(AlgorithmLibrary):
             else:
                 LOGGER.warning("%s", opt_result_str[1])
         LOGGER.info("%s", opt_result_str[2])
-        if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+        if problem.design_space.dimension <= max_design_space_dimension_to_log:
             log = MultiLineString()
             log.indent()
             log.indent()
@@ -381,6 +392,7 @@ class DriverLibrary(AlgorithmLibrary):
         algo_name: str | None = None,
         eval_obs_jac: bool = False,
         skip_int_check: bool = False,
+        max_design_space_dimension_to_log: int = 40,
         **options: DriverLibOptionType,
     ) -> OptimizationResult:
         """Execute the driver.
@@ -393,6 +405,10 @@ class DriverLibrary(AlgorithmLibrary):
             eval_obs_jac: Whether to evaluate the Jacobian of the observables.
             skip_int_check: Whether to skip the integer variable handling check
                 of the selected algorithm.
+            max_design_space_dimension_to_log: The maximum dimension of a design space
+                to be logged.
+                If this number is higher than the dimension of the design space
+                then the design space will not be logged.
             **options: The options for the algorithm.
 
         Returns:
@@ -462,7 +478,7 @@ class DriverLibrary(AlgorithmLibrary):
 
         if self.__log_problem:
             LOGGER.info("%s", problem)
-            if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+            if problem.design_space.dimension <= max_design_space_dimension_to_log:
                 log = MultiLineString()
                 log.indent()
                 log.add("over the design space:")
@@ -493,7 +509,13 @@ class DriverLibrary(AlgorithmLibrary):
         result.design_space = problem.design_space
         self.finalize_iter_observer()
         self.clear_listeners()
-        self._post_run(problem, self.algo_name, result, **options)
+        self._post_run(
+            problem,
+            self.algo_name,
+            result,
+            max_design_space_dimension_to_log,
+            **options,
+        )
         return result
 
     def clear_listeners(self) -> None:
