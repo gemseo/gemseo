@@ -1,1 +1,0 @@
-The ``MDODiscipline`` can be linearized after execution when its ``cache_type`` is set to ``MDODiscipline.CacheType.None`` and both inputs and outputs arguments of linearize are empty.

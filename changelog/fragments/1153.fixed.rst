@@ -1,1 +1,0 @@
-The ``PydanticGrammar`` was not able to validate ``DisciplineData`` objects.

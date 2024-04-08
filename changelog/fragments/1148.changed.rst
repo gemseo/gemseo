@@ -1,1 +1,0 @@
-API change: ``SEED`` moved to ``gemseo.utils.seeder``.

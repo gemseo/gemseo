@@ -1,1 +1,0 @@
-The option ``disp`` of the ``SciPy`` algorithms shall now be passed as a ``boolean`` instead of an ``integer``.

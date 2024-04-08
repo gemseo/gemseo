@@ -1,1 +1,0 @@
-The expression ``LinearComposition.expr`` is now correct.

@@ -1,1 +1,0 @@
-The user no longer has to provide an initial design point to solve an optimization problem with gradient approximation.

@@ -1,1 +1,0 @@
-The ``Alternate2Delta`` method now handles degenerated (ill-conditioned) least squares problems. In this case, the method now returns the iterate without transformations.
