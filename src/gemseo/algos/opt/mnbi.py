@@ -831,7 +831,7 @@ class MNBI(OptimizationLibrary):
             )
             betas = library.compute_doe(
                 beta_design_space,
-                size=n_samples,
+                n_samples=n_samples,
                 unit_sampling=True,
                 **self._doe_algo_options,
             )
