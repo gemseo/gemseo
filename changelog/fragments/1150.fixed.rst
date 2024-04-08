@@ -1,1 +1,0 @@
-The ``MDOChain`` Jacobian is made reproducible, making the sum of composite derivative terms in an order that does not depend on the code execution.

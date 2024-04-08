@@ -1,1 +1,0 @@
-The boolean attribute ``DatasetPlot.grid`` allows to add a grid to the ``DatasetPlot``.

@@ -1,3 +1,0 @@
-It is now possible to solve ``MDA`` instances that include non-numeric couplings (weak or strong), typically strings
-or arrays of string. The non-numeric couplings are automatically filtered during the numerical solution of the ``MDA``.
-A warning message is shown in the log at ``DEBUG`` level with the variables that were filtered.

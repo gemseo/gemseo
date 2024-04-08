@@ -1,2 +1,0 @@
-The ``DirectoryCreator`` can now consider non-existing root directory
-while using ``DirectoryNamingMethod.NUMBERED``.

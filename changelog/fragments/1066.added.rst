@@ -1,1 +1,0 @@
-The method ``DataConverter.is_continuous`` can tell if a variable is continuous.

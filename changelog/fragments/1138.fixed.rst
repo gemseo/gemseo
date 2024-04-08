@@ -1,1 +1,0 @@
-``Dataset.add_group`` works correctly when ``variable_names`` defines a single variable.

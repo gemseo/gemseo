@@ -1,2 +1,0 @@
-The method ``Scenario.set_optimization_history_backup()`` no longer causes the execution to crash at the first iteration
-when the Scenario includes equality or inequality constraints.

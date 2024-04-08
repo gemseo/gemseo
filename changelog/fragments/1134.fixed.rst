@@ -1,1 +1,0 @@
-``Database`` cannot store the same listener several times.

@@ -1,5 +1,0 @@
-``MDAJacobi`` and ``MDAGaussSeidel`` have now different XDSM representations
-which are in line with the convention proposed in :cite:`Lambe2012`.
-``MDAChain`` is not represented anymore in the XDSM.
-Add tests for the pdf generation of XDSMs.
-Bugfixes for XDSM pdf generation.
