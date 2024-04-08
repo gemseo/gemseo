@@ -250,10 +250,13 @@ class BaseAugmentedLagrangian(
         problem: OptimizationProblem,
         algo_name: str,
         result: OptimizationResult,
+        max_design_space_dimension_to_log: int,
         **options: Any,
     ) -> None:
         result.n_obj_call = self.__n_obj_func_calls
-        super()._post_run(problem, algo_name, result, **options)
+        super()._post_run(
+            problem, algo_name, result, max_design_space_dimension_to_log, **options
+        )
 
     @staticmethod
     def _check_termination_criteria(
