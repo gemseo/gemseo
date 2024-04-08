@@ -4,6 +4,8 @@ annotated-types==0.6.0
     # via pydantic
 attrs==23.2.0
     # via check-wheel-contents
+backports-tarfile==1.0.0
+    # via jaraco-context
 build==1.2.1
 certifi==2024.2.2
     # via requests
@@ -26,7 +28,7 @@ importlib-metadata==7.1.0
     #   twine
 jaraco-classes==3.4.0
     # via keyring
-jaraco-context==5.1.0
+jaraco-context==5.3.0
     # via keyring
 jaraco-functools==4.0.0
     # via keyring
@@ -84,7 +86,7 @@ tomli==2.0.1
     #   check-wheel-contents
     #   pyproject-hooks
 twine==5.0.0
-typing-extensions==4.10.0
+typing-extensions==4.11.0
     # via
     #   pydantic
     #   pydantic-core
