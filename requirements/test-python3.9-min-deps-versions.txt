@@ -20,7 +20,7 @@ dill==0.3.8
 docstring-inheritance==1.0.0
 et-xmlfile==1.1.0
     # via openpyxl
-execnet==2.1.0
+execnet==2.1.1
     # via pytest-xdist
 fastjsonschema==2.14.5
 genson==1.2.2
@@ -31,7 +31,7 @@ iniconfig==2.0.0
 jdcal==1.4.1
     # via openpyxl
 jinja2==3.0.0
-joblib==1.3.2
+joblib==1.4.0
     # via scikit-learn
 kiwisolver==1.4.5
     # via matplotlib
