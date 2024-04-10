@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.uniform import (
     UniformToleranceInterval,
@@ -43,7 +43,7 @@ def test_uniform_quantile_lower() -> None:
     """Check the bounds of lower-sided TI for the standard uniform distribution."""
     tolerance_interval = UniformToleranceInterval(1000000, minimum=0.0, maximum=1.0)
     lower, _ = tolerance_interval.compute(
-        0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
+        0.975, 0.9, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert pytest.approx(lower, 0.001) == 0.025
 
@@ -52,6 +52,6 @@ def test_uniform_quantile_upper() -> None:
     """Check the bounds of upper-sided TI for the standard uniform distribution."""
     tolerance_interval = UniformToleranceInterval(1000000, minimum=0.0, maximum=1.0)
     _, upper = tolerance_interval.compute(
-        0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.UPPER
+        0.975, 0.9, side=BaseToleranceInterval.ToleranceIntervalSide.UPPER
     )
     assert pytest.approx(upper, 0.001) == 0.975

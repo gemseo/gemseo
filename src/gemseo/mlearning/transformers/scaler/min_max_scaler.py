@@ -50,7 +50,7 @@ from numpy import where
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
     from gemseo.typing import RealArray
 
 

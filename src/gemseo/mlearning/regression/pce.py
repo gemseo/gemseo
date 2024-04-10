@@ -114,7 +114,7 @@ from openturns import Point
 from openturns import StandardDistributionPolynomialFactory
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.utils.string_tools import pretty_str
 
@@ -146,7 +146,7 @@ class CleaningOptions:
     """The threshold to select the efficient coefficients of the polynomial basis."""
 
 
-class PCERegressor(MLRegressionAlgo):
+class PCERegressor(BaseMLRegressionAlgo):
     """Polynomial chaos expansion model.
 
     See Also: API documentation of the OpenTURNS class `FunctionalChaosAlgorithm`_.
@@ -160,7 +160,7 @@ class PCERegressor(MLRegressionAlgo):
         self,
         data: IODataset | None,
         probability_space: ParameterSpace,
-        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         degree: int = 2,

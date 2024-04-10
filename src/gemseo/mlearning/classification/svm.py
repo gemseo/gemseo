@@ -39,7 +39,7 @@ from typing import ClassVar
 
 from sklearn.svm import SVC
 
-from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.mlearning.classification.classification import BaseMLClassificationAlgo
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import TransformerType
 
 
-class SVMClassifier(MLClassificationAlgo):
+class SVMClassifier(BaseMLClassificationAlgo):
     """The Support Vector Machine algorithm for classification."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "SVM"
@@ -60,7 +60,7 @@ class SVMClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data: IODataset,
-        transformer: TransformerType = MLClassificationAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLClassificationAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         C: float = 1.0,  # noqa: N803

@@ -60,7 +60,7 @@ given the point :math:`x`.
 
 
 This concept is implemented through the :class:`.KMeans` class
-which inherits from the :class:`.MLClusteringAlgo` class.
+which inherits from the :class:`.BaseMLClusteringAlgo` class.
 
 Dependence
 ----------
@@ -80,7 +80,7 @@ from numpy import newaxis
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
 
-from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
+from gemseo.mlearning.clustering.clustering import BaseMLPredictiveClusteringAlgo
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
@@ -90,7 +90,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import TransformerType
 
 
-class KMeans(MLPredictiveClusteringAlgo):
+class KMeans(BaseMLPredictiveClusteringAlgo):
     """The k-means clustering algorithm."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "KMeans"
@@ -101,7 +101,7 @@ class KMeans(MLPredictiveClusteringAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: TransformerType = MLPredictiveClusteringAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLPredictiveClusteringAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         n_clusters: int = 5,
         random_state: int | None = SEED,

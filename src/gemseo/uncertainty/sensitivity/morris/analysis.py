@@ -81,8 +81,8 @@ from strenum import StrEnum
 
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.disciplines.utils import get_all_outputs
+from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
-from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import repr_variable
@@ -102,7 +102,7 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.dataset_plot import VariableType
 
 
-class MorrisAnalysis(SensitivityAnalysis):
+class MorrisAnalysis(BaseSensitivityAnalysis):
     r"""Sensitivity analysis based on the Morris' indices.
 
     :attr:`.MorrisAnalysis.indices` contains both :math:`\mu^*`, :math:`\mu`

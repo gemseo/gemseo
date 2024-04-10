@@ -27,7 +27,7 @@ from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.knn import KNNClassifier
-from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.quality_measures.f1_measure import F1Measure
 from gemseo.utils.testing.helpers import concretize_classes
 
@@ -56,8 +56,8 @@ def dataset_test() -> IODataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(MLAlgo):
-        algo = MLAlgo(dataset)
+    with concretize_classes(BaseMLAlgo):
+        algo = BaseMLAlgo(dataset)
 
     measure = F1Measure(algo)
     assert measure.algo is not None

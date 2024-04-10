@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 N_CPUS: Final[int] = cpu_count()
 
 
-class MDARoot(BaseMDASolver):
+class BaseMDARoot(BaseMDASolver):
     """Abstract class implementing MDAs based on (Quasi-)Newton methods."""
 
     n_processes: int

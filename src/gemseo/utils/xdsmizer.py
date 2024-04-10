@@ -53,7 +53,7 @@ from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.monitoring import Monitoring
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.mda.mda import MDA
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.utils.locks import synchronized
 from gemseo.utils.show_utils import generate_xdsm_html
 from gemseo.utils.xdsm import XDSM
@@ -93,7 +93,7 @@ class XDSMizer:
             level: The depth of the scenario. Root scenario is level 0.
             expected_workflow: The expected workflow,
                 describing the sequence of execution of the different disciplines
-                (:class:`.MDODiscipline`, :class:`.Scenario`, :class:`.MDA`, etc.)
+                (:class:`.MDODiscipline`, :class:`.Scenario`, :class:`.BaseMDA`, etc.)
         """  # noqa:D205 D212 D415
         self.scenario = scenario
         self.level = level
@@ -371,7 +371,7 @@ class XDSMizer:
             node = {"id": self.to_id[atom], "name": atom.discipline.name}
 
             # node type
-            if isinstance(atom.discipline, MDA):
+            if isinstance(atom.discipline, BaseMDA):
                 node["type"] = "mda"
             elif atom.discipline.is_scenario():
                 node["type"] = "mdo"
@@ -452,7 +452,7 @@ class XDSMizer:
         for atom in self.atoms:
             if atom is not self.root_atom:
                 # special case MDA : skipped
-                if isinstance(atom.discipline, MDA):
+                if isinstance(atom.discipline, BaseMDA):
                     continue
                 out_to_user = [
                     o

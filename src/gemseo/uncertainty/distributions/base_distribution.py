@@ -22,7 +22,7 @@ r"""Abstract class defining the concept of probability distribution.
 Overview
 --------
 
-The abstract :class:`.Distribution` class implements the concept of
+The abstract :class:`.BaseDistribution` class implements the concept of
 `probability distribution <https://en.wikipedia.org/wiki/Probability_distribution>`_,
 which is a mathematical function giving the probabilities of occurrence
 of different possible outcomes of a random variable for an experiment.
@@ -38,7 +38,7 @@ with its famous *bell curve* is a well-known example of probability distribution
 Construction
 ------------
 
-The :class:`.Distribution` of a given uncertain variable is built
+The :class:`.BaseDistribution` of a given uncertain variable is built
 from a recognized distribution name (e.g. 'Normal' for OpenTURNS or 'norm' for SciPy),
 a variable dimension, a set of parameters
 and optionally a standard representation of these parameters.
@@ -46,11 +46,11 @@ and optionally a standard representation of these parameters.
 Capabilities
 ------------
 
-From a :class:`.Distribution`, we can easily get statistics,
-such as :attr:`.Distribution.mean`,
-:attr:`.Distribution.standard_deviation`. We can also get the
-numerical :attr:`.Distribution.range` and
-mathematical :attr:`.Distribution.support`.
+From a :class:`.BaseDistribution`, we can easily get statistics,
+such as :attr:`.BaseDistribution.mean`,
+:attr:`.BaseDistribution.standard_deviation`. We can also get the
+numerical :attr:`.BaseDistribution.range` and
+mathematical :attr:`.BaseDistribution.support`.
 
 .. note::
 
@@ -61,15 +61,15 @@ mathematical :attr:`.Distribution.support`.
     Both support and range are described in terms of lower and upper bounds
 
 We can also evaluate the cumulative density function
-(:meth:`.Distribution.compute_cdf`)
+(:meth:`.BaseDistribution.compute_cdf`)
 for the different marginals of the random variable,
 as well as the inverse cumulative density function
-(:meth:`.Distribution.compute_inverse_cdf`). We can plot them,
-either for a given marginal (:meth:`.Distribution.plot`)
-or for all marginals (:meth:`.Distribution.plot_all`).
+(:meth:`.BaseDistribution.compute_inverse_cdf`). We can plot them,
+either for a given marginal (:meth:`.BaseDistribution.plot`)
+or for all marginals (:meth:`.BaseDistribution.plot_all`).
 
 Lastly, we can compute realizations of the random variable
-by means of the :meth:`.Distribution.compute_samples` method.
+by means of the :meth:`.BaseDistribution.compute_samples` method.
 """
 
 from __future__ import annotations
@@ -100,13 +100,13 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.uncertainty.distributions.joint import JointDistribution
+    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 StandardParametersType = Mapping[str, Union[str, int, float]]
 ParametersType = Union[tuple[str, int, float], StandardParametersType]
 
 
-class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseDistribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Probability distribution related to a random variable."""
 
     math_lower_bound: ndarray
@@ -160,10 +160,10 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
     DEFAULT_VARIABLE_NAME: Final[str] = "x"
     """The default name of the variable."""
 
-    JOINT_DISTRIBUTION_CLASS: ClassVar[type[JointDistribution] | None] = None
+    JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution] | None] = None
     """The class of the joint distribution associated with this distribution, if any."""
 
-    # TODO: remove the argument dimension / use JointDistribution for random vectors
+    # TODO: remove the argument dimension / use BaseJointDistribution for random vectors
 
     def __init__(
         self,
@@ -186,7 +186,7 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
                 to all components of the random variable under the hypothesis
                 that these components are stochastically independent.
                 To be removed in a future version;
-                use a :class:`.JointDistribution` instead.
+                use a :class:`.BaseJointDistribution` instead.
             standard_parameters: The parameters of the probability distribution
                 used for string representation only
                 (use ``parameters`` for computation).
@@ -198,10 +198,10 @@ class Distribution(metaclass=ABCGoogleDocstringInheritanceMeta):
                 (this is the case of :class:`.OTDistribution`).
                 Then,
                 the string representation of
-                ``Distribution("x", "Dirac", (1,), 1, {"loc": 1})``
+                ``BaseDistribution("x", "Dirac", (1,), 1, {"loc": 1})``
                 is ``"Dirac(loc=1)"``
                 while the string representation of
-                ``Distribution("x", "Dirac", (1,))``
+                ``BaseDistribution("x", "Dirac", (1,))``
                 is ``"Dirac(1)"``.
                 The same mechanism works for keyword parameters
                 (this is the case of :class:`.SPDistribution`).

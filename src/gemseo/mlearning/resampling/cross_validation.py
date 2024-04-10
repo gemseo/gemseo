@@ -26,7 +26,7 @@ from numpy import setdiff1d
 from numpy import vstack
 from numpy.random import default_rng
 
-from gemseo.mlearning.resampling.resampler import Resampler
+from gemseo.mlearning.resampling.base_resampler import BaseResampler
 from gemseo.mlearning.resampling.split import Split
 from gemseo.mlearning.resampling.splits import Splits
 from gemseo.utils.seeder import SEED
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning import MLAlgo
 
 
-class CrossValidation(Resampler):
+class CrossValidation(BaseResampler):
     """A cross-validation tool for resampling and surrogate modeling."""
 
     __randomize: bool

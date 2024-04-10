@@ -53,7 +53,7 @@ def joint_distribution(
 def test_constructor(joint_distribution) -> None:
     assert joint_distribution.dimension == 4
     assert joint_distribution.variable_name == "x1_x2"
-    assert joint_distribution.distribution_name == "Composed"
+    assert joint_distribution.distribution_name == "Joint"
     assert joint_distribution.transformation == "x1_x2"
     assert len(joint_distribution.parameters) == 1
     assert joint_distribution.parameters[0] is None

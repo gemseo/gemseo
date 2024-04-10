@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 
-class GradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
-    """A gradient approximator."""
+class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
+    """A base class for gradient approximation."""
 
     f_pointer: Callable[[ndarray], ndarray]
     """The pointer to the function to derive."""

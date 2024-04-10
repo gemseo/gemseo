@@ -69,7 +69,7 @@ morris.compute_indices()
 # %%
 # Lastly,
 # we compare these analyses
-# with the graphical method :meth:`.SensitivityAnalysis.plot_comparison`,
+# with the graphical method :meth:`.BaseSensitivityAnalysis.plot_comparison`,
 # either using a bar chart:
 morris.plot_comparison(correlation, "y", use_bar_plot=True, save=False, show=True)
 

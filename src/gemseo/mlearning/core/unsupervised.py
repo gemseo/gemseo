@@ -22,8 +22,8 @@
 The :mod:`~gemseo.mlearning.core.unsupervised` module implements the concept of
 unsupervised machine learning models, where the data has no notion of input or output.
 
-This concept is implemented through the :class:`.MLUnsupervisedAlgo` class, which
-inherits from the :class:`.MLAlgo` class.
+This concept is implemented through the :class:`.BaseMLUnsupervisedAlgo` class, which
+inherits from the :class:`.BaseMLAlgo` class.
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ from typing import NoReturn
 from numpy import hstack
 from numpy import ndarray
 
-from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 
@@ -47,21 +47,21 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 
-class MLUnsupervisedAlgo(MLAlgo):
+class BaseMLUnsupervisedAlgo(BaseMLAlgo):
     """Unsupervised machine learning algorithm.
 
-    Inheriting classes shall overload the :meth:`!MLUnsupervisedAlgo._fit` method.
+    Inheriting classes shall overload the :meth:`!BaseMLUnsupervisedAlgo._fit` method.
     """
 
     input_names: list[str]
     """The names of the variables."""
 
-    SHORT_ALGO_NAME: ClassVar[str] = "MLUnsupervisedAlgo"
+    SHORT_ALGO_NAME: ClassVar[str] = "BaseMLUnsupervisedAlgo"
 
     def __init__(
         self,
         data: Dataset,
-        transformer: TransformerType = MLAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
     ) -> None:

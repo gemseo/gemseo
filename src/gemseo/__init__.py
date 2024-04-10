@@ -150,7 +150,7 @@ from strenum import StrEnum
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.dataset_factory import DatasetFactory as __DatasetFactory
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
@@ -172,7 +172,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.disciplines.surrogate import SurrogateDiscipline
-    from gemseo.mda.mda import MDA
+    from gemseo.mda.base_mda import BaseMDA
     from gemseo.mlearning.core.ml_algo import TransformerType
     from gemseo.post._graph_view import GraphView
     from gemseo.post.opt_post_processor import OptPostProcessor
@@ -1229,9 +1229,9 @@ def create_scalable(
 
 
 def create_surrogate(
-    surrogate: str | MLRegressionAlgo,
+    surrogate: str | BaseMLRegressionAlgo,
     data: IODataset | None = None,
-    transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,
+    transformer: TransformerType = BaseMLRegressionAlgo.DEFAULT_TRANSFORMER,
     disc_name: str | None = None,
     default_inputs: dict[str, ndarray] | None = None,
     input_names: Iterable[str] | None = None,
@@ -1242,20 +1242,20 @@ def create_surrogate(
 
     Args:
         surrogate: Either the class name
-            or the instance of the :class:`.MLRegressionAlgo`.
+            or the instance of the :class:`.BaseMLRegressionAlgo`.
         data: The learning dataset to train the regression model.
             If ``None``, the regression model is supposed to be trained.
         transformer: The strategies to transform the variables.
-            The values are instances of :class:`.Transformer`
+            The values are instances of :class:`.BaseTransformer`
             while the keys are the names of
             either the variables
             or the groups of variables,
             e.g. "inputs" or "outputs" in the case of the regression algorithms.
             If a group is specified,
-            the :class:`.Transformer` will be applied
+            the :class:`.BaseTransformer` will be applied
             to all the variables of this group.
             If ``None``, do not transform the variables.
-            The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
+            The :attr:`.BaseMLRegressionAlgo.DEFAULT_TRANSFORMER` uses
             the :class:`.MinMaxScaler` strategy for both input and output variables.
         disc_name: The name to be given to the surrogate discipline.
             If ``None``, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
@@ -1289,7 +1289,7 @@ def create_mda(
     mda_name: str,
     disciplines: Sequence[MDODiscipline],
     **options: Any,
-) -> MDA:
+) -> BaseMDA:
     """Create a multidisciplinary analysis (MDA).
 
     Args:
@@ -1995,8 +1995,8 @@ def wrap_discipline_in_job_scheduler(
     Finally, the deserialized outputs are returned by the wrapper.
 
     All process classes :class:`~gemseo.core.mdo_scenario.MDOScenario`,
-    or :class:`~gemseo.mda.mda.MDA`, inherit from
-    :class:`~gemseo.core.discipline.MDODiscipline` so can be sent to HPCs in this way.
+    or :class:`.BaseMDA`, inherit from
+    :class:`.MDODiscipline` so can be sent to HPCs in this way.
 
     The job scheduler template script can be provided directly or the predefined
     templates file names in gemseo.wrappers.job_schedulers.template can be used.

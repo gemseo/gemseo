@@ -310,7 +310,7 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
         ),
         "gemseo-pdfo": ("GEMSEO plugin for the PDFO library.", False),
         "gemseo-petsc": (
-            "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
+            "PETSc wrapper for :class:`.LinearSolver` and :class:`.BaseMDA`",
             False,
         ),
         "gemseo-pseven": ("GEMSEO plugin for the pSeven library.", False),

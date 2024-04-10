@@ -41,11 +41,11 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.base_mda_solver import BaseMDASolver
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.mda.mda import MDA
-from gemseo.mda.newton import MDANewtonRaphson
+from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
@@ -208,8 +208,8 @@ def test_consistency_fail(desc, log_message, caplog) -> None:
         log_message: The expected warning message.
         caplog: Fixture to access and control log capturing.
     """
-    with concretize_classes(MDA):
-        MDA(analytic_disciplines_from_desc(desc))
+    with concretize_classes(BaseMDA):
+        BaseMDA(analytic_disciplines_from_desc(desc))
     assert log_message in caplog.text
 
 
@@ -314,8 +314,8 @@ def test_not_numeric_couplings(caplog) -> None:
     sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
-    with concretize_classes(MDA):
-        MDA([sellar1, sellar2])
+    with concretize_classes(BaseMDA):
+        BaseMDA([sellar1, sellar2])
         msg = "The coupling variable(s) {'y_1'} is/are not an array of numeric values."
         assert msg in caplog.text
 

@@ -34,16 +34,16 @@ from typing import TYPE_CHECKING
 
 from sklearn.decomposition import KernelPCA
 
-from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
-    DimensionReduction,
+from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
+    BaseDimensionReduction,
 )
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
     from gemseo.typing import RealArray
 
 
-class KPCA(DimensionReduction):
+class KPCA(BaseDimensionReduction):
     """Kernel principal component dimension reduction algorithm."""
 
     def __init__(
@@ -74,10 +74,10 @@ class KPCA(DimensionReduction):
         self.algo.fit(data)
         self.parameters["n_components"] = len(self.algo.eigenvalues_)
 
-    @DimensionReduction._use_2d_array
+    @BaseDimensionReduction._use_2d_array
     def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.algo.transform(data)
 
-    @DimensionReduction._use_2d_array
+    @BaseDimensionReduction._use_2d_array
     def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.algo.inverse_transform(data)

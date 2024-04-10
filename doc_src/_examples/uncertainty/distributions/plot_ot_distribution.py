@@ -93,7 +93,7 @@ distribution_0_1.plot()
 # .. note::
 #
 #    We can provide a marginal index
-#    as first argument of the :meth:`.Distribution.plot` method
+#    as first argument of the :meth:`.BaseDistribution.plot` method
 #    but in the current version of |g|,
 #    all components have the same distributions and so the plot will be the same.
 

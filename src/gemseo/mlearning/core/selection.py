@@ -52,7 +52,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.quality_measures.quality_measure import (
     OptionType as MeasureOptionType,
@@ -64,7 +64,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.scenario import ScenarioInputDataType
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.core.ml_algo import MLAlgo
+    from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 
 
 class MLAlgoSelection:
@@ -73,7 +73,7 @@ class MLAlgoSelection:
     dataset: Dataset
     """The learning dataset."""
 
-    measure: type[MLQualityMeasure]
+    measure: type[BaseMLQualityMeasure]
     """The name of a quality measure to measure the quality of the machine learning
     algorithms."""
 
@@ -83,15 +83,15 @@ class MLAlgoSelection:
     factory: MLAlgoFactory
     """The factory used for the instantiation of machine learning algorithms."""
 
-    candidates: list[tuple[MLAlgo, float]]
+    candidates: list[tuple[BaseMLAlgo, float]]
     """The candidate machine learning algorithms, after possible calibration, and their
     quality measures."""
 
     def __init__(
         self,
         dataset: Dataset,
-        measure: str | type[MLQualityMeasure],
-        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
+        measure: str | type[BaseMLQualityMeasure],
+        measure_evaluation_method_name: BaseMLQualityMeasure.EvaluationMethod = BaseMLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
         samples: Sequence[int] | None = None,
         **measure_options: MeasureOptionType,
     ) -> None:
@@ -210,7 +210,7 @@ class MLAlgoSelection:
     def select(
         self,
         return_quality: bool = False,
-    ) -> MLAlgo | tuple[MLAlgo, float]:
+    ) -> BaseMLAlgo | tuple[BaseMLAlgo, float]:
         """Select the best model.
 
         The model is chosen through a grid search

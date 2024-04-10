@@ -25,7 +25,7 @@ import pytest
 from numpy import arange
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
+from gemseo.mlearning.core.unsupervised import BaseMLUnsupervisedAlgo
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.testing.helpers import concretize_classes
 
@@ -43,8 +43,8 @@ def dataset() -> Dataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(MLUnsupervisedAlgo):
-        ml_algo = MLUnsupervisedAlgo(dataset)
+    with concretize_classes(BaseMLUnsupervisedAlgo):
+        ml_algo = BaseMLUnsupervisedAlgo(dataset)
 
     assert ml_algo.algo is None
     assert ml_algo.var_names == dataset.get_variable_names(dataset.DEFAULT_GROUP)
@@ -52,8 +52,8 @@ def test_constructor(dataset) -> None:
 
 def test_variable_limitation(dataset) -> None:
     """Test specifying learning variables."""
-    with concretize_classes(MLUnsupervisedAlgo):
-        ml_algo_limited = MLUnsupervisedAlgo(
+    with concretize_classes(BaseMLUnsupervisedAlgo):
+        ml_algo_limited = BaseMLUnsupervisedAlgo(
             dataset,
             transformer={"x_1": MinMaxScaler(), "x_2": MinMaxScaler()},
             var_names=["x_1"],

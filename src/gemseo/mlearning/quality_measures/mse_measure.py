@@ -24,7 +24,7 @@ implements the concept of mean squared error measures
 for machine learning algorithms.
 
 This concept is implemented through the :class:`.MSEMeasure` class
-and overloads the :meth:`!MLErrorMeasure._compute_measure` method.
+and overloads the :meth:`!BaseMLErrorMeasure._compute_measure` method.
 
 The mean squared error (MSE) is defined by
 
@@ -41,21 +41,21 @@ from typing import TYPE_CHECKING
 
 from sklearn.metrics import mean_squared_error
 
-from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
+from gemseo.mlearning.quality_measures.error_measure import BaseMLErrorMeasure
 
 if TYPE_CHECKING:
     from gemseo.mlearning.quality_measures.quality_measure import MeasureType
-    from gemseo.mlearning.regression.regression import MLRegressionAlgo
+    from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
     from gemseo.typing import RealArray
 
 
-class MSEMeasure(MLErrorMeasure):
+class MSEMeasure(BaseMLErrorMeasure):
     """The Mean Squared Error measure for machine learning."""
 
     def __init__(
         self,
-        algo: MLRegressionAlgo,
-        fit_transformers: bool = MLErrorMeasure._FIT_TRANSFORMERS,
+        algo: BaseMLRegressionAlgo,
+        fit_transformers: bool = BaseMLErrorMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:

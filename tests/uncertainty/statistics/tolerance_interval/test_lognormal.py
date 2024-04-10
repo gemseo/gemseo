@@ -27,7 +27,7 @@ import pytest
 from scipy.special import erfinv
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.lognormal import (
     LogNormalToleranceInterval,
@@ -50,7 +50,7 @@ def test_lognormal_quantile_lower() -> None:
         1000000, mean=0.0, std=1.0, location=0.5
     )
     lower, _ = tolerance_interval.compute(
-        0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
+        0.975, 0.9, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert pytest.approx(lower, 0.01) == exp(2**0.5 * erfinv(2 * 0.025 - 1)) + 0.5
 
@@ -61,6 +61,6 @@ def test_lognormal_quantile_upper() -> None:
         1000000, mean=0.0, std=1.0, location=0.5
     )
     _, upper = tolerance_interval.compute(
-        0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.UPPER
+        0.975, 0.9, side=BaseToleranceInterval.ToleranceIntervalSide.UPPER
     )
     assert pytest.approx(upper, 0.01) == exp(2**0.5 * erfinv(2 * 0.975 - 1)) + 0.5

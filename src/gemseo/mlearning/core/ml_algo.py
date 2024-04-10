@@ -60,7 +60,7 @@ a regression model can predict the outputs corresponding to new inputs values.
    :mod:`~gemseo.mlearning.regression.regression`
 
 The quality of a machine learning algorithm can be measured
-using an :class:`.MLQualityMeasure`
+using a :class:`.BaseMLQualityMeasure`
 either with respect to the learning dataset
 or to a test dataset or using resampling methods,
 such as K-folds or leave-one-out cross-validation techniques.
@@ -114,8 +114,8 @@ from typing import Union
 from numpy import ndarray
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.transformers.transformer import Transformer
-from gemseo.mlearning.transformers.transformer import TransformerFactory
+from gemseo.mlearning.transformers.base_transformer import BaseTransformer
+from gemseo.mlearning.transformers.base_transformer import TransformerFactory
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -124,35 +124,35 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
-    from gemseo.mlearning.resampling.resampler import Resampler
+    from gemseo.mlearning.resampling.base_resampler import BaseResampler
 
-SavedObjectType = Union[Dataset, dict[str, Transformer], str, bool, int]
+SavedObjectType = Union[Dataset, dict[str, BaseTransformer], str, bool, int]
 DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
-SubTransformerType = Union[str, tuple[str, Mapping[str, Any]], Transformer]
+SubTransformerType = Union[str, tuple[str, Mapping[str, Any]], BaseTransformer]
 TransformerType = MutableMapping[str, SubTransformerType]
 DefaultTransformerType = ClassVar[Mapping[str, TransformerType]]
 
 
-class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     """An abstract machine learning algorithm.
 
     Such a model is built from a training dataset,
     data transformation options and parameters. This abstract class defines the
-    :meth:`.MLAlgo.learn`, :meth:`.MLAlgo.save` methods and the boolean
-    property, :attr:`!MLAlgo.is_trained`. It also offers a string
+    :meth:`.BaseMLAlgo.learn`, :meth:`.BaseMLAlgo.save` methods and the boolean
+    property, :attr:`!BaseMLAlgo.is_trained`. It also offers a string
     representation for end users.
-    Derived classes shall overload the :meth:`.MLAlgo.learn`,
-    :meth:`!MLAlgo._save_algo` and :meth:`!MLAlgo._load_algo` methods.
+    Derived classes shall overload the :meth:`.BaseMLAlgo.learn`,
+    :meth:`!BaseMLAlgo._save_algo` and :meth:`!BaseMLAlgo._load_algo` methods.
     """
 
     resampling_results: dict[
-        str, tuple[Resampler, list[MLAlgo], list[ndarray] | ndarray]
+        str, tuple[BaseResampler, list[BaseMLAlgo], list[ndarray] | ndarray]
     ]
     """The resampler class names bound to the resampling results.
 
     A resampling result is formatted as ``(resampler, ml_algos, predictions)``
-    where ``resampler`` is a :class:`.Resampler`,
+    where ``resampler`` is a :class:`.BaseResampler`,
     ``ml_algos`` is the list of the associated machine learning algorithms
     built during the resampling stage
     and ``predictions`` are the predictions obtained with the latter.
@@ -167,19 +167,20 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     parameters: dict[str, MLAlgoParameterType]
     """The parameters of the machine learning algorithm."""
 
-    transformer: dict[str, Transformer]
+    transformer: dict[str, BaseTransformer]
     """The strategies to transform the variables, if any.
 
-    The values are instances of :class:`.Transformer` while the keys are the names of
+    The values are instances of :class:`.BaseTransformer`
+    while the keys are the names of
     either the variables or the groups of variables, e.g. "inputs" or "outputs" in the
     case of the regression algorithms. If a group is specified, the
-    :class:`.Transformer` will be applied to all the variables of this group.
+    :class:`.BaseTransformer` will be applied to all the variables of this group.
     """
 
     algo: Any
     """The interfaced machine learning algorithm."""
 
-    SHORT_ALGO_NAME: ClassVar[str] = "MLAlgo"
+    SHORT_ALGO_NAME: ClassVar[str] = "BaseMLAlgo"
     """The short name of the machine learning algorithm, often an acronym.
 
     Typically used for composite names, e.g.
@@ -211,14 +212,14 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             data: The learning dataset.
             transformer: The strategies to transform the variables.
-                The values are instances of :class:`.Transformer`
+                The values are instances of :class:`.BaseTransformer`
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
                 e.g. ``"inputs"`` or ``"outputs"``
                 in the case of the regression algorithms.
                 If a group is specified,
-                the :class:`.Transformer` will be applied
+                the :class:`.BaseTransformer` will be applied
                 to all the variables of this group.
                 If :attr:`.IDENTITY`, do not transform the variables.
             **parameters: The parameters of the machine learning algorithm.
@@ -246,15 +247,15 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             names = self.learning_set.get_variable_names(group)
             if group in self.transformer and transformer_keys & set(names):
                 msg = (
-                    "An MLAlgo cannot have both a transformer "
+                    "An BaseMLAlgo cannot have both a transformer "
                     "for all variables of a group and a transformer "
                     "for one variable of this group."
                 )
                 raise ValueError(msg)
 
     @staticmethod
-    def __create_transformer(transformer: SubTransformerType) -> Transformer:
-        if isinstance(transformer, Transformer):
+    def __create_transformer(transformer: SubTransformerType) -> BaseTransformer:
+        if isinstance(transformer, BaseTransformer):
             return transformer.duplicate()
 
         if isinstance(transformer, tuple):
@@ -264,8 +265,8 @@ class MLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             return TransformerFactory().create(transformer)
 
         msg = (
-            "Transformer type must be "
-            "either Transformer, "
+            "BaseTransformer type must be "
+            "either BaseTransformer, "
             "Tuple[str, Mapping[str, Any]] "
             "or str."
         )

@@ -36,12 +36,12 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
 from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.derivatives.error_estimators import compute_best_step
-from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 
-class CenteredDifferences(GradientApproximator):
+class CenteredDifferences(BaseGradientApproximator):
     r"""Centered differences approximator.
 
     .. math::

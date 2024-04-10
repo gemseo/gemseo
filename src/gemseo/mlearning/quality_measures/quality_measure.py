@@ -39,14 +39,14 @@ from gemseo.utils.seeder import SEED
 from gemseo.utils.seeder import Seeder
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.core.ml_algo import MLAlgo
+    from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 
 MeasureType = Union[float, ndarray, dict[str, ndarray]]
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
 MeasureOptionsType = dict[str, OptionType]
 
 
-class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseMLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     """An abstract quality measure to assess a machine learning algorithm.
 
     This measure can be minimized (e.g. :class:`.MSEMeasure`) or maximized (e.g.
@@ -63,7 +63,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
     subset of the learning dataset.
     """
 
-    algo: MLAlgo
+    algo: BaseMLAlgo
     """The machine learning algorithm whose quality we want to measure."""
 
     _fit_transformers: bool
@@ -117,7 +117,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        algo: MLAlgo,
+        algo: BaseMLAlgo,
         fit_transformers: bool = _FIT_TRANSFORMERS,
     ) -> None:
         """
@@ -325,7 +325,7 @@ class MLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
 
 
 class MLQualityMeasureFactory(BaseFactory):
-    """A factory of :class:`.MLQualityMeasure`."""
+    """A factory of :class:`.BaseMLQualityMeasure`."""
 
-    _CLASS = MLQualityMeasure
+    _CLASS = BaseMLQualityMeasure
     _MODULE_NAMES = ("gemseo.mlearning.quality_measures",)

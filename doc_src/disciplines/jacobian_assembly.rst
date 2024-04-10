@@ -57,7 +57,7 @@ the derivatives provided by all the disciplines.
 For weakly coupled problems, based on :class:`~gemseo.core.chain.MDOChain`, the generalized
 chain rule in reverse mode (from the outputs to the inputs) is used.
 
-For the coupled problems, when the process is based on a MDA :class:`~gemseo.mda.MDA`,
+For the coupled problems, when the process is based on a MDA :class:`~gemseo.mda.BaseMDA`,
 a coupled adjoint approach is used, with two
 variants (direct or adjoint) depending on the number of design variables
 compared to the number of objectives and constraints.

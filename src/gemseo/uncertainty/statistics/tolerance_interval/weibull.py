@@ -26,11 +26,11 @@ from numpy import exp
 from numpy import log
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
 
 
-class WeibullToleranceInterval(ToleranceInterval):
+class WeibullToleranceInterval(BaseToleranceInterval):
     """Computation of tolerance intervals from a data-fitted Weibull distribution.
 
     The formulae come from the R library *tolerance* [1]_.

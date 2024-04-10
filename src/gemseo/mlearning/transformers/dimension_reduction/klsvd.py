@@ -38,16 +38,16 @@ from openturns import ProcessSample
 from openturns import ResourceMap
 from openturns import Sample
 
-from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
-    DimensionReduction,
+from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
+    BaseDimensionReduction,
 )
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
     from gemseo.typing import RealArray
 
 
-class KLSVD(DimensionReduction):
+class KLSVD(BaseDimensionReduction):
     """The Karhunen-Loève SVD algorithm based on OpenTURNS."""
 
     __HALKO2010 = "halko2010"
@@ -124,11 +124,11 @@ class KLSVD(DimensionReduction):
             self.__HALKO2010 if self.parameters["use_halko2010"] else self.__HALKO2011,
         )
 
-    @DimensionReduction._use_2d_array
+    @BaseDimensionReduction._use_2d_array
     def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return array(self.algo.project(self._get_process_sample(data)))
 
-    @DimensionReduction._use_2d_array
+    @BaseDimensionReduction._use_2d_array
     def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return array([
             list(self.algo.liftAsSample(Point(list(coefficients))))

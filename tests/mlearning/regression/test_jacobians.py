@@ -40,7 +40,7 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.rbf import RBFRegressor
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.testing.helpers import concretize_classes
@@ -150,11 +150,11 @@ def test_regression_model() -> None:
     with (
         pytest.raises(
             NotImplementedError,
-            match="Derivatives are not available for MLRegressionAlgo.",
+            match="Derivatives are not available for BaseMLRegressionAlgo.",
         ),
-        concretize_classes(MLRegressionAlgo),
+        concretize_classes(BaseMLRegressionAlgo),
     ):
-        MLRegressionAlgo(dataset).predict_jacobian(array([1.0]))
+        BaseMLRegressionAlgo(dataset).predict_jacobian(array([1.0]))
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)

@@ -55,7 +55,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
+    from gemseo.mlearning.clustering.clustering import BaseMLPredictiveClusteringAlgo
     from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 
 
@@ -66,7 +66,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
 
     def __init__(
         self,
-        algo: MLPredictiveClusteringAlgo,
+        algo: BaseMLPredictiveClusteringAlgo,
         fit_transformers: bool = MLPredictiveClusteringMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """

@@ -46,7 +46,7 @@ for instance cannot be directly used.
 
 .. warning::
 
-    Any :class:`.MDODiscipline` placed in an :class:`.MDA`
+    Any :class:`.MDODiscipline` placed in a :class:`.BaseMDA`
     with strong couplings **must** define its default inputs.
     Otherwise, the execution will fail.
 
@@ -74,7 +74,7 @@ and `Jacobi <https://en.wikipedia.org/wiki/Jacobi_method>`__ algorithms.
    The classes :class:`.MDAGaussSeidel`
    and :class:`.MDAJacobi`
    called by :func:`.create_mda`,
-   inherit from :class:`.MDA`,
+   inherit from :class:`.BaseMDA`,
    itself inheriting from :class:`.MDODiscipline`.
    Therefore,
    an MDA based on a fixed-point algorithm can be viewed as a discipline
@@ -114,8 +114,8 @@ The name of the variant should be provided with the argument ``method``.
    The classes :class:`.MDANewtonRaphson`
    and :class:`.MDAQuasiNewton`
    called by :func:`.create_mda`,
-   inherit from :class:`.MDARoot`,
-   itself inheriting from :class:`.MDA`,
+   inherit from :class:`.BaseMDARoot`,
+   itself inheriting from :class:`.BaseMDA`,
    itself inheriting from :class:`.MDODiscipline`.
    Therefore,
    an MDA based on a root finding method can be viewed as a discipline

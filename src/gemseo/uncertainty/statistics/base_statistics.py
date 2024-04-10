@@ -21,61 +21,64 @@
 Overview
 --------
 
-The abstract :class:`.Statistics` class implements the concept of statistics library.
+The abstract :class:`.BaseStatistics` class implements t
+he concept of statistics library.
 It is enriched by the :class:`.EmpiricalStatistics` and :class:`.ParametricStatistics`.
 
 Construction
 ------------
 
-A :class:`.Statistics` object is built from a :class:`.Dataset`
+A :class:`.BaseStatistics` object is built from a :class:`.Dataset`
 and optionally variables names.
 In this case,
 statistics are only computed for these variables.
 Otherwise,
 statistics are computed for all the variable available in the dataset.
 Lastly,
-the user can give a name to its :class:`.Statistics` object.
+the user can give a name to its :class:`.BaseStatistics` object.
 By default,
-this name is the concatenation of the name of the class overloading :class:`.Statistics`
+this name is the concatenation of the name
+of the class overloading :class:`.BaseStatistics`
 and the name of the :class:`.Dataset`.
 
 Capabilities
 ------------
 
-A :class:`.Statistics` returns standard descriptive and statistical measures
+A :class:`.BaseStatistics` returns standard descriptive and statistical measures
 for the different variables:
 
-- :meth:`.Statistics.compute_minimum`: the minimum value,
-- :meth:`.Statistics.compute_maximum`: the maximum value,
-- :meth:`.Statistics.compute_range`: the difference between minimum and maximum values,
-- :meth:`.Statistics.compute_mean`: the expectation (a.k.a. mean value),
-- :meth:`.Statistics.compute_moment`: a central moment,
+- :meth:`.BaseStatistics.compute_minimum`: the minimum value,
+- :meth:`.BaseStatistics.compute_maximum`: the maximum value,
+- :meth:`.BaseStatistics.compute_range`: the difference
+  between minimum and maximum values,
+- :meth:`.BaseStatistics.compute_mean`: the expectation (a.k.a. mean value),
+- :meth:`.BaseStatistics.compute_moment`: a central moment,
   which is the expected value
   of a specified integer power
   of the deviation from the mean,
-- :meth:`.Statistics.compute_variance`: the variance,
+- :meth:`.BaseStatistics.compute_variance`: the variance,
   which is the mean squared variation around the mean value,
-- :meth:`.Statistics.compute_standard_deviation`: the standard deviation,
+- :meth:`.BaseStatistics.compute_standard_deviation`: the standard deviation,
   which is the square root of the variance,
-- :meth:`.Statistics.compute_variation_coefficient`: the coefficient of variation,
+- :meth:`.BaseStatistics.compute_variation_coefficient`: the coefficient of variation,
   which is the standard deviation normalized by the mean,
-- :meth:`.Statistics.compute_quantile`: the quantile associated with a probability,
+- :meth:`.BaseStatistics.compute_quantile`: the quantile associated with a probability,
   which is the cut point diving the range into a first continuous interval
   with this given probability and a second continuous interval
   with the complementary probability; common *q*-quantiles dividing
   the range into *q* continuous interval with equal probabilities are also implemented:
 
-    - :meth:`.Statistics.compute_median`
+    - :meth:`.BaseStatistics.compute_median`
       which implements the 2-quantile (50%).
-    - :meth:`.Statistics.compute_quartile`
+    - :meth:`.BaseStatistics.compute_quartile`
       whose order (1, 2 or 3) implements the 4-quantiles (25%, 50% and 75%),
-    - :meth:`.Statistics.compute_percentile`
+    - :meth:`.BaseStatistics.compute_percentile`
       whose order (1, 2, ..., 99) implements the 100-quantiles (1%, 2%, ..., 99%),
 
-- :meth:`.Statistics.compute_probability`:
+- :meth:`.BaseStatistics.compute_probability`:
   the probability that the random variable is larger or smaller
   than a certain threshold,
-- :meth:`.Statistics.compute_tolerance_interval`:
+- :meth:`.BaseStatistics.compute_tolerance_interval`:
   the left-sided, right-sided or both-sided tolerance interval
   associated with a given coverage level and a given confidence level,
   which is a statistical interval within which,
@@ -83,10 +86,10 @@ for the different variables:
   a specified proportion of the random variable realizations falls
   (this proportion is the coverage level)
 
-    - :meth:`.Statistics.compute_a_value`:
+    - :meth:`.BaseStatistics.compute_a_value`:
       the A-value, which is the lower bound of the left-sided tolerance interval
       associated with a coverage level equal to 99% and a confidence level equal to 95%,
-    - :meth:`.Statistics.compute_b_value`:
+    - :meth:`.BaseStatistics.compute_b_value`:
       the B-value, which is the lower bound of the left-sided tolerance interval
       associated with a coverage level equal to 90% and a confidence level equal to 95%,
 """
@@ -103,7 +106,7 @@ from numpy import array
 from numpy import ndarray
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
@@ -118,7 +121,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A toolbox to compute statistics.
 
     Unless otherwise stated, the statistics are computed *variable-wise* and *component-
@@ -189,8 +192,8 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
-    ) -> dict[str, list[ToleranceInterval.Bounds]]:  # noqa: D102
+        side: BaseToleranceInterval.ToleranceIntervalSide = BaseToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
+    ) -> dict[str, list[BaseToleranceInterval.Bounds]]:  # noqa: D102
         r"""Compute a :math:`(p,1-\alpha)` tolerance interval :math:`\text{TI}[X]`.
 
         The tolerance interval :math:`\text{TI}[X]` is defined
@@ -244,7 +247,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         return {
             name: array([t_i.lower for t_i in tolerance_intervals])
             for name, tolerance_intervals in self.compute_tolerance_interval(
-                0.99, side=ToleranceInterval.ToleranceIntervalSide.LOWER
+                0.99, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
             ).items()
         }
 
@@ -267,7 +270,7 @@ class Statistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         return {
             name: array([t_i.lower for t_i in tolerance_intervals])
             for name, tolerance_intervals in self.compute_tolerance_interval(
-                0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
+                0.9, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
             ).items()
         }
 

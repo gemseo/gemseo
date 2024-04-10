@@ -120,9 +120,9 @@ from strenum import PascalCaseStrEnum
 from strenum import StrEnum
 
 from gemseo.algos.doe.lib_openturns import OpenTURNS
+from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import SecondOrderIndicesType
-from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
@@ -139,7 +139,7 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.dataset_plot import VariableType
 
 
-class SobolAnalysis(SensitivityAnalysis):
+class SobolAnalysis(BaseSensitivityAnalysis):
     """Sensitivity analysis based on the Sobol' indices.
 
     Examples:

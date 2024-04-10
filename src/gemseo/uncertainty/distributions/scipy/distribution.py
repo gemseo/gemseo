@@ -20,7 +20,7 @@
 """The interface to SciPy-based probability distributions.
 
 The :class:`.SPDistribution` class is a concrete class
-inheriting from :class:`.Distribution` which is an abstract one.
+inheriting from :class:`.BaseDistribution` which is an abstract one.
 SP stands for `scipy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_
 which is the library it relies on.
 
@@ -60,8 +60,8 @@ from numpy import array
 from numpy import ndarray
 from numpy import vstack
 
-from gemseo.uncertainty.distributions.distribution import Distribution
-from gemseo.uncertainty.distributions.distribution import StandardParametersType
+from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+from gemseo.uncertainty.distributions.base_distribution import StandardParametersType
 from gemseo.uncertainty.distributions.scipy.joint import SPJointDistribution
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
@@ -74,14 +74,14 @@ if TYPE_CHECKING:
 
     from numpy.random import RandomState
 
-    from gemseo.uncertainty.distributions.joint import JointDistribution
+    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 LOGGER = logging.getLogger(__name__)
 
 SP_WEBSITE = "https://docs.scipy.org/doc/scipy/reference/stats.html"
 
 
-class SPDistribution(Distribution):
+class SPDistribution(BaseDistribution):
     """A SciPy-based probability distribution.
 
     Create a probability distribution for an uncertain variable
@@ -103,13 +103,13 @@ class SPDistribution(Distribution):
         expon(loc=3, scale=0.5)
     """
 
-    JOINT_DISTRIBUTION_CLASS: ClassVar[type[JointDistribution] | None] = (
+    JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution] | None] = (
         SPJointDistribution
     )
 
     def __init__(  # noqa: D107
         self,
-        variable: str = Distribution.DEFAULT_VARIABLE_NAME,
+        variable: str = BaseDistribution.DEFAULT_VARIABLE_NAME,
         interfaced_distribution: str = "uniform",
         parameters: Mapping[str, Any] = READ_ONLY_EMPTY_DICT,
         dimension: int = 1,

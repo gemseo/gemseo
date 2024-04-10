@@ -20,9 +20,9 @@ import pytest
 from numpy import array
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
-from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
-from gemseo.mlearning.quality_measures.cluster_measure import MLClusteringMeasure
+from gemseo.mlearning.clustering.clustering import BaseMLClusteringAlgo
+from gemseo.mlearning.clustering.clustering import BaseMLPredictiveClusteringAlgo
+from gemseo.mlearning.quality_measures.cluster_measure import BaseMLClusteringMeasure
 from gemseo.mlearning.quality_measures.cluster_measure import (
     MLPredictiveClusteringMeasure,
 )
@@ -41,12 +41,12 @@ def test_data() -> Dataset:
     return Dataset.from_array(array([[1, 0.5]]), ["x", "y"])
 
 
-class NewAlgo(MLClusteringAlgo):
+class NewAlgo(BaseMLClusteringAlgo):
     def _fit(self, data) -> None:
         self.labels = data[:, 1]
 
 
-class NewPredictiveAlgo(MLPredictiveClusteringAlgo):
+class NewPredictiveAlgo(BaseMLPredictiveClusteringAlgo):
     def _fit(self, data) -> None:
         self.labels = data[:, 1]
 
@@ -57,7 +57,7 @@ class NewPredictiveAlgo(MLPredictiveClusteringAlgo):
         return array([[0.2, 0.6, 0.2] for _ in data])
 
 
-class NewMLClusteringMeasure(MLClusteringMeasure):
+class NewMLClusteringMeasure(BaseMLClusteringMeasure):
     def _compute_measure(self, data, labels, multioutput=True) -> float:
         return 1.0
 

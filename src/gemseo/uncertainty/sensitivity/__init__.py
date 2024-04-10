@@ -16,10 +16,10 @@
 
 This package contains:
 
-- an abstract class :class:`.SensitivityAnalysis`
+- an abstract class :class:`.BaseSensitivityAnalysis`
   to define the concept of sensitivity analysis,
 - a factory :class:`.SensitivityAnalysisFactory`
-  to create instances of :class:`.SensitivityAnalysis`,
+  to create instances of :class:`.BaseSensitivityAnalysis`,
 - concrete classes implementing this abstract class:
 
   - :class:`.CorrelationAnalysis` (based on OpenTURNS capabilities)

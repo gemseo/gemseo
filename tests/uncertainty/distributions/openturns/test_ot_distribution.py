@@ -32,7 +32,7 @@ from numpy.random import RandomState
 from numpy.testing import assert_equal
 from openturns import RandomGenerator
 
-from gemseo.uncertainty.distributions import distribution
+from gemseo.uncertainty.distributions import base_distribution
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.exponential import (
     OTExponentialDistribution,
@@ -262,7 +262,7 @@ def test_plot_save(
 ) -> None:
     """Check the file path computed by plot()."""
     triangular = OTTriangularDistribution("x", dimension=dimension)
-    with patch.object(distribution, "save_show_figure") as mock_method:
+    with patch.object(base_distribution, "save_show_figure") as mock_method:
         triangular.plot(
             index=index,
             show=False,

@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.core.execution_sequence import ExecutionSequence
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
-    from gemseo.mda.mda import MDA
+    from gemseo.mda.base_mda import BaseMDA
 
 LOGGER = logging.getLogger(__name__)
 
@@ -372,7 +372,7 @@ class BiLevel(MDOFormulation):
 
     def _build_chain_dis_sub_opts(
         self,
-    ) -> tuple[list | MDA, list[MDOScenarioAdapter]]:
+    ) -> tuple[list | BaseMDA, list[MDOScenarioAdapter]]:
         """Initialize the chain of disciplines and the sub-scenarios.
 
         Returns:

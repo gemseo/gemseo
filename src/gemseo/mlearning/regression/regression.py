@@ -56,8 +56,8 @@ the Jacobian prediction method of the regression algorithm should return the mat
     \\end{pmatrix}
     \\in \\mathbb{R}^{n_{\\textrm{outputs}}\\times n_{\\textrm{inputs}}}.
 
-This concept is implemented through the :class:`.MLRegressionAlgo` class
-which inherits from the :class:`.MLSupervisedAlgo` class.
+This concept is implemented through the :class:`.BaseMLRegressionAlgo` class
+which inherits from the :class:`.BaseMLSupervisedAlgo` class.
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ from typing import TYPE_CHECKING
 from typing import NoReturn
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.supervised import MLSupervisedAlgo
+from gemseo.mlearning.core.supervised import BaseMLSupervisedAlgo
 from gemseo.mlearning.data_formatters.regression_data_formatters import (
     RegressionDataFormatters,
 )
@@ -83,12 +83,12 @@ if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class MLRegressionAlgo(MLSupervisedAlgo):
+class BaseMLRegressionAlgo(BaseMLSupervisedAlgo):
     """Machine Learning Regression Model Algorithm.
 
-    Inheriting classes shall implement the :meth:`!MLSupervisedAlgo._fit` and
-    :meth:`!MLSupervisedAlgo._predict` methods, and
-    :meth:`!MLRegressionAlgo._predict_jacobian` method if possible.
+    Inheriting classes shall implement the :meth:`!BaseMLSupervisedAlgo._fit` and
+    :meth:`!BaseMLSupervisedAlgo._predict` methods, and
+    :meth:`!BaseMLRegressionAlgo._predict_jacobian` method if possible.
     """
 
     DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType({
@@ -101,7 +101,7 @@ class MLRegressionAlgo(MLSupervisedAlgo):
     def __init__(  # noqa: D107
         self,
         data: IODataset,
-        transformer: TransformerType = MLSupervisedAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLSupervisedAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,

@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.exponential import (
     ExponentialToleranceInterval,
@@ -51,7 +51,7 @@ DISTRIBUTIONS = {
 }
 
 
-@pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
+@pytest.mark.parametrize("side", BaseToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
 def test_tolerance_interval(side, distribution) -> None:
     """Check that the lower bound is lower than the upper one."""
@@ -60,7 +60,7 @@ def test_tolerance_interval(side, distribution) -> None:
     assert lower < upper
 
 
-@pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
+@pytest.mark.parametrize("side", BaseToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
 def test_tolerance_interval_coverage_lower(side, distribution) -> None:
     """Check that the lower bound is lower when the coverage is higher."""
@@ -70,7 +70,7 @@ def test_tolerance_interval_coverage_lower(side, distribution) -> None:
     assert lower_with_95_coverage <= lower_with_90_coverage
 
 
-@pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
+@pytest.mark.parametrize("side", BaseToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
 def test_tolerance_interval_coverage_upper(side, distribution) -> None:
     """Check that the upper bound is higher when the coverage is higher."""
@@ -80,7 +80,7 @@ def test_tolerance_interval_coverage_upper(side, distribution) -> None:
     assert upper_with_90_coverage <= upper_with_95_coverage
 
 
-@pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
+@pytest.mark.parametrize("side", BaseToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
 def test_tolerance_interval_confidence_lower(side, distribution) -> None:
     """Check that the lower bound is lower when the confidence is higher."""
@@ -91,12 +91,12 @@ def test_tolerance_interval_confidence_lower(side, distribution) -> None:
     lower_with_90_confidence, _ = tolerance_interval.compute(
         coverage=0.90,
         confidence=0.90,
-        side=ToleranceInterval.ToleranceIntervalSide.LOWER,
+        side=BaseToleranceInterval.ToleranceIntervalSide.LOWER,
     )
     assert lower_with_95_confidence <= lower_with_90_confidence
 
 
-@pytest.mark.parametrize("side", ToleranceInterval.ToleranceIntervalSide)
+@pytest.mark.parametrize("side", BaseToleranceInterval.ToleranceIntervalSide)
 @pytest.mark.parametrize("distribution", DISTRIBUTIONS.keys())
 def test_tolerance_interval_confidence_upper(side, distribution) -> None:
     """Check that the upper bound is higher when the confidence is higher."""

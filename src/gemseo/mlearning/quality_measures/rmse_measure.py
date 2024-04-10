@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.quality_measures.quality_measure import MeasureType
-    from gemseo.mlearning.regression.regression import MLRegressionAlgo
+    from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 
 
 class RMSEMeasure(MSEMeasure):
@@ -57,7 +57,7 @@ class RMSEMeasure(MSEMeasure):
 
     def __init__(
         self,
-        algo: MLRegressionAlgo,
+        algo: BaseMLRegressionAlgo,
         fit_transformers: bool = MSEMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """

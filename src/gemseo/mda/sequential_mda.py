@@ -23,8 +23,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.mda.mda import MDA
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 
 if TYPE_CHECKING:
@@ -35,13 +35,13 @@ if TYPE_CHECKING:
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
 
-class MDASequential(MDA):
+class MDASequential(BaseMDA):
     """A sequence of elementary MDAs."""
 
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
-        mda_sequence: Sequence[MDA],
+        mda_sequence: Sequence[BaseMDA],
         name: str | None = None,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         max_mda_iter: int = 10,
@@ -77,7 +77,7 @@ class MDASequential(MDA):
             mda.reset_history_each_run = True
             self._log_convergence = self._log_convergence or mda.log_convergence
 
-    @MDA.log_convergence.setter
+    @BaseMDA.log_convergence.setter
     def log_convergence(self, value: bool) -> None:  # noqa: D102
         self._log_convergence = value
         for mda in self.mda_sequence:

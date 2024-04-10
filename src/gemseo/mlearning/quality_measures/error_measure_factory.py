@@ -16,11 +16,11 @@
 
 from __future__ import annotations
 
-from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
+from gemseo.mlearning.quality_measures.error_measure import BaseMLErrorMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 
 
 class MLErrorMeasureFactory(MLQualityMeasureFactory):
-    """A factory of :class:`.MLErrorMeasure`."""
+    """A factory of :class:`.BaseMLErrorMeasure`."""
 
-    _CLASS = MLErrorMeasure
+    _CLASS = BaseMLErrorMeasure

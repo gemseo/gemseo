@@ -23,14 +23,14 @@ Overview
 --------
 
 The :class:`.ParametricStatistics` class inherits
-from the abstract :class:`.Statistics` class
+from the abstract :class:`.BaseStatistics` class
 and aims to estimate statistics from a :class:`.Dataset`,
 based on candidate parametric distributions calibrated from this :class:`.Dataset`.
 
 For each variable,
 
 1. the parameters of these distributions are calibrated from the :class:`.Dataset`,
-2. the fitted parametric :class:`.Distribution` which is optimal
+2. the fitted parametric :class:`.BaseDistribution` which is optimal
    in the sense of a goodness-of-fit criterion and a selection criterion
    is selected to estimate the statistics related to this variable.
 
@@ -76,7 +76,7 @@ Capabilities
 
 By inheritance,
 a :class:`.ParametricStatistics` object has
-the same capabilities as :class:`.Statistics`.
+the same capabilities as :class:`.BaseStatistics`.
 Additional ones are:
 
 - :meth:`.get_fitting_matrix`:
@@ -106,11 +106,11 @@ from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
-from gemseo.uncertainty.statistics.statistics import Statistics
+from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+from gemseo.uncertainty.statistics.tolerance_interval.factory import (
     ToleranceIntervalFactory,
 )
 from gemseo.utils.matplotlib_figure import FigSizeType
@@ -142,7 +142,7 @@ class _Distribution(NamedTuple):
     """The probability distribution."""
 
 
-class ParametricStatistics(Statistics):
+class ParametricStatistics(BaseStatistics):
     """A toolbox to compute statistics based on probability distribution-fitting.
 
     Unless otherwise stated,
@@ -562,8 +562,8 @@ class ParametricStatistics(Statistics):
         self,
         coverage: float,
         confidence: float = 0.95,
-        side: ToleranceInterval.ToleranceIntervalSide = ToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
-    ) -> dict[str, list[ToleranceInterval.Bounds]]:
+        side: BaseToleranceInterval.ToleranceIntervalSide = BaseToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
+    ) -> dict[str, list[BaseToleranceInterval.Bounds]]:
         if not 0.0 <= coverage <= 1.0:
             msg = "The argument 'coverage' must be a number in [0,1]."
             raise ValueError(msg)

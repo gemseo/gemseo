@@ -36,13 +36,13 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
+from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class ComplexStep(GradientApproximator):
+class ComplexStep(BaseGradientApproximator):
     r"""Complex step approximator, performing a second-order gradient calculation.
 
     Enable a much lower step than real finite differences,
@@ -63,7 +63,7 @@ class ComplexStep(GradientApproximator):
 
     _DEFAULT_STEP: ClassVar[complex] = 1e-20
 
-    @GradientApproximator.step.setter
+    @BaseGradientApproximator.step.setter
     def step(self, value) -> None:  # noqa:D102
         if value.imag != 0:
             self._step = value.imag

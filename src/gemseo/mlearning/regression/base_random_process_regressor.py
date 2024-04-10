@@ -21,11 +21,11 @@ from abc import abstractmethod
 
 from gemseo import SEED
 from gemseo.datasets.dataset import DataType
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.typing import RealArray
 
 
-class BaseRandomProcessRegressor(MLRegressionAlgo):
+class BaseRandomProcessRegressor(BaseMLRegressionAlgo):
     """A base class for regressors base on a random process."""
 
     @abstractmethod

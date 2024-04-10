@@ -20,16 +20,16 @@
 
 from __future__ import annotations
 
-from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
-    DimensionReduction,
+from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
+    BaseDimensionReduction,
 )
 from gemseo.utils.testing.helpers import concretize_classes
 
 
 def test_constructor() -> None:
     """Test constructor."""
-    with concretize_classes(DimensionReduction):
-        transformer = DimensionReduction(n_components=3)
+    with concretize_classes(BaseDimensionReduction):
+        transformer = BaseDimensionReduction(n_components=3)
 
-    assert transformer.name == "DimensionReduction"
+    assert transformer.name == "BaseDimensionReduction"
     assert transformer.n_components == 3

@@ -19,7 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The factory to create the machine learning algorithms.
 
-This module contains a factory to instantiate an :class:`.MLAlgo` from its class name.
+This module contains a factory to instantiate an :class:`.BaseMLAlgo`
+from its class name.
 This factory also provides a list of available machine learning algorithms and allows
 testing if a machine learning algorithm is available.
 """
@@ -32,7 +33,7 @@ from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
 
 
 class MLAlgoFactory(BaseFactory):
-    """This factory instantiates an :class:`.MLAlgo` from its class name.
+    """This factory instantiates an :class:`.BaseMLAlgo` from its class name.
 
     The class can be either internal or external. In this second case, it can be either
     implemented in a module referenced in the ``GEMSEO_PATH`` or in a module The class
@@ -61,14 +62,14 @@ class MLAlgoFactory(BaseFactory):
         "RBFRegression": "RBFRegressor",
     }
 
-    _CLASS = MLAlgo
+    _CLASS = BaseMLAlgo
     _MODULE_NAMES = ("gemseo.mlearning",)
 
     def create(
         self,
         ml_algo: str,
         **options: Dataset | TransformerType | MLAlgoParameterType | None,
-    ) -> MLAlgo:
+    ) -> BaseMLAlgo:
         """Create an instance of a machine learning algorithm.
 
         Args:
@@ -89,7 +90,7 @@ class MLAlgoFactory(BaseFactory):
     def load(
         self,
         directory: str | Path,
-    ) -> MLAlgo:
+    ) -> BaseMLAlgo:
         """Load an instance of machine learning algorithm from the disk.
 
         Args:
@@ -100,7 +101,7 @@ class MLAlgoFactory(BaseFactory):
             The instance of the machine learning algorithm.
         """
         directory = Path(directory)
-        with (directory / MLAlgo.FILENAME).open("rb") as handle:
+        with (directory / BaseMLAlgo.FILENAME).open("rb") as handle:
             objects = pickle.load(handle)
         algo_name = objects.pop("algo_name")
         model = super().create(

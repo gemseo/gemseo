@@ -67,4 +67,4 @@ assert allclose(transformed_jac_data, jac_shifted_then_scaled)
 
 # %%
 # Note that a :class:`.Pipeline` can compute the Jacobian
-# as long as the :class:`.Transformer` instances that make it up can do so.
+# as long as the :class:`.BaseTransformer` instances that make it up can do so.

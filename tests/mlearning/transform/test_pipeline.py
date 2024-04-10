@@ -34,7 +34,7 @@ from gemseo.mlearning.transformers.pipeline import Pipeline
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import Transformer
+    from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 
 
 @pytest.fixture()
@@ -44,7 +44,7 @@ def data() -> ndarray:
 
 
 @pytest.fixture()
-def transformers() -> list[Transformer]:
+def transformers() -> list[BaseTransformer]:
     """Transformers for pipeline."""
     return [Scaler(coefficient=2), Scaler(offset=3), Scaler(coefficient=5)]
 

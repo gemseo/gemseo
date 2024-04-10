@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Gilberto Ruiz Jimenez
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test the Power Transformer."""
+"""Test the Power BaseTransformer."""
 
 from __future__ import annotations
 

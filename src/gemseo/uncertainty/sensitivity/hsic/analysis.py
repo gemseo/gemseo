@@ -44,8 +44,8 @@ from openturns import Sample
 from openturns import SquaredExponential
 from strenum import StrEnum
 
+from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
-from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.seeder import SEED
@@ -61,7 +61,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
 
 
-class HSICAnalysis(SensitivityAnalysis):
+class HSICAnalysis(BaseSensitivityAnalysis):
     """Sensitivity analysis based on the Hilbert-Schmidt independence criterion (HSIC).
 
     The :meth:`.compute_indices` method proposes three types of sensitivity analysis:

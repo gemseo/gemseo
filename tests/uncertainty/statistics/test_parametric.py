@@ -33,10 +33,10 @@ from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import image_comparison
@@ -303,26 +303,26 @@ def test_tolerance_interval(generate_samples, distribution) -> None:
     dataset = Dataset.from_array(generate_samples(100).reshape((-1, 1)))
     statistics = ParametricStatistics(dataset, [distribution])
     tolerance_interval = statistics.compute_tolerance_interval(
-        0.1, side=ToleranceInterval.ToleranceIntervalSide.BOTH
+        0.1, side=BaseToleranceInterval.ToleranceIntervalSide.BOTH
     )
     assert tolerance_interval["x_0"][0].lower.shape == (1,)
     assert tolerance_interval["x_0"][0].upper.shape == (1,)
     assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
     tolerance_interval = statistics.compute_tolerance_interval(
-        0.1, side=ToleranceInterval.ToleranceIntervalSide.UPPER
+        0.1, side=BaseToleranceInterval.ToleranceIntervalSide.UPPER
     )
     assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
     tolerance_interval = statistics.compute_tolerance_interval(
-        0.1, side=ToleranceInterval.ToleranceIntervalSide.LOWER
+        0.1, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
     assert tolerance_interval["x_0"][0].upper == inf
 
     b_value = statistics.compute_tolerance_interval(
-        0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
+        0.9, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
     )
     a_value = statistics.compute_tolerance_interval(
-        0.95, side=ToleranceInterval.ToleranceIntervalSide.LOWER
+        0.95, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert b_value["x_0"][0].lower >= a_value["x_0"][0].lower
 
@@ -347,7 +347,7 @@ def test_available(statistics) -> None:
             {
                 "coverage": 0.9,
                 "tolerance": 0.99,
-                "side": ToleranceInterval.ToleranceIntervalSide.LOWER,
+                "side": BaseToleranceInterval.ToleranceIntervalSide.LOWER,
             },
             "TI[X; 0.9, 0.99, lower]",
         ),
@@ -357,7 +357,7 @@ def test_available(statistics) -> None:
                 "show_name": True,
                 "coverage": 0.9,
                 "tolerance": 0.99,
-                "side": ToleranceInterval.ToleranceIntervalSide.LOWER,
+                "side": BaseToleranceInterval.ToleranceIntervalSide.LOWER,
             },
             "TI[X; coverage=0.9, side=lower, tolerance=0.99]",
         ),
@@ -389,8 +389,8 @@ def test_expression(name, options, expression) -> None:
 
 
 def test_plot_args(statistics) -> None:
-    """Check the arguments passed to Distribution.plot by the method plot()."""
-    with mock.patch.object(Distribution, "plot") as plot:
+    """Check the arguments passed to BaseDistribution.plot by the method plot()."""
+    with mock.patch.object(BaseDistribution, "plot") as plot:
         statistics.plot(save=1, show=2, directory_path=3, file_format=4)
 
     assert len(plot.call_args.args) == 0

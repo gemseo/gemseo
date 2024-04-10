@@ -35,11 +35,11 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from gemseo.mlearning.core.ml_algo import MLAlgo
+    from gemseo.mlearning.core.ml_algo import BaseMLAlgo
     from gemseo.mlearning.resampling.splits import Splits
 
 
-class Resampler(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A base class for resampling and surrogate modeling."""
 
     name: str
@@ -111,18 +111,18 @@ class Resampler(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         return self._splits
 
-    def __eq__(self, other: Resampler) -> bool:
+    def __eq__(self, other: BaseResampler) -> bool:
         return self._splits == other._splits
 
     def execute(
         self,
-        model: MLAlgo,
+        model: BaseMLAlgo,
         return_models: bool = False,
         input_data: ndarray | None = None,
         stack_predictions: bool = True,
         fit_transformers: bool = True,
         store_sampling_result: bool = False,
-    ) -> tuple[list[MLAlgo], list[ndarray] | ndarray]:
+    ) -> tuple[list[BaseMLAlgo], list[ndarray] | ndarray]:
         """Apply the resampling technique to a machine learning model.
 
         Args:
@@ -137,7 +137,7 @@ class Resampler(metaclass=ABCGoogleDocstringInheritanceMeta):
                 This argument is ignored when ``input_data`` is ``None``.
             fit_transformers: Whether to re-fit the transformers.
             store_sampling_result: Whether to store the sampling results
-                in the attribute :class:`~.MLAlgo.resampling_results`
+                in the attribute :class:`~.BaseMLAlgo.resampling_results`
                 of the original model.
 
         Returns:

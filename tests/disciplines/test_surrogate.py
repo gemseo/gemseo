@@ -78,7 +78,7 @@ def test_linearization_mode_without_gradient(dataset) -> None:
 
 
 def test_instantiation_from_algo(dataset) -> None:
-    """Check the instantiation from an MLRegressionAlgo."""
+    """Check the instantiation from an BaseMLRegressionAlgo."""
     algo = LinearRegressor(dataset)
     algo.learn()
     discipline = SurrogateDiscipline(algo)
@@ -158,7 +158,7 @@ def test_serialize(linear_discipline, tmp_wd) -> None:
 
 
 def test_get_error_measure(linear_discipline) -> None:
-    """Check that get_error_measure returns an instance of MLErrorMeasure."""
+    """Check that get_error_measure returns an instance of BaseMLErrorMeasure."""
     error_measure = linear_discipline.get_error_measure("R2Measure")
     assert isinstance(error_measure, R2Measure)
     assert error_measure.algo == linear_discipline.regression_model

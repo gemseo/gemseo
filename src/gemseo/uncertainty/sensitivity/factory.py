@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Module with a factory to create an instance of :class:`.SensitivityAnalysis`."""
+"""Module with a factory to create an instance of :class:`.BaseSensitivityAnalysis`."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
 
 class SensitivityAnalysisFactory(BaseFactory):
-    """Factory to build instances of :class:`.SensitivityAnalysis`.
+    """Factory to build instances of :class:`.BaseSensitivityAnalysis`.
 
     At initialization, this factory scans the following modules
     to search for subclasses of this class:
@@ -82,7 +82,7 @@ class SensitivityAnalysisFactory(BaseFactory):
         >>> indices = analysis.compute_indices()
     """
 
-    _CLASS = SensitivityAnalysis
+    _CLASS = BaseSensitivityAnalysis
     _MODULE_NAMES = ("gemseo.uncertainty.sensitivity",)
 
     def create(
@@ -96,7 +96,7 @@ class SensitivityAnalysisFactory(BaseFactory):
         algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
         formulation: str = "MDF",
         **formulation_options: Any,
-    ) -> SensitivityAnalysis:
+    ) -> BaseSensitivityAnalysis:
         """Create the sensitivity analysis.
 
         Args:
@@ -109,7 +109,7 @@ class SensitivityAnalysisFactory(BaseFactory):
             output_names: The disciplines' outputs to be considered for the analysis.
                 If empty, use all the outputs.
             algo: The name of the DOE algorithm.
-                If empty, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
+                If empty, use the :attr:`.BaseSensitivityAnalysis.DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
             formulation: The name of the :class:`.MDOFormulation` to sample the
                 disciplines.

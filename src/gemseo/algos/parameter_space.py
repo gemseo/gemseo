@@ -78,7 +78,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.uncertainty.distributions.joint import JointDistribution
+    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 from numpy import array
 from numpy import ndarray
@@ -110,13 +110,13 @@ class ParameterSpace(DesignSpace):
     uncertain_variables: list[str]
     """The names of the uncertain variables."""
 
-    distributions: dict[str, JointDistribution]
+    distributions: dict[str, BaseJointDistribution]
     """The marginal probability distributions of the uncertain variables.
 
     These variables are defined as random vectors with independent components.
     """
 
-    distribution: JointDistribution
+    distribution: BaseJointDistribution
     """The joint probability distribution of the uncertain variables."""
 
     _INITIAL_DISTRIBUTION = "Initial distribution"
@@ -207,7 +207,7 @@ class ParameterSpace(DesignSpace):
 
         Warnings:
             The probability distributions must have
-            the same :class:`~.Distribution.DISTRIBUTION_FAMILY_ID`.
+            the same :class:`~.BaseDistribution.DISTRIBUTION_FAMILY_ID`.
             For instance,
             one cannot mix a random vector
             using a :class:`.OTUniformDistribution` with identifier ``"OT"``
@@ -477,7 +477,7 @@ class ParameterSpace(DesignSpace):
 
         Warnings:
             The probability distributions must have
-            the same :class:`~.Distribution.DISTRIBUTION_FAMILY_ID`.
+            the same :class:`~.BaseDistribution.DISTRIBUTION_FAMILY_ID`.
             For instance,
             one cannot mix a random variable
             distributed as an :class:`.OTUniformDistribution` with identifier ``"OT"``
