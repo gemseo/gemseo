@@ -140,17 +140,14 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         store_resampling_result: bool = False,
     ) -> MeasureType:
         samples, seed = self._pre_process(samples, seed, randomize)
-        cross_validation = CrossValidation(samples, n_folds, randomize, seed)
         data = self._get_data()
+        cross_validation = CrossValidation(samples, n_folds, randomize, seed)
         _, predictions = cross_validation.execute(
             self.algo,
-            store_resampling_result,
-            True,
-            True,
-            self._fit_transformers,
-            store_resampling_result,
-            data,
-            (len(data),),
+            return_models=store_resampling_result,
+            input_data=data,
+            fit_transformers=self._fit_transformers,
+            store_sampling_result=store_resampling_result,
         )
         return self._compute_measure(data, predictions, multioutput)
 
@@ -163,17 +160,15 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         store_resampling_result: bool = False,
     ) -> MeasureType:
         samples, seed = self._pre_process(samples, seed, True)
-        bootstrap = Bootstrap(samples, n_replicates, seed)
         data = self._get_data()
+        bootstrap = Bootstrap(samples, n_replicates, seed)
         _, predictions = bootstrap.execute(
             self.algo,
-            store_resampling_result,
-            True,
-            False,
-            self._fit_transformers,
-            store_resampling_result,
-            data,
-            (len(data),),
+            return_models=store_resampling_result,
+            input_data=data,
+            stack_predictions=False,
+            fit_transformers=self._fit_transformers,
+            store_sampling_result=store_resampling_result,
         )
         measure = 0
         for prediction, split in zip(predictions, bootstrap.splits):

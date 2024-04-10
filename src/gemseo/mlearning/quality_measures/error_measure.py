@@ -177,19 +177,15 @@ class MLErrorMeasure(MLQualityMeasure):
         """  # noqa: D205 D212
         samples, seed = self._pre_process(samples, seed, randomize)
         cross_validation = CrossValidation(samples, n_folds, randomize, seed)
-        output_data = self.algo.output_data
         _, predictions = cross_validation.execute(
             self.algo,
-            store_resampling_result,
-            True,
-            True,
-            self._fit_transformers,
-            store_resampling_result,
-            self.algo.input_data,
-            output_data.shape,
+            return_models=store_resampling_result,
+            input_data=self.algo.input_data,
+            fit_transformers=self._fit_transformers,
+            store_sampling_result=store_resampling_result,
         )
         return self._post_process_measure(
-            self._compute_measure(output_data, predictions, multioutput),
+            self._compute_measure(self.algo.output_data, predictions, multioutput),
             multioutput,
             as_dict,
         )
@@ -214,17 +210,15 @@ class MLErrorMeasure(MLQualityMeasure):
         """  # noqa: D205 D212
         samples, seed = self._pre_process(samples, seed, True)
         bootstrap = Bootstrap(samples, n_replicates, seed)
-        output_data = self.algo.output_data
         _, predictions = bootstrap.execute(
             self.algo,
-            store_resampling_result,
-            True,
-            False,
-            self._fit_transformers,
-            store_resampling_result,
-            self.algo.input_data,
-            output_data.shape,
+            return_models=store_resampling_result,
+            input_data=self.algo.input_data,
+            stack_predictions=False,
+            fit_transformers=self._fit_transformers,
+            store_sampling_result=store_resampling_result,
         )
+        output_data = self.algo.output_data
         measure = 0
         for prediction, split in zip(predictions, bootstrap.splits):
             measure += self._compute_measure(
