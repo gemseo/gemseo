@@ -12,12 +12,10 @@ RUN  dnf -y update \
                     git \
                     graphviz \
                     jq \
-                    https://gitlab.com/gitlab-org/cli/-/releases/v1.35.0/downloads/glab_1.35.0_Linux_x86_64.rpm \
+                    https://gitlab.com/gitlab-org/cli/-/releases/v1.37.0/downloads/glab_1.37.0_Linux_x86_64.rpm \
   && dnf clean all
 
-RUN  pipx install 'tox<5' \
-  && pipx install 'tox<4' --suffix 3 \
-  && pipx install 'tox<5' --suffix 4
+RUN  pipx install 'tox<5'
 
 # For pipx installed tools,
 # explicitly update PATH because gitlab runner run the container in a way
