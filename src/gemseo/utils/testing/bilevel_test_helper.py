@@ -12,10 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Provide base test class stub for testing bilevel also for |g| plugins."""
+"""Provide base test class stub for testing BiLevel also for |g| plugins."""
 
 from __future__ import annotations
 
+from typing import Any
 from typing import Callable
 
 from gemseo.core.mdo_scenario import MDOScenario
@@ -28,7 +29,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 def create_sobieski_bilevel_scenario(
     scenario_formulation: str = "BiLevel",
-) -> Callable[[dict[str, float]], MDOScenario]:
+) -> Callable[[dict[str, Any]], MDOScenario]:
     """Create a function to generate a Sobieski Scenario.
 
     Args:
