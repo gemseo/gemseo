@@ -23,7 +23,7 @@ Overview
 --------
 
 The :class:`.EmpiricalStatistics` class inherits
-from the abstract :class:`.Statistics` class
+from the abstract :class:`.BaseStatistics` class
 and aims to estimate statistics from a :class:`.Dataset`,
 based on empirical estimators.
 
@@ -69,7 +69,7 @@ from scipy.stats import moment
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.lines import Lines
-from gemseo.uncertainty.statistics.statistics import Statistics
+from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -77,7 +77,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-class EmpiricalStatistics(Statistics):
+class EmpiricalStatistics(BaseStatistics):
     """A toolbox to compute statistics empirically.
 
     Unless otherwise stated,

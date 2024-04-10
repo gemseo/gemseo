@@ -24,14 +24,12 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import NamedTuple
 
 from numpy import array
 from numpy import inf
 from strenum import LowercaseStrEnum
 
-from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
@@ -40,15 +38,15 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class ToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Computation of tolerance intervals from a data-fitted probability distribution.
 
-    A :class:`.ToleranceInterval` (TI) is initialized
+    A :class:`.BaseToleranceInterval` (TI) is initialized
     from the number of samples
     used to estimate the parameters of the probability distribution
     and from the estimations of these parameters.
 
-    A :class:`.ToleranceInterval` can be evaluated from:
+    A :class:`.BaseToleranceInterval` can be evaluated from:
 
     - a coverage defining the minimum percentage of belonging to the TI, e.g. 0.90,
     - a level of confidence in [0,1], e.g. 0.95,
@@ -209,50 +207,3 @@ class ToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
             The tolerance bounds.
         """
         return self._compute(coverage, 1 - confidence, self.__size, side)
-
-
-class ToleranceIntervalFactory(BaseFactory):
-    """A factory of :class:`.ToleranceInterval`."""
-
-    _CLASS = ToleranceInterval
-    _MODULE_NAMES = ("gemseo.uncertainty.statistics.tolerance_interval",)
-
-    def create(
-        self,
-        class_name: str,
-        size: int,
-        *args: float,
-    ) -> ToleranceInterval:
-        """Return an instance of :class:`.ToleranceInterval`.
-
-        Args:
-            size: The number of samples
-                used to estimate the parameters of the probability distribution.
-            *args: The arguments of the probability distribution.
-
-        Returns:
-            The instance of the class.
-
-        Raises:
-            TypeError: If the class cannot be instantiated.
-        """
-        cls = self.get_class(class_name)
-        try:
-            return cls(size, *args)
-        except TypeError:
-            LOGGER.exception(
-                "Failed to create class %s with arguments %s", class_name, args
-            )
-            msg = f"Cannot create {class_name}ToleranceInterval with arguments {args}"
-            raise RuntimeError(msg) from None
-
-    def get_class(self, name: str) -> type[Any]:
-        """Return a class from its name.
-
-        Args:
-            name: The name of the class.
-
-        Returns:
-            The class.
-        """
-        return super().get_class(f"{name}ToleranceInterval")

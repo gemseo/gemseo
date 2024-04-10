@@ -34,14 +34,14 @@ from typing import ClassVar
 
 from sklearn.preprocessing import PowerTransformer
 
-from gemseo.mlearning.transformers.transformer import Transformer
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+from gemseo.mlearning.transformers.base_transformer import BaseTransformer
+from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class Power(Transformer):
+class Power(BaseTransformer):
     """A power transformation."""
 
     lambdas_: RealArray
@@ -67,10 +67,10 @@ class Power(Transformer):
         self.__power_transformer.fit(data)
         self.lambdas_ = self.__power_transformer.lambdas_
 
-    @Transformer._use_2d_array
+    @BaseTransformer._use_2d_array
     def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.__power_transformer.transform(data)
 
-    @Transformer._use_2d_array
+    @BaseTransformer._use_2d_array
     def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.__power_transformer.inverse_transform(data)

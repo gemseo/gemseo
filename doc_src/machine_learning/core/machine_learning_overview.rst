@@ -21,7 +21,7 @@ This :class:`.SurrogateDiscipline` is built from a few evaluations of this
 :class:`.MDODiscipline`. This learning phase commonly relies on a regression
 model calibrated by machine learning techniques. This is the reason why
 |g| provides a machine learning package which includes the
-:class:`.MLRegressionAlgo` class implementing the concept of regression model.
+:class:`.BaseMLRegressionAlgo` class implementing the concept of regression model.
 In addition, this machine learning package has a much broader set of features
 than regression: clustering, classification, dimension reduction, data scaling,
 ...
@@ -37,7 +37,7 @@ Development
 -----------
 
 This diagram shows the hierarchy of all machine learning algorithms,
-and where they interact with :class:`.Dataset`, :class:`.MLQualityMeasure`,
-:class:`.Transformer` and :class:`.MLAlgoCalibration`.
+and where they interact with :class:`.Dataset`, :class:`.BaseMLQualityMeasure`,
+:class:`.BaseTransformer` and :class:`.MLAlgoCalibration`.
 
 .. include:: machine_learning.txt

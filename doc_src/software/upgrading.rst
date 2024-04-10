@@ -464,9 +464,9 @@ UQ
 --
 
 - The high-level functions defined in ``gemseo.uncertainty.api`` have been moved to ``gemseo.uncertainty``.
-- Rename ``SensitivityAnalysis.export_to_dataset`` to ``SensitivityAnalysis.to_dataset``.
-- Rename ``SensitivityAnalysis.save`` to ``SensitivityAnalysis.to_pickle``.
-- Rename ``SensitivityAnalysis.load`` to ``SensitivityAnalysis.from_pickle`` which is a class method.
+- Rename ``BaseSensitivityAnalysis.export_to_dataset`` to ``BaseSensitivityAnalysis.to_dataset``.
+- Rename ``BaseSensitivityAnalysis.save`` to ``BaseSensitivityAnalysis.to_pickle``.
+- Rename ``BaseSensitivityAnalysis.load`` to ``BaseSensitivityAnalysis.from_pickle`` which is a class method.
 - ``ComposedDistribution`` uses ``None`` as value for independent copula.
 - ``ParameterSpace`` no longer uses a ``copula`` passed at instantiation but to ``ParameterSpace.build_composed_distribution``.
 - ``SPComposedDistribution`` raises an error when set up with a copula different from ``None``.

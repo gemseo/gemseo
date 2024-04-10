@@ -66,7 +66,7 @@ In terms of API this would result in the following example:
 
 .. warning::
     This is an experimental feature, that is currently validated for the main process classes:
-    :class:`.MDOChain`, :class:`.MDA` and its subclasses, :class:`.MDOParallelChain` etc.
+    :class:`.MDOChain`, :class:`.BaseMDA` and its subclasses, :class:`.MDOParallelChain` etc.
     Scenarios can be created with disciplines handling namespaces.
     The main limitation is that not all wrappers and MDO test problems are
     compatible with namespaces, which requires the modifications described at the end of this page.

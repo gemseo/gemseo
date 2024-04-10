@@ -91,7 +91,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mda.mda import MDA
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
@@ -699,9 +699,9 @@ def test_print_configuration(capfd) -> None:
         "MDODiscipline",
         "OptimizationLibrary",
         "DOELibrary",
-        "MLRegressionAlgo",
+        "BaseMLRegressionAlgo",
         "MDOFormulation",
-        "MDA",
+        "BaseMDA",
         "OptPostProcessor",
     ]
 
@@ -824,7 +824,7 @@ def test_configure(
     assert DriverLibrary.activate_progress_bar == activate_progress_bar
     assert Scenario.activate_input_data_check
     assert Scenario.activate_output_data_check
-    assert MDA.activate_cache
+    assert BaseMDA.activate_cache
     configure()
 
 

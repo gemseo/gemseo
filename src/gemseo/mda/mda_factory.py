@@ -29,20 +29,20 @@ from typing import Union
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.mda.mda import MDA
+from gemseo.mda.base_mda import BaseMDA
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
 
 MDAOptionType = Optional[
-    Union[float, int, bool, str, Iterable[MDOCouplingStructure], Sequence[MDA]]
+    Union[float, int, bool, str, Iterable[MDOCouplingStructure], Sequence[BaseMDA]]
 ]
 
 
 class MDAFactory(BaseFactory):
     """MDA factory to create the MDA from a name or a class."""
 
-    _CLASS = MDA
+    _CLASS = BaseMDA
     _MODULE_NAMES = ("gemseo.mda",)
 
     def create(
@@ -50,7 +50,7 @@ class MDAFactory(BaseFactory):
         mda_name: str,
         disciplines: Sequence[MDODiscipline],
         **options: MDAOptionType,
-    ) -> MDA:
+    ) -> BaseMDA:
         """Create an MDA.
 
         Args:

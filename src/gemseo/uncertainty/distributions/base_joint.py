@@ -22,7 +22,7 @@ r"""Joint probability distribution.
 Overview
 --------
 
-:class:`.JointDistribution` is an abstract class
+:class:`.BaseJointDistribution` is an abstract class
 implementing the concept of `joint probability distribution
 <https://en.wikipedia.org/wiki/Joint_probability_distribution>`_.
 
@@ -34,8 +34,8 @@ It takes into account
 both the marginal probability distributions of these random variables
 and their dependency structure.
 
-A :class:`.JointDistribution` is defined
-from a list of :class:`.Distribution` instances
+A :class:`.BaseJointDistribution` is defined
+from a list of :class:`.BaseDistribution` instances
 defining the marginals of the random variables
 and a copula defining the dependency structure between them.
 
@@ -46,25 +46,25 @@ and a copula defining the dependency structure between them.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`_.
 
 By definition, a joint probability distribution is a probability distribution
-Therefore, :class:`.JointDistribution` inherits
-from the abstract class :class:`.Distribution`.
+Therefore, :class:`.BaseJointDistribution` inherits
+from the abstract class :class:`.BaseDistribution`.
 
 Construction
 ------------
 
-The :class:`.JointDistribution` of a list of given uncertain variables is built
-from a list of :class:`.Distribution` objects
+The :class:`.BaseJointDistribution` of a list of given uncertain variables is built
+from a list of :class:`.BaseDistribution` objects
 implementing the probability distributions of these variables
 and from a copula.
 
 Capabilities
 ------------
 
-Because :class:`.JointDistribution` inherits from :class:`.Distribution`,
-we can easily get statistics, such as :attr:`.JointDistribution.mean`,
-:attr:`.JointDistribution.standard_deviation`.
-We can also get the numerical :attr:`.JointDistribution.range` and
-mathematical :attr:`.JointDistribution.support`.
+Because :class:`.BaseJointDistribution` inherits from :class:`.BaseDistribution`,
+we can easily get statistics, such as :attr:`.BaseJointDistribution.mean`,
+:attr:`.BaseJointDistribution.standard_deviation`.
+We can also get the numerical :attr:`.BaseJointDistribution.range` and
+mathematical :attr:`.BaseJointDistribution.support`.
 
 .. note::
 
@@ -75,15 +75,15 @@ mathematical :attr:`.JointDistribution.support`.
     Both support and range are described in terms of lower and upper bounds
 
 We can also evaluate the cumulative density function
-(:meth:`.JointDistribution.compute_cdf`)
+(:meth:`.BaseJointDistribution.compute_cdf`)
 for the different marginals of the random variable,
 as well as the inverse cumulative density function
-(:meth:`.JointDistribution.compute_inverse_cdf`). We can plot them,
-either for a given marginal (:meth:`.JointDistribution.plot`)
-or for all marginals (:meth:`.JointDistribution.plot_all`).
+(:meth:`.BaseJointDistribution.compute_inverse_cdf`). We can plot them,
+either for a given marginal (:meth:`.BaseJointDistribution.plot`)
+or for all marginals (:meth:`.BaseJointDistribution.plot_all`).
 
 Lastly, we can compute realizations of the random variable
-by means of the :meth:`.JointDistribution.compute_samples` method.
+by means of the :meth:`.BaseJointDistribution.compute_samples` method.
 """
 
 from __future__ import annotations
@@ -96,7 +96,7 @@ from numpy import array
 from numpy import concatenate
 from numpy import ndarray
 
-from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_repr
 
@@ -107,17 +107,15 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class JointDistribution(Distribution):
+class BaseJointDistribution(BaseDistribution):
     """Joint probability distribution."""
-
-    _COMPOSED = "Composed"
 
     __copula_name: str
     """The name of the copula method."""
 
     def __init__(
         self,
-        distributions: Sequence[Distribution],
+        distributions: Sequence[BaseDistribution],
         copula: Any = None,
         variable: str = "",
     ) -> None:
@@ -139,7 +137,7 @@ class JointDistribution(Distribution):
         # TODO: API: set parameters to (distributions, copula) instead of (copula,).
         super().__init__(
             variable or "_".join(self._marginal_variables),
-            self._COMPOSED,
+            "Joint",
             (copula,),
             sum(distribution.dimension for distribution in distributions),
         )
@@ -168,7 +166,7 @@ class JointDistribution(Distribution):
 
     def _set_bounds(
         self,
-        distributions: Iterable[Distribution],
+        distributions: Iterable[BaseDistribution],
     ) -> None:
         """Set the mathematical and numerical bounds (= support and range).
 

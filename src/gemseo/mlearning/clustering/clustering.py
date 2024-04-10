@@ -25,10 +25,10 @@ a kind of unsupervised machine learning algorithm where the goal is to
 group data into clusters. Wherever possible, these methods should be able to predict the
 class of the new data, as well as the probability of belonging to each class.
 
-This concept is implemented through the :class:`.MLClusteringAlgo` class, which inherits
-from the :class:`.MLUnsupervisedAlgo` class, and through the
-:class:`.MLPredictiveClusteringAlgo` class which inherits from
-:class:`.MLClusteringAlgo`.
+This concept is implemented through the :class:`.BaseMLClusteringAlgo` class,
+which inherits from the :class:`.BaseMLUnsupervisedAlgo` class,
+and through the :class:`.BaseMLPredictiveClusteringAlgo` class,
+which inherits from :class:`.BaseMLClusteringAlgo`.
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSavedObjectType
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
+from gemseo.mlearning.core.unsupervised import BaseMLUnsupervisedAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
@@ -59,10 +59,11 @@ if TYPE_CHECKING:
 SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
 
 
-class MLClusteringAlgo(MLUnsupervisedAlgo):
+class BaseMLClusteringAlgo(BaseMLUnsupervisedAlgo):
     """Clustering algorithm.
 
-    The inheriting classes shall overload the :meth:`!MLUnsupervisedAlgo._fit` method.
+    The inheriting classes shall overload the :meth:`!BaseMLUnsupervisedAlgo._fit`
+    method.
     """
 
     labels: list[int]
@@ -74,7 +75,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
     def __init__(  # noqa: D107
         self,
         data: Dataset,
-        transformer: TransformerType = MLUnsupervisedAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLUnsupervisedAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
     ) -> None:
@@ -102,12 +103,12 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
         return objects
 
 
-class MLPredictiveClusteringAlgo(MLClusteringAlgo):
+class BaseMLPredictiveClusteringAlgo(BaseMLClusteringAlgo):
     """Predictive clustering algorithm.
 
-    The inheriting classes shall overload the :meth:`!MLUnsupervisedAlgo._fit` method,
-    and the :meth:`!MLClusteringAlgo._predict` and
-    :meth:`!MLClusteringAlgo._predict_proba` methods if possible.
+    The inheriting classes shall overload the :meth:`!BaseMLUnsupervisedAlgo._fit`
+    method, and the :meth:`!BaseMLClusteringAlgo._predict` and
+    :meth:`!BaseMLClusteringAlgo._predict_proba` methods if possible.
     """
 
     def predict(

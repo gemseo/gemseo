@@ -31,8 +31,8 @@ from numpy.testing import assert_allclose
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.lines import Lines
+from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
-from gemseo.uncertainty.statistics.statistics import Statistics
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -212,7 +212,7 @@ def test_compute_joint_probability(statistics, value, kwargs) -> None:
 def test_variation_coefficient() -> None:
     """Check compute_variation_coefficient()."""
 
-    class NewStatistics(Statistics):
+    class NewStatistics(BaseStatistics):
         compute_mean = lambda self: {"x": 2}  # noqa: E731
         compute_standard_deviation = lambda self: {"x": 6}  # noqa: E731
 

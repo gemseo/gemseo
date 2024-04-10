@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.mlearning import MLSupervisedAlgo
+    from gemseo.mlearning import BaseMLSupervisedAlgo
     from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -41,8 +41,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
     @classmethod
     def format_dict(
         cls,
-        func: Callable[[MLSupervisedAlgo, ndarray, Any, ...], ndarray],
-    ) -> Callable[[MLSupervisedAlgo, DataType, Any, ...], DataType]:
+        func: Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
+    ) -> Callable[[BaseMLSupervisedAlgo, DataType, Any, ...], DataType]:
         """Make an array-based function be called with a dictionary of NumPy arrays.
 
         Args:
@@ -58,7 +58,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
 
         @wraps(func)
         def wrapper(
-            algo: MLSupervisedAlgo,
+            algo: BaseMLSupervisedAlgo,
             input_data: DataType,
             *args: Any,
             **kwargs: Any,
@@ -108,8 +108,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
     @classmethod
     def format_samples(
         cls,
-        func: Callable[[MLSupervisedAlgo, ndarray, Any, ...], ndarray],
-    ) -> Callable[[MLSupervisedAlgo, ndarray, Any, ...], ndarray]:
+        func: Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
+    ) -> Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray]:
         """Make a 2D NumPy array-based function work with 1D NumPy array.
 
         Args:
@@ -127,7 +127,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
 
         @wraps(func)
         def wrapper(
-            algo: MLSupervisedAlgo,
+            algo: BaseMLSupervisedAlgo,
             input_data: DataType,
             *args: Any,
             **kwargs: Any,
@@ -170,8 +170,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
         transform_inputs: bool = True,
         transform_outputs: bool = True,
     ) -> Callable[
-        [Callable[[MLSupervisedAlgo, ndarray, Any, ...], ndarray]],
-        Callable[[MLSupervisedAlgo, ndarray, Any, ...], ndarray],
+        [Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray]],
+        Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
     ]:
         """Force a function to transform its input and/or output variables.
 
@@ -186,8 +186,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
         """
 
         def format_transform_(
-            func: Callable[[MLSupervisedAlgo, ndarray, Any, ...], ndarray],
-        ) -> Callable[[MLSupervisedAlgo, ndarray, Any, ...], ndarray]:
+            func: Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
+        ) -> Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray]:
             """Apply transformation to inputs and inverse transformation to outputs.
 
             Args:
@@ -201,7 +201,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
 
             @wraps(func)
             def wrapper(
-                algo: MLSupervisedAlgo,
+                algo: BaseMLSupervisedAlgo,
                 input_data: ndarray,
                 *args: Any,
                 **kwargs: Any,
@@ -270,8 +270,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
     @classmethod
     def format_input_output(
         cls,
-        func: Callable[[MLSupervisedAlgo, ndarray, Any, ...], ndarray],
-    ) -> Callable[[MLSupervisedAlgo, DataType, Any, ...], DataType]:
+        func: Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
+    ) -> Callable[[BaseMLSupervisedAlgo, DataType, Any, ...], DataType]:
         """Make a function robust to type, array shape and data transformation.
 
         Args:
@@ -288,7 +288,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
         @cls.format_samples
         @cls.format_transform()
         def wrapper(
-            algo: MLSupervisedAlgo, input_data: DataType, *args: Any, **kwargs: Any
+            algo: BaseMLSupervisedAlgo, input_data: DataType, *args: Any, **kwargs: Any
         ) -> DataType:
             """Compute output data from input data.
 

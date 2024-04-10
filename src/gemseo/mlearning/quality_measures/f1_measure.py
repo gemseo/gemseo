@@ -39,26 +39,26 @@ from typing import TYPE_CHECKING
 
 from sklearn.metrics import f1_score
 
-from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
+from gemseo.mlearning.quality_measures.error_measure import BaseMLErrorMeasure
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.mlearning.classification.classification import MLClassificationAlgo
+    from gemseo.mlearning.classification.classification import BaseMLClassificationAlgo
     from gemseo.mlearning.quality_measures.quality_measure import MeasureType
 
 
-class F1Measure(MLErrorMeasure):
+class F1Measure(BaseMLErrorMeasure):
     """The F1 measure for machine learning."""
 
     SMALLER_IS_BETTER = False
 
-    algo: MLClassificationAlgo
+    algo: BaseMLClassificationAlgo
 
     def __init__(
         self,
-        algo: MLClassificationAlgo,
-        fit_transformers: bool = MLErrorMeasure._FIT_TRANSFORMERS,
+        algo: BaseMLClassificationAlgo,
+        fit_transformers: bool = BaseMLErrorMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:

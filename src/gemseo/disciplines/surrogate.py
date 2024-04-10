@@ -30,7 +30,7 @@ from gemseo.mlearning.quality_measures.error_measure_factory import (
     MLErrorMeasureFactory,
 )
 from gemseo.mlearning.regression.factory import RegressionModelFactory
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
     from gemseo.mlearning.core.ml_algo import TransformerType
-    from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
+    from gemseo.mlearning.quality_measures.error_measure import BaseMLErrorMeasure
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ class SurrogateDiscipline(MDODiscipline):
         >>> surrogate_discipline.execute({"x": np.array([1.5])})
     """
 
-    regression_model: MLRegressionAlgo
+    regression_model: BaseMLRegressionAlgo
     """The regression model called by the surrogate discipline."""
 
     __error_measure_factory: MLErrorMeasureFactory
@@ -82,9 +82,9 @@ class SurrogateDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        surrogate: str | MLRegressionAlgo,
+        surrogate: str | BaseMLRegressionAlgo,
         data: IODataset | None = None,
-        transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,
+        transformer: TransformerType = BaseMLRegressionAlgo.DEFAULT_TRANSFORMER,
         disc_name: str | None = None,
         default_inputs: dict[str, ndarray] | None = None,
         input_names: Iterable[str] | None = None,
@@ -94,22 +94,22 @@ class SurrogateDiscipline(MDODiscipline):
         """
         Args:
             surrogate: Either the name of a class
-                deriving from :class:`.MLRegressionAlgo`
-                or the instance of an :class:`.MLRegressionAlgo`.
+                deriving from :class:`.BaseMLRegressionAlgo`
+                or the instance of an :class:`.BaseMLRegressionAlgo`.
             data: The learning dataset to train the regression model.
                 If ``None``, the regression model is supposed to be trained.
             transformer: The strategies to transform the variables.
-                The values are instances of :class:`.Transformer`
+                The values are instances of :class:`.BaseTransformer`
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
                 e.g. ``"inputs"`` or ``"outputs"``
                 in the case of the regression algorithms.
                 If a group is specified,
-                the :class:`.Transformer` will be applied
+                the :class:`.BaseTransformer` will be applied
                 to all the variables of this group.
-                If :attr:`~.MLAlgo.IDENTITY, do not transform the variables.
-                The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
+                If :attr:`~.BaseMLAlgo.IDENTITY, do not transform the variables.
+                The :attr:`.BaseMLRegressionAlgo.DEFAULT_TRANSFORMER` uses
                 the :class:`.MinMaxScaler` strategy for both input and output variables.
             disc_name: The name to be given to the surrogate discipline.
                 If ``None``, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
@@ -128,7 +128,7 @@ class SurrogateDiscipline(MDODiscipline):
                 whilst the regression model is not trained.
         """  # noqa: D205, D212, D415
         self.__error_measure_factory = MLErrorMeasureFactory()
-        if isinstance(surrogate, MLRegressionAlgo):
+        if isinstance(surrogate, BaseMLRegressionAlgo):
             self.regression_model = surrogate
             name = self.regression_model.learning_set.name
         elif data is None:
@@ -254,7 +254,7 @@ class SurrogateDiscipline(MDODiscipline):
         self,
         measure_name: str,
         **measure_options: Any,
-    ) -> MLErrorMeasure:
+    ) -> BaseMLErrorMeasure:
         """Return an error measure.
 
         Args:

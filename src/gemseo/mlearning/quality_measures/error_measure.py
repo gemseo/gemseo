@@ -19,8 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Here is the baseclass to measure the error of machine learning algorithms.
 
-The concept of error measure is implemented with the :class:`.MLErrorMeasure` class and
-proposes different evaluation methods.
+The concept of error measure is implemented with the :class:`.BaseMLErrorMeasure` class
+and proposes different evaluation methods.
 """
 
 from __future__ import annotations
@@ -31,8 +31,8 @@ from typing import Final
 
 from numpy import atleast_1d
 
+from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -41,11 +41,11 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.supervised import MLSupervisedAlgo
+    from gemseo.mlearning.core.supervised import BaseMLSupervisedAlgo
     from gemseo.typing import RealArray
 
 
-class MLErrorMeasure(MLQualityMeasure):
+class BaseMLErrorMeasure(BaseMLQualityMeasure):
     """An abstract error measure for machine learning."""
 
     __OUTPUT_NAME_SEPARATOR: Final[str] = "#"
@@ -57,12 +57,12 @@ class MLErrorMeasure(MLQualityMeasure):
     }
     """Map from the argument "multioutput" of |g| to that of sklearn."""
 
-    algo: MLSupervisedAlgo
+    algo: BaseMLSupervisedAlgo
 
     def __init__(
         self,
-        algo: MLSupervisedAlgo,
-        fit_transformers: bool = MLQualityMeasure._FIT_TRANSFORMERS,
+        algo: BaseMLSupervisedAlgo,
+        fit_transformers: bool = BaseMLQualityMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -161,7 +161,7 @@ class MLErrorMeasure(MLQualityMeasure):
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = MLQualityMeasure._RANDOMIZE,
+        randomize: bool = BaseMLQualityMeasure._RANDOMIZE,
         seed: int | None = None,
         as_dict: bool = False,
         store_resampling_result: bool = False,

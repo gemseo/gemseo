@@ -48,7 +48,7 @@ This sub-package is based in particular on OpenTURNS.
 The sub-package :mod:`~gemseo.uncertainty.statistics` offers an abstract level
 for statistics, as well as parametric and empirical versions.
 Empirical statistics are estimated from a :class:`.Dataset`
-while parametric statistics are analytical properties of a :class:`.Distribution`
+while parametric statistics are analytical properties of a :class:`.BaseDistribution`
 fitted from a :class:`.Dataset`.
 
 .. seealso::
@@ -70,17 +70,17 @@ if TYPE_CHECKING:
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
     from gemseo.datasets.dataset import Dataset
-    from gemseo.uncertainty.distributions.distribution import Distribution
-    from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
-    from gemseo.uncertainty.statistics.statistics import Statistics
+    from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+    from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
+    from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 
 
-def get_available_distributions(base_class_name: str = "Distribution") -> list[str]:
+def get_available_distributions(base_class_name: str = "BaseDistribution") -> list[str]:
     """Get the available probability distributions.
 
     Args:
         base_class_name: The name of the base class of the probability distributions,
-            e.g. ``"Distribution"``, ``"OTDistribution"`` or ``"SPDistribution"``.
+            e.g. ``"BaseDistribution"``, ``"OTDistribution"`` or ``"SPDistribution"``.
 
     Returns:
         The names of the available probability distributions.
@@ -89,7 +89,7 @@ def get_available_distributions(base_class_name: str = "Distribution") -> list[s
 
     factory = DistributionFactory()
     class_names = factory.class_names
-    if base_class_name == "Distribution":
+    if base_class_name == "BaseDistribution":
         return class_names
 
     return [
@@ -105,7 +105,7 @@ def create_distribution(
     distribution_name: str,
     dimension: int = 1,
     **options,
-) -> Distribution:
+) -> BaseDistribution:
     """Create a distribution.
 
     Args:
@@ -154,7 +154,7 @@ def create_statistics(
     selection_criterion: str = "best",
     level: float = 0.05,
     name: str | None = None,
-) -> Statistics:
+) -> BaseStatistics:
     """Create a statistics toolbox, either parametric or empirical.
 
     If parametric, the toolbox selects a distribution from candidates,
@@ -243,7 +243,7 @@ def create_sensitivity_analysis(
     disciplines: Collection[MDODiscipline],
     parameter_space: ParameterSpace,
     **options,
-) -> SensitivityAnalysis:
+) -> BaseSensitivityAnalysis:
     """Create the sensitivity analysis.
 
     Args:
@@ -289,7 +289,7 @@ def create_sensitivity_analysis(
     return factory.create(name, disciplines, parameter_space, **options)
 
 
-def load_sensitivity_analysis(file_path: str | Path) -> SensitivityAnalysis:
+def load_sensitivity_analysis(file_path: str | Path) -> BaseSensitivityAnalysis:
     """Load a sensitivity analysis from the disk.
 
     Args:
@@ -298,6 +298,6 @@ def load_sensitivity_analysis(file_path: str | Path) -> SensitivityAnalysis:
     Returns:
         The sensitivity analysis.
     """
-    from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+    from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
 
-    return SensitivityAnalysis.from_pickle(file_path)
+    return BaseSensitivityAnalysis.from_pickle(file_path)

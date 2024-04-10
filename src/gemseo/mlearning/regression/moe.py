@@ -85,16 +85,16 @@ from gemseo.mlearning.quality_measures.f1_measure import F1Measure
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.classification.classification import MLClassificationAlgo
-    from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
-    from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+    from gemseo.mlearning.classification.classification import BaseMLClassificationAlgo
+    from gemseo.mlearning.clustering.clustering import BaseMLClusteringAlgo
+    from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
     from gemseo.mlearning.quality_measures.quality_measure import (
         OptionType as EvalOptionType,
     )
@@ -112,7 +112,7 @@ MLAlgoType = dict[
 ]
 
 
-class MOERegressor(MLRegressionAlgo):
+class MOERegressor(BaseMLRegressionAlgo):
     """Mixture of experts regression."""
 
     hard: bool
@@ -154,13 +154,13 @@ class MOERegressor(MLRegressionAlgo):
     regress_cands: list[MLAlgoType]
     """The regression algorithm candidates."""
 
-    clusterer: MLClusteringAlgo
+    clusterer: BaseMLClusteringAlgo
     """The clustering algorithm."""
 
-    classifier: MLClassificationAlgo
+    classifier: BaseMLClassificationAlgo
     """The classification algorithm."""
 
-    regress_models: list[MLRegressionAlgo]
+    regress_models: list[BaseMLRegressionAlgo]
     """The regression algorithms."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "MoE"
@@ -175,7 +175,7 @@ class MOERegressor(MLRegressionAlgo):
     def __init__(
         self,
         data: IODataset,
-        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         hard: bool = True,
@@ -259,7 +259,7 @@ class MOERegressor(MLRegressionAlgo):
 
     def set_clustering_measure(
         self,
-        measure: MLQualityMeasure,
+        measure: BaseMLQualityMeasure,
         **eval_options: EvalOptionType,
     ) -> None:
         """Set the quality measure for the clustering algorithms.
@@ -275,7 +275,7 @@ class MOERegressor(MLRegressionAlgo):
 
     def set_classification_measure(
         self,
-        measure: MLQualityMeasure,
+        measure: BaseMLQualityMeasure,
         **eval_options: EvalOptionType,
     ) -> None:
         """Set the quality measure for the classification algorithms.
@@ -291,7 +291,7 @@ class MOERegressor(MLRegressionAlgo):
 
     def set_regression_measure(
         self,
-        measure: MLQualityMeasure,
+        measure: BaseMLQualityMeasure,
         **eval_options: EvalOptionType,
     ) -> None:
         """Set the quality measure for the regression algorithms.

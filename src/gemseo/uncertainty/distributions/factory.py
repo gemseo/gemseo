@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Module containing a factory to create an instance of :class:`.Distribution`."""
+"""Module containing a factory to create an instance of :class:`.BaseDistribution`."""
 
 from __future__ import annotations
 
@@ -25,17 +25,17 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.uncertainty.distributions.joint import JointDistribution
+    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 
 class DistributionFactory(BaseFactory):
-    """Factory to build instances of :class:`.Distribution`.
+    """Factory to build instances of :class:`.BaseDistribution`.
 
     At initialization, this factory scans the following modules
     to search for subclasses of this class:
@@ -60,7 +60,7 @@ class DistributionFactory(BaseFactory):
         Normal(mu=0.0, sigma=1.0)
     """
 
-    _CLASS = Distribution
+    _CLASS = BaseDistribution
     _MODULE_NAMES = ("gemseo.uncertainty.distributions",)
 
     def create_marginal_distribution(
@@ -68,7 +68,7 @@ class DistributionFactory(BaseFactory):
         distribution_name: str,
         variable: str,
         **parameters: Any,
-    ) -> Distribution:
+    ) -> BaseDistribution:
         """Create a marginal probability distribution for a given random variable.
 
         Args:
@@ -85,10 +85,10 @@ class DistributionFactory(BaseFactory):
 
     def create_joint_distribution(
         self,
-        distributions: Sequence[Distribution],
+        distributions: Sequence[BaseDistribution],
         copula: Any = None,
         variable: str = "",
-    ) -> JointDistribution:
+    ) -> BaseJointDistribution:
         """Create a joint probability distribution from marginal ones.
 
         Args:

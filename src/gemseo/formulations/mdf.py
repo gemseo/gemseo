@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.execution_sequence import ExecutionSequence
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.mda.mda import MDA
+    from gemseo.mda.base_mda import BaseMDA
 
 
 class MDF(MDOFormulation):
@@ -49,7 +49,7 @@ class MDF(MDOFormulation):
     Note that the multidisciplinary analysis is made at each optimization iteration.
     """
 
-    mda: MDA
+    mda: BaseMDA
     """The MDA used in the formulation."""
 
     _main_mda_name: str

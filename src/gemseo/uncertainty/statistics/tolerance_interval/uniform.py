@@ -22,11 +22,11 @@
 from __future__ import annotations
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
 
 
-class UniformToleranceInterval(ToleranceInterval):
+class UniformToleranceInterval(BaseToleranceInterval):
     """Computation of tolerance intervals from a data-fitted uniform distribution.
 
     The formulae come from the R library *tolerance* [1]_.

@@ -40,7 +40,7 @@ For that, we can use the :func:`.create_discipline` API function with ``AutoPyDi
 
 The original Python function may or may not include default values for input arguments, however, if the resulting
 :class:`.AutoPyDiscipline` is going to be placed inside an :class:`.MDF`, a :class:`.BiLevel` formulation
-or an :class:`.MDA` with strong couplings, then the Python function **must** assign default values for its input
+or a :class:`.BaseMDA` with strong couplings, then the Python function **must** assign default values for its input
 arguments.
 
 Execute the discipline

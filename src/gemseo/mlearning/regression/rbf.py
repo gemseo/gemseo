@@ -56,7 +56,7 @@ from scipy.interpolate import Rbf
 from strenum import StrEnum
 
 from gemseo.mlearning.core.supervised import SavedObjectType as _SavedObjectType
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -68,7 +68,7 @@ if TYPE_CHECKING:
 SavedObjectType = Union[_SavedObjectType, float, Callable]
 
 
-class RBFRegressor(MLRegressionAlgo):
+class RBFRegressor(BaseMLRegressionAlgo):
     r"""Regression based on radial basis functions (RBFs).
 
     This model relies on the SciPy class :class:`scipy.interpolate.Rbf`.
@@ -99,7 +99,7 @@ class RBFRegressor(MLRegressionAlgo):
     def __init__(
         self,
         data: IODataset,
-        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         function: Function | Callable[[float, float], float] = Function.MULTIQUADRIC,

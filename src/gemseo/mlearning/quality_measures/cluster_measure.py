@@ -20,7 +20,7 @@
 """Here is the baseclass to measure the quality of machine learning algorithms.
 
 The concept of clustering quality measure is implemented with the
-:class:`.MLClusteringMeasure` class and proposes different evaluation methods.
+:class:`.BaseMLClusteringMeasure` class and proposes different evaluation methods.
 """
 
 from __future__ import annotations
@@ -28,8 +28,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
+from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MeasureType
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 
@@ -39,19 +39,19 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
-    from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
+    from gemseo.mlearning.clustering.clustering import BaseMLClusteringAlgo
+    from gemseo.mlearning.clustering.clustering import BaseMLPredictiveClusteringAlgo
 
 
-class MLClusteringMeasure(MLQualityMeasure):
+class BaseMLClusteringMeasure(BaseMLQualityMeasure):
     """An abstract clustering measure for clustering algorithms."""
 
-    algo: MLClusteringAlgo
+    algo: BaseMLClusteringAlgo
 
     def __init__(
         self,
-        algo: MLClusteringAlgo,
-        fit_transformers: bool = MLQualityMeasure._FIT_TRANSFORMERS,
+        algo: BaseMLClusteringAlgo,
+        fit_transformers: bool = BaseMLQualityMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -104,15 +104,15 @@ class MLClusteringMeasure(MLQualityMeasure):
     evaluate_learn = compute_learning_measure
 
 
-class MLPredictiveClusteringMeasure(MLClusteringMeasure):
+class MLPredictiveClusteringMeasure(BaseMLClusteringMeasure):
     """An abstract clustering measure for predictive clustering algorithms."""
 
-    algo: MLPredictiveClusteringAlgo
+    algo: BaseMLPredictiveClusteringAlgo
 
     def __init__(
         self,
-        algo: MLPredictiveClusteringAlgo,
-        fit_transformers: bool = MLQualityMeasure._FIT_TRANSFORMERS,
+        algo: BaseMLPredictiveClusteringAlgo,
+        fit_transformers: bool = BaseMLQualityMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -135,7 +135,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         n_folds: int = 5,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = MLClusteringMeasure._RANDOMIZE,
+        randomize: bool = BaseMLClusteringMeasure._RANDOMIZE,
         seed: int | None = None,
         store_resampling_result: bool = False,
     ) -> MeasureType:

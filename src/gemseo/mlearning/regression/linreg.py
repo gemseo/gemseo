@@ -64,9 +64,9 @@ from sklearn.linear_model import LinearRegression as LinReg
 from sklearn.linear_model import Ridge
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
-    DimensionReduction,
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
+from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
+    BaseDimensionReduction,
 )
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.seeder import SEED
@@ -78,7 +78,7 @@ if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class LinearRegressor(MLRegressionAlgo):
+class LinearRegressor(BaseMLRegressionAlgo):
     """Linear regression model."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "LinReg"
@@ -87,7 +87,7 @@ class LinearRegressor(MLRegressionAlgo):
     def __init__(
         self,
         data: IODataset,
-        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         fit_intercept: bool = True,
@@ -206,7 +206,7 @@ class LinearRegressor(MLRegressionAlgo):
             return coefficients
 
         if any(
-            isinstance(transformer, DimensionReduction)
+            isinstance(transformer, BaseDimensionReduction)
             for transformer in self.transformer.values()
         ):
             msg = (

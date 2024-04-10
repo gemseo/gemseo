@@ -20,8 +20,8 @@ from the `SciPy <https://scipy.org/>`_ library.
 Interfaced distributions
 ------------------------
 
-This package implements the abstract classes :class:`.Distribution`
-and :class:`.JointDistribution`.
+This package implements the abstract classes :class:`.BaseDistribution`
+and :class:`.BaseJointDistribution`.
 
 Classical distributions
 -----------------------
@@ -39,8 +39,8 @@ instead of  ``SPDistribution('x', 'Uniform', {"loc": -1, "scale": 4})``.
 Furthermore, these classes inheriting from :class:`.SPDistribution`
 are documented in such a way that a newbie could easily apprehend them.
 
-Composed distribution
----------------------
+Joint probability distribution
+------------------------------
 
 A ``SPDistribution`` has a :attr:`.SPDistribution.JOINT_DISTRIBUTION_CLASS`
 attribute referencing :class:`.SPJointDistribution`

@@ -80,7 +80,7 @@ associated to the :math:`k` first indices
 
 
 This concept is implemented through the :class:`.KNNClassifier` class which
-inherits from the :class:`.MLClassificationAlgo` class.
+inherits from the :class:`.BaseMLClassificationAlgo` class.
 
 Dependence
 ----------
@@ -99,7 +99,7 @@ from numpy import newaxis
 from numpy import stack
 from sklearn.neighbors import KNeighborsClassifier
 
-from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.mlearning.classification.classification import BaseMLClassificationAlgo
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -108,7 +108,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import TransformerType
 
 
-class KNNClassifier(MLClassificationAlgo):
+class KNNClassifier(BaseMLClassificationAlgo):
     """The k-nearest neighbors classification algorithm."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "KNN"
@@ -117,7 +117,7 @@ class KNNClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data: IODataset,
-        transformer: TransformerType = MLClassificationAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLClassificationAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         n_neighbors: int = 5,

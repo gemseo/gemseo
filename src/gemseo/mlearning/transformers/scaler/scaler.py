@@ -53,8 +53,8 @@ from numpy import diag
 from numpy import full
 from numpy import tile
 
-from gemseo.mlearning.transformers.transformer import Transformer
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+from gemseo.mlearning.transformers.base_transformer import BaseTransformer
+from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -62,7 +62,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class Scaler(Transformer):
+class Scaler(BaseTransformer):
     """Data scaler."""
 
     __OFFSET: Final[str] = "offset"
@@ -122,18 +122,18 @@ class Scaler(Transformer):
             self.__class__.__name__,
         )
 
-    @Transformer._use_2d_array
+    @BaseTransformer._use_2d_array
     def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return data @ diag(self.coefficient) + self.offset
 
-    @Transformer._use_2d_array
+    @BaseTransformer._use_2d_array
     def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return (data - self.offset) @ diag(1 / self.coefficient)
 
-    @Transformer._use_2d_array
+    @BaseTransformer._use_2d_array
     def compute_jacobian(self, data: RealArray) -> RealArray:  # noqa: D102
         return tile(diag(self.coefficient), (len(data), 1, 1))
 
-    @Transformer._use_2d_array
+    @BaseTransformer._use_2d_array
     def compute_jacobian_inverse(self, data: RealArray) -> RealArray:  # noqa: D102
         return tile(diag(1 / self.coefficient), (len(data), 1, 1))

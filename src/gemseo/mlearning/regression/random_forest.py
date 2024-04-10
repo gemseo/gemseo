@@ -35,7 +35,7 @@ from typing import ClassVar
 
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class RandomForestRegressor(MLRegressionAlgo):
+class RandomForestRegressor(BaseMLRegressionAlgo):
     """Random forest regression."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "RF"
@@ -55,7 +55,7 @@ class RandomForestRegressor(MLRegressionAlgo):
     def __init__(
         self,
         data: IODataset,
-        transformer: TransformerType = MLRegressionAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLRegressionAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         n_estimators: int = 100,

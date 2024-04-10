@@ -19,8 +19,8 @@ The package *sensitivity*
 .. automodule:: gemseo.uncertainty.sensitivity
    :noindex:
 
-The base class *SensitivityAnalysis*
-------------------------------------
+The base class *BaseSensitivityAnalysis*
+----------------------------------------
 
 .. automodule:: gemseo.uncertainty.sensitivity.analysis
    :noindex:

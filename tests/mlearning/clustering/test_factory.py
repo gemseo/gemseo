@@ -48,7 +48,7 @@ def test_constructor() -> None:
     assert set(factory.models) <= {
         "GaussianMixture",
         "KMeans",
-        "MLPredictiveClusteringAlgo",
+        "BaseMLPredictiveClusteringAlgo",
     }
 
 

@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Test the factory used to create instances of :class:`.ToleranceInterval`."""
+"""Test the factory used to create instances of :class:`.BaseToleranceInterval`."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ import re
 
 import pytest
 
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+from gemseo.uncertainty.statistics.tolerance_interval.factory import (
     ToleranceIntervalFactory,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.normal import (
@@ -29,7 +29,8 @@ from gemseo.uncertainty.statistics.tolerance_interval.normal import (
 
 
 def test_create() -> None:
-    """Check the creation of a ToleranceInterval from the ToleranceIntervalFactory."""
+    """Check the creation of a BaseToleranceInterval from the
+    ToleranceIntervalFactory."""
     factory = ToleranceIntervalFactory()
     tolerance_interval = factory.create("Normal", 100000, 0, 1)
     assert isinstance(tolerance_interval, NormalToleranceInterval)
@@ -38,7 +39,8 @@ def test_create() -> None:
 
 
 def test_create_fail() -> None:
-    """Check the creation of a ToleranceInterval from the ToleranceIntervalFactory."""
+    """Check the creation of a BaseToleranceInterval from the
+    ToleranceIntervalFactory."""
     factory = ToleranceIntervalFactory()
 
     expected = re.escape(

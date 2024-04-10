@@ -31,7 +31,7 @@ from numpy import array
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import concretize_classes
@@ -52,8 +52,8 @@ def dataset() -> IODataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(MLAlgo):
-        ml_algo = MLAlgo(dataset)
+    with concretize_classes(BaseMLAlgo):
+        ml_algo = BaseMLAlgo(dataset)
 
     assert ml_algo.algo is None
     assert not ml_algo.is_trained
@@ -113,8 +113,8 @@ def test_repr_html(dataset) -> None:
 )
 def test_transformer(dataset, transformer) -> None:
     """Check if transformers are correctly passed."""
-    with concretize_classes(MLAlgo):
-        ml_algo = MLAlgo(dataset, transformer={"parameters": transformer})
+    with concretize_classes(BaseMLAlgo):
+        ml_algo = BaseMLAlgo(dataset, transformer={"parameters": transformer})
 
     assert isinstance(ml_algo.transformer["parameters"], Scaler)
     if isinstance(transformer, tuple):
@@ -127,13 +127,13 @@ def test_transformer_wrong_type(dataset) -> None:
         pytest.raises(
             ValueError,
             match=re.escape(
-                "Transformer type must be "
-                "either Transformer, Tuple[str, Mapping[str, Any]] or str."
+                "BaseTransformer type must be "
+                "either BaseTransformer, Tuple[str, Mapping[str, Any]] or str."
             ),
         ),
-        concretize_classes(MLAlgo),
+        concretize_classes(BaseMLAlgo),
     ):
-        MLAlgo(dataset, transformer={"parameters": 1})
+        BaseMLAlgo(dataset, transformer={"parameters": 1})
 
 
 def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory) -> None:
@@ -161,18 +161,18 @@ def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory) -> None:
 
 
 def test_transformers_error(dataset) -> None:
-    """Check that MLAlgo cannot use a transformer for both group and variable."""
+    """Check that BaseMLAlgo cannot use a transformer for both group and variable."""
     dataset = IODataset()
     dataset.add_variable("x", array([[1.0]]), group_name="foo")
     with (
         pytest.raises(
             ValueError,
             match=(
-                "An MLAlgo cannot have both a transformer "
+                "An BaseMLAlgo cannot have both a transformer "
                 "for all variables of a group and a transformer "
                 "for one variable of this group."
             ),
         ),
-        concretize_classes(MLAlgo),
+        concretize_classes(BaseMLAlgo),
     ):
-        MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})
+        BaseMLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})

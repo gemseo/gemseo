@@ -64,9 +64,8 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-# TODO: API: rename to BaseMDA.
-class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
-    """An MDA analysis."""
+class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
+    """A base class for multidisciplinary analysis (MDA)."""
 
     RESIDUALS_NORM: ClassVar[str] = "MDA residuals norm"
 

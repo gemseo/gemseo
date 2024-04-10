@@ -17,7 +17,7 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Tests for the class SensitivityAnalysis."""
+"""Tests for the class BaseSensitivityAnalysis."""
 
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
+from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
@@ -76,7 +76,7 @@ class Ishigami1D(MDODiscipline):
         self.store_local_data(out=output)
 
 
-class MockSensitivityAnalysis(SensitivityAnalysis):
+class MockSensitivityAnalysis(BaseSensitivityAnalysis):
     """This sensitivity analysis returns dummy indices with dummy methods m1 and m2.
 
     It relies on a dummy dataset with inputs x1 and x2 and outputs y1 and y2. xi and yi
@@ -419,7 +419,7 @@ def test_standardize_indices() -> None:
             {"x1": array([0.0]), "x2": array([0.5]), "x3": array([2.0])},
         ],
     }
-    standardized_indices = SensitivityAnalysis.standardize_indices(indices)
+    standardized_indices = BaseSensitivityAnalysis.standardize_indices(indices)
     expected_standardized_indices = {
         "y1": [{"x1": array([1.0]), "x2": array([0.25]), "x3": array([0.5])}],
         "y2": [
@@ -431,7 +431,7 @@ def test_standardize_indices() -> None:
 
 
 def test_multiple_disciplines(parameter_space) -> None:
-    """Test a SensitivityAnalysis with multiple disciplines.
+    """Test a BaseSensitivityAnalysis with multiple disciplines.
 
     Args:
         parameter_space: A parameter space for the analysis.
@@ -441,8 +441,8 @@ def test_multiple_disciplines(parameter_space) -> None:
     d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
     d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
 
-    with concretize_classes(SensitivityAnalysis):
-        sensitivity_analysis = SensitivityAnalysis([d1, d2, d3], parameter_space, 5)
+    with concretize_classes(BaseSensitivityAnalysis):
+        sensitivity_analysis = BaseSensitivityAnalysis([d1, d2, d3], parameter_space, 5)
 
     assert sensitivity_analysis.dataset.get_variable_names("inputs") == [
         "x1",

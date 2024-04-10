@@ -24,17 +24,17 @@ import logging
 from typing import TYPE_CHECKING
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
-from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.core.supervised import MLSupervisedAlgo
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.clustering.clustering import BaseMLClusteringAlgo
+from gemseo.mlearning.core.ml_algo import BaseMLAlgo
+from gemseo.mlearning.core.supervised import BaseMLSupervisedAlgo
+from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.classification.classification import MLClassificationAlgo
+    from gemseo.mlearning.classification.classification import BaseMLClassificationAlgo
     from gemseo.mlearning.core.ml_algo import TransformerType
 
 LOGGER = logging.getLogger(__name__)
@@ -108,18 +108,18 @@ def get_clustering_models() -> list[str]:
 def create_mlearning_model(
     name: str,
     data: Dataset,
-    transformer: TransformerType = MLAlgo.IDENTITY,
+    transformer: TransformerType = BaseMLAlgo.IDENTITY,
     **parameters,
-) -> MLAlgo:
+) -> BaseMLAlgo:
     """Create a machine learning algorithm from a learning dataset.
 
     Args:
         name: The name of the machine learning algorithm.
         data: The learning dataset.
         transformer: The strategies to transform the variables.
-            Values are instances of :class:`.Transformer`
+            Values are instances of :class:`.BaseTransformer`
             while keys are names of either variables or groups of variables.
-            If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
+            If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
         parameters: The parameters of the machine learning algorithm.
 
     Returns:
@@ -142,18 +142,18 @@ minmax_inputs = {IODataset.INPUT_GROUP: MinMaxScaler()}
 def create_regression_model(
     name: str,
     data: IODataset,
-    transformer: TransformerType = MLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
+    transformer: TransformerType = BaseMLRegressionAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
     **parameters,
-) -> MLRegressionAlgo:
+) -> BaseMLRegressionAlgo:
     """Create a regression model from a learning dataset.
 
     Args:
         name: The name of the regression algorithm.
         data: The learning dataset.
         transformer: The strategies to transform the variables.
-            Values are instances of :class:`.Transformer`
+            Values are instances of :class:`.BaseTransformer`
             while keys are names of either variables or groups of variables.
-            If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
+            If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
         parameters: The parameters of the regression model.
 
     Returns:
@@ -183,18 +183,18 @@ def create_regression_model(
 def create_classification_model(
     name: str,
     data: IODataset,
-    transformer: TransformerType = MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
+    transformer: TransformerType = BaseMLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
     **parameters,
-) -> MLClassificationAlgo:
+) -> BaseMLClassificationAlgo:
     """Create a classification model from a learning dataset.
 
     Args:
         name: The name of the classification algorithm.
         data: The learning dataset.
         transformer: The strategies to transform the variables.
-            Values are instances of :class:`.Transformer`
+            Values are instances of :class:`.BaseTransformer`
             while keys are names of either variables or groups of variables.
-            If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
+            If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
         parameters: The parameters of the classification model.
 
     Returns:
@@ -215,18 +215,18 @@ def create_classification_model(
 def create_clustering_model(
     name: str,
     data: Dataset,
-    transformer: TransformerType = MLClusteringAlgo.DEFAULT_TRANSFORMER,
+    transformer: TransformerType = BaseMLClusteringAlgo.DEFAULT_TRANSFORMER,
     **parameters,
-) -> MLClusteringAlgo:
+) -> BaseMLClusteringAlgo:
     """Create a clustering model from a learning dataset.
 
     Args:
         name: The name of the clustering algorithm.
         data: The learning dataset.
         transformer: The strategies to transform the variables.
-            Values are instances of :class:`.Transformer`
+            Values are instances of :class:`.BaseTransformer`
             while keys are names of either variables or groups of variables.
-            If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
+            If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
         parameters: The parameters of the clustering model.
 
     Returns:
@@ -244,7 +244,7 @@ def create_clustering_model(
     )
 
 
-def import_mlearning_model(directory: str | Path) -> MLAlgo:
+def import_mlearning_model(directory: str | Path) -> BaseMLAlgo:
     """Import a machine learning algorithm from a directory.
 
     Args:
@@ -263,7 +263,7 @@ def import_mlearning_model(directory: str | Path) -> MLAlgo:
     return MLAlgoFactory().load(directory)
 
 
-def import_regression_model(directory: str | Path) -> MLRegressionAlgo:
+def import_regression_model(directory: str | Path) -> BaseMLRegressionAlgo:
     """Import a regression model from a directory.
 
     Args:
@@ -282,7 +282,7 @@ def import_regression_model(directory: str | Path) -> MLRegressionAlgo:
     return RegressionModelFactory().load(directory)
 
 
-def import_classification_model(directory: str | Path) -> MLClassificationAlgo:
+def import_classification_model(directory: str | Path) -> BaseMLClassificationAlgo:
     """Import a classification model from a directory.
 
     Args:
@@ -301,7 +301,7 @@ def import_classification_model(directory: str | Path) -> MLClassificationAlgo:
     return ClassificationModelFactory().load(directory)
 
 
-def import_clustering_model(directory: str | Path) -> MLClusteringAlgo:
+def import_clustering_model(directory: str | Path) -> BaseMLClusteringAlgo:
     """Import a clustering model from a directory.
 
     Args:

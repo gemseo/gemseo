@@ -53,7 +53,7 @@ from gemseo.mlearning import import_classification_model
 from gemseo.mlearning import import_clustering_model
 from gemseo.mlearning import import_mlearning_model
 from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
@@ -278,7 +278,7 @@ def test_import_regression_model_with_old_class_name() -> None:
     directory = Path(__file__).parent / "old_algo"
     loaded_model = import_regression_model(directory)
     assert isinstance(loaded_model, LinearRegressor)
-    with (directory / MLAlgo.FILENAME).open("rb") as f:
+    with (directory / BaseMLAlgo.FILENAME).open("rb") as f:
         objects = pickle.load(f)
 
     assert objects.pop("algo_name") == "LinearRegression"

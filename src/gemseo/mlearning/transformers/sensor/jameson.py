@@ -26,14 +26,14 @@ from typing import TYPE_CHECKING
 from numpy import abs as np_abs
 from numpy import amax
 
-from gemseo.mlearning.transformers.transformer import Transformer
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+from gemseo.mlearning.transformers.base_transformer import BaseTransformer
+from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class JamesonSensor(Transformer):
+class JamesonSensor(BaseTransformer):
     """A 1D Jameson Sensor."""
 
     def __init__(
@@ -60,7 +60,7 @@ class JamesonSensor(Transformer):
     def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
         self.threshold *= amax(data)
 
-    @Transformer._use_2d_array
+    @BaseTransformer._use_2d_array
     def transform(  # noqa: D102
         self,
         data: RealArray,

@@ -34,8 +34,8 @@ In this module, the :class:`.MLAlgoCalibration` class aims to calibrate the hype
 parameters in order to minimize this measure of the generalization quality over a
 calibration parameter space. This class relies on the :class:`.MLAlgoAssessor` class
 which is a discipline (:class:`.MDODiscipline`) built from a machine learning algorithm
-(:class:`.MLAlgo`), a dataset (:class:`.Dataset`), a quality measure
-(:class:`.MLQualityMeasure`) and various options for the data scaling, the quality
+(:class:`.BaseMLAlgo`), a dataset (:class:`.Dataset`), a quality measure
+(:class:`.BaseMLQualityMeasure`) and various options for the data scaling, the quality
 measure and the machine learning algorithm. The inputs of this discipline are hyper-
 parameters of the machine learning algorithm while the output is the quality criterion.
 """
@@ -53,11 +53,11 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MeasureOptionsType
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -78,7 +78,7 @@ class MLAlgoAssessor(MDODiscipline):
     algo: str
     """The name of a machine learning algorithm."""
 
-    measure: type[MLQualityMeasure]
+    measure: type[BaseMLQualityMeasure]
     """The measure to assess the machine learning algorithm."""
 
     measure_options: dict[str, int | Dataset]
@@ -93,7 +93,7 @@ class MLAlgoAssessor(MDODiscipline):
     transformer: TransformerType
     """The transformation strategy for data groups."""
 
-    algos: list[MLAlgo]
+    algos: list[BaseMLAlgo]
     """The instances of the machine learning algorithm (one per execution of the machine
     learning algorithm assessor)."""
 
@@ -106,10 +106,10 @@ class MLAlgoAssessor(MDODiscipline):
         algo: str,
         dataset: Dataset,
         parameters: Iterable[str],
-        measure: type[MLQualityMeasure],
-        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
+        measure: type[BaseMLQualityMeasure],
+        measure_evaluation_method_name: BaseMLQualityMeasure.EvaluationMethod = BaseMLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
         measure_options: MeasureOptionsType | None = None,
-        transformer: TransformerType = MLAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
     ) -> None:
         """
@@ -126,16 +126,16 @@ class MLAlgoAssessor(MDODiscipline):
                 If ``None``, do not use quality measure options.
             transformer: The strategies
                 to transform the variables.
-                The values are instances of :class:`.Transformer`
+                The values are instances of :class:`.BaseTransformer`
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
                 e.g. ``"inputs"`` or ``"outputs"``
                 in the case of the regression algorithms.
                 If a group is specified,
-                the :class:`.Transformer` will be applied
+                the :class:`.BaseTransformer` will be applied
                 to all the variables of this group.
-                If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
+                If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
 
             **algo_options: The options of the machine learning algorithm.
 
@@ -165,7 +165,7 @@ class MLAlgoAssessor(MDODiscipline):
         This method creates a new instance of the machine learning algorithm, from the
         hyper-parameters stored in the local_data attribute of the
         :class:`.MLAlgoAssessor`. It trains it on the learning dataset and measures its
-        quality with the :class:`.MLQualityMeasure`.
+        quality with the :class:`.BaseMLQualityMeasure`.
         """
         inputs = self.get_input_data()
         for index in inputs:
@@ -209,7 +209,7 @@ class MLAlgoCalibration:
     optimal_criterion: float | None
     """The optimal quality measure after execution."""
 
-    optimal_algorithm: MLAlgo | None
+    optimal_algorithm: BaseMLAlgo | None
     """The optimal machine learning algorithm after execution."""
 
     scenario: Scenario | None
@@ -221,11 +221,11 @@ class MLAlgoCalibration:
         dataset: Dataset,
         parameters: Iterable[str],
         calibration_space: DesignSpace,
-        measure: type[MLQualityMeasure],
+        measure: type[BaseMLQualityMeasure],
         measure_evaluation_method_name: str
-        | MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,
+        | BaseMLQualityMeasure.EvaluationMethod = BaseMLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
         measure_options: MeasureOptionsType | None = None,
-        transformer: TransformerType = MLAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
     ) -> None:
         """
@@ -242,16 +242,16 @@ class MLAlgoCalibration:
                 If ``None``, do not use the quality measure options.
             transformer: The strategies
                 to transform the variables.
-                The values are instances of :class:`.Transformer`
+                The values are instances of :class:`.BaseTransformer`
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
                 e.g. ``"inputs"`` or ``"outputs"``
                 in the case of the regression algorithms.
                 If a group is specified,
-                the :class:`.Transformer` will be applied
+                the :class:`.BaseTransformer` will be applied
                 to all the variables of this group.
-                If :attr:`~.MLAlgo.IDENTITY`, do not transform the variables.
+                If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
             **algo_options: The options of the machine learning algorithm.
         """  # noqa: D205 D212
         disc = MLAlgoAssessor(
@@ -325,6 +325,6 @@ class MLAlgoCalibration:
         return self.dataset.get_view(variable_names=name).to_numpy()
 
     @property
-    def algos(self) -> MLAlgo:
+    def algos(self) -> BaseMLAlgo:
         """The trained machine learning algorithms."""
         return self.scenario.disciplines[0].algos

@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.root import MDARoot
+from gemseo.mda.base_mda_root import BaseMDARoot
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class MDANewtonRaphson(MDARoot):
+class MDANewtonRaphson(BaseMDARoot):
     r"""Newton solver for MDA.
 
     The `Newton-Raphson method <https://en.wikipedia.org/wiki/Newton%27s_method>`__ is
@@ -95,7 +95,7 @@ class MDANewtonRaphson(MDARoot):
         newton_linear_solver_options: Mapping[str, Any] | None = None,
         parallel: bool = False,
         use_threading: bool = True,
-        n_processes: int = MDARoot.N_CPUS,
+        n_processes: int = BaseMDARoot.N_CPUS,
         acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
         over_relaxation_factor: float = 0.99,
     ) -> None:

@@ -22,11 +22,11 @@
 The purpose of a sensitivity analysis is to qualify or quantify how the model's
 uncertain inputs impact its outputs.
 
-This analysis relies on :class:`.SensitivityAnalysis` computed from a
+This analysis relies on :class:`.BaseSensitivityAnalysis` computed from a
 :class:`.MDODiscipline` representing the model,
 a :class:`.ParameterSpace` describing the
 uncertain parameters and options associated with a particular concrete class inheriting
-from :class:`.SensitivityAnalysis` which is an abstract one.
+from :class:`.BaseSensitivityAnalysis` which is an abstract one.
 """
 
 from __future__ import annotations
@@ -83,21 +83,21 @@ FirstOrderIndicesType = dict[str, list[dict[str, ndarray]]]
 SecondOrderIndicesType = dict[str, list[dict[str, dict[str, ndarray]]]]
 
 
-class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Sensitivity analysis.
 
-    The :class:`.SensitivityAnalysis` class provides both the values of
-    :attr:`.SensitivityAnalysis.indices` and their graphical representations,
-    from either the :meth:`.SensitivityAnalysis.plot` method, the
-    :meth:`.SensitivityAnalysis.plot_radar` method or the
-    :meth:`.SensitivityAnalysis.plot_bar` method.
+    The :class:`.BaseSensitivityAnalysis` class provides both the values of
+    :attr:`.BaseSensitivityAnalysis.indices` and their graphical representations,
+    from either the :meth:`.plot` method,
+    the :meth:`.plot_radar` method
+    or the :meth:`.plot_bar` method.
 
-    It is also possible to use :meth:`.SensitivityAnalysis.sort_parameters` to get the
-    parameters sorted according to :attr:`.SensitivityAnalysis.main_method`. The
-    :attr:`.SensitivityAnalysis.main_indices` are indices computed with the latter.
+    It is also possible to use :meth:`.sort_parameters`
+    to get the parameters sorted according to :attr:`.main_method`.
+    The :attr:`.main_indices` are indices computed with the latter.
 
-    Lastly, the :meth:`.SensitivityAnalysis.plot_comparison` method allows to compare
-    the current :class:`.SensitivityAnalysis` with another one.
+    Lastly, the :meth:`.plot_comparison` method allows
+    to compare the current :class:`.BaseSensitivityAnalysis` with another one.
     """
 
     # TODO: API: rename to default_outputs or default_output_names
@@ -173,7 +173,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             output_names: The disciplines' outputs to be considered for the analysis.
                 If empty, use all the outputs.
             algo: The name of the DOE algorithm.
-                If empty, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
+                If empty, use the :attr:`.BaseSensitivityAnalysis.DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
             formulation: The name of the :class:`.MDOFormulation`
                 to sample the disciplines.
@@ -208,7 +208,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             pickle.dump(self, f)
 
     @staticmethod
-    def from_pickle(file_path: str | Path) -> SensitivityAnalysis:
+    def from_pickle(file_path: str | Path) -> BaseSensitivityAnalysis:
         """Load a sensitivity analysis from the disk.
 
         Args:
@@ -873,7 +873,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def plot_comparison(
         self,
-        indices: list[SensitivityAnalysis],
+        indices: list[BaseSensitivityAnalysis],
         output: VariableType,
         inputs: Iterable[str] = (),
         title: str = "",
@@ -921,7 +921,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         if not isinstance(output, tuple):
             output = (output, 0)
-        if isinstance(indices, SensitivityAnalysis):
+        if isinstance(indices, BaseSensitivityAnalysis):
             indices = [indices]
         methods = [self, *indices]
         dataset = Dataset()
@@ -995,7 +995,7 @@ class SensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         return fig
 
     def to_dataset(self) -> Dataset:
-        """Convert :attr:`.SensitivityAnalysis.indices` into a :class:`.Dataset`.
+        """Convert :attr:`.BaseSensitivityAnalysis.indices` into a :class:`.Dataset`.
 
         Returns:
             The sensitivity indices.

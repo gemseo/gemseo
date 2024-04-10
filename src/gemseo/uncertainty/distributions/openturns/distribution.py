@@ -20,7 +20,7 @@
 """The interface to OpenTURNS-based probability distributions.
 
 The :class:`.OTDistribution` class is a concrete class
-inheriting from :class:`.Distribution` which is an abstract one.
+inheriting from :class:`.BaseDistribution` which is an abstract one.
 OT stands for `OpenTURNS <https://openturns.github.io/www/>`_
 which is the library it relies on.
 
@@ -65,9 +65,9 @@ from numpy import array
 from numpy import inf
 from numpy import ndarray
 
-from gemseo.uncertainty.distributions.distribution import Distribution
-from gemseo.uncertainty.distributions.distribution import ParametersType
-from gemseo.uncertainty.distributions.distribution import StandardParametersType
+from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+from gemseo.uncertainty.distributions.base_distribution import ParametersType
+from gemseo.uncertainty.distributions.base_distribution import StandardParametersType
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -75,7 +75,7 @@ from gemseo.utils.string_tools import pretty_str
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.uncertainty.distributions.joint import JointDistribution
+    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 OT_WEBSITE = (
     "http://openturns.github.io/openturns/latest/user_manual/"
@@ -85,7 +85,7 @@ OT_WEBSITE = (
 LOGGER = logging.getLogger(__name__)
 
 
-class OTDistribution(Distribution):
+class OTDistribution(BaseDistribution):
     """An OpenTURNS-based probability distribution.
 
     Create a probability distribution for an uncertain variable
@@ -100,7 +100,7 @@ class OTDistribution(Distribution):
         Exponential(3, 2)
     """
 
-    JOINT_DISTRIBUTION_CLASS: ClassVar[type[JointDistribution] | None] = (
+    JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution] | None] = (
         OTJointDistribution
     )
 
@@ -109,7 +109,7 @@ class OTDistribution(Distribution):
 
     def __init__(
         self,
-        variable: str = Distribution.DEFAULT_VARIABLE_NAME,
+        variable: str = BaseDistribution.DEFAULT_VARIABLE_NAME,
         interfaced_distribution: str = "Uniform",
         parameters: tuple[Any] = (),
         dimension: int = 1,

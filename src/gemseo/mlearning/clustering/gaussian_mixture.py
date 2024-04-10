@@ -59,7 +59,7 @@ the cluster centers :math:`\\mu_i` and the covariance matrices :math:`\\Sigma_i`
 are computed using the expectation-maximization algorithm.
 
 This concept is implemented through the :class:`.GaussianMixture` class
-which inherits from the :class:`.MLClusteringAlgo` class.
+which inherits from the :class:`.BaseMLClusteringAlgo` class.
 
 Dependence
 ----------
@@ -76,7 +76,7 @@ from typing import NoReturn
 
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 
-from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
+from gemseo.mlearning.clustering.clustering import BaseMLPredictiveClusteringAlgo
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
@@ -88,7 +88,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import TransformerType
 
 
-class GaussianMixture(MLPredictiveClusteringAlgo):
+class GaussianMixture(BaseMLPredictiveClusteringAlgo):
     """The Gaussian mixture clustering algorithm."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "GMM"
@@ -97,7 +97,7 @@ class GaussianMixture(MLPredictiveClusteringAlgo):
     def __init__(
         self,
         data: Dataset,
-        transformer: TransformerType = MLPredictiveClusteringAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLPredictiveClusteringAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
         n_components: int = 5,
         random_state: int | None = SEED,

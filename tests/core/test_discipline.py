@@ -47,7 +47,7 @@ from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.scenario import Scenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.mda.mda import MDA
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
@@ -903,7 +903,7 @@ def test_cache_none() -> None:
     discipline._run = lambda: None
     discipline.execute()
 
-    assert MDA.activate_cache is True
+    assert BaseMDA.activate_cache is True
 
     MDODiscipline.activate_cache = True
 

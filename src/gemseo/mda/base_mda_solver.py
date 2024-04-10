@@ -29,7 +29,7 @@ from numpy.linalg import norm
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.mda import MDA
+from gemseo.mda.base_mda import BaseMDA
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseMDASolver(MDA):
+class BaseMDASolver(BaseMDA):
     """The base class for MDA solvers."""
 
     __resolved_variable_names_to_slices: dict[BaseDataConverter, dict[str, slice]]

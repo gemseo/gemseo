@@ -35,9 +35,9 @@ from strenum import StrEnum
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
+from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.analysis import OutputsType
-from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.compatibility.openturns import compute_kendall_tau
 from gemseo.utils.compatibility.openturns import compute_pcc
@@ -66,7 +66,7 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.dataset_plot import VariableType
 
 
-class CorrelationAnalysis(SensitivityAnalysis):
+class CorrelationAnalysis(BaseSensitivityAnalysis):
     """Sensitivity analysis based on indices using correlation measures.
 
     Examples:

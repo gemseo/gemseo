@@ -39,7 +39,7 @@ from numpy import newaxis
 from numpy import stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
-from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.mlearning.classification.classification import BaseMLClassificationAlgo
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import TransformerType
 
 
-class RandomForestClassifier(MLClassificationAlgo):
+class RandomForestClassifier(BaseMLClassificationAlgo):
     """The random forest classification algorithm."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "RF"
@@ -58,7 +58,7 @@ class RandomForestClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data: IODataset,
-        transformer: TransformerType = MLClassificationAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLClassificationAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         n_estimators: int = 100,

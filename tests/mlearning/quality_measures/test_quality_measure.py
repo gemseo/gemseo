@@ -25,13 +25,13 @@ import pytest
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.quality_measures.cluster_measure import MLClusteringMeasure
+from gemseo.mlearning.core.ml_algo import BaseMLAlgo
+from gemseo.mlearning.quality_measures.cluster_measure import BaseMLClusteringMeasure
 from gemseo.mlearning.quality_measures.cluster_measure import (
     MLPredictiveClusteringMeasure,
 )
-from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
+from gemseo.mlearning.quality_measures.error_measure import BaseMLErrorMeasure
+from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.utils.testing.helpers import concretize_classes
@@ -46,27 +46,29 @@ def dataset() -> IODataset:
 
 
 @pytest.fixture(scope="module")
-def measure(dataset) -> MLQualityMeasure:
+def measure(dataset) -> BaseMLQualityMeasure:
     """The quality measure related to a trained machine learning algorithm."""
-    with concretize_classes(MLQualityMeasure, MLAlgo):
-        return MLQualityMeasure(MLAlgo(dataset))
+    with concretize_classes(BaseMLQualityMeasure, BaseMLAlgo):
+        return BaseMLQualityMeasure(BaseMLAlgo(dataset))
 
 
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_constructor(fit_transformers, dataset) -> None:
     """Test construction."""
-    with concretize_classes(MLQualityMeasure, MLAlgo):
-        measure = MLQualityMeasure(MLAlgo(dataset), fit_transformers=fit_transformers)
+    with concretize_classes(BaseMLQualityMeasure, BaseMLAlgo):
+        measure = BaseMLQualityMeasure(
+            BaseMLAlgo(dataset), fit_transformers=fit_transformers
+        )
 
     assert measure.algo.learning_set.name == "the_dataset"
     assert measure._fit_transformers is fit_transformers
 
 
 def test_is_better() -> None:
-    class MLQualityMeasureToMinimize(MLQualityMeasure):
+    class MLQualityMeasureToMinimize(BaseMLQualityMeasure):
         SMALLER_IS_BETTER = True
 
-    class MLQualityMeasureToMaximize(MLQualityMeasure):
+    class MLQualityMeasureToMaximize(BaseMLQualityMeasure):
         SMALLER_IS_BETTER = False
 
     assert MLQualityMeasureToMinimize.is_better(1, 2)
@@ -74,20 +76,20 @@ def test_is_better() -> None:
 
 
 def test_factory() -> None:
-    """Check that the factory of MLQualityMeasure works correctly."""
+    """Check that the factory of BaseMLQualityMeasure works correctly."""
     assert "MSEMeasure" in MLQualityMeasureFactory().class_names
 
 
 @pytest.mark.parametrize(
     ("cls", "old", "new"),
     [
-        (MLQualityMeasure, "evaluate_loo", "compute_leave_one_out_measure"),
-        (MLErrorMeasure, "evaluate_learn", "compute_learning_measure"),
-        (MLErrorMeasure, "evaluate_test", "compute_test_measure"),
-        (MLErrorMeasure, "evaluate_kfolds", "compute_cross_validation_measure"),
-        (MLErrorMeasure, "evaluate_loo", "compute_leave_one_out_measure"),
-        (MLErrorMeasure, "evaluate_bootstrap", "compute_bootstrap_measure"),
-        (MLClusteringMeasure, "evaluate_learn", "compute_learning_measure"),
+        (BaseMLQualityMeasure, "evaluate_loo", "compute_leave_one_out_measure"),
+        (BaseMLErrorMeasure, "evaluate_learn", "compute_learning_measure"),
+        (BaseMLErrorMeasure, "evaluate_test", "compute_test_measure"),
+        (BaseMLErrorMeasure, "evaluate_kfolds", "compute_cross_validation_measure"),
+        (BaseMLErrorMeasure, "evaluate_loo", "compute_leave_one_out_measure"),
+        (BaseMLErrorMeasure, "evaluate_bootstrap", "compute_bootstrap_measure"),
+        (BaseMLClusteringMeasure, "evaluate_learn", "compute_learning_measure"),
         (MLPredictiveClusteringMeasure, "evaluate_test", "compute_test_measure"),
         (
             MLPredictiveClusteringMeasure,

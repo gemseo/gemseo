@@ -35,10 +35,10 @@ if TYPE_CHECKING:
 from numpy import array
 from numpy import ndarray
 
-from gemseo.uncertainty.distributions.joint import JointDistribution
+from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 
-class OTJointDistribution(JointDistribution):
+class OTJointDistribution(BaseJointDistribution):
     """The OpenTURNS-based joint probability distribution."""
 
     def __init__(  # noqa: D107

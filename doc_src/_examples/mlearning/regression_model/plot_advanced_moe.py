@@ -138,7 +138,7 @@ model
 #    on another sub-part of the input space.
 #
 # Once built,
-# this mixture of experts can be used as any :class:`.MLRegressionAlgo`.
+# this mixture of experts can be used as any :class:`.BaseMLRegressionAlgo`.
 #
 # .. seealso::
 #

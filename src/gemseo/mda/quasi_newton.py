@@ -33,7 +33,7 @@ from numpy import ndarray
 from scipy.optimize import root
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.root import MDARoot
+from gemseo.mda.base_mda_root import BaseMDARoot
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class MDAQuasiNewton(MDARoot):
+class MDAQuasiNewton(BaseMDARoot):
     r"""Quasi-Newton solver for MDA.
 
     `Quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__

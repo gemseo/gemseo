@@ -19,7 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Dimension reduction as a generic transformer.
 
-The :class:`.DimensionReduction` class implements the concept of dimension reduction.
+The :class:`.BaseDimensionReduction` class implements
+the concept of dimension reduction.
 
 .. seealso::
 
@@ -28,10 +29,10 @@ The :class:`.DimensionReduction` class implements the concept of dimension reduc
 
 from __future__ import annotations
 
-from gemseo.mlearning.transformers.transformer import Transformer
+from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 
 
-class DimensionReduction(Transformer):
+class BaseDimensionReduction(BaseTransformer):
     """Dimension reduction."""
 
     def __init__(

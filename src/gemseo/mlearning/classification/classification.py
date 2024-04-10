@@ -27,8 +27,8 @@ Classification algorithms provide methods for predicting classes of new input da
 as well as predicting the probabilities of belonging to each of the classes
 wherever possible.
 
-This concept is implemented through the :class:`.MLClassificationAlgo` class
-which inherits from the :class:`.MLSupervisedAlgo` class.
+This concept is implemented through the :class:`.BaseMLClassificationAlgo` class
+which inherits from the :class:`.BaseMLSupervisedAlgo` class.
 """
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ from numpy import ndarray
 from numpy import unique
 from numpy import zeros
 
-from gemseo.mlearning.core.supervised import MLSupervisedAlgo
+from gemseo.mlearning.core.supervised import BaseMLSupervisedAlgo
 from gemseo.mlearning.core.supervised import (
     SavedObjectType as MLSupervisedAlgoSavedObjectType,
 )
@@ -59,12 +59,12 @@ SavedObjectType = Union[
 ]
 
 
-class MLClassificationAlgo(MLSupervisedAlgo):
+class BaseMLClassificationAlgo(BaseMLSupervisedAlgo):
     """Classification Algorithm.
 
-    Inheriting classes shall implement the :meth:`!MLSupervisedAlgo._fit` and
-    :meth:`!MLClassificationAlgo._predict` methods, and
-    :meth:`!MLClassificationAlgo._predict_proba_soft` method if possible.
+    Inheriting classes shall implement the :meth:`!BaseMLSupervisedAlgo._fit` and
+    :meth:`!BaseMLClassificationAlgo._predict` methods, and
+    :meth:`!BaseMLClassificationAlgo._predict_proba_soft` method if possible.
     """
 
     n_classes: int
@@ -73,7 +73,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     def __init__(  # noqa: D107
         self,
         data: IODataset,
-        transformer: TransformerType = MLSupervisedAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLSupervisedAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
@@ -99,7 +99,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
         self.n_classes = unique(output_data).shape[0]
         super()._learn(indices, fit_transformers=fit_transformers)
 
-    @MLSupervisedAlgo.DataFormatters.format_input_output
+    @BaseMLSupervisedAlgo.DataFormatters.format_input_output
     def predict_proba(
         self,
         input_data: DataType,

@@ -36,18 +36,18 @@ from numpy import sqrt
 from numpy import tile
 from sklearn.decomposition import PCA as SKLPCA
 
-from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
-    DimensionReduction,
+from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
+    BaseDimensionReduction,
 )
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
     from gemseo.typing import RealArray
 
 
-class PCA(DimensionReduction):
+class PCA(BaseDimensionReduction):
     """Principal component dimension reduction algorithm."""
 
     def __init__(
@@ -71,21 +71,21 @@ class PCA(DimensionReduction):
         self.algo.fit(self.__scaler.fit_transform(data))
         self.parameters["n_components"] = self.algo.n_components_
 
-    @DimensionReduction._use_2d_array
+    @BaseDimensionReduction._use_2d_array
     def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.algo.transform(self.__scaler.transform(data))
 
-    @DimensionReduction._use_2d_array
+    @BaseDimensionReduction._use_2d_array
     def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.__scaler.inverse_transform(self.algo.inverse_transform(data))
 
-    @DimensionReduction._use_2d_array
+    @BaseDimensionReduction._use_2d_array
     def compute_jacobian(self, data: RealArray) -> RealArray:  # noqa: D102
         return tile(
             self.algo.components_, (len(data), 1, 1)
         ) @ self.__scaler.compute_jacobian(data)
 
-    @DimensionReduction._use_2d_array
+    @BaseDimensionReduction._use_2d_array
     def compute_jacobian_inverse(self, data: RealArray) -> RealArray:  # noqa: D102
         _data = self.algo.inverse_transform(data)
         return self.__scaler.compute_jacobian_inverse(_data) @ tile(

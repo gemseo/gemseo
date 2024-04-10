@@ -49,8 +49,9 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.discipline_data import DisciplineData
-    from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
-
+    from gemseo.utils.derivatives.base_gradient_approximator import (
+        BaseGradientApproximator,
+    )
 
 from matplotlib import pyplot as plt
 from numpy import absolute
@@ -71,7 +72,7 @@ class DisciplineJacApprox:
 
     N_CPUS = cpu_count()
 
-    approximator: GradientApproximator | None
+    approximator: BaseGradientApproximator | None
     """The gradient approximation method."""
 
     def __init__(

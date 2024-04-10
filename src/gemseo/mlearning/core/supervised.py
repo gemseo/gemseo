@@ -63,7 +63,7 @@ and :math:`\\Omega` is a regularization term that limits the parameters
 from over-fitting, typically some norm of its argument.
 
 The :mod:`~gemseo.mlearning.core.supervised` module implements this concept
-through the :class:`.MLSupervisedAlgo` class based on an :class:`.IODataset`.
+through the :class:`.BaseMLSupervisedAlgo` class based on an :class:`.IODataset`.
 """
 
 from __future__ import annotations
@@ -82,32 +82,32 @@ from numpy import hstack
 from numpy import ndarray
 
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import DefaultTransformerType
-from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSaveObjectType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.data_formatters.supervised_data_formatters import (
     SupervisedDataFormatters,
 )
-from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
-    DimensionReduction,
+from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
+    BaseDimensionReduction,
 )
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import Transformer
+    from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 
 SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], dict[str, ndarray]]
 
 
-class MLSupervisedAlgo(MLAlgo):
+class BaseMLSupervisedAlgo(BaseMLAlgo):
     """Supervised machine learning algorithm.
 
-    Inheriting classes shall overload the :meth:`!MLSupervisedAlgo._fit` and
-    :meth:`!MLSupervisedAlgo._predict` methods.
+    Inheriting classes shall overload the :meth:`!BaseMLSupervisedAlgo._fit` and
+    :meth:`!BaseMLSupervisedAlgo._predict` methods.
     """
 
     input_names: list[str]
@@ -155,7 +155,7 @@ class MLSupervisedAlgo(MLAlgo):
     _transformed_variable_sizes: dict[str, int]
     """The sizes of the variables in the transformed spaces."""
 
-    SHORT_ALGO_NAME: ClassVar[str] = "MLSupervisedAlgo"
+    SHORT_ALGO_NAME: ClassVar[str] = "BaseMLSupervisedAlgo"
     DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType({
         IODataset.INPUT_GROUP: MinMaxScaler()
     })
@@ -165,7 +165,7 @@ class MLSupervisedAlgo(MLAlgo):
     def __init__(
         self,
         data: IODataset,
-        transformer: TransformerType = MLAlgo.IDENTITY,
+        transformer: TransformerType = BaseMLAlgo.IDENTITY,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         **parameters: MLAlgoParameterType,
@@ -431,7 +431,7 @@ class MLSupervisedAlgo(MLAlgo):
     def __transform_data(
         self,
         names: Iterable[str],
-        transformer: Transformer,
+        transformer: BaseTransformer,
         indices: Ellipsis | Sequence[int],
         input_group: bool,
         fit: bool,
@@ -544,7 +544,7 @@ class MLSupervisedAlgo(MLAlgo):
         for key in self.transformer:
             transformer = self.transformer.get(key)
             if key in input_names:
-                if isinstance(transformer, DimensionReduction):
+                if isinstance(transformer, BaseDimensionReduction):
                     input_dimension += transformer.n_components
                 else:
                     input_dimension += (
@@ -554,7 +554,7 @@ class MLSupervisedAlgo(MLAlgo):
                     )
 
             if key in output_names:
-                if isinstance(transformer, DimensionReduction):
+                if isinstance(transformer, BaseDimensionReduction):
                     output_dimension += transformer.n_components
                 else:
                     output_dimension += (
@@ -573,7 +573,9 @@ class MLSupervisedAlgo(MLAlgo):
 
         for name in self.input_names + self.output_names:
             transformer = self.transformer.get(name)
-            if transformer is None or not isinstance(transformer, DimensionReduction):
+            if transformer is None or not isinstance(
+                transformer, BaseDimensionReduction
+            ):
                 self._transformed_variable_sizes[name] = (
                     self.learning_set.variable_names_to_n_components[name]
                 )

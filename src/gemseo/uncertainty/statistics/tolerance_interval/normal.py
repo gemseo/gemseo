@@ -24,11 +24,11 @@ from __future__ import annotations
 import openturns as ot
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
 
 
-class NormalToleranceInterval(ToleranceInterval):
+class NormalToleranceInterval(BaseToleranceInterval):
     """Computation of tolerance intervals from a data-fitted normal distribution.
 
     The formulae come from the R library *tolerance* [1]_.

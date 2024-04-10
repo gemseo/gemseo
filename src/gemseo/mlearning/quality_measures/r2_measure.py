@@ -23,7 +23,7 @@ The :mod:`~gemseo.mlearning.quality_measures.r2_measure` module
 implements the concept of R2 measures for machine learning algorithms.
 
 This concept is implemented through the :class:`.R2Measure` class
-and overloads the :meth:`!MLErrorMeasure._compute_measure` method.
+and overloads the :meth:`!BaseMLErrorMeasure._compute_measure` method.
 
 The R2 is defined by
 
@@ -46,25 +46,25 @@ from typing import NoReturn
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 
-from gemseo.mlearning.quality_measures.error_measure import MLErrorMeasure
+from gemseo.mlearning.quality_measures.error_measure import BaseMLErrorMeasure
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 
 if TYPE_CHECKING:
     from gemseo.mlearning.quality_measures.quality_measure import MeasureType
-    from gemseo.mlearning.regression.regression import MLRegressionAlgo
+    from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
     from gemseo.typing import RealArray
 
 
-class R2Measure(MLErrorMeasure):
+class R2Measure(BaseMLErrorMeasure):
     """The R2 measure for machine learning."""
 
     SMALLER_IS_BETTER = False
 
     def __init__(
         self,
-        algo: MLRegressionAlgo,
-        fit_transformers: bool = MLErrorMeasure._FIT_TRANSFORMERS,
+        algo: BaseMLRegressionAlgo,
+        fit_transformers: bool = BaseMLErrorMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
@@ -89,7 +89,7 @@ class R2Measure(MLErrorMeasure):
         n_folds: int = 5,
         samples: list[int] | None = None,
         multioutput: bool = True,
-        randomize: bool = MLErrorMeasure._RANDOMIZE,
+        randomize: bool = BaseMLErrorMeasure._RANDOMIZE,
         seed: int | None = None,
         as_dict: bool = False,
         store_resampling_result: bool = False,

@@ -96,7 +96,8 @@ from gemseo.core.discipline import MDODiscipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.mda.mda import MDA
+    from gemseo.mda.base_mda import BaseMDA
+
 
 Y_1 = "y_1"
 Y_2 = "y_2"
@@ -136,7 +137,7 @@ def get_inputs(
     return {name: inputs[name] for name in names}
 
 
-def get_y_opt(mda: MDA) -> ndarray:
+def get_y_opt(mda: BaseMDA) -> ndarray:
     """Return the optimal ``y`` array.
 
     Args:

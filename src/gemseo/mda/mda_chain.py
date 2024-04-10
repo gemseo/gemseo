@@ -34,8 +34,8 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.initialization_chain import MDOInitializationChain
-from gemseo.mda.mda import MDA
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -52,13 +52,13 @@ LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
 
 
-class MDAChain(MDA):
+class MDAChain(BaseMDA):
     """A chain of MDAs.
 
     The execution sequence is provided by the :class:`.DependencyGraph`.
     """
 
-    inner_mdas: list[MDA]
+    inner_mdas: list[BaseMDA]
     """The ordered MDAs."""
 
     __initialize_defaults: bool
@@ -159,7 +159,7 @@ class MDAChain(MDA):
         for mda in self.inner_mdas:
             mda.max_mda_iter = max_mda_iter
 
-    @MDA.log_convergence.setter
+    @BaseMDA.log_convergence.setter
     def log_convergence(  # noqa: D102
         self,
         value: bool,
@@ -228,12 +228,12 @@ class MDAChain(MDA):
         This method creates a process that will be appended to the main inner
         :class:`.MDOChain` of the :class:`.MDAChain`. Depending on the number and type
         of disciplines, as well as the options provided by the user, the process may be
-        a sole discipline, a :class:`.MDA`, a :class:`MDOChain`, or a
+        a sole discipline, a :class:`.BaseMDA`, a :class:`MDOChain`, or a
         :class:`MDOParallelChain`.
 
         Args:
             disciplines: The disciplines.
-            inner_mda_name: The inner :class:`.MDA` class name.
+            inner_mda_name: The inner :class:`.BaseMDA` class name.
             acceleration: The acceleration method to be used to improve the convergence
                 rate of the fixed point iteration method.
             over_relax_factor: The over-relaxation factor.
@@ -241,7 +241,7 @@ class MDAChain(MDA):
             mdachain_parallelize_tasks: Whether to parallelize the parallel tasks,
                 if any.
             mdachain_parallel_options: The :class:`MDOParallelChain` options.
-            inner_mda_options: The inner :class:`.MDA` options.
+            inner_mda_options: The inner :class:`.BaseMDA` options.
 
         Returns:
             A process.
@@ -265,24 +265,24 @@ class MDAChain(MDA):
         inner_mda_name: str,
         parallel_tasks: list[tuple[MDODiscipline]],
         inner_mda_options: Mapping[str, float | int | bool | str | None],
-    ) -> Sequence[MDODiscipline | MDA]:
+    ) -> Sequence[MDODiscipline | BaseMDA]:
         """Compute the parallel disciplines.
 
         This method computes the parallel disciplines,
         if any.
         If there is any coupled disciplines in a parallel task,
-        an :class:`.MDA` is created,
-        based on the :class:`.MDA` options provided.
+        a :class:`.BaseMDA` is created,
+        based on the :class:`.BaseMDA` options provided.
 
         Args:
             disciplines: The disciplines.
-            inner_mda_name: The inner :class:`.MDA` class name.
+            inner_mda_name: The inner :class:`.BaseMDA` class name.
             acceleration: The acceleration method to be used to improve the convergence
                 rate of the fixed point iteration method.
             over_relax_factor: The over-relaxation factor.
             parallel_tasks: The parallel tasks.
-            inner_mda_name: The inner :class:`.MDA` class name.
-            inner_mda_options: The inner :class:`.MDA` options.
+            inner_mda_name: The inner :class:`.BaseMDA` class name.
+            inner_mda_options: The inner :class:`.BaseMDA` options.
 
         Returns:
             The parallel disciplines.
@@ -341,20 +341,20 @@ class MDAChain(MDA):
         coupled_disciplines: Sequence[MDODiscipline],
         inner_mda_name: str,
         inner_mda_options: Mapping[str, float | int | bool | str | None],
-    ) -> MDA:
+    ) -> BaseMDA:
         """Create an inner MDA from the coupled disciplines and the MDA options.
 
         Args:
             disciplines: The disciplines.
             coupled_disciplines: The coupled disciplines.
-            inner_mda_name: The inner :class:`.MDA` class name.
-            inner_mda_options: The inner :class:`.MDA` options.
+            inner_mda_name: The inner :class:`.BaseMDA` class name.
+            inner_mda_options: The inner :class:`.BaseMDA` options.
             acceleration: The acceleration method to be used to improve the convergence
                 rate of the fixed point iteration method.
             over_relax_factor: The over-relaxation factor.
 
         Returns:
-            The :class:`.MDA` instance.
+            The :class:`.BaseMDA` instance.
         """
         inner_mda_disciplines = self.__get_coupled_disciplines_initial_order(
             coupled_disciplines, disciplines
@@ -393,7 +393,7 @@ class MDAChain(MDA):
         return (
             len(disciplines) == 1
             and self.coupling_structure.is_self_coupled(first_discipline)
-            and not isinstance(disciplines[0], MDA)
+            and not isinstance(disciplines[0], BaseMDA)
         )
 
     @staticmethod
@@ -517,7 +517,7 @@ class MDAChain(MDA):
         self,
         inputs: Iterable[str] | None = None,
     ) -> None:
-        MDA.add_differentiated_inputs(self, inputs)
+        BaseMDA.add_differentiated_inputs(self, inputs)
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_inputs(inputs)
 
@@ -525,7 +525,7 @@ class MDAChain(MDA):
         self,
         outputs: Iterable[str] | None = None,
     ) -> None:
-        MDA.add_differentiated_outputs(self, outputs=outputs)
+        BaseMDA.add_differentiated_outputs(self, outputs=outputs)
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_outputs(outputs)
 

@@ -19,10 +19,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A transformer to apply operations on NumPy arrays.
 
-The abstract :class:`.Transformer` class implements the concept of a data transformer.
-Inheriting classes shall implement the :meth:`.Transformer.fit`,
-:meth:`.Transformer.transform`
-and possibly :meth:`.Transformer.inverse_transform` methods.
+The abstract :class:`.BaseTransformer` class implements
+the concept of a data transformer.
+Inheriting classes shall implement the :meth:`.BaseTransformer.fit`,
+:meth:`.BaseTransformer.transform`
+and possibly :meth:`.BaseTransformer.inverse_transform` methods.
 
 .. seealso::
 
@@ -56,7 +57,7 @@ ParameterType = Union[bool, int, float, ndarray, str, None]
 TransformerFitOptionType = Union[float, int, str]
 
 
-class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A data transformer fitted from some samples."""
 
     name: str
@@ -85,7 +86,7 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         """The parameters of the transformer."""
         return self.__parameters
 
-    def duplicate(self) -> Transformer:
+    def duplicate(self) -> BaseTransformer:
         """Duplicate the current object.
 
         Returns:
@@ -218,7 +219,7 @@ class Transformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
 
 class TransformerFactory(BaseFactory):
-    """A factory of :class:`.Transformer`."""
+    """A factory of :class:`.BaseTransformer`."""
 
-    _CLASS = Transformer
+    _CLASS = BaseTransformer
     _MODULE_NAMES = ("gemseo.mlearning.transformers",)

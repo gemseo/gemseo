@@ -58,7 +58,7 @@ class SchedulersFactory(BaseFactory):
         Finally, the deserialized outputs are returned by the wrapper.
 
         All process classes :class:`~gemseo.core.mdo_scenario.MDOScenario`,
-        or :class:`~gemseo.mda.mda.MDA`, inherit from
+        or :class:`~gemseo.mda.mda.BaseMDA`, inherit from
         :class:`~gemseo.core.discipline.MDODiscipline` so can be sent to HPCs this way.
 
         The job scheduler template script can be provided directly or the predefined

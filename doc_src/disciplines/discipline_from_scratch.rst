@@ -206,7 +206,7 @@ We also define the default inputs by means of the :attr:`!MDODiscipline.default_
 .. warning::
 
     An :class:`.MDODiscipline` that will be placed inside an :class:`.MDF`, a :class:`.BiLevel`
-    formulation or an :class:`.MDA` with strong couplings **must** define its default inputs.
+    formulation or a :class:`.BaseMDA` with strong couplings **must** define its default inputs.
     Otherwise, the execution will fail.
 
 Overloading the :meth:`!MDODiscipline._run` method

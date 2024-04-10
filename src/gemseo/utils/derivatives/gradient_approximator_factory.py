@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Factory for classes derived from :class:`GradientApproximator`."""
+"""Factory for classes derived from :class:`BaseGradientApproximator`."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from typing import Any
 from typing import Callable
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
+from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -37,7 +37,7 @@ class GradientApproximatorFactory(BaseFactory):
     :class:`ApproximationMode`.
     """
 
-    _CLASS = GradientApproximator
+    _CLASS = BaseGradientApproximator
     _MODULE_NAMES = ("gemseo.utils.derivatives",)
 
     def __init__(self) -> None:  # noqa:D107
@@ -55,7 +55,7 @@ class GradientApproximatorFactory(BaseFactory):
         normalize: bool = True,
         parallel: bool = False,
         **parallel_args: Any,
-    ) -> GradientApproximator:
+    ) -> BaseGradientApproximator:
         """Create a gradient approximator.
 
         Args:
