@@ -476,13 +476,9 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         )
         result = cross_validation.execute(
             self.__algo,
-            True,
-            True,
-            True,
-            True,
-            True,
-            self.__algo.input_data,
-            self.__algo.output_data.shape,
+            return_models=True,
+            input_data=self.__algo.input_data,
+            store_sampling_result=True,
         )
         observed_dataset = IODataset()
         observed_dataset.add_input_group(

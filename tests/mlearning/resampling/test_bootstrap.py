@@ -49,7 +49,7 @@ def test_properties_with_n_replicates(sample_indices) -> None:
 def test_stacked_predictions(bootstrap, stack_predictions) -> None:
     """Check the stacked_predictions argument of the method execute."""
     predictions = [array([[1, 2], [3, 4]]), array([[1, 2], [3, 4]])]
-    result = bootstrap._post_process_predictions(predictions, (3, 2), stack_predictions)
+    result = bootstrap._post_process_predictions(predictions, stack_predictions)
     if stack_predictions:
         assert result.shape == (4, 2)
     else:

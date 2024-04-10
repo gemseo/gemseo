@@ -137,22 +137,20 @@ class R2Measure(MLErrorMeasure):
             The estimation of the quality measure by resampling.
         """
         samples, seed = self._pre_process(samples, seed, update_seed)
-        resampler = resampler_class(samples, seed=seed, **kwargs)
         stacked_predictions = resampler_class == CrossValidation
-        output_data = self.algo.output_data
+        resampler = resampler_class(samples, seed=seed, **kwargs)
         _, predictions = resampler.execute(
             self.algo,
-            store_resampling_result,
-            True,
-            stacked_predictions,
-            self._fit_transformers,
-            store_resampling_result,
-            self.algo.input_data,
-            output_data.shape,
+            return_models=store_resampling_result,
+            input_data=self.algo.input_data,
+            stack_predictions=stacked_predictions,
+            fit_transformers=self._fit_transformers,
+            store_sampling_result=store_resampling_result,
         )
-        var = self.algo.output_data.var(0)
+        output_data = self.algo.output_data
+        var = output_data.var(0)
         if stacked_predictions:
-            mse = ((self.algo.output_data - predictions) ** 2).mean(0)
+            mse = ((output_data - predictions) ** 2).mean(0)
             if not multioutput:
                 mse = mse.mean()
                 var = var.mean()

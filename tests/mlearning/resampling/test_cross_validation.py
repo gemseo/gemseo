@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from numpy import array
 from numpy import array_equal
@@ -29,6 +31,7 @@ from gemseo.mlearning.resampling.cross_validation import CrossValidation
 from gemseo.mlearning.resampling.split import Split
 from gemseo.mlearning.resampling.splits import Splits
 from gemseo.utils.seeder import SEED
+from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -151,13 +154,11 @@ def test_execution(
     model = LinearRegressor(dataset)
     sub_models, predictions = cross_validation.execute(
         model,
-        return_models,
-        predict,
-        stack_predictions,
-        fit_transformers,
-        False,
-        model.input_data,
-        model.output_data.shape,
+        return_models=return_models,
+        input_data=model.input_data if predict else None,
+        stack_predictions=stack_predictions,
+        fit_transformers=fit_transformers,
+        store_sampling_result=False,
     )
     assert (predictions == []) is not predict
     assert (sub_models == []) is not return_models
@@ -183,3 +184,22 @@ def test_execution(
 def test_name(sample_indices, n_folds, name) -> None:
     """Check the name of the CrossValidation instance."""
     assert CrossValidation(sample_indices, n_folds).name == name
+
+
+@image_comparison(["plot"])
+def test_plot(sample_indices):
+    """Check the plot() method."""
+    CrossValidation(sample_indices).plot(show=False)
+
+
+def test_plot_save(sample_indices, tmp_wd):
+    """Check the plot() method with a specific file path."""
+    CrossValidation(sample_indices).plot(file_path="foo.png", show=False)
+    assert Path("foo.png").exists()
+
+
+def test_plot_color(sample_indices):
+    """Check the plot() method with specific colors."""
+    scatter = CrossValidation(sample_indices).plot(colors=("g", "m"), show=False)
+    assert len(scatter.color) == len(sample_indices) * 5
+    assert set(scatter.color) == {"g", "m"}
