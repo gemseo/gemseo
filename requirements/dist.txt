@@ -18,7 +18,7 @@ click==8.1.7
     # via check-wheel-contents
 cryptography==42.0.5
     # via secretstorage
-docutils==0.20.1
+docutils==0.21.post1
     # via readme-renderer
 idna==3.6
     # via requests
