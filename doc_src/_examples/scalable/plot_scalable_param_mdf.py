@@ -22,7 +22,7 @@
 Parametric scalable MDO problem - MDF
 =====================================
 We define
-a :class:`~.gemseo.problems.scalable.parametric.scalable_problem.ScalableProblem`
+a :class:`~.gemseo.problems.mdo.scalable.parametric.scalable_problem.ScalableProblem`
 with a shared design variable of size 1
 and 2 strongly coupled disciplines.
 The first one has a local design variable of size 1
@@ -39,10 +39,10 @@ from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import generate_n2_plot
-from gemseo.problems.scalable.parametric.core.scalable_discipline_settings import (
+from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (
     ScalableDisciplineSettings,
 )
-from gemseo.problems.scalable.parametric.scalable_problem import ScalableProblem
+from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
 
 configure_logger()
 

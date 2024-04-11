@@ -32,13 +32,13 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import get_y_opt
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sellar.sellar import Sellar1
+from gemseo.problems.mdo.sellar.sellar import Sellar2
+from gemseo.problems.mdo.sellar.sellar import SellarSystem
+from gemseo.problems.mdo.sellar.sellar import get_y_opt
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 
 from ..core.test_dataframe_disciplines import assert_disc_data_equal
 

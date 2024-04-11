@@ -21,8 +21,8 @@ from numpy import zeros
 
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.problems.analytical.power_2 import Power2
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.power_2 import Power2
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
 @pytest.mark.parametrize("is_optimum", [False, True])

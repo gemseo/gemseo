@@ -36,8 +36,8 @@ from gemseo import create_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
-from gemseo.problems.scalable.data_driven import create_scalability_study
-from gemseo.problems.scalable.data_driven import plot_scalability_results
+from gemseo.problems.mdo.scalable.data_driven import create_scalability_study
+from gemseo.problems.mdo.scalable.data_driven import plot_scalability_results
 
 configure_logger()
 

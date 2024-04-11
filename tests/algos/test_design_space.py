@@ -43,7 +43,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 CURRENT_DIR = Path(__file__).parent

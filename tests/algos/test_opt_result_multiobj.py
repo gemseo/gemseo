@@ -28,7 +28,7 @@ import pytest
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result_multiobj import MultiObjectiveOptimizationResult
-from gemseo.problems.analytical.binh_korn import BinhKorn
+from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 
 @pytest.fixture(scope="module")

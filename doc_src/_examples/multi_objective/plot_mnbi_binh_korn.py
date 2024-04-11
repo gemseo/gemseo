@@ -45,7 +45,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.problems.analytical.binh_korn import BinhKorn
+from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 configure_logger()
 

@@ -33,8 +33,8 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.testing.helpers import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"

@@ -24,10 +24,10 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
 from tests.mda.test_mda import analytic_disciplines_from_desc

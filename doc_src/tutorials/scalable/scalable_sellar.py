@@ -23,7 +23,7 @@ from __future__ import annotations
 from numpy import arange
 
 from gemseo import create_discipline
-from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
 sellar = create_discipline("Sellar1")
 design_space = SellarDesignSpace()

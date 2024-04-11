@@ -49,7 +49,7 @@ from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
 from gemseo.core.mdofunctions.taylor_polynomials import compute_quadratic_approximation
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 

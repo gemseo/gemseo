@@ -33,9 +33,9 @@ from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.testing.helpers import concretize_classes
 

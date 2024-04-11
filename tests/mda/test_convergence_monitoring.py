@@ -25,7 +25,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
+    from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 
 
 @pytest.fixture(scope="module")

@@ -37,11 +37,11 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ParallelExecSequence
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.splitter import Splitter
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.problems.sobieski.process.mdo_chain import SobieskiChain
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sobieski.process.mdo_chain import SobieskiChain
 
 DIRNAME = os.path.dirname(__file__)
 

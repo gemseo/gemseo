@@ -101,7 +101,7 @@ either by instantiating a :class:`~gemseo.algos.design_space.DesignSpace`,
 
 .. code::
 
-    from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+    from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
     design_space = SellarDesignSpace()
 

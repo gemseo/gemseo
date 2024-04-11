@@ -22,10 +22,10 @@ from typing import TYPE_CHECKING
 import pytest
 
 from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.problems.sellar.sellar import DataConverter
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.mdo.sellar.sellar import DataConverter
+from gemseo.problems.mdo.sellar.sellar import Sellar1
+from gemseo.problems.mdo.sellar.sellar import Sellar2
+from gemseo.problems.mdo.sellar.sellar import SellarSystem
 from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
 
 if TYPE_CHECKING:

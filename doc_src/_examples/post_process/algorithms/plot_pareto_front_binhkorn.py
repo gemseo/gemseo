@@ -31,7 +31,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.binh_korn import BinhKorn
+from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
 # Import

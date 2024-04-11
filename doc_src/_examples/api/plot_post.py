@@ -35,7 +35,7 @@ from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo import get_available_post_processings
 from gemseo import get_post_processing_options_schema
-from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
 configure_logger()
 

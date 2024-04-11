@@ -24,8 +24,8 @@ import os
 import numpy as np
 
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
-from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
+from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
 DIRNAME = os.path.dirname(__file__)
 

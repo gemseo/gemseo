@@ -44,7 +44,7 @@ from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
 from gemseo.core.chain import MDOParallelChain
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
 if TYPE_CHECKING:

@@ -28,8 +28,8 @@ from numpy import array
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
-from gemseo.problems.analytical.power_2 import Power2
-from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.derivatives.error_estimators import compute_best_step
 
 DS_FILE = Path(__file__).parent / "sobieski_design_space.csv"

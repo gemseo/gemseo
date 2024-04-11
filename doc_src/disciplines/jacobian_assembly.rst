@@ -299,8 +299,8 @@ against finite differences or complex step method, by means of the method :meth:
 
 .. code::
 
-    from gemseo.problems.sobieski.disciplines import SobieskiMission
-    from gemseo.problems.sobieski.core import SobieskiProblem
+    from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+    from gemseo.problems.mdo.sobieski.core import SobieskiProblem
 
     problem = SobieskiProblem("complex128")
     sr = SobieskiMission("complex128")

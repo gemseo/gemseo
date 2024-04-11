@@ -176,7 +176,9 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import TransformerType
     from gemseo.post._graph_view import GraphView
     from gemseo.post.opt_post_processor import OptPostProcessor
-    from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
+    from gemseo.problems.mdo.mdo.scalable.data_driven.discipline import (
+        ScalableDiscipline,
+    )
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
     from gemseo.utils.matplotlib_figure import FigSizeType
     from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
@@ -386,7 +388,7 @@ def get_available_disciplines() -> list[str]:
         get_discipline_options_schema
         get_discipline_options_defaults
     """
-    from gemseo.problems.disciplines_factory import DisciplinesFactory
+    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
 
     return DisciplinesFactory().disciplines
 
@@ -742,7 +744,7 @@ def get_discipline_options_schema(
         get_discipline_outputs_schema
         get_discipline_options_defaults
     """
-    from gemseo.problems.disciplines_factory import DisciplinesFactory
+    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
 
     disc_fact = DisciplinesFactory()
     grammar = disc_fact.get_options_grammar(discipline_name)
@@ -801,7 +803,9 @@ def get_scenario_inputs_schema(
     Examples:
         >>> from gemseo import create_discipline, create_scenario,
         get_scenario_inputs_schema
-        >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+        >>> from gemseo.problems.mdo.sellar.sellar_design_space import (
+        ...     SellarDesignSpace,
+        ... )
         >>> design_space = SellarDesignSpace()
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
@@ -841,7 +845,7 @@ def get_discipline_options_defaults(
         get_discipline_outputs_schema
         get_discipline_options_schema
     """
-    from gemseo.problems.disciplines_factory import DisciplinesFactory
+    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
 
     return DisciplinesFactory().get_default_option_values(discipline_name)
 
@@ -1027,7 +1031,9 @@ def create_scenario(
 
     Examples:
         >>> from gemseo import create_discipline, create_scenario
-        >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+        >>> from gemseo.problems.mdo.sellar.sellar_design_space import (
+        ...     SellarDesignSpace,
+        ... )
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> design_space = SellarDesignSpace()
         >>> scenario = create_scenario(
@@ -1165,7 +1171,7 @@ def create_discipline(
         get_discipline_options_schema
         get_discipline_options_defaults
     """
-    from gemseo.problems.disciplines_factory import DisciplinesFactory
+    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
 
     factory = DisciplinesFactory()
     if isinstance(discipline_name, str):
@@ -1221,7 +1227,7 @@ def create_scalable(
     Returns:
         The scalable discipline.
     """
-    from gemseo.problems.scalable.data_driven.discipline import (  # noqa:F811
+    from gemseo.problems.mdo.scalable.data_driven.discipline import (  # noqa:F811
         ScalableDiscipline,
     )
 
@@ -1341,7 +1347,9 @@ def execute_post(
 
     Examples:
         >>> from gemseo import create_discipline, create_scenario, execute_post
-        >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+        >>> from gemseo.problems.mdo.sellar.sellar_design_space import (
+        ...     SellarDesignSpace,
+        ... )
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> design_space = SellarDesignSpace()
         >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
@@ -1456,11 +1464,11 @@ def print_configuration() -> None:
     """
     from gemseo.algos.doe.doe_factory import DOEFactory
     from gemseo.algos.opt.opt_factory import OptimizersFactory
+    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
     from gemseo.formulations.formulations_factory import MDOFormulationsFactory
     from gemseo.mda.mda_factory import MDAFactory
     from gemseo.mlearning.regression.factory import RegressionModelFactory
     from gemseo.post.post_factory import PostFactory
-    from gemseo.problems.disciplines_factory import DisciplinesFactory
 
     settings = _log_settings()
     LOGGER.info("%s", settings)
@@ -2029,7 +2037,9 @@ def wrap_discipline_in_job_scheduler(
         ...     SchedulersFactory,
         ... )
         >>> from gemseo import create_discipline, create_scenario, create_mda
-        >>> from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+        >>> from gemseo.problems.mdo.sellar.sellar_design_space import (
+        ...     SellarDesignSpace,
+        ... )
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> mda = create_mda(disciplines)
         >>> wrapped_mda= wrap_discipline_in_job_scheduler(mda, scheduler_name="SLURM",

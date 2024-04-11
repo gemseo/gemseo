@@ -31,16 +31,16 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
-from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
-from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG
-from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiAerodynamicsSG
+from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiMissionSG
+from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiPropulsionSG
+from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiStructureSG
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline

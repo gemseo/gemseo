@@ -41,7 +41,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.auto_py import to_arrays_dict
-from gemseo.problems.sellar.sellar import get_inputs
+from gemseo.problems.mdo.sellar.sellar import get_inputs
 
 X_DIM = 4
 

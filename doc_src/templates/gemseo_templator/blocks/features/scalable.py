@@ -27,7 +27,7 @@ block = Block(
         WebLink(
             "scalability study",
             url=(
-                "_modules/gemseo.problems.scalable.data_driven.study.process.html"
+                "_modules/gemseo.problems.mdo.scalable.data_driven.study.process.html"
                 "#scalability-study-process"
             ),
         ),

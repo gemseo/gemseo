@@ -42,13 +42,13 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.problems.sellar.sellar import WITH_2D_ARRAY
-from gemseo.problems.sellar.sellar import X_SHARED
-from gemseo.problems.sellar.sellar import Y_1
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import get_inputs
+from gemseo.problems.mdo.sellar.sellar import WITH_2D_ARRAY
+from gemseo.problems.mdo.sellar.sellar import X_SHARED
+from gemseo.problems.mdo.sellar.sellar import Y_1
+from gemseo.problems.mdo.sellar.sellar import Sellar1
+from gemseo.problems.mdo.sellar.sellar import Sellar2
+from gemseo.problems.mdo.sellar.sellar import SellarSystem
+from gemseo.problems.mdo.sellar.sellar import get_inputs
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 

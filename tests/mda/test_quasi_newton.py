@@ -24,11 +24,11 @@ from numpy import array
 from numpy import linalg
 
 from gemseo.mda.quasi_newton import MDAQuasiNewton
-from gemseo.problems.sellar.sellar import X_SHARED
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import get_y_opt
+from gemseo.problems.mdo.sellar.sellar import X_SHARED
+from gemseo.problems.mdo.sellar.sellar import Sellar1
+from gemseo.problems.mdo.sellar.sellar import Sellar2
+from gemseo.problems.mdo.sellar.sellar import SellarSystem
+from gemseo.problems.mdo.sellar.sellar import get_y_opt
 
 from .test_gauss_seidel import SelfCoupledDisc
 

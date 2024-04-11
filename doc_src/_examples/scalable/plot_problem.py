@@ -36,7 +36,7 @@ from gemseo import create_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
-from gemseo.problems.scalable.data_driven.problem import ScalableProblem
+from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
 
 configure_logger()
 

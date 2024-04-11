@@ -47,13 +47,13 @@ under the constraints ``"g_1"``, ``"g_2"`` and ``"g_3"``.
 
 The objective and constraints are computed by four disciplines:
 
-1. :class:`~gemseo.problems.sobieski.disciplines.SobieskiStructure` (indexed by 1)
+1. :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiStructure` (indexed by 1)
    computes the constraint ``"g_1"`` from ``"x_shared"`` and ``"x_1"``,
-2. :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics` (indexed by 2)
+2. :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics` (indexed by 2)
    computes the constraint ``"g_2"`` from ``"x_shared"`` and ``"x_2"``,
-3. :class:`~gemseo.problems.sobieski.disciplines.SobieskiPropulsion` (indexed by 3)
+3. :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion` (indexed by 3)
    computes the constraint ``"g_3"`` from ``"x_shared"`` and ``"x_3"``,
-4. :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission` (indexed by 4)
+4. :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission` (indexed by 4)
    computes the constraint ``"y_4"`` from ``"x_shared"``.
 
 ``"x_shared"`` denotes the :term:`global design variables <shared design variables>` (a.k.a. shared design variables),
@@ -62,11 +62,11 @@ which means that these variables are shared by at least two disciplines (here, a
 which means that ``"x_i"`` is used by a single discipline (here, number *i*).
 
 The disciplines
-:class:`~gemseo.problems.sobieski.disciplines.SobieskiStructure`,
-:class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics`
-and :class:`~gemseo.problems.sobieski.disciplines.SobieskiPropulsion`
+:class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiStructure`,
+:class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics`
+and :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion`
 are strongly coupled to each other
-but weakly coupled to :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission`.
+but weakly coupled to :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission`.
 The :term:`coupling variable <coupling variables>` ``"y_ij"`` denotes
 an output of the discipline no. *i* and an input of the discipline no. *j*.
 

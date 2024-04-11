@@ -29,7 +29,7 @@ from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.helpers import image_comparison
 
 PARENT_PATH = Path(__file__).parent

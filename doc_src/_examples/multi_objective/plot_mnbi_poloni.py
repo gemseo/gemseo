@@ -50,7 +50,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.problems.analytical.poloni import Poloni
+from gemseo.problems.multiobjective_optimization.poloni import Poloni
 
 configure_logger()
 

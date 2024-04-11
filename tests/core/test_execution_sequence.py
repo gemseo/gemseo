@@ -28,11 +28,11 @@ from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 
 
 class TestExecSequence(unittest.TestCase):

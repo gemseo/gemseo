@@ -32,7 +32,7 @@ from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
 from gemseo.post.scatter_mat import ScatterPlotMatrix
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
 
 CURRENT_DIR = Path(__file__).parent

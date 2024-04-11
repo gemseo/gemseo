@@ -29,8 +29,8 @@ from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
 from .test_gauss_seidel import SelfCoupledDisc
 

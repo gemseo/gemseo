@@ -94,9 +94,9 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import MultiLineStreamHandler
 

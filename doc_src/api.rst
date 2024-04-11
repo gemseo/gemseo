@@ -379,7 +379,7 @@ by means of the :meth:`~gemseo.execute_algo` algorithm:
 
 .. code::
 
-   >>> from gemseo.problems.analytical.rastrigin import Rastrigin
+   >>> from gemseo.problems.optimization.rastrigin import Rastrigin
    >>> from gemseo import execute_algo
    >>>
    >>> opt_problem = Rastrigin()

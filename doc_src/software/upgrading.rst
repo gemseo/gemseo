@@ -244,7 +244,7 @@ MDO processes
   - ``MDODiscipline.COMPLEX_STEP``
   - ``MDODiscipline.AVAILABLE_APPROX_MODES``
 
-- The high-level functions defined in ``gemseo.problems.scalable.data_driven.api`` have been moved to ``gemseo.problems.scalable.data_driven``.
+- The high-level functions defined in ``gemseo.problems.mdo.scalable.data_driven.api`` have been moved to ``gemseo.problems.mdo.scalable.data_driven``.
   `#707 <https://gitlab.com/gemseo/dev/gemseo/-/issues/707>`_
 - Removed ``StudyAnalysis.AVAILABLE_DISTRIBUTED_FORMULATIONS``.
 - The enumeration ``DiscFromExe.Parser`` replaced the constants:
@@ -292,7 +292,7 @@ MDO processes
 - MDA: Remove the method ``set_residuals_scaling_options``.
   `#780 <https://gitlab.com/gemseo/dev/gemseo/-/issues/780>`_
 - ``MDA``: Remove the attributes ``_scale_residuals_with_coupling_size`` and ``_scale_residuals_with_first_norm`` and add the ``scaling`` and ``_scaling_data`` attributes.
-- The module ``gemseo.problems.scalable.parametric.study`` has been removed.
+- The module ``gemseo.problems.mdo.scalable.parametric.study`` has been removed.
   `#717 <https://gitlab.com/gemseo/dev/gemseo/-/issues/717>`_
 
 

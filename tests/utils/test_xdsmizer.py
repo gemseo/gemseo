@@ -40,15 +40,15 @@ from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenari
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sellar.sellar import Sellar1
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.xdsmizer import EdgeType
 from gemseo.utils.xdsmizer import NodeType
 from gemseo.utils.xdsmizer import XDSMizer

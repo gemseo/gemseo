@@ -85,7 +85,7 @@ with ``DOE`` scenario type and the following :class:`.DesignSpace`:
 
 .. code::
 
-   from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+   from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
    design_space = SellarDesignSpace()
 

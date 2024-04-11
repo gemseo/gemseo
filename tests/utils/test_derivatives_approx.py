@@ -38,8 +38,8 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.centered_differences import CenteredDifferences
 from gemseo.utils.derivatives.complex_step import ComplexStep
