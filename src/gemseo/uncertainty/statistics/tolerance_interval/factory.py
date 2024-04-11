@@ -26,7 +26,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
 
 
 class ToleranceIntervalFactory(BaseFactory):
-    """A factory of :class:`.BaseToleranceInterval`."""
+    """A factory of tolerance intervals."""
 
     _CLASS = BaseToleranceInterval
     _MODULE_NAMES = ("gemseo.uncertainty.statistics.tolerance_interval",)

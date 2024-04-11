@@ -39,7 +39,7 @@ class ODESolverDescription(AlgorithmDescription):
     """Description for the ODE solver."""
 
 
-class ODESolverLib(AlgorithmLibrary):
+class ODESolverLibrary(AlgorithmLibrary):
     """Abstract class for libraries of ODE solvers."""
 
     problem: ODEProblem = None

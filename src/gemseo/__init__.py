@@ -149,7 +149,7 @@ from numpy import ndarray
 from strenum import StrEnum
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.datasets.dataset_factory import DatasetFactory as __DatasetFactory
+from gemseo.datasets.factory import DatasetFactory as __DatasetFactory
 from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
@@ -295,9 +295,9 @@ def get_available_formulations() -> list[str]:
         get_formulations_options_defaults
         get_formulations_sub_options_defaults
     """
-    from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+    from gemseo.formulations.factory import MDOFormulationFactory
 
-    return MDOFormulationsFactory().formulations
+    return MDOFormulationFactory().formulations
 
 
 def get_available_opt_algorithms() -> list[str]:
@@ -316,9 +316,9 @@ def get_available_opt_algorithms() -> list[str]:
         get_available_doe_algorithms
         get_algorithm_options_schema
     """
-    from gemseo.algos.opt.opt_factory import OptimizersFactory
+    from gemseo.algos.opt.factory import OptimizationLibraryFactory
 
-    return OptimizersFactory().algorithms
+    return OptimizationLibraryFactory().algorithms
 
 
 def get_available_doe_algorithms() -> list[str]:
@@ -337,9 +337,9 @@ def get_available_doe_algorithms() -> list[str]:
         get_available_opt_algorithms
         get_algorithm_options_schema
     """
-    from gemseo.algos.doe.doe_factory import DOEFactory
+    from gemseo.algos.doe.factory import DOELibraryFactory
 
-    return DOEFactory().algorithms
+    return DOELibraryFactory().algorithms
 
 
 def get_available_surrogates() -> list[str]:
@@ -388,9 +388,9 @@ def get_available_disciplines() -> list[str]:
         get_discipline_options_schema
         get_discipline_options_defaults
     """
-    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
+    from gemseo.disciplines.factory import MDODisciplineFactory
 
-    return DisciplinesFactory().disciplines
+    return MDODisciplineFactory().disciplines
 
 
 def get_surrogate_options_schema(
@@ -451,10 +451,10 @@ def get_algorithm_options_schema(
         get_available_doe_algorithms
         get_algorithm_options_schema
     """
-    from gemseo.algos.doe.doe_factory import DOEFactory
-    from gemseo.algos.opt.opt_factory import OptimizersFactory
+    from gemseo.algos.doe.factory import DOELibraryFactory
+    from gemseo.algos.opt.factory import OptimizationLibraryFactory
 
-    for factory in (DOEFactory(), OptimizersFactory()):
+    for factory in (DOELibraryFactory(), OptimizationLibraryFactory()):
         if factory.is_available(algorithm_name):
             algo_lib = factory.create(algorithm_name)
             opts_gram = algo_lib.init_options_grammar(algorithm_name)
@@ -543,7 +543,7 @@ def get_available_post_processings() -> list[str]:
         execute_post
         get_post_processing_options_schema
     """
-    from gemseo.post.post_factory import PostFactory
+    from gemseo.post.factory import PostFactory
 
     return PostFactory().posts
 
@@ -575,7 +575,7 @@ def get_post_processing_options_schema(
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
-    from gemseo.post.post_factory import PostFactory
+    from gemseo.post.factory import PostFactory
 
     problem = OptimizationProblem(DesignSpace())
     problem.objective = MDOFunction(lambda x: x, "f")
@@ -609,9 +609,9 @@ def get_formulation_options_schema(
         get_formulations_options_defaults
         get_formulations_sub_options_defaults
     """
-    from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+    from gemseo.formulations.factory import MDOFormulationFactory
 
-    grammar = MDOFormulationsFactory().get_options_grammar(formulation_name)
+    grammar = MDOFormulationFactory().get_options_grammar(formulation_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -646,9 +646,9 @@ def get_formulation_sub_options_schema(
         get_formulations_options_defaults
         get_formulations_sub_options_defaults
     """
-    from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+    from gemseo.formulations.factory import MDOFormulationFactory
 
-    grammar = MDOFormulationsFactory().get_sub_options_grammar(
+    grammar = MDOFormulationFactory().get_sub_options_grammar(
         formulation_name, **formulation_options
     )
     return _get_schema(grammar, output_json, pretty_print)
@@ -680,9 +680,9 @@ def get_formulations_sub_options_defaults(
         get_formulation_sub_options_schema
         get_formulations_options_defaults
     """
-    from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+    from gemseo.formulations.factory import MDOFormulationFactory
 
-    return MDOFormulationsFactory().get_default_sub_option_values(
+    return MDOFormulationFactory().get_default_sub_option_values(
         formulation_name, **formulation_options
     )
 
@@ -712,9 +712,9 @@ def get_formulations_options_defaults(
         get_formulation_sub_options_schema
         get_formulations_sub_options_defaults
     """
-    from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+    from gemseo.formulations.factory import MDOFormulationFactory
 
-    return MDOFormulationsFactory().get_default_option_values(formulation_name)
+    return MDOFormulationFactory().get_default_option_values(formulation_name)
 
 
 def get_discipline_options_schema(
@@ -744,9 +744,9 @@ def get_discipline_options_schema(
         get_discipline_outputs_schema
         get_discipline_options_defaults
     """
-    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
+    from gemseo.disciplines.factory import MDODisciplineFactory
 
-    disc_fact = DisciplinesFactory()
+    disc_fact = MDODisciplineFactory()
     grammar = disc_fact.get_options_grammar(discipline_name)
     return _get_schema(grammar, output_json, pretty_print)
 
@@ -845,9 +845,9 @@ def get_discipline_options_defaults(
         get_discipline_outputs_schema
         get_discipline_options_schema
     """
-    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
+    from gemseo.disciplines.factory import MDODisciplineFactory
 
-    return DisciplinesFactory().get_default_option_values(discipline_name)
+    return MDODisciplineFactory().get_default_option_values(discipline_name)
 
 
 def get_scenario_differentiation_modes() -> (
@@ -964,7 +964,7 @@ def get_available_mdas() -> list[str]:
         create_mda
         get_mda_options_schema
     """
-    from gemseo.mda.mda_factory import MDAFactory
+    from gemseo.mda.factory import MDAFactory
 
     return MDAFactory().mdas
 
@@ -992,7 +992,7 @@ def get_mda_options_schema(
         create_mda
         get_available_mdas
     """
-    from gemseo.mda.mda_factory import MDAFactory
+    from gemseo.mda.factory import MDAFactory
 
     grammar = MDAFactory().get_options_grammar(mda_name)
     return _get_schema(grammar, output_json, pretty_print)
@@ -1171,9 +1171,9 @@ def create_discipline(
         get_discipline_options_schema
         get_discipline_options_defaults
     """
-    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
+    from gemseo.disciplines.factory import MDODisciplineFactory
 
-    factory = DisciplinesFactory()
+    factory = MDODisciplineFactory()
     if isinstance(discipline_name, str):
         return factory.create(discipline_name, **options)
 
@@ -1321,7 +1321,7 @@ def create_mda(
         get_available_mdas
         get_mda_options_schema
     """
-    from gemseo.mda.mda_factory import MDAFactory
+    from gemseo.mda.factory import MDAFactory
 
     return MDAFactory().create(mda_name=mda_name, disciplines=disciplines, **options)
 
@@ -1362,7 +1362,7 @@ def execute_post(
         get_post_processing_options_schema
     """
     from gemseo.algos.opt_problem import OptimizationProblem
-    from gemseo.post.post_factory import PostFactory
+    from gemseo.post.factory import PostFactory
 
     if hasattr(to_post_proc, "is_scenario") and to_post_proc.is_scenario():
         opt_problem = to_post_proc.formulation.opt_problem
@@ -1409,14 +1409,14 @@ def execute_algo(
         get_algorithm_options_schema
     """
     if algo_type == "opt":
-        from gemseo.algos.opt.opt_factory import OptimizersFactory
+        from gemseo.algos.opt.factory import OptimizationLibraryFactory
 
-        factory = OptimizersFactory()
+        factory = OptimizationLibraryFactory()
 
     elif algo_type == "doe":
-        from gemseo.algos.doe.doe_factory import DOEFactory
+        from gemseo.algos.doe.factory import DOELibraryFactory
 
-        factory = DOEFactory()
+        factory = DOELibraryFactory()
     else:
         msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
         raise ValueError(msg)
@@ -1462,23 +1462,23 @@ def print_configuration() -> None:
         >>> from gemseo import print_configuration
         >>> print_configuration()
     """
-    from gemseo.algos.doe.doe_factory import DOEFactory
-    from gemseo.algos.opt.opt_factory import OptimizersFactory
-    from gemseo.disciplines.disciplines_factory import DisciplinesFactory
-    from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-    from gemseo.mda.mda_factory import MDAFactory
+    from gemseo.algos.doe.factory import DOELibraryFactory
+    from gemseo.algos.opt.factory import OptimizationLibraryFactory
+    from gemseo.disciplines.factory import MDODisciplineFactory
+    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.mda.factory import MDAFactory
     from gemseo.mlearning.regression.factory import RegressionModelFactory
-    from gemseo.post.post_factory import PostFactory
+    from gemseo.post.factory import PostFactory
 
     settings = _log_settings()
     LOGGER.info("%s", settings)
     print(settings)  # noqa: T201
     for factory in (
-        DisciplinesFactory,
-        OptimizersFactory,
-        DOEFactory,
+        MDODisciplineFactory,
+        OptimizationLibraryFactory,
+        DOELibraryFactory,
         RegressionModelFactory,
-        MDOFormulationsFactory,
+        MDOFormulationFactory,
         MDAFactory,
         PostFactory,
     ):
@@ -1622,7 +1622,7 @@ def get_available_caches() -> list[str]:
         get_available_caches
         gemseo.core.discipline.MDODiscipline.set_cache_policy
     """
-    from gemseo.caches.cache_factory import CacheFactory
+    from gemseo.caches.factory import CacheFactory
 
     return CacheFactory().caches
 
@@ -1663,7 +1663,7 @@ def create_cache(
         get_available_caches
         gemseo.core.discipline.MDODiscipline.set_cache_policy
     """
-    from gemseo.caches.cache_factory import CacheFactory
+    from gemseo.caches.factory import CacheFactory
 
     return CacheFactory().create(cache_type, name=name, **options)
 
@@ -1710,7 +1710,7 @@ def create_dataset(
     See Also:
         create_benchmark_dataset
     """
-    from gemseo.datasets.dataset_factory import DatasetFactory
+    from gemseo.datasets.factory import DatasetFactory
 
     dataset_class = DatasetFactory().get_class(class_name)
 
@@ -1829,9 +1829,9 @@ def compute_doe(
         get_algorithm_options_schema
         execute_algo
     """
-    from gemseo.algos.doe.doe_factory import DOEFactory
+    from gemseo.algos.doe.factory import DOELibraryFactory
 
-    library = DOEFactory().create(algo_name)
+    library = DOELibraryFactory().create(algo_name)
     return library.compute_doe(
         variables_space, n_samples=n_samples, unit_sampling=unit_sampling, **options
     )
@@ -1913,9 +1913,9 @@ def get_algorithm_features(
     Raises:
         ValueError: When the optimization algorithm does not exist.
     """
-    from gemseo.algos.opt.opt_factory import OptimizersFactory
+    from gemseo.algos.opt.factory import OptimizationLibraryFactory
 
-    factory = OptimizersFactory()
+    factory = OptimizationLibraryFactory()
     if not factory.is_available(algorithm_name):
         msg = f"{algorithm_name} is not the name of an optimization algorithm."
         raise ValueError(msg)
@@ -2033,8 +2033,8 @@ def wrap_discipline_in_job_scheduler(
         CPUS using the SLURM wrapper, on a HPC, and at most 10 points run in parallel,
         everytime a point of the DOE is computed, another one is submitted to the queue.
 
-        >>> from gemseo.wrappers.job_schedulers.schedulers_factory import (
-        ...     SchedulersFactory,
+        >>> from gemseo.wrappers.job_schedulers.factory import (
+        ...     JobSchedulerDisciplineWrapperFactory,
         ... )
         >>> from gemseo import create_discipline, create_scenario, create_mda
         >>> from gemseo.problems.mdo.sellar.sellar_design_space import (
@@ -2069,9 +2069,11 @@ def wrap_discipline_in_job_scheduler(
         >>>                                      cache_hdf_file="mda_cache.h5")
         >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes": 10})
     """  # noqa:D205 D212 D415 E501
-    from gemseo.wrappers.job_schedulers.schedulers_factory import SchedulersFactory
+    from gemseo.wrappers.job_schedulers.factory import (
+        JobSchedulerDisciplineWrapperFactory,
+    )
 
-    return SchedulersFactory().wrap_discipline(
+    return JobSchedulerDisciplineWrapperFactory().wrap_discipline(
         discipline=discipline,
         scheduler_name=scheduler_name,
         workdir_path=workdir_path,
@@ -2098,9 +2100,7 @@ def create_scenario_result(
     if scenario.optimization_result is None:
         return None
 
-    from gemseo.scenarios.scenario_results.scenario_result_factory import (
-        ScenarioResultFactory,
-    )
+    from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
 
     return ScenarioResultFactory().create(
         name or scenario.formulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME,

@@ -37,9 +37,7 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.error_estimators import EPSILON
-from gemseo.utils.derivatives.gradient_approximator_factory import (
-    GradientApproximatorFactory,
-)
+from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:

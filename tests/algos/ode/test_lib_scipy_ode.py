@@ -32,9 +32,9 @@ from numpy import sum
 from numpy import zeros
 from numpy.linalg import norm
 
+from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.lib_scipy_ode import ScipyODEAlgos
 from gemseo.algos.ode.ode_problem import ODEProblem
-from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
 from gemseo.problems.ode.orbital_dynamics import OrbitalDynamics
 from gemseo.problems.ode.van_der_pol import VanDerPol
 
@@ -57,7 +57,7 @@ parametrized_algo_names = pytest.mark.parametrize(
 @parametrized_algo_names
 def test_factory(algo_name) -> None:
     """Test the factory for ODE solvers."""
-    assert ODESolversFactory().is_available(algo_name)
+    assert ODESolverLibraryFactory().is_available(algo_name)
 
 
 @parametrized_algo_names
@@ -102,7 +102,7 @@ def test_ode_problem_1d(time_vector) -> None:
     assert problem.result.time_vector.size == 0
 
     algo_name = "DOP853"
-    ODESolversFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
 
     analytical_solution = exp(problem.result.time_vector)
     assert sqrt(sum((problem.result.state_vector - analytical_solution) ** 2)) < 1e-6
@@ -147,7 +147,7 @@ def test_ode_problem_2d() -> None:
         time_vector=arange(0, 1, 0.1),
     )
     algo_name = "DOP853"
-    ODESolversFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
     state_vect = [0.0, 1.0]
     problem.check_jacobian(state_vect)
     assert problem.result.is_converged
@@ -176,7 +176,9 @@ def test_ode_problem_jacobian_as_array() -> None:
         final_time=1,
         time_vector=arange(0, 1, 0.1),
     )
-    ODESolversFactory().execute(problem, "BDF", first_step=1e-6, atol=1e-12, rtol=1e-12)
+    ODESolverLibraryFactory().execute(
+        problem, "BDF", first_step=1e-6, atol=1e-12, rtol=1e-12
+    )
 
     analytical_solution = exp(problem.result.time_vector)
     assert sqrt(sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
@@ -204,7 +206,7 @@ def test_ode_problem_2d_wrong_jacobian() -> None:
         time_vector=arange(0, 1, 0.1),
     )
     algo_name = "DOP853"
-    ODESolversFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
     state_vect = [0.0, 1.0]
     try:
         problem.check_jacobian(state_vect)
@@ -219,7 +221,7 @@ def test_ode_problem_2d_wrong_jacobian() -> None:
 def test_van_der_pol(algo_name) -> None:
     """Solve Van der Pol with the jacobian analytical expression."""
     problem = VanDerPol()
-    ODESolversFactory().execute(problem, algo_name, first_step=10e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=10e-6)
     assert problem.result.is_converged
     assert norm(problem.result.state_vector) > 0
     assert (
@@ -233,7 +235,7 @@ def test_van_der_pol(algo_name) -> None:
 def test_van_der_pol_finite_differences(algo_name) -> None:
     """Solve Van der Pol using finite differences for the jacobian."""
     problem = VanDerPol(use_jacobian=False)
-    ODESolversFactory().execute(problem, algo_name, first_step=10e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=10e-6)
     assert problem.result.is_converged
     assert norm(problem.result.state_vector) > 0
     assert (
@@ -268,7 +270,7 @@ def test_van_der_pol_jacobian_explicit_expression() -> None:
 def test_orbital(algo_name, eccentricity, use_jacobian) -> None:
     """Solve the orbital problem."""
     problem = OrbitalDynamics(eccentricity=eccentricity, use_jacobian=use_jacobian)
-    ODESolversFactory().execute(problem, algo_name, first_step=10e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=10e-6)
     assert problem.result.is_converged
 
 
@@ -295,7 +297,7 @@ def test_unconverged(caplog) -> None:
         return state**2
 
     problem = ODEProblem(_func, initial_state=[1], initial_time=0, final_time=1)
-    ODESolversFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
 
     assert not problem.result.is_converged
     assert f"The ODE solver {algo_name} did not converge." in caplog.records[1].message
@@ -308,7 +310,7 @@ def test_check_ode_problem(problem) -> None:
     assert problem.result.state_vector.size == 0
     problem.check()
 
-    ODESolversFactory().execute(problem)
+    ODESolverLibraryFactory().execute(problem)
     assert problem.result.state_vector is not None
     problem.check()
 
@@ -345,7 +347,7 @@ def test_ode_problem_with_adjoint_attributes():
         adjoint_wrt_desvar=array([0, 0]),
     )
 
-    ODESolversFactory().execute(problem)
+    ODESolverLibraryFactory().execute(problem)
 
     assert problem.result.is_converged
 
@@ -369,7 +371,7 @@ def test_ode_problem_2d_empty_params() -> None:
         time_vector=None,
     )
     algo_name = "DOP853"
-    ODESolversFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
     state_vect = [0.0, 1.0]
     problem.check_jacobian(state_vect)
     assert problem.result.is_converged

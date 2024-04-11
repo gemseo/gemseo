@@ -47,10 +47,10 @@ from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.doe.lib_pydoe import PyDOE
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan
@@ -417,7 +417,7 @@ def test_differentiation_method(pow2_problem) -> None:
 
 def test_get_dv_names() -> None:
     problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP")
+    OptimizationLibraryFactory().execute(problem, "SLSQP")
     assert problem.design_space.variable_names == ["x"]
 
 
@@ -462,7 +462,7 @@ def test_feasible_optimum_points() -> None:
     with pytest.raises(ValueError):
         problem.get_last_point()
 
-    OptimizersFactory().execute(
+    OptimizationLibraryFactory().execute(
         problem, "SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
     )
     feasible_points, _ = problem.get_feasible_points()
@@ -547,7 +547,7 @@ def test_normalize_linear_function() -> None:
 def test_export_hdf(tmp_wd) -> None:
     file_path = Path("power2.h5")
     problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP")
+    OptimizationLibraryFactory().execute(problem, "SLSQP")
     problem.to_hdf(file_path, append=True)  # Shall still work now
 
     def check_pb(imp_pb) -> None:
@@ -781,7 +781,7 @@ def test_evaluate_jacobians_alone(
 
 def test_no_normalization() -> None:
     problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP", normalize_design_space=False)
+    OptimizationLibraryFactory().execute(problem, "SLSQP", normalize_design_space=False)
     f_opt, _, is_feas, _, _ = problem.get_optimum()
     assert is_feas
     assert abs(f_opt - 2.192) < 0.01
@@ -875,7 +875,7 @@ def test_observable(pow2_problem) -> None:
         problem.get_observable("toto")
 
     # Check that the observable is stored in the database
-    OptimizersFactory().execute(problem, "SLSQP")
+    OptimizationLibraryFactory().execute(problem, "SLSQP")
     database = problem.database
     iter_norms = [norm(key.unwrap()) for key in database]
     iter_obs = [value[design_norm] for value in database.values()]
@@ -1068,7 +1068,7 @@ def test_parallel_differentiation_setting_after_functions_preprocessing(
 
 def test_database_name(problem) -> None:
     """Check the name of the database."""
-    DOEFactory().execute(problem, "fullfact", n_samples=1)
+    DOELibraryFactory().execute(problem, "fullfact", n_samples=1)
     problem.database.name = "my_database"
     dataset = problem.to_dataset()
     assert dataset.name == problem.database.name
@@ -1110,7 +1110,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
     problem.objective = -f_1
 
     if skip_int_check:
-        OptimizersFactory().execute(
+        OptimizationLibraryFactory().execute(
             problem,
             "SLSQP",
             normalize_design_space=True,
@@ -1120,7 +1120,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
         assert problem.get_optimum()[1] == array([2.0])
     else:
         with pytest.raises(ValueError, match=expected_message):
-            OptimizersFactory().execute(
+            OptimizationLibraryFactory().execute(
                 problem,
                 "SLSQP",
                 normalize_design_space=True,
@@ -1549,7 +1549,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     obs2 = MDOFunction(lambda x: sum(x), "sum")
     pow2_problem.add_observable(obs2)
 
-    OptimizersFactory().execute(pow2_problem, "SLSQP")
+    OptimizationLibraryFactory().execute(pow2_problem, "SLSQP")
 
     # Export and import the optimization problem.
     file_path = "power2.h5"

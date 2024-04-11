@@ -17,16 +17,7 @@
 #                  initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Scalable model factory.
-
-This module contains the :class:`.ScalableModelFactory` which is a factory
-to create a :class:`.ScalableModel` from its class name by means of the
-:meth:`.ScalableModelFactory.create` method. It is also possible to get a list
-of available scalable models
-(see :attr:`.ScalableModelFactory.scalable_models` method)
-and to check is a type of scalable model is available
-(see :meth:`.ScalableModelFactory.is_available` method)
-"""
+"""A factory of scalable models."""
 
 from __future__ import annotations
 
@@ -43,11 +34,7 @@ if TYPE_CHECKING:
 
 
 class ScalableModelFactory(BaseFactory):
-    """This factory instantiates a class:`.ScalableModel` from its class name.
-
-    The class can be internal to |g| or located in an external module whose path is
-    provided to the constructor.
-    """
+    """A factory of scalable models."""
 
     _CLASS = ScalableModel
     _MODULE_NAMES = ("gemseo.problems.mdo.scalable",)

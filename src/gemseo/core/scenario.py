@@ -43,7 +43,7 @@ from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.utils import check_disciplines_consistency
-from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -53,9 +53,9 @@ if TYPE_CHECKING:
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.core.formulation import MDOFormulation
     from gemseo.datasets.dataset import Dataset
+    from gemseo.post.factory import PostFactory
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.post.opt_post_processor import OptPostProcessorOptionType
-    from gemseo.post.post_factory import PostFactory
     from gemseo.utils.xdsm import XDSM
 
 
@@ -179,9 +179,9 @@ class Scenario(MDODiscipline):
         return ScenarioResult.POST_FACTORY
 
     @property
-    def _formulation_factory(self) -> MDOFormulationsFactory:
+    def _formulation_factory(self) -> MDOFormulationFactory:
         """The factory of MDO formulations."""
-        return MDOFormulationsFactory()
+        return MDOFormulationFactory()
 
     def _check_disciplines(self) -> None:
         """Check that two disciplines do not compute the same output."""

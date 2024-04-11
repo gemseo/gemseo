@@ -36,7 +36,7 @@ from scipy.sparse import eye as speye
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.caches.cache_factory import CacheFactory
+from gemseo.caches.factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
 from gemseo.core.cache import CacheEntry

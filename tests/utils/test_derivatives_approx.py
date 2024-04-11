@@ -33,7 +33,7 @@ from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -45,10 +45,8 @@ from gemseo.utils.derivatives.centered_differences import CenteredDifferences
 from gemseo.utils.derivatives.complex_step import ComplexStep
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.error_estimators import compute_best_step
+from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
-from gemseo.utils.derivatives.gradient_approximator_factory import (
-    GradientApproximatorFactory,
-)
 
 
 def test_init_first_order_fd() -> None:
@@ -384,7 +382,7 @@ def test_derivatives_on_design_boundaries(
     problem = OptimizationProblem(design_space, differentiation_method=method)
     problem.objective = MDOFunction(lambda x: x**2, "my_objective")
 
-    OptimizersFactory().execute(
+    OptimizationLibraryFactory().execute(
         problem, "SLSQP", max_iter=1, eval_jac=True, normalize_design_space=normalize
     )
 

@@ -26,7 +26,7 @@ from typing import Final
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.formulation import MDOFormulation
-from gemseo.mda.mda_factory import MDAFactory
+from gemseo.mda.factory import MDAFactory
 
 if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace

@@ -16,9 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.scenarios.scenario_results.scenario_result_factory import (
-    ScenarioResultFactory,
-)
+from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
 
 
 def test_factory() -> None:

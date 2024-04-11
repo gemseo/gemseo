@@ -77,16 +77,16 @@ Solving the problem by optimization
 -----------------------------------
 
 Once the optimization problem created, it can be solved using one of the available
-optimization algorithms from the :class:`.OptimizersFactory`,
-by means of the function :meth:`!.OptimizersFactory.execute`
+optimization algorithms from the :class:`.OptimizationLibraryFactory`,
+by means of the function :meth:`!.OptimizationLibraryFactory.execute`
 whose mandatory arguments are the :class:`.OptimizationProblem`
 and the optimization algorithm name. For example, in the case of the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_
 with normalized design space, we have:
 
 .. code::
 
-    from gemseo.algos import OptimizersFactory
-    opt = OptimizersFactory().execute(problem, "L-BFGS-B",
+    from gemseo.algos import OptimizationLibraryFactory
+    opt = OptimizationLibraryFactory().execute(problem, "L-BFGS-B",
                                       normalize_design_space=True)
     print "Optimum = " + str(opt)
 
@@ -99,7 +99,7 @@ optimization libraries. It can be obtained using :
 
 .. code::
 
-    algo_list = OptimizersFactory().algorithms
+    algo_list = OptimizationLibraryFactory().algorithms
     print(f"Available algorithms: {algo_list}")
 
 The optimization history can be saved to the disk for further analysis,
@@ -118,10 +118,10 @@ value of the objective and constraints
 
 .. code::
 
-    from gemseo.algos import DOEFactory
+    from gemseo.algos import DOELibraryFactory
 
     # And solve it with |g| interface
-    opt = DOEFactory().execute(problem, "lhs", n_samples=10,
+    opt = DOELibraryFactory().execute(problem, "lhs", n_samples=10,
                                normalize_design_space=True)
 
 Results analysis

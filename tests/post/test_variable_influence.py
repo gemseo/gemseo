@@ -24,7 +24,7 @@ import pytest
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.post.post_factory import PostFactory
+from gemseo.post.factory import PostFactory
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure

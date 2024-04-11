@@ -29,8 +29,8 @@ on the Binh and Korn multi-objective problem.
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.post.post_factory import PostFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.post.factory import PostFactory
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
@@ -54,7 +54,7 @@ problem = BinhKorn()
 # Then,
 # we instantiate the design of experiment factory,
 # and we request the execution of a 100-length LHS optimized by simulated annealing.
-doe_factory = DOEFactory()
+doe_factory = DOELibraryFactory()
 doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 
 # %%

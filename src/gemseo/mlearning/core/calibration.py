@@ -48,7 +48,7 @@ from numpy import argmin
 from numpy import array
 from numpy import ndarray
 
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
@@ -284,7 +284,7 @@ class MLAlgoCalibration:
         Args:
             input_data: The driver properties.
         """
-        if DOEFactory().is_available(input_data["algo"]):
+        if DOELibraryFactory().is_available(input_data["algo"]):
             cls = DOEScenario
         else:
             cls = MDOScenario

@@ -26,12 +26,12 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 
 n_samples = 30
 n_parameters = 2
 
-factory = DOEFactory()
+factory = DOELibraryFactory()
 
 lhs = factory.create("OT_LHS")
 samples = lhs(n_samples, n_parameters)

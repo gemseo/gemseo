@@ -23,17 +23,17 @@ import re
 
 import pytest
 
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 
 
 def test_is_available_error() -> None:
-    assert not OptimizersFactory().is_available("None")
+    assert not OptimizationLibraryFactory().is_available("None")
 
 
 def test_create_ok() -> None:
     """Verify that an existing algorithm can be created."""
-    algo = OptimizersFactory().create("L-BFGS-B")
+    algo = OptimizationLibraryFactory().create("L-BFGS-B")
     assert algo.algo_name == "L-BFGS-B"
     assert "max_iter" in algo.opt_grammar
 
@@ -47,23 +47,23 @@ def test_create_ko() -> None:
             "available algorithms are"
         ),
     ):
-        OptimizersFactory().create("idontexist")
+        OptimizationLibraryFactory().create("idontexist")
 
 
 def test_is_scipy_available() -> None:
-    assert OptimizersFactory().is_available("ScipyOpt")
-    assert "SLSQP" in OptimizersFactory().algorithms
+    assert OptimizationLibraryFactory().is_available("ScipyOpt")
+    assert "SLSQP" in OptimizationLibraryFactory().algorithms
 
 
 def test_solver_factory_cache() -> None:
     """Verify the caching of the solver factory."""
-    factory = LinearSolversFactory(use_cache=True)
+    factory = LinearSolverLibraryFactory(use_cache=True)
     lib1 = factory.create("DEFAULT")
     lib2 = factory.create("DEFAULT")
     assert lib2 is lib1
 
     # A new instance has a different cache.
-    factory = LinearSolversFactory(use_cache=True)
+    factory = LinearSolverLibraryFactory(use_cache=True)
     lib1_bis = factory.create("DEFAULT")
     lib2_bis = factory.create("DEFAULT")
     assert lib2_bis is lib1_bis
@@ -73,7 +73,7 @@ def test_solver_factory_cache() -> None:
 
 def test_clear_lib_cache() -> None:
     """Verify clearing the lib cache."""
-    factory = LinearSolversFactory(use_cache=True)
+    factory = LinearSolverLibraryFactory(use_cache=True)
     lib1 = factory.create("DEFAULT")
     factory.clear_lib_cache()
     lib2 = factory.create("DEFAULT")

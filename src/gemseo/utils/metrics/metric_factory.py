@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A factory to create metrics."""
+"""A factory of metrics."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from gemseo.utils.metrics.base_metric import BaseMetric
 
 
 class MetricFactory(BaseFactory[BaseMetric[Any, Any]]):
-    """Create metrics from :class:`.BaseMetric`."""
+    """A factory of metrics."""
 
     if TYPE_CHECKING:
         _CLASS = BaseMetric[Any, Any]

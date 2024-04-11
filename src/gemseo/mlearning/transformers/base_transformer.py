@@ -219,7 +219,7 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
 
 class TransformerFactory(BaseFactory):
-    """A factory of :class:`.BaseTransformer`."""
+    """A factory of transformers."""
 
     _CLASS = BaseTransformer
     _MODULE_NAMES = ("gemseo.mlearning.transformers",)

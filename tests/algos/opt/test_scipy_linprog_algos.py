@@ -26,8 +26,8 @@ from numpy import array
 from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.lib_scipy_linprog import ScipyLinprog
-from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
@@ -37,7 +37,7 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 @pytest.fixture(scope="module")
 def library() -> ScipyLinprog:
     """The SciPyLinprog library."""
-    return OptimizersFactory().create("ScipyLinprog")
+    return OptimizationLibraryFactory().create("ScipyLinprog")
 
 
 def test_library_name() -> None:

@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Module with a factory to create an instance of :class:`.BaseSensitivityAnalysis`."""
+"""A factory of sensitivity analyses."""
 
 from __future__ import annotations
 
@@ -39,48 +39,7 @@ if TYPE_CHECKING:
 
 
 class SensitivityAnalysisFactory(BaseFactory):
-    """Factory to build instances of :class:`.BaseSensitivityAnalysis`.
-
-    At initialization, this factory scans the following modules
-    to search for subclasses of this class:
-
-    - the modules located in ``gemseo.uncertainty.sensitivity`` and its sub-packages,
-    - the modules referenced in the ``GEMSEO_PATH,``
-    - the modules referenced in the ``PYTHONPATH`` and starting with ``gemseo_``.
-
-    Then, it can check if a class is present or return the list of available classes.
-
-    Lastly, it can create an instance of a class.
-
-    Examples:
-        >>> from numpy import pi
-        >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty.sensitivity.factory import (
-        ...     SensitivityAnalysisFactory,
-        ... )
-        >>>
-        >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions=expressions
-        ... )
-        >>>
-        >>> parameter_space = create_parameter_space()
-        >>> parameter_space.add_random_variable(
-        ...     "x1", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x2", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>>
-        >>> factory = SensitivityAnalysisFactory()
-        >>> analysis = factory.create(
-        ...     "MorrisIndices", discipline, parameter_space, n_replicates=5
-        ... )
-        >>> indices = analysis.compute_indices()
-    """
+    """A factory of sensitivity analyses."""
 
     _CLASS = BaseSensitivityAnalysis
     _MODULE_NAMES = ("gemseo.uncertainty.sensitivity",)

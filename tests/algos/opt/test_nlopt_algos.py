@@ -30,8 +30,8 @@ from scipy.optimize.optimize import rosen_der
 
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.lib_nlopt import Nlopt
-from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -46,7 +46,7 @@ class TestNLOPT(TestCase):
 
     def _test_init(self) -> None:
         """Tests the initialization of the problem."""
-        factory = OptimizersFactory()
+        factory = OptimizationLibraryFactory()
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
 
@@ -69,7 +69,7 @@ class TestNLOPT(TestCase):
 
         problem.objective.jac = obj_grad
         problem.constraints = []
-        opt_library = OptimizersFactory().create("Nlopt")
+        opt_library = OptimizationLibraryFactory().create("Nlopt")
         opt_library.execute(problem, algo_name="NLOPT_BFGS", max_iter=10)
 
     def test_normalization(self) -> None:
@@ -89,7 +89,7 @@ class TestNLOPT(TestCase):
         )
         problem = OptimizationProblem(design_space)
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
-        OptimizersFactory().execute(problem, "NLOPT_COBYLA")
+        OptimizationLibraryFactory().execute(problem, "NLOPT_COBYLA")
 
     def test_tolerance_activation(self) -> None:
         def run_pb(algo_options):
@@ -99,7 +99,9 @@ class TestNLOPT(TestCase):
             )
             problem = OptimizationProblem(design_space)
             problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
-            res = OptimizersFactory().execute(problem, "NLOPT_SLSQP", **algo_options)
+            res = OptimizationLibraryFactory().execute(
+                problem, "NLOPT_SLSQP", **algo_options
+            )
             return res, problem
 
         for tol_name in (
@@ -130,7 +132,7 @@ def test_cast_to_float() -> None:
     problem.objective = MDOFunction(
         lambda x: x, "my_function", jac=lambda x: array([[1.0]])
     )
-    res = OptimizersFactory().execute(problem, "NLOPT_SLSQP", max_iter=100)
+    res = OptimizationLibraryFactory().execute(problem, "NLOPT_SLSQP", max_iter=100)
     assert res.x_opt == array([0.0])
     assert res.f_opt == 0.0
 

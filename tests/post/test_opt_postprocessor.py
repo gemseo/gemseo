@@ -23,7 +23,7 @@ import re
 import matplotlib.pyplot as plt
 import pytest
 
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
@@ -35,7 +35,7 @@ from gemseo.utils.testing.helpers import concretize_classes
 def problem() -> Rosenbrock:
     """The Rosenbrock problem."""
     rosenbrock = Rosenbrock()
-    OptimizersFactory().execute(rosenbrock, "L-BFGS-B")
+    OptimizationLibraryFactory().execute(rosenbrock, "L-BFGS-B")
     return rosenbrock
 
 

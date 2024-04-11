@@ -44,7 +44,7 @@ from numpy import zeros
 from scipy.sparse import csr_array
 from strenum import StrEnum
 
-from gemseo.caches.cache_factory import CacheFactory
+from gemseo.caches.factory import CacheFactory
 from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData

@@ -54,9 +54,7 @@ from gemseo.core.serializable import Serializable
 from gemseo.typing import NumberArray
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.gradient_approximator_factory import (
-    GradientApproximatorFactory,
-)
+from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import pretty_str
 

@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 LEARNING_SIZE = 10
 
 
-def dataset_factory(
+def create_dataset(
     dataset_name, expressions, design_space_variables, objective_name
 ) -> IODataset:
     """Return a dataset from a sampled function.
@@ -76,7 +76,7 @@ def dataset_factory(
     return discipline.cache.to_dataset(dataset_name)
 
 
-# the following contains the arguments passed to dataset_factory
+# the following contains the arguments passed to create_dataset
 DATASETS_DESCRIPTIONS = (
     # Dataset from a R -> R function sampled over [0,1]^2
     ("scalar_scalar", {"y_1": "1+3*x_1"}, {}, "y_1"),
@@ -141,12 +141,12 @@ def _get_dataset_name(dataset_description):
 )
 def dataset(request) -> Dataset:
     """Return one dataset by one at runtime from DATASETS_DESCRIPTIONS."""
-    return dataset_factory(*request.param)
+    return create_dataset(*request.param)
 
 
 def test_regression_model() -> None:
     """Test that by default the computation of the Jacobian raises an error."""
-    dataset = dataset_factory(*DATASETS_DESCRIPTIONS[0])
+    dataset = create_dataset(*DATASETS_DESCRIPTIONS[0])
     with (
         pytest.raises(
             NotImplementedError,

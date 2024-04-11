@@ -31,7 +31,7 @@ from numpy import inf
 from scipy.integrate import solve_ivp
 
 from gemseo.algos.ode.ode_solver_lib import ODESolverDescription
-from gemseo.algos.ode.ode_solver_lib import ODESolverLib
+from gemseo.algos.ode.ode_solver_lib import ODESolverLibrary
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class ScipyODEAlgos(ODESolverLib):
+class ScipyODEAlgos(ODESolverLibrary):
     """Wrapper for SciPy's ODE solvers.
 
     ODE stands for ordinary differential equation.

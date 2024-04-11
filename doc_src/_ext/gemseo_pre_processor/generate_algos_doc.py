@@ -30,18 +30,18 @@ import jinja2
 
 from gemseo import _get_schema
 from gemseo import get_algorithm_features
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
-from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.disciplines.disciplines_factory import DisciplinesFactory
-from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-from gemseo.mda.mda_factory import MDAFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
+from gemseo.algos.ode.factory import ODESolverLibraryFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.disciplines.factory import MDODisciplineFactory
+from gemseo.formulations.factory import MDOFormulationFactory
+from gemseo.mda.factory import MDAFactory
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.mlearning.clustering.factory import ClusteringModelFactory
 from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.regression.factory import RegressionModelFactory
-from gemseo.post.post_factory import PostFactory
+from gemseo.post.factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
@@ -499,17 +499,21 @@ def main(gen_opts_path: str | Path) -> None:
         ),
         InitOptionsDoc("ml_quality", "Quality measures", MLQualityMeasureFactory()),
         InitOptionsDoc("mda", "MDA algorithms", MDAFactory()),
-        InitOptionsDoc("formulation", "MDO formulations", MDOFormulationsFactory()),
+        InitOptionsDoc("formulation", "MDO formulations", MDOFormulationFactory()),
         OptPostProcessorAlgoOptionsDoc(
             "post", "Post-processing algorithms", PostFactory()
         ),
         DriverOptionsDoc(
-            "doe", "DOE algorithms", DOEFactory(), user_guide_anchor="doe"
+            "doe", "DOE algorithms", DOELibraryFactory(), user_guide_anchor="doe"
         ),
-        DriverOptionsDoc("opt", "Optimization algorithms", OptimizersFactory()),
-        DriverOptionsDoc("linear_solver", "Linear solvers", LinearSolversFactory()),
         DriverOptionsDoc(
-            "ode", "Ordinary differential equations solvers", ODESolversFactory()
+            "opt", "Optimization algorithms", OptimizationLibraryFactory()
+        ),
+        DriverOptionsDoc(
+            "linear_solver", "Linear solvers", LinearSolverLibraryFactory()
+        ),
+        DriverOptionsDoc(
+            "ode", "Ordinary differential equations solvers", ODESolverLibraryFactory()
         ),
         InitOptionsDoc(
             "distribution", "Probability distributions", DistributionFactory()
@@ -522,7 +526,7 @@ def main(gen_opts_path: str | Path) -> None:
         InitOptionsDoc(
             "discipline",
             "Disciplines",
-            DisciplinesFactory(),
+            MDODisciplineFactory(),
         ),
     ]
     for algos_options_doc in algos_options_docs:

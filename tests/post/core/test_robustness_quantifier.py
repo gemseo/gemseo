@@ -30,7 +30,7 @@ from numpy.random import default_rng
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.seeder import SEED
@@ -45,7 +45,7 @@ def database() -> Database:
     n = 2
     problem = Rosenbrock(n)
     problem.x_0 = 1.0 - 2 * arange(n) / float(n)
-    OptimizersFactory().execute(problem, "L-BFGS-B", max_iter=200)
+    OptimizationLibraryFactory().execute(problem, "L-BFGS-B", max_iter=200)
     return problem.database
 
 

@@ -26,8 +26,8 @@ import matplotlib.pyplot as plt
 from numpy import array
 from numpy import zeros
 
+from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
-from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
 from gemseo.problems.ode.van_der_pol import VanDerPol
 
 # %%
@@ -120,13 +120,13 @@ ode_problem = ODEProblem(
 # ...............................
 #
 # Whether the Jacobian is specified or not, once the problem is defined, the ODE
-# solver is called on the :class:`.ODEProblem` by using the :class:`.ODESolversFactory`:
-ODESolversFactory().execute(ode_problem)
+# solver is called on the :class:`.ODEProblem` by using the :class:`.ODESolverLibraryFactory`:
+ODESolverLibraryFactory().execute(ode_problem)
 
 # %%
 # By default, the Runge-Kutta method of order 4(5) (``"RK45"``) is used, but other
 # algorithms can be applied by specifying the option ``algo_name`` in
-# :meth:`ODESolversFactory().execute`.
+# :meth:`ODESolverLibraryFactory().execute`.
 # See more information on available algorithms in
 # `the SciPy documentation
 # <https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html>`_.
@@ -153,4 +153,4 @@ plt.show()
 # The class :class:`.VanDerPol` is available in the package
 # :mod:`gemseo.problems.ode`, so it just needs to be imported to be used.
 ode_problem = VanDerPol()
-ODESolversFactory().execute(ode_problem)
+ODESolverLibraryFactory().execute(ode_problem)

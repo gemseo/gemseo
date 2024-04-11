@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.formulations.mdf import MDF
 from gemseo.problems.mdo.sellar.sellar import Sellar1
 from gemseo.problems.mdo.sellar.sellar import Sellar2
@@ -34,9 +34,9 @@ from tests.formulations.not_mdo_formulations.formulation_a import ANotMDOFormula
 
 
 @pytest.fixture()
-def factory(reset_factory) -> MDOFormulationsFactory:
+def factory(reset_factory) -> MDOFormulationFactory:
     """The factory of MDOFormulation."""
-    return MDOFormulationsFactory()
+    return MDOFormulationFactory()
 
 
 def test_formulations(factory) -> None:

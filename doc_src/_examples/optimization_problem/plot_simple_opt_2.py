@@ -36,8 +36,8 @@ from numpy import sin
 from gemseo import configure_logger
 from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -79,12 +79,14 @@ problem.objective = objective
 #
 # Solve the problem
 # ^^^^^^^^^^^^^^^^^
-opt = OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
+opt = OptimizationLibraryFactory().execute(
+    problem, "L-BFGS-B", normalize_design_space=True
+)
 opt
 
 # %%
 # Note that you can get all the optimization algorithms names:
-OptimizersFactory().algorithms
+OptimizationLibraryFactory().algorithms
 
 # %%
 # Save the optimization results
@@ -108,5 +110,7 @@ execute_post(problem, "OptHistoryView", show=True, save=False)
 # ----------------------------------------------------
 # We can also see this optimization problem as a trade-off
 # and solve it by means of a design of experiments (DOE).
-opt = DOEFactory().execute(problem, "lhs", n_samples=10, normalize_design_space=True)
+opt = DOELibraryFactory().execute(
+    problem, "lhs", n_samples=10, normalize_design_space=True
+)
 opt

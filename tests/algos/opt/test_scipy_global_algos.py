@@ -23,8 +23,8 @@ from unittest.case import TestCase
 
 import pytest
 
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.lib_scipy_global import ScipyGlobalOpt
-from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
@@ -44,7 +44,7 @@ class TestScipyGlobalOpt(TestCase):
         return Rosenbrock()
 
     def test_init(self) -> None:
-        factory = OptimizersFactory()
+        factory = OptimizationLibraryFactory()
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
 
@@ -53,7 +53,7 @@ class TestScipyGlobalOpt(TestCase):
 def pow2_database() -> Database:
     """The database resulting from the Power2 problem resolution."""
     problem = Power2()
-    OptimizersFactory().execute(problem, "SHGO", max_iter=20)
+    OptimizationLibraryFactory().execute(problem, "SHGO", max_iter=20)
     return problem.database
 
 

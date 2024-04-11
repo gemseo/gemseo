@@ -28,9 +28,9 @@ from numpy import power
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.post.post_factory import PostFactory
+from gemseo.post.factory import PostFactory
 from gemseo.post.scatter_mat import ScatterPlotMatrix
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
@@ -52,7 +52,7 @@ def test_scatter(tmp_wd) -> None:
     """
     factory = PostFactory()
     problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP")
+    OptimizationLibraryFactory().execute(problem, "SLSQP")
     post = factory.execute(
         problem,
         "ScatterPlotMatrix",

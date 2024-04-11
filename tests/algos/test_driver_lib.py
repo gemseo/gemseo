@@ -33,7 +33,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import concretize_classes
@@ -159,7 +159,7 @@ def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected) -> None
 @pytest.mark.parametrize("activate_progress_bar", [False, True])
 def test_progress_bar(activate_progress_bar, caplog) -> None:
     """Check the activation of the progress bar from the options of a DriverLibrary."""
-    driver = OptimizersFactory().create("SLSQP")
+    driver = OptimizationLibraryFactory().create("SLSQP")
     driver.execute(Power2(), activate_progress_bar=activate_progress_bar)
     assert (
         isinstance(driver._DriverLibrary__progress_bar, ProgressBar)
