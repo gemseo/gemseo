@@ -42,8 +42,8 @@ from typing import Union
 from numpy import linspace
 from strenum import StrEnum
 
-from gemseo.post.dataset.plot_factory_factory import PlotFactoryFactory
 from gemseo.post.dataset.plot_settings import PlotSettings
+from gemseo.post.dataset.plots.factory_factory import PlotFactoryFactory
 from gemseo.utils.compatibility.matplotlib import get_color_map
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
@@ -52,8 +52,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.post.dataset.base_plot import BasePlot
-    from gemseo.post.dataset.plot_factory import PlotFactory
+    from gemseo.post.dataset.plots.base_plot import BasePlot
+    from gemseo.post.dataset.plots.factory import PlotFactory
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 

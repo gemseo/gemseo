@@ -38,7 +38,7 @@ from scipy.optimize import rosen_der
 from gemseo.algos._hdf_database import HDFDatabase
 from gemseo.algos.database import Database
 from gemseo.algos.database import HashableNdarray
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
@@ -70,7 +70,7 @@ def rel_err(to_test, ref):
 def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
     """The Rosenbrock problem solved with L-BFGS-B and the optimization result."""
     rosenbrock = Rosenbrock()
-    result = OptimizersFactory().execute(rosenbrock, "L-BFGS-B")
+    result = OptimizationLibraryFactory().execute(rosenbrock, "L-BFGS-B")
     return rosenbrock, result
 
 
@@ -193,7 +193,7 @@ def test_get_x_at_iteration() -> None:
     database = problem.database
     with pytest.raises(ValueError):
         database.get_x_vect(1)
-    OptimizersFactory().execute(problem, "L-BFGS-B")
+    OptimizationLibraryFactory().execute(problem, "L-BFGS-B")
     hist_g2 = database.get_x_vect(21)
     assert database.get_iteration(hist_g2) - 1 == 20
     with pytest.raises(KeyError):

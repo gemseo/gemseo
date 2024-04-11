@@ -27,7 +27,7 @@ from numpy import array_equal
 from numpy import loadtxt
 from numpy.linalg import norm
 
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -39,8 +39,8 @@ DOE_LIB_NAME = "PyDOE"
 
 
 def test_library_from_factory() -> None:
-    """Check that the DOEFactory can create the PyDOE library."""
-    factory = DOEFactory()
+    """Check that the DOELibraryFactory can create the PyDOE library."""
+    factory = DOELibraryFactory()
     if factory.is_available(DOE_LIB_NAME):
         factory.create(DOE_LIB_NAME)
 
@@ -154,7 +154,7 @@ def test_missing_algo_name() -> None:
 
 def test_export_error() -> None:
     """Check that a DOELibrary.export_samples raises an error if there is no samples."""
-    doe_library = DOEFactory().create(DOE_LIB_NAME)
+    doe_library = DOELibraryFactory().create(DOE_LIB_NAME)
     with pytest.raises(
         Exception, match="Samples are missing, execute method before export."
     ):
@@ -182,7 +182,7 @@ def test_integer_lhs() -> None:
     """Check that a DOE with integer variables stores integer values in the Database."""
     problem = Rosenbrock()
     problem.design_space.add_variable("y", var_type="integer", l_b=10.0, u_b=15.0)
-    DOEFactory().execute(problem, "lhs", n_samples=10)
+    DOELibraryFactory().execute(problem, "lhs", n_samples=10)
 
     for sample in problem.database.get_x_vect_history():
         assert int(sample[-1]) == sample[-1]

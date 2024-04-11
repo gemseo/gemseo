@@ -98,17 +98,17 @@ The classes described by the ODE module are as such:
     set namespaceSeparator none
     class "ODEProblem" as gemseo.algos.ode.ode_problem.ODEProblem {}
     class "ODEResult" as gemseo.algos.ode.ode_result.ODEResult {}
-    class "ODESolverLib" as gemseo.algos.ode.ode_solver_lib.ODESolverLib {
+    class "ODESolverLibrary" as gemseo.algos.ode.ode_solver_lib.ODESolverLibrary {
     }
-    class "ODESolversFactory" as gemseo.algos.ode.ode_solvers_factory.ODESolversFactory {
+    class "ODESolverLibraryFactory" as gemseo.algos.ode.ode_solvers_factory.ODESolverLibraryFactory {
       execute(problem: ODEProblem, algo_name: str) -> ODEResult
     }
     class "ScipyODEAlgos" as gemseo.algos.ode.lib_scipy_ode.ScipyODEAlgos {
 
     }
-    gemseo.algos.ode.lib_scipy_ode.ScipyODEAlgos --|> gemseo.algos.ode.ode_solver_lib.ODESolverLib
+    gemseo.algos.ode.lib_scipy_ode.ScipyODEAlgos --|> gemseo.algos.ode.ode_solver_lib.ODESolverLibrary
     gemseo.algos.ode.ode_result.ODEResult --* gemseo.algos.ode.ode_problem.ODEProblem : result
-    gemseo.algos.ode.ode_solver_lib.ODESolverLib --* gemseo.algos.ode.ode_solvers_factory.ODESolversFactory
+    gemseo.algos.ode.ode_solver_lib.ODESolverLibrary --* gemseo.algos.ode.ode_solvers_factory.ODESolverLibraryFactory
     @enduml
 
 

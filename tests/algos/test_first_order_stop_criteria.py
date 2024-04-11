@@ -20,7 +20,7 @@ from numpy import ones
 from numpy import zeros
 
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
@@ -76,7 +76,7 @@ def test_kkt_norm_correctly_stored(algorithm, problem) -> None:
         "max_iter": 100,
     }
     problem.reset()
-    OptimizersFactory().execute(problem, algorithm, **options)
+    OptimizationLibraryFactory().execute(problem, algorithm, **options)
     kkt_hist = problem.database.get_function_history(problem.KKT_RESIDUAL_NORM)
     obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
     obj_hist = problem.database.get_function_history(problem.objective.name)

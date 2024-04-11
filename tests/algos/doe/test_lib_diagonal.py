@@ -24,7 +24,7 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_scalable import DiagonalDOE
 
 from .utils import check_problem_execution
@@ -35,7 +35,7 @@ DOE_LIB_NAME = "DiagonalDOE"
 
 def test_init() -> None:
     """Check the creation of the library."""
-    factory = DOEFactory()
+    factory = DOELibraryFactory()
     if factory.is_available(DOE_LIB_NAME):
         factory.create(DOE_LIB_NAME)
 
@@ -91,7 +91,7 @@ def variables_space():
 
 def test_compute_doe(variables_space) -> None:
     """Check the computation of a DOE out of a variables space."""
-    library = DOEFactory().create(DOE_LIB_NAME)
+    library = DOELibraryFactory().create(DOE_LIB_NAME)
     doe = library.compute_doe(variables_space, 3, unit_sampling=True)
     assert_equal(doe, array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]))
 
@@ -105,7 +105,7 @@ def test_compute_doe(variables_space) -> None:
 )
 def test_reverse(variables_space, reverse, samples) -> None:
     """Check the sampling of variables in reverse order."""
-    library = DOEFactory().create(DOE_LIB_NAME)
+    library = DOELibraryFactory().create(DOE_LIB_NAME)
     doe = library.compute_doe(variables_space, 3, unit_sampling=True, reverse=reverse)
     assert_equal(doe, samples)
 

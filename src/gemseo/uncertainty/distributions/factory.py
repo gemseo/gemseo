@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Module containing a factory to create an instance of :class:`.BaseDistribution`."""
+"""A factory of probability distributions."""
 
 from __future__ import annotations
 
@@ -35,30 +35,7 @@ if TYPE_CHECKING:
 
 
 class DistributionFactory(BaseFactory):
-    """Factory to build instances of :class:`.BaseDistribution`.
-
-    At initialization, this factory scans the following modules
-    to search for subclasses of this class:
-
-    - the modules located in ``gemseo.uncertainty.distributions`` and its sub-packages,
-    - the modules referenced in the ``GEMSEO_PATH,``
-    - the modules referenced in the ``PYTHONPATH`` and starting with ``gemseo_``.
-
-    Then, it can check if a class is present or return the list of available classes.
-
-    Lastly, it can create an instance of a class.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.factory import DistributionFactory
-        >>> factory = DistributionFactory()
-        >>> factory.is_available("OTNormalDistribution")
-        True
-        >>> factory.available_distributions[-3:]
-        ['SPNormalDistribution', 'SPTriangularDistribution', 'SPUniformDistribution']
-        >>> distribution = factory.create("OTNormalDistribution", "x")
-        >>> print(distribution)
-        Normal(mu=0.0, sigma=1.0)
-    """
+    """A factory of probability distributions."""
 
     _CLASS = BaseDistribution
     _MODULE_NAMES = ("gemseo.uncertainty.distributions",)

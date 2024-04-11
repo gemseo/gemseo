@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
@@ -70,7 +70,7 @@ def execute_problem(
         The DOE library after the execution of the DOE algorithm on the problem.
     """
     problem = get_problem(dim)
-    doe_library = DOEFactory().create(doe_algo_name)
+    doe_library = DOELibraryFactory().create(doe_algo_name)
     doe_library.execute(problem, **options)
     return doe_library
 
@@ -169,11 +169,11 @@ def generate_test_functions(
         The test functions.
     """
     tests = []
-    factory = DOEFactory()
+    factory = DOELibraryFactory()
 
     if factory.is_available(opt_lib_name):
         for dim in [1, 5]:
-            opt_lib = DOEFactory().create(opt_lib_name)
+            opt_lib = DOELibraryFactory().create(opt_lib_name)
             algos = opt_lib.filter_adapted_algorithms(get_problem(dim))
             for algo_name in algos:
                 options = deepcopy(get_options(algo_name, dim))

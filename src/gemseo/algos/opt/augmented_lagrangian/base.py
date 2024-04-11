@@ -33,7 +33,7 @@ from numpy.ma import allequal
 from gemseo import LOGGER
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -371,7 +371,7 @@ class BaseAugmentedLagrangian(
         sub_problem.preprocess_functions(is_function_input_normalized=normalize)
 
         # Solve the sub-problem.
-        opt = OptimizersFactory().execute(
+        opt = OptimizationLibraryFactory().execute(
             sub_problem,
             sub_solver_algorithm,
             **sub_problem_options,

@@ -23,7 +23,7 @@ from typing import ClassVar
 from typing import Final
 
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.post.post_factory import PostFactory
+from gemseo.post.factory import PostFactory
 
 if TYPE_CHECKING:
     from numpy import ndarray

@@ -645,7 +645,7 @@ class LoopExecSequence(CompositeExecSequence):
 
 
 class ExecutionSequenceFactory:
-    """A factory class for ExecutionSequence objects.
+    """A factory of ExecutionSequence objects.
 
     Allow to create AtomicExecutionSequence, SerialExecutionSequence,
     ParallelExecutionSequence and LoopExecutionSequence. Main |g| workflow is intended

@@ -29,9 +29,9 @@ from PIL import Image
 
 from gemseo import execute_post
 from gemseo.algos.database import Database
+from gemseo.post.factory import PostFactory
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
-from gemseo.post.post_factory import PostFactory
 
 
 class Animation(OptPostProcessor):

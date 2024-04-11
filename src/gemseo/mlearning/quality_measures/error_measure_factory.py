@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A factory of error measures for regression models."""
+"""A factory of error measures for regressors."""
 
 from __future__ import annotations
 
@@ -21,6 +21,6 @@ from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFa
 
 
 class MLErrorMeasureFactory(MLQualityMeasureFactory):
-    """A factory of :class:`.BaseMLErrorMeasure`."""
+    """A factory of error measures for regressors."""
 
     _CLASS = BaseMLErrorMeasure

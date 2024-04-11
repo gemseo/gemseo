@@ -29,7 +29,7 @@ from numpy.testing import assert_equal
 from pandas.errors import ParserError
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_custom import CustomDOE
 
 from .utils import execute_problem
@@ -41,8 +41,8 @@ DOE_FILE_PATH = str(Path(__file__).parent / "dim_3_semicolon.csv")
 
 
 def test_library_from_factory():
-    """Check that the DOEFactory can create the CustomDOE library."""
-    factory = DOEFactory()
+    """Check that the DOELibraryFactory can create the CustomDOE library."""
+    factory = DOELibraryFactory()
     if factory.is_available(DOE_LIB_NAME):
         factory.create(DOE_LIB_NAME)
 

@@ -29,8 +29,8 @@ from scipy.optimize.optimize import rosen_der
 from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.lib_scipy import ScipyOpt
-from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -46,7 +46,7 @@ class TestScipy(TestCase):
 
     def test_init(self) -> None:
         """"""
-        factory = OptimizersFactory()
+        factory = OptimizationLibraryFactory()
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
 
@@ -107,7 +107,9 @@ class TestScipy(TestCase):
             return rosen(x)
 
         problem.objective = MDOFunction(i_fail, "rosen")
-        self.assertRaises(Exception, OptimizersFactory().execute, problem, algo_name)
+        self.assertRaises(
+            Exception, OptimizationLibraryFactory().execute, problem, algo_name
+        )
 
     def test_tnc_options(self) -> None:
         """"""
@@ -184,8 +186,12 @@ class TestScipy(TestCase):
         )
         problem = OptimizationProblem(design_space)
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
-        OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
-        OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=False)
+        OptimizationLibraryFactory().execute(
+            problem, "L-BFGS-B", normalize_design_space=True
+        )
+        OptimizationLibraryFactory().execute(
+            problem, "L-BFGS-B", normalize_design_space=False
+        )
 
     def test_xtol_ftol_activation(self) -> None:
         def run_pb(algo_options):
@@ -195,7 +201,9 @@ class TestScipy(TestCase):
             )
             problem = OptimizationProblem(design_space)
             problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
-            res = OptimizersFactory().execute(problem, "L-BFGS-B", **algo_options)
+            res = OptimizationLibraryFactory().execute(
+                problem, "L-BFGS-B", **algo_options
+            )
             return res, problem
 
         for tol_name in (
@@ -268,7 +276,9 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
     optimizer can be executed and converges implies that the MDOFunctions' Jacobians are
     indeed recast as dense NumPy arrays before being sent to SciPy.
     """
-    optimization_result = OptimizersFactory().execute(opt_problem, "SLSQP", atol=1e-10)
+    optimization_result = OptimizationLibraryFactory().execute(
+        opt_problem, "SLSQP", atol=1e-10
+    )
     assert allclose(optimization_result.f_opt, -0.001, atol=1e-10)
 
 
@@ -278,7 +288,7 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
 def test_nelder_mead(initial_simplex) -> None:
     """Test the Nelder-Mead algorithm on the Rosenbrock problem."""
     problem = Rosenbrock()
-    opt = OptimizersFactory().execute(
+    opt = OptimizationLibraryFactory().execute(
         problem, algo_name="NELDER-MEAD", max_iter=800, initial_simplex=initial_simplex
     )
     x_opt, f_opt = problem.get_solution()

@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Module containing a factory to create an instance of :class:`.OTDistribution`."""
+"""A factory of probability distributions based on OpenTURNS."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 
 
 class OTDistributionFactory(DistributionFactory):
-    """Factory to create a :class:`.OTDistribution` from its class name."""
+    """A factory of probability distributions based on OpenTURNS."""
 
     _CLASS = OTDistribution
     _MODULE_NAMES = ("gemseo.uncertainty.distributions.openturns",)

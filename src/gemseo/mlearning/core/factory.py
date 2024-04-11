@@ -17,13 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The factory to create the machine learning algorithms.
-
-This module contains a factory to instantiate an :class:`.BaseMLAlgo`
-from its class name.
-This factory also provides a list of available machine learning algorithms and allows
-testing if a machine learning algorithm is available.
-"""
+"""A factory of machine learning algorithms."""
 
 from __future__ import annotations
 
@@ -42,14 +36,7 @@ if TYPE_CHECKING:
 
 
 class MLAlgoFactory(BaseFactory):
-    """This factory instantiates an :class:`.BaseMLAlgo` from its class name.
-
-    The class can be either internal or external. In this second case, it can be either
-    implemented in a module referenced in the ``GEMSEO_PATH`` or in a module The class
-    can be either internal or external. In the second case, it can be either implemented
-    in a module referenced in the ``GEMSEO_PATH`` environment variable or in a module
-    starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
-    """
+    """A factory of machine learning algorithms."""
 
     # GEMSEO 4.0 renamed several algorithms with the format "{Prefix}Regressor".
     # This mapping allows to import algorithms using the old naming.

@@ -20,8 +20,8 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.post.post_factory import PostFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.post.factory import PostFactory
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
@@ -66,7 +66,7 @@ def test_pareto(tmp_wd, kwargs, baseline_images) -> None:
         baseline_images: The reference images to be compared.
     """
     problem = Power2()
-    DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
     PostFactory().execute(
         problem,
         "ParetoFront",
@@ -87,7 +87,7 @@ def test_pareto_minimize(
     """
     problem = Power2()
     problem.change_objective_sign()
-    DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
     PostFactory().execute(
         problem, "ParetoFront", file_path="power", objectives=["pow2", "ineq1"]
     )
@@ -96,7 +96,7 @@ def test_pareto_minimize(
 def test_pareto_incorrect_objective_list() -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
-    DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
     msg = (
         "objective_labels shall have the same dimension as the number of objectives "
         "to plot."
@@ -115,7 +115,7 @@ def test_pareto_incorrect_objective_list() -> None:
 def test_pareto_incorrect_objective_names() -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
-    DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
     msg = (
         "Cannot build Pareto front, Function \\w* is neither among"
         " optimization problem functions:.*\\.$"
@@ -146,7 +146,7 @@ def test_pareto_binhkorn(tmp_wd, kwargs, baseline_images) -> None:
         baseline_images: The reference images to be compared.
     """
     problem = BinhKorn()
-    DOEFactory().execute(problem, algo_name="fullfact", n_samples=100)
+    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=100)
     PostFactory().execute(
         problem,
         "ParetoFront",
@@ -161,7 +161,7 @@ def test_pareto_binhkorn(tmp_wd, kwargs, baseline_images) -> None:
 def test_pareto_binhkorn_design_variable() -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
-    DOEFactory().execute(problem, algo_name="fullfact", n_samples=100)
+    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=100)
     PostFactory().execute(
         problem,
         "ParetoFront",
@@ -176,7 +176,7 @@ def test_pareto_binhkorn_design_variable() -> None:
 def test_pareto_binhkorn_no_obj() -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
-    DOEFactory().execute(problem, algo_name="fullfact", n_samples=100)
+    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=100)
     PostFactory().execute(
         problem,
         "ParetoFront",

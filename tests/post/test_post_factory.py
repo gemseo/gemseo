@@ -22,8 +22,8 @@ import unittest
 from os.path import dirname
 from os.path import join
 
+from gemseo.post.factory import PostFactory
 from gemseo.post.opt_history_view import OptHistoryView
-from gemseo.post.post_factory import PostFactory
 
 DIRNAME = dirname(__file__)
 POWER2 = join(DIRNAME, "power2_opt_pb.h5")

@@ -262,7 +262,7 @@ Lastly, we solve the :class:`.OptimizationProblem` included in the :class:`.MDOS
 defined above by minimizing the objective function over the :class:`.DesignSpace`.
 Precisely, we choose the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_
 implemented in the function ``scipy.optimize.fmin_l_bfgs_b`` and
-indirectly called by means of the class :class:`.OptimizersFactory` and of its function :meth:`~.BaseAlgoFactory.execute`:
+indirectly called by means of the class :class:`.OptimizationLibraryFactory` and of its function :meth:`~.BaseAlgoFactory.execute`:
 
 .. code-block:: python
 

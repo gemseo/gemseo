@@ -684,8 +684,8 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
 
-class BaseFormulationsFactory(BaseFactory):
-    """A factory of :class:`~gemseo.core.base_formulation.BaseFormulation`."""
+class FormulationFactory(BaseFactory):
+    """A factory of formulations."""
 
     def create(
         self,

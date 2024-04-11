@@ -31,8 +31,8 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.post.factory import PostFactory
 from gemseo.post.gradient_sensitivity import GradientSensitivity
-from gemseo.post.post_factory import PostFactory
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.testing.helpers import image_comparison

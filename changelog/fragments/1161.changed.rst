@@ -1,0 +1,30 @@
+API changes from old to new:
+
+- ``gemseo.algos.doe.doe_factory``: ``gemseo.algos.doe.factory``
+- ``gemseo.linear_solvers.linear_solvers_factory``: ``gemseo.algos.linear_solvers.factory``
+- ``gemseo.algos.ode.ode_solvers_factory``: ``gemseo.algos.ode.factory``
+- ``gemseo.algos.opt.opt_factory``: ``gemseo.algos.opt.factory``
+- ``gemseo.algos.opt.opt_factory``: ``gemseo.algos.opt.factory``
+- ``gemseo.algos.sequence_transformer.sequence_transformer_factory``: ``gemseo.algos.sequence_transformer.factory``
+- ``gemseo.caches.cache_factory``: ``gemseo.caches.factory``
+- ``gemseo.caches.cache_factory``: ``gemseo.caches.factory``
+- ``gemseo.datasets.dataset_factory``: ``gemseo.datasets.factory``
+- ``gemseo.formulations.dataset_factory``: ``gemseo.formulations.factory``
+- ``gemseo.mda.mda_factory``: ``gemseo.mda.factory``
+- ``gemseo.post.post_factory``: ``gemseo.post.factory``
+- ``gemseo.post.post_factory``: ``gemseo.post.factory``
+- ``gemseo.post.dataset.base_plot``: ``gemseo.post.dataset.plots.base_plot``
+- ``gemseo.post.dataset.plot_factory``: ``gemseo.post.dataset.plots.factory``
+- ``gemseo.post.dataset.plot_factory_factory``: ``gemseo.post.dataset.plots.factory_factory``
+- ``gemseo.problems.disciplines_factory``: ``gemseo.problems.factory``
+- ``gemseo.scenarios.scenario_results.scenario_result_factory``: ``gemseo.scenarios.scenario_results.factory``
+- ``gemseo.utils.derivatives.gradient_approximator_factory``: ``gemseo.utils.derivatives.factory``
+- ``gemseo.wrappers.job_schedulers.schedulers_factory``: ``gemseo.wrappers.job_schedulers.factory``
+- ``BaseFormulationsFactory``: ``FormulationFactory``
+- ``DisciplinesFactory``: ``MDODisciplineFactory``
+- ``DOEFactory``: ``DOELibraryFactory``
+- ``LinearSolversFactory``: ``LinearSolverLibraryFactory``
+- ``ODESolversFactory``: ``ODESolverLibraryFactory``
+- ``ODESolverLib``: ``ODESolverLibrary``
+- ``OptimizersFactory``: ``OptimizationLibraryFactory``
+- ``SchedulersFactory``: ``JobSchedulerDisciplineWrapperFactory``

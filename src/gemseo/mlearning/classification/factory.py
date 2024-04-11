@@ -17,14 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A factory to create classification models.
-
-This module contains a factory to instantiate an :class:`.BaseMLClassificationAlgo`
-from its class name.
-
-It also provides a list of available classification models and allows testing if a
-classification model type is available.
-"""
+"""A factory of classification algorithms."""
 
 from __future__ import annotations
 
@@ -33,14 +26,7 @@ from gemseo.mlearning.core.factory import MLAlgoFactory
 
 
 class ClassificationModelFactory(MLAlgoFactory):
-    """This factory instantiates a :class:`.BaseMLRegressionAlgo` from its class name.
-
-    The class can be either internal or external. In this second case, it can be either
-    implemented in a module referenced in the ``GEMSEO_PATH`` or in a module The class
-    can be either internal or external. In the second case, it can be either implemented
-    in a module referenced in the ``GEMSEO_PATH`` environment variable or in a module
-    starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
-    """
+    """A factory of classification algorithms."""
 
     _CLASS = BaseMLClassificationAlgo
     _MOODULE_NAMES = ("gemseo.mlearning.classification",)

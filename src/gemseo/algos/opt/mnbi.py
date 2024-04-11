@@ -57,13 +57,13 @@ from scipy.optimize import linprog
 
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.opt._mnbi.constraint_function_wrapper import ConstraintFunctionWrapper
 from gemseo.algos.opt._mnbi.function_component_extractor import (
     FunctionComponentExtractor,
 )
 from gemseo.algos.opt._mnbi.sub_optim_constraint import SubOptimConstraint
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -396,7 +396,7 @@ class MNBI(OptimizationLibrary):
             else objective.compute_jacobian
         )
         opt_problem.objective = MDOFunction(objective.compute_output, f"f_{i}", jac=jac)
-        opt_result = OptimizersFactory().execute(
+        opt_result = OptimizationLibraryFactory().execute(
             opt_problem,
             self.__sub_optim_algo,
             max_iter=self.__sub_optim_max_iter,
@@ -566,7 +566,7 @@ class MNBI(OptimizationLibrary):
             )
         self.__beta_sub_optim.constraints = wrapped_constraints
         self.__beta_sub_optim.add_constraint(beta_sub_cstr, cstr_type="ineq")
-        opt_res = OptimizersFactory().execute(
+        opt_res = OptimizationLibraryFactory().execute(
             self.__beta_sub_optim,
             self.__sub_optim_algo,
             max_iter=self.__sub_optim_max_iter,
@@ -824,7 +824,7 @@ class MNBI(OptimizationLibrary):
         if self.__n_obj == 2:
             betas = linspace(0, 1, n_samples + 2)[1:-1, newaxis]
         else:
-            library = DOEFactory().create(options["doe_algo"])
+            library = DOELibraryFactory().create(options["doe_algo"])
             beta_design_space = DesignSpace()
             beta_design_space.add_variable(
                 "beta", size=self.__n_obj - 1, l_b=0.0, u_b=1.0

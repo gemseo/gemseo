@@ -27,7 +27,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
 
@@ -114,7 +114,7 @@ class MDOScenario(Scenario):
         return self.optimization_result
 
     def _init_algo_factory(self) -> None:
-        self._algo_factory = OptimizersFactory(use_cache=True)
+        self._algo_factory = OptimizationLibraryFactory(use_cache=True)
 
     def _update_input_grammar(self) -> None:
         super()._update_input_grammar()

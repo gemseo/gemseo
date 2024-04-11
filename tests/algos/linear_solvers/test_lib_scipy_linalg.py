@@ -33,16 +33,16 @@ from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import aslinearoperator
 from scipy.sparse.linalg import spilu
 
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.lib_scipy_linalg import ScipyLinalgAlgos
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 
 RESIDUALS_TOL = 1e-12
 
 
 def test_algo_list() -> None:
     """Tests the algo list detection at lib creation."""
-    factory = LinearSolversFactory()
+    factory = LinearSolverLibraryFactory()
     assert len(factory.algorithms) >= 6
     for algo in ("LGMRES", "GMRES", "BICG", "QMR", "BICGSTAB", "DEFAULT"):
         factory.is_available(algo)
@@ -50,7 +50,7 @@ def test_algo_list() -> None:
 
 def test_default() -> None:
     """Tests the DEFAULT solver."""
-    factory = LinearSolversFactory()
+    factory = LinearSolverLibraryFactory()
     rng = default_rng(1)
     n = 5
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
@@ -66,7 +66,7 @@ def test_default() -> None:
 @pytest.mark.parametrize("use_x0", [True, False])
 def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
     """Tests the solvers options."""
-    factory = LinearSolversFactory()
+    factory = LinearSolverLibraryFactory()
     rng = default_rng(1)
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     options = {
@@ -98,7 +98,7 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
 
 
 def test_common_dtype_cplx() -> None:
-    factory = LinearSolversFactory()
+    factory = LinearSolverLibraryFactory()
     problem = LinearProblem(eye(2, dtype="complex128"), ones(2))
     factory.execute(problem, "DEFAULT")
     assert problem.compute_residuals() < RESIDUALS_TOL
@@ -110,7 +110,7 @@ def test_common_dtype_cplx() -> None:
 
 def test_not_converged(caplog) -> None:
     """Tests the cases when convergence fails and save_when_fail option."""
-    factory = LinearSolversFactory()
+    factory = LinearSolverLibraryFactory()
     rng = default_rng(1)
     n = 100
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
@@ -140,7 +140,7 @@ def test_hard_conv(tmp_wd, seed) -> None:
     rng = default_rng(seed)
     n = 300
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
-    LinearSolversFactory().execute(
+    LinearSolverLibraryFactory().execute(
         problem,
         "DEFAULT",
         max_iter=3,
@@ -156,16 +156,18 @@ def test_inconsistent_options() -> None:
     problem = LinearProblem(ones((2, 2)), ones(2))
 
     with pytest.raises(ValueError, match="Inconsistent Preconditioner shape"):
-        LinearSolversFactory().execute(problem, "DEFAULT", preconditioner=ones((3, 3)))
+        LinearSolverLibraryFactory().execute(
+            problem, "DEFAULT", preconditioner=ones((3, 3))
+        )
 
     with pytest.raises(ValueError, match="Inconsistent initial guess shape"):
-        LinearSolversFactory().execute(problem, "DEFAULT", x0=ones(3))
+        LinearSolverLibraryFactory().execute(problem, "DEFAULT", x0=ones(3))
 
     with pytest.raises(
         ValueError,
         match="Use either 'use_ilu_precond' or provide 'preconditioner', but not both.",
     ):
-        LinearSolversFactory().execute(
+        LinearSolverLibraryFactory().execute(
             problem, "DEFAULT", preconditioner=ones((2, 2)), use_ilu_precond=True
         )
 
@@ -173,7 +175,7 @@ def test_inconsistent_options() -> None:
 def test_runtime_error() -> None:
     problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(RuntimeError, match="Factor is exactly singular"):
-        LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False)
+        LinearSolverLibraryFactory().execute(problem, "DEFAULT", use_ilu_precond=False)
 
 
 def test_default_solver() -> None:
@@ -190,12 +192,16 @@ def test_default_solver() -> None:
 
     # Linear system eventually solved using direct method and considered converged
     problem = LinearProblem(lhs, rhs)
-    LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False, **options)
+    LinearSolverLibraryFactory().execute(
+        problem, "DEFAULT", use_ilu_precond=False, **options
+    )
     assert problem.is_converged
 
     # Linear system left unsolved since no direct method applied
     problem = LinearProblem(aslinearoperator(lhs), rhs)
-    LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False, **options)
+    LinearSolverLibraryFactory().execute(
+        problem, "DEFAULT", use_ilu_precond=False, **options
+    )
     assert not problem.is_converged
 
 
@@ -207,7 +213,7 @@ def test_check_info() -> None:
 
 
 def test_factory() -> None:
-    assert "ScipyLinalgAlgos" in LinearSolversFactory().linear_solvers
+    assert "ScipyLinalgAlgos" in LinearSolverLibraryFactory().linear_solvers
 
 
 def test_algo_none() -> None:

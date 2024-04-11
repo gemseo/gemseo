@@ -49,8 +49,8 @@ from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import factorized
 from strenum import StrEnum
 
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.core.derivatives import derivation_modes
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
@@ -181,7 +181,7 @@ class JacobianAssembly:
     coupled_system: CoupledSystem
     """The coupled derivative system of residuals."""
 
-    __linear_solver_factory: LinearSolversFactory
+    __linear_solver_factory: LinearSolverLibraryFactory
     """The linear solver factory."""
 
     DerivationMode = derivation_modes.DerivationMode
@@ -230,7 +230,7 @@ class JacobianAssembly:
         self.__last_diff_inouts = ()
         self.__minimal_couplings = []
         self.coupled_system = CoupledSystem()
-        self.__linear_solver_factory = LinearSolversFactory(use_cache=True)
+        self.__linear_solver_factory = LinearSolverLibraryFactory(use_cache=True)
 
     def __check_inputs(
         self,
@@ -982,7 +982,7 @@ class CoupledSystem:
     lu_fact: int
     """The number of LU mode calls (adjoint or direct)."""
 
-    __linear_solver_factory: LinearSolversFactory
+    __linear_solver_factory: LinearSolverLibraryFactory
     """The linear solver factory."""
 
     linear_problem: LinearProblem | None
@@ -996,7 +996,7 @@ class CoupledSystem:
         self.n_direct_modes = 0
         self.n_adjoint_modes = 0
         self.lu_fact = 0
-        self.__linear_solver_factory = LinearSolversFactory(use_cache=True)
+        self.__linear_solver_factory = LinearSolverLibraryFactory(use_cache=True)
         self.linear_problem = None
 
     def direct_mode(

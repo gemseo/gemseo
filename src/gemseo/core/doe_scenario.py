@@ -25,7 +25,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
 
@@ -78,7 +78,7 @@ class DOEScenario(Scenario):
         self.__samples = ()
 
     def _init_algo_factory(self) -> None:
-        self._algo_factory = DOEFactory(use_cache=True)
+        self._algo_factory = DOELibraryFactory(use_cache=True)
 
     def _run_algorithm(self) -> None:
         algo_name = self.local_data[self.ALGO]

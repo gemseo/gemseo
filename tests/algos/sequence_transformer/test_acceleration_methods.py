@@ -24,9 +24,7 @@ from numpy import vstack
 from scipy.linalg import lstsq
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
-    SequenceTransformerFactory,
-)
+from gemseo.algos.sequence_transformer.factory import SequenceTransformerFactory
 
 A_TOL: float = 1e-6
 DIMENSION: int = 100

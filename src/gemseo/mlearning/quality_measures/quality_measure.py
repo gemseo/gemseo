@@ -325,7 +325,7 @@ class BaseMLQualityMeasure(metaclass=ABCGoogleDocstringInheritanceMeta):
 
 
 class MLQualityMeasureFactory(BaseFactory):
-    """A factory of :class:`.BaseMLQualityMeasure`."""
+    """A factory of quality measures for machine learning algorithms."""
 
     _CLASS = BaseMLQualityMeasure
     _MODULE_NAMES = ("gemseo.mlearning.quality_measures",)

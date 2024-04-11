@@ -32,7 +32,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
@@ -46,7 +46,7 @@ from gemseo.problems.optimization.power_2 import Power2
 if TYPE_CHECKING:
     from gemseo.algos.database import Database
 
-FACTORY = DOEFactory()
+FACTORY = DOELibraryFactory()
 
 
 @pytest.fixture()

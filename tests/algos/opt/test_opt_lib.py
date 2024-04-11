@@ -23,7 +23,7 @@ import pytest
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -41,9 +41,9 @@ def power() -> Power2:
 
 
 @pytest.fixture(scope="module")
-def lib() -> OptimizersFactory:
+def lib() -> OptimizationLibraryFactory:
     """The factory of optimizers."""
-    factory = OptimizersFactory()
+    factory = OptimizationLibraryFactory()
     if factory.is_available(OPT_LIB_NAME):
         return factory.create(OPT_LIB_NAME)
 
@@ -183,7 +183,7 @@ def test_execute_without_current_value() -> None:
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: (x - 1) ** 2, "obj")
-    driver = OptimizersFactory().create("NLOPT_COBYLA")
+    driver = OptimizationLibraryFactory().create("NLOPT_COBYLA")
     driver.execute(problem, "NLOPT_COBYLA", max_iter=1)
     assert design_space["x"].value == 0.0
 

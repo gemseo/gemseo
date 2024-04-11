@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.disciplines.disciplines_factory import DisciplinesFactory
+from gemseo.disciplines.factory import MDODisciplineFactory
 
 DATA = Path(__file__).parent / "data"
 
@@ -34,7 +34,7 @@ DATA = Path(__file__).parent / "data"
 def test_init(monkeypatch, reset_factory) -> None:
     monkeypatch.setenv("GEMSEO_PATH", DATA)
 
-    fact1 = DisciplinesFactory()
+    fact1 = MDODisciplineFactory()
     # Force update since we changed the GEMSEO_PATH
     fact1.update()
     assert "DummyDisciplineIMP" in fact1.disciplines
@@ -43,7 +43,7 @@ def test_init(monkeypatch, reset_factory) -> None:
     monkeypatch.setenv("GEMSEO_PATH", gemseo_path)
     fact1.update()
 
-    fact2 = DisciplinesFactory()
+    fact2 = MDODisciplineFactory()
 
     monkeypatch.delenv("GEMSEO_PATH")
     fact2.update()
@@ -56,18 +56,18 @@ def test_init(monkeypatch, reset_factory) -> None:
 
 def test_create(monkeypatch, reset_factory) -> None:
     monkeypatch.setenv("GEMSEO_PATH", DATA)
-    fact = DisciplinesFactory()
+    fact = MDODisciplineFactory()
     dummy = fact.create("DummyDisciplineIMP", opts1=1)
     assert dummy.opts1 == 1
 
-    fact2 = DisciplinesFactory()
+    fact2 = MDODisciplineFactory()
     assert id(fact) == id(fact2)
 
-    fact3 = DisciplinesFactory()
+    fact3 = MDODisciplineFactory()
     dummy = fact3.create("DummyDisciplineIMP", opts1=1)
 
     with pytest.raises(ImportError):
         fact3.create("unknown")
 
-    fact4 = DisciplinesFactory()
+    fact4 = MDODisciplineFactory()
     dummy = fact4.create("DummyDisciplineIMP", jac_approx_n_processes=1)
