@@ -25,10 +25,10 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
 

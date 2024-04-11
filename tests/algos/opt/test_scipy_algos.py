@@ -35,7 +35,7 @@ from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 
 

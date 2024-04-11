@@ -15,22 +15,22 @@
 Scalable models
 ===============
 
-.. automodule:: gemseo.problems.scalable.data_driven
+.. automodule:: gemseo.problems.mdo.scalable.data_driven
    :noindex:
 
-.. automodule:: gemseo.problems.scalable.data_driven.problem
+.. automodule:: gemseo.problems.mdo.scalable.data_driven.problem
    :noindex:
 
-.. automodule:: gemseo.problems.scalable.data_driven.discipline
+.. automodule:: gemseo.problems.mdo.scalable.data_driven.discipline
    :noindex:
 
-.. automodule:: gemseo.problems.scalable.data_driven.factory
+.. automodule:: gemseo.problems.mdo.scalable.data_driven.factory
    :noindex:
 
-.. automodule:: gemseo.problems.scalable.data_driven.model
+.. automodule:: gemseo.problems.mdo.scalable.data_driven.model
    :noindex:
 
-.. automodule:: gemseo.problems.scalable.data_driven.diagonal
+.. automodule:: gemseo.problems.mdo.scalable.data_driven.diagonal
    :noindex:
 
 .. uml::

@@ -31,7 +31,7 @@ from gemseo.core.data_processor import ComplexDataProcessor
 from gemseo.core.data_processor import FloatDataProcessor
 from gemseo.core.data_processor import NameMapping
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 
 
 class TestDataProcessor(unittest.TestCase):

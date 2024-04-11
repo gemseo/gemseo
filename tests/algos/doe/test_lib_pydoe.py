@@ -30,7 +30,7 @@ from numpy.linalg import norm
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 from .utils import execute_problem
 from .utils import generate_test_functions

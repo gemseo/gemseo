@@ -24,7 +24,7 @@ import pytest
 
 from gemseo.mda.initialization_chain import MDOInitializationChain
 from gemseo.mda.initialization_chain import order_disciplines_from_default_inputs
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 

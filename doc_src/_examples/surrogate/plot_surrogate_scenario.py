@@ -59,7 +59,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import create_surrogate
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 

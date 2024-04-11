@@ -27,7 +27,7 @@ from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.helpers import concretize_classes
 
 

@@ -39,7 +39,7 @@ from gemseo.algos._hdf_database import HDFDatabase
 from gemseo.algos.database import Database
 from gemseo.algos.database import HashableNdarray
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
     from gemseo.algos.opt_result import OptimizationResult

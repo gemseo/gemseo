@@ -29,7 +29,7 @@ we will see how to convert a :class:`.Database` to a :class:`.Dataset`.
 from __future__ import annotations
 
 from gemseo import execute_algo
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 # %%
 # Let us solve the :class:`.Rosenbrock` optimization problem

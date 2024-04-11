@@ -48,13 +48,13 @@ from gemseo.core.scenario import Scenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mda.base_mda import BaseMDA
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sellar.sellar import Sellar1
+from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiStructureSG
+from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 

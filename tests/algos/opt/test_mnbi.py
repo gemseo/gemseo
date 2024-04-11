@@ -30,11 +30,11 @@ from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.opt.mnbi import MNBI
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.binh_korn import BinhKorn
-from gemseo.problems.analytical.fonseca_fleming import FonsecaFleming
-from gemseo.problems.analytical.poloni import Poloni
-from gemseo.problems.analytical.power_2 import Power2
-from gemseo.problems.analytical.viennet import Viennet
+from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
+from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaFleming
+from gemseo.problems.multiobjective_optimization.poloni import Poloni
+from gemseo.problems.multiobjective_optimization.viennet import Viennet
+from gemseo.problems.optimization.power_2 import Power2
 
 
 @pytest.fixture()

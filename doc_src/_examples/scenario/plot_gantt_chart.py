@@ -38,7 +38,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 

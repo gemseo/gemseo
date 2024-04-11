@@ -32,7 +32,7 @@ from scipy.optimize import rosen_der
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:

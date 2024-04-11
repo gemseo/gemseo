@@ -25,7 +25,7 @@ from data_factory import DataFactory
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
 

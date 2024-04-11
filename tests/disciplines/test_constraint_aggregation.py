@@ -31,7 +31,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.optimization.power_2 import Power2
 
 
 @pytest.fixture()

@@ -22,8 +22,8 @@ import pytest
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.binh_korn import BinhKorn
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
+from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
 
 # - the kwargs to be passed to ParetoFront._plot

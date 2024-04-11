@@ -20,7 +20,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_scalable import DiagonalDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
 @pytest.fixture()

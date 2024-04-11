@@ -27,9 +27,9 @@ from typing import Any
 import numpy as np
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.problems.analytical.power_2 import Power2
-from gemseo.problems.analytical.rastrigin import Rastrigin
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.power_2 import Power2
+from gemseo.problems.optimization.rastrigin import Rastrigin
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
     from numpy._typing import NDArray

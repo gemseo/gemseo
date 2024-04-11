@@ -28,7 +28,7 @@ from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescripti
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import concretize_classes
 
 OPT_LIB_NAME = "ScipyOpt"

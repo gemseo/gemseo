@@ -35,7 +35,7 @@ from pandas import MultiIndex
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.pareto import ParetoFront
-from gemseo.problems.analytical.binh_korn import BinhKorn
+from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 if TYPE_CHECKING:
     from gemseo.algos.opt_problem import OptimizationProblem

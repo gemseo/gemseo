@@ -25,7 +25,7 @@ from numpy import ones
 from gemseo import execute_algo
 from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 from .opt.problems.constant import Constant
 

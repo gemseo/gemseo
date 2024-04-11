@@ -20,7 +20,7 @@ from numpy.core._multiarray_umath import concatenate
 
 from gemseo import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.optimization.power_2 import Power2
 
 
 def create_problem():

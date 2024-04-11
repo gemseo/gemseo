@@ -30,13 +30,13 @@ from numpy import ones
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sellar.sellar import Sellar1
+from gemseo.problems.mdo.sellar.sellar import Sellar2
+from gemseo.problems.mdo.sellar.sellar import SellarSystem
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 
 DATA_PATH = Path(__file__).absolute().parent / "data" / "dependency-graph"
 

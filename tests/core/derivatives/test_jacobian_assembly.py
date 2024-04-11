@@ -35,14 +35,14 @@ from scipy.sparse import csr_matrix
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives import jacobian_assembly
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 
 CWD = Path(__file__).parent
 RNG = default_rng()

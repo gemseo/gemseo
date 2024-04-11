@@ -38,7 +38,7 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_squ
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.optimization.power_2 import Power2
 
 
 def create_problem():

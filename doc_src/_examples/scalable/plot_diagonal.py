@@ -23,7 +23,7 @@ Scalable diagonal discipline
 ============================
 
 Let us consider the
-:class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics` discipline.
+:class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics` discipline.
 We want to build its :class:`.ScalableDiscipline` counterpart,
 using a :class:`.ScalableDiagonalModel`
 
@@ -38,7 +38,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scalable
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
 # Import
@@ -57,7 +57,7 @@ configure_logger()
 # Instantiate the discipline
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For that, we instantiate the
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics` discipline
+# :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics` discipline
 # and set it up to cache all evaluations.
 discipline = create_discipline("SobieskiAerodynamics")
 

@@ -31,7 +31,7 @@ from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.rosenbrock import RosenMF
+from gemseo.problems.optimization.rosen_mf import RosenMF
 
 
 @pytest.mark.parametrize(

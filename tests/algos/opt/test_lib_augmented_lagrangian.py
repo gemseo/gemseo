@@ -20,8 +20,8 @@ from numpy import array
 from gemseo import execute_algo
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.problems.analytical.power_2 import Power2
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.power_2 import Power2
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
 @pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])

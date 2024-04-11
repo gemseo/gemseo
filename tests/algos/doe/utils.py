@@ -25,7 +25,7 @@ from typing import Any
 from typing import Callable
 
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
     from gemseo.algos.doe.doe_library import DOELibrary

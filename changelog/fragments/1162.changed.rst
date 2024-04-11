@@ -1,0 +1,15 @@
+API changes from old to new:
+
+- ``gemseo.problems.analytical``: ``gemseo.problems.optimization``
+- ``gemseo.problems.aerostructure``: ``gemseo.problems.mdo.aerostructure``
+- ``gemseo.problems.propane``: ``gemseo.problems.mdo.propane``
+- ``gemseo.problems.scalable``: ``gemseo.problems.mdo.scalable``
+- ``gemseo.problems.sellar``: ``gemseo.problems.mdo.sellar``
+- ``gemseo.problems.sobieski``: ``gemseo.problems.mdo.sobieski``
+- ``gemseo.problems.analytical.rosenbrock.RosenMF``: ``gemseo.problems.optimization.rosen_mf.RosenMF``
+- ``gemseo.problems.disciplines_factory``: ``gemseo.disciplines.disciplines_factory``
+- ``gemseo.problems.topo_opt``: ``gemseo.problems.topology_optimization``
+- ``gemseo.problems.binh_korn``: ``gemseo.problems.multiobjective_optimization.binh_korn``
+- ``gemseo.problems.fonseca_fleming``: ``gemseo.problems.multiobjective_optimization.fonseca_fleming``
+- ``gemseo.problems.poloni``: ``gemseo.problems.multiobjective_optimization.poloni``
+- ``gemseo.problems.viennet``: ``gemseo.problems.multiobjective_optimization.viennet``

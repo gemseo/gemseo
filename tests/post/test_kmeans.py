@@ -22,7 +22,7 @@ import unittest
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
 class TestKMeans(unittest.TestCase):

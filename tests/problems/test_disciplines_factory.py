@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.problems.disciplines_factory import DisciplinesFactory
+from gemseo.disciplines.disciplines_factory import DisciplinesFactory
 
 DATA = Path(__file__).parent / "data"
 

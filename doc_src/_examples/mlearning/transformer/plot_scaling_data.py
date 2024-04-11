@@ -24,7 +24,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.mlearning.quality_measures.r2_measure import R2Measure
 from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 # %%
 # Scaling data around zero is important to avoid numerical issues
