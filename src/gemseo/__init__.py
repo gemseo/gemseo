@@ -1003,7 +1003,7 @@ def create_scenario(
     formulation: str,
     objective_name: str,
     design_space: DesignSpace | str | Path,
-    name: str | None = None,
+    name: str = "",
     scenario_type: str = "MDO",
     grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     maximize_objective: bool = False,
@@ -1023,7 +1023,7 @@ def create_scenario(
             (some formulations requires additional variables,
             e.g. :class:`.IDF` with the coupling variables).
         name: The name to be given to this scenario.
-            If ``None``, use the name of the class.
+            If empty, use the name of the class.
         scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
         grammar_type: The grammar for the scenario and the MDO formulation.
         maximize_objective: Whether to maximize the objective.
@@ -1037,7 +1037,7 @@ def create_scenario(
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> design_space = SellarDesignSpace()
         >>> scenario = create_scenario(
-        >>>     disciplines, 'MDF', 'obj', design_space, 'SellarMDFScenario'
+        >>>     disciplines, 'MDF', 'obj', design_space, name='SellarMDFScenario'
         >>> )
 
     See Also:

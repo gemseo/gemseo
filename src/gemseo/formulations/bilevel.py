@@ -471,7 +471,7 @@ class BiLevel(MDOFormulation):
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
-        value: float | None = None,
+        value: float = 0,
         positive: bool = False,
         levels: list[str] | None = None,
     ) -> None:
@@ -490,11 +490,19 @@ class BiLevel(MDOFormulation):
         if levels is None:
             if self._apply_cstr_to_system:
                 self._add_system_level_constraint(
-                    output_name, constraint_type, constraint_name, value, positive
+                    output_name,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
             if self._apply_cstr_tosub_scenarios:
                 self._add_sub_level_constraint(
-                    output_name, constraint_type, constraint_name, value, positive
+                    output_name,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
         # Otherwise the constraint is applied at the specified levels.
         elif not isinstance(levels, list) or not set(levels) <= set(BiLevel.LEVELS):
@@ -505,11 +513,19 @@ class BiLevel(MDOFormulation):
         else:
             if BiLevel.SYSTEM_LEVEL in levels:
                 self._add_system_level_constraint(
-                    output_name, constraint_type, constraint_name, value, positive
+                    output_name,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
             if BiLevel.SUBSCENARIOS_LEVEL in levels:
                 self._add_sub_level_constraint(
-                    output_name, constraint_type, constraint_name, value, positive
+                    output_name,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
 
     def _add_system_level_constraint(
@@ -517,7 +533,7 @@ class BiLevel(MDOFormulation):
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
-        value: float | None = None,
+        value: float = 0,
         positive: bool = False,
     ) -> None:
         """Add a constraint at the system level.
@@ -531,11 +547,14 @@ class BiLevel(MDOFormulation):
             constraint_name: The name of the constraint to be stored,
                 If ``None``, the name is generated from the output name.
             value: The value of activation of the constraint.
-                If ``None``, the value is equal to 0.
             positive: Whether the inequality constraint is positive.
         """
         super().add_constraint(
-            output_name, constraint_type, constraint_name, value, positive
+            output_name,
+            constraint_type=constraint_type,
+            constraint_name=constraint_name,
+            value=value,
+            positive=positive,
         )
 
     def _add_sub_level_constraint(
@@ -543,7 +562,7 @@ class BiLevel(MDOFormulation):
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str | None = None,
-        value: float | None = None,
+        value: float = 0,
         positive: bool = False,
     ) -> None:
         """Add a constraint at the sub-scenarios level.
@@ -557,7 +576,6 @@ class BiLevel(MDOFormulation):
             constraint_name: The name of the constraint to be stored,
                 If ``None``, the name is generated from the output name.
             value: The value of activation of the constraint.
-                If ``None``, the value is equal to 0.
             positive: Whether the inequality constraint is positive.
 
         Raises:
@@ -569,7 +587,11 @@ class BiLevel(MDOFormulation):
         for sub_scenario in self.get_sub_scenarios():
             if self._scenario_computes_outputs(sub_scenario, output_names):
                 sub_scenario.add_constraint(
-                    output_names, constraint_type, constraint_name, value, positive
+                    output_names,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
                 added = True
         if not added:

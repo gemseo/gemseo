@@ -57,8 +57,6 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from gemseo.datasets.dataset import Dataset
 
 PARENT_PATH = Path(__file__).parent
@@ -443,21 +441,19 @@ def test_xdsm_filename(tmp_wd, idf_scenario) -> None:
     assert Path(file_name).is_file()
 
 
-@pytest.mark.parametrize("observables", [["y_12"], ["y_23"]])
-def test_add_observable(
-    mdf_scenario: MDOScenario,
-    observables: Sequence[str],
-) -> None:
-    """Test adding observables from discipline outputs.
-
-    Args:
-         mdf_scenario: A fixture for the MDOScenario.
-         observables: A list of observables.
-    """
-    mdf_scenario.add_observable(observables)
-    new_observables = mdf_scenario.formulation.opt_problem.observables
-    for new_observable, expected_observable in zip(new_observables, observables):
-        assert new_observable.name == expected_observable
+@pytest.mark.parametrize(
+    ("output_names", "observable_name", "expected"),
+    [
+        ("y_12", "", "y_12"),
+        ("y_12", "foo", "foo"),
+        (["y_12"], "", "y_12"),
+        (["y_12", "y_23"], "", "y_12_y_23"),
+    ],
+)
+def test_add_observable(mdf_scenario, output_names, observable_name, expected):
+    """Test adding observables from discipline outputs."""
+    mdf_scenario.add_observable(output_names, observable_name=observable_name)
+    assert mdf_scenario.formulation.opt_problem.observables[0].name == expected
 
 
 def test_add_observable_not_available(

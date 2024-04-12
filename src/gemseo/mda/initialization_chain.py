@@ -115,7 +115,7 @@ class MDOInitializationChain(MDOChain):
     def __init__(  # noqa:D107
         self,
         disciplines: list[MDODiscipline],
-        name: str | None = None,
+        name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         available_data_names: Iterable[str] = (),
     ) -> None:

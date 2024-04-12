@@ -174,7 +174,7 @@ class DiscFromExe(_BaseDiscFromExe):
         input_filename: str | Path,
         output_filename: str | Path,
         folders_iter: DirectoryNamingMethod = DirectoryNamingMethod.NUMBERED,
-        name: str | None = None,
+        name: str = "",
         parse_outfile_method: Parser | OutputParser = Parser.TEMPLATE,
         write_input_file_method: InputWriter | None = None,
         parse_out_separator: str = "=",

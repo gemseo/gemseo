@@ -159,29 +159,32 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str | None = None,
-        value: float | None = None,
+        constraint_name: str = "",
+        value: float = 0,
         positive: bool = False,
     ) -> None:
-        """Add a user constraint.
+        r"""Add an equality or inequality constraint to the optimization problem.
 
-        A user constraint is a design constraint
-        in addition to the formulation specific constraints
-        such as the targets (a.k.a. consistency constraints) in IDF.
+        An equality constraint is written as :math:`c(x)=a`,
+        a positive inequality constraint is written as :math:`c(x)\geq a`
+        and a negative inequality constraint is written as :math:`c(x)\leq a`.
 
-        The strategy of repartition of constraints is defined in the formulation class.
+        This constraint is in addition to those created by the formulation,
+        e.g. consistency constraints in IDF.
+
+        The strategy of repartition of the constraints is defined by the formulation.
 
         Args:
-            output_name: The name of the output to be used as a constraint.
-                For instance, if g_1 is given and constraint_type="eq",
-                g_1=0 will be added as a constraint to the optimizer.
-            constraint_type: The type of constraint,
-                either "eq" for equality constraint or "ineq" for inequality constraint.
-            constraint_name: The name of the constraint to be stored,
-                If ``None``, the name is generated from the output name.
-            value: The value of activation of the constraint.
-                If ``None``, the value is equal to 0.
-            positive: Whether to consider an inequality constraint as positive.
+            output_name: The name(s) of the outputs computed by :math:`c(x)`.
+                If several names are given,
+                a single discipline must provide all outputs.
+            constraint_type: The type of constraint.
+            constraint_name: The name of the constraint to be stored.
+                If empty,
+                the name of the constraint is generated
+                from ``output_name``, ``constraint_type``, ``value`` and ``positive``.
+            value: The value :math:`a`.
+            positive: Whether the inequality constraint is positive.
         """
         output_names = self._check_add_cstr_input(output_name, constraint_type)
         constraint = FunctionFromDiscipline(output_names, self)
@@ -190,17 +193,17 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                 constraint, zeros(constraint.input_dimension)
             )
         constraint.f_type = constraint_type
-        if constraint_name is None:
-            constraint.has_default_name = True
-        else:
+        if constraint_name:
             constraint.name = constraint_name
             constraint.has_default_name = False
+        else:
+            constraint.has_default_name = True
         self.opt_problem.add_constraint(constraint, value=value, positive=positive)
 
     def add_observable(
         self,
         output_names: str | Sequence[str],
-        observable_name: str | None = None,
+        observable_name: str = "",
         discipline: MDODiscipline | None = None,
     ) -> None:
         """Add an observable to the optimization problem.
@@ -210,13 +213,14 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             output_names: The name(s) of the output(s) to observe.
             observable_name: The name of the observable.
+                If empty, the output name is used by default.
             discipline: The discipline computing the observed outputs.
                 If ``None``, the discipline is detected from inner disciplines.
         """
         if isinstance(output_names, str):
             output_names = [output_names]
         obs_fun = FunctionFromDiscipline(output_names, self, discipline=discipline)
-        if observable_name is not None:
+        if observable_name:
             obs_fun.name = observable_name
         self.opt_problem.add_observable(obs_fun)
 

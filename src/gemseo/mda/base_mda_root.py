@@ -58,7 +58,7 @@ class BaseMDARoot(BaseMDASolver):
         self,
         disciplines: Sequence[MDODiscipline],
         max_mda_iter: int = 10,
-        name: str | None = None,
+        name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,

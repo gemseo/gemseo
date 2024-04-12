@@ -102,7 +102,7 @@ class MDAQuasiNewton(BaseMDARoot):
         self,
         disciplines: Sequence[MDODiscipline],
         max_mda_iter: int = 10,
-        name: str | None = None,
+        name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         method: str = HYBRID,
         use_gradient: bool = False,

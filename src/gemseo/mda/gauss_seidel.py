@@ -78,7 +78,7 @@ class MDAGaussSeidel(BaseMDASolver):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[MDODiscipline],
-        name: str | None = None,
+        name: str = "",
         max_mda_iter: int = 10,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,

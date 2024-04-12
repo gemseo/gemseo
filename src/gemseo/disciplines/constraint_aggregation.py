@@ -103,7 +103,7 @@ class ConstraintAggregation(MDODiscipline):
         self,
         constraint_names: Sequence[str],
         aggregation_function: EvaluationFunction,
-        name: str | None = None,
+        name: str = "",
         **options: Any,
     ) -> None:
         """
@@ -112,13 +112,12 @@ class ConstraintAggregation(MDODiscipline):
                 which must be discipline outputs.
             aggregation_function: The aggregation function or its name,
                 e.g. IKS, lower_bound_KS,upper_bound_KS, POS_SUM and SUM.
-            name: The name of the discipline.
             **options: The options for the aggregation method.
 
         Raises:
             ValueError: If the method is not supported.
         """  # noqa: D205, D212, D415
-        super().__init__(name)
+        super().__init__(name=name)
         self.__method_name = aggregation_function
         self.__meth_options = options
         self.input_grammar.update_from_names(constraint_names)

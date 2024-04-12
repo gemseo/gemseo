@@ -69,7 +69,7 @@ class MDAChain(BaseMDA):
         disciplines: Sequence[MDODiscipline],
         inner_mda_name: str = "MDAJacobi",
         max_mda_iter: int = 20,
-        name: str | None = None,
+        name: str = "",
         n_processes: int = N_CPUS,
         chain_linearize: bool = False,
         tolerance: float = 1e-6,

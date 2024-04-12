@@ -56,7 +56,7 @@ class FininiteElementAnalysis(MDODiscipline):
         f_amplitude: int | Sequence[int] = -1,
         fixed_nodes: int | Sequence[int] | None = None,
         fixed_dir: int | Sequence[int] | None = None,
-        name: str | None = None,
+        name: str = "",
     ) -> None:
         """
         Args:
@@ -71,8 +71,6 @@ class FininiteElementAnalysis(MDODiscipline):
                 If ``None``, a default value is used.
             fixed_dir: The clamped direction for each node, encode 0 for x and 1 for y.
                 If ``None``, a default value is used.
-            name: The name of the discipline.
-                If ``None``, use the class name.
         """  # noqa: D205 D212
         super().__init__(name=name)
         if fixed_nodes is None:

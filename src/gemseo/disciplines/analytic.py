@@ -78,7 +78,7 @@ class AnalyticDiscipline(MDODiscipline):
     def __init__(
         self,
         expressions: Mapping[str, str | Expr],
-        name: str | None = None,
+        name: str = "",
         fast_evaluation: bool = True,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:

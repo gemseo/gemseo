@@ -238,7 +238,7 @@ class MDODiscipline(Serializable):
 
     def __init__(
         self,
-        name: str | None = None,
+        name: str = "",
         input_grammar_file: str | Path | None = None,
         output_grammar_file: str | Path | None = None,
         auto_detect_grammar_files: bool = False,
@@ -249,7 +249,7 @@ class MDODiscipline(Serializable):
         """
         Args:
             name: The name of the discipline.
-                If ``None``, use the class name.
+                If empty, use the class name.
             input_grammar_file: The input grammar file path.
                 If ``None`` and ``auto_detect_grammar_files=True``,
                 look for ``"ClassName_input.json"``
@@ -308,10 +308,7 @@ class MDODiscipline(Serializable):
 
         # the last execution was due to a linearization
         self.exec_for_lin = False
-        if name is None:
-            self.name = self.__class__.__name__
-        else:
-            self.name = name
+        self.name = name or self.__class__.__name__
 
         self.cache = None
         if not self.activate_cache:

@@ -67,7 +67,7 @@ class XLSDiscipline(MDODiscipline):
     def __init__(
         self,
         xls_file_path: Path | str,
-        name: str | None = None,
+        name: str = "",
         macro_name: str | None = "execute",
         copy_xls_at_setstate: bool = False,
         recreate_book_at_run: bool = False,
