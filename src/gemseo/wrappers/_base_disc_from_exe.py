@@ -41,7 +41,7 @@ class _BaseDiscFromExe(MDODiscipline):
     def __init__(
         self,
         executable_runner: _BaseExecutableRunner,
-        name: str | None = None,
+        name: str = "",
         input_grammar_file: str | Path | None = None,
         output_grammar_file: str | Path | None = None,
         auto_detect_grammar_files: bool = False,

@@ -58,7 +58,7 @@ class DOEScenario(Scenario):
         formulation: str,
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
-        name: str | None = None,
+        name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         maximize_objective: bool = False,
         **formulation_options: Any,
@@ -126,7 +126,7 @@ class DOEScenario(Scenario):
 
     def to_dataset(  # noqa: D102
         self,
-        name: str | None = None,
+        name: str = "",
         categorize: bool = True,
         opt_naming: bool = True,
         export_gradients: bool = False,

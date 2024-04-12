@@ -565,7 +565,7 @@ class MNBI(OptimizationLibrary):
                 )
             )
         self.__beta_sub_optim.constraints = wrapped_constraints
-        self.__beta_sub_optim.add_constraint(beta_sub_cstr, cstr_type="ineq")
+        self.__beta_sub_optim.add_constraint(beta_sub_cstr, constraint_type="ineq")
         opt_res = OptimizationLibraryFactory().execute(
             self.__beta_sub_optim,
             self.__sub_optim_algo,

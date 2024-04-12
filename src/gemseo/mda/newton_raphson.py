@@ -81,7 +81,7 @@ class MDANewtonRaphson(BaseMDARoot):
         disciplines: Sequence[MDODiscipline],
         max_mda_iter: int = 10,
         relax_factor: float | None = None,  # TODO: API: Remove the argument.
-        name: str | None = None,
+        name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         linear_solver: str = "DEFAULT",
         tolerance: float = 1e-6,

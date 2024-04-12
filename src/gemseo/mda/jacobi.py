@@ -96,7 +96,7 @@ class MDAJacobi(BaseMDASolver):
         self,
         disciplines: Sequence[MDODiscipline],
         max_mda_iter: int = 10,
-        name: str | None = None,
+        name: str = "",
         n_processes: int = N_CPUS,
         acceleration: str = "",  # TODO: API: Remove this argument.
         tolerance: float = 1e-6,

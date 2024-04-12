@@ -66,7 +66,7 @@ class MDOScenario(Scenario):
         formulation: str,
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
-        name: str | None = None,
+        name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         maximize_objective: bool = False,
         **formulation_options: Any,

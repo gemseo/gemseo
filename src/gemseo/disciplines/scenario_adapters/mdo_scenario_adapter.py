@@ -92,7 +92,7 @@ class MDOScenarioAdapter(MDODiscipline):
         cache_type: MDODiscipline.CacheType = MDODiscipline.CacheType.SIMPLE,
         output_multipliers: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        name: str | None = None,
+        name: str = "",
         keep_opt_history: bool = False,
         opt_history_file_prefix: str = "",
         scenario_log_level: int | None = None,
@@ -113,8 +113,8 @@ class MDOScenarioAdapter(MDODiscipline):
                 the Lagrange multipliers of the scenario optimal solution are computed
                 and added to the outputs.
             name: The name of the scenario adapter.
-                If ``None``, use the name of the scenario adapter
-                suffixed by ``"_adapter"``.
+                If empty,
+                use the name of the scenario adapter suffixed by ``"_adapter"``.
             keep_opt_history: Whether to keep databases copies after each execution.
             opt_history_file_prefix: The base name for the databases to be exported.
                 The full names of the databases are built from

@@ -113,7 +113,7 @@ class Scenario(MDODiscipline):
         formulation: str,
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
-        name: str | None = None,
+        name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         maximize_objective: bool = False,
         **formulation_options: Any,
@@ -131,7 +131,7 @@ class Scenario(MDODiscipline):
                 (some formulations requires additional variables,
                 e.g. :class:`.IDF` with the coupling variables).
             name: The name to be given to this scenario.
-                If ``None``, use the name of the class.
+                If empty, use the name of the class.
             grammar_type: The grammar for the scenario and the MDO formulation.
             maximize_objective: Whether to maximize the objective.
             **formulation_options: The options of the :class:`.MDOFormulation`.
@@ -232,12 +232,16 @@ class Scenario(MDODiscipline):
         self,
         output_name: str | Sequence[str],
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str | None = None,
-        value: float | None = None,
+        constraint_name: str = "",
+        value: float = 0,
         positive: bool = False,
         **kwargs,
     ) -> None:
-        """Add a design constraint.
+        r"""Add an equality or inequality constraint to the optimization problem.
+
+        An equality constraint is written as :math:`c(x)=a`,
+        a positive inequality constraint is written as :math:`c(x)\geq a`
+        and a negative inequality constraint is written as :math:`c(x)\leq a`.
 
         This constraint is in addition to those created by the formulation,
         e.g. consistency constraints in IDF.
@@ -245,25 +249,23 @@ class Scenario(MDODiscipline):
         The strategy of repartition of the constraints is defined by the formulation.
 
         Args:
-            output_name: The names of the outputs to be used as constraints.
-                For instance, if `"g_1"` is given and `constraint_type="eq"`,
-                `g_1=0` will be added as constraint to the optimizer.
+            output_name: The name(s) of the outputs computed by :math:`c(x)`.
                 If several names are given,
                 a single discipline must provide all outputs.
             constraint_type: The type of constraint.
             constraint_name: The name of the constraint to be stored.
-                If ``None``,
-                the name of the constraint is generated from the output name.
-            value: The value for which the constraint is active.
-                If ``None``, this value is 0.
-            positive: If ``True``, the inequality constraint is positive.
+                If empty,
+                the name of the constraint is generated
+                from ``output_name``, ``constraint_type``, ``value`` and ``positive``.
+            value: The value :math:`a`.
+            positive: Whether the inequality constraint is positive.
 
         Raises:
             ValueError: If the constraint type is neither 'eq' nor 'ineq'.
         """
         self.formulation.add_constraint(
             output_name,
-            constraint_type,
+            constraint_type=constraint_type,
             constraint_name=constraint_name,
             value=value,
             positive=positive,
@@ -273,7 +275,7 @@ class Scenario(MDODiscipline):
     def add_observable(
         self,
         output_names: Sequence[str],
-        observable_name: Sequence[str] | None = None,
+        observable_name: str = "",
         discipline: MDODiscipline | None = None,
     ) -> None:
         """Add an observable to the optimization problem.
@@ -285,7 +287,7 @@ class Scenario(MDODiscipline):
         Args:
             output_names: The names of the outputs to observe.
             observable_name: The name to be given to the observable.
-                If ``None``, the output name is used by default.
+                If empty, the output name is used by default.
             discipline: The discipline used to build the observable function.
                 If ``None``, detect the discipline from the inner disciplines.
         """

@@ -47,15 +47,13 @@ class DensityFilter(MDODiscipline):
         n_x: int = 100,
         n_y: int = 100,
         min_member_size: float = 1.5,
-        name: str | None = None,
+        name: str = "",
     ) -> None:
         """
         Args:
             n_x: The number of elements in the x-direction.
             n_y: The number of elements in the y-direction.
             min_member_size: The minimum structural member size.
-            name: The name of the discipline.
-                If ``None``, use the class name.
         """  # noqa: D205, D212, D415
         super().__init__(name=name)
         self.n_x = n_x

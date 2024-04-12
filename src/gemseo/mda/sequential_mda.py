@@ -42,7 +42,7 @@ class MDASequential(BaseMDA):
         self,
         disciplines: Sequence[MDODiscipline],
         mda_sequence: Sequence[BaseMDA],
-        name: str | None = None,
+        name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         max_mda_iter: int = 10,
         tolerance: float = 1e-6,
@@ -109,7 +109,7 @@ class MDAGSNewton(MDASequential):
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
-        name: str | None = None,
+        name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         max_mda_iter: int = 10,

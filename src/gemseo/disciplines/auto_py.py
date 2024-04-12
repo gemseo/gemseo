@@ -111,7 +111,7 @@ class AutoPyDiscipline(MDODiscipline):
         self,
         py_func: Callable,
         py_jac: Callable | None = None,
-        name: str | None = None,
+        name: str = "",
         use_arrays: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
@@ -122,7 +122,7 @@ class AutoPyDiscipline(MDODiscipline):
                 its output value must be a 2D NumPy array
                 with rows corresponding to the outputs and columns to the inputs.
             name: The name of the discipline.
-                If ``None``, use the name of the Python function.
+                If empty, use the name of the Python function.
             use_arrays: Whether the function is expected
                 to take arrays as inputs and give outputs as arrays.
 

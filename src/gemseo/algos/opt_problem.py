@@ -443,14 +443,14 @@ class OptimizationProblem(BaseProblem):
     @objective.setter
     def objective(
         self,
-        func: MDOFunction,
+        function: MDOFunction,
     ) -> None:
-        func.f_type = func.FunctionType.OBJ
+        function.f_type = function.FunctionType.OBJ
         if self.pb_type == self.ProblemType.LINEAR and not isinstance(
-            func, MDOLinearFunction
+            function, MDOLinearFunction
         ):
             self.pb_type = self.ProblemType.NON_LINEAR
-        self._objective = func
+        self._objective = function
 
     @property
     def minimize_objective(self) -> bool:
@@ -464,16 +464,16 @@ class OptimizationProblem(BaseProblem):
 
     @staticmethod
     def repr_constraint(
-        func: MDOFunction,
-        cstr_type: MDOFunction.ConstraintType,
+        function: MDOFunction,
+        constraint_type: MDOFunction.ConstraintType,
         value: float | None = None,
         positive: bool = False,
     ) -> str:
         """Express a constraint as a string expression.
 
         Args:
-            func: The constraint function.
-            cstr_type: The type of the constraint.
+            function: The constraint function.
+            constraint_type: The type of the constraint.
             value: The value for which the constraint is active.
                 If ``None``, this value is 0.
             positive: If ``True``, then the inequality constraint is positive.
@@ -483,26 +483,26 @@ class OptimizationProblem(BaseProblem):
         """
         if value is None:
             value = 0.0
-        str_repr = func.name
-        if func.input_names:
-            arguments = ", ".join(func.input_names)
+        str_repr = function.name
+        if function.input_names:
+            arguments = ", ".join(function.input_names)
             str_repr += f"({arguments})"
 
-        if cstr_type == MDOFunction.ConstraintType.EQ:
+        if constraint_type == MDOFunction.ConstraintType.EQ:
             sign = " == "
         elif positive:
             sign = " >= "
         else:
             sign = " <= "
 
-        if func.expr:
+        if function.expr:
             str_repr += ": "
-            expr = func.expr
+            expr = function.expr
             n_char = len(str_repr)
             # Remove empty lines with filter
             expr_spl = [_f for _f in expr.split("\n") if _f]
             str_repr = str_repr + expr_spl[0] + sign + str(value)
-            if isinstance(func, (MDOLinearFunction, MDOQuadraticFunction)):
+            if isinstance(function, (MDOLinearFunction, MDOQuadraticFunction)):
                 for repre in expr_spl[1:]:
                     str_repr += "\n" + " " * n_char + repre
             else:
@@ -514,90 +514,96 @@ class OptimizationProblem(BaseProblem):
 
     def add_constraint(
         self,
-        cstr_func: MDOFunction,
-        value: float | None = None,
-        cstr_type: MDOFunction.ConstraintType | None = None,
+        function: MDOFunction,
+        value: float = 0.0,
+        constraint_type: MDOFunction.ConstraintType | None = None,
         positive: bool = False,
     ) -> None:
-        """Add a constraint (equality and inequality) to the optimization problem.
+        r"""Add an equality or inequality constraint to the optimization problem.
+
+        An equality constraint is written as :math:`c(x)=a`,
+        a positive inequality constraint is written as :math:`c(x)\geq a`
+        and a negative inequality constraint is written as :math:`c(x)\leq a`.
 
         Args:
-            cstr_func: The constraint.
-            value: The value for which the constraint is active.
-                If ``None``, this value is 0.
-            cstr_type: The type of the constraint.
-            positive: If ``True``, then the inequality constraint is positive.
+            function: The function :math:`c`.
+            value: The value :math:`a`.
+            constraint_type: The type of the constraint.
+            positive: Whether the inequality constraint is positive.
 
         Raises:
             TypeError: When the constraint of a linear optimization problem
                 is not an :class:`.MDOLinearFunction`.
             ValueError: When the type of the constraint is missing.
         """
-        func_name = cstr_func.name
-        has_default_name = cstr_func.has_default_name
-        self.check_format(cstr_func)
+        func_name = function.name
+        has_default_name = function.has_default_name
+        self.check_format(function)
         if self.pb_type == OptimizationProblem.ProblemType.LINEAR and not isinstance(
-            cstr_func, MDOLinearFunction
+            function, MDOLinearFunction
         ):
             self.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
-        ctype = cstr_type or cstr_func.f_type
-        cstr_repr = self.repr_constraint(cstr_func, ctype, value, positive)
-        if value is not None:
-            cstr_func = cstr_func.offset(-value)
+        ctype = constraint_type or function.f_type
+        cstr_repr = self.repr_constraint(function, ctype, value, positive)
+        if value not in [0, None]:
+            function = function.offset(-value)
         if positive:
-            cstr_func = -cstr_func
+            function = -function
 
-        if cstr_type is not None:
-            cstr_func.f_type = cstr_type
-        elif not cstr_func.is_constraint():
+        if constraint_type is not None:
+            function.f_type = constraint_type
+        elif not function.is_constraint():
             msg = (
                 "Constraint type must be provided, "
                 "either in the function attributes or to the add_constraint method."
             )
             raise ValueError(msg)
 
-        cstr_func.special_repr = cstr_repr
-        self.constraints.append(cstr_func)
+        function.special_repr = cstr_repr
+        self.constraints.append(function)
         if not has_default_name:
-            cstr_func.name = func_name
-            if cstr_func.output_names:
-                output_names = "#".join(cstr_func.output_names)
+            function.name = func_name
+            if function.output_names:
+                output_names = "#".join(function.output_names)
                 cstr_repr = cstr_repr.replace(func_name, output_names)
-                cstr_func.expr = cstr_func.expr.replace(func_name, output_names)
-                cstr_func.special_repr = f"{func_name}: {cstr_repr}"
+                function.expr = function.expr.replace(func_name, output_names)
+                function.special_repr = f"{func_name}: {cstr_repr}"
 
     def add_eq_constraint(
         self,
-        cstr_func: MDOFunction,
-        value: float | None = None,
+        function: MDOFunction,
+        value: float = 0,
     ) -> None:
-        """Add an equality constraint to the optimization problem.
+        r"""Add an equality constraint :math:`c(x)=a` to the optimization problem.
 
         Args:
-            cstr_func: The constraint.
-            value: The value for which the constraint is active.
-                If ``None``, this value is 0.
+            function: The function :math:`c`.
+            value: The value :math:`a`.
         """
-        self.add_constraint(cstr_func, value, cstr_type=MDOFunction.ConstraintType.EQ)
+        self.add_constraint(
+            function, value=value, constraint_type=MDOFunction.ConstraintType.EQ
+        )
 
     def add_ineq_constraint(
         self,
-        cstr_func: MDOFunction,
-        value: float | None = None,
+        function: MDOFunction,
+        value: float = 0,
         positive: bool = False,
     ) -> None:
-        """Add an inequality constraint to the optimization problem.
+        r"""Add an inequality constraint to the optimization problem.
+
+        A positive inequality constraint is written as :math:`c(x)\geq a`
+        and a negative inequality constraint is written as :math:`c(x)\leq a`
 
         Args:
-            cstr_func: The constraint.
-            value: The value for which the constraint is active.
-                If ``None``, this value is 0.
-            positive: If ``True``, then the inequality constraint is positive.
+            function: The function :math:`c`.
+            value: The value :math:`a` for which the constraint is active.
+            positive: Whether the inequality constraint is positive.
         """
         self.add_constraint(
-            cstr_func,
-            value,
-            cstr_type=MDOFunction.ConstraintType.INEQ,
+            function,
+            value=value,
+            constraint_type=MDOFunction.ConstraintType.INEQ,
             positive=positive,
         )
 
@@ -809,7 +815,7 @@ class OptimizationProblem(BaseProblem):
 
     def add_observable(
         self,
-        obs_func: MDOFunction,
+        observable: MDOFunction,
         new_iter: bool = True,
     ) -> None:
         """Add a function to be observed.
@@ -835,21 +841,21 @@ class OptimizationProblem(BaseProblem):
               :attr:`.OptimizationProblem.database`.
 
         Args:
-            obs_func: An observable to be observed.
+            observable: A function to be observed.
             new_iter: If ``True``,
                 then the observable will be called at each new iterate.
         """
-        name = obs_func.name
+        name = observable.name
         if name in self.__observable_names:
             LOGGER.warning('The optimization problem already observes "%s".', name)
             return
 
-        self.check_format(obs_func)
-        obs_func.f_type = MDOFunction.FunctionType.OBS
-        self.observables.append(obs_func)
+        self.check_format(observable)
+        observable.f_type = MDOFunction.FunctionType.OBS
+        self.observables.append(observable)
         self.__observable_names.add(name)
         if new_iter:
-            self.new_iter_observables.append(obs_func)
+            self.new_iter_observables.append(observable)
 
     def get_eq_constraints(self) -> list[MDOFunction]:
         """Retrieve all the equality constraints.
@@ -859,17 +865,17 @@ class OptimizationProblem(BaseProblem):
         """
 
         def is_equality_constraint(
-            func: MDOFunction,
+            function: MDOFunction,
         ) -> bool:
             """Check if a function is an equality constraint.
 
             Args:
-                func: A function.
+                function: A function.
 
             Returns:
                 True if the function is an equality constraint.
             """
-            return func.f_type == MDOFunction.ConstraintType.EQ
+            return function.f_type == MDOFunction.ConstraintType.EQ
 
         return list(filter(is_equality_constraint, self.constraints))
 
@@ -881,17 +887,17 @@ class OptimizationProblem(BaseProblem):
         """
 
         def is_inequality_constraint(
-            func: MDOFunction,
+            function: MDOFunction,
         ) -> bool:
             """Check if a function is an inequality constraint.
 
             Args:
-                func: A function.
+                function: A function.
 
             Returns:
                 True if the function is an inequality constraint.
             """
-            return func.f_type == MDOFunction.ConstraintType.INEQ
+            return function.f_type == MDOFunction.ConstraintType.INEQ
 
         return list(filter(is_inequality_constraint, self.constraints))
 
@@ -1109,16 +1115,16 @@ class OptimizationProblem(BaseProblem):
         return self.design_space.dimension
 
     @staticmethod
-    def check_format(input_function: Any) -> None:
+    def check_format(function: Any) -> None:
         """Check that a function is an instance of :class:`.MDOFunction`.
 
         Args:
-            input_function: The function to be tested.
+            function: The function to be tested.
 
         Raises:
             TypeError: If the function is not an :class:`.MDOFunction`.
         """
-        if not isinstance(input_function, MDOFunction):
+        if not isinstance(function, MDOFunction):
             msg = "Optimization problem functions must be instances of MDOFunction"
             raise TypeError(msg)
 
@@ -1148,7 +1154,7 @@ class OptimizationProblem(BaseProblem):
 
     def __count_cstr_total_dim(
         self,
-        cstr_type: str,
+        constraint_type: MDOFunction.ConstraintType,
     ) -> int:
         """Retrieve the total dimension of the constraints.
 
@@ -1157,6 +1163,9 @@ class OptimizationProblem(BaseProblem):
         of all the constraints.
         of equality or inequality constraints dimensions
         that is the sum of all outputs dimensions of all constraints.
+
+        Args:
+            constraint_type: The type of the constraint.
 
         Returns:
             The total dimension of the constraints.
@@ -1169,7 +1178,7 @@ class OptimizationProblem(BaseProblem):
                     f"please call function {constraint} once"
                 )
                 raise ValueError(msg)
-            if constraint.f_type == cstr_type:
+            if constraint.f_type == constraint_type:
                 n_cstr += constraint.dim
         return n_cstr
 
@@ -1193,14 +1202,13 @@ class OptimizationProblem(BaseProblem):
             x_vect = self.design_space.normalize_vect(x_vect)
 
         return {
-            func: atleast_1d((func(x_vect)) >= -tol)
-            for func in self.get_ineq_constraints()
+            ineq_constraint: atleast_1d((ineq_constraint(x_vect)) >= -tol)
+            for ineq_constraint in self.get_ineq_constraints()
         }
 
-    # TODO: API: rename callback_func to callback
     def add_callback(
         self,
-        callback_func: Callable[[ndarray], Any],
+        callback: Callable[[ndarray], Any],
         each_new_iter: bool = True,
         each_store: bool = False,
     ) -> None:
@@ -1211,7 +1219,7 @@ class OptimizationProblem(BaseProblem):
         within the database of the optimization problem.
 
         Args:
-            callback_func: A function to be called after some events,
+            callback: A function to be called after some events,
                 whose argument is a design vector.
             each_new_iter: Whether to evaluate the callback functions
                 after evaluating all functions of the optimization problem
@@ -1220,9 +1228,9 @@ class OptimizationProblem(BaseProblem):
                 after storing any new value in the :attr:`.database`.
         """
         if each_store:
-            self.database.add_store_listener(callback_func)
+            self.database.add_store_listener(callback)
         if each_new_iter:
-            self.database.add_new_iter_listener(callback_func)
+            self.database.add_new_iter_listener(callback)
 
     def clear_listeners(self) -> None:
         """Clear all the listeners."""
@@ -1495,7 +1503,7 @@ class OptimizationProblem(BaseProblem):
             # Preprocess the constraints
             for icstr, cstr in enumerate(self.constraints):
                 self.nonproc_constraints.append(cstr)
-                p_cstr = self.__preprocess_func(
+                p_cstr = self.__preprocess_function(
                     cstr,
                     is_function_input_normalized=is_function_input_normalized,
                     use_database=use_database,
@@ -1508,7 +1516,7 @@ class OptimizationProblem(BaseProblem):
             # Preprocess the observables
             for iobs, obs in enumerate(self.observables):
                 self.nonproc_observables.append(obs)
-                p_obs = self.__preprocess_func(
+                p_obs = self.__preprocess_function(
                     obs,
                     is_function_input_normalized=is_function_input_normalized,
                     use_database=use_database,
@@ -1521,7 +1529,7 @@ class OptimizationProblem(BaseProblem):
 
             for iobs, obs in enumerate(self.new_iter_observables):
                 self.nonproc_new_iter_observables.append(obs)
-                p_obs = self.__preprocess_func(
+                p_obs = self.__preprocess_function(
                     obs,
                     is_function_input_normalized=False,
                     use_database=use_database,
@@ -1535,7 +1543,7 @@ class OptimizationProblem(BaseProblem):
 
             # Preprocess the objective
             self.nonproc_objective = self.objective
-            self._objective = self.__preprocess_func(
+            self._objective = self.__preprocess_function(
                 self.objective,
                 is_function_input_normalized=is_function_input_normalized,
                 use_database=use_database,
@@ -1560,9 +1568,9 @@ class OptimizationProblem(BaseProblem):
             if self.__eval_obs_jac:
                 new_iter_observable.jac(last_x)
 
-    def __preprocess_func(
+    def __preprocess_function(
         self,
-        func: MDOFunction,
+        function: MDOFunction,
         is_function_input_normalized: bool = True,
         use_database: bool = True,
         round_ints: bool = True,
@@ -1575,7 +1583,7 @@ class OptimizationProblem(BaseProblem):
         not the eventual finite differences or complex step perturbed evaluations.
 
         Args:
-            func: The scaled and derived function to be pre-processed.
+            function: The scaled and derived function to be pre-processed.
             is_function_input_normalized: Whether to consider the function input as
                 normalized and unnormalize it before the evaluation takes place.
             use_database: If ``True``, then the function is wrapped in the database.
@@ -1587,7 +1595,7 @@ class OptimizationProblem(BaseProblem):
         Returns:
             The pre-processed function.
         """
-        self.check_format(func)
+        self.check_format(function)
         # First differentiate it so that the finite differences evaluations
         # are not stored in the database, which would be the case in the other
         # way round
@@ -1595,35 +1603,37 @@ class OptimizationProblem(BaseProblem):
         # exploitation
         # Convert Jacobian in dense format if needed
         if not support_sparse_jacobian:
-            func = DenseJacobianFunction(func)
+            function = DenseJacobianFunction(function)
         if (
-            isinstance(func, MDOLinearFunction)
+            isinstance(function, MDOLinearFunction)
             and not round_ints
             and is_function_input_normalized
         ):
-            func = self.__normalize_linear_function(func)
+            function = self.__normalize_linear_function(function)
         else:
-            func = NormFunction(func, is_function_input_normalized, round_ints, self)
+            function = NormFunction(
+                function, is_function_input_normalized, round_ints, self
+            )
 
         if self.differentiation_method in set(self.ApproximationMode):
-            self.__add_approximated_jac_function(func, is_function_input_normalized)
+            self.__add_approximated_jac_function(function, is_function_input_normalized)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
         if use_database:
-            func = NormDBFunction(
-                func, is_function_input_normalized, is_observable, self
+            function = NormDBFunction(
+                function, is_function_input_normalized, is_observable, self
             )
 
-        return func
+        return function
 
     def __normalize_linear_function(
         self,
-        orig_func: MDOLinearFunction,
+        linear_function: MDOLinearFunction,
     ) -> MDOLinearFunction:
         """Create a linear function using a scaled input vector.
 
         Args:
-            orig_func: The original linear function
+            linear_function: The original linear function.
 
         Returns:
             The scaled linear function.
@@ -1631,7 +1641,7 @@ class OptimizationProblem(BaseProblem):
         Raises:
             TypeError: If the original function is not an :class:`.MDOLinearFunction`.
         """
-        if not isinstance(orig_func, MDOLinearFunction):
+        if not isinstance(linear_function, MDOLinearFunction):
             msg = "Original function must be linear"
             raise TypeError(msg)
         design_space = self.design_space
@@ -1646,30 +1656,30 @@ class OptimizationProblem(BaseProblem):
         shift = where(norm_policies, design_space.get_lower_bounds(), 0.0)
 
         # Build the normalized linear function
-        if isinstance(orig_func.coefficients, sparse_classes):
-            coefficients = deepcopy(orig_func.coefficients)
+        if isinstance(linear_function.coefficients, sparse_classes):
+            coefficients = deepcopy(linear_function.coefficients)
             coefficients.data *= norm_factors[coefficients.indices]
         else:
-            coefficients = multiply(orig_func.coefficients, norm_factors)
+            coefficients = multiply(linear_function.coefficients, norm_factors)
 
-        value_at_zero = orig_func(shift)
+        value_at_zero = linear_function(shift)
         return MDOLinearFunction(
             coefficients,
-            orig_func.name,
-            orig_func.f_type,
-            orig_func.input_names,
+            linear_function.name,
+            linear_function.f_type,
+            linear_function.input_names,
             value_at_zero,
         )
 
     def __add_approximated_jac_function(
         self,
-        func: MDOFunction,
+        function: MDOFunction,
         normalize: bool,
     ) -> None:
         """Define the Jacobian function of an :class:`MDOFunction` as an approximator.
 
         Args:
-            func: The function of interest.
+            function: The function of interest.
             normalize: Whether to unnormalize the input vector of the function
                 before evaluate it.
         """
@@ -1678,14 +1688,14 @@ class OptimizationProblem(BaseProblem):
 
         differentiation_object = GradientApproximatorFactory().create(
             self.differentiation_method,
-            func.evaluate,
+            function.evaluate,
             step=self.fd_step,
             design_space=self.design_space,
             normalize=normalize,
             parallel=self.__parallel_differentiation,
             **self.__parallel_differentiation_options,
         )
-        func.jac = differentiation_object.f_gradient
+        function.jac = differentiation_object.f_gradient
 
     def check(self) -> None:
         """Check if the optimization problem is ready for run.
@@ -1707,11 +1717,11 @@ class OptimizationProblem(BaseProblem):
         Raises:
             ValueError: If a function declared as a constraint has the wrong type.
         """
-        for cstr in self.constraints:
-            self.check_format(cstr)
-            if not cstr.is_constraint():
+        for constraint in self.constraints:
+            self.check_format(constraint)
+            if not constraint.is_constraint():
                 msg = (
-                    f"Constraint type is not eq or ineq !, got {cstr.f_type}"
+                    f"Constraint type is not eq or ineq !, got {constraint.f_type}"
                     " instead "
                 )
                 raise ValueError(msg)
@@ -1765,19 +1775,19 @@ class OptimizationProblem(BaseProblem):
 
     def _satisfied_constraint(
         self,
-        cstr_type: MDOFunction.ConstraintType,
+        constraint_type: MDOFunction.ConstraintType,
         value: ndarray,
     ) -> bool:
         """Determine if an evaluation satisfies a constraint within a given tolerance.
 
         Args:
-            cstr_type: The type of the constraint.
+            constraint_type: The type of the constraint.
             value: The value of the constraint.
 
         Returns:
             Whether a value satisfies a constraint.
         """
-        if cstr_type == MDOFunction.ConstraintType.EQ:
+        if constraint_type == MDOFunction.ConstraintType.EQ:
             return np_all(np_abs(value) <= self.eq_tolerance)
         return np_all(value <= self.ineq_tolerance)
 
