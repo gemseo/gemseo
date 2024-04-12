@@ -81,7 +81,7 @@ def compute_linear_approximation(
         coefficients,
         f"{function.name}_linearized" if name is None else name,
         f_type,
-        input_names if input_names else function.input_names,
+        input_names or function.input_names,
         func_val - coefficients @ x_vect,
     )
 
@@ -150,5 +150,5 @@ def compute_quadratic_approximation(
             (0.5 * hess_dot_vect - gradient).T @ x_vect + function.evaluate(x_vect)
         ),
         name=f"{function.name}_quadratized",
-        input_names=input_names if input_names else function.input_names,
+        input_names=input_names or function.input_names,
     )

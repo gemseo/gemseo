@@ -144,7 +144,7 @@ def test_handle_outputs_errors(
 
     exception = (ValueError("An error."), "stack trace.")
     outputs_path = tmpdir / "outputs.pickl"
-    with open(outputs_path, "wb") as outf:
+    with Path(outputs_path).open("wb") as outf:
         outf.write(pickle.dumps(exception))
 
     with pytest.raises(ValueError, match="An error."):

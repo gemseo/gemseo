@@ -1136,12 +1136,15 @@ def constrained_problem() -> OptimizationProblem:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x.sum(), "f", jac=lambda x: [1, 1])
     problem.add_constraint(
-        MDOFunction(lambda x: x[0], "g", jac=lambda _: [1, 0]), constraint_type="ineq"
+        MDOFunction(operator.itemgetter(0), "g", jac=lambda _: [1, 0]),
+        constraint_type="ineq",
     )
     problem.add_constraint(
         MDOFunction(lambda x: x, "h", jac=lambda _: np.eye(2)), constraint_type="eq"
     )
-    problem.add_observable(MDOFunction(lambda x: x[1], "a", jac=lambda x: [0, 1]))
+    problem.add_observable(
+        MDOFunction(operator.itemgetter(1), "a", jac=lambda x: [0, 1])
+    )
     problem.add_observable(MDOFunction(operator.neg, "b", jac=lambda x: -np.eye(2)))
     return problem
 

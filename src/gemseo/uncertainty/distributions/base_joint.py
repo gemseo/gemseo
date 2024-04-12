@@ -161,7 +161,7 @@ class BaseJointDistribution(BaseDistribution):
 
         return (
             f"{self.__class__.__name__}({pretty_repr(self.marginals, sort=False)}; "
-            f"{self.__copula_name if self.__copula_name else 'IndependentCopula'})"
+            f"{self.__copula_name or 'IndependentCopula'})"
         )
 
     def _set_bounds(

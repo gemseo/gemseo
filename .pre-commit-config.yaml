@@ -65,7 +65,7 @@ repos:
         - ..|   |
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.3.5
+  rev: v0.3.6
   hooks:
     - id: ruff
       args: [
@@ -75,12 +75,12 @@ repos:
       ]
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.3.5
+  rev: v0.3.6
   hooks:
     - id: ruff-format
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v3.21.3
+  rev: v3.22.0
   hooks:
     - id: commitizen
       stages: [commit-msg]

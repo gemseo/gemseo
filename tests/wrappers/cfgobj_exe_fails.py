@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import sys
 from ast import literal_eval
+from pathlib import Path
 
 
 def parse_cfgobj(infile):
@@ -55,7 +56,7 @@ def write_output(out1, out2, outfile, failure=None) -> None:
     out 2 = {:1.18g}
     toto"""
 
-    with open(outfile, "w") as fout:
+    with Path(outfile).open("w") as fout:
         fout.write(sout.format(out1, out2))
 
 

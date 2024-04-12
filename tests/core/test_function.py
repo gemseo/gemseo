@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import re
 from operator import add
+from operator import itemgetter
 from operator import mul
 from operator import sub
 from operator import truediv
@@ -629,7 +630,7 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac) -> None:
 
 @pytest.fixture(scope="module")
 def multidimensional_function() -> MDOFunction:
-    return MDOFunction(lambda x: x[:-1], "f", jac=lambda x: eye(x.size)[:-1, :])
+    return MDOFunction(itemgetter(slice(-1)), "f", jac=lambda x: eye(x.size)[:-1, :])
 
 
 def test_multiplication_by_array(multidimensional_function):

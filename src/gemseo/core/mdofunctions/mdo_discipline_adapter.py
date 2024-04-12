@@ -130,23 +130,23 @@ class MDODisciplineAdapter(LinearCandidateFunction):
             The input dimension.
         """
         if default_inputs and all(inpt in default_inputs for inpt in input_names):
-            return sum([
+            return sum(
                 len(default_inputs[inpt])
                 if isinstance(default_inputs[inpt], ndarray)
                 else 1
                 for inpt in input_names
-            ])
+            )
 
         if len(self.__input_names_to_sizes) > 0:
             return sum(self.__input_names_to_sizes.values())
 
         if all(inpt in discipline.default_inputs for inpt in input_names):
-            return sum([
+            return sum(
                 len(discipline.default_inputs[inpt])
                 if isinstance(discipline.default_inputs[inpt], ndarray)
                 else 1
                 for inpt in input_names
-            ])
+            )
 
         return None
 

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
 
 def execute(infile=None, outfile=None) -> None:
@@ -30,10 +31,10 @@ def execute(infile=None, outfile=None) -> None:
     infile = infile or parser.parse_args().i
     outfile = outfile or parser.parse_args().o
 
-    with open(infile) as input_f:
+    with Path(infile).open() as input_f:
         data = json.load(input_f)
 
-    with open(outfile, "w") as fout:
+    with Path(outfile).open("w") as fout:
         sout = json.dumps({"out": sum(data.values())}, sort_keys=True, indent=4)
         fout.write(sout)
 

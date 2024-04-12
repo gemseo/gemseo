@@ -148,7 +148,7 @@ class MainDiscipline(BaseDiscipline):
 
         output_names_to_values = {
             OBJECTIVE_NAME: array([
-                sum([(__y_i**2).sum() for __y_i in _y_i.values()]) + (x_0**2).sum()
+                sum((__y_i**2).sum() for __y_i in _y_i.values()) + (x_0**2).sum()
             ])
         }
         for c_i_name, __y_i, t_i in zip(self.__c_i_names, _y_i.values(), self.__t_i):

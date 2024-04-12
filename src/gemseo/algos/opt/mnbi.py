@@ -332,11 +332,9 @@ class MNBI(OptimizationLibrary):
         Returns:
             The mNBI library options with their values.
         """
-        sub_optim_algo_options = (
-            sub_optim_algo_options if sub_optim_algo_options else {}
-        )
-        sub_optim_max_iter = sub_optim_max_iter if sub_optim_max_iter else max_iter
-        doe_algo_options = doe_algo_options if doe_algo_options else {}
+        sub_optim_algo_options = sub_optim_algo_options or {}
+        sub_optim_max_iter = sub_optim_max_iter or max_iter
+        doe_algo_options = doe_algo_options or {}
         return self._process_options(
             max_iter=max_iter,
             sub_optim_algo=sub_optim_algo,
