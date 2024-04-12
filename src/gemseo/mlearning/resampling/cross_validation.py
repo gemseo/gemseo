@@ -125,7 +125,7 @@ class CrossValidation(BaseResampler):
         stack_predictions: bool,
     ) -> ndarray | list[ndarray]:
         if stack_predictions:
-            n_predictions = sum([len(prediction) for prediction in predictions])
+            n_predictions = sum(len(prediction) for prediction in predictions)
             predictions_0 = predictions[0]
             if predictions_0.ndim == 1:
                 final_predictions = empty((n_predictions,))

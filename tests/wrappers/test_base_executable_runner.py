@@ -59,7 +59,7 @@ def test_change_working_directory(tmp_wd) -> None:
 def test_attached_files(tmp_wd) -> None:
     """Test to copy attached files."""
     # Create empty files
-    with open("toto.txt", "w") as f, open("tata.txt", "w") as g:
+    with Path("toto.txt").open("w") as f, Path("tata.txt").open("w") as g:
         f.write("toto")
         g.write("tata")
 

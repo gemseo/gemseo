@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 from ast import literal_eval
+from pathlib import Path
 
 
 def parse_cfgobj(infile):
@@ -46,7 +47,7 @@ def write_output(out1, out2, outfile) -> None:
 
 [ "section 1" ]
     out 2 = {:1.18g}"""
-    with open(outfile, "w") as fout:
+    with Path(outfile).open("w") as fout:
         fout.write(sout.format(out1, out2))
 
 

@@ -286,7 +286,7 @@ class MDOFunction(Serializable):
         super().__init__()
 
         # Initialize attributes
-        self.__original_name = original_name if original_name else name
+        self.__original_name = original_name or name
         self._f_type = ""
         self._func = NotImplementedCallable()
         self._jac = NotImplementedCallable()

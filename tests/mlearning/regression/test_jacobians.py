@@ -27,6 +27,7 @@ parameters.
 
 from __future__ import annotations
 
+from operator import itemgetter
 from typing import TYPE_CHECKING
 
 import pytest
@@ -130,14 +131,10 @@ TRANSFORMERS = (
 )
 
 
-def _get_dataset_name(dataset_description):
-    return dataset_description[0]
-
-
 @pytest.fixture(
     scope="module",
     params=DATASETS_DESCRIPTIONS,
-    ids=map(_get_dataset_name, DATASETS_DESCRIPTIONS),
+    ids=map(itemgetter(0), DATASETS_DESCRIPTIONS),
 )
 def dataset(request) -> Dataset:
     """Return one dataset by one at runtime from DATASETS_DESCRIPTIONS."""

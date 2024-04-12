@@ -290,7 +290,7 @@ class AlgoOptionsDoc:
             user_guide_anchor=self.user_guide_anchor,
         )
         output_file_path = Path(GEN_OPTS_PATH).parent / output_file_name
-        with open(output_file_path, "w", encoding="utf-8") as outf:
+        with Path(output_file_path).open("w", encoding="utf-8") as outf:
             outf.write(doc)
 
     @staticmethod

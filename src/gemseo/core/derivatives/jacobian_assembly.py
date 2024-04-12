@@ -831,9 +831,7 @@ class JacobianAssembly:
             for which the order is given by the `couplings` argument.
             Whether the linear solver converged.
         """
-        residual_names = (
-            resolved_residual_names if resolved_residual_names else couplings
-        )
+        residual_names = resolved_residual_names or couplings
 
         self.compute_sizes(residual_names, couplings, couplings)
 

@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+import operator
 import re
 import warnings
 from pathlib import Path
@@ -654,7 +655,7 @@ def test_normalize_vect_with_integer(design_space) -> None:
 @pytest.mark.parametrize(
     ("vect", "get_item"),
     [
-        (ones(1) * 0, lambda x: x[0]),
+        (ones(1) * 0, operator.itemgetter(0)),
         (array([[0.0], [0.0]]), lambda x: x[0][0]),
         (array([[0.0], [0.0]]), lambda x: x[1][0]),
     ],
