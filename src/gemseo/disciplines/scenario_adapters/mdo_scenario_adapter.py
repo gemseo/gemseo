@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.database import Database
     from gemseo.core.execution_sequence import LoopExecSequence
-    from gemseo.core.scenario import Scenario
+    from gemseo.scenarios.scenario import Scenario
 
 
 class MDOScenarioAdapter(MDODiscipline):

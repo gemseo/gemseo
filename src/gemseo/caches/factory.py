@@ -21,14 +21,14 @@
 
 from __future__ import annotations
 
+from gemseo.caches.base_cache import BaseCache
 from gemseo.core.base_factory import BaseFactory
-from gemseo.core.cache import AbstractCache
 
 
-class CacheFactory(BaseFactory[AbstractCache]):
+class CacheFactory(BaseFactory[BaseCache]):
     """A factory of caches."""
 
-    _CLASS = AbstractCache
+    _CLASS = BaseCache
     _MODULE_NAMES = ("gemseo.caches",)
 
     @property

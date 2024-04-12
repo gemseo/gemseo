@@ -62,9 +62,9 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.scenario import ScenarioInputDataType
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.core.ml_algo import BaseMLAlgo
+    from gemseo.scenarios.scenario import ScenarioInputDataType
 
 
 class MLAlgoSelection:

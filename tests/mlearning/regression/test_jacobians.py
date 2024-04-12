@@ -35,7 +35,6 @@ from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
@@ -43,6 +42,7 @@ from gemseo.mlearning.regression.rbf import RBFRegressor
 from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:

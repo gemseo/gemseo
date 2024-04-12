@@ -57,9 +57,9 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
         the discipline and its inputs, execute it and serialize the outputs.
         Finally, the deserialized outputs are returned by the wrapper.
 
-        All process classes :class:`~gemseo.core.mdo_scenario.MDOScenario`,
-        or :class:`~gemseo.mda.mda.BaseMDA`, inherit from
-        :class:`~gemseo.core.discipline.MDODiscipline` so can be sent to HPCs this way.
+        All process classes :class:`.MDOScenario`,
+        or :class:`.BaseMDA`, inherit from
+        :class:`.MDODiscipline` so can be sent to HPCs this way.
 
         The job scheduler template script can be provided directly or the predefined
         templates file names in gemseo.wrappers.job_schedulers.template can be used.

@@ -29,7 +29,7 @@ from numpy import ones
 from gemseo import configure_logger
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 configure_logger()
 

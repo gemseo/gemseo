@@ -78,8 +78,8 @@ if TYPE_CHECKING:
     from numpy._typing import NDArray
 
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.scenario import Scenario
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.scenarios.scenario import Scenario
 
 LOGGER = logging.getLogger(__name__)
 

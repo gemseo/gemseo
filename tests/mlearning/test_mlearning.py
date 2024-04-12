@@ -35,7 +35,6 @@ from numpy import ndarray
 from gemseo import create_dataset
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import create_classification_model
 from gemseo.mlearning import create_clustering_model
@@ -56,6 +55,7 @@ from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset

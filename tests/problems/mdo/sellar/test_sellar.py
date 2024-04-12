@@ -23,7 +23,6 @@ import os
 import numpy as np
 import pytest
 
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.mdo.sellar.sellar import C_1
@@ -37,6 +36,7 @@ from gemseo.problems.mdo.sellar.sellar import Sellar1
 from gemseo.problems.mdo.sellar.sellar import Sellar2
 from gemseo.problems.mdo.sellar.sellar import SellarSystem
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 @pytest.fixture()

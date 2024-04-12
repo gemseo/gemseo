@@ -25,7 +25,7 @@ from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.core.scenario import Scenario
+    from gemseo.scenarios.scenario import Scenario
 
 
 class BiLevelScenarioResult(ScenarioResult):

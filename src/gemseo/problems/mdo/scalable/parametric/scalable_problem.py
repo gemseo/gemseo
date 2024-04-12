@@ -55,7 +55,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from gemseo.core.scenario import Scenario
+    from gemseo.scenarios.scenario import Scenario
 
 
 class ScalableProblem(_ScalableProblem):

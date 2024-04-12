@@ -68,7 +68,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from gemseo.core.cache import AbstractCache
+    from gemseo.caches.base_cache import BaseCache
     from gemseo.core.data_processor import DataProcessor
     from gemseo.core.derivatives.jacobian_operator import JacobianOperator
     from gemseo.core.execution_sequence import AtomicExecSequence
@@ -198,7 +198,7 @@ class MDODiscipline(Serializable):
     For each output define one or many inputs that in linear relationship with it.
     """
 
-    cache: AbstractCache | None
+    cache: BaseCache | None
     """The cache containing one or several executions of the discipline according to the
     cache policy."""
 
@@ -634,7 +634,7 @@ class MDODiscipline(Serializable):
         self,
         class_name: str,
         **kwargs: bool | float | str,
-    ) -> AbstractCache:
+    ) -> BaseCache:
         """Create a cache object.
 
         Args:

@@ -28,9 +28,9 @@ from typing import Any
 from typing import Literal
 from typing import overload
 
-from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
-from gemseo.core.cache import AbstractFullCache
-from gemseo.core.cache import CacheEntry
+from gemseo.caches._hdf5_file_singleton import HDF5FileSingleton
+from gemseo.caches.base_full_cache import BaseFullCache
+from gemseo.caches.cache_entry import CacheEntry
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class HDF5Cache(AbstractFullCache):
+class HDF5Cache(BaseFullCache):
     """Cache using disk HDF5 file to store the data."""
 
     def __init__(
@@ -141,7 +141,7 @@ class HDF5Cache(AbstractFullCache):
     def _has_group(
         self,
         index: int,
-        group: AbstractFullCache.Group,
+        group: BaseFullCache.Group,
     ) -> bool:
         return self.__hdf_file.has_group(index, group, self.__hdf_node_path)
 
@@ -154,20 +154,20 @@ class HDF5Cache(AbstractFullCache):
     def _read_data(
         self,
         index: int,
-        group: Literal[AbstractFullCache.Group.INPUTS, AbstractFullCache.Group.OUTPUTS],
+        group: Literal[BaseFullCache.Group.INPUTS, BaseFullCache.Group.OUTPUTS],
     ) -> DataMapping: ...
 
     @overload
     def _read_data(
         self,
         index: int,
-        group: Literal[AbstractFullCache.Group.JACOBIAN],
+        group: Literal[BaseFullCache.Group.JACOBIAN],
     ) -> JacobianData: ...
 
     def _read_data(
         self,
         index: int,
-        group: AbstractFullCache.Group,
+        group: BaseFullCache.Group,
     ) -> DataMapping | JacobianData:
         data = self.__hdf_file.read_data(index, group, self.__hdf_node_path)
         if group == self.Group.JACOBIAN and data:
@@ -177,7 +177,7 @@ class HDF5Cache(AbstractFullCache):
     def _write_data(
         self,
         values: DataMapping,
-        group: AbstractFullCache.Group,
+        group: BaseFullCache.Group,
         index: int,
     ) -> None:
         self.__hdf_file.write_data(

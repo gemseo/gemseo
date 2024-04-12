@@ -28,12 +28,12 @@ from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
 
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.mdo.propane.propane import PropaneComb1
 from gemseo.problems.mdo.propane.propane import PropaneComb2
 from gemseo.problems.mdo.propane.propane import PropaneComb3
 from gemseo.problems.mdo.propane.propane import PropaneReaction
 from gemseo.problems.mdo.propane.propane import get_design_space
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 class TestPropaneScenario(unittest.TestCase):

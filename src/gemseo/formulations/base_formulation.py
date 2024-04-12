@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.core.base_factory import BaseFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
@@ -40,7 +39,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.execution_sequence import ExecutionSequence
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.core.scenario import Scenario
+    from gemseo.scenarios.scenario import Scenario
 
 from numpy import arange
 from numpy import copy
@@ -686,41 +685,3 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             Either ``None`` or the sub-options grammar.
         """
-
-
-class FormulationFactory(BaseFactory):
-    """A factory of formulations."""
-
-    def create(
-        self,
-        formulation_name: str,
-        disciplines: Sequence[MDODiscipline],
-        objective_name: str,
-        design_space: DesignSpace,
-        maximize_objective: bool = False,
-        **options: Any,
-    ) -> BaseFormulation:
-        """Create a formulation.
-
-        Args:
-            formulation_name: The name of a class implementing a formulation.
-            disciplines: The disciplines.
-            objective_name: The name(s) of the discipline output(s) used as objective.
-                If multiple names are passed, the objective will be a vector.
-            design_space: The design space.
-            maximize_objective: Whether to maximize the objective.
-            **options: The options for the creation of the formulation.
-        """
-        return super().create(
-            formulation_name,
-            disciplines=disciplines,
-            design_space=design_space,
-            objective_name=objective_name,
-            maximize_objective=maximize_objective,
-            **options,
-        )
-
-    @property
-    def formulations(self) -> list[str]:
-        """The available formulations."""
-        return self.class_names

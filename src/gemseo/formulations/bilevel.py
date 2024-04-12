@@ -30,9 +30,9 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.core.chain import MDOWarmStartedChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.formulations.mdo_formulation import MDOFormulation
 from gemseo.mda.factory import MDAFactory
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
@@ -45,8 +45,8 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.execution_sequence import ExecutionSequence
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.core.scenario import Scenario
     from gemseo.mda.base_mda import BaseMDA
+    from gemseo.scenarios.scenario import Scenario
 
 LOGGER = logging.getLogger(__name__)
 

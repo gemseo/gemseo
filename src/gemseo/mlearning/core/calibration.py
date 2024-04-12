@@ -50,22 +50,22 @@ from numpy import ndarray
 
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
 from gemseo.mlearning.quality_measures.quality_measure import MeasureOptionsType
+from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.scenario import Scenario
-    from gemseo.core.scenario import ScenarioInputDataType
     from gemseo.datasets.dataset import Dataset
+    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.scenario import ScenarioInputDataType
 
 
 class MLAlgoAssessor(MDODiscipline):

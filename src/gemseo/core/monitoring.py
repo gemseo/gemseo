@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 
 if TYPE_CHECKING:
-    from gemseo.core.scenario import Scenario
+    from gemseo.scenarios.scenario import Scenario
 
 
 class Monitoring(metaclass=SingleInstancePerAttributeId):

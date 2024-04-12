@@ -32,13 +32,13 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import Ridge
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset

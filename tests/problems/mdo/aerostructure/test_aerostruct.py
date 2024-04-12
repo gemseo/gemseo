@@ -23,7 +23,6 @@ from math import exp
 
 import numpy as np
 
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.mdo.aerostructure.aerostructure import Aerodynamics
@@ -33,6 +32,7 @@ from gemseo.problems.mdo.aerostructure.aerostructure import get_inputs
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 class TestAerostructure(unittest.TestCase):

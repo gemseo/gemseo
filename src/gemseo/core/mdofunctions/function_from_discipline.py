@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.core.base_formulation import BaseFormulation
     from gemseo.core.discipline import MDODiscipline
+    from gemseo.formulations.base_formulation import BaseFormulation
     from gemseo.typing import NumberArray
 
 

@@ -37,7 +37,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.core.formulation import MDOFormulation
+    from gemseo.formulations.mdo_formulation import MDOFormulation
     from gemseo.typing import NumberArray
 
 

@@ -23,9 +23,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.cache import DATA_COMPARATOR
-from gemseo.core.cache import AbstractCache
-from gemseo.core.cache import CacheEntry
+from gemseo.caches.base_cache import DATA_COMPARATOR
+from gemseo.caches.base_cache import BaseCache
+from gemseo.caches.cache_entry import CacheEntry
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from gemseo.typing import JacobianData
 
 
-class SimpleCache(AbstractCache):
+class SimpleCache(BaseCache):
     """Dictionary-based cache storing a unique entry."""
 
     __inputs: DataMapping

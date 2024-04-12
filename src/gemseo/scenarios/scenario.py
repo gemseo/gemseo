@@ -51,8 +51,8 @@ from gemseo.utils.string_tools import pretty_str
 if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_result import OptimizationResult
-    from gemseo.core.formulation import MDOFormulation
     from gemseo.datasets.dataset import Dataset
+    from gemseo.formulations.mdo_formulation import MDOFormulation
     from gemseo.post.factory import PostFactory
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.post.opt_post_processor import OptPostProcessorOptionType

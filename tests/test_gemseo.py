@@ -85,10 +85,8 @@ from gemseo import write_design_space
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.scenario import Scenario
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base_mda import BaseMDA
@@ -97,11 +95,13 @@ from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import MultiLineStreamHandler
 
 if TYPE_CHECKING:
-    from gemseo.core.mdo_scenario import MDOScenario
+    from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 class Observer:

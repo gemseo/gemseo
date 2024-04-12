@@ -24,8 +24,8 @@ block = Block(
         "for a set of disciplines and a given objective."
     ),
     features=[
-        WebLink("DOE scenario", url="_modules/gemseo.core.doe_scenario.html"),
-        WebLink("MDO scenario", url="_modules/gemseo.core.mdo_scenario.html"),
+        WebLink("DOE scenario", url="_modules/gemseo.scenarios.doe_scenario.html"),
+        WebLink("MDO scenario", url="_modules/gemseo.scenarios.mdo_scenario.html"),
     ],
     button_info_url="scenario.html",
     button_examples_url="examples/scenario/index.html",

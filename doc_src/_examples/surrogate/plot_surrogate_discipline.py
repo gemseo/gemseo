@@ -73,7 +73,7 @@ design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
 # Create the learning set
 # -----------------------
 # We can build a learning set by means of a
-# :class:`~gemseo.core.doe_scenario.DOEScenario` with a full factorial design of
+# :class:`~gemseo.scenarios.doe_scenario.DOEScenario` with a full factorial design of
 # experiments. The number of samples can be equal to 9 for example.
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"

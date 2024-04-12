@@ -27,7 +27,7 @@ Store observables
 # ------------
 # In this example,
 # we will learn how to store the history of state variables using the
-# :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
+# :meth:`~gemseo.scenarios.scenario.Scenario.add_observable` method.
 # This is useful in situations where we wish to access, post-process,
 # or save the values of discipline outputs that are not design variables,
 # constraints or objective functions.
@@ -102,7 +102,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 # default. In order to be able to recover the data from the state variables,
 # y1 and y2, we have to add them as observables. All we have to do is enter
 # the variable name as a string to the
-# :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
+# :meth:`~gemseo.scenarios.scenario.Scenario.add_observable` method.
 # If more than one output name is provided (as a list of strings),
 # the observable function returns a concatenated array of the output values.
 scenario.add_observable("y_1")

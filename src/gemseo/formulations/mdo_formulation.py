@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from gemseo.core.base_formulation import BaseFormulation
+from gemseo.formulations.base_formulation import BaseFormulation
 
 
 class MDOFormulation(BaseFormulation):

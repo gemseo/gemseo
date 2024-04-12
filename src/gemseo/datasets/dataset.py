@@ -29,9 +29,9 @@ or from a NumPy array (:meth:`~.Dataset.from_array`),
 and can be enriched from a group of variables (:meth:`~.Dataset.add_group`)
 or from a single variable (:meth:`~.Dataset.add_variable`).
 
-An :class:`.AbstractFullCache` or an :class:`.OptimizationProblem`
+An :class:`.BaseFullCache` or an :class:`.OptimizationProblem`
 can also be exported to a :class:`.Dataset`
-using the methods :meth:`.AbstractFullCache.to_dataset`
+using the methods :meth:`.BaseFullCache.to_dataset`
 and :meth:`.OptimizationProblem.to_dataset`.
 """
 

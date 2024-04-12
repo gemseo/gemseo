@@ -23,11 +23,11 @@ from pathlib import Path
 import pytest
 
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.factory import PostFactory
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import image_comparison
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"

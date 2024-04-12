@@ -27,7 +27,7 @@ from typing import Literal
 from typing import cast
 from typing import overload
 
-from gemseo.core.cache import AbstractFullCache
+from gemseo.caches.base_full_cache import BaseFullCache
 from gemseo.typing import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
@@ -40,12 +40,12 @@ if TYPE_CHECKING:
     from gemseo.typing import DataMapping
 
 
-class MemoryFullCache(AbstractFullCache):
+class MemoryFullCache(BaseFullCache):
     """Cache using memory to cache all the data."""
 
     __data: (
-        DictProxy[int, dict[AbstractFullCache.Group, DataMapping | JacobianData]]
-        | dict[int, dict[AbstractFullCache.Group, DataMapping | JacobianData]]
+        DictProxy[int, dict[BaseFullCache.Group, DataMapping | JacobianData]]
+        | dict[int, dict[BaseFullCache.Group, DataMapping | JacobianData]]
     )
 
     def __init__(
@@ -92,7 +92,7 @@ class MemoryFullCache(AbstractFullCache):
     def _has_group(
         self,
         index: int,
-        group: AbstractFullCache.Group,
+        group: BaseFullCache.Group,
     ) -> bool:
         return group in self.__data[index]
 
@@ -105,20 +105,20 @@ class MemoryFullCache(AbstractFullCache):
     def _read_data(
         self,
         index: int,
-        group: Literal[AbstractFullCache.Group.INPUTS, AbstractFullCache.Group.OUTPUTS],
+        group: Literal[BaseFullCache.Group.INPUTS, BaseFullCache.Group.OUTPUTS],
     ) -> DataMapping: ...
 
     @overload
     def _read_data(
         self,
         index: int,
-        group: Literal[AbstractFullCache.Group.JACOBIAN],
+        group: Literal[BaseFullCache.Group.JACOBIAN],
     ) -> JacobianData: ...
 
     def _read_data(
         self,
         index: int,
-        group: AbstractFullCache.Group,
+        group: BaseFullCache.Group,
     ) -> DataMapping | JacobianData:
         data = self.__data[index].get(group, {})
         if group == self.Group.JACOBIAN and data:
@@ -130,7 +130,7 @@ class MemoryFullCache(AbstractFullCache):
     def _write_data(
         self,
         values: DataMapping,
-        group: AbstractFullCache.Group,
+        group: BaseFullCache.Group,
         index: int,
     ) -> None:
         data = self.__data[index]
