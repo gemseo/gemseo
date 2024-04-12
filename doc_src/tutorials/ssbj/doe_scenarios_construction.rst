@@ -17,9 +17,9 @@ Tutorial: How to carry out a trade-off study
 
 This tutorial describes how to carry out a trade-off study by means of |g|. For that, we consider the :ref:`Sobieski problem <sobieski_problem>`.
 
-Trade-off studies are implemented in the class :class:`~gemseo.core.doe_scenario.DOEScenario`.
+Trade-off studies are implemented in the class :class:`~gemseo.scenarios.doe_scenario.DOEScenario`.
 
-All the post-processing tools presented in :ref:`post_processing` for :class:`~gemseo.core.mdo_scenario.MDOScenario`
+All the post-processing tools presented in :ref:`post_processing` for :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`
 remain valid for trade-off studies, as well as the additional tools presented below.
 
 Similarities between trade-off studies and optimization problems
@@ -29,7 +29,7 @@ Trade-off studies are supported by capabilities of :term:`Design Of Experiments 
 when comparing an optimization scenario and a trade-off scenario, similarities appear:
 
 +------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Feature                            | MDO Scenario (implemented in :class:`~gemseo.core.mdo_scenario.MDOScenario`) | Trade-off study (implemented in :class:`~gemseo.core.doe_scenario.DOEScenario`)           |
+| Feature                            | MDO Scenario (implemented in :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`) | Trade-off study (implemented in :class:`~gemseo.scenarios.doe_scenario.DOEScenario`)           |
 +====================================+==============================================================================+===========================================================================================+
 | Sample evaluation                  | The sample :math:`i+1` requires the evaluation of the sample :math:`i`.      | The sequence is defined *a priori* by a :term:`DOE`; an iteration corresponds to a sample |
 +------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
@@ -80,7 +80,7 @@ We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Then, by means of the API function :func:`.read_design_space`,
-we load the :class:`~gemseo.algos.design_space.DesignSpace`, like for :class:`~gemseo.core.mdo_scenario.MDOScenario`.
+we load the :class:`~gemseo.algos.design_space.DesignSpace`, like for :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`.
 
 .. code::
 
@@ -95,7 +95,7 @@ we load the :class:`~gemseo.algos.design_space.DesignSpace`, like for :class:`~g
 Initialization
 ^^^^^^^^^^^^^^
 
-The :ref:`MDF formulation <mdf_formulation>` is selected to build the :class:`~gemseo.core.doe_scenario.DOEScenario`, like for :class:`~gemseo.core.mdo_scenario.MDOScenario`.
+The :ref:`MDF formulation <mdf_formulation>` is selected to build the :class:`~gemseo.scenarios.doe_scenario.DOEScenario`, like for :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`.
 
 .. code::
 
@@ -129,7 +129,7 @@ with identical inputs, and directly returns the buffered outputs.
 Optimization options
 ^^^^^^^^^^^^^^^^^^^^
 
-The DOE algorithm options are passed as inputs of the :class:`~gemseo.core.mdo_scenario.MDOScenario`.
+The DOE algorithm options are passed as inputs of the :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`.
 The number of samples is specified, as well as the "criterion" option which is the center option of pyDOE centering the points within the sampling intervals.
 The sensitivity of the outputs with respect to the design variables may be computed,
 thanks to the coupled derivatives capabilities, to this aim the 'eval\_jac' option is set to True.

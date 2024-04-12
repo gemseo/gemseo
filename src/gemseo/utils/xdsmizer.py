@@ -44,16 +44,16 @@ from typing import Any
 from typing import Union
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.execution_sequence import AtomicExecSequence
 from gemseo.core.execution_sequence import CompositeExecSequence
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.execution_sequence import ParallelExecSequence
 from gemseo.core.execution_sequence import SerialExecSequence
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.monitoring import Monitoring
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.locks import synchronized
 from gemseo.utils.show_utils import generate_xdsm_html
 from gemseo.utils.xdsm import XDSM
@@ -62,7 +62,7 @@ from gemseo.utils.xdsm_to_pdf import xdsm_data_to_pdf
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from gemseo.core.scenario import Scenario
+    from gemseo.scenarios.scenario import Scenario
 
 LOGGER = logging.getLogger(__name__)
 

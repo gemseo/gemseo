@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.mdo_scenario import MDOScenario
+    from gemseo.scenarios.mdo_scenario import MDOScenario
     from gemseo.utils.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)

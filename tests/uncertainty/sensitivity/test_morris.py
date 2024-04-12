@@ -30,9 +30,9 @@ from numpy.testing import assert_almost_equal
 
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
 from gemseo.utils.testing.helpers import image_comparison

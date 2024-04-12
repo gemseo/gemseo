@@ -52,13 +52,13 @@ from numpy import newaxis
 from numpy import vstack
 from pandas import MultiIndex
 
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import save_show_figure

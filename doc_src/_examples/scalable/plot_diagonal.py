@@ -50,7 +50,7 @@ configure_logger()
 # %%
 # Learning dataset
 # ----------------
-# The first step is to build an :class:`.AbstractFullCache` dataset
+# The first step is to build an :class:`.BaseFullCache` dataset
 # from a :class:`.DiagonalDOE`.
 
 # %%

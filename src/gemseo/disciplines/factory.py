@@ -43,6 +43,7 @@ class MDODisciplineFactory(BaseFactory):
         "gemseo.problems",
         "gemseo.core",
         "gemseo.disciplines",
+        "gemseo.scenarios",
         "gemseo.wrappers",
     )
 

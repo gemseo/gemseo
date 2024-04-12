@@ -59,9 +59,9 @@ Export to another format
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The :attr:`~.MDODiscipline.cache` can be converted to a :class:`.Dataset` for post-processing purposes
-using its method :meth:`~.AbstractCache.to_dataset`.
+using its method :meth:`~.BaseCache.to_dataset`.
 It can also be saved into an XML file to be read by `ggobi <http://ggobi.org/>`__
-using its method :meth:`~.AbstractFullCache.to_ggobi`.
+using its method :meth:`~.BaseFullCache.to_ggobi`.
 
 .. note::
 
@@ -92,7 +92,7 @@ by passing as first argument the name of the cache class, e.g. ``"MemoryFullCach
 
 .. note::
 
-    The types of cache can be extended by subclassing :class:`.AbstractFullCache` or :class:`.MemoryFullCache`.
+    The types of cache can be extended by subclassing :class:`.BaseFullCache` or :class:`.MemoryFullCache`.
     :meth:`~.MDODiscipline.set_cache_policy` will find the new types automatically
     because it is based on a :class:`.CacheFactory`.
 

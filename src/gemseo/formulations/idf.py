@@ -34,9 +34,9 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
 from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
+from gemseo.formulations.mdo_formulation import MDOFormulation
 from gemseo.mda.mda_chain import MDAChain
 
 if TYPE_CHECKING:

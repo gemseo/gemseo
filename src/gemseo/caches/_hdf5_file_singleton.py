@@ -37,9 +37,9 @@ from numpy.core.multiarray import array
 from scipy.sparse import csr_array
 from strenum import StrEnum
 
-from gemseo.core.cache import AbstractCache
-from gemseo.core.cache import hash_data_dict
-from gemseo.core.cache import to_real
+from gemseo.caches.base_cache import BaseCache
+from gemseo.caches.utils import hash_data
+from gemseo.caches.utils import to_real
 from gemseo.utils.compatibility.scipy import SparseArrayType
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
@@ -53,7 +53,6 @@ if TYPE_CHECKING:
     from gemseo.typing import IntegerArray
 
 
-# TODO: API: make this module and class protected.
 class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     """Singleton to access an HDF file.
 
@@ -109,7 +108,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     def write_data(
         self,
         data: DataMapping,
-        group: AbstractCache.Group,
+        group: BaseCache.Group,
         index: int,
         hdf_node_path: str,
     ) -> None:
@@ -135,7 +134,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             try:
                 # Write hash if needed
                 if entry.get(self.HASH_TAG) is None:
-                    data_hash = array([hash_data_dict(data)], dtype="bytes")
+                    data_hash = array([hash_data(data)], dtype="bytes")
                     entry.create_dataset(self.HASH_TAG, data=data_hash)
 
                 for name, value in data.items():
@@ -188,7 +187,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     def read_data(
         self,
         index: int,
-        group: AbstractCache.Group,
+        group: BaseCache.Group,
         hdf_node_path: str,
     ) -> DataMapping:
         """Read the data for given index and group.
@@ -245,7 +244,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     def _has_group(
         self,
         index: int,
-        group: AbstractCache.Group,
+        group: BaseCache.Group,
         hdf_node_path: str,
     ) -> bool:
         """Return whether a group exists.
@@ -268,7 +267,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     def has_group(
         self,
         index: int,
-        group: AbstractCache.Group,
+        group: BaseCache.Group,
         hdf_node_path: str,
     ) -> bool:
         """Check if an entry has data corresponding to a given group.
@@ -406,9 +405,9 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             for value in h5file.values():
                 if isinstance(value, h5py.Group):
                     for sample_value in value.values():
-                        data = sample_value[AbstractCache.Group.INPUTS]
+                        data = sample_value[BaseCache.Group.INPUTS]
                         data = {key: array(val) for key, val in data.items()}
-                        data_hash = array([hash_data_dict(data)], dtype="bytes")
+                        data_hash = array([hash_data(data)], dtype="bytes")
                         sample_value[cls.HASH_TAG][0] = data_hash
 
     @contextmanager

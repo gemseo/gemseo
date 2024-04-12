@@ -24,7 +24,6 @@ from numpy import ndarray
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.mdo.sobieski.design_space import create_design_space
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -34,6 +33,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.mdo.sobieski.disciplines import (
     create_disciplines_with_physical_naming,
 )
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline

@@ -206,7 +206,7 @@ scenario.set_differentiation_method()
 # The formulation has a powerful feature to automatically dispatch the constraints
 # (:math:`g\_1, g\_2, g\_3`) and plug them to the optimizers depending on
 # the formulation. To do that, we use the method
-# :meth:`~gemseo.core.scenario.Scenario.add_constraint`:
+# :meth:`~gemseo.scenarios.scenario.Scenario.add_constraint`:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 # %%

@@ -29,10 +29,10 @@ from numpy import array
 from scipy.interpolate.rbf import Rbf
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.rbf import RBFRegressor
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset

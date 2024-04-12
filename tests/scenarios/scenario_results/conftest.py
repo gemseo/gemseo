@@ -18,8 +18,8 @@ import pytest
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 
 @pytest.fixture()

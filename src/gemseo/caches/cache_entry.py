@@ -12,20 +12,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""A cache entry."""
+
 from __future__ import annotations
 
-from gemseo.core.base_factory import BaseFactory
-from gemseo.formulations.base_formulation import BaseFormulation
+from typing import TYPE_CHECKING
+from typing import NamedTuple
+
+if TYPE_CHECKING:
+    from gemseo.typing import DataMapping
+    from gemseo.typing import JacobianData
 
 
-class NotMDOFormulation(BaseFormulation):
-    def get_expected_workflow(self) -> None:
-        return
+class CacheEntry(NamedTuple):
+    """An entry of a cache."""
 
-    def get_expected_dataflow(self) -> None:
-        return
+    # TODO: API: remove this since a mapping's value does not need to return its key.
+    inputs: DataMapping
+    """The input data."""
 
+    outputs: DataMapping
+    """The output data."""
 
-class NotMDOFormulationFactory(BaseFactory):
-    _CLASS = NotMDOFormulation
-    _MODULE_NAMES = ("tests.formulations.not_mdo_formulations",)
+    jacobian: JacobianData
+    """The Jacobian data."""

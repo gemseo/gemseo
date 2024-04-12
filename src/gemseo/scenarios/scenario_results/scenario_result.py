@@ -29,8 +29,8 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.algos.opt_result import OptimizationResult
-    from gemseo.core.scenario import Scenario
     from gemseo.post.opt_post_processor import OptPostProcessor
+    from gemseo.scenarios.scenario import Scenario
 
 
 class ScenarioResult:

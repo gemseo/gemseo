@@ -29,7 +29,7 @@ from typing import Any
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.scenario import Scenario
+from gemseo.scenarios.scenario import Scenario
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

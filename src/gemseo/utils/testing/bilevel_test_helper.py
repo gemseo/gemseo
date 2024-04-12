@@ -19,12 +19,12 @@ from __future__ import annotations
 from typing import Any
 from typing import Callable
 
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 def create_sobieski_bilevel_scenario(

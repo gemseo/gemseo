@@ -23,7 +23,6 @@ import os
 import pytest
 
 from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.problems.mdo.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.mdo.scalable.data_driven.study.process import ScalabilityStudy
 from gemseo.problems.mdo.sellar.sellar import OBJ
@@ -31,6 +30,7 @@ from gemseo.problems.mdo.sellar.sellar import X_LOCAL
 from gemseo.problems.mdo.sellar.sellar import X_SHARED
 from gemseo.problems.mdo.sellar.sellar import Y_1
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 
 def mdf_cost(varsizes, n_c, n_lc, n_tl_c, n_tl_lc):

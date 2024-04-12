@@ -62,7 +62,7 @@ from gemseo.core.discipline import MDODiscipline
 if TYPE_CHECKING:
     from gemseo.algos.database import DatabaseValueType
     from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.doe_scenario import DOEScenario
+    from gemseo.scenarios.doe_scenario import DOEScenario
 
 
 class _OATSensitivity(MDODiscipline):

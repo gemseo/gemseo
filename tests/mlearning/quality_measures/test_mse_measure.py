@@ -27,13 +27,13 @@ import pytest
 from numpy import allclose
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.core.ml_algo import BaseMLAlgo
 from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
 from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:

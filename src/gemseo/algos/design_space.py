@@ -84,7 +84,7 @@ from numpy import zeros_like
 from strenum import StrEnum
 
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.cache import hash_data_dict
+from gemseo.caches.utils import hash_data
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.compatibility.scipy import ArrayType
 from gemseo.utils.compatibility.scipy import sparse_classes
@@ -2380,8 +2380,8 @@ class DesignSpace(collections.abc.MutableMapping):
             if key not in other:
                 return False
 
-            hash1 = hash_data_dict(flatten_nested_dict(val._asdict()))
-            hash2 = hash_data_dict(flatten_nested_dict(other[key]._asdict()))
+            hash1 = hash_data(flatten_nested_dict(val._asdict()))
+            hash2 = hash_data(flatten_nested_dict(other[key]._asdict()))
             if hash1 != hash2:
                 return False
 

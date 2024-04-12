@@ -26,7 +26,7 @@ from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.disciplines.splitter import Splitter
 
 if TYPE_CHECKING:
-    from gemseo.core.scenario import Scenario
+    from gemseo.scenarios.scenario import Scenario
 
 
 @pytest.fixture(scope="module", params=["DisciplinaryOpt", "IDF"])

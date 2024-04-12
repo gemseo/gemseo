@@ -29,8 +29,8 @@ which may have been loaded from the disk.
 
 In practice,
 
-- a :class:`~gemseo.core.scenario.Scenario` instance has an :class:`~gemseo.core.formulation.MDOFormulation` attribute,
-- an :class:`~gemseo.core.formulation.MDOFormulation` instance has an :class:`~gemseo.algos.opt_problem.OptimizationProblem` attribute,
+- a :class:`~gemseo.scenarios.scenario.Scenario` instance has an :class:`~gemseo.formulations.mdo_formulation.MDOFormulation` attribute,
+- an :class:`~gemseo.formulations.mdo_formulation.MDOFormulation` instance has an :class:`~gemseo.algos.opt_problem.OptimizationProblem` attribute,
 - an :class:`~gemseo.algos.opt_problem.OptimizationProblem` instance has an :class:`~gemseo.algos.opt_result.OptimizationResult` attribute.
 
 Illustration on the Sobieski use case
@@ -70,11 +70,11 @@ the ``formulation`` value. For a detailed explanation on how to setup the case, 
 How to apply a post-process feature?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-From this ``scenario``, we can apply any kind of post-processing dedicated to :class:`~gemseo.core.scenario.Scenario` instances,
+From this ``scenario``, we can apply any kind of post-processing dedicated to :class:`~gemseo.scenarios.scenario.Scenario` instances,
 
-- either by means of its :meth:`~gemseo.core.scenario.Scenario.post_process` method:
+- either by means of its :meth:`~gemseo.scenarios.scenario.Scenario.post_process` method:
 
-    .. automethod:: gemseo.core.scenario.Scenario.post_process
+    .. automethod:: gemseo.scenarios.scenario.Scenario.post_process
        :noindex:
 
 - or by means of the :func:`.execute_post` API method:
@@ -86,7 +86,7 @@ From this ``scenario``, we can apply any kind of post-processing dedicated to :c
 
     Only design variables and functions (objective function, constraints) are stored for post-processing.
     If you want to be able to plot state variables, you must add them as observables before the problem is executed.
-    Use the :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
+    Use the :meth:`~gemseo.scenarios.scenario.Scenario.add_observable` method.
 
 .. include:: /examples/post_process/index.rst
    :start-after: start-after-label

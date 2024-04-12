@@ -26,8 +26,8 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.formulation import MDOFormulation
 from gemseo.disciplines.utils import get_all_inputs
+from gemseo.formulations.mdo_formulation import MDOFormulation
 
 if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace

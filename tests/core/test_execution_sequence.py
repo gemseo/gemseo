@@ -26,13 +26,13 @@ from gemseo.core.execution_sequence import AtomicExecSequence
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.execution_sequence import SerialExecSequence
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 class TestExecSequence(unittest.TestCase):

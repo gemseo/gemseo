@@ -36,12 +36,12 @@ from scipy.sparse import eye as speye
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.caches._hdf5_file_singleton import HDF5FileSingleton
+from gemseo.caches.cache_entry import CacheEntry
 from gemseo.caches.factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
-from gemseo.core.cache import CacheEntry
-from gemseo.core.cache import hash_data_dict
-from gemseo.core.cache import to_real
+from gemseo.caches.utils import hash_data
+from gemseo.caches.utils import to_real
 from gemseo.core.chain import MDOParallelChain
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
@@ -204,7 +204,7 @@ def test_collision(tmp_wd) -> None:
     hash_0 = next(iter(c1._hashes_to_indices.keys()))
     groups = c1._hashes_to_indices.pop(hash_0)
     input_data2 = {"i": 2 * arange(3)}
-    hash_1 = hash_data_dict(input_data2)
+    hash_1 = hash_data(input_data2)
     c1._hashes_to_indices[hash_1] = groups
     output_data2 = {"o": 2.0 * arange(3)}
     c1.cache_outputs(input_data2, output_data2)
@@ -215,14 +215,14 @@ def test_collision(tmp_wd) -> None:
 
 def test_hash_data_dict() -> None:
     input_data = {"i": 10 * arange(3)}
-    hash_0 = hash_data_dict(input_data)
+    hash_0 = hash_data(input_data)
     assert isinstance(hash_0, int)
-    assert hash_0 == hash_data_dict(input_data)
-    assert hash_0 == hash_data_dict({"i": 10 * arange(3), "t": None})
-    assert hash_0 == hash_data_dict({"i": 10 * arange(3), "j": None})
-    hash_data_dict({"i": 10 * arange(3)})
+    assert hash_0 == hash_data(input_data)
+    assert hash_0 == hash_data({"i": 10 * arange(3), "t": None})
+    assert hash_0 == hash_data({"i": 10 * arange(3), "j": None})
+    hash_data({"i": 10 * arange(3)})
     # Discontiguous array
-    hash_data_dict({"i": arange(10)[::3]})
+    hash_data({"i": arange(10)[::3]})
 
 
 @pytest.mark.parametrize(
@@ -242,7 +242,7 @@ def test_hash_discontiguous_array(input_c, input_f) -> None:
         input_c: A C-contiguous array.
         input_f: A Fortran ordered array.
     """
-    assert hash_data_dict({"i": input_c}) == hash_data_dict({"i": input_f})
+    assert hash_data({"i": input_c}) == hash_data({"i": input_f})
 
 
 def func(x):
@@ -454,12 +454,12 @@ def test_hdf5singleton(tmp_wd) -> None:
 def test_hash_data_dict_keys() -> None:
     """Check that hash considers the keys of the dictionary."""
     data = {"a": array([1]), "b": array([2])}
-    assert hash_data_dict(data) == hash_data_dict({"a": array([1]), "b": array([2])})
-    assert hash_data_dict(data) != hash_data_dict({"a": array([1]), "c": array([2])})
-    assert hash_data_dict(data) != hash_data_dict({"a": array([1]), "b": array([3])})
+    assert hash_data(data) == hash_data({"a": array([1]), "b": array([2])})
+    assert hash_data(data) != hash_data({"a": array([1]), "c": array([2])})
+    assert hash_data(data) != hash_data({"a": array([1]), "b": array([3])})
 
     data = {"a": array([1]), "b": array([1])}
-    assert hash_data_dict(data) != hash_data_dict({"a": array([1]), "c": array([1])})
+    assert hash_data(data) != hash_data({"a": array([1]), "c": array([1])})
 
 
 CACHE_FILE_NAME = "cache.h5"

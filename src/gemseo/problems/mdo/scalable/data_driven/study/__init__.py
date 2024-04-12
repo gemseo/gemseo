@@ -29,7 +29,7 @@ the concept of scalability study:
    the MDO problem in terms of design parameters, objective function and
    constraints.
 2. For each discipline, the user adds a dataset stored
-   in a :class:`.AbstractFullCache` and select a type of
+   in a :class:`.BaseFullCache` and select a type of
    :class:`.ScalableModel` to build the :class:`.ScalableDiscipline`
    associated with this discipline.
 3. The user adds different optimization strategies, defined in terms

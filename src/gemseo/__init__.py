@@ -166,9 +166,8 @@ if TYPE_CHECKING:
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.cache import AbstractCache
+    from gemseo.caches.base_cache import BaseCache
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.core.scenario import Scenario
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.disciplines.surrogate import SurrogateDiscipline
@@ -176,9 +175,8 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.ml_algo import TransformerType
     from gemseo.post._graph_view import GraphView
     from gemseo.post.opt_post_processor import OptPostProcessor
-    from gemseo.problems.mdo.mdo.scalable.data_driven.discipline import (
-        ScalableDiscipline,
-    )
+    from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+    from gemseo.scenarios.scenario import Scenario
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
     from gemseo.utils.matplotlib_figure import FigSizeType
     from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
@@ -1047,8 +1045,8 @@ def create_scenario(
         get_scenario_inputs_schema
         get_scenario_differentiation_modes
     """
-    from gemseo.core.doe_scenario import DOEScenario
-    from gemseo.core.mdo_scenario import MDOScenario
+    from gemseo.scenarios.doe_scenario import DOEScenario
+    from gemseo.scenarios.mdo_scenario import MDOScenario
 
     if not isinstance(disciplines, Collection):
         disciplines = [disciplines]
@@ -1616,7 +1614,7 @@ def get_available_caches() -> list[str]:
     Examples:
         >>> from gemseo import get_available_caches
         >>> get_available_caches()
-        ['AbstractFullCache', 'HDF5Cache', 'MemoryFullCache', 'SimpleCache']
+        ['BaseFullCache', 'HDF5Cache', 'MemoryFullCache', 'SimpleCache']
 
     See Also:
         get_available_caches
@@ -1631,7 +1629,7 @@ def create_cache(
     cache_type: str,
     name: str | None = None,
     **options: Any,
-) -> AbstractCache:
+) -> BaseCache:
     """Return a cache.
 
     Args:
@@ -2002,7 +2000,7 @@ def wrap_discipline_in_job_scheduler(
     the discipline and its inputs, execute it and serialize the outputs.
     Finally, the deserialized outputs are returned by the wrapper.
 
-    All process classes :class:`~gemseo.core.mdo_scenario.MDOScenario`,
+    All process classes :class:`.MDOScenario`,
     or :class:`.BaseMDA`, inherit from
     :class:`.MDODiscipline` so can be sent to HPCs in this way.
 

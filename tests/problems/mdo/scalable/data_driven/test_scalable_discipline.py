@@ -29,13 +29,13 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 N_SAMPLES = 10
 

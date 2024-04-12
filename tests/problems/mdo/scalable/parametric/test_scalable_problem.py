@@ -21,8 +21,6 @@ from numpy.testing import assert_equal
 
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.mdo.scalable.parametric.disciplines.main_discipline import (
     MainDiscipline,
 )
@@ -30,6 +28,8 @@ from gemseo.problems.mdo.scalable.parametric.disciplines.scalable_discipline imp
     ScalableDiscipline,
 )
 from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
+from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 @pytest.fixture()

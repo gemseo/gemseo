@@ -57,7 +57,7 @@ maximize_objective = True
 # %%
 # Create the disciplinary datasets
 # --------------------------------
-# Then, we create the disciplinary :class:`.AbstractFullCache` datasets
+# Then, we create the disciplinary :class:`.BaseFullCache` datasets
 # based on a :class:`.DiagonalDOE`.
 disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
 datasets = []

@@ -27,7 +27,6 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOWarmStartedChain
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
@@ -37,6 +36,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_bilevel_scenario
 from tests.core.test_dependency_graph import create_disciplines_from_desc
 
