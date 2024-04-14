@@ -74,6 +74,7 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.multiprocessing.execution import execute
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Mapping
     from pathlib import Path
 
@@ -204,6 +205,12 @@ class MNBI(OptimizationLibrary):
     __beta_sub_optim: OptimizationProblem | None = None
     """The sub-optimization problem that must be run for each value of beta."""
 
+    __custom_anchor_points: Iterable[RealArray]
+    """The bounding points of the custom phi simplex to be used in the optimization."""
+
+    __custom_phi_betas: Iterable[RealArray]
+    r"""The custom values of :math:`\Phi \beta` to be used in the optimization."""
+
     __debug: bool = False
     """Whether the algorithm is running in debug mode."""
 
@@ -298,6 +305,8 @@ class MNBI(OptimizationLibrary):
         debug_file_path: str | Path = "debug_history.h5",
         skip_betas: bool = True,
         debug: bool = False,
+        custom_anchor_points: Iterable[RealArray] = (),
+        custom_phi_betas: Iterable[RealArray] = (),
     ) -> dict[str, MNBIOptionsType]:
         r"""Set the options default values.
 
@@ -326,8 +335,15 @@ class MNBI(OptimizationLibrary):
                 used to parallelize the sub optimizations.
             debug: Whether to output a database hdf file containing the
                 sub optimization optimas only.
+            skip_betas: Whether to skip the sub-optimizations corresponding to values
+                of beta for which the theoretical result has already been found.
             debug_file_path: The path to the debug file if debug mode is
                 active.
+            custom_anchor_points: The bounding points of the custom phi simplex
+                to be used in the optimization.
+            custom_phi_betas: The custom values of :math:`\Phi \beta`
+                to be used in the optimization.
+
 
         Returns:
             The mNBI library options with their values.
@@ -348,6 +364,8 @@ class MNBI(OptimizationLibrary):
             skip_betas=skip_betas,
             debug=debug,
             debug_file_path=debug_file_path,
+            custom_anchor_points=custom_anchor_points,
+            custom_phi_betas=custom_phi_betas,
         )
 
     def __minimize_objective_components_separately(self) -> None:
@@ -490,8 +508,10 @@ class MNBI(OptimizationLibrary):
         )
         self.__beta_sub_optim.change_objective_sign()
 
-    def _run_beta_sub_optim(self, beta: RealArray) -> BetaSubOptimOutput | tuple[()]:
-        """Run the sub-optimization problem for a given value of beta.
+    def _run_beta_sub_optim(
+        self, phi_beta: RealArray
+    ) -> BetaSubOptimOutput | tuple[()]:
+        r"""Run the sub-optimization problem for a given value of :math:`\Phi \beta`.
 
         If the main problem has two objectives, the sub-optimization starts from the
         previous sub-problem result to accelerate convergence, since the optima of two
@@ -501,14 +521,16 @@ class MNBI(OptimizationLibrary):
         initial point.
 
         Args:
-            beta: The coordinates of the considered point in the phi simplex.
+            phi_beta: The coordinates of the point :math:`\Phi \beta` of the phi simplex
+                used in the sub-optimization problem.
 
         Returns:
             The coordinates in the objective space of the sub-optimization result.
             The coordinates in the design space of the sub-optimization result.
-            The vector w used to compute the values of beta that can be skipped in the
-                following sub-optimizations. This is computed only if one component of
-                the beta sub-constraint is inactive. Otherwise, returns None.
+            The vector w used to compute the values of :math:`\Phi \beta`
+                that can be skipped in the following sub-optimizations.
+                This is computed only if one component
+                of the beta sub-constraint is inactive. Otherwise, returns ``None``.
             The database of the main problem. This is returned so that it can be copied
                 in the database of the main process, to store the evaluations done in
                 each sub-process.
@@ -519,18 +541,17 @@ class MNBI(OptimizationLibrary):
         """
         f = self.problem.objective
         n_calls_start = f.n_calls
-        beta = append(beta, 1 - beta.sum())
-        phi_beta = dot(self.__phi, beta)
 
         # Check if phi_beta is in the skippable domains.
         if self.__skip_betas and self.__is_skippable(phi_beta):
             LOGGER.info(
-                "Skipping beta = %s because the resulting solution is already known.",
-                beta,
+                "Skipping sub-optimization for phi_beta = %s "
+                "because the resulting solution is already known.",
+                phi_beta,
             )
             return ()
 
-        LOGGER.info("Solving mNBI sub-problem for beta = %s", beta)
+        LOGGER.info("Solving mNBI sub-problem for phi_beta = %s", phi_beta)
         beta_sub_optim_constraint = SubOptimConstraint(phi_beta, self.__n_vect, f)
         jac = (
             beta_sub_optim_constraint.compute_jacobian
@@ -573,13 +594,15 @@ class MNBI(OptimizationLibrary):
             **self.__sub_optim_algo_options,
         )
         if not opt_res.is_feasible:
-            LOGGER.warning("No feasible optimum has been found for beta=%s", beta)
+            LOGGER.warning(
+                "No feasible optimum has been found for phi_beta = %s", phi_beta
+            )
         x_min = opt_res.x_opt[:-1]
         f_min = f(x_min)
         n_calls = f.n_calls - n_calls_start
 
         # If some components of the sub-optim constraint are inactive, return the vector
-        # w to find the values of beta that can be skipped for the next sub-optims
+        # w to find the values of phi_beta that can be skipped for the next sub-optims
         if self.__skip_betas and any(
             beta_sub_optim_constraint.compute_output(opt_res.x_opt)
             < self.__ineq_tolerance
@@ -757,9 +780,18 @@ class MNBI(OptimizationLibrary):
             ValueError:
                 - If the algorithm is being used to solve a mono-objective problem.
                 - If the given `n_sub_optim` is not strictly greater than the number of
-                  objectives.
+                  objectives and no `custom_anchor_points` or `custom_phi_betas`
+                  were given.
                 - If the name of one of the constraints of the problem coincides with
                   the protected name for the sub optimization problems used by mNBI.
+                - If the options `custom_anchor_points` and `custom_phi_betas`
+                  are both set.
+                - If the number of custom anchor points is not the same as the number of
+                  objectives.
+                - If the dimension of the custom anchor points is not the same as the
+                  number of objectives.
+                - If the dimension of the custom phi_betas is not the same as the number
+                  of objectives.
         """
         super()._pre_run(problem, algo_name, **options)
         self.__n_obj = self.problem.objective.dim
@@ -768,7 +800,11 @@ class MNBI(OptimizationLibrary):
             msg = "MNBI optimizer is not suitable for mono-objective problems."
             raise ValueError(msg)
 
-        if self.__n_sub_optim <= self.__n_obj:
+        custom_anchor_points = options.pop("custom_anchor_points")
+        custom_phi_betas = options.pop("custom_phi_betas")
+        if self.__n_sub_optim <= self.__n_obj and not (
+            custom_anchor_points or custom_phi_betas
+        ):
             msg = (
                 "The number of sub-optimization problems must be "
                 f"strictly greater than the number of objectives {self.__n_obj}; "
@@ -784,6 +820,81 @@ class MNBI(OptimizationLibrary):
                 f"when using MNBI optimizer."
             )
             raise ValueError(msg)
+
+        # Check custom_anchor_points or custom_phi_betas
+        if custom_anchor_points and custom_phi_betas:
+            msg = (
+                "The custom_anchor_points and custom_phi_betas options "
+                "cannot be set at the same time."
+            )
+            raise ValueError(msg)
+
+        if custom_anchor_points:
+            if len(custom_anchor_points) != self.__n_obj:
+                msg = (
+                    "The number of custom anchor points must be "
+                    f"the same as the number of objectives {self.__n_obj}; "
+                    f"got {len(custom_anchor_points)}."
+                )
+                raise ValueError(msg)
+
+            custom_anchor_points = [
+                custom_anchor_point.reshape(-1, 1)
+                for custom_anchor_point in custom_anchor_points
+            ]
+            if any(
+                custom_anchor_point.size != self.__n_obj
+                for custom_anchor_point in custom_anchor_points
+            ):
+                custom_anchor_point_sizes = [
+                    custom_anchor_point.size
+                    for custom_anchor_point in custom_anchor_points
+                ]
+                msg = (
+                    f"The custom anchor points must be of dimension {self.__n_obj}; "
+                    f"got {custom_anchor_point_sizes}"
+                )
+                raise ValueError(msg)
+
+            LOGGER.warning(
+                "Option `custom_anchor_points` was set. "
+                "The resulting Pareto front might be incomplete."
+            )
+            # Account for the individual objective optimizations
+            self.__n_sub_optim += self.__n_obj
+        self.__custom_anchor_points = custom_anchor_points
+
+        if custom_phi_betas:
+            if len(custom_phi_betas) != self.__n_sub_optim:
+                LOGGER.warning(
+                    "The requested number of sub-optimizations "
+                    "does not match the number of custom phi_beta values; "
+                    "keeping the latter (%s).",
+                    len(custom_phi_betas),
+                )
+            # Account for the individual objective optimizations
+            self.__n_sub_optim = len(custom_phi_betas) + self.__n_obj
+
+            custom_phi_betas = [
+                custom_phi_beta.reshape(-1, 1) for custom_phi_beta in custom_phi_betas
+            ]
+            if any(
+                custom_phi_beta.size != self.__n_obj
+                for custom_phi_beta in custom_phi_betas
+            ):
+                custom_phi_beta_sizes = [
+                    custom_phi_beta.size for custom_phi_beta in custom_phi_betas
+                ]
+                msg = (
+                    f"The custom phi_beta values must be of dimension {self.__n_obj}; "
+                    f"got {custom_phi_beta_sizes}"
+                )
+                raise ValueError(msg)
+            LOGGER.warning(
+                "Option `custom_phi_betas` was set. "
+                "The resulting Pareto front might be incomplete."
+            )
+        self.__custom_phi_betas = custom_phi_betas
 
     def _run(self, **options: Any) -> None:
         self.__n_processes = options.pop("n_processes")
@@ -816,29 +927,52 @@ class MNBI(OptimizationLibrary):
         self.__create_beta_sub_optim()
 
         # Run the beta sub-problem for different values of beta corresponding to
-        # different points of the phi simplex. The number of runs accounts for the
-        # individual optimizations already performed.
-        n_samples = self.__n_sub_optim - self.__n_obj
-        if self.__n_obj == 2:
-            betas = linspace(0, 1, n_samples + 2)[1:-1, newaxis]
+        # different points of the phi simplex.
+        phi_betas = []
+        if self.__custom_phi_betas:
+            # Project the points on the phi_beta simplex (allows to detect useless
+            # sub-optimizations and skip them)
+            phi_betas = [
+                self.__project_on_phi_simplex(custom_phi_beta).flatten()
+                for custom_phi_beta in self.__custom_phi_betas
+            ]
         else:
-            library = DOELibraryFactory().create(options["doe_algo"])
-            beta_design_space = DesignSpace()
-            beta_design_space.add_variable(
-                "beta", size=self.__n_obj - 1, l_b=0.0, u_b=1.0
-            )
-            betas = library.compute_doe(
-                beta_design_space,
-                n_samples=n_samples,
-                unit_sampling=True,
-                **self._doe_algo_options,
-            )
+            # The number of runs accounts for the individual optimizations already
+            # performed.
+            n_samples = self.__n_sub_optim - self.__n_obj
+            if self.__custom_anchor_points:
+                # Project the points on the phi_beta simplex (allows to detect useless
+                # sub-optimizations and skip them)
+                anchors = [
+                    self.__project_on_phi_simplex(custom_anchor_point)
+                    for custom_anchor_point in self.__custom_anchor_points
+                ]
+                anchors_matrix = concatenate(anchors, axis=1)
+            else:
+                anchors_matrix = self.__phi
+            if self.__n_obj == 2:
+                betas = linspace(0, 1, n_samples + 2)[1:-1, newaxis]
+            else:
+                library = DOELibraryFactory().create(options["doe_algo"])
+                beta_design_space = DesignSpace()
+                beta_design_space.add_variable(
+                    "beta", size=self.__n_obj - 1, l_b=0.0, u_b=1.0
+                )
+                betas = library.compute_doe(
+                    beta_design_space,
+                    n_samples=n_samples,
+                    unit_sampling=True,
+                    **self._doe_algo_options,
+                )
+            for beta in betas:
+                beta = append(beta, 1 - beta.sum())
+                phi_betas.append(dot(anchors_matrix, beta))
 
         execute(
             self._run_beta_sub_optim,
             [self.__beta_sub_optim_callback],
             self.__n_processes,
-            betas,
+            phi_betas,
         )
 
         if self.__debug:

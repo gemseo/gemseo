@@ -19,7 +19,7 @@
     },
     "n_sub_optim": {
       "type": "integer",
-      "minimum": 3
+      "minimum": 1
     },
     "sub_optim_algo": {
       "type": "string"
@@ -41,6 +41,12 @@
     },
     "debug_file_path": {
       "type": "string"
+    },
+    "custom_anchor_points": {
+      "type": "array"
+    },
+    "custom_phi_betas": {
+      "type": "array"
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",
