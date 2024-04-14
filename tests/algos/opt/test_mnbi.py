@@ -211,8 +211,8 @@ def test_unfeasible_solution(binh_korn):
         )
 
 
-def test_skippable_betas(caplog):
-    """Test the mechanism that allows to skip betas."""
+def test_skippable_points(caplog):
+    """Test the mechanism that allows to skip sub-optimizations."""
     execute_algo(
         Poloni(),
         "MNBI",
@@ -221,4 +221,171 @@ def test_skippable_betas(caplog):
         n_sub_optim=30,
         sub_optim_algo="SLSQP",
     )
-    assert "Skipping beta =" in caplog.text
+    assert "Skipping sub-optimization for phi_beta =" in caplog.text
+
+
+def test_exclusive_options_error(binh_korn):
+    """Test that an exception is raised when mutually exclusive options are set.
+
+    Options custom_anchor_points and custom_phi_betas are not compatible with each
+    other.
+    """
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The custom_anchor_points and custom_phi_betas options "
+            "cannot be set at the same time."
+        ),
+    ):
+        execute_algo(
+            binh_korn,
+            "MNBI",
+            max_iter=10000,
+            sub_optim_max_iter=100,
+            n_sub_optim=10,
+            sub_optim_algo="NLOPT_SLSQP",
+            custom_anchor_points=[array([44.5, 14]), array([29.4, 19])],
+            custom_phi_betas=[array([38, 17]), array([60, 10])],
+        )
+
+
+def test_custom_anchor_points_error(binh_korn):
+    """Test that exceptions are raised when custom_anchor_points has incorrect values.
+
+    The length of the custom_anchor_points list must be the same as the number of
+    objectives. The length of all custom_anchor_points arrays must be the same as the
+    number of objectives.
+    """
+    custom_anchor_points = [array([44.5, 14])]
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The number of custom anchor points must be "
+            f"the same as the number of objectives {binh_korn.objective.dim}; "
+            f"got {len(custom_anchor_points)}."
+        ),
+    ):
+        execute_algo(
+            binh_korn,
+            "MNBI",
+            max_iter=10000,
+            sub_optim_max_iter=100,
+            n_sub_optim=10,
+            sub_optim_algo="NLOPT_SLSQP",
+            custom_anchor_points=custom_anchor_points,
+        )
+
+    custom_anchor_points = [array([44.5, 14]), array([29.4, 19, 12])]
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            f"The custom anchor points must be of dimension {binh_korn.objective.dim}; "
+            f"got {[len(p) for p in custom_anchor_points]}"
+        ),
+    ):
+        execute_algo(
+            binh_korn,
+            "MNBI",
+            max_iter=10000,
+            sub_optim_max_iter=100,
+            n_sub_optim=10,
+            sub_optim_algo="NLOPT_SLSQP",
+            custom_anchor_points=custom_anchor_points,
+        )
+
+
+def test_custom_phi_betas_warning(binh_korn, caplog):
+    """Test that a warning is issued when custom_phi_betas has the wrong length."""
+    custom_phi_betas = [array([38, 17]), array([60, 10])]
+    execute_algo(
+        binh_korn,
+        "MNBI",
+        max_iter=10000,
+        sub_optim_max_iter=100,
+        n_sub_optim=10,
+        sub_optim_algo="NLOPT_SLSQP",
+        custom_phi_betas=custom_phi_betas,
+    )
+    assert (
+        "The requested number of sub-optimizations "
+        "does not match the number of custom phi_beta values; "
+        f"keeping the latter ({len(custom_phi_betas)})." in caplog.text
+    )
+
+
+def test_custom_phi_betas_error(binh_korn):
+    """Test that an exception is raised for incorrect values of custom_phi_betas.
+
+    The length of all custom_phi_betas arrays must be the same as the number of
+    objectives.
+    """
+    custom_phi_betas = [array([38, 17]), array([60, 10, 28])]
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The custom phi_beta values "
+            f"must be of dimension {binh_korn.objective.dim}; "
+            f"got {[len(p) for p in custom_phi_betas]}"
+        ),
+    ):
+        execute_algo(
+            binh_korn,
+            "MNBI",
+            max_iter=10000,
+            sub_optim_max_iter=100,
+            n_sub_optim=10,
+            sub_optim_algo="NLOPT_SLSQP",
+            custom_phi_betas=custom_phi_betas,
+        )
+
+
+def test_mnbi_custom_anchor_points(binh_korn):
+    """Tests the MNBI algo restart with custom anchor points."""
+    result = execute_algo(
+        binh_korn,
+        "MNBI",
+        max_iter=10000,
+        sub_optim_max_iter=100,
+        n_sub_optim=10,
+        sub_optim_algo="NLOPT_SLSQP",
+    )
+    result_restart = execute_algo(
+        binh_korn,
+        "MNBI",
+        max_iter=10000,
+        sub_optim_max_iter=100,
+        n_sub_optim=10,
+        sub_optim_algo="NLOPT_SLSQP",
+        custom_anchor_points=[array([44.5, 14]), array([29.4, 19])],
+    )
+
+    assert (
+        len(result_restart.pareto_front.f_optima)
+        >= len(result.pareto_front.f_optima) + 10
+    )
+
+
+def test_mnbi_custom_phi_betas(binh_korn):
+    """Tests the MNBI algo restart with custom values of phi_beta."""
+    result = execute_algo(
+        binh_korn,
+        "MNBI",
+        max_iter=10000,
+        sub_optim_max_iter=100,
+        n_sub_optim=10,
+        sub_optim_algo="NLOPT_SLSQP",
+    )
+    result_restart = execute_algo(
+        binh_korn,
+        "MNBI",
+        max_iter=10000,
+        sub_optim_max_iter=100,
+        n_sub_optim=2,
+        sub_optim_algo="NLOPT_SLSQP",
+        custom_phi_betas=[array([38, 17]), array([60, 10])],
+    )
+
+    assert (
+        len(result_restart.pareto_front.f_optima)
+        >= len(result.pareto_front.f_optima) + 2
+    )
