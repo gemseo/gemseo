@@ -43,7 +43,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.problems.optimization.fonseca_fleming import FonsecaFleming
+from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaFleming
 
 configure_logger()
 
