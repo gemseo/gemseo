@@ -31,7 +31,7 @@ with two inputs and two outputs:
 
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
 For that,
-we use a :class:`.SurrogateDiscipline` relying on an :class:`.BaseMLRegressionAlgo`.
+we use a :class:`.SurrogateDiscipline` relying on an :class:`.BaseRegressor`.
 """
 
 from __future__ import annotations

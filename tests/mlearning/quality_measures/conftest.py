@@ -21,7 +21,7 @@ from numpy import pi
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
 
 
 @pytest.fixture(scope="module")

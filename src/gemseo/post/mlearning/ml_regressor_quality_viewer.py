@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
+    from gemseo.mlearning.regression.base_regressor import BaseRegressor
 
 DatasetPlotOption = ScatterMatrixOption
 
@@ -44,7 +44,7 @@ DatasetPlotOption = ScatterMatrixOption
 class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
     """Visualization of the quality of a regression model."""
 
-    __algo: BaseMLRegressionAlgo
+    __algo: BaseRegressor
     """The regression algorithm."""
 
     __seeder: Seeder
@@ -63,7 +63,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         decomposable into :math:`K` learning-validation partitions.
         """
 
-    def __init__(self, algo: BaseMLRegressionAlgo) -> None:
+    def __init__(self, algo: BaseRegressor) -> None:
         """
         Args:
             algo: The regression algorithm.

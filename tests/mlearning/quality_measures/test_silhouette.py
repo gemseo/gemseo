@@ -25,8 +25,8 @@ import pytest
 from numpy import arange
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.kmeans import KMeans
-from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
+from gemseo.mlearning.clustering.algos.kmeans import KMeans
+from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
 
 
 @pytest.fixture()

@@ -442,7 +442,7 @@ Added
   `#799 <https://gitlab.com/gemseo/dev/gemseo/-/issues/799>`_
 - The values of the constraints can be passed to method ``OptimizationProblem.get_number_of_unsatisfied_constraints.``
   `#802 <https://gitlab.com/gemseo/dev/gemseo/-/issues/802>`_
-- ``MLErrorMeasureFactory`` is a factory of ``MLErrorMeasure``.
+- ``RegressorQualityFactory`` is a factory of ``MLErrorMeasure``.
 - ``SurrogateDiscipline.get_error_measure`` returns an ``MLErrorMeasure`` to assess the quality of a ``SurrogateDiscipline``; use one of its evaluation methods to compute it, e.g. ``evaluate_learn`` to compute a learning error.
   `#822 <https://gitlab.com/gemseo/dev/gemseo/-/issues/822>`_
 - The ``DatasetFactory`` is a factory of ``Dataset``.

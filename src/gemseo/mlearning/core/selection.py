@@ -50,20 +50,20 @@ from __future__ import annotations
 from itertools import product
 from typing import TYPE_CHECKING
 
+from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
-from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
-from gemseo.mlearning.quality_measures.quality_measure import (
+from gemseo.mlearning.core.quality.base_ml_algo_quality_ import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_algo_quality_ import (
     OptionType as MeasureOptionType,
 )
+from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.core.ml_algo import BaseMLAlgo
+    from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
     from gemseo.scenarios.scenario import ScenarioInputDataType
 
 
@@ -73,7 +73,7 @@ class MLAlgoSelection:
     dataset: Dataset
     """The learning dataset."""
 
-    measure: type[BaseMLQualityMeasure]
+    measure: type[BaseMLAlgoQuality]
     """The name of a quality measure to measure the quality of the machine learning
     algorithms."""
 
@@ -90,8 +90,8 @@ class MLAlgoSelection:
     def __init__(
         self,
         dataset: Dataset,
-        measure: str | type[BaseMLQualityMeasure],
-        measure_evaluation_method_name: BaseMLQualityMeasure.EvaluationMethod = BaseMLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
+        measure: str | type[BaseMLAlgoQuality],
+        measure_evaluation_method_name: BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
         samples: Sequence[int] | None = None,
         **measure_options: MeasureOptionType,
     ) -> None:
@@ -114,7 +114,7 @@ class MLAlgoSelection:
         """  # noqa: D205 D212
         self.dataset = dataset
         if isinstance(measure, str):
-            self.measure = MLQualityMeasureFactory().get_class(measure)
+            self.measure = MLAlgoQualityFactory().get_class(measure)
         else:
             self.measure = measure
 

@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from gemseo.mlearning.core.ml_algo import BaseMLAlgo
+    from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
     from gemseo.mlearning.resampling.splits import Splits
 
 

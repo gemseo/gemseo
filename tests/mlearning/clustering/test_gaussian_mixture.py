@@ -32,7 +32,7 @@ from numpy.random import default_rng
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning import import_clustering_model
-from gemseo.mlearning.clustering.gaussian_mixture import GaussianMixture
+from gemseo.mlearning.clustering.algos.gaussian_mixture import GaussianMixture
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations

@@ -699,7 +699,7 @@ def test_print_configuration(capfd) -> None:
         "MDODiscipline",
         "OptimizationLibrary",
         "DOELibrary",
-        "BaseMLRegressionAlgo",
+        "BaseRegressor",
         "MDOFormulation",
         "BaseMDA",
         "OptPostProcessor",

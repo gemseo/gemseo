@@ -52,8 +52,8 @@ from gemseo.mlearning import import_classification_model
 from gemseo.mlearning import import_clustering_model
 from gemseo.mlearning import import_mlearning_model
 from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.core.ml_algo import BaseMLAlgo
-from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.doe_scenario import DOEScenario
 

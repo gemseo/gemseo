@@ -23,7 +23,7 @@ respectively:
    inherit from :class:`.DOELibrary`,
    and put the Python file in the :file:`src/gemseo/algos/doe` package,
  - for surrogate models,
-   inherit from :class:`.BaseMLRegressionAlgo`,
+   inherit from :class:`.BaseRegressor`,
    and put the Python file in the :file:`src/gemseo/mlearning/regression` package,
  - for MDAs, inherit from :class:`.BaseMDA`,
    and put the Python file in the :file:`src/gemseo/mda` package,

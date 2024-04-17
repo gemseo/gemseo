@@ -26,7 +26,7 @@ import pytest
 from numpy import arange
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.clustering import BaseMLClusteringAlgo
+from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
 
 
 @pytest.fixture()
@@ -40,7 +40,7 @@ def dataset() -> Dataset:
     return dataset_
 
 
-class NewAlgo(BaseMLClusteringAlgo):
+class NewAlgo(BaseClusterer):
     """New machine learning algorithm class."""
 
     def _fit(self, data) -> None:

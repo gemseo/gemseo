@@ -33,7 +33,7 @@
 	 #fit()
 	}
 
-	abstract class BaseMLClusteringAlgo {
+	abstract class BaseClusterer {
 	 +n_clusters
 	 +labels
 	 +learn()
@@ -57,7 +57,7 @@
 	 #get_objects_to_save()
 	}
 
-	abstract class BaseMLClassificationAlgo {
+	abstract class BaseClassifier {
 	 +n_classes
 	 +learn()
 	 +predict_proba()
@@ -67,14 +67,14 @@
 	 #get_objects_to_save()
 	}
 
-	abstract class BaseMLRegressionAlgo {
+	abstract class BaseRegressor {
 	 +DataFormatters
 	 +predict_raw()
 	 +predict_jacobian()
 	 #predict_jacobian()
 	}
 
-	abstract class BaseMLQualityMeasure
+	abstract class BaseMLAlgoQuality
 
 	abstract class SurrogateDiscipline {
 	 +input_grammar
@@ -98,8 +98,8 @@
 	BaseMLAlgo *-- BaseTransformer
 	BaseMLAlgo <|-down- BaseMLUnsupervisedAlgo
 	BaseMLAlgo <|-down- BaseMLSupervisedAlgo
-	BaseMLUnsupervisedAlgo <|-down- BaseMLClusteringAlgo
-	BaseMLSupervisedAlgo <|-- BaseMLRegressionAlgo
-	BaseMLSupervisedAlgo <|-- BaseMLClassificationAlgo
-	BaseMLQualityMeasure *-left- BaseMLAlgo
-	SurrogateDiscipline *-down- BaseMLRegressionAlgo
+	BaseMLUnsupervisedAlgo <|-down- BaseClusterer
+	BaseMLSupervisedAlgo <|-- BaseRegressor
+	BaseMLSupervisedAlgo <|-- BaseClassifier
+	BaseMLAlgoQuality *-left- BaseMLAlgo
+	SurrogateDiscipline *-down- BaseRegressor

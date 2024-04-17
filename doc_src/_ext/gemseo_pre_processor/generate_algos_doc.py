@@ -39,7 +39,7 @@ from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.mda.factory import MDAFactory
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.mlearning.clustering.factory import ClusteringModelFactory
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
+from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.post.factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
@@ -497,7 +497,7 @@ def main(gen_opts_path: str | Path) -> None:
         InitOptionsDoc(
             "classification", "Classification algorithms", ClassificationModelFactory()
         ),
-        InitOptionsDoc("ml_quality", "Quality measures", MLQualityMeasureFactory()),
+        InitOptionsDoc("ml_quality", "Quality measures", MLAlgoQualityFactory()),
         InitOptionsDoc("mda", "MDA algorithms", MDAFactory()),
         InitOptionsDoc("formulation", "MDO formulations", MDOFormulationFactory()),
         OptPostProcessorAlgoOptionsDoc(

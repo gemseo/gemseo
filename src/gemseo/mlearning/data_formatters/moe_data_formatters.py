@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.algos.ml_algo import DataType
     from gemseo.mlearning.regression.moe import MOERegressor
     from gemseo.typing import RealArray
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array

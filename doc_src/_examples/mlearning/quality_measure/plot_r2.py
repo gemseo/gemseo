@@ -25,9 +25,9 @@ from numpy import newaxis
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
-from gemseo.mlearning.regression.rbf import RBFRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.rbf import RBFRegressor
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 
 # %%
 # Given a dataset :math:`(x_i,y_i,\hat{y}_i)_{1\leq i \leq N}`

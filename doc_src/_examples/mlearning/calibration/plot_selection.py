@@ -31,7 +31,7 @@ from numpy.random import default_rng
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 rng = default_rng(54321)
 

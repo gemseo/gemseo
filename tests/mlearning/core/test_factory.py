@@ -25,7 +25,7 @@ import pytest
 from numpy import arange
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.factory import MLAlgoFactory
+from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 
 LEARNING_SIZE = 9
 

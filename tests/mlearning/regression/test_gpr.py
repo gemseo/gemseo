@@ -33,7 +33,7 @@ from numpy.testing import assert_almost_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 

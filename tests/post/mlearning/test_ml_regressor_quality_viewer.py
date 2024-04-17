@@ -25,7 +25,7 @@ from numpy import newaxis
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.testing.helpers import image_comparison
 

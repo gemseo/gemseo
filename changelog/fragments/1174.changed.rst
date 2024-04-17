@@ -1,0 +1,33 @@
+API changes:
+
+- ``gemseo.mlearning.classification``:
+
+  - the classification algorithms are in ``gemseo.mlearning.classification.algos``
+  - the quality measures are in ``gemseo.mlearning.classification.quality``
+  - ``gemseo.mlearning.classification.classification.MLClassificationAlgo``: renamed to ``BaseClassifier``
+  - ``ClassificationModelFactory``: renamed to ``ClassifierFactory``
+
+- ``gemseo.mlearning.clustering``:
+
+  - the clustering algorithms are in ``gemseo.mlearning.clustering.algos``
+  - the quality measures are in ``gemseo.mlearning.clustering.quality``
+  - ``gemseo.mlearning.clustering.clustering.MLClusteringAlgo``: renamed to ``BaseClusterer``
+  - ``ClusteringModelFactory``: renamed to ``ClustererFactory``
+  - ``MLClusteringMeasure``: renamed to ``BaseClustererQuality``
+
+- ``gemseo.mlearning.regression``:
+
+  - the regression algorithms are in ``gemseo.mlearning.regression.algos``
+  - the quality measures are in ``gemseo.mlearning.regression.quality``
+  - ``gemseo.mlearning.regression.regression.MLRegressionAlgo``: renamed to ``BaseRegressor``
+  - ``RegressionModelFactory``: renamed to ``RegressorFactory``
+  - ``MLErrorMeasure``: renamed to ``BaseRegressorQuality``
+  - ``MLErrorMeasureFactory``: renamed to ``RegressorQualityFactory``
+
+- ``gemseo.mlearning.quality_measures``: removed; use instead:
+
+  - ``gemseo.mlearning.core.quality.factory.MLAlgoQualityFactory``
+  - ``gemseo.mlearning.core.quality.quality_measure.BaseMLAlgoQuality``
+  - ``gemseo.mlearning.classification.quality`` for quality measures related to classifiers
+  - ``gemseo.mlearning.clustering.quality`` for quality measures related to clusterers
+  - ``gemseo.mlearning.regression.quality`` for quality measures related to regressors

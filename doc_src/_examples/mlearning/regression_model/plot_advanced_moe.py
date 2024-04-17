@@ -27,9 +27,9 @@ from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
-from gemseo.mlearning.quality_measures.f1_measure import F1Measure
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.classification.quality.f1_measure import F1Measure
 from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 # %%
 # In this example,
@@ -138,7 +138,7 @@ model
 #    on another sub-part of the input space.
 #
 # Once built,
-# this mixture of experts can be used as any :class:`.BaseMLRegressionAlgo`.
+# this mixture of experts can be used as any :class:`.BaseRegressor`.
 #
 # .. seealso::
 #

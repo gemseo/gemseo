@@ -18,7 +18,7 @@
 #        :author: Matthias De Lozzo
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Unit test for ClusteringModelFactory class in gemseo.mlearning.clustering.factory."""
+"""Unit test for ClustererFactory class in gemseo.mlearning.clustering.factory."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.mlearning.clustering.factory import ClusteringModelFactory
+from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
@@ -42,26 +42,26 @@ def dataset() -> IODataset:
 
 
 def test_constructor() -> None:
-    """Test ClusteringModelFactory constructor."""
-    factory = ClusteringModelFactory()
+    """Test ClustererFactory constructor."""
+    factory = ClustererFactory()
     # plugins may add classes
     assert set(factory.models) <= {
         "GaussianMixture",
         "KMeans",
-        "BaseMLPredictiveClusteringAlgo",
+        "BasePredictiveClusterer",
     }
 
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
-    factory = ClusteringModelFactory()
+    factory = ClustererFactory()
     kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
     assert hasattr(kmeans, "parameters")
 
 
 def test_load(dataset, tmp_wd) -> None:
     """Test the loading of a model from data."""
-    factory = ClusteringModelFactory()
+    factory = ClustererFactory()
     kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
     kmeans.learn()
     dirname = kmeans.to_pickle()
@@ -71,13 +71,13 @@ def test_load(dataset, tmp_wd) -> None:
 
 def test_available_clustering_models() -> None:
     """Test the getter of available clustering models."""
-    factory = ClusteringModelFactory()
+    factory = ClustererFactory()
     assert "KMeans" in factory.models
     assert "LinearRegressor" not in factory.models
 
 
 def test_is_available() -> None:
     """Test the existence of a clustering model."""
-    factory = ClusteringModelFactory()
+    factory = ClustererFactory()
     assert factory.is_available("KMeans")
     assert not factory.is_available("Dummy")

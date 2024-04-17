@@ -26,9 +26,9 @@ from numpy import arange
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.knn import KNNClassifier
-from gemseo.mlearning.core.ml_algo import BaseMLAlgo
-from gemseo.mlearning.quality_measures.f1_measure import F1Measure
+from gemseo.mlearning.classification.algos.knn import KNNClassifier
+from gemseo.mlearning.classification.quality.f1_measure import F1Measure
+from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.utils.testing.helpers import concretize_classes
 
 

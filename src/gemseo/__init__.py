@@ -150,7 +150,7 @@ from strenum import StrEnum
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.factory import DatasetFactory as __DatasetFactory
-from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
+from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
@@ -172,7 +172,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.disciplines.surrogate import SurrogateDiscipline
     from gemseo.mda.base_mda import BaseMDA
-    from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.post._graph_view import GraphView
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
@@ -1233,9 +1233,9 @@ def create_scalable(
 
 
 def create_surrogate(
-    surrogate: str | BaseMLRegressionAlgo,
+    surrogate: str | BaseRegressor,
     data: IODataset | None = None,
-    transformer: TransformerType = BaseMLRegressionAlgo.DEFAULT_TRANSFORMER,
+    transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
     disc_name: str | None = None,
     default_inputs: dict[str, ndarray] | None = None,
     input_names: Iterable[str] | None = None,
@@ -1246,7 +1246,7 @@ def create_surrogate(
 
     Args:
         surrogate: Either the class name
-            or the instance of the :class:`.BaseMLRegressionAlgo`.
+            or the instance of the :class:`.BaseRegressor`.
         data: The learning dataset to train the regression model.
             If ``None``, the regression model is supposed to be trained.
         transformer: The strategies to transform the variables.
@@ -1259,7 +1259,7 @@ def create_surrogate(
             the :class:`.BaseTransformer` will be applied
             to all the variables of this group.
             If ``None``, do not transform the variables.
-            The :attr:`.BaseMLRegressionAlgo.DEFAULT_TRANSFORMER` uses
+            The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
             the :class:`.MinMaxScaler` strategy for both input and output variables.
         disc_name: The name to be given to the surrogate discipline.
             If ``None``, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
@@ -1465,7 +1465,7 @@ def print_configuration() -> None:
     from gemseo.disciplines.factory import MDODisciplineFactory
     from gemseo.formulations.factory import MDOFormulationFactory
     from gemseo.mda.factory import MDAFactory
-    from gemseo.mlearning.regression.factory import RegressionModelFactory
+    from gemseo.mlearning.regression.algos.factory import RegressorFactory
     from gemseo.post.factory import PostFactory
 
     settings = _log_settings()
@@ -1475,7 +1475,7 @@ def print_configuration() -> None:
         MDODisciplineFactory,
         OptimizationLibraryFactory,
         DOELibraryFactory,
-        RegressionModelFactory,
+        RegressorFactory,
         MDOFormulationFactory,
         MDAFactory,
         PostFactory,

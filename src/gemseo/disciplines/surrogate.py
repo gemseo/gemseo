@@ -26,11 +26,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mlearning.quality_measures.error_measure_factory import (
-    MLErrorMeasureFactory,
-)
-from gemseo.mlearning.regression.factory import RegressionModelFactory
-from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
+from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.factory import RegressorFactory
+from gemseo.mlearning.regression.quality.factory import RegressorQualityFactory
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -42,9 +40,11 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
-    from gemseo.mlearning.core.ml_algo import TransformerType
-    from gemseo.mlearning.quality_measures.error_measure import BaseMLErrorMeasure
+    from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
+    from gemseo.mlearning.core.algos.ml_algo import TransformerType
+    from gemseo.mlearning.regression.quality.base_regressor_quality import (
+        BaseRegressorQuality,
+    )
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,17 +74,17 @@ class SurrogateDiscipline(MDODiscipline):
         >>> surrogate_discipline.execute({"x": np.array([1.5])})
     """
 
-    regression_model: BaseMLRegressionAlgo
+    regression_model: BaseRegressor
     """The regression model called by the surrogate discipline."""
 
-    __error_measure_factory: MLErrorMeasureFactory
+    __error_measure_factory: RegressorQualityFactory
     """The factory of error measures."""
 
     def __init__(
         self,
-        surrogate: str | BaseMLRegressionAlgo,
+        surrogate: str | BaseRegressor,
         data: IODataset | None = None,
-        transformer: TransformerType = BaseMLRegressionAlgo.DEFAULT_TRANSFORMER,
+        transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
         disc_name: str | None = None,
         default_inputs: dict[str, ndarray] | None = None,
         input_names: Iterable[str] | None = None,
@@ -94,8 +94,8 @@ class SurrogateDiscipline(MDODiscipline):
         """
         Args:
             surrogate: Either the name of a class
-                deriving from :class:`.BaseMLRegressionAlgo`
-                or the instance of an :class:`.BaseMLRegressionAlgo`.
+                deriving from :class:`.BaseRegressor`
+                or the instance of an :class:`.BaseRegressor`.
             data: The learning dataset to train the regression model.
                 If ``None``, the regression model is supposed to be trained.
             transformer: The strategies to transform the variables.
@@ -109,7 +109,7 @@ class SurrogateDiscipline(MDODiscipline):
                 the :class:`.BaseTransformer` will be applied
                 to all the variables of this group.
                 If :attr:`~.BaseMLAlgo.IDENTITY, do not transform the variables.
-                The :attr:`.BaseMLRegressionAlgo.DEFAULT_TRANSFORMER` uses
+                The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
                 the :class:`.MinMaxScaler` strategy for both input and output variables.
             disc_name: The name to be given to the surrogate discipline.
                 If ``None``, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
@@ -127,15 +127,15 @@ class SurrogateDiscipline(MDODiscipline):
             ValueError: If the learning dataset is missing
                 whilst the regression model is not trained.
         """  # noqa: D205, D212, D415
-        self.__error_measure_factory = MLErrorMeasureFactory()
-        if isinstance(surrogate, BaseMLRegressionAlgo):
+        self.__error_measure_factory = RegressorQualityFactory()
+        if isinstance(surrogate, BaseRegressor):
             self.regression_model = surrogate
             name = self.regression_model.learning_set.name
         elif data is None:
             msg = "data is required to train the surrogate model."
             raise ValueError(msg)
         else:
-            factory = RegressionModelFactory()
+            factory = RegressorFactory()
             self.regression_model = factory.create(
                 surrogate,
                 data=data,
@@ -254,7 +254,7 @@ class SurrogateDiscipline(MDODiscipline):
         self,
         measure_name: str,
         **measure_options: Any,
-    ) -> BaseMLErrorMeasure:
+    ) -> BaseRegressorQuality:
         """Return an error measure.
 
         Args:

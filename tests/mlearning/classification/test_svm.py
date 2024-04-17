@@ -31,7 +31,7 @@ from numpy import zeros
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import import_classification_model
-from gemseo.mlearning.classification.svm import SVMClassifier
+from gemseo.mlearning.classification.algos.svm import SVMClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 N_INPUTS = 2

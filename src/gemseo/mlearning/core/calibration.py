@@ -35,7 +35,7 @@ parameters in order to minimize this measure of the generalization quality over 
 calibration parameter space. This class relies on the :class:`.MLAlgoAssessor` class
 which is a discipline (:class:`.MDODiscipline`) built from a machine learning algorithm
 (:class:`.BaseMLAlgo`), a dataset (:class:`.Dataset`), a quality measure
-(:class:`.BaseMLQualityMeasure`) and various options for the data scaling, the quality
+(:class:`.BaseMLAlgoQuality`) and various options for the data scaling, the quality
 measure and the machine learning algorithm. The inputs of this discipline are hyper-
 parameters of the machine learning algorithm while the output is the quality criterion.
 """
@@ -50,12 +50,12 @@ from numpy import ndarray
 
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.core.ml_algo import BaseMLAlgo
-from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
-from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MeasureOptionsType
+from gemseo.mlearning.core.algos.factory import MLAlgoFactory
+from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.algos.ml_algo import TransformerType
+from gemseo.mlearning.core.quality.base_ml_algo_quality_ import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_algo_quality_ import MeasureOptionsType
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
 
@@ -78,7 +78,7 @@ class MLAlgoAssessor(MDODiscipline):
     algo: str
     """The name of a machine learning algorithm."""
 
-    measure: type[BaseMLQualityMeasure]
+    measure: type[BaseMLAlgoQuality]
     """The measure to assess the machine learning algorithm."""
 
     measure_options: dict[str, int | Dataset]
@@ -106,8 +106,8 @@ class MLAlgoAssessor(MDODiscipline):
         algo: str,
         dataset: Dataset,
         parameters: Iterable[str],
-        measure: type[BaseMLQualityMeasure],
-        measure_evaluation_method_name: BaseMLQualityMeasure.EvaluationMethod = BaseMLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
+        measure: type[BaseMLAlgoQuality],
+        measure_evaluation_method_name: BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
         measure_options: MeasureOptionsType | None = None,
         transformer: TransformerType = BaseMLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
@@ -165,7 +165,7 @@ class MLAlgoAssessor(MDODiscipline):
         This method creates a new instance of the machine learning algorithm, from the
         hyper-parameters stored in the local_data attribute of the
         :class:`.MLAlgoAssessor`. It trains it on the learning dataset and measures its
-        quality with the :class:`.BaseMLQualityMeasure`.
+        quality with the :class:`.BaseMLAlgoQuality`.
         """
         inputs = self.get_input_data()
         for index in inputs:
@@ -221,9 +221,9 @@ class MLAlgoCalibration:
         dataset: Dataset,
         parameters: Iterable[str],
         calibration_space: DesignSpace,
-        measure: type[BaseMLQualityMeasure],
+        measure: type[BaseMLAlgoQuality],
         measure_evaluation_method_name: str
-        | BaseMLQualityMeasure.EvaluationMethod = BaseMLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
+        | BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
         measure_options: MeasureOptionsType | None = None,
         transformer: TransformerType = BaseMLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,

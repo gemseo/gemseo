@@ -25,15 +25,19 @@ import pytest
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.ml_algo import BaseMLAlgo
-from gemseo.mlearning.quality_measures.cluster_measure import BaseMLClusteringMeasure
-from gemseo.mlearning.quality_measures.cluster_measure import (
-    MLPredictiveClusteringMeasure,
+from gemseo.mlearning.clustering.quality.base_clusterer_quality import (
+    BaseClustererQuality,
 )
-from gemseo.mlearning.quality_measures.error_measure import BaseMLErrorMeasure
-from gemseo.mlearning.quality_measures.quality_measure import BaseMLQualityMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
+from gemseo.mlearning.clustering.quality.base_predictive_clusterer_quality import (
+    BasePredictiveClustererQuality,
+)
+from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+from gemseo.mlearning.core.quality.base_ml_algo_quality_ import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
+from gemseo.mlearning.regression.quality.base_regressor_quality import (
+    BaseRegressorQuality,
+)
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.utils.testing.helpers import concretize_classes
 
 
@@ -46,17 +50,17 @@ def dataset() -> IODataset:
 
 
 @pytest.fixture(scope="module")
-def measure(dataset) -> BaseMLQualityMeasure:
+def measure(dataset) -> BaseMLAlgoQuality:
     """The quality measure related to a trained machine learning algorithm."""
-    with concretize_classes(BaseMLQualityMeasure, BaseMLAlgo):
-        return BaseMLQualityMeasure(BaseMLAlgo(dataset))
+    with concretize_classes(BaseMLAlgoQuality, BaseMLAlgo):
+        return BaseMLAlgoQuality(BaseMLAlgo(dataset))
 
 
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_constructor(fit_transformers, dataset) -> None:
     """Test construction."""
-    with concretize_classes(BaseMLQualityMeasure, BaseMLAlgo):
-        measure = BaseMLQualityMeasure(
+    with concretize_classes(BaseMLAlgoQuality, BaseMLAlgo):
+        measure = BaseMLAlgoQuality(
             BaseMLAlgo(dataset), fit_transformers=fit_transformers
         )
 
@@ -65,10 +69,10 @@ def test_constructor(fit_transformers, dataset) -> None:
 
 
 def test_is_better() -> None:
-    class MLQualityMeasureToMinimize(BaseMLQualityMeasure):
+    class MLQualityMeasureToMinimize(BaseMLAlgoQuality):
         SMALLER_IS_BETTER = True
 
-    class MLQualityMeasureToMaximize(BaseMLQualityMeasure):
+    class MLQualityMeasureToMaximize(BaseMLAlgoQuality):
         SMALLER_IS_BETTER = False
 
     assert MLQualityMeasureToMinimize.is_better(1, 2)
@@ -76,33 +80,33 @@ def test_is_better() -> None:
 
 
 def test_factory() -> None:
-    """Check that the factory of BaseMLQualityMeasure works correctly."""
-    assert "MSEMeasure" in MLQualityMeasureFactory().class_names
+    """Check that the factory of BaseMLAlgoQuality works correctly."""
+    assert "MSEMeasure" in MLAlgoQualityFactory().class_names
 
 
 @pytest.mark.parametrize(
     ("cls", "old", "new"),
     [
-        (BaseMLQualityMeasure, "evaluate_loo", "compute_leave_one_out_measure"),
-        (BaseMLErrorMeasure, "evaluate_learn", "compute_learning_measure"),
-        (BaseMLErrorMeasure, "evaluate_test", "compute_test_measure"),
-        (BaseMLErrorMeasure, "evaluate_kfolds", "compute_cross_validation_measure"),
-        (BaseMLErrorMeasure, "evaluate_loo", "compute_leave_one_out_measure"),
-        (BaseMLErrorMeasure, "evaluate_bootstrap", "compute_bootstrap_measure"),
-        (BaseMLClusteringMeasure, "evaluate_learn", "compute_learning_measure"),
-        (MLPredictiveClusteringMeasure, "evaluate_test", "compute_test_measure"),
+        (BaseMLAlgoQuality, "evaluate_loo", "compute_leave_one_out_measure"),
+        (BaseRegressorQuality, "evaluate_learn", "compute_learning_measure"),
+        (BaseRegressorQuality, "evaluate_test", "compute_test_measure"),
+        (BaseRegressorQuality, "evaluate_kfolds", "compute_cross_validation_measure"),
+        (BaseRegressorQuality, "evaluate_loo", "compute_leave_one_out_measure"),
+        (BaseRegressorQuality, "evaluate_bootstrap", "compute_bootstrap_measure"),
+        (BaseClustererQuality, "evaluate_learn", "compute_learning_measure"),
+        (BasePredictiveClustererQuality, "evaluate_test", "compute_test_measure"),
         (
-            MLPredictiveClusteringMeasure,
+            BasePredictiveClustererQuality,
             "evaluate_kfolds",
             "compute_cross_validation_measure",
         ),
         (
-            MLPredictiveClusteringMeasure,
+            BasePredictiveClustererQuality,
             "evaluate_loo",
             "compute_leave_one_out_measure",
         ),
         (
-            MLPredictiveClusteringMeasure,
+            BasePredictiveClustererQuality,
             "evaluate_bootstrap",
             "compute_bootstrap_measure",
         ),
