@@ -28,9 +28,9 @@ from numpy import allclose
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.core.ml_algo import BaseMLAlgo
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import concretize_classes

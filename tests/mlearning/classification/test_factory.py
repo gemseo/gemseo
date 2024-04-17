@@ -17,8 +17,6 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Unit test for ClassificationModelFactory class in
-gemseo.mlearning.classification.factory."""
 
 from __future__ import annotations
 
@@ -26,7 +24,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.mlearning.classification.factory import ClassificationModelFactory
+from gemseo.mlearning.classification.algos.factory import ClassifierFactory
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
@@ -41,7 +39,7 @@ def dataset() -> IODataset:
 
 def test_constructor() -> None:
     """Test factory constructor."""
-    factory = ClassificationModelFactory()
+    factory = ClassifierFactory()
     # plugins may add classes
     assert set(factory.models) <= {
         "KNNClassifier",
@@ -52,14 +50,14 @@ def test_constructor() -> None:
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
-    factory = ClassificationModelFactory()
+    factory = ClassifierFactory()
     knn = factory.create("KNNClassifier", data=dataset)
     assert hasattr(knn, "parameters")
 
 
 def test_load(dataset, tmp_wd) -> None:
     """Test the loading of a model from data."""
-    factory = ClassificationModelFactory()
+    factory = ClassifierFactory()
     knn = factory.create("KNNClassifier", data=dataset)
     knn.learn()
     dirname = knn.to_pickle()
@@ -69,12 +67,12 @@ def test_load(dataset, tmp_wd) -> None:
 
 def test_available_models() -> None:
     """Test the getter of available classification models."""
-    factory = ClassificationModelFactory()
+    factory = ClassifierFactory()
     assert "KNNClassifier" in factory.models
 
 
 def test_is_available() -> None:
     """Test the existence of a classification model."""
-    factory = ClassificationModelFactory()
+    factory = ClassifierFactory()
     assert factory.is_available("KNNClassifier")
     assert not factory.is_available("Dummy")

@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Unit test for RegressionModelFactory class in gemseo.mlearning.regression.factory."""
+"""Unit test for RegressorFactory class in gemseo.mlearning.regression.factory."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.factory import RegressionModelFactory
+from gemseo.mlearning.regression.algos.factory import RegressorFactory
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
@@ -59,19 +59,19 @@ def test_constructor() -> None:
         "PolynomialRegressor",
         "RBFRegressor",
         "RandomForestRegressor",
-    } <= set(RegressionModelFactory().models)
+    } <= set(RegressorFactory().models)
 
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
-    factory = RegressionModelFactory()
+    factory = RegressorFactory()
     linreg = factory.create("LinearRegressor", data=dataset)
     assert hasattr(linreg, "parameters")
 
 
 def test_load(dataset, tmp_wd) -> None:
     """Test the loading of a model from data."""
-    factory = RegressionModelFactory()
+    factory = RegressorFactory()
     linreg = factory.create("LinearRegressor", data=dataset)
     linreg.learn()
     dirname = linreg.to_pickle()
@@ -81,12 +81,12 @@ def test_load(dataset, tmp_wd) -> None:
 
 def test_available_models() -> None:
     """Test the getter of available regression models."""
-    factory = RegressionModelFactory()
+    factory = RegressorFactory()
     assert "LinearRegressor" in factory.models
 
 
 def test_is_available() -> None:
     """Test the existence of a regression model."""
-    factory = RegressionModelFactory()
+    factory = RegressorFactory()
     assert factory.is_available("LinearRegressor")
     assert not factory.is_available("Dummy")

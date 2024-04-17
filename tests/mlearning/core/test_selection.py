@@ -27,11 +27,11 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
-from gemseo.mlearning.regression.rbf import RBFRegressor
-from gemseo.mlearning.regression.regression import BaseMLRegressionAlgo
+from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.rbf import RBFRegressor
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 
 @pytest.fixture()
@@ -61,8 +61,7 @@ def test_init(dataset) -> None:
 
 @pytest.mark.parametrize("measure", ["MSEMeasure", MSEMeasure])
 def test_init_with_measure(dataset, measure) -> None:
-    """Check that the measure can be passed either as a str or a
-    BaseMLQualityMeasure."""
+    """Check that the measure can be passed either as a str or a BaseMLAlgoQuality."""
     selector = MLAlgoSelection(dataset, measure)
     assert selector.measure == MSEMeasure
 
@@ -125,7 +124,7 @@ def test_select(dataset, measure_evaluation_method_name) -> None:
     algo = selector.select(True)
     assert isinstance(algo, tuple)
     assert len(algo) == 2
-    assert isinstance(algo[0], BaseMLRegressionAlgo)
+    assert isinstance(algo[0], BaseRegressor)
     assert isinstance(algo[1], float)
     cands = selector.candidates
     for cand in cands:
@@ -134,5 +133,5 @@ def test_select(dataset, measure_evaluation_method_name) -> None:
     assert algo[0].__class__.__name__ == "RBFRegressor"
 
     algo = selector.select()
-    assert isinstance(algo, BaseMLRegressionAlgo)
+    assert isinstance(algo, BaseRegressor)
     assert algo.is_trained

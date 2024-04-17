@@ -30,7 +30,7 @@ from numpy import array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.random_forest import RandomForestRegressor
+from gemseo.mlearning.regression.algos.random_forest import RandomForestRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:

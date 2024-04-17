@@ -32,10 +32,10 @@ from numpy import ones_like
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.classification.random_forest import RandomForestClassifier
-from gemseo.mlearning.clustering.kmeans import KMeans
-from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.regression.moe import MOERegressor
+from gemseo.mlearning.classification.algos.random_forest import RandomForestClassifier
+from gemseo.mlearning.clustering.algos.kmeans import KMeans
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.moe import MOERegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER

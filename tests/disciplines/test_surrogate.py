@@ -28,8 +28,8 @@ from numpy.testing import assert_allclose
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
-from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
@@ -78,7 +78,7 @@ def test_linearization_mode_without_gradient(dataset) -> None:
 
 
 def test_instantiation_from_algo(dataset) -> None:
-    """Check the instantiation from an BaseMLRegressionAlgo."""
+    """Check the instantiation from an BaseRegressor."""
     algo = LinearRegressor(dataset)
     algo.learn()
     discipline = SurrogateDiscipline(algo)
@@ -158,7 +158,7 @@ def test_serialize(linear_discipline, tmp_wd) -> None:
 
 
 def test_get_error_measure(linear_discipline) -> None:
-    """Check that get_error_measure returns an instance of BaseMLErrorMeasure."""
+    """Check that get_error_measure returns an instance of BaseRegressorQuality."""
     error_measure = linear_discipline.get_error_measure("R2Measure")
     assert isinstance(error_measure, R2Measure)
     assert error_measure.algo == linear_discipline.regression_model

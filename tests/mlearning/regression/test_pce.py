@@ -40,9 +40,9 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
-from gemseo.mlearning.regression.pce import CleaningOptions
-from gemseo.mlearning.regression.pce import PCERegressor
+from gemseo.mlearning.regression.algos.pce import CleaningOptions
+from gemseo.mlearning.regression.algos.pce import PCERegressor
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.comparisons import compare_dict_of_arrays
 

@@ -34,8 +34,8 @@ from numpy.ma.testutils import assert_close
 from numpy.testing import assert_equal
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.supervised import BaseMLSupervisedAlgo
-from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
     BaseDimensionReduction,
 )

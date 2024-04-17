@@ -25,7 +25,7 @@ import pytest
 from numpy import arange
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.core.unsupervised import BaseMLUnsupervisedAlgo
+from gemseo.mlearning.core.algos.unsupervised import BaseMLUnsupervisedAlgo
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.testing.helpers import concretize_classes
 

@@ -29,7 +29,7 @@ A :class:`.SurrogateDiscipline` can be used to substitute a
 :class:`.MDODiscipline` within a :class:`.Scenario`. This
 :class:`.SurrogateDiscipline` is an evaluation of the :class:`.MDODiscipline`
 and is faster to compute than the original discipline. It relies on a
-:class:`.BaseMLRegressionAlgo`. This comes at the price of computing a :term:`DOE`
+:class:`.BaseRegressor`. This comes at the price of computing a :term:`DOE`
 on the original :class:`.MDODiscipline`, and validating the approximation. The
 computations from which the approximation is built can be available, or can be
 built using |g|' :term:`DOE` capabilities. See :ref:`sobieski_doe` and
@@ -248,11 +248,11 @@ scenario.execute({"max_iter": 30, "algo": "L-BFGS-B"})
 #
 # Extending surrogate models --------------------------
 #
-# All surrogate models work the same way: the :class:`.BaseMLRegressionAlgo` base
+# All surrogate models work the same way: the :class:`.BaseRegressor` base
 # class shall be extended. See :ref:`extending-gemseo` to learn how to run
 # |g|
-# with external Python modules. Then, the :class:`.RegressionModelFactory` can
-# build the new :class:`.BaseMLRegressionAlgo` automatically from its regression
+# with external Python modules. Then, the :class:`.RegressorFactory` can
+# build the new :class:`.BaseRegressor` automatically from its regression
 # algorithm name and options. This factory is called by the constructor of
 # :class:`.SurrogateDiscipline`.
 #

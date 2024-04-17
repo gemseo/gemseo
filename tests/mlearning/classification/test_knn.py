@@ -32,7 +32,7 @@ from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import import_classification_model
-from gemseo.mlearning.classification.knn import KNNClassifier
+from gemseo.mlearning.classification.algos.knn import KNNClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 rng = default_rng(12345)

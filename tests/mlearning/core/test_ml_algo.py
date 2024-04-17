@@ -29,9 +29,9 @@ from numpy import arange
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.clustering.kmeans import KMeans
-from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.core.ml_algo import BaseMLAlgo
+from gemseo.mlearning.clustering.algos.kmeans import KMeans
+from gemseo.mlearning.core.algos.factory import MLAlgoFactory
+from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import concretize_classes

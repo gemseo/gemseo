@@ -36,7 +36,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 LEARNING_SIZE = 50

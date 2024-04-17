@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.mlearning import BaseMLSupervisedAlgo
-    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.algos.ml_algo import DataType
 from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays

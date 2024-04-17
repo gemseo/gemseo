@@ -32,7 +32,7 @@ from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning import import_classification_model
-from gemseo.mlearning.classification.random_forest import RandomForestClassifier
+from gemseo.mlearning.classification.algos.random_forest import RandomForestClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 RNG = default_rng(12345)

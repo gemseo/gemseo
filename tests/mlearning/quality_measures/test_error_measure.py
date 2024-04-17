@@ -27,14 +27,12 @@ from numpy import linspace
 from numpy import newaxis
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.quality_measures.error_measure_factory import (
-    MLErrorMeasureFactory,
-)
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
-from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
-from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.quality.factory import RegressorQualityFactory
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
+from gemseo.mlearning.regression.quality.rmse_measure import RMSEMeasure
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
@@ -210,6 +208,6 @@ def test_resampling_result_storage(
 
 
 def test_factory() -> None:
-    """Test the MLErrorMeasureFactory."""
-    assert MLErrorMeasureFactory().is_available("R2Measure")
-    assert not MLErrorMeasureFactory().is_available("SilhouetteMeasure")
+    """Test the RegressorQualityFactory."""
+    assert RegressorQualityFactory().is_available("R2Measure")
+    assert not RegressorQualityFactory().is_available("SilhouetteMeasure")
