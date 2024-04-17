@@ -33,7 +33,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.aerostructure.aerostructure_design_space import (
+from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
 from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
