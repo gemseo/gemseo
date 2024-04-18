@@ -28,7 +28,7 @@ from __future__ import annotations
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.classification.quality.f1_measure import F1Measure
-from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
+from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 # %%
