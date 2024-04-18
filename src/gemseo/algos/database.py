@@ -307,6 +307,9 @@ class Database(Mapping):
 
         Returns:
             The history of the function output, and possibly the input history.
+
+        Raises:
+            KeyError: When the database contains no output value for this function.
         """
         output_history = []
         input_history = []
@@ -319,6 +322,10 @@ class Database(Mapping):
 
                 if with_x_vect:
                     input_history.append(x.wrapped_array)
+
+        if not output_history:
+            msg = f"The database {self.name!r} contains no value of {function_name!r}."
+            raise KeyError(msg)
 
         try:
             output_history = array(output_history)
