@@ -249,7 +249,7 @@ but yet is still editable in the source tree.
 
 .. _coding-style:
 
-Coding Style
+Coding style
 ++++++++++++
 
 We use the `pep8`_ convention.
@@ -264,13 +264,13 @@ All these tools are used:
 Coding guidelines
 +++++++++++++++++
 
-String formatting
-  Do not format strings with **+**
-  or with the old `printf-style
-  <https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting>`_
-  formatting:
-  format strings with :func:`format` (`documentation
-  <https://docs.python.org/3/library/stdtypes.html#str.format>`_).
+Enumerations
+  Use ``StrEnum`` from the ``strenum`` package for creating collections of constants that are compatible with strings.
+  This allows to easily work with non-Python API like REST.
+
+Error messages
+  Error messages will be read by humans:
+  they shall be explicit and valid sentences.
 
 Logging
   Loggers shall be defined at module level and named after the module with::
@@ -281,13 +281,23 @@ Logging
   and it’s intuitively obvious where events are logged
   just from the logger name.
 
-Error messages
-  Error messages will be read by humans:
-  they shall be explicit and valid sentences.
+Naming convention
+  - A factory of ``Thing``'s instances is named ``ThingFactory`` and put in a module ``path.things.factory``.
+  - The name of an abstract class is ``Base``-prefixed, _e.g._ ``BaseThing`` is an abstract class of things.
+  - A module should not include more than one public class.
+  - A module including a class named ``ClassName`` is named ``class_name``.
+  - In the absence of a better name for a module that does not contain a class, use ``utils``.
+  - Avoid the use of ``__call__``; add a method named as ``compute_quantity`` instead.
 
-Enumerations
-  Use ``StrEnum`` from the ``strenum`` package for creating collections of constants that are compatible with strings.
-  This allows to easily work with non-Python API like REST.
+String formatting
+  Do not format strings with **+**
+  or with the old `printf-style
+  <https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting>`_
+  formatting:
+  format strings with f-strings first
+  (`documentation <https://docs.python.org/3/reference/lexical_analysis.html#formatted-string-literals>`__),
+  or :func:`format` otherwise
+  (`documentation <https://docs.python.org/3/library/stdtypes.html#str.format>`__).
 
 .. _git:
 
