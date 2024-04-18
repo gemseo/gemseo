@@ -54,8 +54,8 @@ from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.algos.ml_algo import TransformerType
-from gemseo.mlearning.core.quality.base_ml_algo_quality_ import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.base_ml_algo_quality_ import MeasureOptionsType
+from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureOptionsType
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
 

@@ -46,7 +46,7 @@ from gemseo.mlearning.regression.quality.base_regressor_quality import (
 )
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.core.quality.base_ml_algo_quality_ import MeasureType
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
     from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
     from gemseo.typing import RealArray
 

@@ -32,7 +32,7 @@ from gemseo.mlearning.clustering.quality.base_predictive_clusterer_quality impor
     BasePredictiveClustererQuality,
 )
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-from gemseo.mlearning.core.quality.base_ml_algo_quality_ import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
 from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
 from gemseo.mlearning.regression.quality.base_regressor_quality import (
     BaseRegressorQuality,

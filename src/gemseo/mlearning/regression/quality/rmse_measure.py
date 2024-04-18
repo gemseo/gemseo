@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.quality.base_ml_algo_quality_ import MeasureType
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
     from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 
 
