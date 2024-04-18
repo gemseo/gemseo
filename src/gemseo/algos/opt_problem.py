@@ -2433,13 +2433,13 @@ class OptimizationProblem(BaseProblem):
         # Add database outputs
         variable_names = self.database.get_function_names()
         output_names = [name for name in variable_names if name not in input_names]
-        self.__add_data_to_database(
+        self.__update_data_and_columns_for_dataset(
             data, columns, output_names, n_samples, output_group, False
         )
 
         # Add database output gradients
         if export_gradients:
-            self.__add_data_to_database(
+            self.__update_data_and_columns_for_dataset(
                 data, columns, output_names, n_samples, gradient_group, True
             )
 
@@ -2452,7 +2452,7 @@ class OptimizationProblem(BaseProblem):
             ),
         ).get_view(indices=positions)
 
-    def __add_data_to_database(
+    def __update_data_and_columns_for_dataset(
         self,
         data: list[NDArray[float]],
         columns: list[tuple[str, str, int]],
@@ -2461,7 +2461,7 @@ class OptimizationProblem(BaseProblem):
         group: str,
         store_gradient: bool,
     ) -> None:
-        """Add the database output gradients to the dataset.
+        """Update the data and the columns used to create the dataset.
 
         Args:
             data: The sequence of data arrays to be augmented with the output data.

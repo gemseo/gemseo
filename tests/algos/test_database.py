@@ -838,3 +838,11 @@ def test_clear_listeners_arguments(store_listeners, new_iter_listeners, expected
         )
         == expected
     )
+
+
+def test_get_function_history():
+    """Check that get_function_history raises a KeyError when the name is missing."""
+    with pytest.raises(
+        KeyError, match=re.escape("The database 'foo' contains no value of 'g'.")
+    ):
+        Database("foo").get_function_history("g")

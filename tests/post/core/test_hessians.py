@@ -183,16 +183,6 @@ def test_baseclass_methods() -> None:
         ),
     ):
         apprx.get_x_grad_history(problem.objective.name, at_most_niter=1)
-    database.clear()
-
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Cannot build approximation for function: "
-            "rosen because its gradient history is too small: 0."
-        ),
-    ):
-        apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
 
     with pytest.raises(
         ValueError,
@@ -205,6 +195,23 @@ def test_baseclass_methods() -> None:
             at_most_niter=at_most_niter,
             normalize_design_space=True,
         )
+
+    database.clear_from_iteration(2)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot build approximation for function: "
+            "rosen because its gradient history is too small: 1."
+        ),
+    ):
+        apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
+
+    database.clear()
+    with pytest.raises(
+        KeyError,
+        match=re.escape("The database 'Database' contains no value of '@rosen'."),
+    ):
+        apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
 
 
 def test_get_x_grad_history_on_sobieski() -> None:
