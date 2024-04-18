@@ -94,8 +94,8 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
     from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
-    from gemseo.mlearning.core.quality.base_ml_algo_quality_ import BaseMLAlgoQuality
-    from gemseo.mlearning.core.quality.base_ml_algo_quality_ import (
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import (
         OptionType as EvalOptionType,
     )
     from gemseo.typing import RealArray

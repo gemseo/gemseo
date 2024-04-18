@@ -24,8 +24,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from gemseo.mlearning.core.quality.base_ml_algo_quality_ import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.base_ml_algo_quality_ import MeasureType
+from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

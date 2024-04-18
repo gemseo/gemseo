@@ -53,7 +53,7 @@ from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.core.quality.base_ml_algo_quality_ import MeasureType
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
     from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
     from gemseo.typing import RealArray
 

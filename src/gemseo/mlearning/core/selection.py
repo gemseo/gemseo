@@ -52,8 +52,8 @@ from typing import TYPE_CHECKING
 
 from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
-from gemseo.mlearning.core.quality.base_ml_algo_quality_ import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.base_ml_algo_quality_ import (
+from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_algo_quality import (
     OptionType as MeasureOptionType,
 )
 from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory

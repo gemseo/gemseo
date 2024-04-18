@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
-    from gemseo.mlearning.core.quality.base_ml_algo_quality_ import MeasureType
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
 
 
 class F1Measure(BaseClassifierQuality):

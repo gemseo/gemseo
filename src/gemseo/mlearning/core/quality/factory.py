@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.mlearning.core.quality.base_ml_algo_quality_ import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
 
 
 class MLAlgoQualityFactory(BaseFactory):

@@ -58,7 +58,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
         BasePredictiveClusterer,
     )
-    from gemseo.mlearning.core.quality.base_ml_algo_quality_ import MeasureType
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
 
 
 class SilhouetteMeasure(BasePredictiveClustererQuality):
