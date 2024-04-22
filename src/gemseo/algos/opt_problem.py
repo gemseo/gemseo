@@ -73,8 +73,10 @@ from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
+from typing import Literal
 from typing import Optional
 from typing import Union
+from typing import overload
 
 import h5py
 import numpy
@@ -2357,6 +2359,26 @@ class OptimizationProblem(BaseProblem):
                 )
 
         return opt_pb
+
+    @overload
+    def to_dataset(
+        self,
+        name: str = "",
+        categorize: bool = True,
+        opt_naming: Literal[False] = False,
+        export_gradients: bool = False,
+        input_values: Iterable[ndarray] = (),
+    ) -> IODataset: ...
+
+    @overload
+    def to_dataset(
+        self,
+        name: str = "",
+        categorize: bool = True,
+        opt_naming: Literal[True] = True,
+        export_gradients: bool = False,
+        input_values: Iterable[ndarray] = (),
+    ) -> OptimizationDataset: ...
 
     def to_dataset(
         self,

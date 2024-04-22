@@ -81,6 +81,7 @@ from strenum import StrEnum
 
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.disciplines.utils import get_all_outputs
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
 from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
@@ -289,13 +290,16 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         if not output_names:
             output_names = get_all_outputs(disciplines)
 
-        scenario = self._create_scenario(
+        scenario = DOEScenario(
             disciplines,
-            output_names,
             formulation,
-            formulation_options,
+            output_names[0],
             parameter_space,
+            name=f"{self.__class__.__name__}SamplingPhase",
+            **formulation_options,
         )
+        for output_name in output_names:
+            scenario.add_observable(output_name)
 
         discipline = _OATSensitivity(scenario, parameter_space, step)
         super().__init__(

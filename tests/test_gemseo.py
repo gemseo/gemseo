@@ -32,6 +32,7 @@ from numpy import linspace
 from numpy import newaxis
 from numpy import pi as np_pi
 from numpy import sin
+from numpy.testing import assert_equal
 
 from gemseo import AlgorithmFeatures
 from gemseo import DatasetClassName
@@ -80,6 +81,7 @@ from gemseo import get_surrogate_options_schema
 from gemseo import import_discipline
 from gemseo import monitor_scenario
 from gemseo import print_configuration
+from gemseo import sample_disciplines
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo import write_design_space
 from gemseo.algos.design_space import DesignSpace
@@ -941,3 +943,76 @@ def test_configure_logger_file_mode(tmp_wd) -> None:
     """Check configure_logger() with custom file and file mode."""
     logger = configure_logger(filename="foo.txt", filemode="w")
     assert logger.handlers[-1].mode == "w"
+
+
+@pytest.fixture(scope="module")
+def disciplines() -> list[AnalyticDiscipline]:
+    """Two simple disciplines to be sampled, with 1 input and 2 outputs."""
+    return [
+        AnalyticDiscipline({"out1": "2*inpt"}),
+        AnalyticDiscipline({"out2": "3*inpt+out1"}),
+    ]
+
+
+@pytest.fixture(scope="module")
+def input_space() -> DesignSpace:
+    """The input space on which to sample the discipline."""
+    design_space = DesignSpace()
+    design_space.add_variable("inpt", l_b=1.0, u_b=2.0)
+    return design_space
+
+
+@pytest.mark.parametrize(
+    "output_names",
+    ["out1", ["out1", "out2"]],
+)
+def test_sample_disciplines(disciplines, input_space, output_names):
+    """Check the sampling of two disciplines."""
+    dataset = sample_disciplines(disciplines, input_space, output_names, 2, "fullfact")
+    assert dataset.name == "DOEScenario"
+
+    assert_equal(
+        dataset.get_view(variable_names="inpt").to_numpy(), array([[1.0], [2.0]])
+    )
+
+    if isinstance(output_names, str):
+        output_names = [output_names]
+
+    assert_equal(
+        dataset.get_view(variable_names="out1").to_numpy(), array([[2.0], [4.0]])
+    )
+
+    if "out2" in output_names:
+        assert_equal(
+            dataset.get_view(variable_names="out2").to_numpy(), array([[5.0], [10.0]])
+        )
+    else:
+        assert "out2" not in dataset.variable_names
+
+    # By default, the gradients are not sampled.
+    assert "@out1" not in dataset.variable_names
+
+
+def test_sample_disciplines_options(disciplines, input_space):
+    """Check the sampling of two disciplines with options."""
+    dataset = sample_disciplines(
+        disciplines,
+        input_space,
+        "out1",
+        2,
+        "fullfact",
+        name="foo",
+        # Use DisciplinaryOpt instead of MDF
+        formulation="DisciplinaryOpt",
+        # Sample -objective instead of objective
+        formulation_options={"maximize_objective": True},
+        # Sample the gradients
+        eval_jac=True,
+    )
+    assert dataset.name == "foo"
+    assert_equal(
+        dataset.get_view(variable_names="-out1").to_numpy(), array([[-2.0], [-4.0]])
+    )
+    assert_equal(
+        dataset.get_view(variable_names="@-out1").to_numpy(), array([[-2.0], [-2.0]])
+    )
