@@ -31,17 +31,17 @@ from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from gemseo.typing import DataMapping
     from gemseo.typing import JacobianData
+    from gemseo.typing import StrKeyMapping
 
 
 class SimpleCache(BaseCache):
     """Dictionary-based cache storing a unique entry."""
 
-    __inputs: DataMapping
+    __inputs: StrKeyMapping
     """The input data."""
 
-    __outputs: DataMapping
+    __outputs: StrKeyMapping
     """The output data."""
 
     __jacobian: JacobianData
@@ -70,7 +70,7 @@ class SimpleCache(BaseCache):
 
     def __is_cached(
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
     ) -> bool:
         """Check if an input data is cached.
 
@@ -86,8 +86,8 @@ class SimpleCache(BaseCache):
 
     def cache_outputs(  # noqa:D102
         self,
-        input_data: DataMapping,
-        output_data: DataMapping,
+        input_data: StrKeyMapping,
+        output_data: StrKeyMapping,
     ) -> None:
         if self.__is_cached(input_data):
             if not self.__outputs:
@@ -103,7 +103,7 @@ class SimpleCache(BaseCache):
 
     def __getitem__(
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
     ) -> CacheEntry:
         if not self.__is_cached(input_data):
             return CacheEntry(input_data, {}, {})
@@ -111,7 +111,7 @@ class SimpleCache(BaseCache):
 
     def cache_jacobian(  # noqa:D102
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
         jacobian_data: JacobianData,
     ) -> None:
         if self.__is_cached(input_data):

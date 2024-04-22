@@ -142,6 +142,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from gemseo.typing import RealOrComplexArray
+
 LOGGER = logging.getLogger(__name__)
 
 BestInfeasiblePointType = tuple[
@@ -1795,7 +1797,7 @@ class OptimizationProblem(BaseProblem):
 
     def is_point_feasible(
         self,
-        out_val: dict[str, ndarray],
+        out_val: Mapping[str, RealOrComplexArray],
         constraints: Iterable[MDOFunction] | None = None,
     ) -> bool:
         """Check if a point is feasible.
@@ -1828,7 +1830,7 @@ class OptimizationProblem(BaseProblem):
 
     def get_feasible_points(
         self,
-    ) -> tuple[list[ndarray], list[dict[str, float | list[int]]]]:
+    ) -> tuple[list[RealOrComplexArray], list[dict[str, float | list[int]]]]:
         """Retrieve the feasible points within a given tolerance.
 
         This tolerance is defined by

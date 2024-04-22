@@ -21,7 +21,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 
 import numpy as np
 import pytest
@@ -40,9 +39,8 @@ from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.typing import StrKeyMapping
 
 MDF_HIST_PATH = Path(__file__).parent / "mdf_history.h5"
 ROSENBROCK_2_PATH = Path(__file__).parent / "rosenbrock_2_opt_pb.h5"
@@ -73,7 +71,7 @@ def compare_approximations(
     approx_class: HessianApproximation,
     problem: OptimizationProblem,
     ermax: float = 0.7,
-    **kwargs: Mapping[str, Any],
+    **kwargs: StrKeyMapping,
 ) -> None:
     """Check that the approximated hessian is close enough to the reference one.
 

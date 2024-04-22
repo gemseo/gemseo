@@ -17,21 +17,23 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import Callable
 
+from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
+from gemseo.typing import StrKeyMapping
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
 
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.discipline_data import Data
 
 
-class DiscParallelExecution(CallableParallelExecution):
+class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineData]):
     """Execute disciplines in parallel."""
 
     _disciplines: Sequence[MDODiscipline]
@@ -43,7 +45,7 @@ class DiscParallelExecution(CallableParallelExecution):
         n_processes: int = CallableParallelExecution.N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
-        exceptions_to_re_raise: tuple[type[Exception]] = (),
+        exceptions_to_re_raise: Sequence[type[Exception]] = (),
     ) -> None:
         """
         Args:
@@ -63,10 +65,10 @@ class DiscParallelExecution(CallableParallelExecution):
 
     def execute(  # noqa: D102
         self,
-        inputs: Sequence[Data | None],
-        exec_callback: Callable[[int, Any], Any] | None = None,
-        task_submitted_callback: Callable | None = None,
-    ) -> list[Any]:
+        inputs: Sequence[StrKeyMapping],
+        exec_callback: CallbackType | Iterable[CallbackType] = (),
+        task_submitted_callback: Callable[[], None] | None = None,
+    ) -> list[DisciplineData | None]:
         ordered_outputs = super().execute(
             inputs,
             exec_callback=exec_callback,
@@ -78,8 +80,9 @@ class DiscParallelExecution(CallableParallelExecution):
                 not self.use_threading
                 and self.MULTI_PROCESSING_START_METHOD
                 == self.MultiProcessingStartMethod.SPAWN
+                and self._disciplines[0].activate_counters
             ):
-                self._disciplines[0].n_calls += len(inputs)
+                self._disciplines[0].n_calls += len(inputs)  # type: ignore[operator] # checked with activate_counter
         else:
             for disc, output in zip(self._disciplines, ordered_outputs):
                 # When the discipline in the worker failed, output is None.

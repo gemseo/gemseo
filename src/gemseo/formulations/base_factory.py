@@ -20,16 +20,18 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
+from gemseo.formulations.base_formulation import BaseFormulation
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo import DesignSpace
-    from gemseo import MDODiscipline
-    from gemseo.formulations.base_formulation import BaseFormulation
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.typing import StrKeyMapping
 
 
-class BaseFormulationFactory(BaseFactory):
+class BaseFormulationFactory(BaseFactory[BaseFormulation]):
     """A factory of :class:`~gemseo.formulations.base_formulation.BaseFormulation`."""
 
     def create(
@@ -65,3 +67,37 @@ class BaseFormulationFactory(BaseFactory):
     def formulations(self) -> list[str]:
         """The available formulations."""
         return self.class_names
+
+    def get_sub_options_grammar(
+        self,
+        name: str,
+        **options: str,
+    ) -> JSONGrammar:
+        """Return the JSONGrammar of the sub options of a class.
+
+        Args:
+            name: The name of the class.
+            **options: The options to be passed to the class required to deduce
+                the sub options.
+
+        Returns:
+            The JSON grammar.
+        """
+        return self.get_class(name).get_sub_options_grammar(**options)
+
+    def get_default_sub_option_values(
+        self,
+        name: str,
+        **options: str,
+    ) -> StrKeyMapping:
+        """Return the default values of the sub options of a class.
+
+        Args:
+            name: The name of the class.
+            **options: The options to be passed to the class required to deduce
+                the sub options.
+
+        Returns:
+            The JSON grammar.
+        """
+        return self.get_class(name).get_default_sub_option_values(**options)

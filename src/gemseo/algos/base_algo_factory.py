@@ -32,6 +32,7 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from gemseo.algos.algorithm_library import AlgorithmLibrary
     from gemseo.algos.base_problem import BaseProblem
     from gemseo.algos.driver_library import DriverLibrary
     from gemseo.algos.opt_result import OptimizationResult
@@ -46,10 +47,15 @@ class _AlgoFactoryMeta(ABCMeta):
     _MODULE_NAMES: ClassVar[list[str]]
     """The fully qualified names of the modules to search."""
 
-    _Factory: type[BaseFactory]
+    _Factory: type[BaseFactory[AlgorithmLibrary]]
     """The internal factory class."""
 
-    def __init__(cls, name, bases, namespace) -> None:  # noqa: D107
+    def __init__(
+        cls,
+        name: str,
+        bases: tuple[type, ...],
+        namespace: dict[str, Any],
+    ) -> None:  # noqa: D107
         super().__init__(name, bases, namespace)
         # Do not create the internal factory for BaseAlgoFactory which is abstract.
         if name != "BaseAlgoFactory":

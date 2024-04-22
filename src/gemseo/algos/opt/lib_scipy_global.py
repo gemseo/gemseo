@@ -41,11 +41,10 @@ from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
     from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType
+    from gemseo.typing import StrKeyMapping
 
 InputType = NDArray[Union[float64, int32]]
 
@@ -126,7 +125,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         eq_tolerance: float = 1e-6,
         ineq_tolerance: float = 1e-6,
         normalize_design_space: bool = True,
-        local_options: Mapping[str, Any] | None = None,
+        local_options: StrKeyMapping | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:  # pylint: disable=W0221
         r"""Set the options default values.

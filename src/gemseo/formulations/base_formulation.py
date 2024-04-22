@@ -27,8 +27,22 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
+from numpy import arange
+from numpy import copy
+from numpy import empty
+from numpy import in1d
+from numpy import ndarray
+from numpy import zeros
+
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
+from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
@@ -40,21 +54,8 @@ if TYPE_CHECKING:
     from gemseo.core.execution_sequence import ExecutionSequence
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.scenarios.scenario import Scenario
+    from gemseo.typing import StrKeyMapping
 
-from numpy import arange
-from numpy import copy
-from numpy import empty
-from numpy import in1d
-from numpy import ndarray
-from numpy import zeros
-
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
-)
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.disciplines.utils import get_sub_disciplines
 
 LOGGER = logging.getLogger(__name__)
 
@@ -372,7 +373,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         masking_data_names: Iterable[str],
         x_masked: ndarray,
         all_data_names: Iterable[str] | None = None,
-        x_full: ndarray = None,
+        x_full: ndarray | None = None,
     ) -> ndarray:
         """Unmask a vector from a subset of names, with respect to a set of names.
 
@@ -620,7 +621,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     @abstractmethod
     def get_expected_workflow(
         self,
-    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
+    ) -> ExecutionSequence | tuple[ExecutionSequence]:
         """Get the expected sequence of execution of the disciplines.
 
         This method is used for the XDSM representation
@@ -657,7 +658,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @classmethod
-    def get_default_sub_option_values(cls, **options: str) -> dict:
+    def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:
         """Return the default values of the sub-options of the formulation.
 
         When some options of the formulation depend on higher level options,
@@ -670,6 +671,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             Either ``None`` or the sub-options default values.
         """
+        return {}
 
     @classmethod
     def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:
@@ -685,3 +687,4 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             Either ``None`` or the sub-options grammar.
         """
+        return {}

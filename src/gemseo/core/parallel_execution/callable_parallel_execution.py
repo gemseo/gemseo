@@ -21,45 +21,60 @@
 from __future__ import annotations
 
 import logging
-import multiprocessing as mp
 import queue
 import sys
 import threading as th
 import time
 import traceback
+from collections.abc import Callable
+from multiprocessing import cpu_count
+from multiprocessing import current_process
 from multiprocessing import get_context
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import Final
+from typing import Generic
 from typing import TypeVar
+from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from strenum import StrEnum
 
-from gemseo.utils.multiprocessing import get_multi_processing_manager
+from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
+    from multiprocessing.context import ForkProcess
+    from multiprocessing.context import ForkServerProcess
+    from multiprocessing.context import SpawnProcess
+    from multiprocessing.managers import ListProxy
 
 SUBPROCESS_NAME: Final[str] = "subprocess"
 
 LOGGER = logging.getLogger(__name__)
 
-_QueueType = TypeVar("_QueueType", queue.Queue, mp.Queue)
 
-
-CallbackType = Callable[[int, Any], Any]
+CallbackType = Callable[[int, Any], None]
 """The type of a callback function."""
+
+ArgT = TypeVar("ArgT")
+ReturnT = TypeVar("ReturnT")
+
+CallableType = Callable[[ArgT], ReturnT]
+
+_QueueOutItem2 = Union[BaseException, ReturnT]
+
+_QueueInType = queue.Queue[Union[None, tuple[int, ArgT]]]
+_QueueOutType = queue.Queue[tuple[int, _QueueOutItem2[ReturnT]]]
 
 
 def _execute_workers(
-    task_callables: _TaskCallables,
-    queue_in: _QueueType,
-    queue_out: _QueueType,
+    task_callables: _TaskCallables[ArgT, ReturnT],
+    queue_in: _QueueInType[ArgT],
+    queue_out: _QueueOutType[ReturnT],
 ) -> None:
     """Call the task callables for args that are left in the queue_in.
 
@@ -81,24 +96,20 @@ def _execute_workers(
         queue_in.task_done()
 
 
-class _TaskCallables:
+class _TaskCallables(Generic[ArgT, ReturnT]):
     """Manage the call of one callable among callables."""
 
-    callables: Sequence[Callable]
+    callables: Sequence[CallableType[ArgT, ReturnT]]
     """The callables."""
 
-    inputs: Sequence[Any]
-    """The inputs to be passed to the callables."""
-
-    def __init__(self, callables: Sequence[Callable]) -> None:
+    def __init__(self, callables: Sequence[CallableType[ArgT, ReturnT]]) -> None:
         """
         Args:
             callables: The callables.
-            inputs: The inputs to be passed to the callables.
         """  # noqa: D205, D212, D415
         self.callables = callables
 
-    def __call__(self, task_index: int, input_) -> Any:
+    def __call__(self, task_index: int, input_: ArgT) -> ReturnT:
         """Call a callable.
 
         Args:
@@ -114,7 +125,9 @@ class _TaskCallables:
         return callable_(input_)
 
 
-class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
+class CallableParallelExecution(
+    Generic[ArgT, ReturnT], metaclass=GoogleDocstringInheritanceMeta
+):
     """Perform a parallel execution of callables.
 
     The inputs must be independent objects.
@@ -139,10 +152,10 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
     else:  # pragma: win32 no cover
         MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.FORK
 
-    N_CPUS: Final[int] = mp.cpu_count()
+    N_CPUS: Final[int] = cpu_count()
     """The number of CPUs."""
 
-    workers: Sequence[Callable]
+    workers: Sequence[CallableType[ArgT, ReturnT]]
     """The objects that perform the tasks."""
 
     n_processes: int
@@ -157,16 +170,16 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
     inputs: list[Any]
     """The inputs to be passed to the workers."""
 
-    __exceptions_to_re_raise: tuple[type[Exception]]
+    __exceptions_to_re_raise: tuple[type[Exception], ...]
     """The exception from a worker to be raised."""
 
     def __init__(
         self,
-        workers: Sequence[Callable],
+        workers: Sequence[CallableType[ArgT, ReturnT]],
         n_processes: int = N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
-        exceptions_to_re_raise: tuple[type[Exception]] = (),
+        exceptions_to_re_raise: Sequence[type[Exception]] = (),
     ) -> None:
         """
         Args:
@@ -198,7 +211,7 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
         self.n_processes = n_processes
         self.use_threading = use_threading
         self.wait_time_between_fork = wait_time_between_fork
-        self.__exceptions_to_re_raise = exceptions_to_re_raise
+        self.__exceptions_to_re_raise = tuple(exceptions_to_re_raise)
         self._check_unicity(workers)
 
     def _check_unicity(self, objects: Any) -> None:
@@ -215,12 +228,13 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
                 )
                 raise ValueError(msg)
 
+    # TODO: API: let exec_callback always be iterable and renamed to callbacks.
     def execute(
         self,
-        inputs: Sequence[Any],
+        inputs: Sequence[ArgT],
         exec_callback: CallbackType | Iterable[CallbackType] = (),
-        task_submitted_callback: Callable | None = None,
-    ) -> list[Any]:
+        task_submitted_callback: Callable[[], None] | None = None,
+    ) -> list[ReturnT | None]:
         """Execute all the processes.
 
         Args:
@@ -242,15 +256,23 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             necessary to protect its execution with an ``if __name__ == '__main__':``
             statement when working on Windows.
         """
-        if exec_callback is None:
-            exec_callback = []
-
         if callable(exec_callback):
             exec_callback = [exec_callback]
 
         n_tasks = len(inputs)
 
-        tasks = list(range(n_tasks))[::-1]
+        tasks: list[int] | ListProxy[int] = list(range(n_tasks))[::-1]
+
+        queue_in: _QueueInType[ArgT]
+        queue_out: _QueueOutType[ReturnT]
+        processor: (
+            type[th.Thread]
+            | type[ForkProcess]
+            | type[SpawnProcess]
+            | type[ForkServerProcess]
+        )
+
+        # TODO: API: use subclass instead of if?
         # Queue for workers.
         if self.use_threading:
             queue_in = queue.Queue()
@@ -262,22 +284,22 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             queue_out = manager.Queue()
             tasks = manager.list(tasks)
             self.__check_multiprocessing_start_method()
-            processor = get_context(method=self.MULTI_PROCESSING_START_METHOD).Process
+            processor = get_context(method=self.MULTI_PROCESSING_START_METHOD).Process  # type: ignore[attr-defined]
 
         task_callables = _TaskCallables(self.workers)
 
         processes = []
         for _ in range(min(n_tasks, self.n_processes)):
-            proc = processor(
+            process = processor(
                 target=_execute_workers,
                 args=(task_callables, queue_in, queue_out),
                 name=SUBPROCESS_NAME,
             )
-            proc.daemon = True
-            proc.start()
-            processes.append(proc)
+            process.daemon = True
+            process.start()
+            processes.append(process)
 
-        if mp.current_process().name == SUBPROCESS_NAME and not self.use_threading:
+        if current_process().name == SUBPROCESS_NAME and not self.use_threading:
             # The subprocesses do nothing here.
             return []
 
@@ -293,15 +315,16 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
             task_submitted_callback()
 
         # Sort the outputs with the same order as functions.
-        ordered_outputs = [None] * n_tasks
-        got_n_outs = 0
+        ordered_outputs: list[None | ReturnT] = [None] * n_tasks
+        n_outputs = 0
         # Retrieve outputs on the fly to call the callbacks, typically
         # iterates progress bar and stores the data in database or cache.
         stop = False
 
-        while got_n_outs != n_tasks and not stop:
+        # TODO: simplify with for loop and build ordered_outputs incrementally.
+        while n_outputs != n_tasks and not stop:
             index, output = queue_out.get()
-            if isinstance(output, Exception):
+            if isinstance(output, BaseException):
                 LOGGER.error("Failed to execute task indexed %s", str(index))
                 LOGGER.error(output)
                 # Condition to stop the execution only for required exceptions.
@@ -312,14 +335,14 @@ class CallableParallelExecution(metaclass=GoogleDocstringInheritanceMeta):
                 ordered_outputs[index] = output
                 for callback in exec_callback:
                     callback(index, output)
-            got_n_outs += 1
+            n_outputs += 1
 
         # Terminate the threads or processes.
         for _ in processes:
             queue_in.put(None)
 
-        for proc in processes:
-            proc.join()
+        for process in processes:
+            process.join()
 
         if isinstance(output, self.__exceptions_to_re_raise):
             raise output

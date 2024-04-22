@@ -18,25 +18,33 @@ from __future__ import annotations
 
 import logging
 from copy import copy
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Generic
+from typing import TypeVar
 
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import dtype
 from numpy import eye
-from numpy import ndarray
 from scipy.sparse.linalg import LinearOperator
 
-from gemseo.utils.compatibility.scipy import ArrayType
+from gemseo.typing import SparseOrDenseRealArray
 from gemseo.utils.compatibility.scipy import array_classes
-from gemseo.utils.metaclasses import GoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
+
+_OperandT = TypeVar("_OperandT", "JacobianOperator", SparseOrDenseRealArray)
 
 LOGGER = logging.getLogger(__name__)
 
 
-class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta):
+class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta):  # type: ignore[misc] # missing typing
     """The Jacobian of a discipline as linear operator."""
 
     def __init__(
         self,
-        dtype: dtype,
+        dtype: dtype[Any],
         shape: tuple[int, ...],
     ) -> None:
         """
@@ -46,59 +54,31 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
         """  # noqa: D205 D212 D415
         super().__init__(dtype, shape)
 
-    def __add__(self, other: JacobianOperator | ArrayType) -> _SumJacobianOperator:
-        """
-        Raises:
-            TypeError: if the operand has type different from JacobianOperator, NumPy
-                ndarray or SciPy spmatrix.
-        """  # noqa: D205 D212 D415
-        if not isinstance(other, (JacobianOperator, array_classes)):
-            msg = f"Adding a JacobianOperator with {type(other)} is not supported."
-            raise TypeError(msg)
+    def __add__(self, other: _OperandT) -> _BaseOperation[_OperandT]:
+        if isinstance(other, array_classes):
+            return _SumOperationWithArray(self, other)
+        return _SumOperation(self, other)
 
-        return _SumJacobianOperator(self, other)
-
-    def __sub__(self, other: JacobianOperator | ArrayType) -> _SubJacobianOperator:
-        """
-        Raises:
-            TypeError: if the operand has type different from JacobianOperator, NumPy
-                ndarray or SciPy spmatrix.
-        """  # noqa: D205 D212 D415
-        if not isinstance(other, (JacobianOperator, array_classes)):
-            msg = (
-                f"Substracting a JacobianOperator with {type(other)} is not supported."
-            )
-            raise TypeError(msg)
-
-        return _SubJacobianOperator(self, other)
+    def __sub__(self, other: _OperandT) -> _BaseOperation[_OperandT]:
+        if isinstance(other, array_classes):
+            return _SubOperationWithArray(self, other)
+        return _SubOperation(self, other)
 
     def __matmul__(
-        self, other: JacobianOperator | ArrayType
-    ) -> _ComposedJacobianOperator:
-        """
-        Raises:
-            TypeError: if the operand has type different from JacobianOperator, NumPy
-                ndarray or SciPy spmatrix.
-        """  # noqa: D205 D212 D415
-        if not isinstance(other, (JacobianOperator, array_classes)):
-            msg = f"Multiplying a JacobianOperator with {type(other)} is not supported."
-            raise TypeError(msg)
-
-        return _ComposedJacobianOperator(self, other)
+        self,
+        other: _OperandT,
+    ) -> _BaseComposedOperation[JacobianOperator, _OperandT]:
+        if isinstance(other, array_classes):
+            return _ComposedOperationOperatorArray(self, other)
+        return _ComposedOperationOperatorOperator(self, other)
 
     def __rmatmul__(
-        self, other: JacobianOperator | ArrayType
-    ) -> _ComposedJacobianOperator:
-        """
-        Raises:
-            TypeError: if the operand has type different from JacobianOperator, NumPy
-                ndarray or SciPy spmatrix.
-        """  # noqa: D205 D212 D415
-        if not isinstance(other, (JacobianOperator, array_classes)):
-            msg = f"Multiplying a JacobianOperator with {type(other)} is not supported."
-            raise TypeError(msg)
-
-        return _ComposedJacobianOperator(other, self)
+        self,
+        other: _OperandT,
+    ) -> _BaseComposedOperation[_OperandT, JacobianOperator]:
+        if isinstance(other, array_classes):
+            return _ComposedOperationArrayOperator(other, self)
+        return _ComposedOperationOperatorOperator(other, self)
 
     @property
     def real(self) -> _RealJacobianOperator:
@@ -122,15 +102,15 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
         """
         return _AdjointJacobianOperator(self)
 
-    def shift_identity(self) -> _SubJacobianOperator:
-        """Substract the identity to the Jacobian operator.
+    def shift_identity(self) -> _SubOperation:
+        """Subtract the identity to the Jacobian operator.
 
         Returns:
             The Jacobian operator shifted by minus the identity.
         """
         return self - _IdentityOperator(self.shape[0])
 
-    def get_matrix_representation(self) -> ndarray:
+    def get_matrix_representation(self) -> RealArray:
         """Compute the matrix representation of the Jacobian.
 
         Returns:
@@ -141,10 +121,12 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
             "required to apply it to the identity which is not performant."
         )
 
-        return self.dot(eye(self.shape[1]))
+        return self.dot(eye(self.shape[1]))  # type: ignore[no-any-return]
 
 
 class _RealJacobianOperator(JacobianOperator):
+    """A jacobian operator that casts to real."""
+
     def __init__(self, operator: JacobianOperator) -> None:
         """
         Args:
@@ -154,135 +136,172 @@ class _RealJacobianOperator(JacobianOperator):
 
         self.__operator = operator
 
-    def _matvec(self, x: ndarray) -> ndarray:
-        return self.__operator.matvec(x).real
+    def _matvec(self, x: RealArray) -> RealArray:
+        return self.__operator.matvec(x).real  # type: ignore[no-any-return]
 
-    def _rmatvec(self, x: ndarray) -> ndarray:
-        return self.__operator.rmatvec(x).real
+    def _rmatvec(self, x: RealArray) -> RealArray:
+        return self.__operator.rmatvec(x).real  # type: ignore[no-any-return]
 
 
 class _AdjointJacobianOperator(JacobianOperator):
+    """A jacobian operator that handles adjoints."""
+
     def __init__(self, operator: JacobianOperator) -> None:
         """
         Args:
             operator: The Jacobian operator to take the adjoint of.
         """  # noqa: D205 D212 D415
         super().__init__(operator.dtype, operator.shape[::-1])
-
         self.__operator = operator
 
-    def _matvec(self, x: ndarray) -> ndarray:
-        return self.__operator.rmatvec(x)
+    def _matvec(self, x: RealArray) -> RealArray:
+        return self.__operator.rmatvec(x)  # type: ignore[no-any-return]
 
-    def _rmatvec(self, x: ndarray) -> ndarray:
-        return self.__operator.matvec(x)
+    def _rmatvec(self, x: RealArray) -> RealArray:
+        return self.__operator.matvec(x)  # type: ignore[no-any-return]
 
 
 class _IdentityOperator(JacobianOperator):
+    """A jacobian operator that represents the identity operator."""
+
     def __init__(self, size: int) -> None:
         """
         Args:
-            operator: The size of the identity.
+            size: The size of the identity matrix.
         """  # noqa: D205 D212 D415
         super().__init__(dtype(float), (size, size))
 
-    def _matvec(self, x: ndarray) -> ndarray:
+    def _matvec(self, x: RealArray) -> RealArray:
         return x
 
-    def _rmatvec(self, x: ndarray) -> ndarray:
+    def _rmatvec(self, x: RealArray) -> RealArray:
         return x
 
 
-class _SumJacobianOperator(JacobianOperator):
+class _BaseOperation(JacobianOperator, Generic[_OperandT]):
+    """A base class to handle operations on 2 jacobian operators."""
+
+    _operand_1: JacobianOperator
+    """The first operand."""
+
+    _operand_2: _OperandT
+    """The second operand."""
+
     def __init__(
         self,
         operand_1: JacobianOperator,
-        operand_2: JacobianOperator | ArrayType,
+        operand_2: _OperandT,
     ) -> None:
         """
         Args:
-            operand_1: First operand of the summation.
-            operand_2: Second operand of the summation.
+            operand_1: The first operand.
+            operand_2: The second operand.
         """  # noqa: D205 D212 D415
         super().__init__(operand_1.dtype, operand_1.shape)
-
-        self.__operand_1 = operand_1
-        self.__operand_2 = operand_2
-
-        self.__array_like = isinstance(operand_2, array_classes)
-
-    def _matvec(self, x: ndarray) -> ndarray:
-        if self.__array_like:
-            return self.__operand_1.matvec(x) + self.__operand_2 @ x
-        return self.__operand_1.matvec(x) + self.__operand_2.matvec(x)
-
-    def _rmatvec(self, x: ndarray) -> ndarray:
-        if self.__array_like:
-            return self.__operand_1.rmatvec(x) + self.__operand_2.T @ x
-        return self.__operand_1.rmatvec(x) + self.__operand_2.rmatvec(x)
+        self._operand_1 = operand_1
+        self._operand_2 = operand_2
 
 
-class _SubJacobianOperator(JacobianOperator):
+class _SumOperation(_BaseOperation[JacobianOperator]):
+    """A jacobian operator that handles the sum of 2 jacobian operators."""
+
+    def _matvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.matvec(x) + self._operand_2.matvec(x)  # type:ignore[no-any-return]
+
+    def _rmatvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.rmatvec(x) + self._operand_2.rmatvec(x)  # type:ignore[no-any-return]
+
+
+class _SumOperationWithArray(_BaseOperation[SparseOrDenseRealArray]):
+    """A jacobian operator that handles the sum operation with a standard jacobian."""
+
+    def _matvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.matvec(x) + self._operand_2 @ x  # type:ignore[no-any-return]
+
+    def _rmatvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.rmatvec(x) + self._operand_2.T @ x  # type:ignore[no-any-return]
+
+
+class _SubOperation(_BaseOperation[JacobianOperator]):
+    """A jacobian operator that handles the subtraction of 2 jacobian operators."""
+
+    def _matvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.matvec(x) - self._operand_2.matvec(x)  # type:ignore[no-any-return]
+
+    def _rmatvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.rmatvec(x) - self._operand_2.rmatvec(x)  # type:ignore[no-any-return]
+
+
+class _SubOperationWithArray(_BaseOperation[SparseOrDenseRealArray]):
+    """A jacobian operator that handles the subtraction with a standard jacobian."""
+
+    def _matvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.matvec(x) - self._operand_2 @ x  # type:ignore[no-any-return]
+
+    def _rmatvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.rmatvec(x) - self._operand_2.T @ x  # type:ignore[no-any-return]
+
+
+# TODO: How to avoid duplication? (TypeAlias does not work)
+Operand1T = TypeVar("Operand1T", JacobianOperator, SparseOrDenseRealArray)
+Operand2T = TypeVar("Operand2T", JacobianOperator, SparseOrDenseRealArray)
+
+
+class _BaseComposedOperation(JacobianOperator, Generic[Operand1T, Operand2T]):
+    """A base class for jacobian operators composition."""
+
+    _operand_1: Operand1T
+    """The first operand."""
+
+    _operand_2: Operand2T
+    """The second operand."""
+
     def __init__(
         self,
-        operand_1: JacobianOperator,
-        operand_2: JacobianOperator | ArrayType,
+        operand_1: Operand1T,
+        operand_2: Operand2T,
     ) -> None:
         """
         Args:
-            operand_1: First operand of the substraction.
-            operand_2: Second operand of the substraction.
-        """  # noqa: D205 D212 D415
-        super().__init__(operand_1.dtype, operand_1.shape)
-
-        self.__operand_1 = operand_1
-        self.__operand_2 = operand_2
-
-        self.__array_like = isinstance(operand_2, array_classes)
-
-    def _matvec(self, x: ndarray) -> ndarray:
-        if self.__array_like:
-            return self.__operand_1.matvec(x) - self.__operand_2 @ x
-        return self.__operand_1.matvec(x) - self.__operand_2.matvec(x)
-
-    def _rmatvec(self, x: ndarray) -> ndarray:
-        if self.__array_like:
-            return self.__operand_1.rmatvec(x) - self.__operand_2.T @ x
-        return self.__operand_1.rmatvec(x) - self.__operand_2.rmatvec(x)
-
-
-class _ComposedJacobianOperator(JacobianOperator):
-    def __init__(
-        self,
-        operand_1: JacobianOperator | ArrayType,
-        operand_2: JacobianOperator | ArrayType,
-    ) -> None:
-        """
-        Args:
-            operand_1: First operand of the composition.
-            operand_2: Second operand of the composition.
+            operand_1: The first operand of the composition.
+            operand_2: The second operand of the composition.
         """  # noqa: D205 D212 D415
         super().__init__(operand_1.dtype, (operand_1.shape[0], operand_2.shape[1]))
+        self._operand_1 = operand_1
+        self._operand_2 = operand_2
 
-        self.__operand_1 = operand_1
-        self.__operand_2 = operand_2
 
-        self.__array_like_1 = isinstance(operand_1, array_classes)
-        self.__array_like_2 = isinstance(operand_2, array_classes)
+class _ComposedOperationArrayOperator(
+    _BaseComposedOperation[SparseOrDenseRealArray, JacobianOperator]
+):
+    """A jacobian operator that handles a left composition with a standard jacobian."""
 
-    def _matvec(self, x: ndarray) -> ndarray:
-        x = self.__operand_2 @ x if self.__array_like_2 else self.__operand_2.matvec(x)
+    def _matvec(self, x: RealArray) -> RealArray:
+        return self._operand_1 @ self._operand_2.matvec(x)  # type:ignore[no-any-return]
 
-        if self.__array_like_1:
-            return self.__operand_1 @ x
-        return self.__operand_1.matvec(x)
+    def _rmatvec(self, x: RealArray) -> RealArray:
+        return self._operand_2.rmatvec(self._operand_1.T @ x)  # type:ignore[no-any-return]
 
-    def _rmatvec(self, x: ndarray) -> ndarray:
-        if self.__array_like_1:
-            x = self.__operand_1.T @ x
-        else:
-            x = self.__operand_1.rmatvec(x)
 
-        if self.__array_like_2:
-            return self.__operand_2.T @ x
-        return self.__operand_2.rmatvec(x)
+class _ComposedOperationOperatorOperator(
+    _BaseComposedOperation[JacobianOperator, JacobianOperator]
+):
+    """A jacobian operator that compose another jacobian operator."""
+
+    def _matvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.matvec(self._operand_2.matvec(x))  # type:ignore[no-any-return]
+
+    def _rmatvec(self, x: RealArray) -> RealArray:
+        return self._operand_2.rmatvec(self._operand_1.rmatvec(x))  # type:ignore[no-any-return]
+
+
+class _ComposedOperationOperatorArray(
+    _BaseComposedOperation[JacobianOperator, SparseOrDenseRealArray]
+):
+    """A jacobian operator that handles a right composition with a standard jacobian."""
+
+    def _matvec(self, x: RealArray) -> RealArray:
+        return self._operand_1.matvec(self._operand_2 @ x)  # type:ignore[no-any-return]
+
+    def _rmatvec(self, x: RealArray) -> RealArray:
+        return self._operand_2.T @ self._operand_1.rmatvec(x)  # type:ignore[no-any-return]

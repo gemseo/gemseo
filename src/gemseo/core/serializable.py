@@ -34,7 +34,7 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.portable_path import to_os_specific
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from gemseo.typing import StrKeyMapping
 
 
 class Serializable(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -77,7 +77,7 @@ class Serializable(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __setstate__(
         self,
-        state: Mapping[str, Any],
+        state: StrKeyMapping,
     ) -> None:
         # Initialize all Synchronized attributes first.
         self._init_shared_memory_attrs()

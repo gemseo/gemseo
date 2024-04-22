@@ -40,4 +40,3 @@ else:
     SparseArrayType = Union[spmatrix, sparray]
 
 array_classes = (ndarray, *sparse_classes)
-ArrayType = Union[ndarray, SparseArrayType]

@@ -36,12 +36,12 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda_root import BaseMDARoot
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
     from typing import Any
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline_data import DisciplineData
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ class MDAQuasiNewton(BaseMDARoot):
         use_lu_fact: bool = False,
         coupling_structure: MDOCouplingStructure | None = None,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_options: StrKeyMapping | None = None,
     ) -> None:
         """
         Args:

@@ -32,11 +32,11 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.scenarios.scenario import Scenario
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.typing import StrKeyMapping
 
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name
@@ -125,7 +125,7 @@ class MDOScenario(Scenario):
             })
             self.input_grammar.required_names.remove("algo_options")
 
-    def __setstate__(self, state: Mapping[str, Any]) -> None:
+    def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
         # OptimizationLibrary objects cannot be serialized, _algo_name and _lib are
         # set to None to force the lib creation in _run_algorithm.

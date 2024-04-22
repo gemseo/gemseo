@@ -40,13 +40,13 @@ from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.execution_sequence import ExecutionSequence
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.mda.base_mda import BaseMDA
     from gemseo.scenarios.scenario import Scenario
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -309,9 +309,7 @@ class BiLevel(MDOFormulation):
         return MDAFactory().get_options_grammar(main_mda_name)
 
     @classmethod
-    def get_default_sub_option_values(
-        cls, **options: str
-    ) -> Mapping[str, str | int | float | bool | None] | None:
+    def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:
         """
         Raises:
             ValueError: When the MDA name is not provided.

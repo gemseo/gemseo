@@ -26,15 +26,17 @@ The namespaces implementation itself is mainly in :mod:`~gemseo.core.grammars` a
 from __future__ import annotations
 
 from collections.abc import Iterable
+from collections.abc import Mapping
 from collections.abc import MutableMapping
 from typing import Union
 
-NamespacesMapping = MutableMapping[str, Union[str, list[str]]]
+MutableNamespacesMapping = MutableMapping[str, Union[str, list[str]]]
+NamespacesMapping = Mapping[str, Union[str, list[str]]]
 
 namespaces_separator = ":"
 
 
-def split_namespace(name: str) -> list[str, str]:
+def split_namespace(name: str) -> list[str]:
     """Return the (namespace, name) pair from a data name.
 
     For instance if data_name = ``my:namespace:a`` and the separator is ``:``,
@@ -79,8 +81,11 @@ def remove_prefix_from_list(names: Iterable[str]) -> list[str]:
     return [d.rsplit(namespaces_separator, 1)[-1] for d in names]
 
 
+# TODO: API: create a specific update_namespace for process disciplines,
+# that are the only namespaces allowed to use nested namespaces.
+# This will also fix the mypy ignore.
 def update_namespaces(
-    namespaces: NamespacesMapping, other_namespaces: NamespacesMapping
+    namespaces: MutableNamespacesMapping, other_namespaces: MutableNamespacesMapping
 ) -> None:
     """Update namespaces with the key/value pairs from other, overwriting existing keys.
 
@@ -98,6 +103,6 @@ def update_namespaces(
             else:
                 namespaces[name] = [curr_ns, *other_ns]
         elif isinstance(other_ns, str):
-            namespaces[name].append(other_ns)
+            namespaces[name].append(other_ns)  # type:ignore[union-attr]
         else:
-            namespaces[name].extend(other_ns)
+            namespaces[name].extend(other_ns)  # type:ignore[union-attr]

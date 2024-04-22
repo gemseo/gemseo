@@ -225,34 +225,3 @@ def test_algebra_between_jacobian_operators(rectangular_jacobian) -> None:
     assert isinstance(result, JacobianOperator)
     assert allclose(result.get_matrix_representation(), result_mat, atol=1e-12)
     assert allclose(result.T.get_matrix_representation(), result_mat.T, atol=1e-12)
-
-
-def test_algebra_with_not_supported_type(rectangular_jacobian) -> None:
-    """Tests the algebraic operations with non supported objects."""
-    _, jacobian_operator = rectangular_jacobian
-
-    a = 1.0
-
-    with pytest.raises(
-        TypeError,
-        match=(f"Adding a JacobianOperator with {type(a)} is not supported."),
-    ):
-        _ = jacobian_operator + a
-
-    with pytest.raises(
-        TypeError,
-        match=(f"Substracting a JacobianOperator with {type(a)} is not supported."),
-    ):
-        _ = jacobian_operator - a
-
-    with pytest.raises(
-        TypeError,
-        match=(f"Multiplying a JacobianOperator with {type(a)} is not supported."),
-    ):
-        _ = jacobian_operator @ a
-
-    with pytest.raises(
-        TypeError,
-        match=(f"Multiplying a JacobianOperator with {type(a)} is not supported."),
-    ):
-        _ = jacobian_operator.__rmatmul__(a)

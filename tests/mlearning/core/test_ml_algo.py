@@ -128,7 +128,7 @@ def test_transformer_wrong_type(dataset) -> None:
             ValueError,
             match=re.escape(
                 "BaseTransformer type must be "
-                "either BaseTransformer, Tuple[str, Mapping[str, Any]] or str."
+                "either BaseTransformer, Tuple[str, StrKeyMapping] or str."
             ),
         ),
         concretize_classes(BaseMLAlgo),

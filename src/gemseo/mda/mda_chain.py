@@ -41,10 +41,10 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from typing import Any
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline_data import DisciplineData
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ class MDAChain(BaseMDA):
         sub_coupling_structures: Iterable[MDOCouplingStructure | None] | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_options: StrKeyMapping | None = None,
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool] | None = None,
         initialize_defaults: bool = False,
@@ -477,7 +477,7 @@ class MDAChain(BaseMDA):
         super()._check_consistency()
 
     def execute(  # noqa:D102
-        self, input_data: Mapping[str, Any] | None = None
+        self, input_data: StrKeyMapping | None = None
     ) -> DisciplineData:
         if self.__initialize_defaults:
             init_chain = MDOInitializationChain(

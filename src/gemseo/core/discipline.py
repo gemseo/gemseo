@@ -66,14 +66,15 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import MutableMapping
 
-    from numpy.typing import NDArray
-
     from gemseo.caches.base_cache import BaseCache
     from gemseo.core.data_processor import DataProcessor
     from gemseo.core.derivatives.jacobian_operator import JacobianOperator
     from gemseo.core.execution_sequence import AtomicExecSequence
     from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.core.grammars.defaults import Defaults
+    from gemseo.typing import JacobianData
+    from gemseo.typing import MutableStrKeyMapping
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -406,10 +407,10 @@ class MDODiscipline(Serializable):
         return self._local_data
 
     @local_data.setter
-    def local_data(self, data: MutableMapping[str, Any]) -> None:
+    def local_data(self, data: MutableStrKeyMapping) -> None:
         self.__set_local_data(data)
 
-    def __set_local_data(self, data: MutableMapping[str, Any]) -> None:
+    def __set_local_data(self, data: MutableStrKeyMapping) -> None:
         self._local_data = DisciplineData(
             data,
             input_to_namespaced=self.input_grammar.to_namespaced,
@@ -838,7 +839,7 @@ class MDODiscipline(Serializable):
 
     def _filter_inputs(
         self,
-        input_data: Mapping[str, Any] | None = None,
+        input_data: StrKeyMapping | None = None,
     ) -> DisciplineData:
         """Filter data with the discipline inputs and use the default values if missing.
 
@@ -947,7 +948,7 @@ class MDODiscipline(Serializable):
 
     def execute(
         self,
-        input_data: Mapping[str, Any] | None = None,
+        input_data: StrKeyMapping | None = None,
     ) -> DisciplineData:
         """Execute the discipline.
 
@@ -1199,10 +1200,10 @@ class MDODiscipline(Serializable):
 
     def linearize(
         self,
-        input_data: Mapping[str, Any] | None = None,
+        input_data: StrKeyMapping | None = None,
         compute_all_jacobians: bool = False,
         execute: bool = True,
-    ) -> Mapping[str, Mapping[str, NDArray[float]]]:
+    ) -> JacobianData:
         """Compute the Jacobians of some outputs with respect to some inputs.
 
         Args:
@@ -1544,7 +1545,7 @@ class MDODiscipline(Serializable):
         return self.input_grammar.defaults
 
     @default_inputs.setter
-    def default_inputs(self, data: Mapping[str, Any]) -> None:
+    def default_inputs(self, data: StrKeyMapping) -> None:
         self.input_grammar.defaults = data
 
     @property
@@ -1553,7 +1554,7 @@ class MDODiscipline(Serializable):
         return self.output_grammar.defaults
 
     @default_outputs.setter
-    def default_outputs(self, data: Mapping[str, Any]) -> None:
+    def default_outputs(self, data: StrKeyMapping) -> None:
         self.output_grammar.defaults = data
 
     def add_namespace_to_input(self, name: str, namespace: str) -> None:
@@ -1839,9 +1840,17 @@ class MDODiscipline(Serializable):
         """
         return self._status
 
+    @status.setter
+    def status(
+        self,
+        status: ExecutionStatus,
+    ) -> None:
+        self._status = status
+        self.notify_status_observers()
+
     def set_disciplines_statuses(
         self,
-        status: str,
+        status: ExecutionStatus,
     ) -> None:
         """Set the sub-disciplines statuses.
 
@@ -1934,14 +1943,6 @@ class MDODiscipline(Serializable):
             raise ValueError(msg)
         self.status = self.ExecutionStatus.PENDING
 
-    @status.setter
-    def status(
-        self,
-        status: ExecutionStatus,
-    ) -> None:
-        self._status = status
-        self.notify_status_observers()
-
     def add_status_observer(
         self,
         obs: Any,
@@ -1996,7 +1997,7 @@ class MDODiscipline(Serializable):
 
     def check_input_data(
         self,
-        input_data: Mapping[str, Any],
+        input_data: StrKeyMapping,
         raise_exception: bool = True,
     ) -> None:
         """Check the input data validity.
@@ -2204,7 +2205,7 @@ class MDODiscipline(Serializable):
 
     def __setstate__(
         self,
-        state: Mapping[str, Any],
+        state: StrKeyMapping,
     ) -> None:
         super().__setstate__(state)
         # Initialize the attributes that are not serializable nor Synchronized last.

@@ -22,13 +22,13 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from gemseo.core.discipline import MDODiscipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
+
+    from gemseo.typing import StrKeyMapping
 
 
 class FilteringDiscipline(MDODiscipline):
@@ -95,7 +95,7 @@ class FilteringDiscipline(MDODiscipline):
             for input_name in self.get_input_data_names():
                 self.jac[output_name][input_name] = jac[output_name][input_name]
 
-    def __filter_inputs(self, data: Mapping[str, Any]):
+    def __filter_inputs(self, data: StrKeyMapping):
         """Filter a mapping by input names.
 
         Args:

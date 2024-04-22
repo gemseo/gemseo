@@ -86,7 +86,6 @@ from strenum import StrEnum
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.caches.utils import hash_data
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.compatibility.scipy import ArrayType
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -100,6 +99,8 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from numpy.typing import NDArray
+
+    from gemseo.typing import RealOrComplexArrayT
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1266,10 +1267,10 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def normalize_vect(
         self,
-        x_vect: ArrayType,
+        x_vect: RealOrComplexArrayT,
         minus_lb: bool = True,
         out: ndarray | None = None,
-    ) -> ArrayType:
+    ) -> RealOrComplexArrayT:
         r"""Normalize a vector of the design space.
 
         If `minus_lb` is True:
@@ -1340,8 +1341,8 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def normalize_grad(
         self,
-        g_vect: ArrayType,
-    ) -> ArrayType:
+        g_vect: RealOrComplexArrayT,
+    ) -> RealOrComplexArrayT:
         r"""Normalize an unnormalized gradient.
 
         This method is based on the chain rule:
@@ -1376,8 +1377,8 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def unnormalize_grad(
         self,
-        g_vect: ArrayType,
-    ) -> ArrayType:
+        g_vect: RealOrComplexArrayT,
+    ) -> RealOrComplexArrayT:
         r"""Unnormalize a normalized gradient.
 
         This method is based on the chain rule:
@@ -1405,11 +1406,11 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def unnormalize_vect(
         self,
-        x_vect: ArrayType,
+        x_vect: RealOrComplexArrayT,
         minus_lb: bool = True,
         no_check: bool = False,
         out: ndarray | None = None,
-    ) -> ArrayType:
+    ) -> RealOrComplexArrayT:
         """Unnormalize a normalized vector of the design space.
 
         If `minus_lb` is True:

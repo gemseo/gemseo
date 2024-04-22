@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from numpy import ndarray
 
-    from gemseo.utils.compatibility.scipy import ArrayType
+    from gemseo.typing import SparseOrDenseRealArray
     from gemseo.utils.compatibility.scipy import SparseArrayType
 
 
@@ -82,7 +82,7 @@ class LinearProblem(BaseProblem):
 
     def __init__(
         self,
-        lhs: ArrayType | LinearOperator,
+        lhs: SparseOrDenseRealArray | LinearOperator,
         rhs: ndarray | None = None,
         solution: ndarray | None = None,
         is_symmetric: bool = False,

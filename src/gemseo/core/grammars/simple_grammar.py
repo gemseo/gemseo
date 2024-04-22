@@ -20,7 +20,6 @@ import collections
 from collections.abc import Collection
 from collections.abc import Iterable
 from collections.abc import Iterator
-from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -34,6 +33,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
 
 
@@ -152,7 +152,7 @@ class SimpleGrammar(BaseGrammar):
 
     def __update(
         self,
-        grammar: Self | Mapping[str, Any],
+        grammar: Self | StrKeyMapping,
         excluded_names: Iterable[str] = (),
     ) -> None:
         """Update the elements from another grammar or elements.

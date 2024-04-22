@@ -28,11 +28,10 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
-    from typing import Any
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.typing import StrKeyMapping
 
 
 class MDASequential(BaseMDA):
@@ -51,7 +50,7 @@ class MDASequential(BaseMDA):
         use_lu_fact: bool = False,
         coupling_structure: MDOCouplingStructure | None = None,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_options: StrKeyMapping | None = None,
     ) -> None:
         """
         Args:
@@ -120,7 +119,7 @@ class MDAGSNewton(MDASequential):
         warm_start: bool = False,
         use_lu_fact: bool = False,
         coupling_structure: MDOCouplingStructure | None = None,
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_options: StrKeyMapping | None = None,
         log_convergence: bool = False,
         **newton_mda_options: float | str | None,
     ) -> None:

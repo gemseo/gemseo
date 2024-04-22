@@ -36,9 +36,10 @@ from numpy import int64
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from collections.abc import Mapping
 
     from typing_extensions import NotRequired
+
+    from gemseo.typing import StrKeyMapping
 
     Property = TypedDict(  # noqa: UP013
         "Property",
@@ -60,12 +61,12 @@ if TYPE_CHECKING:
         total=False,
     )
 
-    Obj = Mapping[str, Any]
+    Obj = StrKeyMapping
 
 SchemaBuilderProperties = MutableMapping[str, SchemaNode]
 
 
-class _MergeStrategy(Object):  # type: ignore
+class _MergeStrategy(Object):  # type: ignore[misc]
     """A genson strategy to either merge or update a schema.
 
     By default, genson merges nodes, the update is triggered via a class attribute.
@@ -87,16 +88,16 @@ class _MergeStrategy(Object):  # type: ignore
         # that should merge.
         self.node_class.update = False
 
-    def add_schema(self, schema: Mapping[str, Any]) -> None:
+    def add_schema(self, schema: StrKeyMapping) -> None:
         with self.__handle_update():
             super().add_schema(schema)
 
-    def add_object(self, obj: Mapping[str, Any]) -> None:
+    def add_object(self, obj: StrKeyMapping) -> None:
         with self.__handle_update():
             super().add_object(obj)
 
 
-class _SchemaNode(SchemaNode):  # type: ignore
+class _SchemaNode(SchemaNode):  # type: ignore[misc]
     """Overload :meth:`.add_schema` and :meth:`.add_object` to allow updating.
 
     By default, genson merges nodes, the update is triggered via a class attribute.
@@ -105,7 +106,7 @@ class _SchemaNode(SchemaNode):  # type: ignore
     update: ClassVar[bool] = False
     """Whether to update or merge the schema."""
 
-    def add_schema(self, schema: Mapping[str, Any]) -> None:
+    def add_schema(self, schema: StrKeyMapping) -> None:
         self.__handle_update()
         super().add_schema(schema)
 
@@ -123,7 +124,7 @@ class _SchemaNode(SchemaNode):  # type: ignore
             self._active_strategies.clear()
 
 
-class _MultipleMeta(ABCMeta, _MetaSchemaBuilder):  # type: ignore
+class _MultipleMeta(ABCMeta, _MetaSchemaBuilder):  # type: ignore[misc]
     """Required metaclass for inheriting from multiple classes with metaclasses.
 
     Also fix the ``NODE_CLASS`` overloading because it does not use the ``NODE_CLASS``
@@ -137,7 +138,7 @@ class _MultipleMeta(ABCMeta, _MetaSchemaBuilder):  # type: ignore
         )
 
 
-class _Number(Number):  # type: ignore
+class _Number(Number):  # type: ignore[misc]
     """A number strategy that handles numpy data."""
 
     PYTHON_TYPES = (*Number.PYTHON_TYPES, float64, int64)
@@ -145,7 +146,7 @@ class _Number(Number):  # type: ignore
 
 class MutableMappingSchemaBuilder(
     abc.Mapping[str, Any],
-    SchemaBuilder,  # type: ignore
+    SchemaBuilder,  # type: ignore[misc]
     metaclass=_MultipleMeta,
 ):
     """A mutable genson SchemaBuilder with a dictionary-like interface.

@@ -37,7 +37,7 @@ from typing import TypeVar
 
 from typing_extensions import NamedTuple
 
-from gemseo.third_party.prettytable import PrettyTable
+from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.base_multiton import BaseABCMultiton
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.source_parsing import get_callable_argument_defaults
@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -370,9 +371,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         """
         return get_options_doc(self.get_class(name).__init__)
 
-    def get_default_option_values(
-        self, name: str
-    ) -> dict[str, str | int | float | bool]:
+    def get_default_option_values(self, name: str) -> StrKeyMapping:
         """Return the constructor kwargs default values of a class.
 
         Args:
@@ -420,7 +419,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         grammar = JSONGrammar(name)
         grammar.update_from_data(default_option_values)
         grammar.set_descriptions(option_descriptions)
-        grammar.defaults = default_option_values
+        grammar.defaults = default_option_values  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
         for name in default_option_values:
             grammar.required_names.remove(name)
 
@@ -428,40 +427,6 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             grammar.to_file(schema_path)
 
         return grammar
-
-    def get_sub_options_grammar(
-        self,
-        name: str,
-        **options: str,
-    ) -> JSONGrammar:
-        """Return the JSONGrammar of the sub options of a class.
-
-        Args:
-            name: The name of the class.
-            **options: The options to be passed to the class required to deduce
-                the sub options.
-
-        Returns:
-            The JSON grammar.
-        """
-        return self.get_class(name).get_sub_options_grammar(**options)
-
-    def get_default_sub_option_values(
-        self,
-        name: str,
-        **options: str,
-    ) -> JSONGrammar:
-        """Return the default values of the sub options of a class.
-
-        Args:
-            name: The name of the class.
-            **options: The options to be passed to the class required to deduce
-                the sub options.
-
-        Returns:
-            The JSON grammar.
-        """
-        return self.get_class(name).get_default_sub_option_values(**options)
 
     def __str__(self) -> str:
         return f"Factory of {self._CLASS.__name__} objects"

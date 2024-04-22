@@ -78,6 +78,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import StrKeyMapping
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 from numpy import array
@@ -448,7 +449,7 @@ class ParameterSpace(DesignSpace):
         distribution: str,
         size: int = 1,
         interfaced_distribution: str = "",
-        interfaced_distribution_parameters: tuple[Any] | Mapping[str, Any] = (),
+        interfaced_distribution_parameters: tuple[Any] | StrKeyMapping = (),
         **parameters: Any,
     ) -> None:
         """Add a random variable from a probability distribution.
@@ -515,11 +516,11 @@ class ParameterSpace(DesignSpace):
     @staticmethod
     def __get_distribution_parameters(
         interfaced_distribution_parameters: tuple[Any]
-        | Mapping[str, Any]
+        | StrKeyMapping
         | list[tuple[Any]]
-        | tuple[Mapping[str, Any]],
+        | tuple[StrKeyMapping],
         parameters: Any | list[Any],
-    ) -> tuple[Any] | Mapping[str, Any] | list[tuple[Any]] | tuple[Mapping[str, Any]]:
+    ) -> tuple[Any] | StrKeyMapping | list[tuple[Any]] | tuple[StrKeyMapping]:
         """Return the parameters of the interfaced distribution.
 
         Args:

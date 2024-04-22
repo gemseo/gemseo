@@ -28,10 +28,11 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Sequence
 
 
 def order_disciplines_from_default_inputs(
-    disciplines: list[MDODiscipline],
+    disciplines: Sequence[MDODiscipline],
     raise_error: bool = True,
     available_data_names: Iterable[str] = (),
 ) -> list[MDODiscipline] | list[str]:
@@ -58,7 +59,7 @@ def order_disciplines_from_default_inputs(
         the inputs that are missing.
     """
     ordered_discs = []
-    remaining_discs = disciplines.copy()
+    remaining_discs = list(disciplines)
     available_data_names = list(available_data_names)
     while remaining_discs:
         removed_discs = []
@@ -108,13 +109,13 @@ class MDOInitializationChain(MDOChain):
     From the default inputs of the disciplines, use a greedy algorithm to detect
     sequentially the disciplines that can be executed, and records the execution order.
 
-    The couplings are ignored, and therefore, a true MDA must be used afterwards to
+    The couplings are ignored, and therefore, a true MDA must be used afterward to
     ensure consistency.
     """
 
     def __init__(  # noqa:D107
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Sequence[MDODiscipline],
         name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         available_data_names: Iterable[str] = (),

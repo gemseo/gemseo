@@ -180,6 +180,7 @@ if TYPE_CHECKING:
     from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
     from gemseo.scenarios.scenario import Scenario
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
     from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
         JobSchedulerDisciplineWrapper,
@@ -620,7 +621,7 @@ def get_formulation_sub_options_schema(
     output_json: bool = False,
     pretty_print: bool = False,
     **formulation_options: Any,
-) -> str | dict[str, Any] | None:
+) -> str | dict[str, Any]:
     """Return the schema of the sub-options of a formulation.
 
     Args:
@@ -631,7 +632,7 @@ def get_formulation_sub_options_schema(
             required for its instantiation.
 
     Returns:
-        The schema of the sub-options of the formulation, if any, ``None`` otherwise.
+        The schema of the sub-options of the formulation, if any.
 
     Examples:
         >>> from gemseo import get_formulation_sub_options_schema
@@ -895,10 +896,10 @@ def get_available_scenario_types() -> list[str]:
 
 
 def _get_schema(
-    json_grammar: JSONGrammar | None,
+    json_grammar: JSONGrammar,
     output_json: bool = False,
     pretty_print: bool = False,
-) -> str | dict[str, Any] | None:
+) -> str | dict[str, Any]:
     """Return the schema of a JSON grammar.
 
     Args:
@@ -909,12 +910,12 @@ def _get_schema(
     Returns:
         The schema of the JSON grammar if any.
     """
-    from gemseo.third_party.prettytable import PrettyTable
-
-    if json_grammar is None:
-        return None
+    if not json_grammar:
+        return {}
 
     dict_schema = json_grammar.schema
+
+    from gemseo.third_party.prettytable import PrettyTable
 
     if pretty_print:
         title = dict_schema["name"].replace("_", " ") if "name" in dict_schema else None
@@ -2116,7 +2117,7 @@ def sample_disciplines(
     n_samples: int,
     algo_name: str,
     formulation: str = "MDF",
-    formulation_options: Mapping[str, Any] = READ_ONLY_EMPTY_DICT,
+    formulation_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     name: str = "",
     **algo_options: Any,
 ) -> IODataset:

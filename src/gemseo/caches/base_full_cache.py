@@ -39,7 +39,7 @@ from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized
 from gemseo.utils.locks import synchronized_hashes
-from gemseo.utils.multiprocessing import get_multi_processing_manager
+from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -48,9 +48,9 @@ if TYPE_CHECKING:
     from multiprocessing.sharedctypes import Synchronized
     from multiprocessing.synchronize import RLock as RLockType
 
-    from gemseo.typing import DataMapping
     from gemseo.typing import IntegerArray
     from gemseo.typing import JacobianData
+    from gemseo.typing import StrKeyMapping
 
 
 class BaseFullCache(BaseCache):
@@ -109,7 +109,7 @@ class BaseFullCache(BaseCache):
 
     def __ensure_input_data_exists(
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
     ) -> bool:
         """Ensure ``input_data`` associated with ``data_hash`` exists.
 
@@ -183,7 +183,7 @@ class BaseFullCache(BaseCache):
     @abstractmethod
     def _write_data(
         self,
-        values: DataMapping,
+        values: StrKeyMapping,
         group: BaseCache.Group,
         index: int,
     ) -> None:
@@ -197,7 +197,7 @@ class BaseFullCache(BaseCache):
 
     def _cache_inputs(
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
         group: BaseCache.Group,
     ) -> bool:
         """Cache input data and increment group if needed.
@@ -223,8 +223,8 @@ class BaseFullCache(BaseCache):
     @synchronized
     def cache_outputs(  # noqa: D102
         self,
-        input_data: DataMapping,
-        output_data: DataMapping,
+        input_data: StrKeyMapping,
+        output_data: StrKeyMapping,
     ) -> None:
         if self._cache_inputs(input_data, self.Group.OUTPUTS):
             # There is already an output data corresponding to this input data.
@@ -239,7 +239,7 @@ class BaseFullCache(BaseCache):
     @synchronized
     def cache_jacobian(  # noqa: D102
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
         jacobian_data: JacobianData,
     ) -> None:
         if self._cache_inputs(input_data, self.Group.JACOBIAN):
@@ -284,7 +284,7 @@ class BaseFullCache(BaseCache):
         self,
         index: int,
         group: Literal[BaseCache.Group.INPUTS, BaseCache.Group.OUTPUTS],
-    ) -> DataMapping: ...
+    ) -> StrKeyMapping: ...
 
     @overload
     def _read_data(
@@ -298,7 +298,7 @@ class BaseFullCache(BaseCache):
         self,
         index: int,
         group: BaseCache.Group,
-    ) -> DataMapping | JacobianData:
+    ) -> StrKeyMapping | JacobianData:
         """Read the data of an entry.
 
         Args:
@@ -327,7 +327,7 @@ class BaseFullCache(BaseCache):
     def _read_input_output_data(
         self,
         indices: Iterable[int],
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
     ) -> CacheEntry:
         """Read the output and Jacobian data for a given input data.
 
@@ -349,7 +349,7 @@ class BaseFullCache(BaseCache):
     @synchronized
     def __getitem__(
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
     ) -> CacheEntry:
         if self.tolerance == 0.0:
             data_hash = hash_data(input_data)

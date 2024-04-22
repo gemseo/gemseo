@@ -21,29 +21,33 @@
 from __future__ import annotations
 
 import logging
+from typing import cast
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.string_tools import pretty_str
 
-# graphviz is an optional dependency
-
 try:
+    # graphviz is an optional dependency.
     from gemseo.post._graph_view import GraphView
 except ImportError:
-    GraphView = None
+    GRAPHVIZ_IS_MISSING = True
+else:
+    GRAPHVIZ_IS_MISSING = False
 
 from typing import TYPE_CHECKING
 
 from networkx import DiGraph
-from networkx import Graph
 from networkx import condensation
 from networkx import strongly_connected_components
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
+    from collections.abc import Sequence
 
 LOGGER = logging.getLogger(__name__)
+
+ExecutionSequence = list[list[tuple[MDODiscipline, ...]]]
 
 
 class DependencyGraph:
@@ -57,7 +61,13 @@ class DependencyGraph:
     The couplings between the disciplines can also be computed.
     """
 
-    def __init__(self, disciplines) -> None:
+    __graph: DiGraph
+    """The graph representing the disciplines data dependencies.
+
+    The coupled inputs and outputs names are stored as an edge attributes named io.
+    """
+
+    def __init__(self, disciplines: Sequence[MDODiscipline]) -> None:
         """
         Args:
             disciplines: The disciplines to build the graph with.
@@ -70,15 +80,15 @@ class DependencyGraph:
         return iter(self.__graph.nodes)
 
     @property
-    def graph(self) -> Graph:
+    def graph(self) -> DiGraph:
         """The disciplines data graph."""
         return self.__graph
 
-    def get_execution_sequence(self):
+    def get_execution_sequence(self) -> list[list[tuple[MDODiscipline, ...]]]:
         """Compute the execution sequence of the disciplines.
 
         Returns:
-            list(set(tuple(set(MDODisciplines))))
+            The execution sequence.
         """
         condensed_graph = self.__create_condensed_graph()
         execution_sequence = []
@@ -90,14 +100,20 @@ class DependencyGraph:
                 break
 
             parallel_tasks = [
-                tuple(condensed_graph.nodes[node_id]["members"]) for node_id in leaves
+                tuple(
+                    cast(
+                        list[MDODiscipline],
+                        condensed_graph.nodes[node_id]["members"],
+                    )
+                )
+                for node_id in leaves
             ]
             execution_sequence += [parallel_tasks]
             condensed_graph.remove_nodes_from(leaves)
 
         return list(reversed(execution_sequence))
 
-    def __create_condensed_graph(self):
+    def __create_condensed_graph(self) -> DiGraph:
         """Return the condensed graph."""
         # scc = nx.kosaraju_strongly_connected_components(self.__graph)
         # scc = nx.strongly_connected_components_recursive(self.__graph)
@@ -107,14 +123,16 @@ class DependencyGraph:
             scc=self.__get_ordered_scc(strongly_connected_components(self.__graph)),
         )
 
-    def __get_ordered_scc(self, scc):
+    def __get_ordered_scc(
+        self, scc: Iterator[set[MDODiscipline]]
+    ) -> Iterator[list[MDODiscipline]]:
         """Return the scc nodes ordered by the initial disciplines.
 
         Args:
             scc: The scc nodes.
 
         Yields:
-            List[MDODisciplines]: The ordered scc nodes.
+            The ordered scc nodes.
         """
         disciplines = list(self.__graph.nodes)
         for components in scc:
@@ -131,7 +149,9 @@ class DependencyGraph:
 
             yield ordered_components
 
-    def get_disciplines_couplings(self):
+    def get_disciplines_couplings(
+        self,
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         """Return the couplings between the disciplines.
 
         Returns:
@@ -151,7 +171,7 @@ class DependencyGraph:
         The coupled inputs and outputs names are stored as an edge attributes named io.
 
         Args:
-            disciplines (list): The disciplines to build the graph with.
+            disciplines: The disciplines to build the graph with.
 
         Returns:
             The graph of disciplines.
@@ -178,15 +198,15 @@ class DependencyGraph:
         return graph
 
     @staticmethod
-    def __get_node_name(graph, node):
+    def __get_node_name(graph: DiGraph, node: int | MDODiscipline) -> str:
         """Return the name of a node for the representation of a graph.
 
         Args:
-            graph (networkx.DiGraph): A full or condensed graph.
-            node (int, MDODiscipline): A node of the graph.
+            graph: A full or condensed graph.
+            node: A node of the graph.
 
         Returns:
-            str: The name of the node.
+            The name of the node.
         """
         if isinstance(node, MDODiscipline):
             # not a scc node
@@ -203,16 +223,20 @@ class DependencyGraph:
         return "MDA of {}".format(", ".join(map(str, condensed_discs)))
 
     @staticmethod
-    def __get_scc_edge_names(graph, node_from, node_to=None):
+    def __get_scc_edge_names(
+        graph: DiGraph,
+        node_from: int,
+        node_to: int | None = None,
+    ) -> set[str]:
         """Return the names of an edge in a condensed graph.
 
         Args:
-            graph (networkx.DiGraph): A condensed graph.
-            node_from (int): The predecessor node in the graph.
-            node_to (int, optional): The successor node in the graph.
+            graph: A condensed graph.
+            node_from: The predecessor node in the graph.
+            node_to: The successor node in the graph.
 
         Returns:
-            set(str): The names of the edge.
+            The names of the edge.
         """
         output_names = set()
         for disc in graph.nodes[node_from]["members"]:
@@ -226,7 +250,12 @@ class DependencyGraph:
             input_names.update(disc.get_input_data_names())
         return output_names & input_names
 
-    def __write_graph(self, graph: DiGraph, file_path: str, is_full: bool) -> GraphView:
+    def __write_graph(
+        self,
+        graph: DiGraph,
+        file_path: str,
+        is_full: bool,
+    ) -> GraphView | None:
         """Write the representation of a graph.
 
         Args:
@@ -234,7 +263,7 @@ class DependencyGraph:
             file_path: The file path to save the visualization.
             is_full: Whether the graph is full.
         """
-        if GraphView is None:
+        if GRAPHVIZ_IS_MISSING:
             LOGGER.warning(
                 "Cannot write graph: "
                 "GraphView cannot be imported because graphviz is not installed."
@@ -267,19 +296,19 @@ class DependencyGraph:
 
         # 3. Add the edges without head node
         #    (case: some output variables of discipline are not coupling variables).
-        for head_name in self.__get_leaves(graph):
-            if isinstance(head_name, MDODiscipline):
-                output_names = head_name.get_output_data_names()
-                node_name = str(head_name)
+        for leaf_node in self.__get_leaves(graph):
+            if isinstance(leaf_node, MDODiscipline):
+                output_names = leaf_node.get_output_data_names()
+                node_name = str(leaf_node)
             else:
                 # a scc edge
-                output_names = self.__get_scc_edge_names(graph, head_name)
-                node_name = self.__get_node_name(graph, head_name)
+                output_names = list(self.__get_scc_edge_names(graph, leaf_node))
+                node_name = self.__get_node_name(graph, leaf_node)
 
             if not output_names:
                 continue
 
-            tail_name = f"_{head_name}"
+            tail_name = f"_{leaf_node}"
             graph_view.edge(node_name, tail_name, pretty_str(output_names, ","))
             graph_view.hide_node(tail_name)
 
@@ -287,37 +316,42 @@ class DependencyGraph:
         graph_view.visualize(show=False, file_path=file_path, clean_up=False)
         return graph_view
 
-    def write_full_graph(self, file_path: str) -> GraphView:
+    def write_full_graph(self, file_path: str) -> GraphView | None:
         """Write a representation of the full graph.
 
         Args:
             file_path: A path to the file.
 
         Returns:
-            The full graph.
+            The full graph or ``None`` otherwise.
         """
         return self.__write_graph(self.__graph, file_path, True)
 
+    # TODO: API: remove.
     export_initial_graph = write_full_graph
 
-    def write_condensed_graph(self, file_path: str) -> GraphView:
+    def write_condensed_graph(self, file_path: str) -> GraphView | None:
         """Write a representation of the condensed graph.
 
         Args:
             file_path: A path to the file.
 
         Returns:
-            The condensed graph.
+            The condensed graph or ``None`` otherwise.
         """
         return self.__write_graph(self.__create_condensed_graph(), file_path, False)
 
+    # TODO: API: remove.
     export_reduced_graph = write_condensed_graph
 
     @staticmethod
-    def __get_leaves(graph):
+    def __get_leaves(graph: DiGraph) -> list[MDODiscipline] | list[int]:
         """Return the leaf nodes of a graph.
 
         Args:
-            graph (networkx.DiGraph): A graph.
+            graph: A graph.
+
+        Returns:
+            The graph leaf nodes.
         """
         return [n for n in graph.nodes if graph.out_degree(n) == 0]

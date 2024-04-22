@@ -51,7 +51,6 @@ import numbers
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import inf
 
@@ -67,6 +66,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -415,7 +415,7 @@ class ScalabilityStudy:
         algo: str,
         max_iter: int,
         formulation: str = "DisciplinaryOpt",
-        algo_options: Mapping[str, Any] | None = None,
+        algo_options: StrKeyMapping | None = None,
         formulation_options: str | None = None,
         top_level_diff: str = "auto",
     ) -> None:
@@ -563,7 +563,7 @@ class ScalabilityStudy:
 
     @staticmethod
     def __update_var_scaling(
-        scaling: dict[str, Mapping[str, Any]], size: int, varnames: Sequence[str]
+        scaling: dict[str, StrKeyMapping], size: int, varnames: Sequence[str]
     ) -> None:
         """Update a scaling dictionary for a given list of variables and a given size.
 

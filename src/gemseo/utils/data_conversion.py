@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
-    from gemseo.typing import DataMapping
+    from gemseo.typing import StrKeyMapping
 
 
 STRING_SEPARATOR = "#&#"
@@ -250,9 +250,9 @@ def update_dict_of_arrays_from_array(
 
 
 def deepcopy_dict_of_arrays(
-    dict_of_arrays: DataMapping,
+    dict_of_arrays: StrKeyMapping,
     names: Iterable[str] | None = None,
-) -> DataMapping:
+) -> StrKeyMapping:
     """Perform a deep copy of a dictionary of NumPy arrays.
 
     This treats the NumPy arrays specially
@@ -290,9 +290,9 @@ def deepcopy_dict_of_arrays(
 
 
 def nest_flat_bilevel_dict(
-    flat_dict: DataMapping,
+    flat_dict: StrKeyMapping,
     separator: str = STRING_SEPARATOR,
-) -> DataMapping:
+) -> StrKeyMapping:
     """Nest a flat bi-level dictionary where sub-dictionaries will have the same keys.
 
     Examples:
@@ -321,10 +321,10 @@ def nest_flat_bilevel_dict(
 
 
 def nest_flat_dict(
-    flat_dict: DataMapping,
+    flat_dict: StrKeyMapping,
     prefix: str = "",
     separator: str = STRING_SEPARATOR,
-) -> DataMapping:
+) -> StrKeyMapping:
     """Nest a flat dictionary.
 
     Examples:
@@ -351,7 +351,7 @@ def nest_flat_dict(
 
 
 def __nest_flat_mapping(
-    mapping: DataMapping,
+    mapping: StrKeyMapping,
     key: str,
     value: Any,
     separator: str,
@@ -375,9 +375,9 @@ def __nest_flat_mapping(
 
 
 def flatten_nested_bilevel_dict(
-    nested_dict: DataMapping,
+    nested_dict: StrKeyMapping,
     separator: str = STRING_SEPARATOR,
-) -> DataMapping:
+) -> StrKeyMapping:
     """Flatten a nested bi-level dictionary whose sub-dictionaries have the same keys.
 
     Examples:
@@ -403,10 +403,10 @@ def flatten_nested_bilevel_dict(
 
 
 def flatten_nested_dict(
-    nested_dict: DataMapping,
+    nested_dict: StrKeyMapping,
     prefix: str = "",
     separator: str = STRING_SEPARATOR,
-) -> DataMapping:
+) -> StrKeyMapping:
     """Flatten a nested dictionary.
 
     Examples:
@@ -427,7 +427,7 @@ def flatten_nested_dict(
 
 
 def __flatten_nested_mapping(
-    nested_mapping: DataMapping,
+    nested_mapping: StrKeyMapping,
     parent_key: str,
     separator: str,
 ) -> Generator[tuple[str, Any], None, None]:

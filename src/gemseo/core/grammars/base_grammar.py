@@ -34,7 +34,7 @@ from gemseo.core.data_converters.factory import DataConverterFactory
 from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.required_names import RequiredNames
-from gemseo.core.namespaces import NamespacesMapping
+from gemseo.core.namespaces import MutableNamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import update_namespaces
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
-    from gemseo.typing import DataMapping
+    from gemseo.typing import StrKeyMapping
 
     SimpleGrammarTypes = Mapping[str, Optional[type[Any]]]
 
@@ -59,7 +59,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class BaseGrammar(
-    collections.abc.Mapping[str, Any], metaclass=ABCGoogleDocstringInheritanceMeta
+    collections.abc.Mapping[str, Any],
+    metaclass=ABCGoogleDocstringInheritanceMeta,
 ):
     """An abstract base class for grammars with a dictionary-like interface.
 
@@ -71,11 +72,11 @@ class BaseGrammar(
     name: str
     """The name of the grammar."""
 
-    to_namespaced: NamespacesMapping
+    to_namespaced: MutableNamespacesMapping
     """The mapping from element names without namespace prefix to element names with
     namespace prefix."""
 
-    from_namespaced: NamespacesMapping
+    from_namespaced: MutableNamespacesMapping
     """The mapping from element names with namespace prefix to element names without
     namespace prefix."""
 
@@ -213,7 +214,7 @@ class BaseGrammar(
         return self._defaults
 
     @defaults.setter
-    def defaults(self, data: DataMapping) -> None:
+    def defaults(self, data: StrKeyMapping) -> None:
         self._defaults = Defaults(self, data)
 
     @property
@@ -535,6 +536,7 @@ class BaseGrammar(
             KeyError: If a name is not valid.
         """
 
+    # TODO: make private
     def _update_namespaces_from_grammar(self, grammar: Self) -> None:
         """Update the namespaces according to another grammar namespaces.
 

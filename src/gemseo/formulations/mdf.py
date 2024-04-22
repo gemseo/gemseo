@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from gemseo.core.execution_sequence import ExecutionSequence
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.mda.base_mda import BaseMDA
+    from gemseo.typing import StrKeyMapping
 
 
 class MDF(MDOFormulation):
@@ -133,7 +134,7 @@ class MDF(MDOFormulation):
         return MDAFactory().get_options_grammar(main_mda)
 
     @classmethod
-    def get_default_sub_option_values(cls, **options: str) -> dict:  # noqa:D102
+    def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:  # noqa:D102
         main_mda = options.get("main_mda_name")
         if main_mda is None:
             msg = "main_mda_name option required to deduce the sub options of MDF."
@@ -146,7 +147,7 @@ class MDF(MDOFormulation):
 
     def get_expected_workflow(  # noqa:D102
         self,
-    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
+    ) -> ExecutionSequence | tuple[ExecutionSequence]:
         return self.mda.get_expected_workflow()
 
     def get_expected_dataflow(  # noqa:D102

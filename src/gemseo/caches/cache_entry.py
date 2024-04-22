@@ -20,18 +20,18 @@ from typing import TYPE_CHECKING
 from typing import NamedTuple
 
 if TYPE_CHECKING:
-    from gemseo.typing import DataMapping
     from gemseo.typing import JacobianData
+    from gemseo.typing import StrKeyMapping
 
 
 class CacheEntry(NamedTuple):
     """An entry of a cache."""
 
     # TODO: API: remove this since a mapping's value does not need to return its key.
-    inputs: DataMapping
+    inputs: StrKeyMapping
     """The input data."""
 
-    outputs: DataMapping
+    outputs: StrKeyMapping
     """The output data."""
 
     jacobian: JacobianData

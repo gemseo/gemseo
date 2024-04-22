@@ -26,11 +26,14 @@ from numpy import asarray
 from numpy.linalg import norm
 from scipy.sparse.linalg import norm as spnorm
 
-from gemseo.utils.compatibility.scipy import ArrayType
+from gemseo.typing import SparseOrDenseRealArray
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import flatten_nested_dict
 
-DataToCompare = Union[Mapping[str, ArrayType], Mapping[str, Mapping[str, ArrayType]]]
+DataToCompare = Union[
+    Mapping[str, SparseOrDenseRealArray],
+    Mapping[str, Mapping[str, SparseOrDenseRealArray]],
+]
 
 
 def compare_dict_of_arrays(

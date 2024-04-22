@@ -20,10 +20,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import all
 from numpy import allclose
 from numpy import average
 from numpy import bool_
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt_problem import OptimizationProblem
 
 
 class TerminationCriterion(Exception):  # noqa: N818
@@ -55,7 +60,10 @@ class XtolReached(TerminationCriterion):  # noqa: N818
 
 
 def is_x_tol_reached(
-    opt_problem, x_tol_rel: float = 1e-6, x_tol_abs: float = 1e-6, n_x: int = 2
+    opt_problem: OptimizationProblem,
+    x_tol_rel: float = 1e-6,
+    x_tol_abs: float = 1e-6,
+    n_x: int = 2,
 ) -> bool | bool_:
     """Tests if the tolerance on the design variables are reached.
 
@@ -92,7 +100,10 @@ def is_x_tol_reached(
 
 
 def is_f_tol_reached(
-    opt_problem, f_tol_rel: float = 1e-6, f_tol_abs: float = 1e-6, n_x: int = 2
+    opt_problem: OptimizationProblem,
+    f_tol_rel: float = 1e-6,
+    f_tol_abs: float = 1e-6,
+    n_x: int = 2,
 ) -> bool | bool_:
     """Tests if the tolerance on the objective function are reached.
 

@@ -39,11 +39,11 @@ from scipy.sparse.linalg import splu
 
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverDescription
 from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
-from gemseo.utils.compatibility.scipy import ArrayType
 from gemseo.utils.compatibility.scipy import array_classes
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from gemseo.typing import SparseOrDenseRealArray
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -263,7 +263,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
     def _check_solver_info(
         self,
         info: int,
-        options: Mapping[str, Any],
+        options: StrKeyMapping,
     ) -> bool:
         """Check the info returned by the solver.
 
@@ -301,7 +301,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
 
     def _run_default_solver(
         self,
-        lhs: ArrayType | LinearOperator,
+        lhs: SparseOrDenseRealArray | LinearOperator,
         rhs: ndarray,
         **options: Any,
     ) -> tuple[ndarray, int]:

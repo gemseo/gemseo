@@ -50,7 +50,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import Callable
 from typing import ClassVar
 
@@ -74,6 +73,7 @@ if TYPE_CHECKING:
 
     from numpy.random import RandomState
 
+    from gemseo.typing import StrKeyMapping
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 LOGGER = logging.getLogger(__name__)
@@ -111,7 +111,7 @@ class SPDistribution(BaseDistribution):
         self,
         variable: str = BaseDistribution.DEFAULT_VARIABLE_NAME,
         interfaced_distribution: str = "uniform",
-        parameters: Mapping[str, Any] = READ_ONLY_EMPTY_DICT,
+        parameters: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         dimension: int = 1,
         standard_parameters: StandardParametersType | None = None,
     ) -> None:
