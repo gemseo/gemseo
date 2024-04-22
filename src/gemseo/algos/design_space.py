@@ -1797,14 +1797,14 @@ class DesignSpace(collections.abc.MutableMapping):
         Returns:
             The bounds of the design variables.
         """
-        if self.__norm_data_is_computed and variable_names is None and not as_dict:
+        if self.__norm_data_is_computed and not variable_names and not as_dict:
             # The array of all the bounds is up to date
             return value_as_array
 
         if not as_dict:
             return self.dict_to_array(value_as_dict, variable_names=variable_names)
 
-        if variable_names is None:
+        if not variable_names:
             return value_as_dict
 
         return {name: value_as_dict[name] for name in variable_names}
@@ -1932,7 +1932,7 @@ class DesignSpace(collections.abc.MutableMapping):
             of the values of the mapping ``design_values`` corresponding to
             the keys iterable from ``variables_names``.
         """
-        if variable_names is None:
+        if not variable_names:
             variable_names = self.variable_names
 
         data = {name: design_values[name] for name in variable_names}

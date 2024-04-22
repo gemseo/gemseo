@@ -1,0 +1,1 @@
+``HessianHistory`` is an ``OptPostProcessor`` to visualize the history of the diagonal of the Hessian matrix of the objective.

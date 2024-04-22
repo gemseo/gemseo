@@ -1,0 +1,15 @@
+{
+  "name": "HessianHistory_options",
+  "required": [],
+  "properties": {
+    "variable_names": {
+      "type": [
+        "array",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object"
+}
