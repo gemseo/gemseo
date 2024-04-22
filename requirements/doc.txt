@@ -18,7 +18,7 @@ cycler==0.12.1
 dill==0.3.8
     # via openturns
 docstring-inheritance==2.2.0
-docutils==0.20.1
+docutils==0.21.1
     # via
     #   pybtex-docutils
     #   sphinx
@@ -122,7 +122,7 @@ six==1.16.0
     #   python-dateutil
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.2.6
+sphinx==7.3.7
     # via
     #   autodocsumm
     #   sphinx-gallery
@@ -153,6 +153,8 @@ tenacity==8.2.3
     # via plotly
 threadpoolctl==3.4.0
     # via scikit-learn
+tomli==2.0.1
+    # via sphinx
 tqdm==4.66.2
 typing-extensions==4.11.0
     # via

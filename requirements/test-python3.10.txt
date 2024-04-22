@@ -20,7 +20,7 @@ dill==0.3.8
 docstring-inheritance==2.2.0
 et-xmlfile==1.1.0
     # via openpyxl
-exceptiongroup==1.2.0
+exceptiongroup==1.2.1
     # via pytest
 execnet==2.1.1
     # via pytest-xdist
@@ -68,7 +68,7 @@ pandas==2.2.1
 pillow==10.2.0
     # via matplotlib
 plotly==5.20.0
-pluggy==1.4.0
+pluggy==1.5.0
     # via pytest
 psutil==5.9.8
     # via openturns
