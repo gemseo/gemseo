@@ -280,7 +280,6 @@ def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, generate_opt_plot) 
     )
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 4})
     for plot in [
-        "hessian_approximation",
         "ineq_constraints",
         "objective",
         "variables",

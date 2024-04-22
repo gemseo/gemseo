@@ -18,12 +18,11 @@
 #        :author: Damien Guenot
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Basic display of optimization history: functions and x."""
+"""Plot the history of the design variables, objective and constraints."""
 
 from __future__ import annotations
 
 import logging
-import sys
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -40,14 +39,12 @@ from numpy import array
 from numpy import atleast_2d
 from numpy import concatenate
 from numpy import e
-from numpy import full
 from numpy import isnan
 from numpy import log10 as np_log10
 from numpy import logspace
 from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ndarray
-from numpy import ones_like
 from numpy import sort as np_sort
 from numpy import vstack
 from numpy.linalg import norm
@@ -55,7 +52,6 @@ from numpy.linalg import norm
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.string_tools import repr_variable
 
@@ -66,24 +62,18 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.database import Database
     from gemseo.algos.opt_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
 
 class OptHistoryView(OptPostProcessor):
-    """The **OptHistoryView** post processing performs separated plots.
+    """Plot the history of the design variables, objective and constraints.
 
-    The design variables history, the objective function history, the history of hessian
-    approximation of the objective, the inequality constraint history, the equality
-    constraint history, and constraints histories.
-
-    By default, all design variables are considered. A sublist of design variables can
-    be passed as options. Minimum and maximum values for the plot can be passed as
-    options. The objective function can also be represented in terms of difference
-    w.r.t. the initial value. It is possible either to save the plot, to show the plot
-    or both.
+    This post-processing generates one plot for the design variables, one plot for the
+    Euclidean distance to the optimal design vector, one plot for the objective, one
+    plot for the equality constraints (if any) and one plot for the inequality
+    constraints (if any).
     """
 
     DEFAULT_FIG_SIZE = (11.0, 6.0)
@@ -109,7 +99,7 @@ class OptHistoryView(OptPostProcessor):
 
     def _plot(
         self,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Sequence[str] = (),
         obj_min: float | None = None,
         obj_max: float | None = None,
         obj_relative: bool = False,
@@ -117,7 +107,7 @@ class OptHistoryView(OptPostProcessor):
         """
         Args:
             variable_names: The names of the variables to display.
-                If ``None``, use all design variables.
+                If empty, use all design variables.
             obj_max: The upper limit of the *y*-axis on which the objective is plotted.
                 This limit must be greater than or equal
                 to the maximum value of the objective history.
@@ -135,19 +125,11 @@ class OptHistoryView(OptPostProcessor):
                 variable_names
             )
 
-        # compute the names of the inequality and equality constraints
-        ineq_cstr = self.opt_problem.get_ineq_constraints()
-        ineq_cstr_names = [c.name for c in ineq_cstr]
-        eq_cstr = self.opt_problem.get_eq_constraints()
-        eq_cstr_names = [c.name for c in eq_cstr]
-
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
             self._standardized_obj_name, variable_names
         )
-        # design variables
         self._create_variables_plot(x_history_to_display, variable_names)
 
-        # objective function
         self._create_obj_plot(
             obj_history,
             n_iter,
@@ -158,48 +140,29 @@ class OptHistoryView(OptPostProcessor):
 
         self._create_x_star_plot(x_history, n_iter)
 
-        # Hessian plot
-        if not self.database.check_output_history_is_empty(
-            self.database.get_gradient_name(self._standardized_obj_name)
-        ):
-            self._create_hessian_approx_plot(
-                self.database, self._standardized_obj_name, variable_names
-            )
-
-        # inequality and equality constraints
-        self._plot_cstr_history(ineq_cstr_names, MDOFunction.ConstraintType.INEQ)
-        self._plot_cstr_history(eq_cstr_names, MDOFunction.ConstraintType.EQ)
-
-    def _plot_cstr_history(
-        self,
-        cstr_names: MutableSequence[str],
-        cstr_type: str,
-    ) -> None:
-        """Create the plot for (in)equality constraints.
-
-        Args:
-            cstr_names: The names of the constraints.
-            cstr_type: The type of the constraints, either 'eq' or 'ineq'.
-        """
-        if cstr_names is not None:
-            _, constraints_history = self._get_constraints(cstr_names)
-            self._create_cstr_plot(
-                constraints_history,
-                cstr_type,
-                cstr_names,
-            )
+        for constraints, constraint_type in [
+            (self.opt_problem.get_ineq_constraints(), MDOFunction.ConstraintType.INEQ),
+            (self.opt_problem.get_eq_constraints(), MDOFunction.ConstraintType.EQ),
+        ]:
+            if constraints:
+                constraint_names = [constraint.name for constraint in constraints]
+                self._create_cstr_plot(
+                    self.__get_constraint_history(constraint_names),
+                    constraint_type,
+                    constraint_names,
+                )
 
     def _get_history(
         self,
         function_name: str,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Sequence[str],
     ) -> tuple[ndarray, ndarray, int, ndarray]:
         """Access the optimization history of a function and the design variables.
 
         Args:
             function_name: The name of the function.
             variable_names: The names of the variables to display.
-                If ``None``, use all design variables.
+                If empty, use all design variables.
 
         Returns:
             The history of the function outputs,
@@ -214,7 +177,7 @@ class OptHistoryView(OptPostProcessor):
         complete_x_hist = array(x_hist).real
 
         x_hist_to_display = complete_x_hist
-        if variable_names is not None:
+        if variable_names:
             indices = [
                 index
                 for name in variable_names
@@ -224,16 +187,16 @@ class OptHistoryView(OptPostProcessor):
 
         return f_hist, complete_x_hist, complete_x_hist.shape[0], x_hist_to_display
 
-    def _get_constraints(
+    def __get_constraint_history(
         self, constraint_names: MutableSequence[str]
-    ) -> tuple[ndarray, list[ndarray]]:
-        """Extract a history of constraints.
+    ) -> list[ndarray]:
+        """Extract the history of constraints.
 
         Args:
             constraint_names: The names of the constraints.
 
         Returns:
-            The bounds of the constraints and history array.
+            The history of the constraints.
         """
         available_data_names = self.database.get_function_names()
         for constraint_name in constraint_names:
@@ -241,53 +204,34 @@ class OptHistoryView(OptPostProcessor):
                 constraint_names.remove(constraint_name)
 
         constraints_history = []
-        bounds = full(len(constraint_names), sys.float_info.min)
-        for constraint_index, constraint_name in enumerate(constraint_names):
+        for constraint_name in constraint_names:
             constraint_history = array(
                 self.database.get_function_history(constraint_name)
             ).real
             constraints_history.append(constraint_history)
-            bounds[constraint_index] = max(
-                bounds[constraint_index],
-                max(abs(np_min(constraint_history)), abs(np_max(constraint_history))),
-            )
 
-        return bounds, constraints_history
-
-    def _normalize_x_hist(
-        self, x_history: ndarray, variable_names: Sequence[str] | None
-    ) -> ndarray:
-        """Normalize the design variables history.
-
-        Args:
-            x_history: The history for the design variables.
-            variable_names: The names of the variables to display.
-                If ``None``, use all design variables.
-
-        Returns:
-            The normalized design variables array.
-        """
-        lower_bounds = self.opt_problem.design_space.get_lower_bounds(variable_names)
-        upper_bounds = self.opt_problem.design_space.get_upper_bounds(variable_names)
-        return (x_history - lower_bounds) / (upper_bounds - lower_bounds)
+        return constraints_history
 
     def _create_variables_plot(
         self,
         x_history: ndarray,
-        variable_names: Sequence[str] | None,
+        variable_names: Sequence[str],
     ) -> None:
         """Create the design variables plot.
 
         Args:
             x_history: The history for the design variables.
             variable_names: The names of the variables to display.
-                If ``None``, use all design variables.
+                If empty, use all design variables.
         """
         n_iterations = len(x_history)
         if n_iterations < 2:
             return
-        n_variables = x_history.shape[1]
-        norm_x_history = self._normalize_x_hist(x_history, variable_names)
+
+        design_space = self.opt_problem.design_space
+        lower_bounds = design_space.get_lower_bounds(variable_names)
+        upper_bounds = design_space.get_upper_bounds(variable_names)
+        norm_x_history = (x_history - lower_bounds) / (upper_bounds - lower_bounds)
 
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = self._get_grid_layout()
@@ -302,7 +246,7 @@ class OptHistoryView(OptPostProcessor):
             vmax=1.0,
             aspect="auto",
         )
-        ax1.set_yticks(arange(n_variables))
+        ax1.set_yticks(arange(x_history.shape[1]))
         ax1.set_yticklabels(self._get_design_variable_names(variable_names, True))
         ax1.set_xlabel(self.x_label)
         # ax1.invert_yaxis()
@@ -616,88 +560,3 @@ class OptHistoryView(OptPostProcessor):
         # mng.full_screen_toggle()
         mng.resize(700, 1000)
         return fig
-
-    def _create_hessian_approx_plot(
-        self,
-        history: Database,
-        obj_name: str,
-        variable_names: Sequence[str] | None,
-    ) -> None:
-        """Create the plot of the Hessian approximation.
-
-        Args:
-            history: The optimization history.
-            obj_name: The objective function name.
-            variable_names: The names of the variables to display.
-                If ``None``, use all design variables.
-        """
-        try:
-            diag = SR1Approx(history).build_approximation(
-                funcname=obj_name, save_diag=True
-            )[1]
-        except ValueError:
-            LOGGER.warning("Failed to create Hessian approximation.", exc_info=True)
-            return
-
-        if isnan(diag).any():
-            LOGGER.warning("Failed to create Hessian approximation.")
-            LOGGER.warning("The approximated Hessian diagonal contains NaN.")
-            return
-
-        diag = [ones_like(diag[0]), *diag]  # Add first iteration blank
-        diag = array(diag).T
-
-        # if max problem, plot -Hessian
-        if self._change_obj:
-            diag = -diag
-
-        if variable_names:
-            diag = diag[self.__indices, :]
-
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
-        grid = self._get_grid_layout()
-
-        axe = fig.add_subplot(grid[0, 0])
-        axe.set_title("Hessian diagonal approximation")
-        axe.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
-        axe.set_yticks(arange(len(diag)))
-        axe.set_yticklabels(
-            self._get_design_variable_names(variable_names, simplify=True)
-        )
-        n_iterations = len(self.database)
-        axe.set_xticks(range(n_iterations))
-        axe.set_xticklabels(range(1, n_iterations + 1))
-        axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
-
-        # matrix
-        vmax = max(abs(np_max(diag)), abs(np_min(diag)))
-        linthresh = 10 ** (np_log10(vmax) - 5.0)
-        img = axe.imshow(
-            diag.real,
-            cmap=self.cmap,
-            interpolation="nearest",
-            aspect="auto",
-            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linthresh, base=e),
-        )
-
-        # colorbar
-        vmax = max(abs(np_max(diag)), abs(np_min(diag)))
-        thick_min = int(np_log10(linthresh))
-        thick_max = int(np_log10(vmax))
-        thick_num = thick_max - thick_min + 1
-        levels_pos = logspace(thick_min, thick_max, num=thick_num)
-        levels_pos = append(levels_pos, vmax)
-        levels_neg = np_sort(-levels_pos)
-        levels_neg = append(levels_neg, 0)
-        levels = concatenate((levels_neg, levels_pos))
-
-        cax = fig.add_subplot(grid[0, 1])
-        col_bar = fig.colorbar(
-            img, cax=cax, ticks=levels, format=LogFormatterSciNotation()
-        )
-        col_bar.ax.tick_params(labelsize=self.__TICK_LABEL_SIZE)
-
-        mng = plt.get_current_fig_manager()
-        # mng.full_screen_toggle()
-        mng.resize(700, 1000)
-        self._add_figure(fig, "hessian_approximation")

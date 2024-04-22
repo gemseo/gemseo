@@ -344,7 +344,7 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             variables: The design variables of interest.
-                If ``None``, use all the design variables.
+                If empty, use all the design variables.
             simplify: Whether to use ``"[i]"`` when ``i>0`` instead of ``"name[i]"``.
 
         Returns:
