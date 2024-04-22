@@ -80,6 +80,7 @@ Disciplines
 - :func:`.get_discipline_outputs_schema`
 - :func:`.get_discipline_options_schema`
 - :func:`.get_discipline_options_defaults`
+- :func:`.sample_disciplines`
 
 Formulations
 ------------
@@ -151,6 +152,7 @@ from strenum import StrEnum
 from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.factory import DatasetFactory as __DatasetFactory
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
@@ -2104,4 +2106,59 @@ def create_scenario_result(
         name or scenario.formulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME,
         scenario=scenario,
         **options,
+    )
+
+
+def sample_disciplines(
+    disciplines: Sequence[MDODiscipline],
+    input_space: DesignSpace,
+    output_names: str | Iterable[str],
+    n_samples: int,
+    algo_name: str,
+    formulation: str = "MDF",
+    formulation_options: Mapping[str, Any] = READ_ONLY_EMPTY_DICT,
+    name: str = "",
+    **algo_options: Any,
+) -> IODataset:
+    """Sample a set of disciplines associated with an MDO formulation.
+
+    Args:
+        disciplines: The disciplines to be sampled.
+        input_space: The input space on which to sample the discipline.
+        output_names: The names of the outputs of interest.
+        n_samples: The number of samples.
+        algo_name: The name of the DOE algorithm.
+        formulation: The name of the MDO formulation.
+        formulation_options: The options of the MDO formulation.
+            If empty, use the default ones.
+        name: The name of the returned dataset.
+            If empty, use the name of the discipline.
+        **algo_options: The options of the DOE algorithm.
+
+    Returns:
+        The input-output samples of the disciplines.
+    """
+    from gemseo.scenarios.doe_scenario import DOEScenario
+
+    if isinstance(output_names, str):
+        output_names = [output_names]
+
+    output_names_iterator = iter(output_names)
+    scenario = DOEScenario(
+        disciplines,
+        formulation,
+        next(output_names_iterator),
+        input_space,
+        name=name,
+        **formulation_options,
+    )
+    for output_name in output_names_iterator:
+        scenario.add_observable(output_name)
+    scenario.execute({
+        "algo": algo_name,
+        "n_samples": n_samples,
+        "algo_options": algo_options,
+    })
+    return scenario.formulation.opt_problem.to_dataset(
+        name=name, opt_naming=False, export_gradients=True
     )

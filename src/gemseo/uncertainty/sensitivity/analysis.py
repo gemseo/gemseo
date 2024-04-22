@@ -52,13 +52,13 @@ from numpy import newaxis
 from numpy import vstack
 from pandas import MultiIndex
 
+from gemseo import sample_disciplines
 from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
-from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -181,17 +181,24 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """  # noqa: D205, D212, D415
         disciplines = list(disciplines)
         self._algo_name = algo or self.DEFAULT_DRIVER
-        self._output_names = output_names or get_all_outputs(disciplines)
+        all_output_names = get_all_outputs(disciplines)
+        self._output_names = output_names or all_output_names
         self.default_output = self._output_names
         self._input_names = parameter_space.variable_names
-        self.dataset = self.__sample_disciplines(
+        algo_options = dict(algo_options)
+        algo_options["log_problem"] = False
+        algo_options["use_one_line_progress_bar"] = True
+        self.dataset = sample_disciplines(
             disciplines,
             parameter_space,
+            self._output_names,
             n_samples,
-            algo_options,
-            formulation,
-            **(formulation_options or {}),
-        ).to_dataset(opt_naming=False)
+            self._algo_name,
+            formulation=formulation,
+            formulation_options=formulation_options or {},
+            name=f"{self.__class__.__name__}SamplingPhase",
+            **algo_options,
+        )
         self._main_method = None
         self._file_path_manager = FilePathManager(
             FilePathManager.FileType.FIGURE,
@@ -219,82 +226,6 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         with Path(file_path).open("rb") as f:
             return pickle.load(f)
-
-    def __sample_disciplines(
-        self,
-        disciplines: Sequence[MDODiscipline],
-        parameter_space: ParameterSpace,
-        n_samples: int | None,
-        algo_options: Mapping[str, DOELibraryOptionType],
-        formulation: str,
-        **formulation_options: Any,
-    ) -> DOEScenario:
-        """Sample the disciplines and return the scenario after evaluation.
-
-        Args:
-            disciplines: The disciplines to sample.
-            parameter_space: A parameter space.
-            n_samples: A number of samples.
-                If ``None``, the number of samples is computed by the algorithm.
-            algo_options: The options for the DOE algorithm.
-            formulation: The name of the :class:`.MDOFormulation`
-                to sample the disciplines.
-            **formulation_options: The options of the :class:`.MDOFormulation`.
-
-        Returns:
-            The DOE scenario after evaluation.
-        """
-        scenario = self._create_scenario(
-            disciplines,
-            self._output_names,
-            formulation,
-            formulation_options,
-            parameter_space,
-        )
-        algo_options = algo_options or {}
-        algo_options["log_problem"] = False
-        algo_options["use_one_line_progress_bar"] = True
-        scenario.execute({
-            scenario.ALGO: self._algo_name,
-            scenario.N_SAMPLES: n_samples,
-            scenario.ALGO_OPTIONS: algo_options,
-        })
-        return scenario
-
-    def _create_scenario(
-        self,
-        disciplines: Iterable[MDODiscipline],
-        observable_names: Sequence[str],
-        formulation: str,
-        formulation_options: Mapping[str, Any],
-        parameter_space: ParameterSpace,
-    ) -> DOEScenario:
-        """Create a DOE scenario to sample the disciplines.
-
-        Args:
-            disciplines: The disciplines to sample.
-            observable_names: The names of the observables.
-            formulation: The name of the :class:`.MDOFormulation`
-                to sample the disciplines.
-            formulation_options: The options of the :class:`.MDOFormulation`.
-            parameter_space: A parameter space.
-
-        Returns:
-            The DOE scenario to be used to sample the disciplines.
-        """
-        scenario = DOEScenario(
-            disciplines,
-            formulation,
-            observable_names[0],
-            parameter_space,
-            name=f"{self.__class__.__name__}SamplingPhase",
-            **formulation_options,
-        )
-        for discipline in disciplines:
-            for output_name in discipline.get_output_data_names():
-                if output_name in observable_names[1:]:
-                    scenario.add_observable(output_name)
-        return scenario
 
     @property
     def input_names(self) -> list[str]:
