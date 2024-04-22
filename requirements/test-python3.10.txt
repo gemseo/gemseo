@@ -65,7 +65,7 @@ packaging==23.2
     #   plotly
     #   pytest
 pandas==2.2.1
-pillow==10.2.0
+pillow==10.3.0
     # via matplotlib
 plotly==5.20.0
 pluggy==1.5.0
