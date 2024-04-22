@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The silhouette coefficient to assess a clustering.
+r"""The silhouette score to assess the quality of a clusterer.
 
 The `silhouette coefficient <https://en.wikipedia.org/wiki/Silhouette_(clustering)>`__
 :math:`s_i` is a measure of
@@ -62,7 +62,7 @@ if TYPE_CHECKING:
 
 
 class SilhouetteMeasure(BasePredictiveClustererQuality):
-    """The silhouette coefficient to assess a clustering."""
+    """The silhouette score to assess the quality of a clusterer."""
 
     SMALLER_IS_BETTER = False
 

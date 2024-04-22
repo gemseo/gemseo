@@ -17,15 +17,7 @@
 #                         documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The root mean squared error to measure the quality of a regression algorithm.
-
-The :mod:`~gemseo.mlearning.quality_measures.mse_measure` module
-implements the concept of root mean squared error measures
-for machine learning algorithms.
-
-This concept is implemented through the
-:class:`.RMSEMeasure` class and
-overloads the :meth:`!MSEMeasure.evaluate_*` methods.
+r"""The root mean squared error to assess the quality of a regressor.
 
 The root mean squared error (RMSE) is defined by
 
@@ -53,7 +45,7 @@ if TYPE_CHECKING:
 
 
 class RMSEMeasure(MSEMeasure):
-    """The root mean Squared Error measure for machine learning."""
+    """The root mean squared error to assess the quality of a regressor."""
 
     def __init__(
         self,

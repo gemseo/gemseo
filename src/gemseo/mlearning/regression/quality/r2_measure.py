@@ -17,15 +17,9 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The R2 to measure the quality of a regression algorithm.
+r"""The R2 score to assess the quality of a regressor.
 
-The :mod:`~gemseo.mlearning.quality_measures.r2_measure` module
-implements the concept of R2 measures for machine learning algorithms.
-
-This concept is implemented through the :class:`.R2Measure` class
-and overloads the :meth:`!BaseRegressorQuality._compute_measure` method.
-
-The R2 is defined by
+The R2 score s defined by
 
 .. math::
 
@@ -59,7 +53,7 @@ if TYPE_CHECKING:
 
 
 class R2Measure(BaseRegressorQuality):
-    """The R2 measure for machine learning."""
+    """The R2 score to assess the quality of a regressor."""
 
     SMALLER_IS_BETTER = False
 

@@ -17,9 +17,9 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The F1 to measure the quality of a classification algorithm.
+r"""The F1 score to assess the quality of a classifier.
 
-The F1 is defined by
+The F1 score is defined by
 
 .. math::
 
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 
 
 class F1Measure(BaseClassifierQuality):
-    """The F1 measure for machine learning."""
+    """The F1 score to assess the quality of a classifier."""
 
     SMALLER_IS_BETTER = False
 

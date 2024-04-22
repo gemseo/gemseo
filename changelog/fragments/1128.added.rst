@@ -1,0 +1,9 @@
+- ``MAEMeasure`` and ``MEMeasure`` are respectively the mean absolute error and the maximum error to assess the quality of a ``BaseRegressor`` (formerly in ``gemseo_mlearning``).
+- ``GradientBoostingRegressor`` wraps the scikit-learn's gradient boosting regressor (formerly in ``gemseo_mlearning``).
+- ``MLPRegressor`` wraps the scikit-learn's multilayer perceptron (MLP) (formerly in ``gemseo_mlearning``).
+- ``OTGaussianProcessRegressor`` wraps the OpenTURNS' Gaussian process (GP) regressor (formerly in ``gemseo_mlearning``).
+- ``SVMRegressor`` wraps the scikit-learn's support vector machine (SVM) regressor (formerly in ``gemseo_mlearning``).
+- ``TPSRegressor`` is a specific ``RBFRegressor`` for thin plate spline regression (TPS) (formerly in ``gemseo_mlearning``).
+- ``RegressorChain`` is a composition of ``BaseRegressor`` objects trained sequentially,
+  each one learning the relationship between the inputs and the error made by the previous one
+  (formerly in ``gemseo_mlearning``).
