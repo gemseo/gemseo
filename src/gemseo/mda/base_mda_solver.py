@@ -19,7 +19,6 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import abs
 from numpy import array
@@ -33,12 +32,12 @@ from gemseo.mda.base_mda import BaseMDA
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.core.discipline_data import DisciplineData
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -92,7 +91,7 @@ class BaseMDASolver(BaseMDA):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_options: StrKeyMapping | None = None,
         acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
         over_relaxation_factor: float = 1.0,
     ) -> None:

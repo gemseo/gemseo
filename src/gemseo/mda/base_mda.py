@@ -58,6 +58,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline_data import DisciplineData
     from gemseo.core.execution_sequence import LoopExecSequence
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
@@ -80,7 +81,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     linear_solver_tolerance: float
     """The tolerance of the linear solver in the adjoint equation."""
 
-    linear_solver_options: Mapping[str, Any]
+    linear_solver_options: StrKeyMapping
     """The options of the linear solver."""
 
     _max_mda_iter: int
@@ -211,7 +212,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_options: StrKeyMapping | None = None,
         acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
         over_relaxation_factor: float = 1.0,
     ) -> None:
@@ -699,7 +700,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         )
 
     def execute(  # noqa:D102
-        self, input_data: Mapping[str, Any] | None = None
+        self, input_data: StrKeyMapping | None = None
     ) -> DisciplineData:
         self._current_iter = 0
         return super().execute(input_data=input_data)

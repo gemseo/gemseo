@@ -292,7 +292,7 @@ def test_get_formulation_sub_options_schema(formulation_name, opts, expected) ->
         props = sub_opts_schema["properties"]
         assert expected.issubset(set(props))
     else:
-        assert sub_opts_schema is None
+        assert not sub_opts_schema
 
 
 @pytest.mark.parametrize(
@@ -331,7 +331,7 @@ def test_get_formulation_sub_options_schema_print(
     )
     out, err = capfd.readouterr()
     assert not err
-    if schema is not None:
+    if schema:
         assert bool(re.search(expected, out))
 
 
@@ -599,7 +599,7 @@ def test_get_default_sub_option_values() -> None:
     assert defaults is not None
 
     defaults = get_formulations_sub_options_defaults("DisciplinaryOpt")
-    assert defaults is None
+    assert defaults == {}
 
 
 def test_get_formulations_options_defaults() -> None:

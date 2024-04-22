@@ -29,7 +29,8 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
+
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
     __directory_creator: DirectoryCreator
     """The object generating directories with unique names."""
 
-    __subprocess_run_options: Mapping[str, Any]
+    __subprocess_run_options: StrKeyMapping
     """The options of the ``subprocess.run`` method."""
 
     def __init__(
@@ -89,7 +90,7 @@ class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __set_subprocess_run_options(
         self,
-        subprocess_run_options: Mapping[str, Any],
+        subprocess_run_options: StrKeyMapping,
     ) -> None:
         """Set the ``subprocess.run`` options.
 

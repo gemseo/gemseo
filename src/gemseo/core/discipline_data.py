@@ -18,8 +18,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from collections.abc import Iterable
+from collections.abc import Iterator
 from collections.abc import Mapping
 from collections.abc import MutableMapping
 from copy import copy
@@ -33,16 +33,16 @@ from pandas import DataFrame
 
 from gemseo.core.namespaces import NamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
+from gemseo.typing import MutableStrKeyMapping
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.portable_path import to_os_specific
 
-Data = Mapping[str, Any]
-MutableData = MutableMapping[str, Any]
+# TODO: remove when no longer in use.
+Data = StrKeyMapping
 
 
-class DisciplineData(
-    MutableMapping[str, Any], metaclass=ABCGoogleDocstringInheritanceMeta
-):
+class DisciplineData(MutableStrKeyMapping, metaclass=ABCGoogleDocstringInheritanceMeta):
     """A dict-like class for handling disciplines data.
 
     This class replaces a standard dictionary that was previously used for storing
@@ -127,7 +127,7 @@ class DisciplineData(
     """The character used to separate the shared dict key from the column of a pandas
     DataFrame."""
 
-    __data: MutableData
+    __data: MutableStrKeyMapping
     """The internal dict-like object."""
 
     __input_to_namespaced: NamespacesMapping
@@ -138,7 +138,7 @@ class DisciplineData(
 
     def __init__(
         self,
-        data: MutableData | None = None,
+        data: MutableStrKeyMapping | None = None,
         input_to_namespaced: NamespacesMapping | None = None,
         output_to_namespaced: NamespacesMapping | None = None,
     ) -> None:
@@ -186,12 +186,16 @@ class DisciplineData(
         if self.__input_to_namespaced:
             key_with_ns = self.__input_to_namespaced.get(key)
             if key_with_ns is not None:
-                return self[key_with_ns]
+                # TODO: remove the type ignore when namespace for process disciplines
+                # are specialized.
+                return self[key_with_ns]  # type:ignore[index]
 
         if self.__output_to_namespaced:
             key_with_ns = self.__output_to_namespaced.get(key)
             if key_with_ns is not None:
-                return self[key_with_ns]
+                # TODO: remove the type ignore when namespace for process disciplines
+                # are specialized.
+                return self[key_with_ns]  # type:ignore[index]
 
         raise KeyError(key)
 
@@ -234,12 +238,12 @@ class DisciplineData(
         else:
             raise KeyError(key)
 
-    def __iter__(self) -> Generator[str, None, None]:
+    def __iter__(self) -> Iterator[str]:
         for key, value in self.__data.items():
             if isinstance(value, DataFrame):
                 prefix = key + self.SEPARATOR
                 for name in value:
-                    yield prefix + name
+                    yield prefix + name  # type:ignore[operator]
             else:
                 yield key
 
@@ -263,13 +267,13 @@ class DisciplineData(
             if isinstance(v, DataFrame):
                 data[k] = v.copy(deep=False)
         copy_.__data = data
-        copy_.input_to_namespaced = copy(self.__input_to_namespaced)
-        copy_.output_to_namespaced = copy(self.__output_to_namespaced)
+        copy_.__input_to_namespaced = copy(self.__input_to_namespaced)
+        copy_.__output_to_namespaced = copy(self.__output_to_namespaced)
         return copy_
 
-    def __deepcopy__(self, memo: Mapping | None = None) -> DisciplineData:
+    def __deepcopy__(self, memo: Mapping[int, Any] | None = None) -> DisciplineData:
         copy_ = DisciplineData({})
-        data = {}
+        data: MutableStrKeyMapping = {}
         for k, v in self.__data.items():
             if isinstance(v, DataFrame):
                 data[k] = v.copy(deep=True)
@@ -279,8 +283,8 @@ class DisciplineData(
                 data[k] = deepcopy(v)
 
         copy_.__data = data
-        copy_.input_to_namespaced = deepcopy(self.__input_to_namespaced)
-        copy_.output_to_namespaced = deepcopy(self.__output_to_namespaced)
+        copy_.__input_to_namespaced = deepcopy(self.__input_to_namespaced)
+        copy_.__output_to_namespaced = deepcopy(self.__output_to_namespaced)
         return copy_
 
     def clear(self) -> None:  # noqa: D102
@@ -308,9 +312,10 @@ class DisciplineData(
                 copy_[k.rsplit(namespaces_separator, 1)[-1]] = copy_.pop(k)
         return copy_
 
-    def update(
+    # TODO: fix instead ignore for the type error.
+    def update(  # type:ignore[override]
         self,
-        other: Mapping[str, Any],
+        other: StrKeyMapping,
         exclude: Iterable[str] = (),
     ) -> None:
         """Update from another mapping but for some keys.
@@ -361,7 +366,7 @@ class DisciplineData(
 
     def __setstate__(
         self,
-        state: Mapping[str, Any],
+        state: StrKeyMapping,
     ) -> None:
         self.__dict__.update(state)
         state_data = state[f"_{DisciplineData.__name__}__data"]

@@ -34,12 +34,12 @@ from gemseo.mda.base_mda_solver import BaseMDASolver
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from typing import Any
     from typing import Final
 
     from numpy.typing import NDArray
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.typing import StrKeyMapping
 
 N_CPUS: Final[int] = cpu_count()
 
@@ -67,7 +67,7 @@ class BaseMDARoot(BaseMDASolver):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_options: StrKeyMapping | None = None,
         parallel: bool = False,
         use_threading: bool = True,
         n_processes: int = N_CPUS,

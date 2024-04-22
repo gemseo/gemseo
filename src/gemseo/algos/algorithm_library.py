@@ -39,13 +39,12 @@ from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-    from collections.abc import MutableMapping
-
     from numpy import ndarray
 
     from gemseo.algos.base_problem import BaseProblem
     from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+    from gemseo.typing import MutableStrKeyMapping
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -215,7 +214,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _process_specific_option(
         self,
-        options: MutableMapping[str, Any],
+        options: MutableStrKeyMapping,
         option_key: str,
     ) -> None:  # pragma: no cover
         """Preprocess the option specifically, to be overriden by subclasses.
@@ -257,7 +256,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return options
 
-    def _check_ignored_options(self, options: Mapping[str, Any]) -> None:
+    def _check_ignored_options(self, options: StrKeyMapping) -> None:
         """Check that the user did not pass options that do not exist for this driver.
 
         Log a warning if it is the case.

@@ -222,7 +222,7 @@ def test_coupling_structure_plot(
 
 def test_no_graphviz(caplog, graph_with_self_coupling) -> None:
     """Check the message logged when graphviz is missing."""
-    with patch("gemseo.core.dependency_graph.GraphView", None):
+    with patch("gemseo.core.dependency_graph.GRAPHVIZ_IS_MISSING", True):
         assert graph_with_self_coupling.write_full_graph("graph.pdf") is None
         _, log_level, log_message = caplog.record_tuples[0]
         assert log_level == logging.WARNING

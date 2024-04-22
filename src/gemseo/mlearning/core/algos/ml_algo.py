@@ -116,6 +116,7 @@ from numpy import ndarray
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 from gemseo.mlearning.transformers.base_transformer import TransformerFactory
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -129,7 +130,7 @@ if TYPE_CHECKING:
 SavedObjectType = Union[Dataset, dict[str, BaseTransformer], str, bool, int]
 DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
-SubTransformerType = Union[str, tuple[str, Mapping[str, Any]], BaseTransformer]
+SubTransformerType = Union[str, tuple[str, StrKeyMapping], BaseTransformer]
 TransformerType = MutableMapping[str, SubTransformerType]
 DefaultTransformerType = ClassVar[Mapping[str, TransformerType]]
 
@@ -267,7 +268,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         msg = (
             "BaseTransformer type must be "
             "either BaseTransformer, "
-            "Tuple[str, Mapping[str, Any]] "
+            "Tuple[str, StrKeyMapping] "
             "or str."
         )
         raise ValueError(msg)

@@ -49,8 +49,8 @@ if TYPE_CHECKING:
     from multiprocessing.managers import DictProxy
     from multiprocessing.synchronize import RLock as RLockType
 
-    from gemseo.typing import DataMapping
     from gemseo.typing import IntegerArray
+    from gemseo.typing import StrKeyMapping
 
 
 class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
@@ -107,7 +107,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
     def write_data(
         self,
-        data: DataMapping,
+        data: StrKeyMapping,
         group: BaseCache.Group,
         index: int,
         hdf_node_path: str,
@@ -189,7 +189,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         index: int,
         group: BaseCache.Group,
         hdf_node_path: str,
-    ) -> DataMapping:
+    ) -> StrKeyMapping:
         """Read the data for given index and group.
 
         Args:

@@ -28,14 +28,14 @@ from numpy import ndarray
 from numpy import uint8
 from xxhash import xxh3_64_hexdigest
 
-from gemseo.typing import DataMapping
 from gemseo.typing import RealArray
 from gemseo.typing import RealOrComplexArray
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 
 def hash_data(
-    data: DataMapping,
+    data: StrKeyMapping,
 ) -> int:
     """Hash data using xxh3_64 from the xxhash library.
 

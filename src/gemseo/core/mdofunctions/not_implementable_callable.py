@@ -16,12 +16,13 @@
 
 from __future__ import annotations
 
+from typing import Any
 from typing import NoReturn
 
 
 class NotImplementedCallable:
     """A callable object which raises NotImplementedError when called."""
 
-    def __call__(self, *args, **kwargs) -> NoReturn:  # noqa:D102
+    def __call__(self, *args: Any, **kwargs: Any) -> NoReturn:  # noqa:D102
         msg = "Function is not implemented."
         raise NotImplementedError(msg)

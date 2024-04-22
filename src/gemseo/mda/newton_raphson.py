@@ -31,7 +31,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda_root import BaseMDARoot
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
     from typing import Any
 
@@ -39,6 +38,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.discipline_data import DisciplineData
+    from gemseo.typing import StrKeyMapping
 
 
 LOGGER = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class MDANewtonRaphson(BaseMDARoot):
     Available names are "DEFAULT", "GMRES" and "BICGSTAB".
     """
 
-    __newton_linear_solver_options: Mapping[str, Any]
+    __newton_linear_solver_options: StrKeyMapping
     """The options of the Newton linear solver."""
 
     _newton_coupling_names: list[str]
@@ -90,9 +90,9 @@ class MDANewtonRaphson(BaseMDARoot):
         use_lu_fact: bool = False,
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_options: StrKeyMapping | None = None,
         newton_linear_solver_name: str = "DEFAULT",
-        newton_linear_solver_options: Mapping[str, Any] | None = None,
+        newton_linear_solver_options: StrKeyMapping | None = None,
         parallel: bool = False,
         use_threading: bool = True,
         n_processes: int = BaseMDARoot.N_CPUS,

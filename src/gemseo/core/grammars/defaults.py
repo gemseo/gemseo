@@ -26,7 +26,7 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.base_grammar import BaseGrammar
-    from gemseo.typing import DataMapping
+    from gemseo.typing import StrKeyMapping
 
 
 class Defaults(DisciplineData):
@@ -42,7 +42,7 @@ class Defaults(DisciplineData):
     def __init__(
         self,
         grammar: BaseGrammar,
-        data: DataMapping,
+        data: StrKeyMapping,
     ) -> None:
         """
         Args:

@@ -19,7 +19,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from inspect import isclass
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 from typing import Final
 from typing import Union
@@ -64,6 +63,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import DataType
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import NumberArray
+    from gemseo.typing import StrKeyMapping
 
 
 DOEAlgorithmName = StrEnum("DOEAlgorithmName", DOELibraryFactory().algorithms)
@@ -151,7 +151,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     __multi_start_algo_name: DOEAlgorithmName
     """The names of the DOE algorithm for multi-start optimization."""
 
-    __multi_start_algo_options: Mapping[str, Any]
+    __multi_start_algo_options: StrKeyMapping
     """The options of the DOE algorithm for multi-start optimization."""
 
     __multi_start_n_samples: int
@@ -186,7 +186,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         | CovarianceModelType = CovarianceModel.MATERN52,
         multi_start_n_samples: int = 10,
         multi_start_algo_name: DOEAlgorithmName = DOEAlgorithmName.OT_OPT_LHS,
-        multi_start_algo_options: Mapping[str, Any] = READ_ONLY_EMPTY_DICT,
+        multi_start_algo_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
         Args:

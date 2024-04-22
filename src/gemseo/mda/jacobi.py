@@ -34,13 +34,13 @@ from gemseo.mda.base_mda_solver import BaseMDASolver
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from typing import Any
 
     from numpy.typing import NDArray
 
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.execution_sequence import LoopExecSequence
+    from gemseo.typing import StrKeyMapping
 
 
 N_CPUS: Final[int] = cpu_count()
@@ -108,7 +108,7 @@ class MDAJacobi(BaseMDASolver):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_options: StrKeyMapping | None = None,
         acceleration_method: AccelerationMethod = AccelerationMethod.ALTERNATE_2_DELTA,
         over_relaxation_factor: float = 1.0,
     ) -> None:

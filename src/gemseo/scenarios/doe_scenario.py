@@ -30,11 +30,12 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.scenarios.scenario import Scenario
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.opt_result import OptimizationResult
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import StrKeyMapping
 
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name
@@ -74,13 +75,13 @@ class DOEScenario(Scenario):
             maximize_objective=maximize_objective,
             **formulation_options,
         )
-        self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}
+        self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
         self.__samples = ()
 
     def _init_algo_factory(self) -> None:
         self._algo_factory = DOELibraryFactory(use_cache=True)
 
-    def _run_algorithm(self) -> None:
+    def _run_algorithm(self) -> OptimizationResult:
         algo_name = self.local_data[self.ALGO]
         options = self.local_data.get(self.ALGO_OPTIONS)
         if options is None:
@@ -139,7 +140,7 @@ class DOEScenario(Scenario):
             input_values=self.__samples,
         )
 
-    def __setstate__(self, state: Mapping[str, Any]) -> None:
+    def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
         # DOELibrary objects cannot be serialized, _algo_name and _lib are set to None
         # to force the lib creation in _run_algorithm.

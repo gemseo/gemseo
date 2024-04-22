@@ -44,6 +44,7 @@ from numpy import ndarray
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -71,7 +72,7 @@ class JSONGrammar(BaseGrammar):
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "JSONGrammarDataConverter"
 
-    __validator: Callable[[Mapping[str, Any]], None] | None
+    __validator: Callable[[StrKeyMapping], None] | None
     """The schema validator."""
 
     __schema: Schema
@@ -551,4 +552,4 @@ class JSONGrammar(BaseGrammar):
         self.__schema_builder.add_schema(
             state[f"_{self.__class__.__name__}__schema"], True
         )
-        self._defaults.update(cast(Mapping[str, Any], state.pop("defaults")))
+        self._defaults.update(cast(StrKeyMapping, state.pop("defaults")))

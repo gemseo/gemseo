@@ -21,26 +21,26 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
-from typing import Callable
 
+from gemseo.core.parallel_execution.callable_parallel_execution import ArgT
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+from gemseo.core.parallel_execution.callable_parallel_execution import CallableType
+from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
+from gemseo.core.parallel_execution.callable_parallel_execution import ReturnT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
-    from gemseo.algos.doe.doe_library import CallbackType
-    from gemseo.typing import NumberArray
+    from collections.abc import Sequence
 
 
 def execute(
-    worker: Callable,
+    worker: CallableType[ArgT, ReturnT],
     callbacks: Iterable[CallbackType],
     n_processes: int,
-    inputs: NumberArray | list[int],
-) -> list[Any]:
+    inputs: Sequence[ArgT],
+) -> list[ReturnT | None]:
     """Run the worker with the given inputs in sequential or parallel mode.
 
     Args:
@@ -57,11 +57,11 @@ def execute(
         The outputs of the evaluations.
     """
     if n_processes == 1:
-        all_outputs = []
+        all_outputs: list[ReturnT | None] = []
         for input_ in inputs:
             outputs = worker(input_)
             for callback in callbacks:
-                callback(index=0, outputs=outputs)
+                callback(0, outputs)
             all_outputs.append(outputs)
 
         return all_outputs

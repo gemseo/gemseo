@@ -189,7 +189,7 @@ class PydanticGrammar(BaseGrammar):
         # The sole purpose of the following attribute is to identify a model created
         # here,
         # and not from an external class deriving from BaseModel,
-        self.__model.__internal__ = None  # type: ignore
+        self.__model.__internal__ = None  # type: ignore[attr-defined]
         # This is another workaround for pickling a created model.
         self.__model.__pydantic_parent_namespace__ = {}
 

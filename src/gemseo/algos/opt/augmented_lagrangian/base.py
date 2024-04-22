@@ -40,10 +40,10 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
 
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.typing import StrKeyMapping
 
 
 class BaseAugmentedLagrangian(
@@ -97,7 +97,7 @@ class BaseAugmentedLagrangian(
         ineq_tolerance: float = 1e-4,
         kkt_tol_abs: float | None = None,
         kkt_tol_rel: float | None = None,
-        sub_problem_options: Mapping[str, Any] | None = None,
+        sub_problem_options: StrKeyMapping | None = None,
         sub_problem_constraints: Iterable[str] = (),
         initial_rho: float = 10.0,
         **options: Any,
@@ -338,7 +338,7 @@ class BaseAugmentedLagrangian(
         normalize: bool,
         sub_problem_constraints: Iterable[str],
         sub_solver_algorithm: str,
-        sub_problem_options: Mapping[str, Any],
+        sub_problem_options: StrKeyMapping,
         x_init: ndarray,
     ) -> tuple[int, ndarray]:
         """Solve the sub-problem.

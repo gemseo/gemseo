@@ -27,7 +27,6 @@ import shutil
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 from uuid import uuid4
 
 from numpy import array
@@ -36,6 +35,8 @@ from gemseo.core.discipline import MDODiscipline
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+
+    from gemseo.typing import StrKeyMapping
 
 cwd = Path.cwd()
 try:
@@ -209,7 +210,7 @@ class XLSDiscipline(MDODiscipline):
     def __del__(self) -> None:
         self.__reset_xls_objects()
 
-    def __setstate__(self, state: Mapping[str, Any]) -> None:
+    def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
         # If the book is recreated at _run, there is no need to create one for each
         # process.

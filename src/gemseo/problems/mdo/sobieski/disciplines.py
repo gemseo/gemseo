@@ -25,7 +25,6 @@ import time
 from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import array
 
@@ -36,7 +35,8 @@ from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
+
+    from gemseo.typing import StrKeyMapping
 
 
 class SobieskiDiscipline(MDODiscipline):
@@ -73,7 +73,7 @@ class SobieskiDiscipline(MDODiscipline):
         )
         self.re_exec_policy = self.ReExecutionPolicy.DONE
 
-    def __setstate__(self, state: Mapping[str, Any]) -> None:
+    def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
         self.sobieski_problem = SobieskiProblem(self.dtype)
 

@@ -24,7 +24,6 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import Literal
 from typing import overload
 
@@ -36,11 +35,10 @@ from gemseo.utils.locks import synchronized
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from collections.abc import Mapping
     from multiprocessing.synchronize import RLock as RLockType
 
-    from gemseo.typing import DataMapping
     from gemseo.typing import JacobianData
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -108,7 +106,7 @@ class HDF5Cache(BaseFullCache):
             "name": self.name,
         }
 
-    def __setstate__(self, state: Mapping[str, Any]) -> None:
+    def __setstate__(self, state: StrKeyMapping) -> None:
         self.__class__.__init__(self, **state)
 
     def _copy_empty_cache(self) -> HDF5Cache:
@@ -155,7 +153,7 @@ class HDF5Cache(BaseFullCache):
         self,
         index: int,
         group: Literal[BaseFullCache.Group.INPUTS, BaseFullCache.Group.OUTPUTS],
-    ) -> DataMapping: ...
+    ) -> StrKeyMapping: ...
 
     @overload
     def _read_data(
@@ -168,7 +166,7 @@ class HDF5Cache(BaseFullCache):
         self,
         index: int,
         group: BaseFullCache.Group,
-    ) -> DataMapping | JacobianData:
+    ) -> StrKeyMapping | JacobianData:
         data = self.__hdf_file.read_data(index, group, self.__hdf_node_path)
         if group == self.Group.JACOBIAN and data:
             data = nest_flat_bilevel_dict(data, separator=self._JACOBIAN_SEPARATOR)
@@ -176,7 +174,7 @@ class HDF5Cache(BaseFullCache):
 
     def _write_data(
         self,
-        values: DataMapping,
+        values: StrKeyMapping,
         group: BaseFullCache.Group,
         index: int,
     ) -> None:

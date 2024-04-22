@@ -45,6 +45,7 @@ import re
 import sys
 import textwrap
 import unicodedata
+from collections.abc import Iterable
 
 from ._compact import basestring_
 from ._compact import escape
@@ -1295,7 +1296,7 @@ class PrettyTable(object):
     # DATA INPUT METHODS         #
     ##############################
 
-    def add_row(self, row):
+    def add_row(self, row: Iterable[str]) -> None:
         """Add a row to the table
 
         :param row: row of data
@@ -1561,7 +1562,7 @@ class PrettyTable(object):
     # PLAIN TEXT STRING METHODS  #
     ##############################
 
-    def get_string(self, **kwargs):
+    def get_string(self, **kwargs) -> str:
         """
 
         :param title: optional table title
@@ -1863,7 +1864,7 @@ class PrettyTable(object):
     # HTML STRING METHODS        #
     ##############################
 
-    def get_html_string(self, **kwargs):
+    def get_html_string(self, **kwargs) -> str:
         """
 
         :param title: optional table title

@@ -19,7 +19,6 @@ from __future__ import annotations
 import json
 from copy import deepcopy
 from typing import TYPE_CHECKING
-from typing import Any
 
 import pytest
 from numpy.testing import assert_array_equal
@@ -28,7 +27,7 @@ from pandas import DataFrame
 from gemseo.core.discipline_data import DisciplineData
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from gemseo.typing import StrKeyMapping
 
 
 def to_df_key(
@@ -93,7 +92,7 @@ def test_copy_keys_namespace(with_namespace) -> None:
 
 
 def assert_getitem(
-    d: Mapping[str, Any],
+    d: StrKeyMapping,
     df: DataFrame,
 ) -> None:
     assert d["x"].equals(df)

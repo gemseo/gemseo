@@ -40,7 +40,7 @@ from strenum import StrEnum
 from gemseo.caches.cache_entry import CacheEntry
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.typing import DataMapping
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.comparisons import DataToCompare
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.string_tools import MultiLineString
@@ -69,7 +69,7 @@ It is used to check whether an input data has been cached in.
 """
 
 
-class BaseCache(ABCMapping[DataMapping, CacheEntry]):
+class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
     """A base class for caches with a dictionary-like interface.
 
     Caches are mainly used to store the :class:`.MDODiscipline` evaluations.
@@ -242,8 +242,8 @@ class BaseCache(ABCMapping[DataMapping, CacheEntry]):
 
     def __setitem__(
         self,
-        input_data: DataMapping,
-        data: tuple[DataMapping, JacobianData],
+        input_data: StrKeyMapping,
+        data: tuple[StrKeyMapping, JacobianData],
     ) -> None:
         output_data, jacobian_data = data
         if not output_data and not jacobian_data:
@@ -260,8 +260,8 @@ class BaseCache(ABCMapping[DataMapping, CacheEntry]):
     @abstractmethod
     def cache_outputs(
         self,
-        input_data: DataMapping,
-        output_data: DataMapping,
+        input_data: StrKeyMapping,
+        output_data: StrKeyMapping,
     ) -> None:
         """Cache input and output data.
 
@@ -273,7 +273,7 @@ class BaseCache(ABCMapping[DataMapping, CacheEntry]):
     @abstractmethod
     def cache_jacobian(
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
         jacobian_data: JacobianData,
     ) -> None:
         """Cache the input and Jacobian data.
@@ -373,5 +373,5 @@ class BaseCache(ABCMapping[DataMapping, CacheEntry]):
         """
 
     # TODO: API: make it behave like mappings, ie. like .keys().
-    def __iter__(self) -> Iterator[CacheEntry]:  # type: ignore
+    def __iter__(self) -> Iterator[CacheEntry]:  # type: ignore[override]
         return self.get_all_entries()

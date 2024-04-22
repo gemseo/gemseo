@@ -222,9 +222,9 @@ def test_total_derivatives(mda, variables, couplings) -> None:
 @pytest.mark.parametrize(
     ("save", "file_path", "expected"),
     [
-        (False, None, None),
-        (False, "foo", None),
-        (True, None, "coupled_jacobian.pdf"),
+        (False, "", ""),
+        (False, "foo", ""),
+        (True, "", "coupled_jacobian.pdf"),
         (True, "bar", "coupled_jacobian_bar.pdf"),
     ],
 )

@@ -24,12 +24,13 @@ from __future__ import annotations
 import pickle
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
+
+    from gemseo.typing import StrKeyMapping
 
 RESULTS_DIRECTORY = Path("results")
 
@@ -68,10 +69,10 @@ class ScalabilityResult:
     def get(
         self,
         algo: str,
-        algo_options: Mapping[str, Any],
+        algo_options: StrKeyMapping,
         formulation: str,
-        formulation_options: Mapping[str, Any],
-        scaling: Mapping[str, Any],
+        formulation_options: StrKeyMapping,
+        scaling: StrKeyMapping,
         n_calls: Iterable[int],
         n_calls_linearize: Iterable[int],
         n_calls_top_level: Iterable[int],

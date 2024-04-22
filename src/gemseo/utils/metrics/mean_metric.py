@@ -47,4 +47,4 @@ class MeanMetric(BaseCompositeMetric[_InputT, NumberArray]):
     def compute(  # noqa: D102
         self, a: _InputT, b: _InputT
     ) -> NumberArray:
-        return nanmean(self._metric.compute(a, b))
+        return nanmean(self._metric.compute(a, b))  # type: ignore[no-any-return]

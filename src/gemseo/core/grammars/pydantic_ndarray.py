@@ -26,13 +26,13 @@ from numpy import dtype
 from numpy import ndarray
 
 try:
-    from numpy._typing._array_like import _DType_co
-    from numpy._typing._array_like import _ScalarType_co
+    from numpy._typing._array_like import _DType_co as _DType_co
+    from numpy._typing._array_like import _ScalarType_co as _ScalarType_co
 except (ModuleNotFoundError, ImportError):  # pragma: no cover
     from numpy import generic
 
-    _ScalarType_co = TypeVar("_ScalarType_co", bound=generic, covariant=True)
-    _DType_co = TypeVar("_DType_co", covariant=True, bound=dtype)
+    _DType_co = TypeVar("_DType_co", covariant=True, bound=dtype[Any])  # type: ignore[misc] # mypy seems to ignore the except block.
+    _ScalarType_co = TypeVar("_ScalarType_co", bound=generic, covariant=True)  # type: ignore[misc] # mypy seems to ignore the except block.
 
 from numpy.typing import NDArray
 from pydantic_core import CoreSchema

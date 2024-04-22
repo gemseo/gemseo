@@ -32,7 +32,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from gemseo.typing import StrKeyMapping
 
 
 class MDODisciplineFactory(BaseFactory):
@@ -85,7 +85,7 @@ class MDODisciplineFactory(BaseFactory):
 
     @staticmethod
     def __filter_options_with_prefix(
-        options: Mapping[str, Any], prefix: str
+        options: StrKeyMapping, prefix: str
     ) -> dict[str, Any]:
         """Filter the options whose names start with a prefix.
 

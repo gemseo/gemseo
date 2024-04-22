@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.scenarios.scenario import Scenario
+    from gemseo.typing import StrKeyMapping
 
 
 def build_sobieski_scenario(
@@ -516,7 +517,7 @@ def test_xdsmize_chain_of_parallel_chain(options) -> None:
     assert_xdsm(sce, **options("xdsmized_chain_of_parallel_chain"))
 
 
-def assert_xdsm(scenario: Scenario, **options: Mapping[str, Any]) -> None:
+def assert_xdsm(scenario: Scenario, **options: StrKeyMapping) -> None:
     """Build and check the XDSM representation generated from a scenario.
 
     Check both html and tikz generation.

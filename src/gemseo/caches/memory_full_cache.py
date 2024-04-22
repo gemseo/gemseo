@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from copy import copy
 from multiprocessing import RLock
 from typing import TYPE_CHECKING
 from typing import Literal
@@ -31,21 +32,21 @@ from gemseo.caches.base_full_cache import BaseFullCache
 from gemseo.typing import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
-from gemseo.utils.multiprocessing import get_multi_processing_manager
+from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
 if TYPE_CHECKING:
     from multiprocessing.managers import DictProxy
     from multiprocessing.synchronize import RLock as RLockType
 
-    from gemseo.typing import DataMapping
+    from gemseo.typing import StrKeyMapping
 
 
 class MemoryFullCache(BaseFullCache):
     """Cache using memory to cache all the data."""
 
     __data: (
-        DictProxy[int, dict[BaseFullCache.Group, DataMapping | JacobianData]]
-        | dict[int, dict[BaseFullCache.Group, DataMapping | JacobianData]]
+        DictProxy[int, dict[BaseFullCache.Group, StrKeyMapping | JacobianData]]
+        | dict[int, dict[BaseFullCache.Group, StrKeyMapping | JacobianData]]
     )
 
     def __init__(
@@ -106,7 +107,7 @@ class MemoryFullCache(BaseFullCache):
         self,
         index: int,
         group: Literal[BaseFullCache.Group.INPUTS, BaseFullCache.Group.OUTPUTS],
-    ) -> DataMapping: ...
+    ) -> StrKeyMapping: ...
 
     @overload
     def _read_data(
@@ -119,7 +120,7 @@ class MemoryFullCache(BaseFullCache):
         self,
         index: int,
         group: BaseFullCache.Group,
-    ) -> DataMapping | JacobianData:
+    ) -> StrKeyMapping | JacobianData:
         data = self.__data[index].get(group, {})
         if group == self.Group.JACOBIAN and data:
             return nest_flat_bilevel_dict(
@@ -129,12 +130,12 @@ class MemoryFullCache(BaseFullCache):
 
     def _write_data(
         self,
-        values: DataMapping,
+        values: StrKeyMapping,
         group: BaseFullCache.Group,
         index: int,
     ) -> None:
         data = self.__data[index]
-        data[group] = values.copy()
+        data[group] = copy(values)
         self.__data[index] = data
 
     @property

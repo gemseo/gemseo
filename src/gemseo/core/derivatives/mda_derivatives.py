@@ -109,9 +109,7 @@ def traverse_add_diff_io_mda(
     Returns:
         The merged differentiated inputs and outputs.
     """
-    strong_groups = coupling_structure.get_strongly_coupled_disciplines(
-        by_group=True, add_self_coupled=True
-    )
+    strong_groups = coupling_structure.get_strongly_coupled_disciplines(by_group=True)
 
     all_disc_with_red, reduced_disciplines = _replace_strongly_coupled(
         coupling_structure
@@ -119,10 +117,7 @@ def traverse_add_diff_io_mda(
 
     reduced_coupling_structure = MDOCouplingStructure(all_disc_with_red)
     diff_ios_merged = traverse_add_diff_io(
-        reduced_coupling_structure.graph.graph,
-        inputs,
-        outputs,
-        add_differentiated_ios=True,
+        reduced_coupling_structure.graph.graph, inputs, outputs
     )
 
     # The sub MDAs where the strong couplings are handled here.

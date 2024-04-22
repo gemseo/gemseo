@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Any
 
 import numpy
 from numpy import array
@@ -43,6 +42,8 @@ from gemseo.core.discipline import MDODiscipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
+
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -306,7 +307,7 @@ class AnalyticDiscipline(MDODiscipline):
                         dtype=float64,
                     )
 
-    def __setstate__(self, state: Mapping[str, Any]) -> None:
+    def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
         self._sympy_funcs = {}
         self._sympy_jac_funcs = {}

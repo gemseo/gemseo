@@ -24,9 +24,10 @@ from gemseo.algos.opt.augmented_lagrangian.base import BaseAugmentedLagrangian
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
 
     from numpy import ndarray
+
+    from gemseo.typing import StrKeyMapping
 
 
 class AugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian):
@@ -61,7 +62,7 @@ class AugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian):
         ineq_tolerance: float = 1e-4,
         kkt_tol_abs: float | None = None,
         kkt_tol_rel: float | None = None,
-        sub_problem_options: Mapping[str, Any] | None = None,
+        sub_problem_options: StrKeyMapping | None = None,
         sub_problem_constraints: Iterable[str] = (),
         initial_rho: float = 10.0,
         tau: float = 0.9,

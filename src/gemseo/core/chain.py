@@ -28,8 +28,8 @@ from typing import TYPE_CHECKING
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
 
-from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import MDODiscipline
@@ -87,14 +87,14 @@ class MDOChain(MDODiscipline):
             grammar_type: The type of the input and output grammars.
         """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
-        self._disciplines = disciplines
+        self._disciplines = list(disciplines)
         self.initialize_grammars()
         self._coupling_structure = None
         self._last_diff_inouts = None
 
     def set_disciplines_statuses(
         self,
-        status: str,
+        status: MDODiscipline.ExecutionStatus,
     ) -> None:
         """Set the sub-disciplines statuses.
 
