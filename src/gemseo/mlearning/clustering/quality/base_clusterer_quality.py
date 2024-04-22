@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Assessing the quality of a clusterer."""
+"""The base class to assess the quality of a clusterer."""
 
 from __future__ import annotations
 

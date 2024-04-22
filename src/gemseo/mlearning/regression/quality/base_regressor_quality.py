@@ -17,12 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Here is the baseclass to measure the error of machine learning algorithms.
-
-The concept of error measure is implemented
-with the :class:`.BaseRegressorQuality` class
-and proposes different evaluation methods.
-"""
+"""The base class to assess the quality of a regressor."""
 
 from __future__ import annotations
 
