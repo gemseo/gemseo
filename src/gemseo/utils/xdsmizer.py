@@ -340,7 +340,7 @@ class XDSMizer:
         for atom_id, atom in enumerate(self.atoms):  # pylint: disable=too-many-nested-blocks
             # if a node already created from an atom with same discipline
             # at one level just reference the same node
-            for ref_atom in self.to_id:
+            for ref_atom in tuple(self.to_id):
                 if atom.discipline == ref_atom.discipline:
                     self.to_id[atom] = self.to_id[ref_atom]
 

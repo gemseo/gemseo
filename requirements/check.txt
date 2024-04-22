@@ -6,7 +6,7 @@ distlib==0.3.8
     # via virtualenv
 filelock==3.13.4
     # via virtualenv
-identify==2.5.35
+identify==2.5.36
     # via pre-commit
 nodeenv==1.8.0
     # via pre-commit
@@ -15,8 +15,8 @@ platformdirs==4.2.0
 pre-commit==3.7.0
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.3.6
-setuptools==69.2.0
+ruff==0.4.1
+setuptools==69.5.1
     # via nodeenv
-virtualenv==20.25.1
+virtualenv==20.25.3
     # via pre-commit
