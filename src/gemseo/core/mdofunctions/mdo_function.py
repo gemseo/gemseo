@@ -295,7 +295,7 @@ class MDOFunction(Serializable):
         self._expr = ""
         self._dim = 0
         self._output_names = []
-        self._init_shared_memory_attrs()
+        self._init_shared_memory_attrs_before()
         # Use setters to check values
         self.func = func
         self.jac = jac
@@ -392,7 +392,7 @@ class MDOFunction(Serializable):
         with Path(file_path).open("rb") as file_:
             return pickle.Unpickler(file_).load()
 
-    def _init_shared_memory_attrs(self) -> None:
+    def _init_shared_memory_attrs_before(self) -> None:
         """Initialize the shared attributes in multiprocessing."""
         self._n_calls = Value("i", 0)
 
