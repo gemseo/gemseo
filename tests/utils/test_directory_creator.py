@@ -57,21 +57,18 @@ def empty_directory(tmp_wd) -> None:
 def test_get_unique_run_folder_path(directories) -> None:
     """Test the method: ``get_unique_run_folder_path``."""
     dir_creator = DirectoryCreator("resource_dir")
-    assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/4").absolute()
-    assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/5").absolute()
+    assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/4")
+    assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/5")
 
     # a director that does not exist
     dir_creator = DirectoryCreator("resource_dir/foo/bar")
-    assert (
-        dir_creator.get_unique_run_folder_path()
-        == Path("resource_dir/foo/bar/1").absolute()
-    )
+    assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/foo/bar/1")
 
 
 def test_get_unique_run_folder_path_empty(empty_directory) -> None:
     """Test the method: ``create`` on empty directory."""
     dir_creator = DirectoryCreator("empty_resource_dir")
-    assert dir_creator.create() == Path("empty_resource_dir/1").absolute()
+    assert dir_creator.create() == Path("empty_resource_dir/1")
 
 
 def test_uuid_folder(tmp_wd, directories) -> None:

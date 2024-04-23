@@ -342,7 +342,7 @@ class MDODiscipline(Serializable):
 
         self._status = self.ExecutionStatus.PENDING
         if self.activate_counters:
-            self._init_shared_memory_attrs()
+            self._init_shared_memory_attrs_before()
 
         self._status_observers = []
         self.__linear_relationships = {}
@@ -391,7 +391,7 @@ class MDODiscipline(Serializable):
     def _repr_html_(self) -> str:
         return self._string_representation._repr_html_()
 
-    def _init_shared_memory_attrs(self) -> None:
+    def _init_shared_memory_attrs_before(self) -> None:
         self._n_calls = Value("i", 0)
         self._exec_time = Value("d", 0.0)
         self._n_calls_linearize = Value("i", 0)

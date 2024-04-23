@@ -23,9 +23,9 @@ from shutil import copy2
 from typing import TYPE_CHECKING
 from typing import Any
 
+from gemseo.core.serializable import Serializable
 from gemseo.utils.directory_creator import DirectoryCreator
 from gemseo.utils.directory_creator import DirectoryNamingMethod
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class _BaseExecutableRunner(metaclass=ABCGoogleDocstringInheritanceMeta):
+class _BaseExecutableRunner(Serializable):
     """Handle executing a command line in a subprocess.
 
     This class also handles the creation of the directory where the command line is
