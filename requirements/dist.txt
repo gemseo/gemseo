@@ -4,7 +4,7 @@ annotated-types==0.6.0
     # via pydantic
 attrs==23.2.0
     # via check-wheel-contents
-backports-tarfile==1.1.0
+backports-tarfile==1.1.1
     # via jaraco-context
 build==1.2.1
 certifi==2024.2.2
