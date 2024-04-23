@@ -66,7 +66,7 @@ psutil==5.9.8
     # via openturns
 py==1.11.0
     # via pytest
-pydantic==2.1.0
+pydantic==2.7.0
 pydantic-core==2.4.0
     # via pydantic
 pydoe3==1.0.1
