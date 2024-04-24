@@ -7,7 +7,7 @@ attrs==23.2.0
 cached-property==1.5.2
     # via h5py
 covdefaults==0.1.0
-coverage==7.4.4
+coverage==7.5.0
     # via
     #   covdefaults
     #   pytest-cov

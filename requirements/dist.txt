@@ -18,7 +18,7 @@ click==8.1.7
     # via check-wheel-contents
 cryptography==42.0.5
     # via secretstorage
-docutils==0.21.1
+docutils==0.21.2
     # via readme-renderer
 idna==3.7
     # via requests
@@ -56,9 +56,9 @@ pkginfo==1.10.0
     # via twine
 pycparser==2.22
     # via cffi
-pydantic==2.7.0
+pydantic==2.7.1
     # via check-wheel-contents
-pydantic-core==2.18.1
+pydantic-core==2.18.2
     # via pydantic
 pygments==2.17.2
     # via
