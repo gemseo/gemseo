@@ -141,7 +141,7 @@ def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
         tmp_wd : Fixture to move into a temporary directory.
     """
     design_space = create_design_space()
-    design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_1", l_b=0.0, u_b=10.0, value=ones(1))
     design_space.add_variable(
         "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
     )
@@ -164,7 +164,7 @@ def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
         save=True,
         file_path="scatter_sellar",
         file_extension="png",
-        variable_names=["obj", "x_local", "x_shared"],
+        variable_names=["obj", "x_1", "x_shared"],
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:

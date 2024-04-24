@@ -50,10 +50,10 @@ from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.problems.mdo.sellar.sellar import Sellar1
-from gemseo.problems.mdo.sellar.sellar import Sellar2
-from gemseo.problems.mdo.sellar.sellar import SellarSystem
-from gemseo.problems.mdo.sellar.sellar import get_inputs
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.helpers import concretize_classes
@@ -69,7 +69,7 @@ def sellar_mda(sellar_disciplines):
 @pytest.fixture(scope="module")
 def sellar_inputs():
     """Build dictionary with initial solution."""
-    return get_inputs()
+    return get_initial_data()
 
 
 def test_reset(sellar_mda, sellar_inputs) -> None:

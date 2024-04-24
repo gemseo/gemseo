@@ -353,7 +353,9 @@ Consequently, you just need to import them and use it!
 
 .. code::
 
-   from gemseo.problems.mdo.sellar.sellar import Sellar1, Sellar2, SellarSystem
+   from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+   from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+   from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 
    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 

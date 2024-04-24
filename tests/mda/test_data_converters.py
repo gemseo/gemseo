@@ -16,8 +16,8 @@ from __future__ import annotations
 
 # import numpy as np
 # from gemseo.mda.gauss_seidel import MDAGaussSeidel
-# from gemseo.problems.mdo.sellar.sellar import Y_1
-# from gemseo.problems.mdo.sellar.sellar import Y_2
+# from gemseo.problems.mdo.sellar.variables import Y_1
+# from gemseo.problems.mdo.sellar.variables import Y_2
 #
 # from .sellar_for_data_converter import Sellar1
 # from .sellar_for_data_converter import Sellar2

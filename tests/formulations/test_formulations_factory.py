@@ -25,9 +25,9 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.formulations.mdf import MDF
-from gemseo.problems.mdo.sellar.sellar import Sellar1
-from gemseo.problems.mdo.sellar.sellar import Sellar2
-from gemseo.problems.mdo.sellar.sellar import SellarSystem
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.utils.testing.helpers import concretize_classes
 from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulationFactory
 from tests.formulations.not_mdo_formulations.formulation_a import ANotMDOFormulation

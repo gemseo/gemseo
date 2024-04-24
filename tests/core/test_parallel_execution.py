@@ -42,13 +42,13 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.problems.mdo.sellar.sellar import WITH_2D_ARRAY
-from gemseo.problems.mdo.sellar.sellar import X_SHARED
-from gemseo.problems.mdo.sellar.sellar import Y_1
-from gemseo.problems.mdo.sellar.sellar import Sellar1
-from gemseo.problems.mdo.sellar.sellar import Sellar2
-from gemseo.problems.mdo.sellar.sellar import SellarSystem
-from gemseo.problems.mdo.sellar.sellar import get_inputs
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problems.mdo.sellar.utils import WITH_2D_ARRAY
+from gemseo.problems.mdo.sellar.utils import get_initial_data
+from gemseo.problems.mdo.sellar.variables import X_SHARED
+from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 
@@ -135,7 +135,7 @@ def test_callable_exception() -> None:
 def test_disc_parallel_doe_scenario() -> None:
     s_1 = Sellar1()
     design_space = create_design_space()
-    design_space.add_variable("x_local", l_b=0.0, value=1.0, u_b=10.0)
+    design_space.add_variable("x_1", l_b=0.0, value=1.0, u_b=10.0)
     scenario = create_scenario(
         s_1, "DisciplinaryOpt", Y_1, design_space, scenario_type="DOE"
     )
@@ -160,8 +160,8 @@ def test_disc_parallel_doe(sellar_disciplines) -> None:
     )
     input_list = []
     for i in range(n):
-        inputs = get_inputs()
-        if WITH_2D_ARRAY:
+        inputs = get_initial_data()
+        if WITH_2D_ARRAY:  # pragma: no cover
             inputs[X_SHARED][0][0] = i
         else:
             inputs[X_SHARED][0] = i
@@ -184,7 +184,7 @@ def test_disc_parallel_doe(sellar_disciplines) -> None:
     output_list = parallel_execution.execute(input_list)
 
     for i in range(n):
-        inputs = get_inputs()
+        inputs = get_initial_data()
         if WITH_2D_ARRAY:
             inputs[X_SHARED][0][0] = i
         else:
@@ -200,7 +200,7 @@ def test_parallel_lin() -> None:
 
     input_list = []
     for i in range(3):
-        inpts = get_inputs()
+        inpts = get_initial_data()
         inpts[X_SHARED][0] = i + 1
         input_list.append(inpts)
     outs = parallel_execution.execute(input_list)
@@ -208,7 +208,7 @@ def test_parallel_lin() -> None:
     disciplines2 = [Sellar1(), Sellar2(), SellarSystem()]
 
     for i, disc in enumerate(disciplines):
-        inpts = get_inputs()
+        inpts = get_initial_data()
         inpts[X_SHARED][0] = i + 1
 
         j_ref = disciplines2[i].linearize(inpts)
@@ -363,7 +363,7 @@ def test_multiprocessing_context(
 
     parallel_execution = parallel_class([sellar], use_threading=use_threading)
 
-    atom_inputs = get_inputs()
+    atom_inputs = get_initial_data()
     del atom_inputs[Y_1]
     atom_inputs_half = atom_inputs.copy()
     for name, value in atom_inputs_half.items():

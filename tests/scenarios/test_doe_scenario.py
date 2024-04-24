@@ -212,13 +212,13 @@ def test_warning_when_missing_option(caplog, doe_scenario) -> None:
     assert expected_log.format("unknown_option") in caplog.text
 
 
-def f_sellar_1(x_local: float, y_2: float, x_shared: ndarray) -> float:
+def f_sellar_1(x_1: ndarray, y_2: ndarray, x_shared: ndarray) -> ndarray:
     """Function for discipline 1."""
-    if x_local == 0.0:
+    if x_1 == 0.0:
         msg = "Undefined"
         raise ValueError(msg)
 
-    y_1 = (x_shared[0] ** 2 + x_shared[1] + x_local - 0.2 * y_2) ** 0.5
+    y_1 = (x_shared[0] ** 2 + x_shared[1] + x_1 - 0.2 * y_2) ** 0.5
     return y_1  # noqa: RET504
 
 
@@ -245,7 +245,7 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines) -> None
     )
     scenario.execute({
         "algo": "CustomDOE",
-        "algo_options": {"samples": array([[0.0, -10.0, 0.0]])},
+        "algo_options": {"samples": array([[0.0, 0.0, -10.0, 0.0]])},
     })
 
     assert sellar_disciplines[2].n_calls == 0

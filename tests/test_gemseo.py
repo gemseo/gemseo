@@ -791,7 +791,7 @@ def test_import_discipline(tmp_wd) -> None:
     loaded_discipline = import_discipline(file_path)
     loaded_discipline.execute()
 
-    assert loaded_discipline.local_data["x_local"] == discipline.local_data["x_local"]
+    assert loaded_discipline.local_data["x_1"] == discipline.local_data["x_1"]
     assert loaded_discipline.local_data["y_1"] == discipline.local_data["y_1"]
 
 

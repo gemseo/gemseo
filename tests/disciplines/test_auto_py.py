@@ -41,7 +41,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.auto_py import to_arrays_dict
-from gemseo.problems.mdo.sellar.sellar import get_inputs
+from gemseo.problems.mdo.sellar.utils import get_initial_data
 
 X_DIM = 4
 
@@ -378,14 +378,14 @@ def test_type_hints_for_grammars(
 
 
 def compute_y_1(
-    x_local: ndarray,
+    x_1: ndarray,
     x_shared: ndarray,
     y_2: ndarray,
 ) -> float:
     """Evaluate the first coupling equation in functional form.
 
     Args:
-        x_local: The design variables local to first discipline.
+        x_1: The design variables local to first discipline.
         x_shared: The shared design variables.
         y_2: The coupling variable coming from the second discipline.
 
@@ -395,12 +395,12 @@ def compute_y_1(
     if x_shared.ndim != 1:
         # This handles running the test suite for checking data conversion.
         x_shared = x_shared.flatten()
-    y_1 = float(sqrt(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0]))
+    y_1 = float(sqrt(x_shared[0] ** 2 + x_shared[1] + x_1[0] - 0.2 * y_2[0]))
     return y_1  # noqa: RET504
 
 
 def compute_jacobian_1(
-    x_local: ndarray,
+    x_1: ndarray,
     x_shared: ndarray,
     y_2: ndarray,
 ) -> ndarray:
@@ -408,7 +408,7 @@ def compute_jacobian_1(
     if x_shared.ndim != 1:
         # This handles running the test suite for checking data conversion.
         x_shared = x_shared.flatten()
-    inv_denom = 1.0 / compute_y_1(x_local, x_shared, y_2)
+    inv_denom = 1.0 / compute_y_1(x_1, x_shared, y_2)
     jac[0][0] = 0.5 * inv_denom
     jac[0][1] = x_shared[0] * inv_denom
     jac[0][2] = 0.5 * inv_denom
@@ -444,13 +444,13 @@ def compute_jacobian_2(
     return ones((1, 3))
 
 
-@pytest.mark.parametrize("x_local", range(3))
+@pytest.mark.parametrize("x_1", range(3))
 @pytest.mark.parametrize(
     "mda_name", ["MDAGaussSeidel", "MDAJacobi", "MDANewtonRaphson", "MDAQuasiNewton"]
 )
-def test_mda(x_local, mda_name, sellar_disciplines) -> None:
+def test_mda(x_1, mda_name, sellar_disciplines) -> None:
     """Verify MDA."""
-    input_data_ref = get_inputs()
+    input_data_ref = get_initial_data()
     mda_ref = create_mda(mda_name, sellar_disciplines[:-1])
     output_ref = mda_ref.execute(input_data_ref)
 
@@ -472,8 +472,9 @@ def test_mda(x_local, mda_name, sellar_disciplines) -> None:
         return
 
     del input_data["y_1"]
-    mda.default_inputs = input_data
+    del input_data["x_2"]
+    mda.default_inputs = {k: v for k, v in input_data.items() if k in mda.input_grammar}
 
     assert mda.check_jacobian(
-        input_data=input_data, inputs=["x_local", "x_shared"], outputs=["y_1", "y_2"]
+        input_data=input_data, inputs=["x_1", "x_shared"], outputs=["y_1", "y_2"]
     )
