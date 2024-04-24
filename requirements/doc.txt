@@ -18,7 +18,7 @@ cycler==0.12.1
 dill==0.3.8
     # via openturns
 docstring-inheritance==2.2.0
-docutils==0.21.1
+docutils==0.21.2
     # via
     #   pybtex-docutils
     #   sphinx
@@ -112,7 +112,7 @@ pyyaml==6.0.1
 requests==2.31.0
     # via sphinx
 scikit-learn==1.4.1.post1
-scipy==1.11.1
+scipy==1.12.0
     # via
     #   pydoe3
     #   scikit-learn
