@@ -47,7 +47,7 @@ from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mda.base_mda import BaseMDA
-from gemseo.problems.mdo.sellar.sellar import Sellar1
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiStructureSG
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -916,7 +916,7 @@ def test_grammar_inheritance() -> None:
 
     # The discipline works correctly as the parent class has IO grammar files.
     discipline = NewSellar1()
-    assert "x_local" in discipline.get_input_data_names()
+    assert "x_1" in discipline.get_input_data_names()
 
     class NewScenario(Scenario):
         """A discipline whose parent forces its children to use IO grammar files."""
@@ -1156,7 +1156,7 @@ def test_statuses(observer) -> None:
 
     disc._run = lambda x: 1 / 0
     with contextlib.suppress(Exception):
-        disc.execute({"x_local": disc.local_data["x_local"] + 1.0})
+        disc.execute({"x_1": disc.local_data["x_1"] + 1.0})
     assert observer.statuses == [
         MDODiscipline.ExecutionStatus.RUNNING,
         MDODiscipline.ExecutionStatus.FAILED,
@@ -1293,11 +1293,13 @@ def test_path_serialization(tmp_path) -> None:
 
 def test_repr_html() -> None:
     """Check MDODiscipline._repr_html_."""
-    assert Sellar1()._repr_html_() == REPR_HTML_WRAPPER.format(
-        "Sellar1<br/>"
+    assert AnalyticDiscipline(
+        name="foo", expressions={"z": "b+a", "y": "c+d+e"}
+    )._repr_html_() == REPR_HTML_WRAPPER.format(
+        "foo<br/>"
         "<ul>"
-        "<li>Inputs: x_local, x_shared, y_2</li>"
-        "<li>Outputs: y_1</li>"
+        "<li>Inputs: a, b, c, d, e</li>"
+        "<li>Outputs: y, z</li>"
         "</ul>"
     )
 

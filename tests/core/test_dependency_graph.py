@@ -30,9 +30,9 @@ from numpy import ones
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.mdo.sellar.sellar import Sellar1
-from gemseo.problems.mdo.sellar.sellar import Sellar2
-from gemseo.problems.mdo.sellar.sellar import SellarSystem
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion

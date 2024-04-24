@@ -25,11 +25,11 @@ import pytest
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.problems.mdo.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.mdo.scalable.data_driven.study.process import ScalabilityStudy
-from gemseo.problems.mdo.sellar.sellar import OBJ
-from gemseo.problems.mdo.sellar.sellar import X_LOCAL
-from gemseo.problems.mdo.sellar.sellar import X_SHARED
-from gemseo.problems.mdo.sellar.sellar import Y_1
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.mdo.sellar.variables import OBJ
+from gemseo.problems.mdo.sellar.variables import X_1
+from gemseo.problems.mdo.sellar.variables import X_SHARED
+from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 
@@ -59,13 +59,16 @@ def sellar_use_case(tmp_wd, sellar_disciplines):
         discipline.set_cache_policy(discipline.CacheType.HDF5, cache_hdf_file=file_name)
         discipline_names.append(discipline.name)
         objective_name = next(iter(discipline.output_grammar.keys()))
-        input_names = list(discipline.input_grammar.keys())
-        design_space = SellarDesignSpace().filter(input_names)
+        design_space = SellarDesignSpace()
+        input_names = set(design_space.variable_names).intersection(
+            set(discipline.input_grammar.keys())
+        )
+        design_space = design_space.filter(input_names)
         scenario = DOEScenario(
             [discipline], "DisciplinaryOpt", objective_name, design_space
         )
         scenario.execute({"algo": "DiagonalDOE", "n_samples": n_samples})
-    design_variables = [X_SHARED, X_LOCAL]
+    design_variables = [X_SHARED, X_1]
     objective_name = OBJ
     os.mkdir("study_1")
     os.mkdir("study_2")

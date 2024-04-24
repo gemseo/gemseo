@@ -1718,7 +1718,7 @@ def test_constraint_names_with_aggregation() -> None:
 def test_observables_normalization(sellar_disciplines) -> None:
     """Test that the observables are called at each iteration."""
     design_space = DesignSpace()
-    design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_1", l_b=0.0, u_b=10.0, value=ones(1))
     design_space.add_variable(
         "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
     )

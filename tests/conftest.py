@@ -17,25 +17,22 @@
 from __future__ import annotations
 
 from collections import namedtuple
-from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.problems.mdo.sellar.sellar import DataConverter
-from gemseo.problems.mdo.sellar.sellar import Sellar1
-from gemseo.problems.mdo.sellar.sellar import Sellar2
-from gemseo.problems.mdo.sellar.sellar import SellarSystem
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problems.mdo.sellar.utils import set_data_converter
 from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
-
-if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
 
 MARK = "doc_examples"
 
 
 def pytest_collection_modifyitems(
-    session: pytest.Session, config: pytest.Config, items: list[pytest.Item]
+    session: pytest.Session,
+    config: pytest.Config,
+    items: list[pytest.Item],
 ) -> None:
     """Skip by default some marked tests."""
     if not config.getoption("-m"):
@@ -49,7 +46,7 @@ SellarDisciplines = namedtuple("SellarDisciplines", "sellar1, sellar2, sellar_sy
 
 
 @pytest.fixture()
-def sellar_disciplines() -> SellarDisciplines[MDODiscipline]:
+def sellar_disciplines() -> SellarDisciplines:
     """The disciplines of the Sellar problem.
 
     Returns:
@@ -58,6 +55,5 @@ def sellar_disciplines() -> SellarDisciplines[MDODiscipline]:
         * A SellarSystem discipline.
     """
     # This handles running the test suite for checking data conversion.
-    JSONGrammar.DATA_CONVERTER_CLASS = DataConverter
-    yield SellarDisciplines(Sellar1(), Sellar2(), SellarSystem())
-    JSONGrammar.DATA_CONVERTER_CLASS = "JSONGrammarDataConverter"
+    with set_data_converter():
+        yield SellarDisciplines(Sellar1(), Sellar2(), SellarSystem())

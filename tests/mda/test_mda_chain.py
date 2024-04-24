@@ -36,7 +36,7 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.mdo.sellar.sellar import get_inputs
+from gemseo.problems.mdo.sellar.utils import get_initial_data
 
 from .test_mda import analytic_disciplines_from_desc
 
@@ -121,8 +121,8 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(
     linear_solver_options = {"tol": 1e-6}
     mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
     mda_chain.linear_solver_options = linear_solver_options
-    input_data = get_inputs()
-    inputs = ["x_local", "x_shared"]
+    input_data = get_initial_data()
+    inputs = ["x_1", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     mda_chain.add_differentiated_inputs(inputs)
     mda_chain.add_differentiated_outputs(outputs)
@@ -137,8 +137,8 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(
 def test_sellar(tmp_wd, sellar_disciplines) -> None:
     """"""
     mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
-    input_data = get_inputs()
-    inputs = ["x_local", "x_shared"]
+    input_data = get_initial_data()
+    inputs = ["x_1", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     assert mda_chain.check_jacobian(
         input_data,
@@ -153,7 +153,7 @@ def test_sellar(tmp_wd, sellar_disciplines) -> None:
 
 
 def test_sellar_chain_linearize(sellar_disciplines) -> None:
-    inputs = ["x_local", "x_shared"]
+    inputs = ["x_1", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     mda_chain = MDAChain(
         sellar_disciplines,

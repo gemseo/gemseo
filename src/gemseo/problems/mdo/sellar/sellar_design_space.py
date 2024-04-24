@@ -16,75 +16,68 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The design space for the MDO problem proposed by Sellar *et al.*.
-
-Sellar, R., Batill, S., & Renaud, J. (1996). Response surface based, concurrent subspace
-optimization for multidisciplinary system design. In 34th aerospace sciences meeting and
-exhibit (p. 714).
-"""
+"""The design space for the customizable Sellar MDO problem."""
 
 from __future__ import annotations
 
 from numpy import array
-from numpy import ndarray
+from numpy import ones
+from strenum import StrEnum
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.problems.mdo.sellar.sellar import X_LOCAL
-from gemseo.problems.mdo.sellar.sellar import X_SHARED
-from gemseo.problems.mdo.sellar.sellar import Y_1
-from gemseo.problems.mdo.sellar.sellar import Y_2
+from gemseo.problems.mdo.sellar.variables import X_1
+from gemseo.problems.mdo.sellar.variables import X_2
+from gemseo.problems.mdo.sellar.variables import X_SHARED
+from gemseo.problems.mdo.sellar.variables import Y_1
+from gemseo.problems.mdo.sellar.variables import Y_2
+
+
+class RealOrComplexDType(StrEnum):
+    """A real or complex NumPy data type."""
+
+    COMPLEX = "complex128"
+    FLOAT = "float64"
 
 
 class SellarDesignSpace(DesignSpace):
-    """The design space for the MDO problem proposed by Sellar *et al.* (1996).
+    r"""The design space for the customizable Sellar MDO problem.
 
-    It is composed of:
-    - :math:`x_{local}` belonging to :math:`[0., 10.]`,
-    - :math:`x_{shared,1}` belonging to :math:`[-10., 10.]`,
-    - :math:`x_{shared,2}` belonging to :math:`[0., 10.]`,
-    - :math:`y_1` belonging to :math:`[-100., 100.]`,
-    - :math:`y_2` belonging to :math:`[-100., 100.]`.
+    - :math:`x_1\in[0., 10.]^n` (initial: 1),
+    - :math:`x_2\in[0., 10.]^n` (initial: 1),
+    - :math:`x_{shared,1}\in[-10., 10.]` (initial: 4),
+    - :math:`x_{shared,2}\in[0., 10.]` (initial: 3),
+    - :math:`y_1\in[-100., 100.]^n` (initial: 1),
+    - :math:`y_2\in[-100., 100.]^n` (initial: 1),
 
-    This design space is initialized with the initial solution:
-
-    - :math:`x_{local}=1`,
-    - :math:`x_{shared,1}=4`,
-    - :math:`x_{shared,2}=3`,
-    - :math:`y_1=1`,
-    - :math:`y_2=1`.
+    where :math:`n` is the size of the local design variables and coupling variables.
     """
 
     def __init__(
         self,
-        dtype: str = "complex128",
+        dtype: RealOrComplexDType = RealOrComplexDType.COMPLEX,
+        n: int = 1,
+        add_couplings: bool = True,
     ) -> None:
         """
         Args:
             dtype: The type of the variables defined in the design space.
+            n: The size of the local design variables and coupling variables.
+            add_couplings: Whether to add the coupling variables to the design space.
         """  # noqa: D205 D212
         super().__init__()
-
-        x_local, x_shared, y_1, y_2 = self.__get_initial_solution(dtype)
-        self.add_variable(X_LOCAL, l_b=0.0, u_b=10.0, value=x_local)
-        self.add_variable(X_SHARED, 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=x_shared)
-        self.add_variable(Y_1, l_b=-100.0, u_b=100.0, value=y_1)
-        self.add_variable(Y_2, l_b=-100.0, u_b=100.0, value=y_2)
-
-    @staticmethod
-    def __get_initial_solution(
-        dtype: str,
-    ) -> tuple[ndarray]:
-        """Return an initial solution for the MDO problem.
-
-        Args:
-            dtype: The type of the variables defined in the design space.
-
-        Returns:
-            An initial solution for both local design variables,
-            shared design variables and coupling variables.
-        """
-        x_local = array([1.0], dtype=dtype)
-        x_shared = array([4.0, 3.0], dtype=dtype)
-        y_1 = array([1.0], dtype=dtype)
-        y_2 = array([1.0], dtype=dtype)
-        return x_local, x_shared, y_1, y_2
+        self.add_variable(X_1, l_b=0.0, u_b=10.0, value=ones(n, dtype=dtype), size=n)
+        self.add_variable(X_2, l_b=0.0, u_b=10.0, value=ones(n, dtype=dtype), size=n)
+        self.add_variable(
+            X_SHARED,
+            2,
+            l_b=(-10, 0.0),
+            u_b=(10.0, 10.0),
+            value=array([4.0, 3.0], dtype=dtype),
+        )
+        if add_couplings:
+            self.add_variable(
+                Y_1, l_b=-100.0, u_b=100.0, value=ones(n, dtype=dtype), size=n
+            )
+            self.add_variable(
+                Y_2, l_b=-100.0, u_b=100.0, value=ones(n, dtype=dtype), size=n
+            )

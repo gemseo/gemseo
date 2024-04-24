@@ -416,9 +416,9 @@ class DesignSpace(collections.abc.MutableMapping):
         size: int = 1,
         var_type: DesignVariableType
         | Sequence[DesignVariableType] = DesignVariableType.FLOAT,
-        l_b: float | ndarray | None = None,
-        u_b: float | ndarray | None = None,
-        value: float | ndarray | None = None,
+        l_b: Number | Iterable[Number] | None = None,
+        u_b: Number | Iterable[Number] | None = None,
+        value: Number | Iterable[Number] | None = None,
     ) -> None:
         r"""Add a variable to the design space.
 
