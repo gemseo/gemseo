@@ -2118,7 +2118,7 @@ def sample_disciplines(
     algo_name: str,
     formulation: str = "MDF",
     formulation_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-    name: str = "",
+    name: str = "Sampling",
     **algo_options: Any,
 ) -> IODataset:
     """Sample a set of disciplines associated with an MDO formulation.
@@ -2155,6 +2155,10 @@ def sample_disciplines(
     )
     for output_name in output_names_iterator:
         scenario.add_observable(output_name)
+
+    if "log_problem" not in algo_options:
+        algo_options["log_problem"] = False
+
     scenario.execute({
         "algo": algo_name,
         "n_samples": n_samples,
