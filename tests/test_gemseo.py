@@ -966,10 +966,10 @@ def input_space() -> DesignSpace:
     "output_names",
     ["out1", ["out1", "out2"]],
 )
-def test_sample_disciplines(disciplines, input_space, output_names):
+def test_sample_disciplines(disciplines, input_space, output_names, caplog):
     """Check the sampling of two disciplines."""
     dataset = sample_disciplines(disciplines, input_space, output_names, 2, "fullfact")
-    assert dataset.name == "DOEScenario"
+    assert dataset.name == "Sampling"
 
     assert_equal(
         dataset.get_view(variable_names="inpt").to_numpy(), array([[1.0], [2.0]])
@@ -992,8 +992,10 @@ def test_sample_disciplines(disciplines, input_space, output_names):
     # By default, the gradients are not sampled.
     assert "@out1" not in dataset.variable_names
 
+    assert "Objective" not in caplog.text
 
-def test_sample_disciplines_options(disciplines, input_space):
+
+def test_sample_disciplines_options(disciplines, input_space, caplog):
     """Check the sampling of two disciplines with options."""
     dataset = sample_disciplines(
         disciplines,
@@ -1008,6 +1010,8 @@ def test_sample_disciplines_options(disciplines, input_space):
         formulation_options={"maximize_objective": True},
         # Sample the gradients
         eval_jac=True,
+        # Log the problem
+        log_problem=True,
     )
     assert dataset.name == "foo"
     assert_equal(
@@ -1016,3 +1020,4 @@ def test_sample_disciplines_options(disciplines, input_space):
     assert_equal(
         dataset.get_view(variable_names="@-out1").to_numpy(), array([[-2.0], [-2.0]])
     )
+    assert "Objective" in caplog.text
