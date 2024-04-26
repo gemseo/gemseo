@@ -414,10 +414,11 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                     x_unmask[i_min:i_max] = x_masked[i_x : i_x + n_x]
                     i_x += n_x
         except IndexError:
-            raise ValueError(
+            msg = (
                 "Inconsistent input array size of values array "
-                "with reference data shape %s" % x_unmask.shape
-            ) from None
+                f"with reference data shape {x_unmask.shape}"
+            )
+            raise ValueError(msg) from None
         return x_unmask
 
     def mask_x_swap_order(

@@ -134,7 +134,7 @@ class _MultipleMeta(ABCMeta, _MetaSchemaBuilder):  # type: ignore[misc]
     def __init__(cls, name: str, bases: tuple[type], attrs: dict[str, Any]) -> None:
         super().__init__(name, bases, attrs)
         cls.NODE_CLASS = type(
-            "%sSchemaNode" % name, (_SchemaNode,), {"STRATEGIES": cls.STRATEGIES}
+            f"{name}SchemaNode", (_SchemaNode,), {"STRATEGIES": cls.STRATEGIES}
         )
 
 
