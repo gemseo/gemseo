@@ -1,0 +1,2 @@
+``SobolAnalysis.compute_indices`` can estimate the Sobol' indices more precisely using
+control variates.
