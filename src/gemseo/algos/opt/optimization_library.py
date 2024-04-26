@@ -199,17 +199,19 @@ class OptimizationLibrary(DriverLibrary):
         if problem.has_eq_constraints() and not self.algorithm_handles_eqcstr(
             algo_name
         ):
-            raise ValueError(
+            msg = (
                 "Requested optimization algorithm "
-                "%s can not handle equality constraints." % algo_name
+                f"{algo_name} can not handle equality constraints."
             )
+            raise ValueError(msg)
         if problem.has_ineq_constraints() and not self.algorithm_handles_ineqcstr(
             algo_name
         ):
-            raise ValueError(
+            msg = (
                 "Requested optimization algorithm "
-                "%s can not handle inequality constraints." % algo_name
+                f"{algo_name} can not handle inequality constraints."
             )
+            raise ValueError(msg)
 
     def get_right_sign_constraints(self):
         """Transform the problem constraints into their opposite sign counterpart.
