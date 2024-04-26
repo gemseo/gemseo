@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 from typing import Callable
 
@@ -37,8 +38,11 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
     from gemseo.core.discipline import MDODiscipline
     from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
+    from gemseo.uncertainty.sensitivity.analysis import SecondOrderIndicesType
 
 
 @pytest.fixture(scope="module")
@@ -59,6 +63,34 @@ def discipline(
 ) -> AutoPyDiscipline:
     """The discipline of interest."""
     return AutoPyDiscipline(py_func=py_func, use_arrays=True)
+
+
+@pytest.fixture(scope="module")
+def discipline_cv1() -> AutoPyDiscipline:
+    """A first CV discipline."""
+
+    def cv1(x1, x23):
+        sin_x1_tp = x1[0] - x1[0] ** 3 / 6
+        sin_x2_tp = x23[0] - x23[0] ** 3 / 6 + x23[0] ** 5 / 120
+        y = array([sin_x1_tp + 7 * sin_x2_tp**2 + 0.1 * x23[1] ** 4 * sin_x1_tp])
+        z = array([y[0], y[0]])
+        return y, z
+
+    return AutoPyDiscipline(py_func=cv1, use_arrays=True)
+
+
+@pytest.fixture(scope="module")
+def discipline_cv2() -> AutoPyDiscipline:
+    """A second CV discipline."""
+
+    def cv2(x1, x23):
+        sin_x1_tp = x1[0] - x1[0] ** 3 / 6 + x1[0] ** 5 / 120
+        sin_x2_tp = x23[0] - x23[0] ** 3 / 6
+        y = array([sin_x1_tp + 7 * sin_x2_tp**2 + 0.1 * x23[1] ** 4 * sin_x1_tp])
+        z = array([y[0], y[0]])
+        return y, z
+
+    return AutoPyDiscipline(py_func=cv2, use_arrays=True)
 
 
 @pytest.fixture(scope="module")
@@ -90,6 +122,36 @@ def first_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
 def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     """The intervals of the total-order indices."""
     return sobol.get_intervals(False)
+
+
+@pytest.fixture(scope="module")
+def cv1_stat(
+    discipline_cv1: MDODiscipline,
+    uncertain_space: ParameterSpace,
+) -> tuple[
+    dict[str, NDArray[float]], dict[str, FirstOrderIndicesType | SecondOrderIndicesType]
+]:
+    """The estimated output variance and Sobol' indices.
+
+    Here for the first CV discipline.
+    """
+    sobol_analysis = SobolAnalysis([discipline_cv1], uncertain_space, 100)
+    return sobol_analysis.output_variances, sobol_analysis.compute_indices()
+
+
+@pytest.fixture(scope="module")
+def cv2_stat(
+    discipline_cv2: MDODiscipline,
+    uncertain_space: ParameterSpace,
+) -> tuple[
+    dict[str, NDArray[float]], dict[str, FirstOrderIndicesType | SecondOrderIndicesType]
+]:
+    """The estimated output variance and Sobol' indices.
+
+    Here for the second CV discipline.
+    """
+    sobol_analysis = SobolAnalysis([discipline_cv2], uncertain_space, 100)
+    return sobol_analysis.output_variances, sobol_analysis.compute_indices()
 
 
 def test_algo(discipline, uncertain_space) -> None:
@@ -258,7 +320,7 @@ def test_output_variances(sobol) -> None:
         sobol.output_variances,
         {
             name: dataset.get_view(variable_names=name)
-            .to_numpy()[: len(dataset) // 5]
+            .to_numpy()[: len(dataset) // 8 * 2]
             .var(0)
             for name in ["y", "z"]
         },
@@ -273,7 +335,7 @@ def test_output_standard_deviations(sobol) -> None:
         sobol.output_standard_deviations,
         {
             name: dataset.get_view(variable_names=name)
-            .to_numpy()[: len(dataset) // 5]
+            .to_numpy()[: len(dataset) // 8 * 2]
             .std(0)
             for name in ["y", "z"]
         },
@@ -346,3 +408,131 @@ def test_to_dataset(sobol) -> None:
     assert "total" in dataset.group_names
     assert "second" not in dataset.group_names
     assert "second" in dataset.misc
+
+
+def test_cv_wo_statistics(
+    sobol,
+    discipline_cv1,
+    cv1_stat,
+    uncertain_space,
+) -> None:
+    """Check the use of control variates without cv statistics."""
+    cv1_variance, cv1_indices = cv1_stat
+    cv = sobol.ControlVariate(
+        discipline=discipline_cv1,
+        indices=None,
+        n_samples=100,
+        variance=None,
+    )
+    cv = sobol._SobolAnalysis__compute_cv_stats(cv)
+    assert cv.indices is not None
+    assert cv.variance is not None
+
+    cv.variance = None
+    cv.indices = cv1_indices
+    cv = sobol._SobolAnalysis__compute_cv_stats(cv)
+    assert cv.indices is not None
+    assert cv.indices != cv1_indices
+    assert cv.variance is not None
+
+    cv.variance = cv1_variance
+    cv.indices = None
+    cv.n_samples = 0
+    cv = sobol._SobolAnalysis__compute_cv_stats(cv)
+    assert cv.indices is not None
+    assert cv.variance is not None
+    assert cv.variance != cv1_variance
+
+
+@pytest.mark.parametrize(
+    ("order", "reference_cv1", "reference_cv11", "reference_cv12"),
+    [
+        (
+            "first",
+            {"x1": array([0.840]), "x23": array([0.051, -0.039])},
+            {"x1": array([0.896]), "x23": array([0.051, -0.055])},
+            {"x1": array([0.321]), "x23": array([0.037, 0.069])},
+        ),
+        (
+            "total",
+            {"x1": array([0.449]), "x23": array([0.700, 0.423])},
+            {"x1": array([0.449]), "x23": array([0.249, 0.320])},
+            {"x1": array([-0.305]), "x23": array([0.679, 0.063])},
+        ),
+    ],
+)
+def test_cv_algo(
+    sobol,
+    discipline_cv1,
+    discipline_cv2,
+    cv1_stat,
+    cv2_stat,
+    order,
+    reference_cv1,
+    reference_cv11,
+    reference_cv12,
+) -> None:
+    """Check the values of the indices computed with control variates."""
+    output_name = "z"
+    tolerance = 0.001
+    cv1 = sobol.ControlVariate(
+        discipline=discipline_cv1,
+        variance=cv1_stat[0],
+        indices=cv1_stat[1],
+    )
+    cv2 = sobol.ControlVariate(
+        discipline=discipline_cv2,
+        variance=cv2_stat[0],
+        indices=cv2_stat[1],
+    )
+    indices_cv1 = sobol.compute_indices([output_name], control_variates=cv1)
+    indices_cv11 = sobol.compute_indices([output_name], control_variates=[cv1, cv1])
+    indices_cv12 = sobol.compute_indices([output_name], control_variates=[cv1, cv2])
+    assert compare_dict_of_arrays(
+        indices_cv1[order][output_name][0], reference_cv1, tolerance
+    )
+    assert compare_dict_of_arrays(
+        indices_cv11[order][output_name][0], reference_cv11, 0.04
+    )
+    assert compare_dict_of_arrays(
+        indices_cv12[order][output_name][0], reference_cv12, tolerance
+    )
+
+
+def test_warning_log(sobol, discipline_cv1, cv1_stat, caplog) -> None:
+    """Check the warning logged when confidence intervals or second order indices are
+    called for."""
+    cv1 = sobol.ControlVariate(
+        discipline=discipline_cv1,
+        indices=cv1_stat[1],
+        variance=cv1_stat[0],
+    )
+    sobol.compute_indices(control_variates=[cv1])
+    sobol.get_intervals()
+    module = "gemseo.uncertainty.sensitivity.sobol.analysis"
+    msg = "Confidence intervals are not yet implemented for CV estimators."
+    assert (module, logging.WARNING, msg) in caplog.record_tuples
+
+    sobol.plot("y", save=False)
+    assert (module, logging.WARNING, msg) in caplog.record_tuples
+
+    msg = "The second-order Sobol' indices are not yet implemented for CV estimators."
+    assert sobol.second_order_indices == {}
+    assert (module, logging.WARNING, msg) in caplog.record_tuples
+
+
+@pytest.mark.parametrize(
+    "baseline_images",
+    [["plot_cv"]],
+)
+@image_comparison(None)
+def test_plot_cv(discipline_cv1, cv1_stat, sobol, baseline_images) -> None:
+    """Check the main visualization method when a control variate is used."""
+    cv1 = sobol.ControlVariate(
+        discipline=discipline_cv1,
+        indices=cv1_stat[1],
+        variance=cv1_stat[0],
+    )
+    sobol.compute_indices(control_variates=[cv1])
+    fig = sobol.plot("y", save=False, sort=False)
+    assert isinstance(fig, Figure)

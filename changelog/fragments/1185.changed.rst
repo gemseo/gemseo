@@ -1,0 +1,2 @@
+The ``SobolAnalysis.output_variances`` are estimated using twice as many samples, i.e.
+both ``A`` and ``B`` batches of the pick-freeze technique instead of ``A`` only.
