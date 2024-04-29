@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from unittest import TestCase
+from warnings import warn
 
 import pytest
 from numpy import allclose
@@ -284,3 +285,13 @@ def test_nelder_mead(initial_simplex) -> None:
     x_opt, f_opt = problem.get_solution()
     assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
     assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
+
+
+def test_tnc_maxiter(caplog):
+    """Check that TNC no longer receives the unknown maxiter option."""
+    problem = Rosenbrock()
+    with pytest.warns() as record:
+        OptimizersFactory().execute(problem, algo_name="TNC", max_iter=2)
+        warn("foo", UserWarning)  # noqa: B028
+
+    assert len(record) == 1
