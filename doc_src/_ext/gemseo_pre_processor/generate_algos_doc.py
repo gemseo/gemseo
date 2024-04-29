@@ -37,10 +37,10 @@ from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.disciplines.factory import MDODisciplineFactory
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.mda.factory import MDAFactory
-from gemseo.mlearning.classification.factory import ClassificationModelFactory
-from gemseo.mlearning.clustering.factory import ClusteringModelFactory
+from gemseo.mlearning.classification.algos.factory import ClassifierFactory
+from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
-from gemseo.mlearning.regression.factory import RegressionModelFactory
+from gemseo.mlearning.regression.algos.factory import RegressorFactory
 from gemseo.post.factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
@@ -73,18 +73,13 @@ def get_options_schemas(
     obj_type = "type"
     all_data = feature_api_opts_pt(feature_name, output_json=False)
     all_options = all_data["properties"]
-    for opt_name, opt_schema in list(all_options.items()):
+    for _opt_name, opt_schema in list(all_options.items()):
         if descr in opt_schema:
             opt_schema[descr] = opt_schema[descr].replace("\n", " ")
         elif "anyOf" in opt_schema:
             if descr in opt_schema["anyOf"][0]:
                 opt_schema[descr] = opt_schema["anyOf"][0][descr].replace("\n", " ")
         else:
-            print(
-                Warning(
-                    f"Missing description for option {opt_name} of algo {feature_name}"
-                )
-            )
             opt_schema[descr] = ""
         if obj_type in opt_schema:
             opt_schema[obj_type] = opt_schema[obj_type].replace("\n", " ")
@@ -95,11 +90,6 @@ def get_options_schemas(
                     var_types.append(sub_opt_schema[obj_type].replace("\n", " "))
             opt_schema[obj_type] = "Union[{}]".format(",".join(var_types))
         else:
-            print(
-                Warning(
-                    f"Missing object type for option {opt_name} of algo {feature_name}"
-                )
-            )
             opt_schema[obj_type] = ""
 
     return all_options
@@ -114,13 +104,10 @@ def update_options_from_rest_docstring(
         algo: The name of the algorithms.
         options: The reST docstring of a function.
     """
-    for option_name, option in options.items():
+    for option in options.values():
         try:
             tmp = re.split(r":type ([*\w]+): (.*?)", option["description"])
         except KeyError:
-            print(
-                f"ERROR: failed to detect description for {option_name} of algorithm {algo}"
-            )
             tmp = [""] * 4
 
         option["description"] = tmp[0]
@@ -156,18 +143,17 @@ class AlgoOptionsDoc:
         template: str | None = None,
         user_guide_anchor: str = "",
     ) -> None:
-        """
-        Args:
-            algo_type: The name of the algorithm type, e.g. "formulation",
-                to be used internally (e.g. HTML anchors).
-            long_algo_type: The long name of the algorithm type, e.g. "MDO formulation",
-                to be used externally (e.g. HTML rendering).
-            algo_factory: The factory of algorithms.
-            template: The name of the template file located in the same directory
-                as the current file.
-                If None, :attr:`AlgoOptionsDoc.TEMPLATE` will be used.
-            user_guide_anchor: The anchor of the section of the user guide
-                about these algorithms.
+        """Args:
+        algo_type: The name of the algorithm type, e.g. "formulation",
+            to be used internally (e.g. HTML anchors).
+        long_algo_type: The long name of the algorithm type, e.g. "MDO formulation",
+            to be used externally (e.g. HTML rendering).
+        algo_factory: The factory of algorithms.
+        template: The name of the template file located in the same directory
+            as the current file.
+            If None, :attr:`AlgoOptionsDoc.TEMPLATE` will be used.
+        user_guide_anchor: The anchor of the section of the user guide
+            about these algorithms.
         """
         if template is None:
             self.template = self.TEMPLATE
@@ -493,9 +479,9 @@ def main(gen_opts_path: str | Path) -> None:
     GEN_OPTS_PATH = gen_opts_path
 
     algos_options_docs = [
-        InitOptionsDoc("clustering", "Clustering algorithms", ClusteringModelFactory()),
+        InitOptionsDoc("clustering", "Clustering algorithms", ClustererFactory()),
         InitOptionsDoc(
-            "classification", "Classification algorithms", ClassificationModelFactory()
+            "classification", "Classification algorithms", ClassifierFactory()
         ),
         InitOptionsDoc("ml_quality", "Quality measures", MLAlgoQualityFactory()),
         InitOptionsDoc("mda", "MDA algorithms", MDAFactory()),
@@ -533,7 +519,7 @@ def main(gen_opts_path: str | Path) -> None:
         algos_options_doc.to_rst()
 
     options_doc = InitOptionsDoc(
-        "regression", "Regression algorithms", RegressionModelFactory()
+        "regression", "Regression algorithms", RegressorFactory()
     )
     options_doc.to_rst()
     options_doc.to_rst("surrogate_algos_template.tmpl", "surrogate_algos.rst")

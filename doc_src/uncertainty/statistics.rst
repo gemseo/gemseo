@@ -13,10 +13,10 @@
 Statistics
 ==========
 
-The base class *Statistics*
----------------------------
+The base class *BaseStatistics*
+-------------------------------
 
-.. automodule:: gemseo.uncertainty.statistics.statistics
+.. automodule:: gemseo.uncertainty.statistics.base_statistics
    :noindex:
 
 Examples
