@@ -104,6 +104,7 @@ from collections.abc import Iterable
 from collections.abc import Mapping
 from collections.abc import Sequence
 from dataclasses import dataclass
+from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -217,7 +218,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         used by ``SobolAnalysis``.
         """
 
-        indices: Mapping[str, FirstOrderIndicesType] = READ_ONLY_EMPTY_DICT
+        indices: Mapping[str, FirstOrderIndicesType] = field(default_factory=dict)
         """The mapping between output names and first-order Sobol' indices.
 
         If empty, ``SobolAnalysis`` will compute it.
@@ -229,7 +230,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         If 0, use 100 times more samples than the number passed at instantiation.
         """
 
-        variance: Mapping[str, RealArray] = READ_ONLY_EMPTY_DICT
+        variance: Mapping[str, RealArray] = field(default_factory=dict)
         """The mapping between output names and output variances.
 
         If empty, ``SobolAnalysis`` will compute it.
