@@ -151,7 +151,7 @@ strenum==0.4.15
 sympy==1.12
 tenacity==8.2.3
     # via plotly
-threadpoolctl==3.4.0
+threadpoolctl==3.5.0
     # via scikit-learn
 tomli==2.0.1
     # via sphinx
