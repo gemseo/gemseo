@@ -21,7 +21,6 @@ from __future__ import annotations
 import pickle
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import pytest
@@ -31,6 +30,7 @@ from numpy import float64
 from numpy import int64
 from numpy.linalg import norm
 from numpy.testing import assert_equal
+from pandas.testing import assert_frame_equal
 
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
@@ -43,6 +43,7 @@ from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
 )
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiAerodynamicsSG
@@ -54,10 +55,8 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
-
-if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
 
 PARENT_PATH = Path(__file__).parent
 SOBIESKI_HDF5_PATH = PARENT_PATH / "mdf_backup.h5"
@@ -969,3 +968,52 @@ def test_function_problem_type(scenario_for_linear_check, full_linear) -> None:
             scenario_for_linear_check.formulation.opt_problem.pb_type
             == scenario_for_linear_check.formulation.opt_problem.ProblemType.LINEAR
         )
+
+
+class MyDisc(MDODiscipline):
+    """A discipline to manage different type of data."""
+
+    def __init__(self):
+        super().__init__(
+            grammar_type=MDODiscipline.GrammarType.SIMPLE,
+            cache_type=MDODiscipline.CacheType.NONE,
+        )
+        self.input_grammar.update_from_data({"x_float": array([0.0, 0.0])})
+        self.input_grammar.update_from_data({"x_int": array([0])})
+        self.output_grammar.update_from_data({"y1": array([0.0])})
+        self.output_grammar.update_from_data({"y2": array([0.0, 0.0])})
+        self.output_grammar.update_from_data({"name": array(["foo"])})
+
+    def _run(self):
+        self.store_local_data(
+            y1=self.get_input_data()["x_int"],
+            y2=self.get_input_data()["x_float"],
+            name=array(["foo"]),
+        )
+
+
+def test_scenario_to_dataset(tmp_wd):
+    """Test to_dataset method when there are different data types."""
+    design_space = DesignSpace()
+    design_space.add_variable("x_float", size=2)
+    design_space.add_variable("x_int", var_type=DesignSpace.DesignVariableType.INTEGER)
+
+    scenario = DOEScenario([MyDisc()], "DisciplinaryOpt", "y1", design_space)
+    scenario.add_observable("y2")
+    scenario.add_observable("name")
+
+    scenario.execute({
+        "algo": "CustomDOE",
+        "algo_options": {"samples": array([[0.0, 0.0, 1], [3.0, 3.0, 5]])},
+    })
+    dataset = scenario.to_dataset(name="foo", opt_naming=False)
+
+    reference_dataset = Dataset()
+    reference_dataset.add_variable("x_float", [0.0, 3.0], "inputs", components=0)
+    reference_dataset.add_variable("x_float", [0.0, 3.0], "inputs", components=1)
+    reference_dataset.add_variable("x_int", [1, 5], "inputs", components=0)
+    reference_dataset.add_variable("name", "foo", "outputs", components=0)
+    reference_dataset.add_variable("y1", [1, 5], "outputs", components=0)
+    reference_dataset.add_variable("y2", [0.0, 3.0], "outputs", components=0)
+    reference_dataset.add_variable("y2", [0.0, 3.0], "outputs", components=1)
+    assert_frame_equal(dataset, reference_dataset, check_dtype=False)
