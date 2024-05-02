@@ -285,9 +285,7 @@ def test_seed(algo_name) -> None:
 )
 def test_variable_types(doe, var_type1, var_type2) -> None:
     """Verify that input data provided to a discipline match the design space types."""
-    design_variable_type_to_python_type = (
-        DesignSpace._DesignSpace__VARIABLE_TYPES_TO_DTYPES
-    )
+    design_variable_type_to_python_type = DesignSpace.VARIABLE_TYPES_TO_DTYPES
 
     class Disc(MDODiscipline):
         def __init__(self) -> None:
