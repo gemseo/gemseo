@@ -89,6 +89,7 @@ from numpy import array
 from numpy import array_equal
 from numpy import atleast_1d
 from numpy import bytes_
+from numpy import dtype
 from numpy import eye as np_eye
 from numpy import hstack
 from numpy import inf
@@ -2439,6 +2440,13 @@ class OptimizationProblem(BaseProblem):
         # Add database inputs
         input_names = self.design_space.variable_names
         names_to_sizes = self.design_space.variable_sizes
+        names_to_types = {
+            (input_group, name, component): dtype(
+                self.design_space.VARIABLE_TYPES_TO_DTYPES[_type]
+            )
+            for name, types in self.design_space.variable_types.items()
+            for component, _type in enumerate(types)
+        }
         input_history = array(self.database.get_x_vect_history())
         n_samples = len(input_history)
         positions = []
@@ -2457,17 +2465,30 @@ class OptimizationProblem(BaseProblem):
         # Add database outputs
         variable_names = self.database.get_function_names()
         output_names = [name for name in variable_names if name not in input_names]
+
         self.__update_data_and_columns_for_dataset(
-            data, columns, output_names, n_samples, output_group, False
+            data,
+            columns,
+            names_to_types,
+            output_names,
+            n_samples,
+            output_group,
+            False,
         )
 
         # Add database output gradients
         if export_gradients:
             self.__update_data_and_columns_for_dataset(
-                data, columns, output_names, n_samples, gradient_group, True
+                data,
+                columns,
+                names_to_types,
+                output_names,
+                n_samples,
+                gradient_group,
+                True,
             )
 
-        return dataset_class(
+        dataset = dataset_class(
             hstack(data),
             dataset_name=dataset_name,
             columns=MultiIndex.from_tuples(
@@ -2476,10 +2497,27 @@ class OptimizationProblem(BaseProblem):
             ),
         ).get_view(indices=positions)
 
+        names_to_types_without_int = {
+            k: v
+            for k, v in names_to_types.items()
+            if not numpy.issubdtype(v, numpy.integer)
+        }
+        names_to_types_without_int.update({
+            k: float
+            for k, v in names_to_types.items()
+            if numpy.issubdtype(v, numpy.integer)
+        })
+        # "0.0" cannot be cast to int directly (try int("0.0")).
+        # So
+        # 1) we cast the str-like int to float
+        # 2) these float-like int to int.
+        return dataset.astype(names_to_types_without_int).astype(names_to_types)
+
     def __update_data_and_columns_for_dataset(
         self,
         data: list[NDArray[float]],
         columns: list[tuple[str, str, int]],
+        names_to_types: dict[tuple[str, str, int], numpy.dtype],
         output_names: Iterable[str],
         n_samples: int,
         group: str,
@@ -2490,6 +2528,8 @@ class OptimizationProblem(BaseProblem):
         Args:
             data: The sequence of data arrays to be augmented with the output data.
             columns: The multi-index columns to be augmented with the output names.
+            names_to_types: The types of the variables
+                to be augmented with the output names.
             output_names: The names of the outputs in the database.
             n_samples: The total number of samples,
                 including possible points where the evaluation failed.
@@ -2519,7 +2559,9 @@ class OptimizationProblem(BaseProblem):
                 .real
             )
             data.append(history)
-            columns.extend([(group, function_name, i) for i in range(history.shape[1])])
+            _columns = [(group, function_name, i) for i in range(history.shape[1])]
+            columns.extend(_columns)
+            names_to_types.update(dict.fromkeys(_columns, atleast_1d(history).dtype))
 
     @staticmethod
     def __replace_missing_values(

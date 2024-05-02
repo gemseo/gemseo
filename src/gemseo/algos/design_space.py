@@ -162,10 +162,11 @@ class DesignSpace(collections.abc.MutableMapping):
         u_b: ndarray | None = None
         value: ndarray | None = None
 
-    __VARIABLE_TYPES_TO_DTYPES: ClassVar[dict[str, str]] = {
+    VARIABLE_TYPES_TO_DTYPES: Final[dict[str, str]] = {
         DesignVariableType.FLOAT: "float64",
         DesignVariableType.INTEGER: "int32",
     }
+    """One NumPy ``dtype`` per design variable type."""
 
     MINIMAL_FIELDS: ClassVar[list[str]] = ["name", "lower_bound", "upper_bound"]
     TABLE_NAMES: ClassVar[list[str]] = [
@@ -466,7 +467,7 @@ class DesignSpace(collections.abc.MutableMapping):
             if len(array_value) == 1 and size > 1:
                 array_value = full(size, value)
             self.__current_value[name] = array_value.astype(
-                self.__VARIABLE_TYPES_TO_DTYPES[self.variable_types[name][0]],
+                self.VARIABLE_TYPES_TO_DTYPES[self.variable_types[name][0]],
                 copy=False,
             )
             try:
@@ -580,7 +581,7 @@ class DesignSpace(collections.abc.MutableMapping):
         normalize = empty(size)
         for i in range(size):
             var_type = variable_types[i]
-            if var_type in self.__VARIABLE_TYPES_TO_DTYPES:
+            if var_type in self.VARIABLE_TYPES_TO_DTYPES:
                 if (
                     self._lower_bounds[name][i] == -inf
                     or self._upper_bounds[name][i] == inf
@@ -1611,7 +1612,7 @@ class DesignSpace(collections.abc.MutableMapping):
                 if isinstance(variable_type, ndarray):
                     variable_type = variable_type[0]
                 if variable_type == self.DesignVariableType.INTEGER:
-                    value = value.astype(self.__VARIABLE_TYPES_TO_DTYPES[variable_type])
+                    value = value.astype(self.VARIABLE_TYPES_TO_DTYPES[variable_type])
                 self.__current_value[name] = value
 
         self.__update_current_metadata()
@@ -2537,6 +2538,6 @@ class DesignSpace(collections.abc.MutableMapping):
                 name,
                 array(
                     current_value,
-                    dtype=self.__VARIABLE_TYPES_TO_DTYPES[var_type],
+                    dtype=self.VARIABLE_TYPES_TO_DTYPES[var_type],
                 ),
             )
