@@ -508,7 +508,7 @@ def test_update(grammar, merge, excluded_names) -> None:
     other_grammar = grammar.__class__("g")
     other_grammar.update_from_names(UPDATE_DATA.keys())
     with check_update_raise(grammar, merge):
-        grammar.update(other_grammar, merge=merge, exclude_names=excluded_names)
+        grammar.update(other_grammar, merge=merge, excluded_names=excluded_names)
         assert_updated(grammar, merge=merge, excluded_names=set(excluded_names))
 
 

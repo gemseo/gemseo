@@ -58,8 +58,8 @@ from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_problem import OptimizationProblem
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.algos.optimization_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)
 
@@ -482,7 +482,7 @@ class Nlopt(OptimizationLibrary):
         """
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the bounds anx x0
-        x_0, l_b, u_b = self.get_x0_and_bounds_vects(normalize_ds)
+        x_0, l_b, u_b = self.get_x0_and_bounds(normalize_ds)
 
         nlopt_problem = nlopt.opt(self.internal_algo_name, x_0.shape[0])
 

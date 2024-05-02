@@ -90,11 +90,6 @@ _NAMES_TO_BOUNDS = {
 class SobieskiBase:
     """Utilities for Sobieski's SSBJ use case."""
 
-    # TODO: API: remove these unused class attributes.
-    DTYPE_COMPLEX = "complex128"
-    DTYPE_DOUBLE = "float64"
-    DTYPE_DEFAULT = DTYPE_COMPLEX
-
     class DataType(StrEnum):
         """A NumPy data type."""
 

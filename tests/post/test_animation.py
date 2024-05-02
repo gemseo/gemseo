@@ -20,7 +20,7 @@ import pytest
 
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.animation import Animation
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,

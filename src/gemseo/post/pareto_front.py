@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 from numpy import full
 from numpy import ndarray
 
-from gemseo.algos.pareto_front import generate_pareto_plots
+from gemseo.algos.pareto.utils import generate_pareto_plots
 from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
@@ -69,10 +69,10 @@ class ParetoFront(OptPostProcessor):
                 labels are different.
         """  # noqa: D205, D212, D415
         if objectives is None:
-            objectives = [self.opt_problem.objective.name]
+            objectives = [self.optimization_problem.objective.name]
 
-        all_funcs = self.opt_problem.get_all_function_name()
-        all_dv_names = self.opt_problem.design_space.variable_names
+        all_funcs = self.optimization_problem.get_all_function_name()
+        all_dv_names = self.optimization_problem.design_space.variable_names
 
         sample_values, all_labels = self.__compute_names_and_values(
             all_dv_names, all_funcs, objectives
@@ -144,7 +144,7 @@ class ParetoFront(OptPostProcessor):
         all_data_names.sort()
         all_labels = sorted(objective_labels + design_variables_labels)
 
-        sample_values = self.opt_problem.get_data_by_names(
+        sample_values = self.optimization_problem.get_data_by_names(
             names=all_data_names, as_dict=False
         )
 
@@ -169,8 +169,8 @@ class ParetoFront(OptPostProcessor):
             ValueError: If the objective name is not valid.
         """
         if func not in all_funcs and func not in all_dv_names:
-            min_f = "-" + func == self.opt_problem.objective.name
-            if min_f and not self.opt_problem.minimize_objective:
+            min_f = "-" + func == self.optimization_problem.objective.name
+            if min_f and not self.optimization_problem.minimize_objective:
                 objectives[objectives.index(func)] = "-" + func
             else:
                 msg = (
@@ -198,7 +198,7 @@ class ParetoFront(OptPostProcessor):
              func: The function name.
              objectives: The objectives names.
         """
-        if func in self.opt_problem.design_space.variable_names:
+        if func in self.optimization_problem.design_space.variable_names:
             objectives.remove(func)
             design_variables.append(func)
 
@@ -211,7 +211,7 @@ class ParetoFront(OptPostProcessor):
         Returns:
             An array of size ``n_samples``, True if the point is non-feasible.
         """
-        x_feasible, _ = self.opt_problem.get_feasible_points()
+        x_feasible, _ = self.optimization_problem.get_feasible_points()
         feasible_indexes = [self.database.get_iteration(x) - 1 for x in x_feasible]
 
         is_non_feasible = full(sample_values.shape[0], True)

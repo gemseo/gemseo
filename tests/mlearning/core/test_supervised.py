@@ -88,7 +88,6 @@ def test_get_raw_shapes(
 
     assert algo._reduced_input_dimension == n_in
     assert algo._reduced_output_dimension == n_out
-    assert algo._reduced_dimensions == (n_in, n_out)
 
 
 def test_learn(io_dataset) -> None:

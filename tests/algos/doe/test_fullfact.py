@@ -26,7 +26,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.testing.helpers import concretize_classes

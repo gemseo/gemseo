@@ -196,7 +196,7 @@ def openturns_hsic_indices(
 def test_outputs(hsic_analysis, outputs) -> None:
     """Check that outputs are taken into account."""
     hsic_analysis.compute_indices(**outputs)
-    output_names = outputs.get("outputs", hsic_analysis.default_output)
+    output_names = outputs.get("outputs", hsic_analysis.default_output_names)
     if isinstance(output_names, str):
         output_names = [output_names]
     assert set(output_names) == hsic_analysis.indices[hsic_analysis.Method.HSIC].keys()

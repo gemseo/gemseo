@@ -220,7 +220,7 @@ def test_monitor_scenario() -> None:
     scenario.execute({"algo": "SLSQP", "max_iter": 10})
     assert (
         observer.status_changes
-        >= 2 * scenario.formulation.opt_problem.objective.n_calls
+        >= 2 * scenario.formulation.optimization_problem.objective.n_calls
     )
 
 
@@ -267,12 +267,12 @@ def test_create_doe_scenario() -> None:
         (
             "MDF",
             {"main_mda_name": "MDAJacobi"},
-            {"acceleration", "n_processes", "use_threading"},
+            {"acceleration_method", "n_processes", "use_threading"},
         ),
         (
             "BiLevel",
             {"main_mda_name": "MDAGaussSeidel"},
-            {"over_relax_factor"},
+            {"over_relaxation_factor"},
         ),
         ("DisciplinaryOpt", {}, None),
         ("IDF", {}, None),
@@ -874,6 +874,7 @@ def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:
         workdir_path=tmpdir,
         scheduler_run_command="python",
         job_template_path=Path(__file__).parent
+        / "disciplines"
         / "wrappers"
         / "job_schedulers"
         / "mock_job_scheduler.py",

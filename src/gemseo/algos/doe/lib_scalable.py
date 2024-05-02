@@ -105,7 +105,7 @@ class DiagonalDOE(DOELibrary):
             **kwargs,
         )
 
-    def _generate_samples(
+    def _generate_unit_samples(
         self, design_space: DesignSpace, **options: OptionType
     ) -> RealArray:
         """

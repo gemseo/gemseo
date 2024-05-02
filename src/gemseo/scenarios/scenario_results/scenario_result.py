@@ -22,13 +22,13 @@ from typing import Any
 from typing import ClassVar
 from typing import Final
 
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.factory import PostFactory
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.scenarios.scenario import Scenario
 
@@ -63,7 +63,7 @@ class ScenarioResult:
             self.__obj_to_be_post_processed = OptimizationProblem.from_hdf(scenario)
             optimization_result = self.__obj_to_be_post_processed.solution
         else:
-            self.__obj_to_be_post_processed = scenario.formulation.opt_problem
+            self.__obj_to_be_post_processed = scenario.formulation.optimization_problem
             optimization_result = scenario.optimization_result
 
         if optimization_result is None:

@@ -266,7 +266,7 @@ def test_save_load(sobol, tmp_wd) -> None:
     sobol.to_pickle("foo.pkl")
     new_sobol = SobolAnalysis.from_pickle("foo.pkl")
     assert new_sobol.dataset.equals(sobol.dataset)
-    assert new_sobol.default_output == sobol.default_output
+    assert new_sobol.default_output_names == sobol.default_output_names
 
 
 @pytest.mark.parametrize("compute_second_order", [False, True])

@@ -61,8 +61,8 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.algorithm_library import AlgorithmDescription
 from gemseo.algos.algorithm_library import AlgorithmLibrary
 from gemseo.algos.first_order_stop_criteria import KKTReached
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import FunctionIsNan
@@ -82,8 +82,7 @@ if TYPE_CHECKING:
     from gemseo.algos.database import ListenerType
     from gemseo.algos.design_space import DesignSpace
 
-# TODO: API: rename to DriverLibraryOptionType
-DriverLibOptionType = Union[
+DriverLibraryOptionType = Union[
     str, float, int, bool, list[str], ndarray, Iterable[CallbackType]
 ]
 LOGGER = logging.getLogger(__name__)
@@ -163,12 +162,10 @@ class DriverLibrary(AlgorithmLibrary):
     activate_progress_bar: ClassVar[bool] = True
     """Whether to activate the progress bar in the optimization log."""
 
-    # TODO: API: use 0.0 instead of None
-    _max_time: float | None
+    _max_time: float
     """The maximum duration of the execution."""
 
-    # TODO: API: use 0.0 instead of None
-    _start_time: float | None
+    _start_time: float
     """The time at which the execution begins."""
 
     __log_problem: bool
@@ -194,8 +191,8 @@ class DriverLibrary(AlgorithmLibrary):
         super().__init__()
         self.deactivate_progress_bar()
         self.__activate_progress_bar = self.activate_progress_bar
-        self._start_time = None
-        self._max_time = None
+        self._start_time = 0.0
+        self._max_time = 0.0
         self.__reset_iteration_counters = True
         self.__log_problem = True
         self.__one_line_progress_bar = False
@@ -240,10 +237,8 @@ class DriverLibrary(AlgorithmLibrary):
         )
         if self.__activate_progress_bar:
             cls = ProgressBar if self.__log_problem else UnsuffixedProgressBar
-            # TODO: API: use only self.problem
             self.__progress_bar = cls(
                 max_iter,
-                self.problem.current_iter,
                 self.problem,
                 message,
             )
@@ -277,7 +272,7 @@ class DriverLibrary(AlgorithmLibrary):
         self,
         problem: OptimizationProblem,
         algo_name: str,
-        **options: DriverLibOptionType,
+        **options: DriverLibraryOptionType,
     ) -> None:
         """To be overridden by subclasses.
 
@@ -393,7 +388,7 @@ class DriverLibrary(AlgorithmLibrary):
         eval_obs_jac: bool = False,
         skip_int_check: bool = False,
         max_design_space_dimension_to_log: int = 40,
-        **options: DriverLibOptionType,
+        **options: DriverLibraryOptionType,
     ) -> OptimizationResult:
         """Execute the driver.
 
@@ -599,18 +594,17 @@ class DriverLibrary(AlgorithmLibrary):
         return self.descriptions[driver_name].require_gradient
 
     @overload
-    def get_x0_and_bounds_vects(
+    def get_x0_and_bounds(
         self, normalize_ds: bool, as_dict: Literal[False] = False
     ) -> tuple[ndarray, ndarray, ndarray]: ...
 
     @overload
-    def get_x0_and_bounds_vects(
+    def get_x0_and_bounds(
         self, normalize_ds: bool, as_dict: Literal[True] = False
     ) -> tuple[dict[str, ndarray], dict[str, ndarray], dict[str, ndarray]]: ...
 
-    # TODO: API: remove "_vects" from the following method name
     # TODO: return the design space to be used by the solver instead of a tuple
-    def get_x0_and_bounds_vects(
+    def get_x0_and_bounds(
         self, normalize_ds: bool, as_dict: bool = False
     ) -> (
         tuple[ndarray, ndarray, ndarray]

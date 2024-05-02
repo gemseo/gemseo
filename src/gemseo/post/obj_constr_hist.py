@@ -37,7 +37,7 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
@@ -59,7 +59,7 @@ class ObjConstrHist(OptPostProcessor):
         opt_problem: OptimizationProblem,
     ) -> None:
         super().__init__(opt_problem)
-        self.opt_problem = opt_problem
+        self.optimization_problem = opt_problem
         self.cmap = PARULA
         self.ineq_cstr_cmap = RG_SEISMIC
         self.eq_cstr_cmap = "seismic"
@@ -81,7 +81,7 @@ class ObjConstrHist(OptPostProcessor):
         mng.resize(700, 1000)
 
         # 1. Plot the objective history versus the iterations with a curve.
-        problem = self.opt_problem
+        problem = self.optimization_problem
         objective_name = problem.get_objective_name()
         obj_history, x_history = self.database.get_function_history(
             objective_name, with_x_vect=True

@@ -50,12 +50,12 @@ def improved_algo(algo) -> RegressorChain:
 
 def test_standard_algo(standard_algo):
     """Check that the regressor chain model is not accurate."""
-    assert MSEMeasure(standard_algo).evaluate_learn() != pytest.approx(0.0)
+    assert MSEMeasure(standard_algo).compute_learning_measure() != pytest.approx(0.0)
 
 
 def test_improved_algo(improved_algo):
     """Check that an improved regressor chain model is not accurate."""
-    assert MSEMeasure(improved_algo).evaluate_learn() == pytest.approx(0.0)
+    assert MSEMeasure(improved_algo).compute_learning_measure() == pytest.approx(0.0)
 
 
 def test_sub_algos(improved_algo):

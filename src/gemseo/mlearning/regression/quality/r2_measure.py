@@ -183,7 +183,3 @@ class R2Measure(BaseRegressorQuality):
             store_resampling_result,
             n_replicates=n_replicates,
         )
-
-    # TODO: API: remove these aliases in the next major release.
-    evaluate_kfolds = compute_cross_validation_measure
-    evaluate_bootstrap = compute_bootstrap_measure

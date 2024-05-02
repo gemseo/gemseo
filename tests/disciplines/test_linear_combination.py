@@ -21,7 +21,7 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )

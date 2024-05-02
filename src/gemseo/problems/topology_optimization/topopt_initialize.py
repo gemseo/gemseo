@@ -33,7 +33,7 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.problems.topology_optimization.density_filter_disc import DensityFilter
-from gemseo.problems.topology_optimization.fea_disc import FininiteElementAnalysis
+from gemseo.problems.topology_optimization.fea_disc import FiniteElementAnalysis
 from gemseo.problems.topology_optimization.material_model_interpolation_disc import (
     MaterialModelInterpolation,
 )
@@ -148,7 +148,7 @@ def initialize_design_space_and_discipline_to(
         empty_elements=emptyelts,
         full_elements=fullelts,
     )
-    fea = FininiteElementAnalysis(
+    fea = FiniteElementAnalysis(
         nu=nu,
         n_x=n_x,
         n_y=n_y,

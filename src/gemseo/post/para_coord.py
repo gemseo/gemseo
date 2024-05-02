@@ -91,14 +91,14 @@ class ParallelCoordinates(OptPostProcessor):
         return fig
 
     def _plot(self, **options: OptPostProcessorOptionType) -> None:
-        problem = self.opt_problem
+        problem = self.optimization_problem
         variable_history, variable_names, _ = self.database.get_history_array(
             function_names=problem.get_all_function_name()
         )
-        names_to_sizes = self.opt_problem.design_space.variable_sizes
+        names_to_sizes = self.optimization_problem.design_space.variable_sizes
         design_names = [
             repr_variable(name, i, names_to_sizes[name])
-            for name in self.opt_problem.get_design_variable_names()
+            for name in self.optimization_problem.get_design_variable_names()
             for i in range(names_to_sizes[name])
         ]
         output_dimension = variable_history.shape[1] - len(design_names)

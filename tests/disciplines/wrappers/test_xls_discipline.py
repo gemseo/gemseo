@@ -31,7 +31,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
-from gemseo.wrappers.xls_discipline import XLSDiscipline
+from gemseo.disciplines.wrappers.xls_discipline import XLSDiscipline
 
 DIR_PATH = Path(__file__).parent
 FILE_PATH_PATTERN = str(DIR_PATH / "test_excel_fail{}.xlsx")

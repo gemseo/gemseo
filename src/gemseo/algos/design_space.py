@@ -83,7 +83,7 @@ from numpy import where
 from numpy import zeros_like
 from strenum import StrEnum
 
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.caches.utils import hash_data
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.compatibility.scipy import sparse_classes

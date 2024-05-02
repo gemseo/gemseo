@@ -176,7 +176,7 @@ system_scenario.post_process("OptHistoryView", save=False, show=True)
 
 struct_databases = system_scenario.formulation.scenario_adapters[2].databases
 for database in struct_databases[:2]:
-    opt_problem = deepcopy(sc_str.formulation.opt_problem)
+    opt_problem = deepcopy(sc_str.formulation.optimization_problem)
     opt_problem.database = database
     execute_post(opt_problem, "OptHistoryView", save=False, show=True)
 

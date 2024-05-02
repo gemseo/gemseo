@@ -56,11 +56,11 @@ class CenteredDifferences(BaseGradientApproximator):
     def _compute_parallel_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float | ndarray,
         **kwargs: Any,
     ) -> ndarray:
+        n_perturbations = input_perturbations.shape[1]
         self._function_kwargs = kwargs
         functions = [self._wrap_function] * (n_perturbations)
         parallel_execution = CallableParallelExecution(functions, **self._parallel_args)
@@ -90,11 +90,11 @@ class CenteredDifferences(BaseGradientApproximator):
     def _compute_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float | ndarray,
         **kwargs: Any,
     ) -> ndarray:
+        n_perturbations = input_perturbations.shape[1]
         gradient = []
         for perturbation_index in range(int(n_perturbations / 2)):
             perturbated_output_plus = self.f_pointer(

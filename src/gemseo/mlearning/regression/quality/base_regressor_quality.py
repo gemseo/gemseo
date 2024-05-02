@@ -273,10 +273,3 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         return split_array_to_dict_of_arrays(
             data, self.algo.learning_set.variable_names_to_n_components, names
         )
-
-    # TODO: API: remove these aliases in the next major release.
-    evaluate_learn = compute_learning_measure
-    evaluate_test = compute_test_measure
-    evaluate_kfolds = compute_cross_validation_measure
-    evaluate_loo = compute_leave_one_out_measure
-    evaluate_bootstrap = compute_bootstrap_measure

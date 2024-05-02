@@ -29,7 +29,7 @@ from numpy import empty
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.factory import PostFactory
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace

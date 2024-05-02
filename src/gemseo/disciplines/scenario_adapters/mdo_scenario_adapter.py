@@ -189,7 +189,7 @@ class MDOScenarioAdapter(MDODiscipline):
                 or if a specified output is missing from the output grammar.
         """
         formulation = self.scenario.formulation
-        opt_problem = formulation.opt_problem
+        opt_problem = formulation.optimization_problem
         top_leveld = formulation.get_top_level_disc()
         for disc in top_leveld:
             self.input_grammar.update(disc.input_grammar)
@@ -255,7 +255,7 @@ class MDOScenarioAdapter(MDODiscipline):
         """Add the Lagrange multipliers of the scenario optimal solution as outputs."""
         # Fill a dictionary with data of typical shapes
         base_dict = {}
-        problem = self.scenario.formulation.opt_problem
+        problem = self.scenario.formulation.optimization_problem
         # bound-constraints multipliers
         current_x = problem.design_space.get_current_value(as_dict=True)
         base_dict.update({
@@ -320,7 +320,7 @@ class MDOScenarioAdapter(MDODiscipline):
     def _pre_run(self) -> None:
         """Pre-run the scenario."""
         formulation = self.scenario.formulation
-        design_space = formulation.opt_problem.design_space
+        design_space = formulation.optimization_problem.design_space
         top_leveld = formulation.get_top_level_disc()
 
         # Update the top level discipline default inputs with adapter inputs
@@ -357,14 +357,14 @@ class MDOScenarioAdapter(MDODiscipline):
 
     def _reset_optimization_problem(self) -> None:
         """Reset the optimization problem."""
-        self.scenario.formulation.opt_problem.reset(
+        self.scenario.formulation.optimization_problem.reset(
             design_space=self._reset_x0_before_opt, database=False, preprocessing=False
         )
 
     def _post_run(self) -> None:
         """Post-process the scenario."""
         formulation = self.scenario.formulation
-        opt_problem = formulation.opt_problem
+        opt_problem = formulation.optimization_problem
         design_space = opt_problem.design_space
 
         if self.keep_opt_history and opt_problem.solution is not None:
@@ -400,7 +400,9 @@ class MDOScenarioAdapter(MDODiscipline):
         """
         formulation = self.scenario.formulation
         top_level_disciplines = formulation.get_top_level_disc()
-        current_x = formulation.opt_problem.design_space.get_current_value(as_dict=True)
+        current_x = formulation.optimization_problem.design_space.get_current_value(
+            as_dict=True
+        )
         for name in self._output_names:
             for discipline in top_level_disciplines:
                 if discipline.is_output_existing(name) and name not in current_x:
@@ -416,7 +418,7 @@ class MDOScenarioAdapter(MDODiscipline):
         This method stores the multipliers in the local data.
         """
         # Compute the Lagrange multipliers
-        problem = self.scenario.formulation.opt_problem
+        problem = self.scenario.formulation.optimization_problem
         x_opt = problem.solution.x_opt
         lagrange = LagrangeMultipliers(problem)
         lagrange.compute(x_opt, problem.ineq_tolerance)
@@ -474,8 +476,10 @@ class MDOScenarioAdapter(MDODiscipline):
                 if a specified output is not an output of the adapter,
                 or if there is non-differentiable outputs.
         """
-        opt_problem = self.scenario.formulation.opt_problem
-        objective_names = self.scenario.formulation.opt_problem.objective.output_names
+        opt_problem = self.scenario.formulation.optimization_problem
+        objective_names = (
+            self.scenario.formulation.optimization_problem.objective.output_names
+        )
         if len(objective_names) != 1:
             msg = "The objective must be single-valued."
             raise ValueError(msg)
@@ -559,7 +563,7 @@ class MDOScenarioAdapter(MDODiscipline):
             The Jacobians of the optimization functions.
         """
         # Gather the names of the functions to differentiate
-        opt_problem = self.scenario.formulation.opt_problem
+        opt_problem = self.scenario.formulation.optimization_problem
         if func_names is None:
             func_names = opt_problem.objective.output_names + [
                 output_name

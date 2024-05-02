@@ -382,15 +382,14 @@ class JacobianAssembly:
                 msg = f"Failed to determine the size of input variable {variable}"
                 raise ValueError(msg)
 
-    # TODO: API: give a better name like get_derivation_mode for instance.
     @classmethod
-    def _check_mode(
+    def _get_derivation_mode(
         cls,
         mode: DerivationMode,
         n_variables: int,
         n_functions: int,
     ) -> DerivationMode:
-        """Check the differentiation mode.
+        """Get the differentiation mode.
 
         Args:
             mode: The differentiation mode.
@@ -727,7 +726,7 @@ class JacobianAssembly:
             dfun_dx[fun] = self.assemble_jacobian([fun], variables)
             dfun_dy[fun] = self.assemble_jacobian([fun], couplings_and_res)
 
-        mode = self._check_mode(mode, n_variables, n_functions)
+        mode = self._get_derivation_mode(mode, n_variables, n_functions)
 
         # compute the total derivatives
         if mode == self.DerivationMode.DIRECT:

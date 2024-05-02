@@ -252,11 +252,6 @@ class ParameterSpace(DesignSpace):
                 are not consistent.
         """
         self._check_variable_name(name)
-        # TODO: API: remove this compatibility layer
-        # TODO: API: use interfaced_distribution_parameters only.
-        interfaced_distribution_parameters = self.__get_distribution_parameters(
-            interfaced_distribution_parameters, parameters
-        )
         distribution_class = DistributionFactory().get_class(distribution)
         parameters_as_tuple = isinstance(interfaced_distribution_parameters, tuple)
 
@@ -485,11 +480,6 @@ class ParameterSpace(DesignSpace):
             and a random variable
             distributed as a :class:`.SPNormalDistribution` with identifier ``"SP"``.
         """
-        # TODO: API: remove this compatibility layer
-        # TODO: API: use interfaced_distribution_parameters only.
-        interfaced_distribution_parameters = self.__get_distribution_parameters(
-            interfaced_distribution_parameters, parameters
-        )
         kwargs = {k: [v] for k, v in parameters.items()}
         if interfaced_distribution:
             kwargs["interfaced_distribution"] = interfaced_distribution
@@ -512,39 +502,6 @@ class ParameterSpace(DesignSpace):
             size,
             **kwargs,
         )
-
-    @staticmethod
-    def __get_distribution_parameters(
-        interfaced_distribution_parameters: tuple[Any]
-        | StrKeyMapping
-        | list[tuple[Any]]
-        | tuple[StrKeyMapping],
-        parameters: Any | list[Any],
-    ) -> tuple[Any] | StrKeyMapping | list[tuple[Any]] | tuple[StrKeyMapping]:
-        """Return the parameters of the interfaced distribution.
-
-        Args:
-            interfaced_distribution_parameters: The parameters
-                of the interfaced distribution.
-            parameters: The parameters of the distribution.
-
-        Returns:
-            The parameters of the interfaced distribution.
-        """
-        if "parameters" in parameters:
-            if interfaced_distribution_parameters:
-                msg = (
-                    "'interfaced_distribution_parameters' "
-                    "is the new name of 'parameters' "
-                    "which will be removed in the next major release; "
-                    "you cannot use both names at the same time; "
-                    "please use 'interfaced_distribution_parameters'."
-                )
-                raise ValueError(msg)
-
-            return parameters.pop("parameters")
-
-        return interfaced_distribution_parameters
 
     def get_range(
         self,

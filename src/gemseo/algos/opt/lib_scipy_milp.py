@@ -34,8 +34,8 @@ from scipy.optimize import milp
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.utils.compatibility.scipy import sparse_classes
 
@@ -136,7 +136,7 @@ class ScipyMILP(OptimizationLibrary):
         options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
 
         # Get the starting point and bounds
-        x_0, l_b, u_b = self.get_x0_and_bounds_vects(False)
+        x_0, l_b, u_b = self.get_x0_and_bounds(False)
         # Replace infinite bounds with None
         bounds = Bounds(lb=l_b, ub=u_b, keep_feasible=True)
 

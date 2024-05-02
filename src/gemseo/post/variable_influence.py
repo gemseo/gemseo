@@ -81,8 +81,8 @@ class VariableInfluence(OptPostProcessor):
             save_var_files: Whether to save the influential variables indices
                 to a NumPy file.
         """  # noqa: D205, D212, D415
-        function_names = self.opt_problem.get_all_function_name()
-        _, x_opt, _, _, _ = self.opt_problem.get_optimum()
+        function_names = self.optimization_problem.get_all_function_name()
+        _, x_opt, _, _, _ = self.optimization_problem.get_optimum()
         x_0 = self.database.get_x_vect(1)
         absolute_value = log_scale or absolute_value
 
@@ -163,7 +163,7 @@ class VariableInfluence(OptPostProcessor):
         if save:
             names = [
                 [f"{name}${i}" for i in range(size)]
-                for name, size in self.opt_problem.design_space.variable_sizes.items()
+                for name, size in self.optimization_problem.design_space.variable_sizes.items()  # noqa: E501
             ]
             names = array(list(itertools.chain(*names)))
             file_name = f"{func}_influ_vars.csv"

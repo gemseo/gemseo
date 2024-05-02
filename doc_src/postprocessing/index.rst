@@ -17,21 +17,21 @@ How to deal with post-processing
 ================================
 
 In this section we describe the post processing features of |g|, used to
-analyze :class:`~gemseo.algos.opt_result.OptimizationResult`, called the
+analyze :class:`~gemseo.algos.optimization_result.OptimizationResult`, called the
 :term:`optimization history`.
 
 What data to post-process?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Post-processing features are applicable to any
-:class:`~gemseo.algos.opt_problem.OptimizationProblem` that has been solved,
+:class:`~gemseo.algos.optimization_problem.OptimizationProblem` that has been solved,
 which may have been loaded from the disk.
 
 In practice,
 
 - a :class:`~gemseo.scenarios.scenario.Scenario` instance has an :class:`~gemseo.formulations.mdo_formulation.MDOFormulation` attribute,
-- an :class:`~gemseo.formulations.mdo_formulation.MDOFormulation` instance has an :class:`~gemseo.algos.opt_problem.OptimizationProblem` attribute,
-- an :class:`~gemseo.algos.opt_problem.OptimizationProblem` instance has an :class:`~gemseo.algos.opt_result.OptimizationResult` attribute.
+- an :class:`~gemseo.formulations.mdo_formulation.MDOFormulation` instance has an :class:`~gemseo.algos.optimization_problem.OptimizationProblem` attribute,
+- an :class:`~gemseo.algos.optimization_problem.OptimizationProblem` instance has an :class:`~gemseo.algos.optimization_result.OptimizationResult` attribute.
 
 Illustration on the Sobieski use case
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -37,7 +37,7 @@ from numpy import float64
 from numpy import ndarray
 
 from gemseo import create_scenario_result
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
@@ -50,7 +50,7 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.datasets.dataset import Dataset
     from gemseo.formulations.mdo_formulation import MDOFormulation
     from gemseo.post.factory import PostFactory
@@ -157,7 +157,7 @@ class Scenario(MDODiscipline):
             grammar_type=grammar_type,
             **formulation_options,
         )
-        self.formulation.opt_problem.database.name = self.name
+        self.formulation.optimization_problem.database.name = self.name
         self._update_input_grammar()
         self.clear_history_before_run = False
 
@@ -167,11 +167,11 @@ class Scenario(MDODiscipline):
 
         The objective is :attr:`.OptimizationProblem.objective`.
         """
-        return self.formulation.opt_problem.use_standardized_objective
+        return self.formulation.optimization_problem.use_standardized_objective
 
     @use_standardized_objective.setter
     def use_standardized_objective(self, value: bool) -> None:
-        self.formulation.opt_problem.use_standardized_objective = value
+        self.formulation.optimization_problem.use_standardized_objective = value
 
     @property
     def post_factory(self) -> PostFactory:
@@ -218,8 +218,8 @@ class Scenario(MDODiscipline):
             if cast_default_inputs_to_complex:
                 self.__cast_default_inputs_to_complex()
 
-        self.formulation.opt_problem.differentiation_method = method
-        self.formulation.opt_problem.fd_step = step
+        self.formulation.optimization_problem.differentiation_method = method
+        self.formulation.optimization_problem.fd_step = step
 
     def __cast_default_inputs_to_complex(self) -> None:
         """Cast the float default inputs of all disciplines to complex."""
@@ -352,7 +352,7 @@ class Scenario(MDODiscipline):
         Raises:
             ValueError: If the file format is not correct.
         """
-        opt_pb = self.formulation.opt_problem
+        opt_pb = self.formulation.optimization_problem
         if file_format == OptimizationProblem.HDF5_FORMAT:
             opt_pb.to_hdf(file_path=file_path, append=append)
         elif file_format == OptimizationProblem.GGOBI_FORMAT:
@@ -388,7 +388,7 @@ class Scenario(MDODiscipline):
         Raises:
             ValueError: If both ``erase`` and ``pre_load`` are ``True``.
         """
-        opt_pb = self.formulation.opt_problem
+        opt_pb = self.formulation.optimization_problem
         self._opt_hist_backup_path = Path(file_path)
 
         if self._opt_hist_backup_path.exists():
@@ -435,7 +435,7 @@ class Scenario(MDODiscipline):
         Args:
             x_vect: The input value.
         """
-        if len(self.formulation.opt_problem.database) > 2:
+        if len(self.formulation.optimization_problem.database) > 2:
             self.post_process(
                 "OptHistoryView",
                 save=True,
@@ -464,7 +464,7 @@ class Scenario(MDODiscipline):
             The post-processing instance related to the optimization scenario.
         """
         return self.post_factory.execute(
-            self.formulation.opt_problem, post_name, **options
+            self.formulation.optimization_problem, post_name, **options
         )
 
     def _run(self) -> None:
@@ -474,7 +474,7 @@ class Scenario(MDODiscipline):
         LOGGER.info("%s", repr(self))
         # Clear the database when multiple runs are performed, see MDOScenarioAdapter.
         if self.clear_history_before_run:
-            self.formulation.opt_problem.database.clear()
+            self.formulation.optimization_problem.database.clear()
 
         self._run_algorithm()
         LOGGER.info(
@@ -669,7 +669,7 @@ class Scenario(MDODiscipline):
         Returns:
             A dataset built from the database of the optimization problem.
         """
-        return self.formulation.opt_problem.to_dataset(
+        return self.formulation.optimization_problem.to_dataset(
             name=name,
             categorize=categorize,
             opt_naming=opt_naming,

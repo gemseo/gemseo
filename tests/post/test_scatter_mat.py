@@ -29,7 +29,7 @@ from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.factory import PostFactory
 from gemseo.post.scatter_mat import ScatterPlotMatrix
 from gemseo.problems.optimization.power_2 import Power2

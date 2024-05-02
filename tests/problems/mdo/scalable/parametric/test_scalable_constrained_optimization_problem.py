@@ -119,6 +119,6 @@ def test_resolution(
         options["algo_options"]["sub_problem_options"] = {"max_iter": 300}
     scalable_optimization_problem_scenario.execute(options)
     assert pytest.approx(
-        scalable_optimization_problem_scenario.formulation.opt_problem.solution.x_opt,
+        scalable_optimization_problem_scenario.formulation.optimization_problem.solution.x_opt,
         rel=1e-2,
     ) == (arange(n) + 1)

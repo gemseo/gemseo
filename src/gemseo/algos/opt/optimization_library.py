@@ -35,7 +35,7 @@ from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.first_order_stop_criteria import KKTReached
 from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
 from gemseo.algos.first_order_stop_criteria import kkt_residual_computation
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.algos.stop_criteria import is_f_tol_reached
@@ -156,8 +156,7 @@ class OptimizationLibrary(DriverLibrary):
 
         return self.descriptions[algo_name].handle_inequality_constraints
 
-    # TODO: API: rename to algorithm_handles_equality_constraints
-    def algorithm_handles_eqcstr(self, algo_name: str) -> bool:
+    def check_equality_constraint_support(self, algo_name: str) -> bool:
         """Check if an algorithm handles equality constraints.
 
         Args:
@@ -168,8 +167,7 @@ class OptimizationLibrary(DriverLibrary):
         """
         return self.__algorithm_handles(algo_name, True)
 
-    # TODO: API: rename to algorithm_handles_inequality_constraints
-    def algorithm_handles_ineqcstr(self, algo_name: str) -> bool:
+    def check_inequality_constraint_support(self, algo_name: str) -> bool:
         """Check if an algorithm handles inequality constraints.
 
         Args:
@@ -180,15 +178,14 @@ class OptimizationLibrary(DriverLibrary):
         """
         return self.__algorithm_handles(algo_name, False)
 
-    # TODO: API: rename to is_algo_requires_positive_constraints
-    def is_algo_requires_positive_cstr(self, algo_name: str) -> bool:
-        """Check if an algorithm requires positive constraints.
+    def check_positivity_constraint_requirement(self, algo_name: str) -> bool:
+        """Check if an algorithm requires positivity constraints.
 
         Args:
             algo_name: The name of the algorithm.
 
         Returns:
-            Whether the algorithm requires positive constraints.
+            Whether the algorithm requires positivity constraints.
         """
         return self.descriptions[algo_name].positive_constraints
 
@@ -196,7 +193,7 @@ class OptimizationLibrary(DriverLibrary):
         self, algo_name: str, problem: OptimizationProblem
     ) -> None:
         """Check if problem and algorithm are consistent for constraints handling."""
-        if problem.has_eq_constraints() and not self.algorithm_handles_eqcstr(
+        if problem.has_eq_constraints() and not self.check_equality_constraint_support(
             algo_name
         ):
             msg = (
@@ -204,8 +201,9 @@ class OptimizationLibrary(DriverLibrary):
                 f"{algo_name} can not handle equality constraints."
             )
             raise ValueError(msg)
-        if problem.has_ineq_constraints() and not self.algorithm_handles_ineqcstr(
-            algo_name
+        if (
+            problem.has_ineq_constraints()
+            and not self.check_inequality_constraint_support(algo_name)
         ):
             msg = (
                 "Requested optimization algorithm "
@@ -218,10 +216,11 @@ class OptimizationLibrary(DriverLibrary):
 
         This is done if the algorithm requires positive constraints.
         """
-        if self.problem.has_ineq_constraints() and self.is_algo_requires_positive_cstr(
-            self.algo_name
+        if (
+            self.problem.has_ineq_constraints()
+            and self.check_positivity_constraint_requirement(self.algo_name)
         ):
-            return [-cstr for cstr in self.problem.constraints]
+            return [-constraint for constraint in self.problem.constraints]
         return self.problem.constraints
 
     def _pre_run(

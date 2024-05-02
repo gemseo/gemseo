@@ -18,7 +18,7 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_scalable import DiagonalDOE
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
@@ -32,7 +32,7 @@ def __common_problem():  # noqa: PT005
     func = MDOFunction(lambda x: sum(x), "obj")
     func.has_default_name = True
     problem.objective = func
-    problem.change_objective_sign()
+    problem.minimize_objective = False
     func = MDOFunction(lambda x: x * 0.5, "eq")
     func.has_default_name = True
     problem.add_constraint(func, constraint_type="eq")
@@ -88,7 +88,7 @@ def large_common_problem(__common_problem):
 def common_problem_():
     """A dummy optimization problem to check post-processors."""
     problem = Rosenbrock()
-    problem.change_objective_sign()
+    problem.minimize_objective = False
     lib = DiagonalDOE()
     lib.algo_name = "DiagonalDOE"
     lib.execute(problem, n_samples=10, eval_jac=True)

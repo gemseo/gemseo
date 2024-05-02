@@ -26,7 +26,7 @@ from pathlib import Path
 import pytest
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
 from gemseo.post.factory import PostFactory
 from gemseo.problems.optimization.rosenbrock import Rosenbrock

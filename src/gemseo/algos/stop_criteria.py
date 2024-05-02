@@ -28,7 +28,7 @@ from numpy import average
 from numpy import bool_
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
 class TerminationCriterion(Exception):  # noqa: N818

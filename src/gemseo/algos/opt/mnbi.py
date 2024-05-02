@@ -58,6 +58,9 @@ from scipy.optimize import linprog
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.multiobjective_optimization_result import (
+    MultiObjectiveOptimizationResult,
+)
 from gemseo.algos.opt._mnbi.constraint_function_wrapper import ConstraintFunctionWrapper
 from gemseo.algos.opt._mnbi.function_component_extractor import (
     FunctionComponentExtractor,
@@ -66,8 +69,7 @@ from gemseo.algos.opt._mnbi.sub_optim_constraint import SubOptimConstraint
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result_multiobj import MultiObjectiveOptimizationResult
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import NotImplementedCallable
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -79,8 +81,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.algos.doe.doe_library import DOELibraryOptionType
-    from gemseo.algos.driver_library import DriverLibOptionType
-    from gemseo.algos.opt_problem import OptimizationResult
+    from gemseo.algos.driver_library import DriverLibraryOptionType
+    from gemseo.algos.optimization_problem import OptimizationResult
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
@@ -266,7 +268,7 @@ class MNBI(OptimizationLibrary):
     __sub_optim_algo: str
     """The algorithm used for the sub-optimizations."""
 
-    __sub_optim_algo_options: Mapping[str, DriverLibOptionType]
+    __sub_optim_algo_options: Mapping[str, DriverLibraryOptionType]
     """The options for the sub-optimization algorithm."""
 
     __utopia: RealArray
@@ -296,7 +298,7 @@ class MNBI(OptimizationLibrary):
         normalize_design_space: bool = False,
         n_sub_optim: int = 1,
         sub_optim_algo_options: Mapping[
-            str, DriverLibOptionType
+            str, DriverLibraryOptionType
         ] = READ_ONLY_EMPTY_DICT,
         sub_optim_max_iter: int | None = None,
         doe_algo: str = "fullfact",
@@ -506,7 +508,7 @@ class MNBI(OptimizationLibrary):
             name="t_extraction",
             jac=self._t_extraction_jac,
         )
-        self.__beta_sub_optim.change_objective_sign()
+        self.__beta_sub_optim.minimize_objective = False
 
     def _run_beta_sub_optim(
         self, phi_beta: RealArray

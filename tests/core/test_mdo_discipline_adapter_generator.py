@@ -31,23 +31,6 @@ from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
 )
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
-
-
-def test_update_dict_from_val_arr() -> None:
-    """"""
-    x = np.zeros(2)
-    d = {"x": x}
-    out_d = update_dict_of_arrays_from_array(d, [], x)
-    assert (out_d["x"] == x).all()
-
-    args = [d, ["x"], np.ones(4)]
-    with pytest.raises(ValueError):
-        update_dict_of_arrays_from_array(*args)
-
-    args = [d, ["x"], np.ones(1)]
-    with pytest.raises(ValueError):
-        update_dict_of_arrays_from_array(*args)
 
 
 def test_get_values_array_from_dict() -> None:

@@ -96,8 +96,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     problem: Any | None
     """The problem to be solved."""
 
-    # TODO: API: rename to grammar or option_grammar
-    opt_grammar: JSONGrammar | None
+    option_grammar: JSONGrammar | None
     """The grammar defining the options of the current algorithm."""
 
     OPTIONS_DIR: ClassVar[str | Path] = "options"
@@ -118,7 +117,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.algo_name = None
         self.internal_algo_name = None
         self.problem = None
-        self.opt_grammar = None
+        self.option_grammar = None
 
     def init_options_grammar(
         self,
@@ -133,8 +132,8 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         # for multilevel scenarios for instance
         # This significantly speedups the process
         # because of the option grammar that is long to create
-        if self.opt_grammar is not None and self.opt_grammar.name == algo_name:
-            return self.opt_grammar
+        if self.option_grammar is not None and self.option_grammar.name == algo_name:
+            return self.option_grammar
 
         library_directory = Path(inspect.getfile(self.__class__)).parent
         options_directory = library_directory / self.OPTIONS_DIR
@@ -156,12 +155,14 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             )
             raise ValueError(msg)
 
-        self.opt_grammar = JSONGrammar(f"{algo_name}_algorithm_options")
-        self.opt_grammar.update(self._COMMON_OPTIONS_GRAMMAR)
-        self.opt_grammar.update_from_file(schema_file)
-        self.opt_grammar.set_descriptions(get_options_doc(self.__class__._get_options))
+        self.option_grammar = JSONGrammar(f"{algo_name}_algorithm_options")
+        self.option_grammar.update(self._COMMON_OPTIONS_GRAMMAR)
+        self.option_grammar.update_from_file(schema_file)
+        self.option_grammar.set_descriptions(
+            get_options_doc(self.__class__._get_options)
+        )
 
-        return self.opt_grammar
+        return self.option_grammar
 
     @property
     def algorithms(self) -> list[str]:
@@ -210,7 +211,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             Whether the option exists.
         """
-        return option_name in self.opt_grammar
+        return option_name in self.option_grammar
 
     def _process_specific_option(
         self,
@@ -244,7 +245,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             else:
                 self._process_specific_option(options, option_name)
 
-        self.opt_grammar.validate(options)
+        self.option_grammar.validate(options)
 
         for option_name in list(options.keys()):  # Copy keys on purpose
             lib_option_name = self.OPTIONS_MAP.get(option_name)

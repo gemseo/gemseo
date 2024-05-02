@@ -29,7 +29,7 @@ See Also:
 
 from __future__ import annotations
 
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.problems.uncertainty.ishigami.ishigami_function import IshigamiFunction
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
 

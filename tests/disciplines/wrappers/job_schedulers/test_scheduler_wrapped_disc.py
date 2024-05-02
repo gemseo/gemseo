@@ -27,12 +27,12 @@ import pytest
 
 from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
-from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.platform import PLATFORM_IS_WINDOWS
-from gemseo.wrappers import job_schedulers
-from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
+from gemseo.disciplines.wrappers import job_schedulers
+from gemseo.disciplines.wrappers.job_schedulers.scheduler_wrapped_disc import (
     JobSchedulerDisciplineWrapper,
 )
+from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 
 @pytest.fixture()

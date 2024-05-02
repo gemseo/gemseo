@@ -34,11 +34,11 @@ from pandas import DataFrame
 from pandas import MultiIndex
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.pareto import ParetoFront
+from gemseo.algos.pareto.pareto_front import ParetoFront
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
 @pytest.fixture()

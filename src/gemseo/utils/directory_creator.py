@@ -90,23 +90,13 @@ class DirectoryCreator(Serializable):
         """The last created directory or ``None`` if none has been created."""
         return self.__last_directory
 
-    # TODO: API: Make this method either protected or removed in new major version.
-    def get_unique_run_folder_path(self) -> Path:
-        """Generate a directory path.
-
-        Returns:
-            The directory path.
-        """
-        self.__last_directory = self.__root_directory / self.__generate_uid()
-        return self.__last_directory
-
     def create(self) -> Path:
         """Create a directory.
 
         Returns:
             The directory path.
         """
-        self.get_unique_run_folder_path()
+        self.__last_directory = self.__root_directory / self.__generate_uid()
         self.__last_directory.mkdir(parents=True, exist_ok=True)
         return self.__last_directory
 

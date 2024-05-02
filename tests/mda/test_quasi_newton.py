@@ -35,17 +35,16 @@ from .test_gauss_seidel import SelfCoupledDisc
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
 
 
-def test_quasi_newton_invalid_method() -> None:
-    """Test invalid method names for quasi Newton."""
-    with pytest.raises(
-        ValueError, match="Method 'unknown_method' is not a valid quasi-Newton method."
-    ):
-        MDAQuasiNewton([Sellar1(), Sellar2()], method="unknown_method")
-
-
-def test_broyden_sellar() -> None:
-    """Test the execution of quasi-Newton on Sellar."""
-    mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.BROYDEN1)
+@pytest.mark.parametrize(
+    "method",
+    [
+        MDAQuasiNewton.QuasiNewtonMethod.BROYDEN1,
+        MDAQuasiNewton.QuasiNewtonMethod.BROYDEN2,
+    ],
+)
+def test_broyden_sellar(method) -> None:
+    """Test the execution of quasi-Newton on Sellar with a Broyden method."""
+    mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=method)
     mda.reset_history_each_run = True
     mda.execute()
     assert mda.residual_history[-1] < 1e-5
@@ -69,7 +68,9 @@ def test_lm_sellar() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDAQuasiNewton(
-        disciplines, method=MDAQuasiNewton.LEVENBERG_MARQUARDT, use_gradient=True
+        disciplines,
+        method=MDAQuasiNewton.QuasiNewtonMethod.LEVENBERG_MARQUARDT,
+        use_gradient=True,
     )
     mda.execute()
 
@@ -78,20 +79,18 @@ def test_lm_sellar() -> None:
 
 def test_dfsane_sellar() -> None:
     """Test the execution of quasi-Newton on Sellar."""
-    mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.DF_SANE)
+    mda = MDAQuasiNewton(
+        [Sellar1(), Sellar2()], method=MDAQuasiNewton.QuasiNewtonMethod.DF_SANE
+    )
     mda.execute()
 
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
-    with pytest.raises(
-        ValueError, match="Method 'unknown_method' is not a valid quasi-Newton method."
-    ):
-        MDAQuasiNewton([Sellar1(), Sellar2()], method="unknown_method")
 
 
 def test_broyden_sellar2() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), SellarSystem()]
-    mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.BROYDEN1)
+    mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.QuasiNewtonMethod.BROYDEN1)
     mda.reset_history_each_run = True
     mda.execute()
 
@@ -104,3 +103,11 @@ def test_self_coupled() -> None:
     mda = MDAQuasiNewton([sc_disc], tolerance=1e-14, max_mda_iter=40)
     out = mda.execute()
     assert abs(out["y"] - 2.0 / 3.0) < 1e-6
+
+
+@pytest.mark.parametrize("method", MDAQuasiNewton.QuasiNewtonMethod)
+def test_methods_supporting_callbacks(method):
+    """Test MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS."""
+    mda = MDAQuasiNewton([Sellar1(), SellarSystem()], method=method)
+    method_supports_callbacks = method in MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS
+    assert (mda.RESIDUALS_NORM in mda.output_grammar) is method_supports_callbacks

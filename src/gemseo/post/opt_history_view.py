@@ -62,7 +62,7 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -121,8 +121,10 @@ class OptHistoryView(OptPostProcessor):
                 instead of the objective.
         """  # noqa: D205, D212, D415
         if variable_names:
-            self.__indices = self.opt_problem.design_space.get_variables_indexes(
-                variable_names
+            self.__indices = (
+                self.optimization_problem.design_space.get_variables_indexes(
+                    variable_names
+                )
             )
 
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
@@ -141,8 +143,14 @@ class OptHistoryView(OptPostProcessor):
         self._create_x_star_plot(x_history, n_iter)
 
         for constraints, constraint_type in [
-            (self.opt_problem.get_ineq_constraints(), MDOFunction.ConstraintType.INEQ),
-            (self.opt_problem.get_eq_constraints(), MDOFunction.ConstraintType.EQ),
+            (
+                self.optimization_problem.get_ineq_constraints(),
+                MDOFunction.ConstraintType.INEQ,
+            ),
+            (
+                self.optimization_problem.get_eq_constraints(),
+                MDOFunction.ConstraintType.EQ,
+            ),
         ]:
             if constraints:
                 constraint_names = [constraint.name for constraint in constraints]
@@ -181,7 +189,9 @@ class OptHistoryView(OptPostProcessor):
             indices = [
                 index
                 for name in variable_names
-                for index in self.opt_problem.design_space.names_to_indices[name]
+                for index in self.optimization_problem.design_space.names_to_indices[
+                    name
+                ]
             ]
             x_hist_to_display = complete_x_hist[:, indices]
 
@@ -212,6 +222,27 @@ class OptHistoryView(OptPostProcessor):
 
         return constraints_history
 
+    def _normalize_x_hist(
+        self, x_history: ndarray, variable_names: Sequence[str] | None
+    ) -> ndarray:
+        """Normalize the design variables history.
+
+        Args:
+            x_history: The history for the design variables.
+            variable_names: The names of the variables to display.
+                If ``None``, use all design variables.
+
+        Returns:
+            The normalized design variables array.
+        """
+        lower_bounds = self.optimization_problem.design_space.get_lower_bounds(
+            variable_names
+        )
+        upper_bounds = self.optimization_problem.design_space.get_upper_bounds(
+            variable_names
+        )
+        return (x_history - lower_bounds) / (upper_bounds - lower_bounds)
+
     def _create_variables_plot(
         self,
         x_history: ndarray,
@@ -228,7 +259,7 @@ class OptHistoryView(OptPostProcessor):
         if n_iterations < 2:
             return
 
-        design_space = self.opt_problem.design_space
+        design_space = self.optimization_problem.design_space
         lower_bounds = design_space.get_lower_bounds(variable_names)
         upper_bounds = design_space.get_upper_bounds(variable_names)
         norm_x_history = (x_history - lower_bounds) / (upper_bounds - lower_bounds)
@@ -358,9 +389,11 @@ class OptHistoryView(OptPostProcessor):
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
-        normalize = self.opt_problem.design_space.normalize_vect
+        normalize = self.optimization_problem.design_space.normalize_vect
         x_xstar = norm(
-            normalize(x_history) - normalize(self.opt_problem.get_optimum()[1]), axis=1
+            normalize(x_history)
+            - normalize(self.optimization_problem.get_optimum()[1]),
+            axis=1,
         )
 
         # Draw a vertical line at the optimum

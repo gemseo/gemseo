@@ -37,7 +37,7 @@ from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.doe.lib_scipy import SciPyDOE
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -128,7 +128,7 @@ def test_evaluate_samples_multiproc_with_observables(doe) -> None:
         "algo_options": {"n_processes": 2, "samples": samples},
     })
 
-    database = scenario.formulation.opt_problem.database
+    database = scenario.formulation.optimization_problem.database
     for i, (x, data) in enumerate(database.items()):
         assert x.wrapped_array[0] == pytest.approx(float(i))
         assert data["obj"] == float(i)

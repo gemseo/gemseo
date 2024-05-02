@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.typing import StrKeyMapping
 
 # The detection of formulations requires to import them,
@@ -84,7 +84,7 @@ class MDOScenario(Scenario):
         )
 
     def _run_algorithm(self) -> OptimizationResult:
-        problem = self.formulation.opt_problem
+        problem = self.formulation.optimization_problem
         algo_name = self.local_data[self.ALGO]
         max_iter = self.local_data[self.MAX_ITER]
         options = self.local_data.get(self.ALGO_OPTIONS)

@@ -157,22 +157,22 @@ from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 
-# TODO: API: remove this import
-from gemseo.utils.seeder import SEED  # noqa: F401
-
 if TYPE_CHECKING:
     from logging import Logger
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.doe.doe_library import DOELibraryOptionType
-    from gemseo.algos.opt_problem import OptimizationProblem
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.caches.base_cache import BaseCache
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.disciplines.surrogate import SurrogateDiscipline
+    from gemseo.disciplines.wrappers.job_schedulers.scheduler_wrapped_disc import (
+        JobSchedulerDisciplineWrapper,
+    )
     from gemseo.mda.base_mda import BaseMDA
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.post._graph_view import GraphView
@@ -182,9 +182,6 @@ if TYPE_CHECKING:
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
-    from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
-        JobSchedulerDisciplineWrapper,
-    )
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from this root module.
@@ -574,14 +571,14 @@ def get_post_processing_options_schema(
         get_available_post_processings
     """
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.post.factory import PostFactory
 
     problem = OptimizationProblem(DesignSpace())
     problem.objective = MDOFunction(lambda x: x, "f")
     post_proc = PostFactory().create(post_proc_name, problem)
-    return _get_schema(post_proc.opt_grammar, output_json, pretty_print)
+    return _get_schema(post_proc.option_grammar, output_json, pretty_print)
 
 
 def get_formulation_options_schema(
@@ -870,7 +867,7 @@ def get_scenario_differentiation_modes() -> (
         get_scenario_options_schema
         get_scenario_inputs_schema
     """
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
     return tuple(OptimizationProblem.DifferentiationMethod)
 
@@ -1362,11 +1359,11 @@ def execute_post(
         get_available_post_processings
         get_post_processing_options_schema
     """
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.post.factory import PostFactory
 
     if hasattr(to_post_proc, "is_scenario") and to_post_proc.is_scenario():
-        opt_problem = to_post_proc.formulation.opt_problem
+        opt_problem = to_post_proc.formulation.optimization_problem
     elif isinstance(to_post_proc, OptimizationProblem):
         opt_problem = to_post_proc
     elif isinstance(to_post_proc, (str, PathLike)):
@@ -1975,7 +1972,7 @@ def configure(
             in the bounds when evaluating the functions in OptimizationProblem.
     """
     from gemseo.algos.driver_library import DriverLibrary
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -2070,7 +2067,7 @@ def wrap_discipline_in_job_scheduler(
         >>>                                      cache_hdf_file="mda_cache.h5")
         >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes": 10})
     """  # noqa:D205 D212 D415 E501
-    from gemseo.wrappers.job_schedulers.factory import (
+    from gemseo.disciplines.wrappers.job_schedulers.factory import (
         JobSchedulerDisciplineWrapperFactory,
     )
 
@@ -2164,6 +2161,6 @@ def sample_disciplines(
         "n_samples": n_samples,
         "algo_options": algo_options,
     })
-    return scenario.formulation.opt_problem.to_dataset(
+    return scenario.formulation.optimization_problem.to_dataset(
         name=name, opt_naming=False, export_gradients=True
     )

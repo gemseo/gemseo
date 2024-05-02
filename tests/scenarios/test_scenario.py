@@ -34,8 +34,8 @@ from pandas.testing import assert_frame_equal
 
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
@@ -155,7 +155,7 @@ def test_add_user_defined_constraint_error(mdf_scenario) -> None:
     )
 
     assert (
-        mdf_scenario.formulation.opt_problem.differentiation_method
+        mdf_scenario.formulation.optimization_problem.differentiation_method
         == mdf_scenario.DifferentiationMethod.NO_DERIVATIVE
     )
 
@@ -216,7 +216,7 @@ def test_backup_error(tmp_wd, mdf_scenario) -> None:
 def test_optimization_hist_backup_pre_load(tmp_wd, mdf_scenario, pre_load) -> None:
     """Test the pre_load option of the optimization history backup."""
     mdf_scenario.set_optimization_history_backup(SOBIESKI_HDF5_PATH, pre_load=pre_load)
-    database = mdf_scenario.formulation.opt_problem.database
+    database = mdf_scenario.formulation.optimization_problem.database
     assert len(database) == 4 if pre_load else len(database) == 0
 
 
@@ -245,8 +245,8 @@ def test_optimization_hist_backup_each_store(tmp_wd, mdf_scenario, each_store) -
         "g_1": array([0.035, -0.00666667, -0.0275, -0.04, -0.04833333, -0.09, -0.15])
     }
 
-    mdf_scenario.formulation.opt_problem.database.store(inputs, y_4)
-    mdf_scenario.formulation.opt_problem.database.store(inputs, g_1)
+    mdf_scenario.formulation.optimization_problem.database.store(inputs, y_4)
+    mdf_scenario.formulation.optimization_problem.database.store(inputs, g_1)
 
     if each_store:
         backup_problem = OptimizationProblem.from_hdf(file_path)
@@ -306,16 +306,16 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario) -> None:
     opt_read = OptimizationProblem.from_hdf(filename)
 
     assert len(opt_read.database) == len(
-        mdf_variable_grammar_scenario.formulation.opt_problem.database
+        mdf_variable_grammar_scenario.formulation.optimization_problem.database
     )
 
     assert (
         norm(
             array(
-                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_vect_history()
+                mdf_variable_grammar_scenario.formulation.optimization_problem.database.get_x_vect_history()
             )
             - array(
-                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_vect_history()
+                mdf_variable_grammar_scenario.formulation.optimization_problem.database.get_x_vect_history()
             )
         )
         == 0.0
@@ -398,7 +398,7 @@ def test_adapter(tmp_wd, idf_scenario) -> None:
     f_x2 = func(x_shared)
 
     assert f_x1 == f_x2
-    assert len(idf_scenario.formulation.opt_problem.database) == 1
+    assert len(idf_scenario.formulation.optimization_problem.database) == 1
 
     x_shared = array([0.09, 60000, 1.4, 2.5, 70, 1500])
     func(x_shared)
@@ -451,7 +451,7 @@ def test_xdsm_filename(tmp_wd, idf_scenario) -> None:
 def test_add_observable(mdf_scenario, output_names, observable_name, expected):
     """Test adding observables from discipline outputs."""
     mdf_scenario.add_observable(output_names, observable_name=observable_name)
-    assert mdf_scenario.formulation.opt_problem.observables[0].name == expected
+    assert mdf_scenario.formulation.optimization_problem.observables[0].name == expected
 
 
 def test_add_observable_not_available(
@@ -469,7 +469,7 @@ def test_add_observable_not_available(
 
 def test_database_name(mdf_scenario) -> None:
     """Check the name of the database."""
-    assert mdf_scenario.formulation.opt_problem.database.name == "MDOScenario"
+    assert mdf_scenario.formulation.optimization_problem.database.name == "MDOScenario"
 
 
 @patch("timeit.default_timer", new=lambda: 1)
@@ -489,18 +489,18 @@ def test_run_log(mdf_scenario, caplog) -> None:
 def test_clear_history_before_run(mdf_scenario) -> None:
     """Check that clear_history_before_run is correctly used in Scenario._run."""
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    assert len(mdf_scenario.formulation.opt_problem.database) == 1
+    assert len(mdf_scenario.formulation.optimization_problem.database) == 1
 
     def run_algorithm_mock() -> None:
         pass
 
     mdf_scenario._run_algorithm = run_algorithm_mock
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    assert len(mdf_scenario.formulation.opt_problem.database) == 1
+    assert len(mdf_scenario.formulation.optimization_problem.database) == 1
 
     mdf_scenario.clear_history_before_run = True
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    assert len(mdf_scenario.formulation.opt_problem.database) == 0
+    assert len(mdf_scenario.formulation.optimization_problem.database) == 0
 
 
 @pytest.mark.parametrize(
@@ -886,7 +886,7 @@ def test_constraint_representation(
         value=value,
         positive=positive,
     )
-    constraints = identity_scenario.formulation.opt_problem.constraints[-1]
+    constraints = identity_scenario.formulation.optimization_problem.constraints[-1]
     assert constraints.name == expected[0]
     assert constraints.expr == expected[1]
     assert constraints.default_repr == expected[2]
@@ -900,7 +900,9 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
         mdf_scenario: A fixture for the MDOScenario.
     """
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    mdf_scenario.formulation.opt_problem.reset(database=False, design_space=False)
+    mdf_scenario.formulation.optimization_problem.reset(
+        database=False, design_space=False
+    )
 
     with open("scenario.pkl", "wb") as file:
         pickle.dump(mdf_scenario, file)
@@ -952,21 +954,21 @@ def test_function_problem_type(scenario_for_linear_check, full_linear) -> None:
     """Test that function and problem are consistent with declaration."""
     if not full_linear:
         assert isinstance(
-            scenario_for_linear_check.formulation.opt_problem.objective,
+            scenario_for_linear_check.formulation.optimization_problem.objective,
             FunctionFromDiscipline,
         )
         assert (
-            scenario_for_linear_check.formulation.opt_problem.pb_type
-            == scenario_for_linear_check.formulation.opt_problem.ProblemType.NON_LINEAR
+            scenario_for_linear_check.formulation.optimization_problem.pb_type
+            == scenario_for_linear_check.formulation.optimization_problem.ProblemType.NON_LINEAR  # noqa: E501
         )
     else:
         assert isinstance(
-            scenario_for_linear_check.formulation.opt_problem.objective,
+            scenario_for_linear_check.formulation.optimization_problem.objective,
             MDOLinearFunction,
         )
         assert (
-            scenario_for_linear_check.formulation.opt_problem.pb_type
-            == scenario_for_linear_check.formulation.opt_problem.ProblemType.LINEAR
+            scenario_for_linear_check.formulation.optimization_problem.pb_type
+            == scenario_for_linear_check.formulation.optimization_problem.ProblemType.LINEAR  # noqa: E501
         )
 
 

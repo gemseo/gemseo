@@ -310,15 +310,15 @@ which yields:
 4. Saving and post-processing
 *****************************
 
-After the resolution of the :class:`~gemseo.algos.opt_problem.OptimizationProblem`, we can export the results into a :term:`HDF` file:
+After the resolution of the :class:`~gemseo.algos.optimization_problem.OptimizationProblem`, we can export the results into a :term:`HDF` file:
 
 .. code::
 
-   problem = scenario.formulation.opt_problem
+   problem = scenario.formulation.optimization_problem
    problem.to_hdf("my_optim.hdf5")
 
 We can also post-process the optimization history by means of the function :func:`.execute_post`,
-either from the :class:`~gemseo.algos.opt_problem.OptimizationProblem`:
+either from the :class:`~gemseo.algos.optimization_problem.OptimizationProblem`:
 
 .. code::
 

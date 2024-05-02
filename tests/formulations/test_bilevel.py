@@ -106,11 +106,11 @@ def test_execute(sobieski_bilevel_scenario) -> None:
     scenario.formulation.get_expected_workflow()
 
     for i in range(3):
-        cstrs = scenario.disciplines[i].formulation.opt_problem.constraints
+        cstrs = scenario.disciplines[i].formulation.optimization_problem.constraints
         assert len(cstrs) == 1
         assert cstrs[0].name == "g_" + str(i + 1)
 
-    cstrs_sys = scenario.formulation.opt_problem.constraints
+    cstrs_sys = scenario.formulation.optimization_problem.constraints
     assert len(cstrs_sys) == 0
     with pytest.raises(ValueError):
         scenario.add_constraint(["toto"], constraint_type="ineq")
@@ -130,7 +130,7 @@ def test_get_sub_options_grammar() -> None:
     assert sub_options_schema.name == "MDAJacobi"
 
     sub_option_values = BiLevel.get_default_sub_option_values(main_mda_name="MDAJacobi")
-    assert "acceleration" in sub_option_values
+    assert "acceleration_method" in sub_option_values
 
 
 def test_bilevel_aerostructure() -> None:

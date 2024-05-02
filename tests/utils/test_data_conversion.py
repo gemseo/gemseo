@@ -27,122 +27,19 @@ from numpy import ndarray
 from scipy.sparse import csr_matrix
 
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.data_conversion import array_to_dict
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
-from gemseo.utils.data_conversion import dict_to_array
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.data_conversion import nest_flat_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
 
 
 @pytest.fixture()
 def dict_to_be_updated() -> dict[str, ndarray]:
     """A dictionary to be updated."""
     return {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])}
-
-
-@pytest.mark.parametrize(
-    ("values_array", "cast_complex", "expected"),
-    [
-        (
-            array([0.5, 1.0, 2.0]),
-            False,
-            {"y": array([0.5]), "z": array([1, 2])},
-        ),
-        (
-            array([0, 1, 2]),
-            True,
-            {"y": array([0.5]), "z": array([1, 2])},
-        ),
-        (
-            array([0.5 + 0j, 1.0 + 0j, 2.0 + 0j]),
-            False,
-            {"y": array([0.5 + 0j]), "z": array([1.0 + 0j, 2.0 + 0j])},
-        ),
-        (
-            array([0.5 + 0j, 1.0 + 0j, 2.0 + 0j]),
-            True,
-            {"y": array([0.5]), "z": array([1, 2])},
-        ),
-    ],
-)
-def test_update_dict_of_arrays_from_array(
-    dict_to_be_updated, values_array, expected, cast_complex
-) -> None:
-    """Check the update of a data mapping from a data array and variables names."""
-    new_data_dict = update_dict_of_arrays_from_array(
-        dict_to_be_updated, ["y", "z"], values_array, cast_complex=cast_complex
-    )
-    array_equal(new_data_dict, expected)
-
-
-def test_update_dict_of_arrays_from_array_without_variables(dict_to_be_updated) -> None:
-    """Check that a dictionary cannot be update without variables names."""
-    new_data_dict = update_dict_of_arrays_from_array(
-        dict_to_be_updated, [], array([0.5, 1.0, 2.0])
-    )
-    assert compare_dict_of_arrays(new_data_dict, dict_to_be_updated)
-
-
-def test_update_dict_of_arrays_from_array_wrong_data_type(dict_to_be_updated) -> None:
-    """Check that a dictionary cannot be updated from wrongly typed data."""
-    expected = r"The array must be a NumPy one, got instead: <.+ 'float'>\."
-
-    with pytest.raises(TypeError, match=expected):
-        update_dict_of_arrays_from_array(
-            dict_to_be_updated,
-            ["y"],
-            1.0,
-        )
-
-
-def test_update_dict_of_arrays_from_array_wrong_name() -> None:
-    with pytest.raises(KeyError, match="y"):
-        update_dict_of_arrays_from_array(
-            {"z": array([1.0])},
-            ["y"],
-            array([0.5]),
-        )
-    with pytest.raises(AttributeError, match="'int' object has no attribute 'size'"):
-        update_dict_of_arrays_from_array(
-            {"y": 1},
-            ["y"],
-            array([0.5]),
-        )
-
-
-def test_update_dict_of_arrays_from_array_too_long(dict_to_be_updated) -> None:
-    """Check that updating a dictionary with an array that is too long raises an
-    error."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"Inconsistent data shapes: "
-            r"could not use the whole data array of shape \(2L?,\) "
-            r"\(only reached max index = 1\), "
-            r"while updating data dictionary names y of shapes: "
-            r"\[\(u?'y', \(1L?,\)\)\]\."
-        ),
-    ):
-        update_dict_of_arrays_from_array(dict_to_be_updated, "y", array([0.5, 1.5]))
-
-
-def test_update_dict_of_arrays_from_array_too_short(dict_to_be_updated) -> None:
-    """Check that updating a dictionary with an array that is too short raises an
-    error."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Inconsistent data shapes: could not use the whole data array of "
-            "shape (1,) (only reached max index = 2), while updating data "
-            "dictionary names z of shapes: [('z', (2,))]."
-        ),
-    ):
-        update_dict_of_arrays_from_array(dict_to_be_updated, "z", array([0.5]))
 
 
 def test_nest_flat_bilevel_dict_dict() -> None:
@@ -359,9 +256,3 @@ def test_compare_dict_of_arrays(d_1, d_2, d_3, d_4, d_5) -> None:
     d_1_copy["x"] *= 0.99
     assert not compare_dict_of_arrays(d_1, d_1_copy)
     assert compare_dict_of_arrays(d_1, d_1_copy, tolerance=0.1)
-
-
-def test_aliases() -> None:
-    """Check aliases."""
-    assert dict_to_array == concatenate_dict_of_arrays_to_array
-    assert array_to_dict == split_array_to_dict_of_arrays

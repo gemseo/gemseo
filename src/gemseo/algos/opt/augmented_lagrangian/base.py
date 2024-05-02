@@ -35,13 +35,13 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_squ
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.typing import StrKeyMapping
 

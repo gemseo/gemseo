@@ -162,7 +162,7 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
     # initial_x is reset to the initial design value before optimization;
     # thus the optimization starts from initial_design.
     adapter.execute()
-    initial_x = adapter.scenario.formulation.opt_problem.database.get_x_vect(1)
+    initial_x = adapter.scenario.formulation.optimization_problem.database.get_x_vect(1)
     assert np_all(initial_x == initial_design)
 
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
@@ -174,7 +174,7 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
     # initial_x is NOT reset to the initial design value before optimization;
     # thus the optimization starts from the last design value (=new_initial_design).
     adapter.execute()
-    initial_x = adapter.scenario.formulation.opt_problem.database.get_x_vect(1)
+    initial_x = adapter.scenario.formulation.optimization_problem.database.get_x_vect(1)
     assert np_all(initial_x == new_initial_design)
     assert not np_all(initial_x == initial_design)
 
@@ -278,7 +278,7 @@ def test_compute_jacobian_exceptions(scenario) -> None:
         adapter._compute_jacobian(outputs=["y_4", "g_2", "g_1"])
 
     # Pass a multi-valued objective
-    scenario.formulation.opt_problem.objective.output_names = ["y_4"] * 2
+    scenario.formulation.optimization_problem.objective.output_names = ["y_4"] * 2
     with pytest.raises(ValueError, match="The objective must be single-valued."):
         adapter._compute_jacobian()
 
@@ -317,7 +317,7 @@ def build_prop_scenario():
 def check_adapter_jacobian(
     adapter, inputs, objective_threshold, lagrangian_threshold
 ) -> None:
-    opt_problem = adapter.scenario.formulation.opt_problem
+    opt_problem = adapter.scenario.formulation.optimization_problem
     output_names = opt_problem.objective.output_names
     constraints = opt_problem.get_constraint_names()
 
@@ -382,7 +382,7 @@ def check_obj_scenario_adapter(
     scenario, outputs, minimize, objective_threshold, lagrangian_threshold
 ) -> None:
     dim = scenario.design_space.dimension
-    problem = scenario.formulation.opt_problem
+    problem = scenario.formulation.optimization_problem
     objective = problem.objective
     output_names = objective.output_names
     problem.objective = MDOFunction(
@@ -446,7 +446,7 @@ def test_lagrange_multipliers_outputs() -> None:
     )
     assert adapter.is_all_outputs_existing(mult_names)
     adapter.execute()
-    problem = struct_scenario.formulation.opt_problem
+    problem = struct_scenario.formulation.optimization_problem
     x_opt = problem.solution.x_opt
     obj_grad = problem.nonproc_objective.jac(x_opt)
     g1_jac = problem.nonproc_constraints[0].jac(x_opt)
@@ -630,7 +630,7 @@ def test_scenario_adapter(scenario_fixture) -> None:
     )
     scenario.default_inputs = {"algo": "SLSQP", "max_iter": 10}
     scenario.execute()
-    assert scenario.formulation.opt_problem.solution is not None
+    assert scenario.formulation.optimization_problem.solution is not None
 
 
 def test_run_scenario_adapter(scenario_fixture) -> None:

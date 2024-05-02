@@ -100,7 +100,7 @@ class DOEScenario(Scenario):
             self._algo_name = algo_name
 
         options = dict(options)
-        if self.N_SAMPLES in lib.opt_grammar:
+        if self.N_SAMPLES in lib.option_grammar:
             n_samples = self.local_data.get(self.N_SAMPLES)
             if self.N_SAMPLES in options:
                 LOGGER.warning(
@@ -110,7 +110,9 @@ class DOEScenario(Scenario):
                 )
             options[self.N_SAMPLES] = n_samples
 
-        self.optimization_result = lib.execute(self.formulation.opt_problem, **options)
+        self.optimization_result = lib.execute(
+            self.formulation.optimization_problem, **options
+        )
         self.__samples = lib.samples
         return self.optimization_result
 
@@ -132,7 +134,7 @@ class DOEScenario(Scenario):
         opt_naming: bool = True,
         export_gradients: bool = False,
     ) -> Dataset:
-        return self.formulation.opt_problem.to_dataset(
+        return self.formulation.optimization_problem.to_dataset(
             name=name,
             categorize=categorize,
             opt_naming=opt_naming,

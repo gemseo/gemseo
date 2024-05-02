@@ -219,7 +219,7 @@ class OpenTURNS(DOELibrary):
             **kwargs,
         )
 
-    def _generate_samples(
+    def _generate_unit_samples(
         self,
         design_space: DesignSpace,
         n_samples: int | None = None,

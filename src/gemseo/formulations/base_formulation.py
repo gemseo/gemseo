@@ -34,7 +34,7 @@ from numpy import in1d
 from numpy import ndarray
 from numpy import zeros
 
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
@@ -66,7 +66,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     This class creates the :class:`.MDOFunction` instances
     computing the constraints, objective and observables
     from the disciplines
-    and add them to the attached :attr:`.opt_problem`.
+    and add them to the attached :attr:`.optimization_problem`.
 
     It defines the multidisciplinary process, i.e. dataflow and workflow, implicitly.
 
@@ -119,7 +119,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """  # noqa: D205, D212, D415
         self._disciplines = disciplines
         self._objective_name = objective_name
-        self.opt_problem = OptimizationProblem(design_space)
+        self.optimization_problem = OptimizationProblem(design_space)
         self._maximize_objective = maximize_objective
         self.__grammar_type = grammar_type
 
@@ -131,33 +131,16 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     @property
     def design_space(self) -> DesignSpace:
         """The design space on which the formulation is applied."""
-        return self.opt_problem.design_space
+        return self.optimization_problem.design_space
 
     @property
     def disciplines(self) -> list[MDODiscipline]:
         """The disciplines of the MDO process."""
         return self._disciplines
 
-    @staticmethod
-    def _check_add_cstr_input(
-        output_name: str,
-        constraint_type: MDOFunction.ConstraintType,
-    ) -> list[str]:
-        """Check the output name and constraint type passed to :meth:`.add_constraint`.
-
-        Args:
-            output_name: The name of the output to be used as a constraint.
-                For instance, if g_1 is given and constraint_type="eq",
-                g_1=0 will be added as a constraint to the optimizer.
-            constraint_type: The type of constraint.
-        """
-        # TODO: API: remove useless constraint_type.
-        # TODO: API: find a better method name that matches its intent.
-        return output_name if isinstance(output_name, list) else [output_name]
-
     def add_constraint(
         self,
-        output_name: str,
+        output_name: str | Sequence[str],
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str = "",
         value: float = 0,
@@ -186,7 +169,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             value: The value :math:`a`.
             positive: Whether the inequality constraint is positive.
         """
-        output_names = self._check_add_cstr_input(output_name, constraint_type)
+        output_names = [output_name] if isinstance(output_name, str) else output_name
         constraint = FunctionFromDiscipline(output_names, self)
         if constraint.linear_candidate:
             constraint = compute_linear_approximation(
@@ -198,7 +181,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             constraint.has_default_name = False
         else:
             constraint.has_default_name = True
-        self.opt_problem.add_constraint(constraint, value=value, positive=positive)
+        self.optimization_problem.add_constraint(
+            constraint, value=value, positive=positive
+        )
 
     def add_observable(
         self,
@@ -222,7 +207,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         obs_fun = FunctionFromDiscipline(output_names, self, discipline=discipline)
         if observable_name:
             obs_fun.name = observable_name
-        self.opt_problem.add_observable(obs_fun)
+        self.optimization_problem.add_observable(obs_fun)
 
     def get_top_level_disc(self) -> list[MDODiscipline]:
         """Return the disciplines which inputs are required to run the scenario.
@@ -340,7 +325,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The size of the variable.
         """
-        return self.opt_problem.design_space.variable_sizes[variable_name]
+        return self.optimization_problem.design_space.variable_sizes[variable_name]
 
     def _get_dv_indices(
         self,
@@ -358,7 +343,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             and last dimension is its size.
         """
         start = end = 0
-        sizes = self.opt_problem.design_space.variable_sizes
+        sizes = self.optimization_problem.design_space.variable_sizes
         names_to_indices = {}
         for name in names:
             size = sizes[name]
@@ -397,7 +382,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         if all_data_names is None:
             all_data_names = self.get_optim_variable_names()
         indices = self._get_dv_indices(all_data_names)
-        variable_sizes = self.opt_problem.design_space.variable_sizes
+        variable_sizes = self.optimization_problem.design_space.variable_sizes
         total_size = sum(variable_sizes[var] for var in all_data_names)
 
         # TODO: The support of sparse Jacobians requires modifications here.
@@ -468,7 +453,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Raises:
             ValueError: If the sizes or the sizes of variables are inconsistent.
         """
-        design_space = self.opt_problem.design_space
+        design_space = self.optimization_problem.design_space
         if all_data_names is None:
             all_data_names = design_space.variable_names
 
@@ -495,7 +480,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _remove_unused_variables(self) -> None:
         """Remove variables in the design space that are not discipline inputs."""
-        design_space = self.opt_problem.design_space
+        design_space = self.optimization_problem.design_space
         disciplines = self.get_top_level_disc()
         all_inputs = {
             var for disc in disciplines for var in disc.get_input_data_names()
@@ -542,9 +527,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                 obj_mdo_fun, zeros(obj_mdo_fun.input_dimension)
             )
 
-        self.opt_problem.objective = obj_mdo_fun
+        self.optimization_problem.objective = obj_mdo_fun
         if self._maximize_objective:
-            self.opt_problem.change_objective_sign()
+            self.optimization_problem.minimize_objective = False
 
     def get_optim_variable_names(self) -> list[str]:
         """Get the optimization unknown names to be provided to the optimizer.
@@ -556,7 +541,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The optimization variable names.
         """
-        return self.opt_problem.design_space.variable_names
+        return self.optimization_problem.design_space.variable_names
 
     def get_x_names_of_disc(
         self,
@@ -605,10 +590,12 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _set_default_input_values_from_design_space(self) -> None:
         """Initialize the top level disciplines from the design space."""
-        if not self.opt_problem.design_space.has_current_value():
+        if not self.optimization_problem.design_space.has_current_value():
             return
 
-        current_x = self.opt_problem.design_space.get_current_value(as_dict=True)
+        current_x = self.optimization_problem.design_space.get_current_value(
+            as_dict=True
+        )
 
         for discipline in self.get_top_level_disc():
             input_names = discipline.get_input_data_names()

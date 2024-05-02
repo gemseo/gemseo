@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.factory import PostFactory
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace

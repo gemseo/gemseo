@@ -100,7 +100,7 @@ def test_input_couplings() -> None:
                 "SobieskiStructure",
             ])
         )
-        mda._compute_input_couplings()
+        mda._compute_input_coupling_names()
         sorted_c = ["y_12", "y_21", "y_23", "y_31", "y_32"]
         assert mda._input_couplings == sorted_c
 

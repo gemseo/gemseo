@@ -71,7 +71,7 @@ def test_aggregation_discipline(disc_constr) -> None:
     scenario.add_constraint("constr", constraint_type="ineq")
 
     scenario.execute({"algo": "SLSQP", "max_iter": 50})
-    ref_sol = scenario.formulation.opt_problem.solution
+    ref_sol = scenario.formulation.optimization_problem.solution
 
     disc_agg = create_discipline(
         "ConstraintAggregation",
@@ -90,7 +90,7 @@ def test_aggregation_discipline(disc_constr) -> None:
     scenario_agg.add_constraint("lower_bound_KS_constr", constraint_type="ineq")
 
     scenario_agg.execute({"algo": "SLSQP", "max_iter": 50})
-    sol2 = scenario_agg.formulation.opt_problem.solution
+    sol2 = scenario_agg.formulation.optimization_problem.solution
 
     assert allclose(sol2.x_opt, ref_sol.x_opt, rtol=1e-2)
 

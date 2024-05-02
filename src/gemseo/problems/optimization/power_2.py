@@ -26,7 +26,7 @@ from numpy import ndarray
 from numpy import sum as np_sum
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 

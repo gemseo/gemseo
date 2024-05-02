@@ -13,10 +13,3 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Utilities: multiprocessing."""
-# TODO: API: remove import
-
-from __future__ import annotations
-
-from gemseo.utils.multiprocessing.manager import (
-    get_multi_processing_manager,  # noqa: F401
-)

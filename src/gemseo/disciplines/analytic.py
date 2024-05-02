@@ -75,12 +75,10 @@ class AnalyticDiscipline(MDODiscipline):
         "_sympy_jac_funcs",
     ])
 
-    # TODO: API: remove fast_evaluation (see the docstring of sympy.lambdify)
     def __init__(
         self,
         expressions: Mapping[str, str | Expr],
         name: str = "",
-        fast_evaluation: bool = True,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
@@ -88,9 +86,6 @@ class AnalyticDiscipline(MDODiscipline):
             expressions: The outputs expressed as functions of the inputs.
             name: The name of the discipline.
                 If ``None``, use the class name.
-            fast_evaluation: Whether to apply ``sympy.lambdify`` to the expressions
-                in order to accelerate their numerical evaluation;
-                otherwise the expressions are evaluated with ``sympy.Expr.evalf``.
         """  # noqa: D205, D212, D415
         super().__init__(name, grammar_type=grammar_type)
         self.expressions = expressions
@@ -100,14 +95,6 @@ class AnalyticDiscipline(MDODiscipline):
         self._sympy_funcs = {}
         self._sympy_jac_exprs = {}
         self._sympy_jac_funcs = {}
-        self._fast_evaluation = fast_evaluation
-        if fast_evaluation:
-            self._run = self._run_with_fast_evaluation
-            self._compute_jacobian = self._compute_jacobian_with_fast_evaluation
-        else:
-            self._run = self._run_without_fast_evaluation
-            self._compute_jacobian = self._compute_jacobian_without_fast_evaluation
-
         self._init_expressions()
         self._init_grammars()
         self._init_default_inputs()
@@ -155,9 +142,7 @@ class AnalyticDiscipline(MDODiscipline):
         )
 
         self.__real_symbols = {symbol.name: symbol for symbol in all_real_input_symbols}
-
-        if self._fast_evaluation:
-            self._lambdify_expressions()
+        self._lambdify_expressions()
 
     @staticmethod
     def __create_real_input_symbols(expression: Expr) -> dict[str, Symbol]:
@@ -220,7 +205,7 @@ class AnalyticDiscipline(MDODiscipline):
 
         return array([expression], data_type)
 
-    def _run_with_fast_evaluation(self) -> None:
+    def _run(self) -> None:
         """Run the discipline with fast evaluation."""
         output_data = {}
         # Do not pass useless tokens to the expr, this may
@@ -234,25 +219,6 @@ class AnalyticDiscipline(MDODiscipline):
             output_data[output_name] = expand_dims(output_value, 0)
         self.store_local_data(**output_data)
 
-    def _run_without_fast_evaluation(self) -> None:
-        """Run the discipline without fast evaluation."""
-        output_data = {}
-        # Do not pass useless tokens to the expr, this may
-        # fail when tokens contain dots, or slow down the process
-        input_data = self.__get_local_data_without_namespace()
-        for output_name, output_expression in self._sympy_exprs.items():
-            try:
-                output_value = output_expression.evalf(subs=input_data)
-                output_data[output_name] = self.__cast_expression_to_array(output_value)
-            except TypeError:  # noqa: PERF203
-                LOGGER.exception(
-                    "Failed to evaluate expression : %s", output_expression
-                )
-                LOGGER.exception("With inputs : %s", self.local_data)
-                raise
-
-        self.store_local_data(**output_data)
-
     def __get_local_data_without_namespace(self) -> dict[str, numpy.number]:
         """Return the local data without namespace prefixes.
 
@@ -264,7 +230,7 @@ class AnalyticDiscipline(MDODiscipline):
             for input_name in self.get_input_data_names(with_namespaces=False)
         }
 
-    def _compute_jacobian_with_fast_evaluation(
+    def _compute_jacobian(
         self,
         inputs: Iterable[str] | None = None,
         outputs: Iterable[str] | None = None,
@@ -283,28 +249,6 @@ class AnalyticDiscipline(MDODiscipline):
                 if input_symbol in input_names:
                     jac[input_symbol] = array(
                         [[derivative_function(*input_data)]], dtype=float64
-                    )
-
-    def _compute_jacobian_without_fast_evaluation(
-        self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
-    ) -> None:
-        # otherwise there may be missing terms
-        # if some formula have no dependency
-        input_names, output_names = self._init_jacobian(inputs, outputs)
-        input_values = self.__get_local_data_without_namespace()
-        subs = {self.__real_symbols[k]: v for k, v in input_values.items()}
-        for output_name in output_names:
-            output_expression = self._sympy_exprs[output_name]
-            jac = self.jac[output_name]
-            jac_expr = self._sympy_jac_exprs[output_name]
-            for input_symbol in output_expression.free_symbols:
-                input_name = input_symbol.name
-                if input_name in input_names:
-                    jac[input_name] = array(
-                        [[jac_expr[input_name].evalf(subs=subs)]],
-                        dtype=float64,
                     )
 
     def __setstate__(self, state: StrKeyMapping) -> None:

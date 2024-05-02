@@ -34,7 +34,7 @@ from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.typing import NumberArray
 
 

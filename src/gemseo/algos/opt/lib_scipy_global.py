@@ -41,7 +41,7 @@ from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
     from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType
     from gemseo.typing import StrKeyMapping
@@ -260,7 +260,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         # remove normalization from options for algo
         self.normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the normalized bounds:
-        _, l_b, u_b = self.get_x0_and_bounds_vects(self.normalize_ds)
+        _, l_b, u_b = self.get_x0_and_bounds(self.normalize_ds)
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]

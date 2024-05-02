@@ -311,7 +311,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         )
         self._main_method = self.Method.MU_STAR
         self.__outputs_bounds = discipline.output_range
-        self.default_output = output_names
+        self.default_output_names = output_names
 
     @property
     def outputs_bounds(self) -> dict[str, list[float]]:
@@ -336,7 +336,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         fd_data = self.dataset.get_view(group_names=self.dataset.OUTPUT_GROUP).to_dict(
             orient="list"
         )
-        output_names = outputs or self.default_output
+        output_names = outputs or self.default_output_names
         if isinstance(output_names, str):
             output_names = [output_names]
         self.mu_ = {name: {} for name in output_names}

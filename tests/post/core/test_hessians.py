@@ -32,14 +32,14 @@ from numpy.linalg import LinAlgError
 from numpy.linalg import norm
 from scipy.optimize import rosen_hess
 
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.core.hessians import BFGSApprox
 from gemseo.post.core.hessians import HessianApproximation
 from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.typing import StrKeyMapping
 
 MDF_HIST_PATH = Path(__file__).parent / "mdf_history.h5"

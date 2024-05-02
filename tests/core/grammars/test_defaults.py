@@ -23,7 +23,7 @@ from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from ..test_discipline_data import to_df_key
 
 exclude_names = pytest.mark.parametrize(
-    "exclude_names",
+    "excluded_names",
     [
         (),
         ["dummy"],
@@ -102,13 +102,13 @@ def test_getitem(defaults: Defaults) -> None:
 
 
 @exclude_names
-def test_update(defaults, exclude_names) -> None:
+def test_update(defaults, excluded_names) -> None:
     """Verify update."""
     defaults_before = dict(defaults)
     other_defaults = {"name": 1}
-    defaults.update(other_defaults, exclude=exclude_names)
+    defaults.update(other_defaults, exclude=excluded_names)
     for name, value in defaults.items():
-        if name in exclude_names:
+        if name in excluded_names:
             assert value == defaults_before[name]
         else:
             assert value == other_defaults[name]

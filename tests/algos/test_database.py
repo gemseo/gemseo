@@ -42,7 +42,7 @@ from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
 
 DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail.hdf5"

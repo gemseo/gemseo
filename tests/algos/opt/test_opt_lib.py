@@ -26,7 +26,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import concretize_classes
@@ -56,9 +56,10 @@ def lib() -> OptimizationLibraryFactory:
     [("L-BFGS-B", False, False), ("SLSQP", True, True)],
 )
 def test_algorithm_handles_constraints(lib, name, handle_eq, handle_ineq) -> None:
-    """Check algorithm_handles_eqcstr() and algorithm_handles_ineqcstr()."""
-    assert lib.algorithm_handles_eqcstr(name) is handle_eq
-    assert lib.algorithm_handles_ineqcstr(name) is handle_ineq
+    """Check check_equality_constraint_support() and
+    check_inequality_constraint_support()."""
+    assert lib.check_equality_constraint_support(name) is handle_eq
+    assert lib.check_inequality_constraint_support(name) is handle_ineq
 
 
 def test_is_algorithm_suited() -> None:
@@ -150,9 +151,9 @@ def test_check_constraints_handling_fail(lib, power) -> None:
 
 
 def test_algorithm_handles_eqcstr_fail(lib, power) -> None:
-    """Test that algorithm_handles_eqcstr can raise an exception."""
+    """Test that check_equality_constraint_support can raise an exception."""
     with pytest.raises(KeyError, match="Algorithm TOTO not in library ScipyOpt."):
-        lib.algorithm_handles_eqcstr("TOTO")
+        lib.check_equality_constraint_support("TOTO")
 
 
 def test_optimization_algorithm() -> None:
@@ -163,8 +164,8 @@ def test_optimization_algorithm() -> None:
         algorithm_name="bar", internal_algorithm_name="foo"
     )
     algo = lib.descriptions["new_algo"]
-    assert not lib.algorithm_handles_ineqcstr("new_algo")
-    assert not lib.algorithm_handles_eqcstr("new_algo")
+    assert not lib.check_inequality_constraint_support("new_algo")
+    assert not lib.check_equality_constraint_support("new_algo")
     assert not algo.handle_inequality_constraints
     assert not algo.handle_equality_constraints
     assert not algo.handle_integer_variables

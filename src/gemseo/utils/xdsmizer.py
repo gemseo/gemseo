@@ -287,7 +287,7 @@ class XDSMizer:
         nodes = self._create_nodes(algoname)
         edges = self._create_edges()
         workflow = self._create_workflow()
-        optpb = str(self.scenario.formulation.opt_problem)
+        optpb = str(self.scenario.formulation.optimization_problem)
 
         if self.level == 0:
             res = {
@@ -409,7 +409,7 @@ class XDSMizer:
             edges.append(edge)
 
         # For User to/from optimization
-        opt_pb = self.scenario.formulation.opt_problem
+        opt_pb = self.scenario.formulation.optimization_problem
 
         # fct names such as -y4
         function_name = opt_pb.get_all_function_name()

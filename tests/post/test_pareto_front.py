@@ -86,7 +86,7 @@ def test_pareto_minimize(
         tmp_wd: Fixture to move into a temporary directory.
     """
     problem = Power2()
-    problem.change_objective_sign()
+    problem.minimize_objective = False
     DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
     PostFactory().execute(
         problem, "ParetoFront", file_path="power", objectives=["pow2", "ineq1"]

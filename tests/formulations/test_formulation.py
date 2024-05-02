@@ -60,10 +60,10 @@ class TestMDOFormulation(unittest.TestCase):
         ds = SobieskiDesignSpace()
         with concretize_classes(MDOFormulation):
             f = MDOFormulation([sm], "y_4", ds)
-        prob = f.opt_problem
+        prob = f.optimization_problem
         assert not prob.has_constraints()
         f.add_constraint("y_4", constraint_name="toto")
-        assert f.opt_problem.constraints[-1].name == "toto"
+        assert f.optimization_problem.constraints[-1].name == "toto"
 
     #     def test_disciplines_runinputs(self):
     #         sm = SobieskiMission()
@@ -103,9 +103,9 @@ class TestMDOFormulation(unittest.TestCase):
             expr="sin(x)",
             input_names=["x", "y"],
         )
-        f.opt_problem.objective = g
+        f.optimization_problem.objective = g
 
-        obj = f.opt_problem.objective
+        obj = f.optimization_problem.objective
         self.assertAlmostEqual(obj(math.pi / 2), 1.0, 9)
         self.assertAlmostEqual(obj.jac(0.0), 1.0, 9)
 

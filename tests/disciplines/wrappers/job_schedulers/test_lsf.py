@@ -24,8 +24,8 @@ from pathlib import Path
 import pytest
 
 from gemseo import create_discipline
+from gemseo.disciplines.wrappers.job_schedulers.lsf import LSF
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
-from gemseo.wrappers.job_schedulers.lsf import LSF
 
 
 @pytest.fixture()

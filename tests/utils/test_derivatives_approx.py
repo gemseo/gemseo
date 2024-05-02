@@ -34,7 +34,7 @@ from scipy.optimize import rosen_der
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline

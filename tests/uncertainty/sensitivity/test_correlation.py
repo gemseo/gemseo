@@ -128,7 +128,7 @@ def test_save_load(correlation, tmp_wd) -> None:
     correlation.compute_indices()
     new_correlation.compute_indices()
     assert new_correlation.dataset.equals(correlation.dataset)
-    assert new_correlation.default_output == correlation.default_output
+    assert new_correlation.default_output_names == correlation.default_output_names
 
 
 def test_mock_ot_version(correlation) -> None:

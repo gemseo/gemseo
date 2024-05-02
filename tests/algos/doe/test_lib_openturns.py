@@ -34,7 +34,7 @@ from gemseo.algos.doe._openturns.ot_composite_doe import OTCompositeDOE
 from gemseo.algos.doe._openturns.ot_factorial_doe import OTFactorialDOE
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_openturns import OpenTURNS
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -69,7 +69,7 @@ def test_call() -> None:
     Use an algorithm with options to check if the default options are correctly handled.
     """
     algo = DOELibraryFactory().create("OT_OPT_LHS")
-    samples = algo(3, 2)
+    samples = algo.compute_doe(2, n_samples=3)
     assert samples.shape == (3, 2)
 
 
@@ -104,7 +104,7 @@ def test_opt_lhs_wrong_properties(options, error) -> None:
 def test_centered_lhs() -> None:
     """Check that a centered LHS produces samples centered in their cells."""
     algo = DOELibraryFactory().create("OT_LHSC")
-    assert set(unique(algo(2, 2)).tolist()) == {0.25, 0.75}
+    assert set(unique(algo.compute_doe(2, n_samples=2)).tolist()) == {0.25, 0.75}
 
 
 @pytest.mark.parametrize(

@@ -29,7 +29,7 @@ from gemseo.algos.ode.ode_solver_lib import ODESolverLibrary
 
 if TYPE_CHECKING:
     from gemseo.algos.ode.ode_problem import ODEProblem
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
 
 
 class ODESolverLibraryFactory(BaseAlgoFactory):

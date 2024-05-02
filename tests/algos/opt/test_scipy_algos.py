@@ -33,7 +33,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.lib_scipy import ScipyOpt
 from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -94,8 +94,8 @@ class TestScipy(TestCase):
         opt_library = OptLibraryTestBase.generate_one_test(
             self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10
         )
-        assert opt_library.is_algo_requires_positive_cstr(algo_name)
-        assert not opt_library.is_algo_requires_positive_cstr("TNC")
+        assert opt_library.check_positivity_constraint_requirement(algo_name)
+        assert not opt_library.check_positivity_constraint_requirement("TNC")
 
     def test_fail_opt(self) -> None:
         """"""

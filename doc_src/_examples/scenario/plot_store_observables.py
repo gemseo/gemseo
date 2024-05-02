@@ -127,7 +127,7 @@ scenario.execute({"max_iter": 10, "algo": "SLSQP"})
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # In order to create a dataset, we use the
 # corresponding :class:`.OptimizationProblem`:
-opt_problem = scenario.formulation.opt_problem
+opt_problem = scenario.formulation.optimization_problem
 # %%
 # We can easily build an :class:`.OptimizationDataset` from this :class:`.OptimizationProblem`:
 # either by separating the design parameters from the functions

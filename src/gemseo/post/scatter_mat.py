@@ -60,7 +60,7 @@ class ScatterPlotMatrix(OptPostProcessor):
                 points exist. If an element from variable_names is not either
                 a function or a design variable.
         """  # noqa: D205, D212, D415
-        problem = self.opt_problem
+        problem = self.optimization_problem
         add_design_variables = False
         all_function_names = problem.get_all_function_name()
         all_design_names = problem.design_space.variable_names

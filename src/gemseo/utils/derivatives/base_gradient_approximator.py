@@ -114,27 +114,15 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         input_perturbations, steps = self.generate_perturbations(
             input_dimension, x_vect, x_indices=x_indices, step=step
         )
-        n_perturbations = input_perturbations.shape[1]
-
         self._function_kwargs = kwargs
-
-        if self._parallel:
-            grad = self._compute_parallel_grad(
-                x_vect, n_perturbations, input_perturbations, steps, **kwargs
-            )
-        else:
-            grad = self._compute_grad(
-                x_vect, n_perturbations, input_perturbations, steps, **kwargs
-            )
-
+        compute = self._compute_parallel_grad if self._parallel else self._compute_grad
+        grad = compute(x_vect, input_perturbations, steps, **kwargs)
         return array(grad, dtype=float64).T
 
-    # TODO: API: remove useless n_perturbations
     @abstractmethod
     def _compute_parallel_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float,
         **kwargs: Any,
@@ -143,7 +131,6 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             input_values: The input values.
-            n_perturbations: The number of perturbations.
             input_perturbations: The perturbations of the input.
             step: The differentiation step,
                 either one global step or one step by input component.
@@ -157,7 +144,6 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _compute_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float | ndarray,
         **kwargs: Any,
@@ -166,7 +152,6 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             input_values: The input values.
-            n_perturbations: The number of perturbations.
             input_perturbations: The input perturbations.
             step: The differentiation step,
                 either one global step or one step by input component.

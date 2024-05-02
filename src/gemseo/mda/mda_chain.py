@@ -142,18 +142,13 @@ class MDAChain(BaseMDA):
         self.__initialize_defaults = initialize_defaults
         self._initialize_grammars()
         self._check_consistency()
-        self._compute_input_couplings()
+        self._compute_input_coupling_names()
 
         # cascade the tolerance
         for mda in self.inner_mdas:
             mda.tolerance = self.tolerance
 
-    @property
-    def max_mda_iter(self) -> int:
-        """The maximum iterations number of each of the inner MDA algorithms."""
-        return super().max_mda_iter
-
-    @max_mda_iter.setter
+    @BaseMDA.max_mda_iter.setter
     def max_mda_iter(self, max_mda_iter: int) -> None:  # noqa: D102
         self._max_mda_iter = max_mda_iter
         for mda in self.inner_mdas:

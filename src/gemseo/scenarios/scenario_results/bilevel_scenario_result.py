@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Final
 
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 
 if TYPE_CHECKING:
@@ -43,13 +43,13 @@ class BiLevelScenarioResult(ScenarioResult):
     def __init__(self, scenario: Scenario | str | Path) -> None:  # noqa: D107
         super().__init__(scenario)
         formulation = scenario.formulation
-        main_problem = formulation.opt_problem
+        main_problem = formulation.optimization_problem
         x_shared_opt = main_problem.solution.x_opt
         i_opt = main_problem.database.get_iteration(x_shared_opt) - 1
         scenario_adapters = formulation.scenario_adapters
         self.__n_sub_problems = len(scenario_adapters)
         for index, scenario_adapter in enumerate(scenario_adapters):
-            sub_problem = scenario_adapter.scenario.formulation.opt_problem
+            sub_problem = scenario_adapter.scenario.formulation.optimization_problem
             database = sub_problem.database
             sub_problem.database = scenario_adapter.databases[i_opt]
             result = OptimizationResult.from_optimization_problem(sub_problem)

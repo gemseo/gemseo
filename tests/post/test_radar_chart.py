@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.radar_chart import RadarChart
 from gemseo.utils.testing.helpers import image_comparison
 

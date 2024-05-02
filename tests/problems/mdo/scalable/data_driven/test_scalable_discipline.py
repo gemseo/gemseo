@@ -209,7 +209,7 @@ class ScalableProblem(unittest.TestCase):
         for cstr in ["g_1", "g_2", "g_3"]:
             scenario.add_constraint(cstr, constraint_type="ineq", value=cstr_threshold)
 
-        opt_pb = scenario.formulation.opt_problem
+        opt_pb = scenario.formulation.optimization_problem
 
         opt_pb.preprocess_functions()
         for func in opt_pb.get_all_functions():

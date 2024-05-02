@@ -126,7 +126,7 @@ def test_parallel_doe_hdf_cache(caplog) -> None:
     }
     scenario.execute(input_data)
     scenario.print_execution_metrics()
-    assert len(scenario.formulation.opt_problem.database) == n_samples
+    assert len(scenario.formulation.optimization_problem.database) == n_samples
     for disc in disciplines:
         assert len(disc.cache) == n_samples
 
@@ -160,7 +160,7 @@ def test_doe_scenario(mdf_variable_grammar_doe_scenario) -> None:
     mdf_variable_grammar_doe_scenario.execute(input_data)
     mdf_variable_grammar_doe_scenario.print_execution_metrics()
     assert (
-        len(mdf_variable_grammar_doe_scenario.formulation.opt_problem.database)
+        len(mdf_variable_grammar_doe_scenario.formulation.optimization_problem.database)
         == n_samples
     )
 
@@ -312,7 +312,9 @@ def test_lib_serialization(tmp_wd, doe_scenario) -> None:
         "algo_options": {"samples": array([[1.0]])},
     })
 
-    doe_scenario.formulation.opt_problem.reset(database=False, design_space=False)
+    doe_scenario.formulation.optimization_problem.reset(
+        database=False, design_space=False
+    )
 
     with open("doe.pkl", "wb") as file:
         pickle.dump(doe_scenario, file)
@@ -328,12 +330,18 @@ def test_lib_serialization(tmp_wd, doe_scenario) -> None:
     })
 
     assert pickled_scenario._lib.internal_algo_name == "CustomDOE"
-    assert pickled_scenario.formulation.opt_problem.database.get_function_value(
-        "y", array([0.5])
-    ) == array([1.0])
-    assert pickled_scenario.formulation.opt_problem.database.get_function_value(
-        "y", array([1.0])
-    ) == array([2.0])
+    assert (
+        pickled_scenario.formulation.optimization_problem.database.get_function_value(
+            "y", array([0.5])
+        )
+        == array([1.0])
+    )
+    assert (
+        pickled_scenario.formulation.optimization_problem.database.get_function_value(
+            "y", array([1.0])
+        )
+        == array([2.0])
+    )
 
 
 other_doe_scenario = doe_scenario
@@ -380,7 +388,7 @@ def test_partial_execution_from_backup(
             "reset_iteration_counters": reset_iteration_counters,
         },
     })
-    assert len(other_doe_scenario.formulation.opt_problem.database) == expected
+    assert len(other_doe_scenario.formulation.optimization_problem.database) == expected
 
 
 def test_scenario_without_initial_design_value() -> None:
@@ -391,4 +399,4 @@ def test_scenario_without_initial_design_value() -> None:
     discipline.default_inputs = {}
     scenario = DOEScenario([discipline], "MDF", "y", design_space)
     scenario.execute({"algo": "lhs", "n_samples": 3})
-    assert len(scenario.formulation.opt_problem.database) == 3
+    assert len(scenario.formulation.optimization_problem.database) == 3

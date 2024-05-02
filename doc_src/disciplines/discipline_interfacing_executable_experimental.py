@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from gemseo.wrappers._base_disc_from_exe import _BaseDiscFromExe
-from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
+from gemseo.disciplines.wrappers._base_disc_from_exe import _BaseDiscFromExe
+from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableRunner
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

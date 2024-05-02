@@ -19,10 +19,10 @@ A class implementing a Gaussian process regressor must derive from it.
 
 from abc import abstractmethod
 
-from gemseo import SEED
 from gemseo.datasets.dataset import DataType
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.typing import RealArray
+from gemseo.utils.seeder import SEED
 
 
 class BaseRandomProcessRegressor(BaseRegressor):

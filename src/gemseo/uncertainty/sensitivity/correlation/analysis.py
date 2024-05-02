@@ -157,7 +157,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
     def compute_indices(  # noqa: D102
         self, outputs: str | Sequence[str] = ()
     ) -> dict[str, FirstOrderIndicesType]:
-        output_names = outputs or self.default_output
+        output_names = outputs or self.default_output_names
         if isinstance(output_names, str):
             output_names = [output_names]
 

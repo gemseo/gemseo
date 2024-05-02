@@ -89,7 +89,10 @@ class HessianHistory(OptPostProcessor):
 
         if variable_names:
             diag = diag[
-                self.opt_problem.design_space.get_variables_indexes(variable_names), :
+                self.optimization_problem.design_space.get_variables_indexes(
+                    variable_names
+                ),
+                :,
             ]
 
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)

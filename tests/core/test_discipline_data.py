@@ -244,7 +244,7 @@ def test_contains() -> None:
 
 
 exclude_names = pytest.mark.parametrize(
-    "exclude_names",
+    "excluded_names",
     [
         (),
         ["dummy"],
@@ -254,14 +254,14 @@ exclude_names = pytest.mark.parametrize(
 
 
 @exclude_names
-def test_update(exclude_names) -> None:
+def test_update(excluded_names) -> None:
     """Verify the defaults update."""
     data = DisciplineData({"name": 0})
     data_before = dict(data)
     other_data = {"name": 1}
-    data.update(other_data, exclude=exclude_names)
+    data.update(other_data, exclude=excluded_names)
     for name, value in data.items():
-        if name in exclude_names:
+        if name in excluded_names:
             assert value == data_before[name]
         else:
             assert value == other_data[name]

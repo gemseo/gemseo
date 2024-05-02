@@ -265,4 +265,4 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
         if samples.ndim == 2:
             return (samples,)
 
-        return tuple(samples[:, i, :] for i in range(self._reduced_dimensions[1]))
+        return tuple(samples[:, i, :] for i in range(self._reduced_output_dimension))

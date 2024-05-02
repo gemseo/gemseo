@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -111,18 +111,18 @@ class PostOptimalAnalysis:
             raise ValueError(msg)
         self.lagrange_computer = LagrangeMultipliers(opt_problem)
         # N.B. at creation LagrangeMultipliers checks the optimization problem
-        self.opt_problem = opt_problem
+        self.optimization_problem = opt_problem
         # Get the optimal solution
-        self.x_opt = self.opt_problem.design_space.get_current_value()
+        self.x_opt = self.optimization_problem.design_space.get_current_value()
         # Get the objective name
-        output_names = self.opt_problem.objective.output_names
+        output_names = self.optimization_problem.objective.output_names
         if len(output_names) != 1:
             msg = "The objective must be single-valued."
             raise ValueError(msg)
         self.output_names = output_names
         # Set the tolerance on inequality constraints
         if ineq_tol is None:
-            self.ineq_tol = self.opt_problem.ineq_tolerance
+            self.ineq_tol = self.optimization_problem.ineq_tolerance
         else:
             self.ineq_tol = ineq_tol
 
@@ -142,7 +142,7 @@ class PostOptimalAnalysis:
             threshold: The tolerance on the validity assumption.
         """
         # Check the Jacobians
-        func_names = self.opt_problem.get_constraint_names()
+        func_names = self.optimization_problem.get_constraint_names()
         self._check_jacobians(total_jac, func_names, parameters)
         self._check_jacobians(partial_jac, func_names, parameters)
 
@@ -210,7 +210,7 @@ class PostOptimalAnalysis:
                 total_prod_blocks.append(multipliers @ total_jac_block)
                 partial_prod_blocks.append(multipliers @ partial_jac_block)
                 corrections[input_name] = -total_prod_blocks[-1]
-                if not self.opt_problem.minimize_objective:
+                if not self.optimization_problem.minimize_objective:
                     corrections[input_name] *= -1.0
 
         total_prod = hstack(total_prod_blocks) if total_prod_blocks else None
@@ -247,7 +247,7 @@ class PostOptimalAnalysis:
         # Check the inputs and Jacobians consistency
         func_names = self.output_names + [
             output_name
-            for constraint in self.opt_problem.constraints
+            for constraint in self.optimization_problem.constraints
             for output_name in constraint.output_names
         ]
         PostOptimalAnalysis._check_jacobians(functions_jac, func_names, inputs)
@@ -348,7 +348,7 @@ class PostOptimalAnalysis:
                 jac_cstr_arr += mul_eq.T @ jac_eq_arr
 
             # Assemble the Jacobian of the Lagrangian
-            if not self.opt_problem.minimize_objective:
+            if not self.optimization_problem.minimize_objective:
                 jac_cstr_arr *= -1.0
             jac[self.MULT_DOT_CONSTR_JAC][input_name] = jac_cstr_arr
             jac[self.output_names[0]][input_name] = jac_obj_arr + jac_cstr_arr
@@ -367,7 +367,7 @@ class PostOptimalAnalysis:
         Returns:
             The Jacobian of the active inequality constraints for each input name.
         """
-        active_ineq_constraints = self.opt_problem.get_active_ineq_constraints(
+        active_ineq_constraints = self.optimization_problem.get_active_ineq_constraints(
             self.x_opt, self.ineq_tol
         )
         input_names_to_jacobians = {}
@@ -400,7 +400,7 @@ class PostOptimalAnalysis:
         Returns:
             The jacobian of the equality constraints.
         """
-        eq_constraints = self.opt_problem.get_eq_constraints()
+        eq_constraints = self.optimization_problem.get_eq_constraints()
         jacobian = {}
         if eq_constraints:
             for input_name in inputs:

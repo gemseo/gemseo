@@ -111,7 +111,7 @@ class MDOChain(MDODiscipline):
         self.output_grammar.clear()
         for discipline in self.disciplines:
             self.input_grammar.update(
-                discipline.input_grammar, exclude_names=self.output_grammar.keys()
+                discipline.input_grammar, excluded_names=self.output_grammar.keys()
             )
             self.output_grammar.update(discipline.output_grammar)
 

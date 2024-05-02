@@ -110,4 +110,4 @@ def test_load_sensitivity_analysis(tmp_wd) -> None:
     new_analysis = load_sensitivity_analysis("foo.pkl")
     assert new_analysis.__class__.__name__ == new_analysis.__class__.__name__
     assert new_analysis.dataset.equals(analysis.dataset)
-    assert new_analysis.default_output == analysis.default_output
+    assert new_analysis.default_output_names == analysis.default_output_names

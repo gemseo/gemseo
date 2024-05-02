@@ -100,8 +100,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     to compare the current :class:`.BaseSensitivityAnalysis` with another one.
     """
 
-    # TODO: API: rename to default_outputs or default_output_names
-    default_output: Iterable[str]
+    default_output_names: Iterable[str]
     """The default outputs of interest."""
 
     dataset: IODataset
@@ -181,9 +180,8 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """  # noqa: D205, D212, D415
         disciplines = list(disciplines)
         self._algo_name = algo or self.DEFAULT_DRIVER
-        all_output_names = get_all_outputs(disciplines)
-        self._output_names = output_names or all_output_names
-        self.default_output = self._output_names
+        self._output_names = output_names or get_all_outputs(disciplines)
+        self.default_output_names = self._output_names
         self._input_names = parameter_space.variable_names
         algo_options = dict(algo_options)
         algo_options["log_problem"] = False
