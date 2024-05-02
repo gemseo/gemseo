@@ -18,11 +18,11 @@ from pathlib import Path
 
 import pytest
 
+from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableRunner
 from gemseo.utils.directory_creator import DirectoryNamingMethod
-from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
 
 
-@pytest.mark.parametrize("root_directory", [".", Path(".")])
+@pytest.mark.parametrize("root_directory", [".", Path()])
 @pytest.mark.parametrize(
     "identifiers", [DirectoryNamingMethod.UUID, DirectoryNamingMethod.NUMBERED]
 )

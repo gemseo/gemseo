@@ -25,19 +25,9 @@ import pytest
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.clustering.quality.base_clusterer_quality import (
-    BaseClustererQuality,
-)
-from gemseo.mlearning.clustering.quality.base_predictive_clusterer_quality import (
-    BasePredictiveClustererQuality,
-)
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
 from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
-from gemseo.mlearning.regression.quality.base_regressor_quality import (
-    BaseRegressorQuality,
-)
-from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.utils.testing.helpers import concretize_classes
 
 
@@ -82,46 +72,3 @@ def test_is_better() -> None:
 def test_factory() -> None:
     """Check that the factory of BaseMLAlgoQuality works correctly."""
     assert "MSEMeasure" in MLAlgoQualityFactory().class_names
-
-
-@pytest.mark.parametrize(
-    ("cls", "old", "new"),
-    [
-        (BaseMLAlgoQuality, "evaluate_loo", "compute_leave_one_out_measure"),
-        (BaseRegressorQuality, "evaluate_learn", "compute_learning_measure"),
-        (BaseRegressorQuality, "evaluate_test", "compute_test_measure"),
-        (BaseRegressorQuality, "evaluate_kfolds", "compute_cross_validation_measure"),
-        (BaseRegressorQuality, "evaluate_loo", "compute_leave_one_out_measure"),
-        (BaseRegressorQuality, "evaluate_bootstrap", "compute_bootstrap_measure"),
-        (BaseClustererQuality, "evaluate_learn", "compute_learning_measure"),
-        (BasePredictiveClustererQuality, "evaluate_test", "compute_test_measure"),
-        (
-            BasePredictiveClustererQuality,
-            "evaluate_kfolds",
-            "compute_cross_validation_measure",
-        ),
-        (
-            BasePredictiveClustererQuality,
-            "evaluate_loo",
-            "compute_leave_one_out_measure",
-        ),
-        (
-            BasePredictiveClustererQuality,
-            "evaluate_bootstrap",
-            "compute_bootstrap_measure",
-        ),
-        (
-            R2Measure,
-            "evaluate_kfolds",
-            "compute_cross_validation_measure",
-        ),
-        (
-            R2Measure,
-            "evaluate_bootstrap",
-            "compute_bootstrap_measure",
-        ),
-    ],
-)
-def test_deprecated_evaluate_xxx(cls, old, new) -> None:
-    """Check that the aliases of the deprecated evaluation methods are correct."""
-    assert getattr(cls, old) == getattr(cls, new)

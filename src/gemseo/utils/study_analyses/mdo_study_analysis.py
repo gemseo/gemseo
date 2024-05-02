@@ -274,7 +274,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
         """
         LOGGER.info("Generated the following Scenario:")
         LOGGER.info("%s", self.main_scenario)
-        LOGGER.info("%s", self.main_scenario.formulation.opt_problem)
+        LOGGER.info("%s", self.main_scenario.formulation.optimization_problem)
         return self.main_scenario.xdsmize(
             directory_path=directory_path, save_pdf=save_pdf, show_html=show_html
         )

@@ -154,7 +154,7 @@ def test_options() -> None:
     assert isinstance(mda, MDAGaussSeidel)
     assert mda.warm_start is False
     assert mda.tolerance == pytest.approx(1e-5)
-    assert mda.over_relax_factor == pytest.approx(1.2)
+    assert mda.over_relaxation_factor == pytest.approx(1.2)
     assert mda.max_mda_iter == pytest.approx(20)
 
 

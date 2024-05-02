@@ -307,8 +307,6 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def over_relaxation_factor(self, over_relaxation_factor: float) -> None:
         self._sequence_transformer.over_relaxation_factor = over_relaxation_factor
 
-    # TODO: API: this property is useless, either remove it or at least check it is
-    # positive in the setter.
     @property
     def max_mda_iter(self) -> int:
         """The maximum iterations number of the MDA algorithm."""
@@ -316,6 +314,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @max_mda_iter.setter
     def max_mda_iter(self, max_mda_iter: int) -> None:
+        # This setter will be overloaded in certain child classes
         self._max_mda_iter = max_mda_iter
 
     def _initialize_grammars(self) -> None:
@@ -327,7 +326,6 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
 
-    # TODO: API: this property is useless, remove it?
     @property
     def log_convergence(self) -> bool:
         """Whether to log the MDA convergence."""
@@ -338,6 +336,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         value: bool,
     ) -> None:
+        # This setter will be overloaded in certain child classes
         self._log_convergence = value
 
     def __check_linear_solver_options(self) -> None:
@@ -404,8 +403,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 sorted(multiple_outs),
             )
 
-    # TODO: API: better naming: _compute_input_coupling_names
-    def _compute_input_couplings(self) -> None:
+    def _compute_input_coupling_names(self) -> None:
         """Compute the strong couplings that are inputs of the MDA."""
         self._input_couplings = sorted(
             set(self.strong_couplings).intersection(self.get_input_data_names())
@@ -795,8 +793,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return fig
 
-    # TODO: API: better naming: _prepare_warm_start
-    def _couplings_warm_start(self) -> None:
+    def _prepare_warm_start(self) -> None:
         """Load the previous couplings values to local data."""
         cached_outputs = self.cache.last_entry.outputs
 
@@ -828,4 +825,4 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     @abstractmethod
     def _run(self) -> None:  # noqa:D103
         if self.warm_start:
-            self._couplings_warm_start()
+            self._prepare_warm_start()

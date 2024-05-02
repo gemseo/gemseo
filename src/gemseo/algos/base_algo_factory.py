@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from gemseo.algos.algorithm_library import AlgorithmLibrary
     from gemseo.algos.base_problem import BaseProblem
     from gemseo.algos.driver_library import DriverLibrary
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
 
 
 class _AlgoFactoryMeta(ABCMeta):

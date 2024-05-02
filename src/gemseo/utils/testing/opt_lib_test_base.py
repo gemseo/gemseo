@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from numpy._typing import NDArray
 
     from gemseo.algos.opt.optimization_library import OptimizationLibrary
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
 class OptLibraryTestBase:

@@ -43,7 +43,7 @@ from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 OptionType = Optional[
@@ -208,7 +208,7 @@ class PyDOE(DOELibrary):
         """
         return (result + 1.0) * 0.5
 
-    def _generate_samples(
+    def _generate_unit_samples(
         self, design_space: DesignSpace, **options: OptionType
     ) -> RealArray:
         if self.algo_name == self.PYDOE_LHS:

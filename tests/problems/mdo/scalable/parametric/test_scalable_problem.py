@@ -88,9 +88,9 @@ def test_create_scenario(
         assert scenario.design_space.get_current_value(["y_2"]) != array([0.5])
 
     # Check the optimization functions.
-    assert scenario.formulation.opt_problem.objective.name == "f"
+    assert scenario.formulation.optimization_problem.objective.name == "f"
     constraint_names = [
-        constraint.name for constraint in formulation.opt_problem.constraints
+        constraint.name for constraint in formulation.optimization_problem.constraints
     ]
     if formulation_name == "MDF":
         assert constraint_names == ["c_1", "c_2"]
@@ -98,7 +98,8 @@ def test_create_scenario(
         assert constraint_names == ["y_1", "y_2", "c_1", "c_2"]
 
     assert [
-        constraint.name for constraint in formulation.opt_problem.get_ineq_constraints()
+        constraint.name
+        for constraint in formulation.optimization_problem.get_ineq_constraints()
     ] == ["c_1", "c_2"]
 
     assert "x_0" in scenario.design_space

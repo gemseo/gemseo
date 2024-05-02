@@ -69,7 +69,7 @@ class MDASequential(BaseMDA):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
         )
-        self._compute_input_couplings()
+        self._compute_input_coupling_names()
 
         self.mda_sequence = mda_sequence
         for mda in self.mda_sequence:

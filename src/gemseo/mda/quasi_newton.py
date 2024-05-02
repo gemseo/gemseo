@@ -31,6 +31,7 @@ from typing import ClassVar
 from numpy import array
 from numpy import ndarray
 from scipy.optimize import root
+from strenum import StrEnum
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda_root import BaseMDARoot
@@ -69,31 +70,24 @@ class MDAQuasiNewton(BaseMDARoot):
     Jacobian of :math:`f` at :math:`x_k`.
     """
 
-    # Available quasi-Newton methods
-    HYBRID = "hybr"
-    LEVENBERG_MARQUARDT = "lm"
-    BROYDEN1 = "broyden1"
-    BROYDEN2 = "broyden2"
-    ANDERSON = "anderson"
-    LINEAR_MIXING = "linearmixing"
-    DIAG_BROYDEN = "diagbroyden"
-    EXCITING_MIXING = "excitingmixing"
-    KRYLOV = "krylov"
-    DF_SANE = "df-sane"
+    class QuasiNewtonMethod(StrEnum):
+        """A quasi-Newton method."""
 
-    # TODO: API: use enums.
-    QUASI_NEWTON_METHODS: ClassVar[list[str]] = [
-        HYBRID,
-        LEVENBERG_MARQUARDT,
-        BROYDEN1,
-        BROYDEN2,
-        ANDERSON,
-        LINEAR_MIXING,
-        DIAG_BROYDEN,
-        EXCITING_MIXING,
-        KRYLOV,
-        DF_SANE,
-    ]
+        ANDERSON = "anderson"
+        BROYDEN1 = "broyden1"
+        BROYDEN2 = "broyden2"
+        DF_SANE = "df-sane"
+        DIAG_BROYDEN = "diagbroyden"
+        EXCITING_MIXING = "excitingmixing"
+        HYBRID = "hybr"
+        KRYLOV = "krylov"
+        LEVENBERG_MARQUARDT = "lm"
+        LINEAR_MIXING = "linearmixing"
+
+    _METHODS_SUPPORTING_CALLBACKS: ClassVar[
+        tuple[QuasiNewtonMethod, QuasiNewtonMethod]
+    ] = (QuasiNewtonMethod.BROYDEN1, QuasiNewtonMethod.BROYDEN2)
+    """The methods supporting callback functions."""
 
     __current_couplings: ndarray
     """The current values of the coupling variables."""
@@ -104,7 +98,7 @@ class MDAQuasiNewton(BaseMDARoot):
         max_mda_iter: int = 10,
         name: str = "",
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        method: str = HYBRID,
+        method: QuasiNewtonMethod = QuasiNewtonMethod.HYBRID,
         use_gradient: bool = False,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
@@ -116,8 +110,7 @@ class MDAQuasiNewton(BaseMDARoot):
     ) -> None:
         """
         Args:
-            method: The name of the method in scipy root finding, among
-                :attr:`.QUASI_NEWTON_METHODS`.
+            method: The name of the method in scipy root finding.
             use_gradient: Whether to use the analytic gradient of the discipline.
 
         Raises:
@@ -136,51 +129,37 @@ class MDAQuasiNewton(BaseMDARoot):
             linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
         )
-        if method not in self.QUASI_NEWTON_METHODS:
-            msg = f"Method '{method}' is not a valid quasi-Newton method."
-            raise ValueError(msg)
-
         self.method = method
 
-        if self.method not in self._methods_with_callback():
+        if self.method not in self._METHODS_SUPPORTING_CALLBACKS:
             del self.output_grammar[self.RESIDUALS_NORM]
 
         self.use_gradient = use_gradient
 
-    # TODO: API: prepend verb.
-    def _solver_options(self) -> dict[str, float | int]:
+    def _get_options(self) -> dict[str, float | int]:
         """Determine options for the solver, based on the resolution method."""
         options = {}
         if self.method in {
-            self.BROYDEN1,
-            self.BROYDEN2,
-            self.ANDERSON,
-            self.LINEAR_MIXING,
-            self.DIAG_BROYDEN,
-            self.EXCITING_MIXING,
-            self.KRYLOV,
+            self.QuasiNewtonMethod.BROYDEN1,
+            self.QuasiNewtonMethod.BROYDEN2,
+            self.QuasiNewtonMethod.ANDERSON,
+            self.QuasiNewtonMethod.LINEAR_MIXING,
+            self.QuasiNewtonMethod.DIAG_BROYDEN,
+            self.QuasiNewtonMethod.EXCITING_MIXING,
+            self.QuasiNewtonMethod.KRYLOV,
         }:
             options["ftol"] = self.tolerance
             options["maxiter"] = self.max_mda_iter
-        elif self.method == self.LEVENBERG_MARQUARDT:
+        elif self.method == self.QuasiNewtonMethod.LEVENBERG_MARQUARDT:
             options["xtol"] = self.tolerance
             options["maxiter"] = self.max_mda_iter
-        elif self.method == self.DF_SANE:
+        elif self.method == self.QuasiNewtonMethod.DF_SANE:
             options["fatol"] = self.tolerance
             options["maxfev"] = self.max_mda_iter
-        elif self.method == self.HYBRID:
+        elif self.method == self.QuasiNewtonMethod.HYBRID:
             options["xtol"] = self.tolerance
             options["maxfev"] = self.max_mda_iter
         return options
-
-    # TODO: API: prepend verb.
-    def _methods_with_callback(self) -> list[str]:
-        """Determine whether resolution method accepts a callback function.
-
-        Returns:
-            The names of the methods with callback.
-        """
-        return [self.BROYDEN1, self.BROYDEN2]
 
     def __get_jacobian_computer(self) -> Callable[[ndarray], ndarray] | None:
         """Return the function to compute the jacobian.
@@ -230,7 +209,7 @@ class MDAQuasiNewton(BaseMDARoot):
 
     def __get_residual_history_callback(self) -> Callable[[ndarray, Any], None] | None:
         """Return the callback used to store the residual history."""
-        if self.method not in self._methods_with_callback():
+        if self.method not in self._METHODS_SUPPORTING_CALLBACKS:
             return None
 
         def callback(
@@ -302,14 +281,14 @@ class MDAQuasiNewton(BaseMDARoot):
             jac=self.__get_jacobian_computer(),
             callback=self.__get_residual_history_callback(),
             tol=self.tolerance,
-            options=self._solver_options(),
+            options=self._get_options(),
         )
 
         self._warn_convergence_criteria()
 
         self._update_local_data(y_opt.x)
 
-        if self.method in self._methods_with_callback():
+        if self.method in self._METHODS_SUPPORTING_CALLBACKS:
             self._local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
 
         return self._local_data

@@ -35,12 +35,11 @@ from gemseo import create_design_space
 from gemseo import create_mda
 from gemseo import create_scenario
 from gemseo import execute_algo
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.disciplines.auto_py import to_arrays_dict
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 
 X_DIM = 4
@@ -141,13 +140,6 @@ def test_fail_wrongly_formatted_function() -> None:
         AutoPyDiscipline(f4)
 
 
-def test_fail_not_a_python_function() -> None:
-    """Test the failure if a Python function is not provided."""
-    not_a_function = 2
-    with pytest.raises(TypeError, match="py_func must be callable."):
-        AutoPyDiscipline(not_a_function)
-
-
 def test_jac_pb(design_space) -> None:
     """Test the AutoPyDiscipline with Jacobian provided."""
     max_iter = 100
@@ -173,13 +165,6 @@ def test_missing_jacobian() -> None:
     auto_rosen = AutoPyDiscipline(rosen)
     with pytest.raises(RuntimeError, match="The analytic Jacobian is missing."):
         auto_rosen._compute_jacobian()
-
-
-@pytest.mark.parametrize("input_", [{"a": [1.0]}, {"a": array([1.0])}])
-def test_to_arrays_dict(input_) -> None:
-    """Test the function to_arrays_dict."""
-    output = to_arrays_dict(input_)
-    assert output["a"] == array([1.0])
 
 
 def test_multiprocessing() -> None:

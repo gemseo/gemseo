@@ -22,7 +22,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo import create_discipline
-from gemseo.wrappers.filtering_discipline import FilteringDiscipline
+from gemseo.disciplines.wrappers.filtering_discipline import FilteringDiscipline
 
 
 @pytest.fixture()

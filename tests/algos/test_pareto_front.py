@@ -27,8 +27,8 @@ from numpy import ndarray
 from numpy.random import default_rng
 from numpy.testing import assert_array_equal
 
-from gemseo.algos.pareto_front import compute_pareto_optimal_points
-from gemseo.algos.pareto_front import generate_pareto_plots
+from gemseo.algos.pareto.utils import compute_pareto_optimal_points
+from gemseo.algos.pareto.utils import generate_pareto_plots
 
 
 @pytest.fixture()

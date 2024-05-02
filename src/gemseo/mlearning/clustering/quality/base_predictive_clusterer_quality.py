@@ -110,8 +110,3 @@ class BasePredictiveClustererQuality(BaseClustererQuality):
         for prediction, split in zip(predictions, bootstrap.splits):
             measure += self._compute_measure(data[split.test], prediction, multioutput)
         return measure / n_replicates
-
-    # TODO: API: remove these aliases in the next major release.
-    evaluate_test = compute_test_measure
-    evaluate_kfolds = compute_cross_validation_measure
-    evaluate_bootstrap = compute_bootstrap_measure

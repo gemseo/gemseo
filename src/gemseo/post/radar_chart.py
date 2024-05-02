@@ -64,11 +64,14 @@ class RadarChart(OptPostProcessor):
                 nor the tag ``"opt"``.
         """  # noqa: D205, D212, D415
         if constraint_names is None:
-            constraint_names = self.opt_problem.get_constraint_names()
+            constraint_names = self.optimization_problem.get_constraint_names()
         else:
-            constraint_names = self.opt_problem.get_function_names(constraint_names)
+            constraint_names = self.optimization_problem.get_function_names(
+                constraint_names
+            )
             invalid_names = sorted(
-                set(constraint_names) - set(self.opt_problem.get_constraint_names())
+                set(constraint_names)
+                - set(self.optimization_problem.get_constraint_names())
             )
             if invalid_names:
                 msg = (
@@ -79,7 +82,7 @@ class RadarChart(OptPostProcessor):
 
         # optimum_index is the zero-based position of the optimum.
         # while an iteration is a one-based position.
-        optimum_iteration = self.opt_problem.solution.optimum_index + 1
+        optimum_iteration = self.optimization_problem.solution.optimum_index + 1
         is_optimum = iteration in [self.OPTIMUM, optimum_iteration]
         if iteration == self.OPTIMUM:
             iteration = optimum_iteration

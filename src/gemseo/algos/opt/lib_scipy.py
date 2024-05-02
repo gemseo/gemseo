@@ -38,7 +38,7 @@ from gemseo.algos.opt.optimization_library import OptimizationLibrary
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
 
 
 @dataclass
@@ -250,7 +250,7 @@ class ScipyOpt(OptimizationLibrary):
         # remove normalization from options for algo
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the normalized bounds:
-        x_0, l_b, u_b = self.get_x0_and_bounds_vects(normalize_ds)
+        x_0, l_b, u_b = self.get_x0_and_bounds(normalize_ds)
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]

@@ -28,7 +28,7 @@ from scipy.sparse import csr_array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.lib_scipy_linprog import ScipyLinprog
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -104,7 +104,7 @@ def test_linprog_algorithms(minimization, x_opt, f_opt, library) -> None:
     for algo_name in library.algorithms:
         linprog_problem = get_opt_problem()
         if not minimization:
-            linprog_problem.change_objective_sign()
+            linprog_problem.minimize_objective = False
 
         optimization_result = library.execute(linprog_problem, algo_name)
 
@@ -125,7 +125,7 @@ def test_sparse_linprog_algorithms(
     """Tests algorithms on linear optimization problems with sparse Jacobians."""
     linprog_problem = get_opt_problem(sparse_jacobian=True)
     if not minimization:
-        linprog_problem.change_objective_sign()
+        linprog_problem.minimize_objective = False
 
     optimization_result = library.execute(linprog_problem, algo_name)
     assert allclose(optimization_result.x_opt, x_opt)

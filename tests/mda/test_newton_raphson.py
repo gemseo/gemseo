@@ -82,50 +82,6 @@ def test_acceleration_methods(
     assert len(mda.residual_history) <= compute_reference_n_iter
 
 
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility(sobiesky_disciplines) -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda_1 = MDANewtonRaphson(
-        sobiesky_disciplines,
-        tolerance=1e-12,
-        relax_factor=0.95,
-    )
-    mda_1.reset_history_each_run = True
-    mda_1.execute()
-
-    mda_2 = MDANewtonRaphson(
-        sobiesky_disciplines,
-        tolerance=1e-12,
-        over_relaxation_factor=0.95,
-    )
-    mda_2.reset_history_each_run = True
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-    mda_1.cache.clear()
-    mda_1.relax_factor = 0.9
-    mda_1.execute()
-
-    mda_2.cache.clear()
-    mda_2.over_relaxation_factor = 0.9
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility_setters_getters(sobiesky_disciplines) -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda = MDANewtonRaphson(
-        sobiesky_disciplines,
-        tolerance=1e-12,
-        relax_factor=0.95,
-    )
-    assert mda.relax_factor == 0.95
-    assert mda.over_relaxation_factor == 0.95
-
-
 @pytest.mark.parametrize("coupl_scaling", ["n_coupling_variables", "no_scaling"])
 def test_raphson_sobieski(coupl_scaling) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""

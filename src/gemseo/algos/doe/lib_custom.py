@@ -161,14 +161,12 @@ class CustomDOE(DOELibrary):
             **kwargs,
         )
 
-    # TODO: API: remove dimension
     @staticmethod
     def read_file(
         doe_file: str | Path | TextIO,
         delimiter: str | None = ",",
         comments: str | Sequence[str] | None = "#",
         skiprows: int = 0,
-        dimension: int = 0,
     ) -> RealArray:
         """Read a file containing several samples (one per line) and return them.
 
@@ -180,7 +178,6 @@ class CustomDOE(DOELibrary):
                 used to indicate the start of a comment.
                 ``None`` implies no comments.
             skiprows: Skip the first ``skiprows`` lines.
-            dimension: The dimension of the variables space if known.
 
         Returns:
             The samples.
@@ -199,7 +196,7 @@ class CustomDOE(DOELibrary):
 
         return samples
 
-    def _generate_samples(
+    def _generate_unit_samples(
         self, design_space: DesignSpace, **options: OptionType
     ) -> RealArray:
         """
@@ -224,7 +221,6 @@ class CustomDOE(DOELibrary):
                 comments=options[self.COMMENTS_KEYWORD],
                 delimiter=options[self.DELIMITER_KEYWORD],
                 skiprows=options[self.SKIPROWS_KEYWORD],
-                dimension=design_space.dimension,
             )
         elif options.get(self.DOE_FILE) is not None:
             raise ValueError(error_message)

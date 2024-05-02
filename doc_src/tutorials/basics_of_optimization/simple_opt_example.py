@@ -84,7 +84,7 @@ print("Available algorithms:" + str(algo_list))
 
 # POST TREATMENTS
 
-problem = scenario.formulation.opt_problem
+problem = scenario.formulation.optimization_problem
 problem.to_hdf("my_optim.hdf5")
 execute_post(problem, "OptHistoryView", save=True, file_path="opt_view_with_doe")
 # or execute_post("my_optim.hdf5", "OptHistoryView", save=True,

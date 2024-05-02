@@ -95,11 +95,11 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
     class EvaluationFunctionName(StrEnum):
         """The name of the function associated with an evaluation method."""
 
-        LEARN = "evaluate_learn"
-        TEST = "evaluate_test"
-        LOO = "evaluate_loo"
-        KFOLDS = "evaluate_kfolds"
-        BOOTSTRAP = "evaluate_bootstrap"
+        LEARN = "compute_learning_measure"
+        TEST = "compute_test_measure"
+        LOO = "compute_leave_one_out_measure"
+        KFOLDS = "compute_cross_validation_measure"
+        BOOTSTRAP = "compute_bootstrap_measure"
 
     SMALLER_IS_BETTER: ClassVar[bool] = True
     """Whether to minimize or maximize the measure."""
@@ -318,6 +318,3 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
             seed = self.__seeder.get_seed(seed)
 
         return array(samples), seed
-
-    # TODO: API: remove these aliases in the next major release.
-    evaluate_loo = compute_leave_one_out_measure

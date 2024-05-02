@@ -47,7 +47,7 @@ from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from gemseo.algos.database import Database
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 OptPostProcessorOptionType = Union[int, float, str, bool, Sequence[str], FigSizeType]
 PlotOutputType = list[
@@ -97,16 +97,16 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: If the JSON grammar file
                 for the options of the post-processor does not exist.
         """  # noqa: D205, D212, D415
-        self.opt_problem = opt_problem
+        self.optimization_problem = opt_problem
         self._obj_name = opt_problem.get_objective_name(False)
         self._standardized_obj_name = opt_problem.get_objective_name()
         self._neg_obj_name = f"-{self._obj_name}"
         self.database = opt_problem.database
-        self.opt_grammar = JSONGrammar("OptPostProcessor")
-        self.opt_grammar.update_from_file(
+        self.option_grammar = JSONGrammar("OptPostProcessor")
+        self.option_grammar.update_from_file(
             Path(inspect.getfile(OptPostProcessor)).parent / "OptPostProcessor.json"
         )
-        self.opt_grammar.set_descriptions(get_options_doc(self.execute))
+        self.option_grammar.set_descriptions(get_options_doc(self.execute))
         self._update_grammar_from_class(self.__class__)
 
         # The data required to eventually rebuild the plot in another framework.
@@ -141,15 +141,15 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             descriptions.update(get_options_doc(self.__class__._run))
         if hasattr(self.__class__, "_plot"):
             descriptions.update(get_options_doc(self.__class__._plot))
-        self.opt_grammar.update_from_file(schema_file)
-        self.opt_grammar.set_descriptions(descriptions)
+        self.option_grammar.update_from_file(schema_file)
+        self.option_grammar.set_descriptions(descriptions)
 
     @property
     def _change_obj(self) -> bool:
         """Whether to change the objective value and names by using the opposite."""
         return not (
-            self.opt_problem.minimize_objective
-            or self.opt_problem.use_standardized_objective
+            self.optimization_problem.minimize_objective
+            or self.optimization_problem.use_standardized_objective
         )
 
     @property
@@ -230,7 +230,7 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             fig_size=fig_size,
             **options,
         )
-        if not self.opt_problem.database:
+        if not self.optimization_problem.database:
             msg = (
                 f"The post-processor {self.__class__.__name__} cannot be solved "
                 "because the optimization problem was not solved."
@@ -259,7 +259,7 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             InvalidDataError: If an option is invalid according to the grammar.
         """
         try:
-            self.opt_grammar.validate(options)
+            self.option_grammar.validate(options)
         except InvalidDataError as error:
             msg = (
                 f"Invalid options for post-processor {self.__class__.__name__}; "
@@ -351,10 +351,10 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             The names of the components of the design variables.
         """
         if not variables:
-            variables = self.opt_problem.design_space.variable_names
+            variables = self.optimization_problem.design_space.variable_names
 
         design_variable_names = []
-        design_variable_sizes = self.opt_problem.design_space.variable_sizes
+        design_variable_sizes = self.optimization_problem.design_space.variable_sizes
         for variable in variables:
             design_variable_size = design_variable_sizes[variable]
             design_variable_names.extend([

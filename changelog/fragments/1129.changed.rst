@@ -12,6 +12,7 @@ API changes from old to new:
 - ``MLQualityMeasure``: ``BaseMLAlgoQuality``
 - ``MLErrorMeasure``: ``BaseRegressorQuality``
 - ``MLClusteringMeasure``: ``BaseClustererQuality``
+- ``MLPredictiveClusteringMeasure``: ``BasePredictiveClustererQuality``
 - ``MLRegressionAlgo``: ``BaseRegressor``
 - ``resampler``: ``base_resampler``
 - ``Resampler``: ``BaseResampler``

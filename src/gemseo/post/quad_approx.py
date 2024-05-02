@@ -42,7 +42,7 @@ from gemseo.post.opt_post_processor import OptPostProcessor
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
 class QuadApprox(OptPostProcessor):
@@ -77,7 +77,7 @@ class QuadApprox(OptPostProcessor):
                 to be defined if the function has a multidimensional output.
                 If ``None`` and if the output is multidimensional, an error is raised.
         """  # noqa: D205, D212, D415
-        problem = self.opt_problem
+        problem = self.optimization_problem
         if function == self._obj_name:
             b_mat = self.__build_approx(self._standardized_obj_name, func_index)
             if not (problem.minimize_objective or problem.use_standardized_objective):
@@ -113,7 +113,7 @@ class QuadApprox(OptPostProcessor):
         # Avoid using alpha scaling for hessian otherwise diagonal is messy
         b_mat, _, _, self.grad_opt = SR1Approx(self.database).build_approximation(
             function,
-            at_most_niter=int(1.5 * self.opt_problem.get_dimension()),
+            at_most_niter=int(1.5 * self.optimization_problem.get_dimension()),
             return_x_grad=True,
             func_index=func_index,
         )
@@ -146,7 +146,7 @@ class QuadApprox(OptPostProcessor):
             interpolation="nearest",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold, base=e),
         )
-        ticks = arange(self.opt_problem.dimension)
+        ticks = arange(self.optimization_problem.dimension)
         design_variable_names = self._get_design_variable_names(simplify=True)
         ax1.set_xticks(ticks)
         ax1.set_xticklabels(design_variable_names, rotation=45)
@@ -208,8 +208,8 @@ class QuadApprox(OptPostProcessor):
         nrows = int(ceil(float(ndv) / ncols))
 
         xn_vars = np.arange(-1.0, 1.0, 0.01)
-        lower_bounds = self.opt_problem.design_space.get_lower_bounds()
-        upper_bounds = self.opt_problem.design_space.get_upper_bounds()
+        lower_bounds = self.optimization_problem.design_space.get_lower_bounds()
+        upper_bounds = self.optimization_problem.design_space.get_upper_bounds()
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
 
         for i, design_variable_name in enumerate(self._get_design_variable_names()):

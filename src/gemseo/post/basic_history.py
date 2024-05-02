@@ -58,7 +58,7 @@ class BasicHistory(OptPostProcessor):
             variable_names: The names of the variables.
             normalize: Whether to normalize the data.
         """  # noqa: D205, D212, D415
-        problem = self.opt_problem
+        problem = self.optimization_problem
         dataset = problem.to_dataset(opt_naming=False)
         dataset.add_variable(
             self.__ITERATION_NAME, arange(1, len(dataset) + 1)[:, newaxis]

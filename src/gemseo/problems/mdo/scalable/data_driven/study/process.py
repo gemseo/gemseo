@@ -852,13 +852,13 @@ class ScalabilityStudy:
         Returns:
             The stop index, the database length.
         """
-        database = problem.scenario.formulation.opt_problem.database
+        database = problem.scenario.formulation.optimization_problem.database
         n_iter = len(database)
         if self.early_stopping:
             y_prev = inf
             stopidx = 0
             for value in database.values():
-                pbm = problem.scenario.formulation.opt_problem
+                pbm = problem.scenario.formulation.optimization_problem
                 if y_prev == inf:
                     diff = inf
                 else:

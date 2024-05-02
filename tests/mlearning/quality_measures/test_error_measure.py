@@ -140,16 +140,16 @@ def test_subset_of_inputs_and_outputs(
 def test_no_resampling_result_storage(linear_regressor) -> None:
     """Check that by default, a quality measure does not store the resampling result."""
     mse = MSEMeasure(linear_regressor)
-    mse.evaluate_kfolds()
+    mse.compute_cross_validation_measure()
     assert linear_regressor.resampling_results == {}
 
 
 @pytest.mark.parametrize(
     ("method", "resampler_name", "class_name", "dimension"),
     [
-        ("evaluate_kfolds", "CrossValidation", "CrossValidation", 5),
-        ("evaluate_loo", "LeaveOneOut", "CrossValidation", 20),
-        ("evaluate_bootstrap", "Bootstrap", "Bootstrap", 15),
+        ("compute_cross_validation_measure", "CrossValidation", "CrossValidation", 5),
+        ("compute_leave_one_out_measure", "LeaveOneOut", "CrossValidation", 20),
+        ("compute_bootstrap_measure", "Bootstrap", "Bootstrap", 15),
     ],
 )
 def test_resampling_result_storage(

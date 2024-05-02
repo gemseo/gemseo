@@ -72,46 +72,6 @@ def test_acceleration_methods(compute_reference_n_iter, acceleration_method) -> 
     assert len(mda.residual_history) <= compute_reference_n_iter
 
 
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility() -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda_1 = SobieskiMDAJacobi(acceleration="m2d")
-    mda_1.reset_history_each_run = True
-    mda_1.execute()
-
-    mda_2 = SobieskiMDAJacobi(acceleration_method=AccelerationMethod.ALTERNATE_2_DELTA)
-    mda_2.reset_history_each_run = True
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-    mda_1.cache.clear()
-    mda_1.acceleration = "secant"
-    mda_1.execute()
-
-    mda_2.cache.clear()
-    mda_2.acceleration_method = AccelerationMethod.SECANT
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility_setters_getters() -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda = SobieskiMDAJacobi(acceleration="")
-    assert mda.acceleration == AccelerationMethod.ALTERNATE_2_DELTA
-    assert mda.acceleration_method == AccelerationMethod.ALTERNATE_2_DELTA
-
-    mda = SobieskiMDAJacobi(acceleration="m2d")
-    assert mda.acceleration == AccelerationMethod.ALTERNATE_2_DELTA
-    assert mda.acceleration_method == AccelerationMethod.ALTERNATE_2_DELTA
-
-    mda = SobieskiMDAJacobi(acceleration="secant")
-    assert mda.acceleration == AccelerationMethod.SECANT
-    assert mda.acceleration_method == AccelerationMethod.SECANT
-
-
 def test_mda_jacobi_parallel() -> None:
     """Comparison of Jacobi on Sobieski problem: 1 and 5 processes."""
     mda_seq = SobieskiMDAJacobi()

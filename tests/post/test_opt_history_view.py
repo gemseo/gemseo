@@ -27,7 +27,7 @@ from numpy import array
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.utils.testing.helpers import image_comparison

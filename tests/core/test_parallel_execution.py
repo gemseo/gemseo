@@ -146,7 +146,9 @@ def test_disc_parallel_doe_scenario() -> None:
         "algo_options": {"eval_jac": True, "n_processes": 2},
     })
     assert (
-        len(scenario.formulation.opt_problem.database.get_function_history(Y_1))
+        len(
+            scenario.formulation.optimization_problem.database.get_function_history(Y_1)
+        )
         == n_samples
     )
 

@@ -39,7 +39,7 @@ class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):
 
     def _retrieve_top_level_outputs(self) -> None:
         formulation = self.scenario.formulation
-        opt_problem = formulation.opt_problem
+        opt_problem = formulation.optimization_problem
         top_level_disciplines = formulation.get_top_level_disc()
 
         # Get the optimal outputs
@@ -76,6 +76,8 @@ class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):
         # disciplines, but the gradients of the constraints can.
         # The objective function is assumed independent of non-optimization
         # variables.
-        obj_name = self.scenario.formulation.opt_problem.objective.output_names[0]
+        obj_name = (
+            self.scenario.formulation.optimization_problem.objective.output_names[0]
+        )
         mult_cstr_jac_key = PostOptimalAnalysis.MULT_DOT_CONSTR_JAC
         self.jac[obj_name] = dict(self.jac[mult_cstr_jac_key])

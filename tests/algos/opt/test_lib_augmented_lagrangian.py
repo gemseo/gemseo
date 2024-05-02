@@ -89,7 +89,7 @@ def test_2d_ineq(
 ) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
-    problem = analytical_test_2d_ineq.formulation.opt_problem
+    problem = analytical_test_2d_ineq.formulation.optimization_problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
     execute_algo(problem, algo, "opt", **opt["algo_options"])
@@ -119,7 +119,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo) -> None:
     opt = options.copy()
     opt["algo"] = algo
     analytical_test_2d_eq.execute(opt)
-    problem = analytical_test_2d_eq.formulation.opt_problem
+    problem = analytical_test_2d_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     lag = lagrange.compute(
@@ -136,7 +136,7 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo) -> None:
     opt = options.copy()
     opt["algo"] = algo
     analytical_test_2d__multiple_eq.execute(opt)
-    problem = analytical_test_2d__multiple_eq.formulation.opt_problem
+    problem = analytical_test_2d__multiple_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     lag = lagrange.compute(
@@ -170,7 +170,7 @@ def test_2d_mixed(
     opt["algo"] = algo
     opt["algo_options"]["sub_problem_constraints"] = subsolver_constraints
     opt["algo_options"]["ftol_rel"] = 1e-3
-    problem = analytical_test_2d_mixed_rank_deficient.formulation.opt_problem
+    problem = analytical_test_2d_mixed_rank_deficient.formulation.optimization_problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
     execute_algo(problem, algo, "opt", **opt["algo_options"])

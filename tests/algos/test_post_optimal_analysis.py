@@ -27,7 +27,7 @@ from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -122,7 +122,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         # Solve the problem
         if solve:
             if not minimize:
-                opt_problem.change_objective_sign()
+                opt_problem.minimize_objective = False
             OptimizationLibraryFactory().execute(opt_problem, algo_name="SLSQP")
 
         return opt_problem

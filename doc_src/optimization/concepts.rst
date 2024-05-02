@@ -40,7 +40,7 @@ Design space
 Optimization problem
 --------------------
 
-.. autoclass:: gemseo.algos.opt_problem.OptimizationProblem
+.. autoclass:: gemseo.algos.optimization_problem.OptimizationProblem
    :noindex:
 
 .. raw:: html

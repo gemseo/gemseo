@@ -34,7 +34,7 @@ from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.driver_library import DriverDescription
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import concretize_classes
 
@@ -175,13 +175,13 @@ def test_common_options() -> None:
     with concretize_classes(MyDriver):
         driver = MyDriver()
     driver.init_options_grammar("AlgoName")
-    assert driver.opt_grammar.names == {
+    assert driver.option_grammar.names == {
         DriverLibrary.ROUND_INTS_OPTION,
         DriverLibrary.NORMALIZE_DESIGN_SPACE_OPTION,
         DriverLibrary.USE_DATABASE_OPTION,
         DriverLibrary._DriverLibrary__RESET_ITERATION_COUNTERS_OPTION,
     }
-    assert not driver.opt_grammar.required_names
+    assert not driver.option_grammar.required_names
 
 
 @pytest.fixture()
@@ -204,7 +204,7 @@ def test_get_x0_and_bounds_vects_normalized_as_ndarrays(
     driver_library, as_dict, x0, lower_bounds, upper_bounds
 ) -> None:
     """Check the getting of the normalized initial values and bounds."""
-    assert driver_library.get_x0_and_bounds_vects(True, as_dict) == (
+    assert driver_library.get_x0_and_bounds(True, as_dict) == (
         pytest.approx(x0),
         lower_bounds,
         upper_bounds,
@@ -219,7 +219,7 @@ def test_get_x0_and_bounds_vects_non_normalized(
     driver_library, as_dict, x0, lower_bounds, upper_bounds
 ) -> None:
     """Check the getting of the non-normalized initial values and bounds."""
-    assert driver_library.get_x0_and_bounds_vects(False, as_dict) == (
+    assert driver_library.get_x0_and_bounds(False, as_dict) == (
         x0,
         lower_bounds,
         upper_bounds,

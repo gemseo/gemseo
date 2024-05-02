@@ -86,19 +86,6 @@ class AutoPyDiscipline(MDODiscipline):
     py_jac: Callable | None
     """The Python function to compute the Jacobian from the inputs."""
 
-    # TODO: API: remove since it is not used.
-    use_arrays: bool
-    """Whether the function is expected to take arrays as inputs and give outputs as
-    arrays."""
-
-    # TODO: API: remove since this feature is provided by the base class.
-    input_names: list[str]
-    """The names of the inputs."""
-
-    # TODO: API: remove since this feature is provided by the base class.
-    output_names: list[str]
-    """The names of the outputs."""
-
     data_processor: AutoDiscDataProcessor
     """A data processor forcing input data to float and output data to arrays."""
 
@@ -125,17 +112,9 @@ class AutoPyDiscipline(MDODiscipline):
                 If empty, use the name of the Python function.
             use_arrays: Whether the function is expected
                 to take arrays as inputs and give outputs as arrays.
-
-        Raises:
-            TypeError: When ``py_func`` is not callable.
         """  # noqa: D205 D212 D415
-        if not callable(py_func):
-            msg = "py_func must be callable."
-            raise TypeError(msg)
-
         super().__init__(name=name or py_func.__name__, grammar_type=grammar_type)
         self.py_func = py_func
-        self.use_arrays = use_arrays
         self.py_jac = py_jac
         self.input_names = getfullargspec(self.py_func).args
         self.output_names = self.__create_output_names()
@@ -404,19 +383,3 @@ class AutoDiscDataProcessor(DataProcessor):
                 processed_data[output_name] = array([output_value])
 
         return processed_data
-
-
-# TODO: API: remove since it is not used.
-def to_arrays_dict(data: dict[str, DataType]) -> dict[str, ndarray]:
-    """Ensure that the values of a dictionary are NumPy arrays.
-
-    Args:
-        data: The dictionary whose values must be NumPy arrays.
-
-    Returns:
-        The dictionary with NumPy arrays as values.
-    """
-    for key, value in data.items():
-        if not isinstance(value, ndarray):
-            data[key] = array([value])
-    return data

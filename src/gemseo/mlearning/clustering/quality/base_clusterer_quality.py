@@ -91,6 +91,3 @@ class BaseClustererQuality(BaseMLAlgoQuality):
         return self.algo.learning_set.get_view(
             variable_names=self.algo.var_names
         ).to_numpy()
-
-    # TODO: API: remove this alias in the next major release.
-    evaluate_learn = compute_learning_measure

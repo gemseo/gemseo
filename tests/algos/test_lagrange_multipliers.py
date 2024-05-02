@@ -154,7 +154,7 @@ def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
     scenario.add_constraint("c_2", constraint_type)
 
     scenario.execute({"max_iter": 50, "algo": "SLSQP"})
-    problem = scenario.formulation.opt_problem
+    problem = scenario.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
 
     lag = lagrange.compute(problem.solution.x_opt)
@@ -221,7 +221,7 @@ def test_2d_ineq(
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_ineq
-    problem = analytical_test_2d_ineq.formulation.opt_problem
+    problem = analytical_test_2d_ineq.formulation.optimization_problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()
     execute_algo(problem, algo_ineq, "opt", **opt["algo_options"])
@@ -250,7 +250,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
     opt = options.copy()
     opt["algo"] = algo_eq
     analytical_test_2d_eq.execute(opt)
-    problem = analytical_test_2d_eq.formulation.opt_problem
+    problem = analytical_test_2d_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     lag = lagrange.compute(
@@ -267,7 +267,7 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq) -> No
     opt = options.copy()
     opt["algo"] = algo_eq
     analytical_test_2d__multiple_eq.execute(opt)
-    problem = analytical_test_2d__multiple_eq.formulation.opt_problem
+    problem = analytical_test_2d__multiple_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     lag = lagrange.compute(
@@ -301,7 +301,7 @@ def test_2d_mixed(
         pytest.skip(f"{algo_eq} does not have subsolver_constraints option.")
     opt = options.copy()
     opt["algo"] = algo_eq
-    problem = analytical_test_2d_mixed_rank_deficient.formulation.opt_problem
+    problem = analytical_test_2d_mixed_rank_deficient.formulation.optimization_problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()
     execute_algo(problem, algo_eq, "opt", **opt["algo_options"])

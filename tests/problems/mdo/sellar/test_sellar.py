@@ -130,7 +130,7 @@ def test_serialize(discipline, tmp_wd) -> None:
     [
         (
             MDAGaussSeidel,
-            {"max_mda_iter": 100, "tolerance": 1e-14, "over_relax_factor": 0.99},
+            {"max_mda_iter": 100, "tolerance": 1e-14, "over_relaxation_factor": 0.99},
         ),
         (MDAJacobi, {"tolerance": 1e-14}),
     ],

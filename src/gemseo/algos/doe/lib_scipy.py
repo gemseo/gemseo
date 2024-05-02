@@ -207,7 +207,7 @@ class SciPyDOE(DOELibrary):
             **kwargs,
         )
 
-    def _generate_samples(
+    def _generate_unit_samples(
         self, design_space: DesignSpace, **options: OptionType
     ) -> RealArray:
         option_names = self.__SCIPY_OPTION_NAMES.copy()

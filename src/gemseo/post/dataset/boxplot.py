@@ -42,10 +42,6 @@ if TYPE_CHECKING:
 class Boxplot(DatasetPlot):
     """Draw the boxplots of some variables from a :class:`.Dataset`."""
 
-    # TODO: API: remove this attribute and use the option instead.
-    opacity_level: float
-    """The opacity level for the faces, between 0 and 1."""
-
     def __init__(
         self,
         dataset: Dataset,
@@ -76,7 +72,6 @@ class Boxplot(DatasetPlot):
         self.__n_datasets = 1 + len(datasets)
         self.__names = dataset.get_columns(variables)
         self.__origin = 0
-        self.opacity_level = opacity_level
         super().__init__(
             dataset,
             datasets=datasets,

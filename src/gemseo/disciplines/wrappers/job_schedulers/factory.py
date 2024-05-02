@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.wrappers.job_schedulers.scheduler_wrapped_disc import (
+from gemseo.disciplines.wrappers.job_schedulers.scheduler_wrapped_disc import (
     JobSchedulerDisciplineWrapper,
 )
 
@@ -39,7 +39,7 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
     """A factory of job scheduler interfaces."""
 
     _CLASS = JobSchedulerDisciplineWrapper
-    _MODULE_NAMES = ("gemseo.wrappers.job_schedulers",)
+    _MODULE_NAMES = ("gemseo.disciplines.wrappers.job_schedulers",)
 
     def wrap_discipline(
         self,

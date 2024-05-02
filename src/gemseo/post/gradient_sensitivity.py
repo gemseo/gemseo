@@ -74,9 +74,9 @@ class GradientSensitivity(OptPostProcessor):
                    gradient-based algorithm.
         """  # noqa: D205, D212, D415
         if iteration is None:
-            design_value = self.opt_problem.solution.x_opt
+            design_value = self.optimization_problem.solution.x_opt
         else:
-            design_value = self.opt_problem.database.get_x_vect(iteration)
+            design_value = self.optimization_problem.database.get_x_vect(iteration)
 
         fig = self.__generate_subplots(
             self._get_design_variable_names(),
@@ -122,7 +122,7 @@ class GradientSensitivity(OptPostProcessor):
         gradient_values = {}
         if compute_missing_gradients:
             try:
-                _, gradient_values = self.opt_problem.evaluate_functions(
+                _, gradient_values = self.optimization_problem.evaluate_functions(
                     design_value,
                     no_db_no_norm=True,
                     eval_jac=True,
@@ -135,8 +135,8 @@ class GradientSensitivity(OptPostProcessor):
                     "callable functions cannot be computed."
                 )
 
-        function_names = self.opt_problem.get_all_function_name()
-        scale_gradient = self.opt_problem.design_space.unnormalize_vect
+        function_names = self.optimization_problem.get_all_function_name()
+        scale_gradient = self.optimization_problem.design_space.unnormalize_vect
         function_names_to_gradients = {}
         for function_name in function_names:
             if compute_missing_gradients and gradient_values:

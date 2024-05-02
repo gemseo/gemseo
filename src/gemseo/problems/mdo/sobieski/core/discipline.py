@@ -28,20 +28,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
-
 if TYPE_CHECKING:
     from types import ModuleType
 
     from numpy import ndarray
 
+    from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
+
 
 class SobieskiDiscipline:
     """Base class for the disciplines of the Sobieski's SSBJ use case."""
-
-    # TODO: API: remove these unused class attributes.
-    DTYPE_COMPLEX = SobieskiBase.DTYPE_COMPLEX
-    DTYPE_DOUBLE = SobieskiBase.DTYPE_DOUBLE
 
     def __init__(self, sobieski_base: SobieskiBase) -> None:
         """

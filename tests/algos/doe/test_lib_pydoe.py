@@ -23,8 +23,6 @@ import re
 from typing import Any
 
 import pytest
-from numpy import array_equal
-from numpy import loadtxt
 from numpy.linalg import norm
 
 from gemseo.algos.doe.factory import DOELibraryFactory
@@ -43,20 +41,6 @@ def test_library_from_factory() -> None:
     factory = DOELibraryFactory()
     if factory.is_available(DOE_LIB_NAME):
         factory.create(DOE_LIB_NAME)
-
-
-def test_export_samples(tmp_wd) -> None:
-    """Check that samples can be correctly exported."""
-    algo_name = "lhs"
-    n_samples = 3
-    dim = 2
-    doe_library = execute_problem(
-        DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples
-    )
-    doe_file_name = f"test_{algo_name}.csv"
-    doe_library.export_samples(doe_output_file=doe_file_name)
-    file_samples = loadtxt(doe_file_name, delimiter=",")
-    assert array_equal(doe_library.unit_samples, file_samples)
 
 
 def test_invalid_algo() -> None:
@@ -150,15 +134,6 @@ def test_missing_algo_name() -> None:
             dim=2,
             n_samples=3,
         )
-
-
-def test_export_error() -> None:
-    """Check that a DOELibrary.export_samples raises an error if there is no samples."""
-    doe_library = DOELibraryFactory().create(DOE_LIB_NAME)
-    with pytest.raises(
-        Exception, match="Samples are missing, execute method before export."
-    ):
-        doe_library.export_samples("test.csv")
 
 
 @pytest.mark.parametrize(

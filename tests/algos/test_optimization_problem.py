@@ -51,7 +51,7 @@ from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
@@ -1648,7 +1648,7 @@ def test_objective_name() -> None:
     problem.objective = MDOFunction(lambda x: x, "f")
     assert problem.get_objective_name() == "f"
     assert problem.get_objective_name(False) == "f"
-    problem.change_objective_sign()
+    problem.minimize_objective = False
     assert problem.get_objective_name() == "-f"
     assert problem.get_objective_name(False) == "f"
 
@@ -1732,13 +1732,17 @@ def test_observables_normalization(sellar_disciplines) -> None:
     scenario.add_constraint("c_2", constraint_type="ineq")
     scenario.add_observable("y_1")
     scenario.execute(input_data={"max_iter": 3, "algo": "SLSQP"})
-    total_iter = len(scenario.formulation.opt_problem.database)
-    n_obj_eval = scenario.formulation.opt_problem.database.get_function_history(
-        "y_1"
-    ).size
-    n_obs_eval = scenario.formulation.opt_problem.database.get_function_history(
-        "obj"
-    ).size
+    total_iter = len(scenario.formulation.optimization_problem.database)
+    n_obj_eval = (
+        scenario.formulation.optimization_problem.database.get_function_history(
+            "y_1"
+        ).size
+    )
+    n_obs_eval = (
+        scenario.formulation.optimization_problem.database.get_function_history(
+            "obj"
+        ).size
+    )
     assert total_iter == n_obj_eval == n_obs_eval
 
 
@@ -1833,8 +1837,10 @@ def test_avoid_complex_in_dataset() -> None:
         (False, 13.0, [3.0, 4.0]),
     ],
 )
-def test_get_violation_criteria(cstr_type, is_feasible, violation, cstr) -> None:
-    """Test get_violation_criteria."""
+def test_check_design_point_is_feasible(
+    cstr_type, is_feasible, violation, cstr
+) -> None:
+    """Test check_design_point_is_feasible."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
 
@@ -1846,7 +1852,7 @@ def test_get_violation_criteria(cstr_type, is_feasible, violation, cstr) -> None
 
     x_vect = array([1.0])
     problem.database.store(x_vect, {"obj": array([1]), "cstr": array(cstr)})
-    assert problem.get_violation_criteria(x_vect) == pytest.approx((
+    assert problem.check_design_point_is_feasible(x_vect) == pytest.approx((
         is_feasible,
         violation,
     ))

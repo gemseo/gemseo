@@ -39,9 +39,9 @@ from strenum import StrEnum
 
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.data_processor import FloatDataProcessor
+from gemseo.disciplines.wrappers._base_disc_from_exe import _BaseDiscFromExe
+from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableRunner
 from gemseo.utils.directory_creator import DirectoryNamingMethod
-from gemseo.wrappers._base_disc_from_exe import _BaseDiscFromExe
-from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
 
 if TYPE_CHECKING:
     from gemseo.core.discipline_data import Data
@@ -161,24 +161,19 @@ class DiscFromExe(_BaseDiscFromExe):
     data_processor: DataProcessor
     """A data processor to be used before the execution of the discipline."""
 
-    # TODO: API: remove use_shell.
-    # TODO: API: rename executable_command into command_line
-    # TODO: API: rename folders_iter into directory_naming_method
-    # TODO: API: rename output_folder_basepath into root_directory
     def __init__(
         self,
         input_template: str | Path,
         output_template: str | Path,
-        output_folder_basepath: str | Path,
-        executable_command: str,
+        root_directory: str | Path,
+        command_line: str,
         input_filename: str | Path,
         output_filename: str | Path,
-        folders_iter: DirectoryNamingMethod = DirectoryNamingMethod.NUMBERED,
+        directory_naming_method: DirectoryNamingMethod = DirectoryNamingMethod.NUMBERED,
         name: str = "",
         parse_outfile_method: Parser | OutputParser = Parser.TEMPLATE,
         write_input_file_method: InputWriter | None = None,
         parse_out_separator: str = "=",
-        use_shell: bool = True,
         clean_after_execution: bool = False,
     ) -> None:
         """
@@ -193,7 +188,7 @@ class DiscFromExe(_BaseDiscFromExe):
                 by ``GEMSEO_OUTPUT{output_name::1.0}``,
                 where ``output_name`` is the name of the output variable,
                 and ``1.0`` is its default value.
-            executable_command: The command to run the executable.
+            command_line: The command line to run the executable.
                 E.g. ``python my_script.py -i input.txt -o output.txt``
             input_filename: The name of the input file
                 to be generated in the output folder.
@@ -201,7 +196,7 @@ class DiscFromExe(_BaseDiscFromExe):
             output_filename: The name of the output file
                 to be generated in the output folder.
                 E.g. ``"output.txt"``.
-            folders_iter: The method to create the execution directories.
+            directory_naming_method: The method to create the execution directories.
             parse_outfile_method: The optional method that can be provided
                 by the user to parse the output template file.
                 If the :attr:`~.Parser.KEY_VALUE` is used as
@@ -211,23 +206,12 @@ class DiscFromExe(_BaseDiscFromExe):
                 use :func:`~.write_input_file`.
             parse_out_separator: The separator used for the
                 :attr:`~.Parser.KEY_VALUE` output parser.
-            use_shell: This argument is ignored and will be removed,
-                the shell is not used.
-            output_folder_basepath: The base path of the execution directories.
-
-        Raises:
-            TypeError: If the provided ``parse_outfile_method`` is not callable.
-                If the provided ``write_input_file_method`` is not callable.
+            root_directory: The base path of the execution directories.
         """  # noqa:D205 D212 D415
-        if use_shell:
-            LOGGER.warning(
-                "The argument 'use_shell' is no longer used,"
-                "the executable is run without shell."
-            )
         self._executable_runner = _BaseExecutableRunner(
-            root_directory=output_folder_basepath,
-            command_line=executable_command,
-            directory_naming_method=folders_iter,
+            root_directory=root_directory,
+            command_line=command_line,
+            directory_naming_method=directory_naming_method,
         )
         super().__init__(
             self._executable_runner,
@@ -249,15 +233,7 @@ class DiscFromExe(_BaseDiscFromExe):
         else:
             self.parse_outfile = parse_outfile_method
 
-        if not callable(self.parse_outfile):
-            msg = "The parse_outfile_method must be callable."
-            raise TypeError(msg)
-
         self.write_input_file = write_input_file_method or write_input_file
-        if not callable(self.write_input_file):
-            msg = "The write_input_file_method must be callable."
-            raise TypeError(msg)
-
         self._out_pos = None
         self._input_data = None
         self._in_lines = None
@@ -265,10 +241,9 @@ class DiscFromExe(_BaseDiscFromExe):
         self.data_processor = FloatDataProcessor()
         self.__parse_templates_and_set_grammars()
 
-    # TODO: API: rename as command_line
     @property
-    def executable_command(self):
-        """The executable command."""
+    def command_line(self):
+        """The command line."""
         return self._executable_runner.command_line
 
     def __parse_templates_and_set_grammars(self) -> None:

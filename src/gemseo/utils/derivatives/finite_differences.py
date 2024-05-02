@@ -54,11 +54,11 @@ class FirstOrderFD(BaseGradientApproximator):
     def _compute_parallel_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float | ndarray,
         **kwargs: Any,
     ) -> ndarray:
+        n_perturbations = input_perturbations.shape[1]
         if step is None:
             step = self.step
 
@@ -90,11 +90,11 @@ class FirstOrderFD(BaseGradientApproximator):
     def _compute_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float | ndarray,
         **kwargs: Any,
     ) -> ndarray:
+        n_perturbations = input_perturbations.shape[1]
         if step is None:
             step = self.step
 

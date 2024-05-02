@@ -192,8 +192,7 @@ class ScalableDiagonalModel(ScalableModel):
             The scalable approximation.
         """
         comp_dep, inpt_dep = self.__build_dependencies()
-        seed = self.parameters["seed"]
-        return ScalableDiagonalApproximation(self.sizes, comp_dep, inpt_dep, seed)
+        return ScalableDiagonalApproximation(self.sizes, comp_dep, inpt_dep)
 
     def __build_scalable_functions(
         self,
@@ -532,20 +531,17 @@ class ScalableDiagonalApproximation:
     all inputs and outputs have the same names; only their dimensions vary.
     """
 
-    # TODO: API: remove the argument "seed" which is not used.
     def __init__(
         self,
         sizes: Mapping[str, int],
         output_dependency,
         io_dependency,
-        seed: int = SEED,
     ) -> None:
         """
         Args:
             sizes: The sizes of the inputs and outputs.
             output_dependency: The dependency between the original and new outputs.
             io_dependency: The dependency between the new inputs and outputs.
-            seed: The seed for reproducible results.
         """  # noqa: D205, D212, D415
         super().__init__()
         self.sizes = sizes

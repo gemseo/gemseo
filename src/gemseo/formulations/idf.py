@@ -142,7 +142,7 @@ class IDF(MDOFormulation):
     def _update_design_space(self) -> None:
         """Update the design space with the required variables."""
         strong_couplings = set(self.all_couplings)
-        variable_names = set(self.opt_problem.design_space.variable_names)
+        variable_names = set(self.optimization_problem.design_space.variable_names)
         if not strong_couplings.issubset(variable_names):
             missing = strong_couplings - variable_names
             msg = (
@@ -196,7 +196,7 @@ class IDF(MDOFormulation):
                     cstr = compute_linear_approximation(
                         cstr, zeros(cstr.input_dimension)
                     )
-                self.opt_problem.add_eq_constraint(cstr)
+                self.optimization_problem.add_eq_constraint(cstr)
 
     def get_expected_workflow(  # noqa:D102
         self,

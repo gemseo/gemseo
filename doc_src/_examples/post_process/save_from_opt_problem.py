@@ -27,7 +27,7 @@ from __future__ import annotations
 
 from gemseo import create_design_space
 from gemseo import execute_algo
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 # %%

@@ -25,9 +25,11 @@ from __future__ import annotations
 
 import pytest
 
+from gemseo.algos.multiobjective_optimization_result import (
+    MultiObjectiveOptimizationResult,
+)
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result_multiobj import MultiObjectiveOptimizationResult
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 

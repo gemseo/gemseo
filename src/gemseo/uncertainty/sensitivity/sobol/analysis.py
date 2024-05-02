@@ -530,7 +530,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             confidence_level: The level of the confidence intervals.
             control_variates: The control variates based on cheap disciplines.
         """  # noqa:D205,D212,D415
-        output_names = outputs or self.default_output
+        output_names = outputs or self.default_output_names
         if isinstance(output_names, str):
             output_names = [output_names]
 

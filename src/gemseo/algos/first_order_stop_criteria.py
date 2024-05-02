@@ -30,7 +30,7 @@ from gemseo.algos.stop_criteria import TerminationCriterion
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
 class KKTReached(TerminationCriterion):

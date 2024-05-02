@@ -30,7 +30,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
 class NormFunction(MDOFunction):

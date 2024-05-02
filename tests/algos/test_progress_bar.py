@@ -37,11 +37,11 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
 
 
 @pytest.fixture()
@@ -84,7 +84,7 @@ class ProgressOpt(OptimizationLibrary):
 
     def _run(self, **options: Any) -> OptimizationResult:
         """"""
-        x_0, _, _ = self.get_x0_and_bounds_vects(True)
+        x_0, _, _ = self.get_x0_and_bounds(True)
         for off in self.offsets:
             if self.constraints_before_obj:
                 self.problem.constraints[0].func(x_0 + off)

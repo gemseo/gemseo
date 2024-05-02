@@ -115,7 +115,7 @@ class _OATSensitivity(MDODiscipline):
         super().__init__()
         input_names = parameter_space.variable_names
         self.input_grammar.update_from_names(input_names)
-        problem = scenario.formulation.opt_problem
+        problem = scenario.formulation.optimization_problem
         self.__output_names = [problem.get_objective_name()] + [
             observable.name for observable in problem.observables
         ]
@@ -156,7 +156,7 @@ class _OATSensitivity(MDODiscipline):
             output_range[1] = maximum(output_value, output_range[1])
 
     def _run(self) -> None:
-        problem = self.scenario.formulation.opt_problem
+        problem = self.scenario.formulation.optimization_problem
         problem.reset()
         input_sample = self.get_inputs_asarray()
         output_sample, _ = problem.evaluate_functions(input_sample, normalize=False)

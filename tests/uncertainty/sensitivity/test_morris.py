@@ -385,7 +385,7 @@ def test_save_load(morris, tmp_wd) -> None:
     morris.to_pickle("foo.pkl")
     new_morris = MorrisAnalysis.from_pickle("foo.pkl")
     assert new_morris.dataset.equals(morris.dataset)
-    assert new_morris.default_output == morris.default_output
+    assert new_morris.default_output_names == morris.default_output_names
     assert new_morris.n_replicates == morris.n_replicates
     assert new_morris.outputs_bounds == morris.outputs_bounds
 

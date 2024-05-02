@@ -26,7 +26,9 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.core.discipline_data import Data
-    from gemseo.wrappers._base_executable_runner import _BaseExecutableRunner
+    from gemseo.disciplines.wrappers._base_executable_runner import (
+        _BaseExecutableRunner,
+    )
 
 
 class _BaseDiscFromExe(MDODiscipline):

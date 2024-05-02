@@ -25,12 +25,12 @@ from numpy import ones
 from numpy import zeros
 from scipy.optimize import rosen
 
-from gemseo.core.mdofunctions.func_operations import LinearComposition
-from gemseo.core.mdofunctions.func_operations import RestrictedFunction
+from gemseo.core.mdofunctions.linear_composite_function import LinearCompositeFunction
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.restricted_function import RestrictedFunction
 from gemseo.problems.optimization.rosen_mf import RosenMF
 
 
@@ -40,9 +40,10 @@ from gemseo.problems.optimization.rosen_mf import RosenMF
 )
 def test_linear_composition_expr(input_names, expected_expr):
     """Check the expression of a LinearCombination."""
-    linear_composition = LinearComposition(
+    linear_composition = LinearCompositeFunction(
         MDOFunction(lambda x: x, "foo", input_names=input_names), array([[1]])
     )
+    assert linear_composition.name == "[foo o A]"
     assert linear_composition.expr == expected_expr
 
 
@@ -56,8 +57,8 @@ def test_linear_composition():
     assert f2(x) == rosen(x)
 
     interp_op = array([[0.3], [0.4], [0.5]])
-    f_1_1 = LinearComposition(f1, interp_op)
-    f_1_2 = LinearComposition(f2, interp_op)
+    f_1_1 = LinearCompositeFunction(f1, interp_op)
+    f_1_2 = LinearCompositeFunction(f2, interp_op)
     f_1_1.check_grad(ones(1), error_max=1e-4)
     f_1_2.check_grad(ones(1), error_max=1e-4)
 

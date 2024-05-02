@@ -35,12 +35,11 @@ from gemseo.utils.string_tools import MultiLineString
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 Value = Union[str, int, bool, ndarray]
 
 
-# TODO: API: Rename the module to optimization_result.
 @dataclass
 class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The result of an optimization."""

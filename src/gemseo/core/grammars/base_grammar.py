@@ -236,27 +236,26 @@ class BaseGrammar(
     def _clear(self) -> None:
         """Empty specifically the grammar but the common attributes."""
 
-    # TODO: API: rename exclude_names (starts with verb like method) to excluded_names.
     def update(
         self,
         grammar: Self,
-        exclude_names: Iterable[str] = (),
+        excluded_names: Iterable[str] = (),
         merge: bool = False,
     ) -> None:
         """Update the grammar from another grammar.
 
         Args:
             grammar: The grammar to update from.
-            exclude_names: The names of the elements that shall not be updated.
+            excluded_names: The names of the elements that shall not be updated.
             merge: Whether to merge or update the grammar.
         """
         if not grammar:
             return
-        self._update(grammar, exclude_names, merge)
+        self._update(grammar, excluded_names, merge)
         self._update_namespaces_from_grammar(grammar)
-        self._defaults.update(grammar._defaults, exclude=exclude_names)
-        self._required_names |= (grammar.keys() - exclude_names).intersection(
-            grammar._required_names - set(exclude_names)
+        self._defaults.update(grammar._defaults, exclude=excluded_names)
+        self._required_names |= (grammar.keys() - excluded_names).intersection(
+            grammar._required_names - set(excluded_names)
         )
 
     @abstractmethod

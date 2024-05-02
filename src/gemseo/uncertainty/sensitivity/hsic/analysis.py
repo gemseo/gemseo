@@ -266,7 +266,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         if analysis_type == analysis_type.CONDITIONAL:
             statistic_estimator = self.StatisticEstimator.VSTAT
 
-        outputs = outputs or self.default_output
+        outputs = outputs or self.default_output_names
         if isinstance(outputs, str):
             outputs = [outputs]
 

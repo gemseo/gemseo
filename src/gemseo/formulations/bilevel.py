@@ -227,7 +227,7 @@ class BiLevel(MDOFormulation):
 
         # Output couplings of scenario are given to MDA for speedup
         if output_functions:
-            opt_problem = scenario.formulation.opt_problem
+            opt_problem = scenario.formulation.optimization_problem
             sc_output_names = opt_problem.objective.output_names
             sc_constraints = opt_problem.get_constraint_names()
             sc_out_coupl = sc_output_names + sc_constraints
@@ -446,7 +446,7 @@ class BiLevel(MDOFormulation):
             # Otherwise, the MDA2 may be a user provided MDA
             # Which manages the couplings internally
             couplings = self.mda2.strong_couplings
-            design_space = self.opt_problem.design_space
+            design_space = self.optimization_problem.design_space
             for coupling in couplings:
                 if coupling in design_space.variable_names:
                     design_space.remove_variable(coupling)
@@ -581,7 +581,7 @@ class BiLevel(MDOFormulation):
                 top-level disciplines outputs.
         """
         added = False
-        output_names = self._check_add_cstr_input(output_name, constraint_type)
+        output_names = [output_name] if isinstance(output_name, str) else output_name
         for sub_scenario in self.get_sub_scenarios():
             if self._scenario_computes_outputs(sub_scenario, output_names):
                 sub_scenario.add_constraint(

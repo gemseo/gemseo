@@ -26,7 +26,6 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from functools import singledispatchmethod
 from multiprocessing import current_process
-from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
@@ -37,14 +36,13 @@ from numpy import array
 from numpy import dtype
 from numpy import hstack
 from numpy import int32
-from numpy import savetxt
 from numpy import where
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverDescription
-from gemseo.algos.driver_library import DriverLibOptionType
 from gemseo.algos.driver_library import DriverLibrary
-from gemseo.algos.opt_problem import EvaluationType
+from gemseo.algos.driver_library import DriverLibraryOptionType
+from gemseo.algos.optimization_problem import EvaluationType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.core.parallel_execution.callable_parallel_execution import (
@@ -54,21 +52,13 @@ from gemseo.utils.seeder import Seeder
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
 
-    from gemseo.algos.opt_problem import OptimizationProblem
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
-# TODO: API: remove DOELibraryOptionType
-DOELibraryOptionType = DriverLibOptionType
-"""The type of a DOE algorithm option."""
-
-# TODO: API: remove and use EvaluationType directly.
-DOELibraryOutputType = EvaluationType
-"""The type of the output value in an input-output sample."""
 
 CallbackType = Callable[[int, EvaluationType], Any]
 """The type of a callback function in the context of a ."""
@@ -87,6 +77,15 @@ class DOEAlgorithmDescription(DriverDescription):
 class DOELibrary(DriverLibrary):
     """Abstract class to use for DOE library link See DriverLibrary."""
 
+    samples: RealArray
+    """The design vector samples in the design space.
+
+    The design space variable types stored as dtype metadata.
+
+    To access those in the unit hypercube,
+    use :attr:`.unit_samples`.
+    """
+
     unit_samples: RealArray
     """The design vector samples projected in the unit hypercube.
 
@@ -97,35 +96,22 @@ class DOELibrary(DriverLibrary):
     use :attr:`.samples`.
     """
 
-    samples: RealArray
-    """The design vector samples in the design space.
-
-    The design space variable types stored as dtype metadata.
-
-    To access those in the unit hypercube,
-    use :attr:`.unit_samples`.
-    """
-
-    # TODO: API: make the attribute eval_jac private.
-    eval_jac: bool
-    """Whether to evaluate the Jacobian."""
-
-    # TODO: API: remove unused DESIGN_ALGO_NAME attribute
-    DESIGN_ALGO_NAME = "Design algorithm"
-    # TODO: API: remove unused SAMPLES_TAG attribute
-    SAMPLES_TAG = "samples"
-    # TODO: API: remove unused PHIP_CRITERIA attribute
-    PHIP_CRITERIA = "phi^p"
-    N_SAMPLES = "n_samples"
-    # TODO: API: remove unused LEVEL_KEYWORD attribute
-    LEVEL_KEYWORD = "levels"
     EVAL_JAC = "eval_jac"
     N_PROCESSES = "n_processes"
-    WAIT_TIME_BETWEEN_SAMPLES = "wait_time_between_samples"
-    # TODO: API: remove unused DIMENSION attribute
-    DIMENSION = "dimension"
+    N_SAMPLES = "n_samples"
     SEED = "seed"
+    WAIT_TIME_BETWEEN_SAMPLES = "wait_time_between_samples"
+
+    _seeder: Seeder
+    """A seed generator."""
+
+    _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
+    """Whether the algorithms use a unit hypercube to generate the design samples."""
+
     _NORMALIZE_DS = False
+
+    __eval_jac: bool
+    """Whether to evaluate the Jacobian."""
 
     # TODO: use DesignSpace enum once there are hashable.
     __DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE: Final[dict[str, type]] = {
@@ -133,18 +119,12 @@ class DOELibrary(DriverLibrary):
         "integer": int32,
     }
 
-    _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
-    """Whether the algorithms use a unit hypercube to generate the design samples."""
-
-    _seeder: Seeder
-    """A seed generator."""
-
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.unit_samples = array([])
         self.samples = array([])
-        self.eval_jac = False
+        self.unit_samples = array([])
         self._seeder = Seeder()
+        self.__eval_jac = False
 
     @property
     def seed(self) -> int:
@@ -159,13 +139,13 @@ class DOELibrary(DriverLibrary):
         self,
         problem: OptimizationProblem,
         algo_name: str,
-        **options: DOELibraryOptionType,
+        **options: DriverLibraryOptionType,
     ) -> None:
         design_space = self.problem.design_space
         self.__check_unnormalization_capability(design_space)
         super()._pre_run(problem, algo_name, **options)
         problem.stop_if_nan = False
-        self.unit_samples = self._generate_samples(design_space, **options)
+        self.unit_samples = self._generate_unit_samples(design_space, **options)
         LOGGER.debug(
             (
                 "The DOE algorithm %s of %s has generated %s samples "
@@ -204,9 +184,10 @@ class DOELibrary(DriverLibrary):
 
         return samples
 
-    # TODO:API:rename _generate_samples to _generate_unit_samples
     @abstractmethod
-    def _generate_samples(self, design_space: DesignSpace, **options: Any) -> RealArray:
+    def _generate_unit_samples(
+        self, design_space: DesignSpace, **options: Any
+    ) -> RealArray:
         """Generate the samples of the design vector in the unit hypercube.
 
         Args:
@@ -216,28 +197,6 @@ class DOELibrary(DriverLibrary):
         Returns:
             The samples of the design vector in the unit hypercube.
         """
-
-    # TODO: API: remove and use compute_doe instead
-    def __call__(
-        self, n_samples: int | None, dimension: int, **options: Any
-    ) -> RealArray:
-        """Generate a design of experiments in the unit hypercube.
-
-        Args:
-            n_samples: The number of samples.
-                If ``None``, the number of samples is deduced from the ``options``.
-            dimension: The dimension of the design space.
-            **options: The options of the DOE algorithm.
-
-        Returns:
-            A design of experiments in the unit hypercube.
-        """
-        design_space = DesignSpace()
-        design_space.add_variable("x", size=dimension)
-        return self._generate_samples(
-            design_space,
-            **self._update_algorithm_options(n_samples=n_samples, **options),
-        )
 
     def _run(
         self,
@@ -260,78 +219,13 @@ class DOELibrary(DriverLibrary):
                 after each call to :meth:`.OptimizationProblem.evaluate_functions`;
                 to be called as ``callback(index, (output, jacobian))``.
             **options: These options are not used.
-        """  # noqa: D205, D212
-        self.evaluate_samples(
-            eval_jac=eval_jac,
-            n_processes=n_processes,
-            wait_time_between_samples=wait_time_between_samples,
-            use_database=use_database,
-            callbacks=callbacks,
-        )
-        return self.get_optimum_from_database()
-
-    # TODO: API: remove this unused method.
-    # Note: it would be more appropriate to save the samples instead of the unit ones.
-    def export_samples(self, doe_output_file: Path | str) -> None:
-        """Export the samples generated by DOE library to a CSV file.
-
-        Args:
-            doe_output_file: The path to the output file.
-        """
-        if not self.unit_samples.size:
-            msg = "Samples are missing, execute method before export."
-            raise RuntimeError(msg)
-
-        savetxt(doe_output_file, self.unit_samples, delimiter=",")
-
-    def _worker(self, sample: RealArray) -> EvaluationType:
-        """Wrap the evaluation of the functions for parallel execution.
-
-        Args:
-            sample: A point from the unit hypercube.
-
-        Returns:
-            The computed values.
-        """
-        if current_process().name == SUBPROCESS_NAME:
-            self.deactivate_progress_bar()
-            self.problem.database.clear_listeners()
-
-        return self.problem.evaluate_functions(
-            x_vect=self.problem.design_space.untransform_vect(sample, no_check=True),
-            eval_jac=self.eval_jac,
-            eval_observables=True,
-            normalize=False,
-        )
-
-    # TODO: API: remove and merge into _run as it cannot be used safely outside execute.
-    def evaluate_samples(
-        self,
-        eval_jac: bool = False,
-        n_processes: int = 1,
-        wait_time_between_samples: float = 0.0,
-        use_database: bool = True,
-        callbacks: Iterable[CallbackType] = (),
-    ) -> None:
-        """Evaluate all the functions of the optimization problem at the samples.
-
-        Args:
-            eval_jac: Whether to evaluate the Jacobian function.
-            n_processes: The maximum simultaneous number of processes
-                used to parallelize the execution.
-            wait_time_between_samples: The time to wait between each sample
-                evaluation, in seconds.
-            use_database: Whether to store the evaluations in the database.
-            callbacks: The functions to be evaluated
-                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
-                to be called as ``callback(index, (output, jacobian))``.
 
         Warnings:
             This class relies on multiprocessing features when ``n_processes > 1``,
             it is therefore necessary to protect its execution with an
             ``if __name__ == '__main__':`` statement when working on Windows.
-        """
-        self.eval_jac = eval_jac
+        """  # noqa: D205, D212
+        self.__eval_jac = eval_jac
         callbacks = list(callbacks)
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", n_processes)
@@ -372,7 +266,7 @@ class DOELibrary(DriverLibrary):
                 try:
                     output_data, jacobian_data = self.problem.evaluate_functions(
                         x_vect=input_data,
-                        eval_jac=self.eval_jac,
+                        eval_jac=self.__eval_jac,
                         normalize=False,
                     )
                     for callback in callbacks:
@@ -383,6 +277,28 @@ class DOELibrary(DriverLibrary):
                         "%s result is not taken into account in DOE.",
                         input_data,
                     )
+
+        return self.get_optimum_from_database()
+
+    def _worker(self, sample: RealArray) -> EvaluationType:
+        """Wrap the evaluation of the functions for parallel execution.
+
+        Args:
+            sample: A point from the unit hypercube.
+
+        Returns:
+            The computed values.
+        """
+        if current_process().name == SUBPROCESS_NAME:
+            self.deactivate_progress_bar()
+            self.problem.database.clear_listeners()
+
+        return self.problem.evaluate_functions(
+            x_vect=self.problem.design_space.untransform_vect(sample, no_check=True),
+            eval_jac=self.__eval_jac,
+            eval_observables=True,
+            normalize=False,
+        )
 
     def __store_in_database(
         self,
@@ -425,7 +341,7 @@ class DOELibrary(DriverLibrary):
         variables_space: DesignSpace | int,
         n_samples: int | None = None,
         unit_sampling: bool = False,
-        **options: DOELibraryOptionType,
+        **options: DriverLibraryOptionType,
     ) -> RealArray:
         """Compute a design of experiments (DOE) in a variables space.
 
@@ -452,7 +368,7 @@ class DOELibrary(DriverLibrary):
         if self.driver_has_option(self.N_SAMPLES):
             options[self.N_SAMPLES] = n_samples
 
-        unit_samples = self._generate_samples(
+        unit_samples = self._generate_unit_samples(
             design_space,
             **self._update_algorithm_options(
                 initialize_options_grammar=False, **options

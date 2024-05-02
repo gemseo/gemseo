@@ -62,38 +62,6 @@ def test_acceleration_methods(compute_reference_n_iter, acceleration_method) -> 
     assert len(mda.residual_history) <= compute_reference_n_iter
 
 
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility() -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda_1 = SobieskiMDAGaussSeidel(over_relax_factor=0.95)
-    mda_1.reset_history_each_run = True
-    mda_1.execute()
-
-    mda_2 = SobieskiMDAGaussSeidel(over_relaxation_factor=0.95)
-    mda_2.reset_history_each_run = True
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-    mda_1.cache.clear()
-    mda_1.over_relax_factor = 0.5
-    mda_1.execute()
-
-    mda_2.cache.clear()
-    mda_2.over_relaxation_factor = 0.5
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility_setters_getters() -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda = SobieskiMDAGaussSeidel(over_relax_factor=0.95)
-    assert mda.over_relax_factor == 0.95
-    assert mda.over_relaxation_factor == 0.95
-
-
 @image_comparison(["sobieski"])
 def test_sobieski(tmp_wd) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
@@ -193,8 +161,8 @@ def test_self_coupled() -> None:
         assert abs(jac1["o"]["x"][0, 0] - jac2["o"]["x"][0, 0]) < 1e-3
 
 
-@pytest.mark.parametrize("over_relax_factor", [1.0, 0.8, 1.1, 1.2, 1.5])
-def test_over_relaxation(over_relax_factor) -> None:
+@pytest.mark.parametrize("over_relaxation_factor", [1.0, 0.8, 1.1, 1.2, 1.5])
+def test_over_relaxation(over_relaxation_factor) -> None:
     discs = create_discipline([
         "SobieskiPropulsion",
         "SobieskiStructure",
@@ -206,7 +174,7 @@ def test_over_relaxation(over_relax_factor) -> None:
         discs,
         tolerance=tolerance,
         max_mda_iter=100,
-        over_relax_factor=over_relax_factor,
+        over_relaxation_factor=over_relaxation_factor,
     )
     mda.execute()
     assert mda.residual_history[-1] <= tolerance

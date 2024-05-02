@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
-from typing import ClassVar
 from typing import Final
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
@@ -81,24 +80,12 @@ class MDAJacobi(BaseMDASolver):
         \right.
     """
 
-    # TODO: API: Remove the class attributes.
-    SECANT_ACCELERATION: ClassVar[str] = "secant"
-    M2D_ACCELERATION: ClassVar[str] = "m2d"
-
-    # TODO: API: Remove the compatibility mapping.
-    __ACCELERATION_COMPATIBILITY: Final[dict[str, AccelerationMethod | None]] = {
-        M2D_ACCELERATION: AccelerationMethod.ALTERNATE_2_DELTA,
-        SECANT_ACCELERATION: AccelerationMethod.SECANT,
-        "": None,
-    }
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
         max_mda_iter: int = 10,
         name: str = "",
         n_processes: int = N_CPUS,
-        acceleration: str = "",  # TODO: API: Remove this argument.
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         use_threading: bool = True,
@@ -114,12 +101,6 @@ class MDAJacobi(BaseMDASolver):
     ) -> None:
         """
         Args:
-            acceleration: Deprecated, please consider using the
-                :attr:`MDA.acceleration_method` instead.
-                The type of acceleration to be used to extrapolate the residuals and
-                save CPU time by reusing the information from the last iterations,
-                either ``None``, ``"m2d"``, or ``"secant"``, ``"m2d"`` is faster but
-                uses the 2 last iterations.
             n_processes: The maximum simultaneous number of threads if ``use_threading``
                 is set to True, otherwise processes, used to parallelize the execution.
             use_threading: Whether to use threads instead of processes to parallelize
@@ -128,11 +109,6 @@ class MDAJacobi(BaseMDASolver):
                 same discipline multiple times then multiprocessing should be prefered.
         """  # noqa:D205 D212 D415
         self.n_processes = n_processes
-
-        # TODO: API: Remove the old names and attributes for acceleration.
-        if self.__ACCELERATION_COMPATIBILITY[acceleration]:
-            acceleration_method = self.__ACCELERATION_COMPATIBILITY[acceleration]
-
         super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
@@ -150,7 +126,7 @@ class MDAJacobi(BaseMDASolver):
             over_relaxation_factor=over_relaxation_factor,
         )
 
-        self._compute_input_couplings()
+        self._compute_input_coupling_names()
         self._set_resolved_variables(self._input_couplings)
 
         self.parallel_execution = DiscParallelExecution(
@@ -160,17 +136,7 @@ class MDAJacobi(BaseMDASolver):
             exceptions_to_re_raise=(ValueError,),
         )
 
-    # TODO: API: Remove the property and its setter.
-    @property
-    def acceleration(self) -> AccelerationMethod:
-        """The acceleration method."""
-        return self.acceleration_method
-
-    @acceleration.setter
-    def acceleration(self, acceleration: str) -> None:
-        self.acceleration_method = self.__ACCELERATION_COMPATIBILITY[acceleration]
-
-    def _compute_input_couplings(self) -> None:
+    def _compute_input_coupling_names(self) -> None:
         """Compute all the coupling variables that are inputs of the MDA.
 
         This must be overloaded here because the Jacobi algorithm induces a delay
@@ -181,7 +147,7 @@ class MDAJacobi(BaseMDASolver):
         if len(self.coupling_structure.strongly_coupled_disciplines) == len(
             self.disciplines
         ):
-            return super()._compute_input_couplings()
+            return super()._compute_input_coupling_names()
 
         self._input_couplings = sorted(
             set(self.coupling_structure.all_couplings).intersection(

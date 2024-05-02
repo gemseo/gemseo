@@ -27,8 +27,8 @@ from typing import Final
 
 from numpy import ndarray
 
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.pareto import ParetoFront
+from gemseo.algos.optimization_result import OptimizationResult
+from gemseo.algos.pareto.pareto_front import ParetoFront
 from gemseo.utils.string_tools import MultiLineString
 
 

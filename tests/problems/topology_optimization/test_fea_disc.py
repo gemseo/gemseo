@@ -24,7 +24,7 @@ from numpy import array
 from numpy import ones
 from numpy import tile
 
-from gemseo.problems.topology_optimization.fea_disc import FininiteElementAnalysis
+from gemseo.problems.topology_optimization.fea_disc import FiniteElementAnalysis
 
 
 @pytest.fixture(scope="module")
@@ -38,7 +38,7 @@ def finite_element_analysis():
     f_amplitude = [-1]
     fixed_node = tile(arange(ny + 1), 2)
     fixed_dir = array([0] * (ny + 1) + [1] * (ny + 1))
-    return FininiteElementAnalysis(
+    return FiniteElementAnalysis(
         nu=nu,
         n_x=nx,
         n_y=ny,
@@ -53,7 +53,7 @@ def finite_element_analysis():
 @pytest.fixture(scope="module")
 def default_finite_element_analysis():
     """A finite element analysis."""
-    return FininiteElementAnalysis()
+    return FiniteElementAnalysis()
 
 
 def test_run(finite_element_analysis) -> None:

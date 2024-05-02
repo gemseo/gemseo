@@ -219,12 +219,6 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
 
         return self.__reduced_output_dimension
 
-    # TODO: API: remove
-    @property
-    def _reduced_dimensions(self) -> tuple[int, int]:
-        """The input and output reduced dimensions."""
-        return self._reduced_input_dimension, self._reduced_output_dimension
-
     @property
     def input_dimension(self) -> int:
         """The input space dimension."""

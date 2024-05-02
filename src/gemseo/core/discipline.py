@@ -56,7 +56,7 @@ from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.derivatives_approx import EPSILON
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.enumeration import merge_enums
-from gemseo.utils.multiprocessing import get_multi_processing_manager
+from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 

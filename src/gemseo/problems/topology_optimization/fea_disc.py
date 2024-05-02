@@ -38,8 +38,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-# TODO: API: rename to FiniteElementAnalysis.
-class FininiteElementAnalysis(MDODiscipline):
+class FiniteElementAnalysis(MDODiscipline):
     """Finite Element Analysis for 2D topology optimization problems.
 
     Take in input the Young Modulus vector E and computes in output the compliance, i.e.

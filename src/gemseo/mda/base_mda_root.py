@@ -105,7 +105,7 @@ class BaseMDARoot(BaseMDASolver):
             over_relaxation_factor=over_relaxation_factor,
         )
 
-        self._compute_input_couplings()
+        self._compute_input_coupling_names()
         self._set_resolved_variables(self.strong_couplings)
 
     def linearize_all_disciplines(

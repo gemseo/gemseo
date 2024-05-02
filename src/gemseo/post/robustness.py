@@ -77,7 +77,7 @@ class Robustness(OptPostProcessor):
         Returns:
             A plot of the Hessian of the function.
         """
-        problem = self.opt_problem
+        problem = self.optimization_problem
         design_space = problem.design_space
         bounds_range = design_space.get_upper_bounds() - design_space.get_lower_bounds()
         n_x = problem.get_dimension()
@@ -87,7 +87,7 @@ class Robustness(OptPostProcessor):
         robustness = RobustnessQuantifier(self.database)
         function_samples = []
         function_names = []
-        for func in self.opt_problem.get_all_functions():
+        for func in self.optimization_problem.get_all_functions():
             func_name = database_func_name = func.name
             if self._change_obj and func_name == self._neg_obj_name:
                 func_name = self._obj_name

@@ -206,7 +206,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # %%
 # Step 3: Apply the exterior penalty and execute the scenario
 # -----------------------------------------------------------
-scenario.formulation.opt_problem.apply_exterior_penalty(
+scenario.formulation.optimization_problem.apply_exterior_penalty(
     objective_scale=10.0, scale_inequality=10.0
 )
 # %%
@@ -239,7 +239,7 @@ scenario_2 = create_scenario(
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario_2.add_constraint(constraint, constraint_type="ineq")
 scenario_2.set_differentiation_method()
-scenario_2.formulation.opt_problem.apply_exterior_penalty(
+scenario_2.formulation.optimization_problem.apply_exterior_penalty(
     objective_scale=1000.0, scale_inequality=1000.0
 )
 algo_args_2 = {"max_iter": 1000, "algo": "L-BFGS-B"}

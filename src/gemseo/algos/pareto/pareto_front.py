@@ -18,8 +18,7 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Gabriel Max DE MENDONÇA ABRANTES
-"""A module to define a Pareto front."""
-# TODO: API: rename pareto.py to pareto_front.py
+"""Pareto front."""
 
 from __future__ import annotations
 
@@ -38,7 +37,7 @@ from pandas import DataFrame
 from pandas import MultiIndex
 from pandas import concat as pd_concat
 
-from gemseo.algos.pareto_front import compute_pareto_optimal_points
+from gemseo.algos.pareto.utils import compute_pareto_optimal_points
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str

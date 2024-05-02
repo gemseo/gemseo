@@ -23,6 +23,7 @@ from typing import Any
 from typing import TypeVar
 from typing import Union
 
+from numpy import bool_
 from numpy import complexfloating
 from numpy import floating
 from numpy import inexact
@@ -34,6 +35,10 @@ from gemseo.utils.compatibility.scipy import SparseArrayType
 
 if TYPE_CHECKING:
     from gemseo.core.derivatives.jacobian_operator import JacobianOperator
+
+
+BooleanArray = NDArray[bool_]
+"""A NumPy array of boolean numbers."""
 
 NumberArray = NDArray[number[Any]]
 """A NumPy array of integer or real or complex numbers."""

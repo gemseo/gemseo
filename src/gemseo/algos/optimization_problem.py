@@ -29,7 +29,7 @@ The :class:`.OptimizationProblem` class operates on a :class:`.DesignSpace` defi
 A (possible vector) objective function with an :class:`.MDOFunction` type
 is set using the ``objective`` attribute.
 If the optimization problem looks for the maximum of this objective function,
-the :meth:`.OptimizationProblem.change_objective_sign`
+the :meth:`.OptimizationProblem.minimize_objective` property
 changes the objective function sign
 because the optimization drivers seek to minimize this objective function.
 
@@ -114,11 +114,13 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
 from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.opt_result_multiobj import MultiObjectiveOptimizationResult
-from gemseo.algos.pareto import ParetoFront
+from gemseo.algos.multiobjective_optimization_result import (
+    MultiObjectiveOptimizationResult,
+)
+from gemseo.algos.optimization_result import OptimizationResult
+from gemseo.algos.pareto.pareto_front import ParetoFront
 from gemseo.core.mdofunctions.dense_jacobian_function import DenseJacobianFunction
-from gemseo.core.mdofunctions.func_operations import LinearComposition
+from gemseo.core.mdofunctions.linear_composite_function import LinearCompositeFunction
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
@@ -464,7 +466,8 @@ class OptimizationProblem(BaseProblem):
     @minimize_objective.setter
     def minimize_objective(self, value: bool) -> None:
         if self.__minimize_objective != value:
-            self.change_objective_sign()
+            self.__minimize_objective = not self.__minimize_objective
+            self.objective = -self.objective
 
     @staticmethod
     def repr_constraint(
@@ -784,7 +787,9 @@ class OptimizationProblem(BaseProblem):
         ))
         # Get the new problem objective function composing the initial objective
         # function with the restriction operator.
-        problem.objective = LinearComposition(self.objective, restriction_operator)
+        problem.objective = LinearCompositeFunction(
+            self.objective, restriction_operator
+        )
 
         # Each constraint is passed to the new problem. Each inequality constraints is
         # modified first composing the initial constraint with the restriction operator
@@ -792,7 +797,7 @@ class OptimizationProblem(BaseProblem):
         # Each equality constraint is added composing the initial constraint with the
         # restriction operator.
         for constr in self.constraints:
-            new_function = LinearComposition(constr, restriction_operator)
+            new_function = LinearCompositeFunction(constr, restriction_operator)
             if constr.f_type == MDOFunction.ConstraintType.EQ:
                 problem.add_eq_constraint(new_function)
                 continue
@@ -1765,18 +1770,6 @@ class OptimizationProblem(BaseProblem):
                 )
                 self.fd_step = self.fd_step.real
 
-    # TODO: API: to be deprecated in favor of self.minimize_objective
-    def change_objective_sign(self) -> None:
-        """Change the objective function sign in order to minimize its opposite.
-
-        The :class:`.OptimizationProblem` expresses any optimization problem as a
-        minimization problem. Then, an objective function originally expressed as a
-        performance function to maximize must be converted into a cost function to
-        minimize, by means of this method.
-        """
-        self.__minimize_objective = not self.__minimize_objective
-        self.objective = -self.objective
-
     def _satisfied_constraint(
         self,
         constraint_type: MDOFunction.ConstraintType,
@@ -1854,8 +1847,7 @@ class OptimizationProblem(BaseProblem):
                 f_history.append(out_val)
         return x_history, f_history
 
-    # TODO: API: rename to check_design_point_is_feasible
-    def get_violation_criteria(
+    def check_design_point_is_feasible(
         self,
         x_vect: ndarray,
     ) -> tuple[bool, float]:
@@ -1932,7 +1924,7 @@ class OptimizationProblem(BaseProblem):
         is_feasible = []
         viol_criteria = []
         for x_vect, out_val in self.database.items():
-            is_pt_feasible, f_violation = self.get_violation_criteria(x_vect)
+            is_pt_feasible, f_violation = self.check_design_point_is_feasible(x_vect)
             is_feasible.append(is_pt_feasible)
             viol_criteria.append(f_violation)
             x_history.append(x_vect.unwrap())
@@ -2249,8 +2241,7 @@ class OptimizationProblem(BaseProblem):
                         o_subgroup = observables_group.require_group(observable.name)
                         self.__store_attr_h5data(observable, o_subgroup)
 
-                if hasattr(self.solution, "to_dict"):
-                    # TODO: replace by "if self.solution is None"
+                if self.solution is not None:
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 

@@ -31,12 +31,12 @@ from numpy import array
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.disciplines.wrappers.disc_from_exe import DiscFromExe
+from gemseo.disciplines.wrappers.disc_from_exe import Parser
+from gemseo.disciplines.wrappers.disc_from_exe import parse_key_value_file
+from gemseo.disciplines.wrappers.disc_from_exe import parse_outfile
+from gemseo.disciplines.wrappers.disc_from_exe import parse_template
 from gemseo.utils.directory_creator import DirectoryNamingMethod
-from gemseo.wrappers.disc_from_exe import DiscFromExe
-from gemseo.wrappers.disc_from_exe import Parser
-from gemseo.wrappers.disc_from_exe import parse_key_value_file
-from gemseo.wrappers.disc_from_exe import parse_outfile
-from gemseo.wrappers.disc_from_exe import parse_template
 
 from .cfgobj_exe import execute as exec_cfg
 from .sum_data import execute as exec_sum
@@ -52,8 +52,8 @@ def test_disc_from_exe_json(tmp_wd) -> None:
         "DiscFromExe",
         input_template=join(DIRNAME, "input.json.template"),
         output_template=join(DIRNAME, "output.json.template"),
-        output_folder_basepath=str(tmp_wd),
-        executable_command=exec_cmd,
+        root_directory=tmp_wd,
+        command_line=exec_cmd,
         input_filename="input.json",
         output_filename="output.json",
     )
@@ -82,8 +82,8 @@ def test_disc_from_exe_cfgobj(tmp_wd) -> None:
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=str(tmp_wd),
-        executable_command=exec_cmd,
+        root_directory=tmp_wd,
+        command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
@@ -108,12 +108,12 @@ def test_disc_from_exe_cfgobj(tmp_wd) -> None:
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=str(tmp_wd),
-        executable_command=exec_cmd,
+        root_directory=tmp_wd,
+        command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
-        folders_iter=DirectoryNamingMethod.UUID,
+        directory_naming_method=DirectoryNamingMethod.UUID,
     )
 
     disc.execute(indata)
@@ -136,12 +136,12 @@ def test_disc_from_exe_cfgobj_parser_str(tmp_wd, parser) -> None:
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=str(tmp_wd),
-        executable_command=exec_cmd,
+        root_directory=tmp_wd,
+        command_line=exec_cmd,
         parse_outfile_method=parser,
         input_filename="input.cfg",
         output_filename="output.cfg",
-        folders_iter="UUID",
+        directory_naming_method="UUID",
     )
 
 
@@ -157,35 +157,6 @@ def test_exec_json(tmp_wd) -> None:
     exec_sum(infile, outfile)
 
 
-def test_disc_from_exe_wrong_inputs(tmp_wd) -> None:
-    sum_path = join(DIRNAME, "cfgobj_exe.py")
-    exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg"
-
-    with pytest.raises(TypeError):
-        create_discipline(
-            "DiscFromExe",
-            input_template=join(DIRNAME, "input_template.cfg"),
-            output_template=join(DIRNAME, "output_template.cfg"),
-            output_folder_basepath=str(tmp_wd),
-            executable_command=exec_cmd,
-            parse_outfile_method="ERROR",
-            input_filename="input.cfg",
-            output_filename="output.cfg",
-        )
-
-    with pytest.raises(TypeError):
-        create_discipline(
-            "DiscFromExe",
-            input_template=join(DIRNAME, "input_template.cfg"),
-            output_template=join(DIRNAME, "output_template.cfg"),
-            output_folder_basepath=str(tmp_wd),
-            executable_command=exec_cmd,
-            write_input_file_method="ERROR",
-            input_filename="input.cfg",
-            output_filename="output.cfg",
-        )
-
-
 def test_disc_from_exe_fail_exe(tmp_wd) -> None:
     sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
@@ -193,8 +164,8 @@ def test_disc_from_exe_fail_exe(tmp_wd) -> None:
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=str(tmp_wd),
-        executable_command=exec_cmd,
+        root_directory=tmp_wd,
+        command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
@@ -268,21 +239,21 @@ def test_parse_outfile() -> None:
     assert values2["out 1"] == 1.0
 
 
-def test_executable_command(tmp_wd) -> None:
-    """Test the property: ``executable_command``."""
+def test_command_line(tmp_wd) -> None:
+    """Test the property: ``command_line``."""
     sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
     disc: DiscFromExe = create_discipline(
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=str(tmp_wd),
-        executable_command=exec_cmd,
+        root_directory=tmp_wd,
+        command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
     )
-    assert disc.executable_command == exec_cmd
+    assert disc.command_line == exec_cmd
 
 
 def test_parallel_execution(tmp_wd) -> None:
@@ -300,11 +271,11 @@ def test_parallel_execution(tmp_wd) -> None:
         "DiscFromExe",
         input_template=join(DIRNAME, "input.json.template"),
         output_template=join(DIRNAME, "output.json.template"),
-        output_folder_basepath=str(tmp_wd),
-        executable_command=exec_cmd,
+        root_directory=tmp_wd,
+        command_line=exec_cmd,
         input_filename="input.json",
         output_filename="output.json",
-        folders_iter=DirectoryNamingMethod.NUMBERED,
+        directory_naming_method=DirectoryNamingMethod.NUMBERED,
     )
 
     design_space = DesignSpace()
@@ -334,8 +305,8 @@ def test_working_directory(tmp_wd, clean_after_execution: bool) -> None:
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=str(tmp_wd),
-        executable_command=exec_cmd,
+        root_directory=tmp_wd,
+        command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",

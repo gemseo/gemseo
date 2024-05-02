@@ -132,7 +132,7 @@ class Animation(OptPostProcessor):
             The paths to the images at each time step of the animation.
         """
         steps_to_frame_file_paths = []
-        opt_problem = self.opt_problem
+        opt_problem = self.optimization_problem
         if temporary_database_file:
             temporary_database_file = Path(temporary_database_file)
             database = opt_problem.database

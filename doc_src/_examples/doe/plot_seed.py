@@ -43,7 +43,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.doe.lib_openturns import OpenTURNS
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 # %%
@@ -75,7 +75,7 @@ scenario = create_scenario(
 # %%
 # and solve it:
 scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2})
-scenario.formulation.opt_problem.database.get_last_n_x_vect(2)
+scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
 
 # %%
 # You can get the value of the random seed that has been used:
@@ -87,7 +87,7 @@ scenario._lib.seed
 # Then,
 # solving again this problem with the same configuration leads to a new result:
 scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2})
-scenario.formulation.opt_problem.database.get_last_n_x_vect(2)
+scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
 
 # %%
 # and we can check that the value of the seed was incremented:
@@ -98,7 +98,7 @@ scenario._lib.seed
 # with the key ``"algo_options"`` of the ``input_data``
 # passed to :meth:`.DOEScenario.execute`:
 scenario.execute({"algo": "OT_OPT_LHS", "n_samples": 2, "algo_options": {"seed": 123}})
-scenario.formulation.opt_problem.database.get_last_n_x_vect(2)
+scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
 
 # %%
 # You can verify that :attr:`.DOELibrary.seed` has not been replaced by the custom value

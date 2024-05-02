@@ -24,8 +24,8 @@ from numpy import array
 
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.scenarios.doe_scenario import DOEScenario
@@ -205,7 +205,7 @@ def test_from_optimization_problem(
         MDOFunction(lambda x: x, "g"), value, MDOFunction.ConstraintType.INEQ
     )
     if maximize:
-        problem.change_objective_sign()
+        problem.minimize_objective = False
     problem.use_standardized_objective = use_standardized_objective
     execute_algo(problem, "CustomDOE", "doe", samples=array([[0.1]]))
     result = OptimizationResult.from_optimization_problem(problem)

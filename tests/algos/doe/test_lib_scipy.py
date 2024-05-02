@@ -112,7 +112,7 @@ def test_generate_samples(
         del options["centered"]
     variables_space = DesignSpace()
     variables_space.add_variable("x", size=dimension)
-    samples = library._generate_samples(variables_space, **options)
+    samples = library._generate_unit_samples(variables_space, **options)
     lib_scipy.SCIPY_VERSION = scipy_version
 
     if algo_name == "Sobol":
@@ -170,7 +170,7 @@ def test_lhs_centered(library, value) -> None:
         "please use scramble."
     )
     with pytest.raises(ValueError, match=re.escape(msg)):
-        library._generate_samples(
+        library._generate_unit_samples(
             DesignSpace(),
             dimension=2,
             n_samples=10,
