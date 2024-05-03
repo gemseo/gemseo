@@ -31,7 +31,7 @@ iniconfig==2.0.0
 jdcal==1.4.1
     # via openpyxl
 jinja2==3.0.0
-joblib==1.4.0
+joblib==1.4.2
     # via scikit-learn
 kiwisolver==1.4.5
     # via matplotlib
