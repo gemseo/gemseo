@@ -15,7 +15,7 @@ platformdirs==4.2.1
 pre-commit==3.7.0
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.4.2
+ruff==0.4.3
 setuptools==69.5.1
     # via nodeenv
 virtualenv==20.26.1
