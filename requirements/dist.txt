@@ -16,7 +16,7 @@ charset-normalizer==3.3.2
 check-wheel-contents==0.6.0
 click==8.1.7
     # via check-wheel-contents
-cryptography==42.0.5
+cryptography==42.0.6
     # via secretstorage
 docutils==0.21.2
     # via readme-renderer
@@ -60,7 +60,7 @@ pydantic==2.7.1
     # via check-wheel-contents
 pydantic-core==2.18.2
     # via pydantic
-pygments==2.17.2
+pygments==2.18.0
     # via
     #   readme-renderer
     #   rich
