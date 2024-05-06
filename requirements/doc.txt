@@ -5,7 +5,7 @@ alabaster==0.7.16
 annotated-types==0.6.0
     # via pydantic
 autodocsumm==0.2.12
-babel==2.14.0
+babel==2.15.0
     # via sphinx
 certifi==2024.2.2
     # via requests
