@@ -16,7 +16,7 @@ charset-normalizer==3.3.2
 check-wheel-contents==0.6.0
 click==8.1.7
     # via check-wheel-contents
-cryptography==42.0.6
+cryptography==42.0.7
     # via secretstorage
 docutils==0.21.2
     # via readme-renderer
