@@ -149,7 +149,7 @@ sphinxcontrib-serializinghtml==1.1.10
 sphinxcontrib-spelling==8.0.0
 strenum==0.4.15
 sympy==1.12
-tenacity==8.2.3
+tenacity==8.3.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
