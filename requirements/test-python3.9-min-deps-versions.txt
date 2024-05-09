@@ -97,7 +97,7 @@ six==1.16.0
     #   python-dateutil
 strenum==0.4.9
 sympy==1.5
-tenacity==8.2.3
+tenacity==8.3.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
