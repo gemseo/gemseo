@@ -723,7 +723,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         show: bool = False,
         save: bool = True,
         n_iterations: int | None = None,
-        logscale: tuple[int, int] | None = None,
+        logscale: tuple[float, float] = (),
         filename: Path | str = "",
         fig_size: FigSizeType | None = None,
     ) -> Figure:
@@ -737,7 +737,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             n_iterations: The number of iterations on the *x* axis.
                 If ``None``, use all the iterations.
             logscale: The limits of the *y* axis.
-                If ``None``, do not change the limits of the *y* axis.
+                If empty, do not change the limits of the *y* axis.
             filename: The name of the file to save the figure.
                 If empty, use "{mda.name}_residual_history.pdf".
             fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
@@ -783,7 +783,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         fig_ax.set_xlim([-1, n_iterations])
         fig_ax.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         fig_ax.set_ylabel(r"$\log(||residuals||/||y_0||)$", fontsize=14)
-        if logscale is not None:
+        if logscale:
             fig_ax.set_ylim(logscale)
 
         if save and not filename:

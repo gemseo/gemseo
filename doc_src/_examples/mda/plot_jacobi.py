@@ -90,7 +90,7 @@ if IS_NT:
 mda = create_mda(
     "MDAJacobi",
     disciplines,
-    acceleration="m2d",
+    acceleration_method="Alternate2Delta",
     warm_start=True,
     n_processes=4,
     use_threading=use_threading,
@@ -99,7 +99,7 @@ res = mda.execute()
 display_result(res, mda.name)
 mda.plot_residual_history(
     n_iterations=10,
-    logscale=[1e-8, 10.0],
+    logscale=(1e-8, 10.0),
     save=False,
     show=True,
     fig_size=(10, 2),
