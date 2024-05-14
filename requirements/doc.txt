@@ -77,7 +77,7 @@ packaging==24.0
 pandas==2.2.1
 pbr==6.0.0
     # via sphinxcontrib-apidoc
-pillow==10.2.0
+pillow==10.3.0
     # via
     #   matplotlib
     #   sphinx-gallery
