@@ -29,9 +29,11 @@ from numpy.testing import assert_equal
 
 from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+    from collections.abc import MutableMapping
 
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -39,8 +41,8 @@ INPUT_VECTOR = array([1.0, 1.0])
 
 
 def create_disciplinary_function(
-    default_inputs: Mapping[str, ndarray] | None = None,
-    names_to_sizes: Mapping[str, int] | None = None,
+    default_inputs: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+    names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
 ) -> MDODisciplineAdapter:
     """Create a disciplinary function.
 
@@ -62,7 +64,7 @@ def create_disciplinary_function(
     return MDODisciplineAdapter(
         ["x", "y"],
         ["z"],
-        default_inputs,
+        default_inputs or {},  # Because READ_ONLY_EMPTY_DICT cannot be pickled.
         discipline,
         names_to_sizes=names_to_sizes,
     )

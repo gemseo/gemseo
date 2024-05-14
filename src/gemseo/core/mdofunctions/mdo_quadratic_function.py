@@ -56,24 +56,17 @@ class MDOQuadraticFunction(MDOFunction):
         self,
         quad_coeffs: NumberArray,
         name: str,
-        f_type: str | None = None,
-        input_names: Sequence[str] | None = None,
+        f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
+        input_names: Sequence[str] = (),
         linear_coeffs: NumberArray | None = None,
         value_at_zero: OutputType = 0.0,
     ) -> None:
         """
         Args:
             quad_coeffs: The second-order coefficients.
-            name: The name of the function.
-            f_type: The type of the linear function
-                among :attr:`.MDOFunction.FunctionType`.
-                If ``None``, the linear function will have no type.
-            input_names: The names of the inputs of the linear function.
-                If ``None``, the inputs of the linear function will have no names.
             linear_coeffs: The first-order coefficients.
                 If ``None``, the first-order coefficients will be zero.
             value_at_zero: The zero-order coefficient.
-                If ``None``, the value at zero will be zero.
         """  # noqa: D205, D212, D415
         self._input_dim = 0
         self._quad_coeffs = array([])
@@ -181,8 +174,8 @@ class MDOQuadraticFunction(MDOFunction):
         cls,
         quad_coeffs: NumberArray,
         input_names: Sequence[str],
-        linear_coeffs: NumberArray | None = None,
-        value_at_zero: float | None = None,
+        linear_coeffs: NumberArray,
+        value_at_zero: OutputType,
     ) -> str:
         """Build the expression of the quadratic function.
 
@@ -192,7 +185,6 @@ class MDOQuadraticFunction(MDOFunction):
             linear_coeffs: The first-order coefficients.
                 If ``None``, the first-order coefficients will be zero.
             value_at_zero: The zero-order coefficient.
-                If ``None``, the value at zero will be zero.
 
         Returns:
             The expression of the quadratic function.
@@ -218,7 +210,7 @@ class MDOQuadraticFunction(MDOFunction):
                 expr += transpose_str if index == 0 else " "
                 expr += f"[{arg}]"
             # Zero-order expression
-            if value_at_zero is not None and value_at_zero != 0.0 and index == 0:
+            if value_at_zero != 0.0 and index == 0:
                 sign_str = "+" if value_at_zero > 0.0 else "-"
                 expr += (" {} " + cls.COEFF_FORMAT_ND).format(
                     sign_str, abs(value_at_zero)

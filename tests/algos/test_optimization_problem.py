@@ -1873,7 +1873,7 @@ def test_is_multi_objective() -> None:
     problem.objective(1.0)
     assert not problem.is_mono_objective
 
-    problem.objective._dim = 0
+    problem.objective.dim = 0
     with pytest.raises(
         ValueError, match="Cannot determine the dimension of the objective."
     ):

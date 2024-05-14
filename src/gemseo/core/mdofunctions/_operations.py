@@ -73,7 +73,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         """  # noqa: D205, D212, D415
         f_type = ""
         expr = ""
-        input_names = None
+        input_names = []
         jac = None
         self._first_operand = first_operand
         self._second_operand = second_operand

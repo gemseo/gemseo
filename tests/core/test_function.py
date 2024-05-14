@@ -567,7 +567,7 @@ def test_deactivate_counters() -> None:
     MDOFunction.activate_counters = False
 
     func = MDOFunction(lambda x: x, "func")
-    assert func.n_calls is None
+    assert not func.n_calls
 
     with pytest.raises(RuntimeError, match="The function counters are disabled."):
         func.n_calls = 1
@@ -731,7 +731,7 @@ def test_serialize_deserialize(
         serialized_func(value)
         assert serialized_func._n_calls.value == 2
     else:
-        assert serialized_func.n_calls is None
+        assert not serialized_func.n_calls
 
     s_func_u_dict = serialized_func.__dict__
     ok = True
@@ -771,9 +771,9 @@ def test_f_type_sum_function_and_number(f_type) -> None:
 @pytest.mark.parametrize(
     ("f_out", "g_out", "h_out"),
     [
-        (None, None, []),
-        (["a"], None, []),
-        (None, ["b"], []),
+        ([], [], []),
+        (["a"], [], []),
+        ([], ["b"], []),
         (["a"], ["b"], ["a", "b"]),
     ],
 )
@@ -792,20 +792,20 @@ def test_concatenate(f_out, g_out, h_out) -> None:
 @pytest.mark.parametrize(
     ("f_type", "input_names", "expr", "neg", "expected"),
     [
-        (MDOFunction.FunctionType.NONE, None, "", False, "f"),
-        (MDOFunction.FunctionType.NONE, None, "2*x", False, "f = 2*x"),
+        (MDOFunction.FunctionType.NONE, [], "", False, "f"),
+        (MDOFunction.FunctionType.NONE, [], "2*x", False, "f = 2*x"),
         (MDOFunction.FunctionType.NONE, ["y", "x"], "2*x", False, "f(y, x) = 2*x"),
         (MDOFunction.FunctionType.NONE, ["y", "x"], "", False, "f(y, x)"),
-        (MDOFunction.FunctionType.NONE, None, "", True, "-f"),
-        (MDOFunction.FunctionType.NONE, None, "2*x", True, "-f = -(2*x)"),
+        (MDOFunction.FunctionType.NONE, [], "", True, "-f"),
+        (MDOFunction.FunctionType.NONE, [], "2*x", True, "-f = -(2*x)"),
         (MDOFunction.FunctionType.NONE, ["y", "x"], "2*x", True, "-f(y, x) = -(2*x)"),
         (MDOFunction.FunctionType.NONE, ["y", "x"], "", True, "-f(y, x)"),
-        (MDOFunction.FunctionType.INEQ, None, "", False, "f <= 0.0"),
-        (MDOFunction.FunctionType.INEQ, None, "2*x", False, "2*x <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, [], "", False, "f <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, [], "2*x", False, "2*x <= 0.0"),
         (MDOFunction.FunctionType.INEQ, ["y", "x"], "2*x", False, "2*x <= 0.0"),
         (MDOFunction.FunctionType.INEQ, ["y", "x"], "", False, "f(y, x) <= 0.0"),
-        (MDOFunction.FunctionType.INEQ, None, "", True, "-f <= 0.0"),
-        (MDOFunction.FunctionType.INEQ, None, "2*x", True, "-(2*x) <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, [], "", True, "-f <= 0.0"),
+        (MDOFunction.FunctionType.INEQ, [], "2*x", True, "-(2*x) <= 0.0"),
         (MDOFunction.FunctionType.INEQ, ["y", "x"], "2*x", True, "-(2*x) <= 0.0"),
         (MDOFunction.FunctionType.INEQ, ["y", "x"], "", True, "-f(y, x) <= 0.0"),
     ],

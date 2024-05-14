@@ -35,14 +35,14 @@ class Concatenate(MDOFunction):
     """Wrap the concatenation of a set of functions."""
 
     def __init__(
-        self, functions: Iterable[MDOFunction], name: str, f_type: str | None = None
+        self,
+        functions: Iterable[MDOFunction],
+        name: str,
+        f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
     ) -> None:
         """
         Args:
             functions: The functions to be concatenated.
-            name: The name of the concatenation function.
-            f_type: The type of the concatenation function.
-                If ``None``, the function will have no type.
         """  # noqa: D205, D212, D415
         self.__functions = functions
         func_output_names = [func.output_names for func in self.__functions]

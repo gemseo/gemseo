@@ -32,6 +32,7 @@ from numpy import ndarray
 
 from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -58,9 +59,9 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         self,
         input_names: Sequence[str],
         output_names: Sequence[str],
-        default_inputs: Mapping[str, ndarray] | None,
+        default_inputs: Mapping[str, ndarray],
         discipline: MDODiscipline,
-        names_to_sizes: MutableMapping[str, int] | None = None,
+        names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
         linear_candidate: bool = False,
     ) -> None:
         """
@@ -71,27 +72,25 @@ class MDODisciplineAdapter(LinearCandidateFunction):
                 to overload the ones of the discipline
                 at each evaluation of the outputs with :meth:`._fun`
                 or their derivatives with :meth:`._jac`.
-                If ``None``, do not overload them.
+                If empty, do not overload them.
             discipline: The discipline to be adapted.
             names_to_sizes: The sizes of the input variables.
-                If ``None``, determine them from the default inputs and local data
+                If empty, determine them from the default inputs and local data
                 of the discipline :class:`.MDODiscipline`.
             linear_candidate: Whether the final MDOFunction could be linear.
         """  # noqa: D205, D212, D415
         self.__input_names = input_names
         self.__output_names = output_names
-        self.__default_inputs = default_inputs if default_inputs is not None else {}
+        self.__default_inputs = default_inputs
         self.__input_size = 0
         self.__output_names_to_slices = {}
         self.__jacobian = array(())
         self.__discipline = discipline
         self.__input_names_to_slices = {}
-        self.__input_names_to_sizes = (
-            names_to_sizes if names_to_sizes is not None else {}
-        )
+        self.__input_names_to_sizes = names_to_sizes or {}
         self.__linear_candidate = linear_candidate
         self.__input_dimension = self.__compute_input_dimension(
-            default_inputs, discipline, input_names
+            self.__default_inputs, discipline, input_names
         )
         super().__init__(
             self._func_to_wrap,
@@ -111,7 +110,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
 
     def __compute_input_dimension(
         self,
-        default_inputs: Mapping[str, ndarray] | None,
+        default_inputs: Mapping[str, ndarray],
         discipline: MDODiscipline,
         input_names: Sequence[str],
     ) -> int | None:
@@ -148,6 +147,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
                 for inpt in input_names
             )
 
+        # TODO: document what None means. We could use 0 instead.
         return None
 
     def __create_output_names_to_slices(self) -> int:

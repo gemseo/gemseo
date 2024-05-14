@@ -50,8 +50,8 @@ class FunctionFromDiscipline(LinearCandidateFunction):
         mdo_formulation: BaseFormulation,
         discipline: MDODiscipline | None = None,
         top_level_disc: bool = True,
-        x_names: Sequence[str] | None = None,
-        all_data_names: Iterable[str] | None = None,
+        x_names: Iterable[str] = (),
+        all_data_names: Iterable[str] = (),
         differentiable: bool = True,
     ) -> None:
         """
@@ -63,9 +63,9 @@ class FunctionFromDiscipline(LinearCandidateFunction):
                 If ``None``, the discipline is detected from the inner disciplines.
             top_level_disc: If ``True``, search the discipline among the top level ones.
             x_names: The names of the design variables.
-                If ``None``, use self.get_x_names_of_disc(discipline).
+                If empty, use self.get_x_names_of_disc(discipline).
             all_data_names: The reference data names for masking x.
-                If ``None``, use self.get_optim_variable_names().
+                If empty, use self.get_optim_variable_names().
             differentiable: If ``True``, then inputs and outputs are added
                 to the list of variables to be differentiated.
         """  # noqa: D205, D212, D415
@@ -88,7 +88,7 @@ class FunctionFromDiscipline(LinearCandidateFunction):
                 self.__discipline, self.__mdo_formulation.design_space.variable_sizes
             )
 
-        if self.__x_names is None:
+        if not self.__x_names:
             self.__x_names = self.__mdo_formulation.get_x_names_of_disc(
                 self.__discipline
             )

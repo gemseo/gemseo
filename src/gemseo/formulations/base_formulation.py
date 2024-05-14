@@ -379,7 +379,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Raises:
             IndexError: when the sizes of variables are inconsistent.
         """
-        if all_data_names is None:
+        if not all_data_names:
             all_data_names = self.get_optim_variable_names()
         indices = self._get_dv_indices(all_data_names)
         variable_sizes = self.optimization_problem.design_space.variable_sizes
@@ -454,7 +454,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: If the sizes or the sizes of variables are inconsistent.
         """
         design_space = self.optimization_problem.design_space
-        if all_data_names is None:
+        if not all_data_names:
             all_data_names = design_space.variable_names
 
         variable_sizes = design_space.variable_sizes

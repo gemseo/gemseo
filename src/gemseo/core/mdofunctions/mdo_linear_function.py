@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import array
-from numpy import atleast_2d
 from numpy import ndarray
 
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -32,7 +31,10 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from scipy.sparse import csr_matrix
+
     from gemseo.typing import NumberArray
+    from gemseo.typing import SparseOrDenseRealArray
 
 
 class MDOLinearFunction(MDOFunction):
@@ -66,27 +68,22 @@ class MDOLinearFunction(MDOFunction):
 
     def __init__(
         self,
-        coefficients: NumberArray,
+        coefficients: SparseOrDenseRealArray,
         name: str,
-        f_type: str | None = None,
-        input_names: Sequence[str] | None = None,
+        f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
+        input_names: Sequence[str] = (),
         value_at_zero: OutputType = 0.0,
-        output_names: Sequence[str] | None = None,
+        output_names: Sequence[str] = (),
         expr: str | None = None,
     ) -> None:
         """
         Args:
             coefficients: The coefficients :math:`A` of the linear function.
-            name: The name of the linear function.
-            f_type: The type of the linear function among
-                :attr:`.MDOFunction.FunctionType`.
-                If ``None``, the linear function will have no type.
-            input_names: The names of the inputs of the linear function.
-                If ``None``, the inputs of the linear function will have no names.
             value_at_zero: The value :math:`b` of the linear function output at zero.
-            output_names: The names of the outputs of the function.
-                If ``None``, the outputs of the function will have no names.
-            expr: The expression of the linear function.
+            expr: The expression of the function, if any.
+                If ``None``,
+                create an expression
+                from the coefficients and the value at zero.
         """  # noqa: D205, D212, D415
         # Format the passed coefficients and value at zero
         if isinstance(coefficients, sparse_classes):
@@ -159,10 +156,8 @@ class MDOLinearFunction(MDOFunction):
         return self._coefficients
 
     @coefficients.setter
-    def coefficients(self, coefficients: Number | NumberArray) -> None:
-        if isinstance(coefficients, Number):
-            self._coefficients = atleast_2d(coefficients)
-        elif isinstance(coefficients, array_classes) and coefficients.ndim == 2:
+    def coefficients(self, coefficients: SparseOrDenseRealArray) -> None:
+        if isinstance(coefficients, array_classes) and coefficients.ndim == 2:
             self._coefficients = coefficients
         elif isinstance(coefficients, array_classes) and coefficients.ndim == 1:
             self._coefficients = coefficients.reshape((1, -1))
@@ -211,6 +206,7 @@ class MDOLinearFunction(MDOFunction):
         if isinstance(self._coefficients, ndarray):
             iterable = enumerate(self._coefficients[0, :])
         else:
+            self._coefficients: csr_matrix
             iterable = zip(self._coefficients.indices, self._coefficients.data)
 
         for index, coefficient in iterable:
@@ -263,6 +259,7 @@ class MDOLinearFunction(MDOFunction):
                 if isinstance(self._coefficients, ndarray):
                     ith_row = self._coefficients[i, :]
                 else:
+                    self._coefficients: csr_matrix
                     ith_row = self._coefficients.getrow(i).toarray().flatten()
 
                 coefficients = (
