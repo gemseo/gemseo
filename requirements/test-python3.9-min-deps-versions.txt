@@ -86,7 +86,7 @@ pytz==2024.1
     # via pandas
 pyxdsm==2.1.0
 requests==0.2.0
-scikit-learn==1.0
+scikit-learn==1.0.1
 scipy==1.9.0
     # via
     #   pydoe3
