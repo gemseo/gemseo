@@ -132,7 +132,7 @@ class ConvexLinearApprox(MDOFunction):
             + self.__direct_coeffs @ step
             + self.__recipr_coeffs @ inv_step
         )
-        if self.__mdo_function._dim == 1:
+        if self.__mdo_function.dim == 1:
             return value[0]
         return value
 
@@ -151,6 +151,6 @@ class ConvexLinearApprox(MDOFunction):
         value[:, self.__approx_indexes] = self.__direct_coeffs + multiply(
             self.__recipr_coeffs, -(inv_step**2)
         )
-        if self.__mdo_function._dim == 1:
+        if self.__mdo_function.dim == 1:
             value = value[0, :]
         return value

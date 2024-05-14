@@ -29,6 +29,7 @@ from typing import Union
 from numpy import ndarray
 
 from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -54,29 +55,29 @@ class MDODisciplineAdapterGenerator:
     discipline: MDODiscipline
     """The discipline from which to generate functions."""
 
-    __names_to_sizes: MutableMapping[str, int] | None = None
+    __names_to_sizes: MutableMapping[str, int]
     """The names of the inputs bound to their sizes, if known."""
 
     def __init__(
         self,
         discipline: MDODiscipline,
-        names_to_sizes: MutableMapping[str, int] | None = None,
+        names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
         Args:
             discipline: The discipline from which the generator builds the functions.
             names_to_sizes: The sizes of the input variables.
-                If ``None``, guess them from the default inputs and local data
+                If empty, guess them from the default inputs and local data
                 of the discipline :class:`.MDODiscipline`.
         """  # noqa: D205, D212, D415
         self.discipline = discipline
-        self.__names_to_sizes = names_to_sizes
+        self.__names_to_sizes = names_to_sizes or {}
 
     def get_function(
         self,
         input_names: Sequence[str],
         output_names: Sequence[str],
-        default_inputs: Mapping[str, ndarray] | None = None,
+        default_inputs: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
         differentiable: bool = True,
     ) -> MDODisciplineAdapter:
         """Build a function executing a discipline for some inputs and outputs.
@@ -87,7 +88,7 @@ class MDODisciplineAdapterGenerator:
             output_names: The names of outputs of the discipline
                 to be returned by the function.
             default_inputs: The default values of the inputs.
-                If ``None``,
+                If empty,
                 use the default values of the inputs
                 specified by the discipline.
             differentiable: If ``True``, then inputs and outputs are added
@@ -135,7 +136,7 @@ class MDODisciplineAdapterGenerator:
         return MDODisciplineAdapter(
             input_names,
             output_names,
-            default_inputs,
+            default_inputs or {},
             self.discipline,
             self.__names_to_sizes,
             linear_candidate=self.__is_linear(input_names, output_names),

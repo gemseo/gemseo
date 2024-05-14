@@ -23,6 +23,7 @@ from typing import Union
 from numpy import ndarray
 from packaging.version import Version
 from packaging.version import parse as parse_version
+from scipy.sparse import coo_matrix
 
 SCIPY_VERSION: Final[Version] = parse_version(version("scipy"))
 
@@ -37,6 +38,6 @@ else:
     from scipy.sparse import spmatrix
 
     sparse_classes = (spmatrix, sparray)
-    SparseArrayType = Union[spmatrix, sparray]
+    SparseArrayType = Union[coo_matrix, spmatrix, sparray]
 
 array_classes = (ndarray, *sparse_classes)

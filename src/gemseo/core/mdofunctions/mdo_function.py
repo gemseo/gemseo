@@ -28,6 +28,7 @@ from collections.abc import Iterable
 from collections.abc import Sequence
 from collections.abc import Sized
 from multiprocessing import Value
+from numbers import Complex
 from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -63,9 +64,8 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-OperandType = Union[NumberArray, Number]
-OperatorType = Union[Callable[[OperandType, OperandType], OperandType], ufunc]
-OutputType = Union[NumberArray, Number]
+OutputType = Union[NumberArray, Complex]
+OperatorType = Union[Callable[[OutputType, OutputType], OutputType], ufunc]
 WrappedFunctionType = Callable[[NumberArray], OutputType]
 WrappedJacobianType = Callable[[NumberArray], NumberArray]
 
@@ -252,9 +252,9 @@ class MDOFunction(Serializable):
         f_type: FunctionType = FunctionType.NONE,
         jac: WrappedJacobianType | None = None,
         expr: str = "",
-        input_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
         dim: int = 0,
-        output_names: Iterable[str] | None = None,
+        output_names: Iterable[str] = (),
         force_real: bool = False,
         special_repr: str = "",
         original_name: str = "",
@@ -270,12 +270,12 @@ class MDOFunction(Serializable):
                 If ``None``, the function will not have an original Jacobian function.
             expr: The expression of the function, e.g. `"2*x"`, if any.
             input_names: The names of the inputs of the function.
-                If ``None``, the inputs of the function will have no names.
+                If empty, the inputs of the function will have no names.
             dim: The dimension of the output space of the function.
                 If 0, the dimension of the output space of the function
                 will be deduced from the evaluation of the function.
             output_names: The names of the outputs of the function.
-                If ``None``, the outputs of the function will have no names.
+                If empty, the outputs of the function will have no names.
             force_real: Whether to cast the output values to real.
             special_repr: The string representation of the function.
                 If empty, use :meth:`.default_repr`.
@@ -293,7 +293,7 @@ class MDOFunction(Serializable):
         self._name = ""
         self._input_names = []
         self._expr = ""
-        self._dim = 0
+        self.dim = dim
         self._output_names = []
         self._init_shared_memory_attrs_before()
         # Use setters to check values
@@ -303,7 +303,6 @@ class MDOFunction(Serializable):
         self.f_type = f_type
         self.expr = expr
         self.input_names = input_names
-        self.dim = dim
         self.output_names = output_names
         self.last_eval = None
         self.force_real = force_real
@@ -325,7 +324,7 @@ class MDOFunction(Serializable):
         """
         if self.activate_counters:
             return self._n_calls.value
-        return None
+        return 0
 
     @n_calls.setter
     def n_calls(
@@ -439,8 +438,8 @@ class MDOFunction(Serializable):
         return self._name
 
     @name.setter
-    def name(self, name: str | None) -> None:
-        self._name = name or ""
+    def name(self, name: str) -> None:
+        self._name = name
 
     @property
     def jac(self) -> WrappedJacobianType:
@@ -460,11 +459,8 @@ class MDOFunction(Serializable):
         return self._input_names
 
     @input_names.setter
-    def input_names(self, input_names: Iterable[str] | None) -> None:
-        if input_names is None:
-            self._input_names = []
-        else:
-            self._input_names = list(input_names)
+    def input_names(self, input_names: Iterable[str]) -> None:
+        self._input_names = list(input_names)
 
     @property
     def expr(self) -> str:
@@ -473,16 +469,7 @@ class MDOFunction(Serializable):
 
     @expr.setter
     def expr(self, expr: str) -> None:
-        self._expr = expr or ""
-
-    @property
-    def dim(self) -> int:
-        """The dimension of the output space of the function."""
-        return self._dim
-
-    @dim.setter
-    def dim(self, dim: int | None) -> None:
-        self._dim = dim or 0
+        self._expr = expr
 
     @property
     def output_names(self) -> list[str]:
@@ -494,15 +481,12 @@ class MDOFunction(Serializable):
 
     @output_names.setter
     def output_names(self, output_names: Iterable[str]) -> None:
-        if output_names is None:
-            self._output_names = []
-        else:
-            self._output_names = list(output_names)
+        self._output_names = list(output_names)
 
     def is_constraint(self) -> bool:
         """Check if the function is a constraint.
 
-        The type of a constraint function is either 'eq' or 'ineq'.
+        The constraint type is either ``"eq"`` or "``ineq"``.
 
         Returns:
             Whether the function is a constraint.
@@ -865,7 +849,7 @@ class MDOFunction(Serializable):
 
     @classmethod
     def generate_input_names(
-        cls, input_dim: int, input_names: Sequence[str] | None = None
+        cls, input_dim: int, input_names: Sequence[str] = ()
     ) -> Sequence[str]:
         """Generate the names of the inputs of the function.
 
@@ -885,7 +869,6 @@ class MDOFunction(Serializable):
         Returns:
             The names of the inputs of the function.
         """
-        input_names = input_names or []
         n_input_names = len(input_names)
         if n_input_names == input_dim:
             return input_names

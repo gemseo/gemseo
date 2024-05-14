@@ -25,7 +25,7 @@ from numpy import ndarray
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable
 
     from gemseo.typing import NumberArray
 
@@ -39,10 +39,10 @@ class FunctionRestriction(MDOFunction):
         frozen_values: NumberArray,
         input_dim: int,
         mdo_function: MDOFunction,
-        name: str | None = None,
-        f_type: str | None = None,
-        expr: str | None = None,
-        input_names: Sequence[str] | None = None,
+        name: str = "",
+        f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
+        expr: str = "",
+        input_names: Iterable[str] = (),
     ) -> None:
         """
         Args:
@@ -50,17 +50,11 @@ class FunctionRestriction(MDOFunction):
             frozen_values: The values of the inputs that will be frozen.
             input_dim: The dimension of input space of the function before restriction.
             name: The name of the function after restriction.
-                If ``None``,
+                If empty,
                 create a default name
                 based on the name of the current function
                 and on the argument `input_names`.
             mdo_function: The function to restrict.
-            f_type: The type of the function after restriction.
-                If ``None``, the function will have no type.
-            expr: The expression of the function after restriction.
-                If ``None``, the function will have no expression.
-            input_names: The names of the inputs of the function after restriction.
-                If ``None``, the inputs of the function will have no names.
 
         Raises:
             ValueError: If the `frozen_indexes` and the `frozen_values` arrays do

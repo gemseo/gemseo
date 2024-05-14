@@ -468,7 +468,7 @@ class Database(Mapping):
 
     def store(
         self,
-        x_vect: ndarray,
+        x_vect: DatabaseKeyType,
         outputs: DatabaseValueType,
     ) -> None:
         """Store the output values associated to the input values.

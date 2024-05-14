@@ -26,6 +26,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.typing import IntegerArray
     from gemseo.typing import RealArray
 
 
@@ -47,7 +48,7 @@ class RestrictedFunction(MDOFunction):
     def __init__(
         self,
         function: MDOFunction,
-        restriction_indices: Sequence[int],
+        restriction_indices: IntegerArray,
         restriction_values: RealArray,
     ) -> None:
         """
