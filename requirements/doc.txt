@@ -5,6 +5,7 @@ alabaster==0.7.16
 annotated-types==0.6.0
     # via pydantic
 autodocsumm==0.2.12
+    # via gemseo (pyproject.toml)
 babel==2.15.0
     # via sphinx
 certifi==2024.2.2
@@ -18,6 +19,7 @@ cycler==0.12.1
 dill==0.3.8
     # via openturns
 docstring-inheritance==2.2.0
+    # via gemseo (pyproject.toml)
 docutils==0.21.2
     # via
     #   pybtex-docutils
@@ -26,11 +28,15 @@ docutils==0.21.2
 et-xmlfile==1.1.0
     # via openpyxl
 fastjsonschema==2.19.1
+    # via gemseo (pyproject.toml)
 fonttools==4.51.0
     # via matplotlib
 genson==1.2.2
+    # via gemseo (pyproject.toml)
 graphviz==0.20.3
+    # via gemseo (pyproject.toml)
 h5py==3.10.0
+    # via gemseo (pyproject.toml)
 idna==3.7
     # via requests
 imagesize==1.4.1
@@ -42,7 +48,9 @@ importlib-metadata==7.1.0
 importlib-resources==6.4.0
     # via matplotlib
 jinja2==3.1.3
-    # via sphinx
+    # via
+    #   gemseo (pyproject.toml)
+    #   sphinx
 joblib==1.4.2
     # via scikit-learn
 kiwisolver==1.4.5
@@ -52,12 +60,16 @@ latexcodec==3.0.0
 markupsafe==2.1.5
     # via jinja2
 matplotlib==3.8.3
+    # via gemseo (pyproject.toml)
 mpmath==1.3.0
     # via sympy
 networkx==3.2.1
+    # via gemseo (pyproject.toml)
 nlopt==2.7.1
+    # via gemseo (pyproject.toml)
 numpy==1.26.4
     # via
+    #   gemseo (pyproject.toml)
     #   contourpy
     #   h5py
     #   matplotlib
@@ -68,20 +80,26 @@ numpy==1.26.4
     #   scikit-learn
     #   scipy
 openpyxl==3.1.2
+    # via gemseo (pyproject.toml)
 openturns==1.22
+    # via gemseo (pyproject.toml)
 packaging==24.0
     # via
+    #   gemseo (pyproject.toml)
     #   matplotlib
     #   plotly
     #   sphinx
 pandas==2.2.1
+    # via gemseo (pyproject.toml)
 pbr==6.0.0
     # via sphinxcontrib-apidoc
 pillow==10.2.0
     # via
+    #   gemseo (pyproject.toml)
     #   matplotlib
     #   sphinx-gallery
 plotly==5.20.0
+    # via gemseo (pyproject.toml)
 psutil==5.9.8
     # via openturns
 pybtex==0.24.0
@@ -91,11 +109,15 @@ pybtex==0.24.0
 pybtex-docutils==1.0.3
     # via sphinxcontrib-bibtex
 pydantic==2.6.4
+    # via gemseo (pyproject.toml)
 pydantic-core==2.16.3
     # via pydantic
 pydoe3==1.0.1
+    # via gemseo (pyproject.toml)
 pyenchant==3.2.2
-    # via sphinxcontrib-spelling
+    # via
+    #   gemseo (pyproject.toml)
+    #   sphinxcontrib-spelling
 pygments==2.18.0
     # via sphinx
 pyparsing==3.1.2
@@ -107,13 +129,18 @@ python-dateutil==2.9.0.post0
 pytz==2024.1
     # via pandas
 pyxdsm==2.3.0
+    # via gemseo (pyproject.toml)
 pyyaml==6.0.1
     # via pybtex
 requests==2.31.0
-    # via sphinx
+    # via
+    #   gemseo (pyproject.toml)
+    #   sphinx
 scikit-learn==1.4.1.post1
+    # via gemseo (pyproject.toml)
 scipy==1.12.0
     # via
+    #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
 six==1.16.0
@@ -124,6 +151,7 @@ snowballstemmer==2.2.0
     # via sphinx
 sphinx==7.3.7
     # via
+    #   gemseo (pyproject.toml)
     #   autodocsumm
     #   sphinx-gallery
     #   sphinxcontrib-apidoc
@@ -131,10 +159,13 @@ sphinx==7.3.7
     #   sphinxcontrib-plantuml
     #   sphinxcontrib-spelling
 sphinx-gallery==0.16.0
+    # via gemseo (pyproject.toml)
 sphinxcontrib-apidoc==0.5.0
+    # via gemseo (pyproject.toml)
 sphinxcontrib-applehelp==1.0.8
     # via sphinx
 sphinxcontrib-bibtex==2.6.2
+    # via gemseo (pyproject.toml)
 sphinxcontrib-devhelp==1.0.6
     # via sphinx
 sphinxcontrib-htmlhelp==2.0.5
@@ -142,13 +173,17 @@ sphinxcontrib-htmlhelp==2.0.5
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
 sphinxcontrib-plantuml==0.29
+    # via gemseo (pyproject.toml)
 sphinxcontrib-qthelp==1.0.7
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.10
     # via sphinx
 sphinxcontrib-spelling==8.0.0
+    # via gemseo (pyproject.toml)
 strenum==0.4.15
+    # via gemseo (pyproject.toml)
 sympy==1.12
+    # via gemseo (pyproject.toml)
 tenacity==8.3.0
     # via plotly
 threadpoolctl==3.5.0
@@ -156,8 +191,10 @@ threadpoolctl==3.5.0
 tomli==2.0.1
     # via sphinx
 tqdm==4.66.2
+    # via gemseo (pyproject.toml)
 typing-extensions==4.11.0
     # via
+    #   gemseo (pyproject.toml)
     #   pydantic
     #   pydantic-core
 tzdata==2024.1
@@ -165,7 +202,9 @@ tzdata==2024.1
 urllib3==2.2.1
     # via requests
 xdsmjs==2.0.0
+    # via gemseo (pyproject.toml)
 xxhash==3.4.1
+    # via gemseo (pyproject.toml)
 zipp==3.18.1
     # via
     #   importlib-metadata

@@ -13,9 +13,11 @@ nodeenv==1.8.0
 platformdirs==4.2.1
     # via virtualenv
 pre-commit==3.7.1
+    # via -r requirements/check.in
 pyyaml==6.0.1
     # via pre-commit
 ruff==0.4.4
+    # via -r requirements/check.in
 setuptools==69.5.1
     # via nodeenv
 virtualenv==20.26.2
