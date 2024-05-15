@@ -90,7 +90,7 @@ psutil==5.9.8
     # via openturns
 pydantic==2.6.4
     # via gemseo (pyproject.toml)
-pydantic-core==2.16.3
+pydantic-core==2.18.2
     # via pydantic
 pydoe3==1.0.1
     # via gemseo (pyproject.toml)
