@@ -7,6 +7,7 @@ attrs==23.2.0
 backports-tarfile==1.1.1
     # via jaraco-context
 build==1.2.1
+    # via -r requirements/dist.in
 certifi==2024.2.2
     # via requests
 cffi==1.16.0
@@ -14,6 +15,7 @@ cffi==1.16.0
 charset-normalizer==3.3.2
     # via requests
 check-wheel-contents==0.6.0
+    # via -r requirements/dist.in
 click==8.1.7
     # via check-wheel-contents
 cryptography==42.0.7
@@ -85,6 +87,7 @@ tomli==2.0.1
     #   build
     #   check-wheel-contents
 twine==5.0.0
+    # via -r requirements/dist.in
 typing-extensions==4.11.0
     # via
     #   pydantic
