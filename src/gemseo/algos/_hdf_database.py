@@ -179,17 +179,20 @@ class HDFDatabase:
             msg = f"The dataset named '{name}' does not exist."
             raise ValueError(msg)
 
-        existing_output_names = {out.decode() for out in keys_group[name]}
-        all_output_names = set(output_values)
-        missing_names = all_output_names - existing_output_names
+        existing_output_names = [out.decode() for out in keys_group[name]]
+        missing_name_values = {
+            name: value
+            for name, value in output_values.items()
+            if name not in existing_output_names
+        }
 
-        if not missing_names:
+        if not missing_name_values:
             return {}, {}
 
-        missing_name_values = {name: output_values[name] for name in missing_names}
-        all_output_idx_mapping = dict(zip(output_values, range(len(output_values))))
         missing_names_idx_mapping = {
-            name: all_output_idx_mapping[name] for name in missing_names
+            name: i
+            for i, name in enumerate(output_values)
+            if name not in existing_output_names
         }
 
         return missing_name_values, missing_names_idx_mapping
@@ -468,4 +471,5 @@ class HDFDatabase:
         Args:
             data: The data to be exported.
         """
-        self.__pending_arrays.append(data)
+        if data not in self.__pending_arrays:
+            self.__pending_arrays.append(data)
