@@ -1,0 +1,2 @@
+The ``Database`` is now correctly appended at each iteration when
+scalar and vectorial outputs are mixed.
