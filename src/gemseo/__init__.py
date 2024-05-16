@@ -178,6 +178,7 @@ if TYPE_CHECKING:
     from gemseo.post._graph_view import GraphView
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+    from gemseo.scenarios.doe_scenario import DOEScenario as DOEScenario
     from gemseo.scenarios.scenario import Scenario
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
     from gemseo.typing import StrKeyMapping
@@ -2116,6 +2117,11 @@ def sample_disciplines(
     formulation: str = "MDF",
     formulation_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     name: str = "Sampling",
+    backup_file_path: str | Path = "",
+    backup_at_each_iteration: bool = False,
+    backup_at_each_function_call: bool = True,
+    erase_backup: bool = False,
+    load_backup: bool = False,
     **algo_options: Any,
 ) -> IODataset:
     """Sample a set of disciplines associated with an MDO formulation.
@@ -2131,6 +2137,15 @@ def sample_disciplines(
             If empty, use the default ones.
         name: The name of the returned dataset.
             If empty, use the name of the discipline.
+        backup_file_path: The path to the backup file to save the evaluations;
+            if empty, do not use backup file.
+        backup_at_each_iteration: Whether the backup file is updated at every iteration
+            of the sampling to store the database.
+        backup_at_each_function_call: Whether the backup file is updated
+            at every function call.
+        erase_backup: Whether the backup file is erased before the run.
+        load_backup: Whether the backup file is loaded before run,
+            useful after a crash.
         **algo_options: The options of the DOE algorithm.
 
     Returns:
@@ -2156,6 +2171,14 @@ def sample_disciplines(
     if "log_problem" not in algo_options:
         algo_options["log_problem"] = False
 
+    if backup_file_path:
+        scenario.set_optimization_history_backup(
+            backup_file_path,
+            at_each_iteration=backup_at_each_iteration,
+            at_each_function_call=backup_at_each_function_call,
+            erase=erase_backup,
+            load=load_backup,
+        )
     scenario.execute({
         "algo": algo_name,
         "n_samples": n_samples,

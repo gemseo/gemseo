@@ -204,28 +204,30 @@ def test_backup_error(tmp_wd, mdf_scenario) -> None:
         "cannot pre load optimization history and erase it!"
     )
     with pytest.raises(ValueError, match=expected_message):
-        mdf_scenario.set_optimization_history_backup(
-            __file__, erase=True, pre_load=True
-        )
+        mdf_scenario.set_optimization_history_backup(__file__, erase=True, load=True)
 
     with pytest.raises(IOError):
-        mdf_scenario.set_optimization_history_backup(__file__, pre_load=True)
+        mdf_scenario.set_optimization_history_backup(__file__, load=True)
 
 
-@pytest.mark.parametrize("pre_load", [True, False])
-def test_optimization_hist_backup_pre_load(tmp_wd, mdf_scenario, pre_load) -> None:
-    """Test the pre_load option of the optimization history backup."""
-    mdf_scenario.set_optimization_history_backup(SOBIESKI_HDF5_PATH, pre_load=pre_load)
+@pytest.mark.parametrize("load", [True, False])
+def test_optimization_hist_backup_pre_load(tmp_wd, mdf_scenario, load) -> None:
+    """Test the load option of the optimization history backup."""
+    mdf_scenario.set_optimization_history_backup(SOBIESKI_HDF5_PATH, load=load)
     database = mdf_scenario.formulation.optimization_problem.database
-    assert len(database) == 4 if pre_load else len(database) == 0
+    assert len(database) == 4 if load else len(database) == 0
 
 
-@pytest.mark.parametrize("each_store", [True, False])
-def test_optimization_hist_backup_each_store(tmp_wd, mdf_scenario, each_store) -> None:
+@pytest.mark.parametrize("at_each_function_call", [True, False])
+def test_optimization_hist_backup_each_store(
+    tmp_wd, mdf_scenario, at_each_function_call
+) -> None:
     """Test the backup execution at each iteration."""
     file_path = Path("opt_history.h5")
     mdf_scenario.set_optimization_history_backup(
-        file_path, each_new_iter=False, each_store=each_store
+        file_path,
+        at_each_iteration=False,
+        at_each_function_call=at_each_function_call,
     )
 
     inputs = array([
@@ -248,7 +250,7 @@ def test_optimization_hist_backup_each_store(tmp_wd, mdf_scenario, each_store) -
     mdf_scenario.formulation.optimization_problem.database.store(inputs, y_4)
     mdf_scenario.formulation.optimization_problem.database.store(inputs, g_1)
 
-    if each_store:
+    if at_each_function_call:
         backup_problem = OptimizationProblem.from_hdf(file_path)
         assert "-y_4" in backup_problem.database[inputs]
         assert "g_1" in backup_problem.database[inputs]
@@ -267,25 +269,23 @@ def test_optimization_hist_backup_erase(tmp_wd, mdf_scenario, erase) -> None:
     assert not file_exists if erase else file_exists
 
 
-@pytest.mark.parametrize("generate_opt_plot", [True, False])
-def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, generate_opt_plot) -> None:
-    """Test the plot creation with the generate_opt_plot option.
+@pytest.mark.parametrize("plot", [True, False])
+def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, plot) -> None:
+    """Test the plot creation with the plot option.
 
     Four iterations are needed to generate the Hessian approximation plot.
     """
     file_path = Path("opt_history.h5")
-    mdf_scenario.set_optimization_history_backup(
-        file_path, generate_opt_plot=generate_opt_plot
-    )
+    mdf_scenario.set_optimization_history_backup(file_path, plot=plot)
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 4})
-    for plot in [
+    for suffix in [
         "ineq_constraints",
         "objective",
         "variables",
         "x_xstar",
     ]:
-        file_exists = Path(f"opt_history_{plot}.png").exists()
-        assert file_exists if generate_opt_plot else not file_exists
+        file_exists = Path(f"opt_history_{suffix}.png").exists()
+        assert file_exists if plot else not file_exists
 
 
 @pytest.mark.parametrize(
@@ -299,9 +299,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario) -> None:
     tests that when used, the backup does not call the original objective
     """
     filename = "opt_history.h5"
-    mdf_variable_grammar_scenario.set_optimization_history_backup(
-        filename, pre_load=True
-    )
+    mdf_variable_grammar_scenario.set_optimization_history_backup(filename, load=True)
     mdf_variable_grammar_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     opt_read = OptimizationProblem.from_hdf(filename)
 

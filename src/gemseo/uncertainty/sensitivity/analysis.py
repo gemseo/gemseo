@@ -184,7 +184,6 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.default_output_names = self._output_names
         self._input_names = parameter_space.variable_names
         algo_options = dict(algo_options)
-        algo_options["log_problem"] = False
         algo_options["use_one_line_progress_bar"] = True
         self.dataset = sample_disciplines(
             disciplines,

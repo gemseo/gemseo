@@ -380,7 +380,7 @@ def test_partial_execution_from_backup(
     """
     doe_scenario.set_optimization_history_backup("backup.h5")
     doe_scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples_1}})
-    other_doe_scenario.set_optimization_history_backup("backup.h5", pre_load=True)
+    other_doe_scenario.set_optimization_history_backup("backup.h5", load=True)
     other_doe_scenario.execute({
         "algo": "CustomDOE",
         "algo_options": {

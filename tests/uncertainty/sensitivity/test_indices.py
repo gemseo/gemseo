@@ -442,7 +442,9 @@ def test_multiple_disciplines(parameter_space) -> None:
     d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
 
     with concretize_classes(BaseSensitivityAnalysis):
-        sensitivity_analysis = BaseSensitivityAnalysis([d1, d2, d3], parameter_space, 5)
+        sensitivity_analysis = BaseSensitivityAnalysis(
+            [d1, d2, d3], parameter_space, 5, algo="OT_MONTE_CARLO"
+        )
 
     assert sensitivity_analysis.dataset.get_variable_names("inputs") == [
         "x1",
