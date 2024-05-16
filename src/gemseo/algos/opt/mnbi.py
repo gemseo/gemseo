@@ -80,7 +80,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
-    from gemseo.algos.doe.doe_library import DOELibraryOptionType
     from gemseo.algos.driver_library import DriverLibraryOptionType
     from gemseo.algos.optimization_problem import OptimizationResult
     from gemseo.typing import RealArray
@@ -302,7 +301,7 @@ class MNBI(OptimizationLibrary):
         ] = READ_ONLY_EMPTY_DICT,
         sub_optim_max_iter: int | None = None,
         doe_algo: str = "fullfact",
-        doe_algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
+        doe_algo_options: Mapping[str, DriverLibraryOptionType] = READ_ONLY_EMPTY_DICT,
         n_processes: int = 1,
         debug_file_path: str | Path = "debug_history.h5",
         skip_betas: bool = True,

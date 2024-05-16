@@ -161,7 +161,7 @@ if TYPE_CHECKING:
     from logging import Logger
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+    from gemseo.algos.driver_library import DriverLibraryOptionType
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
@@ -1393,7 +1393,7 @@ def execute_algo(
 
     Examples:
         >>> from gemseo import execute_algo
-        >>> from gemseo.problems.analytical.rosenbrock import Rosenbrock
+        >>> from gemseo.problems.optimization.rosenbrock import Rosenbrock
         >>> opt_problem = Rosenbrock()
         >>> opt_result = execute_algo(opt_problem, "SLSQP")
         >>> opt_result
@@ -1796,7 +1796,7 @@ def compute_doe(
     algo_name: str,
     n_samples: int | None = None,
     unit_sampling: bool = False,
-    **options: DOELibraryOptionType,
+    **options: DriverLibraryOptionType,
 ) -> ndarray:
     """Compute a design of experiments (DOE) in a variables space.
 
@@ -2032,7 +2032,7 @@ def wrap_discipline_in_job_scheduler(
         CPUS using the SLURM wrapper, on a HPC, and at most 10 points run in parallel,
         everytime a point of the DOE is computed, another one is submitted to the queue.
 
-        >>> from gemseo.wrappers.job_schedulers.factory import (
+        >>> from gemseo.disciplines.wrappers.job_schedulers.factory import (
         ...     JobSchedulerDisciplineWrapperFactory,
         ... )
         >>> from gemseo import create_discipline, create_scenario, create_mda
