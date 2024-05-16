@@ -60,7 +60,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from gemseo.algos.doe.doe_library import DOELibraryOptionType
+    from gemseo.algos.driver_library import DriverLibraryOptionType
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
     from gemseo.post.dataset.dataset_plot import VariableType
@@ -138,7 +138,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         n_samples: int,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
+        algo_options: Mapping[str, DriverLibraryOptionType] = READ_ONLY_EMPTY_DICT,
         formulation: str = "MDF",
         **formulation_options: Any,
     ) -> None:
