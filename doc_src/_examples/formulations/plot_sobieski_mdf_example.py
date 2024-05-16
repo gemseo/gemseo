@@ -17,8 +17,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-MDF-based MDO on the Sobieski SSBJ test case
+"""MDF-based MDO on the Sobieski SSBJ test case.
 ============================================
 """
 
@@ -52,8 +51,9 @@ disciplines = create_discipline([
 # and outputs) with Python's ``print()`` function. Moreover, we can get the default
 # input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
 for discipline in disciplines:
-    print(discipline)
-    print(f"Default inputs: {discipline.default_inputs}")
+    print(discipline)  # noqa: T201
+    print(f"Default inputs: {discipline.default_inputs}")  # noqa: T201
+
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
@@ -146,16 +146,19 @@ scn_inputs = {"max_iter": 15, "algo": "SLSQP", "algo_options": algo_options}
 #
 #    We can also generate a backup file for the optimization,
 #    as well as plots on the fly of the optimization history if option
-#    ``generate_opt_plot`` is ``True``.
+#    ``plot`` is ``True``.
 #    This slows down a lot the process, here since SSBJ is very light
 #
 #    .. code::
 #
-#     scenario.set_optimization_history_backup(file_path="mdf_backup.h5",
-#                                              each_new_iter=True,
-#                                              each_store=False, erase=True,
-#                                              pre_load=False,
-#                                              generate_opt_plot=True)
+#     scenario.set_optimization_history_backup(
+#         file_path="mdf_backup.h5",
+#         at_each_iteration=True,
+#         at_each_function_call=False,
+#         erase=True,
+#         load=False,
+#         plot=True
+#     )
 
 # %%
 # Execute the scenario

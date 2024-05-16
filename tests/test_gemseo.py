@@ -24,6 +24,7 @@ import logging
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
+from unittest import mock
 
 import pytest
 from numpy import array
@@ -84,6 +85,7 @@ from gemseo import print_configuration
 from gemseo import sample_disciplines
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo import write_design_space
+from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.discipline import MDODiscipline
@@ -1022,3 +1024,65 @@ def test_sample_disciplines_options(disciplines, input_space, caplog):
         dataset.get_view(variable_names="@-out1").to_numpy(), array([[-2.0], [-2.0]])
     )
     assert "Objective" in caplog.text
+
+
+def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
+    """Check that sample_disciplines can use a backup file."""
+    with mock.patch.object(DOEScenario, "set_optimization_history_backup") as method:
+        sample_disciplines(
+            disciplines,
+            input_space,
+            ["out1", "out2"],
+            2,
+            "fullfact",
+        )
+
+    method.assert_not_called()
+
+    sample_disciplines(
+        disciplines,
+        input_space,
+        ["out1", "out2"],
+        2,
+        "fullfact",
+        backup_file_path="database.hdf5",
+    )
+    assert len(Database.from_hdf("database.hdf5")) == 2
+
+    with mock.patch.object(DOEScenario, "set_optimization_history_backup") as method:
+        sample_disciplines(
+            disciplines,
+            input_space,
+            ["out1", "out2"],
+            2,
+            "fullfact",
+            backup_file_path="database.hdf5",
+        )
+
+    assert method.call_args.kwargs == {
+        "at_each_iteration": False,
+        "at_each_function_call": True,
+        "erase": False,
+        "load": False,
+    }
+
+    with mock.patch.object(DOEScenario, "set_optimization_history_backup") as method:
+        sample_disciplines(
+            disciplines,
+            input_space,
+            ["out1", "out2"],
+            2,
+            "fullfact",
+            backup_file_path="database.hdf5",
+            backup_at_each_iteration=True,
+            backup_at_each_function_call=False,
+            erase_backup=True,
+            load_backup=True,
+        )
+
+    assert method.call_args.kwargs == {
+        "at_each_iteration": True,
+        "at_each_function_call": False,
+        "erase": True,
+        "load": True,
+    }

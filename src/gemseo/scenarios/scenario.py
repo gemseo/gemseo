@@ -364,26 +364,25 @@ class Scenario(MDODiscipline):
     def set_optimization_history_backup(
         self,
         file_path: str | Path,
-        each_new_iter: bool = False,
-        each_store: bool = True,
+        at_each_iteration: bool = False,
+        at_each_function_call: bool = True,
         erase: bool = False,
-        pre_load: bool = False,
-        generate_opt_plot: bool = False,
+        load: bool = False,
+        plot: bool = False,
     ) -> None:
-        """Set the backup file for the optimization history during the run.
+        """Set the backup file to store the evaluations of the functions during the run.
 
         Args:
-            file_path: The path to the file to save the history.
-            each_new_iter: Whether the backup file is updated at every iteration
-                of the optimization to store the database.
-            each_store: Whether the backup file is updated at every function call
-                to store the database.
+            file_path: The backup file path.
+            at_each_iteration: Whether the backup file is updated
+                at every iteration of the optimization.
+            at_each_function_call: Whether the backup file is updated
+                at every function call.
             erase: Whether the backup file is erased before the run.
-            pre_load: Whether the backup file is loaded before run,
+            load: Whether the backup file is loaded before run,
                 useful after a crash.
-            generate_opt_plot: Whether to plot the optimization history view
-                at each iteration. The plots will be generated only after the first two
-                iterations.
+            plot: Whether to plot the optimization history view at each iteration.
+                The plots will be generated only after the first two iterations.
 
         Raises:
             ValueError: If both ``erase`` and ``pre_load`` are ``True``.
@@ -392,7 +391,7 @@ class Scenario(MDODiscipline):
         self._opt_hist_backup_path = Path(file_path)
 
         if self._opt_hist_backup_path.exists():
-            if erase and pre_load:
+            if erase and load:
                 msg = (
                     "Conflicting options for history backup, "
                     "cannot pre load optimization history and erase it!"
@@ -404,7 +403,7 @@ class Scenario(MDODiscipline):
                     self._opt_hist_backup_path,
                 )
                 self._opt_hist_backup_path.unlink()
-            elif pre_load:
+            elif load:
                 opt_pb.database.update_from_hdf(self._opt_hist_backup_path)
                 max_iteration = len(opt_pb.database)
                 if max_iteration != 0:
@@ -412,11 +411,11 @@ class Scenario(MDODiscipline):
 
         opt_pb.add_callback(
             self._execute_backup_callback,
-            each_new_iter=each_new_iter,
-            each_store=each_store,
+            each_new_iter=at_each_iteration,
+            each_store=at_each_function_call,
         )
 
-        if generate_opt_plot:
+        if plot:
             opt_pb.add_callback(
                 self._execute_plot_callback, each_new_iter=True, each_store=False
             )
