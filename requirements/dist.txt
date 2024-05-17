@@ -86,7 +86,7 @@ tomli==2.0.1
     # via
     #   build
     #   check-wheel-contents
-twine==5.0.0
+twine==5.1.0
     # via -r requirements/dist.in
 typing-extensions==4.11.0
     # via
@@ -98,5 +98,5 @@ urllib3==2.2.1
     #   twine
 wheel-filename==1.4.1
     # via check-wheel-contents
-zipp==3.18.1
+zipp==3.18.2
     # via importlib-metadata
