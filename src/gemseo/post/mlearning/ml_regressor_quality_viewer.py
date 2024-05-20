@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.mlearning.regression.base_regressor import BaseRegressor
+    from gemseo.typing import RealArray
 
 DatasetPlotOption = ScatterMatrixOption
 
@@ -119,16 +120,18 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         output_name, output_components = output
         if isinstance(output_components, int):
             formatted_output_name = f"{output_name}[{output_components}]"
+            output_components = (output_components,)
         else:
             formatted_output_name = output_name
 
         output_observations = observations.get_view(
             group_names=observations.OUTPUT_GROUP,
-            variable_names=output[0],
-            components=output[1],
-        )
+            variable_names=output_name,
+            components=output_components,
+        ).to_numpy()
         qoi_name, qoi_data = self.__compute_predictions(
-            output[1],
+            output_name,
+            output_components,
             observations,
             output_observations,
             plot_residuals,
@@ -138,7 +141,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         dataset = Dataset()
         dataset.add_variable(qoi_name, qoi_data)
         if input_names is None:
-            dataset.add_variable(formatted_output_name, output_observations.to_numpy())
+            dataset.add_variable(formatted_output_name, output_observations)
         else:
             if not input_names:
                 input_names = self.__algo.input_names
@@ -174,15 +177,17 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
 
     def __compute_predictions(
         self,
-        output_components: int | tuple[int],
+        output_name: str,
+        output_components: tuple[int],
         observations: Dataset,
-        output_observations: Dataset,
+        output_observations: RealArray,
         plot_residuals: bool,
         formatted_output_name: str,
     ) -> tuple[str, ndarray]:
         """Get the observations and some associated data.
 
         Args:
+            output_name: The name of the output.
             output_components: The output component(s).
             observations: The dataset of observations.
             output_observations: The output observations.
@@ -199,17 +204,14 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             observations.get_view(
                 group_names=observations.INPUT_GROUP,
                 variable_names=self.__algo.input_names,
-            ).to_numpy()
-        )
+            ).to_dict_of_arrays()[observations.INPUT_GROUP]
+        )[output_name][:, output_components or Ellipsis]
         if plot_residuals:
-            qoi_values = output_predictions - output_observations.to_numpy()
+            qoi_values = output_predictions - output_observations
             prefix = "R"
         else:
             qoi_values = output_predictions
             prefix = "P"
-
-        if isinstance(output_components, int):
-            qoi_values = qoi_values[:, [output_components]]
 
         return f"{prefix}[{formatted_output_name}]", qoi_values
 

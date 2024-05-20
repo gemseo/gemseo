@@ -1,0 +1,1 @@
+``MLQualityViewer`` displays scalar outputs correctly.

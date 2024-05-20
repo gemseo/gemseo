@@ -38,7 +38,7 @@ def linear_regressor() -> LinearRegressor:
 
     dataset = IODataset()
     dataset.add_input_group(x, "x")
-    dataset.add_output_group(hstack((y, y)), "y", {"y": 2})
+    dataset.add_output_group(hstack((y, y, y)), ["y", "z"], {"y": 2, "z": 1})
 
     return LinearRegressor(dataset)
 
@@ -97,6 +97,14 @@ def test_predictions(
 ) -> None:
     """Check the method plot_predictions_vs_observations."""
     viewer.plot_predictions_vs_observations("y", save=False, show=False)
+
+
+@image_comparison(["predictions_z"], tol=0.01)
+def test_predictions_with_scalar_output(
+    viewer,
+) -> None:
+    """Check the method plot_predictions_vs_observations with a scalar output."""
+    viewer.plot_predictions_vs_observations("z", save=False, show=False)
 
 
 @image_comparison(
