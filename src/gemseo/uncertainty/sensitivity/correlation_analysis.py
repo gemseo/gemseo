@@ -35,9 +35,13 @@ from strenum import StrEnum
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
-from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
-from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
-from gemseo.uncertainty.sensitivity.analysis import OutputsType
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    BaseSensitivityAnalysis,
+)
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    FirstOrderIndicesType,
+)
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import OutputsType
 from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.compatibility.openturns import compute_kendall_tau
 from gemseo.utils.compatibility.openturns import compute_pcc
@@ -72,7 +76,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
     Examples:
         >>> from numpy import pi
         >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty.sensitivity.correlation.analysis import (
+        >>> from gemseo.uncertainty.sensitivity.correlation_analysis import (
         ...     CorrelationAnalysis,
         ... )
         >>>

@@ -65,7 +65,7 @@ if TYPE_CHECKING:
     from gemseo.scenarios.doe_scenario import DOEScenario
 
 
-class _OATSensitivity(MDODiscipline):
+class OATSensitivity(MDODiscipline):
     """A discipline computing finite differences from a multidisciplinary system."""
 
     _PREFIX: ClassVar[str] = "fd"

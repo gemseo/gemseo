@@ -44,8 +44,12 @@ from openturns import Sample
 from openturns import SquaredExponential
 from strenum import StrEnum
 
-from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
-from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    BaseSensitivityAnalysis,
+)
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    FirstOrderIndicesType,
+)
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.seeder import SEED
@@ -88,7 +92,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
     Examples:
         >>> from numpy import pi
         >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty.sensitivity.hsic.analysis import HSICAnalysis
+        >>> from gemseo.uncertainty.sensitivity.hsic_analysis import HSICAnalysis
         >>> from gemseo.problems.uncertainty.ishigami.ishigami_discipline import (
         ...     IshigamiDiscipline,
         ... )

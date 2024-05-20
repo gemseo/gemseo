@@ -25,8 +25,8 @@ import pytest
 
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.uncertainty.sensitivity.correlation import analysis
-from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity import correlation_analysis
+from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
 from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -139,7 +139,7 @@ def test_mock_ot_version(correlation) -> None:
     assert correlation.Method.KENDALL in indices
     assert correlation.Method.SSRC in indices
 
-    with mock.patch.object(analysis, "IS_OT_LOWER_THAN_1_20", new=True):
+    with mock.patch.object(correlation_analysis, "IS_OT_LOWER_THAN_1_20", new=True):
         indices = correlation.compute_indices()
         assert not correlation.kendall
         assert not correlation.ssrc

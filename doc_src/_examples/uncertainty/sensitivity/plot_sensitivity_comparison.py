@@ -28,8 +28,8 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
+from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
 
 configure_logger()
 

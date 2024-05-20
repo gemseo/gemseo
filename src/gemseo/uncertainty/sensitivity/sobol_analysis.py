@@ -125,10 +125,16 @@ from strenum import PascalCaseStrEnum
 from strenum import StrEnum
 
 from gemseo.algos.doe.lib_openturns import OpenTURNS
-from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
-from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
-from gemseo.uncertainty.sensitivity.analysis import SecondOrderIndicesType
-from gemseo.uncertainty.sensitivity.sobol._cv_sobol_algorithm import CVSobolAlgorithm
+from gemseo.uncertainty.sensitivity._cv_sobol_algorithm import CVSobolAlgorithm
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    BaseSensitivityAnalysis,
+)
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    FirstOrderIndicesType,
+)
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    SecondOrderIndicesType,
+)
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import repr_variable
@@ -154,7 +160,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     Examples:
         >>> from numpy import pi
         >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+        >>> from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
         >>> discipline = create_discipline(

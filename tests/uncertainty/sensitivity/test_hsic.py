@@ -37,10 +37,12 @@ from openturns import SquaredExponential
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.uncertainty.sensitivity.hsic.analysis import HSICAnalysis
+from gemseo.uncertainty.sensitivity.hsic_analysis import HSICAnalysis
 
 if TYPE_CHECKING:
-    from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        FirstOrderIndicesType,
+    )
 
 
 @pytest.fixture(params=HSICAnalysis.AnalysisType, scope="module")

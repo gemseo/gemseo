@@ -82,9 +82,13 @@ from strenum import StrEnum
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
-from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
-from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
+from gemseo.uncertainty.sensitivity._oat import OATSensitivity
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    BaseSensitivityAnalysis,
+)
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    FirstOrderIndicesType,
+)
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import repr_variable
 
@@ -301,7 +305,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         for output_name in output_names:
             scenario.add_observable(output_name)
 
-        discipline = _OATSensitivity(scenario, parameter_space, step)
+        discipline = OATSensitivity(scenario, parameter_space, step)
         super().__init__(
             [discipline],
             parameter_space,
@@ -347,7 +351,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         self.max = {name: {} for name in output_names}
         for fd_name, value in fd_data.items():
             value = array([value]).T
-            output_name, input_name = _OATSensitivity.get_io_names(fd_name[1])
+            output_name, input_name = OATSensitivity.get_io_names(fd_name[1])
             if output_name in output_names:
                 lower = self.outputs_bounds[output_name][0]
                 upper = self.outputs_bounds[output_name][1]
