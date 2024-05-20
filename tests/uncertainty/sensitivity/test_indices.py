@@ -35,10 +35,12 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
-from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
-from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    BaseSensitivityAnalysis,
+)
+from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
+from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.testing.helpers import image_comparison
 

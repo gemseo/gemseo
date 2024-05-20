@@ -71,7 +71,9 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
     from gemseo.datasets.dataset import Dataset
     from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
-    from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        BaseSensitivityAnalysis,
+    )
     from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 
 
@@ -298,6 +300,8 @@ def load_sensitivity_analysis(file_path: str | Path) -> BaseSensitivityAnalysis:
     Returns:
         The sensitivity analysis.
     """
-    from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        BaseSensitivityAnalysis,
+    )
 
     return BaseSensitivityAnalysis.from_pickle(file_path)

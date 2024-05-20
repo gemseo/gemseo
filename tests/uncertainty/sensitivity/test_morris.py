@@ -33,8 +33,8 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
-from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
+from gemseo.uncertainty.sensitivity._oat import OATSensitivity
+from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
 from gemseo.utils.testing.helpers import image_comparison
 
 FUNCTION = {
@@ -233,7 +233,7 @@ def oat():
     )
     scenario.add_observable("y2")
 
-    return _OATSensitivity(scenario, space, 0.2)
+    return OATSensitivity(scenario, space, 0.2)
 
 
 def test_oat_get_io_names(oat) -> None:
@@ -294,7 +294,7 @@ def test_oat_with_wrong_step(step) -> None:
     )
 
     with pytest.raises(ValueError, match=expected):
-        _OATSensitivity(scenario, space, step=step)
+        OATSensitivity(scenario, space, step=step)
 
 
 def test_normalize(morris) -> None:
@@ -436,7 +436,7 @@ No coupling in MDA, switching chain_linearize to True\.
 \s
 \*\*\* Start MorrisAnalysisSamplingPhase execution \*\*\*
 MorrisAnalysisSamplingPhase
-   Disciplines: _OATSensitivity
+   Disciplines: OATSensitivity
    MDO formulation: MDF
 Running the algorithm lhs:
     20%\|██        \| 1\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]

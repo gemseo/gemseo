@@ -25,7 +25,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.sensitivity.analysis import BaseSensitivityAnalysis
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    BaseSensitivityAnalysis,
+)
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:

@@ -22,7 +22,7 @@ The package *sensitivity*
 The base class *BaseSensitivityAnalysis*
 ----------------------------------------
 
-.. automodule:: gemseo.uncertainty.sensitivity.analysis
+.. automodule:: gemseo.uncertainty.sensitivity.base_sensitivity_analysis
    :noindex:
 
 Examples

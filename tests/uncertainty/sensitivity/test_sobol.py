@@ -33,7 +33,7 @@ from numpy.testing import assert_almost_equal
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -41,8 +41,12 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.uncertainty.sensitivity.analysis import FirstOrderIndicesType
-    from gemseo.uncertainty.sensitivity.analysis import SecondOrderIndicesType
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        FirstOrderIndicesType,
+    )
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        SecondOrderIndicesType,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -509,7 +513,7 @@ def test_warning_log(sobol, discipline_cv1, cv1_stat, caplog) -> None:
     )
     sobol.compute_indices(control_variates=[cv1])
     sobol.get_intervals()
-    module = "gemseo.uncertainty.sensitivity.sobol.analysis"
+    module = "gemseo.uncertainty.sensitivity.sobol_analysis"
     msg = "Confidence intervals are not yet implemented for CV estimators."
     assert (module, logging.WARNING, msg) in caplog.record_tuples
 
