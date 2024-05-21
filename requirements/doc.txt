@@ -2,7 +2,7 @@
 #    uv pip compile --extra all --extra doc -o requirements/doc.txt --python-version 3.9 pyproject.toml
 alabaster==0.7.16
     # via sphinx
-annotated-types==0.6.0
+annotated-types==0.7.0
     # via pydantic
 autodocsumm==0.2.12
     # via gemseo (pyproject.toml)
@@ -132,7 +132,7 @@ pyxdsm==2.3.0
     # via gemseo (pyproject.toml)
 pyyaml==6.0.1
     # via pybtex
-requests==2.31.0
+requests==2.32.1
     # via
     #   gemseo (pyproject.toml)
     #   sphinx
