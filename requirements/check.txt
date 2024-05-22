@@ -18,7 +18,7 @@ pyyaml==6.0.1
     # via pre-commit
 ruff==0.4.4
     # via -r requirements/check.in
-setuptools==69.5.1
+setuptools==70.0.0
     # via nodeenv
 virtualenv==20.26.2
     # via pre-commit
