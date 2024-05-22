@@ -113,7 +113,7 @@ pytz==2024.1
     # via pandas
 pyxdsm==2.3.0
     # via gemseo (pyproject.toml)
-requests==2.32.1
+requests==2.32.2
     # via gemseo (pyproject.toml)
 scikit-learn==1.4.1.post1
     # via gemseo (pyproject.toml)

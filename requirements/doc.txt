@@ -132,7 +132,7 @@ pyxdsm==2.3.0
     # via gemseo (pyproject.toml)
 pyyaml==6.0.1
     # via pybtex
-requests==2.32.1
+requests==2.32.2
     # via
     #   gemseo (pyproject.toml)
     #   sphinx
