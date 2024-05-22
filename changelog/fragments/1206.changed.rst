@@ -1,0 +1,2 @@
+- API change: ``gemseo.uncertainty.statistics.parametric`` renamed to ``gemseo.uncertainty.statistics.parametric_statistics``.
+- API change: ``gemseo.uncertainty.statistics.empirical`` renamed to ``gemseo.uncertainty.statistics.empirical_statistics``.

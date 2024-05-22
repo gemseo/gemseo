@@ -32,8 +32,8 @@ from gemseo.uncertainty import create_statistics
 from gemseo.uncertainty import get_available_distributions
 from gemseo.uncertainty import get_available_sensitivity_analyses
 from gemseo.uncertainty import load_sensitivity_analysis
-from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
-from gemseo.uncertainty.statistics.parametric import ParametricStatistics
+from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
+from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
 
 
 @pytest.mark.parametrize(

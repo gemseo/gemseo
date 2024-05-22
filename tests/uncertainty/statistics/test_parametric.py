@@ -34,7 +34,7 @@ from numpy.testing import assert_equal
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
-from gemseo.uncertainty.statistics.parametric import ParametricStatistics
+from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
 )

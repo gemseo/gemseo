@@ -94,7 +94,9 @@ class EmpiricalStatistics(BaseStatistics):
         ...     create_parameter_space,
         ...     create_scenario,
         ... )
-        >>> from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+        >>> from gemseo.uncertainty.statistics.empirical_statistics import (
+        ...     EmpiricalStatistics,
+        ... )
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
         >>> discipline = create_discipline(

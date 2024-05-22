@@ -32,7 +32,7 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.lines import Lines
 from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
-from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.testing.helpers import image_comparison
 

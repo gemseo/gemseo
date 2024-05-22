@@ -159,7 +159,9 @@ class ParametricStatistics(BaseStatistics):
         ...     create_parameter_space,
         ...     create_scenario,
         ... )
-        >>> from gemseo.uncertainty.statistics.parametric import ParametricStatistics
+        >>> from gemseo.uncertainty.statistics.parametric_statistics import (
+        ...     ParametricStatistics,
+        ... )
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
         >>> discipline = create_discipline(

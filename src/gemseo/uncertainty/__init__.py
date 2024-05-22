@@ -220,15 +220,13 @@ def create_statistics(
         >>> statistics = create_statistics(dataset)
         >>> mean = statistics.compute_mean()
     """
-    from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics as EmpStats
-    from gemseo.uncertainty.statistics.parametric import (
-        ParametricStatistics as ParamStats,
-    )
+    from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
+    from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
 
     if tested_distributions is None:
-        statistical_analysis = EmpStats(dataset, variable_names, name)
+        statistical_analysis = EmpiricalStatistics(dataset, variable_names, name)
     else:
-        statistical_analysis = ParamStats(
+        statistical_analysis = ParametricStatistics(
             dataset,
             tested_distributions,
             variable_names,
