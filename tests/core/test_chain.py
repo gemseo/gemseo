@@ -266,3 +266,25 @@ def test_jacobian_of_chain_including_splitter() -> None:
     analytic_disc = AnalyticDiscipline({"y": "x_1+x_2"})
     chain = MDOChain([splitter_disc, analytic_disc])
     assert chain.check_jacobian(input_data={"x": array([0.0, 0.0])})
+
+
+def test_non_ndarray_inputs():
+    """Check that MDOParallelChain handles inputs that are not NumPy arrays."""
+
+    class StringDuplicator(MDODiscipline):
+        """A discipline duplicating an input string, e.g. "foo" -> "foofoo"."""
+
+        def __init__(self):  # noqa: D107
+            super().__init__()
+            self.input_grammar.update_from_types({"in": str})
+            self.output_grammar.update_from_types({"out": str})
+            self.default_inputs["in"] = "foo"
+
+        def _run(self) -> None:
+            self.local_data["out"] = self.local_data["in"] * 2
+
+    mdo_parallel_chain = MDOParallelChain([StringDuplicator()])
+    mdo_parallel_chain.execute()
+    assert mdo_parallel_chain.local_data["out"] == "foofoo"
+    mdo_parallel_chain.execute({"in": "bar"})
+    assert mdo_parallel_chain.local_data["out"] == "barbar"
