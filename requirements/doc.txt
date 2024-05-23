@@ -172,7 +172,7 @@ sphinxcontrib-htmlhelp==2.0.5
     # via sphinx
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
-sphinxcontrib-plantuml==0.29
+sphinxcontrib-plantuml==0.30
     # via gemseo (pyproject.toml)
 sphinxcontrib-qthelp==1.0.7
     # via sphinx
