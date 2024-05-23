@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from numpy import ndarray
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
 
@@ -48,8 +49,6 @@ from gemseo.utils.enumeration import merge_enums
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
-
-    from numpy import ndarray
 
 
 # TODO: One class per module.
@@ -398,7 +397,8 @@ class MDOParallelChain(MDODiscipline):
             ]
 
         for value in self.local_data.values():
-            value.flags.writeable = False
+            if isinstance(value, ndarray):
+                value.flags.writeable = False
 
         return [self.local_data] * len(self._disciplines)
 
