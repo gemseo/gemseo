@@ -134,7 +134,7 @@ threadpoolctl==3.5.0
     # via scikit-learn
 tqdm==4.66.2
     # via gemseo (pyproject.toml)
-typing-extensions==4.11.0
+typing-extensions==4.12.0
     # via
     #   gemseo (pyproject.toml)
     #   pydantic

@@ -22,13 +22,13 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from genericpath import exists
 from multiprocessing import RLock
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
 import h5py
-from genericpath import exists
 from h5py import File
 from numpy import append
 from numpy import bytes_
