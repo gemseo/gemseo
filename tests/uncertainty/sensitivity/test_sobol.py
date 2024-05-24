@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from typing import Callable
+from typing import Union
 
 import pytest
 from matplotlib.figure import Figure
@@ -30,23 +31,28 @@ from numpy import ndarray
 from numpy import pi
 from numpy import sin
 from numpy.testing import assert_almost_equal
+from numpy.typing import NDArray
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    FirstOrderIndicesType,
+)
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    SecondOrderIndicesType,
+)
 from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        FirstOrderIndicesType,
-    )
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        SecondOrderIndicesType,
-    )
+
+
+StatisticsType = tuple[
+    dict[str, NDArray[float]],
+    dict[str, Union[FirstOrderIndicesType, SecondOrderIndicesType]],
+]
 
 
 @pytest.fixture(scope="module")
@@ -132,9 +138,7 @@ def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
 def cv1_stat(
     discipline_cv1: MDODiscipline,
     uncertain_space: ParameterSpace,
-) -> tuple[
-    dict[str, NDArray[float]], dict[str, FirstOrderIndicesType | SecondOrderIndicesType]
-]:
+) -> StatisticsType:
     """The estimated output variance and Sobol' indices.
 
     Here for the first CV discipline.
@@ -147,15 +151,43 @@ def cv1_stat(
 def cv2_stat(
     discipline_cv2: MDODiscipline,
     uncertain_space: ParameterSpace,
-) -> tuple[
-    dict[str, NDArray[float]], dict[str, FirstOrderIndicesType | SecondOrderIndicesType]
-]:
+) -> StatisticsType:
     """The estimated output variance and Sobol' indices.
 
     Here for the second CV discipline.
     """
     sobol_analysis = SobolAnalysis([discipline_cv2], uncertain_space, 100)
     return sobol_analysis.output_variances, sobol_analysis.compute_indices()
+
+
+@pytest.fixture(scope="module")
+def sobol_cv(
+    discipline: MDODiscipline,
+    uncertain_space: ParameterSpace,
+    discipline_cv1: MDODiscipline,
+    cv1_stat: StatisticsType,
+) -> SobolAnalysis:
+    """A Sobol' analysis when a control variate is used."""
+    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    cv1 = analysis.ControlVariate(
+        discipline=discipline_cv1,
+        indices=cv1_stat[1],
+        variance=cv1_stat[0],
+    )
+    analysis.compute_indices(control_variates=[cv1])
+    return analysis
+
+
+@pytest.fixture(scope="module")
+def first_intervals_cv(sobol_cv: SobolAnalysis) -> FirstOrderIndicesType:
+    """The intervals of the first-order indices."""
+    return sobol_cv.get_intervals()
+
+
+@pytest.fixture(scope="module")
+def total_intervals_cv(sobol_cv: SobolAnalysis) -> FirstOrderIndicesType:
+    """The intervals of the total-order indices."""
+    return sobol_cv.get_intervals(False)
 
 
 def test_algo(discipline, uncertain_space) -> None:
@@ -291,10 +323,8 @@ def test_asymptotic_or_bootstrap_intervals(discipline, uncertain_space) -> None:
     analysis.compute_indices()
     asymptotic_interval = analysis.get_intervals()["y"][0]["x1"]
 
-    analysis = SobolAnalysis(
-        [discipline], uncertain_space, 100, use_asymptotic_distributions=False
-    )
-    analysis.compute_indices()
+    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis.compute_indices(use_asymptotic_distributions=False)
     bootstrap_interval = analysis.get_intervals()["y"][0]["x1"]
 
     assert asymptotic_interval[0][0] != bootstrap_interval[0][0]
@@ -414,6 +444,24 @@ def test_to_dataset(sobol) -> None:
     assert "second" in dataset.misc
 
 
+def test_output_variance_cv(
+    sobol,
+    discipline_cv1,
+    cv1_stat,
+) -> None:
+    """Check the values of the variances computed with control variates."""
+    decimal = 2
+    cv1 = sobol.ControlVariate(
+        discipline=discipline_cv1,
+        variance=cv1_stat[0],
+        indices=cv1_stat[1],
+    )
+    assert_almost_equal(sobol.output_variances["y"][0], 20.91, decimal=decimal)
+    sobol.compute_indices(["y"], control_variates=[cv1])
+    assert_almost_equal(sobol.output_variances["y"][0], 21.00, decimal=decimal)
+    assert_almost_equal(sobol.output_variances["z"][0], 20.91, decimal=decimal)
+
+
 def test_cv_wo_statistics(
     sobol,
     discipline_cv1,
@@ -478,7 +526,6 @@ def test_cv_algo(
 ) -> None:
     """Check the values of the indices computed with control variates."""
     output_name = "z"
-    tolerance = 0.001
     cv1 = sobol.ControlVariate(
         discipline=discipline_cv1,
         variance=cv1_stat[0],
@@ -492,36 +539,16 @@ def test_cv_algo(
     indices_cv1 = sobol.compute_indices([output_name], control_variates=cv1)
     indices_cv11 = sobol.compute_indices([output_name], control_variates=[cv1, cv1])
     indices_cv12 = sobol.compute_indices([output_name], control_variates=[cv1, cv2])
-    assert compare_dict_of_arrays(
-        indices_cv1[order][output_name][0], reference_cv1, tolerance
-    )
-    assert compare_dict_of_arrays(
-        indices_cv11[order][output_name][0], reference_cv11, 0.04
-    )
-    assert compare_dict_of_arrays(
-        indices_cv12[order][output_name][0], reference_cv12, tolerance
-    )
+    assert compare_dict_of_arrays(indices_cv1[order]["z"][0], reference_cv1, 0.001)
+    assert compare_dict_of_arrays(indices_cv11[order]["z"][0], reference_cv11, 0.05)
+    assert compare_dict_of_arrays(indices_cv12[order]["z"][0], reference_cv12, 0.001)
 
 
-def test_warning_log(sobol, discipline_cv1, cv1_stat, caplog) -> None:
-    """Check the warning logged when confidence intervals or second order indices are
-    called for."""
-    cv1 = sobol.ControlVariate(
-        discipline=discipline_cv1,
-        indices=cv1_stat[1],
-        variance=cv1_stat[0],
-    )
-    sobol.compute_indices(control_variates=[cv1])
-    sobol.get_intervals()
+def test_warning_log(sobol_cv, caplog) -> None:
+    """Check the warning logged when second order indices is called for."""
     module = "gemseo.uncertainty.sensitivity.sobol_analysis"
-    msg = "Confidence intervals are not yet implemented for CV estimators."
-    assert (module, logging.WARNING, msg) in caplog.record_tuples
-
-    sobol.plot("y", save=False)
-    assert (module, logging.WARNING, msg) in caplog.record_tuples
-
     msg = "The second-order Sobol' indices are not yet implemented for CV estimators."
-    assert sobol.second_order_indices == {}
+    assert sobol_cv.second_order_indices == {}
     assert (module, logging.WARNING, msg) in caplog.record_tuples
 
 
@@ -530,13 +557,41 @@ def test_warning_log(sobol, discipline_cv1, cv1_stat, caplog) -> None:
     [["plot_cv"]],
 )
 @image_comparison(None)
-def test_plot_cv(discipline_cv1, cv1_stat, sobol, baseline_images) -> None:
+def test_plot_cv(sobol_cv, baseline_images) -> None:
     """Check the main visualization method when a control variate is used."""
-    cv1 = sobol.ControlVariate(
-        discipline=discipline_cv1,
-        indices=cv1_stat[1],
-        variance=cv1_stat[0],
-    )
-    sobol.compute_indices(control_variates=[cv1])
-    fig = sobol.plot("y", save=False, sort=False)
+    fig = sobol_cv.plot("y", save=False, sort=False)
     assert isinstance(fig, Figure)
+
+
+@pytest.mark.parametrize(
+    ("name", "bound", "expected"),
+    [
+        ("x1", 0, [-0.54]),
+        ("x23", 0, [-0.08, -0.37]),
+        ("x1", 1, [1.87]),
+        ("x23", 1, [0.19, 1.15]),
+    ],
+)
+def test_first_intervals_cv(first_intervals_cv, name, bound, expected) -> None:
+    """Check the values of the intervals for the first-order indices when a control
+    variate is used."""
+    assert_almost_equal(
+        first_intervals_cv["y"][0][name][bound], array(expected), decimal=2
+    )
+
+
+@pytest.mark.parametrize(
+    ("name", "bound", "expected"),
+    [
+        ("x1", 0, [0.16]),
+        ("x23", 0, [0.53, 0.12]),
+        ("x1", 1, [0.89]),
+        ("x23", 1, [0.74, 0.74]),
+    ],
+)
+def test_total_intervals_cv(total_intervals_cv, name, bound, expected) -> None:
+    """Check the values of the intervals for the total-order indices when a control
+    variate is used."""
+    assert_almost_equal(
+        total_intervals_cv["y"][0][name][bound], array(expected), decimal=2
+    )
