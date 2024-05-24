@@ -92,7 +92,7 @@ pluggy==1.5.0
     # via pytest
 psutil==5.9.8
     # via openturns
-pydantic==2.6.4
+pydantic==2.4.0
     # via gemseo (pyproject.toml)
 pydantic-core==2.16.3
     # via pydantic
