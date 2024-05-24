@@ -132,7 +132,7 @@ tenacity==8.3.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
-tqdm==4.66.2
+tqdm==4.66.3
     # via gemseo (pyproject.toml)
 typing-extensions==4.12.0
     # via
