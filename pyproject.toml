@@ -33,7 +33,7 @@ dependencies = [
     "requests",
     "scipy >=1.9,<=1.12.0",
     "strenum >=0.4.9,<=0.4.15",
-    "tqdm >=4.41,<=4.66.2",
+    "tqdm >=4.41,<=4.66.4",
     "typing-extensions >=4,<5",
     "xdsmjs >=1.0.0,<=2.0.0",
     "xxhash >=3.0.0,<=3.4.1",
