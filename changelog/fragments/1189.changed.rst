@@ -1,0 +1,2 @@
+API CHANGE: The argument ``use_asymptotic_distributions`` is no longer an instantiation argument but an argument of
+``SobolAnalysis.compute_indices``.

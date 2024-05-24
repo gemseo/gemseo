@@ -85,7 +85,7 @@ This methodology relies on the :class:`.SobolAnalysis` class. Precisely,
 :attr:`.SobolAnalysis.indices` contains
 both :attr:`.SobolAnalysis.first_order_indices` and
 :attr:`.SobolAnalysis.total_order_indices`
-while :attr:`.SobolAnalysis.main_indices` represents total-order Sobol'
+while :attr:`.SobolAnalysis.main_indices` represents first-order Sobol'
 indices.
 Lastly, the :meth:`.SobolAnalysis.plot` method represents
 the estimations of both first-order and total-order Sobol' indices along with
@@ -94,6 +94,10 @@ their confidence intervals whose default level is 95%.
 The user can select the algorithm to estimate the Sobol' indices.
 The computation relies on
 `OpenTURNS capabilities <https://openturns.github.io/www/>`_.
+
+Control variates can be given to compute indices. In this case, the algorithm selection
+is disregarded and the estimation is based on the Monte Carlo estimator proposed by
+Saltelli in :cite:`saltelli2010`.
 """
 
 from __future__ import annotations
@@ -113,11 +117,14 @@ from typing import Final
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 from numpy import array
+from numpy import hstack
 from numpy import newaxis
 from numpy import vstack
+from numpy.random import default_rng
 from openturns import JansenSensitivityAlgorithm
 from openturns import MartinezSensitivityAlgorithm
 from openturns import MauntzKucherenkoSensitivityAlgorithm
+from openturns import ResourceMap
 from openturns import SaltelliSensitivityAlgorithm
 from openturns import Sample
 from pandas import Series
@@ -137,6 +144,7 @@ from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
 )
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -181,8 +189,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         >>> analysis = SobolAnalysis([discipline], parameter_space, n_samples=10000)
         >>> indices = analysis.compute_indices()
 
-    .. note:: Confidence intervals and second-order Sobol' indices are not yet
-    implemented for cv estimators.
+    .. note:: The second-order Sobol' indices cannot be yet estimated with control
+    variates.
     """
 
     class Algorithm(PascalCaseStrEnum):
@@ -224,8 +232,10 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         used by ``SobolAnalysis``.
         """
 
-        indices: Mapping[str, FirstOrderIndicesType] = field(default_factory=dict)
-        """The mapping between output names and first-order Sobol' indices.
+        indices: Mapping[SobolAnalysis.Method, FirstOrderIndicesType] = field(
+            default_factory=dict
+        )
+        """The mapping between method names and first-order Sobol' indices.
 
         If empty, ``SobolAnalysis`` will compute it.
         """
@@ -249,6 +259,20 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     __GET_FIRST_ORDER_INDICES: Final[str] = "getFirstOrderIndices"
     __GET_SECOND_ORDER_INDICES: Final[str] = "getSecondOrderIndices"
     __GET_TOTAL_ORDER_INDICES: Final[str] = "getTotalOrderIndices"
+
+    __SETTINGS_TO_INTERVAL_GETTERS: Final[dict[tuple[bool, bool], str]] = {
+        (True, True): "first_indices_interval",
+        (True, False): "total_indices_interval",
+        (False, True): "getFirstOrderIndicesInterval",
+        (False, False): "getTotalOrderIndicesInterval",
+    }
+    """A mapping from settings to the name of the interval getter.
+
+    The settings are the following boolean parameters:
+    - Whether control variates are used or not.
+    - Whether the order of the computed Sobol' index is the first order or the total
+    order.
+    """
 
     DEFAULT_DRIVER: ClassVar[str] = OpenTURNS.OT_SOBOL_INDICES
 
@@ -274,17 +298,11 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         algo_options: Mapping[str, DriverLibraryOptionType] = READ_ONLY_EMPTY_DICT,
         formulation: str = "MDF",
         compute_second_order: bool = True,
-        use_asymptotic_distributions: bool = True,
         **formulation_options: Any,
     ) -> None:
         r"""
         Args:
             compute_second_order: Whether to compute the second-order indices.
-            use_asymptotic_distributions: Whether to estimate
-                the confidence intervals
-                of the first- and total-order Sobol' indices
-                with the asymptotic distributions;
-                otherwise, use bootstrap.
 
         Notes:
              The estimators of Sobol' indices rely on the same DOE algorithm.
@@ -316,7 +334,6 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             **formulation_options,
         )
         self.__eval_second_order = compute_second_order
-        self.__use_asymptotic_distributions = use_asymptotic_distributions
         self._main_method = self.Method.FIRST
         dataset = self.dataset
         self.__parameter_space = parameter_space
@@ -333,26 +350,18 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             2 + n_inputs * (1 + (compute_second_order and n_inputs > 2))
         )
 
-        # Variance computation.
-        _output_variances = (
+        self.output_variances = split_array_to_dict_of_arrays(
             dataset.get_view(group_names=dataset.OUTPUT_GROUP)
             .to_numpy()[: 2 * self.__sample_size]
-            .var(0)
+            .var(0),
+            dataset.variable_names_to_n_components,
+            self._output_names,
         )
-        self.output_variances = {
-            column[1]: []
-            for column in dataset.get_view(group_names=dataset.OUTPUT_GROUP).columns
-        }
-        for i, column in enumerate(
-            dataset.get_view(group_names=dataset.OUTPUT_GROUP).columns
-        ):
-            self.output_variances[column[1]].extend([_output_variances[i]])
-
-        self.output_variances = {k: array(v) for k, v in self.output_variances.items()}
 
         self.output_standard_deviations = {
             k: v**0.5 for k, v in self.output_variances.items()
         }
+
         self.__use_control_variates = False
 
     def __execute_cv(
@@ -414,6 +423,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         output_names: Sequence[str],
         algo: Algorithm = Algorithm.SALTELLI,
         confidence_level: float = 0.95,
+        use_asymptotic_distributions: bool = True,
+        n_replicates: int = 100,
     ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
         """Compute the sensitivity indices with OpenTURNS capabilities.
 
@@ -421,11 +432,23 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             output_names: The disciplines' outputs to be considered for the analysis.
             algo: The name of the algorithm to estimate the Sobol' indices.
             confidence_level: The level of the confidence intervals.
+            use_asymptotic_distributions: Whether to estimate
+                the confidence intervals
+                of the first- and total-order Sobol' indices
+                with the asymptotic distributions;
+                otherwise, use bootstrap.
+                If control variates are used, the confidence intervals can only be
+                estimated via bootstrap.
+            n_replicates: The number of bootstrap samples used for the computation of
+                the confidence intervals.
 
         Returns:
             The sensitivity indices.
         """
         algo_class = self.__ALGO_NAME_TO_CLASS[algo]
+        ResourceMap.SetAsUnsignedInteger(
+            "SobolIndicesAlgorithm-DefaultBootstrapSize", n_replicates
+        )
         input_data = Sample(
             self.dataset.get_view(
                 group_names=self.dataset.INPUT_GROUP, variable_names=self._input_names
@@ -442,9 +465,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                     Sample(sub_output_data[:, newaxis]),
                     self.__sample_size,
                 )
-                ot_algo.setUseAsymptoticDistribution(
-                    self.__use_asymptotic_distributions
-                )
+                ot_algo.setUseAsymptoticDistribution(use_asymptotic_distributions)
                 ot_algo.setConfidenceLevel(confidence_level)
                 algos.append(ot_algo)
 
@@ -459,17 +480,36 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         self,
         output_names: Sequence[str],
         control_variates: Iterable[ControlVariate],
+        confidence_level: float = 0.95,
+        n_replicates: int = 100,
+        seed: int | None = SEED,
     ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
         """Compute the sensitivity indices using control variates.
 
         Args:
             output_names: The disciplines' outputs to be considered for the analysis.
             control_variates: The control variates.
+            confidence_level: The level of the confidence intervals.
+            n_replicates: The number of bootstrap samples used for the computation of
+                the confidence intervals.
+            seed: The seed to initialize the random generator used for the bootstrapping
+                method.
+                If ``None``,
+                then fresh, unpredictable entropy will be pulled from the OS.
 
         Returns:
             The sensitivity indices.
         """
-        n_samples_wo_second_order = self.__sample_size * (2 + self.__n_inputs)
+        n = self.__sample_size
+
+        generator = default_rng(seed)
+        bootstrap_samples = []
+        for _ in range(n_replicates):
+            bootstrap_sample_a = generator.choice(n, n)
+            bootstrap_sample_ab = hstack([bootstrap_sample_a, bootstrap_sample_a + n])
+            bootstrap_samples.append((bootstrap_sample_a, bootstrap_sample_ab))
+
+        n_samples_wo_second_order = n * (2 + self.__n_inputs)
 
         control_variates = [self.__compute_cv_stats(cv) for cv in control_variates]
 
@@ -506,14 +546,16 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                     )
                     for cv in control_variates
                 ]
-                algos.append(
-                    CVSobolAlgorithm(
-                        self.__n_inputs,
-                        sub_output_data,
-                        array(sub_cvs_output_data),
-                        sub_cvs_statistics,
-                    )
+                algo = CVSobolAlgorithm(
+                    self.__n_inputs,
+                    sub_output_data,
+                    array(sub_cvs_output_data),
+                    sub_cvs_statistics,
+                    bootstrap_samples,
+                    confidence_level,
                 )
+                algos.append(algo)
+                self.output_variances[output_name][i] = algo.variance
 
         self._indices = {
             self.Method.FIRST: self.__get_indices("compute_first_indices"),
@@ -529,12 +571,28 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         algo: Algorithm = Algorithm.SALTELLI,
         confidence_level: float = 0.95,
         control_variates: ControlVariate | Iterable[ControlVariate] = (),
+        use_asymptotic_distributions: bool = True,
+        n_replicates: int = 100,
+        seed: int | None = SEED,
     ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
         """
         Args:
             algo: The name of the algorithm to estimate the Sobol' indices.
             confidence_level: The level of the confidence intervals.
             control_variates: The control variates based on cheap disciplines.
+            use_asymptotic_distributions: Whether to estimate
+                the confidence intervals
+                of the first- and total-order Sobol' indices
+                with the asymptotic distributions;
+                otherwise, use bootstrap.
+                If control variates are used, the confidence intervals can only be
+                estimated via bootstrap.
+            n_replicates: The number of bootstrap samples used for the computation of
+                the confidence intervals.
+            seed: The seed to initialize the random generator used for the bootstrapping
+                method when the indices are estimated using control variates.
+                If ``None``,
+                then fresh, unpredictable entropy will be pulled from the OS.
         """  # noqa:D205,D212,D415
         output_names = outputs or self.default_output_names
         if isinstance(output_names, str):
@@ -546,12 +604,20 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             if isinstance(control_variates, self.ControlVariate):
                 control_variates = [control_variates]
             self.__use_control_variates = True
-            return self.__compute_indices_using_cv(output_names, control_variates)
+            return self.__compute_indices_using_cv(
+                output_names,
+                control_variates,
+                confidence_level,
+                n_replicates,
+                seed,
+            )
 
         return self.__compute_indices_classically(
             output_names,
             algo,
             confidence_level,
+            use_asymptotic_distributions,
+            n_replicates,
         )
 
     def __get_indices(
@@ -560,7 +626,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         """Get the first-, second- or total-order indices.
 
         Args:
-            method_name: The name of the OpenTURNS method to compute the indices.
+            method_name: The name of the sensitivity method to compute the indices.
 
         Returns:
             The first-, second- or total-order indices.
@@ -749,35 +815,33 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                         }
                     ]
                 }
-
-        .. note:: Not yet implemented for cv estimators.
         """
-        if self.__use_control_variates:
-            LOGGER.warning(
-                "Confidence intervals are not yet implemented for CV estimators."
-            )
-            return {}
+        use_cv = self.__use_control_variates
         names_to_sizes = self.dataset.variable_names_to_n_components
         intervals = {}
         for output_name, sobol_algos in self.__output_names_to_sobol_algos.items():
             intervals[output_name] = []
             for sobol_algorithm in sobol_algos:
-                if first_order:
-                    interval = sobol_algorithm.getFirstOrderIndicesInterval()
-                else:
-                    interval = sobol_algorithm.getTotalOrderIndicesInterval()
-
+                interval = getattr(
+                    sobol_algorithm,
+                    self.__SETTINGS_TO_INTERVAL_GETTERS[use_cv, first_order],
+                )
+                if not use_cv:
+                    interval = array([
+                        interval().getLowerBound(),
+                        interval().getUpperBound(),
+                    ])
                 names_to_lower_bounds = split_array_to_dict_of_arrays(
-                    array(interval.getLowerBound()), names_to_sizes, self._input_names
+                    interval[0], names_to_sizes, self._input_names
                 )
                 names_to_upper_bounds = split_array_to_dict_of_arrays(
-                    array(interval.getUpperBound()), names_to_sizes, self._input_names
+                    interval[1], names_to_sizes, self._input_names
                 )
                 intervals[output_name].append({
-                    input_name: (
+                    input_name: array([
                         names_to_lower_bounds[input_name],
                         names_to_upper_bounds[input_name],
-                    )
+                    ])
                     for input_name in self._input_names
                 })
 
@@ -876,34 +940,6 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         ax.set_axisbelow(True)
         ax.grid()
 
-        if self.__use_control_variates:
-            LOGGER.warning(
-                "Confidence intervals are not yet implemented for CV estimators."
-            )
-            ax.plot(
-                x_labels,
-                values_first_order,
-                "o",
-                label="First order",
-            )
-            ax.plot(
-                x_labels,
-                values_total_order,
-                "o",
-                label="Total order",
-            )
-            ax.legend(loc="lower left")
-            self._save_show_plot(
-                fig,
-                save=save,
-                show=show,
-                file_path=file_path,
-                file_name=file_name,
-                file_format=file_format,
-                directory_path=directory_path,
-            )
-            return fig
-
         intervals = self.get_intervals()
         intervals = intervals[output_name][output_component]
         errorbar_options = {"marker": "o", "linestyle": "", "markersize": 7}
@@ -911,8 +947,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         trans2 = Affine2D().translate(+0.01, 0.0) + ax.transData
         yerr = array([
             [
-                first_order_indices[name][index] - intervals[name][0][index],
-                intervals[name][1][index] - first_order_indices[name][index],
+                first_order_indices[name][index] - intervals[name][0, index],
+                intervals[name][1, index] - first_order_indices[name][index],
             ]
             for name in names
             for index in range(names_to_sizes[name])
@@ -930,8 +966,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         intervals = intervals[output_name][output_component]
         yerr = array([
             [
-                total_order_indices[name][index] - intervals[name][0][index],
-                intervals[name][1][index] - total_order_indices[name][index],
+                total_order_indices[name][index] - intervals[name][0, index],
+                intervals[name][1, index] - total_order_indices[name][index],
             ]
             for name in names
             for index in range(names_to_sizes[name])

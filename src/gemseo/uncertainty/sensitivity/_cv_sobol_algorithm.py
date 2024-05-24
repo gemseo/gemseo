@@ -60,7 +60,7 @@ Given the function of interest :math:`f` from :math:`\mathbb{R}^d` to
 the numerator of the first-order index of :math:`X_i` is
 :math:`\theta := V_{i} = \mathbb{V}[\mathbb{E}[Y|X_i]]`.
 
-Its Monte Carlo estimator proposed by Saltelli (2010) is
+Its Monte Carlo estimator proposed by Saltelli in :cite:`saltelli2010` is
 
 .. math::
    \hat{\theta} := \hat{V}_{i} = \hat{E}[Y(Y^{(i)}-Y')]
@@ -110,6 +110,7 @@ where :math:`\mathbf{A}^{\odot 2}` is the element-wise square of :math:`\mathbf{
 
 from __future__ import annotations
 
+import contextlib
 from itertools import starmap
 from typing import TYPE_CHECKING
 from typing import Callable
@@ -118,13 +119,18 @@ from numpy import array
 from numpy import cov
 from numpy import diag
 from numpy import newaxis
+from numpy import quantile
+from numpy import vstack
 from numpy import zeros
-from numpy.linalg import det
+from numpy.linalg import LinAlgError
 from scipy.linalg import solve
 
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.typing import IntegerArray
     from gemseo.typing import RealArray
 
 
@@ -133,6 +139,9 @@ class CVSobolAlgorithm:
 
     This algorithm is based on the pick-and-freeze (PF) technique.
     """
+
+    __confidence_level: float
+    """The level of the confidence intervals."""
 
     __cv_indices: tuple[dict[str, dict[str, RealArray]]]
     """The output Sobol' indices of the ``n_control_variates`` control variates."""
@@ -164,6 +173,12 @@ class CVSobolAlgorithm:
     Shape: ``(n_inputs, sample_size)``.
     """
 
+    __first_indices_interval: RealArray
+    """The bootstrap confidence intervals for the first-order Sobol' indices.
+
+    Shape: ``(2, n_inputs)``.
+    """
+
     __g_a: RealArray
     """The CV output data for the samples ``1`` to ``sample_size``.
 
@@ -192,8 +207,14 @@ class CVSobolAlgorithm:
     """The number of independent samples composing each of the two independent input
     datasets used for Sobol' analysis."""
 
-    __variance: float
-    """The output variance estimated with control variates expressed."""
+    __total_indices_interval: RealArray
+    """The bootstrap confidence intervals for the total-order Sobol' indices.
+
+    Shape: ``(2, n_inputs)``.
+    """
+
+    variance: float
+    """The output variance estimated with control variates."""
 
     def __init__(
         self,
@@ -201,6 +222,8 @@ class CVSobolAlgorithm:
         output_data: RealArray,
         cv_output_data: RealArray,
         cv_statistics: list[tuple[float, dict[str, dict[str, RealArray]]]],
+        bootstrap_samples: Iterable[tuple[IntegerArray, IntegerArray]],
+        confidence_level: float = 0.95,
     ) -> None:
         """
         Args:
@@ -211,6 +234,9 @@ class CVSobolAlgorithm:
                 sensitivity indices shaped as ``(n_control_variates, n_samples)``.
             cv_statistics: For each control variate, the variance of the output
                 and the Sobol' indices of the form ``{order: {input_name: numerator}``.
+            bootstrap_samples: The bootstrap samples used for the computation of the
+                confidence intervals.
+            confidence_level: The level of the confidence intervals.
         """  # noqa: D205, D212
         self.__n_inputs = n_inputs
         self.__sample_size = sample_size = len(output_data) // (2 + n_inputs)
@@ -238,7 +264,9 @@ class CVSobolAlgorithm:
         ])
 
         self.__cv_variance, self.__cv_indices = zip(*cv_statistics)
-        self.__variance = self.__compute_variance()
+        self.variance = self.__compute_variance()
+        self.__confidence_level = confidence_level
+        self.__bootstrap_samples = bootstrap_samples
 
     @staticmethod
     def __compute_statistic(
@@ -263,13 +291,66 @@ class CVSobolAlgorithm:
             The statistics estimated using control variates shaped as
             ``(n_statistics,)``.
         """
-        alpha_star = array([
-            solve(covariance[1:, 1:], covariance[0, 1:], assume_a="sym")
-            if det(covariance[1:, 1:]) != 0
-            else zeros([covariance.shape[0] - 1])
-            for covariance in covariances
-        ])
+        alpha_star = zeros([len(covariances), mc_cv_stats.shape[1]])
+        for i, covariance in enumerate(covariances):
+            with contextlib.suppress(LinAlgError):
+                alpha_star[i, :] = solve(
+                    covariance[1:, 1:],
+                    covariance[0, 1:],
+                    assume_a="sym",
+                    overwrite_a=True,
+                    overwrite_b=True,
+                )
         return mc_stats - (alpha_star * (mc_cv_stats - cv_stats)).sum(axis=1)
+
+    def __compute_intervals(
+        self, f_s: Iterable[RealArray], g_s: Iterable[RealArray], cv_stats: RealArray
+    ) -> RealArray:
+        """Compute the confidence intervals via bootstrap.
+
+        Args:
+            f_s: The statistics output data;
+                one matrix shaped as ``(n_samples,)`` per control variate.
+            g_s: The statistics output data of the control variates;
+                one matrix shaped as ``(n_control_variates, n_samples)`` per control
+                variate.
+            cv_stats: The CV statistics
+                shaped as ``(n_statistics, n_control_variates)``.
+
+        Returns:
+            The confidence intervals shaped as ``(2, n_inputs,)``.
+        """
+        n_statistics = cv_stats.shape[0]
+        stats = zeros([len(list(self.__bootstrap_samples)), n_statistics])
+        n = self.__sample_size
+        for k, (samples_a, samples_ab) in enumerate(self.__bootstrap_samples):
+            cov_f_g_b = cov(self.__f_ab[samples_ab], self.__g_ab[:, samples_ab])
+            cov_f2_cg2_b = cov(
+                self.__f_ab[samples_ab] ** 2, self.__g_ab[:, samples_ab] ** 2
+            )
+            var_b = self.__compute_statistic(
+                cov_f_g_b[0, 0],
+                diag(cov_f_g_b[1:, 1:])[newaxis, :],
+                array(self.__cv_variance, ndmin=2),
+                [cov_f2_cg2_b + 2 / (2 * n - 1) * cov_f_g_b**2],
+            )[0]
+
+            f_s_b = [f_i[samples_a] for f_i in f_s]
+            g_s_b = [g_i[:, samples_a] for g_i in g_s]
+            stats[k, :] = (
+                self.__compute_statistic(
+                    array([f_s_b_i.mean(axis=-1) for f_s_b_i in f_s_b]),
+                    array([g_s_b_i.mean(axis=-1) for g_s_b_i in g_s_b]),
+                    cv_stats / self.variance * var_b,
+                    list(starmap(cov, zip(f_s_b, g_s_b))),
+                )
+                / var_b
+            )
+        prob = (1.0 - self.__confidence_level) / 2
+        return vstack([
+            quantile(stats, prob, axis=0),
+            quantile(stats, 1 - prob, axis=0),
+        ])
 
     def __compute_variance(self) -> float:
         """Compute the variance using control variates.
@@ -289,8 +370,8 @@ class CVSobolAlgorithm:
 
     def __compute_indices(
         self, order: str, func: Callable[[RealArray, RealArray, RealArray], RealArray]
-    ) -> RealArray:
-        """Compute the Sobol' indices.
+    ) -> tuple[RealArray, RealArray]:
+        """Compute the Sobol' indices and their confidence intervals.
 
         Args:
             order: The order of the Sobol' indices.
@@ -298,10 +379,11 @@ class CVSobolAlgorithm:
             associated to the estimator of the Sobol' indices.
 
         Returns:
-            The Sobol' indices of the given order as ``(n_inputs,)``.
+            The Sobol' indices of the given order shaped as ``(n_inputs,)`` and their
+            confidence intervals shaped as ``(2, n_inputs)``.
         """
         cv_indices_numerator = (
-            self.__variance
+            self.variance
             * array([
                 concatenate_dict_of_arrays_to_array(
                     indices[order], indices[order].keys()
@@ -320,7 +402,8 @@ class CVSobolAlgorithm:
                 cv_indices_numerator,
                 list(starmap(cov, zip(f_s, g_s))),
             )
-            / self.__variance
+            / self.variance,
+            self.__compute_intervals(f_s, g_s, cv_indices_numerator),
         )
 
     def compute_first_indices(self) -> RealArray:
@@ -329,9 +412,10 @@ class CVSobolAlgorithm:
         Returns:
             The first-order Sobol' indices shaped as ``(n_inputs,)``.
         """
-        return self.__compute_indices(
+        first_indices, self.__first_indices_interval = self.__compute_indices(
             "first", lambda f_a, f_b, f_mix: f_b * (f_mix - f_a)
         )
+        return first_indices
 
     def compute_total_indices(self) -> RealArray:
         """Compute the total-order Sobol' indices.
@@ -339,6 +423,31 @@ class CVSobolAlgorithm:
         Returns:
             The total-order Sobol' indices shaped as ``(n_inputs,)``.
         """
-        return self.__compute_indices(
+        total_indices, self.__total_indices_interval = self.__compute_indices(
             "total", lambda f_a, f_b, f_mix: (f_a - f_mix) ** 2 / 2
         )
+        return total_indices
+
+    @property
+    def first_indices_interval(self) -> RealArray:
+        """The confidence interval of the first-order Sobol' indices.
+
+        Warnings:
+            You must first call :meth:`.compute_first_indices`.
+
+        Returns:
+            The confidence intervals shaped as ``(2, n_inputs)``.
+        """
+        return self.__first_indices_interval
+
+    @property
+    def total_indices_interval(self) -> RealArray:
+        """The confidence intervals of the total-order Sobol' indices.
+
+        Warnings:
+            You must first call :meth:`.compute_total_indices`.
+
+        Returns:
+            The confidence intervals shaped as ``(2, n_inputs)``.
+        """
+        return self.__total_indices_interval
