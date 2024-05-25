@@ -51,7 +51,7 @@ all = [
     "scikit-learn >=1,<=1.4.1.post1",
     "sympy >=1.5,<=1.12",
     # xlwings > 0.30.4 fails test with multi-threading.
-    "xlwings >=0.27.0,<=0.30.4 ; platform_system=='Windows'",
+    "xlwings >=0.27.0,<=0.31.3 ; platform_system=='Windows'",
     "pillow >=9.5.0,<=10.2.0",
     "plotly >=5.7.0,<=5.20.0"
 ]
