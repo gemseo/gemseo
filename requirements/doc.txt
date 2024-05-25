@@ -108,7 +108,7 @@ pybtex==0.24.0
     #   sphinxcontrib-bibtex
 pybtex-docutils==1.0.3
     # via sphinxcontrib-bibtex
-pydantic==2.6.4
+pydantic==2.4.0
     # via gemseo (pyproject.toml)
 pydantic-core==2.16.3
     # via pydantic
