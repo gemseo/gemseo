@@ -1,0 +1,1 @@
+``RemappingDiscipline`` uses the same types for the grammar elements as the grammars of the underlying discipline.
