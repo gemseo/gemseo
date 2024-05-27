@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import zeros
 from numpy.testing import assert_equal
 
 from gemseo.core.discipline import MDODiscipline
@@ -34,13 +35,23 @@ class NewDiscipline(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__(name="foo")
-        self.input_grammar.update_from_names(["in_1", "in_2"])
-        self.output_grammar.update_from_names(["out_1", "out_2"])
-        self.default_inputs = {"in_1": array([1.0]), "in_2": array([2.0, 3.0])}
+        default_inputs = {
+            "in_1": array([1.0]),
+            "in_2": array([2.0, 3.0]),
+            "in_3": array(["zero"]),
+        }
+        self.input_grammar.update_from_data(default_inputs)
+        self.output_grammar.update_from_data({
+            "out_1": array([2.0]),
+            "out_2": array([1.0, 2.0]),
+            "out_3": array(["zero plus one"]),
+        })
+        self.default_inputs = default_inputs
 
     def _run(self) -> None:
         self.local_data["out_1"] = self.local_data["in_1"] + 1
         self.local_data["out_2"] = self.local_data["in_2"] - 1
+        self.local_data["out_3"] = array([f"{self.local_data['in_3'][0]} plus one"])
 
     def _compute_jacobian(
         self,
@@ -48,10 +59,20 @@ class NewDiscipline(MDODiscipline):
         outputs: Iterable[str] | None = None,
     ) -> None:
         self.jac = {
-            "out_1": {"in_1": array([[1.0]]), "in_2": array([[1.0, 1.0]])},
+            "out_1": {
+                "in_1": array([[1.0]]),
+                "in_2": array([[1.0, 1.0]]),
+                "in_3": zeros((1, 1)),
+            },
             "out_2": {
                 "in_1": array([[1.0], [1.0]]),
                 "in_2": array([[1.0, 1.0], [1.0, 1.0]]),
+                "in_3": zeros((2, 1)),
+            },
+            "out_3": {
+                "in_1": zeros((1, 1)),
+                "in_2": zeros((1, 2)),
+                "in_3": zeros((1, 1)),
             },
         }
 
@@ -65,8 +86,9 @@ def discipline(module_tmp_wd, request) -> MDODiscipline:
             "new_in_1": "in_1",
             "new_in_2": ("in_2", 0),
             "new_in_3": ("in_2", 1),
+            "new_in_4": ("in_3"),
         },
-        {"new_out_1": "out_1", "new_out_2": "out_2"},
+        {"new_out_1": "out_1", "new_out_2": "out_2", "new_out_3": "out_3"},
     )
     if not request.param:
         # Use the original remapping discipline
@@ -102,14 +124,24 @@ def test_io_names(discipline) -> None:
         "new_in_1",
         "new_in_2",
         "new_in_3",
+        "new_in_4",
     ]
-    assert list(discipline.get_output_data_names()) == ["new_out_1", "new_out_2"]
+    assert list(discipline.get_output_data_names()) == [
+        "new_out_1",
+        "new_out_2",
+        "new_out_3",
+    ]
 
 
 def test_default_inputs(discipline) -> None:
     """Check the default inputs when missing in original discipline."""
     assert_equal(
-        {"new_in_1": array([1.0]), "new_in_2": array([2.0]), "new_in_3": array([3.0])},
+        {
+            "new_in_1": array([1.0]),
+            "new_in_2": array([2.0]),
+            "new_in_3": array([3.0]),
+            "new_in_4": array(["zero"]),
+        },
         discipline.default_inputs,
     )
 
@@ -119,6 +151,7 @@ def test_execute(discipline) -> None:
     discipline.execute()
     assert_equal(discipline.local_data["new_out_1"], array([2.0]))
     assert_equal(discipline.local_data["new_out_2"], array([1.0, 2.0]))
+    assert_equal(discipline.local_data["new_out_3"], array(["zero plus one"]))
 
 
 def test_linearize(discipline) -> None:
@@ -131,11 +164,19 @@ def test_linearize(discipline) -> None:
                 "new_in_1": array([[1.0]]),
                 "new_in_2": array([[1.0]]),
                 "new_in_3": array([[1.0]]),
+                "new_in_4": zeros((1, 1)),
             },
             "new_out_2": {
                 "new_in_1": array([[1.0], [1.0]]),
                 "new_in_2": array([[1.0], [1.0]]),
                 "new_in_3": array([[1.0], [1.0]]),
+                "new_in_4": zeros((2, 1)),
+            },
+            "new_out_3": {
+                "new_in_1": zeros((1, 1)),
+                "new_in_2": zeros((1, 1)),
+                "new_in_3": zeros((1, 1)),
+                "new_in_4": zeros((1, 1)),
             },
         },
     )
@@ -156,3 +197,28 @@ def test_format_mapping(mapping, expected) -> None:
         mapping
     )
     assert formatted_mapping == expected
+
+
+def test_input_grammar(discipline):
+    """Check the input grammar of the remapping discipline."""
+    assert discipline.input_grammar._validate(
+        {
+            "new_in_1": array([1.0]),
+            "new_in_2": array([2.0]),
+            "new_in_3": array([3.0]),
+            "new_in_4": array(["zero"]),
+        },
+        "",
+    )
+
+
+def test_output_grammar(discipline):
+    """Check the output grammar of the remapping discipline."""
+    assert discipline.output_grammar._validate(
+        {
+            "new_out_1": array([2.0]),
+            "new_out_2": array([1.0, 2.0]),
+            "new_out_3": array(["zero plus one"]),
+        },
+        "",
+    )

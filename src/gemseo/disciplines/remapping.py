@@ -19,13 +19,19 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from copy import deepcopy
 from functools import singledispatchmethod
+from typing import TYPE_CHECKING
 from typing import Union
 
 from numpy import empty
 from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
+
+if TYPE_CHECKING:
+    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.grammars.defaults import Defaults
 
 Data = dict[str, ndarray]
 Indices = tuple[str, Union[int, Iterable[int]]]
@@ -74,11 +80,44 @@ class RemappingDiscipline(MDODiscipline):
         self._input_mapping = self.__format_mapping(input_mapping)
         self._output_mapping = self.__format_mapping(output_mapping)
         super().__init__(name=self._discipline.name)
-        self.input_grammar.update_from_names(self._input_mapping.keys())
-        self.output_grammar.update_from_names(self._output_mapping.keys())
+        self.input_grammar = self.__get_grammar(
+            discipline.input_grammar, input_mapping, discipline.default_inputs
+        )
+        self.output_grammar = self.__get_grammar(
+            discipline.output_grammar, output_mapping, discipline.default_outputs
+        )
         self.default_inputs = self.__convert_from_origin(
             discipline.default_inputs, self._input_mapping
         )
+
+    @staticmethod
+    def __get_grammar(
+        grammar: BaseGrammar, name_mapping: NameMapping, default_values: Defaults
+    ) -> BaseGrammar:
+        """Return a grammar with new names.
+
+        Args:
+            grammar: The initial grammar.
+            name_mapping: The name mapping to apply to the initial grammar.
+            default_values: The initial default values.
+
+        Returns:
+            The grammar with new names.
+        """
+        new_grammar = deepcopy(grammar)
+        for new_name, name in name_mapping.items():
+            if isinstance(name, tuple):
+                if name[0] in default_values:
+                    new_grammar.update_from_data(
+                        {new_name: default_values[name[0]]}, True
+                    )
+                else:
+                    new_grammar.update_from_names([new_name], True)
+            else:
+                new_grammar.rename_element(name, new_name)
+
+        new_grammar.restrict_to(name_mapping.keys())
+        return new_grammar
 
     @property
     def original_discipline(self) -> MDODiscipline:
