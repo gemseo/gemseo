@@ -25,18 +25,16 @@ from gemseo.uncertainty.distributions.scipy.weibull import SPWeibullDistribution
 def test_default_distribution() -> None:
     """Check the default Weibull distribution."""
     distribution = SPWeibullDistribution()
-    assert distribution.variable_name == distribution.DEFAULT_VARIABLE_NAME
-    marginal = distribution.marginals[0]
-    assert marginal.mean() == weibull_min.mean(1, loc=0, scale=1)
-    assert marginal.var() == weibull_min.var(1, loc=0, scale=1)
+    distribution = distribution.distribution
+    assert distribution.mean() == weibull_min.mean(1, loc=0, scale=1)
+    assert distribution.var() == weibull_min.var(1, loc=0, scale=1)
 
 
 def test_custom() -> None:
     """Check a custom Weibull distribution."""
     distribution = SPWeibullDistribution(
-        "u", location=2.0, scale=3.0, shape=4.0, use_weibull_min=False
+        location=2.0, scale=3.0, shape=4.0, use_weibull_min=False
     )
-    assert distribution.variable_name == "u"
-    marginal = distribution.marginals[0]
-    assert marginal.mean() == weibull_max.mean(4, loc=2, scale=3)
-    assert marginal.var() == weibull_max.var(4, loc=2, scale=3)
+    distribution = distribution.distribution
+    assert distribution.mean() == weibull_max.mean(4, loc=2, scale=3)
+    assert distribution.var() == weibull_max.var(4, loc=2, scale=3)

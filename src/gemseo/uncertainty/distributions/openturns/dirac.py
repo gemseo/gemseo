@@ -29,10 +29,8 @@ class OTDiracDistribution(OTDistribution):
 
     def __init__(
         self,
-        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         variable_value: float = 0.0,
-        dimension: int = 1,
-        transformation: str | None = None,
+        transformation: str = "",
         lower_bound: float | None = None,
         upper_bound: float | None = None,
         threshold: float = 0.5,
@@ -42,10 +40,8 @@ class OTDiracDistribution(OTDistribution):
             variable_value: The value of the random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "Dirac",
-            (variable_value,),
-            dimension=dimension,
+            interfaced_distribution="Dirac",
+            parameters=(variable_value,),
             standard_parameters={self._LOC: variable_value},
             transformation=transformation,
             lower_bound=lower_bound,

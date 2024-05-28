@@ -19,12 +19,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
-from numpy import allclose
 from numpy import array
 from numpy import inf
-from numpy import ndarray
 from numpy.random import RandomState
+from numpy.testing import assert_almost_equal
+from numpy.testing import assert_equal
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 from gemseo.uncertainty.distributions.scipy.exponential import SPExponentialDistribution
@@ -40,31 +42,32 @@ def test_joint_distribution() -> None:
 
 
 def test_constructor() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 1})
-    assert distribution.dimension == 1
-    assert distribution.variable_name == "x"
-    assert distribution.distribution_name == "norm"
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 1})
     assert distribution.transformation == "x"
-    assert len(distribution.parameters) == 2
-    assert distribution.parameters["loc"] == 0
-    assert distribution.parameters["scale"] == 1
 
 
 def test_bad_distribution() -> None:
-    with pytest.raises(ValueError):
-        SPDistribution("x", "Dummy", {"loc": 0.0, "scale": 1})
+    with pytest.raises(
+        ImportError, match=re.escape("Dummy cannot be imported from scipy.stats.")
+    ):
+        SPDistribution("Dummy", {"loc": 0.0, "scale": 1})
 
 
 def test_bad_distribution_parameters() -> None:
-    with pytest.raises(ValueError):
-        SPDistribution("x", "norm", {"loc": 0.0, "max": 1})
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The arguments of norm(loc=0.0, max=1) are wrong; "
+            "more details on https://docs.scipy.org/doc/scipy/reference/stats.html."
+        ),
+    ):
+        SPDistribution("norm", {"loc": 0.0, "max": 1})
 
 
 def test_str() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2.0})
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2.0})
     assert str(distribution) == "norm(loc=0.0, scale=2.0)"
     distribution = SPDistribution(
-        "x",
         "norm",
         {"loc": 0.0, "scale": 2.0},
         standard_parameters={"mean": 0, "var": 4},
@@ -74,87 +77,67 @@ def test_str() -> None:
 
 def test_compute_samples() -> None:
     random_state = RandomState(0)
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2})
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
     sample = distribution.compute_samples(3, random_state)
-    assert isinstance(sample, ndarray)
-    assert len(sample.shape) == 2
-    assert sample.shape[0] == 3
-    assert sample.shape[1] == 1
-    expectation = array([[3.528105], [0.800314], [1.957476]])
-    assert allclose(sample, expectation, 1e-3)
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 4)
-    sample = distribution.compute_samples(3, random_state)
-    expectation = array([
-        [4.481786, 1.900177, 0.821197, 1.522075],
-        [3.735116, -0.302714, 0.288087, 0.24335],
-        [-1.954556, -0.206438, 2.908547, 0.887726],
-    ])
-    assert allclose(sample, expectation, 1e-3)
+    assert sample.ndim == 1
+    assert_almost_equal(sample, array([3.528105, 0.800314, 1.957476]), decimal=3)
 
 
 def test_get_cdf() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    result = distribution.compute_cdf(array([0, 0]))
-    assert allclose(result, array([0.5, 0.5]))
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+    assert distribution.compute_cdf(0.0) == 0.5
 
 
 def test_get_inverse_cdf() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    result = distribution.compute_inverse_cdf(array([0.5, 0.5]))
-    assert allclose(result, array([0.0, 0.0]))
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+    assert distribution.compute_inverse_cdf(0.5) == 0.0
 
 
 def test_cdf() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    cdf = distribution._cdf(1)
-    assert cdf(0.0) == 0.5
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+    assert distribution._cdf(0.0) == 0.5
 
 
 def test_pdf() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    pdf = distribution._pdf(1)
-    assert allclose(pdf(0.0), 0.19947114020071632, 1e-3)
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+    assert distribution._pdf(0.0) == pytest.approx(0.19947114020071632, abs=1e-3)
 
 
 def test_mean() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    assert allclose(distribution.mean, array([0.0, 0.0]))
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+    assert distribution.mean == 0.0
 
 
 def test_std() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    assert allclose(distribution.standard_deviation, array([2.0, 2.0]))
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+    assert distribution.standard_deviation == 2.0
 
 
 def test_support() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    expectation = array([-inf, inf])
-    for element in distribution.support:
-        assert allclose(element, expectation)
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+    assert_equal(distribution.support, array([-inf, inf]))
 
 
 def test_range() -> None:
-    distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    expectation = array([-14.068968, 14.068974])
-    for element in distribution.range:
-        assert allclose(element, expectation, 1e-3)
+    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+    assert_almost_equal(distribution.range, array([-14.068968, 14.068974]), decimal=3)
 
 
 def test_normal() -> None:
-    distribution = SPNormalDistribution("x")
+    distribution = SPNormalDistribution()
     assert str(distribution) == "norm(mu=0.0, sigma=1.0)"
 
 
 def test_uniform() -> None:
-    distribution = SPUniformDistribution("x")
+    distribution = SPUniformDistribution()
     assert str(distribution) == "uniform(lower=0.0, upper=1.0)"
 
 
 def test_exponential() -> None:
-    distribution = SPExponentialDistribution("x")
+    distribution = SPExponentialDistribution()
     assert str(distribution) == "expon(loc=0.0, scale=1.0)"
 
 
 def test_triangular() -> None:
-    distribution = SPTriangularDistribution("x")
+    distribution = SPTriangularDistribution()
     assert str(distribution) == "triang(lower=0.0, mode=0.5, upper=1.0)"

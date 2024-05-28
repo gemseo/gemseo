@@ -26,19 +26,17 @@ class SPWeibullDistribution(SPDistribution):
         >>> from gemseo.uncertainty.distributions.scipy.weibull import (
         ...     SPWeibullDistribution,
         ... )
-        >>> distribution = SPWeibullDistribution("u", 0.5, 1.0, 2.0)
+        >>> distribution = SPWeibullDistribution(0.5, 1.0, 2.0)
         >>> print(distribution)
         weibull_min(location=1, scale=2, shape=0.5)
     """
 
     def __init__(
         self,
-        variable: str = SPDistribution.DEFAULT_VARIABLE_NAME,
         location: float = 0.0,
         scale: float = 1.0,
         shape: float = 1.0,
         use_weibull_min: bool = True,
-        dimension: int = 1,
     ) -> None:
         r"""
         Args:
@@ -52,11 +50,9 @@ class SPWeibullDistribution(SPDistribution):
                 (the support of the random variable is :math:`]-\infty[,\gamma]`).
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "weibull_min" if use_weibull_min else "weibull_max",
-            {"loc": location, "scale": scale, "c": shape},
-            dimension,
-            {
+            interfaced_distribution="weibull_min" if use_weibull_min else "weibull_max",
+            parameters={"loc": location, "scale": scale, "c": shape},
+            standard_parameters={
                 self._LOCATION: location,
                 self._SCALE: scale,
                 self._SHAPE: shape,

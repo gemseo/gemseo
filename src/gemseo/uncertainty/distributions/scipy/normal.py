@@ -31,17 +31,15 @@ class SPNormalDistribution(SPDistribution):
         >>> from gemseo.uncertainty.distributions.scipy.normal import (
         ...     SPNormalDistribution,
         ... )
-        >>> distribution = SPNormalDistribution("x", -1, 2)
+        >>> distribution = SPNormalDistribution(-1, 2)
         >>> print(distribution)
         norm(mu=-1, sigma=2)
     """
 
     def __init__(
         self,
-        variable: str = SPDistribution.DEFAULT_VARIABLE_NAME,
         mu: float = 0.0,
         sigma: float = 1.0,
-        dimension: int = 1,
     ) -> None:
         """
         Args:
@@ -49,9 +47,7 @@ class SPNormalDistribution(SPDistribution):
             sigma: The standard deviation of the normal random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "norm",
-            {"loc": mu, "scale": sigma},
-            dimension,
-            {self._MU: mu, self._SIGMA: sigma},
+            interfaced_distribution="norm",
+            parameters={"loc": mu, "scale": sigma},
+            standard_parameters={self._MU: mu, self._SIGMA: sigma},
         )

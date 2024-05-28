@@ -1,0 +1,5 @@
+API changes:
+
+- ``BaseDistribution.distribution_name`` has been removed as it was no longer used.
+- ``BaseDistribution.parameters`` has been removed as it was no longer used.
+- ``BaseDistribution.standard_parameters`` has been removed as it was no longer used.

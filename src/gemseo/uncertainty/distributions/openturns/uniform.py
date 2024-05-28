@@ -31,18 +31,16 @@ class OTUniformDistribution(OTDistribution):
         >>> from gemseo.uncertainty.distributions.openturns.uniform import (
         ...     OTUniformDistribution
         >>> )
-        >>> distribution = OTUniformDistribution("x", -1, 1)
+        >>> distribution = OTUniformDistribution(-1, 1)
         >>> print(distribution)
         Uniform(lower=-1, upper=1)
     """
 
     def __init__(
         self,
-        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         minimum: float = 0.0,
         maximum: float = 1.0,
-        dimension: int = 1,
-        transformation: str | None = None,
+        transformation: str = "",
         lower_bound: float | None = None,
         upper_bound: float | None = None,
         threshold: float = 0.5,
@@ -53,13 +51,11 @@ class OTUniformDistribution(OTDistribution):
             maximum: The maximum of the uniform random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "Uniform",
-            (minimum, maximum),
-            dimension,
-            {self._LOWER: minimum, self._UPPER: maximum},
-            transformation,
-            lower_bound,
-            upper_bound,
-            threshold,
+            interfaced_distribution="Uniform",
+            parameters=(minimum, maximum),
+            standard_parameters={self._LOWER: minimum, self._UPPER: maximum},
+            transformation=transformation,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            threshold=threshold,
         )

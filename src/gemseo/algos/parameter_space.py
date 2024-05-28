@@ -596,21 +596,18 @@ class ParameterSpace(DesignSpace):
         """
         if inverse:
             self.__check_dict_of_array(value)
+
+        method_name = "compute_inverse_cdf" if inverse else "compute_cdf"
         values = {}
         for name in self.uncertain_variables:
-            val = value[name]
-            distribution = self.distributions[name]
-            if val.ndim == 1:
-                if inverse:
-                    current_v = distribution.compute_inverse_cdf(val)
-                else:
-                    current_v = distribution.compute_cdf(val)
-            elif inverse:
-                current_v = [distribution.compute_inverse_cdf(sample) for sample in val]
+            input_samples = value[name]
+            compute = getattr(self.distributions[name], method_name)
+            if input_samples.ndim == 1:
+                output_samples = compute(input_samples)
             else:
-                current_v = [distribution.compute_cdf(sample) for sample in val]
+                output_samples = list(map(compute, input_samples))
 
-            values[name] = array(current_v)
+            values[name] = array(output_samples)
 
         return values
 

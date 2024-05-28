@@ -57,7 +57,6 @@ from numpy import linspace
 from numpy import max as np_max
 from numpy import mean
 from numpy import min as np_min
-from numpy import ndarray
 from numpy import quantile
 from numpy import std
 from numpy import unique
@@ -76,6 +75,8 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
+    from gemseo.typing import RealArray
+
 
 class EmpiricalStatistics(BaseStatistics):
     """A toolbox to compute statistics empirically.
@@ -84,7 +85,8 @@ class EmpiricalStatistics(BaseStatistics):
     the statistics are computed *variable-wise* and *component-wise*,
     i.e. variable-by-variable and component-by-component.
     So, for the sake of readability,
-    the methods named as :meth:`compute_statistic` return ``dict[str, ndarray]`` objects
+    the methods named as :meth:`compute_statistic`
+    return ``dict[str, RealArray]`` objects
     whose values are the names of the variables
     and the values are the statistic estimated for the different component.
 
@@ -132,27 +134,27 @@ class EmpiricalStatistics(BaseStatistics):
     __PDF_LABEL: Final[str] = "PDF"
     """The label for the probability density function."""
 
-    def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_maximum(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: np_max(self.dataset.get_view(variable_names=name).to_numpy(), 0)
             for name in self.names
         }
 
-    def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_mean(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: mean(self.dataset.get_view(variable_names=name).to_numpy(), 0)
             for name in self.names
         }
 
-    def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_minimum(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: np_min(self.dataset.get_view(variable_names=name).to_numpy(), 0)
             for name in self.names
         }
 
     def compute_probability(  # noqa: D102
-        self, thresh: Mapping[str, float | ndarray], greater: bool = True
-    ) -> dict[str, ndarray]:
+        self, thresh: Mapping[str, float | RealArray], greater: bool = True
+    ) -> dict[str, RealArray]:
         operator = ge if greater else le
         return {
             name: mean(
@@ -165,7 +167,7 @@ class EmpiricalStatistics(BaseStatistics):
         }
 
     def compute_joint_probability(  # noqa: D102
-        self, thresh: Mapping[str, float | ndarray], greater: bool = True
+        self, thresh: Mapping[str, float | RealArray], greater: bool = True
     ) -> dict[str, float]:
         operator = ge if greater else le
         return {
@@ -181,7 +183,7 @@ class EmpiricalStatistics(BaseStatistics):
             for name in self.names
         }
 
-    def compute_quantile(self, prob: float) -> dict[str, ndarray]:  # noqa: D102
+    def compute_quantile(self, prob: float) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: quantile(
                 self.dataset.get_view(variable_names=name).to_numpy(), prob, 0
@@ -189,25 +191,25 @@ class EmpiricalStatistics(BaseStatistics):
             for name in self.names
         }
 
-    def compute_standard_deviation(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_standard_deviation(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: std(self.dataset.get_view(variable_names=name).to_numpy(), 0)
             for name in self.names
         }
 
-    def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_variance(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: var(self.dataset.get_view(variable_names=name).to_numpy(), 0)
             for name in self.names
         }
 
-    def compute_moment(self, order: int) -> dict[str, ndarray]:  # noqa: D102
+    def compute_moment(self, order: int) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: moment(self.dataset.get_view(variable_names=name).to_numpy(), order)
             for name in self.names
         }
 
-    def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_range(self) -> dict[str, RealArray]:  # noqa: D102
         lower = self.compute_minimum()
         return {
             name: upper - lower[name] for name, upper in self.compute_maximum().items()
@@ -344,7 +346,7 @@ class EmpiricalStatistics(BaseStatistics):
         return plots
 
     @staticmethod
-    def __evaluate_ecdf(data: ndarray) -> tuple[ndarray, ndarray]:
+    def __evaluate_ecdf(data: RealArray) -> tuple[RealArray, RealArray]:
         """Evaluate the empirical cumulative distribution function (ECDF).
 
         Args:

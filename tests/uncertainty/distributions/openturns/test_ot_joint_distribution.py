@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 @pytest.fixture(scope="module")
 def distributions() -> list[OTNormalDistribution]:
     """Two normal distributions."""
-    return [OTNormalDistribution(name, dimension=2) for name in ["x1", "x2"]]
+    return [OTNormalDistribution(), OTNormalDistribution()]
 
 
 @pytest.fixture(scope="module")
@@ -50,45 +50,37 @@ def joint_distribution(
     return OTJointDistribution(distributions)
 
 
-@pytest.mark.parametrize("dimensions", [(1,), (1, 1), (2,)])
-def test_repr(joint_distribution, dimensions) -> None:
+@pytest.mark.parametrize(
+    ("n_marginals", "expected"),
+    [
+        (1, "Normal(mu=0.0, sigma=1.0)"),
+        (
+            2,
+            (
+                "OTJointDistribution("
+                "Normal(mu=0.0, sigma=1.0), Normal(mu=0.0, sigma=1.0); "
+                "IndependentCopula)"
+            ),
+        ),
+    ],
+)
+def test_repr(joint_distribution, n_marginals, expected) -> None:
     """Check the string representation of a joint probability distribution."""
-    normal = "Normal(mu=0.0, sigma=1.0)"
-    normal2 = "Normal[2](mu=0.0, sigma=1.0)"
-    distributions = [OTNormalDistribution(dimension=dimensions[0])]
-    if sum(dimensions) == 1:
-        expected = normal
-    elif len(dimensions) == 1:
-        expected = f"OTJointDistribution({normal2}; IndependentCopula)"
-    else:
-        expected = f"OTJointDistribution({normal}, {normal}; IndependentCopula)"
-        distributions.append(OTNormalDistribution(dimension=dimensions[1]))
-
-    assert repr(OTJointDistribution(distributions)) == expected
+    assert repr(OTJointDistribution([OTNormalDistribution()] * n_marginals)) == expected
 
 
 def test_constructor(joint_distribution) -> None:
-    assert joint_distribution.dimension == 4
-    assert joint_distribution.variable_name == "x1_x2"
-    assert joint_distribution.distribution_name == "Joint"
-    assert joint_distribution.transformation == "x1_x2"
-    assert len(joint_distribution.parameters) == 1
-    assert joint_distribution.parameters[0] is None
+    assert joint_distribution.transformation == "x"
 
 
 def test_copula(distributions) -> None:
     """Check the use of an OpenTURNS copula."""
-    distribution = OTJointDistribution(distributions, copula=NormalCopula(4))
+    distribution = OTJointDistribution(distributions, copula=NormalCopula(2))
     assert repr(distribution) == (
         "OTJointDistribution("
-        "Normal[2](mu=0.0, sigma=1.0), Normal[2](mu=0.0, sigma=1.0); NormalCopula)"
+        "Normal(mu=0.0, sigma=1.0), Normal(mu=0.0, sigma=1.0); NormalCopula)"
     )
     assert distribution.distribution.getCopula().getName() == "NormalCopula"
-
-
-def test_variable_name(distributions) -> None:
-    """Check the use of a custom variable name."""
-    assert OTJointDistribution(distributions, variable="foo").variable_name == "foo"
 
 
 def test_str(joint_distribution) -> None:
@@ -98,8 +90,8 @@ def test_str(joint_distribution) -> None:
         == str(joint_distribution)
         == (
             "OTJointDistribution("
-            "Normal[2](mu=0.0, sigma=1.0), "
-            "Normal[2](mu=0.0, sigma=1.0); "
+            "Normal(mu=0.0, sigma=1.0), "
+            "Normal(mu=0.0, sigma=1.0); "
             "IndependentCopula"
             ")"
         )
@@ -108,37 +100,25 @@ def test_str(joint_distribution) -> None:
 
 def test_get_sample(joint_distribution) -> None:
     sample = joint_distribution.compute_samples(3)
-    assert len(sample.shape) == 2
-    assert sample.shape[0] == 3
-    assert sample.shape[1] == 4
+    assert sample.shape == (3, 2)
 
 
 def test_get_cdf(joint_distribution) -> None:
-    result = joint_distribution.compute_cdf(array([0] * 4))
-    assert allclose(result, array([0.5] * 4))
+    result = joint_distribution.compute_cdf(array([0.0, 0.0]))
+    assert allclose(result, array([0.5, 0.5]))
 
 
 def test_get_inverse_cdf(joint_distribution) -> None:
-    result = joint_distribution.compute_inverse_cdf(array([0.5] * 4))
-    assert allclose(result, array([0.0] * 4))
-
-
-def test_cdf(joint_distribution) -> None:
-    cdf = joint_distribution._cdf(1)
-    assert cdf(0.0) == 0.5
-
-
-def test_pdf(joint_distribution) -> None:
-    pdf = joint_distribution._pdf(1)
-    assert allclose(pdf(0.0), 0.398942, 1e-3)
+    result = joint_distribution.compute_inverse_cdf(array([0.5, 0.5]))
+    assert allclose(result, array([0.0, 0.0]))
 
 
 def test_mean(joint_distribution) -> None:
-    assert allclose(joint_distribution.mean, array([0.0] * 4))
+    assert allclose(joint_distribution.mean, array([0.0, 0.0]))
 
 
 def test_std(joint_distribution) -> None:
-    assert allclose(joint_distribution.standard_deviation, array([1.0] * 4))
+    assert allclose(joint_distribution.standard_deviation, array([1.0, 1.0]))
 
 
 def test_support(joint_distribution) -> None:

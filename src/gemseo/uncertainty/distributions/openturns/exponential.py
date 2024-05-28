@@ -31,18 +31,16 @@ class OTExponentialDistribution(OTDistribution):
         >>> from gemseo.uncertainty.distributions.openturns.exponential import (
         ...     OTExponentialDistribution,
         ... )
-        >>> distribution = OTExponentialDistribution("x", 2, 3)
+        >>> distribution = OTExponentialDistribution(2, 3)
         >>> print(distribution)
         Exponential(rate=2, loc=3)
     """
 
     def __init__(
         self,
-        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         rate: float = 1.0,
         loc: float = 0.0,
-        dimension: int = 1,
-        transformation: str | None = None,
+        transformation: str = "",
         lower_bound: float | None = None,
         upper_bound: float | None = None,
         threshold: float = 0.5,
@@ -53,13 +51,11 @@ class OTExponentialDistribution(OTDistribution):
             loc: The location of the exponential random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "Exponential",
-            (rate, loc),
-            dimension,
-            {self._RATE: rate, self._LOC: loc},
-            transformation,
-            lower_bound,
-            upper_bound,
-            threshold,
+            interfaced_distribution="Exponential",
+            parameters=(rate, loc),
+            standard_parameters={self._RATE: rate, self._LOC: loc},
+            transformation=transformation,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            threshold=threshold,
         )

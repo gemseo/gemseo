@@ -1,0 +1,4 @@
+API changes:
+
+- The ``variable`` argument of ``BaseDistribution`` has been removed as a probability distribution is not defined from a variable name.
+- The ``variable_name`` attribute of ``BaseDistribution`` has been removed in connection with the removal of the ``variable`` argument.

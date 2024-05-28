@@ -304,10 +304,9 @@ class PCERegressor(BaseRegressor):
         self.__hyperbolic_parameter = hyperbolic_parameter
         self.__degree = degree
         self.__composed_distribution = ComposedDistribution([
-            marginal
+            marginal.distribution
             for input_name in self.input_names
-            for distribution in distributions[input_name].marginals
-            for marginal in distribution.marginals
+            for marginal in distributions[input_name].marginals
         ])
 
         if use_quadrature:

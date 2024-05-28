@@ -103,41 +103,33 @@ def get_available_distributions(base_class_name: str = "BaseDistribution") -> li
 
 
 def create_distribution(
-    variable: str,
     distribution_name: str,
-    dimension: int = 1,
     **options,
 ) -> BaseDistribution:
     """Create a distribution.
 
     Args:
-        variable: The name of the random variable.
         distribution_name: The name of a class
             implementing a probability distribution,
             e.g. 'OTUniformDistribution' or 'SPDistribution'.
-        dimension: The dimension of the random variable.
         **options: The distribution options.
 
     Examples:
         >>> from gemseo.uncertainty import create_distribution
         >>>
-        >>> distribution = create_distribution(
-        ...     "x", "OTNormalDistribution", dimension=2, mu=1, sigma=2
-        ... )
+        >>> distribution = create_distribution("OTNormalDistribution", mu=1, sigma=2)
         >>> print(distribution)
         Normal(mu=1, sigma=2)
         >>> print(distribution.mean, distribution.standard_deviation)
-        [1. 1.] [2. 2.]
+        1.0 2.0
         >>> samples = distribution.compute_samples(10)
         >>> print(samples.shape)
-        (10, 2)
+        (10,)
     """
     from gemseo.uncertainty.distributions.factory import DistributionFactory
 
     factory = DistributionFactory()
-    return factory.create(
-        distribution_name, variable=variable, dimension=dimension, **options
-    )
+    return factory.create(distribution_name, **options)
 
 
 def get_available_sensitivity_analyses() -> list[str]:

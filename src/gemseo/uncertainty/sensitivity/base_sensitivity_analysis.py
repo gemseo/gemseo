@@ -47,7 +47,6 @@ from typing import Union
 from numpy import array
 from numpy import hstack
 from numpy import linspace
-from numpy import ndarray
 from numpy import newaxis
 from numpy import vstack
 from pandas import MultiIndex
@@ -59,6 +58,7 @@ from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
+from gemseo.typing import RealArray
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -79,8 +79,8 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.dataset_plot import VariableType
 
 OutputsType = Union[str, tuple[str, int], Sequence[Union[str, tuple[str, int]]]]
-FirstOrderIndicesType = dict[str, list[dict[str, ndarray]]]
-SecondOrderIndicesType = dict[str, list[dict[str, dict[str, ndarray]]]]
+FirstOrderIndicesType = dict[str, list[dict[str, RealArray]]]
+SecondOrderIndicesType = dict[str, list[dict[str, dict[str, RealArray]]]]
 
 
 class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -422,7 +422,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     def plot_field(
         self,
         output: VariableType,
-        mesh: ndarray | None = None,
+        mesh: RealArray | None = None,
         inputs: Iterable[str] = (),
         standardize: bool = False,
         title: str = "",

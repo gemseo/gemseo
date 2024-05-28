@@ -43,20 +43,18 @@ class DistributionFactory(BaseFactory):
     def create_marginal_distribution(
         self,
         distribution_name: str,
-        variable: str,
         **parameters: Any,
     ) -> BaseDistribution:
         """Create a marginal probability distribution for a given random variable.
 
         Args:
             distribution_name: The name of a class defining a distribution.
-            variable: The name of the random variable.
             **parameters: The parameters of the distribution.
 
         Returns:
             The marginal probability distribution.
         """
-        return super().create(distribution_name, variable=variable, **parameters)
+        return super().create(distribution_name, **parameters)
 
     create = create_marginal_distribution
 
@@ -64,7 +62,6 @@ class DistributionFactory(BaseFactory):
         self,
         distributions: Sequence[BaseDistribution],
         copula: Any = None,
-        variable: str = "",
     ) -> BaseJointDistribution:
         """Create a joint probability distribution from marginal ones.
 
@@ -73,10 +70,6 @@ class DistributionFactory(BaseFactory):
             copula: A copula distribution
                 defining the dependency structure between random variables;
                 if ``None``, consider an independent copula.
-            variable: The name of the variable, if any;
-                otherwise,
-                concatenate the names of the random variables
-                defined by ``distributions``.
 
         Returns:
             The joint probability distribution.
@@ -93,7 +86,6 @@ class DistributionFactory(BaseFactory):
             f"{next(iter(identifiers))}JointDistribution",
             distributions=distributions,
             copula=copula,
-            variable=variable,
         )
 
     @property

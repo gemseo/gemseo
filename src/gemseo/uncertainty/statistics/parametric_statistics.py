@@ -100,7 +100,6 @@ from typing import Union
 import matplotlib.pyplot as plt
 from numpy import array
 from numpy import linspace
-from numpy import ndarray
 
 from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
@@ -126,6 +125,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -149,7 +149,8 @@ class ParametricStatistics(BaseStatistics):
     the statistics are computed *variable-wise* and *component-wise*,
     i.e. variable-by-variable and component-by-component.
     So, for the sake of readability,
-    the methods named as :meth:`compute_statistic` return ``dict[str, ndarray]`` objects
+    the methods named as :meth:`compute_statistic`
+    return ``dict[str, RealArray]`` objects
     whose values are the names of the variables
     and the values are the statistic estimated for the different component.
 
@@ -478,7 +479,7 @@ class ParametricStatistics(BaseStatistics):
     def _fit_marginal_distributions(
         self,
         variable: str,
-        sample: ndarray,
+        sample: RealArray,
         distributions: Iterable[DistributionName],
     ) -> dict[str, dict[str, OTDistribution | MeasureType]]:
         """Fit different distributions for a given dataset marginal.
@@ -503,36 +504,35 @@ class ParametricStatistics(BaseStatistics):
             }
         return result
 
-    def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_maximum(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: array([
-                distribution.value.math_upper_bound[0]
+                distribution.value.math_upper_bound
                 for distribution in self.__distributions[name]
             ])
             for name in self.names
         }
 
-    def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_mean(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: array([
-                distribution.value.mean[0]
-                for distribution in self.__distributions[name]
+                distribution.value.mean for distribution in self.__distributions[name]
             ])
             for name in self.names
         }
 
-    def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_minimum(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: array([
-                distribution.value.math_lower_bound[0]
+                distribution.value.math_lower_bound
                 for distribution in self.__distributions[name]
             ])
             for name in self.names
         }
 
     def compute_probability(  # noqa: D102
-        self, thresh: Mapping[str, float | ndarray], greater: bool = True
-    ) -> dict[str, ndarray]:
+        self, thresh: Mapping[str, float | RealArray], greater: bool = True
+    ) -> dict[str, RealArray]:
         func = lambda x: 1 - x if greater else x  # noqa: E731
         new_thresh = {}
         for name, value in thresh.items():
@@ -549,14 +549,14 @@ class ParametricStatistics(BaseStatistics):
 
         return {
             name: array([
-                func(distribution.value.compute_cdf([new_thresh[name][index]])[0])
+                func(distribution.value.compute_cdf([new_thresh[name][index]]))
                 for index, distribution in enumerate(self.__distributions[name])
             ])
             for name in self.names
         }
 
     def compute_joint_probability(  # noqa: D102
-        self, thresh: Mapping[str, float | ndarray], greater: bool = True
+        self, thresh: Mapping[str, float | RealArray], greater: bool = True
     ) -> dict[str, float]:
         raise NotImplementedError
 
@@ -579,14 +579,14 @@ class ParametricStatistics(BaseStatistics):
             name: [
                 tolerance_interval_factory.get_class(distribution.name)(
                     self.n_samples,
-                    *distribution.value.marginals[0].getParameter(),
+                    *distribution.value.distribution.getParameter(),
                 ).compute(coverage, confidence, side)
                 for distribution in self.__distributions[name]
             ]
             for name in self.names
         }
 
-    def compute_quantile(self, prob: float) -> dict[str, ndarray]:  # noqa: D102
+    def compute_quantile(self, prob: float) -> dict[str, RealArray]:  # noqa: D102
         prob = array([prob])
         return {
             name: array([
@@ -596,25 +596,25 @@ class ParametricStatistics(BaseStatistics):
             for name in self.names
         }
 
-    def compute_standard_deviation(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_standard_deviation(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: array([
-                distribution.value.standard_deviation[0]
+                distribution.value.standard_deviation
                 for distribution in self.__distributions[name]
             ])
             for name in self.names
         }
 
-    def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_variance(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: array([
-                distribution.value.standard_deviation[0] ** 2
+                distribution.value.standard_deviation**2
                 for distribution in self.__distributions[name]
             ])
             for name in self.names
         }
 
-    def compute_moment(self, order: int) -> dict[str, ndarray]:  # noqa: D102
+    def compute_moment(self, order: int) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: array([
                 distribution.value.distribution.getMoment(order)[0]
@@ -623,11 +623,11 @@ class ParametricStatistics(BaseStatistics):
             for name in self.names
         }
 
-    def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
+    def compute_range(self) -> dict[str, RealArray]:  # noqa: D102
         return {
             name: array([
-                distribution.value.math_upper_bound[0]
-                - distribution.value.math_lower_bound[0]
+                distribution.value.math_upper_bound
+                - distribution.value.math_lower_bound
                 for distribution in self.__distributions[name]
             ])
             for name in self.names
