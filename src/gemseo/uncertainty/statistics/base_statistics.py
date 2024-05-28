@@ -96,7 +96,6 @@ for the different variables:
 
 from __future__ import annotations
 
-import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -117,8 +116,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.datasets.dataset import Dataset
-
-LOGGER = logging.getLogger(__name__)
 
 
 class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -165,7 +162,6 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         """  # noqa: D205,D212,D415
         class_name = self.__class__.__name__
         self.name = name or f"{class_name}({dataset.name})"
-        LOGGER.info("Create %s, a %s library.", self.name, class_name)
         self.dataset = dataset
         self.n_samples = len(dataset)
         self.names = variable_names or dataset.variable_names

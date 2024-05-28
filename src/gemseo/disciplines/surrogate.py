@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -46,8 +45,6 @@ if TYPE_CHECKING:
         BaseRegressorQuality,
     )
 
-LOGGER = logging.getLogger(__name__)
-
 
 class SurrogateDiscipline(MDODiscipline):
     """A discipline wrapping a regression model built from a dataset.
@@ -67,7 +64,7 @@ class SurrogateDiscipline(MDODiscipline):
         >>>
         >>> # Assess its quality with the R2 measure.
         >>> r2 = surrogate_discipline.get_error_measure("R2Measure")
-        >>> learning_r2 = r2.evaluate_learn()
+        >>> learning_r2 = r2.compute_learning_measure()
         >>>
         >>> # Execute the surrogate discipline, with default or custom input values.
         >>> surrogate_discipline.execute()
@@ -135,8 +132,7 @@ class SurrogateDiscipline(MDODiscipline):
             msg = "data is required to train the surrogate model."
             raise ValueError(msg)
         else:
-            factory = RegressorFactory()
-            self.regression_model = factory.create(
+            self.regression_model = RegressorFactory().create(
                 surrogate,
                 data=data,
                 transformer=transformer,
@@ -145,35 +141,24 @@ class SurrogateDiscipline(MDODiscipline):
                 **parameters,
             )
             name = f"{self.regression_model.SHORT_ALGO_NAME}_{data.name}"
-        disc_name = disc_name or name
+
         if not self.regression_model.is_trained:
             self.regression_model.learn()
-            msg = MultiLineString()
-            msg.add("Build the surrogate discipline: {}", disc_name)
-            msg.indent()
-            msg.add("Dataset size: {}", data.n_samples)
-            msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
-            LOGGER.info("%s", msg)
+
+        disc_name = disc_name or name
         if not name.startswith(self.regression_model.SHORT_ALGO_NAME):
             disc_name = f"{self.regression_model.SHORT_ALGO_NAME}_{disc_name}"
-        msg = MultiLineString()
-        msg.add("Use the surrogate discipline: {}", disc_name)
-        msg.indent()
+
         super().__init__(disc_name)
         self._initialize_grammars(input_names, output_names)
-        msg.add("Inputs: {}", pretty_str(self.get_input_data_names()))
-        msg.add("Outputs: {}", pretty_str(self.get_output_data_names()))
         self._set_default_inputs(default_inputs)
         self.add_differentiated_inputs()
         self.add_differentiated_outputs()
         try:
             self.regression_model.predict_jacobian(self.default_inputs)
             self.linearization_mode = self.LinearizationMode.AUTO
-            msg.add("Jacobian: use surrogate model jacobian")
         except NotImplementedError:
             self.linearization_mode = self.LinearizationMode.FINITE_DIFFERENCES
-            msg.add("Jacobian: use finite differences")
-        LOGGER.info("%s", msg)
 
     @property
     def _string_representation(self) -> MultiLineString:
