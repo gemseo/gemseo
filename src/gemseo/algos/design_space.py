@@ -1580,7 +1580,9 @@ class DesignSpace(collections.abc.MutableMapping):
                 a NumPy array nor an :class:`.OptimizationResult`.
         """
         if isinstance(value, dict):
-            self.__current_value = value
+            self.__current_value = {
+                k: v for k, v in value.items() if k in self.variable_names
+            }
         elif isinstance(value, ndarray):
             if value.size != self.dimension:
                 msg = (

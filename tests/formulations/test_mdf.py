@@ -23,10 +23,15 @@ from numpy.testing import assert_allclose
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.mdf import MDF
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.xdsmizer import XDSMizer
 
 from .formulations_basetest import FormulationsBaseTest
@@ -113,3 +118,29 @@ def test_grammar_type() -> None:
     grammar_type = discipline.GrammarType.SIMPLE
     formulation = MDF([discipline], "y1", design_space, grammar_type=grammar_type)
     assert formulation.mda.grammar_type == grammar_type
+
+
+def test_reset():
+    """Check that the optimization problem can be reset.
+
+    See https://gitlab.com/gemseo/dev/gemseo/-/issues/1179.
+    """
+    design_space = SellarDesignSpace()
+
+    scenario = MDOScenario(
+        [Sellar1(), Sellar2(), SellarSystem()],
+        "MDF",
+        "obj",
+        design_space,
+    )
+    initial_current_value = design_space.get_current_value()
+    scenario.add_constraint("c_1", constraint_type="ineq")
+    scenario.add_constraint("c_2", constraint_type="ineq")
+    scenario.execute({"algo": "SLSQP", "max_iter": 5})
+    final_current_value = design_space.get_current_value()
+
+    scenario.formulation.optimization_problem.reset(design_space=True)
+    assert_allclose(design_space.get_current_value(), initial_current_value)
+
+    scenario.execute({"algo": "SLSQP", "max_iter": 5})
+    assert_allclose(design_space.get_current_value(), final_current_value)
