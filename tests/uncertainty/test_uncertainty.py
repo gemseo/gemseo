@@ -56,8 +56,8 @@ def test_available_distributions(kwargs) -> None:
 
 
 def test_create_distribution() -> None:
-    distribution = create_distribution("x", "OTNormalDistribution")
-    assert distribution.mean[0] == 0.0
+    distribution = create_distribution("OTNormalDistribution")
+    assert distribution.mean == 0.0
 
 
 def test_available_sensitivity_analysis() -> None:

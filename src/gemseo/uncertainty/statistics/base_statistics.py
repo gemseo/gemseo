@@ -102,7 +102,6 @@ from typing import ClassVar
 from typing import Final
 
 from numpy import array
-from numpy import ndarray
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
@@ -116,6 +115,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 
 class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -124,7 +124,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     Unless otherwise stated, the statistics are computed *variable-wise* and *component-
     wise*, i.e. variable-by-variable and component-by-component. So, for the sake of
     readability, the methods named as :meth:`compute_statistic` return ``dict[str,
-    ndarray]`` objects whose values are the names of the variables and the values are
+    RealArray]`` objects whose values are the names of the variables and the values are
     the statistic estimated for the different component.
     """
 
@@ -226,7 +226,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     SYMBOLS["tolerance_interval"] = "TI"
 
-    def compute_a_value(self) -> dict[str, ndarray]:
+    def compute_a_value(self) -> dict[str, RealArray]:
         r"""Compute the A-value :math:`\text{Aval}[X]`.
 
         The A-value is the lower bound of the left-sided tolerance interval
@@ -249,7 +249,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     SYMBOLS["a_value"] = "Aval"
 
-    def compute_b_value(self) -> dict[str, ndarray]:
+    def compute_b_value(self) -> dict[str, RealArray]:
         r"""Compute the B-value :math:`\text{Bval}[X]`.
 
         The B-value is the lower bound of the left-sided tolerance interval
@@ -273,7 +273,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["b_value"] = "Bval"
 
     @abstractmethod
-    def compute_maximum(self) -> dict[str, ndarray]:
+    def compute_maximum(self) -> dict[str, RealArray]:
         r"""Compute the maximum :math:`\text{Max}[X]`.
 
         Returns:
@@ -283,7 +283,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["maximum"] = "Max"
 
     @abstractmethod
-    def compute_mean(self) -> dict[str, ndarray]:
+    def compute_mean(self) -> dict[str, RealArray]:
         r"""Compute the mean :math:`\mathbb{E}[X]`.
 
         Returns:
@@ -292,7 +292,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     SYMBOLS["mean"] = "E"
 
-    def compute_margin(self, std_factor: float) -> dict[str, ndarray]:
+    def compute_margin(self, std_factor: float) -> dict[str, RealArray]:
         r"""Compute a margin :math:`\text{Margin}[X]=\mathbb{E}[X]+\kappa\mathbb{S}[X]`.
 
         Args:
@@ -313,7 +313,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["margin"] = "Margin"
 
     @abstractmethod
-    def compute_minimum(self) -> dict[str, ndarray]:
+    def compute_minimum(self) -> dict[str, RealArray]:
         r"""Compute the :math:`\text{Min}[X]`.
 
         Returns:
@@ -322,7 +322,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     SYMBOLS["minimum"] = "Min"
 
-    def compute_median(self) -> dict[str, ndarray]:
+    def compute_median(self) -> dict[str, RealArray]:
         r"""Compute the median :math:`\text{Med}[X]`.
 
         Returns:
@@ -332,7 +332,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     SYMBOLS["median"] = "Med"
 
-    def compute_percentile(self, order: int) -> dict[str, ndarray]:
+    def compute_percentile(self, order: int) -> dict[str, RealArray]:
         r"""Compute the n-th percentile :math:`\text{p}[X; n]`.
 
         Args:
@@ -353,8 +353,8 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_probability(
-        self, thresh: Mapping[str, float | ndarray], greater: bool = True
-    ) -> dict[str, ndarray]:
+        self, thresh: Mapping[str, float | RealArray], greater: bool = True
+    ) -> dict[str, RealArray]:
         r"""Compute the probability related to a threshold.
 
         Either :math:`\mathbb{P}[X \geq x]` or :math:`\mathbb{P}[X \leq x]`.
@@ -373,7 +373,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_joint_probability(
-        self, thresh: Mapping[str, float | ndarray], greater: bool = True
+        self, thresh: Mapping[str, float | RealArray], greater: bool = True
     ) -> dict[str, float]:
         r"""Compute the joint probability related to a threshold.
 
@@ -396,7 +396,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["probability"] = "P"
 
     @abstractmethod
-    def compute_quantile(self, prob: float) -> dict[str, ndarray]:
+    def compute_quantile(self, prob: float) -> dict[str, RealArray]:
         r"""Compute the quantile :math:`\mathbb{Q}[X; \alpha]` related to a probability.
 
         Args:
@@ -408,7 +408,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     SYMBOLS["quantile"] = "Q"
 
-    def compute_quartile(self, order: int) -> dict[str, ndarray]:
+    def compute_quartile(self, order: int) -> dict[str, RealArray]:
         r"""Compute the n-th quartile :math:`q[X; n]`.
 
         Args:
@@ -429,7 +429,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["quartile"] = "q"
 
     @abstractmethod
-    def compute_range(self) -> dict[str, ndarray]:
+    def compute_range(self) -> dict[str, RealArray]:
         r"""Compute the range :math:`R[X]`.
 
         Returns:
@@ -439,7 +439,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["range"] = "R"
 
     @abstractmethod
-    def compute_standard_deviation(self) -> dict[str, ndarray]:
+    def compute_standard_deviation(self) -> dict[str, RealArray]:
         r"""Compute the standard deviation :math:`\mathbb{S}[X]`.
 
         Returns:
@@ -448,7 +448,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     SYMBOLS["standard_deviation"] = "StD"
 
-    def compute_variation_coefficient(self) -> dict[str, ndarray]:
+    def compute_variation_coefficient(self) -> dict[str, RealArray]:
         r"""Compute the coefficient of variation :math:`CoV[X]`.
 
         This is the standard deviation normalized by the expectation:
@@ -464,7 +464,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["variation_coefficient"] = "CoV"
 
     @abstractmethod
-    def compute_variance(self) -> dict[str, ndarray]:
+    def compute_variance(self) -> dict[str, RealArray]:
         r"""Compute the variance :math:`\mathbb{V}[X]`.
 
         Returns:
@@ -474,7 +474,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["variance"] = "V"
 
     @abstractmethod
-    def compute_moment(self, order: int) -> dict[str, ndarray]:
+    def compute_moment(self, order: int) -> dict[str, RealArray]:
         r"""Compute the n-th moment :math:`M[X; n]`.
 
         Args:

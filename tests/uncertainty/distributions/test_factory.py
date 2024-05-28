@@ -50,10 +50,9 @@ def test_is_available(distribution_factory) -> None:
 def test_create_marginal_distribution(distribution_factory) -> None:
     """Check create_marginal_distribution() to instantiate a marginal distribution."""
     distribution = distribution_factory.create_marginal_distribution(
-        "OTNormalDistribution", variable="x"
+        "OTNormalDistribution"
     )
     assert isinstance(distribution, OTNormalDistribution)
-    assert distribution.variable_name == "x"
     assert (
         distribution_factory.create_marginal_distribution == distribution_factory.create
     )
@@ -62,23 +61,22 @@ def test_create_marginal_distribution(distribution_factory) -> None:
 def test_create_joint_distribution(distribution_factory) -> None:
     """Check create_joint_distribution() to instantiate a joint probability
     distribution."""
-    normal = distribution_factory.create("OTNormalDistribution", variable="x")
-    uniform = distribution_factory.create("OTUniformDistribution", variable="y")
+    normal = distribution_factory.create("OTNormalDistribution")
+    uniform = distribution_factory.create("OTUniformDistribution")
     joint_distribution = distribution_factory.create_joint_distribution(
-        distributions=[normal, uniform], variable="foo"
+        distributions=[normal, uniform]
     )
     assert isinstance(joint_distribution, OTJointDistribution)
     assert joint_distribution.marginals[0] == normal
     assert joint_distribution.marginals[1] == uniform
-    assert joint_distribution.variable_name == "foo"
 
 
 def test_create_joint_distribution_with_different_identifiers(
     distribution_factory,
 ) -> None:
     """Check create_joint_distribution() with different distribution identifiers."""
-    normal = distribution_factory.create("OTNormalDistribution", variable="x")
-    uniform = distribution_factory.create("SPUniformDistribution", variable="y")
+    normal = distribution_factory.create("OTNormalDistribution")
+    uniform = distribution_factory.create("SPUniformDistribution")
     with pytest.raises(
         ValueError,
         match=(

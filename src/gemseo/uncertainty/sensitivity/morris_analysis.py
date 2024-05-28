@@ -76,7 +76,6 @@ from typing import Any
 import matplotlib.pyplot as plt
 from numpy import abs as np_abs
 from numpy import array
-from numpy import ndarray
 from strenum import StrEnum
 
 from gemseo.algos.doe.lib_pydoe import PyDOE
@@ -105,6 +104,7 @@ if TYPE_CHECKING:
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
     from gemseo.post.dataset.dataset_plot import VariableType
+    from gemseo.typing import RealArray
 
 
 class MorrisAnalysis(BaseSensitivityAnalysis):
@@ -147,7 +147,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         >>> indices = analysis.compute_indices()
     """
 
-    mu_: dict[str, dict[str, ndarray]]
+    mu_: dict[str, dict[str, RealArray]]
     """The mean effects with the following structure:
 
     .. code-block:: python
@@ -161,7 +161,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         }
     """
 
-    mu_star: dict[str, dict[str, ndarray]]
+    mu_star: dict[str, dict[str, RealArray]]
     """The mean absolute effects with the following structure:
 
     .. code-block:: python
@@ -175,7 +175,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         }
     """
 
-    sigma: dict[str, dict[str, ndarray]]
+    sigma: dict[str, dict[str, RealArray]]
     """The variability of the effects with the following structure:
 
     .. code-block:: python
@@ -189,7 +189,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         }
     """
 
-    relative_sigma: dict[str, dict[str, ndarray]]
+    relative_sigma: dict[str, dict[str, RealArray]]
     """The relative variability of the effects with the following structure:
 
     .. code-block:: python
@@ -203,7 +203,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         }
     """
 
-    min: dict[str, dict[str, ndarray]]  # noqa: A003
+    min: dict[str, dict[str, RealArray]]  # noqa: A003
     """The minimum effect with the following structure:
 
     .. code-block:: python
@@ -217,7 +217,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         }
     """
 
-    max: dict[str, dict[str, ndarray]]  # noqa: A003
+    max: dict[str, dict[str, RealArray]]  # noqa: A003
     """The maximum effect with the following structure:
 
     .. code-block:: python

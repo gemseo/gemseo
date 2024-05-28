@@ -31,17 +31,15 @@ class SPUniformDistribution(SPDistribution):
         >>> from gemseo.uncertainty.distributions.scipy.uniform import (
         ...     SPUniformDistribution,
         ... )
-        >>> distribution = SPUniformDistribution("x", -1, 1)
+        >>> distribution = SPUniformDistribution(-1, 1)
         >>> print(distribution)
         uniform(lower=-1, upper=1)
     """
 
     def __init__(
         self,
-        variable: str = SPDistribution.DEFAULT_VARIABLE_NAME,
         minimum: float = 0.0,
         maximum: float = 1.0,
-        dimension: int = 1,
     ) -> None:
         """
         Args:
@@ -49,9 +47,7 @@ class SPUniformDistribution(SPDistribution):
             maximum: The maximum of the uniform random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "uniform",
-            {"loc": minimum, "scale": maximum - minimum},
-            dimension,
-            {self._LOWER: minimum, self._UPPER: maximum},
+            interfaced_distribution="uniform",
+            parameters={"loc": minimum, "scale": maximum - minimum},
+            standard_parameters={self._LOWER: minimum, self._UPPER: maximum},
         )

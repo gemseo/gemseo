@@ -31,19 +31,17 @@ class OTTriangularDistribution(OTDistribution):
         >>> from gemseo.uncertainty.distributions.openturns.triangular import (
         ...     OTTriangularDistribution,
         ... )
-        >>> distribution = OTTriangularDistribution("x", -1, 0, 1)
+        >>> distribution = OTTriangularDistribution(-1, 0, 1)
         >>> print(distribution)
         Triangular(lower=-1, mode=0, upper=1)
     """
 
     def __init__(
         self,
-        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         minimum: float = 0.0,
         mode: float = 0.5,
         maximum: float = 1.0,
-        dimension: int = 1,
-        transformation: str | None = None,
+        transformation: str = "",
         lower_bound: float | None = None,
         upper_bound: float | None = None,
         threshold: float = 0.5,
@@ -55,17 +53,15 @@ class OTTriangularDistribution(OTDistribution):
             maximum: The maximum of the random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "Triangular",
-            (minimum, mode, maximum),
-            dimension,
-            {
+            interfaced_distribution="Triangular",
+            parameters=(minimum, mode, maximum),
+            standard_parameters={
                 self._LOWER: minimum,
                 self._MODE: mode,
                 self._UPPER: maximum,
             },
-            transformation,
-            lower_bound,
-            upper_bound,
-            threshold,
+            transformation=transformation,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            threshold=threshold,
         )

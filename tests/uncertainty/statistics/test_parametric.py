@@ -33,7 +33,9 @@ from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+from gemseo.uncertainty.distributions.scalar_distribution_mixin import (
+    ScalarDistributionMixin,
+)
 from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
@@ -389,8 +391,9 @@ def test_expression(name, options, expression) -> None:
 
 
 def test_plot_args(statistics) -> None:
-    """Check the arguments passed to BaseDistribution.plot by the method plot()."""
-    with mock.patch.object(BaseDistribution, "plot") as plot:
+    """Check the arguments passed to ScalarDistributionMixin.plot by the method
+    plot()."""
+    with mock.patch.object(ScalarDistributionMixin, "plot") as plot:
         statistics.plot(save=1, show=2, directory_path=3, file_format=4)
 
     assert len(plot.call_args.args) == 0

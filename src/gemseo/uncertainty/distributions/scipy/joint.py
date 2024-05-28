@@ -33,16 +33,17 @@ based on the `SciPy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_ lib
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Callable
+from typing import Any
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
+    from gemseo.typing import RealArray
+    from gemseo.typing import StrKeyMapping
     from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 from numpy import array
-from numpy import ndarray
 
 from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
@@ -54,7 +55,6 @@ class SPJointDistribution(BaseJointDistribution):
         self,
         distributions: Sequence[SPDistribution],
         copula: None = None,
-        variable: str = "",
     ) -> None:
         """
         Raises:
@@ -64,78 +64,28 @@ class SPJointDistribution(BaseJointDistribution):
             msg = "There is not copula distribution yet for SciPy-based distributions."
             raise NotImplementedError(msg)
 
-        super().__init__(distributions, copula=copula, variable=variable)
-        self.distribution = distributions
-        self._mapping = {}
-        index = 0
-        for marginal_index, marginal in enumerate(self.distribution):
-            for submarginal_index in range(marginal.dimension):
-                self._mapping[index] = (marginal_index, submarginal_index)
-                index += 1
-        self._set_bounds(distributions)
+        super().__init__(distributions, copula=copula)
+
+    def _create_distribution(
+        self, distribution_name: str, parameters: StrKeyMapping, **options: Any
+    ) -> None:
+        self.distribution = self.marginals
+        self._set_bounds(self.marginals)
 
     def compute_cdf(  # noqa: D102
         self,
         vector: Iterable[float],
-    ) -> ndarray:
-        tmp = []
-        for index, value in enumerate(vector):
-            id1 = self._mapping[index][0]
-            id2 = self._mapping[index][1]
-            tmp.append(self.distribution[id1].marginals[id2].cdf(value))
-        return array(tmp)
+    ) -> RealArray:
+        return array([
+            marginal.distribution.cdf(value)
+            for value, marginal in zip(vector, self.marginals)
+        ])
 
     def compute_inverse_cdf(  # noqa: D102
         self,
         vector: Iterable[float],
-    ) -> ndarray:
-        tmp = []
-        for index, value in enumerate(vector):
-            id1 = self._mapping[index][0]
-            id2 = self._mapping[index][1]
-            tmp.append(self.distribution[id1].marginals[id2].ppf(value))
-        return array(tmp)
-
-    def _pdf(  # noqa: D102
-        self,
-        index: int,
-    ) -> Callable:
-        id1 = self._mapping[index][0]
-        id2 = self._mapping[index][1]
-
-        def pdf(
-            point: float,
-        ) -> float:
-            """Probability Density Function (PDF).
-
-            Args:
-                point: An evaluation point.
-
-            Returns:
-                The PDF value at the evaluation point.
-            """
-            return self.distribution[id1].marginals[id2].pdf(point)
-
-        return pdf
-
-    def _cdf(  # noqa: D102
-        self,
-        index: int,
-    ) -> Callable:
-        id1 = self._mapping[index][0]
-        id2 = self._mapping[index][1]
-
-        def cdf(
-            level: float,
-        ) -> float:
-            """Cumulative Density Function (CDF).
-
-            Args:
-                level: A probability level.
-
-            Returns:
-                The CDF value for the probability level.
-            """
-            return self.distribution[id1].marginals[id2].cdf(level)
-
-        return cdf
+    ) -> RealArray:
+        return array([
+            marginal.distribution.ppf(value)
+            for value, marginal in zip(vector, self.marginals)
+        ])

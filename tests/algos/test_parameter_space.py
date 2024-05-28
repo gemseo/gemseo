@@ -39,7 +39,7 @@ from gemseo.datasets.io_dataset import IODataset
 
 
 def test_constructor() -> None:
-    """Check that a ParameterSpace is empty after initialization."""
+    """Check that a ParameterSpace is empty after initialization.."""
     space = ParameterSpace()
     assert not space.is_deterministic("x")
     assert not space.is_uncertain("x")
@@ -646,18 +646,29 @@ def test_random_vector_getitem(obj, args, expected) -> None:
 
 
 @pytest.mark.parametrize(
-    ("distribution", "interfaced_distribution", "interfaced_distribution_parameters"),
+    (
+        "distribution",
+        "interfaced_distribution",
+        "interfaced_distribution_parameters",
+        "string_representation",
+    ),
     [
-        ("OTDistribution", "Uniform", ()),
-        ("OTDistribution", "Uniform", (2, 4)),
-        ("SPDistribution", "uniform", {}),
-        ("SPDistribution", "uniform", {"scale": 2, "loc": 2}),
+        ("OTDistribution", "Uniform", (), "Uniform()"),
+        ("OTDistribution", "Uniform", (2, 4), "Uniform(2, 4)"),
+        ("SPDistribution", "uniform", {}, "uniform()"),
+        (
+            "SPDistribution",
+            "uniform",
+            {"scale": 2, "loc": 2},
+            "uniform(scale=2, loc=2)",
+        ),
     ],
 )
 def test_random_variable_interfaced_distribution(
     distribution,
     interfaced_distribution,
     interfaced_distribution_parameters,
+    string_representation,
 ) -> None:
     """Test adding a random variable from an interfaced distribution."""
     parameter = ParameterSpace()
@@ -666,8 +677,7 @@ def test_random_variable_interfaced_distribution(
         "x", distribution, interfaced_distribution=interfaced_distribution, **kwargs
     )
     marginal = parameter.distributions["x"].marginals[0]
-    assert marginal.distribution_name == interfaced_distribution
-    assert marginal.parameters == interfaced_distribution_parameters
+    assert str(marginal) == string_representation
 
 
 def test_string_representation() -> None:
