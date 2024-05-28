@@ -2171,6 +2171,9 @@ def sample_disciplines(
     if "log_problem" not in algo_options:
         algo_options["log_problem"] = False
 
+    if "use_one_line_progress_bar" not in algo_options:
+        algo_options["use_one_line_progress_bar"] = True
+
     if backup_file_path:
         scenario.set_optimization_history_backup(
             backup_file_path,
