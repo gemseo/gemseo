@@ -75,8 +75,10 @@ class OTJointDistribution(BaseJointDistribution):
         self,
         vector: Iterable[float],
     ) -> RealArray:
+        # We cast the values to float
+        # because computeCDF does not support numpy.int32.
         return array([
-            marginal.distribution.computeCDF(value)
+            marginal.distribution.computeCDF(float(value))
             for value, marginal in zip(vector, self.marginals)
         ])
 

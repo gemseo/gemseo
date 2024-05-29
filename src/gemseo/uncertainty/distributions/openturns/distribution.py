@@ -170,7 +170,9 @@ class OTDistribution(
         return array(self.distribution.getSample(n_samples)).ravel()
 
     def compute_cdf(self, value: float) -> float:  # noqa: D102
-        return self.distribution.computeCDF(value)
+        # We cast the value to float
+        # because computeCDF does not support numpy.int32.
+        return self.distribution.computeCDF(float(value))
 
     def compute_inverse_cdf(self, value: float) -> float:  # noqa: D102
         return self.distribution.computeQuantile(value)[0]
