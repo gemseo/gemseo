@@ -8,7 +8,7 @@ filelock==3.14.0
     # via virtualenv
 identify==2.5.36
     # via pre-commit
-nodeenv==1.8.0
+nodeenv==1.9.0
     # via pre-commit
 platformdirs==4.2.2
     # via virtualenv
@@ -16,9 +16,7 @@ pre-commit==3.7.1
     # via -r requirements/check.in
 pyyaml==6.0.1
     # via pre-commit
-ruff==0.4.5
+ruff==0.4.6
     # via -r requirements/check.in
-setuptools==70.0.0
-    # via nodeenv
 virtualenv==20.26.2
     # via pre-commit
