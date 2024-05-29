@@ -4,7 +4,7 @@ annotated-types==0.7.0
     # via pydantic
 attrs==23.2.0
     # via check-wheel-contents
-backports-tarfile==1.1.1
+backports-tarfile==1.2.0
     # via jaraco-context
 build==1.2.1
     # via -r requirements/dist.in
@@ -58,9 +58,9 @@ pkginfo==1.10.0
     # via twine
 pycparser==2.22
     # via cffi
-pydantic==2.7.1
+pydantic==2.7.2
     # via check-wheel-contents
-pydantic-core==2.18.2
+pydantic-core==2.18.3
     # via pydantic
 pygments==2.18.0
     # via
