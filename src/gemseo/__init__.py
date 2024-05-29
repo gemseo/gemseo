@@ -1237,40 +1237,51 @@ def create_surrogate(
     surrogate: str | BaseRegressor,
     data: IODataset | None = None,
     transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
-    disc_name: str | None = None,
-    default_inputs: dict[str, ndarray] | None = None,
-    input_names: Iterable[str] | None = None,
-    output_names: Iterable[str] | None = None,
+    disc_name: str = "",
+    default_inputs: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
+    input_names: Iterable[str] = (),
+    output_names: Iterable[str] = (),
     **parameters: Any,
 ) -> SurrogateDiscipline:
     """Create a surrogate discipline, either from a dataset or a regression model.
 
     Args:
-        surrogate: Either the class name
-            or the instance of the :class:`.BaseRegressor`.
-        data: The learning dataset to train the regression model.
-            If ``None``, the regression model is supposed to be trained.
-        transformer: The strategies to transform the variables.
-            The values are instances of :class:`.BaseTransformer`
-            while the keys are the names of
-            either the variables
-            or the groups of variables,
-            e.g. "inputs" or "outputs" in the case of the regression algorithms.
-            If a group is specified,
-            the :class:`.BaseTransformer` will be applied
-            to all the variables of this group.
-            If ``None``, do not transform the variables.
-            The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
-            the :class:`.MinMaxScaler` strategy for both input and output variables.
-        disc_name: The name to be given to the surrogate discipline.
-            If ``None``, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
-        default_inputs: The default values of the inputs.
-            If ``None``, use the center of the learning input space.
-        input_names: The names of the input variables.
-            If ``None``, consider all input variables mentioned in the learning dataset.
-        output_names: The names of the output variables.
-            If ``None``, consider all input variables mentioned in the learning dataset.
-        **parameters: The parameters of the machine learning algorithm.
+            surrogate: Either the name of a subclass of :class:`.BaseRegressor`
+                or an instance of this subclass.
+            data: The learning dataset to train the regression model.
+                If ``None``, the regression model is supposed to be trained.
+            transformer: The strategies to transform the variables.
+                This argument is ignored
+                when ``surrogate`` is a :class:`.BaseRegressor`;
+                in this case,
+                these strategies are defined
+                with the ``transformer`` argument of this :class:`.BaseRegressor`,
+                whose default value is :attr:`.BaseMLAlgo.IDENTITY`,
+                which means no transformation.
+                In the other cases,
+                the values of the dictionary are instances of :class:`.BaseTransformer`
+                while the keys can be variable names,
+                the group name ``"inputs"``
+                or the group name ``"outputs"``.
+                If a group name is specified,
+                the :class:`.BaseTransformer` will be applied
+                to all the variables of this group.
+                If :attr:`.BaseMLAlgo.IDENTITY`, do not transform the variables.
+                The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
+                the :class:`.MinMaxScaler` strategy for both input and output variables.
+            disc_name: The name to be given to the surrogate discipline.
+                If empty,
+                the name will be ``f"{surrogate.SHORT_ALGO_NAME}_{data.name}``.
+            default_inputs: The default values of the input variables.
+                If empty,
+                use the center of the learning input space.
+            input_names: The names of the input variables.
+                If empty,
+                consider all input variables mentioned in the learning dataset.
+            output_names: The names of the output variables.
+                If empty,
+                consider all input variables mentioned in the learning dataset.
+            **parameters: The parameters of the machine learning algorithm.
 
     See Also:
         get_available_surrogates
@@ -1280,12 +1291,12 @@ def create_surrogate(
 
     return SurrogateDiscipline(
         surrogate,
-        data,
-        transformer,
-        disc_name,
-        default_inputs,
-        input_names,
-        output_names,
+        data=data,
+        transformer=transformer,
+        disc_name=disc_name,
+        default_inputs=default_inputs,
+        input_names=input_names,
+        output_names=output_names,
         **parameters,
     )
 

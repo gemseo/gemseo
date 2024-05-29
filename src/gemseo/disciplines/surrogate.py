@@ -29,6 +29,7 @@ from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.algos.factory import RegressorFactory
 from gemseo.mlearning.regression.quality.factory import RegressorQualityFactory
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -82,41 +83,48 @@ class SurrogateDiscipline(MDODiscipline):
         surrogate: str | BaseRegressor,
         data: IODataset | None = None,
         transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
-        disc_name: str | None = None,
-        default_inputs: dict[str, ndarray] | None = None,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        disc_name: str = "",
+        default_inputs: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         **parameters: MLAlgoParameterType,
     ) -> None:
         """
         Args:
-            surrogate: Either the name of a class
-                deriving from :class:`.BaseRegressor`
-                or the instance of an :class:`.BaseRegressor`.
+            surrogate: Either the name of a subclass of :class:`.BaseRegressor`
+                or an instance of this subclass.
             data: The learning dataset to train the regression model.
                 If ``None``, the regression model is supposed to be trained.
             transformer: The strategies to transform the variables.
-                The values are instances of :class:`.BaseTransformer`
-                while the keys are the names of
-                either the variables
-                or the groups of variables,
-                e.g. ``"inputs"`` or ``"outputs"``
-                in the case of the regression algorithms.
-                If a group is specified,
+                This argument is ignored
+                when ``surrogate`` is a :class:`.BaseRegressor`;
+                in this case,
+                these strategies are defined
+                with the ``transformer`` argument of this :class:`.BaseRegressor`,
+                whose default value is :attr:`.BaseMLAlgo.IDENTITY`,
+                which means no transformation.
+                In the other cases,
+                the values of the dictionary are instances of :class:`.BaseTransformer`
+                while the keys can be variable names,
+                the group name ``"inputs"``
+                or the group name ``"outputs"``.
+                If a group name is specified,
                 the :class:`.BaseTransformer` will be applied
                 to all the variables of this group.
-                If :attr:`~.BaseMLAlgo.IDENTITY, do not transform the variables.
+                If :attr:`.BaseMLAlgo.IDENTITY`, do not transform the variables.
                 The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
                 the :class:`.MinMaxScaler` strategy for both input and output variables.
             disc_name: The name to be given to the surrogate discipline.
-                If ``None``, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
-            default_inputs: The default values of the inputs.
-                If ``None``, use the center of the learning input space.
+                If empty,
+                the name will be ``f"{surrogate.SHORT_ALGO_NAME}_{data.name}``.
+            default_inputs: The default values of the input variables.
+                If empty,
+                use the center of the learning input space.
             input_names: The names of the input variables.
-                If ``None``,
+                If empty,
                 consider all input variables mentioned in the learning dataset.
             output_names: The names of the output variables.
-                If ``None``,
+                If empty,
                 consider all input variables mentioned in the learning dataset.
             **parameters: The parameters of the machine learning algorithm.
 
@@ -181,17 +189,15 @@ class SurrogateDiscipline(MDODiscipline):
         return self._string_representation._repr_html_()
 
     def _initialize_grammars(
-        self,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        self, input_names: Iterable[str] = (), output_names: Iterable[str] = ()
     ) -> None:
-        """Initialize the input and output grammars from the regression model.
+        """Initialize the input and output grammars.
 
         Args:
-            input_names: The names of the inputs to consider.
-                If ``None``, use all the inputs of the regression model.
-            output_names: The names of the inputs to consider.
-                If ``None``, use all the inputs of the regression model.
+            input_names: The names of the discipline inputs.
+                If empty, use all the inputs of the regression model.
+            output_names: The names of the discipline outputs.
+                If empty, use all the outputs of the regression model.
         """
         self.input_grammar.update_from_names(
             input_names or self.regression_model.input_names
@@ -202,18 +208,18 @@ class SurrogateDiscipline(MDODiscipline):
 
     def _set_default_inputs(
         self,
-        default_inputs: Mapping[str, ndarray] | None = None,
+        default_inputs: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """Set the default values of the inputs.
 
         Args:
            default_inputs: The default values of the inputs.
-               If ``None``, use the center of the learning input space.
+               If empty, use the center of the learning input space.
         """
-        if default_inputs is None:
-            self.default_inputs = self.regression_model.input_space_center
-        else:
+        if default_inputs:
             self.default_inputs = default_inputs
+        else:
+            self.default_inputs = self.regression_model.input_space_center
 
     def _run(self) -> None:
         for name, value in self.regression_model.predict(self.get_input_data()).items():
