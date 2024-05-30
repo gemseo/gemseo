@@ -31,7 +31,6 @@ from typing import Any
 from numpy import ndarray
 from pandas import DataFrame
 
-from gemseo.core.namespaces import NamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.typing import MutableStrKeyMapping
 from gemseo.typing import StrKeyMapping
@@ -130,26 +129,14 @@ class DisciplineData(MutableStrKeyMapping, metaclass=ABCGoogleDocstringInheritan
     __data: MutableStrKeyMapping
     """The internal dict-like object."""
 
-    __input_to_namespaced: NamespacesMapping
-    """The namespace mapping for the inputs."""
-
-    __output_to_namespaced: NamespacesMapping
-    """The namespace mapping for the outputs."""
-
     def __init__(
         self,
         data: MutableStrKeyMapping | None = None,
-        input_to_namespaced: NamespacesMapping | None = None,
-        output_to_namespaced: NamespacesMapping | None = None,
     ) -> None:
         """
         Args:
             data: A dict-like object or a :class:`.DisciplineData` object.
                 If ``None``, an empty dictionary is used.
-            input_to_namespaced: The mapping from input data names
-                to their prefixed names.
-            output_to_namespaced: The mapping from output data names
-                to their prefixed names.
         """  # noqa: D205, D212, D415
         if isinstance(data, self.__class__):
             # By construction, data's keys shall have been already checked.
@@ -168,13 +155,6 @@ class DisciplineData(MutableStrKeyMapping, metaclass=ABCGoogleDocstringInheritan
             self.__check_keys(*data)
             self.__data = data
 
-        self.__input_to_namespaced = (
-            input_to_namespaced if input_to_namespaced is not None else {}
-        )
-        self.__output_to_namespaced = (
-            output_to_namespaced if output_to_namespaced is not None else {}
-        )
-
     def __getitem__(self, key: str) -> Any:
         if key in self.__data:
             return self.__data[key]
@@ -182,20 +162,6 @@ class DisciplineData(MutableStrKeyMapping, metaclass=ABCGoogleDocstringInheritan
         if self.SEPARATOR in key:
             df_key, column = key.split(self.SEPARATOR)
             return self.__data[df_key][column].to_numpy()
-
-        if self.__input_to_namespaced:
-            key_with_ns = self.__input_to_namespaced.get(key)
-            if key_with_ns is not None:
-                # TODO: remove the type ignore when namespace for process disciplines
-                # are specialized.
-                return self[key_with_ns]  # type:ignore[index]
-
-        if self.__output_to_namespaced:
-            key_with_ns = self.__output_to_namespaced.get(key)
-            if key_with_ns is not None:
-                # TODO: remove the type ignore when namespace for process disciplines
-                # are specialized.
-                return self[key_with_ns]  # type:ignore[index]
 
         raise KeyError(key)
 
@@ -267,8 +233,6 @@ class DisciplineData(MutableStrKeyMapping, metaclass=ABCGoogleDocstringInheritan
             if isinstance(v, DataFrame):
                 data[k] = v.copy(deep=False)
         copy_.__data = data
-        copy_.__input_to_namespaced = copy(self.__input_to_namespaced)
-        copy_.__output_to_namespaced = copy(self.__output_to_namespaced)
         return copy_
 
     def __deepcopy__(self, memo: Mapping[int, Any] | None = None) -> DisciplineData:
@@ -283,8 +247,6 @@ class DisciplineData(MutableStrKeyMapping, metaclass=ABCGoogleDocstringInheritan
                 data[k] = deepcopy(v)
 
         copy_.__data = data
-        copy_.__input_to_namespaced = deepcopy(self.__input_to_namespaced)
-        copy_.__output_to_namespaced = deepcopy(self.__output_to_namespaced)
         return copy_
 
     def clear(self) -> None:  # noqa: D102

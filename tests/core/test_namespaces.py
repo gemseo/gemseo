@@ -109,14 +109,12 @@ def test_analytic_disc_ns(grammar_type, use_defaults) -> None:
 
     outs_ref = disc.execute({"x": array([1.0])})
     if use_defaults:
-        assert disc_ns.default_inputs["x"] is not None
         assert "ns:x" in disc_ns.default_inputs
         outs_ns = disc_ns.execute()
     else:
         outs_ns = disc_ns.execute({"ns:x": array([1.0])})
 
     assert outs_ref["x"] == outs_ns["ns:x"]
-    assert outs_ref["x"] == outs_ns["x"]
 
 
 @pytest.mark.parametrize(
@@ -151,8 +149,7 @@ def test_chain_disc_ns(grammar_type) -> None:
     assert sorted(chain.get_output_data_names()) == ["ns_out:y", "z"]
 
     out = chain.execute({"ns_in:x": array([3.0]), "u": array([4.0])})
-    assert out["y"] == out["ns_out:y"]
-    assert out["y"] == array([10.0])
+    assert out["ns_out:y"] == array([10.0])
     assert out["z"] == array([20.0])
 
 
@@ -261,7 +258,7 @@ def test_mda_with_namespaces(grammar_type) -> None:
         tolerance=1e-10,
     )
     out_ns = mda_ns.execute()
-    assert abs(out_ns["y"][0] - out_ref["y"][0]) < 1e-14
+    assert abs(out_ns["ns:y"][0] - out_ref["y"][0]) < 1e-14
 
     assert disc_1.check_jacobian()
     assert disc_2.check_jacobian()
