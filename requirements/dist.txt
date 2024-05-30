@@ -70,7 +70,7 @@ pyproject-hooks==1.1.0
     # via build
 readme-renderer==43.0
     # via twine
-requests==2.32.2
+requests==2.32.3
     # via
     #   requests-toolbelt
     #   twine
