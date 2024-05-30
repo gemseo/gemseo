@@ -27,6 +27,7 @@ import pytest
 from numpy import allclose
 from numpy import array
 from numpy import inf
+from numpy import int32
 from numpy import ndarray
 from numpy.random import RandomState
 from numpy.testing import assert_almost_equal
@@ -292,3 +293,11 @@ def test_otdistfitter_select(norm_data) -> None:
     factory = OTDistributionFitter("x", norm_data)
     dist = factory.select(["Normal", "Exponential"], "BIC")
     assert isinstance(dist, OTDistribution)
+
+
+def test_compute_cdf_int32():
+    """Check that openturns-based compute_cdf handles numpy.int32."""
+    expected = pytest.approx(0.8, abs=0.1)
+    x = int32(1)
+    assert OTNormalDistribution().compute_cdf(x) == expected
+    assert OTJointDistribution([OTNormalDistribution()]).compute_cdf([x]) == expected

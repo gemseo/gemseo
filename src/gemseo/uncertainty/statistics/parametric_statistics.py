@@ -549,7 +549,7 @@ class ParametricStatistics(BaseStatistics):
 
         return {
             name: array([
-                func(distribution.value.compute_cdf([new_thresh[name][index]]))
+                func(distribution.value.compute_cdf(new_thresh[name][index]))
                 for index, distribution in enumerate(self.__distributions[name])
             ])
             for name in self.names
