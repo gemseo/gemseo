@@ -48,7 +48,7 @@ class Defaults(DisciplineData):
         Args:
             grammar: The grammar bound to the defaults.
         """  # noqa: D205, D212, D415
-        super().__init__(input_to_namespaced=grammar.to_namespaced)
+        super().__init__()
         self.__grammar = grammar
         # Explicitly set the items such that they are checked.
         self.update(data)

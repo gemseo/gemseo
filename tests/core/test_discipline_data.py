@@ -111,12 +111,7 @@ def test_getitem(namespace_mapping) -> None:
     """Verify __getitem__()."""
     df = DataFrame(data={"a": [0]})
     data = {"x": df, "y": 0}
-    d = DisciplineData(
-        data,
-        input_to_namespaced=namespace_mapping,
-        output_to_namespaced=namespace_mapping,
-    )
-
+    d = DisciplineData(data)
     assert_getitem(d, df)
 
 
@@ -222,17 +217,11 @@ def test_getitem_ns() -> None:
     """Verify access of data from keys without namespaces."""
     data = DisciplineData(
         {"ns:x": 1, "ns:y": 2, "z": 0},
-        input_to_namespaced={"x": "ns:x"},
-        output_to_namespaced={"y": "ns:y"},
     )
     assert data["ns:x"] == 1
-    assert data["x"] == 1
-    assert data.get("x") == 1
     assert data.get("ns:x") == 1
 
     assert data["ns:y"] == 2
-    assert data["y"] == 2
-    assert data.get("y") == 2
     assert data.get("ns:y") == 2
 
 

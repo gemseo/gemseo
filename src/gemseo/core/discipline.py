@@ -411,11 +411,7 @@ class MDODiscipline(Serializable):
         self.__set_local_data(data)
 
     def __set_local_data(self, data: MutableStrKeyMapping) -> None:
-        self._local_data = DisciplineData(
-            data,
-            input_to_namespaced=self.input_grammar.to_namespaced,
-            output_to_namespaced=self.output_grammar.to_namespaced,
-        )
+        self._local_data = DisciplineData(data)
 
     @property
     def n_calls(self) -> int | None:
