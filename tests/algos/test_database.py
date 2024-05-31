@@ -30,6 +30,7 @@ from numpy import full
 from numpy import ones
 from numpy.linalg import norm
 from numpy.testing import assert_almost_equal
+from numpy.testing import assert_array_equal
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
@@ -646,3 +647,62 @@ def test_get_function_history():
         KeyError, match=re.escape("The database 'foo' contains no value of 'g'.")
     ):
         Database("foo").get_function_history("g")
+
+
+@pytest.mark.parametrize(
+    "store_orders", [[0, 1, 2, 3], [1, 3, 2, 0], [3, 1, 0, 2], [3, 2, 1, 0]]
+)
+def test_store_append(tmp_wd, store_orders):
+    """Verify the export in append mode with successive store.
+
+    A particular case is treated, store empty values, then store values one at a time,
+    versus storing a complete dict.
+    """
+    db1 = Database()
+    db2 = Database()
+    bk_file_1 = Path("out_1.h5")
+    bk_file_2 = Path("out_2.h5")
+    x0 = array([1.0, 2.0])
+    x1 = array([2.0, 2.0])
+
+    def _store(x, in_db1, store_z=True, store_t=True, store_s=True):
+        values = {}
+        if in_db1:
+            db = db1
+            out_file = bk_file_1
+        else:
+            db = db2
+            out_file = bk_file_2
+        if store_z:
+            values["z"] = array([sum(x0)])
+        if store_t:
+            values["t"] = 2 * x0 + 3
+        if store_s:
+            values["s"] = x0[0]
+        db.store(x, values)
+        db.to_hdf(out_file, append=True)
+
+    db1.store(x0, {"z": array([sum(x0)])})
+    db1.to_hdf(bk_file_1, append=True)
+    _store(x0, True, store_z=True, store_t=False)
+    _store(x0, True, store_z=False, store_t=True)
+    _store(x1, True, store_z=True, store_t=True)
+
+    # Test various orders for storing the data z, t, s
+    args_store = [
+        [False, False, False],
+        [True, False, False],
+        [False, True, False],
+        [False, False, True],
+    ]
+
+    for args in [args_store[i] for i in store_orders]:
+        _store(x0, False, *args)
+    _store(x1, store_z=True, store_t=True, store_s=True, in_db1=False)
+
+    db_read_1 = Database.from_hdf(bk_file_1)
+    db_read_2 = Database.from_hdf(bk_file_2)
+    for func in ["z", "t", "s"]:
+        f_s = db_read_1.get_function_history(func, with_x_vect=False)
+        f_p = db_read_2.get_function_history(func, with_x_vect=False)
+        assert_array_equal(f_s, f_p, strict=True)
