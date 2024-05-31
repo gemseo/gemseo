@@ -20,17 +20,22 @@
 from __future__ import annotations
 
 import logging
+import pickle
 import re
+from pathlib import Path
 from sys import platform
 from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import ndarray
+from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
+from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_custom import CustomDOE
@@ -44,7 +49,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
 
 if TYPE_CHECKING:
-    from gemseo.algos.database import Database
+    from gemseo.scenarios.doe_scenario import DOEScenario
 
 FACTORY = DOEFactory()
 
@@ -409,3 +414,80 @@ def test_compute_doe():
     """Check DOELibrary.compute_doe from the dimension of the variables space."""
     samples = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
     assert_equal(CustomDOE().compute_doe(3, samples=samples), samples)
+
+
+def test_serialize(tmp_wd):
+    """Verify that DOELibrary is serializable."""
+    lib = CustomDOE()
+    output_path = Path("out.pk")
+    with open(output_path, "wb") as outf:
+        pickle.dump(lib, outf)
+
+    with open(output_path, "rb") as outf:
+        pickle.load(outf)
+
+
+class _DummyDisc(MDODiscipline):
+    def __init__(self) -> None:
+        super().__init__("foo", grammar_type=MDODiscipline.GrammarType.SIMPLE)
+        self.input_grammar.update_from_names("x")
+        self.output_grammar.update_from_names(("z", "t"))
+        self.output_grammar.update_from_types({
+            "s1": float,
+            "s2": float,
+            "z": ndarray,
+            "t": ndarray,
+        })
+
+    def _run(self):
+        x = self.local_data["x"]
+        self.local_data["z"] = array([sum(x)])
+        self.local_data["t"] = 2 * x + 3
+        self.local_data["s1"] = x[0]
+        self.local_data["s2"] = x[1]
+
+
+def test_parallel_doe_db(tmp_wd):
+    """Verify the backup database in parallel with vector and scalar outputs."""
+
+    def _create_scn() -> DOEScenario:
+        design_space = DesignSpace()
+        design_space.add_variable("x", l_b=0, u_b=1, size=2)
+
+        scenario = create_scenario(
+            [_DummyDisc()],
+            "DisciplinaryOpt",
+            "z",
+            design_space,
+            scenario_type="DOE",
+        )
+        scenario.add_constraint("t")
+        scenario.add_constraint("s1")
+        scenario.add_constraint("s2")
+        return scenario
+
+    scenario_ser = _create_scn()
+    bk_file_ser = Path("ser_out.h5")
+    scenario_ser.set_optimization_history_backup(
+        bk_file_ser, each_new_iter=True, each_store=True
+    )
+    algo_options = {"n_processes": 1}
+    opts = {"algo": "fullfact", "n_samples": 4, "algo_options": algo_options}
+    scenario_ser.execute(opts)
+
+    scenario_par = _create_scn()
+    bk_file_par = Path("par_out.h5")
+    scenario_par.set_optimization_history_backup(
+        bk_file_par, each_new_iter=True, each_store=True
+    )
+    algo_options["n_processes"] = 2
+    scenario_par.execute(opts)
+
+    db_ser = Database.from_hdf(bk_file_ser)
+    db_par = Database.from_hdf(bk_file_par)
+
+    assert len(db_ser) == len(db_par)
+    for func in ["z", "t", "s1", "s2"]:
+        f_s = db_ser.get_function_history(func, with_x_vect=False)
+        f_p = db_par.get_function_history(func, with_x_vect=False)
+        assert_array_equal(f_p, f_s, strict=True)

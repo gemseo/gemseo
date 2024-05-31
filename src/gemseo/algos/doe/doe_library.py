@@ -25,6 +25,7 @@ import logging
 from abc import abstractmethod
 from dataclasses import dataclass
 from functools import singledispatchmethod
+from multiprocessing import RLock
 from multiprocessing import current_process
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -50,6 +51,8 @@ from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCES
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+from gemseo.core.serializable import Serializable
+from gemseo.utils.locks import synchronized
 from gemseo.utils.seeder import Seeder
 
 if TYPE_CHECKING:
@@ -84,7 +87,10 @@ class DOEAlgorithmDescription(DriverDescription):
     """The minimum dimension of the parameter space."""
 
 
-class DOELibrary(DriverLibrary):
+class DOELibrary(
+    DriverLibrary,
+    Serializable,
+):
     """Abstract class to use for DOE library link See DriverLibrary."""
 
     unit_samples: RealArray
@@ -96,6 +102,9 @@ class DOELibrary(DriverLibrary):
     To access those in the design space,
     use :attr:`.samples`.
     """
+
+    lock: RLock
+    """The lock protecting database storage in multiprocessing."""
 
     samples: RealArray
     """The design vector samples in the design space.
@@ -132,6 +141,7 @@ class DOELibrary(DriverLibrary):
         "float": float,
         "integer": int32,
     }
+    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"lock"}
 
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
     """Whether the algorithms use a unit hypercube to generate the design samples."""
@@ -145,6 +155,10 @@ class DOELibrary(DriverLibrary):
         self.samples = array([])
         self.eval_jac = False
         self._seeder = Seeder()
+        self.lock = RLock()
+
+    def _init_shared_memory_attrs(self) -> None:
+        self.lock = RLock()
 
     @property
     def seed(self) -> int:
@@ -384,6 +398,7 @@ class DOELibrary(DriverLibrary):
                         input_data,
                     )
 
+    @synchronized
     def __store_in_database(
         self,
         index: int,

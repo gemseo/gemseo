@@ -106,6 +106,8 @@ class Scenario(MDODiscipline):
     activate_input_data_check = True
     activate_output_data_check = True
     _opt_hist_backup_path: Path
+    __history_backup_is_set: bool
+    """Whether the history backup database option is set."""
 
     def __init__(
         self,
@@ -160,6 +162,7 @@ class Scenario(MDODiscipline):
         self.formulation.opt_problem.database.name = self.name
         self._update_input_grammar()
         self.clear_history_before_run = False
+        self.__history_backup_is_set = False
 
     @property
     def use_standardized_objective(self) -> bool:
@@ -387,6 +390,7 @@ class Scenario(MDODiscipline):
             ValueError: If both ``erase`` and ``pre_load`` are ``True``.
         """
         opt_pb = self.formulation.opt_problem
+        self.__history_backup_is_set = True
         self._opt_hist_backup_path = Path(file_path)
 
         if self._opt_hist_backup_path.exists():
@@ -474,12 +478,22 @@ class Scenario(MDODiscipline):
         if self.clear_history_before_run:
             self.formulation.opt_problem.database.clear()
 
+        database = self.formulation.opt_problem.database
+        n_x = len(database)
         self._run_algorithm()
         LOGGER.info(
             "*** End %s execution (time: %s) ***",
             self.name,
             timedelta(seconds=timeit.default_timer() - t_0),
         )
+        # The last call to the functions may not trigger the callback
+        # so some values may be missing in the database.
+        # This ensures that the callback is called after the last iteration.
+        if self.__history_backup_is_set:
+            n_x_a = len(database)
+            if 0 < n_x < n_x_a:
+                x_vect = database.get_x_vect(n_x_a)
+                self._execute_backup_callback(x_vect)
 
     def _run_algorithm(self) -> OptimizationResult:
         """Run the driver algorithm."""
