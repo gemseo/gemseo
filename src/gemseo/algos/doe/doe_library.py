@@ -25,6 +25,7 @@ import logging
 from abc import abstractmethod
 from dataclasses import dataclass
 from functools import singledispatchmethod
+from multiprocessing import RLock
 from multiprocessing import current_process
 from typing import TYPE_CHECKING
 from typing import Any
@@ -48,6 +49,8 @@ from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCES
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+from gemseo.core.serializable import Serializable
+from gemseo.utils.locks import synchronized
 from gemseo.utils.seeder import Seeder
 
 if TYPE_CHECKING:
@@ -74,7 +77,7 @@ class DOEAlgorithmDescription(DriverDescription):
     """The minimum dimension of the parameter space."""
 
 
-class DOELibrary(DriverLibrary):
+class DOELibrary(DriverLibrary, Serializable):
     """Abstract class to use for DOE library link See DriverLibrary."""
 
     samples: RealArray
@@ -95,6 +98,9 @@ class DOELibrary(DriverLibrary):
     To access those in the design space,
     use :attr:`.samples`.
     """
+
+    lock: RLock
+    """The lock protecting database storage in multiprocessing."""
 
     EVAL_JAC = "eval_jac"
     N_PROCESSES = "n_processes"
@@ -118,6 +124,7 @@ class DOELibrary(DriverLibrary):
         "float": float,
         "integer": int32,
     }
+    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"lock"}
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
@@ -125,6 +132,10 @@ class DOELibrary(DriverLibrary):
         self.unit_samples = array([])
         self._seeder = Seeder()
         self.__eval_jac = False
+        self.lock = RLock()
+
+    def _init_shared_memory_attrs_after(self) -> None:
+        self.lock = RLock()
 
     @property
     def seed(self) -> int:
@@ -300,6 +311,7 @@ class DOELibrary(DriverLibrary):
             normalize=False,
         )
 
+    @synchronized
     def __store_in_database(
         self,
         index: int,

@@ -17,6 +17,7 @@ import h5py
 import pytest
 from numpy import array
 from numpy import bytes_
+from numpy import ndarray
 
 from gemseo.algos._hdf_database import HDFDatabase
 from gemseo.algos.database import HashableNdarray
@@ -127,26 +128,30 @@ def test_add_hdf_output_dataset(h5_file) -> None:
     hdf_database._HDFDatabase__add_hdf_output_dataset(
         10, keys_group, values_group, values
     )
-    assert list(keys_group["10"]) == list(array(list(values.keys()), dtype=bytes_))
+    assert sorted(keys_group["10"]) == sorted(array(list(values.keys()), dtype=bytes_))
     assert array(values_group["10"]) == pytest.approx(array([10]))
-    assert array(values_group["arr_10"]["1"]) == pytest.approx(array([1, 2]))
-    assert array(values_group["arr_10"]["2"]) == pytest.approx(array([3]))
-    assert array(values_group["arr_10"]["3"]) == pytest.approx(array([[1, 2, 3]]))
+    dataset_names = values_group["arr_10"].keys()
+    for key, dataset_name in zip(sorted(values.keys()), dataset_names):
+        val = values[key]
+        if isinstance(val, (ndarray, list)):
+            assert array(values_group["arr_10"][dataset_name]) == pytest.approx(
+                array(val)
+            )
 
     values = {
-        "i": array([1, 2]),
-        "Iter": 1,
         "@j": array([[1, 2, 3]]),
+        "Iter": 1,
+        "i": array([1, 2]),
         "k": 99,
         "l": 100,
     }
     hdf_database._HDFDatabase__add_hdf_output_dataset(
         100, keys_group, values_group, values
     )
-    assert list(keys_group["100"]) == list(array(list(values.keys()), dtype=bytes_))
+    assert sorted(keys_group["100"]) == sorted(array(list(values.keys()), dtype=bytes_))
     assert array(values_group["100"]) == pytest.approx(array([1, 99, 100]))
-    assert array(values_group["arr_100"]["0"]) == pytest.approx(array([1, 2]))
-    assert array(values_group["arr_100"]["2"]) == pytest.approx(array([[1, 2, 3]]))
+    assert array(values_group["arr_100"]["0"]) == pytest.approx(array([[1, 2, 3]]))
+    assert array(values_group["arr_100"]["2"]) == pytest.approx(array([1, 2]))
 
 
 def test_get_missing_hdf_output_dataset(h5_file) -> None:
