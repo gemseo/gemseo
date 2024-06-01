@@ -54,7 +54,7 @@ packaging==24.0
     # via
     #   build
     #   check-wheel-contents
-pkginfo==1.10.0
+pkginfo==1.11.0
     # via twine
 pycparser==2.22
     # via cffi
@@ -98,5 +98,5 @@ urllib3==2.2.1
     #   twine
 wheel-filename==1.4.1
     # via check-wheel-contents
-zipp==3.19.0
+zipp==3.19.1
     # via importlib-metadata

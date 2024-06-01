@@ -29,7 +29,7 @@ et-xmlfile==1.1.0
     # via openpyxl
 fastjsonschema==2.19.1
     # via gemseo (pyproject.toml)
-fonttools==4.52.4
+fonttools==4.53.0
     # via matplotlib
 genson==1.2.2
     # via gemseo (pyproject.toml)
@@ -205,7 +205,7 @@ xdsmjs==2.0.0
     # via gemseo (pyproject.toml)
 xxhash==3.4.1
     # via gemseo (pyproject.toml)
-zipp==3.19.0
+zipp==3.19.1
     # via
     #   importlib-metadata
     #   importlib-resources
