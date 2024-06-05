@@ -1,0 +1,1 @@
+``RemappingDiscipline`` accepts an empty name mapping, in which case no remapping is applied.
