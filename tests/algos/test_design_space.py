@@ -37,6 +37,7 @@ from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
+from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 from scipy.sparse import csr_array
 
@@ -334,12 +335,40 @@ def test_filter_with_an_unknown_variable(design_space) -> None:
         design_space.filter("unknown_x")
 
 
-@pytest.mark.parametrize("indices", [[0], [0, 1]])
-def test_filter_by_variables_dimensions(design_space, indices) -> None:
+@pytest.mark.parametrize("current_value", [[0.2, 0.5], None])
+def test_filter_dimensions(current_value) -> None:
     """Check that the design space can be filtered by variables dimensions."""
-    design_space.filter_dim("x5", indices)
-    with pytest.raises(ValueError, match="Dimension 2 of variable 'x5' is not known."):
-        design_space.filter_dim("x5", [2])
+    space = DesignSpace()
+    space.add_variable("z", 1, "float", -0.6, -0.4, -0.5)
+    space.add_variable("x", 2, "float", [0.1, 0.4], [0.3, 0.6], current_value)
+    space.add_variable("y", 1, "integer", 7, 9, 8)
+    space.filter_dimensions("x", [0])
+    assert space.dimension == 3
+    assert space.variable_sizes == {"z": 1, "x": 1, "y": 1}
+    assert space.variable_types == {
+        "z": array(["float"]),
+        "x": array(["float"]),
+        "y": array(["integer"]),
+    }
+    assert_array_equal(space.get_lower_bounds(), [-0.6, 0.1, 7])
+    assert_array_equal(space.get_upper_bounds(), [-0.4, 0.3, 9])
+    if current_value is not None:
+        assert_array_equal(space.get_current_value(), [-0.5, 0.2, 8])
+
+    assert space.names_to_indices == {"z": range(1), "x": range(1, 2), "y": range(2, 3)}
+
+
+@pytest.mark.parametrize(
+    ("indices", "message"),
+    [
+        ([0, 3], "Dimension 3 of variable 'x5' does not exist."),
+        ([0, 3, 4], "Dimensions 3 and 4 of variable 'x5' do not exist."),
+    ],
+)
+def test_filter_dimensions_nonexistent(design_space, indices, message) -> None:
+    """Check that the design space cannot filter nonexistent dimensions."""
+    with pytest.raises(ValueError, match=message):
+        design_space.filter_dimensions("x5", indices)
 
 
 def test_extend() -> None:

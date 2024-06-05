@@ -50,7 +50,7 @@ print(design_space)
 design_space.filter(["x1", "x2", "x3", "x6"])
 print(design_space)
 
-design_space.filter_dim("x3", [1])
+design_space.filter_dimensions("x3", [1])
 print(design_space)
 
 design_space.set_current_value(array([1.0, 1.0, 1.0, 1.0]))
