@@ -273,7 +273,7 @@ class MDODiscipline(Serializable):
             grammar_type: The type of the input and output grammars.
             cache_type: The type of cache.
             cache_file_path: The HDF file path
-                when ``grammar_type`` is :attr:`.MDODiscipline.CacheType.HDF5`.
+                when ``cache_type`` is :attr:`.MDODiscipline.CacheType.HDF5`.
         """  # noqa: D205, D212, D415
         self.data_processor = None
         self.input_grammar = None
