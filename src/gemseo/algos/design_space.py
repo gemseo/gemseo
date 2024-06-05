@@ -359,16 +359,12 @@ class DesignSpace(collections.abc.MutableMapping):
                 raise ValueError(msg)
         return design_space
 
-    def filter_dim(
-        self,
-        variable: str,
-        keep_dimensions: Iterable[int],
-    ) -> DesignSpace:
+    def filter_dimensions(self, name: str, dimensions: Iterable[int]) -> DesignSpace:
         """Filter the design space to keep a subset of dimensions for a variable.
 
         Args:
-            variable: The name of the variable.
-            keep_dimensions: The dimensions of the variable to be kept,
+            name: The name of the variable.
+            dimensions: The dimensions of the variable to be kept,
                 between :math:`0` and :math:`d-1`
                 where :math:`d` is the number of dimensions of the variable.
 
@@ -376,37 +372,40 @@ class DesignSpace(collections.abc.MutableMapping):
             The filtered design space.
 
         Raises:
-            ValueError: If a dimension is unknown.
+            ValueError: If a dimension does not exist.
         """
-        self.__norm_data_is_computed = False
-        removed_dimensions = list(
-            set(range(self.variable_sizes[variable])) - set(keep_dimensions)
-        )
-        bad_dimensions = list(
-            set(keep_dimensions) - set(range(self.variable_sizes[variable]))
-        )
-        size = len(removed_dimensions)
-        self.dimension -= size
-        self.variable_sizes[variable] -= size
-        types = []
-        for dimension in keep_dimensions:
-            if dimension in bad_dimensions:
-                self.remove_variable(variable)
-                msg = f"Dimension {dimension} of variable '{variable}' is not known."
-                raise ValueError(msg)
-            types.append(self.variable_types[variable][dimension])
-        self.variable_types[variable] = array(types)
+        nonexistent_dimensions = {i for i in dimensions if i >= self.get_size(name)}
+        if nonexistent_dimensions:
+            plural = len(nonexistent_dimensions) > 1
+            msg = (
+                f"Dimension{'s' if plural else ''}"
+                f" {pretty_str(nonexistent_dimensions, use_and=True)}"
+                f" of variable '{name}' {'do' if plural else 'does'} not exist."
+            )
+            raise ValueError(msg)
 
-        idx = keep_dimensions
-        self.normalize[variable] = self.normalize[variable][idx]
-        if variable in self._lower_bounds:
-            self._lower_bounds[variable] = self._lower_bounds[variable][idx]
+        n_kept = len(dimensions)
+        n_removed = self.get_size(name) - n_kept
+        self.dimension -= n_removed
+        self.variable_sizes[name] -= n_removed
+        self._add_type(name, n_kept, self.get_type(name)[dimensions])
+        self.set_lower_bound(name, self.get_lower_bound(name)[dimensions])
+        self.set_upper_bound(name, self.get_upper_bound(name)[dimensions])
+        if name in self.__current_value:
+            self.set_current_variable(name, self.get_current_value(name)[dimensions])
 
-        if variable in self._upper_bounds:
-            self._upper_bounds[variable] = self._upper_bounds[variable][idx]
-
-        if variable in self.__current_value:
-            self.__current_value[variable] = self.__current_value[variable][idx]
+        # Update the mapping from names to array indices
+        name_reached = False
+        for _name, indices in self.__names_to_indices.items():
+            if _name == name:
+                name_reached = True
+                self.__names_to_indices[_name] = range(
+                    indices.start, indices.stop - n_removed
+                )
+            elif name_reached:
+                self.__names_to_indices[_name] = range(
+                    indices.start - n_removed, indices.stop - n_removed
+                )
 
         self.__update_current_metadata()
         return self

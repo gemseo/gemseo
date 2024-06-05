@@ -1,0 +1,1 @@
+``DesignSpace.filter_dimensions`` (formerly ``DesignSpace.filter_dim``) updates the mapping ``DesignSpace.__names_to_indices``
