@@ -18,7 +18,7 @@ check-wheel-contents==0.6.0
     # via -r requirements/dist.in
 click==8.1.7
     # via check-wheel-contents
-cryptography==42.0.7
+cryptography==42.0.8
     # via secretstorage
 docutils==0.21.2
     # via readme-renderer
@@ -98,5 +98,5 @@ urllib3==2.2.1
     #   twine
 wheel-filename==1.4.1
     # via check-wheel-contents
-zipp==3.19.1
+zipp==3.19.2
     # via importlib-metadata
