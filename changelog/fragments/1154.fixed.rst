@@ -1,1 +1,0 @@
-The method ``OptimizationProblem.to_dataset`` now considers the type of each variable.

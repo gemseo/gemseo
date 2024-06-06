@@ -1,1 +1,0 @@
-The ``Database`` export to an HDF5 file works in "append" mode and when storing data successively for the same input value.
