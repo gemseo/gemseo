@@ -100,7 +100,6 @@ class HDFDatabase:
                 "in the group of design variables."
             )
             raise ValueError(msg)
-
         design_vars_group.create_dataset(
             str_index_dataset, data=design_vars_values.wrapped_array
         )
@@ -125,19 +124,21 @@ class HDFDatabase:
                 order of the names in ``output_values``.
                 These indices are used to build the dataset of output vectors.
         """
-        self.__add_hdf_name_output(
-            index_dataset, keys_group, list(output_values.keys())
-        )
+        output_keys_sorted = sorted(output_values.keys())
+        self.__add_hdf_name_output(index_dataset, keys_group, output_keys_sorted)
 
         if not output_name_to_idx:
-            output_name_to_idx = dict(zip(output_values, range(len(output_values))))
+            output_name_to_idx = dict(
+                zip(output_keys_sorted, range(len(output_values)))
+            )
 
         # We separate scalar data from vector data in the hdf file.
         # Scalar data are first stored into a list (``values``),
         # then added to the hdf file.
         # Vector data are directly added to the hdf file.
         values = []
-        for name, value in output_values.items():
+        for name in output_keys_sorted:
+            value = output_values[name]
             idx_value = output_name_to_idx[name]
             if isinstance(value, (ndarray, list)):
                 self.__add_hdf_vector_output(
@@ -175,22 +176,26 @@ class HDFDatabase:
                 an existing dataset.
         """
         name = str(index_dataset)
+
         if name not in keys_group:
             msg = f"The dataset named '{name}' does not exist."
             raise ValueError(msg)
 
-        existing_output_names = {out.decode() for out in keys_group[name]}
-        all_output_names = set(output_values)
-        missing_names = all_output_names - existing_output_names
+        existing_output_names = [out.decode() for out in keys_group[name]]
 
-        if not missing_names:
+        missing_name_values = {
+            name: value
+            for name, value in output_values.items()
+            if name not in existing_output_names
+        }
+
+        if not missing_name_values:
             return {}, {}
 
-        missing_name_values = {name: output_values[name] for name in missing_names}
-        all_output_idx_mapping = dict(zip(output_values, range(len(output_values))))
-        missing_names_idx_mapping = {
-            name: all_output_idx_mapping[name] for name in missing_names
-        }
+        missing_ids = list(range(len(existing_output_names), len(output_values)))
+        missing_names_idx_mapping = dict(
+            zip(sorted(missing_name_values.keys()), missing_ids)
+        )
 
         return missing_name_values, missing_names_idx_mapping
 
@@ -223,7 +228,7 @@ class HDFDatabase:
 
     def __add_hdf_scalar_output(
         self, index_dataset: int, values_group: h5py.Group, values: list[float]
-    ) -> None:
+    ) -> int:
         """Add new scalar values to the HDF group of output values.
 
         Create a dataset in the group of output values
@@ -235,8 +240,12 @@ class HDFDatabase:
             index_dataset: The index of the new HDF entry.
             values_group: The HDF group of the output values.
             values: The scalar values that must be added.
+
+        Returns:
+            The previous scalar values number
         """
         name = str(index_dataset)
+        offset = 0
         if name not in values_group:
             values_group.create_dataset(
                 name, data=self.__to_real(values), maxshape=(None,), dtype=float64
@@ -245,6 +254,7 @@ class HDFDatabase:
             offset = len(values_group[name])
             values_group[name].resize((offset + len(values),))
             values_group[name][offset:] = self.__to_real(values)
+        return offset
 
     def __add_hdf_vector_output(
         self,
@@ -277,14 +287,12 @@ class HDFDatabase:
             sub_group = values_group.require_group(sub_group_name)
         else:
             sub_group = values_group[sub_group_name]
-
         if str(idx_sub_group) in sub_group:
             msg = (
                 f"Dataset name '{idx_sub_group}' already exists "
                 f"in the sub-group of array output '{sub_group_name}'."
             )
             raise ValueError(msg)
-
         sub_group.create_dataset(
             str(idx_sub_group), data=self.__to_real(value), dtype=float64
         )

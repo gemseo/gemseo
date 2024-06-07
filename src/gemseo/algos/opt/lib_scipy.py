@@ -282,7 +282,7 @@ class ScipyOpt(OptimizationLibrary):
         # xtol, ftol, since it may
         # have a different definition of iterations, such as for SLSQP
         # for instance which counts duplicate calls to x as a new iteration
-        options["maxiter"] = 10000000
+        options["maxfun" if self.algo_name == "TNC" else "maxiter"] = 10000000
 
         # Deactivate scipy stop criteria to use |g|' ones
         options["ftol"] = 0.0
