@@ -88,7 +88,7 @@ tomli==2.0.1
     #   check-wheel-contents
 twine==5.1.0
     # via -r requirements/dist.in
-typing-extensions==4.12.1
+typing-extensions==4.12.2
     # via
     #   pydantic
     #   pydantic-core
