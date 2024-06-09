@@ -54,7 +54,7 @@ packaging==24.0
     # via
     #   build
     #   check-wheel-contents
-pkginfo==1.11.0
+pkginfo==1.11.1
     # via twine
 pycparser==2.22
     # via cffi
