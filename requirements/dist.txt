@@ -50,7 +50,7 @@ more-itertools==10.2.0
     #   jaraco-functools
 nh3==0.2.17
     # via readme-renderer
-packaging==24.0
+packaging==24.1
     # via
     #   build
     #   check-wheel-contents
