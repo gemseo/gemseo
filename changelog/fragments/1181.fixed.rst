@@ -1,1 +1,0 @@
-GEMSEO no longer sets the ``maxiter`` option of ``TNC`` that does not exist but ``maxfun``.

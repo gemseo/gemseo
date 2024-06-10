@@ -27,6 +27,21 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 5.3.1 (2024-06-06)
+**************************
+
+
+
+Fixed
+-----
+
+- The method ``OptimizationProblem.to_dataset`` now considers the type of each variable.
+  `#1154 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1154>`_
+- GEMSEO no longer sets the ``maxiter`` option of ``TNC`` that does not exist but ``maxfun``.
+  `#1181 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1181>`_
+- The ``Database`` export to an HDF5 file works in "append" mode and when storing data successively for the same input value.
+  `#1216 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1216>`_
+
 Version 5.3.0 (2024-03-28)
 **************************
 
