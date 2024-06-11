@@ -170,7 +170,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.disciplines.surrogate import SurrogateDiscipline
-    from gemseo.disciplines.wrappers.job_schedulers.scheduler_wrapped_disc import (
+    from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
         JobSchedulerDisciplineWrapper,
     )
     from gemseo.mda.base_mda import BaseMDA
@@ -2001,7 +2001,7 @@ def wrap_discipline_in_job_scheduler(
     discipline: MDODiscipline,
     scheduler_name: str,
     workdir_path: Path,
-    **options: dict[str, Any],
+    **options: Any,
 ) -> JobSchedulerDisciplineWrapper:
     """Wrap the discipline within another one to delegate its execution to a job
     scheduler.
@@ -2092,7 +2092,9 @@ def wrap_discipline_in_job_scheduler(
 
 
 def create_scenario_result(
-    scenario: Scenario | str | Path, name: str = "", **options: Any
+    scenario: Scenario | str | Path,
+    name: str = "",
+    **options: Any,
 ) -> ScenarioResult | None:
     """Create the result of a scenario execution.
 

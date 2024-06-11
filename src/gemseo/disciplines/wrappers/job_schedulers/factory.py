@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.disciplines.wrappers.job_schedulers.scheduler_wrapped_disc import (
+from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
     JobSchedulerDisciplineWrapper,
 )
 

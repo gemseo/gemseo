@@ -28,15 +28,16 @@ import pytest
 from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo.disciplines.wrappers import job_schedulers
-from gemseo.disciplines.wrappers.job_schedulers.scheduler_wrapped_disc import (
+from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (  # noqa: E501
     JobSchedulerDisciplineWrapper,
 )
+from gemseo.problems.topology_optimization.volume_fraction_disc import VolumeFraction
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 
 @pytest.fixture()
-def discipline(tmpdir):
+def discipline(tmp_wd):
     """Create a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the SLURM template.
 
@@ -46,7 +47,7 @@ def discipline(tmpdir):
     template_path = Path(job_schedulers.__file__).parent / "templates" / "SLURM"
     return JobSchedulerDisciplineWrapper(
         discipline=create_discipline("SobieskiMission"),
-        workdir_path=tmpdir,
+        workdir_path=tmp_wd,
         scheduler_run_command="sbatch",
         job_template_path=template_path,
         user_email="toto@irt.com",
@@ -60,7 +61,7 @@ def discipline(tmpdir):
 
 
 @pytest.fixture()
-def discipline_mocked_js(tmpdir) -> JobSchedulerDisciplineWrapper:
+def discipline_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
     """Creates a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the mock template.
 
@@ -70,29 +71,28 @@ def discipline_mocked_js(tmpdir) -> JobSchedulerDisciplineWrapper:
     return JobSchedulerDisciplineWrapper(
         create_discipline("SobieskiMission"),
         job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
-        workdir_path=tmpdir,
+        workdir_path=tmp_wd,
         job_out_filename="run_disc.py",
         scheduler_run_command="python",
     )
 
 
-def test_write_inputs_to_disk(discipline, tmpdir) -> None:
+def test_write_inputs_to_disk(discipline, tmp_wd) -> None:
     """Test the outputs written by the discipline."""
-    current_workdir = Path(tmpdir)
     path_to_discipline, path_to_input_data = discipline._write_inputs_to_disk(
-        current_workdir
+        tmp_wd, (), ()
     )
     assert path_to_discipline.exists()
-    assert path_to_discipline.parent == current_workdir
+    assert path_to_discipline.parent == tmp_wd
     assert path_to_input_data.exists()
-    assert path_to_input_data.parent == current_workdir
+    assert path_to_input_data.parent == tmp_wd
 
 
 def test_generate_job_template(discipline) -> None:
     """Test the job scheduler template creation."""
     current_workdir = discipline._create_current_workdir()
     path_to_discipline, path_to_input_data = discipline._write_inputs_to_disk(
-        current_workdir
+        current_workdir, (), ()
     )
     path_to_outputs = current_workdir / "outputs.pckl"
     log_file_path = current_workdir / "logging.log"
@@ -102,6 +102,7 @@ def test_generate_job_template(discipline) -> None:
         path_to_input_data,
         path_to_outputs,
         log_file_path,
+        "",
     )
     assert dest_job_file_path.exists()
     with open(dest_job_file_path) as infile:
@@ -112,16 +113,16 @@ def test_generate_job_template(discipline) -> None:
     assert len(lines) > 40
 
 
-def test_generate_job_template_fail(discipline, tmpdir) -> None:
+def test_generate_job_template_fail(discipline, tmp_wd) -> None:
     """Test that missing template values raises a proper exception."""
     discipline.job_file_template = Template("$missing")
     with pytest.raises(
         KeyError, match="Value not passed to template for key: 'missing'"
     ):
-        discipline._generate_job_file_from_template(tmpdir, None, None, None, None)
+        discipline._generate_job_file_from_template(tmp_wd, None, None, None, None, "")
 
 
-def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmpdir, caplog) -> None:
+def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmp_wd, caplog) -> None:
     """Test the run failure is correctly handled."""
     discipline._scheduler_run_command = "IDONTEXIST"
     if PLATFORM_IS_WINDOWS:
@@ -129,26 +130,26 @@ def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmpdir, caplog) -> 
     else:
         match = re.escape("[Errno 2] No such file or directory: 'IDONTEXIST'")
     with pytest.raises(FileNotFoundError, match=match):
-        discipline._run_command(tmpdir, tmpdir / "output.pckl")
+        discipline._run_command(tmp_wd, tmp_wd / "output.pckl")
 
 
 def test_handle_outputs_errors(
-    discipline: JobSchedulerDisciplineWrapper, tmpdir
+    discipline: JobSchedulerDisciplineWrapper, tmp_wd
 ) -> None:
     """Test that errors in outputs are correctly handled."""
     with pytest.raises(
         FileNotFoundError,
         match="The serialized outputs file of the discipline does not exist",
     ):
-        discipline._handle_outputs(Path("IDONTEXIST"), tmpdir)
+        discipline._handle_outputs(tmp_wd, Path("IDONTEXIST"))
 
     exception = (ValueError("An error."), "stack trace.")
-    outputs_path = tmpdir / "outputs.pickl"
+    outputs_path = tmp_wd / "outputs.pickl"
     with Path(outputs_path).open("wb") as outf:
         outf.write(pickle.dumps(exception))
 
     with pytest.raises(ValueError, match="An error."):
-        discipline._handle_outputs(outputs_path, tmpdir)
+        discipline._handle_outputs(tmp_wd, outputs_path)
 
 
 def test_create_current_workdir(discipline) -> None:
@@ -170,7 +171,71 @@ def test_execution(discipline_mocked_js) -> None:
     assert compare_dict_of_arrays(out, out_ref)
 
 
-def test_api_fail(tmpdir) -> None:
+@pytest.mark.parametrize("compute_all_jacobians", [False, True])
+@pytest.mark.parametrize("execute", [False, True])
+def test_linearize(discipline_mocked_js, compute_all_jacobians, execute) -> None:
+    """Test the linearization of the wrapped discipline."""
+    orig_disc = discipline_mocked_js._discipline
+    ref_data = orig_disc.default_inputs
+    ref_data["x_shared"] += 1.0
+    if not compute_all_jacobians:
+        discipline_mocked_js.add_differentiated_inputs(["x_shared"])
+        discipline_mocked_js.add_differentiated_outputs(["y_4"])
+    out = discipline_mocked_js.linearize(
+        ref_data, compute_all_jacobians=compute_all_jacobians, execute=execute
+    )
+    assert "y_4" in out
+    mission_local = create_discipline("SobieskiMission")
+    if not compute_all_jacobians:
+        mission_local.add_differentiated_inputs(["x_shared"])
+        mission_local.add_differentiated_outputs(["y_4"])
+    out_ref = mission_local.linearize(
+        ref_data, compute_all_jacobians=compute_all_jacobians, execute=execute
+    )
+    assert compare_dict_of_arrays(out, out_ref)
+    assert compare_dict_of_arrays(
+        discipline_mocked_js.local_data, mission_local.local_data
+    )
+
+
+@pytest.fixture()
+def discipline_diff_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
+    """Creates a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
+    using the mock template.
+
+    Returns:
+        The wrapped discipline
+    """
+    return JobSchedulerDisciplineWrapper(
+        VolumeFraction(),
+        job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
+        workdir_path=tmp_wd,
+        job_out_filename="run_disc.py",
+        scheduler_run_command="python",
+    )
+
+
+def test_linearize_at_exec(discipline_diff_mocked_js) -> None:
+    """Test the linearization of the wrapped discipline during execute."""
+    orig_disc = discipline_diff_mocked_js._discipline
+    ref_data = orig_disc.default_inputs
+    discipline_diff_mocked_js.add_differentiated_inputs(["rho"])
+    discipline_diff_mocked_js.add_differentiated_outputs(["volume fraction"])
+    discipline_diff_mocked_js.execute(ref_data)
+    out = discipline_diff_mocked_js.jac
+    assert "volume fraction" in out
+    disc_local = VolumeFraction()
+    disc_local.add_differentiated_inputs(["rho"])
+    disc_local.add_differentiated_outputs(["volume fraction"])
+    disc_local.execute(ref_data)
+    out_ref = disc_local.jac
+    assert compare_dict_of_arrays(out, out_ref)
+    assert compare_dict_of_arrays(
+        discipline_diff_mocked_js.local_data, disc_local.local_data
+    )
+
+
+def test_api_fail(tmp_wd) -> None:
     """Test the api method that wraps the JS error messages."""
     with pytest.raises(
         FileNotFoundError,
@@ -180,7 +245,17 @@ def test_api_fail(tmpdir) -> None:
             create_discipline("SobieskiMission"),
             "SLURM",
             job_template_path="IDONTEXIST",
-            workdir_path=tmpdir,
+            workdir_path=tmp_wd,
             job_out_filename="run_disc.py",
             scheduler_run_command="python",
         )
+
+
+def test_run_or_compute_jacobian(discipline_diff_mocked_js):
+    """Verify the use_template= False option."""
+    discipline_diff_mocked_js._use_template = False
+    with pytest.raises(
+        FileNotFoundError,
+        match="The serialized outputs file of the discipline does not exist",
+    ):
+        discipline_diff_mocked_js.execute()
