@@ -71,7 +71,7 @@ def test_print_configuration(reset_factory) -> None:
     # check table header
     header_patterns = [
         r"^\+-+\+$",
-        r"^\|\s+MDOFormulation\s+\|$",
+        r"^\|\s+BaseMDOFormulation\s+\|$",
         r"^\+-+\+-+\+-+\+$",
         r"^\|\s+Module\s+\|\s+Is available\?\s+\|\s+Purpose or error " r"message\s+\|$",
     ]
@@ -207,7 +207,7 @@ def test_concrete_classes() -> None:
 def test_str() -> None:
     """Verify str() on a factory."""
     factory = MDOFormulationFactory()
-    assert str(factory) == "Factory of MDOFormulation objects"
+    assert str(factory) == "Factory of BaseMDOFormulation objects"
 
 
 def test_positional_arguments() -> None:

@@ -29,8 +29,8 @@ which may have been loaded from the disk.
 
 In practice,
 
-- a :class:`~gemseo.scenarios.scenario.Scenario` instance has an :class:`~gemseo.formulations.mdo_formulation.MDOFormulation` attribute,
-- an :class:`~gemseo.formulations.mdo_formulation.MDOFormulation` instance has an :class:`~gemseo.algos.optimization_problem.OptimizationProblem` attribute,
+- a :class:`~gemseo.scenarios.scenario.Scenario` instance has an :class:`~gemseo.formulations.base_mdo_formulation.BaseMDOFormulation` attribute,
+- an :class:`~gemseo.formulations.base_mdo_formulation.BaseMDOFormulation` instance has an :class:`~gemseo.algos.optimization_problem.OptimizationProblem` attribute,
 - an :class:`~gemseo.algos.optimization_problem.OptimizationProblem` instance has an :class:`~gemseo.algos.optimization_result.OptimizationResult` attribute.
 
 Illustration on the Sobieski use case

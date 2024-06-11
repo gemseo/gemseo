@@ -25,10 +25,15 @@ import numpy as np
 import pytest
 from numpy import array
 from numpy import ones
+from numpy.testing import assert_equal
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -50,15 +55,12 @@ def test_get_function() -> None:
     gen.get_function(None, None)
     args = [["x_shared"], ["y_4"]]
     gen.get_function(*args)
-    args = ["x_shared", "y_4"]
-    gen.get_function(*args)
     args = [["toto"], ["y_4"]]
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Some elements of ['toto'] are not inputs "
-            "of the discipline SobieskiMission; "
-            "available inputs are: ['y_14', 'x_shared', 'y_24', 'y_34']."
+            "['toto'] are not names of inputs in the discipline SobieskiMission; "
+            "expected names among ['x_shared', 'y_14', 'y_24', 'y_34']."
         ),
     ):
         gen.get_function(*args)
@@ -66,9 +68,8 @@ def test_get_function() -> None:
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Some elements of ['toto'] are not outputs "
-            "of the discipline SobieskiMission; "
-            "available outputs are: ['y_4']."
+            "['toto'] are not names of outputs in the discipline SobieskiMission; "
+            "expected names among ['y_4']."
         ),
     ):
         gen.get_function(*args)
@@ -86,7 +87,7 @@ def test_range_discipline() -> None:
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     x_shared = sr.default_inputs["x_shared"]
     range_ = range_f_z(x_shared).real
-    range_f_z2 = gen.get_function("x_shared", ["y_4"])
+    range_f_z2 = gen.get_function(["x_shared"], ["y_4"])
     range2 = range_f_z2(x_shared).real
 
     assert range_ == range2
@@ -140,3 +141,23 @@ def test_wrong_jac2() -> None:
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
         range_f_z.jac(sr.default_inputs["x_shared"])
+
+
+@pytest.mark.parametrize(
+    ("input_names", "expected_output_value"),
+    [
+        ((), array(8)),
+        (["a", "b"], array(8)),
+        (["a"], array(2)),
+        (["b"], array(6)),
+    ],
+)
+def test_function_from_discipline_input_names(input_names, expected_output_value):
+    """Check the input_names argument of FunctionFromDiscipline."""
+    discipline = AnalyticDiscipline({"y": "2*a+3*b"})
+    design_space = DesignSpace()
+    design_space.add_variable("a")
+    design_space.add_variable("b")
+    formulation = DisciplinaryOpt([discipline], "y", design_space)
+    function = FunctionFromDiscipline(["y"], formulation, input_names=input_names)
+    assert_equal(function.evaluate(array([1, 2])), expected_output_value)

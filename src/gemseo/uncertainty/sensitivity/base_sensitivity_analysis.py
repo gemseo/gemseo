@@ -174,9 +174,9 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             algo: The name of the DOE algorithm.
                 If empty, use the :attr:`.BaseSensitivityAnalysis.DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
-            formulation: The name of the :class:`.MDOFormulation`
+            formulation: The name of the :class:`.BaseMDOFormulation`
                 to sample the disciplines.
-            **formulation_options: The options of the :class:`.MDOFormulation`.
+            **formulation_options: The options of the :class:`.BaseMDOFormulation`.
         """  # noqa: D205, D212, D415
         disciplines = list(disciplines)
         self._algo_name = algo or self.DEFAULT_DRIVER

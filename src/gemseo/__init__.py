@@ -1014,7 +1014,7 @@ def create_scenario(
         disciplines: The disciplines
             used to compute the objective, constraints and observables
             from the design variables.
-        formulation: The class name of the :class:`.MDOFormulation`,
+        formulation: The class name of the :class:`.BaseMDOFormulation`,
             e.g. ``"MDF"``, ``"IDF"`` or ``"BiLevel"``.
         objective_name: The name(s) of the discipline output(s) used as objective.
             If multiple names are passed, the objective will be a vector.
@@ -1026,7 +1026,7 @@ def create_scenario(
         scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
         grammar_type: The grammar for the scenario and the MDO formulation.
         maximize_objective: Whether to maximize the objective.
-        **formulation_options: The options of the :class:`.MDOFormulation`.
+        **formulation_options: The options of the :class:`.BaseMDOFormulation`.
 
     Examples:
         >>> from gemseo import create_discipline, create_scenario
@@ -2101,7 +2101,7 @@ def create_scenario_result(
         name: The class name of the :class:`.ScenarioResult`.
             If empty,
             use the :attr:`~.BaseFormulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME`
-            of the :class:`.MDOFormulation` attached to the :class:`.Scenario`.
+            of the :class:`.BaseMDOFormulation` attached to the :class:`.Scenario`.
         **options: The options of the :class:`.ScenarioResult`.
 
     Returns:

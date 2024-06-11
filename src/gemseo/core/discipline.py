@@ -759,7 +759,7 @@ class MDODiscipline(Serializable):
 
         .. seealso::
 
-           MDOFormulation.get_expected_workflow
+           BaseMDOFormulation.get_expected_workflow
 
         Returns:
             The expected execution sequence.
@@ -780,7 +780,7 @@ class MDODiscipline(Serializable):
 
         .. seealso::
 
-           MDOFormulation.get_expected_dataflow
+           BaseMDOFormulation.get_expected_dataflow
 
         Returns:
             The data exchange arcs.

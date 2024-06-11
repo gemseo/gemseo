@@ -664,7 +664,7 @@ class ExecutionSequenceFactory:
         """Return a structure representing the execution of a discipline.
 
         This function
-        is intended to be called by MDOFormulation.get_expected_workflow methods.
+        is intended to be called by BaseMDOFormulation.get_expected_workflow methods.
 
         Args:
             discipline: A discipline.
@@ -678,8 +678,8 @@ class ExecutionSequenceFactory:
     def serial(sequence=None) -> SerialExecSequence:
         """Return a structure representing the serial execution of disciplines.
 
-        This function is intended to be called by MDOFormulation.get_expected_workflow
-        methods.
+        This function is intended to be called
+        by BaseMDOFormulation.get_expected_workflow methods.
 
         Args:
             sequence: Any number of discipline
@@ -694,8 +694,8 @@ class ExecutionSequenceFactory:
     def parallel(sequence=None) -> ParallelExecSequence:
         """Return a structure representing the parallel execution of disciplines.
 
-        This function is intended to be called by MDOFormulation.get_expected_workflow
-        methods.
+        This function is intended to be called
+        by BaseMDOFormulation.get_expected_workflow methods.
 
         Args:
             sequence: Any number of discipline or
@@ -710,7 +710,7 @@ class ExecutionSequenceFactory:
     def loop(control, composite_sequence) -> LoopExecSequence:
         """Return a structure representing a loop execution of a function.
 
-        It is intended to be called by MDOFormulation.get_expected_workflow methods.
+        It is intended to be called by BaseMDOFormulation.get_expected_workflow methods.
 
         Args:
             control: The discipline object, controller of the loop.
