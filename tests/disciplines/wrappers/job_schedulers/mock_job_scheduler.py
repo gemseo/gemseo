@@ -24,6 +24,7 @@ from subprocess import run
 
 cmd = (
     r"gemseo-deserialize-run $workdir_path $discipline_path $inputs_path $outputs_path"
+    r" $linearize $execute_at_linearize"
 )
 
 result = run(cmd, capture_output=True, shell=True)

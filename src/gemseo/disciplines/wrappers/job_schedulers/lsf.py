@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.disciplines.wrappers.job_schedulers.scheduler_wrapped_disc import (
+from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (  # noqa: E501
     JobSchedulerDisciplineWrapper,
 )
 
