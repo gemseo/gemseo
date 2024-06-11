@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.datasets.dataset import Dataset
-    from gemseo.formulations.mdo_formulation import MDOFormulation
+    from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
     from gemseo.post.factory import PostFactory
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.post.opt_post_processor import OptPostProcessorOptionType
@@ -68,7 +68,7 @@ class Scenario(MDODiscipline):
     """Base class for the scenarios.
 
     The instantiation of a :class:`.Scenario` creates an :class:`.OptimizationProblem`,
-    by linking :class:`.MDODiscipline` objects with an :class:`.MDOFormulation` and
+    by linking :class:`.MDODiscipline` objects with an :class:`.BaseMDOFormulation` and
     defining both the objective to minimize or maximize and the :class:`.DesignSpace` on
     which to solve the problem. Constraints can also be added to the
     :class:`.OptimizationProblem` with the :meth:`.Scenario.add_constraint` method, as
@@ -84,7 +84,7 @@ class Scenario(MDODiscipline):
     :attr:`.Scenario.posts`.
     """
 
-    formulation: MDOFormulation
+    formulation: BaseMDOFormulation
     """The MDO formulation."""
 
     formulation_name: str
@@ -125,7 +125,7 @@ class Scenario(MDODiscipline):
             disciplines: The disciplines
                 used to compute the objective, constraints and observables
                 from the design variables.
-            formulation: The class name of the :class:`.MDOFormulation`,
+            formulation: The class name of the :class:`.BaseMDOFormulation`,
                 e.g. ``"MDF"``, ``"IDF"`` or ``"BiLevel"``.
             objective_name: The name(s) of the discipline output(s) used as objective.
                 If multiple names are passed, the objective will be a vector.
@@ -136,7 +136,7 @@ class Scenario(MDODiscipline):
                 If empty, use the name of the class.
             grammar_type: The grammar for the scenario and the MDO formulation.
             maximize_objective: Whether to maximize the objective.
-            **formulation_options: The options of the :class:`.MDOFormulation`.
+            **formulation_options: The options of the :class:`.BaseMDOFormulation`.
         """  # noqa: D205, D212, D415
         self.optimization_result = None
         self._algo_factory = None
@@ -308,12 +308,12 @@ class Scenario(MDODiscipline):
 
         Args:
             formulation: The name of the MDO formulation,
-                also the name of a class inheriting from :class:`.MDOFormulation`.
+                also the name of a class inheriting from :class:`.BaseMDOFormulation`.
             objective_name: The name of the objective.
             design_space: The design space.
             maximize_objective: Whether to maximize the objective.
             **formulation_options: The options
-                to be passed to the :class:`.MDOFormulation`.
+                to be passed to the :class:`.BaseMDOFormulation`.
         """
         if not isinstance(formulation, str):
             msg = (

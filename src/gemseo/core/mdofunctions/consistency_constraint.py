@@ -31,7 +31,6 @@ from numpy import ones_like
 from numpy import zeros
 
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
@@ -41,7 +40,7 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class ConsistencyCstr(LinearCandidateFunction):
+class ConsistencyConstraint(MDOFunction):
     """An :class:`.MDOFunction` object to compute the consistency constraints."""
 
     def __init__(
@@ -86,12 +85,9 @@ class ConsistencyCstr(LinearCandidateFunction):
         )
 
     @property
-    def linear_candidate(self) -> bool:  # noqa: D102
-        return self.__coupl_func.linear_candidate
-
-    @property
-    def input_dimension(self) -> int | None:  # noqa: D102
-        return self.__coupl_func.input_dimension
+    def coupling_function(self) -> FunctionFromDiscipline:
+        """The coupling function."""
+        return self.__coupl_func
 
     def _func_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the consistency constraints.

@@ -138,9 +138,7 @@ class DisciplineJacApprox:
         Raises:
             ValueError: If the Jacobian approximation method is unknown.
         """
-        self.func = self.generator.get_function(
-            input_names=inputs, output_names=outputs
-        )
+        self.func = self.generator.get_function(inputs, outputs)
         self.approximator = GradientApproximatorFactory().create(
             self.approx_method,
             self.func,

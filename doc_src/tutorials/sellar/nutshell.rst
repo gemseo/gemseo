@@ -459,7 +459,7 @@ with their bounds and values:
 Then, by means of the API function :meth:`gemseo.create_scenario`,
 we create the process which is an :class:`.MDOScenario`.
 The scenario delegates the creation of an :class:`.OptimizationProblem`
-to the  :class:`.MDOFormulation`.
+to the  :class:`.BaseMDOFormulation`.
 We choose the :term:`MDF` formulation,
 which solves a coupling problem (:ref:`mda`)
 at each iteration to compute the coupling variables,

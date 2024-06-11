@@ -27,13 +27,15 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.disciplines.utils import get_all_inputs
-from gemseo.formulations.mdo_formulation import MDOFormulation
+from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.algos.design_space import DesignSpace
 
 
-class DisciplinaryOpt(MDOFormulation):
+class DisciplinaryOpt(BaseMDOFormulation):
     """The disciplinary optimization.
 
     This formulation draws the architecture of a mono-disciplinary optimization process
@@ -47,6 +49,7 @@ class DisciplinaryOpt(MDOFormulation):
         design_space: DesignSpace,
         maximize_objective: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+        differentiated_input_names_substitute: Iterable[str] = (),
     ) -> None:
         super().__init__(
             disciplines,
@@ -54,6 +57,7 @@ class DisciplinaryOpt(MDOFormulation):
             design_space,
             maximize_objective=maximize_objective,
             grammar_type=grammar_type,
+            differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
         self.chain = None
         if len(disciplines) > 1:

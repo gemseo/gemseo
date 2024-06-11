@@ -28,7 +28,7 @@ respectively:
  - for MDAs, inherit from :class:`.BaseMDA`,
    and put the Python file in the :file:`src/gemseo/mda` package,
  - for MDO formulations,
-   inherit from :class:`.MDOFormulation`,
+   inherit from :class:`.BaseMDOFormulation`,
    and put the Python file in the :file:`src/gemseo/formulations` package,
  - for disciplines,
    inherit from :class:`.MDODiscipline`,

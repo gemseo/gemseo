@@ -32,7 +32,7 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.formulations.mdo_formulation import MDOFormulation
+from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.mda.factory import MDAFactory
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class BiLevel(MDOFormulation):
+class BiLevel(BaseMDOFormulation):
     """A bi-level formulation.
 
     This formulation draws an optimization architecture
@@ -94,6 +94,7 @@ class BiLevel(MDOFormulation):
         reset_x0_before_opt: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         sub_scenarios_log_level: int | None = None,
+        differentiated_input_names_substitute: Iterable[str] = (),
         **main_mda_options: Any,
     ) -> None:
         """
@@ -126,6 +127,7 @@ class BiLevel(MDOFormulation):
             design_space,
             maximize_objective=maximize_objective,
             grammar_type=grammar_type,
+            differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
         self._shared_dv = list(design_space.variable_names)
         self._mda1 = None

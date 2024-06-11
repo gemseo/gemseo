@@ -704,7 +704,7 @@ def test_print_configuration(capfd) -> None:
         "OptimizationLibrary",
         "DOELibrary",
         "BaseRegressor",
-        "MDOFormulation",
+        "BaseMDOFormulation",
         "BaseMDA",
         "OptPostProcessor",
     ]

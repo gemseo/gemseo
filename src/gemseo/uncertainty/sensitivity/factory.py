@@ -72,9 +72,9 @@ class SensitivityAnalysisFactory(BaseFactory):
             algo: The name of the DOE algorithm.
                 If empty, use the :attr:`.BaseSensitivityAnalysis.DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
-            formulation: The name of the :class:`.MDOFormulation` to sample the
+            formulation: The name of the :class:`.BaseMDOFormulation` to sample the
                 disciplines.
-            **formulation_options: The options of the :class:`.MDOFormulation`.
+            **formulation_options: The options of the :class:`.BaseMDOFormulation`.
 
         Returns:
             A sensitivity analysis.

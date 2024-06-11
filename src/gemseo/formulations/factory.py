@@ -22,11 +22,11 @@
 from __future__ import annotations
 
 from gemseo.formulations.base_factory import BaseFormulationFactory
-from gemseo.formulations.mdo_formulation import MDOFormulation
+from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 
 
 class MDOFormulationFactory(BaseFormulationFactory):
     """A factory of MDO formulations."""
 
-    _CLASS = MDOFormulation
+    _CLASS = BaseMDOFormulation
     _MODULE_NAMES = ("gemseo.formulations",)

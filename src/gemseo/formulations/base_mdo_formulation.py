@@ -12,28 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Linear candidate function."""
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""The base class for all MDO formulations."""
 
 from __future__ import annotations
 
-from abc import abstractmethod
-
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.formulations.base_formulation import BaseFormulation
 
 
-class LinearCandidateFunction(MDOFunction):
-    """MDOFunction that may be linearized in a Scenario."""
-
-    @property
-    @abstractmethod
-    def linear_candidate(self) -> bool:
-        """Whether the final MDOFunction could be linear."""
-
-    @property
-    @abstractmethod
-    def input_dimension(self) -> int | None:
-        """The input variable dimension, needed for linear candidates.
-
-        If ``None`` this cannot be determined nor by ``MDODiscipline`` default inputs
-        nor by ``MDODisciplineAdapter.__input_names_to_sizes``.
-        """
+class BaseMDOFormulation(BaseFormulation):
+    """A base class for MDO formulations."""

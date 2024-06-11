@@ -53,7 +53,7 @@ The class :class:`~.scalable_problem.ScalableProblem` helps to define a scalable
 from :class:`~.core.scalable_discipline_settings.ScalableDisciplineSettings`,
 a number of shared design variables and a level of feasibility.
 It also proposes a method :meth:`~.scalable_problem.ScalableProblem.create_scenario`
-to create a scenario for an :class:`.MDOFormulation`
+to create a scenario for an :class:`.BaseMDOFormulation`
 and a method :meth:`.ScalableProblem.create_quadratic_programming_problem`
 to rewrite the MDO problem as a quadratic :class:`.OptimizationProblem`.
 Lastly,

@@ -35,7 +35,7 @@ from tests.formulations.not_mdo_formulations.formulation_a import ANotMDOFormula
 
 @pytest.fixture()
 def factory(reset_factory) -> MDOFormulationFactory:
-    """The factory of MDOFormulation."""
+    """The factory of BaseMDOFormulation."""
     return MDOFormulationFactory()
 
 
@@ -52,7 +52,7 @@ def test_is_available(monkeypatch, factory) -> None:
 
 
 def test_create_with_wrong_formulation_name(factory) -> None:
-    """Check that a MDOFormulation cannot be instantiated with a wrong name."""
+    """Check that a BaseMDOFormulation cannot be instantiated with a wrong name."""
     with pytest.raises(
         ImportError,
         match=(
@@ -64,7 +64,7 @@ def test_create_with_wrong_formulation_name(factory) -> None:
 
 
 def test_create(factory) -> None:
-    """Check the creation of a MDOFormulation."""
+    """Check the creation of a BaseMDOFormulation."""
     design_space = DesignSpace()
     design_space.add_variable("x_shared", 3)
     formulation = factory.create(
@@ -80,7 +80,8 @@ def test_create(factory) -> None:
 
 
 def test_not_mdo_formulation() -> None:
-    """Check the use of a factory of _BaseFormulation that is not a MDOFormulation."""
+    """Check the use of a factory of _BaseFormulation that is not a
+    BaseMDOFormulation."""
     with concretize_classes(ANotMDOFormulation):
         factory = NotMDOFormulationFactory()
         assert factory.is_available("ANotMDOFormulation")

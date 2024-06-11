@@ -21,12 +21,7 @@
 
 from __future__ import annotations
 
-from numbers import Number
 from typing import TYPE_CHECKING
-from typing import Callable
-from typing import Union
-
-from numpy import ndarray
 
 from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -36,24 +31,21 @@ if TYPE_CHECKING:
     from collections.abc import MutableMapping
     from collections.abc import Sequence
 
+    from numpy import ndarray
+
     from gemseo.core.discipline import MDODiscipline
-
-
-OperandType = Union[ndarray, Number]
-OperatorType = Callable[[OperandType, OperandType], OperandType]
+    from gemseo.core.grammars.base_grammar import BaseGrammar
 
 
 class MDODisciplineAdapterGenerator:
-    """Generator of :class:`.MDOFunction` objects executing an :class:`.MDODiscipline`.
+    """A generator of discipline adapter.
 
-    It creates an :class:`.MDODisciplineAdapter` evaluating some of the outputs of the
-    discipline from some of its
-
-    It uses closures to generate functions instances from a discipline execution.
+    Given a discipline,
+    an :class:`.MDODisciplineAdapter` computes specific outputs from specific inputs.
     """
 
     discipline: MDODiscipline
-    """The discipline from which to generate functions."""
+    """The discipline from which to generate discipline adapters."""
 
     __names_to_sizes: MutableMapping[str, int]
     """The names of the inputs bound to their sizes, if known."""
@@ -65,10 +57,10 @@ class MDODisciplineAdapterGenerator:
     ) -> None:
         """
         Args:
-            discipline: The discipline from which the generator builds the functions.
+            discipline: The discipline from which to generate discipline adapters.
             names_to_sizes: The sizes of the input variables.
-                If empty, guess them from the default inputs and local data
-                of the discipline :class:`.MDODiscipline`.
+                If empty,
+                determine them from the default inputs and local data of the discipline.
         """  # noqa: D205, D212, D415
         self.discipline = discipline
         self.__names_to_sizes = names_to_sizes or {}
@@ -78,90 +70,103 @@ class MDODisciplineAdapterGenerator:
         input_names: Sequence[str],
         output_names: Sequence[str],
         default_inputs: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
-        differentiable: bool = True,
+        is_differentiable: bool = True,
+        differentiated_input_names_substitute: Sequence[str] = (),
     ) -> MDODisciplineAdapter:
         """Build a function executing a discipline for some inputs and outputs.
 
         Args:
-            input_names: The names of the inputs of the discipline
-                to be inputs of the function.
-            output_names: The names of outputs of the discipline
-                to be returned by the function.
-            default_inputs: The default values of the inputs.
+            input_names: The discipline input names defining the function input vector.
                 If empty,
-                use the default values of the inputs
-                specified by the discipline.
-            differentiable: If ``True``, then inputs and outputs are added
-                to the variables to be differentiated.
+                use all the discipline inputs.
+            output_names: The discipline output names
+                defining the function output vector.
+                If empty,
+                use all the discipline outputs.
+            default_inputs: The default values of the input variables.
+                If empty,
+                use the default input values of the discipline.
+            is_differentiable: Whether the function is differentiable.
+            differentiated_input_names_substitute: The names of the inputs
+                against which to differentiate the functions.
+                If empty,
+                use ``input_names``.
+                This argument is not used when ``is_differentiable`` is ``False``.
 
         Returns:
             The function.
 
         Raises:
-            ValueError: If a given input (or output) name is not the name
-                of an input (or output) variable of the discipline.
+            ValueError: When either
+                an input name is not a discipline input name,
+                a differentiated input name is not a discipline input name
+                or an output name is not a discipline output name.
         """
-        if isinstance(input_names, str):
-            input_names = [input_names]
-
-        if isinstance(output_names, str):
-            output_names = [output_names]
-
-        if input_names is None:
-            input_names = self.discipline.get_input_data_names()
-        if output_names is None:
-            output_names = self.discipline.get_output_data_names()
-
-        if not self.discipline.is_all_inputs_existing(input_names):
-            msg = (
-                f"Some elements of {input_names} "
-                f"are not inputs of the discipline {self.discipline.name}; "
-                f"available inputs are: {self.discipline.get_input_data_names()}."
+        input_names = self.__get_names(
+            "inputs",
+            input_names,
+            self.discipline.input_grammar,
+        )
+        output_names = self.__get_names(
+            "outputs",
+            output_names,
+            self.discipline.output_grammar,
+        )
+        if differentiated_input_names_substitute:
+            self.__get_names(
+                "inputs",
+                differentiated_input_names_substitute,
+                self.discipline.input_grammar,
             )
-            raise ValueError(msg)
+        else:
+            differentiated_input_names_substitute = input_names
 
-        if not self.discipline.is_all_outputs_existing(output_names):
-            msg = (
-                f"Some elements of {output_names} "
-                f"are not outputs of the discipline {self.discipline.name}; "
-                f"available outputs are: {self.discipline.get_output_data_names()}."
+        if is_differentiable:
+            self.discipline.add_differentiated_inputs(
+                differentiated_input_names_substitute
             )
-            raise ValueError(msg)
-
-        # adds inputs and outputs to the list of variables to be
-        # differentiated
-        if differentiable:
-            self.discipline.add_differentiated_inputs(input_names)
             self.discipline.add_differentiated_outputs(output_names)
+
         return MDODisciplineAdapter(
             input_names,
             output_names,
             default_inputs or {},
             self.discipline,
             self.__names_to_sizes,
-            linear_candidate=self.__is_linear(input_names, output_names),
+            differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
 
-    def __is_linear(
-        self, input_names: Sequence[str], output_names: Sequence[str]
-    ) -> bool:
-        """Check if the MDOFunction should be linear.
+    def __get_names(
+        self,
+        group_name: str,
+        names: Sequence[str],
+        grammar: BaseGrammar,
+    ) -> Sequence[str]:
+        """Return the variable names.
 
         Args:
-            input_names: The names of the inputs of the discipline
-                to be inputs of the function.
-            output_names: The names of outputs of the discipline
-                to be returned by the function.
+            group_name: The name of the group to which these variables shall belong.
+            names: The candidate variable names.
+                If empty,
+                return the names of all the variables in the group of interest.
+            grammar: The grammar defining the variables available in the group.
 
         Returns:
-            Whether the function should be linear.
+            The variable names.
+
+        Raises:
+            ValueError: When a variable name is not defined in the grammar.
         """
-        input_names = set(input_names)
-        for output_name in output_names:
-            linear_input_names = self.discipline.linear_relationships.get(output_name)
-            if linear_input_names is not None:
-                if not input_names.issubset(linear_input_names):
-                    return False
-            else:
-                return False
-        return True
+        if names:
+            wrong_names = set(names) - grammar.names
+            if wrong_names:
+                msg = (
+                    f"{sorted(wrong_names)} are not names of {group_name} "
+                    f"in the discipline {self.discipline.name}; "
+                    f"expected names among {sorted(grammar.names)}."
+                )
+                raise ValueError(msg)
+
+            return names
+
+        return list(grammar.names)

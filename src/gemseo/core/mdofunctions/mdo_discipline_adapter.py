@@ -21,16 +21,14 @@
 
 from __future__ import annotations
 
-from numbers import Number
 from typing import TYPE_CHECKING
-from typing import Callable
-from typing import Union
+from typing import Any
 
 from numpy import array
 from numpy import empty
 from numpy import ndarray
 
-from gemseo.core.mdofunctions.linear_candidate_function import LinearCandidateFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -38,22 +36,26 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import MutableMapping
     from collections.abc import Sequence
+    from numbers import Number
 
     from gemseo.core.discipline import MDODiscipline
     from gemseo.typing import NumberArray
 
-OperandType = Union[ndarray, Number]
-OperatorType = Callable[[OperandType, OperandType], OperandType]
 
-
-class MDODisciplineAdapter(LinearCandidateFunction):
+class MDODisciplineAdapter(MDOFunction):
     """An :class:`.MDOFunction` executing a discipline for some inputs and outputs."""
 
-    __linear_candidate: bool
-    """Whether the final MDOFunction could be linear."""
+    __is_linear: bool
+    """Whether the function is linear."""
 
     __input_dimension: int | None
     """The input variable dimension, needed for linear candidates."""
+
+    differentiated_input_names_substitute: Sequence[str]
+    """The names of the inputs against which to differentiate the functions.
+
+    If empty, consider the variables of their input space.
+    """
 
     def __init__(
         self,
@@ -62,7 +64,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         default_inputs: Mapping[str, ndarray],
         discipline: MDODiscipline,
         names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
-        linear_candidate: bool = False,
+        differentiated_input_names_substitute: Sequence[str] = (),
     ) -> None:
         """
         Args:
@@ -77,20 +79,37 @@ class MDODisciplineAdapter(LinearCandidateFunction):
             names_to_sizes: The sizes of the input variables.
                 If empty, determine them from the default inputs and local data
                 of the discipline :class:`.MDODiscipline`.
-            linear_candidate: Whether the final MDOFunction could be linear.
+            differentiated_input_names_substitute: The names of the inputs
+                against which to differentiate the functions.
+                If empty, consider the variables of their input space.
         """  # noqa: D205, D212, D415
         self.__input_names = input_names
+        self.differentiated_input_names_substitute = (
+            differentiated_input_names_substitute or input_names
+        )
         self.__output_names = output_names
         self.__default_inputs = default_inputs
         self.__input_size = 0
+        self.__differentiated_input_size = 0
         self.__output_names_to_slices = {}
         self.__jacobian = array(())
         self.__discipline = discipline
         self.__input_names_to_slices = {}
         self.__input_names_to_sizes = names_to_sizes or {}
-        self.__linear_candidate = linear_candidate
+        self.__differentiated_input_names_to_slices = {}
+        input_names = set(self.__input_names)
+        self.__is_linear = True
+        for output_name in self.__output_names:
+            if not input_names.issubset(
+                self.__discipline.linear_relationships.get(output_name, {})
+            ):
+                self.__is_linear = False
+                break
         self.__input_dimension = self.__compute_input_dimension(
-            self.__default_inputs, discipline, input_names
+            default_inputs, discipline, input_names
+        )
+        self.__convert_array_to_data = (
+            discipline.input_grammar.data_converter.convert_array_to_data
         )
         super().__init__(
             self._func_to_wrap,
@@ -101,8 +120,8 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         )
 
     @property
-    def linear_candidate(self) -> bool:  # noqa: D102
-        return self.__linear_candidate
+    def is_linear(self) -> bool:  # noqa: D102
+        return self.__is_linear
 
     @property
     def input_dimension(self) -> int | None:  # noqa: D102
@@ -128,27 +147,35 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         Returns:
             The input dimension.
         """
-        if default_inputs and all(inpt in default_inputs for inpt in input_names):
+        if default_inputs and all(name in default_inputs for name in input_names):
             return sum(
-                len(default_inputs[inpt])
-                if isinstance(default_inputs[inpt], ndarray)
-                else 1
-                for inpt in input_names
+                self.__get_size(default_inputs[input_name])
+                for input_name in input_names
             )
 
         if len(self.__input_names_to_sizes) > 0:
             return sum(self.__input_names_to_sizes.values())
 
-        if all(inpt in discipline.default_inputs for inpt in input_names):
+        if all(name in discipline.default_inputs for name in input_names):
             return sum(
-                len(discipline.default_inputs[inpt])
-                if isinstance(discipline.default_inputs[inpt], ndarray)
-                else 1
-                for inpt in input_names
+                self.__get_size(discipline.default_inputs[input_name])
+                for input_name in input_names
             )
 
         # TODO: document what None means. We could use 0 instead.
         return None
+
+    @staticmethod
+    def __get_size(obj: Any) -> int:
+        """Return the size of an object.
+
+        Args:
+            obj: The object.
+
+        Returns:
+            The size of the object.
+        """
+        return len(obj) if isinstance(obj, ndarray) else 1
 
     def __create_output_names_to_slices(self) -> int:
         """Compute the indices of the input variables in the Jacobian array.
@@ -159,7 +186,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         self.__output_names_to_slices = output_names_to_slices = {}
         start = 0
         output_size = 0
-        jac_row_id = self.__input_names[0]
+        jac_row_id = self.differentiated_input_names_substitute[0]
         jac = self.__discipline.jac
         for name in self.__output_names:
             output_size += jac[name][jac_row_id].shape[0]
@@ -177,20 +204,17 @@ class MDODisciplineAdapter(LinearCandidateFunction):
             The output vector or a scalar if the vector has only one component.
         """
         self.__discipline.reset_statuses_for_run()
-        input_data = self.__create_discipline_input_data(x_vect)
-        output_data = self.__discipline.execute(input_data)
-        output_array = (
+        output_data = (
             self.__discipline.output_grammar.data_converter.convert_data_to_array(
                 self.__output_names,
-                output_data,
+                self.__discipline.execute(self.__create_discipline_input_data(x_vect)),
             )
         )
-
-        if output_array.size == 1:
+        if output_data.size == 1:
             # The function is scalar.
-            return output_array[0]
+            return output_data[0]
 
-        return output_array
+        return output_data
 
     def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the Jacobian value from an input vector.
@@ -206,16 +230,16 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         if len(self.__jacobian) == 0:
             output_size = self.__create_output_names_to_slices()
             if output_size == 1:
-                shape = self.__input_size
+                shape = self.__differentiated_input_size
             else:
-                shape = (output_size, self.__input_size)
+                shape = (output_size, self.__differentiated_input_size)
             self.__jacobian = empty(shape)
 
         if self.__jacobian.ndim == 1 or self.__jacobian.shape[0] == 1:
             output_name = self.__output_names[0]
             jac_output = self.__discipline.jac[output_name]
-            for input_name in self.__input_names:
-                input_slice = self.__input_names_to_slices[input_name]
+            for input_name in self.differentiated_input_names_substitute:
+                input_slice = self.__differentiated_input_names_to_slices[input_name]
                 jac = jac_output[input_name]
                 # TODO: This precaution is meant to disappear when sparse 1-D array will
                 # be available. This is also mandatory since self.__jacobian is
@@ -230,8 +254,10 @@ class MDODisciplineAdapter(LinearCandidateFunction):
             for output_name in self.__output_names:
                 output_slice = self.__output_names_to_slices[output_name]
                 jac_output = self.__discipline.jac[output_name]
-                for input_name in self.__input_names:
-                    input_slice = self.__input_names_to_slices[input_name]
+                for input_name in self.differentiated_input_names_substitute:
+                    input_slice = self.__differentiated_input_names_to_slices[
+                        input_name
+                    ]
                     jac = jac_output[input_name]
                     # TODO: This is mandatory since self.__jacobian is initialized as a
                     # dense array. Performance improvement could be obtained if one is
@@ -251,6 +277,9 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         """
         input_data = self.__discipline.get_input_data()
         input_data.update(self.__discipline.default_inputs)
+        self.__input_names_to_sizes.update({
+            k: self.__get_size(v) for k, v in input_data.items()
+        })
 
         missing_names = (
             set(self.__input_names)
@@ -272,12 +301,20 @@ class MDODisciplineAdapter(LinearCandidateFunction):
         ) = self.__discipline.input_grammar.data_converter.compute_names_to_slices(
             self.__input_names, input_data, self.__input_names_to_sizes
         )
+        (
+            self.__differentiated_input_names_to_slices,
+            self.__differentiated_input_size,
+        ) = self.__discipline.input_grammar.data_converter.compute_names_to_slices(
+            self.differentiated_input_names_substitute,
+            input_data,
+            self.__input_names_to_sizes,
+        )
 
     def __create_discipline_input_data(
         self,
         x_vect: ndarray,
     ) -> dict[str, ndarray]:
-        """Return the input data for the underlying discipline.
+        """Create the discipline input data from the function input vector.
 
         The variables in the input data are cast according to the types defined in the
         design space.
@@ -286,10 +323,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
             x_vect: The input vector of the function.
 
         Returns:
-            The input data of the underlying discipline.
-
-        Raises:
-            ValueError: When a discipline input has no default value.
+            The input data of the discipline.
         """
         if self.__default_inputs:
             self.__discipline.default_inputs.update(self.__default_inputs)
@@ -302,9 +336,7 @@ class MDODisciplineAdapter(LinearCandidateFunction):
                 x_vect, self.__input_names_to_slices
             )
         )
-
         variable_types = x_vect.dtype.metadata
-
         if variable_types is not None:
             # Restore the proper data types as declared in the design space.
             for name, type_ in variable_types.items():

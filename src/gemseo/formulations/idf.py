@@ -34,9 +34,9 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
+from gemseo.core.mdofunctions.consistency_constraint import ConsistencyConstraint
 from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
-from gemseo.formulations.mdo_formulation import MDOFormulation
+from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.mda.mda_chain import MDAChain
 
 if TYPE_CHECKING:
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class IDF(MDOFormulation):
+class IDF(BaseMDOFormulation):
     """The Individual Discipline Feasible (IDF) formulation.
 
     This formulation draws an optimization architecture where the coupling variables of
@@ -70,6 +70,7 @@ class IDF(MDOFormulation):
         use_threading: bool = True,
         start_at_equilibrium: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+        differentiated_input_names_substitute: Iterable[str] = (),
     ) -> None:
         """
         Args:
@@ -94,6 +95,7 @@ class IDF(MDOFormulation):
             design_space,
             maximize_objective=maximize_objective,
             grammar_type=grammar_type,
+            differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
         if n_processes > 1:
             LOGGER.info(
@@ -191,10 +193,11 @@ class IDF(MDOFormulation):
                 discipline, strong=False
             )
             if couplings:
-                cstr = ConsistencyCstr(couplings, self)
-                if cstr.linear_candidate:
+                cstr = ConsistencyConstraint(couplings, self)
+                discipline_adapter = cstr.coupling_function.discipline_adapter
+                if discipline_adapter.is_linear:
                     cstr = compute_linear_approximation(
-                        cstr, zeros(cstr.input_dimension)
+                        cstr, zeros(discipline_adapter.input_dimension)
                     )
                 self.optimization_problem.add_eq_constraint(cstr)
 

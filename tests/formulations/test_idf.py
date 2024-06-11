@@ -22,7 +22,7 @@ import numpy as np
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
+from gemseo.core.mdofunctions.consistency_constraint import ConsistencyConstraint
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.idf import IDF
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -62,7 +62,7 @@ def test_build_func_from_disc() -> None:
             func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
 
     for coupl in idf.coupling_structure.strong_couplings:
-        func = ConsistencyCstr([coupl], idf)
+        func = ConsistencyConstraint([coupl], idf)
         func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
 
 

@@ -71,4 +71,5 @@ API changes:
 - ``gemseo.algos.pareto`` renamed to ``gemseo.algos.pareto.pareto_front``.
 - ``gemseo.algos.pareto_front`` split into ``gemseo.algos.pareto.utils`` (including ``compute_pareto_optimal_points`` and ``generate_pareto_plots``) and ``gemseo.algos.pareto.pareto_plot_biobjective`` (including ``ParetoPlotBiObjective``).
 - ``LinearCompositeFunction.name`` is ``"[f o A]"`` where ``"f"`` is the name of the original function.
-- ``MDOFormulation``'s ``NAME`` attribute: removed as it was not longer used.
+- ``BaseMDOFormulation``'s ``NAME`` attribute: removed as it was not longer used.
+- ``gemseo.formulations.mdo_formulation.MDOFormulation`` renamed to ``gemseo.formulations.base_mdo_formulation.BaseMDOFormulation``

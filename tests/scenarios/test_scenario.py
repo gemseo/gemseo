@@ -460,8 +460,12 @@ def test_add_observable_not_available(
     Args:
          mdf_scenario: A fixture for the MDOScenario.
     """
-    msg = "^No discipline known by formulation MDF has all outputs named .*"
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "No discipline known by formulation MDF has all outputs named ['toto']."
+        ),
+    ):
         mdf_scenario.add_observable("toto")
 
 
