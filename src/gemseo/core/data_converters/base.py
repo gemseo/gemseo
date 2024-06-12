@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.typing import StrKeyMapping
 
     ValueType = Union[int, float, complex, NumberArray]
 
@@ -148,7 +148,7 @@ class BaseDataConverter(ABC, Generic[T]):
     def compute_names_to_slices(
         self,
         names: Iterable[str],
-        data: Data,
+        data: StrKeyMapping,
         names_to_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> tuple[dict[str, slice], int]:
         """Compute a mapping from data names to data value slices.
@@ -185,7 +185,7 @@ class BaseDataConverter(ABC, Generic[T]):
     def compute_names_to_sizes(
         self,
         names: Iterable[str],
-        data: Data,
+        data: StrKeyMapping,
     ) -> dict[str, int]:
         """Compute a mapping from data names to data value sizes.
 
@@ -226,7 +226,7 @@ class BaseDataConverter(ABC, Generic[T]):
     def convert_data_to_array(
         self,
         names: Iterable[str],
-        data: Data,
+        data: StrKeyMapping,
     ) -> NumberArray:
         """Convert a part of a data structure to a NumPy array.
 

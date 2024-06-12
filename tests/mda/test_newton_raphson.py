@@ -25,6 +25,7 @@ from unittest import mock
 import pytest
 from numpy import array
 from numpy import linalg
+from pandas._testing import assert_dict_equal
 
 from gemseo import create_mda
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
@@ -39,8 +40,6 @@ from gemseo.problems.mdo.sellar.utils import get_y_opt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-
-from ..core.test_dataframe_disciplines import assert_disc_data_equal
 
 TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
@@ -342,7 +341,7 @@ def test_mda_newton_serialization(tmp_wd) -> None:
     with open(out_file, "rb") as file:
         mda_d = pickle.load(file)
 
-    assert_disc_data_equal(mda_d.local_data, out)
+    assert_dict_equal(mda_d.local_data, out)
 
 
 def test_mda_newton_weak_couplings() -> None:

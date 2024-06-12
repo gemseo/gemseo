@@ -22,10 +22,16 @@ Create a discipline that uses pandas DataFrames
 
 from __future__ import annotations
 
+import pandera as pa
 from pandas import DataFrame
+from pandera.typing import DataFrame as DataFrameType
+from pandera.typing import Series
+from pydantic import BaseModel
 
 from gemseo import configure_logger
+from gemseo.core.data_converters.pydantic import PydanticGrammarDataConverter
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 
 # %%
 # Import
@@ -52,33 +58,60 @@ configure_logger()
 # the name of the DataFrame column.
 #
 # The code executed by the discipline is in the ``_run`` method,
-# where ``self.local_data``, i.e. the local data, has automatically been initialized
+# where ``self.data``, i.e. the local data, has automatically been initialized
 # with the default inputs and updated with the inputs passed to the discipline.
 # A DataFrame can be retrieved by querying the corresponding key, e.g. ``df``,
 # in the local data and then changes can be made to this DataFrame, e.g.
-# ``discipline.local_data["df"]["x"] = value``.
+# ``discipline.data["df"]["x"] = value``.
 #
 # The default inputs and local data are instances of :class:`.DisciplineData`.
 #
 # .. seealso::
 #
 #  :class:`.DisciplineData` has more information about how DataFrames are handled.
+class InputDataFrameModel(pa.DataFrameModel):
+    x: Series[float] = pa.Field(unique=True)
+
+
+class OutputDataFrameModel(pa.DataFrameModel):
+    y: Series[float] = pa.Field(unique=True)
+
+
+class InputGrammarModel(BaseModel):
+    df: DataFrameType[InputDataFrameModel]
+
+
+class OutputGrammarModel(BaseModel):
+    df: DataFrameType[OutputDataFrameModel]
+
+
+class DataConverter(PydanticGrammarDataConverter):
+    """A data converter where some coupling variables are 2D NumPy arrays."""
+
+    def convert_value_to_array(self, name, value):
+        if name == "df":
+            return value.to_numpy().flatten()
+        return super().convert_value_to_array(name, value)
+
+    def convert_array_to_value(self, name, array_):
+        if name == "df":
+            return DataFrame({"x": [array_[0]], "y": [array_[1]]})
+        return super().convert_array_to_value(name, array_)
+
+
+PydanticGrammar.DATA_CONVERTER_CLASS = DataConverter
 
 
 class DataFrameDiscipline(MDODiscipline):
     def __init__(self) -> None:
-        super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
-        self.input_grammar.update_from_names(["df~x"])
-        self.output_grammar.update_from_names(["df~y"])
+        super().__init__(grammar_type=MDODiscipline.GrammarType.PYDANTIC)
+        self.input_grammar = PydanticGrammar("inputs", model=InputGrammarModel)
+        self.output_grammar = PydanticGrammar("outputs", model=OutputGrammarModel)
         self.default_inputs = {"df": DataFrame(data={"x": [0.0]})}
 
     def _run(self) -> None:
         df = self.local_data["df"]
         df["y"] = 1.0 - 0.2 * df["x"]
-
-        # The code above could also have been written as
-        # self.local_data["df~y"] = 1.0 - 0.2 * self.local_data["df~x"]
-        # self.local_data["df"]["y"] = 1.0 - 0.2 * self.local_data["df"]["x"]
 
 
 # %%
@@ -94,4 +127,4 @@ discipline.execute()
 
 # %%
 # or using new inputs:
-discipline.execute({"df~x": [1.0]})
+discipline.execute({"df": DataFrame(data={"x": [1.0]})})

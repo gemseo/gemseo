@@ -49,7 +49,6 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from gemseo.core.data_converters.base import BaseDataConverter
-    from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
     from gemseo.typing import StrKeyMapping
 
@@ -253,7 +252,9 @@ class BaseGrammar(
             return
         self._update(grammar, excluded_names, merge)
         self._update_namespaces_from_grammar(grammar)
-        self._defaults.update(grammar._defaults, exclude=excluded_names)
+        self._defaults.update({
+            k: v for k, v in grammar._defaults.items() if k not in excluded_names
+        })
         self._required_names |= (grammar.keys() - excluded_names).intersection(
             grammar._required_names - set(excluded_names)
         )
@@ -308,7 +309,7 @@ class BaseGrammar(
 
     def update_from_data(
         self,
-        data: Data,
+        data: StrKeyMapping,
         merge: bool = False,
     ) -> None:
         """Update the grammar from name-value pairs.
@@ -327,7 +328,7 @@ class BaseGrammar(
 
     def _update_from_data(
         self,
-        data: Data,
+        data: StrKeyMapping,
         merge: bool,
     ) -> None:
         """Update specifically the grammar from name-value pairs.
@@ -376,7 +377,7 @@ class BaseGrammar(
 
     def validate(
         self,
-        data: Data,
+        data: StrKeyMapping,
         raise_exception: bool = True,
     ) -> None:
         """Validate data against the grammar.
@@ -408,7 +409,7 @@ class BaseGrammar(
     @abstractmethod
     def _validate(
         self,
-        data: Data,
+        data: StrKeyMapping,
         error_message: MultiLineString,
     ) -> bool:
         """Validate data but for the required names.
@@ -486,7 +487,8 @@ class BaseGrammar(
             KeyError: If a name is not in the grammar.
         """
         self._check_name(*names)
-        self._defaults.restrict(*names)
+        for name in self._defaults.keys() - names:
+            del self._defaults[name]
         self._required_names &= set(names)
         self._restrict_to(names)
 
@@ -513,7 +515,9 @@ class BaseGrammar(
         if current_name in self._required_names:
             self._required_names.remove(current_name)
             self._required_names.add(new_name)
-        self._defaults.rename(current_name, new_name)
+        default_value = self._defaults.pop(current_name, None)
+        if default_value is not None:
+            self._defaults[new_name] = default_value
 
     @abstractmethod
     def _rename_element(self, current_name: str, new_name: str) -> None:
