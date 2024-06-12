@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline_data import Data
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
 
 
@@ -30,7 +30,7 @@ class SimplerGrammar(SimpleGrammar):
 
     def _validate(  # noqa: D102
         self,
-        data: Data,
+        data: StrKeyMapping,
         error_message: MultiLineString,
     ) -> bool:
         return True

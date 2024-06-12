@@ -25,10 +25,10 @@ from gemseo.core.discipline import MDODiscipline
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.core.discipline_data import Data
     from gemseo.disciplines.wrappers._base_executable_runner import (
         _BaseExecutableRunner,
     )
+    from gemseo.typing import StrKeyMapping
 
 
 class _BaseDiscFromExe(MDODiscipline):
@@ -75,7 +75,7 @@ class _BaseDiscFromExe(MDODiscipline):
         """Create the input files."""
 
     @abstractmethod
-    def _parse_outputs(self) -> Data:
+    def _parse_outputs(self) -> StrKeyMapping:
         """Parse the output files.
 
         Returns:

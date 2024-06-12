@@ -45,10 +45,10 @@ from scipy.sparse import csr_array
 from strenum import StrEnum
 
 from gemseo.caches.factory import CacheFactory
-from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.factory import GrammarFactory
+from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.serializable import Serializable
 from gemseo.disciplines.utils import get_sub_disciplines
@@ -849,13 +849,13 @@ class MDODiscipline(Serializable):
             TypeError: When the input data are not passed as a dictionary.
         """
         if input_data is None:
-            return deepcopy(self.default_inputs)
+            return deepcopy(DisciplineData(self.default_inputs))
 
         if not isinstance(input_data, collections.abc.Mapping):
             msg = f"Input data must be of dict type, got {type(input_data)} instead."
             raise TypeError(msg)
 
-        full_input_data = DisciplineData({})
+        full_input_data = DisciplineData()
         for input_name in self.input_grammar:
             input_value = input_data.get(input_name)
             if input_value is not None:
@@ -934,11 +934,9 @@ class MDODiscipline(Serializable):
                 # If also an output, use a copy of the original input value
                 input_data_[key] = deepcopy(val)
 
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
-            to_array = self.input_grammar.data_converter.convert_value_to_array
-            for name, value in input_data_.items():
-                input_data_[name] = to_array(name, value)
+        to_array = self.input_grammar.data_converter.convert_value_to_array
+        for name, value in input_data_.items():
+            input_data_[name] = to_array(name, value)
 
         return input_data_
 
@@ -1058,13 +1056,11 @@ class MDODiscipline(Serializable):
         if not out_cached:
             return None
 
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
-            # Do not modify the cache entry which is mutable.
-            out_cached = out_cached.copy()
-            to_value = self.output_grammar.data_converter.convert_array_to_value
-            for name, value in out_cached.items():
-                out_cached[name] = to_value(name, value)
+        # Do not modify the cache entry which is mutable.
+        out_cached = out_cached.copy()
+        to_value = self.output_grammar.data_converter.convert_array_to_value
+        for name, value in out_cached.items():
+            out_cached[name] = to_value(name, value)
 
         self.__update_local_data_from_cache(input_data, out_cached, out_jac)
 
@@ -1082,13 +1078,13 @@ class MDODiscipline(Serializable):
         out_names = self.get_output_data_names()
 
         if out_names:
-            outputs_for_cache = self._local_data.copy(keys=out_names)
+            outputs_for_cache = self._local_data.copy()
+            for name in outputs_for_cache.keys() - out_names:
+                del outputs_for_cache[name]
 
-            # Non simple caches require NumPy arrays.
-            if not isinstance(self.cache, SimpleCache):
-                to_array = self.output_grammar.data_converter.convert_value_to_array
-                for name, value in outputs_for_cache.items():
-                    outputs_for_cache[name] = to_array(name, value)
+            to_array = self.output_grammar.data_converter.convert_value_to_array
+            for name, value in outputs_for_cache.items():
+                outputs_for_cache[name] = to_array(name, value)
 
             self.cache.cache_outputs(input_data, outputs_for_cache)
 
@@ -2145,6 +2141,27 @@ class MDODiscipline(Serializable):
         """
         return self.get_outputs_by_name(self.get_output_data_names())
 
+    def __get_data(self, with_namespaces: bool, grammar: BaseGrammar) -> dict[str, Any]:
+        """Return the local data restricted to the items in a grammar.
+
+        Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                output names, if any.
+            grammar: The grammar that provides the names to be restricted to.
+
+        Returns:
+            The local output data.
+        """
+        copy_ = self._local_data.copy()
+        for name in copy_.keys() - grammar.keys():
+            del copy_[name]
+
+        if not with_namespaces and grammar.to_namespaced:
+            for key in tuple(copy_.keys()):
+                copy_[key.rsplit(namespaces_separator, 1)[-1]] = copy_.pop(key)
+
+        return copy_
+
     def get_output_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the local output data as a dictionary.
 
@@ -2155,10 +2172,7 @@ class MDODiscipline(Serializable):
         Returns:
             The local output data.
         """
-        return self._local_data.copy(
-            keys=self.output_grammar.keys(),
-            with_namespace=with_namespaces or not self.output_grammar.to_namespaced,
-        )
+        return self.__get_data(with_namespaces, self.output_grammar)
 
     def get_input_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the local input data as a dictionary.
@@ -2170,10 +2184,7 @@ class MDODiscipline(Serializable):
         Returns:
             The local input data.
         """
-        return self._local_data.copy(
-            keys=self.input_grammar.keys(),
-            with_namespace=with_namespaces or not self.input_grammar.to_namespaced,
-        )
+        return self.__get_data(with_namespaces, self.input_grammar)
 
     def to_pickle(self, file_path: str | Path) -> None:
         """Serialize the discipline and store it in a file.

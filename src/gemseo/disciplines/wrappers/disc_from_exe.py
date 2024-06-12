@@ -44,7 +44,7 @@ from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableR
 from gemseo.utils.directory_creator import DirectoryNamingMethod
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline_data import Data
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -279,7 +279,7 @@ class DiscFromExe(_BaseDiscFromExe):
             self._in_lines,
         )
 
-    def _parse_outputs(self) -> Data:
+    def _parse_outputs(self) -> StrKeyMapping:
         """Parse the output file."""
         with (
             self._executable_runner.working_directory / self.output_filename

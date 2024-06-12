@@ -63,6 +63,8 @@ test = [
 ]
 doc = [
     "autodocsumm",
+    # For supporting DataFrame in pydantic models in an example.
+    "pandera",
     "pillow",
     "pyenchant",
     "sphinx",

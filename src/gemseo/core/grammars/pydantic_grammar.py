@@ -41,9 +41,9 @@ from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
 from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
     from gemseo.core.grammars.json_schema import Schema
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
 
 
@@ -198,7 +198,7 @@ class PydanticGrammar(BaseGrammar):
 
     def _validate(  # noqa: D102
         self,
-        data: Data,
+        data: StrKeyMapping,
         error_message: MultiLineString,
     ) -> bool:
         self.__rebuild_model()

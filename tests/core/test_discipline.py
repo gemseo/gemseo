@@ -1284,7 +1284,7 @@ def test_path_serialization(tmp_path) -> None:
         __is_path_correct(local_path)
 
     data = deserialized.local_data
-    __is_path_correct(data.__getstate__()["_DisciplineData__data"]["path"])
+    __is_path_correct(data["path"])
 
     state = data.__getstate__()
     data.__setstate__(state)

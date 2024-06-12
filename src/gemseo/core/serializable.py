@@ -23,8 +23,7 @@ from __future__ import annotations
 
 from multiprocessing.sharedctypes import Synchronized
 from pathlib import Path
-from pathlib import PurePosixPath
-from pathlib import PureWindowsPath
+from pathlib import PurePath
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -86,7 +85,7 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
                 self.__dict__[attribute_name] = attribute_value
                 # This is needed to handle the case where serialization and
                 # deserialization are not made on the same platform.
-                if isinstance(attribute_value, (PureWindowsPath, PurePosixPath)):
+                if isinstance(attribute_value, PurePath):
                     self.__dict__[attribute_name] = Path(attribute_value)
             elif isinstance(self.__dict__[attribute_name], Synchronized):
                 # Set the value of Synchronized attributes instead of deserializing the
