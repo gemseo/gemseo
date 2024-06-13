@@ -45,6 +45,7 @@ importlib-metadata==7.1.0
     # via
     #   sphinx
     #   sphinxcontrib-bibtex
+    #   typeguard
 importlib-resources==6.4.0
     # via matplotlib
 jinja2==3.1.3
@@ -63,6 +64,10 @@ matplotlib==3.8.3
     # via gemseo (pyproject.toml)
 mpmath==1.3.0
     # via sympy
+multimethod==1.10
+    # via pandera
+mypy-extensions==1.0.0
+    # via typing-inspect
 networkx==3.2.1
     # via gemseo (pyproject.toml)
 nlopt==2.7.1
@@ -75,6 +80,7 @@ numpy==1.26.4
     #   matplotlib
     #   nlopt
     #   pandas
+    #   pandera
     #   pydoe3
     #   pyxdsm
     #   scikit-learn
@@ -87,9 +93,14 @@ packaging==24.0
     # via
     #   gemseo (pyproject.toml)
     #   matplotlib
+    #   pandera
     #   plotly
     #   sphinx
 pandas==2.2.1
+    # via
+    #   gemseo (pyproject.toml)
+    #   pandera
+pandera==0.19.3
     # via gemseo (pyproject.toml)
 pbr==6.0.0
     # via sphinxcontrib-apidoc
@@ -109,7 +120,9 @@ pybtex==0.24.0
 pybtex-docutils==1.0.3
     # via sphinxcontrib-bibtex
 pydantic==2.6.4
-    # via gemseo (pyproject.toml)
+    # via
+    #   gemseo (pyproject.toml)
+    #   pandera
 pydantic-core==2.16.3
     # via pydantic
 pydoe3==1.0.1
@@ -192,15 +205,23 @@ tomli==2.0.1
     # via sphinx
 tqdm==4.66.2
     # via gemseo (pyproject.toml)
+typeguard==4.3.0
+    # via pandera
 typing-extensions==4.12.2
     # via
     #   gemseo (pyproject.toml)
     #   pydantic
     #   pydantic-core
+    #   typeguard
+    #   typing-inspect
+typing-inspect==0.9.0
+    # via pandera
 tzdata==2024.1
     # via pandas
 urllib3==2.2.1
     # via requests
+wrapt==1.16.0
+    # via pandera
 xdsmjs==2.0.0
     # via gemseo (pyproject.toml)
 xxhash==3.4.1
