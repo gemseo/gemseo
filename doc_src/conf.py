@@ -316,6 +316,7 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
         ),
         "gemseo-pseven": ("GEMSEO plugin for the pSeven library.", False),
         "gemseo-pymoo": ("Pymoo wrapper for optimization algorithms", False),
+        "gemseo-ssh": ("SSH plugin for GEMSEO", True),
         "gemseo-scilab": ("Interfacing Scilab functions", False),
         "gemseo-template-editor-gui": (
             "A GUI to create input and output file templates for DiscFromExe.",
