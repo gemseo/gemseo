@@ -136,9 +136,10 @@ def _get_distribution_factories() -> dict[str, DistributionFactory]:
     """
     dist_to_factory_class = {}
     for factory in DistributionFactory.GetContinuousUniVariateFactories():
-        factory_class_name = factory.getImplementation().getClassName()
-        dist_name = factory_class_name.split("Factory")[0]
-        dist_to_factory_class[dist_name] = getattr(ots, factory_class_name)
+        if "SmoothedUniformFactory" not in str(factory):
+            factory_class_name = factory.getImplementation().getClassName()
+            dist_name = factory_class_name.split("Factory")[0]
+            dist_to_factory_class[dist_name] = getattr(ots, factory_class_name)
     return dist_to_factory_class
 
 

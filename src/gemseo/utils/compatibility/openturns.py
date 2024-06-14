@@ -32,6 +32,7 @@ if TYPE_CHECKING:
 
 OT_VERSION: Final[Version] = parse_version(version("openturns"))
 
+OT_1_23: Final[Version] = parse_version("1.21")
 IS_OT_LOWER_THAN_1_20: Final[bool] = parse_version("1.20") > OT_VERSION
 
 if parse_version("1.21") > OT_VERSION:  # pragma: no cover
