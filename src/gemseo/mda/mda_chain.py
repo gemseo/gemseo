@@ -474,9 +474,16 @@ class MDAChain(BaseMDA):
     def execute(  # noqa:D102
         self, input_data: StrKeyMapping | None = None
     ) -> DisciplineData:
-        if self.__initialize_defaults:
+        # The initialization is needed for MDA loops.
+        if (
+            self.__initialize_defaults
+            and len(self.disciplines) > 1
+            and len(self.strong_couplings) > 0
+        ):
             init_chain = MDOInitializationChain(
-                self.disciplines, available_data_names=input_data or ()
+                self.disciplines,
+                available_data_names=input_data or (),
+                grammar_type=self.grammar_type,
             )
             self.default_inputs.update(init_chain.execute(input_data))
             self.__initialize_defaults = False
