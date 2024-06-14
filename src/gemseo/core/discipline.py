@@ -45,6 +45,7 @@ from scipy.sparse import csr_array
 from strenum import StrEnum
 
 from gemseo.caches.factory import CacheFactory
+from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.factory import GrammarFactory
@@ -934,9 +935,11 @@ class MDODiscipline(Serializable):
                 # If also an output, use a copy of the original input value
                 input_data_[key] = deepcopy(val)
 
-        to_array = self.input_grammar.data_converter.convert_value_to_array
-        for name, value in input_data_.items():
-            input_data_[name] = to_array(name, value)
+        # Non simple caches require NumPy arrays.
+        if not isinstance(self.cache, SimpleCache):
+            to_array = self.input_grammar.data_converter.convert_value_to_array
+            for name, value in input_data_.items():
+                input_data_[name] = to_array(name, value)
 
         return input_data_
 
@@ -1056,11 +1059,13 @@ class MDODiscipline(Serializable):
         if not out_cached:
             return None
 
-        # Do not modify the cache entry which is mutable.
-        out_cached = out_cached.copy()
-        to_value = self.output_grammar.data_converter.convert_array_to_value
-        for name, value in out_cached.items():
-            out_cached[name] = to_value(name, value)
+        # Non simple caches require NumPy arrays.
+        if not isinstance(self.cache, SimpleCache):
+            # Do not modify the cache entry which is mutable.
+            out_cached = out_cached.copy()
+            to_value = self.output_grammar.data_converter.convert_array_to_value
+            for name, value in out_cached.items():
+                out_cached[name] = to_value(name, value)
 
         self.__update_local_data_from_cache(input_data, out_cached, out_jac)
 
@@ -1082,9 +1087,11 @@ class MDODiscipline(Serializable):
             for name in outputs_for_cache.keys() - out_names:
                 del outputs_for_cache[name]
 
-            to_array = self.output_grammar.data_converter.convert_value_to_array
-            for name, value in outputs_for_cache.items():
-                outputs_for_cache[name] = to_array(name, value)
+            # Non simple caches require NumPy arrays.
+            if not isinstance(self.cache, SimpleCache):
+                to_array = self.output_grammar.data_converter.convert_value_to_array
+                for name, value in outputs_for_cache.items():
+                    outputs_for_cache[name] = to_array(name, value)
 
             self.cache.cache_outputs(input_data, outputs_for_cache)
 
