@@ -41,6 +41,8 @@ from openturns import Sample
 from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
     BaseDimensionReduction,
 )
+from gemseo.utils.compatibility.openturns import OT_1_23
+from gemseo.utils.compatibility.openturns import OT_VERSION
 
 if TYPE_CHECKING:
     from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
@@ -50,8 +52,13 @@ if TYPE_CHECKING:
 class KLSVD(BaseDimensionReduction):
     """The Karhunen-Loève SVD algorithm based on OpenTURNS."""
 
-    __HALKO2010 = "halko2010"
-    __HALKO2011 = "halko2011"
+    if OT_VERSION >= OT_1_23:  # pragma: no cover
+        __HALKO2010 = "Halko2010"
+        __HALKO2011 = "Halko2011"
+    else:  # pragma: no cover
+        __HALKO2010 = "halko2010"
+        __HALKO2011 = "halko2011"
+
     __RANDOM_SVD_MAXIMUM_RANK = "KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank"
     __RANDOM_SVD_VARIANT = "KarhunenLoeveSVDAlgorithm-RandomSVDVariant"
     __USE_RANDOM_SVD = "KarhunenLoeveSVDAlgorithm-UseRandomSVD"
@@ -76,8 +83,8 @@ class KLSVD(BaseDimensionReduction):
             n_singular_values: The number of singular values to compute
                 when ``use_random_svd`` is ``True``;
                 if ``None``, use the default value implemented by OpenTURNS.
-            use_halko2010: Whether to use the *halko2010* algorithm
-                or the *halko2011* one.
+            use_halko2010: Whether to use the *Halko2010* algorithm
+                or the *Halko2011* one.
         """  # noqa: D205 D212
         super().__init__(
             name,
