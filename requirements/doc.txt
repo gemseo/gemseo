@@ -197,7 +197,7 @@ strenum==0.4.15
     # via gemseo (pyproject.toml)
 sympy==1.12
     # via gemseo (pyproject.toml)
-tenacity==8.3.0
+tenacity==8.4.1
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
@@ -218,7 +218,7 @@ typing-inspect==0.9.0
     # via pandera
 tzdata==2024.1
     # via pandas
-urllib3==2.2.1
+urllib3==2.2.2
     # via requests
 wrapt==1.16.0
     # via pandera
