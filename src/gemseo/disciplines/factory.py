@@ -44,7 +44,6 @@ class MDODisciplineFactory(BaseFactory):
         "gemseo.core",
         "gemseo.disciplines",
         "gemseo.scenarios",
-        "gemseo.wrappers",
     )
 
     def __init__(self) -> None:  # noqa: D107
