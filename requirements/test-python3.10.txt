@@ -130,7 +130,7 @@ strenum==0.4.15
     # via gemseo (pyproject.toml)
 sympy==1.12
     # via gemseo (pyproject.toml)
-tenacity==8.3.0
+tenacity==8.4.1
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
@@ -147,7 +147,7 @@ typing-extensions==4.12.2
     #   pydantic-core
 tzdata==2024.1
     # via pandas
-urllib3==2.2.1
+urllib3==2.2.2
     # via requests
 xdsmjs==2.0.0
     # via gemseo (pyproject.toml)
