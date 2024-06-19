@@ -24,6 +24,19 @@ any process or tool being actually ready.
 
 There is no need to write any line of code to use this tool. A command line executable is available.
 
+GEMSEO web study
+----------------
+A web interface is also available: the `GEMSEO Web study <https://gemseo-web-study.streamlit.app>`_.
+It has the same functionalities as the standalone version based on Excel spreadsheet.
+It can also be executed locally by using the dedicated plugin.
+
+
+.. figure:: figs/gemseo_web_study.png
+   :scale: 70 %
+
+   Web study interface
+
+
 Coupling study analysis
 -----------------------
 
