@@ -111,7 +111,7 @@ pillow==10.3.0
     #   sphinx-gallery
 plotly==5.22.0
     # via gemseo (pyproject.toml)
-psutil==5.9.8
+psutil==6.0.0
     # via openturns
 pybtex==0.24.0
     # via
