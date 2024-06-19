@@ -86,7 +86,7 @@ plotly==5.22.0
     # via gemseo (pyproject.toml)
 pluggy==1.5.0
     # via pytest
-psutil==5.9.8
+psutil==6.0.0
     # via openturns
 pydantic==2.7.4
     # via gemseo (pyproject.toml)
