@@ -78,7 +78,6 @@ from numpy import abs as np_abs
 from numpy import array
 from strenum import StrEnum
 
-from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.uncertainty.sensitivity._oat import OATSensitivity
@@ -231,7 +230,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         }
     """
 
-    DEFAULT_DRIVER = PyDOE.PYDOE_LHS
+    DEFAULT_DRIVER = "lhs"
 
     class Method(StrEnum):
         """The names of the sensitivity methods."""

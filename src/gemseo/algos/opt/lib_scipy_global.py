@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A wrapper for the global optimization algorithms of the SciPy library."""
+"""The library of SciPy global optimization algorithms."""
 
 from __future__ import annotations
 
@@ -25,6 +25,8 @@ import sys
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
+from typing import Final
 from typing import Union
 
 from numpy import float64
@@ -36,11 +38,13 @@ from numpy.typing import NDArray
 from scipy import optimize
 from scipy.optimize import NonlinearConstraint
 
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.algos.design_space_utils import get_value_and_bounds
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
     from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType
@@ -59,45 +63,43 @@ class SciPyGlobalAlgorithmDescription(OptimizationAlgorithmDescription):
     )
 
 
-class ScipyGlobalOpt(OptimizationLibrary):
-    """A wrapper for the global optimization algorithms of the SciPy library."""
+class ScipyGlobalOpt(BaseOptimizationLibrary):
+    """The library of SciPy global optimization algorithms."""
 
-    LIB_COMPUTE_GRAD = True
-    LIBRARY_NAME = "SciPy"
+    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/generated/"
+    ALGORITHM_INFOS: ClassVar[dict[str, SciPyGlobalAlgorithmDescription]] = {
+        "DUAL_ANNEALING": SciPyGlobalAlgorithmDescription(
+            algorithm_name="Dual annealing",
+            description="Dual annealing",
+            handle_integer_variables=True,
+            internal_algorithm_name="dual_annealing",
+            website=f"{__DOC}scipy.optimize.dual_annealing.html",
+        ),
+        "SHGO": SciPyGlobalAlgorithmDescription(
+            algorithm_name="SHGO",
+            description="Simplicial homology global optimization",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+            handle_integer_variables=True,
+            internal_algorithm_name="shgo",
+            positive_constraints=True,
+            website=f"{__DOC}scipy.optimize.shgo.html",
+        ),
+        "DIFFERENTIAL_EVOLUTION": SciPyGlobalAlgorithmDescription(
+            algorithm_name="Differential evolution",
+            description="Differential Evolution algorithm",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+            handle_integer_variables=True,
+            internal_algorithm_name="differential_evolution",
+            website=f"{__DOC}scipy.optimize.differential_evolution.html",
+        ),
+    }
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        doc = "https://docs.scipy.org/doc/scipy/reference/generated/"
-        self.descriptions = {
-            "DUAL_ANNEALING": SciPyGlobalAlgorithmDescription(
-                algorithm_name="Dual annealing",
-                description="Dual annealing",
-                handle_integer_variables=True,
-                internal_algorithm_name="dual_annealing",
-                website=f"{doc}scipy.optimize.dual_annealing.html",
-            ),
-            "SHGO": SciPyGlobalAlgorithmDescription(
-                algorithm_name="SHGO",
-                description="Simplicial homology global optimization",
-                handle_equality_constraints=True,
-                handle_inequality_constraints=True,
-                handle_integer_variables=True,
-                internal_algorithm_name="shgo",
-                positive_constraints=True,
-                website=f"{doc}scipy.optimize.shgo.html",
-            ),
-            "DIFFERENTIAL_EVOLUTION": SciPyGlobalAlgorithmDescription(
-                algorithm_name="Differential evolution",
-                description="Differential Evolution algorithm",
-                handle_equality_constraints=True,
-                handle_inequality_constraints=True,
-                handle_integer_variables=True,
-                internal_algorithm_name="differential_evolution",
-                website=f"{doc}scipy.optimize.differential_evolution.html",
-            ),
-        }
+    def __init__(self, algo_name: str) -> None:  # noqa:D107
+        super().__init__(algo_name)
         # maximum function calls option passed to the algorithm
-        self.max_func_calls = sys.maxsize
+        self._max_func_calls = sys.maxsize
 
     def _get_options(
         self,
@@ -225,13 +227,13 @@ class ScipyGlobalOpt(OptimizationLibrary):
             **kwargs,
         )
 
-    def iter_callback(self, x_vect: InputType) -> None:
+    def _iter_callback(self, x_vect: InputType) -> None:
         """Call the objective and constraints functions.
 
         Args:
             x_vect: The input data with which to call the functions.
         """
-        if self.normalize_ds:
+        if self._normalize_ds:
             x_vect = self.problem.design_space.normalize_vect(x_vect)
         self.problem.objective(x_vect)
         for constraint in self.problem.constraints:
@@ -248,19 +250,11 @@ class ScipyGlobalOpt(OptimizationLibrary):
         """
         return real(self.problem.objective.func(x))
 
-    def _run(self, **options: Any) -> OptimizationResult:
-        """Run the algorithm, to be overloaded by subclasses.
-
-        Args:
-            **options: The options for the algorithm.
-
-        Returns:
-            The optimization result.
-        """
+    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
         # remove normalization from options for algo
-        self.normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
+        self._normalize_ds = options.pop(self._NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the normalized bounds:
-        _, l_b, u_b = self.get_x0_and_bounds(self.normalize_ds)
+        _, l_b, u_b = get_value_and_bounds(problem.design_space, self._normalize_ds)
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
@@ -270,20 +264,23 @@ class ScipyGlobalOpt(OptimizationLibrary):
         # is very constrained (Power2) and OptProblem may fail
         # to detect the optimum.
 
-        if self.problem.has_constraints():
-            self.problem.add_callback(self.iter_callback)
+        if problem.has_constraints():
+            problem.add_callback(self._iter_callback)
 
-        if self.internal_algo_name == "dual_annealing":
+        internal_algo_name = self.ALGORITHM_INFOS[
+            self._algo_name
+        ].internal_algorithm_name
+        if internal_algo_name == "dual_annealing":
             opt_result = optimize.dual_annealing(
                 func=self.real_part_obj_fun,
                 bounds=bounds,
-                maxiter=self.max_func_calls,
+                maxiter=self._max_func_calls,
                 initial_temp=5230.0,
                 restart_temp_ratio=2e-05,
-                maxfun=self.max_func_calls,
+                maxfun=self._max_func_calls,
                 seed=options["seed"],
             )
-        elif self.internal_algo_name == "shgo":
+        elif internal_algo_name == "shgo":
             opt_result = optimize.shgo(
                 func=self.real_part_obj_fun,
                 bounds=bounds,
@@ -291,16 +288,16 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 n=options["n"],
                 iters=options["iters"],
                 sampling_method=options["sampling_method"],
-                constraints=self.__get_constraints_as_scipy_dictionary(),
+                constraints=self.__get_constraints_as_scipy_dictionary(problem),
                 options=options.get("local_options"),
             )
-        elif self.internal_algo_name == "differential_evolution":
+        elif internal_algo_name == "differential_evolution":
             opt_result = optimize.differential_evolution(
                 func=self.real_part_obj_fun,
                 bounds=bounds,
                 args=(),
                 strategy=options["strategy"],
-                maxiter=self.max_func_calls,
+                maxiter=self._max_func_calls,
                 popsize=options["popsize"],
                 tol=options["tol"],
                 atol=options["atol"],
@@ -311,41 +308,52 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 init=options["init"],
                 updating=options["updating"],
                 workers=options["workers"],
-                constraints=self.__get_non_linear_constraints(),
+                constraints=self.__get_non_linear_constraints(problem),
             )
         else:  # pragma: no cover
-            msg = f"Unknown algorithm: {self.internal_algo_name}."
+            msg = f"Unknown algorithm: {internal_algo_name}."
             raise ValueError(msg)
 
-        return self.get_optimum_from_database(opt_result.message, opt_result.success)
+        return self._get_optimum_from_database(
+            problem, opt_result.message, opt_result.success
+        )
 
-    def __get_non_linear_constraints(self) -> tuple[NonlinearConstraint]:
+    @staticmethod
+    def __get_non_linear_constraints(
+        problem: OptimizationProblem,
+    ) -> tuple[NonlinearConstraint]:
         """Return the SciPy nonlinear constraints.
+
+        Args:
+            problem: The problem to be solved.
 
         Returns:
             The SciPy nonlinear constraints.
         """
-        eq_tolerance = self.problem.eq_tolerance
+        eq_tolerance = problem.eq_tolerance
         constraints = [
             NonlinearConstraint(constr, -eq_tolerance, eq_tolerance, jac=constr.jac)
-            for constr in self.problem.get_eq_constraints()
+            for constr in problem.get_eq_constraints()
         ]
-        ineq_tolerance = self.problem.ineq_tolerance
+        ineq_tolerance = problem.ineq_tolerance
         constraints.extend([
             NonlinearConstraint(constr, -np_inf, ineq_tolerance, jac=constr.jac)
-            for constr in self.problem.get_ineq_constraints()
+            for constr in problem.get_ineq_constraints()
         ])
         return tuple(constraints)
 
     def __get_constraints_as_scipy_dictionary(
-        self,
+        self, problem: OptimizationProblem
     ) -> list[dict[str, str | WrappedFunctionType | WrappedJacobianType]]:
         """Create the constraints to be passed to a SciPy algorithm as dictionaries.
+
+        Args:
+            problem: The problem to be solved.
 
         Returns:
             The constraints.
         """
         return [
             {"type": constraint.f_type, "fun": constraint.func, "jac": constraint.jac}
-            for constraint in self.get_right_sign_constraints()
+            for constraint in self._get_right_sign_constraints(problem)
         ]

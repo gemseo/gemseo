@@ -18,7 +18,7 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Abstract factory to create drivers."""
+"""Abstract factory to create libraries of algorithms."""
 
 from __future__ import annotations
 
@@ -32,9 +32,8 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.algos.algorithm_library import AlgorithmLibrary
+    from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
     from gemseo.algos.base_problem import BaseProblem
-    from gemseo.algos.driver_library import DriverLibrary
     from gemseo.algos.optimization_result import OptimizationResult
 
 
@@ -47,7 +46,7 @@ class _AlgoFactoryMeta(ABCMeta):
     _MODULE_NAMES: ClassVar[list[str]]
     """The fully qualified names of the modules to search."""
 
-    _Factory: type[BaseFactory[AlgorithmLibrary]]
+    _Factory: type[BaseFactory[BaseAlgorithmLibrary]]
     """The internal factory class."""
 
     def __init__(
@@ -92,7 +91,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
     possible and will create a new object otherwise.
     """
 
-    __lib_cache: dict[str, type]
+    __lib_cache: dict[str, dict[str, BaseAlgorithmLibrary]]
     """The library cache."""
 
     __use_cache: bool
@@ -108,10 +107,10 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         self._factory = self._Factory()
         self.__algo_name_to_lib_name = {}
         for lib_name in self.libraries:
-            obj = self._factory.create(lib_name)
-            for algo_name in obj.algorithms:
+            cls = self._factory.get_class(lib_name)
+            self.__lib_cache[lib_name] = {}
+            for algo_name in cls.ALGORITHM_INFOS:
                 self.__algo_name_to_lib_name[algo_name] = lib_name
-                self.__lib_cache[lib_name] = obj
 
     @property
     @abstractmethod
@@ -153,40 +152,36 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         """
         return self._factory.class_names
 
-    def create(self, name: str) -> DriverLibrary:
-        """Create a driver library from an algorithm name.
+    def create(self, algo_name: str) -> BaseAlgorithmLibrary:
+        """Create an algorithm library from an algorithm name.
 
         Args:
-            name: The name of an algorithm.
+            algo_name: The name of an algorithm.
 
         Returns:
-             The driver.
+             The algorithm library.
 
         Raises:
-            ImportError: If the library is not available.
+            ImportError: If the algorithm is not available.
         """
-        lib_name = self.__algo_name_to_lib_name.get(name)
-        if lib_name is None:
-            if name not in self.libraries:
-                msg = (
-                    f"No algorithm or library of algorithms named '{name}' is available"
-                    f"; available algorithms are {pretty_str(self.algorithms)}."
-                )
-                raise ImportError(msg)
-            lib_name = name
-            algo_name = ""
-        else:
-            algo_name = name
+        if algo_name not in self.__algo_name_to_lib_name:
+            msg = (
+                f"No algorithm named {algo_name} is available; "
+                f"available algorithms are {pretty_str(self.algorithms, use_and=True)}."
+            )
+            raise ValueError(msg)
 
-        obj = None
+        lib_name = self.__algo_name_to_lib_name.get(algo_name)
+        lib_cache = self.__lib_cache[lib_name]
         if self.__use_cache:
-            obj = self.__lib_cache.get(lib_name)
-        if obj is None:
-            obj = self._factory.create(lib_name)
-        if algo_name:
-            obj.algo_name = name
-            obj.init_options_grammar(algo_name)
-        return obj
+            algo = lib_cache.get(algo_name)
+            if algo is None:
+                algo = self._factory.create(lib_name, algo_name=algo_name)
+                lib_cache[algo_name] = algo
+
+            return algo
+
+        return self._factory.create(lib_name, algo_name=algo_name)
 
     def execute(
         self,
@@ -204,11 +199,12 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         Returns:
             The optimization result.
         """
-        return self.create(algo_name).execute(problem, algo_name=algo_name, **options)
+        return self.create(algo_name).execute(problem, **options)
 
     def clear_lib_cache(self) -> None:
         """Clear the library cache."""
-        self.__lib_cache.clear()
+        for value in self.__lib_cache.values():
+            value.clear()
 
     def get_library_name(self, name: str) -> str:
         """Return the name of the library related to the name of a class.

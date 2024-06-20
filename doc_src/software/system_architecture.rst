@@ -267,7 +267,7 @@ contains the full classes description in the different sections as well as the f
    }
    class MDOFunction {
    }
-   class DriverLibrary {
+   class BaseDriverLibrary {
    }
 
    MDODiscipline <|- Scenario
@@ -276,7 +276,7 @@ contains the full classes description in the different sections as well as the f
    BaseMDOFormulation "1" --> "n" OptimizationProblem
    MDODisciplineAdapterGenerator "1" --> "n" MDOFunction
    MDODisciplineAdapterGenerator "1" *-> "1" MDODiscipline
-   Scenario "1" *-> "1" DriverLibrary
+   Scenario "1" *-> "1" BaseDriverLibrary
    OptimizationProblem "1" *-> "1" DesignSpace
    OptimizationProblem "1" *-> "n" MDOFunction
    BaseMDOFormulation "1" *-> "n" MDODisciplineAdapterGenerator
@@ -317,22 +317,22 @@ contains the full classes description in the different sections as well as the f
    @startuml
    class Scenario {
    }
-   class DriverLibrary {
+   class BaseDriverLibrary {
    }
-   class DOELibrary {
+   class BaseDOELibrary {
    }
-   class OptimizationLibrary {
+   class BaseOptimizationLibrary {
    }
    class MDOScenario {
    }
    class DOEScenario {
    }
 
-   DOELibrary -up|> DriverLibrary
-   OptimizationLibrary -up|> DriverLibrary
-   Scenario "1" *-up> "1" DriverLibrary
-   DOEScenario "1" *-> "1" DOELibrary
-   MDOScenario "1" *-> "1" OptimizationLibrary
+   BaseDOELibrary -up|> BaseDriverLibrary
+   BaseOptimizationLibrary -up|> BaseDriverLibrary
+   Scenario "1" *-up> "1" BaseDriverLibrary
+   DOEScenario "1" *-> "1" BaseDOELibrary
+   MDOScenario "1" *-> "1" BaseOptimizationLibrary
    MDOScenario -up|> Scenario
    DOEScenario -up|> Scenario
    @end uml

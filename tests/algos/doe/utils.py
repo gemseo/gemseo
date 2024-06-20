@@ -77,7 +77,6 @@ def execute_problem(
 
 def check_problem_execution(
     dim: int,
-    doe_library: DOELibrary,
     algo_name: str,
     get_expected_nsamples: Callable[[str, int, int | None], int],
     options: dict[str, Any],
@@ -86,7 +85,6 @@ def check_problem_execution(
 
     Args:
         dim: The dimension of the variables space.
-        doe_library: The DOE library.
         algo_name: The name of the DOE algorithm.
         get_expected_nsamples: The method returning the expected number of samples.
         options: The algorithm options.
@@ -95,7 +93,8 @@ def check_problem_execution(
         The error message, if any.
     """
     problem = get_problem(dim)
-    doe_library.execute(problem, algo_name=algo_name, **options)
+    doe_library = DOELibraryFactory().create(algo_name)
+    doe_library.execute(problem, **options)
     samples = doe_library.unit_samples
 
     pb_name = problem.__class__.__name__
@@ -117,7 +116,6 @@ def check_problem_execution(
 
 def create_test_function(
     dim: int,
-    doe_library: DOELibrary,
     algo_name: str,
     get_expected_nsamples: Callable[[str, int, int | None], int],
     options: dict[str, Any],
@@ -126,7 +124,6 @@ def create_test_function(
 
     Args:
         dim: The dimension of the variables space.
-        doe_library: The DOE library.
         algo_name: The name of the DOE algorithm.
         get_expected_nsamples: The method returning the expected number of samples.
         options: The algorithm options.
@@ -142,9 +139,7 @@ def create_test_function(
         Raises:
             Exception: The reason why the test failed.
         """
-        msg = check_problem_execution(
-            dim, doe_library, algo_name, get_expected_nsamples, options
-        )
+        msg = check_problem_execution(dim, algo_name, get_expected_nsamples, options)
         if msg is not None:
             raise ValueError(msg)
 
@@ -173,22 +168,18 @@ def generate_test_functions(
 
     if factory.is_available(opt_lib_name):
         for dim in [1, 5]:
-            opt_lib = DOELibraryFactory().create(opt_lib_name)
-            algos = opt_lib.filter_adapted_algorithms(get_problem(dim))
+            cls = DOELibraryFactory().get_class(opt_lib_name)
+            algos = cls.filter_adapted_algorithms(get_problem(dim))
             for algo_name in algos:
                 options = deepcopy(get_options(algo_name, dim))
                 # Must copy options otherwise they are erased in the loop
                 test_method = create_test_function(
                     dim,
-                    opt_lib,
                     algo_name,
                     get_expected_nsamples,
                     deepcopy(options),
                 )
-                name = (
-                    f"test_{opt_lib.__class__.__name__}_lib_{algo_name}"
-                    f"_on_Rosenbrock_n_{dim}"
-                )
+                name = f"test_{opt_lib_name}_lib_{algo_name}" f"_on_Rosenbrock_n_{dim}"
                 name = name.replace("-", "_")
                 test_method.__name__ = name
                 tests.append(test_method)

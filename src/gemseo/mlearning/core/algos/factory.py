@@ -90,7 +90,7 @@ class MLAlgoFactory(BaseFactory):
         directory = Path(directory)
         with (directory / BaseMLAlgo.FILENAME).open("rb") as handle:
             objects = pickle.load(handle)
-        algo_name = objects.pop("algo_name")
+        algo_name = objects.pop("_algo_name")
         model = super().create(
             self.__OLD_TO_NEW_NAMES.get(algo_name, algo_name),
             data=objects.pop("data"),

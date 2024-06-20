@@ -7,9 +7,9 @@ API changes:
 - ``DOELibrary.DESIGN_ALGO_NAME``: removed as it was no longer used.
 - ``DOELibraryOutputType``: removed; use ``EvaluationType`` instead.
 - ``DOELibraryOptionType``: removed; use ``DriverLibraryOptionType`` instead.
-- ``DOELibrary.__call__``: removed; use ``DOELibrary.compute_doe`` instead.
-- ``DOELibrary.evaluate_samples``: removed; use ``DOELibrary.execute`` instead.
-- ``DOELibrary.eval_jac``: removed as it was no longer used.
+- ``DOELibrary.__call__``: removed; use ``BaseDOELibrary.compute_doe`` instead.
+- ``DOELibrary.evaluate_samples``: removed; use ``BaseDOELibrary.execute`` instead.
+- ``DOELibrary.eval_jac``: removed as it was no longer used; note, however, that the DOE algorithm option ``eval_jac`` is still available.
 - ``AutoPyDiscipline.input_names``: removed; use ``MDODiscipline`` API instead.
 - ``AutoPyDiscipline.output_names``: removed; use ``MDODiscipline`` API instead.
 - ``AutoPyDiscipline.use_arrays``: removed as it was no longer used.
@@ -28,21 +28,21 @@ API changes:
 - ``MLQualityMeasure.evaluate_test``: removed; use ``BaseMLAlgoQuality.compute_test_measure`` instead.
 - ``OptimizationProblem``'s ``callback_func`` argument renamed to ``callback``.
 - ``OptimizationProblem.change_objective_sign``: removed; use ``OptimizationProblem.minimize_objective`` instead.
-- ``DriverLibrary.get_x0_and_bounds_vects`` renamed to ``DriverLibrary.get_x0_and_bounds``.
+- ``DriverLibrary.get_x0_and_bounds_vects`` renamed to ``BaseDriverLibrary.get_x0_and_bounds``.
 - ``DriverLibOptionType`` renamed to ``DriverLibraryOptionType``.
 - ``gemseo.algos.progress_bar``: removed; replace by the *protected* package ``gemseo.algos._progress_bars``.
 - ``CustomDOE.read_file``'s ``dimension`` argument: removed as it was unused.
 - ``gemseo.SEED``: removed; use ``gemseo.utils.seeder.SEED`` instead.
-- ``OptimizationLibrary.algorithm_handles_eqcstr`` renamed to ``OptimizationLibrary.check_equality_constraint_support``.
-- ``OptimizationLibrary.algorithm_handles_ineqcstr`` renamed to ``OptimizationLibrary.check_inequality_constraint_support``.
-- ``OptimizationLibrary.is_algo_requires_positive_cstr`` renamed to ``OptimizationLibrary.check_positivity_constraint_requirement``.
+- ``OptimizationLibrary.algorithm_handles_eqcstr`` renamed to ``BaseOptimizationLibrary.check_equality_constraint_support``.
+- ``OptimizationLibrary.algorithm_handles_ineqcstr`` renamed to ``BaseOptimizationLibrary.check_inequality_constraint_support``.
+- ``OptimizationLibrary.is_algo_requires_positive_cstr`` renamed to ``BaseOptimizationLibrary.check_positivity_constraint_requirement``.
 - ``FininiteElementAnalysis`` renamed to ``FiniteElementAnalysis``.
 - ``RestrictedFunction``'s ``orig_function`` argument renamed to ``function``.
 - ``LinearCompositeFunction``'s ``orig_function`` argument renamed to ``function``.
 - ``LinearCompositeFunction``'s ``interp_operator`` argument renamed to ``matrix``.
 - ``ScalableDiagonalApproximation``'s ``seed`` argument: removed since it was not used.
 - ``gemseo.utils.multiprocessing.get_multi_processing_manager`` moved to ``gemseo.utils.multiprocessing.manager``.
-- ``DOELibrary.export_samples``: removed because it simply saved the NumPy array ``DOELibrary.unit_samples`` to a text file; use ``numpy.savetxt(file_path, doe_library.unit_samples, delimiter=",")`` to obtain the same result.
+- ``DOELibrary.export_samples``: removed because it simply saved the NumPy array ``BaseDOELibrary.unit_samples`` to a text file; use ``numpy.savetxt(file_path, doe_library.unit_samples, delimiter=",")`` to obtain the same result.
 - ``DiscFromExe``'s ``use_shell`` argument: removed as it was no longer used.
 - ``DiscFromExe``'s ``executable_command`` argument renamed to ``command_line``.
 - ``DiscFromExe.executable_command`` renamed to ``DiscFromExe.command_line``.
@@ -54,7 +54,6 @@ API changes:
 - ``DirectoryCreator.get_unique_run_folder_path`` removed; use ``DirectoryCreator.create`` instead.
 - ``BaseGrammmar.update``'s ``exclude_names`` argument renamed to ``excluded_names``.
 - ``OptimizationProblem.get_violation_criteria`` renamed to ``OptimizationProblem.check_design_point_is_feasible``.
-- ``AlgorithmLibrary.opt_grammar`` renamed to ``AlgorithmLibrary.option_grammar``.
 - ``SensitivityAnalysis.outputs`` renamed to ``SensitivityAnalysis.output_names``.
 - ``MDAQuasiNewton``: the quasi-Newton method names are no longer attributes but names of the enumeration ``MDAQuasiNewton.QuasiNewtonMethod``.
 - ``MDANewtonRaphson``'s ``relax_factor`` argument and attributes removed; use ``over_relaxation_factor`` instead.

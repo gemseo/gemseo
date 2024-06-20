@@ -25,7 +25,7 @@ import numpy as np
 import pytest
 from numpy import zeros
 
-from gemseo.algos.driver_library import MaxIterReachedException
+from gemseo.algos.base_driver_library import MaxIterReachedException
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rastrigin import Rastrigin

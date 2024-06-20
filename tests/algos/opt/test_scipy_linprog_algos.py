@@ -35,26 +35,21 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
 @pytest.fixture(scope="module")
-def library() -> ScipyLinprog:
+def library_cls() -> type[ScipyLinprog]:
     """The SciPyLinprog library."""
-    return OptimizationLibraryFactory().create("ScipyLinprog")
+    return OptimizationLibraryFactory().get_class("ScipyLinprog")
 
 
-def test_library_name() -> None:
-    """Tests the library name."""
-    assert ScipyLinprog.LIBRARY_NAME == "SciPy"
-
-
-def test_factory(library) -> None:
+def test_factory(library_cls) -> None:
     """Tests creation of library from factory."""
-    assert isinstance(library, ScipyLinprog)
+    assert library_cls == ScipyLinprog
 
 
-def test_nonlinear_optimization_problem(library) -> None:
+def test_nonlinear_optimization_problem(library_cls) -> None:
     """Tests that library does not support non-linear problems."""
     problem = Rosenbrock()
-    assert not library.filter_adapted_algorithms(problem)
-    for algo_name in library.algorithms:
+    assert not library_cls.filter_adapted_algorithms(problem)
+    for algo_name in library_cls.ALGORITHM_INFOS:
         with pytest.raises(
             ValueError,
             match=re.escape(
@@ -62,7 +57,7 @@ def test_nonlinear_optimization_problem(library) -> None:
                 "does not handle non-linear problems."
             ),
         ):
-            library.execute(problem, algo_name)
+            library_cls(algo_name).execute(problem, algo_name)
 
 
 def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
@@ -99,14 +94,14 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
     ("minimization", "x_opt", "f_opt"),
     [(True, array([0.0, 0.0]), -1.0), (False, array([1 / 3, 2 / 3]), 0.0)],
 )
-def test_linprog_algorithms(minimization, x_opt, f_opt, library) -> None:
+def test_linprog_algorithms(minimization, x_opt, f_opt, library_cls) -> None:
     """Tests algorithms on linear optimization problems."""
-    for algo_name in library.algorithms:
+    for algo_name in library_cls.ALGORITHM_INFOS:
         linprog_problem = get_opt_problem()
         if not minimization:
             linprog_problem.minimize_objective = False
 
-        optimization_result = library.execute(linprog_problem, algo_name)
+        optimization_result = library_cls(algo_name).execute(linprog_problem, algo_name)
 
         assert allclose(optimization_result.x_opt, x_opt)
         assert allclose(optimization_result.f_opt, f_opt)
@@ -120,13 +115,13 @@ def test_linprog_algorithms(minimization, x_opt, f_opt, library) -> None:
     "algo_name", ["HIGHS", "HIGHS_DUAL_SIMPLEX", "HIGHS_INTERIOR_POINT"]
 )
 def test_sparse_linprog_algorithms(
-    minimization, x_opt, f_opt, algo_name, library
+    minimization, x_opt, f_opt, algo_name, library_cls
 ) -> None:
     """Tests algorithms on linear optimization problems with sparse Jacobians."""
     linprog_problem = get_opt_problem(sparse_jacobian=True)
     if not minimization:
         linprog_problem.minimize_objective = False
 
-    optimization_result = library.execute(linprog_problem, algo_name)
+    optimization_result = library_cls(algo_name).execute(linprog_problem, algo_name)
     assert allclose(optimization_result.x_opt, x_opt)
     assert allclose(optimization_result.f_opt, f_opt)

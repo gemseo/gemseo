@@ -34,8 +34,8 @@ from scipy.stats.qmc import QMCEngine
 from scipy.stats.qmc import Sobol
 from strenum import StrEnum
 
-from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.algos.doe.base_doe_library import BaseDOELibrary
+from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.typing import RealArray
 from gemseo.utils.compatibility.scipy import SCIPY_VERSION
 from gemseo.utils.seeder import SEED
@@ -74,11 +74,10 @@ class _MonteCarlo(QMCEngine):
             return self.rng.random((n, self.d))
 
 
-class SciPyDOE(DOELibrary):
+class SciPyDOE(BaseDOELibrary):
     """A library of designs of experiments based on SciPy."""
 
-    LIBRARY_NAME: ClassVar[str] = "SciPy"
-    OPTIONS_DIR: ClassVar[Path] = Path("options") / "scipy"
+    _OPTIONS_DIR: ClassVar[Path] = Path("options") / "scipy"
 
     __HALTON_ALGO_NAME: Final[str] = "Halton"
     __LHS_ALGO_NAME: Final[str] = "LHS"
@@ -120,15 +119,15 @@ class SciPyDOE(DOELibrary):
         LLOYD = "lloyd"
         NONE = ""
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        for name, cls in self.__NAMES_TO_CLASSES.items():
-            self.descriptions[name] = DOEAlgorithmDescription(
-                algorithm_name=name,
-                description=cls.__doc__.split("\n")[0][:-1],
-                internal_algorithm_name=cls.__name__,
-                library_name=self.algo_name,
-            )
+    ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
+        name: DOEAlgorithmDescription(
+            algorithm_name=name,
+            description=cls.__doc__.split("\n")[0][:-1],
+            internal_algorithm_name=cls.__name__,
+            library_name="SciPy",
+        )
+        for name, cls in __NAMES_TO_CLASSES.items()
+    }
 
     def _get_options(
         self,
@@ -211,12 +210,12 @@ class SciPyDOE(DOELibrary):
         self, design_space: DesignSpace, **options: OptionType
     ) -> RealArray:
         option_names = self.__SCIPY_OPTION_NAMES.copy()
-        if self.algo_name == self.__SOBOL_ALGO_NAME:
+        if self._algo_name == self.__SOBOL_ALGO_NAME:
             self.__remove_recent_scipy_options(option_names, "bits", "1.9")
             self.__remove_recent_scipy_options(option_names, "optimization", "1.10")
-        elif self.algo_name == self.__HALTON_ALGO_NAME:
+        elif self._algo_name == self.__HALTON_ALGO_NAME:
             self.__remove_recent_scipy_options(option_names, "optimization", "1.10")
-        elif self.algo_name == self.__LHS_ALGO_NAME:
+        elif self._algo_name == self.__LHS_ALGO_NAME:
             self.__remove_recent_scipy_options(option_names, "scramble", "1.10")
             self.__remove_recent_scipy_options(option_names, "optimization", "1.8")
             self.__remove_recent_scipy_options(option_names, "strength", "1.8")
@@ -230,15 +229,15 @@ class SciPyDOE(DOELibrary):
                     raise ValueError(msg)
 
                 option_names.remove("centered")
-        elif self.algo_name == self.__POISSON_DISK_ALGO_NAME:
+        elif self._algo_name == self.__POISSON_DISK_ALGO_NAME:
             self.__remove_recent_scipy_options(option_names, "optimization", "1.10")
 
-        algo = self.__NAMES_TO_CLASSES[self.algo_name](
+        algo = self.__NAMES_TO_CLASSES[self._algo_name](
             design_space.dimension,
-            seed=self._seeder.get_seed(options[self.SEED]),
+            seed=self._seeder.get_seed(options[self._SEED]),
             **{k: v for k, v in options.items() if k in option_names},
         )
-        return algo.random(options[self.N_SAMPLES])
+        return algo.random(options[self._N_SAMPLES])
 
     @staticmethod
     def __remove_recent_scipy_options(

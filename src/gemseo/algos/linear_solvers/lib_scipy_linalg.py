@@ -37,35 +37,40 @@ from scipy.sparse.linalg import lgmres
 from scipy.sparse.linalg import qmr
 from scipy.sparse.linalg import splu
 
-from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverDescription
-from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
+from gemseo.algos.linear_solvers.base_linear_solver_library import (
+    BaseLinearSolverLibrary,
+)
+from gemseo.algos.linear_solvers.base_linear_solver_library import (
+    LinearSolverDescription,
+)
 from gemseo.utils.compatibility.scipy import array_classes
 
 if TYPE_CHECKING:
+    from gemseo.algos.linear_solvers.linear_problem import LinearProblem
     from gemseo.typing import SparseOrDenseRealArray
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ScipyLinalgAlgos(LinearSolverLibrary):
+class ScipyLinalgAlgos(BaseLinearSolverLibrary):
     """Wrapper for scipy linalg sparse linear solvers."""
 
-    save_fpath: str
+    file_path: str
     """The path to the file to saved the problem when it is not converged and the option
     save_when_fail is active."""
 
     methods_map: dict[str, Callable[[ndarray, ndarray, ...], tuple[ndarray, int]]]
     """The mapping between the solver names and the solvers methods in scipy.sparse."""
 
-    BASE_INFO_MSG = "scipy linear solver algorithm stop info: "
-    OPTIONS_MAP: ClassVar[dict[str, str]] = {
+    __BASE_INFO_MSG: ClassVar[str] = "scipy linear solver algorithm stop info: "
+    _OPTIONS_MAP: ClassVar[dict[str, str]] = {
         "max_iter": "maxiter",
         "preconditioner": "M",
         "store_outer_av": "store_outer_Av",
     }
 
-    LGMRES_SPEC_OPTS = (
+    _LGMRES_SPEC_OPTS: ClassVar[tuple[str, str, str, str, str]] = (
         "inner_m",
         "outer_k",
         "outer_v",
@@ -73,58 +78,33 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         "prepend_outer_v",
     )
 
-    __WEBSITE = "https://docs.scipy.org/doc/scipy/reference/generated/{}.html"
-    __WEBPAGE = "scipy.sparse.linalg.{}"
-    __WEBPAGES: ClassVar[dict[str, str]] = {
-        "BICG": __WEBPAGE.format("bicg"),
-        "GMRES": __WEBPAGE.format("gmres"),
-        "LGMRES": __WEBPAGE.format("lgmres"),
-        "QMR": __WEBPAGE.format("qmr"),
-        "BICGSTAB": __WEBPAGE.format("bicgstab"),
-        "DEFAULT": __WEBPAGE.format("splu"),
+    methods_map: ClassVar[dict[str, Callable]] = {
+        "LGMRES": lgmres,
+        "GMRES": gmres,
+        "BICG": bicg,
+        "QMR": qmr,
+        "BICGSTAB": bicgstab,
+        "DEFAULT": "None",
     }
 
-    LIBRARY_NAME = "SciPy"
-
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        self.methods_map = {
-            "LGMRES": lgmres,
-            "GMRES": gmres,
-            "BICG": bicg,
-            "QMR": qmr,
-            "BICGSTAB": bicgstab,
-            "DEFAULT": self._run_default_solver,
-        }
-        self.descriptions = {
-            name: self.get_default_properties(name) for name in self.methods_map
-        }
-        self.descriptions["DEFAULT"].description = (
-            "This starts by LGMRES, but if it fails, "
-            "switches to GMRES, then direct method super LU factorization."
-        )
-
-    @classmethod
-    def get_default_properties(cls, algo_name: str) -> LinearSolverDescription:
-        """Return the properties of the algorithm.
-
-        It states if it requires symmetric,
-        or positive definite matrices for instance.
-
-        Args:
-            algo_name: The algorithm name.
-
-        Returns:
-            The properties of the solver.
-        """
-        return LinearSolverDescription(
+    ALGORITHM_INFOS: ClassVar[dict[str, LinearSolverDescription]] = {
+        algo_name: LinearSolverDescription(
             algorithm_name=algo_name,
             description="Linear solver implemented in the SciPy library.",
             internal_algorithm_name=algo_name,
             lhs_must_be_linear_operator=True,
             library_name="SciPy",
-            website=cls.__WEBSITE.format(cls.__WEBPAGES[algo_name]),
+            website=f"https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.{algo_name.lower()}.html",
         )
+        for algo_name in methods_map
+    }
+    ALGORITHM_INFOS["DEFAULT"].website = (
+        "https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.splu.html",
+    )
+    ALGORITHM_INFOS["DEFAULT"].description = (
+        "This starts by LGMRES, but if it fails, "
+        "switches to GMRES, then direct method super LU factorization."
+    )
 
     def _get_options(
         self,
@@ -178,14 +158,14 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
                 when the preconditioner options are inconsistent.
         """
         if preconditioner is not None and (
-            preconditioner.shape != self.problem.lhs.shape
+            preconditioner.shape != self._problem.lhs.shape
         ):
             msg = "Inconsistent Preconditioner shape: %s != %s"
-            raise ValueError(msg.format(preconditioner.shape, self.problem.lhs.shape))
+            raise ValueError(msg.format(preconditioner.shape, self._problem.lhs.shape))
 
-        if x0 is not None and len(x0) != len(self.problem.rhs):
+        if x0 is not None and len(x0) != len(self._problem.rhs):
             msg = "Inconsistent initial guess shape: %s != %s"
-            raise ValueError(msg.format(x0.shape, self.problem.rhs.shape))
+            raise ValueError(msg.format(x0.shape, self._problem.rhs.shape))
 
         if use_ilu_precond and preconditioner is not None:
             msg = (
@@ -210,19 +190,13 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
             store_residuals=store_residuals,
         )
 
-    def _run(self, **options: None | bool | int | float | ndarray) -> ndarray:
-        """Run the algorithm.
-
-        Args:
-            **options: The options for the algorithm.
-
-        Returns:
-            The solution of the problem.
-        """
-        if issparse(self.problem.rhs):
-            self.problem.rhs = self.problem.rhs.toarray()
-        rhs = self.problem.rhs
-        lhs = self.problem.lhs
+    def _run(
+        self, problem: LinearProblem, **options: None | bool | int | float | ndarray
+    ) -> ndarray:
+        if issparse(problem.rhs):
+            problem.rhs = problem.rhs.toarray()
+        rhs = problem.rhs
+        lhs = problem.lhs
 
         opts_solver = options.copy()
         c_dtype = None
@@ -240,16 +214,19 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         del opts_solver["use_ilu_precond"]
         del opts_solver["store_residuals"]
 
-        method = self.methods_map[self.algo_name]
+        if self._algo_name == "DEFAULT":
+            method = self._run_default_solver
+        else:
+            method = self.methods_map[self._algo_name]
 
         if options.get("store_residuals", False):
             opts_solver["callback"] = self.__store_residuals
 
         opts_solver.pop("save_when_fail")
-        self.problem.solution, info = method(lhs, rhs, **opts_solver)
+        problem.solution, info = method(lhs, rhs, **opts_solver)
         self._check_solver_info(info, options)
 
-        return self.problem.solution
+        return problem.solution
 
     def __store_residuals(self, current_x: ndarray) -> ndarray:
         """Store the current iteration residuals.
@@ -257,8 +234,8 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         Args:
             current_x: The current solution.
         """
-        self.problem.solution = current_x
-        self.problem.compute_residuals(True, True)
+        self._problem.solution = current_x
+        self._problem.compute_residuals(True, True)
 
     def _check_solver_info(
         self,
@@ -278,14 +255,14 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         Raises:
             RuntimeError: If the inputs are illegal for the solver.
         """
-        self.problem.is_converged = info == 0
+        self._problem.is_converged = info == 0
 
         if info > 0:
-            if self.problem.solution is not None:
+            if self._problem.solution is not None:
                 LOGGER.warning(
                     "%s, residual = %s",
-                    self.BASE_INFO_MSG,
-                    self.problem.compute_residuals(True),
+                    self.__BASE_INFO_MSG,
+                    self._problem.compute_residuals(True),
                 )
                 LOGGER.warning("info = %s", info)
             return False
@@ -293,7 +270,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         # check the dimensions
         if info < 0:
             raise RuntimeError(
-                self.BASE_INFO_MSG + "illegal input or breakdown, options = %s",
+                self.__BASE_INFO_MSG + "illegal input or breakdown, options = %s",
                 options,
             )
 
@@ -320,7 +297,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         """
         # Try LGMRES first
         best_sol, info = lgmres(A=lhs, b=rhs, **options)
-        best_res = self.problem.compute_residuals(True, current_x=best_sol)
+        best_res = self._problem.compute_residuals(True, current_x=best_sol)
 
         if self._check_solver_info(info, options):
             return best_sol, info
@@ -328,7 +305,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
         # If not converged, try GMRES
 
         # Adapt options
-        for k in self.LGMRES_SPEC_OPTS:
+        for k in self._LGMRES_SPEC_OPTS:
             if k in options:
                 del options[k]
 
@@ -336,7 +313,7 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
             options["x0"] = best_sol
 
         sol, info = gmres(A=lhs, b=rhs, **options)
-        res = self.problem.compute_residuals(True, current_x=sol)
+        res = self._problem.compute_residuals(True, current_x=sol)
 
         if res < best_res:
             best_sol = sol
@@ -346,17 +323,17 @@ class ScipyLinalgAlgos(LinearSolverLibrary):
             return best_sol, info
 
         info = 1
-        self.problem.is_converged = False
+        self._problem.is_converged = False
 
         # Attempt direct solver when possible
         if isinstance(lhs, array_classes):
             a_fact = splu(lhs)
             sol = a_fact.solve(rhs)
-            res = self.problem.compute_residuals(True, current_x=sol)
+            res = self._problem.compute_residuals(True, current_x=sol)
 
             if res < options["tol"]:  # pragma: no cover
                 best_sol = sol
                 info = 0
-                self.problem.is_converged = True
+                self._problem.is_converged = True
 
         return best_sol, info

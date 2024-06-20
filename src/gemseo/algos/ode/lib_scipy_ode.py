@@ -26,51 +26,46 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from numpy import inf
 from scipy.integrate import solve_ivp
 
-from gemseo.algos.ode.ode_solver_lib import ODESolverDescription
-from gemseo.algos.ode.ode_solver_lib import ODESolverLibrary
+from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
+from gemseo.algos.ode.base_ode_solver_library import ODESolverDescription
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
+    from gemseo.algos.ode.ode_problem import ODEProblem
     from gemseo.algos.ode.ode_result import ODEResult
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ScipyODEAlgos(ODESolverLibrary):
+class ScipyODEAlgos(BaseODESolverLibrary):
     """Wrapper for SciPy's ODE solvers.
 
     ODE stands for ordinary differential equation.
     """
 
-    __WEBSITE = "https://docs.scipy.org/doc/scipy/reference/generated/{}.html"
-    __WEBPAGE = "scipy.integrate.solve_ivp"
-
-    LIBRARY_NAME = "SciPy"
-
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        self.descriptions = {
-            name: ODESolverDescription(
-                algorithm_name=name,
-                internal_algorithm_name=name,
-                description="ODE solver implemented in the SciPy library.",
-                library_name="SciPy",
-                website=self.__WEBSITE.format(name),
-            )
-            for name in [
-                "RK45",
-                "RK23",
-                "DOP853",
-                "Radau",
-                "BDF",
-                "LSODA",
-            ]
-        }
+    ALGORITHM_INFOS: ClassVar[dict[str, ODESolverDescription]] = {
+        name: ODESolverDescription(
+            algorithm_name=name,
+            internal_algorithm_name=name,
+            description="ODE solver implemented in the SciPy library.",
+            library_name="SciPy",
+            website=f"https://docs.scipy.org/doc/scipy/reference/generated/{name}.html",
+        )
+        for name in [
+            "RK45",
+            "RK23",
+            "DOP853",
+            "Radau",
+            "BDF",
+            "LSODA",
+        ]
+    }
 
     def _get_options(
         self,
@@ -116,28 +111,31 @@ class ScipyODEAlgos(ODESolverLibrary):
             min_step=min_step,
         )
 
-    def _run(self, **options: bool | int | float | NDArray[float] | None) -> ODEResult:
-        if self.problem.time_vector is not None:
-            options["t_eval"] = self.problem.time_vector
-        if self.problem.jac is not None:
-            options["jac"] = self.problem.jac
+    def _run(
+        self, problem: ODEProblem, **options: bool | int | float | NDArray[float] | None
+    ) -> ODEResult:
+        if problem.time_vector is not None:
+            options["t_eval"] = problem.time_vector
+
+        if problem.jac is not None:
+            options["jac"] = problem.jac
 
         solution = solve_ivp(
-            fun=self.problem.rhs_function,
-            y0=self.problem.initial_state,
-            method=self.algo_name,
-            t_span=self.problem.integration_interval,
+            fun=problem.rhs_function,
+            y0=problem.initial_state,
+            method=self._algo_name,
+            t_span=problem.integration_interval,
             **options,
         )
 
-        self.problem.result.is_converged = solution.status == 0
-        self.problem.result.solver_message = solution.message
-        if not self.problem.result.is_converged:
+        problem.result.is_converged = solution.status == 0
+        problem.result.solver_message = solution.message
+        if not problem.result.is_converged:
             LOGGER.warning(solution.message)
 
-        self.problem.result.state_vector = solution.y
-        self.problem.result.time_vector = solution.t
-        self.problem.result.n_func_evaluations = solution.nfev
-        self.problem.result.n_jac_evaluations = solution.njev
+        problem.result.state_vector = solution.y
+        problem.result.time_vector = solution.t
+        problem.result.n_func_evaluations = solution.nfev
+        problem.result.n_jac_evaluations = solution.njev
 
-        return self.problem.result
+        return problem.result

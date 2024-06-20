@@ -16,13 +16,15 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from numpy import heaviside
 from numpy import ndarray
 
 from gemseo.algos.opt.augmented_lagrangian.penalty_heuristic import (
     AugmentedLagrangianPenaltyHeuristic,
 )
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 
 
 class AugmentedLagrangianOrder0(AugmentedLagrangianPenaltyHeuristic):
@@ -32,20 +34,19 @@ class AugmentedLagrangianOrder0(AugmentedLagrangianPenaltyHeuristic):
     gradient used).
     """
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        self.descriptions = {
-            "Augmented_Lagrangian_order_0": OptimizationAlgorithmDescription(
-                algorithm_name="Augmented_Lagrangian_order_0",
-                description=(
-                    "Augmented Lagrangian algorithm for gradient-less functions."
-                ),
-                internal_algorithm_name="Augmented_Lagrangian",
-                handle_equality_constraints=True,
-                handle_inequality_constraints=True,
-                require_gradient=False,
-            )
-        }
+    ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {
+        "Augmented_Lagrangian_order_0": OptimizationAlgorithmDescription(
+            algorithm_name="Augmented_Lagrangian_order_0",
+            description=("Augmented Lagrangian algorithm for gradient-less functions."),
+            internal_algorithm_name="Augmented_Lagrangian",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+            require_gradient=False,
+        )
+    }
+
+    def __init__(self, algo_name: str = "Augmented_Lagrangian_order_0") -> None:  # noqa:D107
+        super().__init__(algo_name)
 
     def _update_lagrange_multipliers(
         self, eq_lag: dict[str, ndarray], ineq_lag: dict[str, ndarray], x_opt: ndarray

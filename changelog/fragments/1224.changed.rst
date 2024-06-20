@@ -1,0 +1,102 @@
+API changes:
+
+- ``gemseo.algos.algorithm_library.AlgorithmLibrary``: ``gemseo.algos.base_algorithm_library.BaseAlgorithmLibrary``.
+- ``gemseo.algos.driver_library.DriverLibrary``: ``gemseo.algos.base_driver_library.BaseDriverLibrary``.
+- ``gemseo.algos.ode.driver_library.DriverLibrary``: ``gemseo.algos.base_driver_library.BaseDriverLibrary``.
+- ``gemseo.algos.ode_solver_lib.ODESolverLibrary``: ``gemseo.algos.ode.base_ode_solver_library.BaseODESolverLibrary``.
+- ``gemseo.algos.doe.doe_library.DOELibrary``: ``gemseo.algos.doe.base_doe_library.BaseDOELibrary``.
+- ``gemseo.algos.opt.optimization_library.BaseDOELibrary``: ``gemseo.algos.opt.base_optimization_library.BaseOptimizationLibrary``.
+- ``BaseAlgorithmLibrary.driver_has_option``: removed; use ``name in BaseAlgorithmLibrary._option_grammar`` instead.
+- ``AlgorithmLibrary.init_options_grammar``: removed; use ``BaseAlgorithmLibrary._init_options_grammar`` instead, which will disappear in the next version.
+- ``AlgorithmLibrary.opt_grammar``: removed; use ``BaseAlgorithmLibrary._option_grammar`` instead, which will disappear in the next version.
+- ``AlgorithmLibrary.OPTIONS_DIR``: removed; use ``BaseAlgorithmLibrary._OPTIONS_DIR`` instead, which will disappear in the next version.
+- ``AlgorithmLibrary.OPTIONS_MAP``: removed; use ``BaseAlgorithmLibrary._OPTIONS_MAP`` instead, which will disappear in the next version.
+- ``AlgorithmLibrary.internal_algo_name``: removed; use ``BaseAlgorithmLibrary.description[algo_name].internal_algo_name`` instead.
+- ``AlgorithmLibrary.algorithms``: removed; use ``list(BaseAlgorithmLibrary.descriptions)`` instead.
+- ``AlgorithmLibrary.LIBRARY_NAME``: removed as it was no longer used (note that this information is already included in the class names and in the docstrings).
+- ``LinearSolverLibrary.solve``: removed; use ``BaseLinearSolverLibrary.execute`` instead.
+- ``LinearSolverLibrary.solution``: removed; use ``problem.solution`` instead, where ``problem`` is the ``LinearProblem`` passed to the method ``BaseLinearSolverLibrary.execute``.
+- ``LinearSolverLibrary.save_fpath (str | None)``: ``BaseLinearSolverLibrary.file_path (Path)``.
+- ``DriverLibrary.get_optimum_from_database``: removed; use ``OptimizationResult.from_optimization_problem`` instead.
+- ``DriverLibrary.ensure_bounds``: removed as it was no longer used.
+- ``DriverLibrary.requires_gradient``: removed; use ``BaseDriverLibrary.description[algo_name].require_gradient`` instead.
+- ``DriverLibrary.finalize_iter_observer``: removed as it was only used once internally, by ``DriverLibrary.execute``.
+- ``DriverLibrary.new_iteration_callback``: protected because it is not an end-user feature.
+- ``DriverLibrary.deactivate_progress_bar``: protected because it is not an end-user feature.
+- ``DriverLibrary.init_iter_observer``: protected because it is not an end-user feature.
+- ``DriverLibrary.clear_listeners``: protected because it is not an end-user feature.
+- ``DriverLibrary.get_x0_and_bounds``: removed; use ``get_value_and_bounds`` instead.
+- ``OptimizationLibrary.check_inequality_constraint_support``: removed; use ``BaseOptimizationLibrary.descriptions[algo_name].handle_inequality_constraints`` instead.
+- ``OptimizationLibrary.check_equality_constraint_support``: removed; use ``BaseOptimizationLibrary.descriptions[algo_name].handle_equality_constraints`` instead.
+- ``OptimizationLibrary.check_positivity_constraint_requirement``: removed; use ``BaseOptimizationLibrary.descriptions[algo_name].positive_constraints`` instead.
+- ``OptimizationLibrary.get_right_sign_constraints``: protected because it is not an end-user feature.
+- ``ScipyLinalgAlgos.BASE_INFO_MSG``: removed as it was used only internally.
+- ``ScipyOpt.LIB_COMPUTE_GRAD``: removed as it was no longer used.
+- ``ScipyMILP.LIB_COMPUTE_GRAD``: removed as it was no longer used.
+- ``ScipyGlobalOpt.LIB_COMPUTE_GRAD``: removed as it was no longer used.
+- ``NLopt.LIB_COMPUTE_GRAD``: removed as it was no longer used.
+- ``ScipyLinprog.LIB_COMPUTE_GRAD``: removed as it was no longer used.
+- ``ScipyLinalgAlgos.get_default_properties``: removed; use ``ScipyLinalgAlgos.descriptions[algo_name]`` instead.
+- ``NLopt``'s class attributes defining error messages: removed as it was used only internally.
+- ``ScipyGlobalOpt.iter_callback``: protected because it is not an end-user feature.
+- ``ScipyGlobalOpt.max_func_calls``: protected because it is not an end-user feature.
+- ``ScipyGlobalOpt.normalize_ds``: protected because it is not an end-user feature.
+- ``ScipyLinalgAlgos.LGMRES_SPEC_OPTS``: protected because it is not an end-user feature.
+- ``DriverLibrary.EQ_TOLERANCE``: removed as it was used only internally.
+- ``DriverLibrary.EVAL_OBS_JAC_OPTION``: removed as it was used only internally.
+- ``DriverLibrary.INEQ_TOLERANCE``: removed as it was used only internally.
+- ``DriverLibrary.MAX_TIME``: removed as it was used only internally.
+- ``DriverLibrary.NORMALIZE_DESIGN_SPACE_OPTION``: removed as it was used only internally.
+- ``DriverLibrary.ROUND_INTS_OPTION``: removed as it was used only internally.
+- ``DriverLibrary.USE_DATABASE_OPTION``: removed as it was used only internally.
+- ``DriverLibrary.USE_ONE_LINE_PROGRESS_BAR``: removed as it was used only internally.
+- ``DOELibrary.EVAL_JAC``: removed as it was used only internally.
+- ``DOELibrary.N_PROCESSES``: removed as it was used only internally.
+- ``DOELibrary.N_SAMPLES``: removed as it was used only internally.
+- ``DOELibrary.SEED``: removed as it was used only internally.
+- ``DOELibrary.WAIT_TIME_BETWEEN_SAMPLES``: removed as it was used only internally.
+- ``OptimizationLibrary.MAX_ITER``: removed as it was used only internally.
+- ``OptimizationLibrary.F_TOL_REL``: removed as it was used only internally.
+- ``OptimizationLibrary.F_TOL_ABS``: removed as it was used only internally.
+- ``OptimizationLibrary.X_TOL_REL``: removed as it was used only internally.
+- ``OptimizationLibrary.X_TOL_ABS``: removed as it was used only internally.
+- ``OptimizationLibrary.STOP_CRIT_NX``: removed as it was used only internally.
+- ``OptimizationLibrary.LS_STEP_SIZE_MAX``: removed as it was used only internally.
+- ``OptimizationLibrary.LS_STEP_NB_MAX``: removed as it was used only internally.
+- ``OptimizationLibrary.MAX_FUN_EVAL``: removed as it was used only internally.
+- ``OptimizationLibrary.PG_TOL``: removed as it was used only internally.
+- ``OptimizationLibrary.SCALING_THRESHOLD``: removed as it was used only internally.
+- ``OptimizationLibrary.VERBOSE``: removed as it was used only internally.
+- ``OptimizationLibrary.descriptions`` (instance attribute): renamed to ``OptimizationLibrary.ALGORITHM_INFOS`` (class attribute).
+- ``OptimizationLibrary.algo_name`` is now a read-only attribute; set the algorithm name at instantiation instead.
+- ``OptimizationLibrary.execute``'s ``algo_name`` attribute: removed; set the algorithm name at instantiation instead.
+- ``BaseLinearSolverLibrary.SAVE_WHEN_FAIL``: removed as it was used only internally.
+- ``Nlopt.INNER_MAXEVAL``: removed as it was used only internally.
+- ``Nlopt.STOPVAL``: removed as it was used only internally.
+- ``Nlopt.CTOL_ABS``: removed as it was used only internally.
+- ``Nlopt.INIT_STEP``: removed as it was used only internally.
+- ``ScipyLinprog.REDUNDANCY_REMOVAL``: removed as it was used only internally.
+- ``ScipyLinprog.REVISED_SIMPLEX``: removed as it was used only internally.
+- ``CustomDOE.COMMENTS_KEYWORD``: removed as it was used only internally.
+- ``CustomDOE.DELIMITER_KEYWORD``: removed as it was used only internally.
+- ``CustomDOE.DOE_FILE``: removed as it was used only internally.
+- ``CustomDOE.SAMPLES``: removed as it was used only internally.
+- ``CustomDOE.SKIPROWS_KEYWORD``: removed as it was used only internally.
+- ``OpenTURNS.OT_SOBOL``: removed as it was used only internally.
+- ``OpenTURNS.OT_RANDOM``: removed as it was used only internally.
+- ``OpenTURNS.OT_HASEL``: removed as it was used only internally.
+- ``OpenTURNS.OT_REVERSE_HALTON``: removed as it was used only internally.
+- ``OpenTURNS.OT_HALTON``: removed as it was used only internally.
+- ``OpenTURNS.OT_FAURE``: removed as it was used only internally.
+- ``OpenTURNS.OT_MC``: removed as it was used only internally.
+- ``OpenTURNS.OT_FACTORIAL``: removed as it was used only internally.
+- ``OpenTURNS.OT_COMPOSITE``: removed as it was used only internally.
+- ``OpenTURNS.OT_AXIAL``: removed as it was used only internally.
+- ``OpenTURNS.OT_LHSO``: removed as it was used only internally.
+- ``OpenTURNS.OT_LHS``: removed as it was used only internally.
+- ``OpenTURNS.OT_FULLFACT``: removed as it was used only internally.
+- ``OpenTURNS.OT_SOBOL_INDICES``: removed as it was used only internally.
+- ``PyDOE``'s class attributes: removed as it was used only internally.
+- ``AlgorithmLibrary.problem``: removed as it was used only internally.
+- ``is_kkt_residual_norm_reached``: moved to ``gemseo.algos.stop_criteria``.
+- ``kkt_residual_computation``: moved to ``gemseo.algos.stop_criteria``.

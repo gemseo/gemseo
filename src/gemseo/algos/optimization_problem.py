@@ -170,7 +170,7 @@ class OptimizationProblem(BaseProblem):
     - the objective function as an :class:`.MDOFunction`,
       which can be a vector,
 
-    execute it from an algorithm provided by a :class:`.DriverLibrary`,
+    execute it from an algorithm provided by a :class:`.BaseDriverLibrary`,
     and store some execution data in a :class:`.Database`.
 
     In particular,
@@ -247,7 +247,7 @@ class OptimizationProblem(BaseProblem):
     """Whether to use standardized objective for logging and post-processing.
 
     The standardized objective corresponds to the original one expressed as a cost
-    function to minimize. A :class:`.DriverLibrary` works with this standardized
+    function to minimize. A :class:`.BaseDriverLibrary` works with this standardized
     objective and the :class:`.Database` stores its values. However, for convenience, it
     may be more relevant to log the expression and the values of the original objective.
     """

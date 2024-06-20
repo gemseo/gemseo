@@ -35,8 +35,8 @@ from tqdm import tqdm
 from gemseo.algos._progress_bars.custom_tqdm_progress_bar import CustomTqdmProgressBar
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -61,44 +61,45 @@ class TestDesc(OptimizationAlgorithmDescription):
     library_name: str = "Test"
 
 
-class ProgressOpt(OptimizationLibrary):
-    OPTIONS_MAP: ClassVar[dict[Any, str]] = {}
-    LIBRARY_NAME = "Test"
+class ProgressOpt(BaseOptimizationLibrary):
+    _OPTIONS_MAP: ClassVar[dict[Any, str]] = {}
 
-    def __init__(self, offsets, constraints_before_obj) -> None:
-        super().__init__()
-        self.descriptions = {
-            "TestDriver": TestDesc(
-                algorithm_name="TestDriver",
-                description="d ",
-                internal_algorithm_name="test",
-                handle_equality_constraints=True,
-                handle_inequality_constraints=True,
-            ),
-        }
+    ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {
+        "TestDriver": TestDesc(
+            algorithm_name="TestDriver",
+            description="d ",
+            internal_algorithm_name="test",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+        ),
+    }
+
+    def __init__(self, offsets, constraints_before_obj, algo_name) -> None:
+        super().__init__(algo_name)
         self.offsets = offsets
         self.constraints_before_obj = constraints_before_obj
 
     def _get_options(self, **options: Any) -> dict[str, Any]:
         return options
 
-    def _run(self, **options: Any) -> OptimizationResult:
-        """"""
-        x_0, _, _ = self.get_x0_and_bounds(True)
+    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
+        x_0 = problem.design_space.get_current_value(
+            complex_to_real=True, normalize=True
+        )
         for off in self.offsets:
             if self.constraints_before_obj:
-                self.problem.constraints[0].func(x_0 + off)
-            self.problem.objective.func(x_0 + off)
-        return self.get_optimum_from_database()
+                problem.constraints[0].func(x_0 + off)
+            problem.objective.func(x_0 + off)
+        return self._get_optimum_from_database(problem)
 
 
 def test_progress_bar(
     caplog, offsets, constraints_before_obj, objective_and_problem_for_tests
 ) -> None:
     with caplog.at_level(logging.INFO):
-        lib = ProgressOpt(offsets, constraints_before_obj)
+        lib = ProgressOpt(offsets, constraints_before_obj, "TestDriver")
         f, problem = objective_and_problem_for_tests
-        lib.execute(problem, "TestDriver", max_iter=10)
+        lib.execute(problem, max_iter=10)
         for k in range(len(offsets) + 1):
             assert f"{k * 10}%" in caplog.text
         count = zeros(len(offsets))

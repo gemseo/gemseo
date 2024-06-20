@@ -301,7 +301,7 @@ def test_export_to_dataset_normalized_integers() -> None:
 
 
 def test_lib_serialization(tmp_wd, doe_scenario) -> None:
-    """Test the serialization of a DOEScenario with an instantiated DOELibrary.
+    """Test the serialization of a DOEScenario with an instantiated BaseDOELibrary.
 
     Args:
         tmp_wd: Fixture to move into a temporary work directory.
@@ -329,7 +329,10 @@ def test_lib_serialization(tmp_wd, doe_scenario) -> None:
         "algo_options": {"samples": array([[0.5]])},
     })
 
-    assert pickled_scenario._lib.internal_algo_name == "CustomDOE"
+    assert (
+        pickled_scenario._lib.ALGORITHM_INFOS["CustomDOE"].internal_algorithm_name
+        == "CustomDOE"
+    )
     assert (
         pickled_scenario.formulation.optimization_problem.database.get_function_value(
             "y", array([0.5])

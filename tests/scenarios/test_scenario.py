@@ -916,7 +916,10 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
 
     pickled_scenario.execute({"algo": "SLSQP", "max_iter": 1})
 
-    assert pickled_scenario._lib.internal_algo_name == "SLSQP"
+    assert (
+        pickled_scenario._lib.ALGORITHM_INFOS["SLSQP"].internal_algorithm_name
+        == "SLSQP"
+    )
 
 
 def test_get_result(mdf_scenario) -> None:

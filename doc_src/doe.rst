@@ -29,11 +29,11 @@ API
 ---
 
 In |g|,
-a :class:`.DOELibrary` contains one or several DOE algorithms.
+a :class:`.BaseDOELibrary` contains one or several DOE algorithms.
 
-As any :class:`.DriverLibrary`,
-a :class:`.DOELibrary` executes an algorithm from an :class:`.OptimizationProblem` and options.
-Most of the DOE algorithms also need the number of samples when calling :meth:`~.DOELibrary.execute`:
+As any :class:`.BaseDriverLibrary`,
+a :class:`.BaseDOELibrary` executes an algorithm from an :class:`.OptimizationProblem` and options.
+Most of the DOE algorithms also need the number of samples when calling :meth:`~.BaseDOELibrary.execute`:
 
 .. code::
 
@@ -109,11 +109,11 @@ Advanced use
 ------------
 
 Once the functions of the :class:`.OptimizationProblem` have been evaluated,
-the input samples can be accessed with :attr:`~.DOELibrary.samples`.
+the input samples can be accessed with :attr:`~.BaseDOELibrary.samples`.
 
 .. note::
    |g| applies a DOE algorithm over a unit hypercube of the same dimension as the input space
-   and then project the :attr:`~.DOELibrary.unit_samples` onto the input space
+   and then project the :attr:`~.BaseDOELibrary.unit_samples` onto the input space
    using either the probability distributions of the inputs, if the latter are random variables,
    or their lower and upper bounds.
 
@@ -132,9 +132,9 @@ with ``DOEQuality(doe_1) > DOEQuality(doe_2)`` meaning that ``doe_1`` is better 
    graphical indicators (e.g. :class:`.ScatterMatrix`) could be considered.
 
 Lastly,
-a :class:`.DOELibrary` has a :attr:`~.DOELibrary.seed` initialized at 0
-and each call to :meth:`~.DOELibrary.execute` increments it before using it.
+a :class:`.BaseDOELibrary` has a :attr:`~.BaseDOELibrary.seed` initialized at 0
+and each call to :meth:`~.BaseDOELibrary.execute` increments it before using it.
 Thus,
 two executions generate two distinct set of input-output samples.
 For the sake of reproducibility,
-you can pass your own seed to :meth:`~.DOELibrary.execute` as a DOE option.
+you can pass your own seed to :meth:`~.BaseDOELibrary.execute` as a DOE option.

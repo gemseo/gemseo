@@ -30,9 +30,9 @@ from scipy.optimize.optimize import rosen_der
 
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary as OptLib
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.lib_nlopt import Nlopt
-from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -69,8 +69,8 @@ class TestNLOPT(TestCase):
 
         problem.objective.jac = obj_grad
         problem.constraints = []
-        opt_library = OptimizationLibraryFactory().create("Nlopt")
-        opt_library.execute(problem, algo_name="NLOPT_BFGS", max_iter=10)
+        opt_library = OptimizationLibraryFactory().create("NLOPT_BFGS")
+        opt_library.execute(problem, max_iter=10)
 
     def test_normalization(self) -> None:
         """Runs a problem with one variable to be normalized and three not to be."""
@@ -105,10 +105,10 @@ class TestNLOPT(TestCase):
             return res, problem
 
         for tol_name in (
-            OptLib.F_TOL_ABS,
-            OptLib.F_TOL_REL,
-            OptLib.X_TOL_ABS,
-            OptLib.X_TOL_REL,
+            OptLib._F_TOL_ABS,
+            OptLib._F_TOL_REL,
+            OptLib._X_TOL_ABS,
+            OptLib._X_TOL_REL,
         ):
             res, pb = run_pb({tol_name: 1e10})
             assert tol_name in res.message
@@ -143,12 +143,11 @@ def get_options(algo_name):
     :param algo_name:
 
     """
-    from gemseo.algos.opt.lib_nlopt import Nlopt
 
     if algo_name == "NLOPT_SLSQP":
         return {
-            Nlopt.X_TOL_REL: 1e-5,
-            Nlopt.F_TOL_REL: 1e-5,
+            Nlopt._X_TOL_REL: 1e-5,
+            Nlopt._F_TOL_REL: 1e-5,
             "max_iter": 100,
             Nlopt._KKT_TOL_REL: 1e-5,
             Nlopt._KKT_TOL_ABS: 1e-5,
@@ -156,27 +155,22 @@ def get_options(algo_name):
     if algo_name == "NLOPT_MMA":
         return {
             "max_iter": 2700,
-            Nlopt.X_TOL_REL: 1e-8,
-            Nlopt.F_TOL_REL: 1e-8,
-            Nlopt.INNER_MAXEVAL: 10,
+            Nlopt._X_TOL_REL: 1e-8,
+            Nlopt._F_TOL_REL: 1e-8,
+            Nlopt._INNER_MAXEVAL: 10,
             Nlopt._KKT_TOL_REL: 1e-8,
             Nlopt._KKT_TOL_ABS: 1e-8,
         }
     if algo_name == "NLOPT_COBYLA":
-        return {"max_iter": 10000, Nlopt.X_TOL_REL: 1e-8, Nlopt.F_TOL_REL: 1e-8}
+        return {"max_iter": 10000, Nlopt._X_TOL_REL: 1e-8, Nlopt._F_TOL_REL: 1e-8}
     if algo_name == "NLOPT_BOBYQA":
         return {"max_iter": 2200}
-    return {"max_iter": 100, Nlopt.CTOL_ABS: 1e-10, Nlopt.STOPVAL: 0.0}
+    return {"max_iter": 100, Nlopt._CTOL_ABS: 1e-10, Nlopt._STOPVAL: 0.0}
 
 
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("Nlopt", get_options):
     setattr(TestNLOPT, test_method.__name__, test_method)
-
-
-def test_library_name() -> None:
-    """Check the library name."""
-    assert Nlopt.LIBRARY_NAME == "NLopt"
 
 
 @pytest.fixture()
@@ -216,7 +210,7 @@ def test_cobyla_stopped_due_to_small_crit_n_x(x2_problem: X2) -> None:
     which lead to a premature stop of the algorithm.
 
     Args:
-        x2_problem: An instanciated :class:`.X_2` optimization problem.
+        x2_problem: An instantiated :class:`.X_2` optimization problem.
     """
     res = execute_algo(
         x2_problem, algo_name="NLOPT_COBYLA", max_iter=100, stop_crit_n_x=3
@@ -231,7 +225,7 @@ def test_bobyqa_stopped_due_to_small_crit_n_x(x2_problem: X2) -> None:
     which lead to a premature stop of the algorithm.
 
     Args:
-        x2_problem: An instanciated :class:`.X_2` optimization problem.
+        x2_problem: An instantiated :class:`.X_2` optimization problem.
     """
     res = execute_algo(
         x2_problem, algo_name="NLOPT_BOBYQA", max_iter=100, stop_crit_n_x=3

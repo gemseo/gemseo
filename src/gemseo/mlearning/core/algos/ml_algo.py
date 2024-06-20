@@ -409,7 +409,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
             "data": self.learning_set,
             "transformer": self.transformer,
             "parameters": self.parameters,
-            "algo_name": self.__class__.__name__,
+            "_algo_name": self.__class__.__name__,
             "sizes": self.sizes,
             "_trained": self._trained,
         }

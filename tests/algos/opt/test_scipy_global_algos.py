@@ -24,7 +24,6 @@ from unittest.case import TestCase
 import pytest
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.lib_scipy_global import ScipyGlobalOpt
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
@@ -46,7 +45,7 @@ class TestScipyGlobalOpt(TestCase):
     def test_init(self) -> None:
         factory = OptimizationLibraryFactory()
         if factory.is_available(self.OPT_LIB_NAME):
-            factory.create(self.OPT_LIB_NAME)
+            factory.create("DUAL_ANNEALING")
 
 
 @pytest.fixture(scope="module")
@@ -82,8 +81,3 @@ def get_options(algo_name):
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("ScipyGlobalOpt", get_options):
     setattr(TestScipyGlobalOpt, test_method.__name__, test_method)
-
-
-def test_library_name() -> None:
-    """Check the library name."""
-    assert ScipyGlobalOpt.LIBRARY_NAME == "SciPy"

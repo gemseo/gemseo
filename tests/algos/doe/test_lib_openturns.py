@@ -56,13 +56,6 @@ def identity_problem() -> OptimizationProblem:
     return problem
 
 
-def test_library_from_factory() -> None:
-    """Check that the DOELibraryFactory can create the OpenTURNS library."""
-    factory = DOELibraryFactory()
-    if factory.is_available(DOE_LIB_NAME):
-        factory.create(DOE_LIB_NAME)
-
-
 def test_call() -> None:
     """Check that calling OpenTURNS library returns a NumPy array correctly shaped.
 
@@ -93,8 +86,7 @@ def test_opt_lhs_wrong_properties(options, error) -> None:
     )
     with pytest.raises(InvalidDataError, match=match):
         execute_problem(
-            doe_algo_name=DOE_LIB_NAME,
-            algo_name="OT_OPT_LHS",
+            doe_algo_name="OT_OPT_LHS",
             dim=2,
             n_samples=3,
             **options,
@@ -140,9 +132,9 @@ def test_centered_lhs() -> None:
 def test_algos(algo_name, dim, n_samples, options) -> None:
     """Check that the OpenTURNS library returns samples correctly shaped."""
     problem = get_problem(dim)
-    doe_library = DOELibraryFactory().create(DOE_LIB_NAME)
-    doe_library.execute(problem, algo_name=algo_name, dim=dim, **options)
-    assert doe_library.unit_samples.shape == (n_samples, dim)
+    algo = DOELibraryFactory().create(algo_name)
+    algo.execute(problem, dim=dim, **options)
+    assert algo.unit_samples.shape == (n_samples, dim)
 
 
 def get_expected_nsamples(
@@ -270,19 +262,12 @@ def test_compute_stratified_doe(variables_space, name, size) -> None:
     assert doe.shape == (size, variables_space.dimension)
 
 
-def test_library_name() -> None:
-    """Check the library name."""
-    assert OpenTURNS.LIBRARY_NAME == "OpenTURNS"
-
-
 @pytest.mark.parametrize("n_samples", [2, 3, 4])
 @pytest.mark.parametrize("seed", [1, 2])
 def test_executed_twice(identity_problem, n_samples, seed) -> None:
     """Check that the second call to execute() is correctly taken into account."""
-    library = OpenTURNS()
-    library.execute(
-        identity_problem, "OT_MONTE_CARLO", n_samples=3, algo_type="doe", seed=1
-    )
+    library = OpenTURNS("OT_MONTE_CARLO")
+    library.execute(identity_problem, n_samples=3, algo_type="doe", seed=1)
     library.execute(
         identity_problem,
         "OT_MONTE_CARLO",
@@ -302,8 +287,7 @@ def test_executed_twice(identity_problem, n_samples, seed) -> None:
 
 def test_optimized_lhs_size_1():
     """Check that size 1 is not allowed for optimized LHS."""
-    library = OpenTURNS()
-    library.init_options_grammar("OT_OPT_LHS")
+    library = OpenTURNS("OT_OPT_LHS")
     with pytest.raises(
         InvalidDataError, match="data.n_samples must be bigger than or equal to 2"
     ):

@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import StrKeyMapping
 
@@ -46,7 +46,7 @@ class DOEScenario(Scenario):
     """A multidisciplinary scenario to be executed by a design of experiments (DOE).
 
     A :class:`.DOEScenario` is a particular :class:`.Scenario` whose driver is a DOE.
-    This DOE must be implemented in a :class:`.DOELibrary`.
+    This DOE must be implemented in a :class:`.BaseDOELibrary`.
     """
 
     # Constants for input variables in json schema
@@ -95,12 +95,11 @@ class DOEScenario(Scenario):
             lib = self._lib
         else:
             lib = self._algo_factory.create(algo_name)
-            lib.init_options_grammar(algo_name)
+            lib._init_options_grammar()
             self._lib = lib
-            self._algo_name = algo_name
 
         options = dict(options)
-        if self.N_SAMPLES in lib.option_grammar:
+        if self.N_SAMPLES in lib._option_grammar:
             n_samples = self.local_data.get(self.N_SAMPLES)
             if self.N_SAMPLES in options:
                 LOGGER.warning(
@@ -144,7 +143,8 @@ class DOEScenario(Scenario):
 
     def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
-        # DOELibrary objects cannot be serialized, _algo_name and _lib are set to None
+        # BaseDOELibrary objects cannot be serialized,
+        # _algo_name and _lib are set to None
         # to force the lib creation in _run_algorithm.
         self._algo_name = None
         self._lib = None

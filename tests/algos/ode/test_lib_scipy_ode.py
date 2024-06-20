@@ -63,8 +63,7 @@ def test_factory(algo_name) -> None:
 @parametrized_algo_names
 def test_scipy_ode_algos(algo_name) -> None:
     """Test the wrapper for SciPy ODE solvers."""
-    algos = ScipyODEAlgos()
-    assert algo_name in algos.algorithms
+    assert algo_name in ScipyODEAlgos.ALGORITHM_INFOS
 
 
 @pytest.mark.parametrize("time_vector", [None, arange(0, 1, 0.1)])

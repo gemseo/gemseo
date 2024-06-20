@@ -66,9 +66,9 @@ from gemseo.algos.opt._mnbi.function_component_extractor import (
     FunctionComponentExtractor,
 )
 from gemseo.algos.opt._mnbi.sub_optim_constraint import SubOptimConstraint
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import NotImplementedCallable
@@ -80,7 +80,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
-    from gemseo.algos.driver_library import DriverLibraryOptionType
+    from gemseo.algos.base_driver_library import DriverLibraryOptionType
     from gemseo.algos.optimization_problem import OptimizationResult
     from gemseo.typing import RealArray
 
@@ -142,7 +142,7 @@ class MNBIAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "MNBI"
 
 
-class MNBI(OptimizationLibrary):
+class MNBI(BaseOptimizationLibrary):
     r"""MNBI optimizer.
 
     This algorithm computes the Pareto front of a multi-objective optimization problem
@@ -280,15 +280,16 @@ class MNBI(OptimizationLibrary):
 
     __SUB_OPTIM_CONSTRAINT_NAME: Final[str] = "beta_sub_optim_constraint"
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        self.descriptions = {
-            "MNBI": MNBIAlgorithmDescription(
-                algorithm_name="mNBI",
-                internal_algorithm_name="mNBI",
-                description="Modified Normal Boundary Intersection (mNBI) method",
-            )
-        }
+    ALGORITHM_INFOS: ClassVar[dict[str, MNBIAlgorithmDescription]] = {
+        "MNBI": MNBIAlgorithmDescription(
+            algorithm_name="mNBI",
+            internal_algorithm_name="mNBI",
+            description="Modified Normal Boundary Intersection (mNBI) method",
+        )
+    }
+
+    def __init__(self, algo_name: str = "MNBI") -> None:  # noqa:D107
+        super().__init__(algo_name)
 
     def _get_options(
         self,
@@ -772,9 +773,7 @@ class MNBI(OptimizationLibrary):
         lp = linprog(c, A_eq=a, b_eq=b, method="highs")
         return lp.success
 
-    def _pre_run(
-        self, problem: OptimizationProblem, algo_name: str, **options: Any
-    ) -> None:
+    def _pre_run(self, problem: OptimizationProblem, **options: Any) -> None:
         """Processes the options and setups the optimization.
 
         Raises:
@@ -794,8 +793,8 @@ class MNBI(OptimizationLibrary):
                 - If the dimension of the custom phi_betas is not the same as the number
                   of objectives.
         """
-        super()._pre_run(problem, algo_name, **options)
-        self.__n_obj = self.problem.objective.dim
+        super()._pre_run(problem, **options)
+        self.__n_obj = problem.objective.dim
         self.__n_sub_optim = options.pop("n_sub_optim")
         if self.__n_obj == 1:
             msg = "MNBI optimizer is not suitable for mono-objective problems."
@@ -813,9 +812,7 @@ class MNBI(OptimizationLibrary):
             )
             raise ValueError(msg)
 
-        if any(
-            c.name == self.__SUB_OPTIM_CONSTRAINT_NAME for c in self.problem.constraints
-        ):
+        if any(c.name == self.__SUB_OPTIM_CONSTRAINT_NAME for c in problem.constraints):
             msg = (
                 f"The constraint name {self.__SUB_OPTIM_CONSTRAINT_NAME} is protected "
                 f"when using MNBI optimizer."
@@ -897,7 +894,7 @@ class MNBI(OptimizationLibrary):
             )
         self.__custom_phi_betas = custom_phi_betas
 
-    def _run(self, **options: Any) -> None:
+    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
         self.__n_processes = options.pop("n_processes")
         self._normalize_design_space = options.pop("normalize_design_space")
         self.__sub_optim_algo = options.pop("sub_optim_algo")
@@ -907,9 +904,9 @@ class MNBI(OptimizationLibrary):
         self.__skip_betas = options.pop("skip_betas")
         self.__sub_optim_max_iter = options.pop("sub_optim_max_iter")
         self._doe_algo_options = options.pop("doe_algo_options")
-        self.__n_obj = self.problem.objective.dim
+        self.__n_obj = problem.objective.dim
         self.__ineq_tolerance = options.get(
-            self.INEQ_TOLERANCE, self.problem.ineq_tolerance
+            self._INEQ_TOLERANCE, problem.ineq_tolerance
         )
         self.__skippable_domains = Manager().list() if self.__n_processes > 1 else []
         if self.__debug:
@@ -978,7 +975,9 @@ class MNBI(OptimizationLibrary):
 
         if self.__debug:
             self._debug_results.to_hdf(self.__debug_file_path)
-        return self.get_optimum_from_database()
+        return self._get_optimum_from_database(problem)
 
-    def _log_result(self, max_design_space_dimension_to_log: int) -> None:
-        LOGGER.info("%s", self.problem.solution)
+    def _log_result(
+        self, problem: OptimizationProblem, max_design_space_dimension_to_log: int
+    ) -> None:
+        LOGGER.info("%s", problem.solution)

@@ -85,9 +85,9 @@ from gemseo import print_configuration
 from gemseo import sample_disciplines
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo import write_design_space
+from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.driver_library import DriverLibrary
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -694,15 +694,15 @@ def test_print_configuration(capfd) -> None:
       The output data are checked after running the discipline.
    MDOFunction
       The counters are activated.
-   DriverLibrary
+   BaseDriverLibrary
       The progress bar is activated."""
 
     assert expected in out
 
     gemseo_modules = [
         "MDODiscipline",
-        "OptimizationLibrary",
-        "DOELibrary",
+        "BaseOptimizationLibrary",
+        "BaseDOELibrary",
         "BaseRegressor",
         "BaseMDOFormulation",
         "BaseMDA",
@@ -825,7 +825,7 @@ def test_configure(
     assert MDODiscipline.activate_input_data_check == check_input_data
     assert MDODiscipline.activate_output_data_check == check_output_data
     assert MDODiscipline.activate_cache == activate_discipline_cache
-    assert DriverLibrary.activate_progress_bar == activate_progress_bar
+    assert BaseDriverLibrary.activate_progress_bar == activate_progress_bar
     assert Scenario.activate_input_data_check
     assert Scenario.activate_output_data_check
     assert BaseMDA.activate_cache
@@ -840,7 +840,7 @@ def test_configure_default() -> None:
     assert MDODiscipline.activate_input_data_check is True
     assert MDODiscipline.activate_output_data_check is True
     assert MDODiscipline.activate_cache is True
-    assert DriverLibrary.activate_progress_bar is True
+    assert BaseDriverLibrary.activate_progress_bar is True
 
 
 def test_algo_features() -> None:

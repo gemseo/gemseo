@@ -160,8 +160,8 @@ from gemseo.utils.logging_tools import LOGGING_SETTINGS
 if TYPE_CHECKING:
     from logging import Logger
 
+    from gemseo.algos.base_driver_library import DriverLibraryOptionType
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.driver_library import DriverLibraryOptionType
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
@@ -456,7 +456,7 @@ def get_algorithm_options_schema(
     for factory in (DOELibraryFactory(), OptimizationLibraryFactory()):
         if factory.is_available(algorithm_name):
             algo_lib = factory.create(algorithm_name)
-            opts_gram = algo_lib.init_options_grammar(algorithm_name)
+            opts_gram = algo_lib._init_options_grammar()
             return _get_schema(opts_gram, output_json, pretty_print)
     msg = f"Algorithm named {algorithm_name} is not available."
     raise ValueError(msg)
@@ -1848,7 +1848,7 @@ def compute_doe(
 
 
 def _log_settings() -> str:
-    from gemseo.algos.driver_library import DriverLibrary
+    from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.utils.string_tools import MultiLineString
@@ -1884,11 +1884,11 @@ def _log_settings() -> str:
         add_de_prefix(MDOFunction.activate_counters),
     )
     text.dedent()
-    text.add("DriverLibrary")
+    text.add("BaseDriverLibrary")
     text.indent()
     text.add(
         "The progress bar is {}activated.",
-        add_de_prefix(DriverLibrary.activate_progress_bar),
+        add_de_prefix(BaseDriverLibrary.activate_progress_bar),
     )
     return str(text)
 
@@ -1931,7 +1931,7 @@ def get_algorithm_features(
         raise ValueError(msg)
 
     driver = factory.create(algorithm_name)
-    description = driver.descriptions[algorithm_name]
+    description = driver.ALGORITHM_INFOS[algorithm_name]
     return AlgorithmFeatures(
         algorithm_name=description.algorithm_name,
         library_name=description.library_name,
@@ -1983,14 +1983,14 @@ def configure(
         check_desvars_bounds: Whether to check the membership of design variables
             in the bounds when evaluating the functions in OptimizationProblem.
     """
-    from gemseo.algos.driver_library import DriverLibrary
+    from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
     MDODiscipline.activate_counters = activate_discipline_counters
     MDOFunction.activate_counters = activate_function_counters
-    DriverLibrary.activate_progress_bar = activate_progress_bar
+    BaseDriverLibrary.activate_progress_bar = activate_progress_bar
     MDODiscipline.activate_input_data_check = check_input_data
     MDODiscipline.activate_output_data_check = check_output_data
     MDODiscipline.activate_cache = activate_discipline_cache

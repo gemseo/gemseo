@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Base wrapper for all ODE solvers."""
+"""Base class for libraries of ODE solvers."""
 
 from __future__ import annotations
 
@@ -24,8 +24,8 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.algos.algorithm_library import AlgorithmDescription
-from gemseo.algos.algorithm_library import AlgorithmLibrary
+from gemseo.algos.base_algorithm_library import AlgorithmDescription
+from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -39,28 +39,24 @@ class ODESolverDescription(AlgorithmDescription):
     """Description for the ODE solver."""
 
 
-class ODESolverLibrary(AlgorithmLibrary):
-    """Abstract class for libraries of ODE solvers."""
-
-    problem: ODEProblem = None
+class BaseODESolverLibrary(BaseAlgorithmLibrary):
+    """Base class for libraries of ODE solvers."""
 
     def _pre_run(
         self,
         problem: ODEProblem,
-        algo_name: str,
         **options: Any,
     ) -> None:
         problem.result.solver_options = options
-        problem.result.solver_name = algo_name
+        problem.result.solver_name = self._algo_name
 
     def _post_run(
         self,
         problem: ODEProblem,
-        algo_name: str,
         result: NDArray[float],
         **options: Any,
     ) -> None:  # noqa: D107
-        if not self.problem.result.is_converged:
+        if not problem.result.is_converged:
             LOGGER.warning(
-                "The ODE solver %s did not converge.", self.problem.result.solver_name
+                "The ODE solver %s did not converge.", problem.result.solver_name
             )

@@ -23,6 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 from typing import ClassVar
+from typing import Final
 
 from numpy import concatenate
 from numpy import inf
@@ -31,9 +32,10 @@ from scipy.optimize import Bounds
 from scipy.optimize import LinearConstraint
 from scipy.optimize import milp
 
+from gemseo.algos.design_space_utils import get_value_and_bounds
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
@@ -53,43 +55,34 @@ class ScipyMILPAlgorithmDescription(OptimizationAlgorithmDescription):
     handle_integer_variables: bool = True
 
 
-class ScipyMILP(OptimizationLibrary):
+class ScipyMILP(BaseOptimizationLibrary):
     """SciPy Mixed Integer Linear Programming library interface.
 
-    See OptimizationLibrary.
+    See BaseOptimizationLibrary.
 
     With respect to scipy milp function, this wrapper only allows continuous or integer
     variables.
     """
 
-    LIB_COMPUTE_GRAD = True
-
-    OPTIONS_MAP: ClassVar[dict[int, str]] = {
-        OptimizationLibrary.MAX_ITER: "node_limit",
+    _OPTIONS_MAP: ClassVar[dict[int, str]] = {
+        BaseOptimizationLibrary._MAX_ITER: "node_limit",
     }
-
-    LIBRARY_NAME = "SciPy"
 
     _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = True
     """Whether the library support sparse Jacobians."""
 
-    def __init__(self) -> None:
-        """Constructor.
+    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
+    ALGORITHM_INFOS: ClassVar[dict[str, ScipyMILPAlgorithmDescription]] = {
+        "Scipy_MILP": ScipyMILPAlgorithmDescription(
+            algorithm_name="Branch & Cut algorithm",
+            description=("Mixed-integer linear programming"),
+            internal_algorithm_name="milp",
+            website=f"{__DOC}scipy.optimize.milp.html",
+        ),
+    }
 
-        Generate the library dictionary that contains the list of algorithms with their
-        characteristics.
-        """
-        super().__init__()
-        doc = "https://docs.scipy.org/doc/scipy/reference/"
-        self.algo_name = "Scipy_MILP"
-        self.descriptions = {
-            "Scipy_MILP": ScipyMILPAlgorithmDescription(
-                algorithm_name="Branch & Cut algorithm",
-                description=("Mixed-integer linear programming"),
-                internal_algorithm_name="milp",
-                website=f"{doc}scipy.optimize.milp.html",
-            ),
-        }
+    def __init__(self, algo_name: str = "Scipy_MILP") -> None:  # noqa:D107
+        super().__init__(algo_name)
 
     def _get_options(
         self,
@@ -131,24 +124,24 @@ class ScipyMILP(OptimizationLibrary):
             **options,
         )
 
-    def _run(self, **options: Any) -> OptimizationResult:
+    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
         # Remove the normalization option from the algorithm options
-        options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
+        options.pop(self._NORMALIZE_DESIGN_SPACE_OPTION, True)
 
         # Get the starting point and bounds
-        x_0, l_b, u_b = self.get_x0_and_bounds(False)
+        x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
         # Replace infinite bounds with None
         bounds = Bounds(lb=l_b, ub=u_b, keep_feasible=True)
 
         # Build the functions matrices
         # N.B. use the non-processed functions to access the coefficients
-        coefficients = self.problem.nonproc_objective.coefficients
+        coefficients = problem.nonproc_objective.coefficients
         if isinstance(coefficients, sparse_classes):
             obj_coeff = coefficients.getrow(0).todense().flatten()
         else:
             obj_coeff = coefficients[0, :]
 
-        constraints = self.problem.nonproc_constraints
+        constraints = problem.nonproc_constraints
         ineq_lhs, ineq_rhs = build_constraints_matrices(
             constraints, MDOLinearFunction.ConstraintType.INEQ
         )
@@ -170,8 +163,8 @@ class ScipyMILP(OptimizationLibrary):
             lq_constraints.append(
                 LinearConstraint(
                     eq_lhs,
-                    eq_rhs - self.problem.eq_tolerance,
-                    eq_rhs + self.problem.eq_tolerance,
+                    eq_rhs - problem.eq_tolerance,
+                    eq_rhs + problem.eq_tolerance,
                     keep_feasible=True,
                 )
             )
@@ -182,27 +175,27 @@ class ScipyMILP(OptimizationLibrary):
             constraints=lq_constraints,
             options=options,
             integrality=concatenate([
-                self.problem.design_space.variable_types[variable_name]
-                == self.problem.design_space.DesignVariableType.INTEGER
-                for variable_name in self.problem.design_space.variable_names
+                problem.design_space.variable_types[variable_name]
+                == problem.design_space.DesignVariableType.INTEGER
+                for variable_name in problem.design_space.variable_names
             ]),
         )
         # Gather the optimization results
         x_opt = x_0 if milp_result.x is None else milp_result.x
         # N.B. SciPy tolerance on bounds is higher than the DesignSpace one
-        x_opt = self.problem.design_space.project_into_bounds(x_opt)
-        val_opt, jac_opt = self.problem.evaluate_functions(
+        x_opt = problem.design_space.project_into_bounds(x_opt)
+        val_opt, jac_opt = problem.evaluate_functions(
             x_vect=x_opt,
             eval_jac=True,
             eval_obj=True,
             normalize=False,
             no_db_no_norm=True,
         )
-        f_opt = val_opt[self.problem.objective.name]
-        constraint_names = list(self.problem.constraint_names.keys())
+        f_opt = val_opt[problem.objective.name]
+        constraint_names = list(problem.constraint_names.keys())
         constraint_values = {key: val_opt[key] for key in constraint_names}
         constraints_grad = {key: jac_opt[key] for key in constraint_names}
-        is_feasible = self.problem.is_point_feasible(val_opt)
+        is_feasible = problem.is_point_feasible(val_opt)
         return OptimizationResult(
             x_0=x_0,
             x_opt=x_opt,
@@ -210,7 +203,7 @@ class ScipyMILP(OptimizationLibrary):
             status=milp_result.status,
             constraint_values=constraint_values,
             constraints_grad=constraints_grad,
-            optimizer_name=self.algo_name,
+            optimizer_name=self._algo_name,
             message=milp_result.message,
             n_obj_call=None,
             n_grad_call=None,

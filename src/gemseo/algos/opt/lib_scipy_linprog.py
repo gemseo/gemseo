@@ -24,14 +24,16 @@ from dataclasses import dataclass
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 
 from numpy import isfinite
 from scipy.optimize import OptimizeResult
 from scipy.optimize import linprog
 
+from gemseo.algos.design_space_utils import get_value_and_bounds
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
@@ -50,92 +52,77 @@ class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "SciPy"
 
 
-class ScipyLinprog(OptimizationLibrary):
+class ScipyLinprog(BaseOptimizationLibrary):
     """SciPy linear programming library interface.
 
-    See OptimizationLibrary.
+    See BaseOptimizationLibrary.
     """
 
-    LIB_COMPUTE_GRAD = True
+    _REDUNDANCY_REMOVAL: Final[str] = "redundancy removal"
 
-    REDUNDANCY_REMOVAL = "redundancy removal"
-
-    REVISED_SIMPLEX = "REVISED_SIMPLEX"
-
-    OPTIONS_MAP: ClassVar[dict[Any, str]] = {
-        OptimizationLibrary.MAX_ITER: "maxiter",
-        OptimizationLibrary.VERBOSE: "disp",
-        REDUNDANCY_REMOVAL: "rr",
+    _OPTIONS_MAP: ClassVar[dict[Any, str]] = {
+        BaseOptimizationLibrary._MAX_ITER: "maxiter",
+        BaseOptimizationLibrary._VERBOSE: "disp",
+        _REDUNDANCY_REMOVAL: "rr",
     }
-
-    LIBRARY_NAME = "SciPy"
 
     _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = True
     """Whether the library supports sparse Jacobians."""
 
-    def __init__(self) -> None:
-        """Constructor.
+    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
 
-        Generate the library dictionary that contains the list of algorithms with their
-        characteristics.
-        """
-        super().__init__()
-        doc = "https://docs.scipy.org/doc/scipy/reference/"
-
-        # TODO: Remove legacy methods "interior-point", "revised simplex" and "simplex".
-        self.descriptions = {
-            "LINEAR_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
-                algorithm_name="Linear interior point",
-                description=(
-                    "Linear programming by the interior-point"
-                    " method implemented in the SciPy library"
-                ),
-                internal_algorithm_name="interior-point",
-                website=f"{doc}optimize.linprog-interior-point.html",
+    # TODO: Remove legacy methods "interior-point", "revised simplex" and "simplex".
+    ALGORITHM_INFOS: ClassVar[dict[str, ScipyLinProgAlgorithmDescription]] = {
+        "LINEAR_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
+            algorithm_name="Linear interior point",
+            description=(
+                "Linear programming by the interior-point"
+                " method implemented in the SciPy library"
             ),
-            ScipyLinprog.REVISED_SIMPLEX: ScipyLinProgAlgorithmDescription(
-                algorithm_name="Revised simplex",
-                description=(
-                    "Linear programming by a two-phase revised"
-                    " simplex algorithm implemented in the SciPy library"
-                ),
-                internal_algorithm_name="revised simplex",
-                website=f"{doc}optimize.linprog-revised_simplex.html",
+            internal_algorithm_name="interior-point",
+            website=f"{__DOC}optimize.linprog-interior-point.html",
+        ),
+        "REVISED_SIMPLEX": ScipyLinProgAlgorithmDescription(
+            algorithm_name="Revised simplex",
+            description=(
+                "Linear programming by a two-phase revised"
+                " simplex algorithm implemented in the SciPy library"
             ),
-            "SIMPLEX": ScipyLinProgAlgorithmDescription(
-                algorithm_name="Simplex",
-                description=(
-                    "Linear programming by the two-phase simplex"
-                    " algorithm implemented in the SciPy library"
-                ),
-                internal_algorithm_name="simplex",
-                website=f"{doc}optimize.linprog-simplex.html",
+            internal_algorithm_name="revised simplex",
+            website=f"{__DOC}optimize.linprog-revised_simplex.html",
+        ),
+        "SIMPLEX": ScipyLinProgAlgorithmDescription(
+            algorithm_name="Simplex",
+            description=(
+                "Linear programming by the two-phase simplex"
+                " algorithm implemented in the SciPy library"
             ),
-            "HIGHS_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
-                algorithm_name="Interior point method",
-                description=(
-                    "Linear programming using the HiGHS interior point solver."
-                ),
-                internal_algorithm_name="highs-ipm",
-                website=f"{doc}optimize.linprog-highs-ipm.html",
+            internal_algorithm_name="simplex",
+            website=f"{__DOC}optimize.linprog-simplex.html",
+        ),
+        "HIGHS_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
+            algorithm_name="Interior point method",
+            description=("Linear programming using the HiGHS interior point solver."),
+            internal_algorithm_name="highs-ipm",
+            website=f"{__DOC}optimize.linprog-highs-ipm.html",
+        ),
+        "HIGHS_DUAL_SIMPLEX": ScipyLinProgAlgorithmDescription(
+            algorithm_name="Dual simplex",
+            description=("Linear programming using the HiGHS dual simplex solver."),
+            internal_algorithm_name="highs-ds",
+            website=f"{__DOC}optimize.linprog-highs-ds.html",
+        ),
+        "HIGHS": ScipyLinProgAlgorithmDescription(
+            algorithm_name="HiGHS",
+            description=(
+                "Linear programming using the HiGHS solvers. "
+                "A choice is automatically made between the dual simplex "
+                "and the interior-point method."
             ),
-            "HIGHS_DUAL_SIMPLEX": ScipyLinProgAlgorithmDescription(
-                algorithm_name="Dual simplex",
-                description=("Linear programming using the HiGHS dual simplex solver."),
-                internal_algorithm_name="highs-ds",
-                website=f"{doc}optimize.linprog-highs-ds.html",
-            ),
-            "HIGHS": ScipyLinProgAlgorithmDescription(
-                algorithm_name="HiGHS",
-                description=(
-                    "Linear programming using the HiGHS solvers. "
-                    "A choice is automatically made between the dual simplex "
-                    "and the interior-point method."
-                ),
-                internal_algorithm_name="highs",
-                website=f"{doc}optimize.linprog-highs.html",
-            ),
-        }
+            internal_algorithm_name="highs",
+            website=f"{__DOC}optimize.linprog-highs.html",
+        ),
+    }
 
     def _get_options(
         self,
@@ -187,20 +174,12 @@ class ScipyLinprog(OptimizationLibrary):
             **kwargs,
         )
 
-    def _run(self, **options: Any) -> OptimizationResult:
-        """Run the algorithm.
-
-        Args:
-            **options: options dictionary for the algorithm.
-
-        Returns:
-            The optimization result.
-        """
+    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
         # Remove the normalization option from the algorithm options
-        options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
+        options.pop(self._NORMALIZE_DESIGN_SPACE_OPTION, True)
 
         # Get the starting point and bounds
-        x_0, l_b, u_b = self.get_x0_and_bounds(False)
+        x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
         # Replace infinite bounds with None
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
@@ -208,12 +187,12 @@ class ScipyLinprog(OptimizationLibrary):
 
         # Build the functions matrices
         # N.B. use the non-processed functions to access the coefficients
-        coefficients = self.problem.nonproc_objective.coefficients
+        coefficients = problem.nonproc_objective.coefficients
         if isinstance(coefficients, sparse_classes):
             obj_coeff = coefficients.getrow(0).todense().flatten()
         else:
             obj_coeff = coefficients[0, :]
-        constraints = self.problem.nonproc_constraints
+        constraints = problem.nonproc_constraints
         ineq_lhs, ineq_rhs = build_constraints_matrices(
             constraints, MDOLinearFunction.ConstraintType.INEQ
         )
@@ -224,7 +203,7 @@ class ScipyLinprog(OptimizationLibrary):
         # |g| is in charge of ensuring max iterations, since it may
         # have a different definition of iterations, such as for SLSQP
         # for instance which counts duplicate calls to x as a new iteration
-        options[self.OPTIONS_MAP[self.MAX_ITER]] = 10000000
+        options[self._OPTIONS_MAP[self._MAX_ITER]] = 10000000
 
         # For the "revised simplex" algorithm (available since SciPy 1.3.0 which
         # requires Python 3.5+) the initial guess must be a basic feasible solution,
@@ -241,40 +220,38 @@ class ScipyLinprog(OptimizationLibrary):
             A_eq=eq_lhs,
             b_eq=eq_rhs,
             bounds=bounds,
-            method=self.internal_algo_name,
+            method=self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name,
             options=options,
         )
 
         # Gather the optimization results
         x_opt = linprog_result.x
         # N.B. SciPy tolerance on bounds is higher than the DesignSpace one
-        x_opt = self.problem.design_space.project_into_bounds(x_opt)
-        val_opt, jac_opt = self.problem.evaluate_functions(
+        x_opt = problem.design_space.project_into_bounds(x_opt)
+        val_opt, jac_opt = problem.evaluate_functions(
             x_vect=x_opt,
             eval_jac=True,
             eval_obj=True,
             normalize=False,
             no_db_no_norm=True,
         )
-        f_opt = val_opt[self.problem.objective.name]
+        f_opt = val_opt[problem.objective.name]
         constraint_values = {
-            key: val_opt[key] for key in self.problem.get_constraint_names()
+            key: val_opt[key] for key in problem.get_constraint_names()
         }
-        constraints_grad = {
-            key: jac_opt[key] for key in self.problem.get_constraint_names()
-        }
-        is_feasible = self.problem.is_point_feasible(val_opt)
+        constraints_grad = {key: jac_opt[key] for key in problem.get_constraint_names()}
+        is_feasible = problem.is_point_feasible(val_opt)
         return OptimizationResult(
             x_0=x_0,
-            x_0_as_dict=self.problem.design_space.array_to_dict(x_0),
+            x_0_as_dict=problem.design_space.array_to_dict(x_0),
             x_opt=x_opt,
-            x_opt_as_dict=self.problem.design_space.array_to_dict(x_opt),
+            x_opt_as_dict=problem.design_space.array_to_dict(x_opt),
             f_opt=f_opt,
-            objective_name=self.problem.objective.name,
+            objective_name=problem.objective.name,
             status=linprog_result.status,
             constraint_values=constraint_values,
             constraints_grad=constraints_grad,
-            optimizer_name=self.algo_name,
+            optimizer_name=self._algo_name,
             message=linprog_result.message,
             n_obj_call=None,
             n_grad_call=None,

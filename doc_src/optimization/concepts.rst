@@ -52,5 +52,5 @@ Optimization problem
 Driver
 ------
 
-.. autoclass:: gemseo.algos.driver_library.DriverLibrary
+.. autoclass:: gemseo.algos.base_driver_library.BaseDriverLibrary
    :noindex:

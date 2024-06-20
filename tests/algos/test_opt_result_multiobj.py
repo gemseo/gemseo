@@ -60,7 +60,7 @@ def test_str(problem, solved):
     """Test the string representation of the multi objective result."""
     opt = OptimizationLibraryFactory().create("MNBI")
     opt.problem = problem if solved else BinhKorn()
-    result = opt.get_optimum_from_database()
+    result = opt._get_optimum_from_database(opt.problem)
     if solved:
         s_res = str(result)
         assert "The solution is feasible." in s_res

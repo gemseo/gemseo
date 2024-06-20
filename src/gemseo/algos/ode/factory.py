@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
-from gemseo.algos.ode.ode_solver_lib import ODESolverLibrary
+from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
 
 if TYPE_CHECKING:
     from gemseo.algos.ode.ode_problem import ODEProblem
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 class ODESolverLibraryFactory(BaseAlgoFactory):
     """A factory of ODE solver libraries."""
 
-    _CLASS = ODESolverLibrary
+    _CLASS = BaseODESolverLibrary
     _MODULE_NAMES = ("gemseo.algos.ode",)
 
     def execute(

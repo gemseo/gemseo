@@ -75,7 +75,7 @@ class Scenario(MDODiscipline):
     well as observables with the :meth:`.Scenario.add_observable` method.
 
     Then, the :meth:`.Scenario.execute` method takes a driver (see
-    :class:`.DriverLibrary`) with options as input data and uses it to solve the
+    :class:`.BaseDriverLibrary`) with options as input data and uses it to solve the
     optimization problem. This driver is in charge of executing the multidisciplinary
     process.
 
