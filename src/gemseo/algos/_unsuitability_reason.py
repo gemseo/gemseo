@@ -32,15 +32,15 @@ class _UnsuitabilityReason(StrEnum):
 
     NO_REASON = ""
 
-    # DriverLibrary
+    # BaseDriverLibrary
     EMPTY_DESIGN_SPACE = "the design space is empty"
 
-    # LinearSolverLibrary
+    # BaseLinearSolverLibrary
     NOT_SYMMETRIC = _LINEAR_SOLVER_TEMPLATE.format("symmetric")
     NOT_POSITIVE_DEFINITE = _LINEAR_SOLVER_TEMPLATE.format("positive definite")
     NOT_LINEAR_OPERATOR = _LINEAR_SOLVER_TEMPLATE.format("a linear operator")
 
-    # OptimizationLibrary
+    # BaseOptimizationLibrary
     NON_LINEAR_PROBLEM = _OPTIMIZER_TEMPLATE.format("non-linear problems")
     INEQUALITY_CONSTRAINTS = _OPTIMIZER_TEMPLATE.format("inequality constraints")
     EQUALITY_CONSTRAINTS = _OPTIMIZER_TEMPLATE.format("equality constraints")

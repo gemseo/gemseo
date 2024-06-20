@@ -25,7 +25,6 @@ from numpy import array
 from numpy.testing import assert_equal
 
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.algos.doe.lib_scalable import DiagonalDOE
 
 from .utils import check_problem_execution
 from .utils import execute_problem
@@ -42,23 +41,20 @@ def test_init() -> None:
 
 def test_invalid_algo() -> None:
     """Check the request of an invalid algorithm."""
-    algo_name = "invalid_algo"
     with pytest.raises(
-        KeyError,
+        ValueError,
         match=(
-            f"The algorithm {algo_name} is unknown; available ones are: {DOE_LIB_NAME}."
+            "No algorithm named invalid_algo is available; available algorithms are .+"
         ),
     ):
-        execute_problem(DOE_LIB_NAME, algo_name=algo_name, n_samples=100)
+        execute_problem("invalid_algo", n_samples=100)
 
 
 def test_diagonal_doe() -> None:
     """Check the computation of a diagonal DOE."""
     dim = 3
     n_samples = 10
-    doe_library = execute_problem(
-        DOE_LIB_NAME, algo_name="DiagonalDOE", dim=dim, n_samples=n_samples
-    )
+    doe_library = execute_problem("DiagonalDOE", dim=dim, n_samples=n_samples)
     samples = doe_library.unit_samples
     assert samples.shape == (n_samples, dim)
     assert samples[4, 0] == pytest.approx(0.4, rel=0.0, abs=0.1)
@@ -70,7 +66,6 @@ def test_diagonal_doe_on_rosenbrock(dimension) -> None:
     assert (
         check_problem_execution(
             dimension,
-            DiagonalDOE(),
             DOE_LIB_NAME,
             lambda algo, dim, n_samples: n_samples,
             {"n_samples": 13},
@@ -108,8 +103,3 @@ def test_reverse(variables_space, reverse, samples) -> None:
     library = DOELibraryFactory().create(DOE_LIB_NAME)
     doe = library.compute_doe(variables_space, 3, unit_sampling=True, reverse=reverse)
     assert_equal(doe, samples)
-
-
-def test_library_name() -> None:
-    """Check the library name."""
-    assert DiagonalDOE.LIBRARY_NAME == "GEMSEO"

@@ -31,8 +31,8 @@ from numpy import hstack
 from numpy import linspace
 from numpy import newaxis
 
-from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.algos.doe.base_doe_library import BaseDOELibrary
+from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 
 if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
@@ -42,23 +42,20 @@ if TYPE_CHECKING:
 OptionType = Optional[Union[str, int, float, bool, Container[str]]]
 
 
-class DiagonalDOE(DOELibrary):
+class DiagonalDOE(BaseDOELibrary):
     """Class used to create a diagonal DOE."""
 
-    __ALGO_DESC: ClassVar[dict[str, str]] = {
-        "DiagonalDOE": "Diagonal design of experiments"
+    ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
+        "DiagonalDOE": DOEAlgorithmDescription(
+            algorithm_name="DiagonalDOE",
+            description="Diagonal design of experiments",
+            internal_algorithm_name="DiagonalDOE",
+            library_name="GEMSEO",
+        )
     }
-    LIBRARY_NAME = "GEMSEO"
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        for algo, description in self.__ALGO_DESC.items():
-            self.descriptions[algo] = DOEAlgorithmDescription(
-                algorithm_name=algo,
-                description=description,
-                internal_algorithm_name=algo,
-                library_name="GEMSEO",
-            )
+    def __init__(self, algo_name: str = "DiagonalDOE") -> None:  # noqa:D107
+        super().__init__(algo_name)
 
     def _get_options(
         self,
@@ -112,7 +109,7 @@ class DiagonalDOE(DOELibrary):
         Raises:
             ValueError: If the number of samples is not set, or is lower than 2.
         """  # noqa: D205, D212, D415
-        n_samples = options.get(self.N_SAMPLES)
+        n_samples = options.get(self._N_SAMPLES)
         if n_samples is None or n_samples < 2:
             msg = (
                 "The number of samples must set to a value greater than or equal to 2."

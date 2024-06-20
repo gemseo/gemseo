@@ -25,6 +25,7 @@ from collections import namedtuple
 from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 from typing import Optional
 from typing import Union
@@ -47,8 +48,8 @@ from gemseo.algos.doe._openturns.ot_reverse_halton_sequence import (
 from gemseo.algos.doe._openturns.ot_sobol_doe import OTSobolDOE
 from gemseo.algos.doe._openturns.ot_sobol_sequence import OTSobolSequence
 from gemseo.algos.doe._openturns.ot_standard_lhs import OTStandardLHS
-from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.algos.doe.base_doe_library import BaseDOELibrary
+from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
@@ -63,75 +64,55 @@ OptionType = Optional[Union[str, int, float, bool, Sequence[int], RealArray]]
 _AlgoData = namedtuple("_AlgoData", ["description", "webpage", "doe_algo_class"])
 
 
-class OpenTURNS(DOELibrary):
+class OpenTURNS(BaseDOELibrary):
     """Library of OpenTURNS DOE algorithms."""
 
-    __OT_WEBPAGE = (
-        "http://openturns.github.io/openturns/latest/user_manual/"
-        "_generated/openturns.{}.html"
-    )
-
-    # Available algorithm for DOE design
-    OT_SOBOL = "OT_SOBOL"
-    OT_RANDOM = "OT_RANDOM"
-    OT_HASEL = "OT_HASELGROVE"
-    OT_REVERSE_HALTON = "OT_REVERSE_HALTON"
-    OT_HALTON = "OT_HALTON"
-    OT_FAURE = "OT_FAURE"
-    OT_MC = "OT_MONTE_CARLO"
-    OT_FACTORIAL = "OT_FACTORIAL"
-    OT_COMPOSITE = "OT_COMPOSITE"
-    OT_AXIAL = "OT_AXIAL"
-    OT_LHSO = "OT_OPT_LHS"
-    OT_LHS = "OT_LHS"
-    OT_LHSC = "OT_LHSC"
-    OT_FULLFACT = "OT_FULLFACT"  # Box in openturns
-    OT_SOBOL_INDICES = "OT_SOBOL_INDICES"
     __ALGO_NAMES_TO_ALGO_DATA: Final[dict[str, tuple[str, str, BaseOTDOE]]] = {
-        OT_SOBOL: _AlgoData("Sobol sequence", "SobolSequence", OTSobolSequence),
-        OT_RANDOM: _AlgoData("Random sampling", "Uniform", OTMonteCarlo),
-        OT_HASEL: _AlgoData(
+        "OT_SOBOL": _AlgoData("Sobol sequence", "SobolSequence", OTSobolSequence),
+        "OT_RANDOM": _AlgoData("Random sampling", "Uniform", OTMonteCarlo),
+        "OT_HASELGROVE": _AlgoData(
             "Haselgrove sequence", "HaselgroveSequence", OTHaselgroveSequence
         ),
-        OT_REVERSE_HALTON: _AlgoData(
+        "OT_REVERSE_HALTON": _AlgoData(
             "Reverse Halton",
             "ReverseHaltonSequence",
             OTReverseHaltonSequence,
         ),
-        OT_HALTON: _AlgoData("Halton sequence", "HaltonSequence", OTHaltonSequence),
-        OT_FAURE: _AlgoData("Faure sequence", "FaureSequence", OTFaureSequence),
-        OT_MC: _AlgoData("Monte Carlo sequence", "Uniform", OTMonteCarlo),
-        OT_FACTORIAL: _AlgoData("Factorial design", "Factorial", OTFactorialDOE),
-        OT_COMPOSITE: _AlgoData("Composite design", "Composite", OTCompositeDOE),
-        OT_AXIAL: _AlgoData("Axial design", "Axial", OTAxialDOE),
-        OT_LHSO: _AlgoData(
+        "OT_HALTON": _AlgoData("Halton sequence", "HaltonSequence", OTHaltonSequence),
+        "OT_FAURE": _AlgoData("Faure sequence", "FaureSequence", OTFaureSequence),
+        "OT_MONTE_CARLO": _AlgoData("Monte Carlo sequence", "Uniform", OTMonteCarlo),
+        "OT_FACTORIAL": _AlgoData("Factorial design", "Factorial", OTFactorialDOE),
+        "OT_COMPOSITE": _AlgoData("Composite design", "Composite", OTCompositeDOE),
+        "OT_AXIAL": _AlgoData("Axial design", "Axial", OTAxialDOE),
+        "OT_OPT_LHS": _AlgoData(
             "Optimal Latin Hypercube Sampling",
             "SimulatedAnnealingLHS",
             OTOptimalLHS,
         ),
-        OT_LHS: _AlgoData("Latin Hypercube Sampling", "LHS", OTStandardLHS),
-        OT_LHSC: _AlgoData("Centered Latin Hypercube Sampling", "LHS", OTCenteredLHS),
-        OT_FULLFACT: _AlgoData("Full factorial design", "Box", OTFullFactorialDOE),
-        OT_SOBOL_INDICES: _AlgoData(
+        "OT_LHS": _AlgoData("Latin Hypercube Sampling", "LHS", OTStandardLHS),
+        "OT_LHSC": _AlgoData("Centered Latin Hypercube Sampling", "LHS", OTCenteredLHS),
+        "OT_FULLFACT": _AlgoData("Full factorial design", "Box", OTFullFactorialDOE),
+        "OT_SOBOL_INDICES": _AlgoData(
             "DOE for Sobol 'indices",
             "SobolIndicesAlgorithm",
             OTSobolDOE,
         ),
     }
 
-    LIBRARY_NAME = "OpenTURNS"
-
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        for algo_name, algo_data in self.__ALGO_NAMES_TO_ALGO_DATA.items():
-            self.descriptions[algo_name] = DOEAlgorithmDescription(
-                algorithm_name=algo_name,
-                description=algo_data.description,
-                handle_integer_variables=True,
-                internal_algorithm_name=algo_name,
-                library_name=self.__class__.__name__,
-                website=self.__OT_WEBPAGE.format(algo_data.webpage),
-            )
+    ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
+        algo_name: DOEAlgorithmDescription(
+            algorithm_name=algo_name,
+            description=algo_data.description,
+            handle_integer_variables=True,
+            internal_algorithm_name=algo_name,
+            library_name="OpenTURNS",
+            website=(
+                "http://openturns.github.io/openturns/latest/user_manual/"
+                f"_generated/openturns.{algo_data.webpage}.html"
+            ),
+        )
+        for algo_name, algo_data in __ALGO_NAMES_TO_ALGO_DATA.items()
+    }
 
     def _get_options(
         self,
@@ -236,5 +217,5 @@ class OpenTURNS(DOELibrary):
             **options: The options for the DOE algorithm, see associated JSON file.
         """  # noqa: D205, D212, D415
         openturns.RandomGenerator.SetSeed(self._seeder.get_seed(seed))
-        doe_algo = self.__ALGO_NAMES_TO_ALGO_DATA[self.algo_name].doe_algo_class()
+        doe_algo = self.__ALGO_NAMES_TO_ALGO_DATA[self._algo_name].doe_algo_class()
         return doe_algo.generate_samples(n_samples, design_space.dimension, **options)

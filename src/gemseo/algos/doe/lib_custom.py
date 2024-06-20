@@ -39,8 +39,8 @@ from numpy import ndarray
 from numpy import vstack
 from pandas import read_csv
 
-from gemseo.algos.doe.doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.algos.doe.base_doe_library import BaseDOELibrary
+from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, Real
 LOGGER = logging.getLogger(__name__)
 
 
-class CustomDOE(DOELibrary):
+class CustomDOE(BaseDOELibrary):
     """A design of experiments from samples provided as a file or an array.
 
     The samples are provided either as a file in text or csv format or as a sequence of
@@ -62,43 +62,29 @@ class CustomDOE(DOELibrary):
     does not.
     """
 
-    COMMENTS_KEYWORD: Final[str] = "comments"
-    """The name given to the string indicating a comment line."""
-
-    DELIMITER_KEYWORD: Final[str] = "delimiter"
-    """The name given to the string separating two fields."""
-
-    DOE_FILE: Final[str] = "doe_file"
-    """The name given to the DOE file."""
-
-    SAMPLES: Final[str] = "samples"
-    """The name given to the samples."""
-
-    SKIPROWS_KEYWORD: Final[str] = "skiprows"
-    """The name given to the number of skipped rows in the DOE file."""
-
-    LIBRARY_NAME: ClassVar[str] = "GEMSEO"
+    _COMMENTS_KEYWORD: Final[str] = "comments"
+    _DELIMITER_KEYWORD: Final[str] = "delimiter"
+    _DOE_FILE: Final[str] = "doe_file"
+    _SAMPLES: Final[str] = "samples"
+    _SKIPROWS_KEYWORD: Final[str] = "skiprows"
 
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = False
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        name = self.__class__.__name__
-        self.algo_name = name
-
-        desc = {
-            "CustomDOE": (
+    ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
+        "CustomDOE": DOEAlgorithmDescription(
+            algorithm_name="CustomDOE",
+            description=(
                 "This samples are provided "
                 "either as a file in text or csv format "
                 "or as a sequence of sequences of numbers."
-            )
-        }
-        self.descriptions[name] = DOEAlgorithmDescription(
-            algorithm_name=name,
-            description=desc[name],
-            internal_algorithm_name=name,
-            library_name=name,
+            ),
+            internal_algorithm_name="CustomDOE",
+            library_name="CustomDOE",
         )
+    }
+
+    def __init__(self, algo_name: str = "CustomDOE") -> None:  # noqa:D107
+        super().__init__(algo_name)
 
     def _get_options(
         self,
@@ -210,19 +196,19 @@ class CustomDOE(DOELibrary):
             "The algorithm CustomDOE requires "
             "either 'doe_file' or 'samples' as option."
         )
-        samples = options.get(self.SAMPLES)
+        samples = options.get(self._SAMPLES)
         dimension = design_space.dimension
         if samples is None:
-            doe_file = options.get(self.DOE_FILE)
+            doe_file = options.get(self._DOE_FILE)
             if doe_file is None:
                 raise ValueError(error_message)
             samples = self.read_file(
                 doe_file,
-                comments=options[self.COMMENTS_KEYWORD],
-                delimiter=options[self.DELIMITER_KEYWORD],
-                skiprows=options[self.SKIPROWS_KEYWORD],
+                comments=options[self._COMMENTS_KEYWORD],
+                delimiter=options[self._DELIMITER_KEYWORD],
+                skiprows=options[self._SKIPROWS_KEYWORD],
             )
-        elif options.get(self.DOE_FILE) is not None:
+        elif options.get(self._DOE_FILE) is not None:
             raise ValueError(error_message)
 
         if isinstance(samples, Mapping):

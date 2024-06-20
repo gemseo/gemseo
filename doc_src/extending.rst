@@ -17,10 +17,10 @@ associated to the feature you want to extend,
 respectively:
 
  - for optimizers,
-   inherit from :class:`.OptimizationLibrary`,
+   inherit from :class:`.BaseOptimizationLibrary`,
    and put the Python file in the :file:`src/gemseo/algos/opt` package,
  - for DOEs,
-   inherit from :class:`.DOELibrary`,
+   inherit from :class:`.BaseDOELibrary`,
    and put the Python file in the :file:`src/gemseo/algos/doe` package,
  - for surrogate models,
    inherit from :class:`.BaseRegressor`,

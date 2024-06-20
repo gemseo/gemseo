@@ -114,25 +114,20 @@ def test_not_converged(caplog) -> None:
     rng = default_rng(1)
     n = 100
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
-    lib = factory.create("ScipyLinalgAlgos")
+    lib = factory.create("BICGSTAB")
     caplog.set_level(logging.WARNING)
-    lib.solve(
-        problem, "BICGSTAB", max_iter=2, save_when_fail=True, use_ilu_precond=False
-    )
+    lib.execute(problem, max_iter=2, save_when_fail=True, use_ilu_precond=False)
     assert not problem.is_converged
     assert "The linear solver BICGSTAB did not converge." in caplog.text
 
-    with Path(lib.save_fpath).open("rb") as f:
+    with Path(lib.file_path).open("rb") as f:
         problem2 = pickle.load(f)
-    remove(lib.save_fpath)
+    remove(lib.file_path)
     assert (problem2.lhs == problem.lhs).all()
     assert (problem2.rhs == problem.rhs).all()
 
-    lib.solve(
-        problem, "BICGSTAB", max_iter=2, save_when_fail=True, use_ilu_precond=True
-    )
+    lib.execute(problem, max_iter=2, save_when_fail=True, use_ilu_precond=True)
     assert problem.is_converged
-    assert (problem.solution == lib.solution).all()
 
 
 @pytest.mark.parametrize("seed", range(3))
@@ -206,23 +201,11 @@ def test_default_solver() -> None:
 
 
 def test_check_info() -> None:
-    lib = ScipyLinalgAlgos()
-    lib.problem = LinearProblem(zeros((2, 2)), ones(2))
+    lib = ScipyLinalgAlgos("LGMRES")
+    lib._problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(RuntimeError, match="illegal input or breakdown"):
         lib._check_solver_info(-1, {})
 
 
 def test_factory() -> None:
     assert "ScipyLinalgAlgos" in LinearSolverLibraryFactory().linear_solvers
-
-
-def test_algo_none() -> None:
-    lib = ScipyLinalgAlgos()
-    problem = LinearProblem(zeros((2, 2)), ones(2))
-    with pytest.raises(ValueError, match="Algorithm name must be either passed as"):
-        lib.execute(problem)
-
-
-def test_library_name() -> None:
-    """Check the library name."""
-    assert ScipyLinalgAlgos.LIBRARY_NAME == "SciPy"

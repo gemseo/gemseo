@@ -80,7 +80,7 @@ def test_init() -> None:
     """Test solver is correctly initialized."""
     factory = OptimizationLibraryFactory()
     assert factory.is_available("ScipyMILP")
-    assert isinstance(factory.create("ScipyMILP"), ScipyMILP)
+    assert isinstance(factory.create("Scipy_MILP"), ScipyMILP)
 
 
 @pytest.mark.parametrize(

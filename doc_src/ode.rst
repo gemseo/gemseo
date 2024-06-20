@@ -98,17 +98,17 @@ The classes described by the ODE module are as such:
     set namespaceSeparator none
     class "ODEProblem" as gemseo.algos.ode.ode_problem.ODEProblem {}
     class "ODEResult" as gemseo.algos.ode.ode_result.ODEResult {}
-    class "ODESolverLibrary" as gemseo.algos.ode.ode_solver_lib.ODESolverLibrary {
+    class "BaseODESolverLibrary" as gemseo.algos.ode.base_ode_solver_lib.BaseODESolverLibrary {
     }
-    class "ODESolverLibraryFactory" as gemseo.algos.ode.ode_solvers_factory.ODESolverLibraryFactory {
+    class "ODESolverLibraryFactory" as gemseo.algos.ode.factory.ODESolverLibraryFactory {
       execute(problem: ODEProblem, algo_name: str) -> ODEResult
     }
     class "ScipyODEAlgos" as gemseo.algos.ode.lib_scipy_ode.ScipyODEAlgos {
 
     }
-    gemseo.algos.ode.lib_scipy_ode.ScipyODEAlgos --|> gemseo.algos.ode.ode_solver_lib.ODESolverLibrary
+    gemseo.algos.ode.lib_scipy_ode.ScipyODEAlgos --|> gemseo.algos.ode.base_ode_solver_lib.BaseODESolverLibrary
     gemseo.algos.ode.ode_result.ODEResult --* gemseo.algos.ode.ode_problem.ODEProblem : result
-    gemseo.algos.ode.ode_solver_lib.ODESolverLibrary --* gemseo.algos.ode.ode_solvers_factory.ODESolverLibraryFactory
+    gemseo.algos.ode.base_ode_solver_lib.BaseODESolverLibrary --* gemseo.algos.ode.factory.ODESolverLibraryFactory
     @enduml
 
 
@@ -129,14 +129,14 @@ The submodules are organized in the following fashion.
     }
     package "gemseo.algos.ode.ode_result" as gemseo.algos.ode.ode_result {
     }
-    package "gemseo.algos.ode.ode_solver_lib" as gemseo.algos.ode.ode_solver_lib {
+    package "gemseo.algos.ode.base_ode_solver_lib" as gemseo.algos.ode.base_ode_solver_lib {
     }
-    package "gemseo.algos.ode.ode_solvers_factory" as gemseo.algos.ode.ode_solvers_factory {
+    package "gemseo.algos.ode.factory" as gemseo.algos.ode.factory {
     }
     gemseo.algos.ode.lib_scipy_ode --> gemseo.algos.ode.ode_result
-    gemseo.algos.ode.lib_scipy_ode --> gemseo.algos.ode.ode_solver_lib
+    gemseo.algos.ode.lib_scipy_ode --> gemseo.algos.ode.base_ode_solver_lib
     gemseo.algos.ode.ode_problem --> gemseo.algos.ode.ode_result
-    gemseo.algos.ode.ode_solver_lib --> gemseo.algos.ode.ode_problem
-    gemseo.algos.ode.ode_solvers_factory --> gemseo.algos.ode.ode_problem
-    gemseo.algos.ode.ode_solvers_factory --> gemseo.algos.ode.ode_solver_lib
+    gemseo.algos.ode.base_ode_solver_lib --> gemseo.algos.ode.ode_problem
+    gemseo.algos.ode.factory --> gemseo.algos.ode.ode_problem
+    gemseo.algos.ode.factory --> gemseo.algos.ode.base_ode_solver_lib
     @enduml

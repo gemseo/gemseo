@@ -16,13 +16,14 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Base wrapper for all linear solvers."""
+"""Base class for libraries of linear solvers."""
 
 from __future__ import annotations
 
 import logging
 import pickle
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from uuid import uuid4
@@ -32,8 +33,8 @@ from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import spilu
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.algorithm_library import AlgorithmDescription
-from gemseo.algos.algorithm_library import AlgorithmLibrary
+from gemseo.algos.base_algorithm_library import AlgorithmDescription
+from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -57,36 +58,15 @@ class LinearSolverDescription(AlgorithmDescription):
     """Whether the left-hand side matrix must be a linear operator."""
 
 
-class LinearSolverLibrary(AlgorithmLibrary):
-    """Abstract class for libraries of linear solvers."""
+class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
+    """Base class for libraries of linear solvers."""
 
-    SAVE_WHEN_FAIL = "save_when_fail"
+    file_path: Path
+    """The file path to save the linear problem after an execution."""
 
-    # TODO: use Path and default to ""
-    save_fpath: str | None
-    """The file path to save the linear problem."""
-
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        self.save_fpath = None
-
-    def solve(
-        self,
-        linear_problem: LinearProblem,
-        algo_name: str,
-        **options: Any,
-    ) -> Any:
-        """Solve the linear system.
-
-        Args:
-            linear_problem: The problem to solve.
-            algo_name: The name of the algorithm.
-            **options: The algorithm options.
-
-        Returns:
-            The execution result.
-        """
-        return self.execute(linear_problem, algo_name=algo_name, **options)
+    def __init__(self, algo_name: str) -> None:  # noqa:D107
+        super().__init__(algo_name)
+        self.file_path = Path("linear_system.pck")
 
     @staticmethod
     def _build_ilu_preconditioner(
@@ -105,11 +85,6 @@ class LinearSolverLibrary(AlgorithmLibrary):
         """
         ilu = spilu(csc_matrix(lhs))
         return LinearOperator(lhs.shape, ilu.solve, dtype=dtype)
-
-    @property
-    def solution(self) -> ndarray:
-        """The solution of the problem."""
-        return self.problem.solution
 
     @classmethod
     def _get_unsuitability_reason(
@@ -141,46 +116,30 @@ class LinearSolverLibrary(AlgorithmLibrary):
     def _pre_run(
         self,
         problem: LinearProblem,
-        algo_name: str,
         **options: Any,
     ) -> None:
-        """Set the solver options and name in the problem attributes.
-
-        Args:
-            problem: The problem to be solved.
-            algo_name: The name of the algorithm.
-            **options: The options for the algorithm, see associated JSON file.
-        """
         problem.solver_options = options
-        problem.solver_name = algo_name
+        problem.solver_name = self._algo_name
 
     def _post_run(
         self,
         problem: LinearProblem,
-        algo_name: str,
         result: ndarray,
         **options: Any,
-    ) -> None:  # noqa: D107
-        """Save the LinearProblem to the disk when required.
-
-        If the save_when_fail option is True, save the LinearProblem to the disk when
-        the system failed and print the file name in the warnings.
-
-        Args:
-            problem: The problem to be solved.
-            algo_name: The name of the algorithm.
-            result: The result of the run, i.e. the solution.
-            **options: The options for the algorithm, see associated JSON file.
-        """
-        if not self.problem.is_converged:
+    ) -> None:
+        # If the save_when_fail option is True, save the LinearProblem to the disk when
+        # the system failed and print the file name in the warnings.
+        if not problem.is_converged:
             LOGGER.warning(
-                "The linear solver %s did not converge.", self.problem.solver_name
+                "The linear solver %s did not converge.", problem.solver_name
             )
 
-        if options.get(self.SAVE_WHEN_FAIL, False) and not self.problem.is_converged:
-            f_path = f"linear_system_{uuid4()}.pck"
-            # TODO: remove noqa
-            with open(f_path, "wb") as stream:  # noqa: PTH123
-                pickle.dump(self.problem, stream)
-            LOGGER.warning("Linear solver failed, saving problem to file: %s", f_path)
-            self.save_fpath = f_path
+        if options.get("save_when_fail", False) and not problem.is_converged:
+            file_path = Path(f"linear_system_{uuid4()}.pck")
+            with file_path.open("wb") as stream:
+                pickle.dump(problem, stream)
+
+            LOGGER.warning(
+                "Linear solver failed, saving problem to file: %s", file_path
+            )
+            self.file_path = file_path

@@ -18,7 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
-"""scipy.optimize optimization library wrapper."""
+"""The library of SciPy optimization algorithms."""
 
 from __future__ import annotations
 
@@ -26,18 +26,21 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 
 from numpy import isfinite
 from numpy import ndarray
 from numpy import real
 from scipy import optimize
 
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.algos.design_space_utils import get_value_and_bounds
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
 
 
@@ -48,76 +51,58 @@ class SciPyAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "SciPy"
 
 
-class ScipyOpt(OptimizationLibrary):
-    """Scipy optimization library interface.
+class ScipyOpt(BaseOptimizationLibrary):
+    """The library of SciPy optimization algorithms."""
 
-    See OptimizationLibrary.
-    """
-
-    LIB_COMPUTE_GRAD = True
-
-    OPTIONS_MAP: ClassVar[dict[str, str]] = {
+    _OPTIONS_MAP: ClassVar[dict[str, str]] = {
         # Available only in the doc !
-        OptimizationLibrary.LS_STEP_NB_MAX: "maxls",
-        OptimizationLibrary.LS_STEP_SIZE_MAX: "stepmx",
-        OptimizationLibrary.MAX_FUN_EVAL: "maxfun",
-        OptimizationLibrary.PG_TOL: "gtol",
+        BaseOptimizationLibrary._LS_STEP_NB_MAX: "maxls",
+        BaseOptimizationLibrary._LS_STEP_SIZE_MAX: "stepmx",
+        BaseOptimizationLibrary._MAX_FUN_EVAL: "maxfun",
+        BaseOptimizationLibrary._PG_TOL: "gtol",
     }
 
-    LIBRARY_NAME = "SciPy"
-
-    def __init__(self) -> None:
-        """Constructor.
-
-        Generate the library dict, contains the list
-        of algorithms with their characteristics:
-
-        - does it require gradient
-        - does it handle equality constraints
-        - does it handle inequality constraints
-        """
-        super().__init__()
-        doc = "https://docs.scipy.org/doc/scipy/reference/"
-        self.descriptions = {
-            "SLSQP": SciPyAlgorithmDescription(
-                algorithm_name="SLSQP",
-                description=(
-                    "Sequential Least-Squares Quadratic Programming (SLSQP) "
-                    "implemented in the SciPy library"
-                ),
-                handle_equality_constraints=True,
-                handle_inequality_constraints=True,
-                internal_algorithm_name="SLSQP",
-                require_gradient=True,
-                positive_constraints=True,
-                website=f"{doc}optimize.minimize-slsqp.html",
+    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
+    ALGORITHM_INFOS: ClassVar[dict[str, SciPyAlgorithmDescription]] = {
+        "SLSQP": SciPyAlgorithmDescription(
+            algorithm_name="SLSQP",
+            description=(
+                "Sequential Least-Squares Quadratic Programming (SLSQP) "
+                "implemented in the SciPy library"
             ),
-            "L-BFGS-B": SciPyAlgorithmDescription(
-                algorithm_name="L-BFGS-B",
-                description=(
-                    "Limited-memory BFGS algorithm implemented in the SciPy library"
-                ),
-                internal_algorithm_name="L-BFGS-B",
-                require_gradient=True,
-                website=f"{doc}optimize.minimize-lbfgsb.html",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+            internal_algorithm_name="SLSQP",
+            require_gradient=True,
+            positive_constraints=True,
+            website=f"{__DOC}optimize.minimize-slsqp.html",
+        ),
+        "L-BFGS-B": SciPyAlgorithmDescription(
+            algorithm_name="L-BFGS-B",
+            description=(
+                "Limited-memory BFGS algorithm implemented in the SciPy library"
             ),
-            "TNC": SciPyAlgorithmDescription(
-                algorithm_name="TNC",
-                description=(
-                    "Truncated Newton (TNC) algorithm implemented in SciPy library"
-                ),
-                internal_algorithm_name="TNC",
-                require_gradient=True,
-                website=f"{doc}optimize.minimize-tnc.html",
+            internal_algorithm_name="L-BFGS-B",
+            require_gradient=True,
+            website=f"{__DOC}optimize.minimize-lbfgsb.html",
+        ),
+        "TNC": SciPyAlgorithmDescription(
+            algorithm_name="TNC",
+            description=(
+                "Truncated Newton (TNC) algorithm implemented in SciPy library"
             ),
-            "NELDER-MEAD": SciPyAlgorithmDescription(
-                algorithm_name="NELDER-MEAD",
-                description="Nelder-Mead algorithm implemented in the SciPy library",
-                internal_algorithm_name="Nelder-Mead",
-                require_gradient=False,
-                website=f"{doc}optimize.minimize-neldermead.html",
-            ),
-        }
+            internal_algorithm_name="TNC",
+            require_gradient=True,
+            website=f"{__DOC}optimize.minimize-tnc.html",
+        ),
+        "NELDER-MEAD": SciPyAlgorithmDescription(
+            algorithm_name="NELDER-MEAD",
+            description="Nelder-Mead algorithm implemented in the SciPy library",
+            internal_algorithm_name="Nelder-Mead",
+            require_gradient=False,
+            website=f"{__DOC}optimize.minimize-neldermead.html",
+        ),
+    }
 
     def _get_options(
         self,
@@ -197,9 +182,11 @@ class ScipyOpt(OptimizationLibrary):
             offset: Value to subtract from each variable. If ``None``, the offsets are
                 (up+low)/2 for interval bounded variables and x for the others.
             kkt_tol_abs: The absolute tolerance on the KKT residual norm.
-                If ``None`` this criterion is not activated.
+                If ``None`` and ``kkt_tol_rel`` is ``None``,
+                this criterion is not considered.
             kkt_tol_rel: The relative tolerance on the KKT residual norm.
-                If ``None`` this criterion is not activated.
+                If ``None`` and ``kkt_tol_abs`` is ``None``,
+                this criterion is not considered.
             adaptive: Whether to adapt the Nelder-Mead algorithm parameters to the
                 dimensionality of the problem. Useful for high-dimensional minimization.
             initial_simplex: If not ``None``, overrides x0 in the Nelder-Mead algorithm.
@@ -238,19 +225,11 @@ class ScipyOpt(OptimizationLibrary):
             **kwargs,
         )
 
-    def _run(self, **options: Any) -> OptimizationResult:
-        """Run the algorithm, to be overloaded by subclasses.
-
-        Args:
-            **options: The options for the algorithm.
-
-        Returns:
-            The optimization result.
-        """
+    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
         # remove normalization from options for algo
-        normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
+        normalize_ds = options.pop(self._NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the normalized bounds:
-        x_0, l_b, u_b = self.get_x0_and_bounds(normalize_ds)
+        x_0, l_b, u_b = get_value_and_bounds(problem.design_space, normalize_ds)
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
@@ -267,39 +246,39 @@ class ScipyOpt(OptimizationLibrary):
             Returns:
                 The real part of the evaluation of the objective function.
             """
-            return real(self.problem.objective.func(x))
+            return real(problem.objective.func(x))
 
         fun = real_part_fun
 
-        constraints = self.get_right_sign_constraints()
+        constraints = self._get_right_sign_constraints(problem)
         cstr_scipy = []
         for cstr in constraints:
             c_scipy = {"type": cstr.f_type, "fun": cstr.func, "jac": cstr.jac}
             cstr_scipy.append(c_scipy)
-        jac = self.problem.objective.jac
+        jac = problem.objective.jac
 
         # |g| is in charge of ensuring max iterations, and
         # xtol, ftol, since it may
         # have a different definition of iterations, such as for SLSQP
         # for instance which counts duplicate calls to x as a new iteration
-        options["maxfun" if self.algo_name == "TNC" else "maxiter"] = 10000000
+        options["maxfun" if self._algo_name == "TNC" else "maxiter"] = 10000000
 
         # Deactivate scipy stop criteria to use |g|' ones
         options["ftol"] = 0.0
         options["xtol"] = 0.0
-        options.pop(self.F_TOL_ABS)
-        options.pop(self.X_TOL_ABS)
-        options.pop(self.F_TOL_REL)
-        options.pop(self.X_TOL_REL)
-        options.pop(self.MAX_TIME)
-        options.pop(self.MAX_ITER)
+        options.pop(self._F_TOL_ABS)
+        options.pop(self._X_TOL_ABS)
+        options.pop(self._F_TOL_REL)
+        options.pop(self._X_TOL_REL)
+        options.pop(self._MAX_TIME)
+        options.pop(self._MAX_ITER)
         options.pop(self._KKT_TOL_REL)
         options.pop(self._KKT_TOL_ABS)
 
-        if self.algo_name != "TNC":
+        if self._algo_name != "TNC":
             options.pop("xtol")
 
-        if self.algo_name == "NELDER-MEAD":
+        if self._algo_name == "NELDER-MEAD":
             options["fatol"] = 0.0
             options["xatol"] = 0.0
             options.pop("ftol")
@@ -308,11 +287,13 @@ class ScipyOpt(OptimizationLibrary):
         opt_result = optimize.minimize(
             fun=fun,
             x0=x_0,
-            method=self.internal_algo_name,
+            method=self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name,
             jac=jac,
             bounds=bounds,
             constraints=cstr_scipy,
             options=options,
         )
 
-        return self.get_optimum_from_database(opt_result.message, opt_result.status)
+        return self._get_optimum_from_database(
+            problem, opt_result.message, opt_result.status
+        )

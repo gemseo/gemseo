@@ -23,13 +23,13 @@ import pytest
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.algos.opt.lib_scipy import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
-from gemseo.utils.testing.helpers import concretize_classes
 
 OPT_LIB_NAME = "ScipyOpt"
 
@@ -40,26 +40,13 @@ def power() -> Power2:
     return Power2()
 
 
-@pytest.fixture(scope="module")
-def lib() -> OptimizationLibraryFactory:
-    """The factory of optimizers."""
-    factory = OptimizationLibraryFactory()
-    if factory.is_available(OPT_LIB_NAME):
-        return factory.create(OPT_LIB_NAME)
-
-    msg = "SciPy is not available."
-    raise ImportError(msg)
-
-
 @pytest.mark.parametrize(
     ("name", "handle_eq", "handle_ineq"),
     [("L-BFGS-B", False, False), ("SLSQP", True, True)],
 )
-def test_algorithm_handles_constraints(lib, name, handle_eq, handle_ineq) -> None:
-    """Check check_equality_constraint_support() and
-    check_inequality_constraint_support()."""
-    assert lib.check_equality_constraint_support(name) is handle_eq
-    assert lib.check_inequality_constraint_support(name) is handle_ineq
+def test_algorithm_handles_constraints(name, handle_eq, handle_ineq) -> None:
+    assert ScipyOpt.ALGORITHM_INFOS[name].handle_equality_constraints is handle_eq
+    assert ScipyOpt.ALGORITHM_INFOS[name].handle_inequality_constraints is handle_ineq
 
 
 def test_is_algorithm_suited() -> None:
@@ -68,16 +55,16 @@ def test_is_algorithm_suited() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
-    assert OptimizationLibrary.is_algorithm_suited(description, problem)
+    assert BaseOptimizationLibrary.is_algorithm_suited(description, problem)
 
 
 def test_is_algorithm_suited_design_space() -> None:
     """Check is_algorithm_suited with unhandled empty design space."""
     description = OptimizationAlgorithmDescription("foo", "bar")
     problem = OptimizationProblem(DesignSpace())
-    assert not OptimizationLibrary.is_algorithm_suited(description, problem)
+    assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
-        OptimizationLibrary._get_unsuitability_reason(description, problem)
+        BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
         == _UnsuitabilityReason.EMPTY_DESIGN_SPACE
     )
 
@@ -91,9 +78,9 @@ def test_is_algorithm_suited_has_eq_constraints() -> None:
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
     problem.has_eq_constraints = lambda: True
-    assert not OptimizationLibrary.is_algorithm_suited(description, problem)
+    assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
-        OptimizationLibrary._get_unsuitability_reason(description, problem)
+        BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
         == _UnsuitabilityReason.EQUALITY_CONSTRAINTS
     )
 
@@ -107,9 +94,9 @@ def test_is_algorithm_suited_has_ineq_constraints() -> None:
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
     problem.has_ineq_constraints = lambda: True
-    assert not OptimizationLibrary.is_algorithm_suited(description, problem)
+    assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
-        OptimizationLibrary._get_unsuitability_reason(description, problem)
+        BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
         == _UnsuitabilityReason.INEQUALITY_CONSTRAINTS
     )
 
@@ -123,23 +110,25 @@ def test_is_algorithm_suited_pbm_type() -> None:
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
     problem.pb_type = problem.ProblemType.NON_LINEAR
-    assert not OptimizationLibrary.is_algorithm_suited(description, problem)
+    assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
-        OptimizationLibrary._get_unsuitability_reason(description, problem)
+        BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
         == _UnsuitabilityReason.NON_LINEAR_PROBLEM
     )
 
 
-def test_pre_run_fail(lib, power) -> None:
+def test_pre_run_fail(power) -> None:
     """Check that pre_run raises an exception if maxiter cannot be determined."""
+    slsqp = ScipyOpt("SLSQP")
     with pytest.raises(
         ValueError, match="Could not determine the maximum number of iterations."
     ):
-        lib._pre_run(power, "SLSQP")
+        slsqp._pre_run(power)
 
 
-def test_check_constraints_handling_fail(lib, power) -> None:
+def test_check_constraints_handling_fail(power) -> None:
     """Test that check_constraints_handling can raise an exception."""
+    lbfgsb = ScipyOpt("L-BFGS-B")
     with pytest.raises(
         ValueError,
         match=(
@@ -147,34 +136,23 @@ def test_check_constraints_handling_fail(lib, power) -> None:
             "can not handle equality constraints."
         ),
     ):
-        lib._check_constraints_handling("L-BFGS-B", power)
-
-
-def test_algorithm_handles_eqcstr_fail(lib, power) -> None:
-    """Test that check_equality_constraint_support can raise an exception."""
-    with pytest.raises(KeyError, match="Algorithm TOTO not in library ScipyOpt."):
-        lib.check_equality_constraint_support("TOTO")
+        lbfgsb._check_constraints_handling(power)
 
 
 def test_optimization_algorithm() -> None:
     """Check the default settings of OptimizationAlgorithmDescription."""
-    with concretize_classes(OptimizationLibrary):
-        lib = OptimizationLibrary()
-    lib.descriptions["new_algo"] = OptimizationAlgorithmDescription(
+    description = OptimizationAlgorithmDescription(
         algorithm_name="bar", internal_algorithm_name="foo"
     )
-    algo = lib.descriptions["new_algo"]
-    assert not lib.check_inequality_constraint_support("new_algo")
-    assert not lib.check_equality_constraint_support("new_algo")
-    assert not algo.handle_inequality_constraints
-    assert not algo.handle_equality_constraints
-    assert not algo.handle_integer_variables
-    assert not algo.require_gradient
-    assert not algo.positive_constraints
-    assert not algo.handle_multiobjective
-    assert algo.description == ""
-    assert algo.website == ""
-    assert algo.library_name == ""
+    assert not description.handle_inequality_constraints
+    assert not description.handle_equality_constraints
+    assert not description.handle_integer_variables
+    assert not description.require_gradient
+    assert not description.positive_constraints
+    assert not description.handle_multiobjective
+    assert description.description == ""
+    assert description.website == ""
+    assert description.library_name == ""
 
 
 def test_execute_without_current_value() -> None:
@@ -185,7 +163,7 @@ def test_execute_without_current_value() -> None:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: (x - 1) ** 2, "obj")
     driver = OptimizationLibraryFactory().create("NLOPT_COBYLA")
-    driver.execute(problem, "NLOPT_COBYLA", max_iter=1)
+    driver.execute(problem, max_iter=1)
     assert design_space["x"].value == 0.0
 
 
@@ -195,21 +173,10 @@ def test_execute_without_current_value() -> None:
 )
 def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> None:
     """Check the scaling of functions."""
-    with concretize_classes(OptimizationLibrary):
-        library = OptimizationLibrary()
-
-    library.descriptions["algorithm"] = OptimizationAlgorithmDescription(
-        algorithm_name="algorithm_name",
-        internal_algorithm_name="internal_algorithm_name",
-        handle_equality_constraints=True,
-        handle_inequality_constraints=True,
-    )
-    library.algo_name = "algorithm"
+    library = ScipyOpt("SLSQP")
     library.problem = power
     library.problem.preprocess_functions()
-    library._pre_run(
-        power, "algorithm", max_iter=2, scaling_threshold=scaling_threshold
-    )
+    library._pre_run(power, max_iter=2, scaling_threshold=scaling_threshold)
     current_value = power.design_space.get_current_value()
     assert library.problem.objective(current_value) == pow2
     assert library.problem.constraints[0](current_value) == ineq1

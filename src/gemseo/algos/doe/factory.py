@@ -22,11 +22,11 @@
 from __future__ import annotations
 
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
-from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 
 
 class DOELibraryFactory(BaseAlgoFactory):
     """A factory of DOE libraries."""
 
-    _CLASS = DOELibrary
+    _CLASS = BaseDOELibrary
     _MODULE_NAMES = ("gemseo.algos.doe",)

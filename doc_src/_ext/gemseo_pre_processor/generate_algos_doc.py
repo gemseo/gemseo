@@ -48,7 +48,7 @@ from gemseo.utils.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
     from gemseo.algos.base_algo_factory import BaseAlgoFactory
-    from gemseo.algos.driver_library import DriverLibrary
+    from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.core.base_factory import BaseFactory
 
 GEN_OPTS_PATH = None
@@ -349,7 +349,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
                 self.get_class(algo)._get_options
             )
             algo_lib = algo_factory.create(algo)
-            options_grammar = algo_lib.init_options_grammar(algo)
+            options_grammar = algo_lib._init_options_grammar()
             options = {
                 k: v for k, v in options_schema.items() if k in options_grammar.names
             }
@@ -378,7 +378,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The description of the algorithm.
             """
-            return algo_factory.create(algo).descriptions[algo].description
+            return algo_factory.create(algo).ALGORITHM_INFOS[algo].description
 
         return get_description
 
@@ -397,17 +397,17 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The website associated with the algorithm.
             """
-            return algo_factory.create(algo).descriptions[algo].website
+            return algo_factory.create(algo).ALGORITHM_INFOS[algo].website
 
         return get_website
 
     @staticmethod
     def __default_class_getter(
         algo_factory: BaseAlgoFactory,
-    ) -> Callable[[str], DriverLibrary]:
+    ) -> Callable[[str], BaseDriverLibrary]:
         """Return the default algorithm class getter from a driver factory."""
 
-        def get_class(algo: str) -> DriverLibrary:
+        def get_class(algo: str) -> BaseDriverLibrary:
             """Return the driver library associated with an algorithm.
 
             Args:

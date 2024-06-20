@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Base DOE library."""
+"""Base class for libraries of DOEs."""
 
 from __future__ import annotations
 
@@ -39,10 +39,10 @@ from numpy import hstack
 from numpy import int32
 from numpy import where
 
+from gemseo.algos.base_driver_library import BaseDriverLibrary
+from gemseo.algos.base_driver_library import DriverDescription
+from gemseo.algos.base_driver_library import DriverLibraryOptionType
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.driver_library import DriverDescription
-from gemseo.algos.driver_library import DriverLibrary
-from gemseo.algos.driver_library import DriverLibraryOptionType
 from gemseo.algos.optimization_problem import EvaluationType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
@@ -77,8 +77,8 @@ class DOEAlgorithmDescription(DriverDescription):
     """The minimum dimension of the parameter space."""
 
 
-class DOELibrary(DriverLibrary, Serializable):
-    """Abstract class to use for DOE library link See DriverLibrary."""
+class BaseDOELibrary(BaseDriverLibrary, Serializable):
+    """Base class for libraries of DOEs."""
 
     samples: RealArray
     """The design vector samples in the design space.
@@ -102,11 +102,8 @@ class DOELibrary(DriverLibrary, Serializable):
     lock: RLock
     """The lock protecting database storage in multiprocessing."""
 
-    EVAL_JAC = "eval_jac"
-    N_PROCESSES = "n_processes"
-    N_SAMPLES = "n_samples"
-    SEED = "seed"
-    WAIT_TIME_BETWEEN_SAMPLES = "wait_time_between_samples"
+    _N_SAMPLES: Final[str] = "n_samples"
+    _SEED: Final[str] = "seed"
 
     _seeder: Seeder
     """A seed generator."""
@@ -126,8 +123,8 @@ class DOELibrary(DriverLibrary, Serializable):
     }
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"lock"}
 
-    def __init__(self) -> None:  # noqa: D107
-        super().__init__()
+    def __init__(self, algo_name: str) -> None:  # noqa:D107
+        super().__init__(algo_name)
         self.samples = array([])
         self.unit_samples = array([])
         self._seeder = Seeder()
@@ -149,12 +146,11 @@ class DOELibrary(DriverLibrary, Serializable):
     def _pre_run(
         self,
         problem: OptimizationProblem,
-        algo_name: str,
         **options: DriverLibraryOptionType,
     ) -> None:
-        design_space = self.problem.design_space
+        design_space = problem.design_space
         self.__check_unnormalization_capability(design_space)
-        super()._pre_run(problem, algo_name, **options)
+        super()._pre_run(problem, **options)
         problem.stop_if_nan = False
         self.unit_samples = self._generate_unit_samples(design_space, **options)
         LOGGER.debug(
@@ -162,22 +158,27 @@ class DOELibrary(DriverLibrary, Serializable):
                 "The DOE algorithm %s of %s has generated %s samples "
                 "in the input unit hypercube of dimension %s."
             ),
-            self.algo_name,
+            self._algo_name,
             self.__class__.__name__,
             *self.unit_samples.shape,
         )
-        self.samples = self.__convert_unit_samples_to_samples()
-        self.init_iter_observer(len(self.unit_samples))
+        self.samples = self.__convert_unit_samples_to_samples(problem)
+        self._init_iter_observer(problem, len(self.unit_samples))
 
-    def __convert_unit_samples_to_samples(self) -> RealArray:
+    def __convert_unit_samples_to_samples(
+        self, problem: OptimizationProblem
+    ) -> RealArray:
         """Convert the unit design vector samples to design vector samples.
 
         We also set the design variable types as dtype metadata.
 
+        Args:
+            problem: The problem to be solved.
+
         Returns:
             The design vector samples.
         """
-        design_space = self.problem.design_space
+        design_space = problem.design_space
         samples = design_space.untransform_vect(self.unit_samples, no_check=True)
         variable_types = design_space.variable_types
         unique_variable_types = {t[0] for t in variable_types.values()}
@@ -211,6 +212,7 @@ class DOELibrary(DriverLibrary, Serializable):
 
     def _run(
         self,
+        problem: OptimizationProblem,
         eval_jac: bool = False,
         n_processes: int = 1,
         wait_time_between_samples: float = 0.0,
@@ -248,7 +250,7 @@ class DOELibrary(DriverLibrary, Serializable):
                 n_processes=n_processes,
                 wait_time_between_fork=wait_time_between_samples,
             )
-            database = self.problem.database
+            database = problem.database
             if use_database:
                 # Add a callback to store the samples in the database on the fly.
                 callbacks.append(self.__store_in_database)
@@ -275,7 +277,7 @@ class DOELibrary(DriverLibrary, Serializable):
                 )
             for index, input_data in enumerate(self.samples):
                 try:
-                    output_data, jacobian_data = self.problem.evaluate_functions(
+                    output_data, jacobian_data = problem.evaluate_functions(
                         x_vect=input_data,
                         eval_jac=self.__eval_jac,
                         normalize=False,
@@ -289,7 +291,7 @@ class DOELibrary(DriverLibrary, Serializable):
                         input_data,
                     )
 
-        return self.get_optimum_from_database()
+        return self._get_optimum_from_database(problem)
 
     def _worker(self, sample: RealArray) -> EvaluationType:
         """Wrap the evaluation of the functions for parallel execution.
@@ -301,7 +303,7 @@ class DOELibrary(DriverLibrary, Serializable):
             The computed values.
         """
         if current_process().name == SUBPROCESS_NAME:
-            self.deactivate_progress_bar()
+            self._deactivate_progress_bar()
             self.problem.database.clear_listeners()
 
         return self.problem.evaluate_functions(
@@ -376,9 +378,9 @@ class DOELibrary(DriverLibrary, Serializable):
         if not unit_sampling:
             self.__check_unnormalization_capability(design_space)
 
-        self.init_options_grammar(self.algo_name)
-        if self.driver_has_option(self.N_SAMPLES):
-            options[self.N_SAMPLES] = n_samples
+        self._init_options_grammar()
+        if self._N_SAMPLES in self._option_grammar:
+            options[self._N_SAMPLES] = n_samples
 
         unit_samples = self._generate_unit_samples(
             design_space,

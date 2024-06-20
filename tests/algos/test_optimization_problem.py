@@ -993,7 +993,7 @@ def test_gradient_with_random_variables() -> None:
 
     problem = OptimizationProblem(parameter_space)
     problem.objective = MDOFunction(lambda x: 3 * x**2, "func", jac=lambda x: 6 * x)
-    PyDOE().execute(problem, "fullfact", n_samples=3, eval_jac=True)
+    PyDOE("fullfact").execute(problem, n_samples=3, eval_jac=True)
 
     data = problem.database.get_gradient_history("func")
 
@@ -1236,7 +1236,7 @@ def test_approximated_jacobian_wrt_uncertain_variables() -> None:
     problem = OptimizationProblem(uspace)
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     problem.objective = MDOFunction(lambda u: u, "func")
-    CustomDOE().execute(problem, "CustomDOE", samples=array([[0.0]]), eval_jac=True)
+    CustomDOE().execute(problem, samples=array([[0.0]]), eval_jac=True)
     grad = problem.database.get_gradient_history("func")
     assert grad[0, 0] == pytest.approx(1.0, abs=1e-3)
 
@@ -1587,7 +1587,6 @@ def test_export_to_dataset(input_values, expected) -> None:
     )
 
     algo = CustomDOE()
-    algo.algo_name = "CustomDOE"
     algo.execute(problem, samples=array([[1.0], [2.0], [1.0]]))
 
     dataset = problem.to_dataset(input_values=input_values)
@@ -1608,7 +1607,6 @@ def test_export_to_dataset_input_names_order(name) -> None:
     problem.objective = MDOFunction(lambda x: x[0] + x[1], "obj")
 
     algo = CustomDOE()
-    algo.algo_name = "CustomDOE"
     algo.execute(problem, samples=array([[1.0, 1.0], [2.0, 2.0]]))
 
     dataset = problem.to_dataset()

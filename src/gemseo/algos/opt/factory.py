@@ -23,11 +23,11 @@
 from __future__ import annotations
 
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 
 
 class OptimizationLibraryFactory(BaseAlgoFactory):
     """A factory of optimization libraries."""
 
-    _CLASS = OptimizationLibrary
+    _CLASS = BaseOptimizationLibrary
     _MODULE_NAMES = ("gemseo.algos.opt",)

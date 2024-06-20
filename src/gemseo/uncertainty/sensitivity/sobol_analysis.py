@@ -131,7 +131,6 @@ from pandas import Series
 from strenum import PascalCaseStrEnum
 from strenum import StrEnum
 
-from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.uncertainty.sensitivity._cv_sobol_algorithm import CVSobolAlgorithm
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
@@ -274,7 +273,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     order.
     """
 
-    DEFAULT_DRIVER: ClassVar[str] = OpenTURNS.OT_SOBOL_INDICES
+    DEFAULT_DRIVER: ClassVar[str] = "OT_SOBOL_INDICES"
 
     output_variances: dict[str, NDArray[float]]
     """The variances of the output variables."""

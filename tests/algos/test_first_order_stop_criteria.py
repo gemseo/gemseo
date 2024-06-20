@@ -19,8 +19,8 @@ from numpy import array
 from numpy import ones
 from numpy import zeros
 
-from gemseo.algos.first_order_stop_criteria import is_kkt_residual_norm_reached
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.stop_criteria import is_kkt_residual_norm_reached
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 

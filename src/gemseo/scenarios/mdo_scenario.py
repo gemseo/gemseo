@@ -50,7 +50,7 @@ class MDOScenario(Scenario):
 
     an :class:`.MDOScenario` is a particular :class:`.Scenario` whose driver is an
     optimization algorithm. This algorithm must be implemented in an
-    :class:`.OptimizationLibrary`.
+    :class:`.BaseOptimizationLibrary`.
     """
 
     clear_history_before_run: bool
@@ -106,11 +106,8 @@ class MDOScenario(Scenario):
         else:
             lib = self._algo_factory.create(algo_name)
             self._lib = lib
-            self._algo_name = algo_name
 
-        self.optimization_result = lib.execute(
-            problem, algo_name=algo_name, max_iter=max_iter, **options
-        )
+        self.optimization_result = lib.execute(problem, max_iter=max_iter, **options)
         return self.optimization_result
 
     def _init_algo_factory(self) -> None:
@@ -127,7 +124,7 @@ class MDOScenario(Scenario):
 
     def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
-        # OptimizationLibrary objects cannot be serialized, _algo_name and _lib are
+        # BaseOptimizationLibrary objects cannot be serialized, _algo_name and _lib are
         # set to None to force the lib creation in _run_algorithm.
         self._algo_name = None
         self._lib = None

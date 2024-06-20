@@ -17,13 +17,14 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.augmented_lagrangian.penalty_heuristic import (
     AugmentedLagrangianPenaltyHeuristic,
 )
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -39,22 +40,20 @@ class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
     __lagrange_multiplier_calculator: LagrangeMultipliers
     """The Lagrange multiplier calculator."""
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        self.__lagrange_multiplier_calculator = None
+    ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {
+        "Augmented_Lagrangian_order_1": OptimizationAlgorithmDescription(
+            algorithm_name="Augmented_Lagrangian_order_1",
+            description="Augmented Lagrangian algorithm using gradient information",
+            internal_algorithm_name="Augmented_Lagrangian",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+            require_gradient=True,
+        ),
+    }
 
-        self.descriptions = {
-            "Augmented_Lagrangian_order_1": OptimizationAlgorithmDescription(
-                algorithm_name="Augmented_Lagrangian_order_1",
-                description=(
-                    "Augmented Lagrangian algorithm using gradient information."
-                ),
-                internal_algorithm_name="Augmented_Lagrangian",
-                handle_equality_constraints=True,
-                handle_inequality_constraints=True,
-                require_gradient=True,
-            ),
-        }
+    def __init__(self, algo_name: str = "Augmented_Lagrangian_order_1") -> None:  # noqa:D107
+        super().__init__(algo_name)
+        self.__lagrange_multiplier_calculator = None
 
     def _update_lagrange_multipliers(
         self, eq_lag: dict[str, ndarray], ineq_lag: dict[str, ndarray], x_opt: ndarray

@@ -1,2 +1,2 @@
 - API change: renamed the argument ``size`` of ``compute_doe`` to ``n_samples``.
-- API change: renamed the argument ``size`` of ``DOELibrary.compute_doe`` to ``n_samples``.
+- API change: renamed the argument ``size`` of ``BaseDOELibrary.compute_doe`` to ``n_samples``.

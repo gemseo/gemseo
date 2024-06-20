@@ -180,11 +180,6 @@ def test_methods(test_method):
     test_method()
 
 
-def test_library_name():
-    """Check the library name."""
-    assert CustomDOE.LIBRARY_NAME == "GEMSEO"
-
-
 def test_use_custom_doe_directly():
     """Check the use of CustomDOE without setting algo_name."""
     problem = get_problem(2)

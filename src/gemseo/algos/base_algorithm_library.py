@@ -17,7 +17,7 @@
 #       :author: Damien Guenot - 26 avr. 2016
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Base class for algorithm libraries."""
+"""Base class for algorithm libraries to handle a :class:`.BaseProblem`."""
 
 from __future__ import annotations
 
@@ -42,7 +42,6 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.algos.base_problem import BaseProblem
-    from gemseo.algos.linear_solvers.linear_problem import LinearProblem
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
 
@@ -69,8 +68,8 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     """The website of the wrapped library or algorithm."""
 
 
-class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
-    """Abstract class for algorithms libraries interfaces.
+class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
+    """Base class for algorithm libraries to handle a :class:`.BaseProblem`.
 
     An algorithm library solves a numerical problem (optim, doe, linear problem) using a
     particular algorithm from a particular family of numerical methods.
@@ -81,62 +80,68 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     gemseo.algos.doe or gemseo.algo.opt, or gemseo.algos.linear_solver packages.
     """
 
-    descriptions: dict[str, AlgorithmDescription]
-    """The description of the algorithms contained in the library."""
+    _algo_name: str
+    """The name of the algorithm."""
 
-    algo_name: str | None
-    """The name of the algorithm used currently."""
-
-    internal_algo_name: str | None
-    """The internal name of the algorithm used currently.
-
-    It typically corresponds to the name of the algorithm in the wrapped library if any.
-    """
-
-    problem: Any | None
+    _problem: Any | None
     """The problem to be solved."""
 
-    option_grammar: JSONGrammar | None
+    _option_grammar: JSONGrammar | None
     """The grammar defining the options of the current algorithm."""
 
-    OPTIONS_DIR: ClassVar[str | Path] = "options"
+    _OPTIONS_DIR: ClassVar[str | Path] = "options"
     """The name of the directory containing the files of the grammars of the options."""
 
-    OPTIONS_MAP: ClassVar[dict[str, str]] = {}
+    _OPTIONS_MAP: ClassVar[dict[str, str]] = {}
     """The names of the options in |g| mapping to those in the wrapped library."""
-
-    LIBRARY_NAME: ClassVar[str | None] = None
-    """The name of the interfaced library."""
 
     _COMMON_OPTIONS_GRAMMAR: ClassVar[JSONGrammar] = JSONGrammar("AlgoLibOptions")
     """The grammar defining the options common to all the algorithms of the library."""
 
-    def __init__(self) -> None:  # noqa:D107
-        # Library settings and check
-        self.descriptions = {}
-        self.algo_name = None
-        self.internal_algo_name = None
-        self.problem = None
-        self.option_grammar = None
+    ALGORITHM_INFOS: ClassVar[dict[str, AlgorithmDescription]] = {}
+    """The description of the algorithms contained in the library."""
 
-    def init_options_grammar(
-        self,
-        algo_name: str,
-    ) -> JSONGrammar:
+    def __init__(self, algo_name: str) -> None:
+        """
+        Args:
+            algo_name: The algorithm name.
+
+        Raises:
+            KeyError: When the algorithm is not in the library.
+        """  # noqa: D205, D212
+        if algo_name not in self.ALGORITHM_INFOS:
+            msg = (
+                f"The algorithm {algo_name} is unknown in {self.__class__.__name__}; "
+                f"available ones are: {pretty_str(self.ALGORITHM_INFOS.keys())}."
+            )
+            raise KeyError(msg)
+
+        self._algo_name = algo_name
+        self._problem = None
+        self._option_grammar = None
+        self._init_options_grammar()
+
+    @property
+    def algo_name(self) -> str:
+        """The name of the algorithm."""
+        return self._algo_name
+
+    def _init_options_grammar(self) -> JSONGrammar:
         """Initialize the options' grammar.
 
-        Args:
-            algo_name: The name of the algorithm.
+        Returns:
+            The grammar of options.
         """
+        algo_name = self._algo_name
         # Store the lib in case we rerun the same algorithm,
         # for multilevel scenarios for instance
         # This significantly speedups the process
         # because of the option grammar that is long to create
-        if self.option_grammar is not None and self.option_grammar.name == algo_name:
-            return self.option_grammar
+        if self._option_grammar is not None and self._option_grammar.name == algo_name:
+            return self._option_grammar
 
         library_directory = Path(inspect.getfile(self.__class__)).parent
-        options_directory = library_directory / self.OPTIONS_DIR
+        options_directory = library_directory / self._OPTIONS_DIR
         algo_schema_file = options_directory / f"{algo_name.upper()}_options.json"
         lib_schema_file = (
             options_directory / f"{self.__class__.__name__.upper()}_options.json"
@@ -155,41 +160,33 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             )
             raise ValueError(msg)
 
-        self.option_grammar = JSONGrammar(f"{algo_name}_algorithm_options")
-        self.option_grammar.update(self._COMMON_OPTIONS_GRAMMAR)
-        self.option_grammar.update_from_file(schema_file)
-        self.option_grammar.set_descriptions(
+        self._option_grammar = JSONGrammar(f"{algo_name}_algorithm_options")
+        self._option_grammar.update(self._COMMON_OPTIONS_GRAMMAR)
+        self._option_grammar.update_from_file(schema_file)
+        self._option_grammar.set_descriptions(
             get_options_doc(self.__class__._get_options)
         )
 
-        return self.option_grammar
-
-    @property
-    def algorithms(self) -> list[str]:
-        """The available algorithms."""
-        return list(self.descriptions.keys())
+        return self._option_grammar
 
     def _pre_run(
         self,
-        problem: LinearProblem,
-        algo_name: str,
+        problem: BaseProblem,
         **options: Any,
-    ) -> None:  # pragma: no cover
+    ) -> None:
         """Save the solver options and name in the problem attributes.
 
         Args:
             problem: The problem to be solved.
-            algo_name: The name of the algorithm.
             **options: The options for the algorithm, see associated JSON file.
         """
 
     def _post_run(
         self,
-        problem: LinearProblem,
-        algo_name: str,
+        problem: BaseProblem,
         result: ndarray,
         **options: Any,
-    ) -> None:  # pragma: no cover
+    ) -> None:
         """Save the LinearProblem to the disk when required.
 
         If the save_when_fail option is True, save the LinearProblem to the disk when
@@ -197,28 +194,16 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             problem: The problem to be solved.
-            algo_name: The name of the algorithm.
             result: The result of the run, i.e. the solution.
             **options: The options for the algorithm, see associated JSON file.
         """
-
-    def driver_has_option(self, option_name: str) -> bool:
-        """Check the existence of an option.
-
-        Args:
-            option_name: The name of the option.
-
-        Returns:
-            Whether the option exists.
-        """
-        return option_name in self.option_grammar
 
     def _process_specific_option(
         self,
         options: MutableStrKeyMapping,
         option_key: str,
-    ) -> None:  # pragma: no cover
-        """Preprocess the option specifically, to be overriden by subclasses.
+    ) -> None:
+        """Preprocess the option specifically.
 
         Args:
             options: The options to be preprocessed.
@@ -240,15 +225,15 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         for option_name in list(options.keys()):  # Copy keys on purpose
             # Remove extra options added in the _get_option method of the
             # driver
-            if not self.driver_has_option(option_name):
+            if option_name not in self._option_grammar:
                 del options[option_name]
             else:
                 self._process_specific_option(options, option_name)
 
-        self.option_grammar.validate(options)
+        self._option_grammar.validate(options)
 
         for option_name in list(options.keys()):  # Copy keys on purpose
-            lib_option_name = self.OPTIONS_MAP.get(option_name)
+            lib_option_name = self._OPTIONS_MAP.get(option_name)
             # Overload with specific keys
             if lib_option_name is not None:
                 options[lib_option_name] = options[option_name]
@@ -266,48 +251,32 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             options: The options.
         """
         for option_name in options:
-            if not self.driver_has_option(option_name):
+            if option_name not in self._option_grammar:
                 msg = "Driver %s has no option %s, option is ignored."
-                LOGGER.warning(msg, self.algo_name, option_name)
+                LOGGER.warning(msg, self._algo_name, option_name)
 
     def execute(
         self,
         problem: BaseProblem,
-        algo_name: str | None = None,
-        **options: Any,
-    ) -> None:
-        """Execute the driver.
+        **settings: Any,
+    ) -> Any:
+        """Solve a problem with an algorithm from this library.
 
         Args:
             problem: The problem to be solved.
-            algo_name: The name of the algorithm.
-                If ``None``, use :attr:`algo_name` attribute
-                which may have been set by the factory.
-            **options: The algorithm options.
+            **settings: The algorithm settings.
+
+        Returns:
+            The solution found by the algorithm.
         """
-        self.problem = problem
-
-        if algo_name is not None:
-            self.algo_name = algo_name
-
-        if self.algo_name is None:
-            msg = (
-                "Algorithm name must be either passed as "
-                "argument or set by the attribute self.algo_name"
-            )
-            raise ValueError(msg)
-
-        self._check_algorithm(self.algo_name, problem)
-        options = self._update_algorithm_options(**options)
-        self.internal_algo_name = self.descriptions[
-            self.algo_name
-        ].internal_algorithm_name
+        self._problem = problem
+        settings = self._update_algorithm_options(**settings)
         problem.check()
-
-        self._pre_run(problem, self.algo_name, **options)
-        result = self._run(**options)
-        self._post_run(problem, algo_name, result, **options)
-
+        self._pre_run(problem, **settings)
+        result = self._run(problem, **settings)
+        self._post_run(problem, result, **settings)
+        # Clear the state of _problem; the cache of the AlgoFactory can be used.
+        self._problem = None
         return result
 
     def _update_algorithm_options(
@@ -327,7 +296,7 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             The updated algorithm options.
         """
         if initialize_options_grammar:
-            self.init_options_grammar(self.algo_name)
+            self._init_options_grammar()
         self._check_ignored_options(options)
         return self._get_options(**options)
 
@@ -346,41 +315,29 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @abstractmethod
-    def _run(self, **options) -> Any:
+    def _run(self, problem: BaseProblem, **options: Any) -> Any:
         """Run the algorithm.
 
-        To be overloaded by subclasses.
-
         Args:
+            problem: The problem to be solved.
             **options: The options of the algorithm.
 
         Returns:
             The solution of the problem.
         """
 
-    def _check_algorithm(
-        self,
-        algo_name: str,
-        problem: Any,
-    ) -> None:
+    def _check_algorithm(self, problem: Any) -> None:
         """Check that algorithm is available and adapted to the problem.
 
         Set the optimization library and the algorithm name according
         to the requirements of the optimization library.
 
         Args:
-            algo_name: The name of the algorithm.
             problem: The problem to be solved.
         """
-        if algo_name not in self.descriptions:
-            msg = (
-                f"The algorithm {algo_name} is unknown; "
-                f"available ones are: {pretty_str(self.descriptions.keys())}."
-            )
-            raise KeyError(msg)
-
+        algo_name = self._algo_name
         unsuitability_reason = self._get_unsuitability_reason(
-            self.descriptions[self.algo_name], problem
+            self.ALGORITHM_INFOS[algo_name], problem
         )
         if unsuitability_reason:
             msg = (
@@ -419,7 +376,8 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         return not cls._get_unsuitability_reason(algorithm_description, problem)
 
-    def filter_adapted_algorithms(self, problem: Any) -> list[str]:
+    @classmethod
+    def filter_adapted_algorithms(cls, problem: Any) -> list[str]:
         """Filter the algorithms capable of solving the problem.
 
         Args:
@@ -429,8 +387,8 @@ class AlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             The names of the algorithms adapted to this problem.
         """
         adapted_algorithms = []
-        for algo_name, algo_description in self.descriptions.items():
-            if self.is_algorithm_suited(algo_description, problem):
+        for algo_name, algo_description in cls.ALGORITHM_INFOS.items():
+            if cls.is_algorithm_suited(algo_description, problem):
                 adapted_algorithms.append(algo_name)
 
         return adapted_algorithms

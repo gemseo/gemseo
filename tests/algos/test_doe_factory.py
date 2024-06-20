@@ -54,26 +54,18 @@ def test_libraries(factory) -> None:
 
 
 def test_create_from_algo_name(factory) -> None:
-    """Check that the method create works from an algorithm name."""
+    """Check that the method create works algorithm name."""
     lib = factory.create("fullfact")
     assert isinstance(lib, PyDOE)
-    assert lib.algo_name == "fullfact"
-
-
-def test_create_from_library_name(factory) -> None:
-    """Check that the method create works from a DOE library name."""
-    lib = factory.create("PyDOE")
-    assert isinstance(lib, PyDOE)
-    assert lib.algo_name is None
+    assert lib._algo_name == "fullfact"
 
 
 def test_create_from_unknown_name(factory) -> None:
-    """Check that the method create raises an ImportError from an unknown name."""
+    """Check that the method create raises an ValueError from an unknown name."""
     with pytest.raises(
-        ImportError,
+        ValueError,
         match=(
-            "No algorithm or library of algorithms named 'unknown_name' "
-            "is available; available algorithms are .+"
+            "No algorithm named unknown_name is available; available algorithms are .+"
         ),
     ):
         factory.create("unknown_name")

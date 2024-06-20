@@ -33,7 +33,7 @@ from gemseo.utils.compatibility import scipy
 @pytest.fixture()
 def library() -> SciPyDOE:
     """An instance of SciPyDOE."""
-    return SciPyDOE()
+    return SciPyDOE("LHS")
 
 
 def test_get_options(library) -> None:
@@ -96,13 +96,11 @@ def check_option_filtering(
 @pytest.mark.parametrize("algo_name", ["Sobol", "Halton", "MC", "LHS", "PoissonDisk"])
 @pytest.mark.parametrize("version", ["1.7", "1.8", "1.9", "1.10", "1.11", "1.12"])
 @pytest.mark.parametrize("seed", [None, 3])
-def test_generate_samples(
-    library, algo_name, version, seed, caplog, monkeypatch
-) -> None:
+def test_generate_samples(algo_name, version, seed, caplog, monkeypatch) -> None:
     """Check the generation of samples."""
     dimension = 2
     n_samples = 3
-    library.algo_name = algo_name
+    library = SciPyDOE(algo_name)
     options = library._update_algorithm_options(n_samples=n_samples)
     options["seed"] = seed
 
@@ -154,16 +152,16 @@ def test_monte_carlo() -> None:
 @pytest.mark.parametrize(
     "kwargs", [{}, {"optimization": SciPyDOE.Optimizer.NONE}, {"optimization": ""}]
 )
-def test_no_optimizer(library, kwargs) -> None:
+def test_no_optimizer(kwargs) -> None:
     """Check that _get_options converts SciPyDOE.Optimizer.NONE to None."""
-    library.init_options_grammar("HALTON")
+    library = SciPyDOE("Halton")
     assert library._get_options(**kwargs)["optimization"] is None
 
 
 @pytest.mark.parametrize("value", [False, True])
-def test_lhs_centered(library, value) -> None:
+def test_lhs_centered(value) -> None:
     """Check that an error is raised when centered == scramble in the case of LHS."""
-    library.algo_name = "LHS"
+    library = SciPyDOE("LHS")
     msg = (
         "centered must be the opposite of scramble; "
         "centered is deprecated from SciPy 1.10; "

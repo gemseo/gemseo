@@ -30,9 +30,8 @@ from scipy.optimize.optimize import rosen_der
 from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary as OptLib
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.lib_scipy import ScipyOpt
-from gemseo.algos.opt.optimization_library import OptimizationLibrary as OptLib
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
@@ -45,18 +44,10 @@ class TestScipy(TestCase):
 
     OPT_LIB_NAME = "ScipyOpt"
 
-    def test_init(self) -> None:
-        """"""
-        factory = OptimizationLibraryFactory()
-        if factory.is_available(self.OPT_LIB_NAME):
-            factory.create(self.OPT_LIB_NAME)
-
     def test_display(self) -> None:
         """"""
         algo_name = "SLSQP"
-        OptLibraryTestBase.generate_one_test(
-            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10, disp=True
-        )
+        OptLibraryTestBase.generate_one_test(algo_name, max_iter=10, disp=True)
 
     def test_handles_cstr(self) -> None:
         """"""
@@ -64,38 +55,36 @@ class TestScipy(TestCase):
         self.assertRaises(
             Exception,
             OptLibraryTestBase.generate_one_test,
-            self.OPT_LIB_NAME,
-            algo_name=algo_name,
+            algo_name,
             max_iter=10,
         )
 
     def test_algorithm_suited(self) -> None:
         """"""
         algo_name = "SLSQP"
-        opt_library = OptLibraryTestBase.generate_one_test(
-            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10
+        opt_library, problem = OptLibraryTestBase.generate_one_test(
+            algo_name, max_iter=10
         )
 
         assert not opt_library.is_algorithm_suited(
-            opt_library.descriptions["TNC"], opt_library.problem
+            opt_library.ALGORITHM_INFOS["TNC"], problem
         )
 
-        opt_library.problem.pb_type = OptimizationProblem.ProblemType.NON_LINEAR
-        opt_library.descriptions[
+        problem_type = opt_library.ALGORITHM_INFOS["SLSQP"].problem_type
+        opt_library.ALGORITHM_INFOS[
             "SLSQP"
         ].problem_type = OptimizationProblem.ProblemType.LINEAR
         assert not opt_library.is_algorithm_suited(
-            opt_library.descriptions["SLSQP"], opt_library.problem
+            opt_library.ALGORITHM_INFOS["SLSQP"], problem
         )
+        opt_library.ALGORITHM_INFOS["SLSQP"].problem_type = problem_type
 
     def test_positive_constraints(self) -> None:
         """"""
         algo_name = "SLSQP"
-        opt_library = OptLibraryTestBase.generate_one_test(
-            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10
-        )
-        assert opt_library.check_positivity_constraint_requirement(algo_name)
-        assert not opt_library.check_positivity_constraint_requirement("TNC")
+        opt_library, _ = OptLibraryTestBase.generate_one_test(algo_name, max_iter=10)
+        assert opt_library.ALGORITHM_INFOS[algo_name].positive_constraints
+        assert not opt_library.ALGORITHM_INFOS["TNC"].positive_constraints
 
     def test_fail_opt(self) -> None:
         """"""
@@ -153,17 +142,16 @@ class TestScipy(TestCase):
             max_fun_eval=1000,
         )
 
-        opt_library = OptLibraryTestBase.generate_one_test_unconstrained(
+        problem = OptLibraryTestBase.generate_one_test_unconstrained(
             self.OPT_LIB_NAME, algo_name=algo_name, max_iter=100, max_time=0.0000000001
         )
-        assert opt_library.problem.solution.message.startswith("Maximum time reached")
+        assert problem.solution.message.startswith("Maximum time reached")
 
     def test_slsqp_options(self) -> None:
         """"""
         algo_name = "SLSQP"
         OptLibraryTestBase.generate_one_test(
-            self.OPT_LIB_NAME,
-            algo_name=algo_name,
+            algo_name,
             max_iter=100,
             disp=True,
             ftol_rel=1e-10,
@@ -208,10 +196,10 @@ class TestScipy(TestCase):
             return res, problem
 
         for tol_name in (
-            OptLib.F_TOL_ABS,
-            OptLib.F_TOL_REL,
-            OptLib.X_TOL_ABS,
-            OptLib.X_TOL_REL,
+            OptLib._F_TOL_ABS,
+            OptLib._F_TOL_REL,
+            OptLib._X_TOL_ABS,
+            OptLib._X_TOL_REL,
         ):
             res, pb = run_pb({tol_name: 1e10})
             assert tol_name in res.message
@@ -222,11 +210,6 @@ class TestScipy(TestCase):
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("SCIPY"):
     setattr(TestScipy, test_method.__name__, test_method)
-
-
-def test_library_name() -> None:
-    """Check the library name."""
-    assert ScipyOpt.LIBRARY_NAME == "SciPy"
 
 
 @pytest.fixture(params=[True, False])

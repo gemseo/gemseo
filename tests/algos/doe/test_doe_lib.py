@@ -39,7 +39,6 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_custom import CustomDOE
-from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.doe.lib_scipy import SciPyDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
@@ -54,30 +53,45 @@ if TYPE_CHECKING:
 FACTORY = DOELibraryFactory()
 
 
-@pytest.fixture()
-def doe():
-    pytest.mark.skipif(
-        FACTORY.is_available("PyDOE"), reason="skipped because PyDOE is missing"
-    )
-    return FACTORY.create("PyDOE")
+@pytest.fixture(scope="module")
+def lhs():
+    """A PyDOE-based LHS."""
+    return PyDOE("lhs")
 
 
-def test_fail_sample(doe) -> None:
+@pytest.fixture(scope="module")
+def fullfact():
+    """A PyDOE-based full-factorial DOE."""
+    return PyDOE("fullfact")
+
+
+@pytest.fixture(scope="module")
+def mc():
+    """A SciPyDOE-based Monte Carlo DOE."""
+    return SciPyDOE("MC")
+
+
+@pytest.fixture(scope="module")
+def custom_doe():
+    """A custom DOE."""
+    return CustomDOE()
+
+
+def test_fail_sample(lhs) -> None:
     problem = Power2(exception_error=True)
-    doe.execute(problem, "lhs", n_samples=4)
+    lhs.execute(problem, n_samples=4)
 
 
-def test_evaluate_samples(doe) -> None:
+def test_evaluate_samples(fullfact) -> None:
     problem = Power2()
-    doe.execute(problem, "fullfact", n_samples=2, wait_time_between_samples=1)
+    fullfact.execute(problem, n_samples=2, wait_time_between_samples=1)
 
 
-def test_evaluate_samples_multiproc(doe) -> None:
+def test_evaluate_samples_multiproc(fullfact) -> None:
     problem = Power2()
     n_samples = 8
-    doe.execute(
+    fullfact.execute(
         problem,
-        "fullfact",
         n_samples=n_samples,
         n_processes=2,
         wait_time_between_samples=0.01,
@@ -111,7 +125,7 @@ def compute_obj_and_obs(x: float = 0.0) -> tuple[float, float]:
     return obj, obs
 
 
-def test_evaluate_samples_multiproc_with_observables(doe) -> None:
+def test_evaluate_samples_multiproc_with_observables() -> None:
     """Evaluate a DoE in // with multiprocessing and with observables."""
     disc = create_discipline("AutoPyDiscipline", py_func=compute_obj_and_obs)
     disc.cache = None
@@ -160,19 +174,15 @@ def variables_space():
     return design_space
 
 
-def test_compute_doe_transformed(variables_space) -> None:
+def test_compute_doe_transformed(fullfact, variables_space) -> None:
     """Check the computation of a transformed DOE in a variables space."""
-    doe = PyDOE()
-    doe.algo_name = "fullfact"
-    points = doe.compute_doe(variables_space, n_samples=4, unit_sampling=True)
+    points = fullfact.compute_doe(variables_space, n_samples=4, unit_sampling=True)
     assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
 
 
-def test_compute_doe_nontransformed(variables_space) -> None:
+def test_compute_doe_nontransformed(fullfact, variables_space) -> None:
     """Check the computation of a non-transformed DOE in a variables space."""
-    doe = PyDOE()
-    doe.algo_name = "fullfact"
-    points = doe.compute_doe(variables_space, n_samples=4)
+    points = fullfact.compute_doe(variables_space, n_samples=4)
     assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
 
 
@@ -208,11 +218,11 @@ def test_transformation(doe_database, var) -> None:
     assert doe_database[array([var])]["func"] == array([var])
 
 
-def test_pre_run_debug(doe, caplog) -> None:
+def test_pre_run_debug(lhs, caplog) -> None:
     """Check a DEBUG message logged just after sampling the input unit hypercube."""
     caplog.set_level("DEBUG")
     problem = Power2()
-    doe.execute(problem, "lhs", n_samples=2)
+    lhs.execute(problem, n_samples=2)
     message = (
         "The DOE algorithm lhs of PyDOE has generated 2 samples "
         "in the input unit hypercube of dimension 3."
@@ -229,12 +239,12 @@ def test_pre_run_debug(doe, caplog) -> None:
 
 @pytest.mark.parametrize("algo_name", ["OT_MONTE_CARLO", "lhs"])
 def test_seed(algo_name) -> None:
-    """Check the use of the seed at the DOELibrary level."""
+    """Check the use of the seed at the BaseDOELibrary level."""
     problem = Power2()
-    library = PyDOE() if algo_name == "lhs" else OpenTURNS()
-    library.algo_name = algo_name
+    library = DOELibraryFactory().create(algo_name)
 
-    # The DOELibrary has a seed and increments it at the beginning of each execution.
+    # The BaseDOELibrary has a seed and increments it
+    # at the beginning of each execution.
     assert library.seed == 0
     library.execute(
         problem,
@@ -243,10 +253,10 @@ def test_seed(algo_name) -> None:
     assert library.seed == 1
     assert len(problem.database) == 2
 
-    # We execute a second time, still with the seed of the DOELibrary.
+    # We execute a second time, still with the seed of the BaseDOELibrary.
     # For that,
     # we need to reset the current iteration because max_iter is reached
-    # (for DOELibrary, max_iter == n_samples).
+    # (for BaseDOELibrary, max_iter == n_samples).
     problem.reset(
         database=False, design_space=False, function_calls=False, preprocessing=False
     )
@@ -258,7 +268,7 @@ def test_seed(algo_name) -> None:
     assert len(problem.database) == 4
 
     # We execute a third time,
-    # with a seed passed as an option of the DOELibrary
+    # with a seed passed as an option of the BaseDOELibrary
     # and equal to the previous one.
     # By doing so,
     # the input samples will be the same and the functions won't be evaluated.
@@ -270,7 +280,7 @@ def test_seed(algo_name) -> None:
     # There is no new evaluation in the database:
     assert len(problem.database) == 4
 
-    # Lastly, we check that the DOELibrary uses its own seed again.
+    # Lastly, we check that the BaseDOELibrary uses its own seed again.
     problem.reset(
         database=False, design_space=False, function_calls=False, preprocessing=False
     )
@@ -288,7 +298,7 @@ def test_seed(algo_name) -> None:
         ("float", "float"),
     ],
 )
-def test_variable_types(doe, var_type1, var_type2) -> None:
+def test_variable_types(var_type1, var_type2) -> None:
     """Verify that input data provided to a discipline match the design space types."""
     design_variable_type_to_python_type = DesignSpace.VARIABLE_TYPES_TO_DTYPES
 
@@ -323,7 +333,7 @@ def test_variable_types(doe, var_type1, var_type2) -> None:
 
 
 @pytest.mark.parametrize(("l_b", "u_b"), [(None, None), (1, None), (None, 1)])
-def test_uunormalized_components(l_b, u_b) -> None:
+def test_uunormalized_components(mc, l_b, u_b) -> None:
     """Check that an error is raised when the design space is unbounded."""
     design_space = DesignSpace()
     design_space.add_variable("x", 2, l_b=1, u_b=3)
@@ -333,17 +343,15 @@ def test_uunormalized_components(l_b, u_b) -> None:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: sum(x), "f")
 
-    library = SciPyDOE()
-    library.algo_name = "MC"
     error_message = "The components {2, 3, 4} of the design space are unbounded."
     with pytest.raises(ValueError, match=re.escape(error_message)):
-        library.compute_doe(design_space, 3)
+        mc.compute_doe(design_space, 3)
 
     with pytest.raises(ValueError, match=re.escape(error_message)):
-        library.execute(problem, n_samples=3)
+        mc.execute(problem, n_samples=3)
 
 
-def test_uunormalized_components_with_parameter_space() -> None:
+def test_uunormalized_components_with_parameter_space(mc) -> None:
     """Check that an error is not raised when the design space is a parameter space."""
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable("x", "OTNormalDistribution")
@@ -354,10 +362,8 @@ def test_uunormalized_components_with_parameter_space() -> None:
     problem = OptimizationProblem(parameter_space)
     problem.objective = MDOFunction(lambda x: sum(x), "f")
 
-    library = SciPyDOE()
-    library.algo_name = "MC"
-    library.compute_doe(parameter_space, 3)
-    library.execute(problem, n_samples=3)
+    mc.compute_doe(parameter_space, 3)
+    mc.execute(problem, n_samples=3)
 
 
 def f(x):
@@ -384,11 +390,11 @@ def problem():
 
 
 @pytest.mark.parametrize("n_processes", [1, 2])
-def test_callback(n_processes, problem):
+def test_callback(custom_doe, n_processes, problem):
     """Check the use of callbacks."""
 
     counter = Counter()
-    CustomDOE().execute(
+    custom_doe.execute(
         problem,
         samples=array([[1.0], [2.0]]),
         n_processes=n_processes,
@@ -399,9 +405,9 @@ def test_callback(n_processes, problem):
 
 @pytest.mark.parametrize("n_processes", [1, 2])
 @pytest.mark.parametrize("use_database", [False, True])
-def test_use_database(n_processes, problem, use_database):
+def test_use_database(custom_doe, n_processes, problem, use_database):
     """Check the option use_database."""
-    CustomDOE().execute(
+    custom_doe.execute(
         problem,
         samples=array([[1.0], [2.0]]),
         n_processes=n_processes,
@@ -410,18 +416,17 @@ def test_use_database(n_processes, problem, use_database):
     assert bool(problem.database) is use_database
 
 
-def test_compute_doe():
-    """Check DOELibrary.compute_doe from the dimension of the variables space."""
+def test_compute_doe(custom_doe):
+    """Check BaseDOELibrary.compute_doe from the dimension of the variables space."""
     samples = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
-    assert_equal(CustomDOE().compute_doe(3, samples=samples), samples)
+    assert_equal(custom_doe.compute_doe(3, samples=samples), samples)
 
 
-def test_serialize(tmp_wd):
-    """Verify that DOELibrary is serializable."""
-    lib = CustomDOE()
+def test_serialize(custom_doe, tmp_wd):
+    """Verify that BaseDOELibrary is serializable."""
     output_path = Path("out.pk")
     with open(output_path, "wb") as outf:
-        pickle.dump(lib, outf)
+        pickle.dump(custom_doe, outf)
 
     with open(output_path, "rb") as outf:
         pickle.load(outf)

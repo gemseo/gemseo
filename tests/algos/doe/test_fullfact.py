@@ -63,7 +63,7 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
     design_space.add_variable("x", size=size, l_b=0.0, u_b=2.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: sum(x), "func")
-    doe_library_class().execute(problem, algo_name, n_samples=n_samples)
+    doe_library_class(algo_name).execute(problem, n_samples=n_samples)
     assert array_equal(
         problem.to_dataset("data").get_view(variable_names="x").to_numpy(),
         expected,
@@ -82,7 +82,7 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size) -> N
     design_space.add_variable("x", size=size, l_b=0.0, u_b=2.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: sum(x), "func")
-    doe_library_class().execute(problem, algo_name, n_samples=n_samples)
+    doe_library_class(algo_name).execute(problem, n_samples=n_samples)
     data = problem.to_dataset().get_view(variable_names="x").to_numpy()
     if n_samples < 2**size:
         expected_min = expected_max = 1.0
@@ -123,7 +123,7 @@ def test_fullfact_levels(
     """Check that ``levels`` option in full-factorial is correctly taken into
     account."""
 
-    doe_library_class().execute(doe_problem_dim_2, algo_name, **options)
+    doe_library_class(algo_name).execute(doe_problem_dim_2, **options)
     assert allclose(doe_problem_dim_2.database.get_x_vect_history(), expected)
 
 
@@ -163,7 +163,7 @@ def test_fullfact_error(
     """
 
     with pytest.raises(exception, match=error_msg):
-        doe_library_class().execute(doe_problem_dim_2, algo_name, **options)
+        doe_library_class(algo_name).execute(doe_problem_dim_2, **options)
 
 
 def test__compute_fullfact_levels(caplog) -> None:

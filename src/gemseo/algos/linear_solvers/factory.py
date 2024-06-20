@@ -24,7 +24,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
-from gemseo.algos.linear_solvers.linear_solver_library import LinearSolverLibrary
+from gemseo.algos.linear_solvers.base_linear_solver_library import (
+    BaseLinearSolverLibrary,
+)
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -35,7 +37,7 @@ if TYPE_CHECKING:
 class LinearSolverLibraryFactory(BaseAlgoFactory):
     """A factory of linear solver libraries."""
 
-    _CLASS = LinearSolverLibrary
+    _CLASS = BaseLinearSolverLibrary
     _MODULE_NAMES = ("gemseo.algos.linear_solvers",)
 
     @property

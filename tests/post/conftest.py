@@ -61,7 +61,7 @@ def __common_problem():  # noqa: PT005
 def three_length_common_problem(__common_problem):
     """The __common_problem sampled three times on a diagonal of its input space."""
     lib = DiagonalDOE()
-    lib.algo_name = "DiagonalDOE"
+    lib._algo_name = "DiagonalDOE"
     lib.execute(__common_problem, n_samples=3, eval_jac=True)
     return __common_problem
 
@@ -70,7 +70,7 @@ def three_length_common_problem(__common_problem):
 def common_problem(__common_problem):
     """The __common_problem sampled twice on a diagonal of its input space."""
     lib = DiagonalDOE()
-    lib.algo_name = "DiagonalDOE"
+    lib._algo_name = "DiagonalDOE"
     lib.execute(__common_problem, n_samples=2, eval_jac=True)
     return __common_problem
 
@@ -79,7 +79,7 @@ def common_problem(__common_problem):
 def large_common_problem(__common_problem):
     """The __common_problem sampled 20 times on a diagonal of its input space."""
     lib = DiagonalDOE()
-    lib.algo_name = "DiagonalDOE"
+    lib._algo_name = "DiagonalDOE"
     lib.execute(__common_problem, n_samples=20, eval_jac=True)
     return __common_problem
 
@@ -90,6 +90,6 @@ def common_problem_():
     problem = Rosenbrock()
     problem.minimize_objective = False
     lib = DiagonalDOE()
-    lib.algo_name = "DiagonalDOE"
+    lib._algo_name = "DiagonalDOE"
     lib.execute(problem, n_samples=10, eval_jac=True)
     return problem

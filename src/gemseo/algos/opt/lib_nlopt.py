@@ -18,7 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
-"""NLopt library wrapper.
+"""The library of NLopt optimization algorithms.
 
 Warnings:
     If the objective, or a constraint, of the :class:`.OptimizationProblem`
@@ -43,6 +43,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 from typing import Union
 
 import nlopt
@@ -52,8 +53,9 @@ from numpy import atleast_1d
 from numpy import atleast_2d
 from numpy import ndarray
 
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.algos.design_space_utils import get_value_and_bounds
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -73,164 +75,137 @@ class NLoptAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "NLopt"
 
 
-class Nlopt(OptimizationLibrary):
-    """NLopt optimization library interface.
+class Nlopt(BaseOptimizationLibrary):
+    """The library of NLopt optimization algorithms."""
 
-    See OptimizationLibrary.
-    """
+    _INNER_MAXEVAL: Final[str] = "inner_maxeval"
+    _STOPVAL: Final[str] = "stopval"
+    _CTOL_ABS: Final[str] = "ctol_abs"
+    _INIT_STEP: Final[str] = "init_step"
 
-    LIB_COMPUTE_GRAD = False
-    INNER_MAXEVAL = "inner_maxeval"
-    STOPVAL = "stopval"
-    CTOL_ABS = "ctol_abs"
-    INIT_STEP = "init_step"
-    SUCCESS = "NLOPT_SUCCESS: Generic success return value"
-    STOPVAL_REACHED = (
-        "NLOPT_STOPVAL_REACHED: Optimization stopped  "
-        "because stopval (above) was reached"
-    )
-    FTOL_REACHED = (
-        "NLOPT_FTOL_REACHED: Optimization stopped "
-        "because ftol_rel or ftol_abs (above) was reached"
-    )
-
-    XTOL_REACHED = (
-        "NLOPT_XTOL_REACHED Optimization stopped "
-        "because xtol_rel or xtol_abs (above) was reached"
-    )
-
-    MAXEVAL_REACHED = (
-        "NLOPT_MAXEVAL_REACHED: Optimization stopped "
-        "because maxeval (above) was reached"
-    )
-
-    MAXTIME_REACHED = (
-        "NLOPT_MAXTIME_REACHED: Optimization stopped "
-        "because maxtime (above) was reached"
-    )
-    FAILURE = "NLOPT_FAILURE:    Generic failure code"
-
-    INVALID_ARGS = (
-        "NLOPT_INVALID_ARGS: Invalid arguments (e.g. lower "
-        "bounds are bigger than upper bounds, an unknown"
-        " algorithm was specified, etcetera)."
-    )
-    OUT_OF_MEMORY = "OUT_OF_MEMORY: Ran out of memory"
-    ROUNDOFF_LIMITED = (
-        "NLOPT_ROUNDOFF_LIMITED: Halted because "
-        "roundoff errors limited progress. (In this "
-        "case, the optimization still typically "
-        "returns a useful result.)"
-    )
-    FORCED_STOP = (
-        "NLOPT_FORCED_STOP: Halted because of a forced "
-        "termination: the user called nlopt_force_stop"
-        "(opt) on the optimization's nlopt_opt"
-        " object opt from the user's objective "
-        "function or constraints."
-    )
-
-    NLOPT_MESSAGES: ClassVar[dict[int, str]] = {
-        1: SUCCESS,
-        2: STOPVAL_REACHED,
-        3: FTOL_REACHED,
-        4: XTOL_REACHED,
-        5: MAXEVAL_REACHED,
-        6: MAXTIME_REACHED,
-        -1: FAILURE,
-        -2: INVALID_ARGS,
-        -3: OUT_OF_MEMORY,
-        -4: ROUNDOFF_LIMITED,
-        -5: FORCED_STOP,
+    __NLOPT_MESSAGES: ClassVar[dict[int, str]] = {
+        1: "NLOPT_SUCCESS: Generic success return value",
+        2: (
+            "NLOPT_STOPVAL_REACHED: Optimization stopped  "
+            "because stopval (above) was reached"
+        ),
+        3: (
+            "NLOPT_FTOL_REACHED: Optimization stopped "
+            "because ftol_rel or ftol_abs (above) was reached"
+        ),
+        4: (
+            "NLOPT_XTOL_REACHED Optimization stopped "
+            "because xtol_rel or xtol_abs (above) was reached"
+        ),
+        5: (
+            "NLOPT_MAXEVAL_REACHED: Optimization stopped "
+            "because maxeval (above) was reached"
+        ),
+        6: (
+            "NLOPT_MAXTIME_REACHED: Optimization stopped "
+            "because maxtime (above) was reached"
+        ),
+        -1: "NLOPT_FAILURE:    Generic failure code",
+        -2: (
+            "NLOPT_INVALID_ARGS: Invalid arguments (e.g. lower "
+            "bounds are bigger than upper bounds, an unknown"
+            " algorithm was specified, etcetera)."
+        ),
+        -3: "OUT_OF_MEMORY: Ran out of memory",
+        -4: (
+            "NLOPT_ROUNDOFF_LIMITED: Halted because "
+            "roundoff errors limited progress. (In this "
+            "case, the optimization still typically "
+            "returns a useful result.)"
+        ),
+        -5: (
+            "NLOPT_FORCED_STOP: Halted because of a forced "
+            "termination: the user called nlopt_force_stop"
+            "(opt) on the optimization's nlopt_opt"
+            " object opt from the user's objective "
+            "function or constraints."
+        ),
     }
 
-    LIBRARY_NAME = "NLopt"
-
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-
-        nlopt_doc = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
-        self.descriptions = {
-            "NLOPT_MMA": NLoptAlgorithmDescription(
-                algorithm_name="MMA",
-                description=(
-                    "Method of Moving Asymptotes (MMA)"
-                    "implemented in the NLOPT library"
-                ),
-                handle_inequality_constraints=True,
-                internal_algorithm_name=nlopt.LD_MMA,
-                require_gradient=True,
-                website=f"{nlopt_doc}#mma-method-of-moving-asymptotes-and-ccsa",
+    __NLOPT_DOC = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
+    ALGORITHM_INFOS: ClassVar[dict[str, NLoptAlgorithmDescription]] = {
+        "NLOPT_MMA": NLoptAlgorithmDescription(
+            algorithm_name="MMA",
+            description=(
+                "Method of Moving Asymptotes (MMA)" "implemented in the NLOPT library"
             ),
-            "NLOPT_COBYLA": NLoptAlgorithmDescription(
-                algorithm_name="COBYLA",
-                description=(
-                    "Constrained Optimization BY Linear "
-                    "Approximations (COBYLA) implemented "
-                    "in the NLOPT library"
-                ),
-                handle_equality_constraints=True,
-                handle_inequality_constraints=True,
-                internal_algorithm_name=nlopt.LN_COBYLA,
-                website=(
-                    f"{nlopt_doc}#cobyla-constrained-optimization-by-linear-"
-                    "approximations"
-                ),
+            handle_inequality_constraints=True,
+            internal_algorithm_name=nlopt.LD_MMA,
+            require_gradient=True,
+            website=f"{__NLOPT_DOC}#mma-method-of-moving-asymptotes-and-ccsa",
+        ),
+        "NLOPT_COBYLA": NLoptAlgorithmDescription(
+            algorithm_name="COBYLA",
+            description=(
+                "Constrained Optimization BY Linear "
+                "Approximations (COBYLA) implemented "
+                "in the NLOPT library"
             ),
-            "NLOPT_SLSQP": NLoptAlgorithmDescription(
-                algorithm_name="SLSQP",
-                description=(
-                    "Sequential Least-Squares Quadratic "
-                    "Programming (SLSQP) implemented in "
-                    "the NLOPT library"
-                ),
-                handle_equality_constraints=True,
-                handle_inequality_constraints=True,
-                internal_algorithm_name=nlopt.LD_SLSQP,
-                require_gradient=True,
-                website=f"{nlopt_doc}#slsqp",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+            internal_algorithm_name=nlopt.LN_COBYLA,
+            website=(
+                f"{__NLOPT_DOC}#cobyla-constrained-optimization-by-linear-"
+                "approximations"
             ),
-            "NLOPT_BOBYQA": NLoptAlgorithmDescription(
-                algorithm_name="BOBYQA",
-                description=(
-                    "Bound Optimization BY Quadratic "
-                    "Approximation (BOBYQA) implemented "
-                    "in the NLOPT library"
-                ),
-                internal_algorithm_name=nlopt.LN_BOBYQA,
-                website=f"{nlopt_doc}#bobyqa",
+        ),
+        "NLOPT_SLSQP": NLoptAlgorithmDescription(
+            algorithm_name="SLSQP",
+            description=(
+                "Sequential Least-Squares Quadratic "
+                "Programming (SLSQP) implemented in "
+                "the NLOPT library"
             ),
-            "NLOPT_BFGS": NLoptAlgorithmDescription(
-                algorithm_name="BFGS",
-                description=(
-                    "Broyden-Fletcher-Goldfarb-Shanno method "
-                    "(BFGS) implemented in the NLOPT library"
-                ),
-                internal_algorithm_name=nlopt.LD_LBFGS,
-                require_gradient=True,
-                website=f"{nlopt_doc}#low-storage-bfgs",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+            internal_algorithm_name=nlopt.LD_SLSQP,
+            require_gradient=True,
+            website=f"{__NLOPT_DOC}#slsqp",
+        ),
+        "NLOPT_BOBYQA": NLoptAlgorithmDescription(
+            algorithm_name="BOBYQA",
+            description=(
+                "Bound Optimization BY Quadratic "
+                "Approximation (BOBYQA) implemented "
+                "in the NLOPT library"
             ),
-            # Does not work on Rastrigin => banned
-            #             'NLOPT_ESCH': { Does not work on Rastrigin
-            #                 self.INTERNAL_NAME: nlopt.GN_ESCH,
-            #                 self.REQUIRE_GRAD: False,
-            #                 self.HANDLE_EQ_CONS: False,
-            #                 self.HANDLE_INEQ_CONS: False},
-            "NLOPT_NEWUOA": NLoptAlgorithmDescription(
-                algorithm_name="NEWUOA",
-                description=(
-                    "NEWUOA + bound constraints implemented in the NLOPT library"
-                ),
-                internal_algorithm_name=nlopt.LN_NEWUOA_BOUND,
-                website=f"{nlopt_doc}#newuoa-bound-constraints",
+            internal_algorithm_name=nlopt.LN_BOBYQA,
+            website=f"{__NLOPT_DOC}#bobyqa",
+        ),
+        "NLOPT_BFGS": NLoptAlgorithmDescription(
+            algorithm_name="BFGS",
+            description=(
+                "Broyden-Fletcher-Goldfarb-Shanno method "
+                "(BFGS) implemented in the NLOPT library"
             ),
-            # Does not work on Rastrigin => banned
-            #             'NLOPT_ISRES': {
-            #                 self.INTERNAL_NAME: nlopt.GN_ISRES,
-            #                 self.REQUIRE_GRAD: False,
-            #                 self.HANDLE_EQ_CONS: True,
-            #                 self.HANDLE_INEQ_CONS: True}
-        }
+            internal_algorithm_name=nlopt.LD_LBFGS,
+            require_gradient=True,
+            website=f"{__NLOPT_DOC}#low-storage-bfgs",
+        ),
+        # Does not work on Rastrigin => banned
+        #             'NLOPT_ESCH': { Does not work on Rastrigin
+        #                 self.INTERNAL_NAME: nlopt.GN_ESCH,
+        #                 self.REQUIRE_GRAD: False,
+        #                 self.HANDLE_EQ_CONS: False,
+        #                 self.HANDLE_INEQ_CONS: False},
+        "NLOPT_NEWUOA": NLoptAlgorithmDescription(
+            algorithm_name="NEWUOA",
+            description=("NEWUOA + bound constraints implemented in the NLOPT library"),
+            internal_algorithm_name=nlopt.LN_NEWUOA_BOUND,
+            website=f"{__NLOPT_DOC}#newuoa-bound-constraints",
+        ),
+        # Does not work on Rastrigin => banned
+        #             'NLOPT_ISRES': {
+        #                 self.INTERNAL_NAME: nlopt.GN_ISRES,
+        #                 self.REQUIRE_GRAD: False,
+        #                 self.HANDLE_EQ_CONS: True,
+        #                 self.HANDLE_INEQ_CONS: True}
+    }
 
     def _get_options(
         self,
@@ -267,9 +242,11 @@ class Nlopt(OptimizationLibrary):
                 found, or stop maximizing when a value :math:`\geq` stopval
                 is found. If ``None``, this termination condition will not be active.
             kkt_tol_abs: The absolute tolerance on the KKT residual norm.
-                If ``None`` this criterion is not activated.
+                If ``None`` and ``kkt_tol_rel`` is ``None``,
+                this criterion is not considered.
             kkt_tol_rel: The relative tolerance on the KKT residual norm.
-                If ``None`` this criterion is not activated.
+                If ``None`` and ``kkt_tol_abs`` is ``None``,
+                this criterion is not considered.
             normalize_design_space: If ``True``,
                 normalize the design variables between 0 and 1.
             eq_tolerance: The tolerance on the equality constraints.
@@ -291,6 +268,8 @@ class Nlopt(OptimizationLibrary):
                 :math:`\min(x_i)=0` and :math:`\max(x_i)=1`.
             stop_crit_n_x: The minimum number of design vectors to take into account in
                 the stopping criteria.
+                If ``None``,
+                this number is specific to the algorithm and the problem dimension.
             **kwargs: The additional algorithm-specific options.
 
         Returns:
@@ -370,7 +349,7 @@ class Nlopt(OptimizationLibrary):
             Returns:
                 The result of evaluating the function for a given constraint.
             """
-            if self.descriptions[self.algo_name].require_gradient and grad.size > 0:
+            if self.ALGORITHM_INFOS[self._algo_name].require_gradient and grad.size > 0:
                 cstr_jac = jac(xn_vect)
                 grad[:] = atleast_2d(cstr_jac)[index_cstr,]
             return atleast_1d(func(xn_vect).real)[index_cstr]
@@ -419,25 +398,28 @@ class Nlopt(OptimizationLibrary):
         # nlopt_problem.set_xtol_rel(0.0)
         # nlopt_problem.set_ftol_rel(0.0)
         # nlopt_problem.set_ftol_abs(0.0)
-        nlopt_problem.set_maxeval(int(1.5 * opt_options[self.MAX_ITER]))  # anti-cycling
-        nlopt_problem.set_maxtime(opt_options[self.MAX_TIME])
-        nlopt_problem.set_initial_step(opt_options[self.INIT_STEP])
-        if self.STOPVAL in opt_options:
-            stopval = opt_options[self.STOPVAL]
+        nlopt_problem.set_maxeval(
+            int(1.5 * opt_options[self._MAX_ITER])
+        )  # anti-cycling
+        nlopt_problem.set_maxtime(opt_options[self._MAX_TIME])
+        nlopt_problem.set_initial_step(opt_options[self._INIT_STEP])
+        if self._STOPVAL in opt_options:
+            stopval = opt_options[self._STOPVAL]
             if stopval is not None:
                 nlopt_problem.set_stopval(stopval)
-        if self.INNER_MAXEVAL in opt_options:
-            nlopt_problem.set_param(self.INNER_MAXEVAL, opt_options[self.INNER_MAXEVAL])
+        if self._INNER_MAXEVAL in opt_options:
+            nlopt_problem.set_param(
+                self._INNER_MAXEVAL, opt_options[self._INNER_MAXEVAL]
+            )
 
         return nlopt_problem
 
     def _pre_run(
         self,
         problem: OptimizationProblem,
-        algo_name: str,
         **options: NLoptOptionsType,
     ) -> None:
-        """Set :attr:`.STOP_CRIT_NX` depending on the algorithm.
+        """Set ``"stop_crit_n_x"`` depending on the algorithm.
 
         The COBYLA and BOBYQA algorithms create sets of interpolation points
         of sizes ``N+1`` and ``2*N+1`` respectively at initialization,
@@ -445,46 +427,37 @@ class Nlopt(OptimizationLibrary):
         In some cases, a termination criterion can be matched during this phase,
         leading to a premature termination.
 
-        In order to circumvent this, :attr:`.STOP_CRIT_NX` is set accordingly,
+        In order to circumvent this, ``"stop_crit_n_x"`` is set accordingly,
         depending on the algorithm used.
         It ensures that the termination criterion will not be triggered during this
         preliminary Design of Experiment phase of the algorithm.
-
-        Args:
-            problem: The optimization problem.
-            algo_name: The name of the algorithm.
-            **options: The options of the algorithm,
-                see the associated JSON file.
         """
-        n_stop_crit_x = options[self.STOP_CRIT_NX]
+        algo_name = self._algo_name
+        n_stop_crit_x = options[self._STOP_CRIT_NX]
         if algo_name == "NLOPT_COBYLA" and not n_stop_crit_x:
-            design_space_dimension = self.problem.design_space.dimension
-            options[self.STOP_CRIT_NX] = design_space_dimension + 1
+            design_space_dimension = problem.design_space.dimension
+            options[self._STOP_CRIT_NX] = design_space_dimension + 1
         elif algo_name == "NLOPT_BOBYQA" and not n_stop_crit_x:
-            design_space_dimension = self.problem.design_space.dimension
-            options[self.STOP_CRIT_NX] = 2 * design_space_dimension + 1
+            design_space_dimension = problem.design_space.dimension
+            options[self._STOP_CRIT_NX] = 2 * design_space_dimension + 1
         else:
-            options[self.STOP_CRIT_NX] = n_stop_crit_x or 3
-        super()._pre_run(problem, algo_name, **options)
+            options[self._STOP_CRIT_NX] = n_stop_crit_x or 3
+        super()._pre_run(problem, **options)
 
-    def _run(self, **options: NLoptOptionsType) -> OptimizationResult:
-        """Run the algorithm.
-
-        Args:
-            **options: The options for the algorithm,
-                see associated JSON file.
-
-        Returns:
-            The optimization result.
-
+    def _run(
+        self, problem: OptimizationProblem, **options: NLoptOptionsType
+    ) -> OptimizationResult:
+        """
         Raises:
             TerminationCriterion: If the driver stops for some reason.
-        """
-        normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
+        """  # noqa: D205, D212
+        normalize_ds = options.pop(self._NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the bounds anx x0
-        x_0, l_b, u_b = self.get_x0_and_bounds(normalize_ds)
+        x_0, l_b, u_b = get_value_and_bounds(problem.design_space, normalize_ds)
 
-        nlopt_problem = nlopt.opt(self.internal_algo_name, x_0.shape[0])
+        nlopt_problem = nlopt.opt(
+            self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name, x_0.shape[0]
+        )
 
         # Set the normalized bounds:
         nlopt_problem.set_lower_bounds(l_b.real)
@@ -492,7 +465,7 @@ class Nlopt(OptimizationLibrary):
 
         nlopt_problem.set_min_objective(self.__opt_objective_grad_nlopt)
 
-        self.__add_constraints(nlopt_problem, options[self.CTOL_ABS])
+        self.__add_constraints(nlopt_problem, options[self._CTOL_ABS])
         nlopt_problem = self.__set_prob_options(nlopt_problem, **options)
         try:
             nlopt_problem.optimize(x_0.real)
@@ -503,6 +476,6 @@ class Nlopt(OptimizationLibrary):
                 str(err.__class__.__name__),
             )
             raise TerminationCriterion from None
-        message = self.NLOPT_MESSAGES[nlopt_problem.last_optimize_result()]
+        message = self.__NLOPT_MESSAGES[nlopt_problem.last_optimize_result()]
         status = nlopt_problem.last_optimize_result()
-        return self.get_optimum_from_database(message, status)
+        return self._get_optimum_from_database(problem, message, status)
