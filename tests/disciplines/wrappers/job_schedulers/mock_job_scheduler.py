@@ -23,7 +23,7 @@ from __future__ import annotations
 from subprocess import run
 
 cmd = (
-    r"gemseo-deserialize-run $workdir_path $discipline_path $inputs_path $outputs_path"
+    r"gemseo-deserialize-run $discipline_path $inputs_path $outputs_path"
     r" $linearize $execute_at_linearize"
 )
 

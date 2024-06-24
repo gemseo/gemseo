@@ -50,7 +50,6 @@ def sys_argv(discipline_and_data):
         _,
     ) = discipline_and_data
     return [
-        str(path_to_discipline.parent),
         str(path_to_discipline),
         str(path_to_input_data),
         str(path_to_outputs),
@@ -66,14 +65,12 @@ def test_parse_inputs(discipline_and_data, sys_argv) -> None:
         _,
     ) = discipline_and_data
     (
-        workir_path,
         serialized_disc_path,
         input_data_path,
         outputs_path,
         linearize,
         execute_at_linearize,
     ) = _parse_inputs(sys_argv)
-    assert workir_path == path_to_discipline.parent
     assert serialized_disc_path == path_to_discipline
     assert input_data_path == path_to_input_data
     assert outputs_path == path_to_outputs
@@ -96,35 +93,28 @@ def test_parse_inputs_fail(tmp_wd) -> None:
     i_exit_path.write_text("a", encoding="utf8")
     i_exist = str(i_exit_path)
 
-    with pytest.raises(
-        FileNotFoundError, match=r"The work directory .+ does not exist."
-    ):
-        _parse_inputs([idontexist_path, i_exist, i_exist, i_exist])
+    with pytest.raises(SystemExit):
+        _parse_inputs([idontexist_path, i_exist, i_exist])
 
     with pytest.raises(SystemExit):
-        _parse_inputs([i_exist, idontexist_path, i_exist, i_exist])
+        _parse_inputs([i_exist, idontexist_path, i_exist])
 
-    with pytest.raises(SystemExit):
-        _parse_inputs([i_exist, i_exist, idontexist_path, i_exist])
-
-    _parse_inputs([i_exist, i_exist, i_exist, i_exist])
+    _parse_inputs([i_exist, i_exist, i_exist])
 
 
 def test_run_discipline_save_outputs(discipline_and_data) -> None:
     """Test the run and save outputs."""
     (
-        path_to_discipline,
+        _path_to_discipline,
         _,
         _,
         discipline,
     ) = discipline_and_data
-    workir_path = path_to_discipline.parent
-    outputs_path = workir_path / "outputs.pckl"
+    outputs_path = Path("outputs.pckl")
     _run_discipline_save_outputs(
         discipline,
         discipline.default_inputs,
         outputs_path,
-        workir_path,
         False,
         False,
         (),
@@ -144,20 +134,18 @@ def test_run_discipline_save_outputs_errors(discipline_and_data) -> None:
         raise ValueError(error_message)
 
     (
-        path_to_discipline,
+        _path_to_discipline,
         _,
         _,
         discipline,
     ) = discipline_and_data
     discipline._run = _run_and_fail
 
-    workir_path = path_to_discipline.parent
-    outputs_path = workir_path / "outputs.pckl"
+    outputs_path = Path("outputs.pckl")
     return_code = _run_discipline_save_outputs(
         discipline,
         discipline.default_inputs,
         outputs_path,
-        workir_path,
         False,
         False,
         (),
@@ -186,25 +174,24 @@ def test_cli_options_error(tmp_wd):
             "dummy",
             "dummy",
             "dummy",
-            "dummy",
             "--execute-at-linearize",
         ))
 
 
 def test_path_serialization(tmp_wd) -> None:
     """Test the execution of a serialized discipline that contains Paths."""
-    path_to_discipline = tmp_wd / "discipline.pckl"
+    path_to_discipline = "discipline.pckl"
     discipline = PathDiscipline(tmp_wd)
     discipline.to_pickle(path_to_discipline)
-    path_to_outputs = tmp_wd / "outputs.pckl"
-    path_to_input_data = tmp_wd / "inputs.pckl"
+    path_to_outputs = "outputs.pckl"
+    path_to_input_data = "inputs.pckl"
 
     with open(path_to_input_data, "wb") as outf:
         pickler = pickle.Pickler(outf, protocol=2)
         pickler.dump((discipline.default_inputs, (), ()))
 
     completed = subprocess.run(
-        f"gemseo-deserialize-run {tmp_wd} {path_to_discipline} "
+        f"gemseo-deserialize-run {path_to_discipline} "
         f"{path_to_input_data} {path_to_outputs}",
         shell=True,
         capture_output=True,

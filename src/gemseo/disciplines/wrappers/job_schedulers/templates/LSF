@@ -36,7 +36,9 @@ echo ""
 
 $setup_cmd
 
+cd $workdir_path
+
 echo "Deserialize and run discipline..."
-gemseo-deserialize-run $workdir_path $discipline_path $inputs_path $outputs_path $linearize $execute_at_linearize
+gemseo-deserialize-run $discipline_path $inputs_path $outputs_path $linearize $execute_at_linearize
 
 echo "Done"

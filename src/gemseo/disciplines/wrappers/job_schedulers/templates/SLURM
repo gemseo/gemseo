@@ -37,9 +37,13 @@ echo ""
 echo "Number of Nodes Allocated      = $$SLURM_JOB_NUM_NODES"
 echo "Number of Tasks Allocated      = $$SLURM_NTASKS"
 echo "Number of Cores/Task Allocated = $$SLURM_CPUS_PER_TASK"
+echo ""
 
 $setup_cmd
 
+cd $workdir_path
+
 echo "Deserialize and run discipline..."
-gemseo-deserialize-run $workdir_path $discipline_path $inputs_path $outputs_path $linearize $execute_at_linearize
+gemseo-deserialize-run $discipline_path $inputs_path $outputs_path $linearize $execute_at_linearize
+
 echo "Done"

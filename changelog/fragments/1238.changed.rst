@@ -1,0 +1,2 @@
+The executable ``deserialize-and-run`` no longer takes the working directory as its first argument.
+The working directory, if needed,  shall be set before calling it.
