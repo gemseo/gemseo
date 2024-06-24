@@ -41,7 +41,7 @@ idna==3.7
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==7.2.0
+importlib-metadata==7.2.1
     # via
     #   sphinx
     #   sphinxcontrib-bibtex
