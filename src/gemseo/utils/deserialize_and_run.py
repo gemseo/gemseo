@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 import pickle
 import traceback
 from pathlib import Path
@@ -34,14 +33,14 @@ if TYPE_CHECKING:
 
 def _parse_inputs(
     args: Sequence[str] | None = None,
-) -> tuple[Path, Path, Path, Path, bool, bool]:
+) -> tuple[Path, Path, Path, bool, bool]:
     """Parse the arguments of the command.
 
     Args:
         args: The command line arguments. If ``None``, uses sys.argv[1:]
 
     Returns:
-        The path to the workdir, the path to the serialized discipline, the path
+        The path to the serialized discipline, the path
         to the serialized input data, the path to the serialized output data
 
     Raises:
@@ -53,11 +52,6 @@ def _parse_inputs(
             "Deserialize the inputs, run the discipline "
             "and serialize the output to disk."
         ),
-    )
-    parser.add_argument(
-        "run_workdir",
-        help="The path to the directory where the files will be generated.",
-        type=Path,
     )
     parser.add_argument(
         "discipline_path",
@@ -85,17 +79,11 @@ def _parse_inputs(
 
     parsed_args = parser.parse_args(args)
 
-    workdir_path = parsed_args.run_workdir
-    if not workdir_path.exists():
-        msg = f"The work directory {workdir_path} does not exist."
-        raise FileNotFoundError(msg)
-
     if parsed_args.execute_at_linearize and not parsed_args.linearize:
         msg = "The option --execute-at-linearize cannot be used without --linearize."
         raise ValueError(msg)
 
     return (
-        Path(workdir_path),
         Path(parsed_args.discipline_path.name),
         Path(parsed_args.inputs_path.name),
         Path(parsed_args.outputs_path),
@@ -108,7 +96,6 @@ def _run_discipline_save_outputs(
     discipline: MDODiscipline,
     input_data: DisciplineData,
     outputs_path: Path,
-    workdir_path: Path,
     linearize: bool,
     execute_at_linearize: bool,
     differentiated_inputs: Iterable[str],
@@ -120,7 +107,6 @@ def _run_discipline_save_outputs(
         discipline: The discipline to run.
         input_data: The input data for the discipline.
         outputs_path: The path to the output data.
-        workdir_path: The path to the working directory.
         linearize: Whether to linearize the discipline.
         execute_at_linearize: Whether to call execute() when calling linearize().
         differentiated_inputs: If the linearization is performed, the
@@ -131,9 +117,6 @@ def _run_discipline_save_outputs(
     Returns:
         The return code, 0 if success, 1 if failure.
     """
-    cwd = Path.cwd()
-    os.chdir(workdir_path)
-
     outputs: tuple[DisciplineData, JacobianData] | tuple[BaseException, str]
 
     try:
@@ -157,7 +140,6 @@ def _run_discipline_save_outputs(
         pickler = pickle.Pickler(file_, protocol=2)
         pickler.dump(outputs)
 
-    os.chdir(cwd)
     return return_code
 
 
@@ -165,7 +147,6 @@ def main() -> int:
     """Deserialize the inputs, run the discipline and saves the output to the disk.
 
     Takes the input parameters from sys.argv:
-        - run_workdir: The path to the workdir where the files will be generated.
         - discipline_path: The path to the serialized discipline.
         - inputs_path: The path to the serialized input data.
         - outputs_path: The path to the serialized output data.
@@ -178,7 +159,6 @@ def main() -> int:
             or an invalid number of arguments are passed.
     """
     (
-        workir_path,
         serialized_disc_path,
         input_data_path,
         outputs_path,
@@ -196,7 +176,6 @@ def main() -> int:
         discipline,
         input_data,
         outputs_path,
-        workir_path,
         linearize,
         execute_at_linearize,
         linearize_inputs,
