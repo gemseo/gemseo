@@ -24,7 +24,7 @@ docutils==0.21.2
     # via readme-renderer
 idna==3.7
     # via requests
-importlib-metadata==7.2.1
+importlib-metadata==8.0.0
     # via
     #   keyring
     #   twine
@@ -86,7 +86,7 @@ tomli==2.0.1
     # via
     #   build
     #   check-wheel-contents
-twine==5.1.0
+twine==5.0.0
     # via -r requirements/dist.in
 typing-extensions==4.12.2
     # via
