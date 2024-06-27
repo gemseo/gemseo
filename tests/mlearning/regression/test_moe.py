@@ -275,7 +275,7 @@ def test_moe_with_candidates(dataset) -> None:
     assert not moe.regress_cands
     assert not moe.classif_cands
 
-    moe.add_clusterer_candidate("GaussianMixture", n_components=[5])
+    moe.add_clusterer_candidate("GaussianMixture", n_clusters=[5])
     assert len(moe.cluster_cands) == 1
 
     moe.add_classifier_candidate("SVMClassifier", kernel=["rbf"])

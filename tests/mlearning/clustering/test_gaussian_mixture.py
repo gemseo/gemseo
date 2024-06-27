@@ -98,8 +98,8 @@ def dataset(samples) -> Dataset:
 @pytest.fixture()
 def model(dataset) -> GaussianMixture:
     """A trained GaussianMixture."""
-    n_components = 3
-    gaussian_mixture = GaussianMixture(dataset, n_components=n_components)
+    n_clusters = 3
+    gaussian_mixture = GaussianMixture(dataset, n_clusters=n_clusters)
     gaussian_mixture.learn()
     return gaussian_mixture
 
@@ -107,10 +107,10 @@ def model(dataset) -> GaussianMixture:
 @pytest.fixture()
 def model_with_transform(dataset) -> GaussianMixture:
     """A trained GaussianMixture with parameters scaling."""
-    n_components = 3
+    n_clusters = 3
     transformer = {"parameters": MinMaxScaler()}
     gaussian_mixture = GaussianMixture(
-        dataset, transformer=transformer, n_components=n_components
+        dataset, transformer=transformer, n_clusters=n_clusters
     )
     gaussian_mixture.learn()
     return gaussian_mixture
@@ -126,13 +126,13 @@ def test_constructor(dataset) -> None:
 
 def test_learn(dataset) -> None:
     """Test learn."""
-    n_components = 5
-    gaussian_mixture = GaussianMixture(dataset, n_components=n_components)
+    n_clusters = 5
+    gaussian_mixture = GaussianMixture(dataset, n_clusters=n_clusters)
     another_gaussian_mixture = GaussianMixture(
-        dataset, var_names=["x_1"], n_components=n_components
+        dataset, var_names=["x_1"], n_clusters=n_clusters
     )
     yet_another_gaussian_mixture = GaussianMixture(
-        dataset, var_names=["x_2"], n_components=n_components
+        dataset, var_names=["x_2"], n_clusters=n_clusters
     )
     gaussian_mixture.learn()
     another_gaussian_mixture.learn()
@@ -144,7 +144,7 @@ def test_learn(dataset) -> None:
     ]:
         assert gm_model.algo is not None
         assert gm_model.labels is not None
-        assert gm_model.n_clusters == n_components
+        assert gm_model.n_clusters == n_clusters
 
 
 def test_predict(model) -> None:

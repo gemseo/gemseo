@@ -100,7 +100,7 @@ class KMeans(BasePredictiveClusterer):
 
     EPS = finfo(float).eps
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         data: Dataset,
         transformer: TransformerType = BasePredictiveClusterer.IDENTITY,
@@ -109,14 +109,6 @@ class KMeans(BasePredictiveClusterer):
         random_state: int | None = SEED,
         **parameters: int | float | bool | str | None,
     ) -> None:
-        """
-        Args:
-            n_clusters: The number of clusters of the K-means algorithm.
-            random_state: The random state passed to the method
-                generating the initial centroids
-                Use an integer for reproducible results.
-        """  # noqa: D205 D212
-        n_init = parameters.pop("n_init", "auto")
         super().__init__(
             data,
             transformer=transformer,
@@ -126,7 +118,10 @@ class KMeans(BasePredictiveClusterer):
             **parameters,
         )
         self.algo = SKLKmeans(
-            n_clusters, random_state=random_state, n_init=n_init, **parameters
+            n_clusters,
+            random_state=random_state,
+            n_init=parameters.pop("n_init", "auto"),
+            **parameters,
         )
 
     def _fit(

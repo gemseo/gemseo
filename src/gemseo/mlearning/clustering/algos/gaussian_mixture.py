@@ -96,31 +96,25 @@ class GaussianMixture(BasePredictiveClusterer):
     SHORT_ALGO_NAME: ClassVar[str] = "GMM"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         data: Dataset,
         transformer: TransformerType = BasePredictiveClusterer.IDENTITY,
         var_names: Iterable[str] | None = None,
-        n_components: int = 5,
+        n_clusters: int = 5,
         random_state: int | None = SEED,
         **parameters: int | float | str | bool | None,
     ) -> None:
-        """
-        Args:
-            n_components: The number of components of the Gaussian mixture.
-            random_state: The random state passed to the random number generator.
-                Use an integer for reproducible results.
-        """  # noqa: D205 D212
         super().__init__(
             data,
             transformer=transformer,
             var_names=var_names,
-            n_components=n_components,
+            n_clusters=n_clusters,
             random_state=random_state,
             **parameters,
         )
         self.algo = SKLGaussianMixture(
-            n_components, random_state=random_state, **parameters
+            n_components=n_clusters, random_state=random_state, **parameters
         )
 
     def _fit(

@@ -69,7 +69,7 @@ model = create_regression_model("MOERegressor", dataset, hard=False)
 # minimizing this measure.
 model.set_clustering_measure(SilhouetteMeasure)
 model.add_clusterer_candidate("KMeans", n_clusters=[2, 3, 4])
-model.add_clusterer_candidate("GaussianMixture", n_components=[3, 4, 5])
+model.add_clusterer_candidate("GaussianMixture", n_clusters=[3, 4, 5])
 
 # %%
 # Classification
