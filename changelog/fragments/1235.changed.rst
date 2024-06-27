@@ -1,0 +1,1 @@
+API change: ``GaussianMixture``'s ``n_components`` argument renamed to ``n_clusters``; any ``BaseClusterer`` has this argument.

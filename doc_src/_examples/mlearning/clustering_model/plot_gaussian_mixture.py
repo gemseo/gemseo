@@ -59,7 +59,7 @@ dataset = Dataset.from_array(data, variables)
 # -----------------------
 # We know that there are three classes of Iris plants.
 # We will thus try to identify three clusters.
-model = create_clustering_model("GaussianMixture", data=dataset, n_components=3)
+model = create_clustering_model("GaussianMixture", data=dataset, n_clusters=3)
 model.learn()
 model
 

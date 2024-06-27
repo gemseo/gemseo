@@ -27,10 +27,10 @@ from typing import Union
 from numpy import ndarray
 from numpy import unique
 
-from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.algos.ml_algo import SavedObjectType as MLAlgoSavedObjectType
 from gemseo.mlearning.core.algos.ml_algo import TransformerType
 from gemseo.mlearning.core.algos.unsupervised import BaseMLUnsupervisedAlgo
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -55,10 +55,24 @@ class BaseClusterer(BaseMLUnsupervisedAlgo):
         data: Dataset,
         transformer: TransformerType = BaseMLUnsupervisedAlgo.IDENTITY,
         var_names: Iterable[str] | None = None,
-        **parameters: MLAlgoParameterType,
+        n_clusters: int = 5,
+        random_state: int | None = SEED,
+        **parameters: int | float | bool | str | None,
     ) -> None:
+        """
+        Args:
+            n_clusters: The number of clusters of the K-means algorithm.
+            random_state: The random state passed to the method
+                generating the initial centroids.
+                Use an integer for reproducible results.
+        """  # noqa: D205 D212
         super().__init__(
-            data, transformer=transformer, var_names=var_names, **parameters
+            data,
+            transformer=transformer,
+            var_names=var_names,
+            n_clusters=n_clusters,
+            random_state=random_state,
+            **parameters,
         )
         self.labels = None
         self.n_clusters = None
