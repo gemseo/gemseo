@@ -54,7 +54,7 @@ packaging==24.1
     # via
     #   build
     #   check-wheel-contents
-pkginfo==1.11.1
+pkginfo==1.10.0
     # via twine
 pycparser==2.22
     # via cffi
@@ -86,7 +86,7 @@ tomli==2.0.1
     # via
     #   build
     #   check-wheel-contents
-twine==5.0.0
+twine==5.1.1
     # via -r requirements/dist.in
 typing-extensions==4.12.2
     # via
