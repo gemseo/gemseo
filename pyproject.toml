@@ -57,6 +57,7 @@ all = [
 ]
 test = [
     "covdefaults",
+    "pandera",
     "pytest>=7",
     "pytest-cov>=5",
     "pytest-xdist>=3",
