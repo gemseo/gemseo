@@ -222,7 +222,7 @@ class Scenario(MDODiscipline):
                 self.__cast_default_inputs_to_complex()
 
         self.formulation.optimization_problem.differentiation_method = method
-        self.formulation.optimization_problem.fd_step = step
+        self.formulation.optimization_problem.differentiation_step = step
 
     def __cast_default_inputs_to_complex(self) -> None:
         """Cast the float default inputs of all disciplines to complex."""
@@ -342,27 +342,21 @@ class Scenario(MDODiscipline):
     def save_optimization_history(
         self,
         file_path: str | Path,
-        file_format: str = OptimizationProblem.HDF5_FORMAT,
+        file_format: OptimizationProblem.HistoryFileFormat = OptimizationProblem.HistoryFileFormat.HDF5,  # noqa: E501
         append: bool = False,
     ) -> None:
         """Save the optimization history of the scenario to a file.
 
         Args:
             file_path: The path of the file to save the history.
-            file_format: The format of the file, either "hdf5" or "ggobi".
+            file_format: The format of the file.
             append: If ``True``, the history is appended to the file if not empty.
-
-        Raises:
-            ValueError: If the file format is not correct.
         """
-        opt_pb = self.formulation.optimization_problem
-        if file_format == OptimizationProblem.HDF5_FORMAT:
-            opt_pb.to_hdf(file_path=file_path, append=append)
-        elif file_format == OptimizationProblem.GGOBI_FORMAT:
-            opt_pb.database.to_ggobi(file_path=file_path)
-        else:
-            msg = f"Cannot export optimization history to file format: {file_format}."
-            raise ValueError(msg)
+        optimization_problem = self.formulation.optimization_problem
+        if file_format == optimization_problem.HistoryFileFormat.HDF5:
+            optimization_problem.to_hdf(file_path=file_path, append=append)
+        elif file_format == optimization_problem.HistoryFileFormat.GGOBI:
+            optimization_problem.database.to_ggobi(file_path=file_path)
 
     def set_optimization_history_backup(
         self,
@@ -411,17 +405,19 @@ class Scenario(MDODiscipline):
                 opt_pb.database.update_from_hdf(self._opt_hist_backup_path)
                 max_iteration = len(opt_pb.database)
                 if max_iteration != 0:
-                    opt_pb.current_iter = max_iteration
+                    opt_pb.evaluation_counter.current = max_iteration
 
-        opt_pb.add_callback(
+        opt_pb.add_listener(
             self._execute_backup_callback,
-            each_new_iter=at_each_iteration,
-            each_store=at_each_function_call,
+            at_each_iteration=at_each_iteration,
+            at_each_function_call=at_each_function_call,
         )
 
         if plot:
-            opt_pb.add_callback(
-                self._execute_plot_callback, each_new_iter=True, each_store=False
+            opt_pb.add_listener(
+                self._execute_plot_callback,
+                at_each_iteration=True,
+                at_each_function_call=False,
             )
 
     def _execute_backup_callback(self, x_vect: ndarray) -> None:

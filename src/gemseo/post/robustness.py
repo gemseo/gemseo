@@ -80,14 +80,14 @@ class Robustness(OptPostProcessor):
         problem = self.optimization_problem
         design_space = problem.design_space
         bounds_range = design_space.get_upper_bounds() - design_space.get_lower_bounds()
-        n_x = problem.get_dimension()
+        n_x = problem.design_space.dimension
         cov = zeros((n_x, n_x))
         cov[range(n_x), range(n_x)] = (standard_deviation * bounds_range) ** 2
 
         robustness = RobustnessQuantifier(self.database)
         function_samples = []
         function_names = []
-        for func in self.optimization_problem.get_all_functions():
+        for func in self.optimization_problem.functions:
             func_name = database_func_name = func.name
             if self._change_obj and func_name == self._neg_obj_name:
                 func_name = self._obj_name

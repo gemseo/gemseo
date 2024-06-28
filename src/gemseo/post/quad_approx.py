@@ -85,8 +85,8 @@ class QuadApprox(OptPostProcessor):
                 b_mat *= -1
                 function = self._standardized_obj_name
         else:
-            if function in problem.constraint_names:
-                function = problem.constraint_names[function][0]
+            if function in problem.constraints.original_to_current_names:
+                function = problem.constraints.original_to_current_names[function][0]
 
             b_mat = self.__build_approx(function, func_index)
 
@@ -113,7 +113,7 @@ class QuadApprox(OptPostProcessor):
         # Avoid using alpha scaling for hessian otherwise diagonal is messy
         b_mat, _, _, self.grad_opt = SR1Approx(self.database).build_approximation(
             function,
-            at_most_niter=int(1.5 * self.optimization_problem.get_dimension()),
+            at_most_niter=int(1.5 * self.optimization_problem.design_space.dimension),
             return_x_grad=True,
             func_index=func_index,
         )
@@ -146,7 +146,7 @@ class QuadApprox(OptPostProcessor):
             interpolation="nearest",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold, base=e),
         )
-        ticks = arange(self.optimization_problem.dimension)
+        ticks = arange(self.optimization_problem.design_space.dimension)
         design_variable_names = self._get_design_variable_names(simplify=True)
         ax1.set_xticks(ticks)
         ax1.set_xticklabels(design_variable_names, rotation=45)

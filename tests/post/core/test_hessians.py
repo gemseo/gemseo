@@ -82,7 +82,7 @@ def compare_approximations(
         **kwargs: The approximation options.
     """
     database = problem.database
-    n = problem.dimension
+    n = problem.design_space.dimension
     approx = approx_class(database)
     h_approx, _, _, _ = approx.build_approximation(
         funcname=problem.objective.name, **kwargs

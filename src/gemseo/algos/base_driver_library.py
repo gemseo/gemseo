@@ -216,9 +216,9 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         if max_iter < 1:
             msg = f"max_iter must be >=1, got {max_iter}"
             raise ValueError(msg)
-        problem.max_iter = max_iter
-        problem.current_iter = (
-            0 if self.__reset_iteration_counters else problem.current_iter
+        problem.evaluation_counter.maximum = max_iter
+        problem.evaluation_counter.current = (
+            0 if self.__reset_iteration_counters else problem.evaluation_counter.current
         )
         if self.activate_progress_bar:
             cls = ProgressBar if self.__log_problem else UnsuffixedProgressBar
@@ -243,7 +243,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 execution time.
         """
         self.__progress_bar.set_objective_value(None, True)
-        self.problem.current_iter += 1
+        self.problem.evaluation_counter.current += 1
         if 0 < self._max_time < time() - self._start_time:
             raise MaxTimeReached
 
@@ -398,7 +398,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         # in order to remove them at the end of the execution.
         listeners = []
         if problem.new_iter_observables:
-            listeners.append(problem.execute_observables_callback)
+            listeners.append(problem.new_iter_observables.evaluate)
         listeners.append(self._new_iteration_callback)
         for listener in listeners:
             if problem.database.add_new_iter_listener(listener):
@@ -461,10 +461,10 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
 
     def _process_specific_option(self, options, option_key: str) -> None:
         if option_key == self._INEQ_TOLERANCE:
-            self.problem.ineq_tolerance = options[option_key]
+            self.problem.tolerances.inequality = options[option_key]
             del options[option_key]
         elif option_key == self._EQ_TOLERANCE:
-            self.problem.eq_tolerance = options[option_key]
+            self.problem.tolerances.equality = options[option_key]
             del options[option_key]
 
     def _get_early_stopping_result(

@@ -116,7 +116,7 @@ class OATSensitivity(MDODiscipline):
         input_names = parameter_space.variable_names
         self.input_grammar.update_from_names(input_names)
         problem = scenario.formulation.optimization_problem
-        self.__output_names = [problem.get_objective_name()] + [
+        self.__output_names = [problem.standardized_objective_name] + [
             observable.name for observable in problem.observables
         ]
         output_names = [

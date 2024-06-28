@@ -269,7 +269,7 @@ class MDOScenarioAdapter(MDODiscipline):
         # equality- and inequality-constraints multipliers
         base_dict.update({
             self.get_cstr_mult_name(cstr_name): zeros(1)
-            for cstr_name in problem.get_constraint_names()
+            for cstr_name in problem.constraints.get_names()
         })
 
         # Update the output grammar
@@ -381,8 +381,14 @@ class MDOScenarioAdapter(MDODiscipline):
         if last_eval_not_opt:
             # Revaluate all functions at optimum
             # To re execute all disciplines and get the right data
+            output_functions, jacobian_functions = opt_problem.get_functions(
+                no_db_no_norm=True
+            )
             opt_problem.evaluate_functions(
-                x_opt, normalize=False, no_db_no_norm=True, eval_observables=False
+                x_opt,
+                normalize=False,
+                output_functions=output_functions,
+                jacobian_functions=jacobian_functions,
             )
 
         # Retrieves top-level discipline outputs
@@ -421,7 +427,7 @@ class MDOScenarioAdapter(MDODiscipline):
         problem = self.scenario.formulation.optimization_problem
         x_opt = problem.solution.x_opt
         lagrange = LagrangeMultipliers(problem)
-        lagrange.compute(x_opt, problem.ineq_tolerance)
+        lagrange.compute(x_opt, problem.tolerances.inequality)
 
         # Store the Lagrange multipliers in the local data
         multipliers = lagrange.get_multipliers_arrays()
@@ -526,7 +532,7 @@ class MDOScenarioAdapter(MDODiscipline):
         jacobians = self._compute_auxiliary_jacobians(diff_inputs)
 
         # Perform the post-optimal analysis
-        ineq_tolerance = opt_problem.ineq_tolerance
+        ineq_tolerance = opt_problem.tolerances.inequality
         self.post_optimal_analysis = PostOptimalAnalysis(opt_problem, ineq_tolerance)
         post_opt_jac = self.post_optimal_analysis.execute(
             outputs, diff_inputs, jacobians

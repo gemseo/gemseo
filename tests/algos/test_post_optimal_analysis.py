@@ -107,8 +107,9 @@ class TestPostOptimalAnalysis(unittest.TestCase):
             expr="p-x-y",
             input_names=["x", "y"],
             dim=1,
+            f_type=MDOFunction.ConstraintType.INEQ,
         )
-        opt_problem.add_ineq_constraint(ineq_func)
+        opt_problem.add_constraint(ineq_func)
         eq_func = MDOFunction(
             lambda x: array([x[1] - p * x[0]]),
             "h",
@@ -116,8 +117,9 @@ class TestPostOptimalAnalysis(unittest.TestCase):
             expr="p*x-y",
             input_names=["x", "y"],
             dim=1,
+            f_type=MDOFunction.ConstraintType.EQ,
         )
-        opt_problem.add_eq_constraint(eq_func)
+        opt_problem.add_constraint(eq_func)
 
         # Solve the problem
         if solve:

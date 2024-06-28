@@ -160,16 +160,7 @@ def test_add_user_defined_constraint_error(mdf_scenario) -> None:
     )
 
 
-def test_save_optimization_history_exception(mdf_scenario) -> None:
-    with pytest.raises(
-        ValueError, match="Cannot export optimization history to file format: foo."
-    ):
-        mdf_scenario.save_optimization_history("file_path", file_format="foo")
-
-
-@pytest.mark.parametrize(
-    "file_format", [OptimizationProblem.GGOBI_FORMAT, OptimizationProblem.HDF5_FORMAT]
-)
+@pytest.mark.parametrize("file_format", OptimizationProblem.HistoryFileFormat)
 def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd) -> None:
     file_path = Path("file_name")
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
@@ -767,24 +758,24 @@ def identity_scenario() -> MDOScenario:
 @pytest.mark.parametrize(
     ("constraint_type", "constraint_name", "value", "positive", "expected"),
     [
-        ("eq", None, None, False, ["y", "", "y(x) == 0.0", "y(x) == 0.0"]),
+        ("eq", "", 0.0, False, ["y", "", "y(x) == 0.0", "y(x) == 0.0"]),
         (
             "eq",
             "cstr",
-            None,
+            0.0,
             False,
             ["cstr", "", "y(x) == 0.0", "cstr: y(x) == 0.0"],
         ),
         (
             "eq",
-            None,
+            "",
             1.0,
             False,
             ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 == 0.0", "y(x) == 1.0"],
         ),
         (
             "eq",
-            None,
+            "",
             -1.0,
             False,
             ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 == 0.0", "y(x) == -1.0"],
@@ -803,24 +794,24 @@ def identity_scenario() -> MDOScenario:
             False,
             ["cstr", "y(x)+1.0", "y(x)+1.0 == 0.0", "cstr: y(x) == -1.0"],
         ),
-        ("ineq", None, None, False, ["y", "", "y(x) <= 0.0", "y(x) <= 0.0"]),
+        ("ineq", "", 0.0, False, ["y", "", "y(x) <= 0.0", "y(x) <= 0.0"]),
         (
             "ineq",
             "cstr",
-            None,
+            0.0,
             False,
             ["cstr", "", "y(x) <= 0.0", "cstr: y(x) <= 0.0"],
         ),
         (
             "ineq",
-            None,
+            "",
             1.0,
             False,
             ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 <= 0.0", "y(x) <= 1.0"],
         ),
         (
             "ineq",
-            None,
+            "",
             -1.0,
             False,
             ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 <= 0.0", "y(x) <= -1.0"],
@@ -839,24 +830,24 @@ def identity_scenario() -> MDOScenario:
             False,
             ["cstr", "y(x)+1.0", "y(x)+1.0 <= 0.0", "cstr: y(x) <= -1.0"],
         ),
-        ("ineq", None, None, True, ["-y", "-y(x)", "-y(x) <= 0.0", "y(x) >= 0.0"]),
+        ("ineq", "", 0.0, True, ["-y", "-y(x)", "-y(x) <= 0.0", "y(x) >= 0.0"]),
         (
             "ineq",
             "cstr",
-            None,
+            0.0,
             True,
             ["cstr", "-y(x)", "-y(x) <= 0.0", "cstr: y(x) >= 0.0"],
         ),
         (
             "ineq",
-            None,
+            "",
             1.0,
             True,
             ["-[y-1.0]", "-(y(x)-1.0)", "-(y(x)-1.0) <= 0.0", "y(x) >= 1.0"],
         ),
         (
             "ineq",
-            None,
+            "",
             -1.0,
             True,
             ["-[y+1.0]", "-(y(x)+1.0)", "-(y(x)+1.0) <= 0.0", "y(x) >= -1.0"],
@@ -957,24 +948,16 @@ def scenario_for_linear_check(full_linear):
 
 def test_function_problem_type(scenario_for_linear_check, full_linear) -> None:
     """Test that function and problem are consistent with declaration."""
+    optimization_problem = scenario_for_linear_check.formulation.optimization_problem
     if not full_linear:
         assert isinstance(
-            scenario_for_linear_check.formulation.optimization_problem.objective,
+            optimization_problem.objective,
             FunctionFromDiscipline,
         )
-        assert (
-            scenario_for_linear_check.formulation.optimization_problem.pb_type
-            == scenario_for_linear_check.formulation.optimization_problem.ProblemType.NON_LINEAR  # noqa: E501
-        )
+        assert not optimization_problem.is_linear
     else:
-        assert isinstance(
-            scenario_for_linear_check.formulation.optimization_problem.objective,
-            MDOLinearFunction,
-        )
-        assert (
-            scenario_for_linear_check.formulation.optimization_problem.pb_type
-            == scenario_for_linear_check.formulation.optimization_problem.ProblemType.LINEAR  # noqa: E501
-        )
+        assert isinstance(optimization_problem.objective, MDOLinearFunction)
+        assert scenario_for_linear_check.formulation.optimization_problem.is_linear
 
 
 class MyDisc(MDODiscipline):

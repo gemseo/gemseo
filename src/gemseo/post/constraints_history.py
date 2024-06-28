@@ -90,7 +90,9 @@ class ConstraintsHistory(OptPostProcessor):
         Raises:
             ValueError: When an item of ``constraint_names`` is not a constraint name.
         """  # noqa: D205, D212, D415
-        all_constraint_names = self.optimization_problem.constraint_names.keys()
+        all_constraint_names = (
+            self.optimization_problem.constraints.original_to_current_names.keys()
+        )
         for constraint_name in constraint_names:
             if constraint_name not in all_constraint_names:
                 msg = (
@@ -127,7 +129,8 @@ class ConstraintsHistory(OptPostProcessor):
         iterations = arange(len(constraint_histories))
         n_iterations = len(iterations)
         eq_constraint_names = [
-            f.name for f in self.optimization_problem.get_eq_constraints()
+            f.name
+            for f in self.optimization_problem.constraints.get_equality_constraints()
         ]
         # for each subplot
         for constraint_history, constraint_name, axe in zip(
@@ -138,11 +141,11 @@ class ConstraintsHistory(OptPostProcessor):
             if is_eq_constraint:
                 cmap = self.eq_cstr_cmap
                 constraint_type = "equality"
-                tolerance = self.optimization_problem.eq_tolerance
+                tolerance = self.optimization_problem.tolerances.equality
             else:
                 cmap = self.ineq_cstr_cmap
                 constraint_type = "inequality"
-                tolerance = self.optimization_problem.ineq_tolerance
+                tolerance = self.optimization_problem.tolerances.inequality
 
             # prepare the graph
             axe.grid(True)

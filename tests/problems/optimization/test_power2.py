@@ -76,7 +76,7 @@ def test_initial_value() -> None:
 
 def test_constraint_names(problem) -> None:
     """Check the names of the constraints."""
-    assert problem.get_constraint_names() == ["ineq1", "ineq2", "eq"]
+    assert problem.constraints.get_names() == ["ineq1", "ineq2", "eq"]
 
 
 @pytest.mark.parametrize(

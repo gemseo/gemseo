@@ -114,8 +114,8 @@ class SOM(OptPostProcessor):
             annotate: If ``True``, add label of neuron value to SOM plot.
         """  # noqa: D205, D212, D415
         criteria = [
-            self.optimization_problem.get_objective_name(),
-            *self.optimization_problem.get_constraint_names(),
+            self.optimization_problem.standardized_objective_name,
+            *self.optimization_problem.constraints.get_names(),
         ]
         all_data = self.database.get_function_names()
         # Ensure that the data is available in the database

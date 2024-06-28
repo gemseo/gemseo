@@ -71,7 +71,7 @@ class ParetoFront(OptPostProcessor):
         if objectives is None:
             objectives = [self.optimization_problem.objective.name]
 
-        all_funcs = self.optimization_problem.get_all_function_name()
+        all_funcs = self.optimization_problem.function_names
         all_dv_names = self.optimization_problem.design_space.variable_names
 
         sample_values, all_labels = self.__compute_names_and_values(
@@ -144,7 +144,7 @@ class ParetoFront(OptPostProcessor):
         all_data_names.sort()
         all_labels = sorted(objective_labels + design_variables_labels)
 
-        sample_values = self.optimization_problem.get_data_by_names(
+        sample_values = self.optimization_problem.history.get_data_by_names(
             names=all_data_names, as_dict=False
         )
 
@@ -211,7 +211,7 @@ class ParetoFront(OptPostProcessor):
         Returns:
             An array of size ``n_samples``, True if the point is non-feasible.
         """
-        x_feasible, _ = self.optimization_problem.get_feasible_points()
+        x_feasible, _ = self.optimization_problem.history.feasible_points
         feasible_indexes = [self.database.get_iteration(x) - 1 for x in x_feasible]
 
         is_non_feasible = full(sample_values.shape[0], True)

@@ -246,7 +246,10 @@ class PyDOE(BaseDOELibrary):
         problem: OptimizationProblem,
     ) -> _UnsuitabilityReason:
         reason = super()._get_unsuitability_reason(algorithm_description, problem)
-        if reason or problem.dimension >= algorithm_description.minimum_dimension:
+        if (
+            reason
+            or problem.design_space.dimension >= algorithm_description.minimum_dimension
+        ):
             return reason
 
         return _UnsuitabilityReason.SMALL_DIMENSION

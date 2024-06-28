@@ -144,11 +144,11 @@ class OptHistoryView(OptPostProcessor):
 
         for constraints, constraint_type in [
             (
-                self.optimization_problem.get_ineq_constraints(),
+                self.optimization_problem.constraints.get_inequality_constraints(),
                 MDOFunction.ConstraintType.INEQ,
             ),
             (
-                self.optimization_problem.get_eq_constraints(),
+                self.optimization_problem.constraints.get_equality_constraints(),
                 MDOFunction.ConstraintType.EQ,
             ),
         ]:
@@ -391,8 +391,7 @@ class OptHistoryView(OptPostProcessor):
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
         normalize = self.optimization_problem.design_space.normalize_vect
         x_xstar = norm(
-            normalize(x_history)
-            - normalize(self.optimization_problem.get_optimum()[1]),
+            normalize(x_history) - normalize(self.optimization_problem.optimum[1]),
             axis=1,
         )
 

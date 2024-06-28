@@ -20,6 +20,7 @@ from numpy import array
 from gemseo import execute_algo
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
@@ -39,7 +40,7 @@ def test_kkt_norm_correctly_stored(problem) -> None:
     OptimizationLibraryFactory().execute(
         problem, "Augmented_Lagrangian_order_1", **options
     )
-    kkt_hist = problem.database.get_function_history(problem.KKT_RESIDUAL_NORM)
+    kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
     obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
     obj_hist = problem.database.get_function_history(problem.objective.name)
     assert len(kkt_hist) == obj_grad_hist.shape[0]

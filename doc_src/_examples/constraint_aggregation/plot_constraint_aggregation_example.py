@@ -109,7 +109,7 @@ new_scenario.add_constraint("g", constraint_type="ineq")
 
 # %%
 # This method aggregates the constraints using the lower bound KS function
-new_scenario.formulation.optimization_problem.aggregate_constraint(
+new_scenario.formulation.optimization_problem.constraints.aggregate(
     0, method="lower_bound_KS", rho=10.0
 )
 new_scenario.execute(algo_options)

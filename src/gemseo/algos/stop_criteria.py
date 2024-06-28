@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 from numpy import all
 from numpy import allclose
@@ -69,6 +70,10 @@ class XtolReached(TerminationCriterion):  # noqa: N818
 
 class KKTReached(TerminationCriterion):
     """A termination criterion based on the Karush-Kuhn-Tucker (KKT) residual norm."""
+
+
+KKT_RESIDUAL_NORM: Final[str] = "KKT residual norm"
+"""The name to store the KKT residual norm in a database."""
 
 
 @dataclass
@@ -116,7 +121,7 @@ class BaseToleranceTester:
         return tolerance_criterion_is_reached
 
     @abstractmethod
-    def _check(self, problem: OptimizationProblem, **kwargs) -> bool:
+    def _check(self, problem: OptimizationProblem, *args: Any, **kwargs: Any) -> bool:
         """Check whether the tolerance criterion is met.
 
         Args:
@@ -134,14 +139,16 @@ class ObjectiveToleranceTester(BaseToleranceTester):
 
     termination_criterion: TerminationCriterion = field(default=FtolReached, init=False)
 
-    def _check(self, problem: OptimizationProblem, **kwargs: Any) -> bool:  # noqa: D102
+    def _check(self, problem: OptimizationProblem, *args: Any, **kwargs: Any) -> bool:  # noqa: D102
         database = problem.database
         if len(database) < self.n_last_iterations:
             return False
 
         # Checks that there is at least one feasible point
         x_values = database.get_last_n_x_vect(self.n_last_iterations)
-        if not any(problem.is_point_feasible(database[x_val]) for x_val in x_values):
+        if not any(
+            problem.constraints.is_point_feasible(database[x_val]) for x_val in x_values
+        ):
             return False
 
         obj_name = problem.objective.name
@@ -168,7 +175,7 @@ class DesignToleranceTester(BaseToleranceTester):
 
     termination_criterion: TerminationCriterion = field(default=XtolReached, init=False)
 
-    def _check(self, problem: OptimizationProblem, **kwargs: Any) -> bool:  # noqa: D102
+    def _check(self, problem: OptimizationProblem, *args: Any, **kwargs: Any) -> bool:  # noqa: D102
         database = problem.database
         if len(database) < self.n_last_iterations:
             return False
@@ -176,7 +183,9 @@ class DesignToleranceTester(BaseToleranceTester):
         x_values = database.get_last_n_x_vect(self.n_last_iterations)
 
         # Checks that there is at least one feasible point
-        if not any(problem.is_point_feasible(database[x_val]) for x_val in x_values):
+        if not any(
+            problem.constraints.is_point_feasible(database[x_val]) for x_val in x_values
+        ):
             return False
 
         x_average = average(x_values, axis=0)
@@ -222,18 +231,18 @@ def kkt_residual_computation(
     Returns:
         The KKT residual norm.
     """
-    res = opt_problem.database.get_function_value(opt_problem.KKT_RESIDUAL_NORM, x_vect)
+    res = opt_problem.database.get_function_value(KKT_RESIDUAL_NORM, x_vect)
     if res is not None:
         return res
     lagrange = LagrangeMultipliers(opt_problem)
-    if opt_problem.has_constraints():
+    if opt_problem.constraints:
         lagrange.compute(x_vect, ineq_tolerance=ineq_tolerance)
         res = lagrange.kkt_residual + lagrange.constraint_violation
-        opt_problem.database.store(x_vect, {opt_problem.KKT_RESIDUAL_NORM: res})
+        opt_problem.database.store(x_vect, {KKT_RESIDUAL_NORM: res})
         return res
 
     res = norm(lagrange.get_objective_jacobian(x_vect))
-    opt_problem.database.store(x_vect, {opt_problem.KKT_RESIDUAL_NORM: res})
+    opt_problem.database.store(x_vect, {KKT_RESIDUAL_NORM: res})
     return res
 
 

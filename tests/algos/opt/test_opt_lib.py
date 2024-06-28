@@ -77,7 +77,9 @@ def test_is_algorithm_suited_has_eq_constraints() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
-    problem.has_eq_constraints = lambda: True
+    problem.add_constraint(
+        MDOFunction(lambda x: x, "c", f_type=MDOFunction.FunctionType.EQ)
+    )
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
         BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
@@ -93,7 +95,9 @@ def test_is_algorithm_suited_has_ineq_constraints() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
-    problem.has_ineq_constraints = lambda: True
+    problem.add_constraint(
+        MDOFunction(lambda x: x, "c", f_type=MDOFunction.FunctionType.INEQ)
+    )
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
         BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
@@ -104,12 +108,12 @@ def test_is_algorithm_suited_has_ineq_constraints() -> None:
 def test_is_algorithm_suited_pbm_type() -> None:
     """Check is_algorithm_suited with unhandled problem type."""
     description = OptimizationAlgorithmDescription(
-        "foo", "bar", problem_type=OptimizationProblem.ProblemType.LINEAR
+        "foo", "bar", for_linear_problems=True
     )
     design_space = DesignSpace()
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
-    problem.pb_type = problem.ProblemType.NON_LINEAR
+    problem._OptimizationProblem__is_linear = False
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
         BaseOptimizationLibrary._get_unsuitability_reason(description, problem)

@@ -141,9 +141,11 @@ def test_mono_objective_error():
 def test_protected_const(binh_korn):
     """Test that an exception is raised for a protected constraint name."""
     protected_constraint = MDOFunction(
-        lambda x: x, MNBI._MNBI__SUB_OPTIM_CONSTRAINT_NAME, f_type="ineq"
+        lambda x: x,
+        MNBI._MNBI__SUB_OPTIM_CONSTRAINT_NAME,
+        f_type=MDOFunction.ConstraintType.INEQ,
     )
-    binh_korn.add_ineq_constraint(protected_constraint)
+    binh_korn.add_constraint(protected_constraint)
     with pytest.raises(
         ValueError,
         match=re.escape(

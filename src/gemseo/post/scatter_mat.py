@@ -62,7 +62,7 @@ class ScatterPlotMatrix(OptPostProcessor):
         """  # noqa: D205, D212, D415
         problem = self.optimization_problem
         add_design_variables = False
-        all_function_names = problem.get_all_function_name()
+        all_function_names = problem.function_names
         all_design_names = problem.design_space.variable_names
 
         if not problem.minimize_objective and self._obj_name in variable_names:
@@ -72,7 +72,7 @@ class ScatterPlotMatrix(OptPostProcessor):
         variable_names.sort()
         if not variable_names:
             # In this case, plot all design variables, no functions.
-            variable_values = problem.get_data_by_names(
+            variable_values = problem.history.get_data_by_names(
                 names=all_design_names,
                 as_dict=False,
                 filter_non_feasible=filter_non_feasible,
@@ -88,7 +88,8 @@ class ScatterPlotMatrix(OptPostProcessor):
                 if (
                     variable_name not in all_function_names
                     and variable_name not in all_design_names
-                    and variable_name not in problem.constraint_names
+                    and variable_name
+                    not in problem.constraints.original_to_current_names
                 ):
                     msg = (
                         "Cannot build scatter plot matrix: "
@@ -101,8 +102,10 @@ class ScatterPlotMatrix(OptPostProcessor):
                 if variable_name in problem.design_space.variable_names:
                     add_design_variables = True
                     design_names.append(variable_name)
-                elif variable_name in problem.constraint_names:
-                    function_names.extend(problem.constraint_names[variable_name])
+                elif variable_name in problem.constraints.original_to_current_names:
+                    function_names.extend(
+                        problem.constraints.original_to_current_names[variable_name]
+                    )
                 else:
                     function_names.append(variable_name)
 
@@ -133,7 +136,7 @@ class ScatterPlotMatrix(OptPostProcessor):
                 )
                 variable_labels.sort()
 
-            variable_values = problem.get_data_by_names(
+            variable_values = problem.history.get_data_by_names(
                 names=variable_names,
                 as_dict=False,
                 filter_non_feasible=filter_non_feasible,

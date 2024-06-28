@@ -1994,7 +1994,7 @@ def configure(
     MDODiscipline.activate_input_data_check = check_input_data
     MDODiscipline.activate_output_data_check = check_output_data
     MDODiscipline.activate_cache = activate_discipline_cache
-    OptimizationProblem.activate_bound_check = check_desvars_bounds
+    OptimizationProblem.check_bounds = check_desvars_bounds
 
 
 def wrap_discipline_in_job_scheduler(

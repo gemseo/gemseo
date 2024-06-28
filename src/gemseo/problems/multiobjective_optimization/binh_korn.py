@@ -81,22 +81,22 @@ class BinhKorn(OptimizationProblem):
         ineq1 = MDOFunction(
             self._compute_ineq_constraint1,
             name="ineq1",
-            f_type="ineq",
+            f_type=MDOFunction.ConstraintType.INEQ,
             jac=self._compute_ineq_constraint1_jac,
             expr="(x-5.)**2 + y**2 <= 25.",
             input_names=["x", "y"],
         )
-        self.add_ineq_constraint(ineq1)
+        self.add_constraint(ineq1)
 
         ineq2 = MDOFunction(
             self._compute_ineq_constraint2,
             name="ineq2",
-            f_type="ineq",
+            f_type=MDOFunction.ConstraintType.INEQ,
             jac=self._compute_ineq_constraint2_jac,
             expr="(x-8.)**2 + (y+3)**2 >= 7.7",
             input_names=["x", "y"],
         )
-        self.add_ineq_constraint(ineq2)
+        self.add_constraint(ineq2)
 
     @staticmethod
     def _compute_binhkorn(

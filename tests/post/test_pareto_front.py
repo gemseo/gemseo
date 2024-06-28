@@ -72,7 +72,7 @@ def test_pareto(tmp_wd, kwargs, baseline_images) -> None:
         "ParetoFront",
         save=False,
         file_path="power",
-        objectives=problem.get_all_function_name(),
+        objectives=problem.function_names,
         **kwargs,
     )
 
@@ -106,7 +106,7 @@ def test_pareto_incorrect_objective_list() -> None:
             problem,
             "ParetoFront",
             save=False,
-            objectives=problem.get_all_function_name(),
+            objectives=problem.function_names,
             objectives_labels=["fake_label"],
             file_path="power",
         )

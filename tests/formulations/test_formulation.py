@@ -50,7 +50,7 @@ class TestMDOFormulation(unittest.TestCase):
         with concretize_classes(BaseMDOFormulation):
             f = BaseMDOFormulation([sm], "y_4", ds)
         prob = f.optimization_problem
-        assert not prob.has_constraints()
+        assert not prob.constraints
         f.add_constraint("y_4", constraint_name="toto")
         assert f.optimization_problem.constraints[-1].name == "toto"
 

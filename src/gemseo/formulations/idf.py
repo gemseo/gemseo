@@ -193,13 +193,15 @@ class IDF(BaseMDOFormulation):
                 discipline, strong=False
             )
             if couplings:
-                cstr = ConsistencyConstraint(couplings, self)
-                discipline_adapter = cstr.coupling_function.discipline_adapter
+                constraint = ConsistencyConstraint(couplings, self)
+                discipline_adapter = constraint.coupling_function.discipline_adapter
                 if discipline_adapter.is_linear:
-                    cstr = compute_linear_approximation(
-                        cstr, zeros(discipline_adapter.input_dimension)
+                    constraint = compute_linear_approximation(
+                        constraint,
+                        zeros(discipline_adapter.input_dimension),
+                        f_type=constraint.ConstraintType.EQ,
                     )
-                self.optimization_problem.add_eq_constraint(cstr)
+                self.optimization_problem.add_constraint(constraint)
 
     def get_expected_workflow(  # noqa:D102
         self,

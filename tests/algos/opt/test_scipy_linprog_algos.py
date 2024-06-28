@@ -73,7 +73,7 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
     input_names = ["x", "y"]
     array_ = csr_array if sparse_jacobian else array
 
-    problem = OptimizationProblem(design_space, OptimizationProblem.ProblemType.LINEAR)
+    problem = OptimizationProblem(design_space)
     problem.objective = MDOLinearFunction(
         array_([1.0, 1.0]),
         "f",
@@ -81,11 +81,22 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
         input_names,
         array([-1.0]),
     )
-    problem.add_ineq_constraint(
-        MDOLinearFunction(array_([1.0, 1.0]), "g", input_names=input_names), 1.0
+    problem.add_constraint(
+        MDOLinearFunction(
+            array_([1.0, 1.0]),
+            "g",
+            input_names=input_names,
+            f_type=MDOLinearFunction.ConstraintType.INEQ,
+        ),
+        value=1.0,
     )
-    problem.add_eq_constraint(
-        MDOLinearFunction(array_([-2.0, 1.0]), "h", input_names=input_names)
+    problem.add_constraint(
+        MDOLinearFunction(
+            array_([-2.0, 1.0]),
+            "h",
+            input_names=input_names,
+            f_type=MDOLinearFunction.ConstraintType.EQ,
+        )
     )
     return problem
 

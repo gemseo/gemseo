@@ -16,44 +16,30 @@
 
 from __future__ import annotations
 
-import itertools
-
 import numpy
 import pytest
 
-from gemseo.core.mdofunctions.norm_function import NormFunction
-
-parametrize_normalize_round_ints = pytest.mark.parametrize(
-    ("normalize", "round_ints"), tuple(itertools.product([False, True], [False, True]))
-)
+from gemseo.algos.preprocessed_functions.norm_function import NormFunction
 
 
-@parametrize_normalize_round_ints
-def test_special_repr(problem_with_identity, normalize, round_ints) -> None:
+def test_special_repr(problem_with_identity) -> None:
     """Check NormFunction.special_repr."""
     assert (
         NormFunction(
             problem_with_identity.objective,
-            normalize,
-            round_ints,
-            problem_with_identity,
+            problem_with_identity.design_space,
         ).special_repr
         == "Identity"
     )
 
 
-@parametrize_normalize_round_ints
-def test_function_without_jacobian(
-    problem_with_identity, normalize, round_ints
-) -> None:
+def test_function_without_jacobian(problem_with_identity) -> None:
     """Check the handling of a function without Jacobian."""
     with pytest.raises(
         ValueError,
-        match="Selected user gradient but function Identity has no Jacobian matrix !",
+        match="Selected user gradient but function f has no Jacobian function.",
     ):
         NormFunction(
             problem_with_identity.objective,
-            normalize,
-            round_ints,
-            problem_with_identity,
+            problem_with_identity.design_space,
         ).jac(numpy.zeros(3))

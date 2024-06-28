@@ -122,7 +122,7 @@ class PostOptimalAnalysis:
         self.output_names = output_names
         # Set the tolerance on inequality constraints
         if ineq_tol is None:
-            self.ineq_tol = self.optimization_problem.ineq_tolerance
+            self.ineq_tol = self.optimization_problem.tolerances.inequality
         else:
             self.ineq_tol = ineq_tol
 
@@ -142,7 +142,7 @@ class PostOptimalAnalysis:
             threshold: The tolerance on the validity assumption.
         """
         # Check the Jacobians
-        func_names = self.optimization_problem.get_constraint_names()
+        func_names = self.optimization_problem.constraints.get_names()
         self._check_jacobians(total_jac, func_names, parameters)
         self._check_jacobians(partial_jac, func_names, parameters)
 
@@ -367,7 +367,7 @@ class PostOptimalAnalysis:
         Returns:
             The Jacobian of the active inequality constraints for each input name.
         """
-        active_ineq_constraints = self.optimization_problem.get_active_ineq_constraints(
+        active_ineq_constraints = self.optimization_problem.constraints.get_active(
             self.x_opt, self.ineq_tol
         )
         input_names_to_jacobians = {}
@@ -400,12 +400,13 @@ class PostOptimalAnalysis:
         Returns:
             The jacobian of the equality constraints.
         """
-        eq_constraints = self.optimization_problem.get_eq_constraints()
+        jacs = [
+            jacobians[func.name]
+            for func in self.optimization_problem.constraints.get_equality_constraints()
+        ]
         jacobian = {}
-        if eq_constraints:
+        if jacs:
             for input_name in inputs:
-                jacobian[input_name] = vstack([
-                    jacobians[func.name][input_name] for func in eq_constraints
-                ])
+                jacobian[input_name] = vstack([jac[input_name] for jac in jacs])
 
         return jacobian
