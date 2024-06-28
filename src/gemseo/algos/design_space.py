@@ -68,9 +68,9 @@ from numpy import float64
 from numpy import full
 from numpy import genfromtxt
 from numpy import hstack
-from numpy import in1d
 from numpy import inf
 from numpy import int32
+from numpy import isin
 from numpy import isinf
 from numpy import isnan
 from numpy import logical_or
@@ -1326,7 +1326,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
         if isinstance(out, sparse_classes):
             # Construct a mask to only scale the required columns
-            column_mask = in1d(out.indices, norm_inds)
+            column_mask = isin(out.indices, norm_inds)
             # Scale the corresponding coefficients
             out.data[column_mask] *= self._norm_factor_inv[out.indices][column_mask]
         else:
@@ -1481,7 +1481,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
         if isinstance(out, sparse_classes):
             # Construct a mask to only scale the required columns
-            column_mask = in1d(out.indices, norm_inds)
+            column_mask = isin(out.indices, norm_inds)
             # Scale the corresponding coefficients
             out.data[column_mask] *= self._norm_factor[out.indices][column_mask]
         else:

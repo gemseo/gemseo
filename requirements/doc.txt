@@ -100,7 +100,7 @@ pandas==2.2.2
     # via
     #   gemseo (pyproject.toml)
     #   pandera
-pandera==0.20.0
+pandera==0.20.1
     # via gemseo (pyproject.toml)
 pbr==6.0.0
     # via sphinxcontrib-apidoc
