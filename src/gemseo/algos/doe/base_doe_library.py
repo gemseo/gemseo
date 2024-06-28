@@ -43,7 +43,7 @@ from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
 from gemseo.algos.base_driver_library import DriverLibraryOptionType
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.optimization_problem import EvaluationType
+from gemseo.algos.evaluation_problem import EvaluationType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.core.parallel_execution.callable_parallel_execution import (
@@ -58,6 +58,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
@@ -113,8 +114,14 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
     _NORMALIZE_DS = False
 
-    __eval_jac: bool
-    """Whether to evaluate the Jacobian."""
+    __compute_jacobians: bool
+    """Whether to compute the Jacobians."""
+
+    __output_functions: list[MDOFunction]
+    """The functions to compute the outputs."""
+
+    __jacobian_functions: list[MDOFunction]
+    """The functions to compute the Jacobians."""
 
     # TODO: use DesignSpace enum once there are hashable.
     __DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE: Final[dict[str, type]] = {
@@ -128,7 +135,9 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         self.samples = array([])
         self.unit_samples = array([])
         self._seeder = Seeder()
-        self.__eval_jac = False
+        self.__compute_jacobians = False
+        self.__output_functions = []
+        self.__jacobian_functions = []
         self.lock = RLock()
 
     def _init_shared_memory_attrs_after(self) -> None:
@@ -238,7 +247,11 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             it is therefore necessary to protect its execution with an
             ``if __name__ == '__main__':`` statement when working on Windows.
         """  # noqa: D205, D212
-        self.__eval_jac = eval_jac
+        self.__compute_jacobians = eval_jac
+        self.__output_functions, self.__jacobian_functions = self.problem.get_functions(
+            jacobian_names=() if self.__compute_jacobians else None,
+            observable_names=(),
+        )
         callbacks = list(callbacks)
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", n_processes)
@@ -262,7 +275,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             # The list of inputs of the tasks is the list of samples
             # A callback function stores the samples on the fly
             # during the parallel execution.
-            parallel.execute(self.unit_samples, exec_callback=callbacks)
+            parallel.execute(self.samples, exec_callback=callbacks)
             if use_database:
                 # We added empty entries by default to keep order in the database
                 # but when the DOE point is failed, this is not consistent
@@ -278,9 +291,11 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             for index, input_data in enumerate(self.samples):
                 try:
                     output_data, jacobian_data = problem.evaluate_functions(
-                        x_vect=input_data,
-                        eval_jac=self.__eval_jac,
+                        design_vector=input_data,
+                        preprocess_design_vector=False,
                         normalize=False,
+                        output_functions=self.__output_functions,
+                        jacobian_functions=self.__jacobian_functions,
                     )
                     for callback in callbacks:
                         callback(index, (output_data, jacobian_data))
@@ -297,7 +312,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         """Wrap the evaluation of the functions for parallel execution.
 
         Args:
-            sample: A point from the unit hypercube.
+            sample: A point from the design space.
 
         Returns:
             The computed values.
@@ -307,10 +322,11 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             self.problem.database.clear_listeners()
 
         return self.problem.evaluate_functions(
-            x_vect=self.problem.design_space.untransform_vect(sample, no_check=True),
-            eval_jac=self.__eval_jac,
-            eval_observables=True,
+            design_vector=sample,
+            preprocess_design_vector=False,
             normalize=False,
+            output_functions=self.__output_functions,
+            jacobian_functions=self.__jacobian_functions,
         )
 
     @synchronized

@@ -37,14 +37,23 @@ from typing import Union
 from xml.etree.ElementTree import parse as parse_element
 
 from numpy import array
+from numpy import array_equal
 from numpy import atleast_1d
 from numpy import atleast_2d
+from numpy import dtype
 from numpy import hstack
+from numpy import insert
+from numpy import integer
+from numpy import issubdtype
+from numpy import nan
 from numpy import ndarray
 from numpy.linalg import norm
+from pandas import MultiIndex
 
 from gemseo.algos._hdf_database import HDFDatabase
 from gemseo.algos.hashable_ndarray import HashableNdarray
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
@@ -54,6 +63,9 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from numpy.typing import NDArray
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.typing import RealArray
 
 DatabaseKeyType = Union[ndarray, HashableNdarray]
 """The type of a :class:`.Database` key."""
@@ -938,3 +950,191 @@ class Database(Mapping):
             return iteration - 1
 
         return len_self + iteration
+
+    def to_dataset(
+        self,
+        design_space: DesignSpace,
+        name: str = "",
+        export_gradients: bool = False,
+        input_values: Iterable[RealArray] = (),
+        dataset_class: type[Dataset] = Dataset,
+        input_group: str = Dataset.DEFAULT_GROUP,
+        output_group: str = Dataset.DEFAULT_GROUP,
+        gradient_group: str = Dataset.GRADIENT_GROUP,
+    ) -> Dataset:
+        """Export the database to a :class:`.Dataset`.
+
+        Args:
+            design_space: The design space to which the input vector belongs.
+            name: The name to be given to the dataset.
+                If empty,
+                use the name of the database.
+            export_gradients: Whether to export the gradients of the functions
+                if the latter are available in the database of the problem.
+            input_values: The input values to be considered.
+                If empty, consider all the input values of the database.
+            dataset_class: The dataset class.
+            input_group: The name of the group to store the input values.
+            output_group: The name of the group to store the output values.
+            gradient_group: The name of the group to store the gradient values.
+
+        Returns:
+            A dataset built from the database.
+        """
+        dataset_name = name or self.name
+
+        # Add database inputs
+        input_names = design_space.variable_names
+        names_to_sizes = design_space.variable_sizes
+        names_to_types = {
+            (input_group, name, component): dtype(
+                design_space.VARIABLE_TYPES_TO_DTYPES[_type]
+            )
+            for name, types in design_space.variable_types.items()
+            for component, _type in enumerate(types)
+        }
+        input_history = array(self.get_x_vect_history())
+        n_samples = len(input_history)
+        positions = []
+        offset = 1 if issubclass(dataset_class, OptimizationDataset) else 0
+        for input_value in input_values:
+            _positions = ((input_history == input_value).all(axis=1)).nonzero()[0]
+            positions.extend((_positions + offset).tolist())
+
+        data = [input_history.real]
+        columns = [
+            (input_group, name, index)
+            for name in input_names
+            for index in range(names_to_sizes[name])
+        ]
+
+        # Add database outputs
+        variable_names = self.get_function_names()
+        output_names = [name for name in variable_names if name not in input_names]
+
+        self.__update_data_and_columns_for_dataset(
+            data,
+            columns,
+            names_to_types,
+            output_names,
+            n_samples,
+            output_group,
+            False,
+        )
+
+        # Add database output gradients
+        if export_gradients:
+            self.__update_data_and_columns_for_dataset(
+                data,
+                columns,
+                names_to_types,
+                output_names,
+                n_samples,
+                gradient_group,
+                True,
+            )
+
+        dataset = dataset_class(
+            hstack(data),
+            dataset_name=dataset_name,
+            columns=MultiIndex.from_tuples(
+                columns,
+                names=dataset_class.COLUMN_LEVEL_NAMES,
+            ),
+        ).get_view(indices=positions)
+
+        names_to_types_without_int = {
+            k: v for k, v in names_to_types.items() if not issubdtype(v, integer)
+        }
+        names_to_types_without_int.update({
+            k: float for k, v in names_to_types.items() if issubdtype(v, integer)
+        })
+        # "0.0" cannot be cast to int directly (try int("0.0")).
+        # So
+        # 1) we cast the str-like int to float
+        # 2) these float-like int to int.
+        return dataset.astype(names_to_types_without_int).astype(names_to_types)
+
+    def __update_data_and_columns_for_dataset(
+        self,
+        data: list[RealArray],
+        columns: list[tuple[str, str, int]],
+        names_to_types: dict[tuple[str, str, int], dtype],
+        output_names: Iterable[str],
+        n_samples: int,
+        group: str,
+        store_gradient: bool,
+    ) -> None:
+        """Update the data and the columns used to create the dataset.
+
+        Args:
+            data: The sequence of data arrays to be augmented with the output data.
+            columns: The multi-index columns to be augmented with the output names.
+            names_to_types: The types of the variables
+                to be augmented with the output names.
+            output_names: The names of the outputs in the database.
+            n_samples: The total number of samples,
+                including possible points where the evaluation failed.
+            group: The dataset group where the variables will be added.
+            store_gradient: Whether the variable of interest
+                is the gradient of the output.
+        """
+        x_vect_history = array(self.get_x_vect_history())
+        for output_name in output_names:
+            if store_gradient:
+                function_name = Database.get_gradient_name(output_name)
+                if self.check_output_history_is_empty(function_name):
+                    continue
+            else:
+                function_name = output_name
+
+            history, input_history = self.get_function_history(
+                function_name=function_name, with_x_vect=True
+            )
+            history = (
+                self.__replace_missing_values(
+                    history,
+                    input_history,
+                    x_vect_history,
+                )
+                .reshape((n_samples, -1))
+                .real
+            )
+            data.append(history)
+            _columns = [(group, function_name, i) for i in range(history.shape[1])]
+            columns.extend(_columns)
+            names_to_types.update(dict.fromkeys(_columns, atleast_1d(history).dtype))
+
+    @staticmethod
+    def __replace_missing_values(
+        output_history: RealArray,
+        input_history: RealArray,
+        full_input_history: RealArray,
+    ) -> RealArray:
+        """Replace the missing output values with NaN.
+
+        Args:
+            output_history: The output data history with possibly missing values.
+            input_history: The input data history with possibly missing values.
+            full_input_history: The complete input data history, with no missing values.
+
+        Returns:
+            The output data history where missing values have been replaced with NaN.
+        """
+        database_size = full_input_history.shape[0]
+
+        if len(input_history) != database_size:
+            # There are fewer entries than in the full input history.
+            # Add NaN values at the missing input data.
+            # N.B. the input data are assumed to be in the same order.
+            index = 0
+            for input_data in input_history:
+                while not array_equal(input_data, full_input_history[index]):
+                    output_history = insert(output_history, index, nan, 0)
+                    index += 1
+
+                index += 1
+
+            return insert(output_history, [index] * (database_size - index), nan, 0)
+
+        return output_history

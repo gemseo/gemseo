@@ -231,7 +231,7 @@ class BiLevel(BaseMDOFormulation):
         if output_functions:
             opt_problem = scenario.formulation.optimization_problem
             sc_output_names = opt_problem.objective.output_names
-            sc_constraints = opt_problem.get_constraint_names()
+            sc_constraints = opt_problem.constraints.get_names()
             sc_out_coupl = sc_output_names + sc_constraints
         else:
             sc_out_coupl = list(set(top_outputs) & set(couplings + mda2_inputs))

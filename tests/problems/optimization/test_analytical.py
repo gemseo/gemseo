@@ -48,7 +48,7 @@ def run_and_test_problem(problem, algo_name="SLSQP") -> None:
     assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
 
     x_0 = problem.get_x0_normalized()
-    for func in problem.get_all_functions():
+    for func in problem.functions:
         with contextlib.suppress(MaxIterReachedException):
             func.check_grad(x_0, step=1e-9, error_max=1e-4)
 

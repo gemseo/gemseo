@@ -165,12 +165,12 @@ class BaseAugmentedLagrangian(
         normalize = options[self._NORMALIZE_DESIGN_SPACE_OPTION]
         problem_ineq_constraints = [
             constr
-            for constr in problem.get_ineq_constraints()
+            for constr in problem.constraints.get_inequality_constraints()
             if constr.name not in options[self.__SUB_PROBLEM_CONSTRAINTS]
         ]
         problem_eq_constraints = [
             constr
-            for constr in problem.get_eq_constraints()
+            for constr in problem.constraints.get_equality_constraints()
             if constr.name not in options[self.__SUB_PROBLEM_CONSTRAINTS]
         ]
         eq_multipliers = {
@@ -302,9 +302,13 @@ class BaseAugmentedLagrangian(
             the active inequality constraint residuals.
         """
         self.problem.design_space.set_current_value(x_opt)
+        compute_jacobians = self.ALGORITHM_INFOS[self.algo_name].require_gradient
+        output_functions, jacobian_functions = self.problem.get_functions(
+            jacobian_names=() if compute_jacobians else None,
+            evaluate_objective=True,
+        )
         self._function_outputs, _ = self.problem.evaluate_functions(
-            eval_jac=self.ALGORITHM_INFOS[self._algo_name].require_gradient,
-            eval_obj=True,
+            output_functions=output_functions, jacobian_functions=jacobian_functions
         )
         f_opt = self._function_outputs[self.problem.objective.name]
         gv = [
@@ -362,7 +366,7 @@ class BaseAugmentedLagrangian(
         dspace.set_current_value(x_init)
         sub_problem = OptimizationProblem(dspace)
         sub_problem.objective = lagrangian
-        for constraint in self.problem.nonproc_constraints:
+        for constraint in self.problem.constraints.get_originals():
             if constraint.name in sub_problem_constraints:
                 sub_problem.constraints.append(constraint)
         sub_problem.preprocess_functions(is_function_input_normalized=normalize)
@@ -435,8 +439,8 @@ class BaseAugmentedLagrangian(
         Returns:
             The lagrangian function.
         """
-        lagrangian = self.problem.nonproc_objective
-        for constr in self.problem.nonproc_constraints:
+        lagrangian = self.problem.objective.original
+        for constr in self.problem.constraints.get_originals():
             if constr.name in ineq_lag:
                 lagrangian += aggregate_positive_sum_square(
                     constr + ineq_lag[constr.name] / rho, scale=rho / 2

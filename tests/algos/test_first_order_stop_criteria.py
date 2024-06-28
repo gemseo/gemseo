@@ -20,6 +20,7 @@ from numpy import ones
 from numpy import zeros
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
 from gemseo.algos.stop_criteria import is_kkt_residual_norm_reached
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -37,8 +38,7 @@ def test_is_kkt_norm_tol_reached_rosenbrock(is_optimum) -> None:
         == is_optimum
     )
     assert (
-        problem.database.get_function_value(problem.KKT_RESIDUAL_NORM, design_point)
-        is not None
+        problem.database.get_function_value(KKT_RESIDUAL_NORM, design_point) is not None
     )
 
 
@@ -59,8 +59,7 @@ def test_is_kkt_norm_tol_reached_power2(is_optimum) -> None:
         == is_optimum
     )
     assert (
-        problem.database.get_function_value(problem.KKT_RESIDUAL_NORM, design_point)
-        is not None
+        problem.database.get_function_value(KKT_RESIDUAL_NORM, design_point) is not None
     )
 
 
@@ -77,7 +76,7 @@ def test_kkt_norm_correctly_stored(algorithm, problem) -> None:
     }
     problem.reset()
     OptimizationLibraryFactory().execute(problem, algorithm, **options)
-    kkt_hist = problem.database.get_function_history(problem.KKT_RESIDUAL_NORM)
+    kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
     obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
     obj_hist = problem.database.get_function_history(problem.objective.name)
     assert len(kkt_hist) == obj_grad_hist.shape[0]

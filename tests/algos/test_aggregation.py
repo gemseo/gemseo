@@ -68,7 +68,7 @@ def sellar_problem():
 def create_pb_alleq():
     """Creates a basic sellar problem with vectorized equality constraints only."""
     problem = Power2()
-    constraints = problem.constraints
+    constraints = list(problem.constraints)
 
     def cstr(x):
         return concatenate([cstr(x) for cstr in constraints])
@@ -92,21 +92,21 @@ def create_pb_alleq():
 )
 def test_ks_constraint_aggregation_consistency(x):
     problem_ref = create_problem()
-    out = problem_ref.evaluate_functions(x_vect=x)
+    out = problem_ref.evaluate_functions(design_vector=x)
     rho = 10
     offset = log(len(out[0]["cstr"])) / rho
     g_max = max(out[0]["cstr"])
     problem_upper_bound_ks = create_problem()
-    problem_upper_bound_ks.aggregate_constraint(
+    problem_upper_bound_ks.constraints.aggregate(
         0, method="upper_bound_KS", rho=rho, scale=1.0
     )
-    out_upper_bound_ks = problem_upper_bound_ks.evaluate_functions(x_vect=x)
+    out_upper_bound_ks = problem_upper_bound_ks.evaluate_functions(design_vector=x)
     upper_bound_ks = out_upper_bound_ks[0]["upper_bound_KS(cstr)"]
     problem_lower_bound_ks = create_problem()
-    problem_lower_bound_ks.aggregate_constraint(
+    problem_lower_bound_ks.constraints.aggregate(
         0, method="lower_bound_KS", rho=rho, scale=1.0
     )
-    out_lower_bound_ks = problem_lower_bound_ks.evaluate_functions(x_vect=x)
+    out_lower_bound_ks = problem_lower_bound_ks.evaluate_functions(design_vector=x)
     lower_bound_ks = out_lower_bound_ks[0]["lower_bound_KS(cstr)"]
     assert g_max - lower_bound_ks <= offset
     assert pytest.approx(upper_bound_ks - lower_bound_ks) == offset
@@ -125,9 +125,9 @@ def test_ks_aggreg(method) -> None:
 
     problem = create_problem()
     if method in ["upper_bound_KS", "lower_bound_KS", "IKS"]:
-        problem.aggregate_constraint(0, method=method, rho=300.0, scale=1.0)
+        problem.constraints.aggregate(0, method=method, rho=300.0, scale=1.0)
     else:
-        problem.aggregate_constraint(0, method=method, scale=1.0)
+        problem.constraints.aggregate(0, method=method, scale=1.0)
     execute_algo(
         problem,
         algo_name="SLSQP",
@@ -148,7 +148,7 @@ def test_wrong_constraint_index() -> None:
             "the number of constraints (1)."
         ),
     ):
-        problem.aggregate_constraint(10)
+        problem.constraints.aggregate(10)
 
 
 @pytest.mark.parametrize(
@@ -157,18 +157,18 @@ def test_wrong_constraint_index() -> None:
 def test_groups(sellar_problem, method) -> None:
     """Test groups aggregation."""
     if method in ["upper_bound_KS", "lower_bound_KS", "IKS"]:
-        sellar_problem.aggregate_constraint(
+        sellar_problem.constraints.aggregate(
             0, method=method, rho=300.0, scale=1.0, groups=(0, 1)
         )
     else:
-        sellar_problem.aggregate_constraint(0, method=method, scale=1.0, groups=(0, 1))
+        sellar_problem.constraints.aggregate(0, method=method, scale=1.0, groups=(0, 1))
     assert len(sellar_problem.constraints) == 3
 
 
 def test_max_aggreg(sellar_problem) -> None:
     """Tests max inequality aggregation method compared to no aggregation."""
     xopt_ref = array([0.79370053, 0.79370053, 0.96548938])
-    sellar_problem.aggregate_constraint(0, method=aggregate_max, scale=2.0)
+    sellar_problem.constraints.aggregate(0, method=aggregate_max, scale=2.0)
     execute_algo(sellar_problem, algo_name="SLSQP")
     sol2 = sellar_problem.solution
 

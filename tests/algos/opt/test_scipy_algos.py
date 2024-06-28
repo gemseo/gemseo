@@ -70,14 +70,12 @@ class TestScipy(TestCase):
             opt_library.ALGORITHM_INFOS["TNC"], problem
         )
 
-        problem_type = opt_library.ALGORITHM_INFOS["SLSQP"].problem_type
-        opt_library.ALGORITHM_INFOS[
-            "SLSQP"
-        ].problem_type = OptimizationProblem.ProblemType.LINEAR
+        opt_library.problem._OptimizationProblem__has_linear_functions = False
+        opt_library.ALGORITHM_INFOS["SLSQP"].for_linear_problems = True
         assert not opt_library.is_algorithm_suited(
             opt_library.ALGORITHM_INFOS["SLSQP"], problem
         )
-        opt_library.ALGORITHM_INFOS["SLSQP"].problem_type = problem_type
+        opt_library.ALGORITHM_INFOS["SLSQP"].for_linear_problems = False
 
     def test_positive_constraints(self) -> None:
         """"""
@@ -241,13 +239,23 @@ def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
     problem.objective = MDOLinearFunction(
         array_([1.0, 1.0, -1]), "f", MDOFunction.FunctionType.OBJ, input_names, -1.0
     )
-    problem.add_ineq_constraint(
-        MDOLinearFunction(array_([0, 0.5, -0.25]), "g", input_names=input_names),
-        0.333,
-        True,
+    problem.add_constraint(
+        MDOLinearFunction(
+            array_([0, 0.5, -0.25]),
+            "g",
+            input_names=input_names,
+            f_type=MDOLinearFunction.ConstraintType.INEQ,
+        ),
+        value=0.333,
+        positive=True,
     )
-    problem.add_eq_constraint(
-        MDOLinearFunction(array_([-2.0, 1.0, 1.0]), "h", input_names=input_names)
+    problem.add_constraint(
+        MDOLinearFunction(
+            array_([-2.0, 1.0, 1.0]),
+            "h",
+            input_names=input_names,
+            f_type=MDOLinearFunction.ConstraintType.EQ,
+        )
     )
 
     return problem

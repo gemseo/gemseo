@@ -242,7 +242,7 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         x_0 = problem.database.get_x_vect(1)
         # compute the best feasible or infeasible point
-        f_opt, x_opt, is_feas, c_opt, c_opt_grad = problem.get_optimum()
+        f_opt, x_opt, is_feas, c_opt, c_opt_grad = problem.optimum
         if (
             f_opt is not None
             and not problem.minimize_objective

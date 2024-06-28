@@ -1,0 +1,1 @@
+``MDOLinearFunction.normalize`` transforms a basic ``MDOLinearFunction`` into an ``MDOLinearFunction`` using a scaled input vector.

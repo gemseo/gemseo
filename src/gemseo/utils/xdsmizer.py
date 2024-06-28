@@ -412,10 +412,10 @@ class XDSMizer:
         opt_pb = self.scenario.formulation.optimization_problem
 
         # fct names such as -y4
-        function_name = opt_pb.get_all_function_name()
+        function_name = opt_pb.function_names
 
         # output variables used by the fonction (eg y4)
-        fct_varnames = [f.output_names for f in opt_pb.get_all_functions()]
+        fct_varnames = [f.output_names for f in opt_pb.functions]
         function_varnames = []
         for fvars in fct_varnames:
             function_varnames.extend(fvars)

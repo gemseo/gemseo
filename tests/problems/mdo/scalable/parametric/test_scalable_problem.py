@@ -99,7 +99,7 @@ def test_create_scenario(
 
     assert [
         constraint.name
-        for constraint in formulation.optimization_problem.get_ineq_constraints()
+        for constraint in formulation.optimization_problem.constraints.get_inequality_constraints()  # noqa: E501
     ] == ["c_1", "c_2"]
 
     assert "x_0" in scenario.design_space

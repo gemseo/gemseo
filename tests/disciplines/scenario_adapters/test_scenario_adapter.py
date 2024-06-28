@@ -319,7 +319,7 @@ def check_adapter_jacobian(
 ) -> None:
     opt_problem = adapter.scenario.formulation.optimization_problem
     output_names = opt_problem.objective.output_names
-    constraints = opt_problem.get_constraint_names()
+    constraints = opt_problem.constraints.get_names()
 
     # Test the Jacobian accuracy as objective Jacobian
     assert adapter.check_jacobian(
@@ -448,8 +448,8 @@ def test_lagrange_multipliers_outputs() -> None:
     adapter.execute()
     problem = struct_scenario.formulation.optimization_problem
     x_opt = problem.solution.x_opt
-    obj_grad = problem.nonproc_objective.jac(x_opt)
-    g1_jac = problem.nonproc_constraints[0].jac(x_opt)
+    obj_grad = problem.objective.original.jac(x_opt)
+    g1_jac = next(problem.constraints.get_originals()).jac(x_opt)
     x1_low_mult, x1_upp_mult, g1_mult = adapter.get_outputs_by_name(mult_names)
     lagr_grad = obj_grad + matmul(g1_mult.T, g1_jac) - x1_low_mult + x1_upp_mult
     assert allclose(lagr_grad, zeros_like(lagr_grad))

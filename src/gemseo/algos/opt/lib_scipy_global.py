@@ -264,8 +264,8 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
         # is very constrained (Power2) and OptProblem may fail
         # to detect the optimum.
 
-        if problem.has_constraints():
-            problem.add_callback(self._iter_callback)
+        if problem.constraints:
+            problem.add_listener(self._iter_callback)
 
         internal_algo_name = self.ALGORITHM_INFOS[
             self._algo_name
@@ -330,15 +330,15 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
         Returns:
             The SciPy nonlinear constraints.
         """
-        eq_tolerance = problem.eq_tolerance
+        eq_tolerance = problem.tolerances.equality
         constraints = [
             NonlinearConstraint(constr, -eq_tolerance, eq_tolerance, jac=constr.jac)
-            for constr in problem.get_eq_constraints()
+            for constr in problem.constraints.get_equality_constraints()
         ]
-        ineq_tolerance = problem.ineq_tolerance
+        ineq_tolerance = problem.tolerances.inequality
         constraints.extend([
             NonlinearConstraint(constr, -np_inf, ineq_tolerance, jac=constr.jac)
-            for constr in problem.get_ineq_constraints()
+            for constr in problem.constraints.get_inequality_constraints()
         ])
         return tuple(constraints)
 

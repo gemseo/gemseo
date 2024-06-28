@@ -98,8 +98,8 @@ class OptPostProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
                 for the options of the post-processor does not exist.
         """  # noqa: D205, D212, D415
         self.optimization_problem = opt_problem
-        self._obj_name = opt_problem.get_objective_name(False)
-        self._standardized_obj_name = opt_problem.get_objective_name()
+        self._obj_name = opt_problem.objective_name
+        self._standardized_obj_name = opt_problem.standardized_objective_name
         self._neg_obj_name = f"-{self._obj_name}"
         self.database = opt_problem.database
         self.option_grammar = JSONGrammar("OptPostProcessor")

@@ -16,14 +16,14 @@
 
 from __future__ import annotations
 
-from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
+from gemseo.algos.preprocessed_functions.db_norm_function import DBNormFunction
 
 
 def test_special_repr(problem_with_identity) -> None:
     """Check NormFunction.special_repr."""
     assert (
-        NormDBFunction(
-            problem_with_identity.objective, False, False, problem_with_identity
+        DBNormFunction(
+            problem_with_identity.objective, problem_with_identity
         ).special_repr
         == "Identity"
     )

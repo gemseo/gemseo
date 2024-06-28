@@ -64,14 +64,14 @@ class RadarChart(OptPostProcessor):
                 nor the tag ``"opt"``.
         """  # noqa: D205, D212, D415
         if constraint_names is None:
-            constraint_names = self.optimization_problem.get_constraint_names()
+            constraint_names = self.optimization_problem.constraints.get_names()
         else:
             constraint_names = self.optimization_problem.get_function_names(
                 constraint_names
             )
             invalid_names = sorted(
                 set(constraint_names)
-                - set(self.optimization_problem.get_constraint_names())
+                - set(self.optimization_problem.constraints.get_names())
             )
             if invalid_names:
                 msg = (

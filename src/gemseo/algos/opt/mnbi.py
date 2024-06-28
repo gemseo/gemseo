@@ -406,7 +406,8 @@ class MNBI(BaseOptimizationLibrary):
         design_space = DesignSpace()
         design_space.extend(self.problem.design_space)
         opt_problem = OptimizationProblem(design_space)
-        opt_problem.constraints = list(self.problem.constraints)
+        for constraint in self.problem.constraints:
+            opt_problem.add_constraint(constraint)
         objective = FunctionComponentExtractor(self.problem.objective, i)
         jac = (
             None
@@ -569,7 +570,7 @@ class MNBI(BaseOptimizationLibrary):
         # Reset the design space if there are more than two objective, since two
         # successive values of beta are not necessarily close
         self.__beta_sub_optim.reset(design_space=self.__n_obj != 2)
-        wrapped_constraints = []
+        self.__beta_sub_optim.constraints.clear()
         for g in self.problem.constraints:
             wrapped_g = ConstraintFunctionWrapper(g)
             jac = (
@@ -577,15 +578,14 @@ class MNBI(BaseOptimizationLibrary):
                 if not isinstance(g.jac, NotImplementedCallable)
                 else None
             )
-            wrapped_constraints.append(
-                MDOFunction(
-                    wrapped_g.compute_output,
-                    name=f"wrapped_{g.name}",
-                    jac=jac,
-                    f_type=g.f_type,
-                )
+            constraint = MDOFunction(
+                wrapped_g.compute_output,
+                name=f"wrapped_{g.name}",
+                jac=jac,
+                f_type=g.f_type,
             )
-        self.__beta_sub_optim.constraints = wrapped_constraints
+            self.__beta_sub_optim.add_constraint(constraint)
+
         self.__beta_sub_optim.add_constraint(beta_sub_cstr, constraint_type="ineq")
         opt_res = OptimizationLibraryFactory().execute(
             self.__beta_sub_optim,
@@ -906,7 +906,7 @@ class MNBI(BaseOptimizationLibrary):
         self._doe_algo_options = options.pop("doe_algo_options")
         self.__n_obj = problem.objective.dim
         self.__ineq_tolerance = options.get(
-            self._INEQ_TOLERANCE, problem.ineq_tolerance
+            self._INEQ_TOLERANCE, self.problem.tolerances.inequality
         )
         self.__skippable_domains = Manager().list() if self.__n_processes > 1 else []
         if self.__debug:

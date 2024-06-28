@@ -68,7 +68,7 @@ class TestNLOPT(TestCase):
             return array([-1.0, 1.0, 1.0e300])
 
         problem.objective.jac = obj_grad
-        problem.constraints = []
+        problem.constraints.clear()
         opt_library = OptimizationLibraryFactory().create("NLOPT_BFGS")
         opt_library.execute(problem, max_iter=10)
 

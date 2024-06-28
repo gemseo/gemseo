@@ -41,12 +41,11 @@ from numpy import zeros
 from numpy.linalg import norm
 from scipy.sparse import csr_array
 
+from gemseo.algos.preprocessed_functions.norm_function import NormFunction
 from gemseo.core.mdofunctions.concatenate import Concatenate
 from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
 from gemseo.core.mdofunctions.function_restriction import FunctionRestriction
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
-from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
 from gemseo.core.mdofunctions.taylor_polynomials import compute_quadratic_approximation
@@ -125,7 +124,7 @@ def get_full_sin_func():
 
 
 def test_check_format() -> None:
-    """xxx."""
+    """Xxx."""
     MDOFunction(sin, f_type="obj", name=None, jac=cos, expr="sin(x)", input_names="x")
 
 
@@ -236,12 +235,12 @@ def test_todict_fromdict() -> None:
 
 
 def test_repr_1(get_full_sin_func) -> None:
-    """xxx."""
+    """Xxx."""
     assert str(get_full_sin_func) == "F(x) = sin(x)"
 
 
 def test_repr_2() -> None:
-    """xxx."""
+    """Xxx."""
     g = MDOFunction(
         sin,
         name="G",
@@ -254,13 +253,13 @@ def test_repr_2() -> None:
 
 
 def test_repr_3() -> None:
-    """xxx."""
+    """Xxx."""
     h = MDOFunction(sin, name="H", input_names=["x", "y", "x_shared"])
     assert str(h) == "H(x, y, x_shared)"
 
 
 def test_repr_4() -> None:
-    """xxx."""
+    """Xxx."""
     g = MDOFunction(
         sin,
         name="G",
@@ -538,18 +537,10 @@ def test_expect_normalized_inputs_from_database(
     assert func.expects_normalized_inputs == normalize
 
 
-@pytest.mark.parametrize("normalize", [False, True])
-def test_expect_normalized_inputs_normfunction(function, problem, normalize) -> None:
+def test_expect_normalized_inputs_norm_function(function, problem) -> None:
     """Check the inputs normalization expectation."""
-    func = NormFunction(function, normalize, False, problem)
-    assert func.expects_normalized_inputs == normalize
-
-
-@pytest.mark.parametrize("normalize", [False, True])
-def test_expect_normalized_inputs_normdbfunction(function, problem, normalize) -> None:
-    """Check the inputs normalization expectation."""
-    func = NormDBFunction(function, normalize, False, problem)
-    assert func.expects_normalized_inputs == normalize
+    func = NormFunction(function, problem)
+    assert func.expects_normalized_inputs
 
 
 def test_activate_counters() -> None:
@@ -698,10 +689,8 @@ def simple_function(x: ndarray) -> ndarray:
         (
             NormFunction,
             {
-                "orig_func": MDOFunction(simple_function, "f"),
-                "normalize": True,
-                "round_ints": False,
-                "optimization_problem": Power2(),
+                "function": MDOFunction(simple_function, "f"),
+                "design_space": Power2().design_space,
             },
             array([1.0, 1.0, 1.0]),
         ),
@@ -836,4 +825,4 @@ def test_arithmetic_operation_with_incompatible_normalizations(
         "one function expects normalized inputs "
         "while the other does not.",
     ):
-        operation(sinus, NormFunction(sinus, True, False, problem))
+        operation(sinus, NormFunction(sinus, problem))

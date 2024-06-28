@@ -120,9 +120,7 @@ class LagrangeMultipliers:
         self.active_ineq_names = []
         self.active_eq_names = []
         self.lagrange_multipliers = None
-        self.__normalized = opt_problem.preprocess_options.get(
-            "is_function_input_normalized", False
-        )
+        self.__normalized = opt_problem.objective.expects_normalized_inputs
         self.kkt_residual = None
         self.constraint_violation = None
 
@@ -195,13 +193,20 @@ class LagrangeMultipliers:
         Args:
             x_vect: The point at which the Lagrange multipliers are to be computed.
         """
-        self.optimization_problem.design_space.check_membership(x_vect)
+        problem = self.optimization_problem
+        problem.design_space.check_membership(x_vect)
 
         # Check that the point satisfies other constraints
-        values, _ = self.optimization_problem.evaluate_functions(
-            x_vect, eval_obj=False, eval_observables=False, normalize=False
+        output_functions, jacobian_functions = problem.get_functions(
+            evaluate_objective=False, observable_names=None
         )
-        if not self.optimization_problem.is_point_feasible(values):
+        values, _ = self.optimization_problem.evaluate_functions(
+            x_vect,
+            normalize=False,
+            output_functions=output_functions,
+            jacobian_functions=jacobian_functions,
+        )
+        if not self.optimization_problem.constraints.is_point_feasible(values):
             LOGGER.warning("Infeasible point, Lagrange multipliers may not exist.")
 
     def _get_act_bound_jac(self, act_bounds: dict[str, ndarray]):
@@ -253,10 +258,9 @@ class LagrangeMultipliers:
         # a function is active if at least
         # one of its component (in case of multidimensional constraints) is
         # active
-        act_constraints = self.optimization_problem.get_active_ineq_constraints(
-            x_vect, ineq_tolerance
-        )
-        dspace = self.optimization_problem.design_space
+        problem = self.optimization_problem
+        act_constraints = problem.constraints.get_active(x_vect, ineq_tolerance)
+        dspace = problem.design_space
 
         if self.__normalized:
             x_vect = dspace.normalize_vect(x_vect)
@@ -295,9 +299,9 @@ class LagrangeMultipliers:
         for constraint in self.optimization_problem.constraints:
             value = constraint(x_vect)
             if constraint.f_type == constraint.ConstraintType.EQ:
-                value = np_abs(value) - self.optimization_problem.eq_tolerance
+                value = np_abs(value) - self.optimization_problem.tolerances.equality
             else:
-                value = value - self.optimization_problem.ineq_tolerance
+                value = value - self.optimization_problem.tolerances.inequality
             if isinstance(value, ndarray):
                 value = value.max()
             self.constraint_violation = max(self.constraint_violation, value)
@@ -314,7 +318,7 @@ class LagrangeMultipliers:
             The Jacobian of the active equality constraints
             and the name of each component of each function.
         """
-        eq_functions = self.optimization_problem.get_eq_constraints()
+        eq_functions = self.optimization_problem.constraints.get_equality_constraints()
         # loop on equality functions
         # NB: as the solution (x_vect) is supposed to be feasible,
         # all functions (on all dimensions) are supposed to be active
@@ -477,14 +481,14 @@ class LagrangeMultipliers:
         # Inequality-constraints
         multipliers[self.INEQUALITY] = {
             func.name if func.dim == 1 else self._get_component_name(func.name, i): 0.0
-            for func in problem.get_ineq_constraints()
+            for func in problem.constraints.get_inequality_constraints()
             for i in range(func.dim)
         }
 
         # Equality-constraints
         multipliers[self.EQUALITY] = {
             func.name if func.dim == 1 else self._get_component_name(func.name, i): 0.0
-            for func in problem.get_eq_constraints()
+            for func in problem.constraints.get_equality_constraints()
             for i in range(func.dim)
         }
 
@@ -530,7 +534,7 @@ class LagrangeMultipliers:
         # Inequality-constraints multipliers
         ineq_mult = multipliers_init[self.INEQUALITY]
         mult_arrays[self.INEQUALITY] = {}
-        for func in problem.get_ineq_constraints():
+        for func in problem.constraints.get_inequality_constraints():
             func_mult = array([
                 ineq_mult[
                     func.name
@@ -543,7 +547,7 @@ class LagrangeMultipliers:
         # Equality-constraints multipliers
         eq_mult = multipliers_init[self.EQUALITY]
         mult_arrays[self.EQUALITY] = {}
-        for func in problem.get_eq_constraints():
+        for func in problem.constraints.get_equality_constraints():
             func_mult = array([
                 eq_mult[
                     func.name

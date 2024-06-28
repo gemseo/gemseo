@@ -1269,7 +1269,7 @@ class DesignSpace(collections.abc.MutableMapping):
         self,
         x_vect: RealOrComplexArrayT,
         minus_lb: bool = True,
-        out: ndarray | None = None,
+        out: RealOrComplexArrayT | None = None,
     ) -> RealOrComplexArrayT:
         r"""Normalize a vector of the design space.
 

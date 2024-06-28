@@ -277,12 +277,12 @@ def test_executed_twice(identity_problem, n_samples, seed) -> None:
     )
     if seed == 1:
         assert len(identity_problem.database) == max(3, n_samples)
-        assert identity_problem.max_iter == n_samples
-        assert identity_problem.current_iter == max(n_samples - 3, 0)
+        assert identity_problem.evaluation_counter.maximum == n_samples
+        assert identity_problem.evaluation_counter.current == max(n_samples - 3, 0)
     else:
         assert len(identity_problem.database) == 3 + n_samples
-        assert identity_problem.max_iter == n_samples
-        assert identity_problem.current_iter == n_samples
+        assert identity_problem.evaluation_counter.maximum == n_samples
+        assert identity_problem.evaluation_counter.current == n_samples
 
 
 def test_optimized_lhs_size_1():

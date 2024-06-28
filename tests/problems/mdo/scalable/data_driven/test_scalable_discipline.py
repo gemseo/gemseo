@@ -212,7 +212,7 @@ class ScalableProblem(unittest.TestCase):
         opt_pb = scenario.formulation.optimization_problem
 
         opt_pb.preprocess_functions()
-        for func in opt_pb.get_all_functions():
+        for func in opt_pb.functions:
             func.check_grad(opt_pb.design_space.get_current_value())
 
     def test_grad(self) -> None:

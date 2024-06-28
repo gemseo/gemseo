@@ -81,8 +81,8 @@ class VariableInfluence(OptPostProcessor):
             save_var_files: Whether to save the influential variables indices
                 to a NumPy file.
         """  # noqa: D205, D212, D415
-        function_names = self.optimization_problem.get_all_function_name()
-        _, x_opt, _, _, _ = self.optimization_problem.get_optimum()
+        function_names = self.optimization_problem.function_names
+        _, x_opt, _, _, _ = self.optimization_problem.optimum
         x_0 = self.database.get_x_vect(1)
         absolute_value = log_scale or absolute_value
 

@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
@@ -34,19 +35,19 @@ from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.utils.compatibility.scipy import sparse_classes
+
+if TYPE_CHECKING:
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
 @dataclass
 class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of a linear optimization algorithm from the SciPy library."""
 
-    problem_type: OptimizationProblem.ProblemType = (
-        OptimizationProblem.ProblemType.LINEAR
-    )
+    for_linear_problems: bool = True
     handle_equality_constraints: bool = True
     handle_inequality_constraints: bool = True
     library_name: str = "SciPy"
@@ -187,17 +188,18 @@ class ScipyLinprog(BaseOptimizationLibrary):
 
         # Build the functions matrices
         # N.B. use the non-processed functions to access the coefficients
-        coefficients = problem.nonproc_objective.coefficients
+        coefficients = problem.objective.original.coefficients
         if isinstance(coefficients, sparse_classes):
             obj_coeff = coefficients.getrow(0).todense().flatten()
         else:
             obj_coeff = coefficients[0, :]
-        constraints = problem.nonproc_constraints
         ineq_lhs, ineq_rhs = build_constraints_matrices(
-            constraints, MDOLinearFunction.ConstraintType.INEQ
+            problem.constraints.get_originals(),
+            MDOLinearFunction.ConstraintType.INEQ,
         )
         eq_lhs, eq_rhs = build_constraints_matrices(
-            constraints, MDOLinearFunction.ConstraintType.EQ
+            problem.constraints.get_originals(),
+            MDOLinearFunction.ConstraintType.EQ,
         )
 
         # |g| is in charge of ensuring max iterations, since it may
@@ -228,19 +230,25 @@ class ScipyLinprog(BaseOptimizationLibrary):
         x_opt = linprog_result.x
         # N.B. SciPy tolerance on bounds is higher than the DesignSpace one
         x_opt = problem.design_space.project_into_bounds(x_opt)
-        val_opt, jac_opt = problem.evaluate_functions(
-            x_vect=x_opt,
-            eval_jac=True,
-            eval_obj=True,
-            normalize=False,
+        output_functions, jacobian_functions = problem.get_functions(
+            jacobian_names=(),
+            evaluate_objective=True,
             no_db_no_norm=True,
+        )
+        val_opt, jac_opt = problem.evaluate_functions(
+            design_vector=x_opt,
+            normalize=False,
+            output_functions=output_functions,
+            jacobian_functions=jacobian_functions,
         )
         f_opt = val_opt[problem.objective.name]
         constraint_values = {
-            key: val_opt[key] for key in problem.get_constraint_names()
+            key: val_opt[key] for key in problem.constraints.get_names()
         }
-        constraints_grad = {key: jac_opt[key] for key in problem.get_constraint_names()}
-        is_feasible = problem.is_point_feasible(val_opt)
+        constraints_grad = {
+            key: jac_opt[key] for key in problem.constraints.get_names()
+        }
+        is_feasible = problem.constraints.is_point_feasible(val_opt)
         return OptimizationResult(
             x_0=x_0,
             x_0_as_dict=problem.design_space.array_to_dict(x_0),

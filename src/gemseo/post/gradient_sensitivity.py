@@ -122,12 +122,16 @@ class GradientSensitivity(OptPostProcessor):
         gradient_values = {}
         if compute_missing_gradients:
             try:
+                output_functions, jacobian_functions = (
+                    self.optimization_problem.get_functions(
+                        no_db_no_norm=True, jacobian_names=()
+                    )
+                )
                 _, gradient_values = self.optimization_problem.evaluate_functions(
                     design_value,
-                    no_db_no_norm=True,
-                    eval_jac=True,
-                    eval_observables=False,
                     normalize=False,
+                    output_functions=output_functions,
+                    jacobian_functions=jacobian_functions,
                 )
             except NotImplementedError:
                 LOGGER.info(
@@ -135,7 +139,7 @@ class GradientSensitivity(OptPostProcessor):
                     "callable functions cannot be computed."
                 )
 
-        function_names = self.optimization_problem.get_all_function_name()
+        function_names = self.optimization_problem.function_names
         scale_gradient = self.optimization_problem.design_space.unnormalize_vect
         function_names_to_gradients = {}
         for function_name in function_names:

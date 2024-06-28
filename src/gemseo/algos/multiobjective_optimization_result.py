@@ -82,6 +82,6 @@ class MultiObjectiveOptimizationResult(OptimizationResult):
     def _get_additional_fields(cls, problem):
         return {
             f"{cls.__PARETO_FRONT}": ParetoFront.from_optimization_problem(problem)
-            if problem.get_optimum()[2]
+            if problem.optimum[2]
             else None
         }

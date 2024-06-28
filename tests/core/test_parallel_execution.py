@@ -181,7 +181,7 @@ def test_disc_parallel_doe(sellar_disciplines) -> None:
     func_gen = MDODisciplineAdapterGenerator(s_1)
     y_0_func = func_gen.get_function([X_SHARED], [Y_1])
 
-    parallel_execution = CallableParallelExecution([y_0_func])
+    parallel_execution = CallableParallelExecution([y_0_func.evaluate])
     input_list = [array([i, 0], dtype=complex128) for i in range(n)]
     output_list = parallel_execution.execute(input_list)
 

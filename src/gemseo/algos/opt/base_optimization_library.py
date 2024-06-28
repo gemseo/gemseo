@@ -32,17 +32,15 @@ import numpy
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
-from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.stop_criteria import DesignToleranceTester
 from gemseo.algos.stop_criteria import KKTConditionsTester
 from gemseo.algos.stop_criteria import ObjectiveToleranceTester
 from gemseo.algos.stop_criteria import kkt_residual_computation
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     from numpy import ndarray
 
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
@@ -62,10 +60,8 @@ class OptimizationAlgorithmDescription(DriverDescription):
     positive_constraints: bool = False
     """Whether the optimization algorithm requires positive constraints."""
 
-    problem_type: OptimizationProblem.ProblemType = (
-        OptimizationProblem.ProblemType.NON_LINEAR
-    )
-    """The type of problem (see :attr:`.OptimizationProblem.ProblemType`)."""
+    for_linear_problems: bool = False
+    """Whether the optimization algorithm is dedicated to linear problems."""
 
 
 class BaseOptimizationLibrary(BaseDriverLibrary):
@@ -118,7 +114,7 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         """Check if problem and algorithm are consistent for constraints handling."""
         algo_name = self._algo_name
         if (
-            problem.has_eq_constraints()
+            tuple(problem.constraints.get_equality_constraints())
             and not self.ALGORITHM_INFOS[algo_name].handle_equality_constraints
         ):
             msg = (
@@ -127,7 +123,7 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
             )
             raise ValueError(msg)
         if (
-            problem.has_ineq_constraints()
+            tuple(problem.constraints.get_inequality_constraints())
             and not self.ALGORITHM_INFOS[algo_name].handle_inequality_constraints
         ):
             msg = (
@@ -148,7 +144,7 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
             The constraints with the right sign.
         """
         if (
-            problem.has_ineq_constraints()
+            tuple(problem.constraints.get_inequality_constraints())
             and self.ALGORITHM_INFOS[self._algo_name].positive_constraints
         ):
             return [-constraint for constraint in problem.constraints]
@@ -189,43 +185,54 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
                 absolute=kkt_abs_tol or 0.0,
                 relative=kkt_rel_tol or 0.0,
                 ineq_tolerance=options.get(
-                    self._INEQ_TOLERANCE, problem.ineq_tolerance
+                    self._INEQ_TOLERANCE, problem.tolerances.inequality
                 ),
             )
-            problem.add_callback(
-                self._check_kkt_from_database, each_new_iter=False, each_store=True
+            problem.add_listener(
+                self._check_kkt_from_database,
+                at_each_iteration=False,
+                at_each_function_call=True,
             )
         problem.design_space.initialize_missing_current_values()
         if problem.differentiation_method == self.DifferentiationMethod.COMPLEX_STEP:
             problem.design_space.to_complex()
         # First, evaluate all functions at x_0. Some algorithms don't do this
+        output_functions, jacobian_functions = problem.get_functions(
+            jacobian_names=() if require_gradient else None,
+            evaluate_objective=True,
+            observable_names=None,
+        )
+
         function_values, _ = problem.evaluate_functions(
-            eval_jac=require_gradient,
-            eval_obj=True,
-            eval_observables=False,
             normalize=options.get(
                 self._NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
             ),
+            output_functions=output_functions,
+            jacobian_functions=jacobian_functions,
         )
+
         scaling_threshold = options.get(self._SCALING_THRESHOLD)
         if scaling_threshold is not None:
-            problem.objective = self.__scale(
-                problem.objective,
-                function_values[problem.objective.name],
+            self.problem.objective = self.__scale(
+                self.problem.objective,
+                function_values[self.problem.objective.name],
                 scaling_threshold,
             )
-            problem.constraints = [
+            self.problem.constraints = [
                 self.__scale(
                     constraint, function_values[constraint.name], scaling_threshold
                 )
-                for constraint in problem.constraints
+                for constraint in self.problem.constraints
             ]
-            problem.observables = [
-                self.__scale(
-                    observable, function_values[observable.name], scaling_threshold
+
+            observables = tuple(self.problem.observables)
+            self.problem.observables.clear()
+            for observable in observables:
+                self.problem.add_observable(
+                    self.__scale(
+                        observable, function_values[observable.name], scaling_threshold
+                    )
                 )
-                for observable in problem.observables
-            ]
 
     @classmethod
     def _get_unsuitability_reason(
@@ -238,21 +245,18 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
             return reason
 
         if (
-            problem.has_eq_constraints()
+            tuple(problem.constraints.get_equality_constraints())
             and not algorithm_description.handle_equality_constraints
         ):
             return _UnsuitabilityReason.EQUALITY_CONSTRAINTS
 
         if (
-            problem.has_ineq_constraints()
+            tuple(problem.constraints.get_inequality_constraints())
             and not algorithm_description.handle_inequality_constraints
         ):
             return _UnsuitabilityReason.INEQUALITY_CONSTRAINTS
 
-        if (
-            problem.pb_type == problem.ProblemType.NON_LINEAR
-            and algorithm_description.problem_type == problem.ProblemType.LINEAR
-        ):
+        if not problem.is_linear and algorithm_description.for_linear_problems:
             return _UnsuitabilityReason.NON_LINEAR_PROBLEM
 
         return reason
@@ -270,8 +274,8 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         """
         check_kkt = True
         function_names = [
-            self.problem.get_objective_name(),
-            *self.problem.get_constraint_names(),
+            self.problem.standardized_objective_name,
+            *self.problem.constraints.get_names(),
         ]
         database = self.problem.database
         for function_name in function_names:
@@ -297,7 +301,7 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
     @staticmethod
     def __scale(
         function: MDOFunction,
-        function_value: Mapping[str, ndarray],
+        function_value: ndarray,
         scaling_threshold: float,
     ) -> MDOFunction:
         """Scale a function based on its value on the current design values.

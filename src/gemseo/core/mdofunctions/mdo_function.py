@@ -245,6 +245,9 @@ class MDOFunction(Serializable):
     __INPUT_NAME_PATTERN: Final[str] = "x"
     """The pattern to define a variable name, as ``"x!1"``."""
 
+    original: MDOFunction
+    """The function before preprocessing by the :class:`.OptimizationProblem."""
+
     def __init__(
         self,
         func: WrappedFunctionType | None,
@@ -303,12 +306,14 @@ class MDOFunction(Serializable):
         self.f_type = f_type
         self.expr = expr
         self.input_names = input_names
+        self.dim = dim
         self.output_names = output_names
         self.last_eval = None
         self.force_real = force_real
         self.special_repr = special_repr or ""
         self.has_default_name = bool(self.name)
         self.__expects_normalized_inputs = expects_normalized_inputs
+        self.original = self
 
     @property
     def original_name(self) -> str:
@@ -532,11 +537,7 @@ class MDOFunction(Serializable):
 
     @property
     def has_jac(self) -> bool:
-        """Check if the function has an implemented Jacobian function.
-
-        Returns:
-            Whether the function has an implemented Jacobian function.
-        """
+        """Whether the function has an implemented Jacobian function."""
         return self.jac is not None and not isinstance(
             self._jac, NotImplementedCallable
         )
@@ -895,6 +896,10 @@ class MDOFunction(Serializable):
     def expects_normalized_inputs(self) -> bool:
         """Whether the function expects normalized inputs."""
         return self.__expects_normalized_inputs
+
+    @expects_normalized_inputs.setter
+    def expects_normalized_inputs(self, value: bool) -> None:
+        self.__expects_normalized_inputs = value
 
     def get_indexed_name(self, index: int) -> str:
         """Return the name of function component.

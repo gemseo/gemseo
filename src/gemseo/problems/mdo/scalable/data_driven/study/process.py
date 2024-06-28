@@ -862,11 +862,11 @@ class ScalabilityStudy:
                 if y_prev == inf:
                     diff = inf
                 else:
-                    diff = abs(y_prev - value[pbm.get_objective_name()])
+                    diff = abs(y_prev - value[pbm.standardized_objective_name])
                     diff /= abs(y_prev)
                 if diff < 1e-6:
                     break
-                y_prev = value[pbm.get_objective_name()]
+                y_prev = value[pbm.standardized_objective_name]
                 stopidx += 1  # noqa: SIM113
         else:
             stopidx = n_iter

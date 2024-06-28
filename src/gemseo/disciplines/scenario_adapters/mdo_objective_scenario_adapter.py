@@ -44,7 +44,7 @@ class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):
 
         # Get the optimal outputs
         optimum = opt_problem.design_space.get_current_value(as_dict=True)
-        f_opt = opt_problem.get_optimum()[0]
+        f_opt = opt_problem.optimum[0]
         if not opt_problem.minimize_objective:
             f_opt = -f_opt
         if not opt_problem.is_mono_objective:

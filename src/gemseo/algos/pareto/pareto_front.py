@@ -237,7 +237,6 @@ class ParetoFront:
             then the values of their design variables.
         """
         n_iter = len(problem.database)
-        constraints = problem.get_ineq_constraints() + problem.get_eq_constraints()
 
         dv_history = zeros((n_iter, problem.design_space.dimension))
         obj_history = zeros((n_iter, problem.objective.dim))
@@ -248,9 +247,7 @@ class ParetoFront:
             dv_history[iteration] = x_vect.unwrap()
             if problem.objective.name in out_val:
                 obj_history[iteration] = array(out_val[problem.objective.name])
-                feasibility[iteration] = problem.is_point_feasible(
-                    out_val, constraints=constraints
-                )
+                feasibility[iteration] = problem.constraints.is_point_feasible(out_val)
             else:
                 obj_history[iteration] = float("nan")
                 feasibility[iteration] = False
@@ -316,9 +313,9 @@ class ParetoFront:
         return table
 
     def __str__(self) -> str:
-        obj_names = [self._problem.get_objective_name()]
-        c_names = self._problem.get_constraint_names()
-        dv_names = self._problem.get_design_variable_names()
+        obj_names = [self._problem.standardized_objective_name]
+        c_names = self._problem.constraints.get_names()
+        dv_names = self._problem.design_space.variable_names
 
         msg = MultiLineString()
         msg.add(

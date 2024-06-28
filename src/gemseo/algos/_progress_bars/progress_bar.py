@@ -60,7 +60,7 @@ class ProgressBar(BaseProgressBar):
             desc=description,
             ascii=False,
         )
-        self._tqdm_progress_bar.n = problem.current_iter
+        self._tqdm_progress_bar.n = problem.evaluation_counter.current
         self.__is_current_iteration_logged = True
         self.__change_objective_sign = (
             not problem.minimize_objective and not problem.use_standardized_objective
@@ -72,7 +72,9 @@ class ProgressBar(BaseProgressBar):
         if current_iter_must_not_be_logged:
             if not self.__is_current_iteration_logged:
                 self._set_objective_value(
-                    self._problem.database.get_x_vect(self._problem.current_iter or -1)
+                    self._problem.database.get_x_vect(
+                        self._problem.evaluation_counter.current or -1
+                    )
                 )
         else:
             self._set_objective_value(x_vect)
@@ -111,7 +113,9 @@ class ProgressBar(BaseProgressBar):
     def finalize_iter_observer(self):  # noqa D102
         if not self.__is_current_iteration_logged:
             self.set_objective_value(
-                self._problem.database.get_x_vect(self._problem.current_iter or -1)
+                self._problem.database.get_x_vect(
+                    self._problem.evaluation_counter.current or -1
+                )
             )
         self._tqdm_progress_bar.leave = False
         self._tqdm_progress_bar.close()

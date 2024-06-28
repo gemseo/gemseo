@@ -35,6 +35,7 @@ from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
 
     from gemseo.algos.optimization_problem import OptimizationProblem
@@ -82,7 +83,7 @@ class ObjConstrHist(OptPostProcessor):
 
         # 1. Plot the objective history versus the iterations with a curve.
         problem = self.optimization_problem
-        objective_name = problem.get_objective_name()
+        objective_name = problem.standardized_objective_name
         obj_history, x_history = self.database.get_function_history(
             objective_name, with_x_vect=True
         )
@@ -106,10 +107,10 @@ class ObjConstrHist(OptPostProcessor):
         #    with green-white-red color map.
         # 2.a. Get inequality and equality constraint histories.
         ineq_history, ineq_names = self.__get_constraints(
-            problem.get_ineq_constraints(), constraint_names
+            problem.constraints.get_inequality_constraints(), constraint_names
         )
         eq_history, eq_names = self.__get_constraints(
-            problem.get_eq_constraints(), constraint_names
+            problem.constraints.get_equality_constraints(), constraint_names
         )
         # 2.b. Concatenate the inequality and equality constraint histories.
         #      NB: Take absolute values of equality constraints for color map.
@@ -167,7 +168,9 @@ class ObjConstrHist(OptPostProcessor):
         self._add_figure(fig)
 
     def __get_constraints(
-        self, constraints: list[MDOFunction], all_constraint_names: Sequence[str] | None
+        self,
+        constraints: Iterable[MDOFunction],
+        all_constraint_names: Sequence[str] | None,
     ) -> tuple[ndarray, ndarray]:
         """Return the constraints with formatted shape.
 

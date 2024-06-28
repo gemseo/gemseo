@@ -81,10 +81,7 @@ def scenario(request) -> Scenario:
 
 def test_problem_is_linear(scenario) -> None:
     """Tests that optimization problems are linear."""
-    assert (
-        scenario.formulation.optimization_problem.pb_type
-        == scenario.formulation.optimization_problem.ProblemType.LINEAR
-    )
+    assert scenario.formulation.optimization_problem.is_linear
 
 
 def test_execution(scenario) -> None:

@@ -208,7 +208,7 @@ def test_clear_listeners(name):
     problem = Power2()
     getattr(problem.database, f"add_{name}")(sum)
     driver = CustomDOE()
-    driver.execute(problem, samples=array([[1, 2, 3]]))
+    driver.execute(problem, samples=array([[-0.5, 0.0, 0.5]]))
     assert getattr(problem.database, f"_Database__{name}s") == [sum]
 
 
