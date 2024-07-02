@@ -23,6 +23,9 @@ import pytest
 
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import filter_names
+from gemseo.utils.string_tools import get_name_and_component
+from gemseo.utils.string_tools import get_variables_with_components
 from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
@@ -196,4 +199,40 @@ def test_repr_html() -> None:
         "</ul>"
         "</li>"
         "</ul>"
+    )
+
+
+@pytest.mark.parametrize(
+    ("variable", "expected"),
+    [("foo", ("foo", 0)), (("foo", 0), ("foo", 0)), (("foo", 1), ("foo", 1))],
+)
+def test_get_name_and_component(variable, expected):
+    """Check get_name_and_component()."""
+    assert get_name_and_component(variable) == expected
+
+
+@pytest.mark.parametrize(
+    ("names_to_keep", "expected"),
+    [((), ["a", "b", "c"]), (("a", "b"), ["a", "b"]), (("b", "a"), ["a", "b"])],
+)
+def test_filter_names(names_to_keep, expected):
+    """Check filter_names()."""
+    assert filter_names(["a", "b", "c"], names_to_keep=names_to_keep) == expected
+
+
+@pytest.mark.parametrize(
+    ("variables", "expected"),
+    [
+        ("x", [("x", 0), ("x", 1)]),
+        (("x", 0), [("x", 0)]),
+        ((("x", 0), "y"), [("x", 0), ("y", 0), ("y", 1), ("y", 2)]),
+        (("y", ("x", 0)), [("y", 0), ("y", 1), ("y", 2), ("x", 0)]),
+        ((("y", 1), ("x", 0)), [("y", 1), ("x", 0)]),
+    ],
+)
+def test_rewrite_variables_with_components(variables, expected):
+    """Check rewrite_variables_with_components()."""
+    assert (
+        list(get_variables_with_components(variables, {"x": 2, "a": 1, "y": 3}))
+        == expected
     )

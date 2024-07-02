@@ -1,0 +1,48 @@
+{
+  "name": "MORRISDOE_options",
+  "description": "The DOE used by the Morris sensitivity analysis.",
+  "properties": {
+    "n_samples": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        }
+      ]
+    },
+    "doe_algo_name": {
+      "type": "string"
+    },
+    "doe_algo_options": {
+      "type": "object"
+    },
+    "n_replicates": {
+      "type": "integer"
+    },
+    "step": {
+      "type": "number"
+    },
+    "eval_jac": {
+      "type": "boolean"
+    },
+    "n_processes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "wait_time_between_samples": {
+      "type": "number",
+      "minimum": 0
+    },
+    "callbacks": {}
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object"
+}

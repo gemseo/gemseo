@@ -48,6 +48,7 @@ from gemseo.problems.mdo.sobieski.core.mission import SobieskiMission
 from gemseo.problems.mdo.sobieski.core.propulsion import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.core.structure import SobieskiStructure
 from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
+from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -361,12 +362,9 @@ class SobieskiProblem:
         if names is None:
             return names_to_default_values
 
-        if isinstance(names, str):
-            names = [names]
-
         return {
             names: names_to_default_values[names]
-            for names in names
+            for names in convert_strings_to_iterable(names)
             if names in names_to_default_values
         }
 

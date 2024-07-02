@@ -54,7 +54,8 @@ uncertain_space = IshigamiSpace()
 # %%
 # Then,
 # we run sensitivity analysis of type :class:`.CorrelationAnalysis`:
-sensitivity_analysis = CorrelationAnalysis([discipline], uncertain_space, 1000)
+sensitivity_analysis = CorrelationAnalysis()
+sensitivity_analysis.compute_samples([discipline], uncertain_space, 1000)
 sensitivity_analysis.compute_indices()
 
 # %%
@@ -76,7 +77,7 @@ pprint.pprint(sensitivity_analysis.main_indices)
 
 # %%
 # We can also get the input parameters sorted by decreasing order of influence:
-sensitivity_analysis.sort_parameters("y")
+sensitivity_analysis.sort_input_variables("y")
 
 # %%
 # We can use the method :meth:`.CorrelationAnalysis.plot`

@@ -30,7 +30,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import VariableType
+from gemseo.utils.string_tools import get_name_and_component
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
+    from gemseo.utils.string_tools import VariableType
 
 
 class ZvsXY(DatasetPlot):
@@ -76,9 +77,9 @@ class ZvsXY(DatasetPlot):
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset=dataset,
-            x=self._force_variable_to_tuple(x),
-            y=self._force_variable_to_tuple(y),
-            z=self._force_variable_to_tuple(z),
+            x=get_name_and_component(x),
+            y=get_name_and_component(y),
+            z=get_name_and_component(z),
             add_points=add_points,
             other_datasets=other_datasets,
             fill=fill,

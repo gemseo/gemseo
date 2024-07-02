@@ -106,7 +106,7 @@ force-single-line = true
 convention = "google"
 
 [lint.per-file-ignores]
-"tests/*.py" = ["D", "PT009","PT011", "PT027", "PTH"]
+"tests/*.py" = ["D", "PT009","PT011", "PT027", "PTH", "B018"]
 "doc_src/*.py" = ["T", "D", "B018", "PTH", "E501", "PERF", "A001", "RET504"]
 "src/gemseo/utils/testing/opt_lib_test_base.py" = ["D"]
 "src/gemseo/problems/scalable/data_driven/*" = ["D"]

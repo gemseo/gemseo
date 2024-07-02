@@ -41,6 +41,7 @@ from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approxima
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -206,7 +207,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             value: The value :math:`a`.
             positive: Whether the inequality constraint is positive.
         """
-        output_names = [output_name] if isinstance(output_name, str) else output_name
+        output_names = convert_strings_to_iterable(output_name)
         constraint = FunctionFromDiscipline(output_names, self)
         if constraint.discipline_adapter.is_linear:
             constraint = compute_linear_approximation(

@@ -99,6 +99,7 @@ from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.scenarios.backup_settings import BackupSettings
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
@@ -1045,7 +1046,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
         ["out1", "out2"],
         2,
         "fullfact",
-        backup_file_path="database.hdf5",
+        backup_settings=BackupSettings("database.hdf5"),
     )
     assert len(Database.from_hdf("database.hdf5")) == 2
 
@@ -1056,7 +1057,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             ["out1", "out2"],
             2,
             "fullfact",
-            backup_file_path="database.hdf5",
+            backup_settings=BackupSettings("database.hdf5"),
         )
 
     assert method.call_args.kwargs == {
@@ -1073,11 +1074,13 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             ["out1", "out2"],
             2,
             "fullfact",
-            backup_file_path="database.hdf5",
-            backup_at_each_iteration=True,
-            backup_at_each_function_call=False,
-            erase_backup=True,
-            load_backup=True,
+            backup_settings=BackupSettings(
+                "database.hdf5",
+                at_each_iteration=True,
+                at_each_function_call=False,
+                erase=True,
+                load=True,
+            ),
         )
 
     assert method.call_args.kwargs == {

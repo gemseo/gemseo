@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import logging
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Union
@@ -114,21 +114,22 @@ def uncertain_space() -> ParameterSpace:
     return parameter_space
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def sobol(discipline: MDODiscipline, uncertain_space: ParameterSpace) -> SobolAnalysis:
     """A Sobol' analysis."""
-    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
     analysis.compute_indices()
     return analysis
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def first_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     """The intervals of the first-order indices."""
     return sobol.get_intervals()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     """The intervals of the total-order indices."""
     return sobol.get_intervals(False)
@@ -143,7 +144,8 @@ def cv1_stat(
 
     Here for the first CV discipline.
     """
-    sobol_analysis = SobolAnalysis([discipline_cv1], uncertain_space, 100)
+    sobol_analysis = SobolAnalysis()
+    sobol_analysis.compute_samples([discipline_cv1], uncertain_space, 100)
     return sobol_analysis.output_variances, sobol_analysis.compute_indices()
 
 
@@ -156,7 +158,8 @@ def cv2_stat(
 
     Here for the second CV discipline.
     """
-    sobol_analysis = SobolAnalysis([discipline_cv2], uncertain_space, 100)
+    sobol_analysis = SobolAnalysis()
+    sobol_analysis.compute_samples([discipline_cv2], uncertain_space, 100)
     return sobol_analysis.output_variances, sobol_analysis.compute_indices()
 
 
@@ -168,7 +171,8 @@ def sobol_cv(
     cv1_stat: StatisticsType,
 ) -> SobolAnalysis:
     """A Sobol' analysis when a control variate is used."""
-    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
     cv1 = analysis.ControlVariate(
         discipline=discipline_cv1,
         indices=cv1_stat[1],
@@ -192,10 +196,11 @@ def total_intervals_cv(sobol_cv: SobolAnalysis) -> FirstOrderIndicesType:
 
 def test_algo(discipline, uncertain_space) -> None:
     """Check that algorithm can be passed either as a str or an Algorithm."""
-    analysis = SobolAnalysis([discipline], uncertain_space, 100)
-    indices = analysis.compute_indices(algo=analysis.Algorithm.JANSEN)["first"]["y"][0]
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
     assert compare_dict_of_arrays(
-        indices, analysis.compute_indices(algo="Jansen")["first"]["y"][0]
+        analysis.compute_indices(algo=analysis.Algorithm.JANSEN).first["y"][0],
+        analysis.compute_indices(algo="Jansen").first["y"][0],
     )
 
 
@@ -204,13 +209,13 @@ def test_method(sobol, method) -> None:
     """Check the use of the main method."""
     assert sobol.main_method == "first"
     assert compare_dict_of_arrays(
-        sobol.main_indices["y"][0], sobol.indices["first"]["y"][0], 0.1
+        sobol.main_indices["y"][0], sobol.indices.first["y"][0], 0.1
     )
 
     sobol.main_method = method
     assert sobol.main_method == "total"
     assert compare_dict_of_arrays(
-        sobol.main_indices["y"][0], sobol.indices["total"]["y"][0], 0.1
+        sobol.main_indices["y"][0], sobol.indices.total["y"][0], 0.1
     )
 
     sobol.main_method = SobolAnalysis.Method.FIRST
@@ -291,39 +296,30 @@ def test_plot(name, sobol, sort, sort_by_total, kwargs, baseline_images) -> None
 )
 def test_indices(sobol, order, reference) -> None:
     """Check the values of the indices."""
-    assert compare_dict_of_arrays(sobol.indices[order]["y"][0], reference, 0.1)
-    assert compare_dict_of_arrays(
-        getattr(sobol, f"{order.lower()}_order_indices")["y"][0], reference, 0.1
-    )
-
-
-def test_save_load(sobol, tmp_wd) -> None:
-    """Check saving and loading a SobolAnalysis."""
-    sobol.to_pickle("foo.pkl")
-    new_sobol = SobolAnalysis.from_pickle("foo.pkl")
-    assert new_sobol.dataset.equals(sobol.dataset)
-    assert new_sobol.default_output_names == sobol.default_output_names
+    assert compare_dict_of_arrays(getattr(sobol.indices, order)["y"][0], reference, 0.1)
 
 
 @pytest.mark.parametrize("compute_second_order", [False, True])
 def test_second_order(discipline, uncertain_space, compute_second_order) -> None:
     """Check the computation of second-order indices."""
-    analysis = SobolAnalysis(
+    analysis = SobolAnalysis()
+    analysis.compute_samples(
         [discipline], uncertain_space, 100, compute_second_order=compute_second_order
     )
     analysis.compute_indices()
-    assert bool(analysis.indices["second"]) is compute_second_order
-    assert bool(analysis.second_order_indices) is compute_second_order
+    assert bool(analysis.indices.second) is compute_second_order
     assert len(analysis.dataset) == (96 if compute_second_order else 100)
 
 
 def test_asymptotic_or_bootstrap_intervals(discipline, uncertain_space) -> None:
     """Check the method to compute the confidence intervals."""
-    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
     analysis.compute_indices()
     asymptotic_interval = analysis.get_intervals()["y"][0]["x1"]
 
-    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
     analysis.compute_indices(use_asymptotic_distributions=False)
     bootstrap_interval = analysis.get_intervals()["y"][0]["x1"]
 
@@ -333,17 +329,19 @@ def test_asymptotic_or_bootstrap_intervals(discipline, uncertain_space) -> None:
 
 def test_confidence_level_default(discipline, uncertain_space) -> None:
     """Check the default confidence level used by the algorithm."""
-    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
     analysis.compute_indices()
-    algos = analysis._SobolAnalysis__output_names_to_sobol_algos
+    algos = analysis.dataset.misc["output_names_to_sobol_algos"]
     assert algos["y"][0].getConfidenceLevel() == 0.95
 
 
 def test_confidence_level_custom(discipline, uncertain_space) -> None:
     """Check setting a custom confidence level."""
-    analysis = SobolAnalysis([discipline], uncertain_space, 100)
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
     analysis.compute_indices(confidence_level=0.90)
-    algos = analysis._SobolAnalysis__output_names_to_sobol_algos
+    algos = analysis.dataset.misc["output_names_to_sobol_algos"]
     assert algos["y"][0].getConfidenceLevel() == 0.90
 
 
@@ -382,9 +380,9 @@ def test_output_standard_deviations(sobol) -> None:
 def test_unscale_indices(sobol, use_variance, order) -> None:
     """Check SobolAnalysis.unscaled_indices()."""
     orders_to_indices = {
-        "first": sobol.first_order_indices,
-        "second": sobol.second_order_indices,
-        "total": sobol.total_order_indices,
+        "first": sobol.indices.first,
+        "second": sobol.indices.second,
+        "total": sobol.indices.total,
     }
     is_second_order = order == "second"
     indices = orders_to_indices[order]
@@ -432,7 +430,8 @@ def test_unscale_indices(sobol, use_variance, order) -> None:
 
 def test_compute_indices_output_names(sobol) -> None:
     """Check compute_indices with different types for output_names."""
-    assert sobol.compute_indices(["y"]).keys() == sobol.compute_indices("y").keys()
+    assert sobol.compute_indices(["y"]).first
+    assert sobol.compute_indices("y").first
 
 
 def test_to_dataset(sobol) -> None:
@@ -539,17 +538,15 @@ def test_cv_algo(
     indices_cv1 = sobol.compute_indices([output_name], control_variates=cv1)
     indices_cv11 = sobol.compute_indices([output_name], control_variates=[cv1, cv1])
     indices_cv12 = sobol.compute_indices([output_name], control_variates=[cv1, cv2])
-    assert compare_dict_of_arrays(indices_cv1[order]["z"][0], reference_cv1, 0.001)
-    assert compare_dict_of_arrays(indices_cv11[order]["z"][0], reference_cv11, 0.05)
-    assert compare_dict_of_arrays(indices_cv12[order]["z"][0], reference_cv12, 0.001)
-
-
-def test_warning_log(sobol_cv, caplog) -> None:
-    """Check the warning logged when second order indices is called for."""
-    module = "gemseo.uncertainty.sensitivity.sobol_analysis"
-    msg = "The second-order Sobol' indices are not yet implemented for CV estimators."
-    assert sobol_cv.second_order_indices == {}
-    assert (module, logging.WARNING, msg) in caplog.record_tuples
+    assert compare_dict_of_arrays(
+        getattr(indices_cv1, order)["z"][0], reference_cv1, 0.001
+    )
+    assert compare_dict_of_arrays(
+        getattr(indices_cv11, order)["z"][0], reference_cv11, 0.05
+    )
+    assert compare_dict_of_arrays(
+        getattr(indices_cv12, order)["z"][0], reference_cv12, 0.001
+    )
 
 
 @pytest.mark.parametrize(
@@ -594,4 +591,30 @@ def test_total_intervals_cv(total_intervals_cv, name, bound, expected) -> None:
     variate is used."""
     assert_almost_equal(
         total_intervals_cv["y"][0][name][bound], array(expected), decimal=2
+    )
+
+
+def test_from_samples(sobol, tmp_path):
+    """Check the instantiation from samples."""
+    file_path = Path("samples.pkl")
+    sobol.dataset.to_pickle(file_path)
+    new_sobol = SobolAnalysis(samples=file_path)
+    new_sobol.compute_indices()
+    assert new_sobol.indices.first["y"][0]["x1"] == sobol.indices.first["y"][0]["x1"]
+
+
+def test_from_samples_cv(sobol_cv, discipline_cv1, cv1_stat, tmp_path):
+    """Check the instantiation from samples with control variates.."""
+    file_path = Path("samples.pkl")
+    sobol_cv.dataset.to_pickle(file_path)
+    new_sobol_cv = SobolAnalysis(samples=file_path)
+    cv1 = new_sobol_cv.ControlVariate(
+        discipline=discipline_cv1,
+        indices=cv1_stat[1],
+        variance=cv1_stat[0],
+    )
+    new_sobol_cv.compute_indices(control_variates=[cv1])
+    assert not new_sobol_cv.indices.second
+    assert (
+        new_sobol_cv.indices.first["y"][0]["x1"] == sobol_cv.indices.first["y"][0]["x1"]
     )

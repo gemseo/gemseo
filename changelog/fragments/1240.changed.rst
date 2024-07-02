@@ -1,0 +1,4 @@
+API changes:
+
+- ``SensitivityAnalysisFactory.create``: removed; use ``SensitivityAnalysisFactory.class_names`` instead.
+- ``create_sensitivity_analysis`` creates a ``BaseSensitivityAnalysis`` from samples; if missing, use the method ``compute_samples`` of the ``BaseSensitivityAnalysis``.

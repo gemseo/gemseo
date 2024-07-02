@@ -39,6 +39,8 @@ from numpy import float64
 from numpy import ndarray
 from strenum import StrEnum
 
+from gemseo.utils.string_tools import convert_strings_to_iterable
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from types import ModuleType
@@ -174,12 +176,12 @@ class SobieskiBase:
         Returns:
             The lower and upper bounds of these variables.
         """
-        if isinstance(variable_names, str):
-            variable_names = [variable_names]
-
         bounds = atleast_2d(
             concatenate(
-                [_NAMES_TO_BOUNDS[variable_name] for variable_name in variable_names],
+                [
+                    _NAMES_TO_BOUNDS[variable_name]
+                    for variable_name in convert_strings_to_iterable(variable_names)
+                ],
                 axis=0,
             )
         )

@@ -1,0 +1,5 @@
+API changes:
+
+- ``BaseSensitivityAnalysis``: the arguments ``inputs`` have been renamed to ``input_names``.
+- ``BaseSensitivityAnalysis.compute_indices``'s ``outputs`` argument has been renamed to ``output_names``.
+- ``BaseSensitivityAnalysis``'s. ``sort_parameters`` method renamed to ``sort_input_variables``.

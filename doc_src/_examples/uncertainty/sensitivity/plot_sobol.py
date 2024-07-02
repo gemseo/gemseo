@@ -52,7 +52,8 @@ uncertain_space = IshigamiSpace()
 # %%
 # Then,
 # we run sensitivity analysis of type :class:`.SobolAnalysis`:
-sensitivity_analysis = SobolAnalysis([discipline], uncertain_space, 10000)
+sensitivity_analysis = SobolAnalysis()
+sensitivity_analysis.compute_samples([discipline], uncertain_space, 10000)
 sensitivity_analysis.main_method = "total"
 sensitivity_analysis.compute_indices()
 
@@ -62,9 +63,9 @@ pprint.pprint(sensitivity_analysis.indices)
 
 # %%
 # They can also be accessed separately:
-pprint.pprint(sensitivity_analysis.first_order_indices)
-pprint.pprint(sensitivity_analysis.second_order_indices)
-pprint.pprint(sensitivity_analysis.total_order_indices)
+pprint.pprint(sensitivity_analysis.indices.first)
+pprint.pprint(sensitivity_analysis.indices.second)
+pprint.pprint(sensitivity_analysis.indices.total)
 
 # %%
 # One can also obtain their confidence intervals:
@@ -80,7 +81,7 @@ pprint.pprint(sensitivity_analysis.main_indices)
 # %%
 # These main indices can be used to get the input parameters
 # sorted by decreasing order of influence:
-sensitivity_analysis.sort_parameters("y")
+sensitivity_analysis.sort_input_variables("y")
 
 # %%
 # We can use the method :meth:`.SobolAnalysis.plot`

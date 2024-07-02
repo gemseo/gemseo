@@ -55,6 +55,7 @@ from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
+from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
@@ -818,10 +819,8 @@ class Database(Mapping):
         if with_x_vect:
             if not input_names:
                 x_names = [f"x_{i + 1}" for i in range(len(self))]
-            elif isinstance(input_names, str):
-                x_names = [input_names]
             else:
-                x_names = input_names
+                x_names = convert_strings_to_iterable(input_names)
 
             x_flat_names, x_flat_values = self.__split_history(x_history, x_names)
             variables_flat_names = f_flat_names + x_flat_names

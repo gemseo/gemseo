@@ -57,13 +57,15 @@ uncertain_space = IshigamiSpace()
 #
 # Firstly,
 # we create a :class:`.CorrelationAnalysis` and compute the sensitivity indices:
-correlation = CorrelationAnalysis([discipline], uncertain_space, 10)
+correlation = CorrelationAnalysis()
+correlation.compute_samples([discipline], uncertain_space, 10)
 correlation.compute_indices()
 
 # %%
 # Then,
 # we create an :class:`.MorrisAnalysis` and compute the sensitivity indices:
-morris = MorrisAnalysis([discipline], uncertain_space, 10)
+morris = MorrisAnalysis()
+morris.compute_samples([discipline], uncertain_space, 10)
 morris.compute_indices()
 
 # %%

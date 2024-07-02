@@ -37,6 +37,7 @@ from gemseo.mda.factory import MDAFactory
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
 )
+from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -583,7 +584,7 @@ class BiLevel(BaseMDOFormulation):
                 top-level disciplines outputs.
         """
         added = False
-        output_names = [output_name] if isinstance(output_name, str) else output_name
+        output_names = convert_strings_to_iterable(output_name)
         for sub_scenario in self.get_sub_scenarios():
             if self._scenario_computes_outputs(sub_scenario, output_names):
                 sub_scenario.add_constraint(

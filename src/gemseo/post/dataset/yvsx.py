@@ -29,11 +29,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import VariableType
+from gemseo.utils.string_tools import get_name_and_component
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
+    from gemseo.utils.string_tools import VariableType
 
 
 class YvsX(DatasetPlot):
@@ -51,8 +52,8 @@ class YvsX(DatasetPlot):
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,
-            x=self._force_variable_to_tuple(x),
-            y=self._force_variable_to_tuple(y),
+            x=get_name_and_component(x),
+            y=get_name_and_component(y),
         )
 
     def _create_specific_data_from_dataset(
