@@ -56,7 +56,6 @@ if TYPE_CHECKING:
 
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
-VariableType = Union[str, tuple[str, int]]
 
 
 class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -497,21 +496,6 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     @labels.setter
     def labels(self, names_to_labels: Mapping[str, str]) -> None:
         self._common_settings.labels = names_to_labels
-
-    @staticmethod
-    def _force_variable_to_tuple(variable: VariableType) -> tuple[str, int]:
-        """Return a variable as a tuple ``(variable_name, variable_component)``.
-
-        Args:
-            variable: The original variable.
-
-        Returns:
-            The variable as ``(variable_name, variable_component)``.
-        """
-        if isinstance(variable, str):
-            variable = (variable, 0)
-
-        return variable
 
     @property
     def _n_items(self) -> int:

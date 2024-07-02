@@ -56,7 +56,7 @@ and the Sobol' indices are obtained by dividing by the variance and sum up to 1:
    \sum_{i,j,k=1\atop i\neq j\neq k}^d S_{i,j,k} + \ldots + S_{1,\ldots,d}
 
 A Sobol' index represents the share of output variance explained
-by a parameter or a group of parameters. For the parameter :math:`X_i`,
+by an input variable or a group of input variables. For the input variable :math:`X_i`,
 
 - :math:`S_i` is the first-order Sobol' index
   measuring the individual effect of :math:`X_i`,
@@ -79,12 +79,12 @@ and the total-order Sobol' index:
    S_i^T=\sum_{u\subset\{1,\ldots,d\}\atop u \ni i}S_u
 
 The latter represents the sum of the individual effect of :math:`X_i` and
-the joint effects between :math:`X_i` and any parameter or group of parameters.
+the joint effects between :math:`X_i` and any input variable or group of input variable.
 
 This methodology relies on the :class:`.SobolAnalysis` class. Precisely,
 :attr:`.SobolAnalysis.indices` contains
-both :attr:`.SobolAnalysis.first_order_indices` and
-:attr:`.SobolAnalysis.total_order_indices`
+both :attr:`.SobolAnalysis.indices.first` and
+:attr:`.SobolAnalysis.indices.total`
 while :attr:`.SobolAnalysis.main_indices` represents first-order Sobol'
 indices.
 Lastly, the :meth:`.SobolAnalysis.plot` method represents
@@ -106,7 +106,6 @@ import logging
 from collections.abc import Collection
 from collections.abc import Iterable
 from collections.abc import Mapping
-from collections.abc import Sequence
 from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
@@ -143,20 +142,23 @@ from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
 )
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.utils.seeder import SEED
+from gemseo.utils.string_tools import filter_names
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from matplotlib.figure import Figure
-    from numpy.typing import NDArray
 
     from gemseo.algos.driver_library import DriverLibraryOptionType
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.post.dataset.dataset_plot import VariableType
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.typing import RealArray
+    from gemseo.utils.string_tools import VariableType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -185,12 +187,26 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
         ... )
         >>>
-        >>> analysis = SobolAnalysis([discipline], parameter_space, n_samples=10000)
+        >>> analysis = SobolAnalysis()
+        >>> analysis.compute_samples([discipline], parameter_space, n_samples=10000)
         >>> indices = analysis.compute_indices()
 
     .. note:: The second-order Sobol' indices cannot be yet estimated with control
     variates.
     """
+
+    @dataclass(frozen=True)
+    class SensitivityIndices:  # noqa: D106
+        first: FirstOrderIndicesType = field(default_factory=dict)
+        """The first-order Sobol' indices."""
+
+        second: SecondOrderIndicesType = field(default_factory=dict)
+        """The second-order Sobol' indices."""
+
+        total: FirstOrderIndicesType = field(default_factory=dict)
+        """The total order Sobol' indices."""
+
+    _indices: SensitivityIndices
 
     class Algorithm(PascalCaseStrEnum):
         """The algorithms to estimate the Sobol' indices."""
@@ -206,6 +222,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         Algorithm.MAUNTZ_KUCHERENKO: MauntzKucherenkoSensitivityAlgorithm,
         Algorithm.MARTINEZ: MartinezSensitivityAlgorithm,
     }
+    """The mapping from the sensitivity algorithms to the OT classes."""
 
     class Method(StrEnum):
         """The names of the sensitivity methods."""
@@ -227,7 +244,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         discipline: MDODiscipline
         """A cheap discipline, e.g. a surrogate discipline.
 
-        It must have as inputs the uncertain input variables and the output variables
+        It must have as inputs the input variables and the output variables
         used by ``SobolAnalysis``.
         """
 
@@ -269,25 +286,15 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
     The settings are the following boolean parameters:
     - Whether control variates are used or not.
-    - Whether the order of the computed Sobol' index is the first order or the total
-    order.
+    - Whether the order of the computed Sobol' index is
+      the first order or the total order.
     """
 
     DEFAULT_DRIVER: ClassVar[str] = "OT_SOBOL_INDICES"
 
-    output_variances: dict[str, NDArray[float]]
-    """The variances of the output variables."""
+    _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.FIRST
 
-    output_standard_deviations: dict[str, NDArray[float]]
-    """The standard deviations of the output variables."""
-
-    __use_control_variates: bool
-    """Whether the indices are estimated using control variates."""
-
-    __n_inputs: int
-    """The number of inputs in parameter space."""
-
-    def __init__(
+    def compute_samples(
         self,
         disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
@@ -295,10 +302,11 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         output_names: Iterable[str] = (),
         algo: str = "",
         algo_options: Mapping[str, DriverLibraryOptionType] = READ_ONLY_EMPTY_DICT,
+        backup_settings: BackupSettings | None = None,
         formulation: str = "MDF",
         compute_second_order: bool = True,
         **formulation_options: Any,
-    ) -> None:
+    ) -> IODataset:
         r"""
         Args:
             compute_second_order: Whether to compute the second-order indices.
@@ -319,25 +327,22 @@ class SobolAnalysis(BaseSensitivityAnalysis):
              the user can choose to set ``compute_second_order`` to ``False``
              to ensure a better estimation of the first- and second-order indices.
         """  # noqa: D205, D212, D415
-        self.__output_names_to_sobol_algos = {}
         algo_options = algo_options or {}
         algo_options["eval_second_order"] = compute_second_order
-        super().__init__(
+        super().compute_samples(
             disciplines,
             parameter_space,
             n_samples=n_samples,
             output_names=output_names,
             algo=algo,
             algo_options=algo_options,
+            backup_settings=backup_settings,
             formulation=formulation,
             **formulation_options,
         )
-        self.__eval_second_order = compute_second_order
-        self._main_method = self.Method.FIRST
         dataset = self.dataset
-        self.__parameter_space = parameter_space
+        dataset.misc["output_names_to_sobol_algos"] = {}
         n_inputs = parameter_space.dimension
-        self.__n_inputs = n_inputs
 
         # If eval_second_order is set to False, the input design is of size N(2+n_X).
         # If eval_second_order is set to True,
@@ -345,23 +350,37 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         #   if n_X != 2, the input design is of size N(2+2n_X).
         # Ref: https://openturns.github.io/openturns/latest/user_manual/_generated/
         # openturns.SobolIndicesExperiment.html#openturns.SobolIndicesExperiment
-        self.__sample_size = len(dataset) // (
+        sample_size = len(dataset) // (
             2 + n_inputs * (1 + (compute_second_order and n_inputs > 2))
         )
-
-        self.output_variances = split_array_to_dict_of_arrays(
+        self.dataset.misc["eval_second_order"] = compute_second_order
+        self.dataset.misc["parameter_space"] = parameter_space
+        self.dataset.misc["sample_size"] = sample_size
+        self.dataset.misc["n_inputs"] = n_inputs
+        output_variances = split_array_to_dict_of_arrays(
             dataset.get_view(group_names=dataset.OUTPUT_GROUP)
-            .to_numpy()[: 2 * self.__sample_size]
+            .to_numpy()[: 2 * sample_size]
             .var(0),
             dataset.variable_names_to_n_components,
             self._output_names,
         )
-
-        self.output_standard_deviations = {
-            k: v**0.5 for k, v in self.output_variances.items()
+        self.dataset.misc["output_variances"] = output_variances
+        self.dataset.misc["output_standard_deviations"] = {
+            k: v**0.5 for k, v in output_variances.items()
         }
+        self.dataset.misc["use_control_variates"] = False
+        self.dataset.misc["output_names_to_sobol_algos"] = {}
+        return self.dataset
 
-        self.__use_control_variates = False
+    @property
+    def output_variances(self) -> dict[str, RealArray]:
+        """The variances of the output variables."""
+        return self.dataset.misc["output_variances"]
+
+    @property
+    def output_standard_deviations(self) -> dict[str, RealArray]:
+        """The standard deviations of the output variables."""
+        return self.dataset.misc["output_standard_deviations"]
 
     def __execute_cv(
         self,
@@ -401,14 +420,16 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         if cv.variance and cv.indices:
             return cv
 
+        dataset = self.dataset
         n_samples = (
-            100 * self.__sample_size * (2 + self.__n_inputs)
+            100 * dataset.misc["sample_size"] * (2 + dataset.misc["n_inputs"])
             if cv.n_samples == 0
             else cv.n_samples
         )
-        cv_analysis = self.__class__(
+        cv_analysis = self.__class__()
+        cv_analysis.compute_samples(
             [cv.discipline],
-            parameter_space=self.__parameter_space,
+            parameter_space=dataset.misc["parameter_space"],
             n_samples=n_samples,
             output_names=self._output_names,
             compute_second_order=False,
@@ -419,12 +440,12 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
     def __compute_indices_classically(
         self,
-        output_names: Sequence[str],
+        output_names: Iterable[str],
         algo: Algorithm = Algorithm.SALTELLI,
         confidence_level: float = 0.95,
         use_asymptotic_distributions: bool = True,
         n_replicates: int = 100,
-    ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
+    ) -> SensitivityIndices:
         """Compute the sensitivity indices with OpenTURNS capabilities.
 
         Args:
@@ -448,41 +469,43 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         ResourceMap.SetAsUnsignedInteger(
             "SobolIndicesAlgorithm-DefaultBootstrapSize", n_replicates
         )
+        dataset = self.dataset
         input_data = Sample(
-            self.dataset.get_view(
-                group_names=self.dataset.INPUT_GROUP, variable_names=self._input_names
+            dataset.get_view(
+                group_names=dataset.INPUT_GROUP, variable_names=self._input_names
             ).to_numpy()
         )
+        output_names_to_sobol_algos = self.dataset.misc["output_names_to_sobol_algos"]
         for output_name in output_names:
-            output_data = self.dataset.get_view(
-                group_names=self.dataset.OUTPUT_GROUP, variable_names=output_name
+            output_data = dataset.get_view(
+                group_names=dataset.OUTPUT_GROUP, variable_names=output_name
             ).to_numpy()
-            algos = self.__output_names_to_sobol_algos[output_name] = []
+            algos = output_names_to_sobol_algos[output_name] = []
             for sub_output_data in output_data.T:
                 ot_algo = algo_class(
                     input_data,
                     Sample(sub_output_data[:, newaxis]),
-                    self.__sample_size,
+                    dataset.misc["sample_size"],
                 )
                 ot_algo.setUseAsymptoticDistribution(use_asymptotic_distributions)
                 ot_algo.setConfidenceLevel(confidence_level)
                 algos.append(ot_algo)
 
-        self._indices = {
-            self.Method.FIRST: self.__get_indices(self.__GET_FIRST_ORDER_INDICES),
-            self.__SECOND: self.__get_indices(self.__GET_SECOND_ORDER_INDICES),
-            self.Method.TOTAL: self.__get_indices(self.__GET_TOTAL_ORDER_INDICES),
-        }
+        self._indices = self.SensitivityIndices(
+            first=self.__get_indices(self.__GET_FIRST_ORDER_INDICES),
+            second=self.__get_indices(self.__GET_SECOND_ORDER_INDICES),
+            total=self.__get_indices(self.__GET_TOTAL_ORDER_INDICES),
+        )
         return self._indices
 
     def __compute_indices_using_cv(
         self,
-        output_names: Sequence[str],
+        output_names: Iterable[str],
         control_variates: Iterable[ControlVariate],
         confidence_level: float = 0.95,
         n_replicates: int = 100,
         seed: int | None = SEED,
-    ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
+    ) -> SensitivityIndices:
         """Compute the sensitivity indices using control variates.
 
         Args:
@@ -499,7 +522,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         Returns:
             The sensitivity indices.
         """
-        n = self.__sample_size
+        dataset = self.dataset
+        n = dataset.misc["sample_size"]
 
         generator = default_rng(seed)
         bootstrap_samples = []
@@ -508,21 +532,23 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             bootstrap_sample_ab = hstack([bootstrap_sample_a, bootstrap_sample_a + n])
             bootstrap_samples.append((bootstrap_sample_a, bootstrap_sample_ab))
 
-        n_samples_wo_second_order = n * (2 + self.__n_inputs)
+        n_inputs = dataset.misc["n_inputs"]
+        n_samples_wo_second_order = n * (2 + n_inputs)
 
         control_variates = [self.__compute_cv_stats(cv) for cv in control_variates]
 
         cvs_dataset_list = [
-            self.dataset.get_view(indices=range(n_samples_wo_second_order)).apply(
+            dataset.get_view(indices=range(n_samples_wo_second_order)).apply(
                 lambda sample, cv_d=cv.discipline: self.__execute_cv(sample, cv_d),
                 axis=1,
             )
             for cv in control_variates
         ]
 
+        output_names_to_sobol_algos = dataset.misc["output_names_to_sobol_algos"]
         for output_name in output_names:
-            output_data = self.dataset.get_view(
-                group_names=self.dataset.OUTPUT_GROUP,
+            output_data = dataset.get_view(
+                group_names=dataset.OUTPUT_GROUP,
                 variable_names=output_name,
                 indices=range(n_samples_wo_second_order),
             ).to_numpy()
@@ -530,7 +556,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 vstack(list(cv_dataset_list[output_name]))
                 for cv_dataset_list in cvs_dataset_list
             ]
-            algos = self.__output_names_to_sobol_algos[output_name] = []
+            algos = output_names_to_sobol_algos[output_name] = []
             for i, sub_output_data in enumerate(output_data.T):
                 sub_cvs_output_data = [
                     cv_output_data.T[i] for cv_output_data in cvs_output_data
@@ -539,14 +565,16 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                     (
                         cv.variance[output_name][i],
                         {
-                            method: cv.indices[method][output_name][i]
+                            method: getattr(cv.indices, str(method).lower())[
+                                output_name
+                            ][i]
                             for method in list(self.Method)
                         },
                     )
                     for cv in control_variates
                 ]
                 algo = CVSobolAlgorithm(
-                    self.__n_inputs,
+                    n_inputs,
                     sub_output_data,
                     array(sub_cvs_output_data),
                     sub_cvs_statistics,
@@ -556,24 +584,22 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 algos.append(algo)
                 self.output_variances[output_name][i] = algo.variance
 
-        self._indices = {
-            self.Method.FIRST: self.__get_indices("compute_first_indices"),
-            self.__SECOND: {},
-            self.Method.TOTAL: self.__get_indices("compute_total_indices"),
-        }
-
+        self._indices = self.SensitivityIndices(
+            first=self.__get_indices("compute_first_indices"),
+            total=self.__get_indices("compute_total_indices"),
+        )
         return self._indices
 
     def compute_indices(
         self,
-        outputs: str | Sequence[str] = (),
+        output_names: str | Iterable[str] = (),
         algo: Algorithm = Algorithm.SALTELLI,
         confidence_level: float = 0.95,
         control_variates: ControlVariate | Iterable[ControlVariate] = (),
         use_asymptotic_distributions: bool = True,
         n_replicates: int = 100,
         seed: int | None = SEED,
-    ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
+    ) -> SensitivityIndices:
         """
         Args:
             algo: The name of the algorithm to estimate the Sobol' indices.
@@ -593,16 +619,12 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 If ``None``,
                 then fresh, unpredictable entropy will be pulled from the OS.
         """  # noqa:D205,D212,D415
-        output_names = outputs or self.default_output_names
-        if isinstance(output_names, str):
-            output_names = [output_names]
-
-        self.__output_names_to_sobol_algos = {}
-
+        output_names = self._get_output_names(output_names)
+        self.dataset.misc["output_names_to_sobol_algos"] = {}
         if control_variates:
             if isinstance(control_variates, self.ControlVariate):
                 control_variates = [control_variates]
-            self.__use_control_variates = True
+            self.dataset.misc["use_control_variates"] = True
             return self.__compute_indices_using_cv(
                 output_names,
                 control_variates,
@@ -630,13 +652,15 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         Returns:
             The first-, second- or total-order indices.
         """
+        dataset = self.dataset
         if (
             method_name == self.__GET_SECOND_ORDER_INDICES
-            and not self.__eval_second_order
+            and not dataset.misc["eval_second_order"]
         ):
             return {}
 
-        names_to_sizes = self.dataset.variable_names_to_n_components
+        names_to_sizes = dataset.variable_names_to_n_components
+        output_names_to_sobol_algos = dataset.misc["output_names_to_sobol_algos"]
         indices = {
             output_name: [
                 split_array_to_dict_of_arrays(
@@ -644,9 +668,9 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                     names_to_sizes,
                     self._input_names,
                 )
-                for algorithm in self.__output_names_to_sobol_algos[output_name]
+                for algorithm in algorithms
             ]
-            for output_name in self.__output_names_to_sobol_algos
+            for output_name, algorithms in output_names_to_sobol_algos.items()
         }
         if method_name == self.__GET_SECOND_ORDER_INDICES:
             return {
@@ -664,74 +688,13 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
         return indices
 
-    @property
-    def first_order_indices(self) -> FirstOrderIndicesType:
-        """The first-order Sobol' indices.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.FIRST]
-
-    @property
-    def second_order_indices(self) -> SecondOrderIndicesType:
-        """The second-order Sobol' indices.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        {"input_name": {"other_input_name": data_array},
-                    }
-                ]
-            }
-
-        .. note:: Not yet implemented for cv estimators.
-        """
-        if self.__use_control_variates:
-            LOGGER.warning(
-                "The second-order Sobol' indices are not yet implemented for CV "
-                "estimators."
-            )
-        return self._indices[self.__SECOND]
-
-    @property
-    def total_order_indices(self) -> FirstOrderIndicesType:
-        """The total-order Sobol' indices.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.TOTAL]
-
     def __unscale_index(
         self,
-        sobol_index: NDArray[float] | Mapping[str, NDArray[float]],
+        sobol_index: RealArray | Mapping[str, RealArray],
         output_name: str,
         output_index: int,
         use_variance: bool,
-    ) -> NDArray[float] | dict[str, NDArray[float]]:
+    ) -> RealArray | dict[str, RealArray]:
         """Unscaled a Sobol' index.
 
         Args:
@@ -815,10 +778,12 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                     ]
                 }
         """
-        use_cv = self.__use_control_variates
+        use_cv = self.dataset.misc["use_control_variates"]
         names_to_sizes = self.dataset.variable_names_to_n_components
         intervals = {}
-        for output_name, sobol_algos in self.__output_names_to_sobol_algos.items():
+        for output_name, sobol_algos in self.dataset.misc[
+            "output_names_to_sobol_algos"
+        ].items():
             intervals[output_name] = []
             for sobol_algorithm in sobol_algos:
                 interval = getattr(
@@ -849,7 +814,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     def plot(
         self,
         output: VariableType,
-        inputs: Iterable[str] = (),
+        input_names: Iterable[str] = (),
         title: str = "",
         save: bool = True,
         show: bool = False,
@@ -862,7 +827,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     ) -> Figure:
         r"""Plot the first- and total-order Sobol' indices.
 
-        For the :math:`i`-th uncertain input variable,
+        For the :math:`i`-th input variable,
         plot its first-order Sobol' index :math:`S_i^{1}`
         and its total-order Sobol' index :math:`S_i^{T}` with dots
         and their confidence intervals with vertical lines.
@@ -875,7 +840,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             file_name: The name of the file.
             title: The title of the plot.
                 If empty, use a default one.
-            sort: Whether to sort the uncertain variables by decreasing order.
+            sort: Whether to sort the input variables by decreasing order.
             sort_by_total: Whether to sort according to the total-order Sobol' indices
                 when ``sort`` is ``True``.
                 Otherwise, use the first-order Sobol' indices.
@@ -885,10 +850,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
         fig, ax = plt.subplots()
 
-        if sort_by_total:
-            indices = self.total_order_indices
-        else:
-            indices = self.first_order_indices
+        indices = self.indices.total if sort_by_total else self.indices.first
         output_name, output_component = output
         indices = indices[output_name][output_component]
         if sort:
@@ -901,10 +863,10 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         else:
             names = indices.keys()
 
-        names = self._filter_names(names, inputs)
+        names = filter_names(names, input_names)
 
-        first_order_indices = self.first_order_indices[output_name][output_component]
-        total_order_indices = self.total_order_indices[output_name][output_component]
+        first_order_indices = self.indices.first[output_name][output_component]
+        total_order_indices = self.indices.total[output_name][output_component]
         names_to_sizes = {
             name: value.size for name, value in first_order_indices.items()
         }
@@ -930,7 +892,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         pretty_output_name = repr_variable(
             output_name,
             output_component,
-            len(self.total_order_indices[output_name]),
+            len(self.indices.total[output_name]),
         )
         if not title:
             title = f"Sobol' indices for the output {pretty_output_name}"
@@ -980,9 +942,9 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             **errorbar_options,
         )
         ax.legend(loc="lower left")
-        self._save_show_plot(
+        save_show_figure_from_file_path_manager(
             fig,
-            save=save,
+            self._file_path_manager if save else None,
             show=show,
             file_path=file_path,
             file_name=file_name,

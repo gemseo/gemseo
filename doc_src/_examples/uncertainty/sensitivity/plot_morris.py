@@ -54,7 +54,8 @@ uncertain_space = IshigamiSpace()
 # %%
 # Then,
 # we run sensitivity analysis of type :class:`.MorrisAnalysis`:
-sensitivity_analysis = MorrisAnalysis([discipline], uncertain_space, n_samples=None)
+sensitivity_analysis = MorrisAnalysis()
+sensitivity_analysis.compute_samples([discipline], uncertain_space, n_samples=None)
 sensitivity_analysis.compute_indices()
 
 # %%
@@ -73,7 +74,7 @@ pprint.pprint(sensitivity_analysis.outputs_bounds)
 
 # %%
 # We can also get the input parameters sorted by decreasing order of influence:
-sensitivity_analysis.sort_parameters("y")
+sensitivity_analysis.sort_input_variables("y")
 
 # %%
 # We can use the method :meth:`.MorrisAnalysis.plot`

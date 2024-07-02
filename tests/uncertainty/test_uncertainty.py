@@ -31,7 +31,6 @@ from gemseo.uncertainty import create_sensitivity_analysis
 from gemseo.uncertainty import create_statistics
 from gemseo.uncertainty import get_available_distributions
 from gemseo.uncertainty import get_available_sensitivity_analyses
-from gemseo.uncertainty import load_sensitivity_analysis
 from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
 from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
 
@@ -66,6 +65,7 @@ def test_available_sensitivity_analysis() -> None:
 
 
 def test_create_sensitivity() -> None:
+    """Check the function create_sensitivity()."""
     discipline = AnalyticDiscipline(
         {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}, name="Ishigami"
     )
@@ -75,13 +75,16 @@ def test_create_sensitivity() -> None:
         space.add_random_variable(
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
-    assert create_sensitivity_analysis(
-        "MorrisAnalysis", [discipline], space, n_samples=None, n_replicates=5
-    )
 
-    assert create_sensitivity_analysis(
-        "morris", [discipline], space, n_samples=None, n_replicates=5
-    )
+    # Create a sensitivity analysis computing samples.
+    analysis = create_sensitivity_analysis("MorrisAnalysis")
+    analysis.compute_samples([discipline], space, n_samples=None, n_replicates=5)
+
+    # Create a new sensitivity analysis from these samples.
+    other_analysis = create_sensitivity_analysis("morris", samples=analysis.dataset)
+
+    # Verify that the datasets are identical
+    assert analysis.dataset is other_analysis.dataset
 
 
 def test_create_statistics() -> None:
@@ -91,23 +94,3 @@ def test_create_statistics() -> None:
     assert isinstance(stat, EmpiricalStatistics)
     stat = create_statistics(dataset, tested_distributions=["Normal", "Exponential"])
     assert isinstance(stat, ParametricStatistics)
-
-
-def test_load_sensitivity_analysis(tmp_wd) -> None:
-    discipline = AnalyticDiscipline(
-        {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}, name="Ishigami"
-    )
-    space = ParameterSpace()
-    for variable in ["x1", "x2", "x3"]:
-        space.add_random_variable(
-            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
-        )
-    analysis = create_sensitivity_analysis(
-        "SobolAnalysis", [discipline], space, n_samples=1000
-    )
-    analysis.to_pickle("foo.pkl")
-
-    new_analysis = load_sensitivity_analysis("foo.pkl")
-    assert new_analysis.__class__.__name__ == new_analysis.__class__.__name__
-    assert new_analysis.dataset.equals(analysis.dataset)
-    assert new_analysis.default_output_names == analysis.default_output_names

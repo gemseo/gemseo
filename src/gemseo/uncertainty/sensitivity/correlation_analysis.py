@@ -22,9 +22,11 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from dataclasses import field
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Final
 
 from numpy import array
@@ -51,23 +53,17 @@ from gemseo.utils.compatibility.openturns import compute_spearman_correlation
 from gemseo.utils.compatibility.openturns import compute_squared_src
 from gemseo.utils.compatibility.openturns import compute_src
 from gemseo.utils.compatibility.openturns import compute_srrc
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.string_tools import filter_names
+from gemseo.utils.string_tools import get_name_and_component
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
     from collections.abc import Iterable
-    from collections.abc import Mapping
     from collections.abc import Sequence
     from pathlib import Path
 
-    from numpy.typing import NDArray
-
-    from gemseo.algos.driver_library import DriverLibraryOptionType
-    from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.discipline import MDODiscipline
-    from gemseo.post.dataset.dataset_plot import VariableType
+    from gemseo.utils.string_tools import VariableType
 
 
 class CorrelationAnalysis(BaseSensitivityAnalysis):
@@ -96,11 +92,38 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
         ... )
         >>>
-        >>> analysis = CorrelationAnalysis(
-        ...     [discipline], parameter_space, n_samples=1000
-        ... )
+        >>> analysis = CorrelationAnalysis()
+        >>> analysis.compute_samples([discipline], parameter_space, n_samples=1000)
         >>> indices = analysis.compute_indices()
     """  # noqa: E501
+
+    @dataclass(frozen=True)
+    class SensitivityIndices:  # noqa: D106
+        kendall: FirstOrderIndicesType = field(default_factory=dict)
+        """The Kendall rank correlation coefficients."""
+
+        pcc: FirstOrderIndicesType = field(default_factory=dict)
+        """The Partial Correlation Coefficients."""
+
+        pearson: FirstOrderIndicesType = field(default_factory=dict)
+        """The Pearson coefficients."""
+
+        prcc: FirstOrderIndicesType = field(default_factory=dict)
+        """The Partial Rank Correlation Coefficients."""
+
+        spearman: FirstOrderIndicesType = field(default_factory=dict)
+        """The Spearman coefficients."""
+
+        src: FirstOrderIndicesType = field(default_factory=dict)
+        """The Standard Regression Coefficients."""
+
+        srrc: FirstOrderIndicesType = field(default_factory=dict)
+        """The Standard Rank Regression Coefficients."""
+
+        ssrc: FirstOrderIndicesType = field(default_factory=dict)
+        """The Squared Standard Regression Coefficients."""
+
+    _indices: SensitivityIndices
 
     class Method(StrEnum):
         """The names of the sensitivity methods."""
@@ -132,53 +155,32 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         Method.SRRC: compute_srrc,
         Method.SSRC: compute_squared_src,
     }
+    """The mapping from the method names to the functions."""
 
-    DEFAULT_DRIVER = "OT_MONTE_CARLO"
+    _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.SPEARMAN
 
-    def __init__(  # noqa: D107
-        self,
-        disciplines: Collection[MDODiscipline],
-        parameter_space: ParameterSpace,
-        n_samples: int,
-        output_names: Iterable[str] = (),
-        algo: str = "",
-        algo_options: Mapping[str, DriverLibraryOptionType] = READ_ONLY_EMPTY_DICT,
-        formulation: str = "MDF",
-        **formulation_options: Any,
-    ) -> None:
-        super().__init__(
-            disciplines,
-            parameter_space,
-            n_samples=n_samples,
-            output_names=output_names,
-            algo=algo,
-            algo_options=algo_options,
-            formulation=formulation,
-            **formulation_options,
-        )
-        self.main_method = self.Method.SPEARMAN
+    DEFAULT_DRIVER: ClassVar[str] = "OT_MONTE_CARLO"
 
     def compute_indices(  # noqa: D102
-        self, outputs: str | Sequence[str] = ()
-    ) -> dict[str, FirstOrderIndicesType]:
-        output_names = outputs or self.default_output_names
-        if isinstance(output_names, str):
-            output_names = [output_names]
+        self, output_names: str | Sequence[str] = ()
+    ) -> SensitivityIndices:
+        output_names = self._get_output_names(output_names)
 
         input_samples = Sample(
             self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
         )
-        self._indices = {}
+        indices = {}
         # For each correlation method
         new_methods = [self.Method.KENDALL, self.Method.SSRC]
         for method in self.Method:
             if IS_OT_LOWER_THAN_1_20 and method in new_methods:
+                indices[str(method).lower()] = {}
                 continue
 
             # The version of OpenTURNS offers this correlation method.
             get_indices = self.__METHODS_TO_FUNCTIONS[method]
             sizes = self.dataset.variable_names_to_n_components
-            self._indices[method] = {
+            indices[str(method).lower()] = {
                 output_name: [
                     split_array_to_dict_of_arrays(
                         array(
@@ -202,156 +204,13 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
                 for output_name in output_names
             }
 
+        self._indices = self.SensitivityIndices(**indices)
         return self._indices
-
-    @property
-    def pcc(self) -> FirstOrderIndicesType:
-        """The Partial Correlation Coefficients.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.PCC]
-
-    @property
-    def prcc(self) -> FirstOrderIndicesType:
-        """The Partial Rank Correlation Coefficients.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.PRCC]
-
-    @property
-    def src(self) -> FirstOrderIndicesType:
-        """The Standard Regression Coefficients.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.SRC]
-
-    @property
-    def ssrc(self) -> FirstOrderIndicesType:
-        """The Squared Standard Regression Coefficients.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices.get(self.Method.SSRC, {})
-
-    @property
-    def kendall(self) -> FirstOrderIndicesType:
-        """The Kendall rank correlation coefficients.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices.get(self.Method.KENDALL, {})
-
-    @property
-    def srrc(self) -> FirstOrderIndicesType:
-        """The Standard Rank Regression Coefficients.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.SRRC]
-
-    @property
-    def pearson(self) -> FirstOrderIndicesType:
-        """The Pearson coefficients.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.PEARSON]
-
-    @property
-    def spearman(self) -> FirstOrderIndicesType:
-        """The Spearman coefficients.
-
-         ith the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.SPEARMAN]
 
     def plot(  # noqa: D102
         self,
         output: VariableType,
-        inputs: Iterable[str] = (),
+        input_names: Iterable[str] = (),
         title: str = "",
         save: bool = True,
         show: bool = False,
@@ -365,42 +224,41 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
             directory_path: The path to the directory where to save the plots.
             file_name: The name of the file.
         """  # noqa: D212, D205
-        if isinstance(output, str):
-            output_name, output_index = output, 0
-        else:
-            output_name, output_index = output
+        output_name, output_index = get_name_and_component(output)
 
         all_indices = tuple(self.Method)
         dataset = Dataset()
-        for input_name in self._filter_names(self._input_names, inputs):
+        for input_name in filter_names(self._input_names, input_names):
             # Store all the sensitivity indices
             # related to the tuple (output_name, output_index, input_name)
             # in a 2D NumPy array shaped as (n_indices, input_dimension).
             dataset.add_variable(
                 input_name,
                 vstack([
-                    getattr(self, method.lower())[output_name][output_index][input_name]
+                    getattr(self.indices, method.lower())[output_name][output_index][
+                        input_name
+                    ]
                     for method in all_indices
                 ]),
             )
 
         dataset.index = all_indices
-        plot = RadarChart(dataset)
+        radar_chart = RadarChart(dataset)
         output_name = repr_variable(
             output_name,
             output_index,
             size=self.dataset.variable_names_to_n_components[output_name],
         )
-        plot.title = title or f"Correlation indices for the output {output_name}"
-        plot.rmin = -1.0
-        plot.rmax = 1.0
+        radar_chart.title = title or f"Correlation indices for the output {output_name}"
+        radar_chart.rmin = -1.0
+        radar_chart.rmax = 1.0
         file_path = self._file_path_manager.create_file_path(
             file_path=file_path,
             directory_path=directory_path,
             file_name=file_name,
             file_extension=file_format,
         )
-        plot.execute(
+        radar_chart.execute(
             save=save,
             show=show,
             file_path=file_path,
@@ -408,12 +266,12 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
             file_format=file_format,
             directory_path=directory_path,
         )
-        return plot
+        return radar_chart
 
     def plot_radar(  # noqa: D102
         self,
         outputs: OutputsType = (),
-        inputs: Iterable[str] = (),
+        input_names: Iterable[str] = (),
         title: str = "",
         save: bool = True,
         show: bool = False,
@@ -427,7 +285,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
     ) -> RadarChart:
         return super().plot_radar(
             outputs,
-            inputs=inputs,
+            input_names=input_names,
             title=title,
             save=save,
             show=show,
@@ -439,7 +297,3 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
             max_radius=max_radius,
             **options,
         )
-
-    @staticmethod
-    def _aggregate_sensitivity_indices(indices: NDArray[float]) -> float:  # noqa: D102
-        return abs(indices).sum()

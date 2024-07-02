@@ -91,6 +91,7 @@ from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
@@ -347,8 +348,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Raises:
             ValueError: If the variable is not in the design space.
         """
-        if isinstance(keep_variables, str):
-            keep_variables = [keep_variables]
+        keep_variables = convert_strings_to_iterable(keep_variables)
         design_space = deepcopy(self) if copy else self
         for name in deepcopy(self.variable_names):
             if name not in keep_variables:

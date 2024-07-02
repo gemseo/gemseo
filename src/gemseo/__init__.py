@@ -178,6 +178,7 @@ if TYPE_CHECKING:
     from gemseo.post._graph_view import GraphView
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+    from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.scenarios.doe_scenario import DOEScenario as DOEScenario
     from gemseo.scenarios.scenario import Scenario
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
@@ -2130,11 +2131,7 @@ def sample_disciplines(
     formulation: str = "MDF",
     formulation_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     name: str = "Sampling",
-    backup_file_path: str | Path = "",
-    backup_at_each_iteration: bool = False,
-    backup_at_each_function_call: bool = True,
-    erase_backup: bool = False,
-    load_backup: bool = False,
+    backup_settings: BackupSettings | None = None,
     **algo_options: Any,
 ) -> IODataset:
     """Sample a set of disciplines associated with an MDO formulation.
@@ -2150,25 +2147,17 @@ def sample_disciplines(
             If empty, use the default ones.
         name: The name of the returned dataset.
             If empty, use the name of the discipline.
-        backup_file_path: The path to the backup file to save the evaluations;
-            if empty, do not use backup file.
-        backup_at_each_iteration: Whether the backup file is updated at every iteration
-            of the sampling to store the database.
-        backup_at_each_function_call: Whether the backup file is updated
-            at every function call.
-        erase_backup: Whether the backup file is erased before the run.
-        load_backup: Whether the backup file is loaded before run,
-            useful after a crash.
+        backup_settings: The settings of the backup file to store the evaluations
+            if any.
         **algo_options: The options of the DOE algorithm.
 
     Returns:
         The input-output samples of the disciplines.
     """
     from gemseo.scenarios.doe_scenario import DOEScenario
+    from gemseo.utils.string_tools import convert_strings_to_iterable
 
-    if isinstance(output_names, str):
-        output_names = [output_names]
-
+    output_names = convert_strings_to_iterable(output_names)
     output_names_iterator = iter(output_names)
     scenario = DOEScenario(
         disciplines,
@@ -2187,13 +2176,13 @@ def sample_disciplines(
     if "use_one_line_progress_bar" not in algo_options:
         algo_options["use_one_line_progress_bar"] = True
 
-    if backup_file_path:
+    if backup_settings is not None and backup_settings.file_path:
         scenario.set_optimization_history_backup(
-            backup_file_path,
-            at_each_iteration=backup_at_each_iteration,
-            at_each_function_call=backup_at_each_function_call,
-            erase=erase_backup,
-            load=load_backup,
+            backup_settings.file_path,
+            at_each_iteration=backup_settings.at_each_iteration,
+            at_each_function_call=backup_settings.at_each_function_call,
+            erase=backup_settings.erase,
+            load=backup_settings.load,
         )
     scenario.execute({
         "algo": algo_name,

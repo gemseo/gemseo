@@ -29,3 +29,51 @@ Examples
 --------
 
 `See the examples about sensitivity analysis. <../examples/uncertainty/index.html#sensitivity-analysis>`__
+
+Architecture
+------------
+
+.. uml::
+
+   @startuml
+   class SensitivityIndices {
+      +indices_a
+      +indices_b
+   }
+
+   class Method {
+      +method_a
+      +method_b
+   }
+
+   class BaseSensitivityAnalysis {
+      +Method
+      +dataset
+      +default_output_names
+      +indices
+      +main_indices
+      +main_method
+      +compute_samples()
+      +compute_indices()
+      +plot()
+      +plot_bar()
+      +plot_field()
+      +plot_radar()
+      +plot_comparison()
+      +sort_parameters()
+      +standardize_indices()
+      +to_dataset()
+   }
+
+   class SpecificAnalysis {
+      +Method
+      +main_method
+      +compute_samples()
+      +compute_indices()
+      +plot()
+   }
+
+   SpecificAnalysis <|- BaseSensitivityAnalysis
+   BaseSensitivityAnalysis *- Method
+   BaseSensitivityAnalysis *- SensitivityIndices
+   @enduml

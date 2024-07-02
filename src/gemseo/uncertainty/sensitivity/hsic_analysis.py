@@ -22,8 +22,9 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from dataclasses import field
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 from typing import Final
 
@@ -50,19 +51,13 @@ from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     FirstOrderIndicesType,
 )
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
-
-    from gemseo.algos.driver_library import DriverLibraryOptionType
-    from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.discipline import MDODiscipline
 
 
 class HSICAnalysis(BaseSensitivityAnalysis):
@@ -103,9 +98,26 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         >>> discipline = IshigamiDiscipline()
         >>> uncertain_space = IshigamiSpace()
         >>>
-        >>> analysis = HSICAnalysis([discipline], uncertain_space, n_samples=1000)
+        >>> analysis = HSICAnalysis()
+        >>> analysis.compute_samples([discipline], uncertain_space, n_samples=1000)
         >>> indices = analysis.compute_indices()
     """
+
+    @dataclass(frozen=True)
+    class SensitivityIndices:  # noqa: D106
+        hsic: FirstOrderIndicesType = field(default_factory=dict)
+        """The HSIC indices."""
+
+        r2_hsic: FirstOrderIndicesType = field(default_factory=dict)
+        """The normalized HSIC indices."""
+
+        p_value_permutation: FirstOrderIndicesType = field(default_factory=dict)
+        """The p-value estimated through permutations."""
+
+        p_value_asymptotic: FirstOrderIndicesType = field(default_factory=dict)
+        """The p-value obtained with an asymptotic formula."""
+
+    _indices: SensitivityIndices
 
     @staticmethod
     def __compute_covariance_models(
@@ -125,9 +137,8 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         """
         covariance_models = []
         for i in range(sample.getDimension()):
-            scale = sample.getMarginal(i).computeStandardDeviation()
             covariance_model = covariance_model_class(1)
-            covariance_model.setScale(scale)
+            covariance_model.setScale(sample.getMarginal(i).computeStandardDeviation())
             covariance_models.append(covariance_model)
 
         return covariance_models
@@ -153,6 +164,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         Method.P_VALUE_PERMUTATION: "getPValuesPermutation",
         Method.R2_HSIC: "getR2HSICIndices",
     }
+    """The mapping from the sensitivity indices to the OT classes."""
 
     class AnalysisType(StrEnum):
         """The sensitivity analysis type."""
@@ -177,6 +189,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         AnalysisType.GLOBAL: HSICEstimatorGlobalSensitivity,
         AnalysisType.TARGET: HSICEstimatorTargetSensitivity,
     }
+    """The mapping from the analysis types to the OT classes."""
 
     class StatisticEstimator(StrEnum):
         """The statistic estimator type."""
@@ -193,6 +206,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         StatisticEstimator.USTAT: HSICUStat,
         StatisticEstimator.VSTAT: HSICVStat,
     }
+    """The mapping from the statistic estimators to the OT classes."""
 
     class CovarianceModel(StrEnum):
         """The covariance model type."""
@@ -205,54 +219,37 @@ class HSICAnalysis(BaseSensitivityAnalysis):
     ] = {
         CovarianceModel.GAUSSIAN: SquaredExponential,
     }
+    """The mapping from the covariance model names to the OT classes."""
 
     DEFAULT_DRIVER: ClassVar[str] = "OT_MONTE_CARLO"
 
-    def __init__(  # noqa: D107
-        self,
-        disciplines: Collection[MDODiscipline],
-        parameter_space: ParameterSpace,
-        n_samples: int,
-        output_names: Iterable[str] = (),
-        algo: str = "",
-        algo_options: Mapping[str, DriverLibraryOptionType] = READ_ONLY_EMPTY_DICT,
-        formulation: str = "MDF",
-        **formulation_options: Any,
-    ) -> None:
-        super().__init__(
-            disciplines,
-            parameter_space,
-            n_samples=n_samples,
-            output_names=output_names,
-            algo=algo,
-            algo_options=algo_options,
-            formulation=formulation,
-            **formulation_options,
-        )
-        self._main_method = self.Method.R2_HSIC
+    _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.R2_HSIC
 
     def compute_indices(
         self,
-        outputs: str
-        | Sequence[str]
-        | Mapping[str, tuple[Iterable[float], Iterable[float]]] = (),
+        output_names: str | Iterable[str] = (),
+        output_bounds: Mapping[str, tuple[Iterable[float], Iterable[float]]] = (),
         statistic_estimator: StatisticEstimator = StatisticEstimator.USTAT,
         input_covariance_model: CovarianceModel = CovarianceModel.GAUSSIAN,
         output_covariance_model: CovarianceModel = CovarianceModel.GAUSSIAN,
         analysis_type: AnalysisType = AnalysisType.GLOBAL,
         seed: int = SEED,
         n_permutations: int = 100,
-    ) -> dict[str, FirstOrderIndicesType]:
+    ) -> SensitivityIndices:
         """
         Args:
-            outputs: For global sensitivity analysis,
-                the name(s) of the output(s)
-                for which to compute the sensitivity indices;
-                if empty, use the names of the outputs set at instantiation.
-                For target and conditional sensitivity analyses,
-                the names and the lower and upper bounds of these outputs
-                specified as ``{name: (lower, upper), ...}``;
-                this argument is mandatory.
+            output_names: The name(s) of the output(s)
+                for which to compute the sensitivity indices.
+                If empty,
+                use the names of the outputs set at instantiation.
+                In the case of target and conditional sensitivity analyses,
+                these output names are the keys of the dictionary ``output_bounds``
+                and the argument ``output_names`` is ignored.
+            output_bounds: The lower and upper bounds of the outputs
+                specified as ``{name: (lower, upper), ...}``.
+                This argument is ignored in the case of global sensitivity analysis.
+                This argument is mandatory
+                in the case of target and conditional sensitivity analyses.
             statistic_estimator: The name of the statistic estimator type.
                 This argument is ignored
                 when ``analysis_type`` is :attr:`~.AnalysisType.CONDITIONAL`;
@@ -270,16 +267,17 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         if analysis_type == analysis_type.CONDITIONAL:
             statistic_estimator = self.StatisticEstimator.VSTAT
 
-        outputs = outputs or self.default_output_names
-        if isinstance(outputs, str):
-            outputs = [outputs]
+        output_names = self._get_output_names(output_names)
 
         statistic_estimator_class = self.__STATISTIC_ESTIMATORS_TO_OT_CLASSES[
             statistic_estimator
         ]
 
         if analysis_type in [analysis_type.CONDITIONAL, analysis_type.TARGET]:
-            outputs = {name: tuple(zip(*value)) for name, value in outputs.items()}
+            output_bounds = {
+                name: tuple(zip(*value)) for name, value in output_bounds.items()
+            }
+            output_names = output_bounds.keys()
 
         input_covariance_model_class = self.__COVARIANCE_MODELS_TO_OT_CLASSES[
             input_covariance_model
@@ -291,9 +289,9 @@ class HSICAnalysis(BaseSensitivityAnalysis):
             self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
         )
         hsic_class = self.__ANALYSIS_TO_OT_CLASSES[analysis_type]
-        self._indices = {}
+        indices = {}
         for method in self.Method:
-            indices = self._indices[method] = {}
+            _indices = indices[str(method).lower().replace("-", "_")] = {}
             if (
                 method == method.P_VALUE_ASYMPTOTIC
                 and analysis_type == analysis_type.CONDITIONAL
@@ -305,7 +303,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
                 input_samples, input_covariance_model_class
             )
 
-            for output_name in outputs:
+            for output_name in output_names:
                 output_indices = []
                 for i, output_component_samples in enumerate(
                     self.dataset.get_view(
@@ -328,10 +326,12 @@ class HSICAnalysis(BaseSensitivityAnalysis):
                     elif analysis_type == analysis_type.TARGET:
                         args = (
                             statistic_estimator_class(),
-                            IndicatorFunction(Interval(*outputs[output_name][i])),
+                            IndicatorFunction(Interval(*output_bounds[output_name][i])),
                         )
                     else:
-                        args = (IndicatorFunction(Interval(*outputs[output_name][i])),)
+                        args = (
+                            IndicatorFunction(Interval(*output_bounds[output_name][i])),
+                        )
 
                     hsic_estimator = hsic_class(
                         covariance_models, input_samples, output_samples, *args
@@ -349,80 +349,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
                         )
                     )
 
-                indices[output_name] = output_indices
+                _indices[output_name] = output_indices
 
+        self._indices = self.SensitivityIndices(**indices)
         return self.indices
-
-    @property
-    def hsic(self) -> FirstOrderIndicesType:
-        """The HSIC indices.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.HSIC]
-
-    @property
-    def p_value_asymptotic(self) -> FirstOrderIndicesType:
-        """The p-value obtained with an asymptotic formula.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-
-        .. note:: Not yet implemented in OpenTURNS for conditional analysis.
-        """
-        return self._indices[self.Method.P_VALUE_ASYMPTOTIC]
-
-    @property
-    def p_value_permutation(self) -> FirstOrderIndicesType:
-        """The p-value estimated through permutations.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.P_VALUE_PERMUTATION]
-
-    @property
-    def r2_hsic(self) -> FirstOrderIndicesType:
-        """The normalized HSIC indices.
-
-        With the following structure:
-
-        .. code-block:: python
-
-            {
-                "output_name": [
-                    {
-                        "input_name": data_array,
-                    }
-                ]
-            }
-        """
-        return self._indices[self.Method.R2_HSIC]

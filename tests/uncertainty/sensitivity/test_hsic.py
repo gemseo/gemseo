@@ -21,7 +21,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from dataclasses import fields
+from pathlib import Path
 
 import pytest
 from numpy import newaxis
@@ -39,11 +40,6 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.sensitivity.hsic_analysis import HSICAnalysis
 
-if TYPE_CHECKING:
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        FirstOrderIndicesType,
-    )
-
 
 @pytest.fixture(params=HSICAnalysis.AnalysisType, scope="module")
 def analysis_type(request) -> HSICAnalysis.AnalysisType:
@@ -60,14 +56,16 @@ def hsic_analysis() -> HSICAnalysis:
     uncertain_space.add_random_variable("x1", "OTNormalDistribution")
     uncertain_space.add_random_variable("x2", "OTNormalDistribution")
 
-    return HSICAnalysis([discipline], uncertain_space, 100)
+    analysis = HSICAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
+    return analysis
 
 
 @pytest.fixture(scope="module")
 def hsic_analysis_2(hsic_analysis, analysis_type) -> HSICAnalysis:
     """A HSIC sensitivity analysis after calling the compute_indices method."""
     hsic_analysis.compute_indices(
-        outputs={"y1": ([0], [1]), "y2": ([1], [float("inf")])},
+        output_bounds={"y1": ([0], [1]), "y2": ([1], [float("inf")])},
         analysis_type=analysis_type,
         n_permutations=90,
         seed=3,
@@ -78,7 +76,7 @@ def hsic_analysis_2(hsic_analysis, analysis_type) -> HSICAnalysis:
 @pytest.fixture(scope="module")
 def openturns_hsic_indices(
     hsic_analysis, analysis_type
-) -> dict[str, FirstOrderIndicesType]:
+) -> HSICAnalysis.SensitivityIndices:
     """The HSIC and R2-HSIC indices calculated directly from OpenTURNS."""
     RandomGenerator.SetSeed(3)
     input_samples = Sample(
@@ -177,67 +175,72 @@ def openturns_hsic_indices(
             "y2": [{"x1": y2_p_value_a[0], "x2": y2_p_value_a[1]}],
         }
 
-    return {
-        HSICAnalysis.Method.HSIC: {
+    return HSICAnalysis.SensitivityIndices(
+        hsic={
             "y1": [{"x1": y1_hsic_indices[0], "x2": y1_hsic_indices[1]}],
             "y2": [{"x1": y2_hsic_indices[0], "x2": y2_hsic_indices[1]}],
         },
-        HSICAnalysis.Method.P_VALUE_ASYMPTOTIC: p_value_asymptotic,
-        HSICAnalysis.Method.P_VALUE_PERMUTATION: {
+        p_value_asymptotic=p_value_asymptotic,
+        p_value_permutation={
             "y1": [{"x1": y1_p_value_p[0], "x2": y1_p_value_p[1]}],
             "y2": [{"x1": y2_p_value_p[0], "x2": y2_p_value_p[1]}],
         },
-        HSICAnalysis.Method.R2_HSIC: {
+        r2_hsic={
             "y1": [{"x1": y1_r2hsic_indices[0], "x2": y1_r2hsic_indices[1]}],
             "y2": [{"x1": y2_r2hsic_indices[0], "x2": y2_r2hsic_indices[1]}],
         },
-    }
+    )
 
 
-@pytest.mark.parametrize("outputs", [{}, {"outputs": ["y1", "y2"]}, {"outputs": "y2"}])
+@pytest.mark.parametrize(
+    "outputs", [{}, {"output_names": ["y1", "y2"]}, {"output_names": "y2"}]
+)
 def test_outputs(hsic_analysis, outputs) -> None:
     """Check that outputs are taken into account."""
     hsic_analysis.compute_indices(**outputs)
-    output_names = outputs.get("outputs", hsic_analysis.default_output_names)
+    output_names = outputs.get("output_names", hsic_analysis.default_output_names)
     if isinstance(output_names, str):
         output_names = [output_names]
-    assert set(output_names) == hsic_analysis.indices[hsic_analysis.Method.HSIC].keys()
+
+    assert list(hsic_analysis.indices.hsic) == output_names
 
 
 def test_methods(hsic_analysis_2) -> None:
     """Check the methods for which the indices have been computed."""
-    assert hsic_analysis_2.indices.keys() == set(hsic_analysis_2.Method)
+    assert {f.name for f in fields(hsic_analysis_2.indices)} == {
+        str(m).lower().replace("-", "_") for m in hsic_analysis_2.Method
+    }
 
 
 def test_outputs_names_and_size(hsic_analysis_2) -> None:
     """Check the names and sizes of the outputs."""
-    hsic_index = hsic_analysis_2.indices["HSIC"]
-    output_names = {"y1", "y2"}
-    assert set(hsic_index.keys()) == output_names
+    hsic_index = hsic_analysis_2.indices.hsic
+    output_names = ["y1", "y2"]
+    assert list(hsic_index) == output_names
     for output_name in output_names:
         assert len(hsic_index[output_name]) == 1
 
 
 def test_inputs_names_and_size(hsic_analysis_2) -> None:
     """Check the names and sizes of the inputs."""
-    hsic_index = hsic_analysis_2.indices["HSIC"]
-    input_names = {"x1", "x2"}
-    assert set(hsic_index["y1"][0].keys()) == input_names
+    hsic_index = hsic_analysis_2.indices.hsic
+    input_names = ["x1", "x2"]
+    assert list(hsic_index["y1"][0]) == input_names
     for input_name in input_names:
         assert hsic_index["y1"][0][input_name].shape == (1,)
-
-
-def test_method_names(hsic_analysis_2) -> None:
-    """Check that the property ``method`` is ``indices[algo.lower()]``."""
-    indices = hsic_analysis_2.indices
-    for method_name in hsic_analysis_2.Method:
-        assert (
-            getattr(hsic_analysis_2, method_name.lower().replace("-", "_"))
-            == indices[method_name]
-        )
 
 
 def test_hsic_indices_values(hsic_analysis_2, openturns_hsic_indices) -> None:
     """Check that the global HSIC indices are equal to the indices computed with
     OpenTURNS."""
     assert hsic_analysis_2.indices == openturns_hsic_indices
+
+
+def test_from_samples(hsic_analysis, tmp_path):
+    """Check the instantiation from samples."""
+    file_path = Path("samples.pkl")
+    hsic_analysis.compute_indices()
+    hsic_analysis.dataset.to_pickle(file_path)
+    new_hsic_analysis = HSICAnalysis(samples=file_path)
+    new_hsic_analysis.compute_indices()
+    assert new_hsic_analysis.indices == hsic_analysis.indices

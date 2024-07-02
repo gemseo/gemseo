@@ -29,6 +29,7 @@ from gemseo.post.dataset.scatter import Scatter
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrixOption
 from gemseo.utils.seeder import Seeder
+from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -146,7 +147,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             if not input_names:
                 input_names = self.__algo.input_names
 
-            input_names = [input_names] if isinstance(input_names, str) else input_names
+            input_names = convert_strings_to_iterable(input_names)
             for input_name in input_names:
                 dataset.add_variable(
                     input_name,

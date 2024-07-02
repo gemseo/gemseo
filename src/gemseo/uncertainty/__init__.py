@@ -62,14 +62,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
     from collections.abc import Iterable
     from collections.abc import Sequence
     from pathlib import Path
 
-    from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.algos.parameter_space import ParameterSpace as ParameterSpace
+    from gemseo.core.discipline import MDODiscipline as MDODiscipline
     from gemseo.datasets.dataset import Dataset
+    from gemseo.datasets.io_dataset import IODataset
     from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
     from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
         BaseSensitivityAnalysis,
@@ -136,8 +136,7 @@ def get_available_sensitivity_analyses() -> list[str]:
     """Get the available sensitivity analyses."""
     from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
-    factory = SensitivityAnalysisFactory()
-    return factory.available_sensitivity_analyses
+    return SensitivityAnalysisFactory().class_names
 
 
 def create_statistics(
@@ -232,42 +231,20 @@ def create_statistics(
 
 def create_sensitivity_analysis(
     analysis: str,
-    disciplines: Collection[MDODiscipline],
-    parameter_space: ParameterSpace,
-    **options,
+    samples: IODataset | str | Path | None = None,
 ) -> BaseSensitivityAnalysis:
     """Create the sensitivity analysis.
 
     Args:
         analysis: The name of a sensitivity analysis class.
-        disciplines: The disciplines.
-        parameter_space: A parameter space.
-        **options: The DOE algorithm options.
+        samples: The samples for the estimation of the sensitivity indices,
+            either as an :class:`.IODataset`
+            or as a pickle file path generated from
+            the :class:`.IODataset.to_pickle` method.
+            If ``None``, use :meth:`.compute_samples`.
 
     Returns:
-        The toolbox for these sensitivity indices.
-
-    Examples:
-        >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty import create_sensitivity_analysis
-        >>>
-        >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions=expressions
-        ... )
-        >>>
-        >>> parameter_space = create_parameter_space()
-        >>> parameter_space.add_random_variable(
-        ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x2", "OTNormalDistribution", mu=0.5, sigma=2
-        ... )
-        >>>
-        >>> analysis = create_sensitivity_analysis(
-        ...     "CorrelationIndices", [discipline], parameter_space, n_samples=1000
-        ... )
-        >>> indices = analysis.compute_indices()
+        The sensitivity analysis.
     """
     from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
@@ -278,7 +255,7 @@ def create_sensitivity_analysis(
         name += "Analysis"
     name = name[0].upper() + name[1:]
 
-    return factory.create(name, disciplines, parameter_space, **options)
+    return factory.create(name, samples=samples)
 
 
 def load_sensitivity_analysis(file_path: str | Path) -> BaseSensitivityAnalysis:

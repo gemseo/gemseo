@@ -22,19 +22,21 @@
 
 from __future__ import annotations
 
-from collections import abc
 from collections import namedtuple
+from collections.abc import Iterable
+from collections.abc import Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from html import escape
+from itertools import chain
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import Union
 
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
     from collections.abc import Iterator
 
 # to store the raw ingredients of a string to be formatted later
@@ -45,6 +47,8 @@ DEFAULT_DELIMITER = ", "
 
 DEFAULT_KEY_VALUE_SEPARATOR = "="
 """A string to separate key and value in a key-value pair of a mapping."""
+
+VariableType = Union[str, tuple[str, int]]
 
 
 def __stringify(
@@ -69,10 +73,10 @@ def __stringify(
     Returns:
         A string representing the object.
     """
-    if not isinstance(obj, abc.Iterable):
+    if not isinstance(obj, Iterable):
         return function(obj)
 
-    if isinstance(obj, abc.Mapping):
+    if isinstance(obj, Mapping):
         obj = [
             f"{key!s}{key_value_separator}{function(val)}" for key, val in obj.items()
         ]
@@ -151,6 +155,82 @@ def repr_variable(name: str, index: int, size: int = 0, simplify: bool = False) 
     if simplify and index != 0:
         return f"[{index}]"
     return f"{name}[{index}]"
+
+
+def get_name_and_component(variable: VariableType) -> tuple[str, int]:
+    """Return the name and the component of a variable.
+
+    Args:
+        variable: Either a variable name or a variable name with its variable component.
+
+    Returns:
+        The name and the component of a variable.
+    """
+    return (variable, 0) if isinstance(variable, str) else variable
+
+
+def convert_strings_to_iterable(str_or_strs: str | Iterable[str]) -> Iterable[str]:
+    """Return strings as an iterable.
+
+    Args:
+        str_or_strs: A string or several strings.
+
+    Returns:
+        Names.
+    """
+    return [str_or_strs] if isinstance(str_or_strs, str) else str_or_strs
+
+
+def filter_names(
+    names: Iterable[str],
+    names_to_keep: Iterable[str],
+) -> Iterable[str]:
+    """Filter names from a collection of other names.
+
+    Args:
+        names: The original names.
+        names_to_keep: The names to keep. If ``None``, keep all.
+
+    Returns:
+        The filtered names.
+    """
+    if names_to_keep:
+        return [name for name in names if name in set(names_to_keep)]
+
+    return names
+
+
+def get_variables_with_components(
+    variables: VariableType | Iterable[VariableType], names_to_sizes: Mapping[str, int]
+) -> Iterator[tuple[str, int]]:
+    """Convert a set of variables to ``tuple(str, int)`` objects.
+
+    Args:
+        variables: One or several variable defined as ``name`` or ``(name, component)``.
+            When ``name``, all the components of the variable are considered.
+        names_to_sizes: The sizes of the variables.
+
+    Returns:
+        The variables defined as ``(name, component)``.
+    """
+    return chain.from_iterable(
+        (variable,)
+        if isinstance(variable, tuple)
+        else ((variable, index) for index in range(names_to_sizes[variable]))
+        for variable in (
+            (variables,)
+            if (
+                isinstance(variables, str)
+                or (
+                    isinstance(variables, tuple)
+                    and len(variables) == 2
+                    and isinstance(variables[0], str)
+                    and isinstance(variables[1], int)
+                )
+            )
+            else variables
+        )
+    )
 
 
 class MultiLineString:

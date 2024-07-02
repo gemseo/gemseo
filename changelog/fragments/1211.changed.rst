@@ -1,0 +1,25 @@
+API changes:
+
+- ``BaseSensitivityAnalysis.indices`` is now a dataclass to be used as ``analysis.indices.index_name[output_name][output_component][input_name]``.
+- ``CorrelationAnalysis.kendall``: removed; use ``CorrelationAnalysis.indices.kendall`` instead.
+- ``CorrelationAnalysis.pcc``: removed; use ``CorrelationAnalysis.indices.pcc`` instead.
+- ``CorrelationAnalysis.pearson``: removed; use ``CorrelationAnalysis.indices.pearson`` instead.
+- ``CorrelationAnalysis.prcc``: removed; use ``CorrelationAnalysis.indices.prcc`` instead.
+- ``CorrelationAnalysis.spearman``: removed; use ``CorrelationAnalysis.indices.spearman`` instead.
+- ``CorrelationAnalysis.src``: removed; use ``CorrelationAnalysis.indices.src`` instead.
+- ``CorrelationAnalysis.srrc``: removed; use ``CorrelationAnalysis.indices.srrc`` instead.
+- ``CorrelationAnalysis.ssrc``: removed; use ``CorrelationAnalysis.indices.ssrc`` instead.
+- ``SobolAnalysis.first_order_indices``: removed; use ``SobolAnalysis.indices.first`` instead.
+- ``SobolAnalysis.second_order_indices``: removed; use ``SobolAnalysis.indices.second`` instead.
+- ``SobolAnalysis.total_order_indices``: removed; use ``SobolAnalysis.indices.total`` instead.
+- ``SobolAnalysis.total_order_indices``: removed; use ``SobolAnalysis.indices.total`` instead.
+- ``HSICAnalysis.hsic``: removed; use ``HSICAnalysis.indices.hsic`` instead.
+- ``HSICAnalysis.r2_hsic``: removed; use ``HSICAnalysis.indices.r2_hsic`` instead.
+- ``HSICAnalysis.p_value_permutation``: removed; use ``HSICAnalysis.indices.p_value_permutation`` instead.
+- ``HSICAnalysis.p_value_asymptotic``: removed; use ``HSICAnalysis.indices.p_value_asymptotic`` instead.
+- ``MorrisAnalysis.mu``: removed; use ``MorrisAnalysis.indices.mu`` instead.
+- ``MorrisAnalysis.mu_star``: removed; use ``MorrisAnalysis.indices.mu_star`` instead.
+- ``MorrisAnalysis.sigma``: removed; use ``MorrisAnalysis.indices.sigma`` instead.
+- ``MorrisAnalysis.relative_sigma``: removed; use ``MorrisAnalysis.indices.relative_sigma`` instead.
+- ``MorrisAnalysis.min``: removed; use ``MorrisAnalysis.indices.min`` instead.
+- ``MorrisAnalysis.max``: removed; use ``MorrisAnalysis.indices.max`` instead.
