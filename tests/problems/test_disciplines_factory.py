@@ -37,7 +37,7 @@ def test_init(monkeypatch, reset_factory) -> None:
     fact1 = MDODisciplineFactory()
     # Force update since we changed the GEMSEO_PATH
     fact1.update()
-    assert "DummyDisciplineIMP" in fact1.disciplines
+    assert fact1.is_available("DummyDisciplineIMP")
 
     gemseo_path = f"{DATA}:{DATA}"
     monkeypatch.setenv("GEMSEO_PATH", gemseo_path)
@@ -48,7 +48,7 @@ def test_init(monkeypatch, reset_factory) -> None:
     monkeypatch.delenv("GEMSEO_PATH")
     fact2.update()
 
-    assert fact1.disciplines == fact2.disciplines
+    assert fact1.class_names == fact2.class_names
 
     fact1.update()
     fact2.update()

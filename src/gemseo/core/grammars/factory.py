@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.grammars.base_grammar import BaseGrammar
 
@@ -32,23 +30,3 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
 
     _CLASS = BaseGrammar
     _MODULE_NAMES = ("gemseo.core.grammars",)
-
-    def create(
-        self,
-        class_name: str,
-        name: str,
-        **options: Any,
-    ) -> BaseGrammar:
-        """Create a grammar.
-
-        Args:
-            class_name: The name of a class deriving from :class:`.BaseGrammar`.
-            name: The name to be given to the grammar.
-            **options: The options to be passed to the initialization.
-        """
-        return super().create(class_name, name=name, **options)
-
-    @property
-    def grammars(self) -> list[str]:
-        """The sorted names of the available grammars."""
-        return self.class_names

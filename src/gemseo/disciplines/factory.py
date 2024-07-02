@@ -112,11 +112,6 @@ class MDODisciplineFactory(BaseFactory):
         specific_options = {k: v for k, v in options.items() if k not in common_options}
         return common_options, specific_options
 
-    @property
-    def disciplines(self) -> list[str]:
-        """The names of the available disciplines."""
-        return self.class_names
-
     def get_options_grammar(
         self, name: str, write_schema: bool = False, schema_path: str | None = None
     ) -> JSONGrammar:

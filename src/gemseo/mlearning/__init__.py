@@ -54,7 +54,7 @@ def get_mlearning_models() -> list[str]:
     """
     from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 
-    return MLAlgoFactory().models
+    return MLAlgoFactory().class_names
 
 
 def get_regression_models() -> list[str]:
@@ -70,7 +70,7 @@ def get_regression_models() -> list[str]:
     """
     from gemseo.mlearning.regression.algos.factory import RegressorFactory
 
-    return RegressorFactory().models
+    return RegressorFactory().class_names
 
 
 def get_classification_models() -> list[str]:
@@ -86,7 +86,7 @@ def get_classification_models() -> list[str]:
     """
     from gemseo.mlearning.classification.algos.factory import ClassifierFactory
 
-    return ClassifierFactory().models
+    return ClassifierFactory().class_names
 
 
 def get_clustering_models() -> list[str]:
@@ -102,7 +102,7 @@ def get_clustering_models() -> list[str]:
     """
     from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 
-    return ClustererFactory().models
+    return ClustererFactory().class_names
 
 
 def create_mlearning_model(

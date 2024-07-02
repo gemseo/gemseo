@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import OptPostProcessorFactory
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
@@ -45,7 +45,7 @@ TEST_PARAMETERS_BINHKORN = {
 }
 
 pytestmark = pytest.mark.skipif(
-    not PostFactory().is_available("ScatterPlotMatrix"),
+    not OptPostProcessorFactory().is_available("ScatterPlotMatrix"),
     reason="ScatterPlotMatrix plot is not available.",
 )
 
@@ -67,7 +67,7 @@ def test_pareto(tmp_wd, kwargs, baseline_images) -> None:
     """
     problem = Power2()
     DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
-    PostFactory().execute(
+    OptPostProcessorFactory().execute(
         problem,
         "ParetoFront",
         save=False,
@@ -88,7 +88,7 @@ def test_pareto_minimize(
     problem = Power2()
     problem.minimize_objective = False
     DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
-    PostFactory().execute(
+    OptPostProcessorFactory().execute(
         problem, "ParetoFront", file_path="power", objectives=["pow2", "ineq1"]
     )
 
@@ -102,7 +102,7 @@ def test_pareto_incorrect_objective_list() -> None:
         "to plot."
     )
     with pytest.raises(ValueError, match=msg):
-        PostFactory().execute(
+        OptPostProcessorFactory().execute(
             problem,
             "ParetoFront",
             save=False,
@@ -121,7 +121,7 @@ def test_pareto_incorrect_objective_names() -> None:
         " optimization problem functions:.*\\.$"
     )
     with pytest.raises(ValueError, match=msg):
-        PostFactory().execute(
+        OptPostProcessorFactory().execute(
             problem,
             "ParetoFront",
             save=False,
@@ -147,7 +147,7 @@ def test_pareto_binhkorn(tmp_wd, kwargs, baseline_images) -> None:
     """
     problem = BinhKorn()
     DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=100)
-    PostFactory().execute(
+    OptPostProcessorFactory().execute(
         problem,
         "ParetoFront",
         save=False,
@@ -162,7 +162,7 @@ def test_pareto_binhkorn_design_variable() -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
     DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=100)
-    PostFactory().execute(
+    OptPostProcessorFactory().execute(
         problem,
         "ParetoFront",
         save=False,
@@ -177,7 +177,7 @@ def test_pareto_binhkorn_no_obj() -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
     DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=100)
-    PostFactory().execute(
+    OptPostProcessorFactory().execute(
         problem,
         "ParetoFront",
         save=False,

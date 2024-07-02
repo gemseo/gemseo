@@ -297,7 +297,7 @@ def get_available_formulations() -> list[str]:
     """
     from gemseo.formulations.factory import MDOFormulationFactory
 
-    return MDOFormulationFactory().formulations
+    return MDOFormulationFactory().class_names
 
 
 def get_available_opt_algorithms() -> list[str]:
@@ -390,7 +390,7 @@ def get_available_disciplines() -> list[str]:
     """
     from gemseo.disciplines.factory import MDODisciplineFactory
 
-    return MDODisciplineFactory().disciplines
+    return MDODisciplineFactory().class_names
 
 
 def get_surrogate_options_schema(
@@ -543,9 +543,9 @@ def get_available_post_processings() -> list[str]:
         execute_post
         get_post_processing_options_schema
     """
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import OptPostProcessorFactory
 
-    return PostFactory().posts
+    return OptPostProcessorFactory().class_names
 
 
 def get_post_processing_options_schema(
@@ -575,11 +575,11 @@ def get_post_processing_options_schema(
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import OptPostProcessorFactory
 
     problem = OptimizationProblem(DesignSpace())
     problem.objective = MDOFunction(lambda x: x, "f")
-    post_proc = PostFactory().create(post_proc_name, problem)
+    post_proc = OptPostProcessorFactory().create(post_proc_name, problem)
     return _get_schema(post_proc.option_grammar, output_json, pretty_print)
 
 
@@ -966,7 +966,7 @@ def get_available_mdas() -> list[str]:
     """
     from gemseo.mda.factory import MDAFactory
 
-    return MDAFactory().mdas
+    return MDAFactory().class_names
 
 
 def get_mda_options_schema(
@@ -1334,7 +1334,7 @@ def create_mda(
     """
     from gemseo.mda.factory import MDAFactory
 
-    return MDAFactory().create(mda_name=mda_name, disciplines=disciplines, **options)
+    return MDAFactory().create(mda_name, disciplines, **options)
 
 
 def execute_post(
@@ -1373,7 +1373,7 @@ def execute_post(
         get_post_processing_options_schema
     """
     from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import OptPostProcessorFactory
 
     if hasattr(to_post_proc, "is_scenario") and to_post_proc.is_scenario():
         opt_problem = to_post_proc.formulation.optimization_problem
@@ -1384,7 +1384,7 @@ def execute_post(
     else:
         msg = f"Cannot post process type: {type(to_post_proc)}"
         raise TypeError(msg)
-    return PostFactory().execute(opt_problem, post_name, **options)
+    return OptPostProcessorFactory().execute(opt_problem, post_name, **options)
 
 
 def execute_algo(
@@ -1479,7 +1479,7 @@ def print_configuration() -> None:
     from gemseo.formulations.factory import MDOFormulationFactory
     from gemseo.mda.factory import MDAFactory
     from gemseo.mlearning.regression.algos.factory import RegressorFactory
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import OptPostProcessorFactory
 
     settings = _log_settings()
     LOGGER.info("%s", settings)
@@ -1491,7 +1491,7 @@ def print_configuration() -> None:
         RegressorFactory,
         MDOFormulationFactory,
         MDAFactory,
-        PostFactory,
+        OptPostProcessorFactory,
     ):
         factory_repr = repr(factory())
         LOGGER.info("%s", factory_repr)
@@ -1635,7 +1635,7 @@ def get_available_caches() -> list[str]:
     """
     from gemseo.caches.factory import CacheFactory
 
-    return CacheFactory().caches
+    return CacheFactory().class_names
 
 
 def create_cache(

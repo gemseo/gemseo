@@ -28,7 +28,7 @@ import pytest
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import OptPostProcessorFactory
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -39,7 +39,7 @@ MOD_SELLAR_HDF5_PATH = PARENT_PATH / "modified_sellar_opt_pb.h5"
 
 @pytest.fixture(scope="module")
 def factory():
-    return PostFactory()
+    return OptPostProcessorFactory()
 
 
 def test_correlations(tmp_wd, factory) -> None:

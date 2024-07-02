@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-class PostFactory(BaseFactory):
+class OptPostProcessorFactory(BaseFactory):
     """A factory of post-processors."""
 
     _CLASS = OptPostProcessor
@@ -41,26 +41,6 @@ class PostFactory(BaseFactory):
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
         self.executed_post = []
-
-    @property
-    def posts(self) -> list[str]:
-        """The available post processors."""
-        return self.class_names
-
-    def create(
-        self,
-        class_name: str,
-        opt_problem: OptimizationProblem,
-        **options: OptPostProcessorOptionType,
-    ) -> OptPostProcessor:
-        """Create a post-processor from its class name.
-
-        Args:
-            class_name: The name of the post-processor.
-            opt_problem: The optimization problem to be post-processed.
-            **options: The options of the post-processor.
-        """
-        return super().create(class_name, opt_problem=opt_problem, **options)
 
     def execute(
         self,

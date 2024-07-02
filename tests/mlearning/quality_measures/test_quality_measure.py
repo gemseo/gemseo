@@ -71,4 +71,4 @@ def test_is_better() -> None:
 
 def test_factory() -> None:
     """Check that the factory of BaseMLAlgoQuality works correctly."""
-    assert "MSEMeasure" in MLAlgoQualityFactory().class_names
+    assert MLAlgoQualityFactory().is_available("MSEMeasure")

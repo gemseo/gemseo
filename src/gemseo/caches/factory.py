@@ -30,8 +30,3 @@ class CacheFactory(BaseFactory[BaseCache]):
 
     _CLASS = BaseCache
     _MODULE_NAMES = ("gemseo.caches",)
-
-    @property
-    def caches(self) -> list[str]:
-        """The names of the cache classes."""
-        return self.class_names

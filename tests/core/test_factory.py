@@ -165,7 +165,7 @@ def test_ext_plugin_gemseo_path(monkeypatch, reset_factory) -> None:
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
     monkeypatch.setenv("GEMSEO_PATH", DATA)
     # There could be more classes available with the plugins
-    assert "DummyBiLevel" in MDOFormulationFactory().class_names
+    assert MDOFormulationFactory().is_available("DummyBiLevel")
 
 
 def test_ext_plugin_gemseo_path_bad_package(monkeypatch, reset_factory) -> None:
@@ -188,7 +188,7 @@ def test_wanted_classes_with_entry_points(monkeypatch, reset_factory) -> None:
     monkeypatch.syspath_prepend(DATA / "gemseo_dummy_plugins")
 
     # There could be more classes available with the plugins
-    assert "DummyBiLevel" in MDOFormulationFactory().class_names
+    assert MDOFormulationFactory().is_available("DummyBiLevel")
 
 
 def test_get_library_name(reset_factory) -> None:
@@ -200,8 +200,8 @@ def test_get_library_name(reset_factory) -> None:
 def test_concrete_classes() -> None:
     """Check that the factory considers only the concrete classes."""
     factory = MDOFormulationFactory()
-    assert "BiLevel" in factory.class_names
-    assert factory._CLASS not in factory.class_names
+    assert factory.is_available("BiLevel")
+    assert not factory.is_available(factory._CLASS)
 
 
 def test_str() -> None:

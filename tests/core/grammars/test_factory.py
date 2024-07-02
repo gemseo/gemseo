@@ -34,7 +34,3 @@ def test_create(factory) -> None:
     grammar = factory.create("SimpleGrammar", name=grammar_name)
     assert isinstance(grammar, SimpleGrammar)
     assert grammar.name == grammar_name
-
-
-def test_grammars(factory) -> None:
-    assert "SimpleGrammar" in factory.grammars

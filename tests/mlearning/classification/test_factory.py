@@ -41,7 +41,7 @@ def test_constructor() -> None:
     """Test factory constructor."""
     factory = ClassifierFactory()
     # plugins may add classes
-    assert set(factory.models) <= {
+    assert set(factory.class_names) <= {
         "KNNClassifier",
         "RandomForestClassifier",
         "SVMClassifier",
@@ -63,12 +63,6 @@ def test_load(dataset, tmp_wd) -> None:
     dirname = knn.to_pickle()
     loaded_knn = factory.load(dirname)
     assert hasattr(loaded_knn, "parameters")
-
-
-def test_available_models() -> None:
-    """Test the getter of available classification models."""
-    factory = ClassifierFactory()
-    assert "KNNClassifier" in factory.models
 
 
 def test_is_available() -> None:

@@ -18,15 +18,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-
-    from gemseo.algos.design_space import DesignSpace
     from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 
@@ -45,41 +41,15 @@ class GradientApproximatorFactory(BaseFactory):
     def create(
         self,
         name: str | ApproximationMode,
-        f_pointer: Callable,
-        step: float | complex | ndarray | None = None,
-        design_space: DesignSpace | None = None,
-        normalize: bool = True,
-        parallel: bool = False,
-        **parallel_args: Any,
+        *args: Any,
+        **kwargs: Any,
     ) -> BaseGradientApproximator:
         """Create a gradient approximator.
 
         Args:
             name: The name of the class or the approximation mode.
-            f_pointer: The pointer to the function to derive.
-            step: The default differentiation step.
-            design_space: The design space
-                containing the upper bounds of the input variables.
-                If ``None``, consider that the input variables are unbounded.
-            normalize: Whether to normalize the function.
-            parallel: Whether to differentiate the function in parallel.
-            **parallel_args: The parallel execution options,
-                see :mod:`gemseo.core.parallel_execution`.
 
         Returns:
             The gradient approximator.
         """
-        return super().create(
-            name,
-            f_pointer=f_pointer,
-            step=step,
-            design_space=design_space,
-            normalize=normalize,
-            parallel=parallel,
-            **parallel_args,
-        )
-
-    @property
-    def gradient_approximators(self) -> list[str]:
-        """The gradient approximators."""
-        return self.class_names
+        return super().create(name, *args, **kwargs)

@@ -31,7 +31,7 @@ def test_create(sellar_disciplines) -> None:
 
 def test_is_available() -> None:
     factory = MDAFactory()
-    avail = factory.mdas
+    avail = factory.class_names
     assert len(avail) > 2
 
     for mda in avail:

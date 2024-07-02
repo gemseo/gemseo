@@ -45,7 +45,7 @@ def test_constructor() -> None:
     """Test ClustererFactory constructor."""
     factory = ClustererFactory()
     # plugins may add classes
-    assert set(factory.models) <= {
+    assert set(factory.class_names) <= {
         "GaussianMixture",
         "KMeans",
         "BasePredictiveClusterer",
@@ -69,15 +69,8 @@ def test_load(dataset, tmp_wd) -> None:
     assert hasattr(loaded_kmeans, "parameters")
 
 
-def test_available_clustering_models() -> None:
-    """Test the getter of available clustering models."""
-    factory = ClustererFactory()
-    assert "KMeans" in factory.models
-    assert "LinearRegressor" not in factory.models
-
-
 def test_is_available() -> None:
     """Test the existence of a clustering model."""
     factory = ClustererFactory()
     assert factory.is_available("KMeans")
-    assert not factory.is_available("Dummy")
+    assert not factory.is_available("LinearRegressor")

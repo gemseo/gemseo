@@ -29,7 +29,7 @@ from PIL import Image
 
 from gemseo import execute_post
 from gemseo.algos.database import Database
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import OptPostProcessorFactory
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 
@@ -55,7 +55,7 @@ class Animation(OptPostProcessor):
             **options: The options of the :class:`.Animation`.
         """
         self._update_grammar_from_class(
-            cls=PostFactory().get_class(
+            cls=OptPostProcessorFactory().get_class(
                 options.get(self.__OPT_POST_PROCESSOR, self.DEFAULT_OPT_POST_PROCESSOR)
             )
         )

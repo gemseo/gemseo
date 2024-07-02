@@ -39,11 +39,6 @@ def factory(reset_factory) -> MDOFormulationFactory:
     return MDOFormulationFactory()
 
 
-def test_formulations(factory) -> None:
-    """Check the property formulations."""
-    assert "MDF" in factory.formulations
-
-
 def test_is_available(monkeypatch, factory) -> None:
     """Check the method is_available."""
     monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "not_mdo_formulations")
