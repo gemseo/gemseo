@@ -21,7 +21,7 @@ from __future__ import annotations
 import unittest
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import OptPostProcessorFactory
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
@@ -33,7 +33,7 @@ class TestKMeans(unittest.TestCase):
         problem = Rosenbrock()
         OptimizationLibraryFactory().execute(problem, "L-BFGS-B")
         cls.problem = problem
-        cls.factory = PostFactory()
+        cls.factory = OptPostProcessorFactory()
 
     def test_kmeans(self) -> None:
         """"""

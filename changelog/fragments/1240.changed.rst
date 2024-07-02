@@ -1,4 +1,16 @@
 API changes:
 
-- ``SensitivityAnalysisFactory.create``: removed; use ``SensitivityAnalysisFactory.class_names`` instead.
-- ``create_sensitivity_analysis`` creates a ``BaseSensitivityAnalysis`` from samples; if missing, use the method ``compute_samples`` of the ``BaseSensitivityAnalysis``.
+- ``DistributionFactory.available_distributions``: removed; use ``DistributionFactory.class_names`` instead.
+- ``GrammarFactory.grammars``: removed; use ``GrammarFactory.class_names`` instead.
+- ``DatasetPlotFactory.plots``: removed; use ``DatasetPlotFactory.class_names`` instead.
+- ``SensitivityAnalysisFactory.available_sensitivity_analyses``: removed; use ``SensitivityAnalysisFactory.class_names`` instead.
+- ``CacheFactory.caches``: removed; use ``CacheFactory.class_names`` instead.
+- ``MDODisciplineFactory.disciplines``: removed; use ``MDODisciplineFactory.class_names`` instead.
+- ``BaseFormulationFactory.formulations``: removed; use ``BaseFormulationFactory.class_names`` instead.
+- ``MDAFactory.mdas``: removed; use ``MDAFactory.class_names`` instead.
+- ``MLAlgoFactory.models``: removed; use ``MLAlgoFactory.class_names`` instead.
+- ``PostFactory`` renamed to ``OptPostProcessorFactory``.
+- ``OptPostProcessorFactory.posts``: removed; use ``OptPostProcessorFactory.class_names`` instead.
+- ``ScalableModelFactory.scalable_models``: removed; use ``ScalableModelFactory.class_names`` instead.
+- ``GradientApproximatorFactory.gradient_approximators``: removed; use ``GradientApproximatorFactory.class_names`` instead.
+- ``JobSchedulerDisciplineWrapperFactory.scheduler_names``: removed; use ``JobSchedulerDisciplineWrapperFactory.class_names`` instead.

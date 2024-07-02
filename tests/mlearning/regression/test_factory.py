@@ -59,7 +59,7 @@ def test_constructor() -> None:
         "PolynomialRegressor",
         "RBFRegressor",
         "RandomForestRegressor",
-    } <= set(RegressorFactory().models)
+    } <= set(RegressorFactory().class_names)
 
 
 def test_create(dataset) -> None:
@@ -77,12 +77,6 @@ def test_load(dataset, tmp_wd) -> None:
     dirname = linreg.to_pickle()
     loaded_linreg = factory.load(dirname)
     assert hasattr(loaded_linreg, "parameters")
-
-
-def test_available_models() -> None:
-    """Test the getter of available regression models."""
-    factory = RegressorFactory()
-    assert "LinearRegressor" in factory.models
 
 
 def test_is_available() -> None:

@@ -23,16 +23,12 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
 from typing import Optional
 from typing import Union
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.mda.base_mda import BaseMDA
-
-if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
 
 MDAOptionType = Optional[
     Union[float, int, bool, str, Iterable[MDOCouplingStructure], Sequence[BaseMDA]]
@@ -44,23 +40,3 @@ class MDAFactory(BaseFactory):
 
     _CLASS = BaseMDA
     _MODULE_NAMES = ("gemseo.mda",)
-
-    def create(
-        self,
-        mda_name: str,
-        disciplines: Sequence[MDODiscipline],
-        **options: MDAOptionType,
-    ) -> BaseMDA:
-        """Create an MDA.
-
-        Args:
-            mda_name: The name of the MDA (its class name).
-            disciplines: The disciplines.
-            **options: The options of the MDA.
-        """
-        return super().create(mda_name, disciplines=disciplines, **options)
-
-    @property
-    def mdas(self) -> list[str]:
-        """The names of the available MDAs."""
-        return self.class_names

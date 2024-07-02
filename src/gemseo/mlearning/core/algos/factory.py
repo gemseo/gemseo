@@ -23,16 +23,10 @@ from __future__ import annotations
 
 import pickle
 from pathlib import Path
-from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
-from gemseo.mlearning.core.algos.ml_algo import TransformerType
-
-if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
 
 
 class MLAlgoFactory(BaseFactory):
@@ -51,28 +45,6 @@ class MLAlgoFactory(BaseFactory):
 
     _CLASS = BaseMLAlgo
     _MODULE_NAMES = ("gemseo.mlearning",)
-
-    def create(
-        self,
-        ml_algo: str,
-        **options: Dataset | TransformerType | MLAlgoParameterType | None,
-    ) -> BaseMLAlgo:
-        """Create an instance of a machine learning algorithm.
-
-        Args:
-            ml_algo: The name of a machine learning algorithm
-                (its class name).
-            **options: The options of the machine learning algorithm.
-
-        Returns:
-            The instance of the machine learning algorithm.
-        """
-        return super().create(ml_algo, **options)
-
-    @property
-    def models(self) -> list[str]:
-        """The available machine learning algorithms."""
-        return self.class_names
 
     def load(
         self,

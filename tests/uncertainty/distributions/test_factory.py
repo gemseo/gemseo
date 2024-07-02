@@ -34,13 +34,6 @@ def distribution_factory() -> DistributionFactory:
     return DistributionFactory()
 
 
-def test_available_distributions(distribution_factory) -> None:
-    """Check the property available_distributions."""
-    distributions = distribution_factory.available_distributions
-    assert distributions == distribution_factory.class_names
-    assert "OTNormalDistribution" in distributions
-
-
 def test_is_available(distribution_factory) -> None:
     """Check is_available()."""
     assert distribution_factory.is_available("OTNormalDistribution")

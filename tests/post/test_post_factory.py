@@ -22,7 +22,7 @@ import unittest
 from os.path import dirname
 from os.path import join
 
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import OptPostProcessorFactory
 from gemseo.post.opt_history_view import OptHistoryView
 
 DIRNAME = dirname(__file__)
@@ -34,16 +34,15 @@ class TestPostFactory(unittest.TestCase):
 
     def test_is_available(self) -> None:
         """"""
-        factory = PostFactory()
+        factory = OptPostProcessorFactory()
         assert factory.is_available("OptHistoryView")
         assert not factory.is_available("TOTO")
         self.assertRaises(ImportError, factory.create, None, "toto")
 
     def test_post(self) -> None:
-        available = PostFactory().posts
-        assert "GradientSensitivity" in available
-        assert "Correlations" in available
+        assert OptPostProcessorFactory().is_available("GradientSensitivity")
+        assert OptPostProcessorFactory().is_available("Correlations")
 
     def test_execute_from_hdf(self) -> None:
-        post = PostFactory().execute(POWER2, "OptHistoryView", save=False)
+        post = OptPostProcessorFactory().execute(POWER2, "OptHistoryView", save=False)
         assert isinstance(post, OptHistoryView)

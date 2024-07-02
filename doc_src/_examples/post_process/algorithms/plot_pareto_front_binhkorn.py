@@ -18,8 +18,7 @@
 #                           documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Pareto front on Binh and Korn problem
+"""Pareto front on Binh and Korn problem.
 =====================================
 
 In this example, we illustrate the use of the :class:`.ParetoFront` plot
@@ -30,7 +29,7 @@ from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import OptPostProcessorFactory
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
@@ -67,7 +66,7 @@ doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 # points. The plots in green denote non-feasible points. Note that the user
 # can avoid the display of the non-feasible points.
 
-PostFactory().execute(
+OptPostProcessorFactory().execute(
     problem,
     "ParetoFront",
     show_non_feasible=False,
@@ -77,7 +76,7 @@ PostFactory().execute(
     show=True,
 )
 
-PostFactory().execute(
+OptPostProcessorFactory().execute(
     problem,
     "ParetoFront",
     objectives=["compute_binhkorn"],

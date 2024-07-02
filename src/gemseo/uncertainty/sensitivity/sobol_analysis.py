@@ -152,7 +152,7 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.driver_library import DriverLibraryOptionType
+    from gemseo.algos.base_driver_library import DriverLibraryOptionType
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
     from gemseo.datasets.io_dataset import IODataset

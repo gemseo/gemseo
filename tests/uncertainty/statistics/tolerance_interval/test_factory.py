@@ -44,17 +44,20 @@ def test_create_fail() -> None:
     factory = ToleranceIntervalFactory()
 
     expected = re.escape(
-        "The class WrongNameToleranceInterval is not available; "
-        "the available ones are: ExponentialToleranceInterval, "
-        "LogNormalToleranceInterval, "
-        "NormalToleranceInterval, UniformToleranceInterval, "
-        "WeibullMinToleranceInterval, WeibullToleranceInterval."
+        "The class WrongName is not available; "
+        "the available ones are: Exponential, ExponentialToleranceInterval, LogNormal, "
+        "LogNormalToleranceInterval, Normal, NormalToleranceInterval, Uniform, "
+        "UniformToleranceInterval, Weibull, WeibullMin, WeibullMinToleranceInterval, "
+        "WeibullToleranceInterval."
     )
 
     with pytest.raises(ImportError, match=expected):
         factory.create("WrongName", 100000, 0, 1)
 
     with pytest.raises(
-        RuntimeError, match="Cannot create NormalToleranceInterval with arguments ()"
+        TypeError,
+        match=re.escape(
+            "__init__() missing 2 required positional arguments: 'mean' and 'std'"
+        ),
     ):
         factory.create("Normal", 100000)

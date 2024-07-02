@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import OptPostProcessorFactory
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
@@ -40,7 +40,7 @@ def test_variable_influence(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = PostFactory()
+    factory = OptPostProcessorFactory()
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = factory.execute(problem, "VariableInfluence", file_path="var_infl")
     assert len(post.output_files) == 1
@@ -92,7 +92,7 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = PostFactory()
+    factory = OptPostProcessorFactory()
     problem = OptimizationProblem.from_hdf(SSBJ_HDF5_PATH)
     post = factory.execute(
         problem,

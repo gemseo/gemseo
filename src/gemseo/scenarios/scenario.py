@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.datasets.dataset import Dataset
     from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import OptPostProcessorFactory
     from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.post.opt_post_processor import OptPostProcessorOptionType
     from gemseo.utils.xdsm import XDSM
@@ -93,7 +93,7 @@ class Scenario(MDODiscipline):
     optimization_result: OptimizationResult | None
     """The optimization result if the scenario has been executed; otherwise ``None``."""
 
-    post_factory: PostFactory | None
+    post_factory: OptPostProcessorFactory | None
     """The factory for post-processors if any."""
 
     DifferentiationMethod = OptimizationProblem.DifferentiationMethod
@@ -177,7 +177,7 @@ class Scenario(MDODiscipline):
         self.formulation.optimization_problem.use_standardized_objective = value
 
     @property
-    def post_factory(self) -> PostFactory:
+    def post_factory(self) -> OptPostProcessorFactory:
         """The factory of post-processors."""
         return ScenarioResult.POST_FACTORY
 
@@ -445,7 +445,7 @@ class Scenario(MDODiscipline):
     @property
     def posts(self) -> list[str]:
         """The available post-processors."""
-        return self.post_factory.posts
+        return self.post_factory.class_names
 
     def post_process(
         self,

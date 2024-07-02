@@ -39,11 +39,5 @@ def test_create() -> None:
     factory.create("ScalableDiagonalModel", data=dataset)
 
 
-def test_list_available() -> None:
-    factory = ScalableModelFactory()
-    assert "ScalableDiagonalModel" in factory.scalable_models
-
-
 def test_is_available() -> None:
-    factory = ScalableModelFactory()
-    assert factory.is_available("ScalableDiagonalModel")
+    assert ScalableModelFactory().is_available("ScalableDiagonalModel")

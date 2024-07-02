@@ -90,8 +90,3 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
             workdir_path=workdir_path,
             **options,
         )
-
-    @property
-    def scheduler_names(self) -> list[str]:
-        """The names of the available job scheduler interfaces."""
-        return self.class_names

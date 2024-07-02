@@ -34,6 +34,3 @@ def test_available_schedulers(factory) -> None:
     """Test the availability of job schedulers using the Factory mechanism."""
     assert factory.is_available("LSF")
     assert factory.is_available("SLURM")
-
-    assert "LSF" in factory.scheduler_names
-    assert "SLURM" in factory.scheduler_names

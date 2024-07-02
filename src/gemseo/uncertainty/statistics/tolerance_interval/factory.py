@@ -16,10 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import LOGGER
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
 )
@@ -31,42 +28,8 @@ class ToleranceIntervalFactory(BaseFactory):
     _CLASS = BaseToleranceInterval
     _MODULE_NAMES = ("gemseo.uncertainty.statistics.tolerance_interval",)
 
-    def create(
-        self,
-        class_name: str,
-        size: int,
-        *args: float,
-    ) -> BaseToleranceInterval:
-        """Return an instance of :class:`.ToleranceInterval`.
-
-        Args:
-            size: The number of samples
-                used to estimate the parameters of the probability distribution.
-            *args: The arguments of the probability distribution.
-
-        Returns:
-            The instance of the class.
-
-        Raises:
-            TypeError: If the class cannot be instantiated.
-        """
-        cls = self.get_class(class_name)
-        try:
-            return cls(size, *args)
-        except TypeError:
-            LOGGER.exception(
-                "Failed to create class %s with arguments %s", class_name, args
-            )
-            msg = f"Cannot create {class_name}ToleranceInterval with arguments {args}"
-            raise RuntimeError(msg) from None
-
-    def get_class(self, name: str) -> type[Any]:
-        """Return a class from its name.
-
-        Args:
-            name: The name of the class.
-
-        Returns:
-            The class.
-        """
-        return super().get_class(f"{name}ToleranceInterval")
+    def __init__(self) -> None:  # noqa:D107
+        super().__init__()
+        for class_info in tuple(self._names_to_class_info.values()):
+            class_name = class_info.class_.__name__.replace("ToleranceInterval", "")
+            self._names_to_class_info[class_name] = class_info

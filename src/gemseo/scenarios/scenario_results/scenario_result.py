@@ -23,7 +23,7 @@ from typing import ClassVar
 from typing import Final
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import OptPostProcessorFactory
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -48,7 +48,7 @@ class ScenarioResult:
     __obj_to_be_post_processed: Scenario | OptimizationProblem
     """The object to be post-processed."""
 
-    _POST_FACTORY: ClassVar[PostFactory | None] = None
+    _POST_FACTORY: ClassVar[OptPostProcessorFactory | None] = None
     """The factory of :class:`.OptPostProcessor`, if created."""
 
     def __init__(self, scenario: Scenario | str | Path) -> None:
@@ -77,10 +77,10 @@ class ScenarioResult:
 
     @classmethod
     @property
-    def POST_FACTORY(cls) -> PostFactory:  # noqa: N802
+    def POST_FACTORY(cls) -> OptPostProcessorFactory:  # noqa: N802
         """The factory of post-processors."""
         if cls._POST_FACTORY is None:
-            cls._POST_FACTORY = PostFactory()
+            cls._POST_FACTORY = OptPostProcessorFactory()
         return cls._POST_FACTORY
 
     @property

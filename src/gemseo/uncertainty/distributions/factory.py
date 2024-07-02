@@ -87,8 +87,3 @@ class DistributionFactory(BaseFactory):
             distributions=distributions,
             copula=copula,
         )
-
-    @property
-    def available_distributions(self) -> list[str]:
-        """The available probability distributions."""
-        return self.class_names

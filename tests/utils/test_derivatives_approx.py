@@ -83,9 +83,7 @@ def x():
 
 
 def run_tests(xs, fd_app) -> None:
-    """
-
-    :param xs: param fd_app:
+    """:param xs: param fd_app:
     :param fd_app:
 
     """
@@ -338,9 +336,7 @@ def test_wrong_step(dtype, method) -> None:
 
 def test_factory() -> None:
     factory = GradientApproximatorFactory()
-    assert "ComplexStep" in factory.gradient_approximators
     assert factory.is_available("ComplexStep")
-    assert "CenteredDifferences" in factory.gradient_approximators
     assert factory.is_available("CenteredDifferences")
 
     def function(x):

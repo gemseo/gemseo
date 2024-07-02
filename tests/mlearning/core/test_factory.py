@@ -55,7 +55,7 @@ def test_constructor() -> None:
         "RandomForestClassifier",
         "RandomForestRegressor",
         "SVMClassifier",
-    } <= set(MLAlgoFactory().models)
+    } <= set(MLAlgoFactory().class_names)
 
 
 def test_create(dataset) -> None:
@@ -77,7 +77,7 @@ def test_load(dataset, tmp_wd) -> None:
 def test_available_models() -> None:
     """Test the getter of available regression models."""
     factory = MLAlgoFactory()
-    assert "KMeans" in factory.models
+    assert factory.is_available("KMeans")
 
 
 def test_is_available() -> None:
