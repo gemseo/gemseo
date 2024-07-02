@@ -23,8 +23,8 @@ from __future__ import annotations
 
 import ast
 import logging
-from inspect import getfullargspec
 from inspect import getsource
+from inspect import signature
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Final
@@ -116,7 +116,7 @@ class AutoPyDiscipline(MDODiscipline):
         super().__init__(name=name or py_func.__name__, grammar_type=grammar_type)
         self.py_func = py_func
         self.py_jac = py_jac
-        self.input_names = getfullargspec(self.py_func).args
+        self.input_names = list(signature(self.py_func).parameters)
         self.output_names = self.__create_output_names()
         have_type_hints = self.__create_grammars()
 
