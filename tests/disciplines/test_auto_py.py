@@ -59,6 +59,12 @@ def f1(y2=1.0, z=2.0):
     return y1  # noqa: RET504
 
 
+class F:
+    def f1(self, y2=1.0, z=2.0):
+        y1 = z + y2
+        return y1  # noqa: RET504
+
+
 def f2(y1=2.0, z=2.0):
     y2 = z + 2 * y1
     y3 = 14
@@ -106,6 +112,13 @@ def test_basic() -> None:
 
     d2.execute()
     assert d2.local_data["y2"] == f2()[0]
+
+    d3 = AutoPyDiscipline(F().f1)
+
+    assert list(d3.get_input_data_names()) == ["y2", "z"]
+    d3.execute()
+
+    assert d3.local_data["y1"] == F().f1()
 
 
 @pytest.mark.parametrize(
