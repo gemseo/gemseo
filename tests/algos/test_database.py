@@ -706,3 +706,15 @@ def test_store_append(tmp_wd, store_orders):
         f_s = db_read_1.get_function_history(func, with_x_vect=False)
         f_p = db_read_2.get_function_history(func, with_x_vect=False)
         assert_array_equal(f_s, f_p, strict=True)
+
+
+def test_store_twice(tmp_wd) -> None:
+    """Check that store twice the same data in hdf only stores once."""
+    database = Database()
+    x_vect = array([1.0, 1.0])
+    item = {"foo": 0.0}
+    database.store(x_vect, item)
+    database.store(x_vect, item)
+    path = Path("foo.hdf5")
+    database.to_hdf(path)
+    assert len(Database.from_hdf(path)) == 1
