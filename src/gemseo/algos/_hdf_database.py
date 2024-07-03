@@ -29,6 +29,7 @@ from typing import Union
 
 import h5py
 from numpy import array
+from numpy import array_equal
 from numpy import bytes_
 from numpy import float64
 from numpy import ndarray
@@ -52,17 +53,19 @@ ReturnedHdfMissingOutputType = tuple[
 class HDFDatabase:
     """Capabilities to export a database to an HDF file."""
 
-    __pending_arrays: list[HashableNdarray]
+    __pending_arrays: dict[int, HashableNdarray]
     """A buffer of input values.
 
     To temporary save the last input values that have been stored before calling
     :meth:`.to_file`.
-
     It is used to append the exported HDF file.
+    The keys are the arrays hashes, they are used to check whether an array is already
+    stored. This is way much faster than using a list of arrays when checking
+    membership.
     """
 
     def __init__(self) -> None:  # noqa:D107
-        self.__pending_arrays = []
+        self.__pending_arrays = {}
 
     @staticmethod
     def __to_real(data: ArrayLike) -> ndarray:
@@ -392,7 +395,7 @@ class HDFDatabase:
                     zip(database.keys(), range(len(database.keys())))
                 )
 
-                for input_values in self.__pending_arrays:
+                for input_values in self.__pending_arrays.values():
                     output_values = database[input_values]
                     index_dataset = input_values_to_idx[input_values]
 
@@ -476,5 +479,9 @@ class HDFDatabase:
         Args:
             data: The data to be exported.
         """
-        if data not in self.__pending_arrays:
-            self.__pending_arrays.append(data)
+        data_hash = hash(data)
+        existing_array = self.__pending_arrays.get(data_hash)
+        if existing_array is None or not array_equal(
+            data.wrapped_array, existing_array.wrapped_array
+        ):
+            self.__pending_arrays[data_hash] = data
