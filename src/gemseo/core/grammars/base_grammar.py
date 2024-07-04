@@ -256,7 +256,7 @@ class BaseGrammar(
             k: v for k, v in grammar._defaults.items() if k not in excluded_names
         })
         self._required_names |= (grammar.keys() - excluded_names).intersection(
-            grammar._required_names - set(excluded_names)
+            grammar._required_names.get_names_difference(excluded_names)
         )
 
     @abstractmethod
@@ -394,7 +394,7 @@ class BaseGrammar(
         error_message = MultiLineString()
         error_message.add(f"Grammar {self.name}: validation failed.")
 
-        missing_names = self._required_names - set(data)
+        missing_names = self._required_names.get_names_difference(data)
         if missing_names:
             error_message.add(f"Missing required names: {pretty_str(missing_names)}.")
             data_is_valid = False

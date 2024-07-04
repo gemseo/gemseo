@@ -32,6 +32,7 @@ from itertools import chain
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Union
 
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
@@ -247,23 +248,24 @@ class MultiLineString:
     added as a new line in the result.
     """
 
-    INDENTATION = " " * 3
-    DEFAULT_LEVEL = 0
+    INDENTATION: ClassVar[str] = " " * 3
+    """The indentation increment of each indentation level."""
+
+    DEFAULT_LEVEL: ClassVar[str] = 0
+    """The default indentation level."""
+
     __level: int
     """The indentation level."""
 
     def __init__(
         self,
-        lines: Iterable[MessageLine] | None = None,
+        lines: Iterable[MessageLine] = (),
     ) -> None:
         """
         Args:
             lines: The lines from which to create the multi-line string.
         """  # noqa:D205 D212 D415
-        if lines is None:
-            self.__lines = []
-        else:
-            self.__lines = list(lines)
+        self.__lines = list(lines)
         self.reset()
 
     def add(
