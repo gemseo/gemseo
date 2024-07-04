@@ -63,6 +63,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
     from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -130,17 +131,25 @@ class OptHistoryView(OptPostProcessor):
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
             self._standardized_obj_name, variable_names
         )
-        self._create_variables_plot(x_history_to_display, variable_names)
+        normalize = self.optimization_problem.design_space.normalize_vect
+        x_xstar = norm(
+            normalize(x_history)
+            - normalize(self.optimization_problem.history.optimum.design),
+            axis=1,
+        )
+
+        self._create_variables_plot(x_history_to_display, variable_names, x_xstar)
 
         self._create_obj_plot(
             obj_history,
             n_iter,
-            obj_min,
-            obj_max,
+            x_xstar,
+            obj_min=obj_min,
+            obj_max=obj_max,
             obj_relative=obj_relative,
         )
 
-        self._create_x_star_plot(x_history, n_iter)
+        self._create_x_star_plot(x_history, n_iter, x_xstar)
 
         for constraints, constraint_type in [
             (
@@ -158,6 +167,7 @@ class OptHistoryView(OptPostProcessor):
                     self.__get_constraint_history(constraint_names),
                     constraint_type,
                     constraint_names,
+                    x_xstar,
                 )
 
     def _get_history(
@@ -222,31 +232,8 @@ class OptHistoryView(OptPostProcessor):
 
         return constraints_history
 
-    def _normalize_x_hist(
-        self, x_history: ndarray, variable_names: Sequence[str] | None
-    ) -> ndarray:
-        """Normalize the design variables history.
-
-        Args:
-            x_history: The history for the design variables.
-            variable_names: The names of the variables to display.
-                If ``None``, use all design variables.
-
-        Returns:
-            The normalized design variables array.
-        """
-        lower_bounds = self.optimization_problem.design_space.get_lower_bounds(
-            variable_names
-        )
-        upper_bounds = self.optimization_problem.design_space.get_upper_bounds(
-            variable_names
-        )
-        return (x_history - lower_bounds) / (upper_bounds - lower_bounds)
-
     def _create_variables_plot(
-        self,
-        x_history: ndarray,
-        variable_names: Sequence[str],
+        self, x_history: ndarray, variable_names: Sequence[str], x_xstar: RealArray
     ) -> None:
         """Create the design variables plot.
 
@@ -254,6 +241,7 @@ class OptHistoryView(OptPostProcessor):
             x_history: The history for the design variables.
             variable_names: The names of the variables to display.
                 If empty, use all design variables.
+            x_xstar: The distance between the designs and the optimum design.
         """
         n_iterations = len(x_history)
         if n_iterations < 2:
@@ -277,9 +265,11 @@ class OptHistoryView(OptPostProcessor):
             vmax=1.0,
             aspect="auto",
         )
+        ax1.axvline(x=argmin(x_xstar), color="r", label="Optimum")
+        ax1.legend()
         ax1.set_yticks(arange(x_history.shape[1]))
         ax1.set_yticklabels(self._get_design_variable_names(variable_names, True))
-        ax1.set_xlabel(self.x_label)
+        ax1.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         # ax1.invert_yaxis()
 
         ax1.set_title("Evolution of the optimization variables")
@@ -301,6 +291,7 @@ class OptHistoryView(OptPostProcessor):
         self,
         obj_history: ndarray,
         n_iter: int,
+        x_xstar: RealArray,
         obj_min: float | None = None,
         obj_max: float | None = None,
         obj_relative: bool = False,
@@ -316,6 +307,7 @@ class OptHistoryView(OptPostProcessor):
                 If ``None``, use the minimum value of the objective history.
             obj_relative: If ``True``, plot the objective value difference
                 with the initial value.
+            x_xstar: The distance between the designs and the optimum design.
         """
         if self._change_obj:
             obj_history = -obj_history
@@ -347,8 +339,9 @@ class OptHistoryView(OptPostProcessor):
         # objective function
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("Objective value", fontsize=self.__AXIS_LABEL_SIZE)
-
         plt.plot(x_absc_not_nan, obj_history)
+        plt.axvline(x=argmin(x_xstar), color="r", label="Optimum")
+        plt.legend()
 
         if idx_nan.size > 0:
             for x_i in x_absc_nan:
@@ -376,15 +369,14 @@ class OptHistoryView(OptPostProcessor):
         self._add_figure(fig, "objective")
 
     def _create_x_star_plot(
-        self,
-        x_history: ndarray,
-        n_iter: int,
+        self, x_history: ndarray, n_iter: int, x_xstar: RealArray
     ) -> None:
         """Create the design variables plot.
 
         Args:
             x_history: The history of the design variables.
             n_iter: The number of iterations.
+            x_xstar: The distance between the designs and the optimum design.
         """
         fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
@@ -397,8 +389,10 @@ class OptHistoryView(OptPostProcessor):
 
         # Draw a vertical line at the optimum
         n_iterations = len(x_history)
-        plt.axvline(x=argmin(x_xstar), color="r")
+        plt.axvline(x=argmin(x_xstar), color="r", label="Optimum")
+        plt.legend()
         plt.semilogy(arange(n_iterations), x_xstar)
+        plt.legend()
         # ======================================================================
         # try:
         #     plt.semilogy(np.arange(len(x_xstar)), x_xstar)
@@ -411,7 +405,7 @@ class OptHistoryView(OptPostProcessor):
         ax1.set_xticklabels(range(1, n_iterations + 1))
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         plt.grid(True)
-        plt.title("Distance to the optimum")
+        plt.title("Evolution of the distance to the optimum")
         plt.xlim([0 - self._X_MARGIN, n_iter - 1 + self._X_MARGIN])
 
         # Set window size
@@ -444,6 +438,7 @@ class OptHistoryView(OptPostProcessor):
         cstr_history: Iterable[ndarray],
         cstr_type: str,
         cstr_names: Sequence[str],
+        x_xstar: RealArray,
     ) -> None:
         """Create the constraints plot: 1 line per constraint component.
 
@@ -451,6 +446,7 @@ class OptHistoryView(OptPostProcessor):
             cstr_history: The history of the constraints.
             cstr_type: The type of the constraints, either 'eq' or 'ineq'.
             cstr_names: The names of the constraints.
+            x_xstar: The distance between the designs and the optimum design.
         """
         n_cstr = self._cstr_number(cstr_history)
         if n_cstr == 0:
@@ -500,7 +496,9 @@ class OptHistoryView(OptPostProcessor):
                     else:
                         cstr_matrix = vstack((cstr_matrix, history_i_j))
 
-        fig = self._build_cstr_fig(cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels)
+        fig = self._build_cstr_fig(
+            cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels, x_xstar
+        )
 
         self._add_figure(fig, f"{cstr_type}_constraints")
 
@@ -511,6 +509,7 @@ class OptHistoryView(OptPostProcessor):
         vmax: float,
         n_cstr: int,
         cstr_labels: Sequence[str],
+        x_xstar: RealArray,
     ) -> Figure:
         """Build the constraints figure.
 
@@ -521,6 +520,7 @@ class OptHistoryView(OptPostProcessor):
             vmax: The maximum constraint absolute value.
             n_cstr: The number of constraints.
             cstr_labels: The labels of constraints names.
+            x_xstar: The distance between the designs and the optimum design.
 
         Returns:
             The constraints figure.
@@ -548,6 +548,7 @@ class OptHistoryView(OptPostProcessor):
             aspect="auto",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0, base=e),
         )
+        ax1.axvline(x=argmin(x_xstar), color="r", label="Optimum")
         if hasnan > 0:
             x_absc_nan = idx_nan.any(axis=0).nonzero()[0]
             for x_i in x_absc_nan:
@@ -557,7 +558,7 @@ class OptHistoryView(OptPostProcessor):
         ax1.set_yticks(list(range(n_cstr)))
         ax1.set_yticklabels(cstr_labels)
 
-        ax1.set_xlabel(self.x_label)
+        ax1.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         ax1.set_title(f"Evolution of the {constraint_type} constraints")
         n_iterations = len(self.database)
         ax1.set_xticks(range(n_iterations))
