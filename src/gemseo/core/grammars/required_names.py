@@ -69,6 +69,20 @@ class RequiredNames(MutableSet[str]):
     def __len__(self) -> int:
         return len(self.__names)
 
+    def get_names_difference(self, other: Iterable[str]) -> set[str]:
+        """Return the names that are not in ``other``.
+
+        If only the names matter,
+        this method is much faster than computing instance differences.
+
+        Args:
+            other: The names to be discarded.
+
+        Returns:
+            The names that are not in ``other``.
+        """
+        return self.__names.difference(other)
+
     def discard(self, name: str) -> None:  # noqa: D102
         self.__names.discard(name)
 

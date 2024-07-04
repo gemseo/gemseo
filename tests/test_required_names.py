@@ -94,3 +94,11 @@ def test_from_iterable(grammar):
     match = r"The name bad is not in the grammar\."
     with pytest.raises(KeyError, match=match):
         rn | {"bad"}
+
+
+def test_get_names_difference(grammar):
+    """Verify get_names_difference."""
+    rn = RequiredNames(grammar, names=["name"])
+    assert rn.get_names_difference(()) == {"name"}
+    assert rn.get_names_difference(["dummy"]) == {"name"}
+    assert rn.get_names_difference(["name"]) == set()
