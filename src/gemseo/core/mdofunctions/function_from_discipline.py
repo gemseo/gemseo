@@ -26,8 +26,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Callable
 
-from numpy import empty
-
 from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
@@ -183,28 +181,13 @@ class FunctionFromDiscipline(MDOFunction):
         Returns:
             The value of the gradient of the outputs.
         """
-        loc_jac = self.__discipline_adapter.jac(x_vect[self._input_mask])
-        if len(loc_jac.shape) == 1:
-            # This is surprising but there is a duality between the
-            # masking operation in the function inputs and the
-            # unmasking of its outputs
-            return self.__unmask_x_swap_order(
-                self.__differentiated_input_names,
-                loc_jac,
-                self.__all_differentiated_input_names,
-            )
-
-        n_outs = loc_jac.shape[0]
         # TODO: The support of sparse Jacobians requires modifications here.
-        jac = empty((n_outs, x_vect.size), dtype=x_vect.dtype)
-        for func_ind in range(n_outs):
-            gr_u = self.__unmask_x_swap_order(
-                self.__differentiated_input_names,
-                loc_jac[func_ind, :],
-                self.__all_differentiated_input_names,
-            )
-            jac[func_ind, :] = gr_u
-
+        jac = self.__unmask_x_swap_order(
+            self.__differentiated_input_names,
+            self.__discipline_adapter.jac(x_vect[self._input_mask]),
+            self.__all_differentiated_input_names,
+        )
+        jac.astype(x_vect.dtype)
         return jac
 
     @property
