@@ -294,24 +294,24 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         masking_data_names: Iterable[str],
         x_masked: ndarray,
-        all_data_names: Iterable[str] | None = None,
+        all_data_names: Iterable[str] = (),
         x_full: ndarray | None = None,
     ) -> ndarray:
-        """Unmask a vector from a subset of names, with respect to a set of names.
+        """Unmask a vector or matrix from names, with respect to other names.
 
         This method eventually swaps the order of the values
         if the order of the data names is inconsistent between these sets.
 
         Args:
             masking_data_names: The names of the kept data.
-            x_masked: The boolean vector to unmask.
+            x_masked: The vector or matrix to unmask.
             all_data_names: The set of all names.
-                If ``None``, use the design variables stored in the design space.
-            x_full: The default values for the full vector.
-                If ``None``, use the zero vector.
+                If empty, use the design variables stored in the design space.
+            x_full: The default values for the full vector or matrix.
+                If ``None``, use the zero vector or matrix.
 
         Returns:
-            The vector related to the input mask.
+            The vector or matrix related to the input mask.
 
         Raises:
             IndexError: when the sizes of variables are inconsistent.
@@ -324,7 +324,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         # TODO: The support of sparse Jacobians requires modifications here.
         if x_full is None:
-            x_unmask = zeros(total_size, dtype=x_masked.dtype)
+            x_unmask = zeros((*x_masked.shape[:-1], total_size), dtype=x_masked.dtype)
         else:
             x_unmask = copy(x_full)
 
@@ -333,7 +333,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             for key in all_data_names:
                 if key in masking_data_names:
                     i_min, i_max, n_x = indices[key]
-                    x_unmask[i_min:i_max] = x_masked[i_x : i_x + n_x]
+                    x_unmask[..., i_min:i_max] = x_masked[..., i_x : i_x + n_x]
                     i_x += n_x
         except IndexError:
             msg = (
