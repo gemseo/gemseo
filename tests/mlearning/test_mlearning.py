@@ -73,7 +73,7 @@ AVAILABLE_CLASSIFICATION_MODELS = ["KNNClassifier", "RandomForestClassifier"]
 AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the machine learning algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
@@ -86,7 +86,7 @@ def dataset() -> Dataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture()
+@pytest.fixture
 def classification_data() -> tuple[ndarray, list[str], dict[str, str]]:
     """The dataset used to train the classification algorithms."""
     data = array([
@@ -106,7 +106,7 @@ def classification_data() -> tuple[ndarray, list[str], dict[str, str]]:
     return data, variables, groups
 
 
-@pytest.fixture()
+@pytest.fixture
 def cluster_data() -> tuple[ndarray, list[str]]:
     """The dataset used to train the clustering algorithms."""
     data = array([

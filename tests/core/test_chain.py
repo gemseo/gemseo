@@ -96,7 +96,7 @@ class Testmdochain(unittest.TestCase):
                 )
                 assert ok
 
-    @pytest.mark.skip_under_windows()
+    @pytest.mark.skip_under_windows
     def test_parallel_chain_combinatorial_mprocess(self) -> None:
         # Keep the two first only as MP is slow there
         perms = list(permutations(range(4)))[:2]
@@ -225,7 +225,7 @@ def test_warm_started_mdo_chain_variables(variable_names) -> None:
         )
 
 
-@pytest.fixture()
+@pytest.fixture
 def two_virtual_disciplines() -> list[MDODiscipline]:
     """Create two dummy disciplines that have no _run method and can only be executed in
     virtual mode.

@@ -240,7 +240,7 @@ def test_plot_save(
             assert args[2] == Path(tmp_wd / expected)
 
 
-@pytest.fixture()
+@pytest.fixture
 def norm_data() -> ndarray:
     """Normal samples."""
     return RandomState(1).normal(size=100)

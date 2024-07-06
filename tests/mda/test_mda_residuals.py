@@ -154,7 +154,7 @@ def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray
     return d_obj_d_y1_y2_x  # noqa: RET504
 
 
-@pytest.fixture()
+@pytest.fixture
 def res_disciplines() -> list[MDODiscipline]:
     """Create the three disciplines required to make a MDA with residual variables.
 

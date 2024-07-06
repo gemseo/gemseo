@@ -31,7 +31,7 @@ from numpy.testing import assert_almost_equal
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))

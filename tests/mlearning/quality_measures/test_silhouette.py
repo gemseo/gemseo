@@ -29,7 +29,7 @@ from gemseo.mlearning.clustering.algos.kmeans import KMeans
 from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     data = arange(60).reshape((20, 3))
@@ -38,7 +38,7 @@ def dataset() -> Dataset:
     return dataset_
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_test() -> Dataset:
     """The dataset used to test the performance of the clustering algorithms."""
     data = arange(30).reshape((10, 3))
@@ -47,7 +47,7 @@ def dataset_test() -> Dataset:
     return dataset_
 
 
-@pytest.fixture()
+@pytest.fixture
 def measure(dataset) -> SilhouetteMeasure:
     """A silhouette measure."""
     algo = KMeans(dataset, n_clusters=3)

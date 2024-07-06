@@ -24,7 +24,7 @@ from gemseo.core.mdofunctions.collections.constraints import Constraints
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
-@pytest.fixture()
+@pytest.fixture
 def constraints(problem) -> Constraints:
     """A set of constraints."""
     design_space = DesignSpace()

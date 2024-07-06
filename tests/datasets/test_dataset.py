@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset(data: NDArray[np_int]) -> Dataset:
     """A dataset built from ``data``.
 
@@ -59,7 +59,7 @@ def dataset(data: NDArray[np_int]) -> Dataset:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def small_dataset(small_data: NDArray[np_int]) -> Dataset:
     """A small view of ``dataset``."""
     return Dataset.from_array(
@@ -67,13 +67,13 @@ def small_dataset(small_data: NDArray[np_int]) -> Dataset:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def io_data() -> ndarray:
     """Input-output data."""
     return concatenate([arange(50).reshape(10, 5), arange(20).reshape(10, 2)], axis=1)
 
 
-@pytest.fixture()
+@pytest.fixture
 def io_dataset(io_data) -> Dataset:
     """An input-output dataset.
 
@@ -94,7 +94,7 @@ def io_dataset(io_data) -> Dataset:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def small_file_dataset(tmp_wd, small_data) -> str:
     """The generation of a small file.txt containing ``small_data``."""
     filename = "dataset.txt"
@@ -102,7 +102,7 @@ def small_file_dataset(tmp_wd, small_data) -> str:
     return filename
 
 
-@pytest.fixture()
+@pytest.fixture
 def file_dataset(
     tmp_wd,
     io_dataset,

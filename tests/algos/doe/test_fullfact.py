@@ -32,7 +32,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.testing.helpers import concretize_classes
 
 
-@pytest.fixture()
+@pytest.fixture
 def doe_problem_dim_2():
     design_space = DesignSpace()
     design_space.add_variable("x", size=2, l_b=-2.0, u_b=2.0)

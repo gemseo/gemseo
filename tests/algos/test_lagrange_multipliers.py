@@ -44,7 +44,7 @@ SLSQP_OPTIONS = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def problem() -> Power2:
     """The Power2 optimization problem."""
     return Power2()

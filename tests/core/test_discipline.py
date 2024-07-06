@@ -84,7 +84,7 @@ def check_jac_equals(
     return True
 
 
-@pytest.fixture()
+@pytest.fixture
 def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
     """Build a Sobieski chain.
 
@@ -1123,7 +1123,7 @@ class Observer:
         self.statuses.clear()
 
 
-@pytest.fixture()
+@pytest.fixture
 def observer() -> Observer:
     return Observer()
 

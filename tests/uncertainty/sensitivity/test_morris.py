@@ -71,7 +71,7 @@ def parameter_space() -> ParameterSpace:
     return space
 
 
-@pytest.fixture()
+@pytest.fixture
 def morris(discipline, parameter_space):
     """Morris analysis for the Ishigami function."""
     analysis = MorrisAnalysis()

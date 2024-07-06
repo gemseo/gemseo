@@ -34,13 +34,13 @@ from gemseo.mlearning.clustering.quality.factory import ClustererQualityFactory
 from gemseo.utils.testing.helpers import concretize_classes
 
 
-@pytest.fixture()
+@pytest.fixture
 def learning_data() -> Dataset:
     """The dataset used to train the clustering algorithms."""
     return Dataset.from_array(array([[1, 0], [2, 0], [3, 1], [4, 1]]), ["x", "y"])
 
 
-@pytest.fixture()
+@pytest.fixture
 def test_data() -> Dataset:
     """The dataset used to test the performance clustering algorithms."""
     return Dataset.from_array(array([[1, 0.5]]), ["x", "y"])

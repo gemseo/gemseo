@@ -28,7 +28,7 @@ from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 
 
-@pytest.fixture()
+@pytest.fixture
 def distribution_factory() -> DistributionFactory:
     """A distribution factory."""
     return DistributionFactory()

@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 N_CLUSTERS = 3
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the clustering algorithms."""
     return create_iris_dataset(as_io=True, as_numeric=True)

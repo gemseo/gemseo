@@ -28,7 +28,7 @@ from gemseo.disciplines.wrappers.job_schedulers.slurm import SLURM
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 
-@pytest.fixture()
+@pytest.fixture
 def discipline(tmpdir):
     """Create a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the SLURM template.

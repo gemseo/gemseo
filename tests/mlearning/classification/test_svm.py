@@ -45,7 +45,7 @@ INPUT_VALUES = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the SVMClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
@@ -62,7 +62,7 @@ def dataset() -> IODataset:
     return dataset_
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> SVMClassifier:
     """A trained SVMClassifier with two outputs, y_1 and y_2."""
     svm = SVMClassifier(dataset, probability=True)
@@ -70,7 +70,7 @@ def model(dataset) -> SVMClassifier:
     return svm
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_transform(dataset) -> SVMClassifier:
     """A trained SVMClassifier using input scaling."""
     svm = SVMClassifier(

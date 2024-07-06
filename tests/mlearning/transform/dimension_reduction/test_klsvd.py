@@ -48,7 +48,7 @@ def func(tau, theta):
     return sin(2 * pi * (tau - theta)) + 1
 
 
-@pytest.fixture()
+@pytest.fixture
 def data():
     """The dataset used to build the transformer, based on a 1D-mesh."""
     return array([
@@ -56,7 +56,7 @@ def data():
     ])
 
 
-@pytest.fixture()
+@pytest.fixture
 def data2d():
     """The dataset used to build the transformer, based on a 2D-mesh."""
     tau = array(MESH2D)

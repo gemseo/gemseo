@@ -33,7 +33,7 @@ from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipli
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 
 
-@pytest.fixture()
+@pytest.fixture
 def sobieski_aerodynamics():
     """Create a SobieskiAerodynamics problem.
 

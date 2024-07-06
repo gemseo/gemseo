@@ -114,7 +114,7 @@ def uncertain_space() -> ParameterSpace:
     return parameter_space
 
 
-@pytest.fixture()
+@pytest.fixture
 def sobol(discipline: MDODiscipline, uncertain_space: ParameterSpace) -> SobolAnalysis:
     """A Sobol' analysis."""
     analysis = SobolAnalysis()
@@ -123,13 +123,13 @@ def sobol(discipline: MDODiscipline, uncertain_space: ParameterSpace) -> SobolAn
     return analysis
 
 
-@pytest.fixture()
+@pytest.fixture
 def first_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     """The intervals of the first-order indices."""
     return sobol.get_intervals()
 
 
-@pytest.fixture()
+@pytest.fixture
 def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     """The intervals of the total-order indices."""
     return sobol.get_intervals(False)

@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 LEARNING_SIZE = 9
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
@@ -59,7 +59,7 @@ def dataset() -> IODataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> LinearRegressor:
     """A trained LinearRegressor."""
     linreg = LinearRegressor(dataset)
@@ -67,7 +67,7 @@ def model(dataset) -> LinearRegressor:
     return linreg
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_transform(dataset) -> LinearRegressor:
     """A trained LinearRegressor with inputs and outputs scaling."""
     linreg = LinearRegressor(

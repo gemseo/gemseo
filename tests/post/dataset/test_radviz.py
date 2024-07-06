@@ -52,7 +52,7 @@ TEST_PARAMETERS = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The Iris dataset."""
     return create_iris_dataset()

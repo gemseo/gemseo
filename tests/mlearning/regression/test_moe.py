@@ -55,7 +55,7 @@ ATOL = 1e-5
 RTOL = 1e-5
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     x_1 = linspace(0, 1, ROOT_LEARNING_SIZE)
@@ -83,7 +83,7 @@ def dataset() -> IODataset:
     return tmp
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> MOERegressor:
     """A trained MOERegressor."""
     moe = MOERegressor(dataset)
@@ -92,7 +92,7 @@ def model(dataset) -> MOERegressor:
     return moe
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_soft(dataset) -> MOERegressor:
     """A trained MOERegressor with soft classification."""
     moe = MOERegressor(dataset, hard=False)
@@ -101,7 +101,7 @@ def model_soft(dataset) -> MOERegressor:
     return moe
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_transform(dataset) -> MOERegressor:
     """A trained MOERegressor with inputs and outputs scaling."""
     moe = MOERegressor(

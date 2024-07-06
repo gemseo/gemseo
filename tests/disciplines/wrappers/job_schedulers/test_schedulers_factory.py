@@ -25,7 +25,7 @@ from gemseo.disciplines.wrappers.job_schedulers.factory import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def factory() -> JobSchedulerDisciplineWrapperFactory:
     return JobSchedulerDisciplineWrapperFactory()
 

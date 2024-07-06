@@ -378,7 +378,7 @@ class Counter:
         self.total += data[0]["f"]
 
 
-@pytest.fixture()
+@pytest.fixture
 def problem():
     """A problem."""
     design_space = DesignSpace()

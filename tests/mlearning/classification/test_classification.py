@@ -28,7 +28,7 @@ from numpy import arange
 from gemseo.datasets.dataset import Dataset
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """A dataset used to train the classification algorithms."""
     data = arange(60).reshape(10, 6)

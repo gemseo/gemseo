@@ -26,7 +26,7 @@ from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_pydoe import PyDOE
 
 
-@pytest.fixture()
+@pytest.fixture
 def factory():
     """The DOE factory."""
     return DOELibraryFactory()

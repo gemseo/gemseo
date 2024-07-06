@@ -38,7 +38,7 @@ from gemseo.post.dataset.yvsx import YvsX
 from gemseo.utils.testing.helpers import concretize_classes
 
 
-@pytest.fixture()
+@pytest.fixture
 def yvsx() -> YvsX:
     """A plot of type YvsX."""
     dataset = Dataset()
@@ -68,7 +68,7 @@ def test_get_label() -> None:
     assert varname == ("parameters", "x", 0)
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """A very simple dataset with a single value: x=[1]."""
     return Dataset.from_array(
@@ -76,7 +76,7 @@ def dataset() -> Dataset:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_plot(dataset):
     """A simple dataset plot from a dataset with a single value: x=[1]."""
     with concretize_classes(DatasetPlot):

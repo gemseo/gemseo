@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from gemseo.algos.database import Database
 
 
-@pytest.fixture()
+@pytest.fixture
 def database() -> Database:
     """The database."""
     n = 2

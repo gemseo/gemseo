@@ -31,7 +31,7 @@ from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 from gemseo.utils.testing.helpers import concretize_classes
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))

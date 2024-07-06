@@ -61,7 +61,7 @@ from gemseo.utils.testing.helpers import concretize_classes
 DIRNAME = os.path.dirname(__file__)
 
 
-@pytest.fixture()
+@pytest.fixture
 def sellar_mda(sellar_disciplines):
     return MDAGaussSeidel(sellar_disciplines)
 

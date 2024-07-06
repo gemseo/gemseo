@@ -30,7 +30,7 @@ from gemseo.algos.doe.lib_scipy import _MonteCarlo
 from gemseo.utils.compatibility import scipy
 
 
-@pytest.fixture()
+@pytest.fixture
 def library() -> SciPyDOE:
     """An instance of SciPyDOE."""
     return SciPyDOE("LHS")

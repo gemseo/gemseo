@@ -32,7 +32,7 @@ from gemseo.utils.testing.helpers import image_comparison
 TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
 
 
-@pytest.fixture()
+@pytest.fixture
 def reset_time_stamping():
     """Reset the time stamping before and after a test."""
     MDODiscipline.deactivate_time_stamps()

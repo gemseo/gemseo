@@ -28,7 +28,7 @@ from gemseo.utils.deserialize_and_run import main
 from gemseo.utils.path_discipline import PathDiscipline
 
 
-@pytest.fixture()
+@pytest.fixture
 def discipline_and_data(tmp_wd):
     path_to_discipline = tmp_wd / "discipline.pckl"
     discipline = create_discipline("SobieskiMission")
@@ -41,7 +41,7 @@ def discipline_and_data(tmp_wd):
     return path_to_discipline, path_to_outputs, path_to_input_data, discipline
 
 
-@pytest.fixture()
+@pytest.fixture
 def sys_argv(discipline_and_data):
     (
         path_to_discipline,

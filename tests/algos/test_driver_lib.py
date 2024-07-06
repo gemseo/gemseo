@@ -158,7 +158,7 @@ def test_common_options() -> None:
     assert not driver._option_grammar.required_names
 
 
-@pytest.fixture()
+@pytest.fixture
 def driver_library() -> BaseDriverLibrary:
     """A driver library."""
     driver_library = ScipyOpt("SLSQP")

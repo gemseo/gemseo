@@ -26,7 +26,7 @@ from numpy import array
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 
-@pytest.fixture()
+@pytest.fixture
 def binh_korn() -> BinhKorn:
     """Fixture for the Binh-Korn optimization problem.
 

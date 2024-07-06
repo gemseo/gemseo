@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_result import OptimizationResult
 
 
-@pytest.fixture()
+@pytest.fixture
 def offsets():
     return [0.0, 0.3, 0.4, 0.5, 0.1, 0.2, -0.3, -0.1, -0.2, -0.4]
 
@@ -117,7 +117,7 @@ def test_progress_bar(
         assert max(count) == 1
 
 
-@pytest.fixture()
+@pytest.fixture
 def objective_and_problem_for_tests(constraints_before_obj):
     f = MDOFunction(
         func=dummy_sleep_function,

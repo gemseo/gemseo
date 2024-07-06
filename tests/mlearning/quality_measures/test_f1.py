@@ -32,7 +32,7 @@ from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.utils.testing.helpers import concretize_classes
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the classification algorithms."""
     input_data = 1.0 * arange(63).reshape((21, 3))
@@ -43,7 +43,7 @@ def dataset() -> IODataset:
     return dataset_
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_test() -> IODataset:
     """The dataset used to test the performance classification algorithms."""
     input_data = 1.0 * arange(18).reshape((6, 3))

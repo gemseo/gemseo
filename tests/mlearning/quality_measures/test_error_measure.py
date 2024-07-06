@@ -62,7 +62,7 @@ def learning_dataset() -> IODataset:
     return dataset
 
 
-@pytest.fixture()
+@pytest.fixture
 def linear_regressor(learning_dataset) -> LinearRegressor:
     """A linear regressor."""
     algo = LinearRegressor(learning_dataset)

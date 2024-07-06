@@ -45,7 +45,7 @@ def pytest_collection_modifyitems(
 SellarDisciplines = namedtuple("SellarDisciplines", "sellar1, sellar2, sellar_system")
 
 
-@pytest.fixture()
+@pytest.fixture
 def sellar_disciplines() -> SellarDisciplines:
     """The disciplines of the Sellar problem.
 

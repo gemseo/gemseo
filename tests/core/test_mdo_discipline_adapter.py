@@ -70,7 +70,7 @@ def create_disciplinary_function(
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def disciplinary_function() -> MDODisciplineAdapter:
     """A disciplinary function."""
     return create_disciplinary_function()

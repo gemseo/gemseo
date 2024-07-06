@@ -34,7 +34,7 @@ from gemseo.mlearning.regression.algos.rbf import RBFRegressor
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     data = np.linspace(0, 2 * np.pi, 10)

@@ -173,7 +173,7 @@ for test_method in suite_tests.generate_test("Nlopt", get_options):
     setattr(TestNLOPT, test_method.__name__, test_method)
 
 
-@pytest.fixture()
+@pytest.fixture
 def x2_problem() -> X2:
     """Instantiate a :class:`.X2` test problem.
 

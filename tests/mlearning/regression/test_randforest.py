@@ -42,7 +42,7 @@ INPUT_VALUE = {"x_1": array([1]), "x_2": array([2])}
 INPUT_VALUES = {"x_1": array([[1], [0], [3]]), "x_2": array([[2], [1], [1]])}
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
@@ -55,7 +55,7 @@ def dataset() -> Dataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> RandomForestRegressor:
     """A trained RandomForestRegressor."""
     random_forest = RandomForestRegressor(dataset)
@@ -63,7 +63,7 @@ def model(dataset) -> RandomForestRegressor:
     return random_forest
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_1d_output(dataset) -> RandomForestRegressor:
     """A trained RandomForestRegressor with only y_1 as outputs."""
     random_forest = RandomForestRegressor(dataset, output_names=["y_1"])

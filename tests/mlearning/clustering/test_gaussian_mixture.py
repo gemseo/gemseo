@@ -55,7 +55,7 @@ VALUE = {"x_1": [0], "x_2": [0]}
 VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 
-@pytest.fixture()
+@pytest.fixture
 def samples() -> tuple[ndarray, ndarray, list[int]]:
     """The description of the samples used to generate the learning dataset.
 
@@ -69,7 +69,7 @@ def samples() -> tuple[ndarray, ndarray, list[int]]:
     return LOCS, SCALES, N_SAMPLES
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset(samples) -> Dataset:
     """The dataset used to train the GaussianMixture.
 
@@ -95,7 +95,7 @@ def dataset(samples) -> Dataset:
     return sample
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> GaussianMixture:
     """A trained GaussianMixture."""
     n_clusters = 3
@@ -104,7 +104,7 @@ def model(dataset) -> GaussianMixture:
     return gaussian_mixture
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_transform(dataset) -> GaussianMixture:
     """A trained GaussianMixture with parameters scaling."""
     n_clusters = 3

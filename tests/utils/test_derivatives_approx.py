@@ -71,7 +71,7 @@ def test_init_complex_step() -> None:
         cplx.f_gradient(zeros(3) + 1j)
 
 
-@pytest.fixture()
+@pytest.fixture
 def x():
     """"""
     return [

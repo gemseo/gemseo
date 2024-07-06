@@ -23,7 +23,7 @@ from gemseo.algos._hdf_database import HDFDatabase
 from gemseo.algos.database import HashableNdarray
 
 
-@pytest.fixture()
+@pytest.fixture
 def h5_file(tmp_wd):
     return h5py.File("test.h5", "w")
 

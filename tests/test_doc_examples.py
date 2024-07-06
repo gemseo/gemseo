@@ -31,7 +31,7 @@ EXAMPLE_PATHS = [
 ]
 
 
-@pytest.mark.doc_examples()
+@pytest.mark.doc_examples
 @pytest.mark.parametrize(
     "example_path", EXAMPLE_PATHS, ids=(path.name for path in EXAMPLE_PATHS)
 )

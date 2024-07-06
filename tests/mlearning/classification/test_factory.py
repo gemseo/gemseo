@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The Iris dataset used to train the classification algorithms."""
     return create_iris_dataset(as_io=True)

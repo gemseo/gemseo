@@ -67,7 +67,7 @@ def test_add_random_variable() -> None:
     assert "y" in space.distributions
 
 
-@pytest.fixture()
+@pytest.fixture
 def mixed_space():
     """A parameter space containing both deterministic and uncertain variables."""
     space = ParameterSpace()
@@ -307,7 +307,7 @@ def test_evaluate_cdf_raising_errors() -> None:
         space.evaluate_cdf({"x": array([1.5])}, inverse=True)
 
 
-@pytest.fixture()
+@pytest.fixture
 def io_dataset() -> IODataset:
     """An input-output dataset."""
     inputs = arange(50).reshape(10, 5)

@@ -32,7 +32,7 @@ N_SAMPLES = 10
 N_FEATURES = 8
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> ndarray:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     return linspace(0, 1, N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
