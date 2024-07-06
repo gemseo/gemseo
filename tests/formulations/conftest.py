@@ -113,7 +113,7 @@ def build_and_run_idf_scenario_with_constraints(
     return -obj_opt, is_feasible
 
 
-@pytest.fixture()
+@pytest.fixture
 def generate_idf_scenario():
     """Wrap an :class:`.MDOScenario` with an IDF formulation.
 

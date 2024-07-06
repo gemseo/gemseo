@@ -33,7 +33,7 @@ from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulatio
 from tests.formulations.not_mdo_formulations.formulation_a import ANotMDOFormulation
 
 
-@pytest.fixture()
+@pytest.fixture
 def factory(reset_factory) -> MDOFormulationFactory:
     """The factory of BaseMDOFormulation."""
     return MDOFormulationFactory()

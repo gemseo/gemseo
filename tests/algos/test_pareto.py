@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 
-@pytest.fixture()
+@pytest.fixture
 def problem_2obj() -> OptimizationProblem:
     """The Binh-Korn optimization problem ready to be post-processed."""
     problem = BinhKorn()

@@ -46,7 +46,7 @@ INPUT_VALUES = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({
@@ -63,7 +63,7 @@ def dataset() -> Dataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> RBFRegressor:
     """A trained RBFRegressor."""
     rbf = RBFRegressor(dataset)
@@ -71,7 +71,7 @@ def model(dataset) -> RBFRegressor:
     return rbf
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_custom_function(dataset) -> RBFRegressor:
     """A trained RBFRegressor  f(r) = r**2 - 1 as kernel function."""
 
@@ -85,7 +85,7 @@ def model_with_custom_function(dataset) -> RBFRegressor:
     return rbf
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_1d_output(dataset) -> RBFRegressor:
     """A trained RBFRegressor with y_1 as output."""
     rbf = RBFRegressor(dataset, output_names=["y_1"])

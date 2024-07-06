@@ -43,7 +43,7 @@ def coefficients(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def concatenation_disc(coefficients):
     """Set-up fixture, creating a concatenation discipline."""
     return create_discipline(
@@ -54,7 +54,7 @@ def concatenation_disc(coefficients):
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def input_data():
     """"""
     return {"c_1": array([2.0, 3.0]), "c_2": array([2.0, 3.0, 4.0])}

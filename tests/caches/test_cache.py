@@ -60,22 +60,22 @@ def factory():
     return CacheFactory()
 
 
-@pytest.fixture()
+@pytest.fixture
 def simple_cache(factory):
     return factory.create("SimpleCache", tolerance=0.0)
 
 
-@pytest.fixture()
+@pytest.fixture
 def memory_full_cache(factory):
     return factory.create("MemoryFullCache")
 
 
-@pytest.fixture()
+@pytest.fixture
 def memory_full_cache_loc(factory):
     return factory.create("MemoryFullCache", is_memory_shared=False)
 
 
-@pytest.fixture()
+@pytest.fixture
 def hdf5_cache(factory, tmp_wd):
     return factory.create(
         "HDF5Cache", hdf_file_path="dummy.h5", hdf_node_path="DummyCache"
@@ -465,7 +465,7 @@ def test_hash_data_dict_keys() -> None:
 CACHE_FILE_NAME = "cache.h5"
 
 
-@pytest.fixture()
+@pytest.fixture
 def h5_file(tmp_wd) -> Iterator[h5py.File]:
     """Provide an empty h5 file object and close it afterward."""
     h5_file = h5py.File(CACHE_FILE_NAME, mode="a")

@@ -54,7 +54,7 @@ model2 = pytest.fixture(get_model2)
 model3 = pytest.fixture(get_model3)
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(
     request: SubRequest, model1: ModelType, model2: ModelType
 ) -> ModelType | None:

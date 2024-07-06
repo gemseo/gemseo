@@ -37,13 +37,13 @@ if TYPE_CHECKING:
     from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))
 
 
-@pytest.fixture()
+@pytest.fixture
 def transformers() -> list[BaseTransformer]:
     """Transformers for pipeline."""
     return [Scaler(coefficient=2), Scaler(offset=3), Scaler(coefficient=5)]
@@ -55,7 +55,7 @@ OFF_3 = array([0, 10, 100])
 C_3 = array([5, 1, 2])
 
 
-@pytest.fixture()
+@pytest.fixture
 def other_transformers():
     """Transformers for pipeline."""
     return [

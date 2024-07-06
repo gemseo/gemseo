@@ -92,7 +92,7 @@ def problem_executed_twice() -> OptimizationProblem:
     return problem
 
 
-@pytest.fixture()
+@pytest.fixture
 def pow2_problem() -> OptimizationProblem:
     design_space = DesignSpace()
     design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
@@ -1080,7 +1080,7 @@ def test_is_mono_objective() -> None:
     assert problem.is_mono_objective
 
 
-@pytest.fixture()
+@pytest.fixture
 def problem() -> OptimizationProblem:
     """A simple optimization problem :math:`max_x x`."""
     design_space = DesignSpace()
@@ -1187,7 +1187,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
             )
 
 
-@pytest.fixture()
+@pytest.fixture
 def constrained_problem() -> OptimizationProblem:
     """A constrained optimisation problem with multidimensional constraints."""
     design_space = DesignSpace()
@@ -1282,7 +1282,7 @@ def test_approximated_jacobian_wrt_uncertain_variables() -> None:
     assert grad[0, 0] == pytest.approx(1.0, abs=1e-3)
 
 
-@pytest.fixture()
+@pytest.fixture
 def rosenbrock_lhs() -> tuple[Rosenbrock, dict[str, ndarray]]:
     """The Rosenbrock problem after evaluation and its start point."""
     problem = Rosenbrock()
@@ -1445,7 +1445,7 @@ def test_get_function_dimension_unknown(constrained_problem) -> None:
         constrained_problem.get_function_dimension("unknown")
 
 
-@pytest.fixture()
+@pytest.fixture
 def design_space() -> mock.Mock:
     """A design space."""
     design_space = mock.Mock()
@@ -1453,7 +1453,7 @@ def design_space() -> mock.Mock:
     return design_space
 
 
-@pytest.fixture()
+@pytest.fixture
 def function() -> mock.Mock:
     """A function."""
     function = mock.MagicMock(return_value=1.0)
@@ -1571,7 +1571,7 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
             )
 
 
-@pytest.fixture()
+@pytest.fixture
 def problem_for_eval_obs_jac() -> OptimizationProblem:
     """An optimization problem to check the option eval_obs_jac."""
     design_space = DesignSpace()

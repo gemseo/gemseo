@@ -65,7 +65,7 @@ def generate_parallel_doe(
     return scenario.optimization_result.f_opt
 
 
-@pytest.fixture()
+@pytest.fixture
 def generate_parallel_doe_data():
     """Wrap a parallel DOE scenario to be used in the MDA tests.
 

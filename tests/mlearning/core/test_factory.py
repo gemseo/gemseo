@@ -30,7 +30,7 @@ from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 LEARNING_SIZE = 9
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape((10, 3))

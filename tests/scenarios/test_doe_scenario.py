@@ -85,7 +85,7 @@ def build_mdo_scenario(
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def mdf_variable_grammar_doe_scenario(request):
     """Return a DOEScenario with MDF formulation and custom grammar.
 
@@ -97,7 +97,7 @@ def mdf_variable_grammar_doe_scenario(request):
 
 
 @pytest.mark.usefixtures("tmp_wd")
-@pytest.mark.skip_under_windows()
+@pytest.mark.skip_under_windows
 def test_parallel_doe_hdf_cache(caplog) -> None:
     disciplines = create_discipline([
         "SobieskiStructure",
@@ -179,7 +179,7 @@ def double_discipline():
     return AnalyticDiscipline({"y": "2*x"}, name="func")
 
 
-@pytest.fixture()
+@pytest.fixture
 def doe_scenario(unit_design_space, double_discipline) -> DOEScenario:
     """A simple DOE scenario not yet executed.
 

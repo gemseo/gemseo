@@ -47,7 +47,7 @@ TOL_DEG_3 = 0.01
 ATOL = 1e-12
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
@@ -58,7 +58,7 @@ def dataset() -> IODataset:
     return MODEL.cache.to_dataset()
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_test() -> IODataset:
     """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()

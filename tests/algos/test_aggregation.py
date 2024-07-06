@@ -59,7 +59,7 @@ def create_problem():
     return problem
 
 
-@pytest.fixture()
+@pytest.fixture
 def sellar_problem():
     """Sellar problem fixture."""
     return create_problem()

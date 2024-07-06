@@ -34,7 +34,7 @@ from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.problems.optimization.power_2 import Power2
 
 
-@pytest.fixture()
+@pytest.fixture
 def disc_constr():
     """A Sellar problem discipline."""
     problem = Power2()

@@ -97,7 +97,7 @@ def skip_under_windows(request) -> None:
         pytest.skip("skipped on windows")
 
 
-@pytest.fixture()
+@pytest.fixture
 def baseline_images(request):
     """Return the baseline_images contents.
 
@@ -106,7 +106,7 @@ def baseline_images(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def reset_factory():
     """Reset the factory cache."""
     BaseFactory.clear_cache()

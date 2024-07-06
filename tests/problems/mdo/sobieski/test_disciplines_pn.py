@@ -157,7 +157,7 @@ def test_mission_linearize(discipline_class, factor) -> None:
     discipline.check_jacobian(input_data=input_data)
 
 
-@pytest.fixture()
+@pytest.fixture
 def mda():
     """An MDA for the Sobieski's use case with physical naming."""
     return MDAGaussSeidel(create_disciplines_with_physical_naming())
@@ -192,7 +192,7 @@ def test_coupling(factor, mda) -> None:
     assert_allclose(original_mda.local_data["y_4"], y_4, rtol=1e-2)
 
 
-@pytest.fixture()
+@pytest.fixture
 def scenario_pn() -> DOEScenario:
     """A DOEScenario for the Sobieski's SSBJ use case with physical naming."""
     scn = DOEScenario(
@@ -216,7 +216,7 @@ def scenario_pn() -> DOEScenario:
     return scn
 
 
-@pytest.fixture()
+@pytest.fixture
 def scenario() -> DOEScenario:
     """A DOEScenario for the Sobieski's SSBJ use case without physical naming."""
     scn = DOEScenario(

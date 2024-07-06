@@ -32,7 +32,7 @@ def y0(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def analytical_test_2d_ineq(x0, y0):
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline({"f": "(x-1)**2+(y-1)**2", "g": "x+y-1"}, name="2D_test")
@@ -49,7 +49,7 @@ def analytical_test_2d_ineq(x0, y0):
     return scenario
 
 
-@pytest.fixture()
+@pytest.fixture
 def analytical_test_2d_eq(x0, y0):
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline({"f": "(x)**2+(y)**2", "g": "x+y-1"}, name="2D_test")
@@ -66,7 +66,7 @@ def analytical_test_2d_eq(x0, y0):
     return scenario
 
 
-@pytest.fixture()
+@pytest.fixture
 def analytical_test_2d__multiple_eq():
     """Test for lagrange multiplier."""
     x0 = 4.0
@@ -89,7 +89,7 @@ def analytical_test_2d__multiple_eq():
     return scenario
 
 
-@pytest.fixture()
+@pytest.fixture
 def analytical_test_2d_mixed_rank_deficient():
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline(

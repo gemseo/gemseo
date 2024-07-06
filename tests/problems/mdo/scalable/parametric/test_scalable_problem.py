@@ -32,7 +32,7 @@ from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
-@pytest.fixture()
+@pytest.fixture
 def scalable_problem() -> ScalableProblem:
     """The scalable problem."""
     return ScalableProblem()

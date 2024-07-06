@@ -443,7 +443,7 @@ def test_linear_approximation() -> None:
     assert (linear_approximation.value_at_zero == vec).all()
 
 
-@pytest.fixture()
+@pytest.fixture
 def function():
     return MDOFunction(lambda x: x, "n", expr="e", special_repr="a_special_repr")
 

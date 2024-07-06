@@ -48,7 +48,7 @@ def grammar_class(request) -> type[BaseGrammar]:
     return FACTORY.get_class(request.param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def grammar(grammar_class) -> BaseGrammar:
     """Iterate over empty grammar instances of all types."""
     return grammar_class("g")

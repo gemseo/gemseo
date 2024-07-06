@@ -36,7 +36,7 @@ from gemseo.utils.data_conversion import nest_flat_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 
-@pytest.fixture()
+@pytest.fixture
 def dict_to_be_updated() -> dict[str, ndarray]:
     """A dictionary to be updated."""
     return {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])}

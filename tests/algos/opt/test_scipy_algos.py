@@ -216,7 +216,7 @@ def jacobians_are_sparse(request) -> bool:
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
     """A linear optimization problem.
 

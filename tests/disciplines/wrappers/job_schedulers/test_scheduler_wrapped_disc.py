@@ -36,7 +36,7 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 
-@pytest.fixture()
+@pytest.fixture
 def discipline(tmp_wd):
     """Create a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the SLURM template.
@@ -60,7 +60,7 @@ def discipline(tmp_wd):
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def discipline_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
     """Creates a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the mock template.
@@ -198,7 +198,7 @@ def test_linearize(discipline_mocked_js, compute_all_jacobians, execute) -> None
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def discipline_diff_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
     """Creates a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
     using the mock template.

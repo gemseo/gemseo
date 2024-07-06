@@ -59,7 +59,7 @@ FLOAT = DesignSpace.DesignVariableType.FLOAT
 INTEGER = DesignSpace.DesignVariableType.INTEGER
 
 
-@pytest.fixture()
+@pytest.fixture
 def design_space():
     """The main design space to be used by the test function.
 
@@ -997,7 +997,7 @@ def table_template_2() -> str:
 """.strip()
 
 
-@pytest.fixture()
+@pytest.fixture
 def design_space_2() -> DesignSpace:
     """Return a design space with scalar and vectorial variables."""
     design_space = DesignSpace()

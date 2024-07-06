@@ -22,7 +22,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 
-@pytest.fixture()
+@pytest.fixture
 def scenario() -> DOEScenario:
     """A bi-level DOE Scenario.
 

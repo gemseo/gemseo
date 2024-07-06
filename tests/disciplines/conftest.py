@@ -20,7 +20,7 @@ import pytest
 from gemseo.disciplines.linear_combination import LinearCombination
 
 
-@pytest.fixture()
+@pytest.fixture
 def linear_combination() -> LinearCombination:
     """A linear combination."""
     # delta = -2 + alpha - 2*beta

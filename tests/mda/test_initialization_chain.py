@@ -38,7 +38,7 @@ DISC_DESCR_1 = [
 ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def disciplines1() -> list[MDODiscipline]:
     """Return the disciplines for test case 1.
 

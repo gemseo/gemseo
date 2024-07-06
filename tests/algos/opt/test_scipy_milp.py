@@ -38,7 +38,7 @@ def jacobians_are_sparse(request) -> bool:
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def milp_problem(
     problem_is_feasible: bool, jacobians_are_sparse: bool
 ) -> OptimizationProblem:

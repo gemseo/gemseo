@@ -37,7 +37,7 @@ from gemseo.problems.multiobjective_optimization.viennet import Viennet
 from gemseo.problems.optimization.power_2 import Power2
 
 
-@pytest.fixture()
+@pytest.fixture
 def binh_korn():
     """Fixture that returns a BinhKorn problem instance."""
     return BinhKorn()

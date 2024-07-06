@@ -45,7 +45,7 @@ from .utils import get_problem
 DOE_LIB_NAME = "OpenTURNS"
 
 
-@pytest.fixture()
+@pytest.fixture
 def identity_problem() -> OptimizationProblem:
     """A problem whose objective is the identity function defined over [0,1]."""
     design_space = DesignSpace()

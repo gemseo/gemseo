@@ -56,7 +56,7 @@ ARRAY_VALUE = array([0, 0])
 VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 
-@pytest.fixture()
+@pytest.fixture
 def samples() -> tuple[ndarray, ndarray, list[int]]:
     """The description of the samples used to generate the learning dataset.
 
@@ -70,7 +70,7 @@ def samples() -> tuple[ndarray, ndarray, list[int]]:
     return LOCS, SCALES, N_SAMPLES
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset(samples) -> IODataset:
     """The dataset used to train the GaussianMixture.
 
@@ -109,7 +109,7 @@ def fit_transformers(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset):
     """A trained KMeans with parameters scaling."""
     kmeans = KMeans(dataset, n_clusters=3)
@@ -117,7 +117,7 @@ def model(dataset):
     return kmeans
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_transform(dataset, transformer_key, fit_transformers):
     """A trained KMeans with parameters scaling."""
     kmeans = KMeans(

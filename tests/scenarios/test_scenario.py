@@ -104,7 +104,7 @@ def build_mdo_scenario(
     return scenario
 
 
-@pytest.fixture()
+@pytest.fixture
 def mdf_scenario():
     """Return a MDOScenario with MDF formulation and JSONGrammar.
 
@@ -114,7 +114,7 @@ def mdf_scenario():
     return build_mdo_scenario("MDF")
 
 
-@pytest.fixture()
+@pytest.fixture
 def mdf_variable_grammar_scenario(request):
     """Return a MDOScenario with MDF formulation and custom grammar.
 
@@ -128,7 +128,7 @@ def mdf_variable_grammar_scenario(request):
     return build_mdo_scenario("MDF", request.param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def idf_scenario():
     """Return a MDOScenario with IDF formulation and JSONGrammar.
 
@@ -570,7 +570,7 @@ def test_export_to_dataset(mdf_scenario) -> None:
     assert dataset == (1, 2, 3, 4, 5)
 
 
-@pytest.fixture()
+@pytest.fixture
 def complex_step_scenario() -> MDOScenario:
     """The scenario to be used by test_complex_step."""
     design_space = DesignSpace()
@@ -604,7 +604,7 @@ def test_complex_step(complex_step_scenario, normalize_design_space) -> None:
     assert complex_step_scenario.optimization_result.x_opt[0] == 0.0
 
 
-@pytest.fixture()
+@pytest.fixture
 def sinus_use_case() -> tuple[AnalyticDiscipline, DesignSpace]:
     """The sinus discipline and its design space."""
     discipline = AnalyticDiscipline({"y": "sin(2*pi*x)"})
@@ -671,7 +671,7 @@ def test_complex_casting(
             assert value.dtype == expected_dtype
 
 
-@pytest.fixture()
+@pytest.fixture
 def scenario_with_non_float_variables() -> MDOScenario:
     """Create an ``MDOScenario`` from an ``AnalyticDiscipline`` with non-float inputs.
 
@@ -746,7 +746,7 @@ def test_check_disciplines() -> None:
         MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)
 
 
-@pytest.fixture()
+@pytest.fixture
 def identity_scenario() -> MDOScenario:
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
@@ -933,7 +933,7 @@ def full_linear(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def scenario_for_linear_check(full_linear):
     """MDOScenario for linear check."""
     my_disc = AnalyticDiscipline({"f": "x1+ x2**2"})

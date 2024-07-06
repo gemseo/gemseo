@@ -43,7 +43,7 @@ def linear_regressor() -> LinearRegressor:
     return LinearRegressor(dataset)
 
 
-@pytest.fixture()
+@pytest.fixture
 def viewer(linear_regressor) -> MLRegressorQualityViewer:
     """The quality viewer for a trained linear regressor."""
     linear_regressor = deepcopy(linear_regressor)

@@ -39,7 +39,7 @@ from gemseo.utils.testing.helpers import concretize_classes
 from .new_ml_algo.new_ml_algo import NewMLAlgo
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape(10, 3)

@@ -29,7 +29,7 @@ exclude_names = pytest.mark.parametrize(
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def defaults() -> Defaults:
     """Return a Defaults object."""
     return Defaults(

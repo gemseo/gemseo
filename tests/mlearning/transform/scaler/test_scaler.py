@@ -32,7 +32,7 @@ from numpy import ones
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))

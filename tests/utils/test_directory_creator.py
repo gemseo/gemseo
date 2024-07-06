@@ -30,7 +30,7 @@ from gemseo.utils.directory_creator import DirectoryNamingMethod
 BASE_DIR = Path("resource_dir")
 
 
-@pytest.fixture()
+@pytest.fixture
 def directories(tmp_wd) -> None:
     """Generate three directories and a file to test the ``NUMBERED``
     directory_naming_method.
@@ -48,7 +48,7 @@ def directories(tmp_wd) -> None:
         f.write("foo")
 
 
-@pytest.fixture()
+@pytest.fixture
 def empty_directory(tmp_wd) -> None:
     """Generate an empty directory."""
     Path("empty_resource_dir").mkdir()

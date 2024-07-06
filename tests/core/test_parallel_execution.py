@@ -311,7 +311,7 @@ def test_re_raise_exceptions(exceptions, raises_exception) -> None:
         assert parallel_execution.execute(input_list) == [array([2.0]), None]
 
 
-@pytest.fixture()
+@pytest.fixture
 def reset_default_multiproc_method():
     """Reset the global multiproccessing method to the FORK method."""
     yield

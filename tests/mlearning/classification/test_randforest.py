@@ -49,7 +49,7 @@ INPUT_VALUES = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the RandomForestClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
@@ -69,7 +69,7 @@ def dataset() -> IODataset:
     return dataset_
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_1d(dataset) -> RandomForestClassifier:
     """A trained RandomForestClassifier with y_1 as single output."""
     algo = RandomForestClassifier(dataset, output_names=["y_1"])
@@ -77,7 +77,7 @@ def model_1d(dataset) -> RandomForestClassifier:
     return algo
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> RandomForestClassifier:
     """A trained KNNClassifier with two outputs, y_1 and y_2."""
     algo = RandomForestClassifier(dataset)
@@ -85,7 +85,7 @@ def model(dataset) -> RandomForestClassifier:
     return algo
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_transform(dataset) -> RandomForestClassifier:
     """A trained KNNClassifier using input scaling."""
     algo = RandomForestClassifier(dataset, transformer={"inputs": MinMaxScaler()})

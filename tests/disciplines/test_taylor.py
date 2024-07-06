@@ -33,7 +33,7 @@ def input_data(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def discipline(linear_combination, input_data) -> TaylorDiscipline:
     """A Taylor discipline."""
     return TaylorDiscipline(linear_combination, input_data=input_data)

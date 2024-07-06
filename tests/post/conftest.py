@@ -23,7 +23,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
-@pytest.fixture()
+@pytest.fixture
 def __common_problem():  # noqa: PT005
     """A dummy optimization problem to check post-processors."""
     design_space = DesignSpace()
@@ -57,7 +57,7 @@ def __common_problem():  # noqa: PT005
     return problem
 
 
-@pytest.fixture()
+@pytest.fixture
 def three_length_common_problem(__common_problem):
     """The __common_problem sampled three times on a diagonal of its input space."""
     lib = DiagonalDOE()
@@ -66,7 +66,7 @@ def three_length_common_problem(__common_problem):
     return __common_problem
 
 
-@pytest.fixture()
+@pytest.fixture
 def common_problem(__common_problem):
     """The __common_problem sampled twice on a diagonal of its input space."""
     lib = DiagonalDOE()
@@ -75,7 +75,7 @@ def common_problem(__common_problem):
     return __common_problem
 
 
-@pytest.fixture()
+@pytest.fixture
 def large_common_problem(__common_problem):
     """The __common_problem sampled 20 times on a diagonal of its input space."""
     lib = DiagonalDOE()
@@ -84,7 +84,7 @@ def large_common_problem(__common_problem):
     return __common_problem
 
 
-@pytest.fixture()
+@pytest.fixture
 def common_problem_():
     """A dummy optimization problem to check post-processors."""
     problem = Rosenbrock()

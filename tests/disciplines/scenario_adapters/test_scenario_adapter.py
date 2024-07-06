@@ -63,7 +63,7 @@ def create_design_space():
     return SobieskiDesignSpace()
 
 
-@pytest.fixture()
+@pytest.fixture
 def scenario():
     """An MDO scenario solving the Sobieski problem with MDF and L-BFGS-B."""
     disciplines = [
@@ -598,7 +598,7 @@ def disciplines_fixture(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def scenario_fixture(disciplines_fixture):
     """Fixture generating a discipline depending only on main design variable.
 

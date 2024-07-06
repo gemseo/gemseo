@@ -35,7 +35,7 @@ from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
 from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 
 
-@pytest.fixture()
+@pytest.fixture
 def io_dataset():
     """The dataset used to train the regression algorithms."""
     data = arange(60).reshape(10, 6)

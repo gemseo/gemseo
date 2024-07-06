@@ -34,7 +34,7 @@ from gemseo.problems.optimization.power_2 import Power2
 OPT_LIB_NAME = "ScipyOpt"
 
 
-@pytest.fixture()
+@pytest.fixture
 def power() -> Power2:
     """The power-2 optimization problem with inequality and equality constraints."""
     return Power2()

@@ -41,13 +41,13 @@ from gemseo.utils.testing.bilevel_test_helper import create_sobieski_bilevel_sce
 from tests.core.test_dependency_graph import create_disciplines_from_desc
 
 
-@pytest.fixture()
+@pytest.fixture
 def sobieski_bilevel_scenario():
     """Fixture from an existing function."""
     return create_sobieski_bilevel_scenario()
 
 
-@pytest.fixture()
+@pytest.fixture
 def dummy_bilevel_scenario() -> MDOScenario:
     """Create a dummy BiLevel scenario.
 

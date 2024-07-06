@@ -60,7 +60,7 @@ def rel_err(to_test, ref):
     return err
 
 
-@pytest.fixture()
+@pytest.fixture
 def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
     """The Rosenbrock problem solved with L-BFGS-B and the optimization result."""
     rosenbrock = Rosenbrock()
@@ -68,7 +68,7 @@ def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
     return rosenbrock, result
 
 
-@pytest.fixture()
+@pytest.fixture
 def problem(problem_and_result) -> Rosenbrock:
     """The Rosenbrock problem solved with L-BFGS-B."""
     return problem_and_result[0]
@@ -495,7 +495,7 @@ def test_notify_newiter_store_listeners() -> None:
     assert database.x_sum == 6
 
 
-@pytest.fixture()
+@pytest.fixture
 def simple_database():
     """A database with a single element."""
     database = Database()

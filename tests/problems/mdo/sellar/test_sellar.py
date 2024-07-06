@@ -62,14 +62,14 @@ def discipline(request, n: int) -> SellarSystem | Sellar1 | Sellar2:
         return request.param(n=n)
 
 
-@pytest.fixture()
+@pytest.fixture
 def disciplines(n: int) -> tuple[SellarSystem, Sellar1, Sellar2]:
     """The Sellar disciplines."""
     with set_data_converter():
         return SellarSystem(n=n), Sellar1(n=n), Sellar2(n=n)
 
 
-@pytest.fixture()
+@pytest.fixture
 def input_data(n: int) -> dict[str, ndarray]:
     """Generate a point at which the problem is linearized."""
     x_shared = [1.2, 3.4]
@@ -85,7 +85,7 @@ def input_data(n: int) -> dict[str, ndarray]:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def output_data(
     discipline: SellarSystem | Sellar1 | Sellar2, n: int
 ) -> dict[str, ndarray]:
@@ -98,7 +98,7 @@ def output_data(
     return {Y_2: full(n, 2.0)}
 
 
-@pytest.fixture()
+@pytest.fixture
 def x_opt(n: int) -> ndarray:
     """The optimal design vector."""
     return hstack((zeros(0), array((1.9776, 0.0))))

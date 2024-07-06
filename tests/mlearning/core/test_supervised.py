@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 
-@pytest.fixture()
+@pytest.fixture
 def io_dataset() -> IODataset:
     """The dataset used to train the supervised machine learning algorithms."""
     data = arange(60).reshape(10, 6)

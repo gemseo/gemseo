@@ -49,7 +49,7 @@ def idf_cost(varsizes, n_c, n_lc, n_tl_c, n_tl_lc):
     return cost
 
 
-@pytest.fixture()
+@pytest.fixture
 def sellar_use_case(tmp_wd, sellar_disciplines):
     n_samples = 20
     os.mkdir("data")

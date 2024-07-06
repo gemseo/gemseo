@@ -60,7 +60,7 @@ ANOTHER_INPUT_VALUE = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """Dataset from a R^2 -> R^3 function sampled over [-1, 2]^2."""
     root_learning_size = int(sqrt(LEARNING_SIZE))
@@ -88,7 +88,7 @@ def dataset() -> IODataset:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_from_cache() -> IODataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({
@@ -105,7 +105,7 @@ def dataset_from_cache() -> IODataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor."""
     polyreg = PolynomialRegressor(dataset, degree=DEGREE)
@@ -113,7 +113,7 @@ def model(dataset) -> PolynomialRegressor:
     return polyreg
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_without_intercept(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor without intercept fitting."""
     polyreg = PolynomialRegressor(dataset, degree=DEGREE, fit_intercept=False)

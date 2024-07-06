@@ -32,7 +32,7 @@ def mdo_functions() -> list[MDOFunction]:
     return [MDOFunction(lambda x: x, f"f{i}") for i in range(3)]
 
 
-@pytest.fixture()
+@pytest.fixture
 def functions(problem) -> Functions:
     """A set of functions."""
     return Functions()

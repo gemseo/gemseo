@@ -20,7 +20,7 @@ from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 
-@pytest.fixture()
+@pytest.fixture
 def factory():
     return GrammarFactory()
 

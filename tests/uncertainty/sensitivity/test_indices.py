@@ -52,13 +52,13 @@ if TYPE_CHECKING:
     from gemseo.disciplines.analytic import AnalyticDiscipline
 
 
-@pytest.fixture()
+@pytest.fixture
 def discipline() -> AnalyticDiscipline:
     """Return a discipline of interest."""
     return create_discipline("AnalyticDiscipline", expressions={"out": "x1+2*x2+3*x3"})
 
 
-@pytest.fixture()
+@pytest.fixture
 def parameter_space() -> ParameterSpace:
     """Return the parameter space on which to evaluate the discipline."""
     space = ParameterSpace()
@@ -200,14 +200,14 @@ class MockMorrisAnalysisIndices(MorrisAnalysis):
         )
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_sensitivity_analysis() -> MockSensitivityAnalysis:
     """Return an instance of MockSensitivityAnalysis."""
     with concretize_classes(MockSensitivityAnalysis):
         return MockSensitivityAnalysis()
 
 
-@pytest.fixture()
+@pytest.fixture
 def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
     """Return an instance of SecondMockSensitivityAnalysis."""
     with concretize_classes(SecondMockSensitivityAnalysis):

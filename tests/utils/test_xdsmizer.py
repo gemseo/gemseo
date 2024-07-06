@@ -93,7 +93,7 @@ def build_sobieski_scenario(
     return sc
 
 
-@pytest.fixture()
+@pytest.fixture
 def options(tmp_path):
     """The options to be passed to the xdsm generation.
 

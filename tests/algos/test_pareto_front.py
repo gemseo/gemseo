@@ -31,7 +31,7 @@ from gemseo.algos.pareto.utils import compute_pareto_optimal_points
 from gemseo.algos.pareto.utils import generate_pareto_plots
 
 
-@pytest.fixture()
+@pytest.fixture
 def objective_points() -> ndarray:
     """Return points.
 
@@ -41,7 +41,7 @@ def objective_points() -> ndarray:
     return array([[1, 2], [1.4, 1.7], [1.6, 1.6], [2, 1], [2, 2], [1.5, 1.5], [2, 0.5]])
 
 
-@pytest.fixture()
+@pytest.fixture
 def non_feasible_points() -> ndarray:
     """Return a non-feasible point mask.
 

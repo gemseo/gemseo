@@ -45,7 +45,7 @@ from gemseo.problems.mdo.sellar.utils import get_initial_data
 X_DIM = 4
 
 
-@pytest.fixture()
+@pytest.fixture
 def design_space():
     design_space = create_design_space()
     design_space.add_variable(
