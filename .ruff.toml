@@ -83,7 +83,7 @@ select = [
     "SLOT",
     "FURB",
     "PERF",
-    "TRIO",
+    "ASYNC1",
 #    "C",
 #    "S",
 #    "PL",
