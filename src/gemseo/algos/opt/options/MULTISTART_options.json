@@ -1,0 +1,42 @@
+{
+  "name": "MULTISTART_options",
+  "required": [
+    "max_iter",
+    "n_start"
+  ],
+  "properties": {
+    "normalize_design_space": {
+      "type": "boolean"
+    },
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "n_start": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "opt_algo_max_iter": {
+      "type": "integer"
+    },
+    "opt_algo_name": {
+      "type": "string"
+    },
+    "opt_algo_options": {},
+    "n_processes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "doe_algo_name": {
+      "type": "string"
+    },
+    "doe_algo_options": {},
+    "multistart_file_path": {
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "id": "#MULTISTART"
+}

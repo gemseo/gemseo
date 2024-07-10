@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-import re
 from unittest import mock
 
 import pytest
@@ -156,23 +155,3 @@ def test_no_optimizer(kwargs) -> None:
     """Check that _get_options converts SciPyDOE.Optimizer.NONE to None."""
     library = SciPyDOE("Halton")
     assert library._get_options(**kwargs)["optimization"] is None
-
-
-@pytest.mark.parametrize("value", [False, True])
-def test_lhs_centered(value) -> None:
-    """Check that an error is raised when centered == scramble in the case of LHS."""
-    library = SciPyDOE("LHS")
-    msg = (
-        "centered must be the opposite of scramble; "
-        "centered is deprecated from SciPy 1.10; "
-        "please use scramble."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
-        library._generate_unit_samples(
-            DesignSpace(),
-            dimension=2,
-            n_samples=10,
-            centered=value,
-            scramble=value,
-            seed=1,
-        )

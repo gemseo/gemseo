@@ -95,10 +95,10 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
     _SCALING_THRESHOLD: Final[str] = "scaling_threshold"
     _VERBOSE: Final[str] = "verbose"
 
-    __f_tol_tester: ObjectiveToleranceTester
+    _f_tol_tester: ObjectiveToleranceTester
     """A tester for the termination criterion associated the objective."""
 
-    __x_tol_tester: DesignToleranceTester
+    _x_tol_tester: DesignToleranceTester
     """A tester for the termination criterion associated the design variables."""
 
     __kkt_tester: KKTConditionsTester
@@ -106,8 +106,8 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
-        self.__f_tol_tester = ObjectiveToleranceTester()
-        self.__x_tol_tester = DesignToleranceTester()
+        self._f_tol_tester = ObjectiveToleranceTester()
+        self._x_tol_tester = DesignToleranceTester()
         self.__kkt_tester = KKTConditionsTester()
 
     def _check_constraints_handling(self, problem: OptimizationProblem) -> None:
@@ -166,12 +166,12 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
             raise ValueError(msg)
 
         n_points = options.get(self._STOP_CRIT_NX, 3)
-        self.__f_tol_tester = ObjectiveToleranceTester(
+        self._f_tol_tester = ObjectiveToleranceTester(
             absolute=options.get(self._F_TOL_ABS, 0.0),
             relative=options.get(self._F_TOL_REL, 0.0),
             n_last_iterations=n_points,
         )
-        self.__x_tol_tester = DesignToleranceTester(
+        self._x_tol_tester = DesignToleranceTester(
             absolute=options.get(self._X_TOL_ABS, 0.0),
             relative=options.get(self._X_TOL_REL, 0.0),
             n_last_iterations=n_points,
@@ -263,8 +263,8 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
 
     def _new_iteration_callback(self, x_vect: ndarray) -> None:
         super()._new_iteration_callback(x_vect)
-        self.__f_tol_tester.check(self.problem, raise_exception=True)
-        self.__x_tol_tester.check(self.problem, raise_exception=True)
+        self._f_tol_tester.check(self.problem, raise_exception=True)
+        self._x_tol_tester.check(self.problem, raise_exception=True)
 
     def _check_kkt_from_database(self, x_vect: ndarray) -> None:
         """Verify, if required, KKT norm stopping criterion at each database storage.

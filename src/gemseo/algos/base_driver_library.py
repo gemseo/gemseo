@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterable
+from collections.abc import Mapping
 from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
@@ -81,7 +82,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
 
 DriverLibraryOptionType = Union[
-    str, float, int, bool, list[str], ndarray, Iterable[CallbackType]
+    str, float, int, bool, list[str], ndarray, Iterable[CallbackType], Mapping[str, Any]
 ]
 LOGGER = logging.getLogger(__name__)
 
