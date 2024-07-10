@@ -161,7 +161,9 @@ class SciPyDOE(BaseDOELibrary):
             n_samples: The number of samples.
             centered: Whether to center the samples
                 within the cells of a multi-dimensional grid.
-                If SciPy >= 1.10.0, use ``scramble`` instead.
+                If SciPy >= 1.10.0,
+                this argument is ignore;
+                use ``scramble`` instead.
             scramble: Whether to use scrambling (Owen type).
                 Only available with SciPy >= 1.10.0.
             radius: The minimal distance to keep between points
@@ -219,15 +221,7 @@ class SciPyDOE(BaseDOELibrary):
             self.__remove_recent_scipy_options(option_names, "scramble", "1.10")
             self.__remove_recent_scipy_options(option_names, "optimization", "1.8")
             self.__remove_recent_scipy_options(option_names, "strength", "1.8")
-            if parse_version("1.10") <= SCIPY_VERSION and "centered" in options:
-                if options["centered"] == options["scramble"]:
-                    msg = (
-                        "centered must be the opposite of scramble; "
-                        "centered is deprecated from SciPy 1.10; "
-                        "please use scramble."
-                    )
-                    raise ValueError(msg)
-
+            if parse_version("1.10") <= SCIPY_VERSION:
                 option_names.remove("centered")
         elif self._algo_name == self.__POISSON_DISK_ALGO_NAME:
             self.__remove_recent_scipy_options(option_names, "optimization", "1.10")

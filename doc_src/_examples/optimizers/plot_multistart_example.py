@@ -19,12 +19,12 @@
 #
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Multistart optimization
-=======================
+Multi-start optimization
+========================
 
-Runs simple optimization problem with multiple starting points
-Nests an :class:`.MDOScenario` in a :class:`.DOEScenario`
-using an :class:`.MDOScenarioAdapter`.
+The optimization algorithm ``multistart``
+generates starting points using a DOE algorithm
+and run a sub-optimization algorithm from each starting point.
 """
 
 from __future__ import annotations
@@ -33,60 +33,60 @@ from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo import execute_post
 
 configure_logger()
 
 
 # %%
-# Create the disciplines
-# ----------------------
+# First,
+# we create the disciplines
 objective = create_discipline("AnalyticDiscipline", expressions={"obj": "x**3-x+1"})
 constraint = create_discipline(
     "AnalyticDiscipline", expressions={"cstr": "x**2+obj**2-1.5"}
 )
 
 # %%
-# Create the design space
-# -----------------------
+# and the design space
 design_space = create_design_space()
 design_space.add_variable("x", l_b=-1.5, u_b=1.5, value=1.5)
 
 # %%
-# Create the MDO scenario
-# -----------------------
+# Then,
+# we define the MDO scenario
 scenario = create_scenario(
     [objective, constraint],
     "DisciplinaryOpt",
     "obj",
     design_space,
 )
-scenario.default_inputs = {"algo": "SLSQP", "max_iter": 10}
 scenario.add_constraint("cstr", constraint_type="ineq")
 
 # %%
-# Create the scenario adapter
-# ---------------------------
-dv_names = scenario.formulation.optimization_problem.design_space.variable_names
-adapter = MDOScenarioAdapter(
-    scenario, dv_names, ["obj", "cstr"], set_x0_before_opt=True
-)
+# and execute it with the ``MultiStart`` optimization algorithm
+# combining the local optimization algorithm SLSQP
+# and the full-factorial DOE algorithm:
+scenario.execute({
+    "algo": "MultiStart",
+    "max_iter": 100,
+    "algo_options": {
+        "opt_algo_name": "SLSQP",
+        "opt_algo_max_iter": 10,
+        "doe_algo_name": "fullfact",
+        "n_start": 10,
+        # Set multistart_file_path to save the history of the local optima.
+        "multistart_file_path": "multistart.hdf5",
+    },
+})
 
 # %%
-# Create the DOE scenario
-# -----------------------
-scenario_doe = create_scenario(
-    adapter,
-    "DisciplinaryOpt",
-    "obj",
-    design_space,
-    scenario_type="DOE",
-)
-scenario_doe.add_constraint("cstr", constraint_type="ineq")
-run_inputs = {"n_samples": 10, "algo": "fullfact"}
-scenario_doe.execute(run_inputs)
+# Lastly,
+# we can plot the history of the objective,
+# either by concatenating the 10 sub-optimization histories:
+execute_post(scenario, "BasicHistory", variable_names=["obj"], save=False, show=True)
 
 # %%
-# Plot the optimum objective for different x0
-# -------------------------------------------
-scenario_doe.post_process("BasicHistory", variable_names=["obj"], save=False, show=True)
+# or by filtering the local optima (one per starting point):
+execute_post(
+    "multistart.hdf5", "BasicHistory", variable_names=["obj"], save=False, show=True
+)
