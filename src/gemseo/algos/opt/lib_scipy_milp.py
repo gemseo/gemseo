@@ -39,6 +39,7 @@ from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDesc
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
@@ -138,7 +139,7 @@ class ScipyMILP(BaseOptimizationLibrary):
         # N.B. use the non-processed functions to access the coefficients
         coefficients = problem.objective.original.coefficients
         if isinstance(coefficients, sparse_classes):
-            obj_coeff = coefficients.getrow(0).todense().flatten()
+            obj_coeff = get_row(coefficients, 0).todense().flatten()
         else:
             obj_coeff = coefficients[0, :]
 

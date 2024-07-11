@@ -949,7 +949,7 @@ class JacobianAssembly:
             dfun_dx = self.assemble_jacobian([fun], variables)
             outputs_positions[fun] = current_position
             current_position += self.sizes[fun]
-            total_jac = dfun_dx if len(total_jac) else vstack((total_jac, dfun_dx))
+            total_jac = vstack((total_jac, dfun_dx)) if len(total_jac) else dfun_dx
 
         # compute the positions of the inputs
         inputs_positions = {}

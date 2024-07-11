@@ -9,7 +9,7 @@
       "minimum": 1
     },
     "preconditioner": {},
-    "tol": {
+    "rtol": {
       "type": "number",
       "minimum": 0.0
     },

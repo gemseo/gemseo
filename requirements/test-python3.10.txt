@@ -131,7 +131,7 @@ requests==2.32.3
     # via gemseo (pyproject.toml)
 scikit-learn==1.5.1
     # via gemseo (pyproject.toml)
-scipy==1.12.0
+scipy==1.14.0
     # via
     #   gemseo (pyproject.toml)
     #   pydoe3

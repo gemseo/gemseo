@@ -75,7 +75,7 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOLinearFunction(
-        array_([1.0, 1.0]),
+        array_([[1.0, 1.0]]),
         "f",
         MDOFunction.FunctionType.OBJ,
         input_names,
@@ -83,7 +83,7 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
     )
     problem.add_constraint(
         MDOLinearFunction(
-            array_([1.0, 1.0]),
+            array_([[1.0, 1.0]]),
             "g",
             input_names=input_names,
             f_type=MDOLinearFunction.ConstraintType.INEQ,
@@ -92,7 +92,7 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
     )
     problem.add_constraint(
         MDOLinearFunction(
-            array_([-2.0, 1.0]),
+            array_([[-2.0, 1.0]]),
             "h",
             input_names=input_names,
             f_type=MDOLinearFunction.ConstraintType.EQ,

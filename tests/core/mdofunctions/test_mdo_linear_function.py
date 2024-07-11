@@ -35,7 +35,7 @@ def test_inputs() -> None:
     coeffs_as_list = [1.0, 2.0]
     coeffs_as_vec = array(coeffs_as_list)
     coeffs_as_mat = array([coeffs_as_list])
-    coeffs_as_sparse = coo_array(coeffs_as_vec)
+    coeffs_as_sparse = coo_array(coeffs_as_mat)
     with pytest.raises(ValueError):
         MDOLinearFunction(coeffs_as_list, "f")
     MDOLinearFunction(coeffs_as_mat, "f")
@@ -55,7 +55,7 @@ def test_inputs() -> None:
 
 
 @pytest.mark.parametrize(
-    "coefficients", [array([1.0, 2.0, 3.0]), coo_array(array([1.0, 2.0, 3.0]))]
+    "coefficients", [array([1.0, 2.0, 3.0]), coo_array(array([[1.0, 2.0, 3.0]]))]
 )
 def test_input_names_generation(coefficients) -> None:
     """Tests the generation of arguments strings."""
@@ -84,7 +84,7 @@ def test_input_names_generation(coefficients) -> None:
     "coefs",
     [
         np.array([0.0, 0.0, -1.0, 2.0, 1.0, 0.0, -9.0]),
-        csr_array(np.array([0.0, 0.0, -1.0, 2.0, 1.0, 0.0, -9.0])),
+        csr_array(np.array([[0.0, 0.0, -1.0, 2.0, 1.0, 0.0, -9.0]])),
     ],
 )
 def test_linear_function(coefs) -> None:

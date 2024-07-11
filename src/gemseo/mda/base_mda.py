@@ -347,9 +347,9 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         as it is set using the linear_solver_tolerance keyword argument.
 
         Raises:
-            ValueError: If the ``tol`` keyword is in :attr:`.linear_solver_options`.
+            ValueError: If the ``rtol`` keyword is in :attr:`.linear_solver_options`.
         """
-        if "tol" in self.linear_solver_options:
+        if "rtol" in self.linear_solver_options:
             msg = (
                 "The linear solver tolerance shall be set"
                 " using the linear_solver_tolerance argument."
@@ -542,7 +542,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             outputs,
             inputs,
             couplings_adjoint,
-            tol=self.linear_solver_tolerance,
+            rtol=self.linear_solver_tolerance,
             mode=self.linearization_mode,
             matrix_type=self.matrix_type,
             use_lu_fact=self.use_lu_fact,

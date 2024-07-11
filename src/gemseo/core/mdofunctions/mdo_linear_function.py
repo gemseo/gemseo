@@ -29,6 +29,7 @@ from numpy import where
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_function import OutputType
 from gemseo.utils.compatibility.scipy import array_classes
+from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
@@ -264,7 +265,7 @@ class MDOLinearFunction(MDOFunction):
                     ith_row = self._coefficients[i, :]
                 else:
                     self._coefficients: csr_matrix
-                    ith_row = self._coefficients.getrow(i).toarray().flatten()
+                    ith_row = get_row(self._coefficients, i).toarray().flatten()
 
                 coefficients = (
                     self.COEFF_FORMAT_ND.format(coefficient) for coefficient in ith_row

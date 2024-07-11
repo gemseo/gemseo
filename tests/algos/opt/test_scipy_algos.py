@@ -237,11 +237,11 @@ def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
     input_names = ["x", "y", "z"]
 
     problem.objective = MDOLinearFunction(
-        array_([1.0, 1.0, -1]), "f", MDOFunction.FunctionType.OBJ, input_names, -1.0
+        array_([[1.0, 1.0, -1]]), "f", MDOFunction.FunctionType.OBJ, input_names, -1.0
     )
     problem.add_constraint(
         MDOLinearFunction(
-            array_([0, 0.5, -0.25]),
+            array_([[0, 0.5, -0.25]]),
             "g",
             input_names=input_names,
             f_type=MDOLinearFunction.ConstraintType.INEQ,
@@ -251,7 +251,7 @@ def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
     )
     problem.add_constraint(
         MDOLinearFunction(
-            array_([-2.0, 1.0, 1.0]),
+            array_([[-2.0, 1.0, 1.0]]),
             "h",
             input_names=input_names,
             f_type=MDOLinearFunction.ConstraintType.EQ,
