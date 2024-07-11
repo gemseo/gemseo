@@ -227,9 +227,7 @@ class FunctionFromDiscipline(MDOFunction):
             ValueError: If no discipline is found.
         """
         if discipline is not None:
-            return MDODisciplineAdapterGenerator(
-                discipline, formulation.design_space.variable_sizes
-            )
+            return MDODisciplineAdapterGenerator(discipline, formulation.variable_sizes)
 
         for discipline in (
             formulation.get_top_level_disc()
@@ -238,7 +236,7 @@ class FunctionFromDiscipline(MDOFunction):
         ):
             if discipline.is_all_outputs_existing(output_names):
                 return MDODisciplineAdapterGenerator(
-                    discipline, formulation.design_space.variable_sizes
+                    discipline, formulation.variable_sizes
                 )
 
         msg = (
