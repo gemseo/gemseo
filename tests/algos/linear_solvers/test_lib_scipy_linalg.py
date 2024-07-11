@@ -71,7 +71,7 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     options = {
         "max_iter": 100,
-        "tol": 1e-14,
+        "rtol": 1e-14,
         "atol": 1e-13,
         "x0": None,
         "use_ilu_precond": use_ilu_precond,
@@ -141,7 +141,7 @@ def test_hard_conv(tmp_wd, seed) -> None:
         max_iter=3,
         store_residuals=True,
         use_ilu_precond=True,
-        tol=1e-14,
+        rtol=1e-14,
     )
 
     assert problem.compute_residuals() < 1e-10
@@ -183,7 +183,7 @@ def test_default_solver() -> None:
     rng = default_rng(123456789)
 
     lhs, rhs = rng.normal(size=(30, 30)), ones(30)
-    options = {"tol": 1e-12, "max_iter": 1, "inner_m": 1}
+    options = {"rtol": 1e-12, "max_iter": 1, "inner_m": 1}
 
     # Linear system eventually solved using direct method and considered converged
     problem = LinearProblem(lhs, rhs)

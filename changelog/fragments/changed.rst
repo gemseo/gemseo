@@ -10,3 +10,7 @@ API changes:
         - removed the method ``restrict``
         - remove the argument ``exclude`` from the method ``update``
         - remove the argument ``with_namespace`` from the method ``copy``
+    - ``ScipyLinalgAlgos``:
+
+        - The option ``tol`` has been renamed to ``rtol``.
+        - The default value of the option ``atol`` is ``1e-12`` instead of ``None``.

@@ -142,7 +142,7 @@ def test_mdofunctions_algebra(jacobian_type_1, jacobian_type_2) -> None:
     f = MDOFunction(
         lambda x: norm(x) ** 2,
         name="f",
-        jac=lambda x: 2 * array_(x),
+        jac=lambda x: 2 * array_([x.tolist()]),
         expr="f(x)",
         input_names=["x"],
         dim=1,
@@ -152,7 +152,7 @@ def test_mdofunctions_algebra(jacobian_type_1, jacobian_type_2) -> None:
     g = MDOFunction(
         lambda x: sum(cos(x)),
         name="cos",
-        jac=lambda x: -array_(sin(x)),
+        jac=lambda x: -sin(array_([x.tolist()])),
         expr="cos(x)",
         input_names=["x"],
         dim=1,

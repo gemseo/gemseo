@@ -29,6 +29,7 @@ from numpy import empty
 from numpy import ndarray
 
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -245,7 +246,7 @@ class MDODisciplineAdapter(MDOFunction):
                 # be available. This is also mandatory since self.__jacobian is
                 # initialized as a dense array.
                 if isinstance(jac, sparse_classes):
-                    first_row = jac.getrow(0).todense().flatten()
+                    first_row = get_row(jac, 0).todense().flatten()
                 else:
                     first_row = jac[0, :]
 

@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 
 from numpy import ndarray
 from numpy import promote_types
@@ -43,6 +44,7 @@ from gemseo.algos.linear_solvers.base_linear_solver_library import (
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     LinearSolverDescription,
 )
+from gemseo.utils.compatibility.scipy import SCIPY_LOWER_THAN_1_12
 from gemseo.utils.compatibility.scipy import array_classes
 
 if TYPE_CHECKING:
@@ -51,6 +53,8 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
+
+_TOL_OPTION: Final[str] = "tol" if SCIPY_LOWER_THAN_1_12 else "rtol"
 
 
 class ScipyLinalgAlgos(BaseLinearSolverLibrary):
@@ -110,8 +114,8 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
         self,
         max_iter: int = 1000,
         preconditioner: ndarray | LinearOperator | None = None,
-        tol: float = 1e-12,
-        atol: float | None = None,
+        rtol: float = 1e-12,
+        atol: float = 1e-12,
         x0: ndarray | None = None,
         use_ilu_precond: bool = True,
         inner_m: int = 30,
@@ -130,7 +134,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             max_iter: The maximum number of iterations.
             preconditioner: The preconditioner, approximation of RHS^-1.
                 If ``None``, no preconditioner is used.
-            tol: The relative tolerance for convergence,
+            rtol: The relative tolerance for convergence,
                 norm(RHS.dot(sol)) <= max(tol*norm(LHS), atol).
             atol: The absolute tolerance for convergence,
                 norm(RHS.dot(sol)) <= max(tol*norm(LHS), atol).
@@ -177,7 +181,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
         return self._process_options(
             max_iter=max_iter,
             preconditioner=preconditioner,
-            tol=tol,
+            rtol=rtol,
             atol=atol,
             x0=x0,
             inner_m=inner_m,
@@ -193,6 +197,9 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
     def _run(
         self, problem: LinearProblem, **options: None | bool | int | float | ndarray
     ) -> ndarray:
+        if SCIPY_LOWER_THAN_1_12:
+            options["tol"] = options.pop("rtol")
+
         if issparse(problem.rhs):
             problem.rhs = problem.rhs.toarray()
         rhs = problem.rhs
@@ -331,7 +338,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             sol = a_fact.solve(rhs)
             res = self._problem.compute_residuals(True, current_x=sol)
 
-            if res < options["tol"]:  # pragma: no cover
+            if res < options[_TOL_OPTION]:  # pragma: no cover
                 best_sol = sol
                 info = 0
                 self._problem.is_converged = True

@@ -24,6 +24,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 
 import numpy as np
 import scipy.sparse.linalg as scipy_linalg
@@ -32,10 +33,13 @@ from scipy.sparse.linalg import bicgstab
 from scipy.sparse.linalg import cgs
 from strenum import LowercaseStrEnum
 
+from gemseo.utils.compatibility.scipy import SCIPY_LOWER_THAN_1_12
+
 if TYPE_CHECKING:
     from collections.abc import Sized
 
 LOGGER = logging.getLogger(__name__)
+_TOL_OPTION: Final[str] = "tol" if SCIPY_LOWER_THAN_1_12 else "rtol"
 
 
 class LinearSolver:
@@ -95,9 +99,9 @@ class LinearSolver:
         # check the dimensions of b
         b_vec = LinearSolver._check_b(a_mat, b_vec)
         # solve the system
-        if "tol" not in options:
-            options["tol"] = 1e-8
-        options["atol"] = options["tol"]
+        if _TOL_OPTION not in options:
+            options[_TOL_OPTION] = 1e-8
+        options["atol"] = options[_TOL_OPTION]
 
         if "maxiter" not in options:
             options["maxiter"] = 50 * len(b_vec)

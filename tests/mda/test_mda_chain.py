@@ -98,7 +98,7 @@ def test_set_linear_solver_tolerance_from_options_constructor(
 
     In this test, we check that an exception is raised at the MDA instantiation.
     """
-    linear_solver_options = {"tol": 1e-6}
+    linear_solver_options = {"rtol": 1e-6}
     msg = (
         "The linear solver tolerance shall be set"
         " using the linear_solver_tolerance argument."
@@ -118,7 +118,7 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(
 
     In this test, we check that the exception is raised when linearizing the MDA.
     """
-    linear_solver_options = {"tol": 1e-6}
+    linear_solver_options = {"rtol": 1e-6}
     mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
     mda_chain.linear_solver_options = linear_solver_options
     input_data = get_initial_data()

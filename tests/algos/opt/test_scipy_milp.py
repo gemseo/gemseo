@@ -63,10 +63,10 @@ def milp_problem(
     problem = OptimizationProblem(design_space)
 
     problem.objective = MDOLinearFunction(
-        array_([1.0, 1.0, -1]), "f", MDOFunction.FunctionType.OBJ, args, -1.0
+        array_([[1.0, 1.0, -1]]), "f", MDOFunction.FunctionType.OBJ, args, -1.0
     )
     ineq_constraint = MDOLinearFunction(
-        array_([0, 0.5, -0.25]),
+        array_([[0, 0.5, -0.25]]),
         "g",
         input_names=args,
         f_type=MDOLinearFunction.ConstraintType.INEQ,
@@ -77,7 +77,7 @@ def milp_problem(
 
     problem.add_constraint(
         MDOLinearFunction(
-            array_([-2.0, 1.0, 1.0]),
+            array_([[-2.0, 1.0, 1.0]]),
             "h",
             input_names=args,
             f_type=MDOLinearFunction.ConstraintType.EQ,
