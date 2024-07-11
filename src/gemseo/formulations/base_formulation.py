@@ -98,6 +98,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     _maximize_objective: bool
     """Whether to maximize the objective."""
 
+    variable_sizes: dict[str, int]
+    """The sizes of the design variables and differentiated inputs substitutes."""
+
     def __init__(
         self,
         disciplines: list[MDODiscipline],
@@ -152,6 +155,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.optimization_problem = OptimizationProblem(design_space)
         self._maximize_objective = maximize_objective
         self.__grammar_type = grammar_type
+        self.variable_sizes = design_space.variable_sizes.copy()
 
     @property
     def differentiated_input_names_substitute(self) -> tuple[str, ...]:
@@ -280,7 +284,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             and last dimension is its size.
         """
         start = end = 0
-        sizes = self.optimization_problem.design_space.variable_sizes
+        sizes = self.variable_sizes
         names_to_indices = {}
         for name in names:
             size = sizes[name]
@@ -319,7 +323,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         if not all_data_names:
             all_data_names = self.get_optim_variable_names()
         indices = self._get_dv_indices(all_data_names)
-        variable_sizes = self.optimization_problem.design_space.variable_sizes
+        variable_sizes = self.variable_sizes
         total_size = sum(variable_sizes[var] for var in all_data_names)
 
         # TODO: The support of sparse Jacobians requires modifications here.

@@ -1,0 +1,1 @@
+``BaseFormulation.variable_sizes`` stores the sizes of both the design variables and the differentiated inputs.
