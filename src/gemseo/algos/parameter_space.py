@@ -344,19 +344,14 @@ class ParameterSpace(DesignSpace):
         l_b = self.distributions[name].math_lower_bound
         u_b = self.distributions[name].math_upper_bound
         value = self.distributions[name].mean
-        if name in self.variable_names:
-            self.set_lower_bound(name, l_b)
-            self.set_upper_bound(name, u_b)
-            self.set_current_variable(name, value)
-        else:
-            self.add_variable(
-                name,
-                self.distributions[name].dimension,
-                self.DesignVariableType.FLOAT,
-                l_b,
-                u_b,
-                value,
-            )
+        self.add_variable(
+            name,
+            self.distributions[name].dimension,
+            self.DesignVariableType.FLOAT,
+            l_b,
+            u_b,
+            value,
+        )
 
     @staticmethod
     def __get_random_vector_parameter_value(size: int, value: list[Any]) -> list[Any]:
