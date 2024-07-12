@@ -42,8 +42,8 @@ problem = Rosenbrock()
 # %%
 # In order to approximate this function with a regression model,
 # we sample it 30 times with an optimized Latin hypercube sampling (LHS) technique
-openturns = OpenTURNS()
-openturns.execute(problem, openturns.OT_LHSO, n_samples=30)
+opt_lhs = OpenTURNS("OT_OPT_LHS")
+opt_lhs.execute(problem, n_samples=30)
 
 # %%
 # and save the samples in an :class:`IODataset`:
@@ -51,7 +51,8 @@ dataset_train = problem.to_dataset(opt_naming=False)
 
 # %%
 # We do the same with a full-factorial design of experiments (DOE) of size 900:
-openturns.execute(problem, openturns.OT_FULLFACT, n_samples=30 * 30)
+full_fact = OpenTURNS("OT_FULLFACT")
+full_fact.execute(problem, n_samples=30 * 30)
 dataset_test = problem.to_dataset(opt_naming=False)
 
 # %%
@@ -108,9 +109,9 @@ problem = OptimizationProblem(design_space)
 problem.objective = MDOFunction(
     lambda x: (1 - x[0]) ** 2 + 100 * (0.01 * x[1] - x[0] ** 2) ** 2, "f"
 )
-openturns.execute(problem, openturns.OT_LHSO, n_samples=30)
+opt_lhs.execute(problem, n_samples=30)
 dataset_train = problem.to_dataset(opt_naming=False)
-openturns.execute(problem, openturns.OT_FULLFACT, n_samples=30 * 30)
+full_fact.execute(problem, n_samples=30 * 30)
 dataset_test = problem.to_dataset(opt_naming=False)
 
 # %%

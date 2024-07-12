@@ -34,9 +34,11 @@ from __future__ import annotations
 from numpy import sum as np_sum
 
 from gemseo import configure_logger
+from gemseo import execute_algo
 from gemseo import execute_post
+from gemseo import get_available_doe_algorithms
+from gemseo import get_available_opt_algorithms
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -70,7 +72,7 @@ problem.objective = objective
 # We can see this optimization problem as a trade-off
 # and solve it by means of a design of experiments (DOE),
 # e.g. full factorial design
-DOELibraryFactory().execute(problem, "fullfact", n_samples=11**2)
+execute_algo(problem, "fullfact", n_samples=11**2, algo_type="doe")
 
 # %%
 # Post-process the results
@@ -85,4 +87,7 @@ execute_post(
 
 # %%
 # Note that you can get all the optimization algorithms names:
-DOELibraryFactory().algorithms
+get_available_opt_algorithms()
+# %%
+# and all the DOE algorithms names:
+get_available_doe_algorithms()
