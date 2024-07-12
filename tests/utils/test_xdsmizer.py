@@ -517,6 +517,40 @@ def test_xdsmize_chain_of_parallel_chain(options) -> None:
     assert_xdsm(sce, **options("xdsmized_chain_of_parallel_chain"))
 
 
+def test_xdsmized_parallel_chain_of_mda(options) -> None:
+    """Test the XDSM representation of a parallel chain including an MDA."""
+
+    def get_name(x: int) -> str:
+        return f"x_{x}"
+
+    par_chain = MDOParallelChain([
+        MDOChain([
+            elementary_discipline(get_name(1), get_name(2)),
+            elementary_discipline(get_name(2), get_name(3)),
+        ]),
+        MDOChain([
+            elementary_discipline(get_name(1), get_name(3)),
+            elementary_discipline(get_name(3), get_name(4)),
+            MDAGaussSeidel([
+                elementary_discipline(get_name(5), get_name(6)),
+                elementary_discipline(get_name(4), get_name(5)),
+            ]),
+        ]),
+    ])
+
+    design_space = DesignSpace()
+    design_space.add_variable(get_name(1))
+
+    sce = MDOScenario(
+        [par_chain, elementary_discipline(get_name(6), get_name(7))],
+        "DisciplinaryOpt",
+        get_name(7),
+        design_space,
+    )
+
+    assert_xdsm(sce, **options("xdsmized_parallel_chain_of_mda"))
+
+
 def assert_xdsm(scenario: Scenario, **options: StrKeyMapping) -> None:
     """Build and check the XDSM representation generated from a scenario.
 
