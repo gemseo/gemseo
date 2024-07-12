@@ -131,12 +131,18 @@ class XDSMToPDFConverter:
                     self.__add_processes(sub_workflow)
 
                     if isinstance(sub_sys, list):
-                        # take the last node when it is a chain (e.g. [d1, d2, d2...]),
-                        # but take the first node when it is an iterative struct
-                        # (e.g. MDA, [d1, [d2, d3]])
-                        last_nodes.append(
-                            sub_sys[0] if isinstance(sub_sys[-1], list) else sub_sys[-1]
-                        )
+                        # If the last node is an iterative structure,
+                        # take the node just before
+                        # e.g. if [d1, d2, d3] -> take d3
+                        # if [d1, d2, [d3]] -> take d2
+                        if len(sub_sys) == 1:
+                            last_nodes.append(sub_sys[0])
+                        else:
+                            last_nodes.append(
+                                sub_sys[-2]
+                                if isinstance(sub_sys[-1], list)
+                                else sub_sys[-1]
+                            )
                     else:
                         last_nodes.append(sub_sys)
                 last_node = last_nodes
