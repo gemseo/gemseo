@@ -30,14 +30,13 @@ from __future__ import annotations
 
 from numpy import cos
 from numpy import exp
-from numpy import ones
 from numpy import sin
 
 from gemseo import configure_logger
+from gemseo import execute_algo
 from gemseo import execute_post
+from gemseo import get_available_opt_algorithms
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
@@ -63,7 +62,7 @@ objective = f_1 - f_2
 # -----------------------
 # Then, we define the :class:`.DesignSpace` with |g|.
 design_space = DesignSpace()
-design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
+design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5)
 
 # %%
 # Define the optimization problem
@@ -79,14 +78,12 @@ problem.objective = objective
 #
 # Solve the problem
 # ^^^^^^^^^^^^^^^^^
-opt = OptimizationLibraryFactory().execute(
-    problem, "L-BFGS-B", normalize_design_space=True
-)
-opt
+optimization_result = execute_algo(problem, "L-BFGS-B")
+optimization_result
 
 # %%
 # Note that you can get all the optimization algorithms names:
-OptimizationLibraryFactory().algorithms
+get_available_opt_algorithms()
 
 # %%
 # Save the optimization results
@@ -108,9 +105,8 @@ execute_post(problem, "OptHistoryView", show=True, save=False)
 # %%
 # Solve the optimization problem using a DOE algorithm
 # ----------------------------------------------------
-# We can also see this optimization problem as a trade-off
+# We can also see this optimization problem as a trade-off problem
 # and solve it by means of a design of experiments (DOE).
-opt = DOELibraryFactory().execute(
-    problem, "lhs", n_samples=10, normalize_design_space=True
-)
-opt
+problem.reset()
+optimization_result = execute_algo(problem, "lhs", n_samples=10, algo_type="doe")
+optimization_result
