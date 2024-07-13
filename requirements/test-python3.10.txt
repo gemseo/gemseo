@@ -22,7 +22,7 @@ docstring-inheritance==2.2.0
     # via gemseo (pyproject.toml)
 et-xmlfile==1.1.0
     # via openpyxl
-exceptiongroup==1.2.1
+exceptiongroup==1.2.2
     # via pytest
 execnet==2.1.1
     # via pytest-xdist
