@@ -22,6 +22,7 @@ from __future__ import annotations
 import pytest
 from numpy import array
 from numpy import isclose
+from numpy.testing import assert_almost_equal
 
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -266,3 +267,28 @@ def test_virtual_exe_mda(two_virtual_disciplines):  # noqa F811
     chain.execute()
     assert chain.local_data["x"] == 1.0
     assert chain.local_data["y"] == 2.0
+
+
+def test_max_mda_iter_0():
+    """Check that Gauss-Seidel calls the disciplines only once when max_mda_iter=0."""
+    mda = SobieskiMDAGaussSeidel(max_mda_iter=0)
+    assert mda.RESIDUALS_NORM not in mda.output_grammar
+
+    mda.execute()
+
+    for discipline in mda.disciplines:
+        assert discipline.n_calls == 1
+
+    output_data = mda.get_output_data()
+
+    expected_output_data = {}
+    local_data = dict(mda.default_inputs)
+    for discipline in mda.disciplines:
+        discipline.cache.clear()
+        discipline.execute(local_data)
+        output_data_ = discipline.get_output_data()
+        expected_output_data.update(output_data_)
+        local_data.update(output_data_)
+
+    for output_name, output_value in output_data.items():
+        assert_almost_equal(output_value, expected_output_data[output_name])
