@@ -107,9 +107,10 @@ class MDAGaussSeidel(BaseMDASolver):
             acceleration_method=acceleration_method,
             over_relaxation_factor=over_relaxation_factor,
         )
-
         self._compute_input_coupling_names()
         self._set_resolved_variables(self.strong_couplings)
+        if max_mda_iter == 0:
+            del self.output_grammar[self.RESIDUALS_NORM]
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
@@ -128,6 +129,8 @@ class MDAGaussSeidel(BaseMDASolver):
     def _run(self) -> None:
         super()._run()
         self.execute_all_disciplines()
+        if self.max_mda_iter == 0:
+            return
 
         while True:
             input_data = self.local_data.copy()

@@ -220,8 +220,11 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             disciplines: The disciplines from which to compute the MDA.
             max_mda_iter: The maximum iterations number for the MDA algorithm.
+                If 0,
+                evaluate the coupling the coupling process
+                without trying to solve the coupling equations.
             name: The name to be given to the MDA.
-                If ``None``, use the name of the class.
+                If empty, use the name of the class.
             grammar_type: The type of the input and output grammars.
             tolerance: The tolerance of the iterative direct coupling solver;
                 the norm of the current residuals divided by initial residuals norm
