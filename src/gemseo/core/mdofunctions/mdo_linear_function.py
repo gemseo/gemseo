@@ -83,7 +83,7 @@ class MDOLinearFunction(MDOFunction):
     ) -> None:
         """
         Args:
-            coefficients: The coefficients :math:`A` of the linear function.
+            coefficients: The coefficient matrix :math:`A` of the linear function.
             value_at_zero: The value :math:`b` of the linear function output at zero.
             expr: The expression of the function, if any.
                 If ``None``,
@@ -150,13 +150,9 @@ class MDOLinearFunction(MDOFunction):
 
     @property
     def coefficients(self) -> NumberArray:
-        """The coefficients of the linear function.
+        """The coefficient matrix of the linear function.
 
         This is the matrix :math:`A` in the expression :math:`y=Ax+b`.
-
-        Raises:
-            ValueError: If the coefficients are not passed
-                as a 1-dimensional or 2-dimensional ndarray.
         """
         return self._coefficients
 

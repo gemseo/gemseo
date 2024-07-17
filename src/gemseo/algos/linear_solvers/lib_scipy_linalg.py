@@ -25,7 +25,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Final
 
 from numpy import ndarray
 from numpy import promote_types
@@ -45,6 +44,7 @@ from gemseo.algos.linear_solvers.base_linear_solver_library import (
     LinearSolverDescription,
 )
 from gemseo.utils.compatibility.scipy import SCIPY_LOWER_THAN_1_12
+from gemseo.utils.compatibility.scipy import TOL_OPTION
 from gemseo.utils.compatibility.scipy import array_classes
 
 if TYPE_CHECKING:
@@ -53,8 +53,6 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
-
-_TOL_OPTION: Final[str] = "tol" if SCIPY_LOWER_THAN_1_12 else "rtol"
 
 
 class ScipyLinalgAlgos(BaseLinearSolverLibrary):
@@ -134,10 +132,10 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             max_iter: The maximum number of iterations.
             preconditioner: The preconditioner, approximation of RHS^-1.
                 If ``None``, no preconditioner is used.
-            rtol: The relative tolerance for convergence,
-                norm(RHS.dot(sol)) <= max(tol*norm(LHS), atol).
-            atol: The absolute tolerance for convergence,
-                norm(RHS.dot(sol)) <= max(tol*norm(LHS), atol).
+            rtol: The relative tolerance for convergence;
+                ``norm(b - A @ x) <= max(rtol*norm(b), atol)`` should be satisfied.
+            atol: The absolute tolerance for convergence;
+                ``norm(b - A @ x) <= max(rtol*norm(b), atol)`` should be satisfied.
             x0: The initial guess for the solution.
                 M{sparse matrix, dense matrix, LinearOperator}.
                 If ``None``, solvers usually start from the null vector.
@@ -338,7 +336,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             sol = a_fact.solve(rhs)
             res = self._problem.compute_residuals(True, current_x=sol)
 
-            if res < options[_TOL_OPTION]:  # pragma: no cover
+            if res < options[TOL_OPTION]:  # pragma: no cover
                 best_sol = sol
                 info = 0
                 self._problem.is_converged = True

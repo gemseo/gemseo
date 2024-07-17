@@ -32,7 +32,7 @@ class TestLinearSolver(unittest.TestCase):
         LinearSolver()
 
     def test_solve(self) -> None:
-        LinearSolver().solve(diag(list(range(1, 4))), ones(3))
+        LinearSolver().solve(diag(list(range(1, 4))), ones(3), rtol=1e-8)
 
     def test_fail_and_branches(self) -> None:
         LinearSolver().solve(diag(list(range(2))), ones(2), maxiter=1)
