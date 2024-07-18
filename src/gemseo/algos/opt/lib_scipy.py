@@ -121,7 +121,7 @@ class ScipyOpt(BaseOptimizationLibrary):
         eta: float = -1.0,
         factr: float = 1e7,
         maxcor: int = 20,
-        normalize_design_space: int = True,
+        normalize_design_space: bool = True,
         eq_tolerance: float = 1e-2,
         ineq_tolerance: float = 1e-4,
         stepmx: float = 0.0,

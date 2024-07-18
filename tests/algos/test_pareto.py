@@ -46,7 +46,12 @@ def problem_2obj() -> OptimizationProblem:
     """The Binh-Korn optimization problem ready to be post-processed."""
     problem = BinhKorn()
     OptimizationLibraryFactory().execute(
-        problem, algo_name="MNBI", max_iter=100, n_sub_optim=5, sub_optim_algo="SLSQP"
+        problem,
+        algo_name="MNBI",
+        max_iter=100,
+        n_sub_optim=5,
+        sub_optim_algo="SLSQP",
+        normalize_design_space=False,
     )
     return problem
 

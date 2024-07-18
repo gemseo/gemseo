@@ -295,7 +295,7 @@ class MNBI(BaseOptimizationLibrary):
         self,
         max_iter: int,
         sub_optim_algo: str,
-        normalize_design_space: bool = False,
+        normalize_design_space: bool = True,
         n_sub_optim: int = 1,
         sub_optim_algo_options: Mapping[
             str, DriverLibraryOptionType
@@ -311,6 +311,9 @@ class MNBI(BaseOptimizationLibrary):
         custom_phi_betas: Iterable[RealArray] = (),
     ) -> dict[str, MNBIOptionsType]:
         r"""Set the options default values.
+
+        Store the `normalize_design_space` option, since it must be applied only to the
+        sub-problems, and not to the main problem.
 
         Args:
             max_iter: The maximum number of iterations.
@@ -353,11 +356,12 @@ class MNBI(BaseOptimizationLibrary):
         sub_optim_algo_options = sub_optim_algo_options or {}
         sub_optim_max_iter = sub_optim_max_iter or max_iter
         doe_algo_options = doe_algo_options or {}
+        self._normalize_design_space = normalize_design_space
         return self._process_options(
             max_iter=max_iter,
             sub_optim_algo=sub_optim_algo,
             sub_optim_max_iter=sub_optim_max_iter,
-            normalize_design_space=normalize_design_space,
+            normalize_design_space=False,
             n_sub_optim=n_sub_optim,
             sub_optim_algo_options=sub_optim_algo_options,
             doe_algo=doe_algo,
@@ -896,7 +900,6 @@ class MNBI(BaseOptimizationLibrary):
 
     def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
         self.__n_processes = options.pop("n_processes")
-        self._normalize_design_space = options.pop("normalize_design_space")
         self.__sub_optim_algo = options.pop("sub_optim_algo")
         self.__sub_optim_algo_options = options.pop("sub_optim_algo_options")
         self.__debug = options.pop("debug")
