@@ -24,6 +24,7 @@ import re
 import pytest
 from numpy import array
 from numpy import ndarray
+from numpy.testing import assert_allclose
 from numpy.testing import assert_array_equal
 
 from gemseo import execute_algo
@@ -391,3 +392,28 @@ def test_mnbi_custom_phi_betas(binh_korn):
         len(result_restart.pareto_front.f_optima)
         >= len(result.pareto_front.f_optima) + 2
     )
+
+
+@pytest.mark.parametrize("normalize_design_space", [True, False])
+def test_mnbi_normalize_design_space(binh_korn, normalize_design_space):
+    """Tests that the option `normalize_design_space` is correctly handled."""
+    utopia_neighbor = (
+        [17.01259261, 25.0875926]
+        if normalize_design_space
+        else [14.89156056, 26.43593304]
+    )
+    n_pareto_points = 84 if normalize_design_space else 104
+
+    result = execute_algo(
+        binh_korn,
+        "MNBI",
+        max_iter=10000,
+        sub_optim_max_iter=100,
+        n_sub_optim=10,
+        sub_optim_algo="NLOPT_SLSQP",
+        normalize_design_space=normalize_design_space,
+    )
+    assert_allclose(result.pareto_front.f_utopia, [0, 4], atol=1e-7)
+
+    assert_allclose(result.pareto_front.f_utopia_neighbors.flatten(), utopia_neighbor)
+    assert result.pareto_front.f_optima.size == n_pareto_points
