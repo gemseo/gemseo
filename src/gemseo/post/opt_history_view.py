@@ -219,7 +219,7 @@ class OptHistoryView(OptPostProcessor):
             The history of the constraints.
         """
         available_data_names = self.database.get_function_names()
-        for constraint_name in constraint_names:
+        for constraint_name in tuple(constraint_names):
             if constraint_name not in available_data_names:
                 constraint_names.remove(constraint_name)
 

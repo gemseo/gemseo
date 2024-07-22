@@ -162,7 +162,7 @@ six==1.16.0
     #   python-dateutil
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.4.5
+sphinx==7.4.7
     # via
     #   gemseo (pyproject.toml)
     #   autodocsumm
@@ -171,7 +171,7 @@ sphinx==7.4.5
     #   sphinxcontrib-bibtex
     #   sphinxcontrib-plantuml
     #   sphinxcontrib-spelling
-sphinx-gallery==0.16.0
+sphinx-gallery==0.17.0
     # via gemseo (pyproject.toml)
 sphinxcontrib-apidoc==0.5.0
     # via gemseo (pyproject.toml)
@@ -181,13 +181,13 @@ sphinxcontrib-bibtex==2.6.2
     # via gemseo (pyproject.toml)
 sphinxcontrib-devhelp==1.0.6
     # via sphinx
-sphinxcontrib-htmlhelp==2.0.5
+sphinxcontrib-htmlhelp==2.0.6
     # via sphinx
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
 sphinxcontrib-plantuml==0.30
     # via gemseo (pyproject.toml)
-sphinxcontrib-qthelp==1.0.7
+sphinxcontrib-qthelp==1.0.8
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.10
     # via sphinx

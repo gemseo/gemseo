@@ -119,7 +119,7 @@ class SOM(OptPostProcessor):
         ]
         all_data = self.database.get_function_names()
         # Ensure that the data is available in the database
-        for criterion in criteria:
+        for criterion in tuple(criteria):
             if criterion not in all_data:
                 criteria.remove(criterion)
         figure = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
