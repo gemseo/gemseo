@@ -114,6 +114,7 @@ def compute_best_step(
         f_m: The value of the function :math:`f` at the previous step
             :math:`x-\\delta_x`.
         step: The differentiation step :math:`\\delta_x`.
+        epsilon_mach: The machine epsilon.
 
     Returns:
         The estimation of the truncation error.

@@ -29,6 +29,7 @@ from numpy import array
 from numpy import ndarray
 from numpy import zeros
 from numpy.linalg import norm
+from numpy.testing import assert_equal
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
@@ -404,3 +405,22 @@ def test_derivatives_with_sparse_jacobians(tmp_wd, output_size) -> None:
     assert DisciplineJacApprox(discipline).check_jacobian(
         {"y": {"x": discipline.mat}}, ["y"], ["x"], discipline, plot_result=True
     )
+
+
+def f(x):
+    return array([sum(x)])
+
+
+@pytest.mark.parametrize("use_design_space", [False, True])
+@pytest.mark.parametrize("parallel", [False, True])
+@pytest.mark.parametrize("cls", [CenteredDifferences, FirstOrderFD, ComplexStep])
+def test_f_gradient(use_design_space, parallel, cls):
+    """Check the BaseGradientApproximator.f_gradient method."""
+    if use_design_space:
+        design_space = DesignSpace()
+        design_space.add_variable("x", size=2)
+    else:
+        design_space = None
+
+    cd = cls(f, design_space=design_space, parallel=parallel)
+    assert_equal(cd.f_gradient(array([0.0, 0.0])), array([[1.0, 1.0]]))

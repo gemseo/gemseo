@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A base class for gradient approximation."""
 
-    f_pointer: Callable[[ndarray], ndarray]
+    f_pointer: Callable[[ndarray, Any, ...], ndarray]
     """The pointer to the function to derive."""
 
     _APPROXIMATION_MODE: ClassVar[ApproximationMode]
@@ -50,7 +50,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        f_pointer: Callable[[ndarray], ndarray],
+        f_pointer: Callable[[ndarray, Any, ...], ndarray],
         step: float | complex | ndarray | None = None,
         design_space: DesignSpace | None = None,
         normalize: bool = True,
