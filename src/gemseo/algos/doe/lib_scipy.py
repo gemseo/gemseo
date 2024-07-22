@@ -68,6 +68,7 @@ class _MonteCarlo(QMCEngine):
         def random(self, n: int = 1) -> RealArray:
             self.num_generated += n
             return self.rng.random((n, self.d))
+
     else:
 
         def _random(self, n: int = 1, *, workers: int = 1) -> RealArray:
