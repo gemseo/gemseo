@@ -38,7 +38,7 @@ h5py==3.11.0
     # via gemseo (pyproject.toml)
 idna==3.7
     # via requests
-importlib-metadata==8.0.0
+importlib-metadata==8.1.0
     # via typeguard
 importlib-resources==6.4.0
     # via matplotlib
