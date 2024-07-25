@@ -32,6 +32,7 @@ from scipy.sparse import csr_array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary as OptLib
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.lib_scipy import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
@@ -296,3 +297,11 @@ def test_tnc_maxiter(caplog):
         warn("foo", UserWarning)  # noqa: B028
 
     assert len(record) == 1
+
+
+@pytest.mark.parametrize("algorithm_name", ["SLSQP", "L-BFGS-B", "TNC", "NELDER-MEAD"])
+def test_stop_crit_n_x(algorithm_name) -> None:
+    """Check that option stop_crit_n_x is supported."""
+    library = ScipyOpt(algorithm_name)
+    library.problem = Rosenbrock()
+    assert library._get_options(stop_crit_n_x=5)["stop_crit_n_x"] == 5
