@@ -24,6 +24,10 @@
       "type": "number",
       "minimum": 0.0
     },
+    "stop_crit_n_x": {
+      "type": "integer",
+      "minimum": 2
+    },
     "disp": {
       "type": "boolean"
     },
