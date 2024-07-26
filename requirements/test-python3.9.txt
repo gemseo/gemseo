@@ -114,7 +114,7 @@ pydoe3==1.0.3
     # via gemseo (pyproject.toml)
 pyparsing==3.1.2
     # via matplotlib
-pytest==8.3.1
+pytest==8.3.2
     # via
     #   gemseo (pyproject.toml)
     #   pytest-cov
