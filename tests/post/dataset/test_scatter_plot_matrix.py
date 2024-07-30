@@ -78,7 +78,7 @@ def test_plot(
         ("quadratic", ["ScatterMatrix_quadratic_trend"]),
         ("cubic", ["ScatterMatrix_cubic_trend"]),
         ("rbf", ["ScatterMatrix_rbf_trend"]),
-        (lambda x, y: Rbf(x, y), ["ScatterMatrix_custom_trend"]),
+        (Rbf, ["ScatterMatrix_custom_trend"]),
     ],
 )
 @image_comparison(None, tol=0.01)

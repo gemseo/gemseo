@@ -29,7 +29,7 @@ def __common_problem():  # noqa: PT005
     design_space = DesignSpace()
     design_space.add_variable("x", size=2, l_b=0, u_b=1, value=0.5)
     problem = OptimizationProblem(design_space)
-    func = MDOFunction(lambda x: sum(x), "obj")
+    func = MDOFunction(sum, "obj")
     func.has_default_name = True
     problem.objective = func
     problem.minimize_objective = False
@@ -58,7 +58,7 @@ def __common_problem():  # noqa: PT005
 
 
 @pytest.fixture
-def three_length_common_problem(__common_problem):
+def three_length_common_problem(__common_problem):  # noqa: PYI063
     """The __common_problem sampled three times on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"
@@ -67,7 +67,7 @@ def three_length_common_problem(__common_problem):
 
 
 @pytest.fixture
-def common_problem(__common_problem):
+def common_problem(__common_problem):  # noqa: PYI063
     """The __common_problem sampled twice on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"
@@ -76,7 +76,7 @@ def common_problem(__common_problem):
 
 
 @pytest.fixture
-def large_common_problem(__common_problem):
+def large_common_problem(__common_problem):  # noqa: PYI063
     """The __common_problem sampled 20 times on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"

@@ -70,7 +70,7 @@ def test_overrelaxation(factor) -> None:
 )
 def test_relaxation_factor(factor) -> None:
     """Tests the relaxation factor argument of OverRelaxation."""
-    if factor in [-1, 3]:
+    if factor in {-1, 3}:
         with pytest.raises(ValueError):
             SequenceTransformerFactory().create("OverRelaxation", factor=factor)
     elif factor == "foo":

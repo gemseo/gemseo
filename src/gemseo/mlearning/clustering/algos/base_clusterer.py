@@ -57,7 +57,7 @@ class BaseClusterer(BaseMLUnsupervisedAlgo):
         var_names: Iterable[str] | None = None,
         n_clusters: int = 5,
         random_state: int | None = SEED,
-        **parameters: int | float | bool | str | None,
+        **parameters: float | bool | str | None,
     ) -> None:
         """
         Args:

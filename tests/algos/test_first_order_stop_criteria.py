@@ -14,7 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import pytest as pytest
+import pytest
 from numpy import array
 from numpy import ones
 from numpy import zeros

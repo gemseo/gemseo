@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-from collections import namedtuple
 from collections.abc import Iterable
 from collections.abc import Mapping
 from contextlib import contextmanager
@@ -33,6 +32,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import NamedTuple
 from typing import Union
 
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
@@ -40,8 +40,15 @@ from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-# to store the raw ingredients of a string to be formatted later
-MessageLine = namedtuple("MessageLine", "str_format level args kwargs")
+
+class MessageLine(NamedTuple):
+    """Store the raw ingredient of a string to be formatted later."""
+
+    str_format: str
+    level: int
+    args: Any
+    kwargs: Any
+
 
 DEFAULT_DELIMITER = ", "
 """A string to separate string fields."""

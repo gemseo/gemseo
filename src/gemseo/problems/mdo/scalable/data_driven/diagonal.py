@@ -273,7 +273,7 @@ class ScalableDiagonalModel(ScalableModel):
         )
         if not is_binary_matrix:
             dp_sum = dependency_matrix.sum(0)
-            dependency_matrix = dependency_matrix / dp_sum
+            dependency_matrix /= dp_sum
 
         fig, axes = plt.subplots()
         axes.matshow(dependency_matrix, cmap="Greys", vmin=0)

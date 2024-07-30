@@ -112,7 +112,7 @@ class ScipyODEAlgos(BaseODESolverLibrary):
         )
 
     def _run(
-        self, problem: ODEProblem, **options: bool | int | float | NDArray[float] | None
+        self, problem: ODEProblem, **options: bool | float | NDArray[float] | None
     ) -> ODEResult:
         if problem.time_vector is not None:
             options["t_eval"] = problem.time_vector

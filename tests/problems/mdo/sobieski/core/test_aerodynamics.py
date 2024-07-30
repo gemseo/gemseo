@@ -409,7 +409,6 @@ def test_jac_aero(problem) -> None:
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
     )
-    #
     indata = problem.get_default_inputs_feasible(names=sr.get_input_data_names())
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30

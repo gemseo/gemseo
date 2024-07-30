@@ -213,7 +213,7 @@ class Animation(OptPostProcessor):
         output_file_paths = []
         for file_path, frames in file_paths_to_frames.items():
             if first_iteration > 0:
-                first_iteration = first_iteration - 1
+                first_iteration -= 1
             frames = frames[first_iteration:] + frames[:first_iteration]
             frames[0].save(
                 file_path,

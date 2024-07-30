@@ -386,7 +386,7 @@ def test__str__database() -> None:
 
     ref = "{[1. 2.]: {'Rosenbrock': 100.0}, " "[3.  4.5]: {'Rosenbrock': 2029.0}}"
 
-    assert database.__str__() == ref
+    assert str(database) == ref
 
 
 def test_filter_database() -> None:

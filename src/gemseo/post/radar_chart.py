@@ -83,7 +83,7 @@ class RadarChart(OptPostProcessor):
         # optimum_index is the zero-based position of the optimum.
         # while an iteration is a one-based position.
         optimum_iteration = self.optimization_problem.solution.optimum_index + 1
-        is_optimum = iteration in [self.OPTIMUM, optimum_iteration]
+        is_optimum = iteration in {self.OPTIMUM, optimum_iteration}
         if iteration == self.OPTIMUM:
             iteration = optimum_iteration
 

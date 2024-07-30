@@ -193,7 +193,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
         )
 
     def _run(
-        self, problem: LinearProblem, **options: None | bool | int | float | ndarray
+        self, problem: LinearProblem, **options: None | bool | float | ndarray
     ) -> ndarray:
         if SCIPY_LOWER_THAN_1_12:
             options["tol"] = options.pop("rtol")

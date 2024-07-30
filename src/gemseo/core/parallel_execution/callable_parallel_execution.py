@@ -87,7 +87,7 @@ def _execute_workers(
         try:
             sys.stdout.flush()
             output = task_callables(task_index, input_)
-        except BaseException as err:
+        except BaseException as err:  # noqa: BLE001
             traceback.print_exc()
             queue_out.put((task_index, err))
             queue_in.task_done()
@@ -265,12 +265,7 @@ class CallableParallelExecution(
 
         queue_in: _QueueInType[ArgT]
         queue_out: _QueueOutType[ReturnT]
-        processor: (
-            type[th.Thread]
-            | type[ForkProcess]
-            | type[SpawnProcess]
-            | type[ForkServerProcess]
-        )
+        processor: type[th.Thread | ForkProcess | SpawnProcess | ForkServerProcess]
 
         # TODO: API: use subclass instead of if?
         # Queue for workers.

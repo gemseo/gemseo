@@ -37,6 +37,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from types import TracebackType
 
+    from typing_extensions import Self
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -73,7 +75,7 @@ class Timer:
         """The time spent within the ``with`` statement."""
         return self.__elapsed_time
 
-    def __enter__(self) -> Timer:
+    def __enter__(self) -> Self:
         self.__elapsed_time = perf_counter()
         return self
 

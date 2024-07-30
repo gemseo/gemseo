@@ -74,11 +74,11 @@ def hash_data(
 
         value = value.view(uint8)
 
-        hashed_value = xxh3_64_hexdigest(value)  # type: ignore
+        hashed_value = xxh3_64_hexdigest(value)
         hashed_name = xxh3_64_hexdigest(bytes(name, "utf-8"))
         names_with_hashed_values.append((hashed_name, hashed_value))
 
-    return int(xxh3_64_hexdigest(array(names_with_hashed_values)), 16)  # type: ignore
+    return int(xxh3_64_hexdigest(array(names_with_hashed_values)), 16)
 
 
 def to_real(

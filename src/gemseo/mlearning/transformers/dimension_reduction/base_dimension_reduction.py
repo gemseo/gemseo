@@ -39,7 +39,7 @@ class BaseDimensionReduction(BaseTransformer):
         self,
         name: str = "",
         n_components: int | None = None,
-        **parameters: bool | int | float | str | None,
+        **parameters: bool | float | str | None,
     ) -> None:
         """
         Args:

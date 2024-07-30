@@ -492,7 +492,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         variable_name: str,
         statistic_name: str,
         show_name: bool = False,
-        **options: bool | float | int,
+        **options: bool | float,
     ) -> str:
         """Return the expression of a statistical function applied to a variable.
 

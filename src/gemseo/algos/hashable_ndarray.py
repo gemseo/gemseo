@@ -60,7 +60,7 @@ class HashableNdarray:
         self.__hash = int(xxh3_64_hexdigest(array.view(uint8)), 16)  # type: ignore[arg-type]
         self.__array = np_array(array) if copy else array
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__) or hash(self) != hash(other):
             return False
         return array_equal(self.__array, other.__array)

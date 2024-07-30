@@ -124,7 +124,7 @@ def test_ks_aggreg(method) -> None:
     ref_sol = problem_ref.solution
 
     problem = create_problem()
-    if method in ["upper_bound_KS", "lower_bound_KS", "IKS"]:
+    if method in {"upper_bound_KS", "lower_bound_KS", "IKS"}:
         problem.constraints.aggregate(0, method=method, rho=300.0, scale=1.0)
     else:
         problem.constraints.aggregate(0, method=method, scale=1.0)
@@ -156,7 +156,7 @@ def test_wrong_constraint_index() -> None:
 )
 def test_groups(sellar_problem, method) -> None:
     """Test groups aggregation."""
-    if method in ["upper_bound_KS", "lower_bound_KS", "IKS"]:
+    if method in {"upper_bound_KS", "lower_bound_KS", "IKS"}:
         sellar_problem.constraints.aggregate(
             0, method=method, rho=300.0, scale=1.0, groups=(0, 1)
         )

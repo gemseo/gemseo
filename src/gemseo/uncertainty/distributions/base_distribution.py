@@ -231,7 +231,7 @@ class BaseDistribution(
         """
         try:
             create_distribution = getattr(module, distribution_name)
-        except BaseException:
+        except BaseException:  # noqa: BLE001
             msg = f"{distribution_name} cannot be imported from {module.__name__}."
             raise ImportError(msg) from None
 
@@ -240,7 +240,7 @@ class BaseDistribution(
                 return create_distribution(**parameters)
 
             return create_distribution(*parameters)
-        except BaseException:
+        except BaseException:  # noqa: BLE001
             msg = (
                 f"The arguments of {self._string_representation} are wrong; "
                 f"more details on {self._WEBSITE}."

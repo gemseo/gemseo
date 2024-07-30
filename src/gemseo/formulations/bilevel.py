@@ -330,7 +330,7 @@ class BiLevel(BaseMDOFormulation):
         self,
         main_mda_name: str,
         inner_mda_name: str,
-        **main_mda_options: str | int | float | bool | None,
+        **main_mda_options: str | float | bool | None,
     ) -> None:
         """Build the chain on top of which all functions are built.
 

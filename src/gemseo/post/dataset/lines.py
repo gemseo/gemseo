@@ -96,9 +96,8 @@ class Lines(DatasetPlot):
             if self._specific_settings.plot_abscissa_variable:
                 if abscissa_variable not in variable_names:
                     variable_names.append(abscissa_variable)
-            else:
-                if abscissa_variable in variable_names:
-                    variable_names.remove(abscissa_variable)
+            elif abscissa_variable in variable_names:
+                variable_names.remove(abscissa_variable)
 
         y_names_to_values = {
             variable_name: self.dataset.get_view(variable_names=variable_name)

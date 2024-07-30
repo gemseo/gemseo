@@ -63,7 +63,7 @@ class RandomForestClassifier(BaseClassifier):
         output_names: Iterable[str] | None = None,
         n_estimators: int = 100,
         random_state: int | None = SEED,
-        **parameters: int | float | bool | str | None,
+        **parameters: float | bool | str | None,
     ) -> None:
         """
         Args:

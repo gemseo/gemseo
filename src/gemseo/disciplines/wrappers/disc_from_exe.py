@@ -409,7 +409,7 @@ def parse_key_value_file(
             key, value = key_and_value
             try:
                 data[key.strip()] = float(literal_eval(value.strip()))
-            except BaseException:
+            except BaseException:  # noqa: BLE001
                 msg = f"Failed to parse value as float {value}."
                 raise ValueError(msg) from None
 

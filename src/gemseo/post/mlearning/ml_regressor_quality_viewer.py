@@ -249,10 +249,10 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 if other_variable_name == variable_name:
                     continue
 
-                if filter_scatters and name not in [
+                if filter_scatters and name not in {
                     variable_name[0],
                     other_variable_name[0],
-                ]:
+                }:
                     continue
 
                 scatter = Scatter(dataset, variable_name, other_variable_name, trend)

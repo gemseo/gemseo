@@ -52,7 +52,7 @@ class PLS(BaseDimensionReduction):
         self,
         name: str = "",
         n_components: int | None = None,
-        **parameters: float | int | bool,
+        **parameters: float | bool,
     ) -> None:
         """
         Args:

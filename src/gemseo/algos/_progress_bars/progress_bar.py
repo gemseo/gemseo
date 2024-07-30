@@ -66,7 +66,7 @@ class ProgressBar(BaseProgressBar):
             not problem.minimize_objective and not problem.use_standardized_objective
         )
 
-    def set_objective_value(  # noqa D102
+    def set_objective_value(  # noqa: D102
         self, x_vect: ndarray | None, current_iter_must_not_be_logged: bool = False
     ) -> None:
         if current_iter_must_not_be_logged:
@@ -110,7 +110,7 @@ class ProgressBar(BaseProgressBar):
         if self.__is_current_iteration_logged:
             self._tqdm_progress_bar.set_postfix(refresh=True, obj=obj)
 
-    def finalize_iter_observer(self):  # noqa D102
+    def finalize_iter_observer(self):  # noqa: D102
         if not self.__is_current_iteration_logged:
             self.set_objective_value(
                 self._problem.database.get_x_vect(

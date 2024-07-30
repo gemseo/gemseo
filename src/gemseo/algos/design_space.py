@@ -96,6 +96,7 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
 
@@ -2352,7 +2353,7 @@ class DesignSpace(collections.abc.MutableMapping):
     def __len__(self) -> int:
         return len(self.variable_names)
 
-    def __iter__(self) -> Iterable[str]:
+    def __iter__(self) -> Iterator[str]:
         return iter(self.variable_names)
 
     def __setitem__(

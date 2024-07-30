@@ -51,7 +51,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
     def __init__(
         self,
         f_pointer: Callable[[ndarray, Any, ...], ndarray],
-        step: float | complex | ndarray | None = None,
+        step: complex | ndarray | None = None,
         design_space: DesignSpace | None = None,
         normalize: bool = True,
         parallel: bool = False,

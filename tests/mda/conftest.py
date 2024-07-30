@@ -14,7 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test helpers."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: I001
 
 from functools import partial
 
@@ -23,6 +23,8 @@ import pytest
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+
+from ..core.test_chain import two_virtual_disciplines  # noqa: F401
 
 
 def generate_parallel_doe(

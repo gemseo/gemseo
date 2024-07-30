@@ -17,16 +17,21 @@
 from __future__ import annotations
 
 import re
-from collections import namedtuple
 from pathlib import Path
 from re import findall
 from typing import ClassVar
+from typing import NamedTuple
 
 from strenum import LowercaseStrEnum
 
 from gemseo.utils.string_tools import MultiLineString
 
-FileDefinition = namedtuple("FileDefinition", ["name", "extension"])
+
+class FileDefinition(NamedTuple):
+    """The definition of a file name."""
+
+    name: str
+    extension: str
 
 
 class FilePathManager:
