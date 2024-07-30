@@ -140,7 +140,7 @@ strenum==0.4.15
     # via gemseo (pyproject.toml)
 sympy==1.13.0
     # via gemseo (pyproject.toml)
-tenacity==8.5.0
+tenacity==9.0.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn

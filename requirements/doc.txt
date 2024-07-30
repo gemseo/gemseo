@@ -175,21 +175,21 @@ sphinx-gallery==0.17.0
     # via gemseo (pyproject.toml)
 sphinxcontrib-apidoc==0.5.0
     # via gemseo (pyproject.toml)
-sphinxcontrib-applehelp==1.0.8
+sphinxcontrib-applehelp==2.0.0
     # via sphinx
 sphinxcontrib-bibtex==2.6.2
     # via gemseo (pyproject.toml)
-sphinxcontrib-devhelp==1.0.6
+sphinxcontrib-devhelp==2.0.0
     # via sphinx
-sphinxcontrib-htmlhelp==2.0.6
+sphinxcontrib-htmlhelp==2.1.0
     # via sphinx
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
 sphinxcontrib-plantuml==0.30
     # via gemseo (pyproject.toml)
-sphinxcontrib-qthelp==1.0.8
+sphinxcontrib-qthelp==2.0.0
     # via sphinx
-sphinxcontrib-serializinghtml==1.1.10
+sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
 sphinxcontrib-spelling==8.0.0
     # via gemseo (pyproject.toml)
@@ -197,7 +197,7 @@ strenum==0.4.15
     # via gemseo (pyproject.toml)
 sympy==1.13.0
     # via gemseo (pyproject.toml)
-tenacity==8.5.0
+tenacity==9.0.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
