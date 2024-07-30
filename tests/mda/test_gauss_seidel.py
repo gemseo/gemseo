@@ -37,8 +37,6 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.testing.helpers import image_comparison
 
-from ..core.test_chain import two_virtual_disciplines  # noqa W0611 F811
-
 
 @pytest.fixture(scope="module")
 def compute_reference_n_iter():
@@ -261,7 +259,7 @@ def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) 
         )
 
 
-def test_virtual_exe_mda(two_virtual_disciplines):  # noqa F811
+def test_virtual_exe_mda(two_virtual_disciplines):
     """Test an MDA with disciplines in virtual execution mode."""
     chain = MDAGaussSeidel(two_virtual_disciplines)
     chain.execute()

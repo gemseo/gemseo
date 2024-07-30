@@ -129,7 +129,7 @@ def _run_discipline_save_outputs(
             outputs = (discipline.execute(input_data), {})
             if discipline._is_linearized:
                 outputs = (outputs[0], discipline.jac)
-    except BaseException as error:
+    except BaseException as error:  # noqa: BLE001
         trace = traceback.format_exc()
         outputs = (error, trace)
         return_code = 1

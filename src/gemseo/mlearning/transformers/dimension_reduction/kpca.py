@@ -52,7 +52,7 @@ class KPCA(BaseDimensionReduction):
         n_components: int | None = None,
         fit_inverse_transform: bool = True,
         kernel: str = "linear",
-        **parameters: float | int | str | None,
+        **parameters: float | str | None,
     ) -> None:
         """
         Args:

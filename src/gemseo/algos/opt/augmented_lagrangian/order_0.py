@@ -59,7 +59,6 @@ class AugmentedLagrangianOrder0(AugmentedLagrangianPenaltyHeuristic):
                 )
                 ineq_lag[constraint.name] = (mu_1) * heaviside(mu_1.real, 0.0)
             elif constraint.name in eq_lag:
-                eq_lag[constraint.name] = (
-                    eq_lag[constraint.name]
-                    + self._rho * self._function_outputs[constraint.name]
+                eq_lag[constraint.name] += (
+                    self._rho * self._function_outputs[constraint.name]
                 )

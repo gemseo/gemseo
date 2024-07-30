@@ -21,12 +21,12 @@
 
 from __future__ import annotations
 
-from collections import namedtuple
 from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
+from typing import NamedTuple
 from typing import Optional
 from typing import Union
 
@@ -61,7 +61,10 @@ if TYPE_CHECKING:
 OptionType = Optional[Union[str, int, float, bool, Sequence[int], RealArray]]
 
 
-_AlgoData = namedtuple("_AlgoData", ["description", "webpage", "doe_algo_class"])
+class _AlgoData(NamedTuple):
+    description: str
+    webpage: str
+    doe_algo_class: type
 
 
 class OpenTURNS(BaseDOELibrary):

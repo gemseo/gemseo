@@ -322,8 +322,8 @@ def test_filter_by_variable_names(design_space, copy) -> None:
     if not copy:
         design_space_with_x5 = design_space
 
-    assert not design_space_with_x5.__contains__("x4")
-    assert design_space_with_x5.__contains__("x5")
+    assert "x4" not in design_space_with_x5
+    assert "x5" in design_space_with_x5
 
     if copy:
         assert design_space_with_x5 is not design_space

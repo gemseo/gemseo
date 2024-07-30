@@ -296,7 +296,7 @@ def test_tolerance_interval_wrong_confidence(statistics, dataset, confidence) ->
         ("Exponential", lambda n: RNG.exponential(size=n)),
         ("WeibullMin", lambda n: array(ot.WeibullMin().getSample(n))),
         ("LogNormal", lambda n: RNG.lognormal(size=n)),
-        ("Uniform", lambda n: RNG.random(n)),
+        ("Uniform", RNG.random),
         ("Normal", lambda n: RNG.normal(size=n)),
     ],
 )

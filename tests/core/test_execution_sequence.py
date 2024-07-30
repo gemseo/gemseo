@@ -45,8 +45,8 @@ class TestExecSequence(unittest.TestCase):
     def test_atomic_exec_sequence(self) -> None:
         self.assertRaises(Exception, AtomicExecSequence, "not_a_discipline")
         tmp = AtomicExecSequence(SobieskiAerodynamics())
-        assert tmp.__str__() == "SobieskiAerodynamics(None)"
-        assert tmp.__repr__() == ("SobieskiAerodynamics(None, " + str(tmp.uuid) + ")")
+        assert str(tmp) == "SobieskiAerodynamics(None)"
+        assert repr(tmp) == ("SobieskiAerodynamics(None, " + str(tmp.uuid) + ")")
 
     def test_loop_exec_sequence(self) -> None:
         self.assertRaises(

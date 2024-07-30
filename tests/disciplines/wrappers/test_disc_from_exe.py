@@ -124,7 +124,7 @@ def test_disc_from_exe_cfgobj(tmp_wd) -> None:
     [
         Parser.TEMPLATE,
         Parser.KEY_VALUE,
-        lambda a, b: zip(a, b),
+        zip,
     ],
 )
 def test_disc_from_exe_cfgobj_parser_str(tmp_wd, parser) -> None:

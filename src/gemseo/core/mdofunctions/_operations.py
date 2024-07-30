@@ -233,7 +233,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
     def get_string_representation(
         operand_1: str,
         operator: str,
-        operand_2: str | float | int,
+        operand_2: str | float,
         use_brackets: bool = False,
     ) -> str:
         """Return the string representation of an operation between two operands.

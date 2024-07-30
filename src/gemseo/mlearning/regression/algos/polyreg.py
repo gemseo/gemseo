@@ -114,7 +114,7 @@ class PolynomialRegressor(LinearRegressor):
         fit_intercept: bool = True,
         penalty_level: float = 0.0,
         l2_penalty_ratio: float = 1.0,
-        **parameters: float | int | str | bool | None,
+        **parameters: float | str | bool | None,
     ) -> None:
         """
         Args:

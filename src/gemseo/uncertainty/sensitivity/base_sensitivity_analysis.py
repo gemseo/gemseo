@@ -155,7 +155,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """  # noqa: D202, D205, D212
         if isinstance(samples, IODataset):
             self.dataset = samples
-        elif samples not in [None, ""]:
+        elif samples not in {None, ""}:
             with Path(samples).open("rb") as f:
                 samples = self.dataset = pickle.load(f)
         else:

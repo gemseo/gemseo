@@ -103,7 +103,7 @@ def test_lagrangian_validation_eq(problem) -> None:
 
     def obj(eq_val):
         problem2 = Power2()
-        problem2.constraints[-1] = problem2.constraints[-1] + eq_val
+        problem2.constraints[-1] += eq_val
         execute_algo(problem2, "SLSQP", "opt", **SLSQP_OPTIONS)
         return problem2.solution.f_opt
 
@@ -120,13 +120,13 @@ def test_lagrangian_validation_ineq_normalize() -> None:
 
     def obj(eq_val):
         problem2 = Power2()
-        problem2.constraints[-2] = problem2.constraints[-2] + eq_val
+        problem2.constraints[-2] += eq_val
         execute_algo(problem2, "SLSQP", "opt", **options)
         return problem2.solution.f_opt
 
     def obj_grad(eq_val):
         problem = Power2()
-        problem.constraints[-2] = problem.constraints[-2] + eq_val
+        problem.constraints[-2] += eq_val
         execute_algo(problem, "SLSQP", "opt", **options)
         lagrange = LagrangeMultipliers(problem)
         x_opt = problem.solution.x_opt

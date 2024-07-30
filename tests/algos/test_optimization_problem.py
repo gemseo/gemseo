@@ -1286,10 +1286,8 @@ def test_approximated_jacobian_wrt_uncertain_variables() -> None:
 def rosenbrock_lhs() -> tuple[Rosenbrock, dict[str, ndarray]]:
     """The Rosenbrock problem after evaluation and its start point."""
     problem = Rosenbrock()
-    problem.add_observable(MDOFunction(lambda x: sum(x), "obs"))
-    problem.add_constraint(
-        MDOFunction(lambda x: sum(x), "cstr"), constraint_type="ineq"
-    )
+    problem.add_observable(MDOFunction(sum, "obs"))
+    problem.add_constraint(MDOFunction(sum, "cstr"), constraint_type="ineq")
     start_point = problem.design_space.get_current_value(as_dict=True)
     execute_algo(problem, "lhs", n_samples=3, algo_type="doe")
     return problem, start_point
@@ -1555,20 +1553,19 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
                 .all()
             )
 
-    else:
-        if export_gradients:
-            assert array_equal(
-                dataset.get_view(group_names="parameters", indices=3).to_numpy()[0, :],
-                np.array([0.0, 0.0, 0.0, 0.0, 0.0, np.nan, np.nan, np.nan]),
-                equal_nan=True,
-            )
+    elif export_gradients:
+        assert array_equal(
+            dataset.get_view(group_names="parameters", indices=3).to_numpy()[0, :],
+            np.array([0.0, 0.0, 0.0, 0.0, 0.0, np.nan, np.nan, np.nan]),
+            equal_nan=True,
+        )
 
-        else:
-            assert array_equal(
-                dataset.get_view(group_names="parameters", indices=4).to_numpy()[0, :],
-                np.array([0.5, 0.5, 0.5, np.nan, np.nan]),
-                equal_nan=True,
-            )
+    else:
+        assert array_equal(
+            dataset.get_view(group_names="parameters", indices=4).to_numpy()[0, :],
+            np.array([0.5, 0.5, 0.5, np.nan, np.nan]),
+            equal_nan=True,
+        )
 
 
 @pytest.fixture
@@ -1608,7 +1605,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     # Add observables to the optimization problem.
     obs1 = MDOFunction(norm, "design norm")
     pow2_problem.add_observable(obs1)
-    obs2 = MDOFunction(lambda x: sum(x), "sum")
+    obs2 = MDOFunction(sum, "sum")
     pow2_problem.add_observable(obs2)
 
     OptimizationLibraryFactory().execute(pow2_problem, "SLSQP")

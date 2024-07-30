@@ -84,7 +84,7 @@ class MDAChain(BaseMDA):
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool] | None = None,
         initialize_defaults: bool = False,
-        **inner_mda_options: float | int | bool | str | None,
+        **inner_mda_options: float | bool | str | None,
     ) -> None:
         """
         Args:
@@ -170,7 +170,7 @@ class MDAChain(BaseMDA):
         sub_coupling_structures: Iterable[MDOCouplingStructure | None] | None = None,
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool] | None = None,
-        **inner_mda_options: float | int | bool | str | None,
+        **inner_mda_options: float | bool | str | None,
     ) -> None:
         """Create an MDO chain from the execution sequence of the disciplines.
 

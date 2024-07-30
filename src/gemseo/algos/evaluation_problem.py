@@ -605,13 +605,12 @@ class EvaluationProblem(BaseProblem):
             and is_function_input_normalized
         ):
             function = function.normalize(self.design_space)
-        else:
-            if is_function_input_normalized and round_ints:
-                function = NormIntFunction(function, self.design_space)
-            elif round_ints:
-                function = IntFunction(function, self.design_space.round_vect)
-            elif is_function_input_normalized:
-                function = NormFunction(function, self.design_space)
+        elif is_function_input_normalized and round_ints:
+            function = NormIntFunction(function, self.design_space)
+        elif round_ints:
+            function = IntFunction(function, self.design_space.round_vect)
+        elif is_function_input_normalized:
+            function = NormFunction(function, self.design_space)
 
         if self.differentiation_method in set(self.ApproximationMode):
             gradient_approximator = GradientApproximatorFactory().create(

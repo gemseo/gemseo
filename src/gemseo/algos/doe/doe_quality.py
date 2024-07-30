@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from collections import namedtuple
 from operator import ge
 from operator import gt
 from operator import le
@@ -26,6 +25,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 from typing import Literal
+from typing import NamedTuple
 
 from scipy.spatial import distance
 from scipy.stats import qmc
@@ -42,15 +42,20 @@ _DEFAULT_DISCREPANCY_TYPE_NAME: Final[str] = "CD"
 _DEFAULT_POWER: Final[int] = 50
 
 
-DOEMeasures = namedtuple("DOEMeasures", ["discrepancy", "mindist", "phip"])
-r"""The quality measures of a DOE.
+class DOEMeasures(NamedTuple):
+    r"""The quality measures of a DOE.
 
-Namely :math:`\phi^p`, minimum-distance and discrepancy measures,
-accessible with the attributes ``discrepancy``, ``mindist`` and ``phip``.
+    Namely :math:`\phi^p`, minimum-distance and discrepancy measures,
+    accessible with the attributes ``discrepancy``, ``mindist`` and ``phip``.
 
-The smaller the quality measures, the better,
-except for the minimum-distance criterion for which the larger it is the better.
-"""
+    The smaller the quality measures, the better,
+    except for the minimum-distance criterion for which the larger it is the better.
+    """
+
+    discrepancy: float
+    mindist: float
+    phip: float
+
 
 _measure_transformations: tuple[Callable[[float], float]] = (
     lambda x: x,

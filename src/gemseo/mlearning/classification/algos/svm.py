@@ -67,7 +67,7 @@ class SVMClassifier(BaseClassifier):
         kernel: str | Callable | None = "rbf",
         probability: bool = False,
         random_state: int | None = SEED,
-        **parameters: int | float | bool | str | None,
+        **parameters: float | bool | str | None,
     ) -> None:
         """
         Args:

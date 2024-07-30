@@ -29,10 +29,10 @@ input data and the sum of their output data is returned.
 
 from __future__ import annotations
 
-from collections import namedtuple
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import NamedTuple
 
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
@@ -47,7 +47,10 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-_AlgoDefinition = namedtuple("AlgoDefinition", "name,transformer,parameters")
+class _AlgoDefinition(NamedTuple):
+    name: str
+    transformer: TransformerType
+    parameters: Any
 
 
 class RegressorChain(BaseRegressor):

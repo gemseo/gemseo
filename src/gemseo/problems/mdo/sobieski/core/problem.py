@@ -29,11 +29,11 @@ from __future__ import annotations
 import cmath
 import math
 import random
-from collections import namedtuple
 from random import uniform
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
+from typing import NamedTuple
 
 from numpy import array
 from numpy import complex128
@@ -54,11 +54,14 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
+    from gemseo import MDODiscipline
 
-_Disciplines = namedtuple(
-    "Disciplines",
-    ("aerodynamics", "structure", "propulsion", "mission"),
-)
+
+class _Disciplines(NamedTuple):
+    aerodynamics: MDODiscipline
+    structure: MDODiscipline
+    propulsion: MDODiscipline
+    mission: MDODiscipline
 
 
 class SobieskiProblem:

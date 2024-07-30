@@ -291,7 +291,7 @@ def test_get_formulation_sub_options_schema(formulation_name, opts, expected) ->
     """
     sub_opts_schema = get_formulation_sub_options_schema(formulation_name, **opts)
 
-    if formulation_name in ("BiLevel", "MDF"):
+    if formulation_name in {"BiLevel", "MDF"}:
         props = sub_opts_schema["properties"]
         assert expected.issubset(set(props))
     else:

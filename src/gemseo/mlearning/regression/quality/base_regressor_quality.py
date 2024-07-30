@@ -191,7 +191,7 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         n_replicates: int = 100,
         samples: Sequence[int] | None = None,
         multioutput: bool = True,
-        seed: None | None = None,
+        seed: int | None = None,
         as_dict: bool = False,
         store_resampling_result: bool = False,
     ) -> MeasureType:

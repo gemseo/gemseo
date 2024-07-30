@@ -90,13 +90,13 @@ from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
-RandomVariable = collections.namedtuple(
+RandomVariable = collections.namedtuple(  # noqa: PYI024
     "RandomVariable",
     ["distribution", "size", "parameters"],
     defaults=(1, {}),
 )
 
-RandomVector = collections.namedtuple(
+RandomVector = collections.namedtuple(  # noqa: PYI024
     "RandomVector",
     ["distribution", "size", "parameters"],
     defaults=(1, {}),
@@ -685,7 +685,7 @@ class ParameterSpace(DesignSpace):
             )
             add_transformation = False
             for transformation in transformations:
-                if transformation not in [default_variable_name, self._BLANK]:
+                if transformation not in {default_variable_name, self._BLANK}:
                     add_transformation = True
                     break
 

@@ -34,12 +34,7 @@ def parse_cfgobj(infile):
                 if len(spl) != 2:
                     raise ValueError("unbalanced = in line " + str(line))
                 key = spl[0].strip()
-                try:
-                    data[key] = float(literal_eval(spl[1].strip()))
-                except Exception:
-                    raise ValueError(
-                        "Failed to parse value as float " + str(spl[1])
-                    ) from None
+                data[key] = float(literal_eval(spl[1].strip()))
     return data
 
 

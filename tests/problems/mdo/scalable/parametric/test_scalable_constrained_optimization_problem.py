@@ -103,10 +103,10 @@ def scalable_optimization_problem_scenario(request, n, constraint_kind):
 def test_resolution(
     scalable_optimization_problem_scenario, algo, n, constraint_kind
 ) -> None:
-    if constraint_kind == MDOFunction.ConstraintType.EQ and algo in [
+    if constraint_kind == MDOFunction.ConstraintType.EQ and algo in {
         "SLSQP",
         "NLOPT_SLSQP",
-    ]:
+    }:
         pytest.skip("SLSQP is not well suited for non-linear equality constraints. ")
     options = {
         "max_iter": 1000,

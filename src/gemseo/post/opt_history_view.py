@@ -463,8 +463,7 @@ class OptHistoryView(OptPostProcessor):
             if history_i.shape[1] == 1:
                 history_i = history_i.T
 
-            if max_iter < history_i.shape[1]:
-                max_iter = history_i.shape[1]
+            max_iter = max(max_iter, history_i.shape[1])
 
         for i, cstr_history_i in enumerate(cstr_history):
             history_i = atleast_2d(cstr_history_i).T

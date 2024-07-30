@@ -16,7 +16,8 @@
 
 from __future__ import annotations
 
-from collections import namedtuple
+from typing import TYPE_CHECKING
+from typing import NamedTuple
 
 import pytest
 
@@ -25,6 +26,9 @@ from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sellar.utils import set_data_converter
 from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
+
+if TYPE_CHECKING:
+    from gemseo import MDODiscipline
 
 MARK = "doc_examples"
 
@@ -42,7 +46,10 @@ def pytest_collection_modifyitems(
                 item.add_marker(skip_me)
 
 
-SellarDisciplines = namedtuple("SellarDisciplines", "sellar1, sellar2, sellar_system")
+class SellarDisciplines(NamedTuple):
+    sellar1: MDODiscipline
+    sellar2: MDODiscipline
+    sellar_system: MDODiscipline
 
 
 @pytest.fixture

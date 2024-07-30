@@ -7,12 +7,18 @@ src = ["src"]
 [lint]
 task-tags = ["TODO"]
 ignore = [
+    # Missing type annotation for `self` in method.
+    "ANN101",
+    # Missing type annotation for `cls` in classmethod.
+    "ANN102",
+    # Dynamically typed expressions (typing.Any) are disallowed.
+    "ANN401",
+    # Checks for undocumented magic method definitions.
+    "D105",
+    # Missing argument description in the docstring.
+    "D417",
     # Conflicts with ruff format.
     "E203",
-    # Checks for noqa directives that are no longer applicable.
-    "RUF100",
-    # Checks for long exception messages that are not defined in the exception class itself.
-    "TRY003",
     # Avoid unexpected behavior with the formatter.
     "ISC001",
     # Too many arguments in function definition.
@@ -37,59 +43,60 @@ ignore = [
     "PLW1641",
     # Fixture does not return anything, add leading underscore.
     "PT004",
-    # Checks for undocumented magic method definitions.
-    "D105",
-    # Missing argument description in the docstring.
-    "D417",
-    # Missing type annotation for `self` in method.
-    "ANN101",
-    # Missing type annotation for `cls` in classmethod.
-    "ANN102",
-    # Dynamically typed expressions (typing.Any) are disallowed.
-    "ANN401",
+    # Checks for noqa directives that are no longer applicable.
+    "RUF100",
+    # Checks for long exception messages that are not defined in the exception class itself.
+    "TRY003",
 ]
+
 select = [
     "A",
+#    "ANN",
+    "ASYNC",
     "B",
+    "BLE",
+#    "C",
     "C4",
     "D",
+#    "DOC",
     "E",
+    "EM",
     "F",
+#    "FA",
+#    "FBT",
+    "FLY",
+    "FURB",
     "G",
     "I",
+    "ISC",
+    "INP",
+    "LOG",
     "Q",
     "N",
-    "T",
-    "W",
-    "EM",
-    "UP",
-    "PT",
-#    "ANN",
-    "FLY",
-    "ISC",
-    "LOG",
     "NPY",
+#    "PL",
+#    "PD",
+    "PT",
     "PIE",
+    "PGH",
     "PTH",
+    "PYI",
+    "PERF",
     "RET",
     "RSE",
     "RUF",
+#    "S",
     "SIM",
+#    "SLF",
+    "SLOT",
+    "T",
     "T10",
     "T20",
     "TCH",
     "TRY",
+    "W",
+    "UP",
     "YTT",
-    "SLOT",
-    "FURB",
-    "PERF",
-    "ASYNC1",
-#    "C",
-#    "S",
-#    "PL",
-#    "PD",
-#    "BLE",
-#    "FBT",
 ]
 
 [lint.flake8-type-checking]
@@ -107,7 +114,7 @@ convention = "google"
 
 [lint.per-file-ignores]
 "tests/*.py" = ["D", "PT009","PT011", "PT027", "PTH", "B018"]
-"doc_src/*.py" = ["T", "D", "B018", "PTH", "E501", "PERF", "A001", "RET504"]
+"doc_src/*.py" = ["T", "D", "B018", "PTH", "E501", "PERF", "A001", "RET504", "INP001"]
 "src/gemseo/utils/testing/opt_lib_test_base.py" = ["D"]
 "src/gemseo/problems/scalable/data_driven/*" = ["D"]
 "src/gemseo/third_party/*" = ["ALL"]

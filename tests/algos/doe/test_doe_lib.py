@@ -341,7 +341,7 @@ def test_uunormalized_components(mc, l_b, u_b) -> None:
     design_space.add_variable("z", l_b=0, u_b=1)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: sum(x), "f")
+    problem.objective = MDOFunction(sum, "f")
 
     error_message = "The components {2, 3, 4} of the design space are unbounded."
     with pytest.raises(ValueError, match=re.escape(error_message)):
@@ -360,7 +360,7 @@ def test_uunormalized_components_with_parameter_space(mc) -> None:
     assert not parameter_space.normalize["x"]
 
     problem = OptimizationProblem(parameter_space)
-    problem.objective = MDOFunction(lambda x: sum(x), "f")
+    problem.objective = MDOFunction(sum, "f")
 
     mc.compute_doe(parameter_space, 3)
     mc.execute(problem, n_samples=3)

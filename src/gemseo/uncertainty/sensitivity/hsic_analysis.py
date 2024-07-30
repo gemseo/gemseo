@@ -273,7 +273,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
             statistic_estimator
         ]
 
-        if analysis_type in [analysis_type.CONDITIONAL, analysis_type.TARGET]:
+        if analysis_type in {analysis_type.CONDITIONAL, analysis_type.TARGET}:
             output_bounds = {
                 name: tuple(zip(*value)) for name, value in output_bounds.items()
             }

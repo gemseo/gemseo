@@ -429,7 +429,7 @@ def prepare_grammar(grammar: BaseGrammar) -> None:
     """
     grammar_type = grammar.__class__
 
-    if grammar_type in (SimpleGrammar, SimplerGrammar):
+    if grammar_type in {SimpleGrammar, SimplerGrammar}:
         grammar._SimpleGrammar__names_to_types["required_name1"] = int
         grammar._SimpleGrammar__names_to_types["optional_name1"] = int
         grammar._SimpleGrammar__names_to_types["required_name2"] = int

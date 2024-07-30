@@ -111,7 +111,7 @@ def test_plot(kwargs, properties, baseline_images, dataset, fig_and_axes) -> Non
         ("quadratic", ["Scatter_quadratic_trend"]),
         ("cubic", ["Scatter_cubic_trend"]),
         ("rbf", ["Scatter_rbf_trend"]),
-        (lambda x, y: Rbf(x, y), ["Scatter_custom_trend"]),
+        (Rbf, ["Scatter_custom_trend"]),
     ],
 )
 @image_comparison(None)

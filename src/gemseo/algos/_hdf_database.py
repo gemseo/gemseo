@@ -391,9 +391,9 @@ class HDFDatabase:
             # variables group exists because otherwise the function tries to
             # append something empty.
             if append and len(design_vars_grp) != 0:
-                input_values_to_idx = dict(
-                    zip(database.keys(), range(len(database.keys())))
-                )
+                input_values_to_idx = {
+                    value: key for key, value in enumerate(database.keys())
+                }
 
                 for input_values in self.__pending_arrays.values():
                     output_values = database[input_values]

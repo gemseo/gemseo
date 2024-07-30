@@ -195,7 +195,7 @@ def get_options(
         The options of the DOE algorithm.
     """
     options = {}
-    if algo_name in ["OT_AXIAL", "OT_COMPOSITE", "OT_FACTORIAL"]:
+    if algo_name in {"OT_AXIAL", "OT_COMPOSITE", "OT_FACTORIAL"}:
         options["levels"] = [0.1, 0.9]
     else:
         options["n_samples"] = 13

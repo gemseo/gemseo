@@ -121,7 +121,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         annotations = getfullargspec(self.__class__.__init__).annotations
         parameter_names_to_types = [(name, annotations[name]) for name in parameters]
 
-        specific_settings = NamedTuple("specific_settings", parameter_names_to_types)  # type:ignore
+        specific_settings = NamedTuple("specific_settings", parameter_names_to_types)
         self._common_settings = PlotSettings()
         self._specific_settings = specific_settings(**parameters)
         self.__common_dataset = dataset

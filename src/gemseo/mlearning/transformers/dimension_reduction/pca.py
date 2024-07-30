@@ -55,7 +55,7 @@ class PCA(BaseDimensionReduction):
         name: str = "",
         n_components: int | None = None,
         scale: bool = False,
-        **parameters: float | int | str | bool | None,
+        **parameters: float | str | bool | None,
     ) -> None:
         """
         Args:

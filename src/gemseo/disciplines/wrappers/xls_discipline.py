@@ -180,7 +180,7 @@ class XLSDiscipline(MDODiscipline):
             self._xls_app = xlwings.App(visible=False)
             self._xls_app.interactive = False
         # Wide except because I cannot tell what is the exception raised by xlwings.
-        except BaseException:
+        except BaseException:  # noqa: BLE001
             msg = "xlwings requires Microsoft Excel"
             raise RuntimeError(msg) from None
 
@@ -303,7 +303,7 @@ class XLSDiscipline(MDODiscipline):
         if self._xls_file_path.match("*.xlsm") and self.macro_name is not None:
             try:
                 self._xls_app.api.Application.Run(self.macro_name)
-            except BaseException as err:
+            except BaseException as err:  # noqa: BLE001
                 msg = f"Failed to run '{self.macro_name}' macro: {err}."
                 raise RuntimeError(msg) from None
 

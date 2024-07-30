@@ -519,7 +519,7 @@ class DisciplineJacApprox:
             if isinstance(indices_sequence[-1], slice):
                 indices_sequence[-1] = variable_indices[indices_sequence[-1]]
 
-            if indices_sequence[-1] in [Ellipsis, None]:
+            if indices_sequence[-1] in (Ellipsis, None):
                 indices_sequence[-1] = variable_indices
 
             names_to_indices[variable_name] = indices_sequence[-1]

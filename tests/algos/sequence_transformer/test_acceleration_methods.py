@@ -157,7 +157,7 @@ def test_aitken() -> None:
 )
 def test_minimum_polynomial_parameters(window_size) -> None:
     """Tests the window size argument of MinimumPolynomial."""
-    if window_size in [0, "foo"]:
+    if window_size in {0, "foo"}:
         with pytest.raises(ValueError):
             factory.create(
                 AccelerationMethod.MINIMUM_POLYNOMIAL, window_size=window_size

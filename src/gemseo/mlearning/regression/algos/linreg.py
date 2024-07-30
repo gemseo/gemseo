@@ -94,7 +94,7 @@ class LinearRegressor(BaseRegressor):
         penalty_level: float = 0.0,
         l2_penalty_ratio: float = 1.0,
         random_state: int | None = SEED,
-        **parameters: float | int | str | bool | None,
+        **parameters: float | str | bool | None,
     ) -> None:
         """
         Args:

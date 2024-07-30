@@ -263,9 +263,9 @@ class OptimizationHistory:
                 x_opt = feas_x[i]
                 for constraint in constraints:
                     c_name = constraint.name
-                    c_opt[c_name] = feas_f[i].get(c_name)
+                    c_opt[c_name] = output_values.get(c_name)
                     c_key = Database.get_gradient_name(c_name)
-                    c_opt_grad[constraint.name] = feas_f[i].get(c_key)
+                    c_opt_grad[constraint.name] = output_values.get(c_key)
 
         if isinstance(f_opt, ndarray) and len(f_opt) == 1:
             f_opt = f_opt[0]

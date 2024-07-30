@@ -136,7 +136,6 @@ from __future__ import annotations
 
 import logging
 import re
-from collections import namedtuple
 from collections.abc import Collection
 from collections.abc import Iterable
 from collections.abc import Mapping
@@ -145,6 +144,7 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import NamedTuple
 
 from numpy import ndarray
 from strenum import StrEnum
@@ -1894,20 +1894,18 @@ def _log_settings() -> str:
     return str(text)
 
 
-AlgorithmFeatures = namedtuple(
-    "AlgorithmFeature",
-    [
-        "algorithm_name",
-        "library_name",
-        "root_package_name",
-        "handle_equality_constraints",
-        "handle_inequality_constraints",
-        "handle_float_variables",
-        "handle_integer_variables",
-        "handle_multiobjective",
-        "require_gradient",
-    ],
-)
+class AlgorithmFeatures(NamedTuple):
+    """The features of an algorithm."""
+
+    algorithm_name: str
+    library_name: str
+    root_package_name: str
+    handle_equality_constraints: bool
+    handle_inequality_constraints: bool
+    handle_float_variables: bool
+    handle_integer_variables: bool
+    handle_multiobjective: bool
+    require_gradient: bool
 
 
 def get_algorithm_features(

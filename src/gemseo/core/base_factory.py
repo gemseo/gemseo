@@ -216,7 +216,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         """
         try:
             pkg = importlib.import_module(pkg_name)
-        except BaseException as error:
+        except BaseException as error:  # noqa: BLE001
             self.__record_import_failure(pkg_name, error)
             return
 
@@ -229,7 +229,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         ):
             try:
                 importlib.import_module(mod_name)
-            except BaseException as error:  # noqa: PERF203
+            except BaseException as error:  # noqa: PERF203, BLE001
                 self.__record_import_failure(mod_name, error)
 
     def __record_import_failure(
