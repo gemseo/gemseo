@@ -39,7 +39,7 @@ def binh_korn() -> BinhKorn:
 def test_binh_korn_compute(binh_korn) -> None:
     """Test the Binh-Korn objective function."""
     x = array([0.0, 0.0])
-    obj = binh_korn.objective(x)
+    obj = binh_korn.objective.evaluate(x)
     assert array([0.0, 50.0]) == pytest.approx(obj)
 
 
@@ -53,7 +53,7 @@ def test_binh_korn_compute_jac(binh_korn) -> None:
 def test_binh_korn_ineq1(binh_korn) -> None:
     """Test the Binh-Korn first ineq."""
     x = array([1.0, 0.0])
-    ineq1 = binh_korn.constraints[0](x)
+    ineq1 = binh_korn.constraints[0].evaluate(x)
     assert array([-9.0]) == pytest.approx(ineq1)
 
 
@@ -67,7 +67,7 @@ def test_binh_korn_ineq1_jac(binh_korn) -> None:
 def test_binh_korn_ineq2(binh_korn) -> None:
     """Test the Binh-Korn second ineq."""
     x = array([1.0, 0.0])
-    ineq1 = binh_korn.constraints[1](x)
+    ineq1 = binh_korn.constraints[1].evaluate(x)
     assert array([-44.3]) == pytest.approx(ineq1)
 
 

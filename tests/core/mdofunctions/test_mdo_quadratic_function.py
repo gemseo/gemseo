@@ -67,7 +67,7 @@ def test_init(coefficients) -> None:
 def test_values(function, value, gradient, request) -> None:
     """Check the value of a quadratic function."""
     x_vect = array([1.0, 2.0])
-    assert request.getfixturevalue(function)(x_vect) == value
+    assert request.getfixturevalue(function).evaluate(x_vect) == value
     assert_equal(request.getfixturevalue(function).jac(x_vect), gradient)
 
 

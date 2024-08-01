@@ -1425,7 +1425,7 @@ def test_normalization_casting(design_space: DesignSpace, normalize: bool) -> No
     design_space.filter(["x14"])
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x, "f")
-    out = problem.evaluate_functions(normalize=normalize)
+    out = problem.evaluate_functions(design_vector_is_normalized=normalize)
     assert out[0]["f"] == array([2])
     assert out[0]["f"].dtype == int32
 

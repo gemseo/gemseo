@@ -66,8 +66,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
-    from gemseo.algos.parameter_space import ParameterSpace as ParameterSpace
-    from gemseo.core.discipline import MDODiscipline as MDODiscipline
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
@@ -256,19 +254,3 @@ def create_sensitivity_analysis(
     name = name[0].upper() + name[1:]
 
     return factory.create(name, samples=samples)
-
-
-def load_sensitivity_analysis(file_path: str | Path) -> BaseSensitivityAnalysis:
-    """Load a sensitivity analysis from the disk.
-
-    Args:
-        file_path: The path to the file.
-
-    Returns:
-        The sensitivity analysis.
-    """
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        BaseSensitivityAnalysis,
-    )
-
-    return BaseSensitivityAnalysis.from_pickle(file_path)

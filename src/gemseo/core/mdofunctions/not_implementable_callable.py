@@ -23,6 +23,18 @@ from typing import NoReturn
 class NotImplementedCallable:
     """A callable object which raises NotImplementedError when called."""
 
+    __message: str
+    """The error message associated to the NotImplementedError."""
+
+    def __init__(self, name: str, quantity_name: str) -> None:
+        """
+        Args:
+            name: The name of the object to which the callable is attached.
+            quantity_name: The name of the quantity of interest.
+        """  # noqa: D205, D212
+        self.__message = (
+            f"The function computing the {quantity_name} of {name} is not implemented."
+        )
+
     def __call__(self, *args: Any, **kwargs: Any) -> NoReturn:  # noqa:D102
-        msg = "Function is not implemented."
-        raise NotImplementedError(msg)
+        raise NotImplementedError(self.__message)

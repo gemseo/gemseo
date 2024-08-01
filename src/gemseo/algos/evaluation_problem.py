@@ -38,25 +38,21 @@ from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.evaluation_counter import EvaluationCounter
-from gemseo.algos.preprocessed_functions.db_function import DBFunction
-from gemseo.algos.preprocessed_functions.db_norm_function import DBNormFunction
-from gemseo.algos.preprocessed_functions.int_function import IntFunction
-from gemseo.algos.preprocessed_functions.norm_function import NormFunction
-from gemseo.algos.preprocessed_functions.norm_int_function import NormIntFunction
+from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.mdofunctions.collections.observables import Observables
-from gemseo.core.mdofunctions.dense_jacobian_function import DenseJacobianFunction
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.typing import RealArray
+from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 LOGGER = logging.getLogger(__name__)
@@ -97,7 +93,7 @@ class EvaluationProblem(BaseProblem):
     differentiation_step: float
     """The differentiation step."""
 
-    stop_if_nan: bool
+    _stop_if_nan: bool
     """Whether the evaluation stops when a function returns ``NaN``."""
 
     ApproximationMode = ApproximationMode
@@ -159,12 +155,30 @@ class EvaluationProblem(BaseProblem):
         self.__initial_current_x = deepcopy(
             design_space.get_current_value(as_dict=True)
         )
-        self.stop_if_nan = True
+        self._stop_if_nan = True
         self.__parallel_differentiation = parallel_differentiation
         self.__parallel_differentiation_options = parallel_differentiation_options
         self.evaluation_counter = EvaluationCounter()
         self._sequence_of_functions = [self.__observables, self.__new_iter_observables]
         self._function_names = []
+
+    @property
+    def stop_if_nan(self) -> bool:
+        """Whether the evaluation stops when a function returns ``NaN``."""
+        return self._stop_if_nan
+
+    @stop_if_nan.setter
+    def stop_if_nan(self, value: bool) -> None:
+        self._stop_if_nan = value
+        for functions in self._sequence_of_functions:
+            for function in functions:
+                if isinstance(function, ProblemFunction):
+                    function.stop_if_nan = value
+
+        for function_name in self._function_names:
+            function = getattr(self, function_name)
+            if isinstance(function, ProblemFunction):
+                function.stop_if_nan = value
 
     def __check_functions_are_not_preprocessed(self) -> None:
         """Raise an exception if the functions have already been pre-processed.
@@ -356,7 +370,7 @@ class EvaluationProblem(BaseProblem):
     def evaluate_functions(
         self,
         design_vector: RealArray | None = None,
-        normalize: bool = True,
+        design_vector_is_normalized: bool = True,
         preprocess_design_vector: bool = True,
         output_functions: Iterable[MDOFunction] | None = None,
         jacobian_functions: Iterable[MDOFunction] | None = None,
@@ -366,7 +380,7 @@ class EvaluationProblem(BaseProblem):
         Args:
             design_vector: The design vector at which to evaluate the functions;
                 if ``None``, use the current value of the design space.
-            normalize: Whether to consider the design vector ``x_vect`` as normalized.
+            design_vector_is_normalized: Whether ``design_vector`` is normalized.
             preprocess_design_vector: Whether to preprocess the design vector.
             output_functions: The functions computing the outputs.
                 If ``None``, evaluate all the functions computing outputs.
@@ -381,6 +395,10 @@ class EvaluationProblem(BaseProblem):
         """
         if output_functions is None and jacobian_functions is None:
             output_functions, jacobian_functions = self.get_functions()
+        elif output_functions is None:
+            output_functions = ()
+        elif jacobian_functions is None:
+            jacobian_functions = ()
 
         if preprocess_design_vector:
             functions = output_functions or jacobian_functions
@@ -388,7 +406,7 @@ class EvaluationProblem(BaseProblem):
                 # N.B. either all functions expect normalized inputs or none of them do.
                 design_vector = self._preprocess_inputs(
                     design_vector,
-                    normalize,
+                    design_vector_is_normalized,
                     functions[0].expects_normalized_inputs,
                 )
 
@@ -568,6 +586,10 @@ class EvaluationProblem(BaseProblem):
         self.check()
         self.new_iter_observables.evaluate_jacobian = eval_obs_jac
 
+    @staticmethod
+    def _convert_array_to_dense(value):
+        return value.todense() if isinstance(value, sparse_classes) else value
+
     def _preprocess_function(
         self,
         function: MDOFunction,
@@ -589,48 +611,61 @@ class EvaluationProblem(BaseProblem):
         Returns:
             The pre-processed function.
         """
-        function_before_preprocessing = function
-        # First differentiate it so that the finite differences evaluations
-        # are not stored in the database, which would be the case in the other
-        # way round
-        # Also, store non normalized values in the database for further
-        # exploitation
-        # Convert Jacobian in dense format if needed
-        if not support_sparse_jacobian:
-            function = DenseJacobianFunction(function)
-
+        original_function = function
+        args = () if support_sparse_jacobian else (self._convert_array_to_dense,)
+        ds = self.design_space
         if (
             isinstance(function, MDOLinearFunction)
             and not round_ints
             and is_function_input_normalized
         ):
+            expects_normalized_inputs = True
             function = function.normalize(self.design_space)
+            func_seq = (function.func,)
+            jac_seq = (function.jac, *args)
         elif is_function_input_normalized and round_ints:
-            function = NormIntFunction(function, self.design_space)
-        elif round_ints:
-            function = IntFunction(function, self.design_space.round_vect)
-        elif is_function_input_normalized:
-            function = NormFunction(function, self.design_space)
-
-        if self.differentiation_method in set(self.ApproximationMode):
-            gradient_approximator = GradientApproximatorFactory().create(
-                self.differentiation_method,
-                function.evaluate,
-                step=self.differentiation_step,
-                design_space=self.design_space,
-                normalize=function.expects_normalized_inputs,
-                parallel=self.__parallel_differentiation,
-                **self.__parallel_differentiation_options,
+            expects_normalized_inputs = True
+            func_seq = (ds.unnormalize_vect, ds.round_vect, function.func)
+            jac_seq = (
+                ds.unnormalize_vect,
+                ds.round_vect,
+                function.jac,
+                *args,
+                ds.normalize_grad,
             )
-            function.jac = gradient_approximator.f_gradient
+        elif round_ints:
+            expects_normalized_inputs = function.expects_normalized_inputs
+            func_seq = (ds.round_vect, function.func)
+            jac_seq = (ds.round_vect, function.jac, *args)
+        elif is_function_input_normalized:
+            expects_normalized_inputs = True
+            func_seq = (ds.unnormalize_vect, function.func)
+            jac_seq = (ds.unnormalize_vect, function.jac, *args, ds.normalize_grad)
+        else:
+            expects_normalized_inputs = function.expects_normalized_inputs
+            func_seq = (function.func,)
+            jac_seq = (function.jac, *args)
 
-        if use_database:
-            if function.expects_normalized_inputs:
-                function = DBNormFunction(function, self)
-            else:
-                function = DBFunction(function, self)
-
-        function.original = function_before_preprocessing
+        function = ProblemFunction(
+            function,
+            func_seq,
+            jac_seq,
+            expects_normalized_inputs,
+            self.database if use_database else None,
+            self.evaluation_counter,
+            self.stop_if_nan,
+            self.design_space,
+            differentiation_method=(
+                self.differentiation_method
+                if self.differentiation_method in set(self.ApproximationMode)
+                else None
+            ),
+            step=self.differentiation_step,
+            normalize=is_function_input_normalized,
+            parallel=self.__parallel_differentiation,
+            **self.__parallel_differentiation_options,
+        )
+        function.original = original_function
         return function
 
     def check(self) -> None:
@@ -749,7 +784,7 @@ class EvaluationProblem(BaseProblem):
         if design_space:
             self.design_space.set_current_value(self.__initial_current_x)
 
-        if function_calls and MDOFunction.activate_counters:
+        if function_calls and ProblemFunction.enable_statistics:
             for function in self.functions:
                 function.n_calls = 0
 
@@ -758,22 +793,14 @@ class EvaluationProblem(BaseProblem):
                     original_functions.n_calls = 0
 
         if preprocessing and self._functions_are_preprocessed:
+            n_o_calls = [o.n_calls for o in self.__observables]
+            n_nio_calls = [o.n_calls for o in self.__new_iter_observables]
             self.__observables.reset()
             self.__new_iter_observables.reset()
+            if not function_calls and ProblemFunction.enable_statistics:
+                for o, n_calls in zip(self.__observables, n_o_calls):
+                    o.n_calls = n_calls
+                for nio, n_calls in zip(self.__new_iter_observables, n_nio_calls):
+                    nio.n_calls = n_calls
+
             self._functions_are_preprocessed = False
-
-    def get_x0_normalized(
-        self, cast_to_real: bool = False, as_dict: bool = False
-    ) -> RealArray | dict[str, RealArray]:
-        """Return the initial values of the design variables after normalization.
-
-        Args:
-            cast_to_real: Whether to return the real part of the initial values.
-            as_dict: Whether to return the values
-                as a dictionary of the form ``{variable_name: variable_value}``.
-
-        Returns:
-            The current values of the design variables
-            normalized between 0 and 1 from their lower and upper bounds.
-        """
-        return self.design_space.get_current_value(None, cast_to_real, as_dict, True)

@@ -293,7 +293,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
                     output_data, jacobian_data = problem.evaluate_functions(
                         design_vector=input_data,
                         preprocess_design_vector=False,
-                        normalize=False,
+                        design_vector_is_normalized=False,
                         output_functions=self.__output_functions,
                         jacobian_functions=self.__jacobian_functions,
                     )
@@ -324,7 +324,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         return self.problem.evaluate_functions(
             design_vector=sample,
             preprocess_design_vector=False,
-            normalize=False,
+            design_vector_is_normalized=False,
             output_functions=self.__output_functions,
             jacobian_functions=self.__jacobian_functions,
         )

@@ -31,7 +31,7 @@ def create_problem():
     eq = problem.constraints[2]
 
     def cstr(x):
-        return concatenate([ineq1(x), ineq2(x)])
+        return concatenate([ineq1.evaluate(x), ineq2.evaluate(x)])
 
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
@@ -58,6 +58,6 @@ def test_exterior_penalty() -> None:
         max_iter=1000,
     )
     sol2 = problem.solution
-    problem_ref.constraints[0](sol2.x_opt)
+    problem_ref.constraints[0].evaluate(sol2.x_opt)
 
     assert allclose(ref_sol.x_opt, sol2.x_opt, rtol=1e-2)

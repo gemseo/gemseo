@@ -72,7 +72,7 @@ def compute_linear_approximation(
         raise AttributeError(msg)
 
     coefficients = function.jac(x_vect)
-    func_val = function.evaluate(x_vect)
+    func_val = function.func(x_vect)
     if isinstance(func_val, ndarray):
         # Make sure the function value is at most 1-dimensional
         func_val = func_val.flatten()

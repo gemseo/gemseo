@@ -94,7 +94,7 @@ def test_linear_function(coefs) -> None:
     coeffs_str = (MDOFunction.COEFF_FORMAT_1D.format(coeff) for coeff in (2, 9))
     expr = "-x!2 + {}*x!3 + x!4 - {}*x!6".format(*coeffs_str)
     assert linear_fun.expr == expr
-    assert linear_fun(np.ones(max(coefs.shape))) == -7.0
+    assert linear_fun.evaluate(np.ones(max(coefs.shape))) == -7.0
     # Jacobian
     jac = linear_fun.jac(np.array([]))
     if isinstance(jac, ndarray):
@@ -157,7 +157,7 @@ def test_mult_linear_function() -> None:
 
     prod = sqr * linear_fun
     x_array = np.array([4.0])
-    assert prod(x_array) == 128.0
+    assert prod.evaluate(x_array) == 128.0
 
     numerical_jac = prod.jac(x_array)
     assert numerical_jac[0] == 96.0

@@ -96,7 +96,7 @@ class TestMDOFormulation(unittest.TestCase):
         f.optimization_problem.objective = g
 
         obj = f.optimization_problem.objective
-        self.assertAlmostEqual(obj(math.pi / 2), 1.0, 9)
+        self.assertAlmostEqual(obj.evaluate(math.pi / 2), 1.0, 9)
         self.assertAlmostEqual(obj.jac(0.0), 1.0, 9)
 
     def test_get_x0(self) -> None:

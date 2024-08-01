@@ -127,7 +127,7 @@ class FunctionRestriction(MDOFunction):
         Returns:
             The value of the outputs of the restriction.
         """
-        return self.__mdo_function.evaluate(self.__extend_subvect(x_subvect))
+        return self.__mdo_function.func(self.__extend_subvect(x_subvect))
 
     def _jac_to_wrap(self, x_subvect: NumberArray) -> NumberArray:
         """Compute the Jacobian matrix of the restriction.

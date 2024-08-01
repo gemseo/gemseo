@@ -32,20 +32,20 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize(
-    ("max_iter", "options", "expected_length", "expected_n_calls"),
+    ("max_iter", "options", "expected_length"),
     [
-        (10, {}, 10, 11),
-        (10, {"n_start": 4}, 10, 11),
-        (15, {"opt_algo_max_iter": 2}, 11, 11),
+        (10, {}, 10),
+        (10, {"n_start": 4}, 9),
+        (15, {"opt_algo_max_iter": 2}, 11),
     ],
 )
-def test_database_length(max_iter, options, expected_length, expected_n_calls):
+def test_database_length(max_iter, options, expected_length):
     """Check the database length and the number of calls to the objective."""
     problem = Power2()
     algo = MultiStart()
     algo.execute(problem, max_iter=max_iter, **options)
     assert len(problem.database) == expected_length
-    assert problem.objective.n_calls == expected_n_calls
+    assert problem.objective.n_calls == 1
 
 
 @pytest.mark.parametrize("max_iter", [4, 5])
@@ -73,8 +73,7 @@ def test_max_iter_error_2():
         match=re.escape(
             "Multi-start optimization: "
             "the sum of the maximum number of iterations (50) "
-            "related to the sub-optimizations is greater than "
-            "the total maximum number of iterations (10)."
+            "related to the sub-optimizations is greater than the limit (10-1=9)."
         ),
     ):
         algo.execute(problem, max_iter=10, n_start=5, opt_algo_max_iter=10)

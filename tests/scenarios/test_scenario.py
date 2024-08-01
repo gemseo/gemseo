@@ -383,14 +383,14 @@ def test_adapter(tmp_wd, idf_scenario) -> None:
     gen = MDODisciplineAdapterGenerator(adapter)
     func = gen.get_function(inputs, outputs)
     x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
-    f_x1 = func(x_shared)
-    f_x2 = func(x_shared)
+    f_x1 = func.evaluate(x_shared)
+    f_x2 = func.evaluate(x_shared)
 
     assert f_x1 == f_x2
     assert len(idf_scenario.formulation.optimization_problem.database) == 1
 
     x_shared = array([0.09, 60000, 1.4, 2.5, 70, 1500])
-    func(x_shared)
+    func.evaluate(x_shared)
 
 
 def test_adapter_error(idf_scenario) -> None:

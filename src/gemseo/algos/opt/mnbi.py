@@ -432,7 +432,7 @@ class MNBI(BaseOptimizationLibrary):
             raise RuntimeError(msg)
 
         x_min = opt_result.x_opt
-        f_min = self.problem.objective(x_min)
+        f_min = self.problem.objective.evaluate(x_min)
         n_calls = self.problem.objective.n_calls - n_calls_start
         return IndividualSubOptimOutput(f_min, x_min, self.problem.database, n_calls)
 
@@ -604,7 +604,7 @@ class MNBI(BaseOptimizationLibrary):
                 "No feasible optimum has been found for phi_beta = %s", phi_beta
             )
         x_min = opt_res.x_opt[:-1]
-        f_min = f(x_min)
+        f_min = f.evaluate(x_min)
         n_calls = f.n_calls - n_calls_start
 
         # If some components of the sub-optim constraint are inactive, return the vector

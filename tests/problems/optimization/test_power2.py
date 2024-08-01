@@ -120,7 +120,7 @@ def test_function_expression(request, function, expr, value) -> None:
     """Check the consistency between the expression of a function and its value."""
     func = request.getfixturevalue(function)
     assert func.expr == expr
-    assert_equal(func(numpy.array([-1, -2, -3])), value)
+    assert_equal(func.evaluate(numpy.array([-1, -2, -3])), value)
 
 
 @pytest.mark.parametrize(
@@ -151,23 +151,23 @@ def test_function_gradient(request, function, gradient) -> None:
 def test_iter_error(exception_error, iter_error) -> None:
     """Check the `iter_error` attribute."""
     power2 = Power2(exception_error)
-    power2.objective(numpy.zeros(3))
+    power2.objective.evaluate(numpy.zeros(3))
     assert power2.iter_error == iter_error
 
 
 def test_exception_error() -> None:
     """Check the `exception_error` mechanism."""
     power2 = Power2(True)
-    power2.objective(numpy.zeros(3))
-    power2.objective(numpy.zeros(3))
-    power2.objective(numpy.zeros(3))
+    power2.objective.evaluate(numpy.zeros(3))
+    power2.objective.evaluate(numpy.zeros(3))
+    power2.objective.evaluate(numpy.zeros(3))
     with pytest.raises(
         ValueError, match=re.escape("pow2() has already been called three times.")
     ):
-        power2.objective(numpy.zeros(3))
+        power2.objective.evaluate(numpy.zeros(3))
 
 
 def test_solution(problem) -> None:
     """Check the objective value at the solution."""
     x_opt, f_opt = problem.get_solution()
-    assert problem.objective(x_opt) == pytest.approx(f_opt)
+    assert problem.objective.evaluate(x_opt) == pytest.approx(f_opt)

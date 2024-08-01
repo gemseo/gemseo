@@ -101,7 +101,7 @@ def test_evaluate_samples_multiproc(fullfact) -> None:
     x_history = problem.database.get_x_vect_history()
     assert len(x_history) == n_samples
     for sample in x_history:
-        val_ref = new_pb.objective(sample)
+        val_ref = new_pb.objective.evaluate(sample)
         val_sample = problem.database.get_function_value("pow2", sample)
         assert val_ref == val_sample
 

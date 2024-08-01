@@ -88,8 +88,8 @@ class ProgressOpt(BaseOptimizationLibrary):
         )
         for off in self.offsets:
             if self.constraints_before_obj:
-                problem.constraints[0].func(x_0 + off)
-            problem.objective.func(x_0 + off)
+                problem.constraints[0].evaluate(x_0 + off)
+            problem.objective.evaluate(x_0 + off)
         return self._get_optimum_from_database(problem)
 
 
@@ -107,7 +107,7 @@ def test_progress_bar(
             for k in range(len(offsets)):
                 if f"{(k + 1) * 10}%" in record.message:
                     count[k] += 1
-                    assert str(int(f(5.0 + offsets[k] * 10))) in record.message
+                    assert str(int(f.evaluate(5.0 + offsets[k] * 10))) in record.message
                     if not constraints_before_obj and k >= 1:
                         assert tqdm.format_interval(0.1 * (k + 1)) in record.message
                         assert (

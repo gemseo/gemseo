@@ -12,14 +12,3 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A mixin for normalized function."""
-
-from __future__ import annotations
-
-
-class NormFunctionMixin:
-    """A mixin for normalized function."""
-
-    @property
-    def expects_normalized_inputs(self) -> bool:  # noqa:D102
-        return True

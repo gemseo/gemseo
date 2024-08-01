@@ -170,7 +170,7 @@ class FunctionFromDiscipline(MDOFunction):
         Returns:
             The value of the outputs.
         """
-        return self.__discipline_adapter(x_vect[self._input_mask])
+        return self.__discipline_adapter.evaluate(x_vect[self._input_mask])
 
     def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the gradient of the outputs.

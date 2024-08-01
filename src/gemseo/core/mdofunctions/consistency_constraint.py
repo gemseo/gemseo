@@ -100,7 +100,7 @@ class ConsistencyConstraint(MDOFunction):
             Equal to zero if the disciplines are at equilibrium.
         """
         x_sw = self.__formulation.mask_x_swap_order(self.__output_couplings, x_vect)
-        coupl = self.__coupl_func(x_vect)
+        coupl = self.__coupl_func.evaluate(x_vect)
         if self.__formulation.normalize_constraints:
             return (coupl - x_sw) / self.__norm_fact
         return coupl - x_sw

@@ -173,16 +173,13 @@ class BaseAugmentedLagrangian(
             for constr in problem.constraints.get_equality_constraints()
             if constr.name not in options[self.__SUB_PROBLEM_CONSTRAINTS]
         ]
+        current_value = self.problem.design_space.get_current_value(normalize=normalize)
         eq_multipliers = {
-            h.name: zeros_like(
-                h(problem.design_space.get_current_value(normalize=normalize))
-            )
+            h.name: zeros_like(h.evaluate(current_value))
             for h in problem_eq_constraints
         }
         ineq_multipliers = {
-            g.name: zeros_like(
-                g(problem.design_space.get_current_value(normalize=normalize))
-            )
+            g.name: zeros_like(g.evaluate(current_value))
             for g in problem_ineq_constraints
         }
 

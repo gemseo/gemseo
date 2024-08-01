@@ -1850,8 +1850,8 @@ def compute_doe(
 
 def _log_settings() -> str:
     from gemseo.algos.base_driver_library import BaseDriverLibrary
+    from gemseo.algos.problem_function import ProblemFunction
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.utils.string_tools import MultiLineString
 
     add_de_prefix = lambda x: "" if x else "de"  # noqa: E731
@@ -1878,11 +1878,11 @@ def _log_settings() -> str:
         add_not_prefix(MDODiscipline.activate_output_data_check),
     )
     text.dedent()
-    text.add("MDOFunction")
+    text.add("ProblemFunction")
     text.indent()
     text.add(
         "The counters are {}activated.",
-        add_de_prefix(MDOFunction.activate_counters),
+        add_de_prefix(ProblemFunction.enable_statistics),
     )
     text.dedent()
     text.add("BaseDriverLibrary")
@@ -1984,11 +1984,11 @@ def configure(
     """
     from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.algos.problem_function import ProblemFunction
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
     MDODiscipline.activate_counters = activate_discipline_counters
-    MDOFunction.activate_counters = activate_function_counters
+    ProblemFunction.enable_statistics = activate_function_counters
     BaseDriverLibrary.activate_progress_bar = activate_progress_bar
     MDODiscipline.activate_input_data_check = check_input_data
     MDODiscipline.activate_output_data_check = check_output_data
@@ -2190,3 +2190,31 @@ def sample_disciplines(
     return scenario.formulation.optimization_problem.to_dataset(
         name=name, opt_naming=False, export_gradients=True
     )
+
+
+def to_pickle(obj: Any, file_path: str | Path) -> None:
+    """Save the pickled representation of an object on the disk.
+
+    Args:
+        file_path: The path to the file to store the pickled representation.
+    """
+    import pickle
+
+    with Path(file_path).open("wb") as f:
+        pickler = pickle.Pickler(f, protocol=2)
+        pickler.dump(obj)
+
+
+def from_pickle(file_path: str | Path) -> Any:
+    """Load an object from its pickled representation stored on the disk.
+
+    Args:
+        file_path: The path to the file containing the pickled representation.
+
+    Returns:
+        The object.
+    """
+    import pickle
+
+    with Path(file_path).open("rb") as f:
+        return pickle.Unpickler(f).load()

@@ -41,7 +41,7 @@ def disc_constr():
     constraints = problem.constraints[:2]
 
     def cstr(x):
-        constr = concatenate([cstr(x) for cstr in constraints])
+        constr = concatenate([cstr.evaluate(x) for cstr in constraints])
         return constr  # noqa: RET504
 
     def jac(x):

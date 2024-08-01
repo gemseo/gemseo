@@ -122,8 +122,10 @@ def test_create_quadratic_optimization_problem(scalable_problem) -> None:
         ),
     )
     x = array([1.0, 2.0, 3.0])
-    assert_almost_equal(qp_problem.objective(x), array(15.784), decimal=3)
-    assert_almost_equal(qp_problem.constraints[0](x), array([0.79, 3.097]), decimal=3)
+    assert_almost_equal(qp_problem.objective.evaluate(x), array(15.784), decimal=3)
+    assert_almost_equal(
+        qp_problem.constraints[0].evaluate(x), array([0.79, 3.097]), decimal=3
+    )
 
     scenario = scalable_problem.create_scenario()
     scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
@@ -151,8 +153,10 @@ def test_create_quadratic_optimization_problem_uncertainty_default(
         covariance_matrices=(array([[1]]), array([[1.25]]))
     )
     x = array([1.0, 2.0, 3.0])
-    assert_almost_equal(qp_problem.objective(x), array(18.539), decimal=3)
-    assert_almost_equal(qp_problem.constraints[0](x), array([2.843, 5.706]), decimal=3)
+    assert_almost_equal(qp_problem.objective.evaluate(x), array(18.539), decimal=3)
+    assert_almost_equal(
+        qp_problem.constraints[0].evaluate(x), array([2.843, 5.706]), decimal=3
+    )
 
 
 @pytest.mark.parametrize(
@@ -170,8 +174,10 @@ def test_robust_quadratic_optimization(scalable_problem, options, expected) -> N
         covariance_matrices=(array([[1]]), array([[1.25]])), **options
     )
     x = array([1.0, 2.0, 3.0])
-    assert_almost_equal(qp_problem.objective(x), array(18.539), decimal=3)
-    assert_almost_equal(qp_problem.constraints[0](x), array(expected), decimal=3)
+    assert_almost_equal(qp_problem.objective.evaluate(x), array(18.539), decimal=3)
+    assert_almost_equal(
+        qp_problem.constraints[0].evaluate(x), array(expected), decimal=3
+    )
 
 
 def test_compute_y(scalable_problem) -> None:

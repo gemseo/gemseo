@@ -1,0 +1,10 @@
+API changes:
+
+- ``MDOFunction.to_pickle``: removed; use the ``to_pickle`` function instead.
+- ``MDOFunction.from_pickle``: removed; use the ``from_pickle`` function instead.
+- ``BaseSensitivityAnalysis.to_pickle``: removed; use the ``to_pickle`` function instead.
+- ``BaseSensitivityAnalysis.from_pickle``: removed; use the ``from_pickle`` function instead.
+- ``load_sensitivity_analysis``: removed; use the ``from_pickle`` function instead.
+- ``NormFunction``: removed as it was only used internally by ``OptimizationProblem.preprocess_functions``; replaced by ``ProblemFunction``.
+- ``NormDBFunction``: removed as it was only used internally by ``OptimizationProblem.preprocess_functions``; replaced by ``ProblemFunction``.
+- ``MDOFunction.n_calls``: removed; only ``ProblemFunction`` has this mechanism.

@@ -1,0 +1,5 @@
+API changes:
+
+- ``MDOFunction.__call__``: removed; use ``MDOFunction.evaluate`` instead.
+- ``MDOFunction.func`` is now an alias of the wrapped function ``MDOFunction._func``; use ``MDOFunction.evaluate`` to both evaluate ``_func`` and increment the number of calls when ``MDOFunction.activate_counters`` is ``True``.
+- ``MDOFunction``'s ``expects_normalized_inputs`` argument renamed to ``with_normalized_inputs``.

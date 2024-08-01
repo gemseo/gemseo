@@ -310,7 +310,7 @@ class Constraints(Functions):
             x_vect = design_space.normalize_vect(x_vect)
 
         return {
-            ineq_constraint: atleast_1d((ineq_constraint(x_vect)) >= -tol)
+            ineq_constraint: atleast_1d((ineq_constraint.evaluate(x_vect)) >= -tol)
             for ineq_constraint in self.get_inequality_constraints()
         }
 

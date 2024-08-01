@@ -53,8 +53,8 @@ def test_linear_composition():
     f2 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": 1})
 
     x = zeros(3)
-    assert f1(x) == 0.0
-    assert f2(x) == rosen(x)
+    assert f1.evaluate(x) == 0.0
+    assert f2.evaluate(x) == rosen(x)
 
     interp_op = array([[0.3], [0.4], [0.5]])
     f_1_1 = LinearCompositeFunction(f1, interp_op)
@@ -76,8 +76,8 @@ def test_restricted_function():
         f_ref, restriction_indices=array([0]), restriction_values=array([1])
     )
 
-    assert f1(x) == 0.0
-    assert f2(x) == 2.0
+    assert f1.evaluate(x) == 0.0
+    assert f2.evaluate(x) == 2.0
 
     f1.check_grad(x, error_max=1e-4)
     f2.check_grad(x, error_max=1e-4)

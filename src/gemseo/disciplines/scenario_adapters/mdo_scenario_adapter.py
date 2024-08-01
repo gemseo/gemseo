@@ -385,8 +385,8 @@ class MDOScenarioAdapter(MDODiscipline):
                 no_db_no_norm=True
             )
             opt_problem.evaluate_functions(
-                x_opt,
-                normalize=False,
+                design_vector=x_opt,
+                design_vector_is_normalized=False,
                 output_functions=output_functions,
                 jacobian_functions=jacobian_functions,
             )

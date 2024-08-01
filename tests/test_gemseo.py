@@ -88,9 +88,9 @@ from gemseo import write_design_space
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base_mda import BaseMDA
@@ -693,7 +693,7 @@ def test_print_configuration(capfd) -> None:
       The counters are activated.
       The input data are checked before running the discipline.
       The output data are checked after running the discipline.
-   MDOFunction
+   ProblemFunction
       The counters are activated.
    BaseDriverLibrary
       The progress bar is activated."""
@@ -821,7 +821,7 @@ def test_configure(
         check_input_data=check_input_data,
         check_output_data=check_output_data,
     )
-    assert MDOFunction.activate_counters == activate_function_counters
+    assert ProblemFunction.enable_statistics == activate_function_counters
     assert MDODiscipline.activate_counters == activate_discipline_counters
     assert MDODiscipline.activate_input_data_check == check_input_data
     assert MDODiscipline.activate_output_data_check == check_output_data
@@ -836,7 +836,7 @@ def test_configure(
 def test_configure_default() -> None:
     """Check the default use of configure."""
     configure()
-    assert MDOFunction.activate_counters is True
+    assert ProblemFunction.enable_statistics is True
     assert MDODiscipline.activate_counters is True
     assert MDODiscipline.activate_input_data_check is True
     assert MDODiscipline.activate_output_data_check is True

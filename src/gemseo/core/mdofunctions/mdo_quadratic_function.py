@@ -106,7 +106,7 @@ class MDOQuadraticFunction(MDOFunction):
         """
         return (
             x_vect.T @ (self._quad_coeffs @ x_vect)
-            + self._linear_part(x_vect)
+            + self._linear_part.func(x_vect)
             + self._value_at_zero
         )
 

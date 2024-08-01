@@ -123,11 +123,13 @@ def aggregate_sum_square(
     """
 
     def compute(x):
-        return compute_sum_square_agg(constr_fct(x), indices=indices, scale=scale)
+        return compute_sum_square_agg(
+            constr_fct.evaluate(x), indices=indices, scale=scale
+        )
 
     def compute_jac(x):
         return compute_total_sum_square_agg_jac(
-            constr_fct(x), constr_fct.jac(x), indices=indices, scale=scale
+            constr_fct.evaluate(x), constr_fct.jac(x), indices=indices, scale=scale
         )
 
     return _create_mdofunc(
@@ -160,12 +162,12 @@ def aggregate_positive_sum_square(
 
     def compute(x):
         return compute_sum_positive_square_agg(
-            constr_fct(x), indices=indices, scale=scale
+            constr_fct.evaluate(x), indices=indices, scale=scale
         )
 
     def compute_jac(x):
         return compute_total_sum_square_positive_agg_jac(
-            constr_fct(x), constr_fct.jac(x), indices=indices, scale=scale
+            constr_fct.evaluate(x), constr_fct.jac(x), indices=indices, scale=scale
         )
 
     return _create_mdofunc(
@@ -197,11 +199,11 @@ def aggregate_max(
     """
 
     def compute(x):
-        return compute_max_agg(constr_fct(x), indices=indices, scale=scale)
+        return compute_max_agg(constr_fct.evaluate(x), indices=indices, scale=scale)
 
     def compute_jac(x):
         return compute_max_agg_jac(
-            constr_fct(x), constr_fct.jac(x), indices=indices, scale=scale
+            constr_fct.evaluate(x), constr_fct.jac(x), indices=indices, scale=scale
         )
 
     return _create_mdofunc(
@@ -237,11 +239,17 @@ def aggregate_iks(
     """
 
     def compute(x):
-        return compute_iks_agg(constr_fct(x), indices=indices, rho=rho, scale=scale)
+        return compute_iks_agg(
+            constr_fct.evaluate(x), indices=indices, rho=rho, scale=scale
+        )
 
     def compute_jac(x):
         return compute_total_iks_agg_jac(
-            constr_fct(x), constr_fct.jac(x), indices=indices, rho=rho, scale=scale
+            constr_fct.evaluate(x),
+            constr_fct.jac(x),
+            indices=indices,
+            rho=rho,
+            scale=scale,
         )
 
     return _create_mdofunc(
@@ -278,12 +286,16 @@ def aggregate_lower_bound_ks(
 
     def compute(x):
         return compute_lower_bound_ks_agg(
-            constr_fct(x), indices=indices, rho=rho, scale=scale
+            constr_fct.evaluate(x), indices=indices, rho=rho, scale=scale
         )
 
     def compute_jac(x):
         return compute_total_ks_agg_jac(
-            constr_fct(x), constr_fct.jac(x), indices=indices, rho=rho, scale=scale
+            constr_fct.evaluate(x),
+            constr_fct.jac(x),
+            indices=indices,
+            rho=rho,
+            scale=scale,
         )
 
     return _create_mdofunc(
@@ -320,12 +332,16 @@ def aggregate_upper_bound_ks(
 
     def compute(x):
         return compute_upper_bound_ks_agg(
-            constr_fct(x), indices=indices, rho=rho, scale=scale
+            constr_fct.evaluate(x), indices=indices, rho=rho, scale=scale
         )
 
     def compute_jac(x):
         return compute_total_ks_agg_jac(
-            constr_fct(x), constr_fct.jac(x), indices=indices, rho=rho, scale=scale
+            constr_fct.evaluate(x),
+            constr_fct.jac(x),
+            indices=indices,
+            rho=rho,
+            scale=scale,
         )
 
     return _create_mdofunc(

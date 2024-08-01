@@ -24,7 +24,6 @@ import re
 from operator import add
 from operator import itemgetter
 from operator import mul
-from operator import sub
 from operator import truediv
 from unittest import mock
 
@@ -39,9 +38,14 @@ from numpy import ones
 from numpy import sin
 from numpy import zeros
 from numpy.linalg import norm
+from numpy.testing import assert_array_equal
 from scipy.sparse import csr_array
 
-from gemseo.algos.preprocessed_functions.norm_function import NormFunction
+from gemseo import from_pickle
+from gemseo import to_pickle
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.evaluation_counter import EvaluationCounter
+from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.mdofunctions.concatenate import Concatenate
 from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
 from gemseo.core.mdofunctions.function_restriction import FunctionRestriction
@@ -73,7 +77,7 @@ def sinus_eq_output_names() -> MDOFunction:
 @pytest.mark.parametrize("x", [0, 1])
 def test_call(sinus, x) -> None:
     """Check MDOFunction.__call__()."""
-    assert sinus(x) == sin(x)
+    assert sinus.evaluate(x) == sin(x)
 
 
 def test_output_names_error() -> None:
@@ -131,7 +135,7 @@ def test_check_format() -> None:
 def test_func_error(sinus) -> None:
     """Check func() with a string argument."""
     with pytest.raises(TypeError):
-        sinus.func("toto")
+        sinus.evaluate("toto")
 
 
 @pytest.mark.parametrize("jacobian_type_1", ["dense", "sparse"])
@@ -167,47 +171,47 @@ def test_mdofunctions_algebra(jacobian_type_1, jacobian_type_2) -> None:
     dg_x = -sin(x)
 
     h = f + g
-    assert allclose(h(x), f_x + g_x)
+    assert allclose(h.evaluate(x), f_x + g_x)
     assert allclose(h.jac(x).data, (df_x + dg_x).data)
     h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f - g
-    assert allclose(h(x), f_x - g_x)
+    assert allclose(h.evaluate(x), f_x - g_x)
     assert allclose(h.jac(x).data, (df_x - dg_x).data)
     h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f * g
-    assert allclose(h(x), f_x * g_x)
+    assert allclose(h.evaluate(x), f_x * g_x)
     assert allclose(h.jac(x).data, (g_x * df_x + f_x * dg_x).data)
     h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f / g
-    assert allclose(h(x), f_x / g_x)
+    assert allclose(h.evaluate(x), f_x / g_x)
     assert allclose(h.jac(x).data, (g_x * df_x - f_x * dg_x).data / g_x**2)
     h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f + 3.0
-    assert allclose(h(x), f_x + 3.0)
+    assert allclose(h.evaluate(x), f_x + 3.0)
     assert allclose(h.jac(x).data, df_x.data)
     h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f - 3.0
-    assert allclose(h(x), f_x - 3.0)
+    assert allclose(h.evaluate(x), f_x - 3.0)
     assert allclose(h.jac(x).data, df_x.data)
     h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f * 3.0
-    assert allclose(h(x), f_x * 3.0)
+    assert allclose(h.evaluate(x), f_x * 3.0)
     assert allclose(h.jac(x).data, (df_x * 3.0).data)
     h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f / 3.0
-    assert allclose(h(x), f_x / 3.0)
+    assert allclose(h.evaluate(x), f_x / 3.0)
     assert allclose(h.jac(x).data, (df_x / 3.0).data)
     h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
     h = -f
-    assert allclose(h(x), -f_x)
+    assert allclose(h.evaluate(x), -f_x)
     assert allclose(h.jac(x).data, (-df_x).data)
     h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
 
@@ -301,7 +305,7 @@ def test_restriction(function) -> None:
     x_vect = array([1.0, 2.0, 3.0])
     sub_x_vect = x_vect[array([0, 2])]
     restriction = FunctionRestriction(array([1]), array([2.0]), 3, function, "f_y")
-    assert allclose(restriction(sub_x_vect), function(x_vect))
+    assert allclose(restriction.evaluate(sub_x_vect), function.evaluate(x_vect))
     assert allclose(
         restriction.jac(sub_x_vect), function.jac(x_vect)[..., array([0, 2])]
     )
@@ -317,7 +321,7 @@ def test_linearization() -> None:
         dim=2,
     )
     linearization = compute_linear_approximation(function, array([1.0, 1.0, -2.0]))
-    assert allclose(linearization(array([2.0, 2.0, 2.0])), array([-3.0, 3.0]))
+    assert allclose(linearization.evaluate(array([2.0, 2.0, 2.0])), array([-3.0, 3.0]))
     linearization.check_grad(array([2.0, 2.0, 2.0]))
 
 
@@ -336,7 +340,7 @@ def test_convex_linearization() -> None:
     convex_lin = ConvexLinearApprox(
         array([1.0, 1.0, -2.0]), function, array([False, True, True])
     )
-    assert allclose(convex_lin(array([2.0, 2.0, 2.0])), array([7.5, 4.5]))
+    assert allclose(convex_lin.evaluate(array([2.0, 2.0, 2.0])), array([7.5, 4.5]))
 
     # Check the Jacobian of the convex linearization
     convex_lin.check_grad(array([2.0, 2.0, 2.0]), error_max=1e-6)
@@ -351,7 +355,7 @@ def test_convex_linearization() -> None:
     convex_lin = ConvexLinearApprox(
         array([1.0, 1.0, -2.0]), function, array([False, True, True])
     )
-    value = convex_lin(array([2.0, 2.0, 2.0]))
+    value = convex_lin.evaluate(array([2.0, 2.0, 2.0]))
     assert isinstance(value, float)
     assert allclose(value, 7.5)
     gradient = convex_lin.jac(array([2.0, 2.0, 2.0]))
@@ -386,7 +390,7 @@ def test_quadratic_approximation(function_for_quadratic_approximation) -> None:
     approx = compute_quadratic_approximation(
         function_for_quadratic_approximation, ones(3), eye(3)
     )
-    assert approx(zeros(3)) == pytest.approx(0.0)
+    assert approx.evaluate(zeros(3)) == pytest.approx(0.0)
     assert allclose(approx.jac(zeros(3)), zeros(3))
     approx.check_grad(zeros(3), error_max=1e-6)
 
@@ -398,7 +402,7 @@ def test_concatenation() -> None:
     g = MDOFunction(lambda x: x, "g", jac=lambda x: eye(dim), dim=dim)
     h = Concatenate([f, g], "h")
     x_vect = ones(dim)
-    assert allclose(h(x_vect), array([2.0, 1.0, 1.0]))
+    assert allclose(h.evaluate(x_vect), array([2.0, 1.0, 1.0]))
     assert allclose(h.jac(x_vect), array([[2.0, 2.0], [1.0, 0.0], [0.0, 1.0]]))
     h.check_grad(x_vect, error_max=1e-6)
 
@@ -408,12 +412,12 @@ def test_set_pt_from_database(normalize) -> None:
     problem = Power2()
     problem.preprocess_functions(is_function_input_normalized=normalize)
     x = zeros(3)
-    problem.evaluate_functions(x, normalize=normalize)
+    problem.evaluate_functions(design_vector=x, design_vector_is_normalized=normalize)
     function = MDOFunction(sum, problem.objective.name)
     function.set_pt_from_database(
         problem.database, problem.design_space, normalize=normalize, jac=False
     )
-    function(x)
+    function.evaluate(x)
 
 
 def test_linear_approximation() -> None:
@@ -537,33 +541,47 @@ def test_expect_normalized_inputs_from_database(
     assert func.expects_normalized_inputs == normalize
 
 
-def test_expect_normalized_inputs_norm_function(function, problem) -> None:
-    """Check the inputs normalization expectation."""
-    func = NormFunction(function, problem)
-    assert func.expects_normalized_inputs
-
-
 def test_activate_counters() -> None:
     """Check that the function counter is active by default."""
     func = MDOFunction(lambda x: x, "func")
+    func = ProblemFunction(
+        func,
+        (func.func,),
+        (func.func,),
+        False,
+        None,
+        EvaluationCounter(),
+        False,
+        DesignSpace(),
+    )
     assert func.n_calls == 0
-    func(array([1.0]))
+    func.evaluate(array([1.0]))
     assert func.n_calls == 1
 
 
 def test_deactivate_counters() -> None:
     """Check that the function counter is set to None when deactivated."""
-    activate_counters = MDOFunction.activate_counters
+    enable_statistics = ProblemFunction.enable_statistics
 
-    MDOFunction.activate_counters = False
+    ProblemFunction.enable_statistics = False
 
     func = MDOFunction(lambda x: x, "func")
+    func = ProblemFunction(
+        func,
+        (func.func,),
+        (func.func,),
+        False,
+        None,
+        EvaluationCounter(),
+        False,
+        DesignSpace(),
+    )
     assert not func.n_calls
 
     with pytest.raises(RuntimeError, match="The function counters are disabled."):
         func.n_calls = 1
 
-    MDOFunction.activate_counters = activate_counters
+    ProblemFunction.enable_statistics = enable_statistics
 
 
 def test_get_indexed_name(function) -> None:
@@ -592,7 +610,7 @@ def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac) -> Non
         suffix = f" = {fexpr}{op_name}{gexpr}"
 
     assert repr(f_op_g) == f"[f{op_name}g](x)" + suffix
-    assert f_op_g(2) == func
+    assert f_op_g.evaluate(2) == func
     assert f_op_g.jac(2) == jac
 
 
@@ -615,7 +633,7 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac) -> None:
     else:
         assert repr(f_op_2) == "[f/2](x)" + suffix
 
-    assert f_op_2(2) == func
+    assert f_op_2.evaluate(2) == func
     assert f_op_2.jac(2) == jac
 
 
@@ -628,7 +646,7 @@ def test_multiplication_by_array(multidimensional_function):
     """Check the multiplication of a function by an array."""
     product = multidimensional_function * array([2.0, 3.0])
     inputs = array([4.0, 5.0, 6.0])
-    assert (product(inputs) == [8.0, 15.0]).all()
+    assert (product.evaluate(inputs) == [8.0, 15.0]).all()
     assert (product.jac(inputs) == array([[2, 0, 0], [0, 3, 0]])).all()
 
 
@@ -636,7 +654,7 @@ def test_division_by_array(multidimensional_function):
     """Check the division of a function by an array."""
     quotient = multidimensional_function / array([2.0, 5.0])
     inputs = array([4.0, 3.0, 6.0])
-    assert (quotient(inputs) == array([2.0, 0.6])).all()
+    assert (quotient.evaluate(inputs) == array([2.0, 0.6])).all()
     assert (quotient.jac(inputs) == array([[0.5, 0, 0], [0, 0.2, 0]])).all()
 
 
@@ -670,7 +688,7 @@ def simple_function(x: ndarray) -> ndarray:
     return x
 
 
-@pytest.mark.parametrize("activate_counters", [True, False])
+@pytest.mark.parametrize("enable_statistics", [True, False])
 @pytest.mark.parametrize(
     ("mdo_function", "kwargs", "value"),
     [
@@ -686,38 +704,40 @@ def simple_function(x: ndarray) -> ndarray:
             },
             array([1.0]),
         ),
-        (
-            NormFunction,
-            {
-                "function": MDOFunction(simple_function, "f"),
-                "design_space": Power2().design_space,
-            },
-            array([1.0, 1.0, 1.0]),
-        ),
     ],
 )
 def test_serialize_deserialize(
-    activate_counters, mdo_function, kwargs, value, tmp_wd
+    enable_statistics, mdo_function, kwargs, value, tmp_wd
 ) -> None:
     """Test the serialization/deserialization method.
 
     Args:
-        activate_counters: Whether to activate the function counters.
+        enable_statistics: Whether to enable the statistics.
         mdo_function: The ``MDOFunction`` to be tested.
         kwargs: The keyword arguments to instantiate the ``MDOFunction``.
         value: The value to evaluate the ``MDOFunction``.
         tmp_wd: Fixture to move into a temporary work directory.
     """
     function = mdo_function(**kwargs)
+    function = ProblemFunction(
+        function,
+        (sum,),
+        (sum,),
+        False,
+        None,
+        EvaluationCounter(),
+        False,
+        DesignSpace(),
+    )
     out_file = "function1.o"
-    function.activate_counters = activate_counters
-    function(value)
-    function.to_pickle(out_file)
-    serialized_func = mdo_function.from_pickle(out_file)
+    function.enable_statistics = enable_statistics
+    function.evaluate(value)
+    to_pickle(function, out_file)
+    serialized_func = from_pickle(out_file)
 
-    if activate_counters:
+    if enable_statistics:
         assert function.n_calls == serialized_func.n_calls
-        serialized_func(value)
+        serialized_func.evaluate(value)
         assert serialized_func._n_calls.value == 2
     else:
         assert not serialized_func.n_calls
@@ -814,15 +834,20 @@ def test_default_repr(f_type, input_names, expr, neg, expected) -> None:
     assert f.default_repr == expected
 
 
-@pytest.mark.parametrize("operation", [add, sub, mul, truediv])
-def test_arithmetic_operation_with_incompatible_normalizations(
-    sinus, problem, operation
-):
-    """Check arithmetic operation on functions with incompatible normalizations."""
-    with pytest.raises(
-        RuntimeError,
-        match="The operation cannot be performed because "
-        "one function expects normalized inputs "
-        "while the other does not.",
-    ):
-        operation(sinus, NormFunction(sinus, problem))
+@pytest.mark.parametrize(("method", "n_calls"), [("func", 0), ("evaluate", 1)])
+def test_func(method, n_calls):
+    """Check that the property func is an alias of _func."""
+    f = MDOFunction(lambda x: 2 * x, "f")
+    f = ProblemFunction(
+        f,
+        (f.func,),
+        (f.func,),
+        False,
+        None,
+        EvaluationCounter(),
+        False,
+        DesignSpace(),
+    )
+    assert f.n_calls == 0
+    assert_array_equal(getattr(f, method)(array([2])), array([4]))
+    assert f.n_calls == n_calls

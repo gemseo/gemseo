@@ -128,7 +128,7 @@ class ConvexLinearApprox(MDOFunction):
         merged_vect = where(self.__approx_indexes, self.__x_vect, x_new)
         step, inv_step = self.__get_steps(x_new)
         value = (
-            self.__mdo_function.evaluate(merged_vect)
+            self.__mdo_function.func(merged_vect)
             + self.__direct_coeffs @ step
             + self.__recipr_coeffs @ inv_step
         )

@@ -250,14 +250,14 @@ class ScipyOpt(BaseOptimizationLibrary):
             Returns:
                 The real part of the evaluation of the objective function.
             """
-            return real(problem.objective.func(x))
+            return real(problem.objective.evaluate(x))
 
         fun = real_part_fun
 
         constraints = self._get_right_sign_constraints(problem)
         cstr_scipy = []
         for cstr in constraints:
-            c_scipy = {"type": cstr.f_type, "fun": cstr.func, "jac": cstr.jac}
+            c_scipy = {"type": cstr.f_type, "fun": cstr.evaluate, "jac": cstr.jac}
             cstr_scipy.append(c_scipy)
         jac = problem.objective.jac
 

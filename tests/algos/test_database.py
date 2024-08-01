@@ -141,7 +141,7 @@ def test_get_f_hist() -> None:
     database = problem.database
     problem.preprocess_functions()
     for x_vec in (array([0.0, 1.0]), array([1, 2.0])):
-        problem.objective(x_vec)
+        problem.objective.evaluate(x_vec)
         problem.objective.jac(x_vec)
 
     hist_x = database.get_x_vect_history()

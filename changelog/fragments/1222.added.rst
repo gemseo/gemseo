@@ -1,0 +1,3 @@
+- The function ``to_pickle`` saves the pickled representation of an object on the disk.
+- The function ``from_pickle`` loads the pickled representation of an object from the disk.
+- ``ProblemFunction`` is an ``MDOFunction`` wrapping another ``MDOFunction``. Its ``func`` and ``jac`` methods call the corresponding methods of the underlying ``MDOFunction`` after pre-processing input value and before post-processing output value. Each function attached to an ``EvaluationProblem`` is replaced by a ``ProblemFunction`` when calling ``EvaluationProblem.preprocess_functions``. Calls to the function can be counted via the ``enable_statistics`` and ``n_calls`` attributes.

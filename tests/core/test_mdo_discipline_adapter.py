@@ -78,7 +78,7 @@ def disciplinary_function() -> MDODisciplineAdapter:
 
 def check_func_and_jac_evaluation(mdo_function: MDOFunction) -> None:
     """Check the evaluation of the function and its Jacobian."""
-    assert_equal(mdo_function.func(INPUT_VECTOR), array([2.0]))
+    assert_equal(mdo_function.evaluate(INPUT_VECTOR), array([2.0]))
     assert_equal(mdo_function.jac(INPUT_VECTOR), array([1.0, 1.0]))
 
 
