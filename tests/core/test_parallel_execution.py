@@ -253,9 +253,9 @@ def test_async_call() -> None:
     x_list = [i * ones(6) for i in range(4)]
 
     def do_work():
-        return list(map(func, x_list))
+        return list(map(func.evaluate, x_list))
 
-    par = CallableParallelExecution([func] * 2, n_processes=2)
+    par = CallableParallelExecution([func.evaluate] * 2, n_processes=2)
     par.execute([i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work)
 
 

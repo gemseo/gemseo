@@ -159,7 +159,7 @@ class Functions(MutableSequence[MDOFunction]):
         .. note:: This method does not return the output values.
         """
         for function in self._functions:
-            function(input_value)
+            function.evaluate(input_value)
             if self.evaluate_jacobian:
                 function.jac(input_value)
 

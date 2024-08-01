@@ -58,6 +58,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
+from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
@@ -152,7 +153,7 @@ def test_callback() -> None:
     problem.preprocess_functions()
     problem.check()
 
-    problem.objective(problem.design_space.get_current_value())
+    problem.objective.evaluate(problem.design_space.get_current_value())
     call_me.assert_called_once()
 
 
@@ -382,7 +383,12 @@ def test_missing_constjac(pow2_problem) -> None:
     problem.add_constraint(ineq1, value=-1)
     problem.preprocess_functions()
     output_functions, jacobian_functions = problem.get_functions(jacobian_names=())
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape(
+            "The function computing the Jacobian of [sum+1] is not implemented."
+        ),
+    ):
         problem.evaluate_functions(
             ones(3),
             output_functions=output_functions,
@@ -454,7 +460,7 @@ def test_get_best_infeasible_point() -> None:
     problem = Power2()
     problem.preprocess_functions()
     x_0 = problem.design_space.normalize_vect(zeros(3))
-    f_val = problem.objective(x_0)
+    f_val = problem.objective.evaluate(x_0)
     x_opt, f_opt, is_opt_feasible, opt_fd = (
         problem.history._OptimizationHistory__get_best_infeasible_point()
     )
@@ -478,7 +484,7 @@ def test_get_best_infeasible_point() -> None:
     assert len(opt_fd) > 0
     f_last, x_last, is_feas, _, _ = problem.history.last_point
     assert allclose(x_last, array([0.0, -1.0, 0.0]))
-    assert f_last == problem.objective(x_2)
+    assert f_last == problem.objective.evaluate(x_2)
     assert is_feas == problem.constraints.is_point_feasible(
         problem.evaluate_functions(x_2)[0]
     )
@@ -510,7 +516,7 @@ def test_nan() -> None:
     problem.preprocess_functions()
 
     with pytest.raises(DesvarIsNan):
-        problem.objective(array([1.0, float("nan")]))
+        problem.objective.evaluate(array([1.0, float("nan")]))
 
     with pytest.raises(DesvarIsNan):
         problem.objective.jac(array([1.0, float("nan")]))
@@ -562,15 +568,15 @@ def test_normalize_linear_function() -> None:
     objective = MDOLinearFunction(
         array([[2.0, 0.0], [0.0, 3.0]]), "affine", "obj", "x", array([5.0, 7.0])
     )
-    low_bnd_value = objective(lower_bounds)
-    upp_bnd_value = objective(upper_bounds)
-    initial_value = objective(x_0)
+    low_bnd_value = objective.evaluate(lower_bounds)
+    upp_bnd_value = objective.evaluate(upper_bounds)
+    initial_value = objective.evaluate(x_0)
     problem = OptimizationProblem(design_space)
     problem.objective = objective
     problem.preprocess_functions(use_database=False, round_ints=False)
-    assert allclose(problem.objective(zeros(2)), low_bnd_value)
-    assert allclose(problem.objective(ones(2)), upp_bnd_value)
-    assert allclose(problem.objective(0.8 * ones(2)), initial_value)
+    assert allclose(problem.objective.evaluate(zeros(2)), low_bnd_value)
+    assert allclose(problem.objective.evaluate(ones(2)), upp_bnd_value)
+    assert allclose(problem.objective.evaluate(0.8 * ones(2)), initial_value)
 
 
 def test_export_hdf(tmp_wd) -> None:
@@ -600,12 +606,12 @@ def test_export_hdf(tmp_wd) -> None:
     problem.to_hdf(file_path, append=True)
     imp_pb = OptimizationProblem.from_hdf(file_path)
     check_pb(imp_pb)
-    val = imp_pb.objective(imp_pb.database.get_x_vect(2))
+    val = imp_pb.objective.evaluate(imp_pb.database.get_x_vect(2))
     assert isinstance(val, float)
     jac = imp_pb.objective.jac(imp_pb.database.get_x_vect(1))
     assert isinstance(jac, ndarray)
     with pytest.raises(ValueError):
-        imp_pb.objective(array([1.1254]))
+        imp_pb.objective.evaluate(array([1.1254]))
 
 
 def test_evaluate_functions() -> None:
@@ -617,7 +623,7 @@ def test_evaluate_functions() -> None:
     )
     func, grad = problem.evaluate_functions(
         design_vector=array([1.0, 0.5, 0.2]),
-        normalize=False,
+        design_vector_is_normalized=False,
         output_functions=output_functions,
         jacobian_functions=jacobian_functions,
     )
@@ -638,7 +644,7 @@ def test_evaluate_functions_no_gradient() -> None:
         no_db_no_norm=True, evaluate_objective=False
     )
     func, grad = problem.evaluate_functions(
-        normalize=False,
+        design_vector_is_normalized=False,
         jacobian_functions=jacobian_functions,
         output_functions=output_functions,
     )
@@ -659,7 +665,7 @@ def test_evaluate_functions_only_gradients() -> None:
         jacobian_names=["ineq1", "ineq2", "eq"],
     )
     func, grad = problem.evaluate_functions(
-        normalize=False,
+        design_vector_is_normalized=False,
         output_functions=output_functions,
         jacobian_functions=jacobian_functions,
     )
@@ -683,7 +689,7 @@ def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm) -> None:
     )
     out = problem.evaluate_functions(
         design_vector=array([1.0, 1.0, 1.0]),
-        normalize=False,
+        design_vector_is_normalized=False,
         output_functions=output_functions,
         jacobian_functions=jacobian_functions,
     )
@@ -697,7 +703,7 @@ def test_evaluate_functions_non_preprocessed(constrained_problem) -> None:
         no_db_no_norm=True, observable_names=None
     )
     values, jacobians = constrained_problem.evaluate_functions(
-        normalize=False,
+        design_vector_is_normalized=False,
         output_functions=output_functions,
         jacobian_functions=jacobian_functions,
     )
@@ -722,7 +728,7 @@ def test_evaluate_functions_preprocessed(pre_normalize, eval_normalize, x_vect) 
     constrained_problem = Power2()
     constrained_problem.preprocess_functions(is_function_input_normalized=pre_normalize)
     values, _ = constrained_problem.evaluate_functions(
-        design_vector=x_vect, normalize=eval_normalize
+        design_vector=x_vect, design_vector_is_normalized=eval_normalize
     )
     assert set(values.keys()) == {"pow2", "ineq1", "ineq2", "eq"}
     assert values["pow2"] == pytest.approx(0.14)
@@ -855,7 +861,7 @@ def test_nan_func() -> None:
     problem.objective.func = nan_func
     problem.preprocess_functions()
     with pytest.raises(FunctionIsNan):
-        problem.objective(zeros(3))
+        problem.objective.evaluate(zeros(3))
 
 
 def test_fail_import() -> None:
@@ -878,7 +884,7 @@ def test_append_export(tmp_wd) -> None:
 
     n_calls = 200
     for i in range(n_calls):
-        func(array([0.1, 1.0 / (i + 1.0)]))
+        func.evaluate(array([0.1, 1.0 / (i + 1.0)]))
 
     # Export again with append mode
     problem.to_hdf(file_path_db, append=True)
@@ -887,7 +893,7 @@ def test_append_export(tmp_wd) -> None:
     assert len(read_db) == n_calls
 
     i += 1
-    func(array([0.1, 1.0 / (i + 1.0)]))
+    func.evaluate(array([0.1, 1.0 / (i + 1.0)]))
 
     # Export again with identical elements plus a new one.
     problem.to_hdf(file_path_db, append=True)
@@ -1267,7 +1273,7 @@ def test_observables_callback() -> None:
     problem.preprocess_functions(is_function_input_normalized=False)
     problem.observables.evaluate(array([0.79499653, 0.20792012, 0.96630481]))
 
-    assert obs1.n_calls == 1
+    assert problem.observables[0].n_calls == 1
 
 
 def test_approximated_jacobian_wrt_uncertain_variables() -> None:
@@ -1454,7 +1460,8 @@ def design_space() -> mock.Mock:
 @pytest.fixture
 def function() -> mock.Mock:
     """A function."""
-    function = mock.MagicMock(return_value=1.0)
+    function = mock.Mock()
+    function.evaluate = mock.MagicMock(return_value=1.0)
     function.name = "f"
     return function
 
@@ -1469,13 +1476,12 @@ def test_get_function_dimension_no_dim(
     design_space.has_current_value = mock.Mock(return_value=True)
     problem = OptimizationProblem(design_space)
     problem.objective = function
-    problem.get_x0_normalized = mock.Mock()
+    design_space.get_current_value = mock.Mock()
     assert problem.get_function_dimension(function.name) == 1
     if expects_normalized:
-        problem.get_x0_normalized.assert_called_once()
         design_space.get_current_value.assert_called_once()
     else:
-        problem.get_x0_normalized.assert_not_called()
+        design_space.get_current_value.assert_not_called()
         assert design_space.get_current_value.call_count == 2
 
 
@@ -1690,7 +1696,10 @@ def test_get_x0_normalized_complex(
 ) -> None:
     """Check the getting of a normalized complex initial value."""
     assert_equal(
-        problem_with_complex_value.get_x0_normalized(cast_to_real, as_dict), x0
+        problem_with_complex_value.design_space.get_current_value(
+            complex_to_real=cast_to_real, as_dict=as_dict, normalize=True
+        ),
+        x0,
     )
 
 
@@ -1935,7 +1944,7 @@ def test_is_multi_objective() -> None:
     ):
         problem.is_mono_objective  # noqa: B018
 
-    problem.objective(1.0)
+    problem.objective.evaluate(1.0)
     assert not problem.is_mono_objective
 
     problem.objective.dim = 0
@@ -2033,10 +2042,10 @@ def test_minimize_objective(pow2_problem, minimize) -> None:
     """Test the minimize objective setter."""
     initial_minimize = pow2_problem.minimize_objective
     x_0 = np.ones(3)
-    f_0 = pow2_problem.objective(x_0)
+    f_0 = pow2_problem.objective.evaluate(x_0)
 
     pow2_problem.minimize_objective = minimize
-    f_1 = pow2_problem.objective(x_0)
+    f_1 = pow2_problem.objective.evaluate(x_0)
 
     assert pow2_problem.minimize_objective == minimize
 
@@ -2140,10 +2149,10 @@ def test_evaluation_problem_to_dataset():
     problem.preprocess_functions()
     functions = problem.get_functions(observable_names=())
     problem.evaluate_functions(
-        array([1.0]), normalize=False, output_functions=functions[0]
+        array([1.0]), design_vector_is_normalized=False, output_functions=functions[0]
     )
     problem.evaluate_functions(
-        array([2.0]), normalize=False, output_functions=functions[0]
+        array([2.0]), design_vector_is_normalized=False, output_functions=functions[0]
     )
 
     dataset = IODataset()
@@ -2155,3 +2164,69 @@ def test_evaluation_problem_to_dataset():
     dataset.add_variable("x", array([[1.0], [2.0]]))
     dataset.add_variable("f", array([[2.0], [4.0]]))
     assert_frame_equal(problem.to_dataset(categorize=False), dataset)
+
+
+@pytest.fixture
+def evaluation_problem() -> EvaluationProblem:
+    """An evaluation problem."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    problem = EvaluationProblem(design_space)
+    problem.add_observable(
+        MDOFunction(lambda x: 2 * x, "f", jac=lambda x: array([2.0]))
+    )
+    return problem
+
+
+@pytest.mark.parametrize("design_vector_is_normalized", [False, True])
+@pytest.mark.parametrize(
+    ("name1", "name2", "i"),
+    [
+        ("observable_names", "output_functions", 0),
+        ("jacobian_names", "jacobian_functions", 1),
+    ],
+)
+def test_max_iter_reached_exception(
+    evaluation_problem, design_vector_is_normalized, name1, name2, i
+):
+    """Check MaxIterReachedException."""
+    evaluation_problem.preprocess_functions()
+    functions = evaluation_problem.get_functions(**{name1: ("f",)})[i]
+    evaluation_problem.evaluation_counter.maximum = 2
+    kwargs = {name2: functions}
+    evaluation_problem.evaluate_functions(
+        array([0.1]), design_vector_is_normalized=design_vector_is_normalized, **kwargs
+    )
+    evaluation_problem.evaluate_functions(
+        array([0.2]), design_vector_is_normalized=design_vector_is_normalized, **kwargs
+    )
+    evaluation_problem.evaluation_counter.current = 2
+    with pytest.raises(MaxIterReachedException):
+        evaluation_problem.evaluate_functions(
+            array([0.3]),
+            design_vector_is_normalized=design_vector_is_normalized,
+            **kwargs,
+        )
+
+
+def test_stop_if_nan(evaluation_problem):
+    """Check stop_if_nan when the functions are not ProblemFunction."""
+    evaluation_problem.foo = MDOFunction(lambda x: x, "foo")
+    evaluation_problem._function_names.append("foo")
+    evaluation_problem.stop_if_nan = False
+    assert not evaluation_problem.stop_if_nan
+    assert not evaluation_problem._stop_if_nan
+
+
+@pytest.mark.parametrize("is_function_input_normalized", [False, True])
+def test_jacobian_is_none_and_maxiter_is_reached(
+    evaluation_problem, is_function_input_normalized
+):
+    """Check that an error is raised when Jacobian is None and maxiter is reached."""
+    evaluation_problem.preprocess_functions(
+        is_function_input_normalized=is_function_input_normalized
+    )
+    evaluation_problem.evaluation_counter.current = 1
+    evaluation_problem.evaluation_counter.maximum = 1
+    with pytest.raises(MaxIterReachedException):
+        evaluation_problem.observables[0].jac(array([0.0]))

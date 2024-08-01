@@ -73,7 +73,9 @@ class Concatenate(MDOFunction):
         Returns:
             The concatenation of the values of the outputs of the functions.
         """
-        return concatenate([atleast_1d(func(x_vect)) for func in self.__functions])
+        return concatenate([
+            atleast_1d(func.evaluate(x_vect)) for func in self.__functions
+        ])
 
     def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Concatenate the outputs of the Jacobian functions.

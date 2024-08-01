@@ -90,7 +90,7 @@ class RestrictedFunction(MDOFunction):
             The evaluation of the function at x_vect.
         """
         x_full = insert(x_vect, self._restriction_indices, self.restriction_values)
-        return self._function(x_full)
+        return self._function.evaluate(x_full)
 
     def _jac_to_wrap(self, x_vect: RealArray) -> RealArray:
         """Wrap the provided Jacobian in order to be given to the optimizer.

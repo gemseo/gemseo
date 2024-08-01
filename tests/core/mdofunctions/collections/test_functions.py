@@ -111,7 +111,7 @@ def test_dimension(functions, mdo_functions):
         assert functions.dimension == 3
 
     for mdo_function in mdo_functions:
-        mdo_function(array([1]))
+        mdo_function.evaluate(array([1]))
 
     assert functions.dimension == 3
 

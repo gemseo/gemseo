@@ -945,12 +945,13 @@ class OptimizationProblem(EvaluationProblem):
             return function.dim
 
         if self.design_space.has_current_value():
+            get_current_value = self.design_space.get_current_value
             if function.expects_normalized_inputs:
-                current_variables = self.get_x0_normalized()
+                current_variables = get_current_value(normalize=True)
             else:
-                current_variables = self.design_space.get_current_value()
+                current_variables = get_current_value()
 
-            return atleast_1d(function(current_variables)).size
+            return atleast_1d(function.evaluate(current_variables)).size
 
         msg = f"The output dimension of function {name} is not available."
         raise RuntimeError(msg)
@@ -981,8 +982,15 @@ class OptimizationProblem(EvaluationProblem):
         preprocessing: bool = True,
     ) -> None:
         if preprocessing and self._functions_are_preprocessed:
+            n_obj_calls = self._objective.n_calls
+            n_constraint_calls = [c.n_calls for c in self.__constraints]
             self._objective = self._objective.original
             self.__constraints.reset()
+            if not function_calls:
+                self._objective.n_calls = n_obj_calls
+                for constraint, n_calls in zip(self.__constraints, n_constraint_calls):
+                    constraint.n_calls = n_calls
+
         super().reset(
             database=database,
             current_iter=current_iter,

@@ -204,7 +204,7 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         )
 
         function_values, _ = problem.evaluate_functions(
-            normalize=options.get(
+            design_vector_is_normalized=options.get(
                 self._NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
             ),
             output_functions=output_functions,

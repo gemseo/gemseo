@@ -122,17 +122,19 @@ class MultiStart(BaseOptimizationLibrary):
                 are not consistent.
         """  # noqa: D205 D212
         design_space = problem.design_space
-        max_iter = options["max_iter"]
+        # We decrement the maximum number of iterations by one
+        # as a first iteration has already been done in OptimizationLibrary._pre_run.
+        max_iter = options["max_iter"] - 1
         n_processes = options["n_processes"]
         n_start = options["n_start"]
         opt_algo_max_iter = options["opt_algo_max_iter"]
         opt_algo_options = options["opt_algo_options"]
 
         if opt_algo_max_iter == 0:
-            if max_iter <= n_start:
+            if max_iter < n_start:
                 msg = (
                     "Multi-start optimization: "
-                    f"the maximum number of iterations ({max_iter}) "
+                    f"the maximum number of iterations ({max_iter + 1}) "
                     f"must be greater than the number of initial points ({n_start})."
                 )
                 raise ValueError(msg)
@@ -151,7 +153,7 @@ class MultiStart(BaseOptimizationLibrary):
                 "Multi-start optimization: "
                 f"the sum of the maximum number of iterations ({sum_max_iter}) "
                 f"related to the sub-optimizations "
-                f"is greater than the total maximum number of iterations ({max_iter})."
+                f"is greater than the limit ({max_iter + 1}-1={max_iter})."
             )
             raise ValueError(msg)
 

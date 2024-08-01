@@ -86,9 +86,9 @@ def test_range_discipline() -> None:
     gen = MDODisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     x_shared = sr.default_inputs["x_shared"]
-    range_ = range_f_z(x_shared).real
+    range_ = range_f_z.evaluate(x_shared).real
     range_f_z2 = gen.get_function(["x_shared"], ["y_4"])
-    range2 = range_f_z2(x_shared).real
+    range2 = range_f_z2.evaluate(x_shared).real
 
     assert range_ == range2
 
@@ -112,7 +112,7 @@ def test_wrong_default_inputs() -> None:
     gen = MDODisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
-        range_f_z(array([1.0]))
+        range_f_z.evaluate(array([1.0]))
 
 
 def test_wrong_jac() -> None:

@@ -49,7 +49,7 @@ def create_problem():
     eq = problem.constraints[2]
 
     def cstr(x):
-        return concatenate([ineq1(x), ineq2(x)])
+        return concatenate([ineq1.evaluate(x), ineq2.evaluate(x)])
 
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
@@ -71,7 +71,7 @@ def create_pb_alleq():
     constraints = list(problem.constraints)
 
     def cstr(x):
-        return concatenate([cstr(x) for cstr in constraints])
+        return concatenate([cstr.evaluate(x) for cstr in constraints])
 
     def jac(x):
         return vstack([cstr.jac(x) for cstr in constraints])
@@ -252,6 +252,6 @@ def test_real_complex(complex_real_mdo_func_aggregation, indices) -> None:
     real_mdo_func_agg = aggregation_function(real_mdo_function, indices=indices)
     input_data = array([0.5, 0.6, 0.2])
     complex_mdo_func_agg.check_grad(x_vect=input_data, approximation_mode="ComplexStep")
-    assert pytest.approx(complex_mdo_func_agg(input_data)) == real_mdo_func_agg(
-        input_data
-    )
+    assert pytest.approx(
+        complex_mdo_func_agg.evaluate(input_data)
+    ) == real_mdo_func_agg.evaluate(input_data)

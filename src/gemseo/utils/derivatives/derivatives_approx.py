@@ -141,7 +141,7 @@ class DisciplineJacApprox:
         self.func = self.generator.get_function(inputs, outputs)
         self.approximator = GradientApproximatorFactory().create(
             self.approx_method,
-            self.func,
+            self.func.evaluate,
             step=self.step,
             parallel=self.__parallel,
             **self.__par_args,

@@ -312,7 +312,7 @@ class Nlopt(BaseOptimizationLibrary):
         obj_func = self.problem.objective
         if grad.size > 0:
             grad[:] = obj_func.jac(xn_vect)
-        return array(obj_func.func(xn_vect).real).ravel()[0]
+        return array(obj_func.evaluate(xn_vect).real).ravel()[0]
 
     def __make_constraint(
         self,
@@ -369,7 +369,7 @@ class Nlopt(BaseOptimizationLibrary):
         """
         for constraint in self.problem.constraints:
             f_type = constraint.f_type
-            func = constraint.func
+            func = constraint.evaluate
             jac = constraint.jac
             dim = constraint.dim
             for idim in range(dim):

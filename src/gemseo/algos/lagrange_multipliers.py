@@ -201,8 +201,8 @@ class LagrangeMultipliers:
             evaluate_objective=False, observable_names=None
         )
         values, _ = self.optimization_problem.evaluate_functions(
-            x_vect,
-            normalize=False,
+            design_vector=x_vect,
+            design_vector_is_normalized=False,
             output_functions=output_functions,
             jacobian_functions=jacobian_functions,
         )
@@ -297,7 +297,7 @@ class LagrangeMultipliers:
         if self.__normalized:
             x_vect = self.optimization_problem.design_space.normalize_vect(x_vect)
         for constraint in self.optimization_problem.constraints:
-            value = constraint(x_vect)
+            value = constraint.evaluate(x_vect)
             if constraint.f_type == constraint.ConstraintType.EQ:
                 value = np_abs(value) - self.optimization_problem.tolerances.equality
             else:

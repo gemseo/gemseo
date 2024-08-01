@@ -107,12 +107,12 @@ def test_adapter(scenario) -> None:
     gen = MDODisciplineAdapterGenerator(adapter)
     func = gen.get_function(inputs, outputs)
     x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
-    f_x1 = func(x_shared)
-    f_x2 = func(x_shared)
+    f_x1 = func.evaluate(x_shared)
+    f_x2 = func.evaluate(x_shared)
     assert f_x1 == f_x2
     x_shared = array([0.09, 60000, 1.4, 2.5, 70, 1500])
 
-    f_x3 = func(x_shared)
+    f_x3 = func.evaluate(x_shared)
     assert f_x3 > 4947.0
 
 
@@ -124,7 +124,7 @@ def test_adapter_set_x0_before_opt(scenario) -> None:
     gen = MDODisciplineAdapterGenerator(adapter)
     x_shared = array([0.25, 1.0, 1.0, 0.5, 0.09, 60000, 1.4, 2.5, 70, 1500])
     func = gen.get_function(inputs, outputs)
-    f_x3 = func(x_shared)
+    f_x3 = func.evaluate(x_shared)
     assert f_x3 > 4947.0
 
 

@@ -68,9 +68,12 @@ API changes from old to new:
 - ``OptimizationProblem.evaluate_functions``'s ``eval_jac`` argument renamed to ``compute_jacobians``.
 - ``OptimizationProblem.evaluate_functions``'s ``eval_observables`` argument renamed to ``evaluate_observables``.
 - ``OptimizationProblem.evaluate_functions``'s ``eval_obj`` argument renamed to ``evaluate_objective``.
+- ``OptimizationProblem.evaluate_functions``'s ``x_vect`` argument renamed to ``design_vector``.
+- ``OptimizationProblem.evaluate_functions``'s ``normalize`` argument renamed to ``design_vector_is_normalized``.
 - ``OptimizationProblem.ProblemType``: removed; use a boolean mechanism instead to check if the the problem is linear.
 - ``OptimizationProblem.pb_type``: removed; use the boolean property ``is_linear`` instead.
 - ``OptimizationProblem``'s ``pb_type``: removed; use the boolean argument ``is_linear`` instead.
 - ``OptimizationProblem.clear_listeners``: removed as it was no longer used; use ``EvaluationProblem.database.clear_listeners`` instead.
 - ``OptimizationProblem``'s ``fd_step`` attribute and argument renamed to ``differentiation_step``.
 - ``OptimizationProblem``'s ``database`` argument can no longer be a file path and the ``hdf_node_path`` argument has been removed; use ``Database.from_hdf(file_path, hdf_node_path=hdf_node_path)`` to pass a ``Database`` relying on a HDF5 file.
+- ``OptimizationProblem``'s ``get_x0_normalized`` removed; use ``OptimizationProblem.design_space.get_current_value`` instead.

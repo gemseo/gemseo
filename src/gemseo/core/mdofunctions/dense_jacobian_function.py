@@ -22,16 +22,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Callable
 
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import OutputType
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from numpy import ndarray
-
-    from gemseo.typing import NumberArray
 
 
 class DenseJacobianFunction(MDOFunction):
@@ -39,9 +35,6 @@ class DenseJacobianFunction(MDOFunction):
 
     __original_function: MDOFunction
     """The wrapped function."""
-
-    __evaluate_original_function: Callable[[NumberArray], OutputType]
-    """The wrapped function evaluation callable."""
 
     def __init__(
         self,
@@ -52,10 +45,9 @@ class DenseJacobianFunction(MDOFunction):
             original_function: The original function which is wrapped.
         """  # noqa: D205, D212, D415
         self.__original_function = original_function
-        self.__evaluate_original_function = self.__original_function.evaluate
 
         super().__init__(
-            self.__evaluate_original_function,
+            self.__original_function.func,
             name=original_function.name,
             jac=self._jac_to_wrap,
             f_type=original_function.f_type,

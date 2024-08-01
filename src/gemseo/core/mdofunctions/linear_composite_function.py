@@ -76,7 +76,7 @@ class LinearCompositeFunction(MDOFunction):
         Returns:
             The evaluation of the function at x_vect.
         """
-        return self._function(self._matrix.dot(x_vect))
+        return self._function.evaluate(self._matrix.dot(x_vect))
 
     def _restricted_jac(self, x_vect: RealArray) -> RealArray:
         """Wrap the provided Jacobian in order to be given to the optimizer.

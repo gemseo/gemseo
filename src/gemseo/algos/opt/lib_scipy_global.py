@@ -235,9 +235,9 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
         """
         if self._normalize_ds:
             x_vect = self.problem.design_space.normalize_vect(x_vect)
-        self.problem.objective(x_vect)
+        self.problem.objective.evaluate(x_vect)
         for constraint in self.problem.constraints:
-            constraint(x_vect)
+            constraint.evaluate(x_vect)
 
     def real_part_obj_fun(self, x: InputType) -> int | float:
         """Wrap the function and return the real part.
@@ -248,7 +248,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
         Returns:
             The real part of the evaluation of the objective function.
         """
-        return real(self.problem.objective.func(x))
+        return real(self.problem.objective.evaluate(x))
 
     def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
         # remove normalization from options for algo
@@ -332,12 +332,16 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
         """
         eq_tolerance = problem.tolerances.equality
         constraints = [
-            NonlinearConstraint(constr, -eq_tolerance, eq_tolerance, jac=constr.jac)
+            NonlinearConstraint(
+                constr.evaluate, -eq_tolerance, eq_tolerance, jac=constr.jac
+            )
             for constr in problem.constraints.get_equality_constraints()
         ]
         ineq_tolerance = problem.tolerances.inequality
         constraints.extend([
-            NonlinearConstraint(constr, -np_inf, ineq_tolerance, jac=constr.jac)
+            NonlinearConstraint(
+                constr.evaluate, -np_inf, ineq_tolerance, jac=constr.jac
+            )
             for constr in problem.constraints.get_inequality_constraints()
         ])
         return tuple(constraints)
@@ -354,6 +358,10 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
             The constraints.
         """
         return [
-            {"type": constraint.f_type, "fun": constraint.func, "jac": constraint.jac}
+            {
+                "type": constraint.f_type,
+                "fun": constraint.evaluate,
+                "jac": constraint.jac,
+            }
             for constraint in self._get_right_sign_constraints(problem)
         ]

@@ -238,7 +238,7 @@ class ScipyLinprog(BaseOptimizationLibrary):
         )
         val_opt, jac_opt = problem.evaluate_functions(
             design_vector=x_opt,
-            normalize=False,
+            design_vector_is_normalized=False,
             output_functions=output_functions,
             jacobian_functions=jacobian_functions,
         )

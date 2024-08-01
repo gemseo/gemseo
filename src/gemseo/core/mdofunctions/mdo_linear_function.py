@@ -359,7 +359,7 @@ class MDOLinearFunction(MDOFunction):
         else:
             coefficients = multiply(self.coefficients, norm_factors)
 
-        value_at_zero = self(shift)
+        value_at_zero = self.evaluate(shift)
         function = MDOLinearFunction(
             coefficients,
             self.name,
