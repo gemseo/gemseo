@@ -32,7 +32,7 @@ jaraco-classes==3.4.0
     # via keyring
 jaraco-context==5.3.0
     # via keyring
-jaraco-functools==4.0.1
+jaraco-functools==4.0.2
     # via keyring
 jeepney==0.8.0
     # via
