@@ -24,7 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from matplotlib import pyplot
-from numpy import any
+from numpy import any as np_any
 from pandas.core.frame import DataFrame
 from pandas.plotting import scatter_matrix
 
@@ -151,7 +151,7 @@ class ScatterPlotMatrix(OptPostProcessor):
             variable_labels[index] = self._obj_name
             variable_values[:, index] *= -1
 
-        if filter_non_feasible and not any(variable_values):
+        if filter_non_feasible and not np_any(variable_values):
             msg = "No feasible points were found."
             raise ValueError(msg)
 

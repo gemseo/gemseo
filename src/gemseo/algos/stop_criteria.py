@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 
-from numpy import all
+from numpy import all as np_all
 from numpy import allclose
 from numpy import average
 from numpy import bool_
@@ -163,7 +163,7 @@ class ObjectiveToleranceTester(BaseToleranceTester):
             return False
 
         f_average = average(f_values)
-        return all([
+        return np_all([
             allclose(f_val, f_average, atol=self.absolute, rtol=self.relative)
             for f_val in f_values
         ])
@@ -189,7 +189,7 @@ class DesignToleranceTester(BaseToleranceTester):
             return False
 
         x_average = average(x_values, axis=0)
-        return all([
+        return np_all([
             allclose(x_val, x_average, atol=self.absolute, rtol=self.relative)
             for x_val in x_values
         ])

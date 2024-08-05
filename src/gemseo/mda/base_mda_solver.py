@@ -20,7 +20,7 @@ import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from numpy import abs
+from numpy import abs as np_abs
 from numpy import array
 from numpy import concatenate
 from numpy import ndarray
@@ -372,7 +372,7 @@ class BaseMDASolver(BaseMDA):
             if _scaling_data is None:
                 _scaling_data = residual + (residual == 0)
 
-            normed_residual = abs(residual / _scaling_data).max()
+            normed_residual = np_abs(residual / _scaling_data).max()
 
         elif scaling == ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
             if _scaling_data is None:

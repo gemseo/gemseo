@@ -19,7 +19,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from numbers import Number
 from re import Pattern
-from re import compile
+from re import compile as re_compile
 from re import search
 from typing import TYPE_CHECKING
 from typing import Final
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
     """A helper to create a function applying an operation to another function."""
 
-    __SUM_SUBTRACTION_PATTERN: Final[Pattern] = compile(
+    __SUM_SUBTRACTION_PATTERN: Final[Pattern] = re_compile(
         r"""^([^\(].*[+-].*[^\)])$| # Sum/subtraction with one or many parentheses
             ^(.+[+-].*[^\)])$| # Sum/subtraction with one or many end parentheses
             ^([^\(].*[+-].+)$ # Sum/subtraction with one or many starting parentheses"""

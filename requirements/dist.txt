@@ -2,7 +2,7 @@
 #    uv pip compile requirements/dist.in -o requirements/dist.txt
 annotated-types==0.7.0
     # via pydantic
-attrs==23.2.0
+attrs==24.1.0
     # via check-wheel-contents
 backports-tarfile==1.2.0
     # via jaraco-context
@@ -38,7 +38,7 @@ jeepney==0.8.0
     # via
     #   keyring
     #   secretstorage
-keyring==25.2.1
+keyring==25.3.0
     # via twine
 markdown-it-py==3.0.0
     # via rich

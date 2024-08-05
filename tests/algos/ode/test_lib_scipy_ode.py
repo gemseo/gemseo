@@ -28,7 +28,7 @@ from numpy import arange
 from numpy import array
 from numpy import exp
 from numpy import sqrt
-from numpy import sum
+from numpy import sum as np_sum
 from numpy import zeros
 from numpy.linalg import norm
 
@@ -104,7 +104,7 @@ def test_ode_problem_1d(time_vector) -> None:
     ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
 
     analytical_solution = exp(problem.result.time_vector)
-    assert sqrt(sum((problem.result.state_vector - analytical_solution) ** 2)) < 1e-6
+    assert sqrt(np_sum((problem.result.state_vector - analytical_solution) ** 2)) < 1e-6
 
     problem.check()
 
@@ -154,7 +154,9 @@ def test_ode_problem_2d() -> None:
     assert problem.result.state_vector is not None
 
     analytical_solution = exp(problem.result.time_vector)
-    assert sqrt(sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+    assert (
+        sqrt(np_sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+    )
 
 
 def test_ode_problem_jacobian_as_array() -> None:
@@ -180,7 +182,9 @@ def test_ode_problem_jacobian_as_array() -> None:
     )
 
     analytical_solution = exp(problem.result.time_vector)
-    assert sqrt(sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+    assert (
+        sqrt(np_sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+    )
 
 
 def test_ode_problem_2d_wrong_jacobian() -> None:
@@ -378,4 +382,6 @@ def test_ode_problem_2d_empty_params() -> None:
     assert problem.result.state_vector is not None
 
     analytical_solution = exp(problem.result.time_vector)
-    assert sqrt(sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+    assert (
+        sqrt(np_sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+    )
