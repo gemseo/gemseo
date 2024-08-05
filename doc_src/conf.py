@@ -307,7 +307,7 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
         "gemseo-mlearning": ("Miscellaneous machine learning capabilities", True),
         "gemseo-mma": (
             "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
-            False,
+            True,
         ),
         "gemseo-pdfo": ("GEMSEO plugin for the PDFO library.", False),
         "gemseo-petsc": (

@@ -77,7 +77,7 @@ from numpy import logical_or
 from numpy import mod
 from numpy import ndarray
 from numpy import ones_like
-from numpy import round
+from numpy import round as np_round
 from numpy import vectorize
 from numpy import where
 from numpy import zeros_like
@@ -1562,7 +1562,7 @@ class DesignSpace(collections.abc.MutableMapping):
         rounded_x_vect = x_vect.copy() if copy else x_vect
 
         are_integers = self.__integer_components
-        rounded_x_vect[..., are_integers] = round(x_vect[..., are_integers])
+        rounded_x_vect[..., are_integers] = np_round(x_vect[..., are_integers])
         return rounded_x_vect
 
     def set_current_value(
