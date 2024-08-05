@@ -9,6 +9,30 @@
     "normalize_design_space": {
       "type": "boolean"
     },
+    "xtol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "xtol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_rel": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "ftol_abs": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "max_time": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "stop_crit_n_x": {
+      "type": "integer",
+      "minimum": 2
+    },
     "max_iter": {
       "type": "integer",
       "minimum": 1

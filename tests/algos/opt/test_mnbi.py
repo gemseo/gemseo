@@ -116,6 +116,7 @@ def test_mnbi_parallel(binh_korn):
         n_sub_optim=n_sub_optim,
         sub_optim_algo="NLOPT_SLSQP",
         n_processes=2,
+        xtol_abs=0.0,
     )
     assert_array_equal(
         binh_korn.database.get_function_value("identity", 1),
@@ -412,6 +413,7 @@ def test_mnbi_normalize_design_space(binh_korn, normalize_design_space):
         n_sub_optim=10,
         sub_optim_algo="NLOPT_SLSQP",
         normalize_design_space=normalize_design_space,
+        xtol_abs=0.0,
     )
     assert_allclose(result.pareto_front.f_utopia, [0, 4], atol=1e-7)
 
