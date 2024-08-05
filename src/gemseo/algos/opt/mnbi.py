@@ -295,6 +295,12 @@ class MNBI(BaseOptimizationLibrary):
         self,
         max_iter: int,
         sub_optim_algo: str,
+        ftol_rel: float = 1e-9,
+        ftol_abs: float = 1e-9,
+        xtol_rel: float = 1e-9,
+        xtol_abs: float = 1e-9,
+        max_time: float = 0,
+        stop_crit_n_x: int = 3,
         normalize_design_space: bool = True,
         n_sub_optim: int = 1,
         sub_optim_algo_options: Mapping[
@@ -321,6 +327,19 @@ class MNBI(BaseOptimizationLibrary):
                 the generated sub optimization problems.
             sub_optim_algo_options: The options for the optimization
                 algorithm.
+            ftol_rel: A stop criteria, the relative tolerance on the
+               objective function.
+               If abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop.
+            ftol_abs: A stop criteria, the absolute tolerance on the objective
+               function. If abs(f(xk)-f(xk+1))<= ftol_rel: stop.
+            xtol_rel: A stop criteria, the relative tolerance on the
+               design variables. If norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
+            xtol_abs: A stop criteria, absolute tolerance on the
+               design variables.
+               If norm(xk-xk+1)<= xtol_abs: stop.
+            max_time: The maximum runtime in seconds, disabled if 0.
+            stop_crit_n_x: The minimum number of design vectors to take into account in
+                the stopping criteria.
             n_sub_optim: The number of sub optimization in addition to
                 the individual minimums of the objectives. mNBI will
                 generate n_sub_optim points on the Pareto front
@@ -359,6 +378,12 @@ class MNBI(BaseOptimizationLibrary):
         self._normalize_design_space = normalize_design_space
         return self._process_options(
             max_iter=max_iter,
+            ftol_rel=ftol_rel,
+            ftol_abs=ftol_abs,
+            xtol_rel=xtol_rel,
+            xtol_abs=xtol_abs,
+            max_time=max_time,
+            stop_crit_nx=stop_crit_n_x,
             sub_optim_algo=sub_optim_algo,
             sub_optim_max_iter=sub_optim_max_iter,
             normalize_design_space=False,
