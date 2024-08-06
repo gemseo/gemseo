@@ -36,6 +36,7 @@ from scipy import optimize
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
+from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -104,6 +105,20 @@ class ScipyOpt(BaseOptimizationLibrary):
         ),
     }
 
+    if SCIPY_GREATER_THAN_1_14:
+        ALGORITHM_INFOS["COBYQA"] = SciPyAlgorithmDescription(
+            algorithm_name="COBYQA",
+            description=(
+                "Derivative-free trust-region SQP method "
+                "based on quadratic models for constrained optimization."
+            ),
+            internal_algorithm_name="COBYQA",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+            positive_constraints=True,
+            website=f"{__DOC}optimize.minimize-cobyqa.html",
+        )
+
     def _get_options(
         self,
         max_iter: int = 999,
@@ -134,6 +149,7 @@ class ScipyOpt(BaseOptimizationLibrary):
         adaptive: bool = False,
         initial_simplex: Sequence[Sequence[float]] | None = None,
         stop_crit_n_x: int = 3,
+        initial_tr_radius: float = 0.1,
         **kwargs: Any,
     ) -> dict[str, Any]:
         r"""Set the options default values.
@@ -195,6 +211,9 @@ class ScipyOpt(BaseOptimizationLibrary):
                 vertex of the N+1 vertices in the simplex, where N is the dimension.
             stop_crit_n_x: The minimum number of design vectors to take into account in
                 the stopping criteria.
+            initial_tr_radius: The initial trust-region radius for the COBYQA algorithm.
+                This value should be in the order of one tenth of the greatest expected
+                change to the variables.
             **kwargs: The other algorithm options.
         """
         return self._process_options(
@@ -226,6 +245,7 @@ class ScipyOpt(BaseOptimizationLibrary):
             kkt_tol_abs=kkt_tol_abs,
             kkt_tol_rel=kkt_tol_rel,
             stop_crit_n_x=stop_crit_n_x,
+            initial_tr_radius=initial_tr_radius,
             **kwargs,
         )
 
@@ -286,6 +306,12 @@ class ScipyOpt(BaseOptimizationLibrary):
         if self._algo_name == "NELDER-MEAD":
             options["fatol"] = 0.0
             options["xatol"] = 0.0
+            options.pop("ftol")
+            jac = None
+
+        if self._algo_name == "COBYQA":
+            options["final_tr_radius"] = 0.0
+            options["feasibility_tol"] = 0.0
             options.pop("ftol")
             jac = None
 
