@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import array
 from numpy import empty
@@ -107,7 +106,7 @@ class MDODisciplineAdapter(MDOFunction):
                 self.__is_linear = False
                 break
         self.__input_dimension = self.__compute_input_dimension(
-            default_inputs, discipline, input_names
+            default_inputs, input_names
         )
         self.__convert_array_to_data = (
             discipline.input_grammar.data_converter.convert_array_to_data
@@ -131,7 +130,6 @@ class MDODisciplineAdapter(MDOFunction):
     def __compute_input_dimension(
         self,
         default_inputs: Mapping[str, ndarray],
-        discipline: MDODiscipline,
         input_names: Sequence[str],
     ) -> int | None:
         """Compute the input dimension.
@@ -142,41 +140,32 @@ class MDODisciplineAdapter(MDOFunction):
                 at each evaluation of the outputs with :meth:`._fun`
                 or their derivatives with :meth:`._jac`.
                 If ``None``, do not overload them.
-            discipline: The discipline to be adapted.
             input_names: The names of the inputs.
 
         Returns:
             The input dimension.
         """
+        get_value_size = self.__discipline.input_grammar.data_converter.get_value_size
+
         if default_inputs and all(name in default_inputs for name in input_names):
             return sum(
-                self.__get_size(default_inputs[input_name])
+                get_value_size(input_name, default_inputs[input_name])
                 for input_name in input_names
             )
 
         if len(self.__input_names_to_sizes) > 0:
             return sum(self.__input_names_to_sizes.values())
 
-        if all(name in discipline.default_inputs for name in input_names):
+        default_inputs = self.__discipline.default_inputs
+
+        if all(name in default_inputs for name in input_names):
             return sum(
-                self.__get_size(discipline.default_inputs[input_name])
+                get_value_size(input_name, default_inputs[input_name])
                 for input_name in input_names
             )
 
         # TODO: document what None means. We could use 0 instead.
         return None
-
-    @staticmethod
-    def __get_size(obj: Any) -> int:
-        """Return the size of an object.
-
-        Args:
-            obj: The object.
-
-        Returns:
-            The size of the object.
-        """
-        return len(obj) if isinstance(obj, ndarray) else 1
 
     def __create_output_names_to_slices(self) -> int:
         """Compute the indices of the input variables in the Jacobian array.
@@ -278,9 +267,11 @@ class MDODisciplineAdapter(MDOFunction):
         """
         input_data = self.__discipline.get_input_data()
         input_data.update(self.__discipline.default_inputs)
-        self.__input_names_to_sizes.update({
-            k: self.__get_size(v) for k, v in input_data.items()
-        })
+        self.__input_names_to_sizes.update(
+            self.__discipline.input_grammar.data_converter.compute_names_to_sizes(
+                input_data.keys(), input_data
+            )
+        )
 
         missing_names = (
             set(self.__input_names)
