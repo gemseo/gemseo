@@ -132,7 +132,7 @@ class MDAQuasiNewton(BaseMDARoot):
         self.method = method
 
         if self.method not in self._METHODS_SUPPORTING_CALLBACKS:
-            del self.output_grammar[self.RESIDUALS_NORM]
+            del self.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
 
         self.use_gradient = use_gradient
 
@@ -183,7 +183,7 @@ class MDAQuasiNewton(BaseMDARoot):
             Returns:
                 The linearized residuals.
             """
-            self._update_local_data(x_vect)
+            self._update_local_data_from_array(x_vect)
 
             self.reset_disciplines_statuses()
             for discipline in self.disciplines:
@@ -222,7 +222,7 @@ class MDAQuasiNewton(BaseMDARoot):
                 new_couplings: The new coupling variables.
                 _: ignored
             """
-            self._compute_residual()
+            self._compute_normalized_residual_norm()
             self.__current_couplings = new_couplings
 
         return callback
@@ -242,12 +242,12 @@ class MDAQuasiNewton(BaseMDARoot):
         self.current_iter += 1
         # Work on a temporary copy so _update_local_data can be called.
         local_data_copy = self._local_data.copy()
-        self._update_local_data(x_vect)
+        self._update_local_data_from_array(x_vect)
         input_data = self._local_data
         self._local_data = local_data_copy
         self.reset_disciplines_statuses()
         self.execute_all_disciplines(input_data)
-        self._update_residuals(input_data)
+        self._compute_residuals(input_data)
         return self.assembly.residuals(input_data, self._resolved_variable_names).real
 
     def _run(self) -> DisciplineData:
@@ -262,7 +262,7 @@ class MDAQuasiNewton(BaseMDARoot):
                 "disciplines once."
             )
             LOGGER.warning(msg)
-            self._local_data[self.RESIDUALS_NORM] = array([0.0])
+            self._local_data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
             return self._local_data
 
         self.current_iter = 0
@@ -286,9 +286,11 @@ class MDAQuasiNewton(BaseMDARoot):
 
         self._warn_convergence_criteria()
 
-        self._update_local_data(y_opt.x)
+        self._update_local_data_from_array(y_opt.x)
 
         if self.method in self._METHODS_SUPPORTING_CALLBACKS:
-            self._local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
+            self._local_data[self.NORMALIZED_RESIDUAL_NORM] = array([
+                self.normed_residual
+            ])
 
         return self._local_data

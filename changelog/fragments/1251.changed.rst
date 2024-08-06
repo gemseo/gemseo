@@ -1,0 +1,5 @@
+The convergence of MDAs is now checked after the execution of the disciplines instead of after the acceleration.
+This change affects the absolute value of the output coupling variables when running an MDA with acceleration methods.
+The difference has an order of magnitude at most equal to the MDA tolerance.
+The change should be harmless in most cases but could anyway have effects for numerically sensitive problems.
+API change: ``MDA.RESIDUALS_NORM`` is now ``MDA.NORMALIZED_RESIDUAL_NORM``.

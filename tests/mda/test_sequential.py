@@ -53,7 +53,7 @@ def test_sequential_mda_sellar(tmp_wd) -> None:
     assert Path(filename).exists
     assert np.linalg.norm(y_ref - get_y_opt(mda3)) / np.linalg.norm(y_ref) < 1e-4
 
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-6
+    assert mda.local_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
 
 
 def test_log_convergence() -> None:

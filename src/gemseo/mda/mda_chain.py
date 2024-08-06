@@ -496,10 +496,10 @@ class MDAChain(BaseMDA):
 
         res_sum = 0.0
         for mda in self.inner_mdas:
-            res_local = mda.local_data.get(self.RESIDUALS_NORM)
+            res_local = mda.local_data.get(self.NORMALIZED_RESIDUAL_NORM)
             if res_local is not None:
                 res_sum += res_local[-1] ** 2
-        self.local_data[self.RESIDUALS_NORM] = array([res_sum**0.5])
+        self.local_data[self.NORMALIZED_RESIDUAL_NORM] = array([res_sum**0.5])
 
     def _compute_jacobian(
         self,

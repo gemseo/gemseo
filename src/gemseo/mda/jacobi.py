@@ -31,10 +31,7 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.mda.base_mda_solver import BaseMDASolver
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
-
-    from numpy.typing import NDArray
 
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -161,19 +158,15 @@ class MDAJacobi(BaseMDASolver):
 
         return None
 
-    def execute_all_disciplines(self, input_local_data: Mapping[str, NDArray]) -> None:
-        """Execute all the disciplines, possibly in parallel.
-
-        Args:
-            input_local_data: The input data of the disciplines.
-        """
+    def execute_all_disciplines(self) -> None:
+        """Execute all the disciplines, possibly in parallel."""
         self.reset_disciplines_statuses()
 
         if self.n_processes > 1:
-            self.parallel_execution.execute([input_local_data] * len(self.disciplines))
+            self.parallel_execution.execute([self.local_data] * len(self.disciplines))
         else:
             for discipline in self.disciplines:
-                discipline.execute(input_local_data)
+                discipline.execute(self.local_data)
 
         for discipline in self.disciplines:
             self.local_data.update(discipline.get_output_data())
@@ -209,17 +202,15 @@ class MDAJacobi(BaseMDASolver):
         while True:
             input_data = self.local_data.copy()
 
-            self.execute_all_disciplines(self.local_data)
-            self._update_residuals(input_data)
+            self.execute_all_disciplines()
+            self._compute_residuals(input_data)
 
-            new_couplings = self._sequence_transformer.compute_transformed_iterate(
+            if self._stop_criterion_is_reached:
+                break
+
+            updated_couplings = self._sequence_transformer.compute_transformed_iterate(
                 self.get_current_resolved_variables_vector(),
                 self.get_current_resolved_residual_vector(),
             )
 
-            self._update_local_data(new_couplings)
-            self._update_residuals(input_data)
-            self._compute_residual(log_normed_residual=self._log_convergence)
-
-            if self._stop_criterion_is_reached:
-                break
+            self._update_local_data_from_array(updated_couplings)
