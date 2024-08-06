@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A Gauss Seidel algorithm for solving MDAs."""
+"""A Gauss-Seidel algorithm for solving MDAs."""
 
 from __future__ import annotations
 
@@ -110,7 +110,7 @@ class MDAGaussSeidel(BaseMDASolver):
         self._compute_input_coupling_names()
         self._set_resolved_variables(self.strong_couplings)
         if max_mda_iter == 0:
-            del self.output_grammar[self.RESIDUALS_NORM]
+            del self.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
@@ -136,21 +136,17 @@ class MDAGaussSeidel(BaseMDASolver):
             input_data = self.local_data.copy()
 
             self.execute_all_disciplines()
-            self._update_residuals(input_data)
+            self._compute_residuals(input_data)
 
-            new_couplings = self._sequence_transformer.compute_transformed_iterate(
+            if self._stop_criterion_is_reached:
+                break
+
+            updated_couplings = self._sequence_transformer.compute_transformed_iterate(
                 self.get_current_resolved_variables_vector(),
                 self.get_current_resolved_residual_vector(),
             )
 
-            self._update_local_data(new_couplings)
-            self._update_residuals(input_data)
-            self._compute_residual(log_normed_residual=self._log_convergence)
-
-            if self._stop_criterion_is_reached:
-                break
-        for discipline in self.disciplines:  # Update all outputs without relax
-            self.local_data.update(discipline.get_output_data())
+            self._update_local_data_from_array(updated_couplings)
 
     def _get_disciplines_couplings(
         self, graph: DependencyGraph

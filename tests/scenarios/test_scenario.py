@@ -522,7 +522,7 @@ def test_get_execution_metrics(mdf_scenario) -> None:
     expected = re.compile(
         "Scenario Execution Statistics\n"
         "   Discipline: SobieskiPropulsion\n"
-        "      Executions number: 10\n"
+        "      Executions number: 9\n"
         "      Execution time: .* s\n"
         "      Linearizations number: 1\n"
         "   Discipline: SobieskiAerodynamics\n"
@@ -537,9 +537,10 @@ def test_get_execution_metrics(mdf_scenario) -> None:
         "      Executions number: 10\n"
         "      Execution time: .* s\n"
         "      Linearizations number: 1\n"
-        "   Total number of executions calls: 31\n"
+        "   Total number of executions calls: 30\n"
         "   Total number of linearizations: 4"
     )
+
     assert expected.match(str(mdf_scenario._Scenario__get_execution_metrics()))
 
 

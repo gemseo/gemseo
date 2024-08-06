@@ -19,7 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+from numpy import allclose as allclose_
 from numpy import array
 from numpy import isclose
 
@@ -34,6 +37,67 @@ from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
 from .test_gauss_seidel import SelfCoupledDisc
 
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
+
+
+def allclose(a, b):
+    return allclose_(a, b, atol=1e-8, rtol=0.0)
+
+
+@pytest.fixture(scope="module")
+def mda_setting() -> StrKeyMapping:
+    """Returns the setting for all subsequent MDAs."""
+    return {"tolerance": 1e-12, "max_mda_iter": 50}
+
+
+@pytest.fixture(scope="module")
+def reference(mda_setting) -> MDAJacobi:
+    """An instance of Jacobi MDA on the Sobieski problem."""
+    mda_jacobi = SobieskiMDAJacobi(
+        **mda_setting, acceleration_method=AccelerationMethod.NONE
+    )
+    mda_jacobi.execute()
+    return mda_jacobi
+
+
+@pytest.mark.parametrize("relaxation", [0.8, 1.0, 1.2])
+def test_over_relaxation(mda_setting, relaxation, reference) -> None:
+    """Tests the relaxation factor."""
+    mda = SobieskiMDAJacobi(
+        **mda_setting,
+        acceleration_method=AccelerationMethod.NONE,
+        over_relaxation_factor=relaxation,
+    )
+    mda.execute()
+
+    assert allclose(
+        mda.get_current_resolved_residual_vector(),
+        reference.get_current_resolved_residual_vector(),
+    )
+    assert allclose(
+        mda.get_current_resolved_variables_vector(),
+        reference.get_current_resolved_variables_vector(),
+    )
+
+
+@pytest.mark.parametrize("acceleration", AccelerationMethod)
+def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
+    """Tests the acceleration methods."""
+    mda = SobieskiMDAJacobi(**mda_setting, acceleration_method=acceleration)
+    mda.execute()
+
+    assert mda._current_iter <= reference._current_iter
+
+    assert allclose(
+        mda.get_current_resolved_residual_vector(),
+        reference.get_current_resolved_residual_vector(),
+    )
+    assert allclose(
+        mda.get_current_resolved_variables_vector(),
+        reference.get_current_resolved_variables_vector(),
+    )
+
 
 def test_jacobi_sobieski() -> None:
     """Test the execution of Jacobi on Sobieski."""
@@ -44,32 +108,7 @@ def test_jacobi_sobieski() -> None:
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
 
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
-
-
-@pytest.fixture(scope="module")
-def compute_reference_n_iter():
-    """Compute the number of iterations to serve as a reference.
-
-    The Jacobi method is applied to the Sobiesky problem without accelerations.
-    """
-    mda = SobieskiMDAJacobi(
-        tolerance=1e-12, max_mda_iter=30, acceleration_method=AccelerationMethod.NONE
-    )
-    mda.execute()
-    return len(mda.residual_history)
-
-
-@pytest.mark.parametrize("acceleration_method", AccelerationMethod)
-def test_acceleration_methods(compute_reference_n_iter, acceleration_method) -> None:
-    """Tests the acceleration methods."""
-    mda = SobieskiMDAJacobi(
-        tolerance=1e-12, max_mda_iter=30, acceleration_method=acceleration_method
-    )
-    mda.execute()
-
-    # Check that the number of iterations have been at least decreased
-    assert len(mda.residual_history) <= compute_reference_n_iter
+    assert mda.local_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
 
 
 def test_mda_jacobi_parallel() -> None:
@@ -94,7 +133,7 @@ def test_jacobi_sellar(sellar_disciplines) -> None:
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-4
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
+    assert mda.local_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
 
 
 def test_expected_workflow() -> None:

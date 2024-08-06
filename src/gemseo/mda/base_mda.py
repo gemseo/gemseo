@@ -24,6 +24,8 @@ import logging
 from abc import abstractmethod
 from enum import auto
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Final
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -49,8 +51,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
     from pathlib import Path
-    from typing import Any
-    from typing import ClassVar
 
     from matplotlib.figure import Figure
     from numpy import ndarray
@@ -68,7 +68,7 @@ LOGGER = logging.getLogger(__name__)
 class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     """A base class for multidisciplinary analysis (MDA)."""
 
-    RESIDUALS_NORM: ClassVar[str] = "MDA residuals norm"
+    NORMALIZED_RESIDUAL_NORM: Final[str] = "MDA residuals norm"
 
     activate_cache = True
 
@@ -286,7 +286,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self.lin_cache_tol_fact = 0.0
 
         self._initialize_grammars()
-        self.output_grammar.update_from_names([self.RESIDUALS_NORM])
+        self.output_grammar.update_from_names([self.NORMALIZED_RESIDUAL_NORM])
         self._check_consistency()
         self.__check_linear_solver_options()
         self._check_coupling_types()
@@ -427,9 +427,9 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         else:
             inputs, outputs = MDODiscipline._retrieve_diff_inouts(self)
 
-        if self.RESIDUALS_NORM in outputs:
+        if self.NORMALIZED_RESIDUAL_NORM in outputs:
             outputs = list(outputs)
-            outputs.remove(self.RESIDUALS_NORM)
+            outputs.remove(self.NORMALIZED_RESIDUAL_NORM)
 
         # Filter the non-numeric arrays
         inputs = [
@@ -662,8 +662,8 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             if coupling in inputs:
                 inputs.remove(coupling)
 
-        if self.RESIDUALS_NORM in outputs:
-            outputs.remove(self.RESIDUALS_NORM)
+        if self.NORMALIZED_RESIDUAL_NORM in outputs:
+            outputs.remove(self.NORMALIZED_RESIDUAL_NORM)
 
         # Remove non-numeric arrays that cannot be differentiated
         inputs = [

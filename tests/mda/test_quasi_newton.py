@@ -94,7 +94,7 @@ def test_broyden_sellar2() -> None:
     mda.reset_history_each_run = True
     mda.execute()
 
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-6
+    assert mda.local_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
 
 
 def test_self_coupled() -> None:
@@ -110,4 +110,6 @@ def test_methods_supporting_callbacks(method):
     """Test MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS."""
     mda = MDAQuasiNewton([Sellar1(), SellarSystem()], method=method)
     method_supports_callbacks = method in MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS
-    assert (mda.RESIDUALS_NORM in mda.output_grammar) is method_supports_callbacks
+    assert (
+        mda.NORMALIZED_RESIDUAL_NORM in mda.output_grammar
+    ) is method_supports_callbacks

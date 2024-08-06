@@ -248,9 +248,9 @@ def test_convergence_warning(caplog) -> None:
 
     mda._set_resolved_variables(mda.strong_couplings)
     mda.local_data.update({"y_1": array([1.0]), "y_2": array([1.0])})
-    mda._update_residuals({"y_1": array([2.0]), "y_2": array([2.0])})
+    mda._compute_residuals({"y_1": array([2.0]), "y_2": array([2.0])})
 
-    mda._compute_residual()
+    mda._compute_normalized_residual_norm()
     mda._warn_convergence_criteria()
     assert len(caplog.records) == 1
     assert (
@@ -285,15 +285,17 @@ def test_log_convergence(caplog) -> None:
 
     mda._set_resolved_variables(mda.strong_couplings)
     mda.local_data.update({"y_1": array([1.0]), "y_2": array([1.0])})
-    mda._update_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
+    mda._compute_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
 
-    mda._compute_residual(store_it=False)
+    mda._log_convergence = False
+    mda._compute_normalized_residual_norm(store_it=False)
     assert (
         "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)"
         not in caplog.text
     )
 
-    mda._compute_residual(log_normed_residual=True)
+    mda._log_convergence = True
+    mda._compute_normalized_residual_norm()
     assert (
         "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
     )

@@ -19,7 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+from numpy import allclose as allclose_
 from numpy import array
 from numpy import isclose
 from numpy.testing import assert_almost_equal
@@ -37,28 +40,62 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.testing.helpers import image_comparison
 
+from ..core.test_chain import two_virtual_disciplines  # noqa: F401
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
+
+
+def allclose(a, b):
+    return allclose_(a, b, atol=1e-10, rtol=0.0)
+
 
 @pytest.fixture(scope="module")
-def compute_reference_n_iter():
-    """Compute the number of iterations to serve as a reference.
+def mda_setting() -> StrKeyMapping:
+    """Returns the setting for all subsequent MDAs."""
+    return {"tolerance": 1e-12, "max_mda_iter": 30}
 
-    The Gauss-Seidel method is applied to the Sobiesky problem without accelerations.
-    """
-    mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
+
+@pytest.fixture(scope="module")
+def reference(mda_setting) -> MDAGaussSeidel:
+    """An instance of Gauss-Seidel MDA on the Sobieski problem."""
+    mda_gauss_seidel = SobieskiMDAGaussSeidel(**mda_setting)
+    mda_gauss_seidel.execute()
+    return mda_gauss_seidel
+
+
+@pytest.mark.parametrize("relaxation", [0.8, 1.0, 1.2])
+def test_over_relaxation(mda_setting, relaxation, reference) -> None:
+    """Tests the relaxation factor."""
+    mda = SobieskiMDAGaussSeidel(**mda_setting, over_relaxation_factor=relaxation)
     mda.execute()
-    return len(mda.residual_history)
 
-
-@pytest.mark.parametrize("acceleration_method", AccelerationMethod)
-def test_acceleration_methods(compute_reference_n_iter, acceleration_method) -> None:
-    """Tests the acceleration methods."""
-    mda = SobieskiMDAGaussSeidel(
-        tolerance=1e-12, max_mda_iter=30, acceleration_method=acceleration_method
+    assert allclose(
+        mda.get_current_resolved_residual_vector(),
+        reference.get_current_resolved_residual_vector(),
     )
+    assert allclose(
+        mda.get_current_resolved_variables_vector(),
+        reference.get_current_resolved_variables_vector(),
+    )
+
+
+@pytest.mark.parametrize("acceleration", AccelerationMethod)
+def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
+    """Tests the acceleration methods."""
+    mda = SobieskiMDAGaussSeidel(**mda_setting, acceleration_method=acceleration)
     mda.execute()
 
-    # Check that the number of iterations have been at least decreased
-    assert len(mda.residual_history) <= compute_reference_n_iter
+    assert mda._current_iter <= reference._current_iter
+
+    assert allclose(
+        mda.get_current_resolved_residual_vector(),
+        reference.get_current_resolved_residual_vector(),
+    )
+    assert allclose(
+        mda.get_current_resolved_variables_vector(),
+        reference.get_current_resolved_variables_vector(),
+    )
 
 
 @image_comparison(["sobieski"])
@@ -160,27 +197,6 @@ def test_self_coupled() -> None:
         assert abs(jac1["o"]["x"][0, 0] - jac2["o"]["x"][0, 0]) < 1e-3
 
 
-@pytest.mark.parametrize("over_relaxation_factor", [1.0, 0.8, 1.1, 1.2, 1.5])
-def test_over_relaxation(over_relaxation_factor) -> None:
-    discs = create_discipline([
-        "SobieskiPropulsion",
-        "SobieskiStructure",
-        "SobieskiAerodynamics",
-        "SobieskiMission",
-    ])
-    tolerance = 1e-14
-    mda = MDAGaussSeidel(
-        discs,
-        tolerance=tolerance,
-        max_mda_iter=100,
-        over_relaxation_factor=over_relaxation_factor,
-    )
-    mda.execute()
-    assert mda.residual_history[-1] <= tolerance
-
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < tolerance
-
-
 class SelfCoupledDisc(MDODiscipline):
     def __init__(self, plus_y=False) -> None:
         MDODiscipline.__init__(self)
@@ -259,7 +275,7 @@ def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) 
         )
 
 
-def test_virtual_exe_mda(two_virtual_disciplines):
+def test_virtual_exe_mda(two_virtual_disciplines):  # noqa: F811
     """Test an MDA with disciplines in virtual execution mode."""
     chain = MDAGaussSeidel(two_virtual_disciplines)
     chain.execute()
@@ -270,7 +286,7 @@ def test_virtual_exe_mda(two_virtual_disciplines):
 def test_max_mda_iter_0():
     """Check that Gauss-Seidel calls the disciplines only once when max_mda_iter=0."""
     mda = SobieskiMDAGaussSeidel(max_mda_iter=0)
-    assert mda.RESIDUALS_NORM not in mda.output_grammar
+    assert mda.NORMALIZED_RESIDUAL_NORM not in mda.output_grammar
 
     mda.execute()
 
