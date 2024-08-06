@@ -1,0 +1,1 @@
+Add support of SciPy's version of the ``COBYQA`` algorithm.

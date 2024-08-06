@@ -37,6 +37,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 
 
@@ -305,3 +306,27 @@ def test_stop_crit_n_x(algorithm_name) -> None:
     library = ScipyOpt(algorithm_name)
     library.problem = Rosenbrock()
     assert library._get_options(stop_crit_n_x=5)["stop_crit_n_x"] == 5
+
+
+@pytest.mark.skipif(
+    not SCIPY_GREATER_THAN_1_14, reason="Algo COBYQA is only available in scipy>=1.14."
+)
+def test_cobyqa() -> None:
+    """Test the COBYQA algorithm on the Rosenbrock problem."""
+    problem = Rosenbrock()
+    opt = OptimizationLibraryFactory().execute(
+        problem, algo_name="COBYQA", max_iter=100
+    )
+    x_opt, f_opt = problem.get_solution()
+    assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
+    assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
+
+
+@pytest.mark.skipif(
+    not SCIPY_GREATER_THAN_1_14, reason="Algo COBYQA is only available in scipy>=1.14."
+)
+def test_initial_tr_radius_cobyqa() -> None:
+    """Check that option initial_tr_radius is supported."""
+    library = ScipyOpt("COBYQA")
+    library.problem = Rosenbrock()
+    assert library._get_options(initial_tr_radius=1)["initial_tr_radius"] == 1
