@@ -2,13 +2,13 @@
 #    uv pip compile requirements/check-types.in -o requirements/check-types.txt --python-version 3.11
 lxml==5.2.2
     # via mypy
-mypy==1.10.1
+mypy==1.11.1
     # via -r requirements/check-types.in
 mypy-extensions==1.0.0
     # via mypy
-numpy==2.0.0
+numpy==1.26.4
     # via pandas-stubs
-pandas-stubs==2.2.2.240603
+pandas-stubs==2.2.2.240805
     # via -r requirements/check-types.in
 types-pytz==2024.1.0.20240417
     # via pandas-stubs
