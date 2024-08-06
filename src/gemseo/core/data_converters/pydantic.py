@@ -91,9 +91,9 @@ class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
     #     if issubclass(type_arg, Collection):
     #         return cls.__is_collection_of_numbers(type_arg)
     #
-    #     return type_arg in _NUMERIC_TYPES
+    #     return type_arg in _NON_ARRAY_TYPES
 
     def _convert_array_to_value(self, name: str, array: NumberArray) -> Any:  # noqa: D102
-        if self._grammar[name].annotation in self._NUMERIC_TYPES:
+        if self._grammar[name].annotation in self._NON_ARRAY_TYPES:
             return array[0]
         return array

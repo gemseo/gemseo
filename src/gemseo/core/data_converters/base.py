@@ -81,8 +81,8 @@ class BaseDataConverter(ABC, Generic[T]):
     _grammar: T
     """The grammar providing the data types used for the conversions."""
 
-    _NUMERIC_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex)
-    """The base types for numeric values."""
+    _NON_ARRAY_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex, str)
+    """The base types that are not arrays like."""
 
     _IS_NUMERIC_TYPES: ClassVar[tuple[Any, ...]]
     """The types used for `is_numeric`."""
@@ -111,7 +111,7 @@ class BaseDataConverter(ABC, Generic[T]):
         Returns:
             The NumPy array.
         """
-        if isinstance(value, self._NUMERIC_TYPES):
+        if isinstance(value, self._NON_ARRAY_TYPES):
             return np_array([value])
         return cast(NumberArray, value)
 
@@ -141,7 +141,7 @@ class BaseDataConverter(ABC, Generic[T]):
         Returns:
             The size.
         """
-        if isinstance(value, cls._NUMERIC_TYPES):
+        if isinstance(value, cls._NON_ARRAY_TYPES):
             return 1
         return cast(NumberArray, value).size
 
