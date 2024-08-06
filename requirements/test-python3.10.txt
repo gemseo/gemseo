@@ -48,7 +48,7 @@ kiwisolver==1.4.5
     # via matplotlib
 markupsafe==2.1.5
     # via jinja2
-matplotlib==3.9.1
+matplotlib==3.9.0
     # via gemseo (pyproject.toml)
 mpmath==1.3.0
     # via sympy
@@ -73,7 +73,7 @@ numpy==1.26.4
     #   pyxdsm
     #   scikit-learn
     #   scipy
-openpyxl==3.1.2
+openpyxl==3.1.5
     # via gemseo (pyproject.toml)
 openturns==1.23
     # via gemseo (pyproject.toml)
@@ -94,7 +94,7 @@ pillow==10.4.0
     # via
     #   gemseo (pyproject.toml)
     #   matplotlib
-plotly==5.22.0
+plotly==5.23.0
     # via gemseo (pyproject.toml)
 pluggy==1.5.0
     # via pytest
@@ -140,7 +140,7 @@ six==1.16.0
     # via python-dateutil
 strenum==0.4.15
     # via gemseo (pyproject.toml)
-sympy==1.13.0
+sympy==1.13.1
     # via gemseo (pyproject.toml)
 tenacity==9.0.0
     # via plotly
@@ -150,7 +150,7 @@ tomli==2.0.1
     # via
     #   coverage
     #   pytest
-tqdm==4.66.4
+tqdm==4.66.5
     # via gemseo (pyproject.toml)
 typeguard==4.3.0
     # via pandera
