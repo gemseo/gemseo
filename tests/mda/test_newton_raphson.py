@@ -20,9 +20,12 @@
 from __future__ import annotations
 
 import pickle
+from typing import TYPE_CHECKING
+from typing import Any
 from unittest import mock
 
 import pytest
+from numpy import allclose as allclose_
 from numpy import array
 from numpy import linalg
 
@@ -42,51 +45,92 @@ from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 from ..core.test_dataframe_disciplines import assert_disc_data_equal
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
+    from gemseo.core.discipline import MDODiscipline
+
 TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
 
 
+def allclose(a, b):
+    return allclose_(a, b, atol=1e-8, rtol=0.0)
+
+
 @pytest.fixture(scope="module")
-def sobiesky_disciplines():
+def mda_setting() -> Mapping[str, Any]:
+    """Returns the setting for all subsequent MDAs."""
+    return {"tolerance": 1e-12, "max_mda_iter": 50}
+
+
+@pytest.fixture(scope="module")
+def sobieski_disciplines() -> Sequence[MDODiscipline]:
     """Returns the Sobieski's disciplines."""
     return [SobieskiAerodynamics(), SobieskiStructure(), SobieskiPropulsion()]
 
 
 @pytest.fixture(scope="module")
-def compute_reference_n_iter(sobiesky_disciplines):
-    """Compute the number of iterations to serve as a reference.
+def reference(sobieski_disciplines, mda_setting) -> MDANewtonRaphson:
+    """An instance of Newton-Raphson MDA on the Sobieski problem."""
+    mda_newton = MDANewtonRaphson(
+        sobieski_disciplines, **mda_setting, over_relaxation_factor=1.0
+    )
+    mda_newton.execute()
+    return mda_newton
 
-    The Newton-Raphson method is applied to the Sobiesky problem without accelerations.
-    """
+
+@pytest.mark.parametrize("relaxation", [0.8, 1.0, 1.2])
+def test_over_relaxation(
+    sobieski_disciplines, mda_setting, relaxation, reference
+) -> None:
+    """Tests the relaxation factor."""
     mda = MDANewtonRaphson(
-        sobiesky_disciplines, over_relaxation_factor=1.0, tolerance=1e-12
+        sobieski_disciplines, **mda_setting, over_relaxation_factor=relaxation
     )
     mda.execute()
-    return len(mda.residual_history)
+
+    assert allclose(
+        mda.get_current_resolved_residual_vector(),
+        reference.get_current_resolved_residual_vector(),
+    )
+    assert allclose(
+        mda.get_current_resolved_variables_vector(),
+        reference.get_current_resolved_variables_vector(),
+    )
 
 
-@pytest.mark.parametrize("acceleration_method", AccelerationMethod)
+@pytest.mark.parametrize("acceleration", AccelerationMethod)
 def test_acceleration_methods(
-    sobiesky_disciplines, compute_reference_n_iter, acceleration_method
+    sobieski_disciplines, mda_setting, acceleration, reference
 ) -> None:
     """Tests the acceleration methods."""
     mda = MDANewtonRaphson(
-        sobiesky_disciplines,
-        tolerance=1e-12,
-        acceleration_method=acceleration_method,
+        sobieski_disciplines,
+        **mda_setting,
+        acceleration_method=acceleration,
         over_relaxation_factor=1.0,
     )
     mda.execute()
 
-    # Check that the number of iterations have been at least decreased
-    assert len(mda.residual_history) <= compute_reference_n_iter
+    assert mda._current_iter <= reference._current_iter
+
+    assert allclose(
+        mda.get_current_resolved_residual_vector(),
+        reference.get_current_resolved_residual_vector(),
+    )
+    assert allclose(
+        mda.get_current_resolved_variables_vector(),
+        reference.get_current_resolved_variables_vector(),
+    )
 
 
 # TODO: Remove tests once the old attributes are removed
-def test_compatibility(sobiesky_disciplines) -> None:
+def test_compatibility(sobieski_disciplines) -> None:
     """Tests that the compatibility with previous behavior is ensured."""
     mda_1 = MDANewtonRaphson(
-        sobiesky_disciplines,
+        sobieski_disciplines,
         tolerance=1e-12,
         relax_factor=0.95,
     )
@@ -94,7 +138,7 @@ def test_compatibility(sobiesky_disciplines) -> None:
     mda_1.execute()
 
     mda_2 = MDANewtonRaphson(
-        sobiesky_disciplines,
+        sobieski_disciplines,
         tolerance=1e-12,
         over_relaxation_factor=0.95,
     )
@@ -115,10 +159,10 @@ def test_compatibility(sobiesky_disciplines) -> None:
 
 
 # TODO: Remove tests once the old attributes are removed
-def test_compatibility_setters_getters(sobiesky_disciplines) -> None:
+def test_compatibility_setters_getters(sobieski_disciplines) -> None:
     """Tests that the compatibility with previous behavior is ensured."""
     mda = MDANewtonRaphson(
-        sobiesky_disciplines,
+        sobieski_disciplines,
         tolerance=1e-12,
         relax_factor=0.95,
     )
@@ -181,7 +225,7 @@ def test_raphson_sellar_without_cache(use_cache) -> None:
     residual_length = len(mda.residual_history)
     assert mda.residual_history[-1] < tolerance
     assert disciplines[0].n_calls == residual_length
-    assert disciplines[0].n_calls_linearize == residual_length
+    assert disciplines[0].n_calls_linearize == residual_length - 1
 
 
 @pytest.mark.parametrize("parallel", [False, True])

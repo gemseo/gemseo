@@ -244,16 +244,14 @@ class MDAJacobi(BaseMDASolver):
             input_data = self.local_data.copy()
 
             self.execute_all_disciplines(self.local_data)
-            self._update_residuals(input_data)
+            self._compute_residuals(input_data)
 
-            new_couplings = self._sequence_transformer.compute_transformed_iterate(
+            if self._stop_criterion_is_reached:
+                break
+
+            updated_couplings = self._sequence_transformer.compute_transformed_iterate(
                 self.get_current_resolved_variables_vector(),
                 self.get_current_resolved_residual_vector(),
             )
 
-            self._update_local_data(new_couplings)
-            self._update_residuals(input_data)
-            self._compute_residual(log_normed_residual=self._log_convergence)
-
-            if self._stop_criterion_is_reached:
-                break
+            self._update_local_data_from_array(updated_couplings)

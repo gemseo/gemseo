@@ -204,7 +204,7 @@ class MDAQuasiNewton(MDARoot):
             Returns:
                 The linearized residuals.
             """
-            self._update_local_data(x_vect)
+            self._update_local_data_from_array(x_vect)
 
             self.reset_disciplines_statuses()
             for discipline in self.disciplines:
@@ -243,7 +243,7 @@ class MDAQuasiNewton(MDARoot):
                 new_couplings: The new coupling variables.
                 _: ignored
             """
-            self._compute_residual()
+            self._compute_normalized_residual_norm()
             self.__current_couplings = new_couplings
 
         return callback
@@ -263,12 +263,12 @@ class MDAQuasiNewton(MDARoot):
         self.current_iter += 1
         # Work on a temporary copy so _update_local_data can be called.
         local_data_copy = self._local_data.copy()
-        self._update_local_data(x_vect)
+        self._update_local_data_from_array(x_vect)
         input_data = self._local_data
         self._local_data = local_data_copy
         self.reset_disciplines_statuses()
         self.execute_all_disciplines(input_data)
-        self._update_residuals(input_data)
+        self._compute_residuals(input_data)
         return self.assembly.residuals(input_data, self._resolved_variable_names).real
 
     def _run(self) -> DisciplineData:
@@ -307,7 +307,7 @@ class MDAQuasiNewton(MDARoot):
 
         self._warn_convergence_criteria()
 
-        self._update_local_data(y_opt.x)
+        self._update_local_data_from_array(y_opt.x)
 
         if self.method in self._methods_with_callback():
             self._local_data[self.RESIDUALS_NORM] = array([self.normed_residual])

@@ -24,6 +24,8 @@ import logging
 from abc import abstractmethod
 from enum import auto
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Final
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -49,8 +51,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
     from pathlib import Path
-    from typing import Any
-    from typing import ClassVar
 
     from matplotlib.figure import Figure
     from numpy import ndarray
@@ -68,7 +68,7 @@ LOGGER = logging.getLogger(__name__)
 class MDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     """An MDA analysis."""
 
-    RESIDUALS_NORM: ClassVar[str] = "MDA residuals norm"
+    RESIDUALS_NORM: Final[str] = "MDA residuals norm"
 
     activate_cache = True
 
