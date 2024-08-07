@@ -88,6 +88,8 @@ def build_and_run_idf_scenario_with_constraints(
         use_threading=use_threading,
         maximize_objective=True,
         start_at_equilibrium=True,
+        tolerance=1e-10,
+        over_relaxation_factor=0.95,
     )
     if linearize:
         scenario.set_differentiation_method()

@@ -84,7 +84,7 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
 def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
-    """Test the gradient sensitivity post-processing with the Sobiesky problem.
+    """Test the gradient sensitivity post-processing with the Sobieski problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.

@@ -199,8 +199,7 @@ class MDANewtonRaphson(MDARoot):
                 discipline.add_differentiated_inputs(inputs_to_linearize)
                 discipline.add_differentiated_outputs(outputs_to_linearize)
 
-    # TODO: API: prepend with verb.
-    def _newton_step(
+    def _compute_newton_step(
         self,
         input_data: dict[str, Any] | DisciplineData,
     ) -> NDArray:
@@ -216,6 +215,8 @@ class MDANewtonRaphson(MDARoot):
         Returns:
             The Newton step.
         """
+        self.linearize_all_disciplines(input_data, execute=False)
+
         newton_step, is_converged = self.assembly.compute_newton_step(
             input_data,
             self._resolved_variable_names,
@@ -243,18 +244,15 @@ class MDANewtonRaphson(MDARoot):
             input_couplings = self.get_current_resolved_variables_vector()
 
             self.execute_all_disciplines(self.local_data)
-            self.linearize_all_disciplines(input_data, execute=False)
+            self._compute_residuals(input_data)
 
-            self._update_residuals(input_data)
-            newton_step = self._newton_step(input_data)
+            if self._stop_criterion_is_reached:
+                break
 
-            new_couplings = self._sequence_transformer.compute_transformed_iterate(
+            newton_step = self._compute_newton_step(input_data)
+            updated_couplings = self._sequence_transformer.compute_transformed_iterate(
                 input_couplings + newton_step,
                 newton_step,
             )
 
-            self._update_local_data(new_couplings)
-            self._compute_residual(log_normed_residual=self._log_convergence)
-
-            if self._stop_criterion_is_reached:
-                break
+            self._update_local_data_from_array(updated_couplings)

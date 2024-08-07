@@ -196,6 +196,7 @@ class BaseMDASolver(MDA):
     @property
     def _stop_criterion_is_reached(self) -> bool:
         """Whether a stop criterion is reached."""
+        self._compute_normalized_residual_norm()
         residual_is_small, max_iter_is_reached = self._warn_convergence_criteria()
         return residual_is_small or max_iter_is_reached
 
@@ -297,7 +298,7 @@ class BaseMDASolver(MDA):
                         slice_
                     )
 
-    def _update_local_data(self, array_: ndarray) -> None:
+    def _update_local_data_from_array(self, array_: ndarray) -> None:
         """Update the local data from an array.
 
         Args:
@@ -311,16 +312,11 @@ class BaseMDASolver(MDA):
                 converter.convert_array_to_data(array_, couplings_names_to_slices)
             )
 
-    def _compute_residual(
-        self,
-        store_it: bool = True,
-        log_normed_residual: bool = False,
-    ) -> float:
-        """Compute the residual on the inputs of the MDA.
+    def _compute_normalized_residual_norm(self, store_it: bool = True) -> float:
+        """Compute the normalized residual norm at the current point.
 
         Args:
             store_it: Whether to store the normed residual.
-            log_normed_residual: Whether to log the normed residual.
 
         Returns:
             The normed residual.
@@ -389,7 +385,7 @@ class BaseMDASolver(MDA):
         self.normed_residual = normed_residual
         self._scaling_data = _scaling_data
 
-        if log_normed_residual:
+        if self._log_convergence:
             LOGGER.info(
                 "%s running... Normed residual = %s (iter. %s)",
                 self.name,
@@ -403,7 +399,7 @@ class BaseMDASolver(MDA):
             self.residual_history.append(self.normed_residual)
             self._current_iter += 1
 
-        self._local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
+        self.local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
 
         return self.normed_residual
 
@@ -412,8 +408,8 @@ class BaseMDASolver(MDA):
         super()._run()
         self._sequence_transformer.clear()
 
-    def _update_residuals(self, input_data: DisciplineData) -> None:
-        """Update the residuals.
+    def _compute_residuals(self, input_data: DisciplineData) -> None:
+        """Compute the residual vector.
 
         Residuals are computed either as the difference between input and output values
         of coupling variables, or, for state variables, directly from the associated
