@@ -121,7 +121,6 @@ autodoc_mock_imports = [
     "matlabengine",
     "da",
     "pymoo",
-    "petsc4py",
     "scilab2py",
     "pyfmi",
     "fmpy",
@@ -312,7 +311,7 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
         "gemseo-pdfo": ("GEMSEO plugin for the PDFO library.", False),
         "gemseo-petsc": (
             "PETSc wrapper for :class:`.LinearSolver` and :class:`.BaseMDA`",
-            False,
+            True,
         ),
         "gemseo-pseven": ("GEMSEO plugin for the pSeven library.", False),
         "gemseo-pymoo": ("Pymoo wrapper for optimization algorithms", False),
