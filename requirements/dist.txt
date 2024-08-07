@@ -2,13 +2,15 @@
 #    uv pip compile requirements/dist.in -o requirements/dist.txt
 annotated-types==0.7.0
     # via pydantic
-attrs==24.1.0
+attrs==24.2.0
     # via check-wheel-contents
+backports-tarfile==1.2.0
+    # via jaraco-context
 build==1.2.1
     # via -r requirements/dist.in
 certifi==2024.7.4
     # via requests
-cffi==1.16.0
+cffi==1.17.0
     # via cryptography
 charset-normalizer==3.3.2
     # via requests
@@ -23,7 +25,9 @@ docutils==0.21.2
 idna==3.7
     # via requests
 importlib-metadata==8.2.0
-    # via twine
+    # via
+    #   keyring
+    #   twine
 jaraco-classes==3.4.0
     # via keyring
 jaraco-context==5.3.0
@@ -78,6 +82,10 @@ rich==13.7.1
     # via twine
 secretstorage==3.3.3
     # via keyring
+tomli==2.0.1
+    # via
+    #   build
+    #   check-wheel-contents
 twine==5.1.1
     # via -r requirements/dist.in
 typing-extensions==4.12.2
