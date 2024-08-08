@@ -27,6 +27,32 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 5.3.2 (2024-08-08)
+**************************
+
+
+
+Added
+-----
+
+- The ``IDF`` formulation now accepts options at instanciation for the ``MDAChain`` executed at the begining of the process when ``start_at_equilibrium=True``.
+  `#1259 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1259>`_
+
+Fixed
+-----
+
+- Remove the update of local data performed in the end of the ``MDAGaussSeidel``.
+  `#1251 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1251>`_
+
+Changed
+-------
+
+- The convergence of MDAs is now checked after the execution of the disciplines instead of after the acceleration.
+  This change affects the absolute value of the output coupling variables when running an MDA with acceleration methods.
+  The difference has an order of magnitude at most equal to the MDA tolerance.
+  The change should be harmless in most cases but could anyway have effects for numerically sensitive problems.
+  `#1251 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1251>`_
+
 Version 5.3.1 (2024-06-06)
 **************************
 
