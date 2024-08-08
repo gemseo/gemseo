@@ -41,6 +41,7 @@ from gemseo.mda.mda_chain import MDAChain
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from typing import Any
 
     from gemseo.algos.design_space import DesignSpace
 
@@ -70,6 +71,7 @@ class IDF(MDOFormulation):
         use_threading: bool = True,
         start_at_equilibrium: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+        **mda_options_for_start_at_equilibrium: Any,
     ) -> None:
         """
         Args:
@@ -87,6 +89,9 @@ class IDF(MDOFormulation):
                 you shall use multiprocessing.
             start_at_equilibrium: If ``True``,
                 an MDA is used to initialize the coupling variables.
+            mda_options_for_start_at_equilibrium: The options for the MDA when
+                ``start_at_equilibrium=True``.
+                See detailed options in :class:`.MDAChain`.
         """  # noqa: D205, D212, D415
         super().__init__(
             disciplines,
@@ -117,16 +122,19 @@ class IDF(MDOFormulation):
         self._build_objective_from_disc(objective_name)
 
         if start_at_equilibrium:
-            self._compute_equilibrium()
+            self._compute_equilibrium(**mda_options_for_start_at_equilibrium)
 
-    def _compute_equilibrium(self) -> None:
+    def _compute_equilibrium(self, **mda_options: Any) -> None:
         """Run an MDA to compute the initial target couplings at equilibrium.
 
         The values at equilibrium are set in the initial design space.
+
+        Args:
+            mda_options: The options for the MDA chain.
         """
         current_x = self.design_space.get_current_value(as_dict=True)
         # run MDA to initialize target coupling variables
-        mda = MDAChain(self.disciplines)
+        mda = MDAChain(self.disciplines, **mda_options)
         res = mda.execute(current_x)
 
         for name in self.all_couplings:
