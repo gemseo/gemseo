@@ -49,6 +49,11 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
     from gemseo.typing import StrKeyMapping
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.core.discipline import MDODiscipline
+
 TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
 
