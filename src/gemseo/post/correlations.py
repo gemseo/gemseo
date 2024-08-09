@@ -172,7 +172,7 @@ class Correlations(OptPostProcessor):
         ax1.scatter(
             variable_history[:, x_index], variable_history[:, y_index], c="b", s=30
         )
-        self.materials_for_plotting[(x_index, y_index)] = (
+        self.materials_for_plotting[x_index, y_index] = (
             variable_names[x_index],
             variable_names[y_index],
             correlation_coefficients,

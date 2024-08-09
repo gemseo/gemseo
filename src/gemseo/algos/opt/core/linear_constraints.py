@@ -95,6 +95,6 @@ def build_bounds_matrices(
     if n_finite == 0:
         return None, None
     lhs_mat = zeros((n_finite, bounds.size))
-    lhs_mat[(range(n_finite), is_finite)] = 1.0 if upper else -1.0
+    lhs_mat[range(n_finite), is_finite] = 1.0 if upper else -1.0
     rhs_vec = bounds[is_finite] if upper else -bounds[is_finite]
     return lhs_mat, rhs_vec
