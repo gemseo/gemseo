@@ -6,7 +6,7 @@ annotated-types==0.7.0
     # via pydantic
 autodocsumm==0.2.13
     # via gemseo (pyproject.toml)
-babel==2.15.0
+babel==2.16.0
     # via sphinx
 certifi==2024.7.4
     # via requests
