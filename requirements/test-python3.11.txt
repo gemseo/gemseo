@@ -144,6 +144,8 @@ tenacity==9.0.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
+tomli==2.0.1
+    # via coverage
 tqdm==4.66.5
     # via gemseo (pyproject.toml)
 typeguard==4.3.0
