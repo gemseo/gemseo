@@ -24,13 +24,13 @@ docutils==0.21.2
     # via readme-renderer
 idna==3.7
     # via requests
-importlib-metadata==8.2.0
+importlib-metadata==8.3.0
     # via
     #   keyring
     #   twine
 jaraco-classes==3.4.0
     # via keyring
-jaraco-context==5.3.0
+jaraco-context==6.0.0
     # via keyring
 jaraco-functools==4.0.2
     # via keyring
