@@ -36,7 +36,7 @@ graphviz==0.20.3
     # via gemseo (pyproject.toml)
 h5py==3.11.0
     # via gemseo (pyproject.toml)
-idna==3.7
+idna==3.8
     # via requests
 importlib-metadata==8.4.0
     # via typeguard
