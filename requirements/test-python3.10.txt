@@ -108,7 +108,7 @@ pydantic-core==2.20.1
     # via pydantic
 pydoe3==1.0.3
     # via gemseo (pyproject.toml)
-pyparsing==3.1.2
+pyparsing==3.1.4
     # via matplotlib
 pytest==8.3.2
     # via
