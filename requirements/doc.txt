@@ -133,7 +133,7 @@ pyenchant==3.2.2
     #   sphinxcontrib-spelling
 pygments==2.18.0
     # via sphinx
-pyparsing==3.1.2
+pyparsing==3.1.4
     # via matplotlib
 python-dateutil==2.9.0.post0
     # via
