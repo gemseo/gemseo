@@ -71,7 +71,6 @@ scenario.execute({
     "max_iter": 100,
     "algo_options": {
         "opt_algo_name": "SLSQP",
-        "opt_algo_max_iter": 10,
         "doe_algo_name": "fullfact",
         "n_start": 10,
         # Set multistart_file_path to save the history of the local optima.

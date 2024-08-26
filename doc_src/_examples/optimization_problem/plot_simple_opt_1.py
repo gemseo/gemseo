@@ -73,5 +73,7 @@ objective
 #
 
 x_0 = -ones(1)
-opt = optimize.fmin_l_bfgs_b(objective, x_0, fprime=objective.jac, bounds=[(-0.2, 2.0)])
+opt = optimize.fmin_l_bfgs_b(
+    objective.evaluate, x_0, fprime=objective.jac, bounds=[(-0.2, 2.0)]
+)
 opt
