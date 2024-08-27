@@ -78,7 +78,7 @@ requests-toolbelt==1.0.0
     # via twine
 rfc3986==2.0.0
     # via twine
-rich==13.7.1
+rich==13.8.0
     # via twine
 secretstorage==3.3.3
     # via keyring
@@ -98,5 +98,5 @@ urllib3==2.2.2
     #   twine
 wheel-filename==1.4.1
     # via check-wheel-contents
-zipp==3.20.0
+zipp==3.20.1
     # via importlib-metadata
