@@ -16,19 +16,36 @@ from __future__ import annotations
 
 import pytest
 from numpy import array
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_allclose
 
 from gemseo.problems.uncertainty.ishigami.functions import compute_gradient
 from gemseo.problems.uncertainty.ishigami.functions import compute_output
 
 
-def test_compute_output() -> None:
+@pytest.mark.parametrize(
+    ("input_value", "output_value"),
+    [
+        (array([1.0, 1.0, 1.0]), 5.9),
+        (array([[1.0, 1.0, 1.0], [1.0, 1.0, 2.0]]), array([5.9, 7.1])),
+    ],
+)
+def test_compute_output(input_value, output_value) -> None:
     """Check the output of the Ishigami function."""
-    assert compute_output(array([1.0, 1.0, 1.0])) == pytest.approx(5.9, abs=0.1)
+    result = compute_output(input_value)
+    assert_allclose(result, output_value, atol=1)
+    assert isinstance(result, float) is (input_value.ndim == 1)
 
 
-def test_compute_gradient() -> None:
+@pytest.mark.parametrize(
+    ("input_value", "gradient_value"),
+    [
+        (array([1.0, 1.0, 1.0]), array([0.6, 6.4, 0.3])),
+        (
+            array([[1.0, 1.0, 1.0], [1.0, 1.0, 2.0]]),
+            array([[0.6, 6.4, 0.3], [1.4, 6.4, 2.7]]),
+        ),
+    ],
+)
+def test_compute_gradient(input_value, gradient_value) -> None:
     """Check the gradient of the Ishigami function."""
-    assert_almost_equal(
-        compute_gradient(array([1.0, 1.0, 1.0])), array([0.6, 6.4, 0.3]), decimal=1
-    )
+    assert_allclose(compute_gradient(input_value), gradient_value, atol=1)
