@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 from numpy import atleast_1d
 
 if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import NumberArray
 
 

@@ -16,9 +16,9 @@
 
 import logging
 
-from gemseo.core.mdofunctions.collections.functions import Functions
-from gemseo.core.mdofunctions.collections.observables import Observables
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.collections.functions import Functions
+from gemseo.core.mdo_functions.collections.observables import Observables
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 def test_functions():
@@ -45,7 +45,7 @@ def test_format_warn(problem, caplog):
     observables.append(observable)
     assert observables.format(observable) is None
     assert caplog.record_tuples[0] == (
-        "gemseo.core.mdofunctions.collections.observables",
+        "gemseo.core.mdo_functions.collections.observables",
         logging.WARNING,
         'The optimization problem already observes "o".',
     )

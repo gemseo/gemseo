@@ -40,7 +40,7 @@ from scipy.optimize import rosen
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.algos.ot_gpr import OTGaussianProcessRegressor
 from gemseo.problems.optimization.rosenbrock import Rosenbrock

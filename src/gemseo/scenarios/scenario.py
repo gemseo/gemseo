@@ -41,7 +41,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult

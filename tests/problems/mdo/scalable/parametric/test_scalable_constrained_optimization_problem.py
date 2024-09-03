@@ -28,7 +28,7 @@ from numpy import ones_like
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

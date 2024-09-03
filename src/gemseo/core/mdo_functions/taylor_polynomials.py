@@ -20,9 +20,9 @@ from typing import TYPE_CHECKING
 
 from numpy import ndarray
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
-from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_quadratic_function import MDOQuadraticFunction
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

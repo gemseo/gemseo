@@ -36,7 +36,7 @@ from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 

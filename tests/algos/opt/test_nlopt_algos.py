@@ -34,7 +34,7 @@ from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary a
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.lib_nlopt import Nlopt
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 

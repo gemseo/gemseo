@@ -26,8 +26,8 @@ from numpy import ndarray
 from scipy.sparse import coo_array
 from scipy.sparse import csr_array
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 
 
 def test_inputs() -> None:

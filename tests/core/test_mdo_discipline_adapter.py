@@ -27,7 +27,7 @@ from numpy import array
 from numpy import ndarray
 from numpy.testing import assert_equal
 
-from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
+from gemseo.core.mdo_functions.mdo_discipline_adapter import MDODisciplineAdapter
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import MutableMapping
 
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 INPUT_VECTOR = array([1.0, 1.0])
 

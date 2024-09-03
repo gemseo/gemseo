@@ -44,7 +44,7 @@ from scipy.sparse import csr_array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 

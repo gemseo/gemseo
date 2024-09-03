@@ -30,7 +30,7 @@ from numpy import diag
 from numpy import ndarray
 from numpy import tile
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 
 N_SAMPLES = 10

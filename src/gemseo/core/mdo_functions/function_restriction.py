@@ -22,7 +22,7 @@ from numpy import array
 from numpy import empty
 from numpy import ndarray
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

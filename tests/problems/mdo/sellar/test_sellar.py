@@ -29,7 +29,7 @@ from numpy import ndarray
 from numpy import zeros
 from numpy.testing import assert_allclose
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1

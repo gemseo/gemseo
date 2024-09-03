@@ -21,7 +21,7 @@ import pytest
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.disciplines.splitter import Splitter
 

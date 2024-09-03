@@ -22,8 +22,8 @@ from collections.abc import MutableSequence
 import pytest
 from numpy import array
 
-from gemseo.core.mdofunctions.collections.functions import Functions
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.collections.functions import Functions
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 @pytest.fixture(scope="module")

@@ -49,7 +49,7 @@ from numpy import sort as np_sort
 from numpy import vstack
 from numpy.linalg import norm
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor

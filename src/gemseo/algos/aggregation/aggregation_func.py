@@ -39,7 +39,7 @@ from gemseo.algos.aggregation.core import compute_total_ks_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_positive_agg_jac
 from gemseo.algos.aggregation.core import compute_upper_bound_ks_agg
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

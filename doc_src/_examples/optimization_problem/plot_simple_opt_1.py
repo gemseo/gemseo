@@ -37,7 +37,7 @@ from numpy import sin
 from scipy import optimize
 
 from gemseo import configure_logger
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 configure_logger()
 

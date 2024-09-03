@@ -36,7 +36,7 @@ from numpy import ndarray
 from numpy.linalg import norm
 
 from gemseo.algos.database import Database
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.typing import RealArray
 from gemseo.typing import RealOrComplexArray
 
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.mdofunctions.collections.constraints import Constraints
+    from gemseo.core.mdo_functions.collections.constraints import Constraints
 
 
 BestInfeasiblePointType = tuple[RealArray, RealArray, bool, dict[str, RealArray]]

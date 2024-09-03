@@ -22,7 +22,7 @@ import numpy as np
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdofunctions.consistency_constraint import ConsistencyConstraint
+from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.idf import IDF
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace

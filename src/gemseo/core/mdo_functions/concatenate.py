@@ -23,7 +23,7 @@ from numpy import atleast_2d
 from numpy import concatenate
 from numpy import vstack
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

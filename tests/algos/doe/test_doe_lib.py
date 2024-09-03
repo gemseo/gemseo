@@ -44,7 +44,7 @@ from gemseo.algos.doe.lib_scipy import SciPyDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 
 if TYPE_CHECKING:

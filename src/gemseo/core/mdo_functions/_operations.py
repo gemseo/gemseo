@@ -33,9 +33,9 @@ from numpy import subtract as _subtract
 from numpy import tile
 
 if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
-    from gemseo.core.mdofunctions.mdo_function import OperatorType
-    from gemseo.core.mdofunctions.mdo_function import OutputType
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import OperatorType
+    from gemseo.core.mdo_functions.mdo_function import OutputType
     from gemseo.typing import NumberArray
 
 

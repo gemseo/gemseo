@@ -46,13 +46,13 @@ from gemseo import to_pickle
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.evaluation_counter import EvaluationCounter
 from gemseo.algos.problem_function import ProblemFunction
-from gemseo.core.mdofunctions.concatenate import Concatenate
-from gemseo.core.mdofunctions.convex_linear_approx import ConvexLinearApprox
-from gemseo.core.mdofunctions.function_restriction import FunctionRestriction
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
-from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
-from gemseo.core.mdofunctions.taylor_polynomials import compute_quadratic_approximation
+from gemseo.core.mdo_functions.concatenate import Concatenate
+from gemseo.core.mdo_functions.convex_linear_approx import ConvexLinearApprox
+from gemseo.core.mdo_functions.function_restriction import FunctionRestriction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.set_pt_from_database import SetPtFromDatabase
+from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
+from gemseo.core.mdo_functions.taylor_polynomials import compute_quadratic_approximation
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 

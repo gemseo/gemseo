@@ -30,7 +30,7 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.core.chain import MDOWarmStartedChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.mda.factory import MDAFactory
