@@ -44,7 +44,7 @@ jinja2==3.1.4
     # via gemseo (pyproject.toml)
 joblib==1.4.2
     # via scikit-learn
-kiwisolver==1.4.5
+kiwisolver==1.4.6
     # via matplotlib
 markupsafe==2.1.5
     # via jinja2
@@ -88,7 +88,7 @@ pandas==2.2.2
     # via
     #   gemseo (pyproject.toml)
     #   pandera
-pandera==0.20.3
+pandera==0.20.4
     # via gemseo (pyproject.toml)
 pillow==10.4.0
     # via
