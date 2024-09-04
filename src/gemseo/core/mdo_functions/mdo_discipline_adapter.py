@@ -27,7 +27,7 @@ from numpy import array
 from numpy import empty
 from numpy import ndarray
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT

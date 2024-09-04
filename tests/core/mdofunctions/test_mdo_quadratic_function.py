@@ -20,8 +20,8 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_quadratic_function import MDOQuadraticFunction
 
 
 @pytest.fixture(scope="module")

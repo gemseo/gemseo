@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.uncertainty.ishigami.functions import compute_gradient
 from gemseo.problems.uncertainty.ishigami.functions import compute_output
 

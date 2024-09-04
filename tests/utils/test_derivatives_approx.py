@@ -37,7 +37,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission

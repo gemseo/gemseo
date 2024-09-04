@@ -19,7 +19,7 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_scalable import DiagonalDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 

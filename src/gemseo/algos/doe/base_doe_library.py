@@ -58,7 +58,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)

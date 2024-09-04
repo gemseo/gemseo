@@ -30,7 +30,7 @@ from numpy.testing import assert_array_equal
 from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.opt.mnbi import MNBI
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaFleming
 from gemseo.problems.multiobjective_optimization.poloni import Poloni

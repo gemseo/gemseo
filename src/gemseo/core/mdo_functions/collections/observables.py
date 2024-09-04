@@ -19,8 +19,8 @@ from __future__ import annotations
 import logging
 from typing import ClassVar
 
-from gemseo.core.mdofunctions.collections.functions import Functions
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.collections.functions import Functions
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
 

@@ -37,12 +37,12 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter

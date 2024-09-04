@@ -39,8 +39,8 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.evaluation_counter import EvaluationCounter
 from gemseo.algos.problem_function import ProblemFunction
-from gemseo.core.mdofunctions.collections.observables import Observables
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.collections.observables import Observables
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.typing import RealArray
@@ -52,7 +52,7 @@ from gemseo.utils.string_tools import pretty_str
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 LOGGER = logging.getLogger(__name__)

@@ -23,9 +23,9 @@ from numpy import ndarray
 from numpy import zeros
 from numpy import zeros_like
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import OutputType
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import OutputType
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

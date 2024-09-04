@@ -20,8 +20,8 @@ import pytest
 
 from gemseo.algos.constraint_tolerances import ConstraintTolerances
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdofunctions.collections.constraints import Constraints
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.collections.constraints import Constraints
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 @pytest.fixture

@@ -28,7 +28,7 @@ from numpy import empty
 
 from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.ode.ode_result import ODEResult
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 if TYPE_CHECKING:

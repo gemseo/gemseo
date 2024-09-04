@@ -30,8 +30,8 @@ from numpy import newaxis
 from numpy import ones_like
 from numpy import zeros
 
-from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

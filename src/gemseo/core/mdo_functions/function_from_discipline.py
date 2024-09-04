@@ -26,17 +26,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Callable
 
-from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
     from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.mdofunctions.mdo_discipline_adapter import MDODisciplineAdapter
+    from gemseo.core.mdo_functions.mdo_discipline_adapter import MDODisciplineAdapter
     from gemseo.formulations.base_formulation import BaseFormulation
     from gemseo.typing import BooleanArray
     from gemseo.typing import NumberArray

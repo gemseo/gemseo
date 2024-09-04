@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import StrKeyMapping
 
 

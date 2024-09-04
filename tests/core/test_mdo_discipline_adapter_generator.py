@@ -28,8 +28,8 @@ from numpy import ones
 from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
 from gemseo.disciplines.analytic import AnalyticDiscipline

@@ -46,7 +46,7 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from gemseo.utils.matplotlib_figure import FigSizeType

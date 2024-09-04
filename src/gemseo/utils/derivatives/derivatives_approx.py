@@ -106,7 +106,7 @@ class DisciplineJacApprox:
             wait_time_between_fork: The time waited between two forks
                 of the process / thread.
         """  # noqa:D205 D212 D415
-        from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+        from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
             MDODisciplineAdapterGenerator,
         )
 

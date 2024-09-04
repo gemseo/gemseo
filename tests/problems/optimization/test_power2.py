@@ -27,7 +27,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.problems.optimization.power_2 import Power2
 
 if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 @pytest.fixture(scope="module")

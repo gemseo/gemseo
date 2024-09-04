@@ -43,11 +43,11 @@ from numpy.linalg import norm
 from strenum import StrEnum
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdofunctions._operations import _AdditionFunctionMaker
-from gemseo.core.mdofunctions._operations import _MultiplicationFunctionMaker
-from gemseo.core.mdofunctions._operations import _OperationFunctionMaker
-from gemseo.core.mdofunctions.not_implementable_callable import NotImplementedCallable
-from gemseo.core.mdofunctions.set_pt_from_database import SetPtFromDatabase
+from gemseo.core.mdo_functions._operations import _AdditionFunctionMaker
+from gemseo.core.mdo_functions._operations import _MultiplicationFunctionMaker
+from gemseo.core.mdo_functions._operations import _OperationFunctionMaker
+from gemseo.core.mdo_functions.not_implementable_callable import NotImplementedCallable
+from gemseo.core.mdo_functions.set_pt_from_database import SetPtFromDatabase
 from gemseo.typing import NumberArray
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode

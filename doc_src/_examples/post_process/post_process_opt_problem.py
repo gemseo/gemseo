@@ -29,7 +29,7 @@ from gemseo import create_design_space
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 # %%
 # We consider a minimization problem over the interval :math:`[0,1]`

@@ -26,7 +26,7 @@ from numpy import ones_like
 from numpy import where
 from numpy import zeros_like
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from gemseo.typing import NumberArray

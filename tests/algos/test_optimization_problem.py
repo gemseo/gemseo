@@ -59,8 +59,8 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.algos.stop_criteria import MaxIterReachedException
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace

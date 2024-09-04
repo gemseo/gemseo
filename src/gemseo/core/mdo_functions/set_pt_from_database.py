@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import NumberArray
 
 

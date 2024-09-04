@@ -92,10 +92,10 @@ from gemseo.algos.multiobjective_optimization_result import (
 from gemseo.algos.optimization_history import OptimizationHistory
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.algos.pareto.pareto_front import ParetoFront
-from gemseo.core.mdofunctions.collections.constraints import Constraints
-from gemseo.core.mdofunctions.linear_composite_function import LinearCompositeFunction
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.collections.constraints import Constraints
+from gemseo.core.mdo_functions.linear_composite_function import LinearCompositeFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset

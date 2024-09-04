@@ -38,10 +38,10 @@ from gemseo.algos.database import Database
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter import (
     MDOObjectiveScenarioAdapter,
 )

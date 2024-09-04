@@ -19,7 +19,7 @@ from numpy import vstack
 from numpy.core._multiarray_umath import concatenate
 
 from gemseo import execute_algo
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 
 

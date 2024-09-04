@@ -70,8 +70,8 @@ from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import NotImplementedCallable
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import NotImplementedCallable
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.multiprocessing.execution import execute
 

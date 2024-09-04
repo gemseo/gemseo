@@ -29,9 +29,9 @@ from gemseo.algos.database import Database
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.algos.stop_criteria import MaxIterReachedException
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import OutputType
-from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import OutputType
+from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
 from gemseo.core.serializable import Serializable
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 

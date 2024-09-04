@@ -32,10 +32,10 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_max
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
-from gemseo.core.mdofunctions.collections.functions import Functions
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
-from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
+from gemseo.core.mdo_functions.collections.functions import Functions
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_quadratic_function import MDOQuadraticFunction
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 

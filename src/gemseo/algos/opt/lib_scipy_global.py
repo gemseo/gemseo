@@ -46,8 +46,8 @@ from gemseo.utils.seeder import SEED
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.core.mdofunctions.mdo_function import WrappedFunctionType
-    from gemseo.core.mdofunctions.mdo_function import WrappedJacobianType
+    from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
+    from gemseo.core.mdo_functions.mdo_function import WrappedJacobianType
     from gemseo.typing import StrKeyMapping
 
 InputType = NDArray[Union[float64, int32]]

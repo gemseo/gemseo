@@ -27,7 +27,7 @@ from numpy import atleast_2d
 from numpy import zeros
 
 if TYPE_CHECKING:
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import NumberArray
 
 

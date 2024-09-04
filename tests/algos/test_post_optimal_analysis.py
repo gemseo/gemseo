@@ -29,7 +29,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 class TestPostOptimalAnalysis(unittest.TestCase):

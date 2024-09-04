@@ -36,7 +36,7 @@ from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 from .utils import execute_problem
 from .utils import generate_test_functions

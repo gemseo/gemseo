@@ -29,8 +29,8 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.lib_scipy_linprog import ScipyLinprog
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 

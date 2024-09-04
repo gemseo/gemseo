@@ -29,13 +29,13 @@ from numpy import vstack
 from numpy import zeros
 from scipy.sparse import vstack as sparse_vstack
 
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 def build_constraints_matrices(

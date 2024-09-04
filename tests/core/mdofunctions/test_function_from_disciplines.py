@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 

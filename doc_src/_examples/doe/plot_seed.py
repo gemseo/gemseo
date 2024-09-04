@@ -44,7 +44,7 @@ from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 # %%
 # At the scenario level

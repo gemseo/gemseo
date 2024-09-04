@@ -22,7 +22,7 @@ from numpy import zeros
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
 from gemseo.utils.comparisons import compare_dict_of_arrays

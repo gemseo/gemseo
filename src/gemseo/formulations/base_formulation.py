@@ -35,9 +35,9 @@ from numpy import zeros
 
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
+from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta

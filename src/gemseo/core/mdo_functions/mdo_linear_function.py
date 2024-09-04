@@ -26,8 +26,8 @@ from numpy import multiply
 from numpy import ndarray
 from numpy import where
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_function import OutputType
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import OutputType
 from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
