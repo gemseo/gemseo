@@ -18,7 +18,7 @@ cycler==0.12.1
     # via matplotlib
 dill==0.3.8
     # via openturns
-docstring-inheritance==2.2.0
+docstring-inheritance==2.2.1
     # via gemseo (pyproject.toml)
 et-xmlfile==1.1.0
     # via openpyxl
@@ -44,7 +44,7 @@ jinja2==3.1.4
     # via gemseo (pyproject.toml)
 joblib==1.4.2
     # via scikit-learn
-kiwisolver==1.4.6
+kiwisolver==1.4.7
     # via matplotlib
 markupsafe==2.1.5
     # via jinja2
@@ -94,7 +94,7 @@ pillow==10.4.0
     # via
     #   gemseo (pyproject.toml)
     #   matplotlib
-plotly==5.23.0
+plotly==5.24.0
     # via gemseo (pyproject.toml)
 pluggy==1.5.0
     # via pytest
@@ -106,7 +106,7 @@ pydantic==2.8.2
     #   pandera
 pydantic-core==2.20.1
     # via pydantic
-pydoe3==1.0.3
+pydoe3==1.0.4
     # via gemseo (pyproject.toml)
 pyparsing==3.1.4
     # via matplotlib
@@ -131,7 +131,7 @@ requests==2.32.3
     # via gemseo (pyproject.toml)
 scikit-learn==1.5.1
     # via gemseo (pyproject.toml)
-scipy==1.14.0
+scipy==1.14.1
     # via
     #   gemseo (pyproject.toml)
     #   pydoe3
@@ -140,7 +140,7 @@ six==1.16.0
     # via python-dateutil
 strenum==0.4.15
     # via gemseo (pyproject.toml)
-sympy==1.13.1
+sympy==1.13.2
     # via gemseo (pyproject.toml)
 tenacity==9.0.0
     # via plotly
@@ -171,5 +171,5 @@ wrapt==1.16.0
     # via pandera
 xdsmjs==2.0.0
     # via gemseo (pyproject.toml)
-xxhash==3.4.1
+xxhash==3.5.0
     # via gemseo (pyproject.toml)
