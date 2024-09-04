@@ -40,7 +40,7 @@ jinja2==3.0.0
     # via gemseo (pyproject.toml)
 joblib==1.4.2
     # via scikit-learn
-kiwisolver==1.4.5
+kiwisolver==1.4.6
     # via matplotlib
 markupsafe==2.1.5
     # via jinja2
