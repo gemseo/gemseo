@@ -1,0 +1,2 @@
+``MDAChain`` correctly runs with ``initialize_defaults`` set to True when some outputs
+of the chain are not coupling variables.
