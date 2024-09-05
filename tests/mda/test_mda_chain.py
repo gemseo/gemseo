@@ -385,6 +385,21 @@ def test_max_mda_iter(sellar_disciplines) -> None:
         assert mda.max_mda_iter == 10
 
 
+def test_scaling(sellar_disciplines) -> None:
+    """Test that changing the scaling of a chain modifies all the inner mdas."""
+    mda_chain = MDAChain(
+        sellar_disciplines,
+        tolerance=1e-13,
+        max_mda_iter=30,
+        chain_linearize=True,
+        warm_start=True,
+    )
+    mda_chain.scaling = MDAChain.ResidualScaling.NO_SCALING
+    assert mda_chain.scaling == MDAChain.ResidualScaling.NO_SCALING
+    for mda in mda_chain.inner_mdas:
+        assert mda.scaling == MDAChain.ResidualScaling.NO_SCALING
+
+
 def test_initialize_defaults() -> None:
     """Test the automated initialization of the default_inputs."""
     disciplines = create_disciplines_from_desc([

@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Charlie Vanaret
@@ -101,7 +103,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     warm_start: bool
     """Whether the second iteration and ongoing start from the previous solution."""
 
-    scaling: ResidualScaling
+    _scaling: ResidualScaling
     """The scaling method applied to MDA residuals for convergence monitoring."""
 
     _scaling_data: float | list[tuple[slice, float]] | NDArray[float] | None
@@ -267,7 +269,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             over_relaxation_factor, acceleration_method
         )
 
-        self.scaling = self.ResidualScaling.INITIAL_RESIDUAL_NORM
+        self._scaling = self.ResidualScaling.INITIAL_RESIDUAL_NORM
         self._scaling_data = None
 
         # Don't erase coupling values before calling _compute_jacobian
@@ -317,8 +319,18 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @max_mda_iter.setter
     def max_mda_iter(self, max_mda_iter: int) -> None:
-        # This setter will be overloaded in certain child classes
+        # This setter will be overloaded in certain child classes.
         self._max_mda_iter = max_mda_iter
+
+    @property
+    def scaling(self) -> ResidualScaling:
+        """The scaling method applied to MDA residuals for convergence monitoring."""
+        return self._scaling
+
+    @scaling.setter
+    def scaling(self, scaling: ResidualScaling) -> None:
+        # This setter will be overloaded in certain child classes.
+        self._scaling = scaling
 
     def _initialize_grammars(self) -> None:
         """Define all the inputs and outputs of the MDA.

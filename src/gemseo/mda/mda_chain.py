@@ -156,6 +156,12 @@ class MDAChain(BaseMDA):
         for mda in self.inner_mdas:
             mda.max_mda_iter = max_mda_iter
 
+    @BaseMDA.scaling.setter
+    def scaling(self, scaling: BaseMDA.ResidualScaling) -> None:  # noqa: D102
+        self._scaling = scaling
+        for mda in self.inner_mdas:
+            mda.scaling = scaling
+
     @BaseMDA.log_convergence.setter
     def log_convergence(  # noqa: D102
         self,
