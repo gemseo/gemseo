@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -602,3 +604,14 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
         linearization_mode="adjoint",
         threshold=1e-3,
     )
+
+
+def test_scaling_method() -> None:
+    """Test changing the `scaling` argument of an MDA."""
+    sellar1 = Sellar1()
+    sellar2 = Sellar2()
+
+    with concretize_classes(BaseMDA):
+        mda = BaseMDA([sellar1, sellar2])
+        mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
+        assert mda.scaling == BaseMDA.ResidualScaling.NO_SCALING

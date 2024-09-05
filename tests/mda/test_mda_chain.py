@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -381,6 +383,21 @@ def test_max_mda_iter(sellar_disciplines) -> None:
     assert mda_chain.max_mda_iter == 10
     for mda in mda_chain.inner_mdas:
         assert mda.max_mda_iter == 10
+
+
+def test_scaling(sellar_disciplines) -> None:
+    """Test that changing the scaling of a chain modifies all the inner mdas."""
+    mda_chain = MDAChain(
+        sellar_disciplines,
+        tolerance=1e-13,
+        max_mda_iter=30,
+        chain_linearize=True,
+        warm_start=True,
+    )
+    mda_chain.scaling = MDAChain.ResidualScaling.NO_SCALING
+    assert mda_chain.scaling == MDAChain.ResidualScaling.NO_SCALING
+    for mda in mda_chain.inner_mdas:
+        assert mda.scaling == MDAChain.ResidualScaling.NO_SCALING
 
 
 def test_initialize_defaults() -> None:

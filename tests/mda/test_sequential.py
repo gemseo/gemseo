@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,6 +25,7 @@ from pathlib import Path
 
 import numpy as np
 
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.sequential_mda import MDAGSNewton
@@ -90,3 +93,20 @@ def test_parallel_doe(generate_parallel_doe_data) -> None:
     """
     obj = generate_parallel_doe_data(inner_mda_name="MDAGSNewton")
     assert np.isclose(np.array([-obj]), np.array([608.175]), atol=1e-3)
+
+
+def test_sequential_mda_scaling_method() -> None:
+    """Test changing the `scaling` attribute of a sequential MDA.
+
+    Check that the change is propagated to the sub-MDAs.
+    """
+    disciplines = [Sellar1(), Sellar2()]
+    mda1 = MDAJacobi(disciplines, max_mda_iter=1)
+    mda2 = MDANewtonRaphson(disciplines)
+    mda_sequence = [mda1, mda2]
+    mda = MDASequential(disciplines, mda_sequence, max_mda_iter=20)
+
+    mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
+    assert mda.scaling == BaseMDA.ResidualScaling.NO_SCALING
+    assert mda1.scaling == BaseMDA.ResidualScaling.NO_SCALING
+    assert mda2.scaling == BaseMDA.ResidualScaling.NO_SCALING

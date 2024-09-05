@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
@@ -153,6 +155,12 @@ class MDAChain(BaseMDA):
         self._max_mda_iter = max_mda_iter
         for mda in self.inner_mdas:
             mda.max_mda_iter = max_mda_iter
+
+    @BaseMDA.scaling.setter
+    def scaling(self, scaling: BaseMDA.ResidualScaling) -> None:  # noqa: D102
+        self._scaling = scaling
+        for mda in self.inner_mdas:
+            mda.scaling = scaling
 
     @BaseMDA.log_convergence.setter
     def log_convergence(  # noqa: D102
