@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -387,7 +389,7 @@ def test_initialize_defaults() -> None:
     """Test the automated initialization of the default_inputs."""
     disciplines = create_disciplines_from_desc([
         ("A", ["x", "y"], ["z"]),
-        ("B", ["a", "z"], ["y"]),
+        ("B", ["a", "z"], ["y", "w"]),
     ])
     del disciplines[0].default_inputs["y"]
     chain = MDAChain(disciplines, initialize_defaults=False)

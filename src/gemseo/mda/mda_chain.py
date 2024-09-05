@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
@@ -485,7 +487,12 @@ class MDAChain(BaseMDA):
                 available_data_names=input_data or (),
                 grammar_type=self.grammar_type,
             )
-            self.default_inputs.update(init_chain.execute(input_data))
+
+            self.default_inputs.update({
+                key: value
+                for key, value in init_chain.execute(input_data).items()
+                if key in self.input_grammar.names
+            })
             self.__initialize_defaults = False
         return super().execute(input_data=input_data)
 
