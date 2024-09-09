@@ -165,7 +165,7 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
     def __init__(
         self,
         tolerance: float = 0.0,
-        name: str | None = None,
+        name: str = "",
     ) -> None:
         """
         Args:
@@ -177,10 +177,10 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
                 This tolerance could be useful to optimize CPU time.
                 It could be something like ``2 * numpy.finfo(float).eps``.
             name: A name for the cache.
-                If ``None``, use the class name.
+                If empty, use the class name.
         """  # noqa: D205, D212, D415
         self.tolerance = tolerance
-        self.name = name if name is not None else self.__class__.__name__
+        self.name = name or self.__class__.__name__
         self.__names_to_sizes = {}
         self.__input_names = []
         self._output_names = []

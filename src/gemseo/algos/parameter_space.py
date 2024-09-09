@@ -644,12 +644,12 @@ class ParameterSpace(DesignSpace):
 
     def get_pretty_table(  # noqa: D102
         self,
-        fields: Sequence[str] | None = None,
+        fields: Sequence[str] = (),
         with_index: bool = False,
         capitalize: bool = False,
         simplify: bool = False,
     ) -> PrettyTable:
-        if not simplify or self.deterministic_variables or fields is not None:
+        if not simplify or self.deterministic_variables or fields:
             table = super().get_pretty_table(
                 fields=fields, capitalize=capitalize, with_index=with_index
             )

@@ -32,12 +32,12 @@ if TYPE_CHECKING:
 
 
 def _parse_inputs(
-    args: Sequence[str] | None = None,
+    args: Sequence[str] = (),
 ) -> tuple[Path, Path, Path, bool, bool]:
     """Parse the arguments of the command.
 
     Args:
-        args: The command line arguments. If ``None``, uses sys.argv[1:]
+        args: The command line arguments. If empty, uses ``sys.argv[1:]``.
 
     Returns:
         The path to the serialized discipline, the path
@@ -77,7 +77,7 @@ def _parse_inputs(
         action="store_true",
     )
 
-    parsed_args = parser.parse_args(args)
+    parsed_args = parser.parse_args(args or None)
 
     if parsed_args.execute_at_linearize and not parsed_args.linearize:
         msg = "The option --execute-at-linearize cannot be used without --linearize."

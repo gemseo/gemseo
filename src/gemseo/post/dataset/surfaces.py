@@ -45,21 +45,21 @@ class Surfaces(DatasetPlot):
         dataset: Dataset,
         mesh: str,
         variable: str,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         add_points: bool = False,
         fill: bool = True,
-        levels: int | Sequence[int] | None = None,
+        levels: int | Sequence[int] = (),
     ) -> None:
         """
         Args:
             mesh: The name of the dataset metadata corresponding to the mesh.
             variable: The name of the variable for the x-axis.
-            samples: The indices of the samples to plot. If ``None``, plot all samples.
+            samples: The indices of the samples to plot. If empty, plot all samples.
             add_points: If ``True`` then display the samples over the surface plot.
             fill: Whether to generate a filled contour plot.
             levels: Either the number of contour lines
                 or the values of the contour lines in increasing order.
-                If ``None``, select them automatically.
+                If empty, select them automatically.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,

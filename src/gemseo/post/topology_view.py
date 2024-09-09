@@ -36,8 +36,8 @@ class TopologyView(OptPostProcessor):
         self,
         n_x: int,
         n_y: int,
-        observable: str | None = None,
-        iterations: int | Iterable[int] | None = None,
+        observable: str = "",
+        iterations: int | Iterable[int] = (),
     ) -> None:
         """Plot the design variable or an observable field patch plot.
 
@@ -47,9 +47,9 @@ class TopologyView(OptPostProcessor):
             observable: The name of the observable to be plotted.
                 It should be of size ``n_x*n_y``.
             iterations: The iterations of the optimization history.
-                If ``None``, the last iteration is taken.
+                If empty, the last iteration is taken.
         """
-        if iterations is None:
+        if not iterations:
             iterations = [len(self.database)]
         elif isinstance(iterations, int):
             iterations = [iterations]

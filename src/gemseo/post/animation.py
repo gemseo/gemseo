@@ -73,7 +73,7 @@ class Animation(OptPostProcessor):
         time_step: int = 100,
         n_repetitions: int | None = None,
         gif_file_path: str | Path = "animated_gif",
-        temporary_database_file: str | Path | None = None,
+        temporary_database_file: str | Path = "",
         remove_frames: bool = True,
         **options: Any,
     ) -> list[str]:
@@ -88,8 +88,8 @@ class Animation(OptPostProcessor):
             infinitely.
             gif_file_path: The path to the GIF file.
             temporary_database_file:  The path to a temporary database file to avoid
-                deepcopy memory errors. If ``None``, deepcopy is used instead.
-            remove_frames: Wether to remove the frame images after the GIF generation.
+                deepcopy memory errors. If empty, deepcopy is used instead.
+            remove_frames: Whether to remove the frame images after the GIF generation.
             **options: The options of the :class:`.OptPostProcessor`.
         """
         steps_to_frame_file_paths = self._generate_frames(
@@ -116,7 +116,7 @@ class Animation(OptPostProcessor):
         self,
         frame_rate: int,
         opt_post_processor: str,
-        temporary_database_file: str | Path | None = None,
+        temporary_database_file: str | Path = "",
         **options: Any,
     ) -> list[list[str]]:
         """Generate the frames of the animation.
@@ -125,7 +125,7 @@ class Animation(OptPostProcessor):
             frame_rate: The rate of frame per iterations.
             opt_post_processor: The class name of the :class:`.OptPostProcessor`.
             temporary_database_file:  The path to a temporary database file to avoid
-                deepcopy memory errors. If ``None`` or empty, deepcopy is used instead.
+                deepcopy memory errors. If empty, deepcopy is used instead.
             **options: The options of the :class:`.OptPostProcessor`.
 
         Returns:

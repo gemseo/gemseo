@@ -65,11 +65,11 @@ class ObjConstrHist(OptPostProcessor):
         self.ineq_cstr_cmap = RG_SEISMIC
         self.eq_cstr_cmap = "seismic"
 
-    def _plot(self, constraint_names: Sequence[str] | None = None) -> None:
+    def _plot(self, constraint_names: Sequence[str] = ()) -> None:
         """
         Args:
             constraint_names: The names of the constraints to plot.
-                If ``None``, use all the constraints.
+                If empty, use all the constraints.
         """  # noqa: D205, D212, D415
         # 0. Initialize the figure.
         grid = self._get_grid_layout()
@@ -170,21 +170,21 @@ class ObjConstrHist(OptPostProcessor):
     def __get_constraints(
         self,
         constraints: Iterable[MDOFunction],
-        all_constraint_names: Sequence[str] | None,
+        all_constraint_names: Sequence[str],
     ) -> tuple[ndarray, ndarray]:
         """Return the constraints with formatted shape.
 
         Args:
             constraints: The different constraints.
             all_constraint_names: The names of the constraints.
-                If ``None``, use all the constraints.
+                If empty, use all the constraints.
 
         Returns:
             The history and the names of constraints.
         """
         constraint_names = []
         for constraint in constraints:
-            if all_constraint_names is None or constraint.name in all_constraint_names:
+            if not all_constraint_names or constraint.name in all_constraint_names:
                 constraint_names.append(constraint.name)  # noqa: PERF401
 
         if constraint_names:

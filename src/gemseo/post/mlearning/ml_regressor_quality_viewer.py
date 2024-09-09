@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.mlearning.regression.base_regressor import BaseRegressor
+    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
     from gemseo.typing import RealArray
 
 DatasetPlotOption = ScatterMatrixOption

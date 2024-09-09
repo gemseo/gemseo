@@ -61,6 +61,7 @@ from pandas import DataFrame
 from pandas import MultiIndex
 from pandas import read_csv
 
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
@@ -777,8 +778,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         cls,
         data: DataType,
         variable_names: StrColumnType = (),
-        variable_names_to_n_components: dict[str, int] | None = None,
-        variable_names_to_group_names: dict[str, str] | None = None,
+        variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
     ) -> Dataset:
         """Create a dataset from a NumPy array.
 
@@ -787,10 +788,10 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_names: The names of the variables.
                 If empty, use default names.
             variable_names_to_n_components: The number of components of the variables.
-                If ``None``,
+                If empty,
                 assume that all the variables have a single component.
             variable_names_to_group_names: The groups of the variables.
-                If ``None``,
+                If empty,
                 use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
 
         Returns:
@@ -828,8 +829,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         cls,
         file_path: Path | str,
         variable_names: Iterable[str] = (),
-        variable_names_to_n_components: dict[str, int] | None = None,
-        variable_names_to_group_names: dict[str, str] | None = None,
+        variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
         delimiter: str = ",",
         header: bool = True,
     ) -> Dataset:
@@ -850,10 +851,10 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 based on the patterns the :attr:`.DEFAULT_NAMES`
                 associated with the different groups.
             variable_names_to_n_components: The number of components of the variables.
-                If ``None``,
+                If empty,
                 assume that all the variables have a single component.
             variable_names_to_group_names: The groups of the variables.
-                If ``None``,
+                If empty,
                 use :attr:`.DEFAULT_GROUP` for all the variables.
             delimiter: The field delimiter.
             header: Whether to read the names of the variables

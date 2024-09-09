@@ -52,23 +52,23 @@ class ParetoFront(OptPostProcessor):
 
     def _plot(
         self,
-        objectives: Sequence[str] | None = None,
-        objectives_labels: Sequence[str] | None = None,
+        objectives: Sequence[str] = (),
+        objectives_labels: Sequence[str] = (),
         show_non_feasible: bool = True,
     ) -> None:
         """
         Args:
             objectives: The functions names or design variables to plot.
-                If ``None``, use the objective function (maybe a vector).
+                If empty, use the objective function (maybe a vector).
             objectives_labels: The labels of the objective components.
-                If ``None``, use the objective name suffixed by an index.
+                If empty, use the objective name suffixed by an index.
             show_non_feasible: If ``True``, show the non-feasible points in the plot.
 
         Raises:
             ValueError: If the numbers of objectives and objectives
                 labels are different.
         """  # noqa: D205, D212, D415
-        if objectives is None:
+        if not objectives:
             objectives = [self.optimization_problem.objective.name]
 
         all_funcs = self.optimization_problem.function_names
@@ -80,13 +80,14 @@ class ParetoFront(OptPostProcessor):
 
         non_feasible_samples = self.__compute_non_feasible_samples(sample_values)
 
-        if objectives_labels is not None:
+        if objectives_labels:
             if len(all_labels) != len(objectives_labels):
                 msg = (
                     "objective_labels shall have the same dimension as the number"
                     " of objectives to plot."
                 )
                 raise ValueError(msg)
+
             all_labels = objectives_labels
 
         fig = generate_pareto_plots(

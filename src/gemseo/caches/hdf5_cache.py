@@ -50,14 +50,14 @@ class HDF5Cache(BaseFullCache):
     def __init__(
         self,
         tolerance: float = 0.0,
-        name: str | None = None,
+        name: str = "",
         hdf_file_path: str | Path = "cache.hdf5",
         hdf_node_path: str = "node",
     ) -> None:
         """
         Args:
             name: A name for the cache.
-                If ``None``, use :attr:`hdf_node_path``.
+                If empty, use :attr:`hdf_node_path``.
             hdf_file_path: The path of the HDF file.
                 Initialize a singleton to access the HDF file.
                 This singleton is used for multithreading/multiprocessing access

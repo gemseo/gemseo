@@ -93,7 +93,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         x_vect: ndarray,
         step: float | None = None,
-        x_indices: Sequence[int] | None = None,
+        x_indices: Sequence[int] = (),
         **kwargs: Any,
     ) -> ndarray:
         """Approximate the gradient of the function for a given input vector.
@@ -104,7 +104,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If ``None``, use the default differentiation step.
             x_indices: The components of the input vector
                 to be used for the differentiation.
-                If ``None``, use all the components.
+                If empty, use all the components.
             **kwargs: The optional arguments for the function.
 
         Returns:
@@ -165,7 +165,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         n_dim: int,
         x_vect: ndarray,
-        x_indices: Sequence[int] | None = None,
+        x_indices: Sequence[int] = (),
         step: float | None = None,
     ) -> tuple[ndarray, float | ndarray]:
         """Generate the input perturbations from the differentiation step.
@@ -177,7 +177,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
             x_vect: The input vector.
             x_indices: The components of the input vector
                 to be used for the differentiation.
-                If ``None``, use all the components.
+                If empty, use all the components.
             step: The differentiation step.
                 If ``None``, use the default differentiation step.
 
@@ -189,7 +189,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         if step is None:
             step = self.step
 
-        if x_indices is None:
+        if not x_indices:
             x_indices = range(n_dim)
 
         return self._generate_perturbations(x_vect, x_indices, step)

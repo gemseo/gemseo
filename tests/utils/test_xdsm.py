@@ -45,7 +45,7 @@ def test_html_file(xdsm) -> None:
 
 def test_no_html_file(xdsm_without_html_file) -> None:
     """Check HTML file path when missing."""
-    assert xdsm_without_html_file.html_file_path is None
+    assert not xdsm_without_html_file.html_file_path
 
 
 def test_json_schema(xdsm) -> None:

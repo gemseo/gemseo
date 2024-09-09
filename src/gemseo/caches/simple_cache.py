@@ -50,7 +50,7 @@ class SimpleCache(BaseCache):
     def __init__(  # noqa:D107
         self,
         tolerance: float = 0.0,
-        name: str | None = None,
+        name: str = "",
     ) -> None:
         super().__init__(tolerance, name)
         self.clear()

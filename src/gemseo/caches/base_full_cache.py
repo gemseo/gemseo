@@ -91,7 +91,7 @@ class BaseFullCache(BaseCache):
     def __init__(  # noqa: D107
         self,
         tolerance: float = 0.0,
-        name: str | None = None,
+        name: str = "",
     ) -> None:
         super().__init__(tolerance, name)
         self.lock_hashes = RLock()
@@ -385,17 +385,17 @@ class BaseFullCache(BaseCache):
     def to_ggobi(
         self,
         file_path: str,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         """Export the cache to an XML file for ggobi tool.
 
         Args:
             file_path: The path of the file to export the cache.
             input_names: The names of the inputs to export.
-                If ``None``, export all of them.
+                If empty, export all of them.
             output_names: The names of the outputs to export.
-                If ``None``, export all of them.
+                If empty, export all of them.
         """
         if not self._hashes_to_indices:
             msg = "An empty cache cannot be exported to XML file."
@@ -411,10 +411,10 @@ class BaseFullCache(BaseCache):
             input_data = data.inputs or {}
             output_data = data.outputs or {}
             try:
-                if input_names is not None:
+                if input_names:
                     input_data = {name: input_data[name] for name in input_names}
 
-                if output_names is not None:
+                if output_names:
                     output_data = {name: output_data[name] for name in output_names}
 
             except KeyError:

@@ -47,9 +47,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import full
 from numpy import ndarray
+
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -57,7 +60,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
 
 
-class ScalableModel:
+class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
     """A scalable model."""
 
     ABBR = "sm"
@@ -68,14 +71,14 @@ class ScalableModel:
     def __init__(
         self,
         data: IODataset,
-        sizes: Mapping[str, int] | None = None,
+        sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
         **parameters: Any,
     ) -> None:
         """
         Args:
             data: The learning dataset.
             sizes: The sizes of the input and output variables.
-                If ``None``, use the original sizes.
+                If empty, use the original sizes.
             **parameters: The parameters of the model.
         """  # noqa: D205 D212
         sizes = sizes or {}

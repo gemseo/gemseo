@@ -1077,18 +1077,18 @@ def create_scenario(
 
 
 def configure_logger(
-    logger_name: str | None = None,
+    logger_name: str = "",
     level: str | int = logging.INFO,
     date_format: str = DEFAULT_DATE_FORMAT,
     message_format: str = DEFAULT_MESSAGE_FORMAT,
-    filename: str | Path | None = None,
+    filename: str | Path = "",
     filemode: str = "a",
 ) -> Logger:
     """Configure |g| logging.
 
     Args:
         logger_name: The name of the logger to configure.
-            If ``None``, configure the root logger.
+            If empty, configure the root logger.
         level: The numerical value or name of the logging level,
             as defined in :py:mod:`logging`.
             Values can either be
@@ -1126,7 +1126,7 @@ def configure_logger(
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
 
-    if filename is not None:
+    if filename:
         file_handler = MultiLineFileHandler(
             filename, mode=filemode, delay=True, encoding="utf-8"
         )
@@ -1213,7 +1213,7 @@ def import_discipline(
 def create_scalable(
     name: str,
     data: Dataset,
-    sizes: Mapping[str, int] | None = None,
+    sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     **parameters: Any,
 ) -> ScalableDiscipline:
     """Create a scalable discipline from a dataset.
@@ -1500,7 +1500,7 @@ def print_configuration() -> None:
 
 def read_design_space(
     file_path: str | Path,
-    header: Iterable[str] | None = None,
+    header: Iterable[str] = (),
 ) -> DesignSpace:
     """Read a design space from a CSV or HDF file.
 
@@ -1515,7 +1515,7 @@ def read_design_space(
     Args:
         file_path: The path to the file.
         header: The names of the fields saved in the CSV file.
-            If ``None``, read them in the first row of the CSV file.
+            If empty, read them in the first row of the CSV file.
 
     Returns:
         The design space.
@@ -1547,7 +1547,7 @@ def read_design_space(
 def write_design_space(
     design_space: DesignSpace,
     output_file: str | Path,
-    fields: Sequence[str] | None = None,
+    fields: Sequence[str] = (),
     header_char: str = "",
     **table_options: Any,
 ) -> None:
@@ -1557,7 +1557,7 @@ def write_design_space(
         design_space: The design space to be saved.
         output_file: The path to the file.
         fields: The fields to be exported.
-            If ``None``, export all fields.
+            If empty, export all fields.
         header_char: The header character.
         **table_options: The names and values of additional attributes
             for the :class:`.PrettyTable` view
@@ -1640,7 +1640,7 @@ def get_available_caches() -> list[str]:
 
 def create_cache(
     cache_type: str,
-    name: str | None = None,
+    name: str = "",
     **options: Any,
 ) -> BaseCache:
     """Return a cache.
@@ -1648,7 +1648,7 @@ def create_cache(
     Args:
         cache_type: The type of the cache.
         name: The name to be given to the cache.
-            If ``None``, use `cache_type`.
+            If empty, use ``cache_type``.
         **options: The options of the cache.
 
     Returns:
@@ -1686,8 +1686,8 @@ def create_dataset(
     name: str = "",
     data: ndarray | str | Path = "",
     variable_names: str | Iterable[str] = (),
-    variable_names_to_n_components: dict[str, int] | None = None,
-    variable_names_to_group_names: dict[str, str] | None = None,
+    variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
+    variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
     delimiter: str = ",",
     header: bool = True,
     class_name: DatasetClassName = DatasetClassName.Dataset,
@@ -1702,10 +1702,10 @@ def create_dataset(
         variable_names: The names of the variables.
             If empty, use default names.
         variable_names_to_n_components: The number of components of the variables.
-            If ``None``,
+            If empty,
             assume that all the variables have a single component.
         variable_names_to_group_names: The groups of the variables.
-            If ``None``,
+            If empty,
             use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
         delimiter: The field delimiter.
         header: If ``True`` and `data` is a string,

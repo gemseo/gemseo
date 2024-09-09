@@ -50,11 +50,11 @@ class KMeans(OptPostProcessor):
         self,
         save: bool = True,
         show: bool = False,
-        file_path: Path | None = None,
-        directory_path: str | Path | None = None,
-        file_name: str | None = None,
-        file_extension: str | None = None,
-        fig_size: FigSizeType | None = None,
+        file_path: Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
+        file_extension: str = "",
+        fig_size: FigSizeType = (),
         n_clusters: int = 5,
     ) -> None:
         """

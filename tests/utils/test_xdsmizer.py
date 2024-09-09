@@ -734,7 +734,7 @@ def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
 
     html_file_name = f"{file_name}.html"
     if not save_html:
-        assert xdsm.html_file_path is None
+        assert not xdsm.html_file_path
     elif directory_path != ".":
         # The output directory containing the HTML is given by the user.
         assert xdsm.html_file_path == directory_path / html_file_name

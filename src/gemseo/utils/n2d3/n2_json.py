@@ -25,6 +25,8 @@ from typing import TYPE_CHECKING
 
 from jinja2 import Template
 
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import MDODiscipline
@@ -40,7 +42,7 @@ class N2JSON:
     def __init__(
         self,
         graph: DependencyGraph,
-        self_coupled_disciplines: Sequence[str] | None = None,
+        self_coupled_disciplines: Sequence[str] = (),
     ) -> None:
         """
         Args:
@@ -82,7 +84,7 @@ class N2JSON:
             self.__discipline_names, data["children"], data["groups"]
         )
 
-        data["self_coupled_disciplines"] = self_coupled_disciplines or []
+        data["self_coupled_disciplines"] = self_coupled_disciplines
         self.__json = json.dumps(data, sort_keys=True)
 
     def __str__(self) -> str:
@@ -91,14 +93,14 @@ class N2JSON:
     @staticmethod
     def _create_variables_html(
         names: Iterable[str],
-        variable_sizes: Mapping[str, int] | None = None,
+        variable_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> str:
         """Generate the HTML representation of variables from their names and sizes.
 
         Args:
             names: The names of the variables.
             variable_sizes: The sizes of the variables.
-                If ``None``, display only the names.
+                If empty, display only the names.
 
         Return:
             The HTML representation of the sorted variables.
@@ -106,7 +108,7 @@ class N2JSON:
         variables = [
             {
                 "name": name,
-                "size": None if variable_sizes is None else variable_sizes.get(name, 1),
+                "size": variable_sizes.get(name, 1) if variable_sizes else None,
             }
             for name in sorted(names)
         ]

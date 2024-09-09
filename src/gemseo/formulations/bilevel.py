@@ -471,16 +471,16 @@ class BiLevel(BaseMDOFormulation):
         self,
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str | None = None,
+        constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
-        levels: list[str] | None = None,
+        levels: list[str] = (),
     ) -> None:
         """Add a constraint to the formulation.
 
         Args:
             levels: The levels at which the constraint is to be added
-                (sublist of Bilevel.LEVELS).
+                (sublist of :attr:`.LEVELS`).
                 By default, the policy set at the initialization
                 of the formulation is enforced.
 
@@ -488,7 +488,7 @@ class BiLevel(BaseMDOFormulation):
             ValueError: When the constraint levels are not a sublist of BiLevel.LEVELS.
         """
         # If the constraint levels are not specified the initial policy is enforced.
-        if levels is None:
+        if not levels:
             if self._apply_cstr_to_system:
                 self._add_system_level_constraint(
                     output_name,
@@ -533,7 +533,7 @@ class BiLevel(BaseMDOFormulation):
         self,
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str | None = None,
+        constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
     ) -> None:
@@ -546,7 +546,7 @@ class BiLevel(BaseMDOFormulation):
             constraint_type: The type of constraint,
                 either "eq" for equality constraint or "ineq" for inequality constraint.
             constraint_name: The name of the constraint to be stored,
-                If ``None``, the name is generated from the output name.
+                If empty, the name is generated from the output name.
             value: The value of activation of the constraint.
             positive: Whether the inequality constraint is positive.
         """
@@ -562,7 +562,7 @@ class BiLevel(BaseMDOFormulation):
         self,
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str | None = None,
+        constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
     ) -> None:
@@ -575,7 +575,7 @@ class BiLevel(BaseMDOFormulation):
             constraint_type: The type of constraint,
                 either "eq" for equality constraint or "ineq" for inequality constraint.
             constraint_name: The name of the constraint to be stored,
-                If ``None``, the name is generated from the output name.
+                If empty, the name is generated from the output name.
             value: The value of activation of the constraint.
             positive: Whether the inequality constraint is positive.
 

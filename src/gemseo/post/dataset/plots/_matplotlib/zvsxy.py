@@ -53,7 +53,7 @@ class ZvsXY(MatplotlibPlot):
         self._common_settings.set_colors(self._common_settings.color)
         grid = mtri.Triangulation(x_values, y_values)
         options = {"cmap": self._common_settings.colormap}
-        if self._specific_settings.levels is not None:
+        if self._specific_settings.levels:
             options["levels"] = self._specific_settings.levels
 
         plot_contour = (

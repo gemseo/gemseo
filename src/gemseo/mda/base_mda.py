@@ -43,6 +43,7 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
@@ -214,7 +215,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping | None = None,
+        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
         over_relaxation_factor: float = 1.0,
     ) -> None:
@@ -529,8 +530,8 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _compute_jacobian(
         self,
-        inputs: Collection[str] | None = None,
-        outputs: Collection[str] | None = None,
+        inputs: Collection[str] = (),
+        outputs: Collection[str] = (),
     ) -> None:
         # Do not re-execute disciplines if inputs error is beyond self tol
         # Apply a safety factor on this (mda is a loop, inputs
@@ -570,13 +571,13 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def check_jacobian(
         self,
-        input_data: Mapping[str, ndarray] | None = None,
+        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
         derr_approx: MDODiscipline.ApproximationMode = MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,  # noqa:E501
         step: float = 1e-7,
         threshold: float = 1e-8,
         linearization_mode: str = "auto",
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        inputs: Iterable[str] = (),
+        outputs: Iterable[str] = (),
         parallel: bool = False,
         n_processes: int = MDODiscipline.N_CPUS,
         use_threading: bool = False,
@@ -587,7 +588,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         show: bool = False,
         fig_size_x: float = 10,
         fig_size_y: float = 10,
-        reference_jacobian_path: None | Path | str = None,
+        reference_jacobian_path: Path | str = "",
         save_reference_jacobian: bool = False,
         indices: Iterable[int] | None = None,
     ) -> bool:
@@ -608,16 +609,16 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             input_data: The input values.
-                If ``None``, use the default input values.
+                If empty, use the default input values.
             derr_approx: The derivative approximation method.
             threshold: The acceptance threshold for the Jacobian error.
             linearization_mode: The mode of linearization,
                 either "direct", "adjoint" or "auto" switch
                 depending on dimensions of inputs and outputs.
             inputs: The names of the inputs with respect to which to differentiate.
-                If ``None``, use the inputs of the MDA.
+                If empty, use the inputs of the MDA.
             outputs: The outputs to differentiate.
-                If ``None``, use all the outputs of the MDA.
+                If empty, use all the outputs of the MDA.
             step: The step
                 for finite differences or complex step differentiation methods.
             parallel: Whether to execute the MDA in parallel.
@@ -660,13 +661,8 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             Whether the passed Jacobian is correct.
         """
         # Strong couplings are not linearized
-        if inputs is None:
-            inputs = self.get_input_data_names()
-        if outputs is None:
-            outputs = self.get_output_data_names()
-
-        inputs = list(inputs)
-        outputs = list(outputs)
+        inputs = list(inputs or self.get_input_data_names())
+        outputs = list(outputs or self.get_output_data_names())
 
         for coupling in self.all_couplings:
             if coupling in outputs:
@@ -740,7 +736,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         n_iterations: int | None = None,
         logscale: tuple[float, float] = (),
         filename: Path | str = "",
-        fig_size: FigSizeType | None = None,
+        fig_size: FigSizeType = (),
     ) -> Figure:
         """Generate a plot of the residual history.
 

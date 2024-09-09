@@ -29,6 +29,7 @@ from numpy.linalg import norm
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -91,7 +92,7 @@ class BaseMDASolver(BaseMDA):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping | None = None,
+        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
         over_relaxation_factor: float = 1.0,
     ) -> None:

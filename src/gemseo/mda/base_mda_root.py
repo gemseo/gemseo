@@ -30,6 +30,7 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -67,7 +68,7 @@ class BaseMDARoot(BaseMDASolver):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping | None = None,
+        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         parallel: bool = False,
         use_threading: bool = True,
         n_processes: int = N_CPUS,
