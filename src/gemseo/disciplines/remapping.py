@@ -22,6 +22,7 @@ from collections.abc import Iterable
 from copy import deepcopy
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
+from typing import NoReturn
 from typing import Union
 
 from numpy import empty
@@ -78,18 +79,24 @@ class RemappingDiscipline(MDODiscipline):
             k: empty(v.shape, dtype=v.dtype)
             for k, v in discipline.default_inputs.items()
         }
+        original_input_grammar = discipline.input_grammar
+        original_output_grammar = discipline.output_grammar
+        input_mapping = input_mapping or {n: n for n in original_input_grammar}
+        output_mapping = output_mapping or {n: n for n in original_output_grammar}
         self._input_mapping = self.__format_mapping(
             input_mapping, discipline.input_grammar
         )
         self._output_mapping = self.__format_mapping(
             output_mapping, discipline.output_grammar
         )
-        super().__init__(name=self._discipline.name)
+        super().__init__(
+            name=self._discipline.name, grammar_type=discipline.grammar_type
+        )
         self.input_grammar = self.__get_grammar(
-            discipline.input_grammar, input_mapping, discipline.default_inputs
+            original_input_grammar, input_mapping, discipline.default_inputs
         )
         self.output_grammar = self.__get_grammar(
-            discipline.output_grammar, output_mapping, discipline.default_outputs
+            original_output_grammar, output_mapping, discipline.default_outputs
         )
         self.default_inputs = self.__convert_from_origin(
             discipline.default_inputs, self._input_mapping
@@ -142,7 +149,7 @@ class RemappingDiscipline(MDODiscipline):
 
     @singledispatchmethod
     @staticmethod
-    def __cast_mapping_value(value) -> slice | Iterable[int]:
+    def __cast_mapping_value(value) -> NoReturn:
         """Cast a value of a mapping.
 
         Args:
@@ -178,7 +185,7 @@ class RemappingDiscipline(MDODiscipline):
     @classmethod
     def __format_mapping(
         cls, mapping: NameMapping, grammar: BaseGrammar
-    ) -> dict[str, slice | Iterable[int]]:
+    ) -> dict[str, tuple[str, slice | Iterable[int]]]:
         """Format a mapping as ``{"current_name": ("original_name", components)}``.
 
         Args:
@@ -188,8 +195,6 @@ class RemappingDiscipline(MDODiscipline):
         Returns:
             The formatted mapping.
         """
-        mapping = mapping or {name: name for name in grammar}
-
         return {k: cls.__cast_mapping_value(v) for k, v in mapping.items()}
 
     def _run(self) -> None:

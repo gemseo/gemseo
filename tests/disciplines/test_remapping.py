@@ -34,8 +34,10 @@ if TYPE_CHECKING:
 class NewDiscipline(MDODiscipline):
     """A new discipline."""
 
-    def __init__(self) -> None:
-        super().__init__(name="foo")
+    def __init__(
+        self, grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON
+    ) -> None:
+        super().__init__(name="foo", grammar_type=grammar_type)
         default_inputs = {
             "in_1": array([1.0]),
             "in_2": array([2.0, 3.0]),
@@ -202,7 +204,6 @@ def grammar() -> SimpleGrammar:
 @pytest.mark.parametrize(
     ("mapping", "expected"),
     [
-        (None, {"x": ("x", slice(None))}),
         ({"new_in_1": "x"}, {"new_in_1": ("x", slice(None))}),
         ({"new_in_1": ("x", 1)}, {"new_in_1": ("x", slice(1, 2))}),
         ({"new_in_1": ("x", [0, 2])}, {"new_in_1": ("x", [0, 2])}),
@@ -240,3 +241,32 @@ def test_output_grammar(discipline):
         },
         "",
     )
+
+
+@pytest.mark.parametrize(
+    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
+)
+def test_grammar_type(grammar_type):
+    """Check the grammar type of the remapping discipline."""
+    discipline = RemappingDiscipline(
+        NewDiscipline(grammar_type=grammar_type),
+        input_mapping={"new_in_1": "in_1", "new_in_2": "in_2", "new_in_3": "in_3"},
+        output_mapping=output_mapping,
+    )
+    assert discipline.grammar_type == grammar_type
+    assert discipline.input_grammar.__class__.__name__ == grammar_type
+    assert discipline.output_grammar.__class__.__name__ == grammar_type
+
+
+def test_no_mapping():
+    """Check the remapping discipline without remapping."""
+    original_discipline = NewDiscipline()
+    discipline = RemappingDiscipline(original_discipline)
+    assert discipline.input_grammar.names == original_discipline.input_grammar.names
+    assert discipline.output_grammar.names == original_discipline.output_grammar.names
+    assert discipline._input_mapping == {
+        f"in_{i}": (f"in_{i}", slice(None)) for i in range(1, 4)
+    }
+    assert discipline._output_mapping == {
+        f"out_{i}": (f"out_{i}", slice(None)) for i in range(1, 4)
+    }
