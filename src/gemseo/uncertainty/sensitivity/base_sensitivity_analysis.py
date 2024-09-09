@@ -144,18 +144,18 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     _indices: SensitivityIndices
     """The sensitivity indices computed by the :meth:`.compute_indices` method."""
 
-    def __init__(self, samples: IODataset | str | Path | None = None) -> None:
+    def __init__(self, samples: IODataset | str | Path = "") -> None:
         """
         Args:
             samples: The samples for the estimation of the sensitivity indices,
                 either as an :class:`.IODataset`
                 or as a pickle file path generated from
                 the :class:`.IODataset.to_pickle` method.
-                If ``None``, use :meth:`.compute_samples`.
+                If empty, use :meth:`.compute_samples`.
         """  # noqa: D202, D205, D212
         if isinstance(samples, IODataset):
             self.dataset = samples
-        elif samples not in {None, ""}:
+        elif samples:
             with Path(samples).open("rb") as f:
                 samples = self.dataset = pickle.load(f)
         else:
@@ -167,7 +167,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
         self.main_method = self._DEFAULT_MAIN_METHOD
-        if samples is None:
+        if self.dataset is None:
             self._input_names = []
             self._output_names = []
         else:

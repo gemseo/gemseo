@@ -41,10 +41,10 @@ def create_gantt_chart(
     file_path: str | Path = DEFAULT_NAME,
     save: bool = True,
     show: bool = False,
-    file_extension: str | None = None,
+    file_extension: str = "",
     fig_size: FigSizeType = (15.0, 10.0),
     font_size: int = 12,
-    disc_names: Sequence[str] | None = None,
+    disc_names: Sequence[str] = (),
 ) -> plt.Figure:
     """Generate a gantt chart with processes execution time data.
 
@@ -61,11 +61,11 @@ def create_gantt_chart(
         save: Whether to save the figure.
         show: Whether to show the figure.
         file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
-            If ``None``, use the default file extension.
+            If empty, use the default file extension.
         fig_size: The figure size.
         font_size: The size of the fonts in the plot.
         disc_names: The names of the disciplines to plot.
-            If ``None``, plot all the disciplines for which time stamps exist.
+            If empty, plot all the disciplines for which time stamps exist.
 
     Returns:
         The matplotlib figure.
@@ -81,13 +81,13 @@ def create_gantt_chart(
 
     fig, ax = plt.subplots(figsize=fig_size)
 
-    if disc_names is None:
-        disc_names = list(time_stamps.keys())
-    else:
+    if disc_names:
         missing = list(set(disc_names) - set(time_stamps.keys()))
         if missing:
             msg = f"The disciplines: {missing}, have no time stamps."
             raise ValueError(msg)
+    else:
+        disc_names = list(time_stamps.keys())
 
     ax.set_ylim(5, 10 * len(disc_names) + 15)
     ax.set_yticks([5 + (i + 1) * 10 for i in range(len(disc_names))])
@@ -122,7 +122,7 @@ def create_gantt_chart(
             FilePathManager.FileType.FIGURE, default_name=DEFAULT_NAME
         ).create_file_path(file_path=file_path, file_extension=file_extension)
     else:
-        file_path = None
+        file_path = ""
 
     save_show_figure(fig, show, file_path)
 

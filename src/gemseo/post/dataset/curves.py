@@ -46,14 +46,14 @@ class Curves(DatasetPlot):
         dataset: Dataset,
         mesh: str,
         variable: str,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
     ) -> None:
         """
         Args:
             mesh: The name of the dataset misc corresponding to the mesh.
             variable: The name of the variable for the x-axis.
             samples: The indices of the samples to plot.
-                If ``None``, plot all the samples.
+                If empty, plot all the samples.
         """  # noqa: D205, D212, D415
         super().__init__(dataset, mesh=mesh, variable=variable, samples=samples)
 
@@ -69,11 +69,11 @@ class Curves(DatasetPlot):
         y_values = self.dataset.get_view(
             variable_names=self._specific_settings.variable
         ).to_numpy()
-        if samples is None:
-            self._n_items = len(y_values)
-            samples = range(self._n_items)
-        else:
+        if samples:
             self._n_items = len(samples)
             y_values = y_values[samples, :]
+        else:
+            self._n_items = len(y_values)
+            samples = range(self._n_items)
 
         return y_values, [self.dataset.index[sample] for sample in samples]

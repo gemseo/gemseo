@@ -28,6 +28,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.newton_raphson import MDANewtonRaphson
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -52,7 +53,7 @@ class MDASequential(BaseMDA):
         use_lu_fact: bool = False,
         coupling_structure: MDOCouplingStructure | None = None,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping | None = None,
+        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
         Args:

@@ -74,7 +74,7 @@ class ComplexStep(BaseGradientApproximator):
         self,
         x_vect: ndarray,
         step: complex | None = None,
-        x_indices: Sequence[int] | None = None,
+        x_indices: Sequence[int] = (),
         **kwargs: Any,
     ) -> ndarray:
         if norm(x_vect.imag) != 0.0:

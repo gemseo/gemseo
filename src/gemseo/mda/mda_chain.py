@@ -38,6 +38,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.initialization_chain import MDOInitializationChain
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -79,12 +80,12 @@ class MDAChain(BaseMDA):
         use_lu_fact: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         coupling_structure: MDOCouplingStructure | None = None,
-        sub_coupling_structures: Iterable[MDOCouplingStructure | None] | None = None,
+        sub_coupling_structures: Iterable[MDOCouplingStructure | None] = (),
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping | None = None,
+        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         mdachain_parallelize_tasks: bool = False,
-        mdachain_parallel_options: Mapping[str, int | bool] | None = None,
+        mdachain_parallel_options: Mapping[str, int | bool] = READ_ONLY_EMPTY_DICT,
         initialize_defaults: bool = False,
         **inner_mda_options: float | bool | str | None,
     ) -> None:
@@ -98,7 +99,7 @@ class MDAChain(BaseMDA):
                 preferred to minimize computations in adjoint mode, while in direct
                 mode, linearizing the chain may be cheaper.
             sub_coupling_structures: The coupling structures to be used by the
-                inner-MDAs. If ``None``, they are created from the sub-disciplines.
+                inner-MDAs. If empty, they are created from the sub-disciplines.
             mdachain_parallelize_tasks: Whether to parallelize the parallel tasks, if
                 any.
             mdachain_parallel_options: The options of the MDOParallelChain instances, if
@@ -175,9 +176,9 @@ class MDAChain(BaseMDA):
         self,
         disciplines: Sequence[MDODiscipline],
         inner_mda_name: str = "MDAJacobi",
-        sub_coupling_structures: Iterable[MDOCouplingStructure | None] | None = None,
+        sub_coupling_structures: Iterable[MDOCouplingStructure | None] = (),
         mdachain_parallelize_tasks: bool = False,
-        mdachain_parallel_options: Mapping[str, int | bool] | None = None,
+        mdachain_parallel_options: Mapping[str, int | bool] = READ_ONLY_EMPTY_DICT,
         **inner_mda_options: float | bool | str | None,
     ) -> None:
         """Create an MDO chain from the execution sequence of the disciplines.
@@ -189,14 +190,14 @@ class MDAChain(BaseMDA):
                 rate of the fixed point iteration method.
             over_relax_factor: The over-relaxation factor.
             sub_coupling_structures: The coupling structures to be used by the inner
-                MDAs. If ``None``, they are created from the sub-disciplines.
+                MDAs. If empty, they are created from the sub-disciplines.
             mdachain_parallelize_tasks: Whether to parallelize the
                 parallel tasks, if any.
             mdachain_parallel_options: The options of the MDOParallelChain instances,
                 if any.
             **inner_mda_options: The options of the inner-MDAs.
         """
-        if sub_coupling_structures is None:
+        if not sub_coupling_structures:
             sub_coupling_structures = repeat(None)
 
         self.__sub_coupling_structures_iterator = iter(sub_coupling_structures)
@@ -223,7 +224,7 @@ class MDAChain(BaseMDA):
         inner_mda_name: str,
         parallel_tasks: list[tuple[MDODiscipline]],
         mdachain_parallelize_tasks: bool,
-        mdachain_parallel_options: Mapping[str, int | bool] | None,
+        mdachain_parallel_options: Mapping[str, int | bool],
         inner_mda_options: Mapping[str, float | int | bool | str | None],
     ) -> MDODiscipline:
         """Create a process from disciplines.
@@ -313,7 +314,7 @@ class MDAChain(BaseMDA):
         self,
         parallel_disciplines: Sequence[MDODiscipline],
         mdachain_parallelize_tasks: bool,
-        mdachain_parallel_options: Mapping[str, int | bool] | None,
+        mdachain_parallel_options: Mapping[str, int | bool],
     ) -> MDODiscipline | MDOChain | MDOParallelChain:
         """Create a process from parallel disciplines.
 
@@ -419,7 +420,7 @@ class MDAChain(BaseMDA):
         self,
         parallel_disciplines: Sequence[MDODiscipline],
         mdachain_parallelize_tasks: bool,
-        mdachain_parallel_options: Mapping[str, int | bool] | None,
+        mdachain_parallel_options: Mapping[str, int | bool],
     ) -> MDOChain | MDOParallelChain:
         """Create an :class:`.MDOChain` or :class:`.MDOParallelChain`.
 
@@ -442,7 +443,7 @@ class MDAChain(BaseMDA):
     def __create_mdo_parallel_chain(
         self,
         parallel_disciplines: Sequence[MDODiscipline],
-        mdachain_parallel_options: Mapping[str, int | bool] | None,
+        mdachain_parallel_options: Mapping[str, int | bool],
     ) -> MDOParallelChain:
         """Create an :class:`.MDOParallelChain`.
 
@@ -585,7 +586,7 @@ class MDAChain(BaseMDA):
         show: bool = False,
         save: bool = True,
         n_iterations: int | None = None,
-        logscale: tuple[int, int] | None = None,
+        logscale: tuple[int, int] = (),
         filename: Path | str = "",
         fig_size: FigSizeType = (50.0, 10.0),
     ) -> None:

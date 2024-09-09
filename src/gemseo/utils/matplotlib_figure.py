@@ -35,7 +35,7 @@ def save_show_figure(
     fig: Figure,
     show: bool,
     file_path: str | Path,
-    fig_size: FigSizeType | None = None,
+    fig_size: FigSizeType = (),
 ) -> None:
     """Save or show a Matplotlib figure.
 
@@ -45,11 +45,11 @@ def save_show_figure(
         file_path: The file path to save the Matplotlib figure.
             If empty, do not save the figure.
         fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
-            If ``None``, use the current size of the figure.
+            If empty, use the current size of the figure.
     """
     save = bool(file_path)
 
-    if fig_size is not None:
+    if fig_size:
         fig.set_size_inches(fig_size)
 
     if save:
@@ -70,7 +70,7 @@ def save_show_figure_from_file_path_manager(
     directory_path: str | Path = "",
     file_name: str = "",
     file_format: str = "",
-    fig_size: FigSizeType | None = None,
+    fig_size: FigSizeType = (),
 ) -> Figure:
     """Save or show the plot.
 
@@ -91,7 +91,7 @@ def save_show_figure_from_file_path_manager(
         file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
             If empty, use a default file extension.
         fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
-            If ``None``, use the current size of the figure.
+            If empty, use the current size of the figure.
 
     Returns:
         The figure.

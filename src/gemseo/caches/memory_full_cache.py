@@ -52,7 +52,7 @@ class MemoryFullCache(BaseFullCache):
     def __init__(
         self,
         tolerance: float = 0.0,
-        name: str | None = None,
+        name: str = "",
         is_memory_shared: bool = True,
     ) -> None:
         """

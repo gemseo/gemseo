@@ -152,7 +152,7 @@ def split_array_to_dict_of_arrays(
 
 def deepcopy_dict_of_arrays(
     dict_of_arrays: StrKeyMapping,
-    names: Iterable[str] | None = None,
+    names: Iterable[str] = (),
 ) -> StrKeyMapping:
     """Perform a deep copy of a dictionary of NumPy arrays.
 
@@ -169,14 +169,14 @@ def deepcopy_dict_of_arrays(
     Args:
         dict_of_arrays: The dictionary of NumPy arrays to be copied.
         names: The keys of the dictionary for which to deepcopy the items.
-            If ``None``, consider all the dictionary keys.
+            If empty, consider all the dictionary keys.
 
     Returns:
         A deep copy of the dictionary of NumPy arrays.
     """
     deep_copy = {}
     selected_keys = dict_of_arrays.keys()
-    if names is not None:
+    if names:
         selected_keys = [name for name in names if name in selected_keys]
         # TODO: either let the following block raise a KeyError or log a warning
 

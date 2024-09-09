@@ -139,12 +139,12 @@ def get_available_sensitivity_analyses() -> list[str]:
 
 def create_statistics(
     dataset: Dataset,
-    variable_names: Iterable[str] | None = None,
-    tested_distributions: Sequence[str] | None = None,
+    variable_names: Iterable[str] = (),
+    tested_distributions: Sequence[str] = (),
     fitting_criterion: str = "BIC",
     selection_criterion: str = "best",
     level: float = 0.05,
-    name: str | None = None,
+    name: str = "",
 ) -> BaseStatistics:
     """Create a statistics toolbox, either parametric or empirical.
 
@@ -154,7 +154,7 @@ def create_statistics(
     Args:
         dataset: A dataset.
         variable_names: The variables of interest.
-            If ``None``, consider all the variables from dataset.
+            If empty, consider all the variables from dataset.
         tested_distributions: The names of
             the tested distributions.
         fitting_criterion: The name of a goodness-of-fit criterion,
@@ -169,7 +169,7 @@ def create_statistics(
             that is an incorrect rejection of a true null hypothesis,
             for criteria based on a test hypothesis.
         name: A name for the statistics toolbox instance.
-            If ``None``, use the concatenation of class and dataset names.
+            If empty, use the concatenation of class and dataset names.
 
     Returns:
         A statistics toolbox.
@@ -212,9 +212,7 @@ def create_statistics(
     from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
     from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
 
-    if tested_distributions is None:
-        statistical_analysis = EmpiricalStatistics(dataset, variable_names, name)
-    else:
+    if tested_distributions:
         statistical_analysis = ParametricStatistics(
             dataset,
             tested_distributions,
@@ -224,12 +222,14 @@ def create_statistics(
             selection_criterion,
             name,
         )
+    else:
+        statistical_analysis = EmpiricalStatistics(dataset, variable_names, name)
     return statistical_analysis
 
 
 def create_sensitivity_analysis(
     analysis: str,
-    samples: IODataset | str | Path | None = None,
+    samples: IODataset | str | Path = "",
 ) -> BaseSensitivityAnalysis:
     """Create the sensitivity analysis.
 
@@ -239,7 +239,7 @@ def create_sensitivity_analysis(
             either as an :class:`.IODataset`
             or as a pickle file path generated from
             the :class:`.IODataset.to_pickle` method.
-            If ``None``, use :meth:`.compute_samples`.
+            If empty, use :meth:`.compute_samples`.
 
     Returns:
         The sensitivity analysis.

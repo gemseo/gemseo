@@ -43,11 +43,11 @@ class Surfaces(MatplotlibPlot):
         y_data = self._common_dataset.misc[mesh][:, 1]
         data = self._common_dataset.get_view(variable_names=variable).to_numpy()
 
-        samples = data[samples, :] if samples is not None else data
+        samples = data[samples, :] if samples else data
 
         options = {"cmap": self._common_settings.colormap}
         levels = self._specific_settings.levels
-        if levels is not None:
+        if levels:
             options["levels"] = levels
 
         figs = []

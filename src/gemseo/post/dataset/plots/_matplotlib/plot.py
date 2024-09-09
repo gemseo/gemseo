@@ -107,7 +107,7 @@ class MatplotlibPlot(BasePlot):
         self,
         fig: Figure | None,
         axes: Axes | None,
-        fig_size: FigSizeType | None = None,
+        fig_size: FigSizeType = (),
         n_rows: int = 1,
         n_cols: int = 1,
     ) -> tuple[Figure, Axes]:
@@ -119,7 +119,7 @@ class MatplotlibPlot(BasePlot):
             axes: The axes to plot the data.
                 If ``None``, create new ones.
             fig_size: The width and height of the figure in inches.
-                If ``None``, use the default ``fig_size``.
+                If empty, use the default ``fig_size``.
             n_rows: The number of rows of the subplot grid.
             n_cols: The number of cols of the subplot grid.
 

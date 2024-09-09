@@ -41,14 +41,14 @@ class RadarChart(OptPostProcessor):
 
     def _plot(
         self,
-        constraint_names: Iterable[str] | None = None,
+        constraint_names: Iterable[str] = (),
         iteration: int | RadarChart.OPTIMUM = OPTIMUM,
         show_names_radially: bool = False,
     ) -> None:
         r"""
         Args:
             constraint_names: The names of the constraints.
-                If ``None``, use all the constraints.
+                If empty, use all the constraints.
             iteration: Either an iteration in :math:`-N,\ldots,-1,1,`ldots,N`
                 or the tag :attr:`.OPTIMUM` for the iteration
                 at which the optimum is located,
@@ -63,9 +63,7 @@ class RadarChart(OptPostProcessor):
                 or when the requested iteration is neither a database index
                 nor the tag ``"opt"``.
         """  # noqa: D205, D212, D415
-        if constraint_names is None:
-            constraint_names = self.optimization_problem.constraints.get_names()
-        else:
+        if constraint_names:
             constraint_names = self.optimization_problem.get_function_names(
                 constraint_names
             )
@@ -79,6 +77,8 @@ class RadarChart(OptPostProcessor):
                     "stored in the database."
                 )
                 raise ValueError(msg)
+        else:
+            constraint_names = self.optimization_problem.constraints.get_names()
 
         # optimum_index is the zero-based position of the optimum.
         # while an iteration is a one-based position.

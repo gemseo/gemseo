@@ -56,6 +56,7 @@ from typing import Any
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.mdo.scalable.data_driven.factory import ScalableModelFactory
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -74,9 +75,9 @@ class ScalableDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        name: str | None,
+        name: str,
         data: IODataset,
-        sizes: Mapping[str, int] | None = None,
+        sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
         **parameters: Any,
     ) -> None:
         """
@@ -84,7 +85,7 @@ class ScalableDiscipline(MDODiscipline):
             name: The name of the class of the scalable model.
             data: The learning dataset.
             sizes: The sizes of the input and output variables.
-                If ``None``, use the original sizes.
+                If empty, use the original sizes.
             **parameters: The parameters for the model.
         """  # noqa: D205 D212
         self.scalable_model = ScalableModelFactory().create(

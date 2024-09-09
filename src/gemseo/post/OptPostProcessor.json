@@ -39,11 +39,18 @@
         },
         {
           "type": "array",
-          "minItems": 2,
-          "maxItems": 2,
-          "items": {
-            "type": "number"
-          }
+          "oneOf": [
+            {
+              "maxItems": 0
+            },
+            {
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number"
+              }
+            }
+          ]
         }
       ]
     }

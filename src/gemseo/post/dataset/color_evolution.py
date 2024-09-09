@@ -43,7 +43,7 @@ class ColorEvolution(DatasetPlot):
     def __init__(
         self,
         dataset: Dataset,
-        variables: Iterable[str] | None = None,
+        variables: Iterable[str] = (),
         use_log: bool = False,
         opacity: float = 0.6,
         **options: bool | float | str | None,
@@ -51,7 +51,7 @@ class ColorEvolution(DatasetPlot):
         """
         Args:
             variables: The variables of interest
-                If ``None``, use all the variables.
+                If empty, use all the variables.
             use_log: Whether to use a symmetric logarithmic scale.
             opacity: The level of opacity (0 = transparent; 1 = opaque).
             **options: The options for the matplotlib function :meth:`imshow`.

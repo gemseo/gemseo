@@ -351,7 +351,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         masking_data_names: Iterable[str],
         x_vect: ndarray,
-        all_data_names: Iterable[str] | None = None,
+        all_data_names: Iterable[str] = (),
     ) -> ndarray:
         """Mask a vector from a subset of names, with respect to a set of names.
 
@@ -362,7 +362,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             masking_data_names: The names of the kept data.
             x_vect: The vector to mask.
             all_data_names: The set of all names.
-                If ``None``, use the design variables stored in the design space.
+                If empty, use the design variables stored in the design space.
 
         Returns:
             The masked version of the input vector.
@@ -376,7 +376,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     def get_x_mask_x_swap_order(
         self,
         masking_data_names: Iterable[str],
-        all_data_names: Iterable[str] | None = None,
+        all_data_names: Iterable[str] = (),
     ) -> ndarray:
         """Mask a vector from a subset of names, with respect to a set of names.
 
@@ -386,7 +386,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             masking_data_names: The names of the kept data.
             all_data_names: The set of all names.
-                If ``None``, use the design variables stored in the design space.
+                If empty, use the design variables stored in the design space.
 
         Returns:
             The masked version of the input vector.

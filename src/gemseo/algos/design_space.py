@@ -1944,7 +1944,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def get_pretty_table(
         self,
-        fields: Sequence[str] | None = None,
+        fields: Sequence[str] = (),
         with_index: bool = False,
         capitalize: bool = False,
         simplify: bool = False,
@@ -1953,7 +1953,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
         Args:
             fields: The name of the fields to be exported.
-                If ``None``, export all the fields.
+                If empty, export all the fields.
             with_index: Whether to show index of names for arrays.
                 This is ignored for scalars.
             capitalize: Whether to capitalize the field names
@@ -1963,7 +1963,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Returns:
             A tabular view of the design space.
         """
-        if fields is None:
+        if not fields:
             fields = self.TABLE_NAMES
 
         if capitalize:
@@ -2180,7 +2180,7 @@ class DesignSpace(collections.abc.MutableMapping):
     def to_csv(
         self,
         output_file: str | Path,
-        fields: Sequence[str] | None = None,
+        fields: Sequence[str] = (),
         header_char: str = "",
         **table_options: Any,
     ) -> None:
@@ -2189,7 +2189,7 @@ class DesignSpace(collections.abc.MutableMapping):
         Args:
             output_file: The path to the file.
             fields: The fields to be exported.
-                If ``None``, export all fields.
+                If empty, export all fields.
             header_char: The header character.
             **table_options: The names and values of additional attributes
                 for the :class:`.PrettyTable` view
@@ -2205,15 +2205,13 @@ class DesignSpace(collections.abc.MutableMapping):
             outf.write(table_str)
 
     @classmethod
-    def from_csv(
-        cls, file_path: str | Path, header: Iterable[str] | None = None
-    ) -> DesignSpace:
+    def from_csv(cls, file_path: str | Path, header: Iterable[str] = ()) -> DesignSpace:
         """Create a design space from a CSV file.
 
         Args:
             file_path: The path to the CSV file.
             header: The names of the fields saved in the file.
-                If ``None``, read them in the file.
+                If empty, read them in the file.
 
         Returns:
             The design space defined in the file.
@@ -2225,11 +2223,11 @@ class DesignSpace(collections.abc.MutableMapping):
         design_space = cls()
         float_data = genfromtxt(file_path, dtype="float")
         str_data = genfromtxt(file_path, dtype="str")
-        if header is None:
+        if header:
+            start_read = 0
+        else:
             header = str_data[0, :].tolist()
             start_read = 1
-        else:
-            start_read = 0
         if not set(cls.MINIMAL_FIELDS).issubset(set(header)):
             msg = (
                 f"Malformed DesignSpace input file {file_path} does not contain "

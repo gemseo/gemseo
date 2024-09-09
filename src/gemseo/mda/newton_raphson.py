@@ -31,6 +31,7 @@ from strenum import StrEnum
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda_root import BaseMDARoot
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -91,9 +92,9 @@ class MDANewtonRaphson(BaseMDARoot):
         use_lu_fact: bool = False,
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
-        linear_solver_options: StrKeyMapping | None = None,
+        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         newton_linear_solver_name: NewtonLinearSolver = NewtonLinearSolver.DEFAULT,
-        newton_linear_solver_options: StrKeyMapping | None = None,
+        newton_linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         parallel: bool = False,
         use_threading: bool = True,
         n_processes: int = BaseMDARoot.N_CPUS,

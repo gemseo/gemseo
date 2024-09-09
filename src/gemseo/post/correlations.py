@@ -57,7 +57,7 @@ class Correlations(OptPostProcessor):
 
     def _plot(
         self,
-        func_names: Sequence[str] | None = None,
+        func_names: Sequence[str] = (),
         coeff_limit: float = 0.95,
         n_plots_x: int = 5,
         n_plots_y: int = 5,
@@ -65,7 +65,7 @@ class Correlations(OptPostProcessor):
         """
         Args:
             func_names: The names of the functions to be considered.
-                If ``None``, all functions are considered.
+                If empty, all functions are considered.
             coeff_limit: The minimum correlation coefficient
                 below which the variable is not plotted.
             n_plots_x: The number of horizontal plots.

@@ -66,6 +66,7 @@ from numpy.random import default_rng
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from gemseo.problems.mdo.scalable.data_driven.model import ScalableModel
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.seeder import SEED
@@ -91,24 +92,25 @@ class ScalableDiagonalModel(ScalableModel):
     def __init__(
         self,
         data: IODataset,
-        sizes: Sequence[int] | None = None,
+        sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
         fill_factor: float = -1,
-        comp_dep: NDArray[float] = None,
-        inpt_dep: NDArray[float] = None,
+        comp_dep: NDArray[float] | None = None,
+        inpt_dep: NDArray[float] | None = None,
         force_input_dependency: bool = False,
         allow_unused_inputs: bool = True,
         seed: int = SEED,
-        group_dep: Mapping[str, Iterable[str]] | None = None,
+        group_dep: Mapping[str, Iterable[str]] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
         Args:
-            data: The input-output dataset.
-            sizes: The sizes of the inputs and outputs.
-                If ``None``, use the original sizes.
             fill_factor: The degree of sparsity of the dependency matrix.
             comp_dep: The matrix defining the selection
                 of a single original component for each scalable component.
+                If ``None``,
+                generate a random matrix.
             inpt_dep: The input-output dependency matrix.
+                If ``None``,
+                generate a random matrix.
             force_input_dependency: Whether to force the dependency of each output
                 with at least one input.
             bool allow_unused_inputs: The possibility to have an input

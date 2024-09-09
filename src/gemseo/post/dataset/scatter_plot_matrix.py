@@ -75,8 +75,8 @@ class ScatterMatrix(DatasetPlot):
     def __init__(
         self,
         dataset: Dataset,
-        variable_names: Iterable[str] | None = None,
-        classifier: str | None = None,
+        variable_names: Iterable[str] = (),
+        classifier: str = "",
         kde: bool = False,
         size: int = 25,
         marker: str = "o",
@@ -88,8 +88,9 @@ class ScatterMatrix(DatasetPlot):
         """
         Args:
             variable_names: The names of the variables to consider.
-                If ``None``, consider all the variables of the dataset.
-            classifier: The name of the variable to build the cluster.
+                If empty, consider all the variables of the dataset.
+            classifier: The name of the variable to group data.
+                If empty, do not group data.
             kde: The type of the distribution representation.
                 If ``True``, plot kernel-density estimator on the diagonal.
                 Otherwise, use histograms.
@@ -118,13 +119,13 @@ class ScatterMatrix(DatasetPlot):
         """
         Returns:
             The column of the dataset associated with the classifier
-            if the classifier is not ``None``.
+            if the classifier exists.
 
         Raises:
             ValueError: When the classifier does not exist.
         """  # noqa: D205, D212, D415
         classifier = self._specific_settings.classifier
-        if classifier is not None and classifier not in self.dataset.variable_names:
+        if classifier and classifier not in self.dataset.variable_names:
             msg = (
                 f"{classifier} cannot be used as a classifier "
                 f"because it is not a variable name; "
@@ -132,7 +133,7 @@ class ScatterMatrix(DatasetPlot):
             )
             raise ValueError(msg)
 
-        if self._specific_settings.classifier is not None:
-            return (self._get_label(self._specific_settings.classifier)[1],)
+        if classifier:
+            return (self._get_label(classifier)[1],)
 
         return (None,)

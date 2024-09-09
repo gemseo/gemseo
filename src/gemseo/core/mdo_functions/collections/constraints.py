@@ -108,7 +108,7 @@ class Constraints(Functions):
         constraint_index: int,
         method: Callable[[RealArray], float]
         | AggregationFunction = AggregationFunction.MAX,
-        groups: Iterable[Sequence[int]] | None = None,
+        groups: Iterable[Sequence[int]] = (),
         **options: Any,
     ) -> None:
         """Aggregate a constraint to generate a reduced dimension constraint.
@@ -119,7 +119,7 @@ class Constraints(Functions):
                 ``"upper_bound_KS"``or ``"IKS"``.
             groups: The groups of components of the constraint to aggregate
                 to produce one aggregation constraint per group of components;
-                if ``None``, a single aggregation constraint is produced.
+                if empty, a single aggregation constraint is produced.
             **options: The options of the aggregation method.
 
         Raises:
@@ -141,10 +141,7 @@ class Constraints(Functions):
             aggregate_constraints = self._AGGREGATION_FUNCTION_MAP[method]
 
         del self[constraint_index]
-        if groups is None:
-            self.insert(constraint_index, aggregate_constraints(constraint, **options))
-            self.__aggregated_constraint_indices.append(constraint_index)
-        else:
+        if groups:
             aggregated_constraints = [
                 aggregate_constraints(constraint, indices, **options)
                 for indices in groups
@@ -158,6 +155,9 @@ class Constraints(Functions):
                     )
                 )
             )
+        else:
+            self.insert(constraint_index, aggregate_constraints(constraint, **options))
+            self.__aggregated_constraint_indices.append(constraint_index)
 
     def format(
         self,

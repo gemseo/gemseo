@@ -29,6 +29,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -92,7 +93,7 @@ class MDAJacobi(BaseMDASolver):
         coupling_structure: MDOCouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping | None = None,
+        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         acceleration_method: AccelerationMethod = AccelerationMethod.ALTERNATE_2_DELTA,
         over_relaxation_factor: float = 1.0,
     ) -> None:

@@ -34,6 +34,7 @@ from typing import TYPE_CHECKING
 from scipy.sparse import hstack as sparse_hstack
 
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.error_estimators import EPSILON
@@ -224,19 +225,19 @@ class DisciplineJacApprox:
     def _prepare_xvect(
         self,
         inputs: Iterable[str],
-        data: DisciplineData | None = None,
+        data: DisciplineData = READ_ONLY_EMPTY_DICT,
     ) -> ndarray:
         """Convert an input data mapping into an input array.
 
         Args:
             inputs: The names of the inputs to be used for the differentiation.
             data: The input data mapping.
-                If ``None``, use the local data of the discipline.
+                If empty, use the local data of the discipline.
 
         Returns:
             The input array.
         """
-        if data is None:
+        if not data:
             data = self.discipline.local_data
 
         return self.discipline.input_grammar.data_converter.convert_data_to_array(
@@ -248,7 +249,7 @@ class DisciplineJacApprox:
         self,
         outputs: Iterable[str],
         inputs: Iterable[str],
-        x_indices: Sequence[int] | None = None,
+        x_indices: Sequence[int] = (),
     ) -> dict[str, dict[str, ndarray]]:
         """Approximate the Jacobian.
 
@@ -257,7 +258,7 @@ class DisciplineJacApprox:
             inputs: The names of the inputs used to differentiate the outputs.
             x_indices: The components of the input vector
                 to be used for the differentiation.
-                If ``None``, use all the components.
+                If empty, use all the components.
 
         Returns:
             The approximated Jacobian.
@@ -296,14 +297,14 @@ class DisciplineJacApprox:
             )
         )
 
-        if x_indices is None:
-            flat_jac_complete = flat_jac
-        else:
+        if x_indices:
             flat_jac_complete = zeros([
                 sum(data_names_to_sizes.values()),
                 sum(input_names_to_sizes.values()),
             ])
             flat_jac_complete[:, x_indices] = flat_jac
+        else:
+            flat_jac_complete = flat_jac
 
         data_names_to_sizes.update(input_names_to_sizes)
 
@@ -323,18 +324,18 @@ class DisciplineJacApprox:
         show: bool = False,
         fig_size_x: float = 10.0,
         fig_size_y: float = 10.0,
-        reference_jacobian_path: str | Path | None = None,
+        reference_jacobian_path: str | Path = "",
         save_reference_jacobian: bool = False,
         indices: int | Sequence[int] | slice | Ellipsis | None = None,
     ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
-        If `reference_jacobian_path` is not `None`
+        If `reference_jacobian_path` is not empty
         and `save_reference_jacobian` is `True`,
         compute the reference Jacobian with the approximation method
         and save it in `reference_jacobian_path`.
 
-        If `reference_jacobian_path` is not `None`
+        If `reference_jacobian_path` is not empty
         and `save_reference_jacobian` is `False`,
         do not compute the reference Jacobian
         but read it from `reference_jacobian_path`.
@@ -385,7 +386,7 @@ class DisciplineJacApprox:
                 ),
             )
 
-        if reference_jacobian_path is None or save_reference_jacobian:
+        if not reference_jacobian_path or save_reference_jacobian:
             approximated_jacobian = self.compute_approx_jac(
                 outputs, inputs, input_indices
             )
