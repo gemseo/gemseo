@@ -245,11 +245,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def variable_names_to_n_components(self) -> dict[str, int]:
         """The names of the variables bound to their number of components."""
         return {
-            variable_name: len(
-                self.get_view(variable_names=variable_name).columns.get_level_values(
-                    self.__COMPONENT_LEVEL
-                )
-            )
+            variable_name: self.get_view(variable_names=variable_name).shape[1]
             for variable_name in self.variable_names
         }
 
@@ -257,11 +253,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def group_names_to_n_components(self) -> dict[str, int]:
         """The names of the groups bound to their number of components."""
         return {
-            group_name: len(
-                self.get_view(group_names=group_name).columns.get_level_values(
-                    self.__COMPONENT_LEVEL
-                )
-            )
+            group_name: self.get_view(group_names=group_name).shape[1]
             for group_name in self.group_names
         }
 

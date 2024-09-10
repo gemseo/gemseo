@@ -29,7 +29,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
+from typing import Literal
 from typing import Union
+from typing import overload
 
 from numpy import any as np_any
 from strenum import StrEnum
@@ -704,6 +706,26 @@ class EvaluationProblem(BaseProblem):
                     " Auto setting the imaginary part to 0"
                 )
                 self.differentiation_step = self.differentiation_step.real
+
+    @overload
+    def to_dataset(
+        self,
+        name: str = ...,
+        categorize: Literal[True] = ...,
+        export_gradients: bool = ...,
+        input_values: Iterable[RealArray] = ...,
+        **dataset_options: ...,
+    ) -> IODataset: ...
+
+    @overload
+    def to_dataset(
+        self,
+        name: str = ...,
+        categorize: Literal[False] = ...,
+        export_gradients: bool = ...,
+        input_values: Iterable[RealArray] = ...,
+        **dataset_options: ...,
+    ) -> Dataset: ...
 
     def to_dataset(
         self,

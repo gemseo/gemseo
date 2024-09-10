@@ -30,36 +30,36 @@ while for a discrete output variable,
 a *classification* is performed.
 
 Given a set of input variables
-:math:`x \\in \\mathbb{R}^{n_{\\text{samples}}\\times n_{\\text{inputs}}}` and
+:math:`x \in \mathbb{R}^{n_{\text{samples}}\times n_{\text{inputs}}}` and
 a set of output variables
-:math:`y\\in \\mathbb{K}^{n_{\\text{samples}}\\times n_{\\text{outputs}}}`,
-where :math:`n_{\\text{inputs}}` is the dimension of the input variable,
-:math:`n_{\\text{outputs}}` is the dimension of the output variable,
-:math:`n_{\\text{samples}}` is the number of training samples and
-:math:`\\mathbb{K}` is either :math:`\\mathbb{R}` or :math:`\\mathbb{N}`
+:math:`y \in \mathbb{K}^{n_{\text{samples}}\times n_{\text{outputs}}}`,
+where :math:`n_{\text{inputs}}` is the dimension of the input variable,
+:math:`n_{\text{outputs}}` is the dimension of the output variable,
+:math:`n_{\text{samples}}` is the number of training samples and
+:math:`\mathbb{K}` is either :math:`\mathbb{R}` or :math:`\mathbb{N}`
 for regression and classification tasks respectively,
 a supervised learning algorithm seeks to find a function
-:math:`f: \\mathbb{R}^{n_{\\text{inputs}}} \\to
-\\mathbb{K}^{n_{\\text{outputs}}}` such that :math:`y=f(x)`.
+:math:`f: \mathbb{R}^{n_{\text{inputs}}} \to
+\mathbb{K}^{n_{\text{outputs}}}` such that :math:`y=f(x)`.
 
 In addition,
 we often want to impose some additional constraints on the function :math:`f`,
 mainly to ensure that it has a generalization capacity beyond the training data,
 i.e. it is able to correctly predict output values of new input values.
 This is called regularization.
-Assuming :math:`f` is parametrized by a set of parameters :math:`\\theta`,
-and denoting :math:`f_\\theta` the parametrized function,
+Assuming :math:`f` is parametrized by a set of parameters :math:`\theta`,
+and denoting :math:`f_\theta` the parametrized function,
 one typically seeks to minimize a function of the form
 
 .. math::
 
-    \\mu(y, f_\\theta(x)) + \\Omega(\\theta),
+    \mu(y, f_\theta(x)) + \Omega(\theta),
 
-where :math:`\\mu` is a distance-like measure,
+where :math:`\mu` is a distance-like measure,
 typically a mean squared error,
 a cross entropy in the case of a regression,
 or a probability to be maximized in the case of a classification,
-and :math:`\\Omega` is a regularization term that limits the parameters
+and :math:`\Omega` is a regularization term that limits the parameters
 from over-fitting, typically some norm of its argument.
 
 The :mod:`~gemseo.mlearning.core.supervised` module implements this concept
@@ -222,10 +222,12 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
     @property
     def input_dimension(self) -> int:
         """The input space dimension."""
-        if not self.__input_dimension and self.learning_set is not None:
-            variable_to_size = self.learning_set.variable_names_to_n_components
+        data = self.learning_set
+        if not self.__input_dimension and data is not None:
+            input_data = data.input_dataset
             self.__input_dimension = sum(
-                variable_to_size[name] for name in self.input_names
+                input_data.get_view(variable_names=name).shape[1]
+                for name in self.input_names
             )
 
         return self.__input_dimension
@@ -233,10 +235,12 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
     @property
     def output_dimension(self) -> int:
         """The output space dimension."""
-        if not self.__output_dimension and self.learning_set is not None:
-            variable_to_size = self.learning_set.variable_names_to_n_components
+        data = self.learning_set
+        if not self.__output_dimension and data is not None:
+            output_data = data.output_dataset
             self.__output_dimension = sum(
-                variable_to_size[name] for name in self.output_names
+                output_data.get_view(variable_names=name).shape[1]
+                for name in self.output_names
             )
 
         return self.__output_dimension
@@ -532,30 +536,30 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
         """Set the input and output dimensions after transformations."""
         input_dimension = 0
         output_dimension = 0
-        input_names = [*self.input_names, IODataset.INPUT_GROUP]
-        output_names = [*self.output_names, IODataset.OUTPUT_GROUP]
+        input_names = (IODataset.INPUT_GROUP, *self.input_names)
+        output_names = (IODataset.OUTPUT_GROUP, *self.output_names)
 
-        for key in self.transformer:
-            transformer = self.transformer.get(key)
-            if key in input_names:
-                if isinstance(transformer, BaseDimensionReduction):
-                    input_dimension += transformer.n_components
-                else:
-                    input_dimension += (
-                        self.learning_set.variable_names_to_n_components.get(
-                            key, self.input_dimension
-                        )
-                    )
+        in_data = self.learning_set.input_dataset
+        out_data = self.learning_set.output_dataset
+        for name in input_names:
+            transformer = self.transformer.get(name)
+            if isinstance(transformer, BaseDimensionReduction):
+                input_dimension += transformer.n_components
+            elif name != IODataset.INPUT_GROUP:
+                input_dimension += in_data.get_view(variable_names=name).shape[1]
 
-            if key in output_names:
-                if isinstance(transformer, BaseDimensionReduction):
-                    output_dimension += transformer.n_components
-                else:
-                    output_dimension += (
-                        self.learning_set.variable_names_to_n_components.get(
-                            key, self.output_dimension
-                        )
-                    )
+            if name == IODataset.INPUT_GROUP and input_dimension:
+                break
+
+        for name in output_names:
+            transformer = self.transformer.get(name)
+            if isinstance(transformer, BaseDimensionReduction):
+                output_dimension += transformer.n_components
+            elif name != IODataset.OUTPUT_GROUP:
+                output_dimension += out_data.get_view(variable_names=name).shape[1]
+
+            if name == IODataset.OUTPUT_GROUP and output_dimension:
+                break
 
         self.__reduced_input_dimension = input_dimension or self.input_dimension
         self.__reduced_output_dimension = output_dimension or self.output_dimension

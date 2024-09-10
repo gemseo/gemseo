@@ -29,7 +29,9 @@ from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
 from itertools import chain
 from typing import TYPE_CHECKING
+from typing import Literal
 from typing import Protocol
+from typing import overload
 
 from numpy import hstack
 from numpy import ndarray
@@ -293,6 +295,24 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
     @abstractmethod
     def last_entry(self) -> CacheEntry:
         """The last cache entry."""
+
+    @overload
+    def to_dataset(
+        self,
+        name: str = ...,
+        categorize: Literal[True] = ...,
+        input_names: Iterable[str] = ...,
+        output_names: Iterable[str] = ...,
+    ) -> IODataset: ...
+
+    @overload
+    def to_dataset(
+        self,
+        name: str = ...,
+        categorize: Literal[False] = ...,
+        input_names: Iterable[str] = ...,
+        output_names: Iterable[str] = ...,
+    ) -> Dataset: ...
 
     def to_dataset(
         self,

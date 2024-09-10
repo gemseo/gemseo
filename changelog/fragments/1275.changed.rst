@@ -1,0 +1,2 @@
+``IODataset``: the "group name, default variable name" pairs for the ``IODataset`` are "i, inputs" and "o, outputs".
+``OptimizationDataset``: the "group name, default variable name" pairs for the ``OptimizationDataset`` are "d, designs", "o, observables", "f, objectives" and "c, constraints".

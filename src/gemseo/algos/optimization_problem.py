@@ -821,20 +821,20 @@ class OptimizationProblem(EvaluationProblem):
     def to_dataset(
         self,
         name: str = "",
-        categorize: bool = True,
-        export_gradients: bool = False,
-        input_values: Iterable[RealArray] = (),
-        opt_naming: Literal[False] = False,
+        categorize: Literal[True] = ...,
+        export_gradients: bool = ...,
+        input_values: Iterable[RealArray] = ...,
+        opt_naming: Literal[False] = ...,
     ) -> IODataset: ...
 
     @overload
     def to_dataset(
         self,
-        name: str = "",
-        categorize: bool = True,
-        export_gradients: bool = False,
-        input_values: Iterable[RealArray] = (),
-        opt_naming: Literal[True] = True,
+        name: str = ...,
+        categorize: Literal[True] = ...,
+        export_gradients: bool = ...,
+        input_values: Iterable[RealArray] = ...,
+        opt_naming: Literal[True] = ...,
     ) -> OptimizationDataset: ...
 
     def to_dataset(

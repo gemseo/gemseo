@@ -1,0 +1,1 @@
+``GaussianProcessRegressor.predict_std`` and ``GaussianProcessRegressor.compute_samples`` consider the output scales deduced from the training data.

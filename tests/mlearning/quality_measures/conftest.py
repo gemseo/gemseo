@@ -25,7 +25,7 @@ from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
 
 
 @pytest.fixture(scope="module")
-def algo_for_transformer() -> IODataset:
+def algo_for_transformer() -> GaussianProcessRegressor:
     """A GP regression of f(x) = x*sin(x)**2 over [0, 2*pi] with 20 points."""
     dataset = IODataset()
     x = linspace(0, 2 * pi, 20)[:, newaxis]
@@ -36,5 +36,6 @@ def algo_for_transformer() -> IODataset:
         transformer=GaussianProcessRegressor.DEFAULT_TRANSFORMER,
         n_restarts_optimizer=0,
     )
+    algo.algo.normalize_y = False
     algo.learn()
     return algo
