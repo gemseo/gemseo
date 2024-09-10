@@ -183,10 +183,17 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
             )
 
         self.algo = sklearn.gaussian_process.GaussianProcessRegressor(
-            kernel=kernel,
             alpha=alpha,
-            optimizer=optimizer,
+            kernel=kernel,
             n_restarts_optimizer=n_restarts_optimizer,
+            # When output_dimension > 1 and normalize_y is False,
+            # the prediction uncertainty
+            # (e.g. standard deviation, samples, ...)
+            # is wrong (see https://github.com/scikit-learn/scikit-learn/issues/29697).
+            # Set normalize_y to True fix this bug.
+            # TODO: Remove this bugfix once the bug has been corrected in sklearn.
+            normalize_y=True,
+            optimizer=optimizer,
             random_state=random_state,
         )
         self.parameters["kernel"] = kernel.__class__.__name__
@@ -219,6 +226,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
             return [self.__DEFAULT_BOUNDS] * dimension
 
         if isinstance(bounds, tuple):
+            bounds: tuple[float, float]
             return [bounds] * dimension
 
         bounds_ = []
@@ -260,7 +268,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
 
     def compute_samples(  # noqa: D102
         self, input_data: RealArray, n_samples: int, seed: int = SEED
-    ) -> tuple[RealArray]:
+    ) -> tuple[RealArray, ...]:
         samples = self.algo.sample_y(input_data, n_samples=n_samples, random_state=seed)
         if samples.ndim == 2:
             return (samples,)

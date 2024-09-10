@@ -41,7 +41,7 @@ class OptimizationDataset(Dataset):
     CONSTRAINT_GROUP: Final[str] = "constraints"
     """The group name for the constraints of an :class:`.OptimizationProblem`."""
 
-    OBSERVABLE_GROUP: Final[str] = "observables."
+    OBSERVABLE_GROUP: Final[str] = "observables"
     """The group name for the observables of an :class:`.OptimizationProblem`."""
 
     @property
@@ -221,7 +221,7 @@ class OptimizationDataset(Dataset):
     def add_constraint_group(
         self,
         data: DataType,
-        variable_names: StrColumnType = (),
+        variable_names: StrColumnType = "c",
         variable_names_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the constraint group.
@@ -246,7 +246,7 @@ class OptimizationDataset(Dataset):
     def add_design_group(
         self,
         data: DataType,
-        variable_names: StrColumnType = (),
+        variable_names: StrColumnType = "d",
         variable_names_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the design variable group.
@@ -271,7 +271,7 @@ class OptimizationDataset(Dataset):
     def add_objective_group(
         self,
         data: DataType,
-        variable_names: StrColumnType = (),
+        variable_names: StrColumnType = "f",
         variable_names_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the objective group.
@@ -296,7 +296,7 @@ class OptimizationDataset(Dataset):
     def add_observable_group(
         self,
         data: DataType,
-        variable_names: StrColumnType = (),
+        variable_names: StrColumnType = "o",
         variable_names_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the observable group.

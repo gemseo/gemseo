@@ -27,10 +27,13 @@ import pytest
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
+from numpy import hstack
 from numpy import ndarray
 from numpy.testing import assert_almost_equal
+from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
@@ -175,14 +178,14 @@ def test_kernel(dataset) -> None:
             {},
             (
                 array([
-                    [1.793727, 1.6737006],
-                    [4.7481523, 4.7274054],
-                    [4.1133087, 4.0414895],
+                    [1.8165583, 1.727881],
+                    [4.6739789, 4.6915704],
+                    [4.0564862, 3.9842878],
                 ]),
                 array([
-                    [-1.9714888, -1.9169749],
-                    [-4.610077, -4.6684153],
-                    [-3.9723156, -3.9135493],
+                    [-1.9822646, -1.9510085],
+                    [-4.5580722, -4.6255665],
+                    [-3.9284371, -3.8928664],
                 ]),
             ),
         ),
@@ -191,14 +194,14 @@ def test_kernel(dataset) -> None:
             {},
             (
                 array([
-                    [1.9019072, 1.8469586],
-                    [4.6702036, 4.8555419],
-                    [3.88026, 4.0085456],
+                    [1.9445679, 1.8869145],
+                    [4.6358505, 4.7708454],
+                    [3.866145, 4.0080552],
                 ]),
                 array([
-                    [-1.9195439, -1.826369],
-                    [-4.5784073, -4.7704947],
-                    [-4.0406025, -3.9173866],
+                    [-1.9243842, -1.880916],
+                    [-4.5288311, -4.7229072],
+                    [-3.9682647, -3.9136432],
                 ]),
             ),
         ),
@@ -207,9 +210,9 @@ def test_kernel(dataset) -> None:
             {"output_names": ["y_1"]},
             (
                 array([
-                    [1.793727, 1.6737006],
-                    [4.7481523, 4.7274054],
-                    [4.1133087, 4.0414895],
+                    [1.8165583, 1.727881],
+                    [4.6739789, 4.6915704],
+                    [4.0564862, 3.9842878],
                 ]),
             ),
         ),
@@ -224,3 +227,36 @@ def test_compute_samples(dataset, compute_options, init_options, expected_sample
     assert_almost_equal(samples[0], expected_samples[0])
     if not init_options:
         assert_almost_equal(samples[1], expected_samples[1])
+
+
+def test_std_multiple_output():
+    """Check the standard deviation when the number of outputs is greater than 1."""
+    x = array([[0.0], [0.5], [1.0]])
+    y = hstack((x**2, 10 * x**2))
+    dataset = IODataset()
+    dataset.add_input_group(x, variable_names="x")
+    dataset.add_output_group(y, variable_names="y")
+    gpr = GaussianProcessRegressor(dataset)
+    gpr.learn()
+    std = gpr.predict_std(array([0.25]))[0]
+    assert std[0] != std[1]
+    assert std[0] == pytest.approx(std[1] / 10, rel=1e-9)
+
+
+def test_homonymous_io():
+    """Check that a supervised ML algo can use with homonymous inputs and outputs."""
+    x = array([[0.0], [0.5], [1.0]])
+    y = x**2
+    dataset = IODataset()
+    dataset.add_input_group(x, variable_names="x")
+    dataset.add_output_group(y, variable_names="y")
+    gpr = GaussianProcessRegressor(dataset)
+    gpr.learn()
+    reference = gpr.predict(array([0.25]))
+
+    dataset = IODataset()
+    dataset.add_input_group(x)
+    dataset.add_output_group(y)
+    gpr = GaussianProcessRegressor(dataset)
+    gpr.learn()
+    assert_equal(gpr.predict(array([0.25])), reference)

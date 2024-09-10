@@ -117,6 +117,43 @@ def test_coefficients(model) -> None:
     assert allclose(coefficients["y_2"][0]["x_2"], array([-3.0]))
 
 
+@pytest.mark.parametrize(
+    (
+        "key",
+        "transformer",
+        "input_dimension",
+        "output_dimension",
+        "reduced_input_dimension",
+        "reduced_output_dimension",
+    ),
+    [
+        ("outputs", PCA(n_components=1), 2, 2, 2, 1),
+        ("y_1", PCA(n_components=1), 2, 2, 2, 2),
+        ("inputs", PCA(n_components=1), 2, 2, 1, 2),
+        ("x_1", PCA(n_components=1), 2, 2, 2, 2),
+        ("outputs", MinMaxScaler(), 2, 2, 2, 2),
+        ("y_1", MinMaxScaler(), 2, 2, 2, 2),
+        ("inputs", MinMaxScaler(), 2, 2, 2, 2),
+        ("x_1", MinMaxScaler(), 2, 2, 2, 2),
+    ],
+)
+def test_reduced_io_dimensions(
+    dataset,
+    key,
+    transformer,
+    input_dimension,
+    output_dimension,
+    reduced_input_dimension,
+    reduced_output_dimension,
+):
+    """Check the reduced input and output dimensions."""
+    regressor = LinearRegressor(dataset, transformer={key: transformer})
+    assert regressor.input_dimension == input_dimension
+    assert regressor.output_dimension == output_dimension
+    assert regressor._reduced_input_dimension == reduced_input_dimension
+    assert regressor._reduced_output_dimension == reduced_output_dimension
+
+
 def test_coefficients_with_transform(dataset, model_with_transform) -> None:
     """Test correct handling of get_coefficients with transformers."""
     model_with_transform.get_coefficients(as_dict=False)

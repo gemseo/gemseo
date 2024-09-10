@@ -1,0 +1,1 @@
+``BaseMLSupervisedAlgo`` can be trained from an ``IODataset`` with homonymous inputs and outputs.
