@@ -119,11 +119,11 @@ pybtex==0.24.0
     #   sphinxcontrib-bibtex
 pybtex-docutils==1.0.3
     # via sphinxcontrib-bibtex
-pydantic==2.8.2
+pydantic==2.9.0
     # via
     #   gemseo (pyproject.toml)
     #   pandera
-pydantic-core==2.20.1
+pydantic-core==2.23.2
     # via pydantic
 pydoe3==1.0.4
     # via gemseo (pyproject.toml)
@@ -217,7 +217,9 @@ typing-extensions==4.12.2
 typing-inspect==0.9.0
     # via pandera
 tzdata==2024.1
-    # via pandas
+    # via
+    #   pandas
+    #   pydantic
 urllib3==2.2.2
     # via requests
 wrapt==1.16.0

@@ -25,17 +25,5 @@ build:
       # Tags are necessary for setuptools-scm to determine the version.
       - git fetch --tags
       - git fetch origin develop
-    post_install:
-      - pip install --no-deps -r requirements/doc-plugins.txt
     pre_build:
-      - python -c "import site; print(site.getsitepackages()[0])" > site-packages-path
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_scilab
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_pymoo
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_java
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_calibration
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_pdfo
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_matlab
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_pseven
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_template_editor_gui
-      - sphinx-apidoc -e -M -o doc_src/_modules $(cat site-packages-path)/gemseo_benchmark
       - sphinx-apidoc -e -M -o doc_src/_modules src/gemseo
