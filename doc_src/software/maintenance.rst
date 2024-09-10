@@ -9,8 +9,8 @@
 .. _pypi: https://pypi.org
 .. _anaconda: https://anaconda.org
 .. _conda-forge: https://conda-forge.org
-.. _pip-tools: https://github.com/jazzband/pip-tools
 .. _pre-commit: https://pre-commit.com
+.. _uv: https://docs.astral.sh/uv/
 
 Maintainers information
 =======================
@@ -34,8 +34,6 @@ but a range of compatible versions shall be defined.
 
 All the dependencies of |g| are defined in :file:`pyproject.toml`,
 this files does not tell where the packages will be pulled from.
-The dependencies could be provided by the packages repositories
-`pypi`_, `anaconda`_ or `conda-forge`_.
 
 Getting |g| to work with
 a set of packages versions common to several platforms
@@ -43,8 +41,8 @@ and python versions is tricky and challenging.
 This kind of work is mostly done by trials and errors.
 
 In addition to the dependencies of |g|,
-:file:`pyproject.toml` also defines optional dependencies
-used for running the tests or building the documentation.
+:file:`pyproject.toml` also defines extra dependencies
+used for developing, testing, or building the documentation.
 
 Dependencies for development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -53,19 +51,18 @@ The dependencies used for development shall be fully controlled
 so all developers are provided
 with reproducible and working environments.
 The dependencies shall be updated
-at least once in a while (couple months)
 to benefit from packages improvements,
 security and bug fixes.
 
-The dependencies update is done with `pip-tools`_
+The dependencies update is done with `uv`_
 and eventually from input requirements files.
-These input requirements files contain
+These input requirements files may contain
 the minimum pinning requirements
 and are intended to be modified by maintainers.
-The `pip-tools`_ package provides the :command:`pip-compile`
-which can process an input requirements file
+The `uv`_ package provides :command:`uv pip compile`
+which may process an input requirements file
 to produce a fully pinned requirements file.
-The actual call to `pip-tools`_ is done via ``tox`` (see below).
+The actual call to `uv`_ is done via ``tox`` (see below).
 
 .. warning::
 

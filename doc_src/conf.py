@@ -294,32 +294,32 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
     html_context["plugins"] = {
         "gemseo-benchmark": (
             "A GEMSEO-based package to benchmark optimization algorithm.",
-            False,
+            True,
         ),
         "gemseo-calibration": (
             "Capability to calibrate GEMSEO disciplines from data",
-            False,
+            True,
         ),
         "gemseo-fmu": ("GEMSEO plugin for FMU dynamic models", True),
         "gemseo-jax": ("GEMSEO plugin for JAX", True),
-        "gemseo-matlab": ("GEMSEO plugin for MATLAB.", False),
+        "gemseo-matlab": ("GEMSEO plugin for MATLAB.", True),
         "gemseo-mlearning": ("Miscellaneous machine learning capabilities", True),
         "gemseo-mma": (
             "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
             True,
         ),
-        "gemseo-pdfo": ("GEMSEO plugin for the PDFO library.", False),
+        "gemseo-pdfo": ("GEMSEO plugin for the PDFO library.", True),
         "gemseo-petsc": (
             "PETSc wrapper for :class:`.LinearSolver` and :class:`.BaseMDA`",
             True,
         ),
-        "gemseo-pseven": ("GEMSEO plugin for the pSeven library.", False),
-        "gemseo-pymoo": ("Pymoo wrapper for optimization algorithms", False),
+        "gemseo-pseven": ("GEMSEO plugin for the pSeven library.", True),
+        "gemseo-pymoo": ("Pymoo wrapper for optimization algorithms", True),
         "gemseo-ssh": ("SSH plugin for GEMSEO", True),
-        "gemseo-scilab": ("Interfacing Scilab functions", False),
+        "gemseo-scilab": ("Interfacing Scilab functions", True),
         "gemseo-template-editor-gui": (
             "A GUI to create input and output file templates for DiscFromExe.",
-            False,
+            True,
         ),
         "gemseo-umdo": ("Capability for MDO under uncertainty", True),
     }
