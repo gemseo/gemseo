@@ -40,7 +40,7 @@ idna==3.8
     # via requests
 importlib-metadata==8.4.0
     # via typeguard
-importlib-resources==6.4.4
+importlib-resources==6.4.5
     # via matplotlib
 iniconfig==2.0.0
     # via pytest
