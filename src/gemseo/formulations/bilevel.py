@@ -28,7 +28,7 @@ from typing import ClassVar
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.chain import MDOWarmStartedChain
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
@@ -141,7 +141,7 @@ class BiLevel(BaseMDOFormulation):
         self._apply_cstr_tosub_scenarios = apply_cstr_tosub_scenarios
         self.__parallel_scenarios = parallel_scenarios
         self._multithread_scenarios = multithread_scenarios
-        self.couplstr = MDOCouplingStructure(self.get_sub_disciplines())
+        self.couplstr = CouplingStructure(self.get_sub_disciplines())
 
         # Create MDA
         self.__sub_scenarios_log_level = sub_scenarios_log_level

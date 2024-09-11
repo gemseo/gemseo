@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline_data import DisciplineData
     from gemseo.typing import StrKeyMapping
 
@@ -105,7 +105,7 @@ class MDAQuasiNewton(BaseMDARoot):
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
         use_lu_fact: bool = False,
-        coupling_structure: MDOCouplingStructure | None = None,
+        coupling_structure: CouplingStructure | None = None,
         linear_solver: str = "DEFAULT",
         linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> None:

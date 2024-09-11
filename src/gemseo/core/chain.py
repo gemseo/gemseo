@@ -29,7 +29,7 @@ from numpy import ndarray
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
 
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
@@ -208,7 +208,7 @@ class MDOChain(MDODiscipline):
         self, inputs: Iterable[str], outputs: Iterable[str]
     ) -> None:
         if self._coupling_structure is None:
-            self._coupling_structure = MDOCouplingStructure(self.disciplines)
+            self._coupling_structure = CouplingStructure(self.disciplines)
 
         diff_ios = (set(inputs), set(outputs))
         if self._last_diff_inouts != diff_ios:

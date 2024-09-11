@@ -52,8 +52,7 @@ GraphType = dict[int, set[int]]
 ComponentType = tuple[int]
 
 
-# TODO: API: make the module and class names match.
-class MDOCouplingStructure:
+class CouplingStructure:
     """Structure of the couplings between several disciplines.
 
     The methods of this class include the computation of weak, strong or all couplings.

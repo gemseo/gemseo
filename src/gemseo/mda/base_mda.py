@@ -38,8 +38,8 @@ from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import 
     RelaxationAcceleration,
 )
 from gemseo.caches.simple_cache import SimpleCache
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.coupling_structure import DependencyGraph
-from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -90,7 +90,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     _max_mda_iter: int
     """The maximum iterations number for the MDA algorithm."""
 
-    coupling_structure: MDOCouplingStructure
+    coupling_structure: CouplingStructure
     """The coupling structure to be used by the MDA."""
 
     assembly: JacobianAssembly
@@ -212,7 +212,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
         use_lu_fact: bool = False,
-        coupling_structure: MDOCouplingStructure | None = None,
+        coupling_structure: CouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
         linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
@@ -257,7 +257,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self.max_mda_iter = max_mda_iter
         self._disciplines = disciplines
         if coupling_structure is None:
-            self.coupling_structure = MDOCouplingStructure(disciplines)
+            self.coupling_structure = CouplingStructure(disciplines)
         else:
             self.coupling_structure = coupling_structure
         self.assembly = JacobianAssembly(self.coupling_structure)

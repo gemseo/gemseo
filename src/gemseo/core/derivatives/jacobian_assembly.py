@@ -65,7 +65,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import TypeAlias
 
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline import MDODiscipline
     from gemseo.typing import RealArray
     from gemseo.typing import RealOrComplexArray
@@ -185,7 +185,7 @@ class JacobianAssembly:
     Typically, assemble discipline's Jacobians into a system Jacobian.
     """
 
-    coupling_structure: MDOCouplingStructure
+    coupling_structure: CouplingStructure
     """The considered coupling structure."""
 
     sizes: dict[str, int]
@@ -240,10 +240,10 @@ class JacobianAssembly:
         """The column index of the disciplinary Jacobian within the assembled Jacobian
         when defined blockwise."""
 
-    def __init__(self, coupling_structure: MDOCouplingStructure) -> None:
+    def __init__(self, coupling_structure: CouplingStructure) -> None:
         """
         Args:
-            coupling_structure: The MDOCouplingStructure associated disciplines that
+            coupling_structure: The CouplingStructure associated disciplines that
                 form the coupled system.
         """  # noqa: D205, D212, D415
         self.coupling_structure = coupling_structure
@@ -578,7 +578,7 @@ class JacobianAssembly:
         variables: Iterable[str],
         functions: Iterable[str],
         states: Iterable[str],
-        coupling_structure: MDOCouplingStructure,
+        coupling_structure: CouplingStructure,
     ) -> set[str]:
         """Compute the minimal differentiated inputs, outputs and couplings.
 

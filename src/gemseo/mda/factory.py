@@ -27,11 +27,11 @@ from typing import Optional
 from typing import Union
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.mda.base_mda import BaseMDA
 
 MDAOptionType = Optional[
-    Union[float, int, bool, str, Iterable[MDOCouplingStructure], Sequence[BaseMDA]]
+    Union[float, int, bool, str, Iterable[CouplingStructure], Sequence[BaseMDA]]
 ]
 
 

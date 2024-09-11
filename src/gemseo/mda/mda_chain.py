@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline_data import DisciplineData
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
@@ -79,8 +79,8 @@ class MDAChain(BaseMDA):
         linear_solver_tolerance: float = 1e-12,
         use_lu_fact: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        coupling_structure: MDOCouplingStructure | None = None,
-        sub_coupling_structures: Iterable[MDOCouplingStructure | None] = (),
+        coupling_structure: CouplingStructure | None = None,
+        sub_coupling_structures: Iterable[CouplingStructure | None] = (),
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
         linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
@@ -176,7 +176,7 @@ class MDAChain(BaseMDA):
         self,
         disciplines: Sequence[MDODiscipline],
         inner_mda_name: str = "MDAJacobi",
-        sub_coupling_structures: Iterable[MDOCouplingStructure | None] = (),
+        sub_coupling_structures: Iterable[CouplingStructure | None] = (),
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options: Mapping[str, int | bool] = READ_ONLY_EMPTY_DICT,
         **inner_mda_options: float | bool | str | None,

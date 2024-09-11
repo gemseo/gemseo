@@ -142,7 +142,7 @@ MDO processes
     - Rename ``open_browser`` to ``show_html``.
     - Rename ``output_dir`` to ``directory_path``.
 
-- ``MDOCouplingStructure.plot_n2_chart``: rename ``open_browser`` to ``show_html``.
+- ``CouplingStructure.plot_n2_chart``: rename ``open_browser`` to ``show_html``.
 - ``N2HTML``: rename ``open_browser`` to ``show_html``.
 - ``generate_n2_plot`` rename ``open_browser`` to ``show_html``.
 - ``Scenario.xdsmize``: rename ``print_statuses`` to ``log_workflow_status``.

@@ -214,7 +214,7 @@ def test_chain_jac_random_with_couplings(
 #         no_self_coupled=False,
 #         grammar_type=MDOChain.GrammarType.SIMPLE
 #     )
-#     coupling_structure = MDOCouplingStructure(disciplines)
+#     coupling_structure = CouplingStructure(disciplines)
 #     print("N Disc",len(disciplines))
 #     from time import time
 #     t0=time()

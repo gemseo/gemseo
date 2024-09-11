@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda_chain import MDAChain
@@ -52,7 +52,7 @@ DISC_DESCR_SELF_C = [("A", ["x", "y"], ["y", "o"])]
 def test_traverse_add_diff_io_basic() -> None:
     """Test the differentiated inputs and outputs graph calculations."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1)
-    coupl = MDOCouplingStructure(disciplines)
+    coupl = CouplingStructure(disciplines)
 
     traverse_add_diff_io_mda(coupl, ["x1"], ["o1"])
 

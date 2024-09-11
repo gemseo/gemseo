@@ -238,9 +238,9 @@ def generate_n2_plot(
     See Also:
         generate_coupling_graph
     """
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
 
-    coupling_structure = MDOCouplingStructure(disciplines)
+    coupling_structure = CouplingStructure(disciplines)
     coupling_structure.plot_n2_chart(
         file_path, show_data_names, save, show, fig_size, show_html
     )
@@ -270,9 +270,9 @@ def generate_coupling_graph(
     See Also:
         generate_n2_plot
     """
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
 
-    coupling_structure = MDOCouplingStructure(disciplines)
+    coupling_structure = CouplingStructure(disciplines)
     if full:
         return coupling_structure.graph.export_initial_graph(file_path)
     return coupling_structure.graph.export_reduced_graph(file_path)

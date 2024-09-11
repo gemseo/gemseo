@@ -30,7 +30,7 @@ from numpy import ndarray
 from numpy import zeros
 
 from gemseo.core.chain import MDOParallelChain
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -116,7 +116,7 @@ class IDF(BaseMDOFormulation):
         else:
             self._parallel_exec = None
 
-        self.coupling_structure = MDOCouplingStructure(disciplines)
+        self.coupling_structure = CouplingStructure(disciplines)
         self.all_couplings = self.coupling_structure.all_couplings
         self._update_design_space()
         self.normalize_constraints = normalize_constraints

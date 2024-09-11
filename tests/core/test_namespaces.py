@@ -39,7 +39,7 @@ from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -232,23 +232,23 @@ def test_mda_with_namespaces(grammar_type) -> None:
     )
     out_ref = mda.execute()
 
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert len(struct.get_strongly_coupled_disciplines()) == 2
     disc_1.add_namespace_to_output("y", "ns")
 
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert not struct.get_strongly_coupled_disciplines()
 
     disc_2.add_namespace_to_input("y", "ns")
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert len(struct.get_strongly_coupled_disciplines()) == 2
 
     disc_1.add_namespace_to_input("u", "ns")
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert not struct.get_strongly_coupled_disciplines()
 
     disc_2.add_namespace_to_output("u", "ns")
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert len(struct.get_strongly_coupled_disciplines()) == 2
 
     mda_ns = create_mda(

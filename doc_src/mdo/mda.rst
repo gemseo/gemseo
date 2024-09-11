@@ -201,19 +201,19 @@ The following inheritance diagram shows the different MDA classes in |g| and the
 MDAChain and the Coupling structure for smart MDAs
 --------------------------------------------------
 
-The :class:`.MDOCouplingStructure`
+The :class:`.CouplingStructure`
 provides methods to compute the coupling variables between the disciplines:
 
 .. code::
 
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
 
-    coupling_structure = MDOCouplingStructure(disciplines)
+    coupling_structure = CouplingStructure(disciplines)
 
 This is an internal object that is created in all MDA classes and all formulations.
 The end user does not need to create it for basic usage.
 
-The :class:`.MDOCouplingStructure`
+The :class:`.CouplingStructure`
 uses graphs to compute the dependencies between the disciplines,
 and therefore the coupling variables.
 This graph can then be used to generate a process
