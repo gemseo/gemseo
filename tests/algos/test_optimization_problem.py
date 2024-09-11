@@ -1578,15 +1578,14 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
 def problem_for_eval_obs_jac() -> OptimizationProblem:
     """An optimization problem to check the option eval_obs_jac."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.0)
 
     problem = OptimizationProblem(design_space)
-    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
-    problem.objective = MDOFunction(lambda x: x, "f", jac=lambda x: 1)
+    problem.objective = MDOFunction(lambda x: 1 - x, "f", jac=lambda x: array([[-1.0]]))
     problem.add_constraint(
-        MDOFunction(lambda x: x, "c", f_type="ineq", jac=lambda x: 1)
+        MDOFunction(lambda x: x - 0.5, "c", f_type="ineq", jac=lambda x: array([[1.0]]))
     )
-    problem.add_observable(MDOFunction(lambda x: x, "o", jac=lambda x: 1))
+    problem.add_observable(MDOFunction(lambda x: x, "o", jac=lambda x: array([[1.0]])))
     return problem
 
 
@@ -1598,11 +1597,25 @@ def problem_for_eval_obs_jac() -> OptimizationProblem:
     ],
 )
 @pytest.mark.parametrize("eval_obs_jac", [True, False])
-def test_observable_jac(problem_for_eval_obs_jac, options, eval_obs_jac) -> None:
-    """Check that the observable derivatives are computed when eval_obs_jac is True."""
-    execute_algo(problem_for_eval_obs_jac, eval_obs_jac=eval_obs_jac, **options)
+@pytest.mark.parametrize("store_jacobian", [True, False])
+def test_jabobian_in_database(
+    problem_for_eval_obs_jac, options, eval_obs_jac, store_jacobian
+) -> None:
+    """Check Jacobian matrices in database in function of eval_obs_jac and
+    store_jacobian options."""
+    problem_for_eval_obs_jac.reset()
+    execute_algo(
+        problem_for_eval_obs_jac,
+        eval_obs_jac=eval_obs_jac,
+        store_jacobian=store_jacobian,
+        **options,
+    )
     database = problem_for_eval_obs_jac.database
-    assert ("@o" in database.get_function_names(False)) is eval_obs_jac
+    function_names = database.get_function_names(False)
+    assert ("@o" in function_names) is (eval_obs_jac and store_jacobian)
+    store_f_and_c = store_jacobian and options["algo_name"] == "SLSQP"
+    assert ("@f" in function_names) is store_f_and_c
+    assert ("@c" in function_names) is store_f_and_c
 
 
 def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:

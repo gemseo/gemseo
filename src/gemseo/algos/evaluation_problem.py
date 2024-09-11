@@ -528,6 +528,7 @@ class EvaluationProblem(BaseProblem):
         round_ints: bool = True,
         eval_obs_jac: bool = False,
         support_sparse_jacobian: bool = False,
+        store_jacobian: bool = True,
     ) -> None:
         """Wrap the function for a more attractive evaluation.
 
@@ -544,6 +545,8 @@ class EvaluationProblem(BaseProblem):
             round_ints: Whether to round the integer variables.
             eval_obs_jac: Whether to evaluate the Jacobian of the observables.
             support_sparse_jacobian: Whether the driver supports sparse Jacobian.
+            store_jacobian: Whether to store the Jacobian matrices in the database.
+                This argument is ignored when ``use_database`` is ``False``.
         """
         # Avoids multiple wrappings of functions when multiple executions
         # are performed, in bi-level scenarios for instance
@@ -569,6 +572,7 @@ class EvaluationProblem(BaseProblem):
                     use_database=use_database,
                     round_ints=round_ints,
                     support_sparse_jacobian=support_sparse_jacobian,
+                    store_jacobian=store_jacobian,
                 )
                 functions[index] = function
 
@@ -582,6 +586,7 @@ class EvaluationProblem(BaseProblem):
                     use_database=use_database,
                     round_ints=round_ints,
                     support_sparse_jacobian=support_sparse_jacobian,
+                    store_jacobian=store_jacobian,
                 ),
             )
         self._functions_are_preprocessed = True
@@ -599,6 +604,7 @@ class EvaluationProblem(BaseProblem):
         use_database: bool = True,
         round_ints: bool = True,
         support_sparse_jacobian: bool = False,
+        store_jacobian: bool = True,
     ) -> MDOFunction:
         """Wrap the function for a more attractive evaluation.
 
@@ -609,6 +615,7 @@ class EvaluationProblem(BaseProblem):
             use_database: Whether to store the function evaluations in the database.
             round_ints: Whether to round the integer variables.
             support_sparse_jacobian: Whether the driver supports sparse Jacobian.
+            store_jacobian: Whether to store the Jacobian in the database.
 
         Returns:
             The pre-processed function.
@@ -657,6 +664,7 @@ class EvaluationProblem(BaseProblem):
             self.evaluation_counter,
             self.stop_if_nan,
             self.design_space,
+            store_jacobian,
             differentiation_method=(
                 self.differentiation_method
                 if self.differentiation_method in set(self.ApproximationMode)

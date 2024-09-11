@@ -83,6 +83,9 @@ class ProblemFunction(MDOFunction, Serializable):
     ]
     """The function to unnormalize a normalized vector of the design space."""
 
+    __store_jacobian: bool
+    """Whether to store the Jacobian matrices in the database."""
+
     def __init__(
         self,
         function: MDOFunction,
@@ -93,6 +96,7 @@ class ProblemFunction(MDOFunction, Serializable):
         counter: EvaluationCounter,
         stop_if_nan: bool,
         design_space: DesignSpace,
+        store_jacobian: bool = True,
         differentiation_method: ApproximationMode | None = None,
         **differentiation_method_options: Any,
     ):
@@ -110,6 +114,7 @@ class ProblemFunction(MDOFunction, Serializable):
             counter: The counter of evaluations.
             stop_if_nan: Whether the evaluation stops when a function returns ``NaN``.
             design_space: The design space on which to evaluate the function.
+            store_jacobian: Whether to store the Jacobian matrices in the database.
             differentiation_method: The differentiation method to compute the Jacobian.
                 If ``None``, use the original derivatives.
             **differentiation_method_options: The options of the differentiation method.
@@ -118,6 +123,8 @@ class ProblemFunction(MDOFunction, Serializable):
         self._init_shared_memory_attrs_before()
         self._output_evaluation_sequence = output_evaluation_sequence
         self._jacobian_evaluation_sequence = jacobian_evaluation_sequence
+        self.__store_jacobian = store_jacobian
+
         use_database = database is not None
         if use_database and with_normalized_inputs:
             compute_output = self._compute_output_db_norm
@@ -262,7 +269,8 @@ class ProblemFunction(MDOFunction, Serializable):
             self.check_function_output_includes_nan(
                 jacobian, self.stop_if_nan, name, input_value
             )
-            database.store(hashed_xu, {name: jacobian})
+            if self.__store_jacobian:
+                database.store(hashed_xu, {name: jacobian})
 
         return jacobian
 
@@ -330,7 +338,8 @@ class ProblemFunction(MDOFunction, Serializable):
                 self._gradient_name,
                 xu_vect,
             )
-            database.store(hashed_xu, {self._gradient_name: jac_u})
+            if self.__store_jacobian:
+                database.store(hashed_xu, {self._gradient_name: jac_u})
         else:
             jac_n = self._normalize_grad(jac_u)
 

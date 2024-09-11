@@ -12,6 +12,9 @@
     },
     "reset_iteration_counters": {
       "type": "boolean"
+    },
+    "store_jacobian": {
+      "type": "boolean"
     }
   },
   "$schema": "http://json-schema.org/draft-04/schema",
