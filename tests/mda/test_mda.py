@@ -37,7 +37,7 @@ from scipy.linalg import solve
 
 from gemseo import create_discipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
@@ -267,7 +267,7 @@ def test_convergence_warning(caplog) -> None:
 
 def test_coupling_structure(sellar_disciplines) -> None:
     """Check that an MDA is correctly instantiated from a coupling structure."""
-    coupling_structure = MDOCouplingStructure(sellar_disciplines)
+    coupling_structure = CouplingStructure(sellar_disciplines)
     mda_sellar = MDAGaussSeidel(
         sellar_disciplines, coupling_structure=coupling_structure
     )

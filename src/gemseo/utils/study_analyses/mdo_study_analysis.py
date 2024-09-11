@@ -29,7 +29,7 @@ from typing import ClassVar
 
 from gemseo import create_design_space
 from gemseo import create_scenario
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 
@@ -164,7 +164,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
             An MDO scenario.
         """
         design_space = create_design_space()
-        coupling_variables = set(MDOCouplingStructure(disciplines).all_couplings)
+        coupling_variables = set(CouplingStructure(disciplines).all_couplings)
         design_variables = set(scenario_description[XLSStudyParser.DESIGN_VARIABLES])
         for name in sorted(coupling_variables | design_variables):
             design_space.add_variable(name)

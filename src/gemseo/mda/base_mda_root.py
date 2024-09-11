@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.typing import StrKeyMapping
 
 N_CPUS: Final[int] = cpu_count()
@@ -65,7 +65,7 @@ class BaseMDARoot(BaseMDASolver):
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
         use_lu_fact: bool = False,
-        coupling_structure: MDOCouplingStructure | None = None,
+        coupling_structure: CouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
         linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,

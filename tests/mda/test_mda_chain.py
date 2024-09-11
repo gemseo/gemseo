@@ -28,7 +28,7 @@ from numpy import array
 from numpy import isclose
 
 from gemseo.core.chain import MDOParallelChain
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataError
@@ -244,8 +244,8 @@ def test_no_coupling_jac() -> None:
 
 def test_sub_coupling_structures(sellar_disciplines) -> None:
     """Check that an MDA is correctly instantiated from a coupling structure."""
-    coupling_structure = MDOCouplingStructure(sellar_disciplines)
-    sub_coupling_structures = [MDOCouplingStructure(sellar_disciplines)]
+    coupling_structure = CouplingStructure(sellar_disciplines)
+    sub_coupling_structures = [CouplingStructure(sellar_disciplines)]
     mda_sellar = MDAChain(
         sellar_disciplines,
         coupling_structure=coupling_structure,

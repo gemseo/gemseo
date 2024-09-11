@@ -209,7 +209,7 @@ Object oriented design
 In |g|, the :class:`~gemseo.core.jacobian_assembly.JacobianAssembly` class computes the derivatives of the :ref:`MDAs<mda>`.
 All :ref:`MDA<mda>` classes delegate the coupled derivatives computations to a
 :class:`~gemseo.core.jacobian_assembly.JacobianAssembly` instance.
-The :class:`~gemseo.core.coupling_structure.MDOCouplingStructure` class is responsible for the analysis of the
+The :class:`~gemseo.core.coupling_structure.CouplingStructure` class is responsible for the analysis of the
 dependencies between the :class:`~gemseo.core.discipline.MDODiscipline`'s inputs and outputs, using a graph.
 
 

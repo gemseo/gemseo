@@ -23,7 +23,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.discipline import MDODiscipline
 
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 
 def _replace_strongly_coupled(
-    coupling_structure: MDOCouplingStructure,
+    coupling_structure: CouplingStructure,
 ) -> tuple[list[MDODiscipline], list[MDODiscipline]]:
     """Replace the strongly coupled disciplines by a single one.
 
@@ -84,7 +84,7 @@ def _replace_strongly_coupled(
 
 
 def traverse_add_diff_io_mda(
-    coupling_structure: MDOCouplingStructure,
+    coupling_structure: CouplingStructure,
     inputs: Iterable[str],
     outputs: Iterable[str],
 ) -> DisciplineIOMapping:
@@ -115,7 +115,7 @@ def traverse_add_diff_io_mda(
         coupling_structure
     )
 
-    reduced_coupling_structure = MDOCouplingStructure(all_disc_with_red)
+    reduced_coupling_structure = CouplingStructure(all_disc_with_red)
     diff_ios_merged = traverse_add_diff_io(
         reduced_coupling_structure.graph.graph, inputs, outputs
     )

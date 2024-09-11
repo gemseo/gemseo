@@ -32,7 +32,7 @@ from numpy import ones
 from numpy.random import default_rng
 from scipy.sparse import csr_matrix
 
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives import jacobian_assembly
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
@@ -55,7 +55,7 @@ def assembly() -> JacobianAssembly:
     for discipline in disciplines:
         discipline.linearize(compute_all_jacobians=True)
 
-    return JacobianAssembly(MDOCouplingStructure(disciplines))
+    return JacobianAssembly(CouplingStructure(disciplines))
 
 
 @pytest.fixture(scope="module")
@@ -305,7 +305,7 @@ def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format) -> None:
         matrix_density=0.5,
     )
 
-    mc = MDOCouplingStructure(disciplines)
+    mc = CouplingStructure(disciplines)
     ja = JacobianAssembly(mc)
 
     inputs = {
@@ -338,7 +338,7 @@ def test_compute_newton_step(compute_residuals, size) -> None:
         ])
     else:
         residuals = None
-    assembly = JacobianAssembly(MDOCouplingStructure(disciplines))
+    assembly = JacobianAssembly(CouplingStructure(disciplines))
     couplings = ["a", "b"]
     assembly.compute_sizes([], [], couplings)
 

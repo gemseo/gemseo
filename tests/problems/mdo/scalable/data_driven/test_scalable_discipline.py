@@ -28,7 +28,7 @@ import numpy as np
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -183,7 +183,7 @@ class ScalableProblem(unittest.TestCase):
         # add target coupling variables for IDF
         if formulation == "IDFFormulation":
             scalable_disciplines = ScalableProblem.scalable_disciplines
-            coupling_structure = MDOCouplingStructure(scalable_disciplines)
+            coupling_structure = CouplingStructure(scalable_disciplines)
             # add an optimization variable for each coupling variable
             for coupling in coupling_structure.strong_couplings:
                 value = 0.5 * np.ones(ScalableProblem.sizes[coupling])

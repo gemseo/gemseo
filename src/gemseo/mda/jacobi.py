@@ -34,8 +34,8 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.coupling_structure import DependencyGraph
-    from gemseo.core.coupling_structure import MDOCouplingStructure
     from gemseo.core.execution_sequence import LoopExecSequence
     from gemseo.typing import StrKeyMapping
 
@@ -90,7 +90,7 @@ class MDAJacobi(BaseMDASolver):
         warm_start: bool = False,
         use_lu_fact: bool = False,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        coupling_structure: MDOCouplingStructure | None = None,
+        coupling_structure: CouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
         linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,

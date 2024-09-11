@@ -63,7 +63,7 @@ from gemseo import create_scenario
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.factory import MDAFactory
 from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
@@ -310,7 +310,7 @@ class ScalableProblem:
         Returns:
             A scenario using a bi-level formulation.
         """
-        cpl_structure = MDOCouplingStructure(disciplines)
+        cpl_structure = CouplingStructure(disciplines)
         st_cpl_disciplines = cpl_structure.strongly_coupled_disciplines
         wk_cpl_disciplines = cpl_structure.weakly_coupled_disciplines()
         obj = self.objective_function
@@ -386,7 +386,7 @@ class ScalableProblem:
             )
 
         if formulation == "IDF":
-            coupling_structure = MDOCouplingStructure(disciplines)
+            coupling_structure = CouplingStructure(disciplines)
             all_couplings = set(coupling_structure.all_couplings)
             for name in all_couplings:
                 size = self.scaled_sizes[name]

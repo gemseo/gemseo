@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline_data import DisciplineData
     from gemseo.typing import StrKeyMapping
 
@@ -90,7 +90,7 @@ class MDANewtonRaphson(BaseMDARoot):
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
         use_lu_fact: bool = False,
-        coupling_structure: MDOCouplingStructure | None = None,
+        coupling_structure: CouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         newton_linear_solver_name: NewtonLinearSolver = NewtonLinearSolver.DEFAULT,
