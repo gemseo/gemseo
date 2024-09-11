@@ -1,0 +1,1 @@
+API change: ``gemseo.utils.linear_solver.LinearSolver`` has been removed; use ``gemseo.algos.linear_solvers`` instead.
