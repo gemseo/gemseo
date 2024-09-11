@@ -153,6 +153,7 @@ def test_common_options() -> None:
         BaseDriverLibrary._ROUND_INTS_OPTION,
         BaseDriverLibrary._NORMALIZE_DESIGN_SPACE_OPTION,
         BaseDriverLibrary._USE_DATABASE_OPTION,
+        BaseDriverLibrary._STORE_JACOBIAN_OPTION,
         "reset_iteration_counters",
     }
     assert not driver._option_grammar.required_names

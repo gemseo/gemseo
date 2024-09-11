@@ -130,6 +130,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
     _MAX_TIME: Final[str] = "max_time"
     _NORMALIZE_DESIGN_SPACE_OPTION: Final[str] = "normalize_design_space"
     _ROUND_INTS_OPTION: Final[str] = "round_ints"
+    _STORE_JACOBIAN_OPTION: Final[str] = "store_jacobian"
     _USE_DATABASE_OPTION: Final[str] = "use_database"
 
     _NORMALIZE_DS: ClassVar[bool] = True
@@ -354,6 +355,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         eval_obs_jac: bool = False,
         skip_int_check: bool = False,
         max_design_space_dimension_to_log: int = 40,
+        store_jacobian: bool = True,
         **settings: DriverLibraryOptionType,
     ) -> OptimizationResult:
         """
@@ -365,6 +367,8 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 to be logged.
                 If this number is higher than the dimension of the design space
                 then the design space will not be logged.
+            store_jacobian: Whether to store the Jacobian matrices in the database.
+                This argument is ignored when the ``use_database`` option is ``False``.
         """  # noqa: D205, D212
         self.problem = problem
         self._check_algorithm(problem)
@@ -390,6 +394,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             round_ints=options.get(self._ROUND_INTS_OPTION, True),
             eval_obs_jac=eval_obs_jac,
             support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
+            store_jacobian=store_jacobian,
         )
         # A database contains both shared listeners
         # and listeners specific to a BaseDriverLibrary instance.
