@@ -32,6 +32,8 @@ graphviz==0.16
     # via gemseo (pyproject.toml)
 h5py==3.0.0
     # via gemseo (pyproject.toml)
+importlib-metadata==3.6.0
+    # via gemseo (pyproject.toml)
 iniconfig==2.0.0
     # via pytest
 jdcal==1.4.1
@@ -155,3 +157,5 @@ xdsmjs==1.0.0
     # via gemseo (pyproject.toml)
 xxhash==3.0.0
     # via gemseo (pyproject.toml)
+zipp==3.20.1
+    # via importlib-metadata

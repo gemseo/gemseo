@@ -27,7 +27,6 @@ import os
 import pkgutil
 import sys
 from abc import abstractmethod
-from importlib import metadata
 from inspect import isabstract
 from typing import TYPE_CHECKING
 from typing import Any
@@ -39,6 +38,7 @@ from typing_extensions import NamedTuple
 
 from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.base_multiton import BaseABCMultiton
+from gemseo.utils.compatibility.python import entry_points
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
@@ -164,7 +164,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         sys_path.pop(0)
 
         # Import from the setuptools entry points.
-        for entry_point in metadata.entry_points().get(self.PLUGIN_ENTRY_POINT, []):
+        for entry_point in entry_points(group=self.PLUGIN_ENTRY_POINT):
             module_name = entry_point.value
             self.__import_modules_from(module_name)
             module_names += [module_name]

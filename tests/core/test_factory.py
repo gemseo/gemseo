@@ -24,12 +24,12 @@ import re
 import shutil
 import subprocess
 import sys
-from importlib import metadata
 from pathlib import Path
 
 import pytest
 
 from gemseo.caches.factory import CacheFactory
+from gemseo.core import base_factory
 from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.utils.base_multiton import BaseABCMultiton
@@ -181,10 +181,10 @@ def test_wanted_classes_with_entry_points(monkeypatch, reset_factory) -> None:
         name = "dummy-name"
         value = "dummy_formulations"
 
-    def entry_points():
-        return {BaseFactory.PLUGIN_ENTRY_POINT: [DummyEntryPoint]}
+    def entry_points(group):
+        return [DummyEntryPoint]
 
-    monkeypatch.setattr(metadata, "entry_points", entry_points)
+    monkeypatch.setattr(base_factory, "entry_points", entry_points)
     monkeypatch.syspath_prepend(DATA / "gemseo_dummy_plugins")
 
     # There could be more classes available with the plugins

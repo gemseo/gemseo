@@ -80,13 +80,13 @@ First time setup:
 
 .. code-block:: console
 
-  tox -e py39 --develop
+  tox run -e py39
 
 * Run the checks:
 
 .. code-block:: console
 
-  tox -e check
+  tox run -e check
 
 * `configure PyCharm`_
 
@@ -160,7 +160,7 @@ Create and execute the environment named *env* and run its commands with:
 
 .. code-block:: console
 
-   tox -e env
+   tox run -e env
 
 The first invocation of this command line may take some time to proceed,
 further invocations will be faster because `tox`_ shall not create a new
@@ -172,13 +172,13 @@ You may run (sequentially) more than one environment with:
 
 .. code-block:: console
 
-   tox -e env,env2,env3
+   tox run -e env,env2,env3
 
 Recreate an existing environment with:
 
 .. code-block:: console
 
-   tox -e env -r
+   tox run -e env -r
 
 This may be necessary
 if an environment is broken
@@ -220,7 +220,7 @@ for example:
 
 .. code-block:: console
 
-   tox -e env -- ARG1 --opt1
+   tox run -e env -- ARG1 --opt1
 
 Not all the environments allow this feature,
 see the specific topics below for more information.
@@ -235,7 +235,7 @@ Create a development environment:
 
 .. code-block:: console
 
-  tox -e py39 --develop
+  tox run -e py39
 
 This will create an environment based on Python 3.9 with
 |g| installed in `editable mode`_,
@@ -259,7 +259,7 @@ A git commit shall have no checkers violations.
 All these tools are used:
 
 * either automatically by the git hooks when creating a commit,
-* or manually by running :command:`tox -e check`.
+* or manually by running :command:`tox run -e check`.
 
 Coding guidelines
 +++++++++++++++++
@@ -652,7 +652,7 @@ run the tests with:
 
 .. code-block:: console
 
-   tox -e py39
+   tox run -e py39
 
 Replace py39 by py310 for testing with Python 3.10.
 With `tox`_,
@@ -661,13 +661,13 @@ for instance:
 
 .. code-block:: console
 
-   tox -e py39 -- --last-failed --step-wise
+   tox run -e py39 -- --last-failed --step-wise
 
 Run the tests for several Python versions with for instance (on Linux):
 
 .. code-block:: console
 
-   tox -e py39,py310,py311
+   tox run -e py39,py310,py311
 
 Tests coverage
 ++++++++++++++
@@ -677,7 +677,7 @@ get the coverage information with:
 
 .. code-block:: console
 
-   tox -e py39-coverage
+   tox run -e py39-coverage
 
 See `pytest-cov`_ for more information.
 
@@ -695,14 +695,14 @@ On Linux, generate the documentation with:
 
 .. code-block:: console
 
-   tox -e doc
+   tox run -e doc
 
 Pass options to ``sphinx-build`` after ``--``,
 for instance:
 
 .. code-block:: console
 
-   tox -e doc -- -vv -j2
+   tox run -e doc -- -vv -j2
 
 Writing guidelines
 ++++++++++++++++++
@@ -765,7 +765,7 @@ Check that the examples run correctly with:
 
 .. code::
 
-    tox -e py39 -- tests/test_doc_examples.py -m doc_examples
+    tox run -e py39 -- tests/test_doc_examples.py -m doc_examples
 
 Versioning
 ----------

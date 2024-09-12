@@ -22,11 +22,13 @@ from typing import Final
 PYTHON_VERSION: Final[tuple[int, int, int]] = version_info
 
 if PYTHON_VERSION < (3, 10):  # pragma: >=3.10 no cover
+    from importlib_metadata import entry_points  # noqa: F401
     from typing_extensions import ParamSpecArgs  # noqa: F401
     from typing_extensions import ParamSpecKwargs  # noqa: F401
 
     EllipsisType = type(Ellipsis)
 else:  # pragma: <3.10 no cover
+    from importlib.metadata import entry_points  # noqa: F401
     from types import EllipsisType
     from typing import ParamSpecArgs  # noqa: F401
     from typing import ParamSpecKwargs  # noqa: F401
