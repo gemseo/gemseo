@@ -24,7 +24,7 @@ docutils==0.21.2
     # via readme-renderer
 idna==3.8
     # via requests
-importlib-metadata==8.4.0
+importlib-metadata==8.5.0
     # via
     #   keyring
     #   twine

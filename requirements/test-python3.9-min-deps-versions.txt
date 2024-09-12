@@ -111,7 +111,7 @@ python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
-pytz==2024.1
+pytz==2024.2
     # via pandas
 pyxdsm==2.1.0
     # via gemseo (pyproject.toml)

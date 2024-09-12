@@ -41,7 +41,7 @@ idna==3.8
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==8.4.0
+importlib-metadata==8.5.0
     # via
     #   sphinx
     #   sphinxcontrib-bibtex
@@ -139,7 +139,7 @@ python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
-pytz==2024.1
+pytz==2024.2
     # via pandas
 pyxdsm==2.3.0
     # via gemseo (pyproject.toml)
