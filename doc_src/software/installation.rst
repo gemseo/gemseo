@@ -14,7 +14,7 @@
 
 .. _pytest: https://docs.pytest.org
 .. _Anaconda: https://docs.anaconda.com/anaconda/install
-.. _venv: https://docs.python.org/3.9/library/venv.html
+.. _venv: https://docs.python.org/3/library/venv.html
 .. _pip: https://pip.pypa.io/en/stable/getting-started/
 .. _graphviz: https://graphviz.org/download
 
@@ -27,8 +27,6 @@ You may install the core or the full features set of |g|.
 See :ref:`dependencies` for more information.
 There are different ways to install |g|, they are described below.
 
-.. _python-env:
-
 .. _environment:
 
 Requirements
@@ -40,7 +38,7 @@ We may not support newer version of Python when a dependency of |g|
 does not provide support for it.
 We may support an old version of Python from its end-of-life date
 until a major release of |g|.
-The currently supported versions of Python are 3.9, 3.10 and 3.11.
+The currently supported versions of Python are 3.9, 3.10, 3.11 and 3.12.
 
 To install |g|,
 you should use a Python environment.
@@ -82,7 +80,7 @@ in an anaconda environment named *gemseo* for Python 3.9 with
 
     conda create -c conda-forge -n gemseo python=3.9 gemseo
 
-You can change the Python version to 3.10 or 3.11.
+You can change the Python version to 3.10, 3.11 or 3.12.
 
 Install without internet access
 *******************************

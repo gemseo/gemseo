@@ -1,4 +1,4 @@
-ARG FEDORA_VERSION=36
+ARG FEDORA_VERSION=39
 
 FROM fedora:$FEDORA_VERSION
 
@@ -9,13 +9,16 @@ RUN  dnf -y update \
                     python39 \
                     python310 \
                     python311 \
+                    python312 \
                     git \
                     graphviz \
                     jq \
-                    https://gitlab.com/gitlab-org/cli/-/releases/v1.37.0/downloads/glab_1.37.0_Linux_x86_64.rpm \
-  && dnf clean all
+                    https://gitlab.com/gitlab-org/cli/-/releases/v1.46.1/downloads/glab_1.46.1_Linux_x86_64.rpm \
+  && dnf clean all \
+  && rm -rf /var/cache/dnf
 
-RUN  pipx install 'tox<5'
+RUN  pipx install 'tox<5' --python python3.12 \
+  && pipx inject tox tox-uv
 
 # For pipx installed tools,
 # explicitly update PATH because gitlab runner run the container in a way
