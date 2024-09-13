@@ -36,10 +36,11 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import MutableMapping
     from collections.abc import Sequence
-    from numbers import Number
 
     from gemseo.core.discipline import MDODiscipline
+    from gemseo.typing import JacobianData
     from gemseo.typing import NumberArray
+    from gemseo.typing import StrKeyMapping
 
 
 class MDODisciplineAdapter(MDOFunction):
@@ -167,8 +168,11 @@ class MDODisciplineAdapter(MDOFunction):
         # TODO: document what None means. We could use 0 instead.
         return None
 
-    def __create_output_names_to_slices(self) -> int:
+    def __create_output_names_to_slices(self, jacobians: JacobianData) -> int:
         """Compute the indices of the input variables in the Jacobian array.
+
+        Args:
+            jacobians: The Jacobians data used to compute the slices.
 
         Returns:
             The size of the inputs.
@@ -177,14 +181,13 @@ class MDODisciplineAdapter(MDOFunction):
         start = 0
         output_size = 0
         jac_row_id = self.differentiated_input_names_substitute[0]
-        jac = self.__discipline.jac
         for name in self.__output_names:
-            output_size += jac[name][jac_row_id].shape[0]
+            output_size += jacobians[name][jac_row_id].shape[0]
             output_names_to_slices[name] = slice(start, output_size)
             start = output_size
         return output_size
 
-    def _func_to_wrap(self, x_vect: NumberArray) -> ndarray | Number:
+    def _func_to_wrap(self, x_vect: NumberArray) -> complex | NumberArray:
         """Compute an output vector from an input one.
 
         Args:
@@ -194,17 +197,33 @@ class MDODisciplineAdapter(MDOFunction):
             The output vector or a scalar if the vector has only one component.
         """
         self.__discipline.reset_statuses_for_run()
-        output_data = (
+
+        input_data = self.__create_discipline_input_data(x_vect)
+        output_data = self.__discipline.execute(input_data)
+
+        return self._convert_output_data_to_array(output_data)
+
+    def _convert_output_data_to_array(
+        self, output_data: StrKeyMapping
+    ) -> complex | NumberArray:
+        """Convert the discipline's output data to array/scalar.
+
+        Args:
+            output_data: The discipline's output data.
+
+        Returns:
+            The vector or scalar of output data.
+        """
+        output_vector = (
             self.__discipline.output_grammar.data_converter.convert_data_to_array(
-                self.__output_names,
-                self.__discipline.execute(self.__create_discipline_input_data(x_vect)),
+                self.__output_names, output_data
             )
         )
-        if output_data.size == 1:
-            # The function is scalar.
-            return output_data[0]
 
-        return output_data
+        if output_vector.size == 1:  # The function is scalar.
+            return output_vector[0]
+
+        return output_vector
 
     def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the Jacobian value from an input vector.
@@ -215,19 +234,32 @@ class MDODisciplineAdapter(MDOFunction):
         Returns:
             The Jacobian value.
         """
-        self.__discipline.linearize(self.__create_discipline_input_data(x_vect))
+        input_data = self.__create_discipline_input_data(x_vect)
+        jacobians = self.__discipline.linearize(input_data)
 
+        return self._convert_jacobian_to_array(jacobians)
+
+    def _convert_jacobian_to_array(self, jacobians: JacobianData) -> NumberArray:
+        """Convert the discipline's Jacobians to array.
+
+        Args:
+            jacobians: The discipline's Jacobians data.
+
+        Returns:
+            The aggregated Jacobian as a NumPy array.
+        """
         if len(self.__jacobian) == 0:
-            output_size = self.__create_output_names_to_slices()
+            output_size = self.__create_output_names_to_slices(jacobians)
             if output_size == 1:
                 shape = self.__differentiated_input_size
             else:
                 shape = (output_size, self.__differentiated_input_size)
+
             self.__jacobian = empty(shape)
 
         if self.__jacobian.ndim == 1 or self.__jacobian.shape[0] == 1:
             output_name = self.__output_names[0]
-            jac_output = self.__discipline.jac[output_name]
+            jac_output = jacobians[output_name]
             for input_name in self.differentiated_input_names_substitute:
                 input_slice = self.__differentiated_input_names_to_slices[input_name]
                 jac = jac_output[input_name]
@@ -243,7 +275,7 @@ class MDODisciplineAdapter(MDOFunction):
         else:
             for output_name in self.__output_names:
                 output_slice = self.__output_names_to_slices[output_name]
-                jac_output = self.__discipline.jac[output_name]
+                jac_output = jacobians[output_name]
                 for input_name in self.differentiated_input_names_substitute:
                     input_slice = self.__differentiated_input_names_to_slices[
                         input_name

@@ -46,6 +46,7 @@ from strenum import StrEnum
 
 from gemseo.caches.factory import CacheFactory
 from gemseo.caches.simple_cache import SimpleCache
+from gemseo.core._discipline_class_injector import ClassInjector
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.grammars.factory import GrammarFactory
@@ -85,7 +86,7 @@ def default_dict_factory() -> dict:
     return defaultdict(None)
 
 
-class MDODiscipline(Serializable):
+class MDODiscipline(Serializable, metaclass=ClassInjector):
     """A software integrated in the workflow.
 
     To be used,
@@ -980,7 +981,7 @@ class MDODiscipline(Serializable):
         # Load the default_inputs if the user did not provide all required data
         input_data = self._filter_inputs(input_data)
 
-        cached_local_data = self.__get_cache_data(input_data)
+        cached_local_data = self._get_cache_data(input_data)
         if cached_local_data is not None:
             return cached_local_data
 
@@ -1041,7 +1042,7 @@ class MDODiscipline(Serializable):
 
         return self._local_data
 
-    def __get_cache_data(self, input_data: DisciplineData) -> DisciplineData | None:
+    def _get_cache_data(self, input_data: DisciplineData) -> DisciplineData | None:
         """Return the cached local data if cached.
 
         Args:
@@ -1067,7 +1068,7 @@ class MDODiscipline(Serializable):
             for name, value in out_cached.items():
                 out_cached[name] = to_value(name, value)
 
-        self.__update_local_data_from_cache(input_data, out_cached, out_jac)
+        self._update_local_data_from_cache(input_data, out_cached, out_jac)
 
         return self._local_data
 
@@ -1100,7 +1101,7 @@ class MDODiscipline(Serializable):
         if self._is_linearized:
             self.cache.cache_jacobian(input_data, self.jac)
 
-    def __update_local_data_from_cache(
+    def _update_local_data_from_cache(
         self,
         input_data: DisciplineData,
         out_cached: DisciplineData,

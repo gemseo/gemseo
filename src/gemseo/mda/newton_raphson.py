@@ -153,9 +153,9 @@ class MDANewtonRaphson(BaseMDARoot):
             )
             raise ValueError(msg)
 
-        self.__set_differentiated_ios()
+        self._set_differentiated_ios()
 
-    def __set_differentiated_ios(self) -> None:
+    def _set_differentiated_ios(self) -> None:
         """Set the differentiated inputs and outputs for the Newton algorithm.
 
         Also ensures that :attr:`.JacobianAssembly.sizes` contains the sizes of all

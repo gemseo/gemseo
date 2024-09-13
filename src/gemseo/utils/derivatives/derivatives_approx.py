@@ -30,9 +30,13 @@ from contextlib import contextmanager
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from scipy.sparse import hstack as sparse_hstack
 
+from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
+    MDODisciplineAdapterGenerator,
+)
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -74,6 +78,11 @@ class DisciplineJacApprox:
     approximator: BaseGradientApproximator | None
     """The gradient approximation method."""
 
+    generator_class: ClassVar[type[MDODisciplineAdapterGenerator]] = (
+        MDODisciplineAdapterGenerator
+    )
+    """The generator class used to create ``MDOFunction`` from an ``MDODiscipline``."""
+
     def __init__(
         self,
         discipline: MDODiscipline,
@@ -107,14 +116,10 @@ class DisciplineJacApprox:
             wait_time_between_fork: The time waited between two forks
                 of the process / thread.
         """  # noqa:D205 D212 D415
-        from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
-            MDODisciplineAdapterGenerator,
-        )
-
         self.discipline = discipline
         self.approx_method = approx_method
         self.step = step
-        self.generator = MDODisciplineAdapterGenerator(discipline)
+        self.generator = self.generator_class(discipline)
         self.func = None
         self.approximator = None
         self.auto_steps = {}

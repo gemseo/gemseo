@@ -254,7 +254,7 @@ class JacobianAssembly:
         self.coupled_system = CoupledSystem()
         self.__linear_solver_factory = LinearSolverLibraryFactory(use_cache=True)
 
-    def __check_inputs(
+    def _check_inputs(
         self,
         functions: Iterable[str],
         variables: Iterable[str],
@@ -573,7 +573,7 @@ class JacobianAssembly:
         msg = f"Bad jacobian_type: {jacobian_type}"
         raise ValueError(msg)
 
-    def __compute_diff_ios_and_couplings(
+    def _compute_diff_ios_and_couplings(
         self,
         variables: Iterable[str],
         functions: Iterable[str],
@@ -671,12 +671,12 @@ class JacobianAssembly:
         if not functions:
             return defaultdict(default_dict_factory)
 
-        self.__check_inputs(functions, variables, couplings, matrix_type, use_lu_fact)
+        self._check_inputs(functions, variables, couplings, matrix_type, use_lu_fact)
 
         # Retrieve states variables and local residuals if provided
         states = list(residual_variables.values()) if residual_variables else []
 
-        couplings_minimal = self.__compute_diff_ios_and_couplings(
+        couplings_minimal = self._compute_diff_ios_and_couplings(
             variables,
             functions,
             states,
