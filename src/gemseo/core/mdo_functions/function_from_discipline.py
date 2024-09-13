@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Callable
+from typing import ClassVar
 
 from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
@@ -88,6 +89,11 @@ class FunctionFromDiscipline(MDOFunction):
 
     __discipline_adapter: MDODisciplineAdapter
     """The discipline adapter."""
+
+    generator_class: ClassVar[type[MDODisciplineAdapterGenerator]] = (
+        MDODisciplineAdapterGenerator
+    )
+    """The class used to generator the :class:`MDODisciplineAdapter`."""
 
     def __init__(
         self,
@@ -200,8 +206,9 @@ class FunctionFromDiscipline(MDOFunction):
 
         return self.__input_mask
 
-    @staticmethod
+    @classmethod
     def __get_discipline_adapter_generator(
+        cls,
         formulation: BaseFormulation,
         output_names: Iterable[str],
         discipline: MDODiscipline | None,
@@ -227,7 +234,7 @@ class FunctionFromDiscipline(MDOFunction):
             ValueError: If no discipline is found.
         """
         if discipline is not None:
-            return MDODisciplineAdapterGenerator(discipline, formulation.variable_sizes)
+            return cls.generator_class(discipline, formulation.variable_sizes)
 
         for discipline in (
             formulation.get_top_level_disc()
@@ -235,9 +242,7 @@ class FunctionFromDiscipline(MDOFunction):
             else formulation.disciplines
         ):
             if discipline.is_all_outputs_existing(output_names):
-                return MDODisciplineAdapterGenerator(
-                    discipline, formulation.variable_sizes
-                )
+                return cls.generator_class(discipline, formulation.variable_sizes)
 
         msg = (
             f"No discipline known by formulation {formulation.__class__.__name__}"

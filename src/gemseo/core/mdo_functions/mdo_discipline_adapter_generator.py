@@ -47,7 +47,7 @@ class MDODisciplineAdapterGenerator:
     discipline: MDODiscipline
     """The discipline from which to generate discipline adapters."""
 
-    __names_to_sizes: MutableMapping[str, int]
+    _names_to_sizes: MutableMapping[str, int]
     """The names of the inputs bound to their sizes, if known."""
 
     def __init__(
@@ -63,7 +63,7 @@ class MDODisciplineAdapterGenerator:
                 determine them from the default inputs and local data of the discipline.
         """  # noqa: D205, D212, D415
         self.discipline = discipline
-        self.__names_to_sizes = names_to_sizes or {}
+        self._names_to_sizes = names_to_sizes or {}
 
     def get_function(
         self,
@@ -102,18 +102,18 @@ class MDODisciplineAdapterGenerator:
                 a differentiated input name is not a discipline input name
                 or an output name is not a discipline output name.
         """
-        input_names = self.__get_names(
+        input_names = self._get_names(
             "inputs",
             input_names,
             self.discipline.input_grammar,
         )
-        output_names = self.__get_names(
+        output_names = self._get_names(
             "outputs",
             output_names,
             self.discipline.output_grammar,
         )
         if differentiated_input_names_substitute:
-            self.__get_names(
+            self._get_names(
                 "inputs",
                 differentiated_input_names_substitute,
                 self.discipline.input_grammar,
@@ -132,11 +132,11 @@ class MDODisciplineAdapterGenerator:
             output_names,
             default_inputs or {},
             self.discipline,
-            self.__names_to_sizes,
+            self._names_to_sizes,
             differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
 
-    def __get_names(
+    def _get_names(
         self,
         group_name: str,
         names: Sequence[str],
