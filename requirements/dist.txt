@@ -84,11 +84,11 @@ typing-extensions==4.12.2
     # via
     #   pydantic
     #   pydantic-core
-urllib3==2.2.2
+urllib3==2.2.3
     # via
     #   requests
     #   twine
 wheel-filename==1.4.1
     # via check-wheel-contents
-zipp==3.20.1
+zipp==3.20.2
     # via importlib-metadata
