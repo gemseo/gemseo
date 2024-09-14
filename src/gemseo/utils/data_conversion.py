@@ -244,8 +244,7 @@ def nest_flat_dict(
     """
     nested_dict = {}
     for key, value in flat_dict.items():
-        if key.startswith(prefix):
-            key = key[len(prefix) :]
+        key = key.removeprefix(prefix)
         __nest_flat_mapping(nested_dict, key, value, separator)
 
     return nested_dict
