@@ -37,7 +37,7 @@ graphviz==0.20.3
     # via gemseo (pyproject.toml)
 h5py==3.11.0
     # via gemseo (pyproject.toml)
-idna==3.8
+idna==3.9
     # via requests
 imagesize==1.4.1
     # via sphinx

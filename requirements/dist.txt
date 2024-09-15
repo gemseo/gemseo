@@ -20,7 +20,7 @@ cryptography==43.0.1
     # via secretstorage
 docutils==0.21.2
     # via readme-renderer
-idna==3.8
+idna==3.9
     # via requests
 importlib-metadata==8.5.0
     # via twine
