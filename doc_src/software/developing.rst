@@ -30,11 +30,29 @@
 .. _pyperf: https://pyperf.readthedocs.io
 .. _profiler: https://docs.python.org/3/library/profile.html
 .. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
+.. _commitizen: https://commitizen-tools.github.io/commitizen
+.. _conventional commits: https://www.conventionalcommits.org
+.. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
 .. _develop documentation: https://gemseo.readthedocs.io/en/develop/index.html
+.. _editable mode: https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs
+.. _gitflow: https://nvie.com/posts/a-successful-git-branching-model
+.. _gitlab: https://gitlab.com/gemseo/dev/gemseo
 .. _graphviz: https://graphviz.org/download
-.. _PyCharm: https://www.jetbrains.com/pycharm
+.. _mypy: http://mypy-lang.org
+.. _pep8: https://pep8.org
 .. _pre-commit: https://pre-commit.com
-.. _pipx: https://pypa.github.io/pipx
+.. _profiler: https://docs.python.org/3/library/profile.html
+.. _PyCharm: https://www.jetbrains.com/pycharm
+.. _pyperf: https://pyperf.readthedocs.io
+.. _pytest: https://docs.pytest.org
+.. _pytest-cov: https://pytest-cov.readthedocs.io
+.. _ruff: https://docs.astral.sh/ruff
+.. _semantic line feeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
+.. _semantic versioning: https://semver.org
+.. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html?highlight=Sequence#standard-duck-types
+.. _sphinx: https://www.sphinx-doc.org
+.. _tox: https://tox.readthedocs.io
+.. _uv: https://docs.astral.sh/uv/getting-started/installation/#standalone-installer
 .. _vscode: https://code.visualstudio.com/
 
 .. _dev:
@@ -129,21 +147,13 @@ Requirements
 Make sure Python 3 is installed,
 preferably 3.9.
 
-Install `pipx`_ first:
+First install `uv`_,
+then install `tox`_ and `pre-commit`_:
 
 .. code-block:: console
 
-   python -m pip install --user pipx
-   python -m pipx ensurepath
-
-You may need to log out and back in for the system path update to be taken into account.
-
-Then install `tox`_ and `pre-commit`_:
-
-.. code-block:: console
-
-   pipx install tox
-   pipx install pre-commit
+   uv tool install tox --with tox-uv
+   uv tool install pre-commit
 
 Finally,
 make sure that `graphviz`_ is installed
@@ -173,18 +183,6 @@ You may run (sequentially) more than one environment with:
 .. code-block:: console
 
    tox run -e env,env2,env3
-
-Recreate an existing environment with:
-
-.. code-block:: console
-
-   tox run -e env -r
-
-This may be necessary
-if an environment is broken
-or if `tox`_ cannot figure out
-that a dependency has been updated
-(for instance with dependencies defined by a git branch).
 
 Activate the `tox`_ environment named *env* with:
 
