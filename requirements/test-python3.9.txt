@@ -22,6 +22,8 @@ docstring-inheritance==2.2.1
     # via gemseo (pyproject.toml)
 et-xmlfile==1.1.0
     # via openpyxl
+eval-type-backport==0.2.0
+    # via gemseo (pyproject.toml)
 exceptiongroup==1.2.2
     # via pytest
 execnet==2.1.1

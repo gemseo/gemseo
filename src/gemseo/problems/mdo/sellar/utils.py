@@ -14,8 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Utils for the customizable Sellar MDO problem."""
 
-from collections.abc import Iterable
+from __future__ import annotations
+
 from contextlib import contextmanager
+from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import array
@@ -27,7 +29,6 @@ from numpy import zeros
 
 from gemseo.core.data_converters.json import JSONGrammarDataConverter
 from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.mda.base_mda import BaseMDA
 from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.variables import ALPHA
 from gemseo.problems.mdo.sellar.variables import BETA
@@ -37,7 +38,12 @@ from gemseo.problems.mdo.sellar.variables import X_2
 from gemseo.problems.mdo.sellar.variables import X_SHARED
 from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.problems.mdo.sellar.variables import Y_2
-from gemseo.typing import RealArray
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.mda.base_mda import BaseMDA
+    from gemseo.typing import RealArray
 
 
 def get_initial_data(names: Iterable[str] = (), n: int = 1) -> dict[str, RealArray]:

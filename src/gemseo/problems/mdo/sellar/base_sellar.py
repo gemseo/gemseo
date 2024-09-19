@@ -14,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A base class for the disciplines of the customizable Sellar MDO problem."""
 
+from __future__ import annotations
+
 from typing import ClassVar
 
 from gemseo.core.discipline import MDODiscipline

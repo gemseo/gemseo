@@ -14,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Tests for Observables."""
 
+from __future__ import annotations
+
 import logging
 
 from gemseo.core.mdo_functions.collections.functions import Functions

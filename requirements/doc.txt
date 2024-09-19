@@ -27,6 +27,8 @@ docutils==0.21.2
     #   sphinxcontrib-bibtex
 et-xmlfile==1.1.0
     # via openpyxl
+eval-type-backport==0.2.0
+    # via gemseo (pyproject.toml)
 fastjsonschema==2.20.0
     # via gemseo (pyproject.toml)
 fonttools==4.53.1

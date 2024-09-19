@@ -18,6 +18,8 @@ An element-wise metric applies a metric on each element of two collections of th
 size.
 """
 
+from __future__ import annotations
+
 from collections.abc import Iterable
 from itertools import starmap
 from numbers import Number

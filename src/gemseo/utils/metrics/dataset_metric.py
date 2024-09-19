@@ -14,7 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A metric for comparing :class:`.Dataset` objects row-wisely."""
 
+from __future__ import annotations
+
 import itertools
+from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import vstack
@@ -24,7 +27,9 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.dataset import IndexType
 from gemseo.datasets.dataset import StrColumnType
 from gemseo.utils.metrics.base_composite_metric import BaseCompositeMetric
-from gemseo.utils.metrics.base_metric import BaseMetric
+
+if TYPE_CHECKING:
+    from gemseo.utils.metrics.base_metric import BaseMetric
 
 
 class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):

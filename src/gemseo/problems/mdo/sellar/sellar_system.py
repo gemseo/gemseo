@@ -19,7 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The system discipline of the customizable Sellar MDO problem."""
 
-from collections.abc import Iterable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from numpy import array
@@ -42,7 +44,11 @@ from gemseo.problems.mdo.sellar.variables import X_2
 from gemseo.problems.mdo.sellar.variables import X_SHARED
 from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.problems.mdo.sellar.variables import Y_2
-from gemseo.typing import RealArray
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.typing import RealArray
 
 
 class SellarSystem(BaseSellar):

@@ -35,6 +35,10 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import DataType
+    from gemseo.typing import RealArray
+
 
 class BaseRandomProcessRegressor(BaseRegressor):
     """A base class for regressors based on a random process."""

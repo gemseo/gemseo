@@ -14,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Tests for the Viennet analytical problem."""
 
+from __future__ import annotations
+
 from numpy import array
 
 from gemseo.problems.multiobjective_optimization.viennet import Viennet

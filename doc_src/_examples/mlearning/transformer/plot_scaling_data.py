@@ -18,6 +18,8 @@ Scaling
 =======
 """
 
+from __future__ import annotations
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.optimization_problem import OptimizationProblem
