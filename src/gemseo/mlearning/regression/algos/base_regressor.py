@@ -57,8 +57,8 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         self,
         data: IODataset,
         transformer: TransformerType = BaseMLSupervisedAlgo.IDENTITY,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         **parameters: MLAlgoParameterType,
     ) -> None:
         super().__init__(
@@ -89,7 +89,7 @@ class BaseRegressor(BaseMLSupervisedAlgo):
     def predict_jacobian(
         self,
         input_data: DataType,
-    ) -> NoReturn:
+    ) -> DataType:
         """Predict the Jacobians of the regression model at input_data.
 
         The user can specify these input data either as a NumPy array,

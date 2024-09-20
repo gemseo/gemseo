@@ -138,10 +138,10 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
         self,
         data: IODataset,
         transformer: TransformerType = BaseRandomProcessRegressor.IDENTITY,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         kernel: Kernel | None = None,
-        bounds: __Bounds | Mapping[str, __Bounds] | None = None,
+        bounds: __Bounds | Mapping[str, __Bounds] = (),
         alpha: float | RealArray = 1e-10,
         optimizer: str | Callable = "fmin_l_bfgs_b",
         n_restarts_optimizer: int = 10,
@@ -155,7 +155,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
                 when ``kernel`` is ``None``.
                 Either a unique lower-upper pair common to all the inputs
                 or lower-upper pairs for some of them.
-                When ``bounds`` is ``None`` or when an input has no pair,
+                When ``bounds`` is empty or when an input has no pair,
                 the lower bound is 0.01 and the upper bound is 100.
             alpha: The nugget effect to regularize the model.
             optimizer: The optimization algorithm to find the parameter length scales.
@@ -207,7 +207,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
 
     def __compute_parameter_length_scale_bounds(
         self,
-        bounds: __Bounds | Mapping[str, __Bounds] | None,
+        bounds: __Bounds | Mapping[str, __Bounds],
     ) -> list[tuple[float, float]]:
         """Return the lower and upper bounds for the parameter length scales.
 
@@ -222,7 +222,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
             The lower and upper bounds of the parameter length scales.
         """
         dimension = self._reduced_input_dimension
-        if bounds is None:
+        if not bounds:
             return [self.__DEFAULT_BOUNDS] * dimension
 
         if isinstance(bounds, tuple):
@@ -267,10 +267,12 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
         return output_data
 
     def compute_samples(  # noqa: D102
-        self, input_data: RealArray, n_samples: int, seed: int = SEED
-    ) -> tuple[RealArray, ...]:
-        samples = self.algo.sample_y(input_data, n_samples=n_samples, random_state=seed)
+        self, input_data: RealArray, n_samples: int, seed: int | None = None
+    ) -> list[RealArray]:
+        samples = self.algo.sample_y(
+            input_data, n_samples=n_samples, random_state=self._seeder.get_seed(seed)
+        )
         if samples.ndim == 2:
-            return (samples,)
+            return [samples]
 
-        return tuple(samples[:, i, :] for i in range(self._reduced_output_dimension))
+        return [samples[:, i, :] for i in range(self._reduced_output_dimension)]

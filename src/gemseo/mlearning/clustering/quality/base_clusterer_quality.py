@@ -53,7 +53,7 @@ class BaseClustererQuality(BaseMLAlgoQuality):
 
     def compute_learning_measure(  # noqa: D102
         self,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
     ) -> MeasureType:
         return self._compute_measure(

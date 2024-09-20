@@ -69,7 +69,7 @@ def test_constructor(transformers, other_transformers) -> None:
     """Test constructor."""
     pipeline = Pipeline()
     assert pipeline.name == "Pipeline"
-    assert pipeline.transformers == []
+    assert pipeline.transformers == ()
     another_pipeline = Pipeline(transformers=transformers)
     assert another_pipeline.transformers == transformers
     yet_another_pipeline = Pipeline(transformers=other_transformers)

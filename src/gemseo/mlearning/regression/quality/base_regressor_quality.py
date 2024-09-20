@@ -68,7 +68,7 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
 
     def compute_learning_measure(
         self,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         as_dict: bool = False,
     ) -> MeasureType:
@@ -95,7 +95,7 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
     def compute_test_measure(
         self,
         test_data: IODataset,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         as_dict: bool = False,
     ) -> MeasureType:
@@ -129,7 +129,7 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
 
     def compute_leave_one_out_measure(
         self,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         as_dict: bool = False,
         store_resampling_result: bool = False,
@@ -155,7 +155,7 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
     def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         randomize: bool = BaseMLAlgoQuality._RANDOMIZE,
         seed: int | None = None,
@@ -189,7 +189,7 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
     def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         seed: int | None = None,
         as_dict: bool = False,

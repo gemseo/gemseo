@@ -116,6 +116,8 @@ from numpy import ndarray
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 from gemseo.mlearning.transformers.base_transformer import TransformerFactory
+from gemseo.typing import IntegerArray
+from gemseo.typing import RealArray
 from gemseo.typing import StrKeyMapping
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
@@ -127,8 +129,10 @@ if TYPE_CHECKING:
     from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
     from gemseo.mlearning.resampling.base_resampler import BaseResampler
 
-SavedObjectType = Union[Dataset, dict[str, BaseTransformer], str, bool, int]
-DataType = Union[ndarray, Mapping[str, ndarray]]
+SavedObjectType = Union[
+    Dataset, dict[str, BaseTransformer], list[int], str, bool, int, IntegerArray
+]
+DataType = Union[RealArray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
 SubTransformerType = Union[str, tuple[str, StrKeyMapping], BaseTransformer]
 TransformerType = MutableMapping[str, SubTransformerType]
@@ -285,22 +289,22 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def learn(
         self,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         fit_transformers: bool = True,
     ) -> None:
         """Train the machine learning algorithm from the learning dataset.
 
         Args:
             samples: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
+                If empty, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
                 Otherwise, use them as they are.
         """
         self.resampling_results = {}
-        if samples is None:
-            self._learning_samples_indices = self.learning_set.index.to_list()
-        else:
+        if samples:
             self._learning_samples_indices = samples
+        else:
+            self._learning_samples_indices = self.learning_set.index.to_list()
 
         self._learn(samples, fit_transformers)
         self._trained = True
@@ -308,14 +312,14 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     @abstractmethod
     def _learn(
         self,
-        indices: Sequence[int] | None,
+        indices: Sequence[int],
         fit_transformers: bool,
     ) -> None:
         """Define the indices of the learning samples.
 
         Args:
             indices: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
+                If empty, use the whole learning dataset.
             fit_transformers: Whether to fit the variable transformers.
                 Otherwise, use them as they are.
         """
@@ -342,7 +346,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def to_pickle(
         self,
-        directory: str | None = None,
+        directory: str = "",
         path: str | Path = ".",
         save_learning_set: bool = False,
     ) -> str:

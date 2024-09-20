@@ -53,6 +53,8 @@ if TYPE_CHECKING:
     from typing_extensions import ParamSpecArgs
     from typing_extensions import ParamSpecKwargs
 
+    from gemseo.typing import RealArray
+
 ParameterType = Union[bool, int, float, ndarray, str, None]
 TransformerFitOptionType = Union[float, int, str]
 
@@ -156,7 +158,7 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.fit(data, *args)
         return self.transform(data)
 
-    def compute_jacobian(self, data: ndarray) -> NoReturn:
+    def compute_jacobian(self, data: RealArray) -> NoReturn:
         """Compute the Jacobian of :meth:`.transform`.
 
         Args:
@@ -168,7 +170,7 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError
 
-    def compute_jacobian_inverse(self, data: ndarray) -> NoReturn:
+    def compute_jacobian_inverse(self, data: RealArray) -> NoReturn:
         """Compute the Jacobian of the :meth:`.inverse_transform`.
 
         Args:

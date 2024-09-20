@@ -29,10 +29,10 @@ from typing import Optional
 from typing import Union
 
 from numpy import array
-from numpy import ndarray
 from strenum import StrEnum
 
 from gemseo.datasets.dataset import Dataset
+from gemseo.typing import RealArray
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.seeder import SEED
 from gemseo.utils.seeder import Seeder
@@ -40,7 +40,7 @@ from gemseo.utils.seeder import Seeder
 if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 
-MeasureType = Union[float, ndarray, dict[str, ndarray]]
+MeasureType = Union[float, RealArray, dict[str, RealArray]]
 OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
 MeasureOptionsType = dict[str, OptionType]
 
@@ -135,14 +135,14 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
     @abstractmethod
     def compute_learning_measure(
         self,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
     ) -> MeasureType:
         """Evaluate the quality of the ML model from the learning dataset.
 
         Args:
             samples: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
+                If empty, use the whole learning dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -155,7 +155,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
     def compute_test_measure(
         self,
         test_data: Dataset,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
     ) -> MeasureType:
         """Evaluate the quality of the ML model from a test dataset.
@@ -163,7 +163,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             test_data: The test dataset.
             samples: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
+                If empty, use the whole learning dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -174,7 +174,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def compute_leave_one_out_measure(
         self,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         store_resampling_result: bool = True,
     ) -> MeasureType:
@@ -182,7 +182,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             samples: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
+                If empty, use the whole learning dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -205,7 +205,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
     def compute_cross_validation_measure(
         self,
         n_folds: int = 5,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         randomize: bool = _RANDOMIZE,
         seed: int | None = None,
@@ -216,7 +216,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             n_folds: The number of folds.
             samples: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
+                If empty, use the whole learning dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -237,7 +237,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
     def compute_bootstrap_measure(
         self,
         n_replicates: int = 100,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         seed: int | None = None,
         store_resampling_result: bool = False,
@@ -247,7 +247,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             n_replicates: The number of bootstrap replicates.
             samples: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
+                If empty, use the whole learning dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -291,7 +291,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _pre_process(
         self,
-        samples: Sequence[int] | None,
+        samples: Sequence[int] = (),
         seed: int | None = SEED,
         update_seed: bool = False,
     ):
@@ -299,7 +299,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             samples: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
+                If empty, use the whole learning dataset.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
                 then an unpredictable generator will be used.
@@ -311,7 +311,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         if not self.algo.is_trained:
             self.algo.learn(samples)
 
-        if samples is None:
+        if not samples:
             samples = self.algo.learning_samples_indices
 
         if update_seed:

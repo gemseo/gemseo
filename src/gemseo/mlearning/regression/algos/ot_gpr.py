@@ -41,6 +41,7 @@ from openturns import MultiStart
 from openturns import OptimizationAlgorithmImplementation
 from openturns import Point
 from openturns import QuadraticBasisFactory
+from openturns import RandomGenerator
 from openturns import ResourceMap
 from openturns import SquaredExponential
 from openturns import TensorizedCovarianceModel
@@ -396,8 +397,9 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         return array([array(gradient(Point(data))).T for data in input_data])
 
     def compute_samples(  # noqa: D102
-        self, input_data: NumberArray, n_samples: int
+        self, input_data: NumberArray, n_samples: int, seed: int | None = None
     ) -> list[NumberArray]:
+        RandomGenerator.SetSeed(self._seeder.get_seed(seed))
         data = array(KrigingRandomVector(self.algo, input_data).getSample(n_samples))
         output_dimension = self.output_dimension
-        return [data[:, i::output_dimension] for i in range(output_dimension)]
+        return [data[:, i::output_dimension].T for i in range(output_dimension)]

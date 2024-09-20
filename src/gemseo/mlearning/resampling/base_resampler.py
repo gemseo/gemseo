@@ -165,7 +165,9 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
                 sub_model = deepcopy(model)
                 sub_models.append(sub_model)
 
-            sub_model.learn(samples=split.train, fit_transformers=fit_transformers)
+            sub_model.learn(
+                samples=split.train.tolist(), fit_transformers=fit_transformers
+            )
             if predict:
                 predictions.append(sub_model.predict(input_data[split.test]))
 

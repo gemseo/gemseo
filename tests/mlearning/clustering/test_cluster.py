@@ -22,22 +22,13 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from numpy import arange
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
-
-
-@pytest.fixture
-def dataset() -> Dataset:
-    """The dataset used to train the clustering algorithms."""
-    data = arange(30).reshape(10, 3)
-    variables = ["x_1", "x_2"]
-    sizes = {"x_1": 1, "x_2": 2}
-    dataset_ = Dataset(dataset_name="dataset_name")
-    dataset_.from_array(data, variables, sizes)
-    return dataset_
 
 
 class NewAlgo(BaseClusterer):
@@ -47,8 +38,14 @@ class NewAlgo(BaseClusterer):
         pass
 
 
-def test_labels(dataset) -> None:
+def test_labels() -> None:
     """Test clustering labels."""
+    dataset = Dataset.from_array(
+        arange(30).reshape(10, 3), ["x_1", "x_2"], {"x_1": 1, "x_2": 2}
+    )
     algo = NewAlgo(dataset)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape("NewAlgo._fit() did not set the labels attribute."),
+    ):
         algo.learn()

@@ -58,6 +58,7 @@ from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
 from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureOptionsType
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -108,7 +109,7 @@ class MLAlgoAssessor(MDODiscipline):
         parameters: Iterable[str],
         measure: type[BaseMLAlgoQuality],
         measure_evaluation_method_name: BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
-        measure_options: MeasureOptionsType | None = None,
+        measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
         transformer: TransformerType = BaseMLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
     ) -> None:
@@ -123,7 +124,7 @@ class MLAlgoAssessor(MDODiscipline):
             measure_options: The options of the quality measure.
                 If "multioutput" is missing,
                 it is added with False as value.
-                If ``None``, do not use quality measure options.
+                If empty, do not use quality measure options.
             transformer: The strategies
                 to transform the variables.
                 The values are instances of :class:`.BaseTransformer`
@@ -147,7 +148,7 @@ class MLAlgoAssessor(MDODiscipline):
         self.output_grammar.update_from_names([self.CRITERION, self.LEARNING])
         self.algo = algo
         self.measure = measure
-        self.measure_options = measure_options or {}
+        self.measure_options = dict(measure_options)
         self.__measure_evaluation_method_name = measure_evaluation_method_name
         self.parameters = algo_options
         self.data = dataset
@@ -224,7 +225,7 @@ class MLAlgoCalibration:
         measure: type[BaseMLAlgoQuality],
         measure_evaluation_method_name: str
         | BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
-        measure_options: MeasureOptionsType | None = None,
+        measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
         transformer: TransformerType = BaseMLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
     ) -> None:
@@ -239,7 +240,7 @@ class MLAlgoCalibration:
             measure_evaluation_method_name: The name of the method
                 to evaluate the quality measure.
             measure_options: The options of the quality measure.
-                If ``None``, do not use the quality measure options.
+                If empty, do not use the quality measure options.
             transformer: The strategies
                 to transform the variables.
                 The values are instances of :class:`.BaseTransformer`

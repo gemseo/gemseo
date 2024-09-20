@@ -72,7 +72,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import NoReturn
 
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 
@@ -88,6 +87,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 
 class GaussianMixture(BasePredictiveClusterer):
@@ -100,7 +100,7 @@ class GaussianMixture(BasePredictiveClusterer):
         self,
         data: Dataset,
         transformer: TransformerType = BasePredictiveClusterer.IDENTITY,
-        var_names: Iterable[str] | None = None,
+        var_names: Iterable[str] = (),
         n_clusters: int = 5,
         random_state: int | None = SEED,
         **parameters: float | str | bool | None,
@@ -119,19 +119,19 @@ class GaussianMixture(BasePredictiveClusterer):
 
     def _fit(
         self,
-        data: ndarray,
-    ) -> NoReturn:
+        data: RealArray,
+    ) -> None:
         self.algo.fit(data)
         self.labels = self.algo.predict(data)
 
     def _predict(
         self,
-        data: ndarray,
+        data: RealArray,
     ) -> ndarray:
         return self.algo.predict(data)
 
     def _predict_proba_soft(
         self,
-        data: ndarray,
-    ) -> ndarray:
+        data: RealArray,
+    ) -> RealArray:
         return self.algo.predict_proba(data)

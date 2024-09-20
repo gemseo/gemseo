@@ -27,7 +27,6 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Union
 
-from numpy import ndarray
 from numpy import unique
 from numpy import zeros
 
@@ -35,6 +34,8 @@ from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
 from gemseo.mlearning.core.algos.supervised import (
     SavedObjectType as MLSupervisedAlgoSavedObjectType,
 )
+from gemseo.typing import NumberArray
+from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
@@ -43,7 +44,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
 
 SavedObjectType = Union[
-    MLSupervisedAlgoSavedObjectType, Sequence[str], dict[str, ndarray], int
+    MLSupervisedAlgoSavedObjectType, Sequence[str], dict[str, NumberArray], int
 ]
 
 
@@ -51,14 +52,14 @@ class BaseClassifier(BaseMLSupervisedAlgo):
     """The base class for classification algorithms."""
 
     n_classes: int
-    """The number of classes."""
+    """The number of classes computed when calling :meth:`.learn`."""
 
     def __init__(  # noqa: D107
         self,
         data: IODataset,
         transformer: TransformerType = BaseMLSupervisedAlgo.IDENTITY,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         **parameters: MLAlgoParameterType,
     ) -> None:
         super().__init__(
@@ -68,11 +69,11 @@ class BaseClassifier(BaseMLSupervisedAlgo):
             output_names=output_names,
             **parameters,
         )
-        self.n_classes = None
+        self.n_classes = 0
 
     def _learn(
         self,
-        indices: Sequence[int] | None,
+        indices: Sequence[int],
         fit_transformers: bool,
     ) -> None:
         output_data = self.learning_set.get_view(
@@ -87,7 +88,7 @@ class BaseClassifier(BaseMLSupervisedAlgo):
         self,
         input_data: DataType,
         hard: bool = True,
-    ) -> ndarray:
+    ) -> DataType:
         """Predict the probability of belonging to each cluster from input data.
 
         The user can specify these input data either as a numpy array,
@@ -115,9 +116,9 @@ class BaseClassifier(BaseMLSupervisedAlgo):
 
     def _predict_proba(
         self,
-        input_data: ndarray,
+        input_data: RealArray,
         hard: bool = True,
-    ) -> ndarray:
+    ) -> RealArray:
         """Predict the probability of belonging to each class.
 
         Args:
@@ -135,8 +136,8 @@ class BaseClassifier(BaseMLSupervisedAlgo):
 
     def _predict_proba_hard(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         """Return 1 if the data belongs to a class, 0 otherwise.
 
         Args:
@@ -157,8 +158,8 @@ class BaseClassifier(BaseMLSupervisedAlgo):
     @abstractmethod
     def _predict_proba_soft(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         """Predict the probability of belonging to each class.
 
         Args:
