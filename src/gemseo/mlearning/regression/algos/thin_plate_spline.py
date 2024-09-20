@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import Callable
 from typing import ClassVar
 
@@ -50,7 +49,6 @@ class TPSRegressor(RBFRegressor):
         smooth: float = 0.0,
         norm: str
         | Callable[[NumberArray, NumberArray], float] = RBFRegressor.EUCLIDEAN,
-        **parameters: Any,
     ) -> None:
         super().__init__(
             data,
@@ -60,5 +58,4 @@ class TPSRegressor(RBFRegressor):
             function=RBFRegressor.Function.THIN_PLATE,
             smooth=smooth,
             norm=norm,
-            **parameters,
         )
