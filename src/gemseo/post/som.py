@@ -50,7 +50,6 @@ from gemseo.post.som_settings import SOMSettings
 from gemseo.third_party import sompy
 
 if TYPE_CHECKING:
-    from gemseo.algos.optimization_problem import OptimizationProblem
     from matplotlib.axes import Axes
     from numpy.typing import ArrayLike
 
@@ -95,7 +94,7 @@ class SOM(BasePost[SOMSettings]):
         var_som = sompy.SOM(
             "som",
             x_vars,
-            mapsize=[som_grid_ny + 1, som_grid_nx + 1],  # type: ignore
+            mapsize=[som_grid_ny + 1, som_grid_nx + 1],
             initmethod=initmethod,
         )
         var_som.init_map()
@@ -256,8 +255,8 @@ class SOM(BasePost[SOMSettings]):
         x_history = self.database.get_x_vect_history()
         x_vars = array(x_history).real
         som = self.__build_som_from_vars(x_vars, som_grid_nx, som_grid_ny)
-        som_cluster_index = som.project_data(x_vars)  # type:ignore
-        som_cluster_xy = som.ind_to_xy(som_cluster_index)  # type:ignore
+        som_cluster_index = som.project_data(x_vars)
+        som_cluster_xy = som.ind_to_xy(som_cluster_index)
         som_coord = array(som_cluster_xy, dtype=int32)
         coord_2d_offset = self.__coord2d_to_coords_offsets(som_coord)
         self.materials_for_plotting["SOM"] = coord_2d_offset
@@ -276,7 +275,7 @@ class SOM(BasePost[SOMSettings]):
     @staticmethod
     def __coord2d_to_coords_offsets(
         som_coord: IntegerArray,
-        max_ofset: float = 0.6,
+        max_offset: float = 0.6,
     ) -> RealArray:
         """Take a coord array from SOM and adds an offset.
 
@@ -285,7 +284,7 @@ class SOM(BasePost[SOMSettings]):
 
         Args:
             som_coord: The SOM coordinates.
-            max_ofset: The maximum offset of the grid.
+            max_offset: The maximum offset of the grid.
 
         Returns:
             The coordinates.
@@ -299,7 +298,7 @@ class SOM(BasePost[SOMSettings]):
         unique_indx = uniques_occ[:, 0]
         max_occ = np_max(uniques_occ[:, 1])
         max_subarr_size = floor(sqrt(max_occ)) + 1
-        dxdy_max = max_ofset / (max_subarr_size - 1)
+        dxdy_max = max_offset / (max_subarr_size - 1)
         for grp in unique_indx:
             inds_of_grp = (coord_indx == grp).nonzero()[0]
             subarr_size = sqrt(len(inds_of_grp))

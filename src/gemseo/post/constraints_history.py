@@ -42,8 +42,6 @@ from gemseo.post.base_post import BasePost
 from gemseo.post.constraints_history_settings import ConstraintsHistorySettings
 from gemseo.post.core.colormaps import RG_SEISMIC
 
-if TYPE_CHECKING:
-    from gemseo.algos.optimization_problem import OptimizationProblem
 
 class ConstraintsHistory(BasePost[ConstraintsHistorySettings]):
     r"""A matrix of constraint history plots.

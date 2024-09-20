@@ -45,7 +45,7 @@ from numpy import log10 as np_log10
 from numpy import logspace
 from numpy import max as np_max
 from numpy import min as np_min
-from numpy import ones_like
+from numpy import ndarray
 from numpy import sort as np_sort
 from numpy import vstack
 from numpy.linalg import norm
@@ -64,8 +64,6 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.database import Database
-    from gemseo.typing import IntegerArray
     from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
@@ -104,16 +102,6 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
 
     def _plot(self, settings: OptHistoryViewSettings) -> None:
         variable_names = settings.variable_names
-        if variable_names:
-            self.opt_problem.design_space.get_variables_indexes(variable_names)
-        else:
-            array([], dtype=int)
-
-        # compute the names of the inequality and equality constraints
-        ineq_cstr = self.opt_problem.get_ineq_constraints()
-        [c.name for c in ineq_cstr]
-        eq_cstr = self.opt_problem.get_eq_constraints()
-        [c.name for c in eq_cstr]
 
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
             self._standardized_obj_name, variable_names
@@ -124,10 +112,10 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
             - normalize(self.optimization_problem.history.optimum.design),
             axis=1,
         )
-        # design variables
-        self._create_variables_plot(x_history_to_display, variable_names, x_xstar)
 
-        self._create_variables_plot(x_history_to_display, variable_names, x_xstar)
+        self._create_variables_plot(
+            x_history_to_display, variable_names, settings.fig_size, x_xstar
+        )
 
         self._create_obj_plot(
             obj_history,
@@ -139,7 +127,7 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
             obj_relative=settings.obj_relative,
         )
 
-        self._create_x_star_plot(x_history, n_iter, settings.fig_size, x_xstar)
+        self._create_x_star_plot(x_history, n_iter, settings.fig_size)
 
         for constraints, constraint_type in [
             (
@@ -157,6 +145,7 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
                     self.__get_constraint_history(constraint_names),
                     constraint_type,
                     constraint_names,
+                    settings.fig_size,
                     x_xstar,
                 )
 
@@ -370,14 +359,12 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
         x_history: RealArray,
         n_iter: int,
         fig_size: tuple[float, float],
-        x_xstar: RealArray,
     ) -> None:
         """Create the design variables plot.
 
         Args:
             x_history: The history of the design variables.
             n_iter: The number of iterations.
-            x_xstar: The distance between the designs and the optimum design.
         """
         fig = plt.figure(figsize=fig_size)
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
@@ -456,7 +443,7 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
             return
 
         # matrix of all constraints' values
-        init_cstr_matrix = True
+        cstr_matrix = None
         vmax = 0.0
         cstr_labels = []
 
@@ -492,11 +479,8 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
                     notnans = ~isnan(history_i_j)
                     vmax = max(vmax, np_max(np_abs(history_i_j[notnans])))
 
-                    cstr_matrix: NumberArray
-
                     # build the constraint matrix
-                    if init_cstr_matrix:
-                        init_cstr_matrix = False
+                    if cstr_matrix is None:
                         cstr_matrix = history_i_j
                     else:
                         cstr_matrix = vstack((cstr_matrix, history_i_j))
@@ -601,91 +585,3 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
         assert mng is not None
         mng.resize(700, 1000)
         return fig
-
-    def _create_hessian_approx_plot(
-        self,
-        history: Database,
-        obj_name: str,
-        variable_names: Iterable[str] | None,
-        indices: IntegerArray,
-    ) -> None:
-        """Create the plot of the Hessian approximation.
-
-        Args:
-            history: The optimization history.
-            obj_name: The objective function name.
-            variable_names: The names of the variables to display.
-                If ``None``, use all design variables.
-            indices: The indices.
-        """
-        try:
-            diag = SR1Approx(history).build_approximation(
-                funcname=obj_name, save_diag=True
-            )[1]
-        except ValueError:
-            LOGGER.warning("Failed to create Hessian approximation.", exc_info=True)
-            return
-
-        if isnan(diag).any():
-            LOGGER.warning("Failed to create Hessian approximation.")
-            LOGGER.warning("The approximated Hessian diagonal contains NaN.")
-            return
-
-        # Add first iteration blank.
-        diag = array([ones_like(diag[0]), *diag]).T
-
-        # if max problem, plot -Hessian
-        if self._change_obj:
-            diag = -diag
-
-        if variable_names:
-            diag = diag[indices, :]
-
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
-        grid = self._get_grid_layout()
-
-        axe = fig.add_subplot(grid[0, 0])
-        axe.set_title("Hessian diagonal approximation")
-        axe.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
-        axe.set_yticks(arange(len(diag)))
-        axe.set_yticklabels(
-            self._get_design_variable_names(variable_names, simplify=True)
-        )
-        n_iterations = len(self.database)
-        axe.set_xticks(range(n_iterations))
-        axe.set_xticklabels(map(str, range(1, n_iterations + 1)))
-        axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
-
-        # matrix
-        vmax = max(abs(np_max(diag)), abs(np_min(diag)))
-        linthresh = 10 ** (np_log10(vmax) - 5.0)
-        img = axe.imshow(
-            diag.real,
-            cmap=self.__CMAP,
-            interpolation="nearest",
-            aspect="auto",
-            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linthresh, base=e),
-        )
-
-        # colorbar
-        vmax = max(abs(np_max(diag)), abs(np_min(diag)))
-        thick_min = int(np_log10(linthresh))
-        thick_max = int(np_log10(vmax))
-        thick_num = thick_max - thick_min + 1
-        levels_pos = logspace(thick_min, thick_max, num=thick_num)
-        levels_pos = append(levels_pos, vmax)
-        levels_neg = np_sort(-levels_pos)
-        levels_neg = append(levels_neg, 0)
-        levels = concatenate((levels_neg, levels_pos))
-
-        cax = fig.add_subplot(grid[0, 1])
-        col_bar = fig.colorbar(
-            img, cax=cax, ticks=levels, format=LogFormatterSciNotation()
-        )
-        col_bar.ax.tick_params(labelsize=self.__TICK_LABEL_SIZE)
-
-        mng = plt.get_current_fig_manager()
-        # mng.full_screen_toggle()
-        assert mng is not None
-        mng.resize(700, 1000)
-        self._add_figure(fig, "hessian_approximation")

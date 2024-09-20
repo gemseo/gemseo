@@ -76,7 +76,7 @@ def test_opt_hist_from_database(
     problem = OptimizationProblem.from_hdf(problem_path)
     # The use of the default value is deliberate;
     # to check that the JSON grammar works properly.
-    execute_post(problem, "HessianHistory", variable_names=None, show=False, save=False)
+    execute_post(problem, "HessianHistory", variable_names=(), show=False, save=False)
 
 
 def test_diag_with_nan() -> None:

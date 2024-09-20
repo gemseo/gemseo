@@ -102,6 +102,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from gemseo.typing import IntegerArray
     from gemseo.typing import RealOrComplexArrayT
 
 LOGGER = logging.getLogger(__name__)

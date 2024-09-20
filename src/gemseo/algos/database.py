@@ -62,10 +62,8 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.typing import NumberArray
-
-
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
 DatabaseKeyType = Union[ndarray, HashableNdarray]

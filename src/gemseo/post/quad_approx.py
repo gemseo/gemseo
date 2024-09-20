@@ -43,7 +43,7 @@ from gemseo.post.quad_approx_settings import QuadApproxSettings
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
-    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.typing import NumberArray
 
 
 class QuadApprox(BasePost[QuadApproxSettings]):

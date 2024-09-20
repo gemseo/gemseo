@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from gemseo.algos.database import Database
     from gemseo.algos.optimization_problem import OptimizationProblem
 
-OptPostProcessorOptionType = Union[int, float, str, bool, Sequence[str], FigSizeType]
+BasePostOptionType = Union[int, float, str, bool, Sequence[str], FigSizeType]
 PlotOutputType = list[
     tuple[Optional[str], Union[Figure, DatasetPlot], Optional[dict[str, Sequence[str]]]]
 ]
@@ -62,10 +62,10 @@ class BasePost(Generic[T]):
     # Silencing mypy since the root cause does not seem legit,
     # and may be changed.
     # See https://github.com/python/mypy/issues/5144.
-    Settings: ClassVar[type[T]]  # type: ignore
+    Settings: ClassVar[type[T]]
     """The pydantic model for the settings."""
 
-    opt_problem: OptimizationProblem
+    optimization_problem: OptimizationProblem
     """The optimization problem."""
 
     database: Database

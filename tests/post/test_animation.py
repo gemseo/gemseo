@@ -21,7 +21,7 @@ import pytest
 from gemseo import create_scenario
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.animation import Animation
-from gemseo.post.post_factory import PostFactory
+from gemseo.post.factory import BasePostFactory
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
@@ -39,7 +39,7 @@ def test_common_scenario(
 ) -> None:
     """Check Animation with objective, standardized or not."""
     animation = Animation(common_problem)
-    post_processing = PostFactory().create("BasicHistory", common_problem)
+    post_processing = BasePostFactory().create("BasicHistory", common_problem)
     pp_settings = post_processing.Settings(
         variable_names=["obj", "eq", "neg", "pos", "x"],
     )
@@ -58,7 +58,7 @@ def test_common_scenario(
 def test_large_common_scenario(large_common_problem, tmp_wd) -> None:
     """Check Animation with objective, standardized or not."""
     opt = Animation(large_common_problem)
-    post_processing = PostFactory().create("BasicHistory", large_common_problem)
+    post_processing = BasePostFactory().create("BasicHistory", large_common_problem)
     pp_settings = post_processing.Settings(
         variable_names=["obj", "eq", "neg", "pos", "x"],
     )
@@ -74,7 +74,7 @@ def test_opt_hist_const(tmp_wd) -> None:
     """Test that a problem with constraints is properly rendered."""
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     opt = Animation(problem)
-    post_processing = PostFactory().create("OptHistoryView", problem)
+    post_processing = BasePostFactory().create("OptHistoryView", problem)
     pp_settings = post_processing.Settings(
         variable_names=["x"],
         file_path="power2_2",
@@ -119,8 +119,8 @@ def test_l_shape(tmp_wd) -> None:
         "volume fraction", constraint_type="ineq", value=volume_fraction
     )
     scenario.execute({"max_iter": 10, "algo": "NLOPT_MMA"})
-    post_processing = PostFactory().create(
-        "TopologyView", scenario.formulation.opt_problem
+    post_processing = BasePostFactory().create(
+        "TopologyView", scenario.formulation.optimization_problem
     )
     pp_settings = post_processing.Settings(n_x=n_x, n_y=n_y)
     output_files = scenario.post_process(

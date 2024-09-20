@@ -16,15 +16,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
 
 
 class ConstraintsHistorySettings(BasePostSettings):  # noqa: D101
-    constraint_names: Sequence[str] = Field(
+    constraint_names: list[str] = Field(
         ...,
         description="The names of the constraints.",
         min_length=1,

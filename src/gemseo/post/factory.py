@@ -21,55 +21,27 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.base_factory import BaseFactory
 from gemseo.post.base_post import BasePost
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.algos.opt_problem import OptimizationProblem
-
-LOGGER = logging.getLogger(__name__)
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
-class OptPostProcessorFactory(BaseFactory[BasePost[Any]]):
+class BasePostFactory(BaseFactory[BasePost[Any]]):
     """A factory of post-processors."""
 
     _CLASS = BasePost
     _MODULE_NAMES = ("gemseo.post",)
 
-    executed_post: list[BasePost[Any]]
-    """The executed post processing."""
-
     def __init__(self) -> None:  # noqa:D107
         super().__init__()
-        # TODO: API: is this really useful? make it private?
         self.executed_post = []
-
-    @property
-    def posts(self) -> list[str]:
-        """The available post processors."""
-        return self.class_names
-
-    def create(
-        self,
-        class_name: str,
-        opt_problem: OptimizationProblem,
-        *args: Any,
-        **kwargs: Any,
-    ) -> BasePost[Any]:
-        """Create a post-processor from its class name.
-
-        Args:
-            class_name: The name of the post-processor.
-            opt_problem: The optimization problem to be post-processed.
-        """
-        return super().create(class_name, opt_problem=opt_problem)
 
     def execute(
         self,

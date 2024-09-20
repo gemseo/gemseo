@@ -57,7 +57,9 @@ class GradientSensitivity(BasePost[GradientSensitivitySettings]):
         if settings.iteration is None:
             design_value = self.optimization_problem.solution.x_opt
         else:
-            design_value = self.optimization_problem.database.get_x_vect(settings.iteration)
+            design_value = self.optimization_problem.database.get_x_vect(
+                settings.iteration
+            )
 
         fig = self.__generate_subplots(
             self._get_design_variable_names(),

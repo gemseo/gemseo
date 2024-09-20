@@ -94,7 +94,7 @@ class Animation(BasePost[AnimationSettings]):
 
         if temporary_database:
             opt_problem.database = Database().from_hdf(temporary_database)
-            temporary_database.unlink()  # type:ignore
+            temporary_database.unlink()
         else:
             opt_problem.database = database
 

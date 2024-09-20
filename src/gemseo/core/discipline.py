@@ -2114,7 +2114,6 @@ class MDODiscipline(Serializable, metaclass=ClassInjector):
             return list(self.output_grammar.keys())
         return remove_prefix_from_list(self.output_grammar.keys())
 
-    # TODO: API: remove since only used once internally?
     def get_input_output_data_names(self, with_namespaces: bool = True) -> list[str]:
         """Return the names of the input and output variables.
 
@@ -2248,7 +2247,6 @@ class MDODiscipline(Serializable, metaclass=ClassInjector):
             msg = f"Discipline {self.name} has no local_data named {err}."
             raise ValueError(msg) from None
 
-    # TODO: API: remove and check for base class instead.
     @staticmethod
     def is_scenario() -> bool:
         """Whether the discipline is a scenario."""

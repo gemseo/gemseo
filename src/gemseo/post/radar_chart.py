@@ -46,10 +46,10 @@ class RadarChart(BasePost[RadarChartSettings]):
         constraint_names = settings.constraint_names
         iteration = settings.iteration
 
-        if not constraint_names:
-            constraint_names = self.optimzation_problem.get_constraint_names()
-        else:
-            constraint_names = self.optimzation_problem.get_function_names(constraint_names)
+        if constraint_names:
+            constraint_names = self.optimization_problem.get_function_names(
+                constraint_names
+            )
             invalid_names = sorted(
                 set(constraint_names)
                 - set(self.optimization_problem.constraints.get_names())
@@ -65,9 +65,9 @@ class RadarChart(BasePost[RadarChartSettings]):
 
         # optimum_index is the zero-based position of the optimum.
         # while an iteration is a one-based position.
-        assert self.opt_problem.solution is not None
-        assert self.opt_problem.solution.optimum_index is not None
-        optimum_iteration = self.optimzation_problem.solution.optimum_index + 1
+        assert self.optimization_problem.solution is not None
+        assert self.optimization_problem.solution.optimum_index is not None
+        optimum_iteration = self.optimization_problem.solution.optimum_index + 1
         if iteration is None:
             iteration = optimum_iteration
         is_optimum = iteration == optimum_iteration
@@ -97,7 +97,7 @@ class RadarChart(BasePost[RadarChartSettings]):
             values,
             constraint_names,
         )
-        dataset.index = ["computed constraints", "limit constraint"]  # type: ignore
+        dataset.index = ["computed constraints", "limit constraint"]
 
         radar = RadarChartPost(
             dataset, display_zero=False, radial_ticks=settings.show_names_radially

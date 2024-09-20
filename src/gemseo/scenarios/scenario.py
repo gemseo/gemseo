@@ -52,9 +52,10 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.datasets.dataset import Dataset
+    from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
     from gemseo.post.base_post import BasePost
-    from gemseo.post.base_post import OptPostProcessorOptionType
-    from gemseo.post.post_factory import PostFactory
+    from gemseo.post.base_post import BasePostOptionType
+    from gemseo.post.factory import BasePostFactory
     from gemseo.utils.xdsm import XDSM
 
 
@@ -92,7 +93,7 @@ class Scenario(MDODiscipline):
     optimization_result: OptimizationResult | None
     """The optimization result if the scenario has been executed; otherwise ``None``."""
 
-    post_factory: OptPostProcessorFactory | None
+    post_factory: BasePostFactory | None
     """The factory for post-processors if any."""
 
     DifferentiationMethod = OptimizationProblem.DifferentiationMethod
@@ -177,7 +178,7 @@ class Scenario(MDODiscipline):
 
     # TODO: API: the factory is a global object, remove this property.
     @property
-    def post_factory(self) -> OptPostProcessorFactory:
+    def post_factory(self) -> BasePostFactory:
         """The factory of post-processors."""
         return ScenarioResult.POST_FACTORY
 
@@ -451,7 +452,7 @@ class Scenario(MDODiscipline):
     def post_process(
         self,
         post_name: str,
-        **options: OptPostProcessorOptionType | Path,
+        **options: BasePostOptionType | Path,
     ) -> BasePost:
         """Post-process the optimization history.
 
@@ -635,7 +636,6 @@ class Scenario(MDODiscipline):
             self.input_grammar.update_from_types({"algo": str})
         self.input_grammar.required_names.add("algo")
 
-    # TODO: API: remove and check for base class instead.
     @staticmethod
     def is_scenario() -> bool:
         """Indicate if the current object is a :class:`.Scenario`.

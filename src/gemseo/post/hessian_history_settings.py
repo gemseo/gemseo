@@ -16,32 +16,17 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 
-
-class ParetoFrontSettings(BasePostSettings):  # noqa: D101
-    show_non_feasible: bool = Field(
-        True,
-        description="Whether to show the non-feasible points in the plot.",
-    )
-    objectives: Sequence[str] = Field(
+class HessianHistorySettings(BasePostSettings):  # noqa: D101
+    variable_names: list[str] = Field(
         (),
-        description="The functions names or design variables to plot. If empty, "
-        "use the objective function (maybe a vector).",
-    )
-    objectives_labels: Sequence[str] = Field(
-        (),
-        description="The labels of the objective components. If empty, use the "
-        "objective name suffixed by an index.",
+        description="The names of the variables.",
     )
 
 
-update_field(ParetoFrontSettings, "fig_size", default=(10.0, 10.0))
+update_field(HessianHistorySettings, "fig_size", default=(11.0, 6.0))
