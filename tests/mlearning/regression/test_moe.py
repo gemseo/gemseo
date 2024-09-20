@@ -221,7 +221,7 @@ def test_repr_str_(model) -> None:
     expected = """MOERegressor(hard=True)
    built from 36 learning samples
    Clustering
-      KMeans(n_clusters=2, random_state=0, var_names=None)
+      KMeans(n_clusters=2, random_state=0, var_names=())
    Classification
       KNNClassifier(n_neighbors=5)
    Regression
@@ -240,7 +240,7 @@ def test_repr_html(model) -> None:
         "<li>built from 36 learning samples</li>"
         "<li>Clustering"
         "<ul>"
-        "<li>KMeans(n_clusters=2, random_state=0, var_names=None)</li>"
+        "<li>KMeans(n_clusters=2, random_state=0, var_names=())</li>"
         "</ul>"
         "</li>"
         "<li>Classification"

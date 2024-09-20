@@ -22,6 +22,7 @@ from unittest.mock import Mock
 import openturns
 import pytest
 from numpy import array
+from numpy import array_equal
 from numpy import hstack
 from numpy import ndarray
 from numpy import zeros
@@ -405,18 +406,26 @@ def test_compute_samples(dataset):
     """Check the method compute_samples."""
     model = OTGaussianProcessRegressor(dataset)
     model.learn()
-    output_data = model.compute_samples(array([[0.23, 0.59], [-0.45, 1.2]]), 3)
+    input_data = array([[0.23, 0.59], [-0.45, 1.2]])
+    output_data = model.compute_samples(input_data, 3)
     assert_allclose(
-        output_data[0],
+        (output_data_0 := output_data[0]),
         array([
-            [1327.999028, 1343.55591],
-            [1404.76494, 1310.716423],
-            [1403.099801, 1353.588844],
+            [1476.479722, 1256.439278, 1543.093856],
+            [1209.737606, 1474.013075, 1481.73877],
         ]),
         rtol=1e-3,
     )
     assert_allclose(
         output_data[1],
-        array([[-3.293869, 2.651571], [-1.594788, -4.757636], [-3.283659, -3.792748]]),
+        array([[2.213964, 1.812411, 1.42207], [1.186121, -1.261375, -2.94392]]),
         rtol=1e-3,
+    )
+    assert not array_equal(model.compute_samples(input_data, 3)[0], output_data_0)
+    assert not array_equal(
+        model.compute_samples(input_data, 3, seed=123)[0], output_data_0
+    )
+    assert_equal(
+        model.compute_samples(input_data, 3, seed=model._seeder.default_seed - 2)[0],
+        output_data_0,
     )

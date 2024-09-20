@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Union
 
+from numpy import array
 from numpy import ndarray
 from numpy import unique
 
@@ -44,17 +45,23 @@ SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
 class BaseClusterer(BaseMLUnsupervisedAlgo):
     """The base class for clustering algorithms."""
 
-    labels: list[int]
-    """The indices of the clusters for the different samples."""
+    labels: ndarray
+    """The labels of the clusters for the different samples.
+
+    This attribute is set when calling :meth:`.learn`.
+    """
 
     n_clusters: int
-    """The number of clusters."""
+    """The number of clusters.
+
+    This attribute is set when calling :meth:`.learn`.
+    """
 
     def __init__(  # noqa: D107
         self,
         data: Dataset,
         transformer: TransformerType = BaseMLUnsupervisedAlgo.IDENTITY,
-        var_names: Iterable[str] | None = None,
+        var_names: Iterable[str] = (),
         n_clusters: int = 5,
         random_state: int | None = SEED,
         **parameters: float | bool | str | None,
@@ -74,19 +81,19 @@ class BaseClusterer(BaseMLUnsupervisedAlgo):
             random_state=random_state,
             **parameters,
         )
-        self.labels = None
-        self.n_clusters = None
+        self.labels = array([])
+        self.n_clusters = 0
 
     def _learn(
         self,
-        indices: Sequence[int] | None,
+        indices: Sequence[int],
         fit_transformers: bool,
     ) -> None:
         super()._learn(indices, fit_transformers=fit_transformers)
-        if self.labels is None:
-            msg = "self._fit() shall assign labels."
-            raise ValueError(msg)
         self.n_clusters = unique(self.labels).shape[0]
+        if not self.n_clusters:
+            msg = f"{self.__class__.__name__}._fit() did not set the labels attribute."
+            raise NotImplementedError(msg)
 
     def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
         objects = super()._get_objects_to_save()

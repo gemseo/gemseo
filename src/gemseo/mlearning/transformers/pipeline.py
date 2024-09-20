@@ -46,7 +46,7 @@ class Pipeline(BaseTransformer):
     def __init__(
         self,
         name: str = "",
-        transformers: Sequence[BaseTransformer] | None = None,
+        transformers: Sequence[BaseTransformer] = (),
     ) -> None:
         """
         Args:
@@ -58,7 +58,7 @@ class Pipeline(BaseTransformer):
                 transformer behaves like an identity transformer.
         """  # noqa: D205 D212
         super().__init__(name)
-        self.transformers = transformers or []
+        self.transformers = transformers
 
     def duplicate(self) -> Pipeline:
         """Duplicate the current object.

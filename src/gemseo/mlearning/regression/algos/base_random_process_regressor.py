@@ -17,16 +17,47 @@
 A class implementing a Gaussian process regressor must derive from it.
 """
 
-from abc import abstractmethod
+from __future__ import annotations
 
-from gemseo.datasets.dataset import DataType
+from abc import abstractmethod
+from typing import TYPE_CHECKING
+
+from gemseo.mlearning import BaseMLSupervisedAlgo
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.typing import RealArray
-from gemseo.utils.seeder import SEED
+from gemseo.utils.seeder import Seeder
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from gemseo.datasets.dataset import DataType
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
+    from gemseo.mlearning.core.algos.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 
 class BaseRandomProcessRegressor(BaseRegressor):
-    """A base class for regressors base on a random process."""
+    """A base class for regressors based on a random process."""
+
+    _seeder: Seeder
+    """A seed generator."""
+
+    def __init__(  # noqa: D107
+        self,
+        data: IODataset,
+        transformer: TransformerType = BaseMLSupervisedAlgo.IDENTITY,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+        **parameters: MLAlgoParameterType,
+    ) -> None:
+        super().__init__(
+            data,
+            transformer=transformer,
+            input_names=input_names,
+            output_names=output_names,
+            **parameters,
+        )
+        self._seeder = Seeder()
 
     @abstractmethod
     def predict_std(
@@ -61,7 +92,7 @@ class BaseRandomProcessRegressor(BaseRegressor):
 
     @abstractmethod
     def compute_samples(
-        self, input_data: RealArray, n_samples: int, seed: int = SEED
+        self, input_data: RealArray, n_samples: int, seed: int | None = None
     ) -> list[RealArray]:
         """Sample a random vector from the conditioned Gaussian process.
 

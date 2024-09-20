@@ -75,7 +75,6 @@ from collections.abc import Sequence
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import NoReturn
 from typing import Union
 
 from numpy import hstack
@@ -99,6 +98,7 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
     from gemseo.mlearning.transformers.base_transformer import BaseTransformer
+    from gemseo.typing import RealArray
 
 SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], dict[str, ndarray]]
 
@@ -113,7 +113,7 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
     input_names: list[str]
     """The names of the input variables."""
 
-    input_space_center: dict[str, ndarray]
+    input_space_center: dict[str, RealArray]
     """The center of the input space."""
 
     output_names: list[str]
@@ -166,16 +166,16 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
         self,
         data: IODataset,
         transformer: TransformerType = BaseMLAlgo.IDENTITY,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         **parameters: MLAlgoParameterType,
     ) -> None:
         """
         Args:
             input_names: The names of the input variables.
-                If ``None``, consider all the input variables of the learning dataset.
+                If empty, consider all the input variables of the learning dataset.
             output_names: The names of the output variables.
-                If ``None``, consider all the output variables of the learning dataset.
+                If empty, consider all the output variables of the learning dataset.
         """  # noqa: D205 D212
         super().__init__(data, transformer=transformer, **parameters)
         self.input_names = input_names or data.get_variable_names(data.INPUT_GROUP)
@@ -293,11 +293,11 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
 
     def _learn(
         self,
-        indices: Sequence[int] | None,
+        indices: Sequence[int],
         fit_transformers: bool,
     ) -> None:
         dataset = self.learning_set
-        if indices is None:
+        if not indices:
             indices = Ellipsis
 
         input_data = dataset.get_view(
@@ -479,9 +479,9 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
     @abstractmethod
     def _fit(
         self,
-        input_data: ndarray,
+        input_data: RealArray,
         output_data: ndarray,
-    ) -> NoReturn:
+    ) -> None:
         """Fit input-output relationship from the learning data.
 
         Args:
@@ -521,8 +521,8 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
     @abstractmethod
     def _predict(
         self,
-        input_data: ndarray,
-    ) -> NoReturn:
+        input_data: RealArray,
+    ) -> ndarray:
         """Predict output data from input data.
 
         Args:
@@ -592,7 +592,7 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
         }
 
     @property
-    def input_data(self) -> ndarray:
+    def input_data(self) -> RealArray:
         """The input data matrix."""
         return self.learning_set.get_view(
             group_names=self.learning_set.INPUT_GROUP,

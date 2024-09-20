@@ -47,6 +47,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 
 class RandomForestClassifier(BaseClassifier):
@@ -59,8 +60,8 @@ class RandomForestClassifier(BaseClassifier):
         self,
         data: IODataset,
         transformer: TransformerType = BaseClassifier.IDENTITY,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         n_estimators: int = 100,
         random_state: int | None = SEED,
         **parameters: float | bool | str | None,
@@ -86,7 +87,7 @@ class RandomForestClassifier(BaseClassifier):
 
     def _fit(
         self,
-        input_data: ndarray,
+        input_data: RealArray,
         output_data: ndarray,
     ) -> None:
         if output_data.shape[1] == 1:
@@ -95,14 +96,14 @@ class RandomForestClassifier(BaseClassifier):
 
     def _predict(
         self,
-        input_data: ndarray,
+        input_data: RealArray,
     ) -> ndarray:
         return self.algo.predict(input_data).astype(int).reshape((len(input_data), -1))
 
     def _predict_proba_soft(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         probas = self.algo.predict_proba(input_data)
         if probas[0].ndim == 1:
             return probas[..., newaxis]

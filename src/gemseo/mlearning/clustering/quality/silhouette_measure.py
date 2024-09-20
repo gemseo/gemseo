@@ -80,7 +80,7 @@ class SilhouetteMeasure(BasePredictiveClustererQuality):
     def compute_test_measure(  # noqa: D102
         self,
         test_data: Dataset,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
     ) -> MeasureType:
         raise NotImplementedError
@@ -88,7 +88,7 @@ class SilhouetteMeasure(BasePredictiveClustererQuality):
     def compute_cross_validation_measure(  # noqa: D102
         self,
         n_folds: int = 5,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         randomize: bool = BasePredictiveClustererQuality._RANDOMIZE,
         seed: int | None = None,
@@ -98,7 +98,7 @@ class SilhouetteMeasure(BasePredictiveClustererQuality):
     def compute_bootstrap_measure(  # noqa: D102
         self,
         n_replicates: int = 100,
-        samples: Sequence[int] | None = None,
+        samples: Sequence[int] = (),
         multioutput: bool = True,
         seed: int | None = None,
     ) -> MeasureType:

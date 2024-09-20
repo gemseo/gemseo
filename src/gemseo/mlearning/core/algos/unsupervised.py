@@ -31,10 +31,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import NoReturn
 
 from numpy import hstack
-from numpy import ndarray
 
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
@@ -45,6 +43,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import RealArray
 
 
 class BaseMLUnsupervisedAlgo(BaseMLAlgo):
@@ -62,7 +61,7 @@ class BaseMLUnsupervisedAlgo(BaseMLAlgo):
         self,
         data: Dataset,
         transformer: TransformerType = BaseMLAlgo.IDENTITY,
-        var_names: Iterable[str] | None = None,
+        var_names: Iterable[str] = (),
         **parameters: MLAlgoParameterType,
     ) -> None:
         """
@@ -77,7 +76,7 @@ class BaseMLUnsupervisedAlgo(BaseMLAlgo):
 
     def _learn(
         self,
-        indices: Sequence[int] | None,
+        indices: Sequence[int],
         fit_transformers: bool,
     ) -> None:
         if set(self.var_names) == set(self.learning_set.variable_names):
@@ -97,7 +96,7 @@ class BaseMLUnsupervisedAlgo(BaseMLAlgo):
             data.append(sub_data)
 
         data = hstack(data)
-        if indices is not None:
+        if indices:
             data = data[indices]
 
         self._fit(data)
@@ -105,8 +104,8 @@ class BaseMLUnsupervisedAlgo(BaseMLAlgo):
     @abstractmethod
     def _fit(
         self,
-        data: ndarray,
-    ) -> NoReturn:
+        data: RealArray,
+    ) -> None:
         """Fit model on data.
 
         Args:

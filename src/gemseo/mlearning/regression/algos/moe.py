@@ -86,6 +86,7 @@ from gemseo.mlearning.data_formatters.moe_data_formatters import MOEDataFormatte
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.algos.factory import RegressorFactory
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
@@ -176,8 +177,8 @@ class MOERegressor(BaseRegressor):
         self,
         data: IODataset,
         transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         hard: bool = True,
     ) -> None:
         """
@@ -309,7 +310,7 @@ class MOERegressor(BaseRegressor):
         self,
         name: str,
         calib_space: DesignSpace | None = None,
-        calib_algo: dict[str, str | int] | None = None,
+        calib_algo: dict[str, str | int] = READ_ONLY_EMPTY_DICT,
         **option_lists: list[MLAlgoParameterType] | None,
     ) -> None:
         """Add a candidate for clustering.
@@ -339,7 +340,7 @@ class MOERegressor(BaseRegressor):
         self,
         name: str,
         calib_space: DesignSpace | None = None,
-        calib_algo: dict[str, str | int] | None = None,
+        calib_algo: dict[str, str | int] = READ_ONLY_EMPTY_DICT,
         **option_lists: list[MLAlgoParameterType] | None,
     ) -> None:
         """Add a candidate for classification.
@@ -369,7 +370,7 @@ class MOERegressor(BaseRegressor):
         self,
         name: str,
         calib_space: DesignSpace | None = None,
-        calib_algo: dict[str, str | int] | None = None,
+        calib_algo: dict[str, str | int] = READ_ONLY_EMPTY_DICT,
         **option_lists: list[MLAlgoParameterType] | None,
     ) -> None:
         """Add a candidate for regression.
@@ -401,7 +402,7 @@ class MOERegressor(BaseRegressor):
     def predict_class(
         self,
         input_data: DataType,
-    ) -> int | ndarray:
+    ) -> int | str | ndarray:
         """Predict classes from input data.
 
         The user can specify these input data either as a NumPy array,
@@ -539,13 +540,8 @@ class MOERegressor(BaseRegressor):
         factory = RegressorFactory()
         self.regress_models = []
         for index in range(self.clusterer.n_clusters):
-            samples = nonzero(self.clusterer.labels == index)[0]
-            if not self.regress_cands:
-                local_model = factory.create(
-                    self.regress_algo, data=dataset, **self.regress_params
-                )
-                local_model.learn(samples=samples)
-            else:
+            samples = nonzero(self.clusterer.labels == index)[0].tolist()
+            if self.regress_cands:
                 selector = MLAlgoSelection(
                     dataset,
                     self.regress_measure["measure"],
@@ -558,6 +554,11 @@ class MOERegressor(BaseRegressor):
                 LOGGER.info("Selected regressor for cluster %s:", index)
                 with MultiLineString.offset():
                     LOGGER.info("%s", local_model)
+            else:
+                local_model = factory.create(
+                    self.regress_algo, data=dataset, **self.regress_params
+                )
+                local_model.learn(samples=samples)
 
             self.regress_models.append(local_model)
 

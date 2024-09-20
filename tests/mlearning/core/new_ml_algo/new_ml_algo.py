@@ -22,7 +22,7 @@ class NewMLAlgo(BaseMLAlgo):
 
     LIBRARY = "NewLibrary"
 
-    def learn(self, samples=None) -> None:
+    def learn(self, samples=()) -> None:
         super().learn(samples=samples)
         self._trained = True
 

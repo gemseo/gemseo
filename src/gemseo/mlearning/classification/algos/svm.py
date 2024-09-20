@@ -49,6 +49,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
+    from gemseo.typing import RealArray
 
 
 class SVMClassifier(BaseClassifier):
@@ -61,8 +62,8 @@ class SVMClassifier(BaseClassifier):
         self,
         data: IODataset,
         transformer: TransformerType = BaseClassifier.IDENTITY,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         C: float = 1.0,  # noqa: N803
         kernel: str | Callable | None = "rbf",
         probability: bool = False,
@@ -102,21 +103,21 @@ class SVMClassifier(BaseClassifier):
 
     def _fit(
         self,
-        input_data: ndarray,
+        input_data: RealArray,
         output_data: ndarray,
     ) -> None:
         self.algo.fit(input_data, output_data.ravel())
 
     def _predict(
         self,
-        input_data: ndarray,
+        input_data: RealArray,
     ) -> ndarray:
         return self.algo.predict(input_data).astype(int).reshape((len(input_data), -1))
 
     def _predict_proba_soft(
         self,
-        input_data: ndarray,
-    ) -> ndarray:
+        input_data: RealArray,
+    ) -> RealArray:
         if not self.parameters["probability"]:
             msg = (
                 "SVMClassifier soft probability prediction is only available if the "

@@ -73,7 +73,7 @@ class NewPredictiveClustererQuality(BasePredictiveClustererQuality):
 
 
 @pytest.mark.parametrize("train", [False, True])
-@pytest.mark.parametrize("samples", [None, [1, 2, 3]])
+@pytest.mark.parametrize("samples", [(), [1, 2, 3]])
 @pytest.mark.parametrize("multioutput", [True, False])
 def test_compute_learning_measure(learning_data, train, samples, multioutput) -> None:
     algo = NewAlgo(learning_data)
@@ -88,7 +88,7 @@ def test_compute_learning_measure(learning_data, train, samples, multioutput) ->
 
 
 @pytest.mark.parametrize("train", [False, True])
-@pytest.mark.parametrize("samples", [None, [1, 2, 3]])
+@pytest.mark.parametrize("samples", [(), [1, 2, 3]])
 @pytest.mark.parametrize("multioutput", [True, False])
 def test_compute_test_measure(
     learning_data, test_data, train, samples, multioutput
@@ -105,7 +105,7 @@ def test_compute_test_measure(
 
 
 @pytest.mark.parametrize("n_replicates", [1, 2])
-@pytest.mark.parametrize("samples", [None, [1, 2, 3]])
+@pytest.mark.parametrize("samples", [(), [1, 2, 3]])
 @pytest.mark.parametrize("multioutput", [True, False])
 def test_compute_bootstrap_measure(
     learning_data, n_replicates, samples, multioutput
@@ -120,7 +120,7 @@ def test_compute_bootstrap_measure(
 
 
 @pytest.mark.parametrize("n_folds", [2, 3])
-@pytest.mark.parametrize("samples", [None, [0, 1, 2]])
+@pytest.mark.parametrize("samples", [(), [0, 1, 2]])
 @pytest.mark.parametrize("multioutput", [True, False])
 def test_compute_cross_validation_measure(
     learning_data, n_folds, samples, multioutput

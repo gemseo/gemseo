@@ -35,7 +35,7 @@ where
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import NoReturn
+from typing import Any
 
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
@@ -83,7 +83,7 @@ class R2Measure(BaseRegressorQuality):
     def compute_cross_validation_measure(  # noqa: D102
         self,
         n_folds: int = 5,
-        samples: list[int] | None = None,
+        samples: list[int] = (),
         multioutput: bool = True,
         randomize: bool = BaseRegressorQuality._RANDOMIZE,
         seed: int | None = None,
@@ -104,14 +104,14 @@ class R2Measure(BaseRegressorQuality):
 
     def __evaluate_by_resampling(
         self,
-        as_dict,
-        multioutput,
-        update_seed,
+        as_dict: bool,
+        multioutput: bool,
+        update_seed: bool,
         resampler_class,
-        samples,
-        seed,
-        store_resampling_result,
-        **kwargs,
+        samples: list[int],
+        seed: int | None,
+        store_resampling_result: bool,
+        **kwargs: Any,
     ) -> MeasureType:
         """Evaluate the quality measure with a resampler.
 
@@ -167,12 +167,12 @@ class R2Measure(BaseRegressorQuality):
     def compute_bootstrap_measure(  # noqa: D102
         self,
         n_replicates: int = 100,
-        samples: list[int] | None = None,
+        samples: list[int] = (),
         multioutput: bool = True,
         seed: int | None = None,
         as_dict: bool = False,
         store_resampling_result: bool = False,
-    ) -> NoReturn:
+    ) -> MeasureType:
         return self.__evaluate_by_resampling(
             as_dict,
             multioutput,

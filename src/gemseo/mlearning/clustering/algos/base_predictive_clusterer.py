@@ -24,7 +24,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
-from typing import NoReturn
 
 from numpy import atleast_2d
 from numpy import ndarray
@@ -35,6 +34,8 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import DataType
+    from gemseo.typing import IntegerArray
+    from gemseo.typing import RealArray
 
 
 class BasePredictiveClusterer(BaseClusterer):
@@ -84,7 +85,7 @@ class BasePredictiveClusterer(BaseClusterer):
     def _predict(
         self,
         data: ndarray,
-    ) -> NoReturn:
+    ) -> ndarray:
         """Predict the clusters from input data.
 
         Args:
@@ -98,7 +99,7 @@ class BasePredictiveClusterer(BaseClusterer):
         self,
         data: DataType,
         hard: bool = True,
-    ) -> ndarray:
+    ) -> RealArray:
         """Predict the probability of belonging to each cluster from input data.
 
         The user can specify these input data either as a numpy array,
@@ -133,9 +134,9 @@ class BasePredictiveClusterer(BaseClusterer):
 
     def _predict_proba(
         self,
-        data: ndarray,
+        data: RealArray,
         hard: bool = True,
-    ) -> ndarray:
+    ) -> RealArray:
         """Predict the probability of belonging to each cluster.
 
         Args:
@@ -153,8 +154,8 @@ class BasePredictiveClusterer(BaseClusterer):
 
     def _predict_proba_hard(
         self,
-        data: ndarray,
-    ) -> ndarray:
+        data: RealArray,
+    ) -> IntegerArray:
         """Return 1 if the data belongs to a cluster, 0 otherwise.
 
         Args:
@@ -173,8 +174,8 @@ class BasePredictiveClusterer(BaseClusterer):
     @abstractmethod
     def _predict_proba_soft(
         self,
-        data: ndarray,
-    ) -> NoReturn:
+        data: RealArray,
+    ) -> RealArray:
         """Predict the probability of belonging to each cluster.
 
         Args:
