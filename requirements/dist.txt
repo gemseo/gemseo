@@ -34,7 +34,7 @@ jeepney==0.8.0
     # via
     #   keyring
     #   secretstorage
-keyring==25.4.0
+keyring==25.4.1
     # via twine
 markdown-it-py==3.0.0
     # via rich
