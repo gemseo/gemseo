@@ -850,9 +850,9 @@ def get_discipline_options_defaults(
     return MDODisciplineFactory().get_default_option_values(discipline_name)
 
 
-def get_scenario_differentiation_modes() -> (
-    tuple[OptimizationProblem.DifferentiationMethod]
-):
+def get_scenario_differentiation_modes() -> tuple[
+    OptimizationProblem.DifferentiationMethod
+]:
     """Return the names of the available differentiation modes of a scenario.
 
     Returns:
