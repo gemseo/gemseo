@@ -1,0 +1,1 @@
+API change: The ``N_CPUS`` constants have been replaced by a unique one in ``gemseo.utils.constants``.

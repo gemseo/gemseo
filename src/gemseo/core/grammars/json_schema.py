@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from collections import abc
 from collections.abc import MutableMapping
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
@@ -34,12 +33,12 @@ from genson.schema.strategies import Object
 from numpy import float64
 from numpy import int64
 
+from gemseo.typing import StrKeyMapping
+
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
     from typing_extensions import NotRequired
-
-    from gemseo.typing import StrKeyMapping
 
     Property = TypedDict(  # noqa: UP013
         "Property",
@@ -145,7 +144,7 @@ class _Number(Number):  # type: ignore[misc]
 
 
 class MutableMappingSchemaBuilder(
-    abc.Mapping[str, Any],
+    StrKeyMapping,
     SchemaBuilder,  # type: ignore[misc]
     metaclass=_MultipleMeta,
 ):

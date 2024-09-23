@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
@@ -30,30 +29,33 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
-    from typing import Final
-
-    from numpy.typing import NDArray
 
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.typing import StrKeyMapping
-
-N_CPUS: Final[int] = cpu_count()
 
 
 class BaseMDARoot(BaseMDASolver):
     """Abstract class implementing MDAs based on (Quasi-)Newton methods."""
 
-    n_processes: int
-    """The maximum number of simultaneous threads,  if :attr:`.use_threading` is True,
-    or processes otherwise, used to parallelize the execution."""
+    __n_processes: int
+    """The maximum number of threads or processes for parallel execution."""
 
-    use_threading: bool
+    _parallel_execution: DiscParallelExecution | None
+    """Either an executor of disciplines in parallel or ``None`` in serial mode."""
+
+    _parallel_linearization: DiscParallelLinearization | None
+    """Either an linearizor of disciplines in parallel or ``None`` in serial mode."""
+
+    __use_threading: bool
     """Whether to use threads instead of processes to parallelize the execution."""
+
+    _execute_before_linearizing: bool
+    """Whether to start by executing the discipline before linearizing them."""
 
     def __init__(
         self,
@@ -69,25 +71,49 @@ class BaseMDARoot(BaseMDASolver):
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
         linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        parallel: bool = False,
         use_threading: bool = True,
         n_processes: int = N_CPUS,
         acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
         over_relaxation_factor: float = 1.0,
+        execute_before_linearizing: bool = False,
     ) -> None:
         """
         Args:
-            parallel: Whether to execute and linearize the disciplines in parallel.
             n_processes: The maximum simultaneous number of threads if ``use_threading``
                 is set to True, otherwise processes, used to parallelize the execution.
             use_threading: Whether to use threads instead of processes to parallelize
-                the execution. Processes will copy (serialize) all the disciplines,
-                while threads will share all the memory. If one wants to execute the
+                the execution. Processes will copy (serialize) the disciplines,
+                while threads will share the memory. If one wants to execute the
                 same discipline multiple times then multiprocessing should be preferred.
+            execute_before_linearizing: Whether to start by executing the disciplines
+                with the input data for which to compute the Jacobian;
+                this allows to ensure that the discipline were executed
+                with the right input data;
+                it can be almost free if the corresponding output data
+                have been stored in the :attr:`.cache`.
         """  # noqa:D205 D212 D415
-        self.use_threading = use_threading
-        self.n_processes = n_processes
-        self.parallel = parallel
+        self.__use_threading = use_threading
+        self.__n_processes = n_processes
+        self._execute_before_linearizing = execute_before_linearizing
+        if n_processes > 1:
+            self._execute_disciplines = self._execute_disciplines_in_parallel
+            self._linearize_disciplines = self._linearize_disciplines_in_parallel
+            self._parallel_execution = DiscParallelExecution(
+                disciplines,
+                n_processes,
+                use_threading=use_threading,
+            )
+            self._parallel_linearization = DiscParallelLinearization(
+                disciplines,
+                n_processes,
+                use_threading=use_threading,
+                execute=execute_before_linearizing,
+            )
+        else:
+            self._execute_disciplines = self._execute_disciplines_sequentially
+            self._linearize_disciplines = self._linearize_disciplines_sequentially
+            self._parallel_execution = None
+            self._parallel_linearization = False
 
         super().__init__(
             disciplines,
@@ -105,57 +131,50 @@ class BaseMDARoot(BaseMDASolver):
             acceleration_method=acceleration_method,
             over_relaxation_factor=over_relaxation_factor,
         )
-
         self._compute_input_coupling_names()
         self._set_resolved_variables(self.strong_couplings)
 
-    def linearize_all_disciplines(
-        self, input_data: Mapping[str, NDArray], execute: bool = True
-    ) -> None:
-        """Linearize all disciplines.
+    def _linearize_disciplines_sequentially(self, input_data: StrKeyMapping) -> None:
+        """Linearize the disciplines sequentially.
 
         Args:
-            input_data: The input data to be passed to the disciplines.
-            execute: Whether to start by executing the discipline
-                with the input data for which to compute the Jacobian;
-                this allows to ensure that the discipline was executed
-                with the right input data;
-                it can be almost free if the corresponding output data
-                have been stored in the :attr:`.cache`.
+            input_data: The input data to execute the disciplines.
         """
-        disciplines = self.coupling_structure.disciplines
-        if self.parallel:
-            parallel_linearization = DiscParallelLinearization(
-                disciplines,
-                self.n_processes,
-                use_threading=self.use_threading,
-                execute=execute,
-            )
-            parallel_linearization.execute([input_data] * len(disciplines))
-        else:
-            for disc in disciplines:
-                disc.linearize(input_data, execute=execute)
+        for discipline in self.disciplines:
+            discipline.linearize(input_data, execute=self._execute_before_linearizing)
 
-    def execute_all_disciplines(
-        self, input_local_data: Mapping[str, NDArray], update_local_data: bool = True
+    def _linearize_disciplines_in_parallel(
+        self,
+        input_data: StrKeyMapping,
     ) -> None:
-        """Execute all disciplines.
+        """Linearize the disciplines in parallel.
 
         Args:
-            input_local_data: The input data of the disciplines.
-            update_local_data: Whether to update the local data from the disciplines.
+            input_data: The input data to execute the disciplines.
         """
-        if self.parallel:
-            parallel_execution = DiscParallelExecution(
-                self.disciplines,
-                self.n_processes,
-                use_threading=self.use_threading,
-            )
-            parallel_execution.execute([input_local_data] * len(self.disciplines))
-        else:
-            for discipline in self.disciplines:
-                discipline.execute(input_local_data)
+        self._parallel_linearization.execute([input_data] * len(self.disciplines))
 
-        if update_local_data:
-            for discipline in self.disciplines:
-                self.local_data.update(discipline.get_output_data())
+    def _execute_disciplines_and_update_local_data(
+        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
+    ) -> None:
+        input_data = input_data or self.local_data
+        self._execute_disciplines(input_data)
+        for discipline in self.disciplines:
+            self.local_data.update(discipline.get_output_data())
+
+    def _execute_disciplines_in_parallel(self, input_data: StrKeyMapping) -> None:
+        """Execute the discipline in parallel.
+
+        Args:
+            input_data: The input data of the disciplines.
+        """
+        self._parallel_execution.execute([input_data] * len(self.disciplines))
+
+    def _execute_disciplines_sequentially(self, input_data: StrKeyMapping) -> None:
+        """Execute the discipline sequentially.
+
+        Args:
+            input_data: The input data of the disciplines.
+        """
+        for discipline in self.disciplines:
+            discipline.execute(input_data)

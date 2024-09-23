@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import collections
 import logging
 from abc import abstractmethod
 from copy import copy
@@ -37,6 +36,7 @@ from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.core.namespaces import MutableNamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import update_namespaces
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -50,7 +50,6 @@ if TYPE_CHECKING:
 
     from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
-    from gemseo.typing import StrKeyMapping
 
     SimpleGrammarTypes = Mapping[str, Optional[type[Any]]]
 
@@ -58,7 +57,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class BaseGrammar(
-    collections.abc.Mapping[str, Any],
+    StrKeyMapping,
     metaclass=ABCGoogleDocstringInheritanceMeta,
 ):
     """An abstract base class for grammars with a dictionary-like interface.

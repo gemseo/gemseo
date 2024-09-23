@@ -46,7 +46,7 @@ def order_disciplines_from_default_inputs(
     sequentially the disciplines that can be executed, and records the execution order.
 
     Raises:
-        ValueError: When not all the disciplines can be initialized.
+        ValueError: When a discipline cannot be initialized.
 
     Args:
         disciplines: The disciplines to compute the initialization of.

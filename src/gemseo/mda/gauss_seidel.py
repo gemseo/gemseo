@@ -121,23 +121,24 @@ class MDAGaussSeidel(BaseMDASolver):
             )
             self.output_grammar.update(discipline.output_grammar)
 
-    def execute_all_disciplines(self) -> None:
-        """Execute all the disciplines in sequence."""
+    def _execute_disciplines_and_update_local_data(
+        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
+    ) -> None:
+        input_data = input_data or self.local_data
         for discipline in self.disciplines:
-            discipline.execute(self.local_data)
+            discipline.execute(input_data)
             self.local_data.update(discipline.get_output_data())
 
     def _run(self) -> None:
         super()._run()
-        self.execute_all_disciplines()
+        self._execute_disciplines_and_update_local_data()
         if self.max_mda_iter == 0:
             return
 
         while True:
-            input_data = self.local_data.copy()
-
-            self.execute_all_disciplines()
-            self._compute_residuals(input_data)
+            local_data_before_execution = self.local_data.copy()
+            self._execute_disciplines_and_update_local_data()
+            self._compute_residuals(local_data_before_execution)
 
             if self._stop_criterion_is_reached:
                 break
@@ -151,7 +152,7 @@ class MDAGaussSeidel(BaseMDASolver):
 
     def _get_disciplines_couplings(
         self, graph: DependencyGraph
-    ) -> list[tuple[str, str, list[str]]]:
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         couplings_results = []
         disc_already_seen = set()
 
@@ -165,19 +166,23 @@ class MDAGaussSeidel(BaseMDASolver):
                 set(graph.graph.predecessors(disc)) - {self} & disc_already_seen
             )
             for predecessor in sorted(predecessors, key=lambda p: p.name):
-                current_couplings = graph.graph.get_edge_data(predecessor, disc)["io"]
+                current_couplings = graph.graph.get_edge_data(predecessor, disc)[
+                    graph.IO
+                ]
                 couplings_results.append((predecessor, disc, sorted(current_couplings)))
                 couplings_with_mda_to_be_removed.update(current_couplings)
 
             in_data = graph.graph.get_edge_data(self, disc)
             if in_data:
-                couplings_with_mda = in_data["io"] - couplings_with_mda_to_be_removed
+                couplings_with_mda = (
+                    in_data[graph.IO] - couplings_with_mda_to_be_removed
+                )
                 if couplings_with_mda:
                     couplings_results.append((self, disc, sorted(couplings_with_mda)))
 
             out_data = graph.graph.get_edge_data(disc, self)
             if out_data:
-                couplings_results.append((disc, self, sorted(out_data["io"])))
+                couplings_results.append((disc, self, sorted(out_data[graph.IO])))
 
             disc_already_seen.add(disc)
 

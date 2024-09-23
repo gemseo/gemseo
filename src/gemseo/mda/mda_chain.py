@@ -24,20 +24,21 @@
 from __future__ import annotations
 
 import logging
+from inspect import getfullargspec
 from itertools import repeat
-from multiprocessing import cpu_count
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from numpy import array
 
-from gemseo import create_mda
 from gemseo.core.chain import MDOChain
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.factory import MDAFactory
 from gemseo.mda.initialization_chain import MDOInitializationChain
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -51,8 +52,6 @@ if TYPE_CHECKING:
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
-
-N_CPUS = cpu_count()
 
 
 class MDAChain(BaseMDA):
@@ -222,7 +221,7 @@ class MDAChain(BaseMDA):
         self,
         disciplines: Sequence[MDODiscipline],
         inner_mda_name: str,
-        parallel_tasks: list[tuple[MDODiscipline]],
+        parallel_tasks: list[tuple[MDODiscipline, ...]],
         mdachain_parallelize_tasks: bool,
         mdachain_parallel_options: Mapping[str, int | bool],
         inner_mda_options: Mapping[str, float | int | bool | str | None],
@@ -238,9 +237,6 @@ class MDAChain(BaseMDA):
         Args:
             disciplines: The disciplines.
             inner_mda_name: The inner :class:`.BaseMDA` class name.
-            acceleration: The acceleration method to be used to improve the convergence
-                rate of the fixed point iteration method.
-            over_relax_factor: The over-relaxation factor.
             parallel_tasks: The parallel tasks to be processed.
             mdachain_parallelize_tasks: Whether to parallelize the parallel tasks,
                 if any.
@@ -267,7 +263,7 @@ class MDAChain(BaseMDA):
         self,
         disciplines: Sequence[MDODiscipline],
         inner_mda_name: str,
-        parallel_tasks: list[tuple[MDODiscipline]],
+        parallel_tasks: list[tuple[MDODiscipline, ...]],
         inner_mda_options: Mapping[str, float | int | bool | str | None],
     ) -> Sequence[MDODiscipline | BaseMDA]:
         """Compute the parallel disciplines.
@@ -281,9 +277,6 @@ class MDAChain(BaseMDA):
         Args:
             disciplines: The disciplines.
             inner_mda_name: The inner :class:`.BaseMDA` class name.
-            acceleration: The acceleration method to be used to improve the convergence
-                rate of the fixed point iteration method.
-            over_relax_factor: The over-relaxation factor.
             parallel_tasks: The parallel tasks.
             inner_mda_name: The inner :class:`.BaseMDA` class name.
             inner_mda_options: The inner :class:`.BaseMDA` options.
@@ -353,9 +346,6 @@ class MDAChain(BaseMDA):
             coupled_disciplines: The coupled disciplines.
             inner_mda_name: The inner :class:`.BaseMDA` class name.
             inner_mda_options: The inner :class:`.BaseMDA` options.
-            acceleration: The acceleration method to be used to improve the convergence
-                rate of the fixed point iteration method.
-            over_relax_factor: The over-relaxation factor.
 
         Returns:
             The :class:`.BaseMDA` instance.
@@ -363,8 +353,14 @@ class MDAChain(BaseMDA):
         inner_mda_disciplines = self.__get_coupled_disciplines_initial_order(
             coupled_disciplines, disciplines
         )
-        mda = create_mda(
-            inner_mda_name,
+        mda_factory = MDAFactory()
+        mda_class = mda_factory.get_class(inner_mda_name)
+        option = "n_processes"
+        if option in getfullargspec(mda_class)[0] and option not in inner_mda_options:
+            inner_mda_options = dict(inner_mda_options)
+            inner_mda_options.pop(option, self.n_processes)
+
+        return mda_class(
             inner_mda_disciplines,
             max_mda_iter=self.max_mda_iter,
             tolerance=self.tolerance,
@@ -376,10 +372,6 @@ class MDAChain(BaseMDA):
             coupling_structure=next(self.__sub_coupling_structures_iterator),
             **inner_mda_options,
         )
-
-        mda.n_processes = self.n_processes
-
-        return mda
 
     def __is_one_discipline_self_coupled(
         self, disciplines: Sequence[MDODiscipline]

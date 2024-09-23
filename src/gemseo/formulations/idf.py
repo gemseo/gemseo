@@ -90,7 +90,7 @@ class IDF(BaseMDOFormulation):
                 you shall use multiprocessing.
             start_at_equilibrium: If ``True``,
                 an MDA is used to initialize the coupling variables.
-            mda_options_for_start_at_equilibrium: The options for the MDA when
+            **mda_options_for_start_at_equilibrium: The options for the MDA when
                 ``start_at_equilibrium=True``.
                 See detailed options in :class:`.MDAChain`.
         """  # noqa: D205, D212, D415

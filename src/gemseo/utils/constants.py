@@ -16,9 +16,14 @@
 
 from __future__ import annotations
 
+from multiprocessing import cpu_count
 from types import MappingProxyType
 from typing import Any
 from typing import Final
+
+N_CPUS: Final[int] = cpu_count()
+"""The number of CPUs in the system."""
+
 
 READ_ONLY_EMPTY_DICT: Final[MappingProxyType[Any, Any]] = MappingProxyType({})
 """A read-only empty dictionary."""

@@ -43,6 +43,7 @@ from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -120,7 +121,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     """The names of the strong coupling variables."""
 
     all_couplings: list[str]
-    """The names of all the coupling variables."""
+    """The names of the coupling variables."""
 
     matrix_type: JacobianAssembly.JacobianType
     """The type of the matrix."""
@@ -334,10 +335,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self._scaling = scaling
 
     def _initialize_grammars(self) -> None:
-        """Define all the inputs and outputs of the MDA.
-
-        Add all the outputs of all the disciplines to the outputs.
-        """
+        """Define the grammars as the union of the disciplines' grammars."""
         for discipline in self.disciplines:
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
@@ -513,7 +511,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _get_disciplines_couplings(
         self, graph: DependencyGraph
-    ) -> list[tuple[str, str, list[str]]]:
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         """Return the couplings between disciplines.
 
         Args:
@@ -579,7 +577,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         inputs: Iterable[str] = (),
         outputs: Iterable[str] = (),
         parallel: bool = False,
-        n_processes: int = MDODiscipline.N_CPUS,
+        n_processes: int = N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: int = 0,
         auto_set_step: bool = False,
@@ -627,8 +625,8 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 used to parallelize the execution.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
-                multiprocessing will copy (serialize) all the disciplines,
-                while threading will share all the memory.
+                multiprocessing will copy (serialize) the disciplines,
+                while threading will share the memory.
                 This is important to note
                 if you want to execute the same discipline multiple times,
                 you shall use multiprocessing.
@@ -837,3 +835,13 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def _run(self) -> None:  # noqa:D103
         if self.warm_start:
             self._prepare_warm_start()
+
+    def _execute_disciplines_and_update_local_data(
+        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
+    ) -> None:
+        """Execute the disciplines and update the local data with their output data.
+
+        Args:
+            input_data: The input data to execute the disciplines.
+                If empty, use the local data.
+        """
