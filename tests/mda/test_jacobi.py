@@ -25,11 +25,14 @@ import pytest
 from numpy import allclose as allclose_
 from numpy import array
 from numpy import isclose
+from numpy.testing import assert_equal
 
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -112,19 +115,21 @@ def test_jacobi_sobieski() -> None:
 
 
 def test_mda_jacobi_parallel() -> None:
-    """Comparison of Jacobi on Sobieski problem: 1 and 5 processes."""
-    mda_seq = SobieskiMDAJacobi()
-    sorted_c = ["y_12", "y_14", "y_21", "y_23", "y_24", "y_31", "y_32", "y_34"]
-    assert mda_seq._input_couplings == sorted_c
+    """Comparison of Jacobi on Sobieski problem: 1 and 4 processes."""
+    sorted_couplings = ["y_12", "y_14", "y_21", "y_23", "y_24", "y_31", "y_32", "y_34"]
 
-    outdata_seq = mda_seq.execute()
+    mda_seq = SobieskiMDAJacobi()
+    assert mda_seq._input_couplings == sorted_couplings
+    assert mda_seq.parallel_execution is None
+    mda_seq_local_data = mda_seq.execute()
 
     mda_parallel = SobieskiMDAJacobi(n_processes=4)
+    assert mda_seq._input_couplings == sorted_couplings
+    assert mda_parallel.parallel_execution is not None
     mda_parallel.reset_statuses_for_run()
-    outdata_parallel = mda_parallel.execute()
+    mda_parallel_local_data = mda_parallel.execute()
 
-    for key, value in outdata_seq.items():
-        assert array(outdata_parallel[key] == value).all()
+    assert_equal(mda_seq_local_data, mda_parallel_local_data)
 
 
 def test_jacobi_sellar(sellar_disciplines) -> None:
@@ -237,3 +242,21 @@ def test_parallel_doe(generate_parallel_doe_data) -> None:
     """
     obj = generate_parallel_doe_data("MDAJacobi", 7)
     assert isclose(array([-obj]), array([608.175]), atol=1e-3)
+
+
+def test_no_coupling():
+    """Check what happens when the disciplines are not coupled."""
+    disciplines = [AnalyticDiscipline({"y": "a"}), AnalyticDiscipline({"z": "2*a"})]
+    mda = MDAJacobi(disciplines)
+    mda.default_inputs["a"] = array([1.0])
+    assert not mda._get_disciplines_couplings(DependencyGraph(disciplines))
+    local_data = mda.execute()
+    assert_equal(
+        local_data,
+        {
+            "a": array([1.0]),
+            "y": array([1.0]),
+            "z": array([2.0]),
+            "MDA residuals norm": array([0.0]),
+        },
+    )

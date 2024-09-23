@@ -121,7 +121,6 @@ class MDAGSNewton(MDASequential):
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         max_mda_iter: int = 10,
-        relax_factor: float = 0.99,
         linear_solver: str = "DEFAULT",
         max_mda_iter_gs: int = 3,
         linear_solver_tolerance: float = 1e-12,
@@ -134,7 +133,6 @@ class MDAGSNewton(MDASequential):
     ) -> None:
         """
         Args:
-            relax_factor: The relaxation factor.
             max_mda_iter_gs: The maximum number of iterations of the Gauss-Seidel MDA.
             newton_linear_solver: The name of the linear solver for the Newton method.
             newton_linear_solver_options: The options for the Newton linear solver.

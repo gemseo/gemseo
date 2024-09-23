@@ -1,0 +1,1 @@
+API change: The ``relax_factor`` argument of ``MDAGSNewton`` has been removed; use ``over_relaxation_factor`` instead.

@@ -108,6 +108,7 @@ class MDAQuasiNewton(BaseMDARoot):
         coupling_structure: CouplingStructure | None = None,
         linear_solver: str = "DEFAULT",
         linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        execute_before_linearizing: bool = False,
     ) -> None:
         """
         Args:
@@ -129,6 +130,7 @@ class MDAQuasiNewton(BaseMDARoot):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
+            execute_before_linearizing=execute_before_linearizing,
         )
         self.method = method
 
@@ -244,18 +246,20 @@ class MDAQuasiNewton(BaseMDARoot):
         # Work on a temporary copy so _update_local_data can be called.
         local_data_copy = self._local_data.copy()
         self._update_local_data_from_array(x_vect)
-        input_data = self._local_data
+        local_data_before_execution = self._local_data
         self._local_data = local_data_copy
         self.reset_disciplines_statuses()
-        self.execute_all_disciplines(input_data)
-        self._compute_residuals(input_data)
-        return self.assembly.residuals(input_data, self._resolved_variable_names).real
+        self._execute_disciplines_and_update_local_data(local_data_before_execution)
+        self._compute_residuals(local_data_before_execution)
+        return self.assembly.residuals(
+            local_data_before_execution, self._resolved_variable_names
+        ).real
 
     def _run(self) -> DisciplineData:
         super()._run()
 
         self.reset_disciplines_statuses()
-        self.execute_all_disciplines(self._local_data)
+        self._execute_disciplines_and_update_local_data()
 
         if not self.strong_couplings:
             msg = (

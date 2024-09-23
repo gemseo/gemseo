@@ -191,9 +191,11 @@ def test_raphson_sellar_without_cache(use_cache) -> None:
 def test_raphson_sellar(parallel) -> None:
     """Test the execution of Newton on Sobieski."""
     disciplines = [Sellar1(), Sellar2()]
-    mda = MDANewtonRaphson(disciplines, parallel=parallel)
+    kwargs = {} if parallel else {"n_processes": 1}
+    mda = MDANewtonRaphson(disciplines, **kwargs)
     mda.execute()
 
+    assert (mda._BaseMDARoot__n_processes == 1) is not parallel
     assert mda.residual_history[-1] < 1e-6
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 

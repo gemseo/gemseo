@@ -20,15 +20,14 @@
 
 from __future__ import annotations
 
-from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
-from typing import Final
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -38,9 +37,6 @@ if TYPE_CHECKING:
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.execution_sequence import LoopExecSequence
     from gemseo.typing import StrKeyMapping
-
-
-N_CPUS: Final[int] = cpu_count()
 
 
 class MDAJacobi(BaseMDASolver):
@@ -78,6 +74,12 @@ class MDAJacobi(BaseMDASolver):
         \right.
     """
 
+    __n_processes: int
+    """The maximum number of threads or processes for parallel execution."""
+
+    parallel_execution: DiscParallelExecution | None
+    """Either an executor of disciplines in parallel or ``None`` in serial mode."""
+
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
@@ -102,11 +104,11 @@ class MDAJacobi(BaseMDASolver):
             n_processes: The maximum simultaneous number of threads if ``use_threading``
                 is set to True, otherwise processes, used to parallelize the execution.
             use_threading: Whether to use threads instead of processes to parallelize
-                the execution. Processes will copy (serialize) all the disciplines,
-                while threads will share all the memory. If one wants to execute the
-                same discipline multiple times then multiprocessing should be prefered.
+                the execution. Processes will copy (serialize) the disciplines,
+                while threads will share the memory. If one wants to execute the
+                same discipline multiple times then multiprocessing should be preferred.
         """  # noqa:D205 D212 D415
-        self.n_processes = n_processes
+        self.__n_processes = n_processes
         super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
@@ -126,21 +128,25 @@ class MDAJacobi(BaseMDASolver):
 
         self._compute_input_coupling_names()
         self._set_resolved_variables(self._input_couplings)
-
-        self.parallel_execution = DiscParallelExecution(
-            disciplines,
-            n_processes,
-            use_threading,
-            exceptions_to_re_raise=(ValueError,),
-        )
+        if n_processes == 1:
+            self._execute_disciplines = self._execute_disciplines_sequentially
+            self.parallel_execution = None
+        else:
+            self._execute_disciplines = self._execute_disciplines_in_parallel
+            self.parallel_execution = DiscParallelExecution(
+                disciplines,
+                n_processes,
+                use_threading,
+                exceptions_to_re_raise=(ValueError,),
+            )
 
     def _compute_input_coupling_names(self) -> None:
-        """Compute all the coupling variables that are inputs of the MDA.
+        """Compute the coupling variables that are inputs of the MDA.
 
         This must be overloaded here because the Jacobi algorithm induces a delay
         between the couplings, the strong couplings may be fully resolved but the weak
-        ones may need one more iteration. The base MDA class uses strong couplings only
-        which is not satisfying here if all disciplines are not strongly coupled.
+        ones may need one more iteration. The base MDA class uses strong couplings only,
+        which is not satisfying here if some disciplines are not strongly coupled.
         """
         if len(self.coupling_structure.strongly_coupled_disciplines) == len(
             self.disciplines
@@ -159,24 +165,28 @@ class MDAJacobi(BaseMDASolver):
 
         return None
 
-    def execute_all_disciplines(self) -> None:
-        """Execute all the disciplines, possibly in parallel."""
+    def _execute_disciplines_in_parallel(self) -> None:
+        """Execute the disciplines in parallel."""
+        self.parallel_execution.execute([self.local_data] * len(self.disciplines))
+
+    def _execute_disciplines_sequentially(self) -> None:
+        """Execute the disciplines sequentially."""
+        for discipline in self.disciplines:
+            discipline.execute(self.local_data)
+
+    def _execute_disciplines_and_update_local_data(
+        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
+    ) -> None:
         self.reset_disciplines_statuses()
-
-        if self.n_processes > 1:
-            self.parallel_execution.execute([self.local_data] * len(self.disciplines))
-        else:
-            for discipline in self.disciplines:
-                discipline.execute(self.local_data)
-
+        self._execute_disciplines()
         for discipline in self.disciplines:
             self.local_data.update(discipline.get_output_data())
 
     def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
-        if self.n_processes > 1:
-            sub_workflow = ExecutionSequenceFactory.parallel()
-        else:
+        if self.parallel_execution is None:
             sub_workflow = ExecutionSequenceFactory.serial()
+        else:
+            sub_workflow = ExecutionSequenceFactory.parallel()
 
         for discipline in self.disciplines:
             sub_workflow.extend(discipline.get_expected_workflow())
@@ -185,26 +195,28 @@ class MDAJacobi(BaseMDASolver):
 
     def _get_disciplines_couplings(
         self, graph: DependencyGraph
-    ) -> list[tuple[str, str, list[str]]]:
-        couplings_results = []
-        for disc in self.disciplines:
-            in_data = graph.graph.get_edge_data(self, disc)
-            if in_data:
-                couplings_results.append((self, disc, sorted(in_data["io"])))
-            out_data = graph.graph.get_edge_data(disc, self)
-            if out_data:
-                couplings_results.append((disc, self, sorted(out_data["io"])))
+    ) -> list[tuple[MDODiscipline, MDAJacobi, list[str]]]:
+        disciplines_couplings = []
+        get_edge_data = graph.graph.get_edge_data
+        for discipline in self.disciplines:
+            for source, target in ((self, discipline), (discipline, self)):
+                edge_data = get_edge_data(source, target)
+                if edge_data:
+                    disciplines_couplings.append((
+                        source,
+                        target,
+                        sorted(edge_data.get(graph.IO)),
+                    ))
 
-        return couplings_results
+        return disciplines_couplings
 
     def _run(self) -> None:
         super()._run()
 
         while True:
-            input_data = self.local_data.copy()
-
-            self.execute_all_disciplines()
-            self._compute_residuals(input_data)
+            local_data_before_execution = self.local_data.copy()
+            self._execute_disciplines_and_update_local_data()
+            self._compute_residuals(local_data_before_execution)
 
             if self._stop_criterion_is_reached:
                 break

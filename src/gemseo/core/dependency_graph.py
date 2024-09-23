@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Final
 from typing import cast
 
 from gemseo.core.discipline import MDODiscipline
@@ -66,6 +67,9 @@ class DependencyGraph:
 
     The coupled inputs and outputs names are stored as an edge attributes named io.
     """
+
+    IO: Final[str] = "io"
+    """The argument name for the coupling variables associated with an edge."""
 
     def __init__(self, disciplines: Sequence[MDODiscipline]) -> None:
         """
@@ -160,7 +164,7 @@ class DependencyGraph:
             variables names.
         """
         couplings = []
-        for from_disc, to_disc, edge_names in self.__graph.edges(data="io"):
+        for from_disc, to_disc, edge_names in self.__graph.edges(data=self.IO):
             couplings += [(from_disc, to_disc, sorted(edge_names))]
         return couplings
 
@@ -274,7 +278,7 @@ class DependencyGraph:
 
         # 1. Add the edges with different head and tail nodes
         #    (case: some outputs of a discipline are inputs of another one)
-        for head_node, tail_node, coupling_names in graph.edges(data="io"):
+        for head_node, tail_node, coupling_names in graph.edges(data=self.IO):
             head_name = self.__get_node_name(graph, head_node)
             tail_name = self.__get_node_name(graph, tail_node)
             if not isinstance(tail_node, MDODiscipline):

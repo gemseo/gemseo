@@ -26,6 +26,8 @@ from networkx import DiGraph
 from networkx import edge_bfs
 from networkx import reverse_view
 
+from gemseo.core.dependency_graph import DependencyGraph
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
@@ -115,7 +117,7 @@ def _bfs_one_way_diff_io(
     diff_io: DisciplineIOMapping = {}
     for source_disc in source_disciplines:
         for edge in edge_bfs(graph, source=source_disc):
-            coupl_io = graph.get_edge_data(*edge)["io"]
+            coupl_io = graph.get_edge_data(*edge)[DependencyGraph.IO]
             # The origin of the edge is the discipline that computes the outputs.
             # These outputs are added to the outputs to be differentiated.
             disc_1 = edge[0]

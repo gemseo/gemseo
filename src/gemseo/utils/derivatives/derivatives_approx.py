@@ -27,7 +27,6 @@ from collections.abc import Mapping
 from collections.abc import Sequence
 from collections.abc import Sized
 from contextlib import contextmanager
-from multiprocessing import cpu_count
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -38,6 +37,7 @@ from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,
 )
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
@@ -72,8 +72,6 @@ LOGGER = logging.getLogger(__name__)
 
 class DisciplineJacApprox:
     """Approximates a discipline Jacobian using finite differences or Complex step."""
-
-    N_CPUS = cpu_count()
 
     approximator: BaseGradientApproximator | None
     """The gradient approximation method."""

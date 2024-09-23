@@ -29,13 +29,11 @@ from collections import defaultdict
 from copy import deepcopy
 from multiprocessing import Manager
 from multiprocessing import Value
-from multiprocessing import cpu_count
 from pathlib import Path
 from timeit import default_timer as timer
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Final
 
 from numpy import concatenate
 from numpy import empty
@@ -54,6 +52,7 @@ from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import remove_prefix_from_list
 from gemseo.core.serializable import Serializable
 from gemseo.disciplines.utils import get_sub_disciplines
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.derivatives_approx import EPSILON
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
@@ -226,9 +225,6 @@ class MDODiscipline(Serializable, metaclass=ClassInjector):
     virtual_execution: ClassVar[bool] = False
     """Whether to skip the :meth:`._run` method during execution and return the
     :attr:`.default_outputs`, whatever the inputs."""
-
-    N_CPUS: Final[int] = cpu_count()
-    """The number of available CPUs."""
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {
         "_status_observers",

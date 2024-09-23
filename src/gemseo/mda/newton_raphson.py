@@ -31,6 +31,7 @@ from strenum import StrEnum
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda_root import BaseMDARoot
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -95,11 +96,11 @@ class MDANewtonRaphson(BaseMDARoot):
         linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         newton_linear_solver_name: NewtonLinearSolver = NewtonLinearSolver.DEFAULT,
         newton_linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        parallel: bool = False,
         use_threading: bool = True,
-        n_processes: int = BaseMDARoot.N_CPUS,
+        n_processes: int = N_CPUS,
         acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
         over_relaxation_factor: float = 0.99,
+        execute_before_linearizing: bool = False,
     ) -> None:
         """
         Args:
@@ -124,11 +125,11 @@ class MDANewtonRaphson(BaseMDARoot):
             linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
-            parallel=parallel,
             use_threading=use_threading,
             n_processes=n_processes,
             acceleration_method=acceleration_method,
             over_relaxation_factor=over_relaxation_factor,
+            execute_before_linearizing=execute_before_linearizing,
         )
 
         # We use all couplings to form the Newton matrix otherwise the effect of the
@@ -196,7 +197,7 @@ class MDANewtonRaphson(BaseMDARoot):
         Returns:
             The Newton step.
         """
-        self.linearize_all_disciplines(input_data, execute=False)
+        self._linearize_disciplines(input_data)
 
         newton_step, is_converged = self.assembly.compute_newton_step(
             input_data,
@@ -221,16 +222,16 @@ class MDANewtonRaphson(BaseMDARoot):
         super()._run()
 
         while True:
-            input_data = self.local_data.copy()
+            local_data_before_execution = self.local_data.copy()
             input_couplings = self.get_current_resolved_variables_vector()
 
-            self.execute_all_disciplines(self.local_data)
-            self._compute_residuals(input_data)
+            self._execute_disciplines_and_update_local_data()
+            self._compute_residuals(local_data_before_execution)
 
             if self._stop_criterion_is_reached:
                 break
 
-            newton_step = self.__compute_newton_step(input_data)
+            newton_step = self.__compute_newton_step(local_data_before_execution)
             updated_couplings = self._sequence_transformer.compute_transformed_iterate(
                 input_couplings + newton_step,
                 newton_step,

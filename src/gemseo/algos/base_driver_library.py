@@ -38,7 +38,6 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterable
-from collections.abc import Mapping
 from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
@@ -71,6 +70,7 @@ from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.logging_tools import OneLineLogging
@@ -82,7 +82,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
 
 DriverLibraryOptionType = Union[
-    str, float, int, bool, list[str], ndarray, Iterable[CallbackType], Mapping[str, Any]
+    str, float, int, bool, list[str], ndarray, Iterable[CallbackType], StrKeyMapping
 ]
 LOGGER = logging.getLogger(__name__)
 

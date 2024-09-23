@@ -24,12 +24,10 @@ from __future__ import annotations
 import itertools
 import logging
 from collections import defaultdict
-from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import ClassVar
-from typing import Final
 from typing import NamedTuple
 
 import matplotlib.pyplot as plt
@@ -207,9 +205,6 @@ class JacobianAssembly:
     """The linear solver factory."""
 
     DerivationMode: TypeAlias = derivation_modes.DerivationMode
-
-    N_CPUS: Final[int] = cpu_count()
-    """The number of available CPUs."""
 
     class JacobianType(StrEnum):
         """The available types for the Jacobian matrix."""

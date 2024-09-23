@@ -27,7 +27,6 @@ import threading as th
 import time
 import traceback
 from collections.abc import Callable
-from multiprocessing import cpu_count
 from multiprocessing import current_process
 from multiprocessing import get_context
 from typing import TYPE_CHECKING
@@ -41,6 +40,7 @@ from typing import Union
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from strenum import StrEnum
 
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
@@ -151,9 +151,6 @@ class CallableParallelExecution(
         MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.SPAWN
     else:  # pragma: win32 no cover
         MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.FORK
-
-    N_CPUS: Final[int] = cpu_count()
-    """The number of CPUs."""
 
     workers: Sequence[CallableType[ArgT, ReturnT]]
     """The objects that perform the tasks."""

@@ -26,6 +26,7 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
 )
 from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 from gemseo.typing import StrKeyMapping
+from gemseo.utils.constants import N_CPUS
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -87,7 +88,7 @@ class DiscParallelLinearization(
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
-        n_processes: int = CallableParallelExecution.N_CPUS,
+        n_processes: int = N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
         exceptions_to_re_raise: Sequence[type[Exception]] = (),
