@@ -30,7 +30,7 @@ from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import BasePostFactory
+from gemseo.post.factory import PostFactory
 from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
@@ -39,7 +39,7 @@ CURRENT_DIR = Path(__file__).parent
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 pytestmark = pytest.mark.skipif(
-    not BasePostFactory().is_available("ScatterPlotMatrix"),
+    not PostFactory().is_available("ScatterPlotMatrix"),
     reason="ScatterPlotMatrix is not available.",
 )
 
@@ -50,7 +50,7 @@ def test_scatter(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = BasePostFactory()
+    factory = PostFactory()
     problem = Power2()
     OptimizationLibraryFactory().execute(problem, "SLSQP")
     post = factory.execute(
@@ -70,7 +70,7 @@ def test_scatter_load(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = BasePostFactory()
+    factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
         problem,
@@ -93,7 +93,7 @@ def test_non_existent_var(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = BasePostFactory()
+    factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER2)
     with pytest.raises(
         ValueError,
@@ -182,7 +182,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
         filter_non_feasible: If True, remove the non-feasible points from the data.
         baseline_images: The reference images to be compared.
     """
-    factory = BasePostFactory()
+    factory = PostFactory()
     # Create a Power2 instance
     problem = Power2()
     # Add feasible points
@@ -214,7 +214,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
 
 def test_filter_non_feasible_exception() -> None:
     """Test exception when no feasible points are left after filtering."""
-    factory = BasePostFactory()
+    factory = PostFactory()
     # Create a Power2 instance
     problem = Power2()
     # Add two non-feasible points

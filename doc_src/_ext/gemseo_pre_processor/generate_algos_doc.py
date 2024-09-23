@@ -41,7 +41,7 @@ from gemseo.mlearning.classification.algos.factory import ClassifierFactory
 from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
 from gemseo.mlearning.regression.algos.factory import RegressorFactory
-from gemseo.post.factory import BasePostFactory
+from gemseo.post.factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
@@ -486,7 +486,7 @@ def main(gen_opts_path: str | Path) -> None:
         InitOptionsDoc("ml_quality", "Quality measures", MLAlgoQualityFactory()),
         InitOptionsDoc("mda", "MDA algorithms", MDAFactory()),
         InitOptionsDoc("formulation", "MDO formulations", MDOFormulationFactory()),
-        BasePostAlgoOptionsDoc("post", "Post-processing algorithms", BasePostFactory()),
+        BasePostAlgoOptionsDoc("post", "Post-processing algorithms", PostFactory()),
         DriverOptionsDoc(
             "doe", "DOE algorithms", DOELibraryFactory(), user_guide_anchor="doe"
         ),

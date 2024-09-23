@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 
-class BasePostFactory(BaseFactory[BasePost[Any]]):
+class PostFactory(BaseFactory[BasePost[Any]]):
     """A factory of post-processors."""
 
     _CLASS = BasePost

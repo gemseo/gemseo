@@ -543,9 +543,9 @@ def get_available_post_processings() -> list[str]:
         execute_post
         get_post_processing_options_schema
     """
-    from gemseo.post.factory import BasePostFactory
+    from gemseo.post.factory import PostFactory
 
-    return BasePostFactory().class_names
+    return PostFactory().class_names
 
 
 def get_post_processing_options_schema(
@@ -575,11 +575,11 @@ def get_post_processing_options_schema(
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
-    from gemseo.post.factory import BasePostFactory
+    from gemseo.post.factory import PostFactory
 
     problem = OptimizationProblem(DesignSpace())
     problem.objective = MDOFunction(lambda x: x, "f")
-    post_proc = BasePostFactory().create(post_proc_name, problem)
+    post_proc = PostFactory().create(post_proc_name, problem)
     return _get_schema(post_proc.option_grammar, output_json, pretty_print)
 
 
@@ -1373,7 +1373,7 @@ def execute_post(
         get_post_processing_options_schema
     """
     from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.post.factory import BasePostFactory
+    from gemseo.post.factory import PostFactory
 
     if hasattr(to_post_proc, "is_scenario") and to_post_proc.is_scenario():
         opt_problem = to_post_proc.formulation.optimization_problem
@@ -1384,7 +1384,7 @@ def execute_post(
     else:
         msg = f"Cannot post process type: {type(to_post_proc)}"
         raise TypeError(msg)
-    return BasePostFactory().execute(opt_problem, post_name, **options)
+    return PostFactory().execute(opt_problem, post_name, **options)
 
 
 def execute_algo(
@@ -1479,7 +1479,7 @@ def print_configuration() -> None:
     from gemseo.formulations.factory import MDOFormulationFactory
     from gemseo.mda.factory import MDAFactory
     from gemseo.mlearning.regression.algos.factory import RegressorFactory
-    from gemseo.post.factory import BasePostFactory
+    from gemseo.post.factory import PostFactory
 
     settings = _log_settings()
     LOGGER.info("%s", settings)
@@ -1491,7 +1491,7 @@ def print_configuration() -> None:
         RegressorFactory,
         MDOFormulationFactory,
         MDAFactory,
-        BasePostFactory,
+        PostFactory,
     ):
         factory_repr = repr(factory())
         LOGGER.info("%s", factory_repr)

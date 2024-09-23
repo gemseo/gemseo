@@ -30,7 +30,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import BasePostFactory
+from gemseo.post.factory import PostFactory
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
@@ -45,7 +45,7 @@ SOBIESKI_GRADIENT_VALUES = Path(__file__).parent / "sobieski_gradient.pkl"
 
 @pytest.fixture(scope="module")
 def factory():
-    return BasePostFactory()
+    return PostFactory()
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])

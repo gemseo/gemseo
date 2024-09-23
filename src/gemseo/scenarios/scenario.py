@@ -55,7 +55,7 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post import BasePostOptionType
-    from gemseo.post.factory import BasePostFactory
+    from gemseo.post.factory import PostFactory
     from gemseo.utils.xdsm import XDSM
 
 
@@ -93,7 +93,7 @@ class Scenario(MDODiscipline):
     optimization_result: OptimizationResult | None
     """The optimization result if the scenario has been executed; otherwise ``None``."""
 
-    post_factory: BasePostFactory | None
+    post_factory: PostFactory | None
     """The factory for post-processors if any."""
 
     DifferentiationMethod = OptimizationProblem.DifferentiationMethod
@@ -178,7 +178,7 @@ class Scenario(MDODiscipline):
 
     # TODO: API: the factory is a global object, remove this property.
     @property
-    def post_factory(self) -> BasePostFactory:
+    def post_factory(self) -> PostFactory:
         """The factory of post-processors."""
         return ScenarioResult.POST_FACTORY
 

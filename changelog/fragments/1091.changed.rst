@@ -14,3 +14,4 @@
     - Removed the attributes ``OptHistoryView.cmap``, ``OptHistoryView.ineq_cstr_cmap``, ``OptHistoryView.eq_cstr_cmap``.
     - Removed the attribute ``QuadApprox.grad_opt``.
     - Removed the attributes ``SOM.cmap``, ``SOM.som``.
+    - Removed the method ``OptPostProcessor.list_generated_plots``.

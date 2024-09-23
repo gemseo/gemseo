@@ -22,7 +22,7 @@ import unittest
 from pathlib import Path
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import BasePostFactory
+from gemseo.post.factory import PostFactory
 from gemseo.post.opt_history_view import OptHistoryView
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
@@ -33,16 +33,16 @@ class TestBasePostFactory(unittest.TestCase):
 
     def test_is_available(self) -> None:
         """"""
-        factory = BasePostFactory()
+        factory = PostFactory()
         assert factory.is_available("OptHistoryView")
         assert not factory.is_available("TOTO")
         self.assertRaises(ImportError, factory.create, None, "toto")
 
     def test_post(self) -> None:
-        assert BasePostFactory().is_available("GradientSensitivity")
-        assert BasePostFactory().is_available("Correlations")
+        assert PostFactory().is_available("GradientSensitivity")
+        assert PostFactory().is_available("Correlations")
 
     def test_execute_from_hdf(self) -> None:
         opt_problem = OptimizationProblem.from_hdf(POWER2)
-        post = BasePostFactory().execute(opt_problem, "OptHistoryView", save=False)
+        post = PostFactory().execute(opt_problem, "OptHistoryView", save=False)
         assert isinstance(post, OptHistoryView)
