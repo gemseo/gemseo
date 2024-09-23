@@ -28,8 +28,6 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.post.base_post import BasePost
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 
@@ -38,10 +36,6 @@ class BasePostFactory(BaseFactory[BasePost[Any]]):
 
     _CLASS = BasePost
     _MODULE_NAMES = ("gemseo.post",)
-
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        self.executed_post = []
 
     def execute(
         self,
@@ -61,13 +55,4 @@ class BasePostFactory(BaseFactory[BasePost[Any]]):
         """
         post = self.create(post_name, opt_problem)
         post.execute(**options)
-        self.executed_post.append(post)
         return post
-
-    # TODO: API: rename to get_output_file_paths
-    def list_generated_plots(self) -> set[Path]:
-        """The generated plot files."""
-        plots = set()
-        for post in self.executed_post:
-            plots.update(post.output_files)
-        return plots
