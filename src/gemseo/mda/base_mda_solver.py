@@ -421,9 +421,21 @@ class BaseMDASolver(BaseMDA):
         Args:
             input_data: The input data to compute residual of coupling variables.
         """
-        for name in self._resolved_residual_names:
-            if name in self._resolved_variable_names:
-                residual = self.local_data[name] - input_data[name]
-            else:
-                residual = self.local_data[name]
-            self._current_residuals[name] = residual
+        self.__compute_names_to_slices()
+
+        for (
+            converter,
+            couplings_names_to_slices,
+        ) in self.__resolved_residual_names_to_slices.items():
+            for name in couplings_names_to_slices:
+                local_data_array = converter.convert_data_to_array(
+                    [name], self.local_data
+                )
+                if name in self._resolved_variable_names:
+                    input_data_array = converter.convert_data_to_array(
+                        [name], input_data
+                    )
+                    residual = local_data_array - input_data_array
+                else:
+                    residual = local_data_array
+                self._current_residuals[name] = residual
