@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from matplotlib import pyplot
 from numpy import arange
@@ -30,63 +31,46 @@ from numpy import atleast_2d
 from numpy import ndarray
 from numpy import where
 
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.base_post import BasePost
+from gemseo.post.gradient_sensitivity_settings import GradientSensitivitySettings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
 
     from matplotlib.figure import Figure
+
+    from gemseo.typing import NumberArray
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
 
-class GradientSensitivity(OptPostProcessor):
+class GradientSensitivity(BasePost[GradientSensitivitySettings]):
     """Derivatives of the objective and constraints at a given iteration."""
 
-    DEFAULT_FIG_SIZE = (10.0, 10.0)
+    Settings: ClassVar[type[GradientSensitivitySettings]] = GradientSensitivitySettings
 
-    def _plot(
-        self,
-        iteration: int | None = None,
-        scale_gradients: bool = False,
-        compute_missing_gradients: bool = False,
-    ) -> None:
-        """
-        Args:
-            iteration: The iteration to plot the sensitivities.
-                Can use either positive or negative indexing,
-                e.g. ``5`` for the 5-th iteration
-                or ``-2`` for the penultimate one.
-                If ``None``, use the iteration of the optimum.
-            scale_gradients: If ``True``, normalize each gradient
-                w.r.t. the design variables.
-            compute_missing_gradients: Whether to compute the gradients at the
-                selected iteration if they were not computed by the algorithm.
+    def _plot(self, settings: GradientSensitivitySettings) -> None:
+        compute_missing_gradients = settings.compute_missing_gradients
 
-                .. warning::
-                   Activating this option may add considerable computation time
-                   depending on the cost of the gradient evaluation.
-                   This option will not compute the gradients if the
-                   :class:`.OptimizationProblem` instance was imported from an HDF5
-                   file. This option requires an :class:`.OptimizationProblem` with a
-                   gradient-based algorithm.
-        """  # noqa: D205, D212, D415
-        if iteration is None:
+        if settings.iteration is None:
             design_value = self.optimization_problem.solution.x_opt
         else:
-            design_value = self.optimization_problem.database.get_x_vect(iteration)
+            design_value = self.optimization_problem.database.get_x_vect(
+                settings.iteration
+            )
 
         fig = self.__generate_subplots(
             self._get_design_variable_names(),
             design_value,
             self.__get_output_gradients(
                 design_value,
-                scale_gradients=scale_gradients,
+                scale_gradients=settings.scale_gradients,
                 compute_missing_gradients=compute_missing_gradients,
             ),
-            scale_gradients=scale_gradients,
+            settings.scale_gradients,
+            settings.fig_size,
         )
         self._add_figure(fig)
 
@@ -95,7 +79,7 @@ class GradientSensitivity(OptPostProcessor):
         design_value: ndarray,
         scale_gradients: bool = False,
         compute_missing_gradients: bool = False,
-    ) -> dict[str, ndarray]:
+    ) -> dict[str, RealArray]:
         """Return the gradients of all the output variable at a given design value.
 
         Args:
@@ -166,9 +150,10 @@ class GradientSensitivity(OptPostProcessor):
     def __generate_subplots(
         self,
         design_names: Iterable[str],
-        design_value: ndarray,
-        gradients: Mapping[str, ndarray],
-        scale_gradients: bool = False,
+        design_value: NumberArray,
+        gradients: dict[str, RealArray],
+        scale_gradients: bool,
+        fig_size: tuple[float, float],
     ) -> Figure:
         """Generate the gradients subplots from the data.
 
@@ -178,6 +163,7 @@ class GradientSensitivity(OptPostProcessor):
             gradients: The gradients to plot indexed by the output names.
             scale_gradients: Whether to normalize the gradients
                 w.r.t. the design variables.
+            fig_size: The size of the figure.
 
         Returns:
             The gradients subplots.
@@ -194,7 +180,7 @@ class GradientSensitivity(OptPostProcessor):
         n_rows = sum(divmod(n_gradients, n_cols))
 
         fig, axes = pyplot.subplots(
-            nrows=n_rows, ncols=n_cols, sharex=True, figsize=self.DEFAULT_FIG_SIZE
+            nrows=n_rows, ncols=n_cols, sharex=True, figsize=fig_size
         )
 
         axes = atleast_2d(axes)

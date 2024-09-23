@@ -22,16 +22,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import matplotlib
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 from numpy import array
-from numpy import ndarray
 
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
-from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.post.opt_post_processor import OptPostProcessorOptionType
+from gemseo.post.parallel_coordinates_settings import ParallelCoordinatesSettings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -39,18 +39,68 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
+    from gemseo.typing import NumberArray
 
-class ParallelCoordinates(OptPostProcessor):
+
+class ParallelCoordinates(BasePost[ParallelCoordinatesSettings]):
     """Parallel coordinates plot."""
 
-    DEFAULT_FIG_SIZE = (10.0, 5.0)
+    Settings: ClassVar[type[ParallelCoordinatesSettings]] = ParallelCoordinatesSettings
+
+    def _plot(self, settings: ParallelCoordinatesSettings) -> None:
+        problem = self.optimization_problem
+
+        variable_history, variable_names, _ = self.database.get_history_array(
+            function_names=problem.function_names
+        )
+        names_to_sizes = problem.design_space.variable_sizes
+        design_names = [
+            repr_variable(name, i, names_to_sizes[name])
+            for name in problem.design_space.variable_names
+            for i in range(names_to_sizes[name])
+        ]
+        output_dimension = variable_history.shape[1] - len(design_names)
+        design_history = problem.design_space.normalize_vect(
+            variable_history[:, output_dimension:]
+        )
+        function_names = variable_names[:output_dimension]
+        objective_index = variable_names.index(self._standardized_obj_name)
+        objective_history = variable_history[:, objective_index]
+        if self._change_obj:
+            objective_history = -objective_history
+            variable_history[:, objective_index] = objective_history
+            function_names[objective_index] = self._obj_name
+            obj_name = self._obj_name
+        else:
+            obj_name = self._standardized_obj_name
+
+        fig = self.__parallel_coordinates(
+            design_history, design_names, objective_history, settings.fig_size
+        )
+        fig.suptitle(f"Design variables history colored by '{obj_name}' value")
+        plt.tight_layout()
+        self._add_figure(fig, "para_coord_des_vars")
+
+        fig = self.__parallel_coordinates(
+            variable_history[:, :output_dimension],
+            function_names,
+            objective_history,
+            settings.fig_size,
+        )
+        fig.suptitle(
+            f"Objective function and constraints history "
+            f"colored by '{obj_name}' value."
+        )
+        plt.tight_layout()
+        self._add_figure(fig, "para_coord_funcs")
 
     @classmethod
-    def parallel_coordinates(
+    def __parallel_coordinates(
         cls,
-        y_data: ndarray,
+        y_data: NumberArray,
         x_names: Sequence[str],
-        color_criteria: Sequence[float],
+        color_criteria: NumberArray,
+        fig_size: tuple[float, float],
     ) -> Figure:
         """Plot the parallel coordinates.
 
@@ -59,6 +109,7 @@ class ParallelCoordinates(OptPostProcessor):
             x_names: The names of the abscissa.
             color_criteria: The values of same length as `y_data`
                 to colorize the lines.
+            fig_size: The sizes of the figure.
         """
         _, n_cols = y_data.shape
         expected_shape = (len(color_criteria), len(x_names))
@@ -70,7 +121,7 @@ class ParallelCoordinates(OptPostProcessor):
             raise ValueError(msg)
 
         x_values = list(range(n_cols))
-        fig = plt.figure(figsize=cls.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         axes = plt.gca()
         c_min, c_max = color_criteria.min(), color_criteria.max()
         s_m = matplotlib.cm.ScalarMappable(
@@ -89,44 +140,3 @@ class ParallelCoordinates(OptPostProcessor):
         axes.grid()
         fig.colorbar(s_m, ax=axes)
         return fig
-
-    def _plot(self, **options: OptPostProcessorOptionType) -> None:
-        problem = self.optimization_problem
-        variable_history, variable_names, _ = self.database.get_history_array(
-            function_names=problem.function_names
-        )
-        names_to_sizes = self.optimization_problem.design_space.variable_sizes
-        design_names = [
-            repr_variable(name, i, names_to_sizes[name])
-            for name in self.optimization_problem.design_space.variable_names
-            for i in range(names_to_sizes[name])
-        ]
-        output_dimension = variable_history.shape[1] - len(design_names)
-        design_history = problem.design_space.normalize_vect(
-            variable_history[:, output_dimension:]
-        )
-        function_names = variable_names[:output_dimension]
-        objective_index = variable_names.index(self._standardized_obj_name)
-        objective_history = variable_history[:, objective_index]
-        if self._change_obj:
-            objective_history = -objective_history
-            variable_history[:, objective_index] = objective_history
-            function_names[objective_index] = self._obj_name
-            obj_name = self._obj_name
-        else:
-            obj_name = self._standardized_obj_name
-
-        fig = self.parallel_coordinates(design_history, design_names, objective_history)
-        fig.suptitle(f"Design variables history colored by '{obj_name}' value")
-        plt.tight_layout()
-        self._add_figure(fig, "para_coord_des_vars")
-
-        fig = self.parallel_coordinates(
-            variable_history[:, :output_dimension], function_names, objective_history
-        )
-        fig.suptitle(
-            f"Objective function and constraints history "
-            f"colored by '{obj_name}' value."
-        )
-        plt.tight_layout()
-        self._add_figure(fig, "para_coord_funcs")

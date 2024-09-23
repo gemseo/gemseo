@@ -1,0 +1,18 @@
+- Post-processing classes use ``Pydantic`` models instead of ``JSONGrammar``, the models are available via the class attribute ``Settings``.
+- API changes:
+    - Renamed the class ``OptPostProcessor`` to ``BasePost``.
+    - Removed the method ``OptPostProcessor.check_options``.
+    - Renamed the attribute ``OptPostProcessor.output_files`` to ``BasePost.output_file_paths``.
+    - Removed the attribute ``OptPostProcessor.opt_grammar``.
+    - Removed the attribute ``DEFAULT_FIG_SIZE`` for all post processing classes, use the ``fig_size`` field of the ``Pydantic`` model instead.
+    - The arguments of the method ``OptPostProcessor.execute`` are all keyword arguments.
+    - The argument ``opt_problem`` of the method ``OptPostProcessor.execute`` can no longer be a ``str``.
+    - The arguments of the method ``PostFactory.execute`` are keyword arguments in addition to the arguments ``opt_problem``, ``post_name``.
+    - Renamed the module ``scatter_mat.py`` to ``scatter_plot_matrix.py``.
+    - Renamed the module ``para_coord.py`` to ``parallel_coordinates.py``.
+    - Removed the attribute ``Animation.DEFAULT_OPT_POST_PROCESSOR``.
+    - Removed the attributes ``ConstraintsHistory.cmap``, ``ConstraintsHistory.ineq_cstr_cmap``, ``ConstraintsHistory.eq_cstr_cmap``.
+    - Removed the attributes ``OptHistoryView.cmap``, ``OptHistoryView.ineq_cstr_cmap``, ``OptHistoryView.eq_cstr_cmap``.
+    - Removed the attribute ``QuadApprox.grad_opt``.
+    - Removed the attributes ``SOM.cmap``, ``SOM.som``.
+    - Removed the method ``OptPostProcessor.list_generated_plots``.

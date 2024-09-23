@@ -53,9 +53,9 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.datasets.dataset import Dataset
     from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
-    from gemseo.post.factory import OptPostProcessorFactory
-    from gemseo.post.opt_post_processor import OptPostProcessor
-    from gemseo.post.opt_post_processor import OptPostProcessorOptionType
+    from gemseo.post.base_post import BasePost
+    from gemseo.post.base_post import BasePostOptionType
+    from gemseo.post.factory import PostFactory
     from gemseo.utils.xdsm import XDSM
 
 
@@ -93,7 +93,7 @@ class Scenario(MDODiscipline):
     optimization_result: OptimizationResult | None
     """The optimization result if the scenario has been executed; otherwise ``None``."""
 
-    post_factory: OptPostProcessorFactory | None
+    post_factory: PostFactory | None
     """The factory for post-processors if any."""
 
     DifferentiationMethod = OptimizationProblem.DifferentiationMethod
@@ -176,11 +176,13 @@ class Scenario(MDODiscipline):
     def use_standardized_objective(self, value: bool) -> None:
         self.formulation.optimization_problem.use_standardized_objective = value
 
+    # TODO: API: the factory is a global object, remove this property.
     @property
-    def post_factory(self) -> OptPostProcessorFactory:
+    def post_factory(self) -> PostFactory:
         """The factory of post-processors."""
         return ScenarioResult.POST_FACTORY
 
+    # TODO: API: the factory is a global object, remove this property.
     @property
     def _formulation_factory(self) -> MDOFormulationFactory:
         """The factory of MDO formulations."""
@@ -450,13 +452,13 @@ class Scenario(MDODiscipline):
     def post_process(
         self,
         post_name: str,
-        **options: OptPostProcessorOptionType | Path,
-    ) -> OptPostProcessor:
+        **options: BasePostOptionType | Path,
+    ) -> BasePost:
         """Post-process the optimization history.
 
         Args:
             post_name: The name of the post-processor,
-                i.e. the name of a class inheriting from :class:`.OptPostProcessor`.
+                i.e. the name of a class inheriting from :class:`.BasePost`.
             **options: The options for the post-processor.
 
         Returns:

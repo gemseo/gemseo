@@ -26,54 +26,49 @@ import re
 from functools import partial
 from re import fullmatch
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import ticker
 from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
-from numpy import ndarray
 
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.base_post import BasePost
+from gemseo.post.correlations_settings import CorrelationsSettings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from matplotlib.figure import Figure
 
+    from gemseo.typing import NumberArray
+    from gemseo.typing import RealArray
+
 LOGGER = logging.getLogger(__name__)
 
 
-class Correlations(OptPostProcessor):
+class Correlations(BasePost[CorrelationsSettings]):
     """Scatter plots of the correlated variables.
 
     These variables can be design variables, constraints, objective or observables. This
     post-processor considers all the correlations greater than a threshold.
     """
 
-    DEFAULT_FIG_SIZE = (15.0, 10.0)
-    MAXIMUM_CORRELATION_COEFFICIENT = 1.0 - 1e-9
+    MAXIMUM_CORRELATION_COEFFICIENT: ClassVar[float] = 1.0 - 1e-9
     """The maximum correlation coefficient above which the variable is not plotted."""
 
-    def _plot(
-        self,
-        func_names: Sequence[str] = (),
-        coeff_limit: float = 0.95,
-        n_plots_x: int = 5,
-        n_plots_y: int = 5,
-    ) -> None:
-        """
-        Args:
-            func_names: The names of the functions to be considered.
-                If empty, all functions are considered.
-            coeff_limit: The minimum correlation coefficient
-                below which the variable is not plotted.
-            n_plots_x: The number of horizontal plots.
-            n_plots_y: The number of vertical plots.
+    Settings: ClassVar[type[CorrelationsSettings]] = CorrelationsSettings
 
+    def _plot(self, settings: CorrelationsSettings) -> None:
+        """
         Raises:
-            ValueError: If an element of `func_names` is unknown.
+            ValueError: If an element of ``func_names`` is unknown.
         """  # noqa: D205, D212, D415
+        func_names = settings.func_names
+        coeff_limit = settings.coeff_limit
+        n_plots_x = settings.n_plots_x
+        n_plots_y = settings.n_plots_y
         problem = self.optimization_problem
 
         all_func_names = [func.name for func in problem.functions]
@@ -114,17 +109,18 @@ class Correlations(OptPostProcessor):
 
         spec = GridSpec(n_plots_y, n_plots_x, wspace=0.3, hspace=0.75)
         spec.update(top=0.95, bottom=0.06, left=0.08, right=0.95)
-        fig = None
+
         for plot_index, (i, j) in enumerate(zip(i_corr, j_corr)):
             plot_index_loc = plot_index % (n_plots_x * n_plots_y)
             if plot_index_loc == 0:
-                if fig is not None:
-                    # Save previous plot
-                    self._add_figure(fig)
-                fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+                fig: Figure
+                fig = plt.figure(figsize=settings.fig_size)
                 mng = plt.get_current_fig_manager()
-                mng.resize(1200, 900)
+                if mng is not None:
+                    mng.resize(1200, 900)
                 ticker.MaxNLocator(nbins=3)
+
+                self._add_figure(fig)
 
             self.__create_sub_correlation_plot(
                 i,
@@ -138,20 +134,18 @@ class Correlations(OptPostProcessor):
                 variable_history,
                 variable_names,
             )
-        if fig is not None:
-            self._add_figure(fig)
 
     def __create_sub_correlation_plot(
         self,
         x_index: int,
         y_index: int,
-        correlation_coefficients: ndarray,
+        correlation_coefficients: RealArray,
         fig: Figure,
         spec: GridSpec,
         plot_index: int,
         n_y: int,
         n_x: int,
-        variable_history: ndarray,
+        variable_history: NumberArray,
         variable_names: Sequence[str],
     ) -> None:
         """Create a correlation plot.
@@ -189,7 +183,7 @@ class Correlations(OptPostProcessor):
         ax1.grid()
 
     @classmethod
-    def __compute_correlations(cls, variable_history: ndarray) -> ndarray:
+    def __compute_correlations(cls, variable_history: NumberArray) -> RealArray:
         """Compute the correlations between the variables.
 
         Args:
@@ -220,9 +214,9 @@ class Correlations(OptPostProcessor):
         Returns:
             The sorted expanded variable names.
         """
-        variable_names.sort(key=partial(self.func_order, func_names))
+        v_names = sorted(variable_names, key=partial(self.func_order, func_names))
         x_names = self._get_design_variable_names()
-        return variable_names[: -len(x_names)] + x_names
+        return v_names[: -len(x_names)] + x_names
 
     @staticmethod
     def func_order(

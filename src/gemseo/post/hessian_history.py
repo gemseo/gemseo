@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
@@ -41,28 +41,18 @@ from numpy import min as np_min
 from numpy import ones_like
 from numpy import sort as np_sort
 
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
-from gemseo.post.opt_post_processor import OptPostProcessor
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
+from gemseo.post.hessian_history_settings import HessianHistorySettings
 
 
-class HessianHistory(OptPostProcessor):
+class HessianHistory(BasePost):
     """Plot the history of the diagonal of the Hessian matrix."""
 
-    DEFAULT_FIG_SIZE = (11.0, 6.0)
+    Settings: ClassVar[type[HessianHistorySettings]] = HessianHistorySettings
 
-    def _plot(
-        self,
-        variable_names: Sequence[str] = (),
-    ) -> None:
-        """
-        Args:
-            variable_names: The names of the variables to display.
-                If empty, use all design variables.
-        """  # noqa: D205, D212, D415
+    def _plot(self, settings: HessianHistorySettings) -> None:
         if self.database.check_output_history_is_empty(
             self.database.get_gradient_name(self._standardized_obj_name)
         ):
@@ -75,6 +65,7 @@ class HessianHistory(OptPostProcessor):
         diag = SR1Approx(self.database).build_approximation(
             funcname=self._standardized_obj_name, save_diag=True
         )[1]
+
         if isnan(diag).any():
             msg = (
                 "HessianHistory cannot be plotted "
@@ -87,6 +78,7 @@ class HessianHistory(OptPostProcessor):
         if self._change_obj:
             diag = -diag
 
+        variable_names = settings.variable_names
         if variable_names:
             diag = diag[
                 self.optimization_problem.design_space.get_variables_indexes(
@@ -95,7 +87,7 @@ class HessianHistory(OptPostProcessor):
                 :,
             ]
 
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=settings.fig_size)
         grid_spec = self._get_grid_layout()
         axes = fig.add_subplot(grid_spec[0, 0])
         axes.set_title("Hessian diagonal approximation")

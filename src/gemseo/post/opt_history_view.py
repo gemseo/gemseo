@@ -28,6 +28,7 @@ from typing import ClassVar
 from typing import Final
 
 from matplotlib import pyplot as plt
+from matplotlib.colors import ListedColormap
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
@@ -50,9 +51,10 @@ from numpy import vstack
 from numpy.linalg import norm
 
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.opt_history_view_settings import OptHistoryViewSettings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -62,13 +64,13 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
 
-class OptHistoryView(OptPostProcessor):
+class OptHistoryView(BasePost[OptHistoryViewSettings]):
     """Plot the history of the design variables, objective and constraints.
 
     This post-processing generates one plot for the design variables, one plot for the
@@ -77,7 +79,7 @@ class OptHistoryView(OptPostProcessor):
     constraints (if any).
     """
 
-    DEFAULT_FIG_SIZE = (11.0, 6.0)
+    Settings: ClassVar[type[OptHistoryViewSettings]] = OptHistoryViewSettings
 
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""
@@ -88,45 +90,18 @@ class OptHistoryView(OptPostProcessor):
     __AXIS_LABEL_SIZE: Final[int] = 12
     """The font size of the axis labels."""
 
-    def __init__(  # noqa:D107
-        self,
-        opt_problem: OptimizationProblem,
-    ) -> None:
-        super().__init__(opt_problem)
-        self.cmap = PARULA
-        self.ineq_cstr_cmap = RG_SEISMIC
-        self.eq_cstr_cmap = "seismic"
-        self.__indices = array([], dtype="int")
+    __X_MARGIN: Final[float] = 0.1
+    """The left and right margin for the x-axis."""
 
-    def _plot(
-        self,
-        variable_names: Sequence[str] = (),
-        obj_min: float | None = None,
-        obj_max: float | None = None,
-        obj_relative: bool = False,
-    ) -> None:
-        """
-        Args:
-            variable_names: The names of the variables to display.
-                If empty, use all design variables.
-            obj_max: The upper limit of the *y*-axis on which the objective is plotted.
-                This limit must be greater than or equal
-                to the maximum value of the objective history.
-                If ``None``, use the maximum value of the objective history.
-            obj_min: The lower limit of the *y*-axis on which the objective is plotted.
-                This limit must be less than or equal
-                to the minimum value of the objective history.
-                If ``None``, use the minimum value of the objective history.
-            obj_relative: Whether the difference
-                between the objective and its initial value is plotted
-                instead of the objective.
-        """  # noqa: D205, D212, D415
-        if variable_names:
-            self.__indices = (
-                self.optimization_problem.design_space.get_variables_indexes(
-                    variable_names
-                )
-            )
+    __Y_MARGIN: Final[float] = 0.05
+    """The left and right margin for the y-axis."""
+
+    __CMAP: Final[ListedColormap] = PARULA
+    __INEQ_CSTR_CMAP: Final[ListedColormap] = RG_SEISMIC
+    __EQ_CSTR_CMAP: Final[str] = "seismic"
+
+    def _plot(self, settings: OptHistoryViewSettings) -> None:
+        variable_names = settings.variable_names
 
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
             self._standardized_obj_name, variable_names
@@ -138,18 +113,21 @@ class OptHistoryView(OptPostProcessor):
             axis=1,
         )
 
-        self._create_variables_plot(x_history_to_display, variable_names, x_xstar)
+        self._create_variables_plot(
+            x_history_to_display, variable_names, settings.fig_size, x_xstar
+        )
 
         self._create_obj_plot(
             obj_history,
             n_iter,
+            settings.fig_size,
             x_xstar,
-            obj_min=obj_min,
-            obj_max=obj_max,
-            obj_relative=obj_relative,
+            obj_min=settings.obj_min,
+            obj_max=settings.obj_max,
+            obj_relative=settings.obj_relative,
         )
 
-        self._create_x_star_plot(x_history, n_iter, x_xstar)
+        self._create_x_star_plot(x_history, n_iter, settings.fig_size)
 
         for constraints, constraint_type in [
             (
@@ -167,14 +145,15 @@ class OptHistoryView(OptPostProcessor):
                     self.__get_constraint_history(constraint_names),
                     constraint_type,
                     constraint_names,
+                    settings.fig_size,
                     x_xstar,
                 )
 
     def _get_history(
         self,
         function_name: str,
-        variable_names: Sequence[str],
-    ) -> tuple[ndarray, ndarray, int, ndarray]:
+        variable_names: Iterable[str],
+    ) -> tuple[RealArray, RealArray, int, RealArray]:
         """Access the optimization history of a function and the design variables.
 
         Args:
@@ -233,7 +212,11 @@ class OptHistoryView(OptPostProcessor):
         return constraints_history
 
     def _create_variables_plot(
-        self, x_history: ndarray, variable_names: Sequence[str], x_xstar: RealArray
+        self,
+        x_history: RealArray,
+        variable_names: Iterable[str],
+        fig_size: tuple[float, float],
+        x_xstar: RealArray,
     ) -> None:
         """Create the design variables plot.
 
@@ -252,14 +235,14 @@ class OptHistoryView(OptPostProcessor):
         upper_bounds = design_space.get_upper_bounds(variable_names)
         norm_x_history = (x_history - lower_bounds) / (upper_bounds - lower_bounds)
 
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         grid = self._get_grid_layout()
 
         # design variables
         ax1 = fig.add_subplot(grid[0, 0])
         im1 = ax1.imshow(
             norm_x_history.T,
-            cmap=self.cmap,
+            cmap=self.__CMAP,
             interpolation="nearest",
             vmin=0.0,
             vmax=1.0,
@@ -273,8 +256,8 @@ class OptHistoryView(OptPostProcessor):
         # ax1.invert_yaxis()
 
         ax1.set_title("Evolution of the optimization variables")
-        ax1.set_xticks(list(range(n_iterations)))
-        ax1.set_xticklabels(list(range(1, n_iterations + 1)))
+        ax1.set_xticks(range(n_iterations))
+        ax1.set_xticklabels(map(str, (range(1, n_iterations + 1))))
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
 
         # colorbar
@@ -283,14 +266,16 @@ class OptHistoryView(OptPostProcessor):
 
         # Set window size
         mng = plt.get_current_fig_manager()
+        assert mng is not None
         mng.resize(700, 1000)
 
         self._add_figure(fig, "variables")
 
     def _create_obj_plot(
         self,
-        obj_history: ndarray,
+        obj_history: RealArray,
         n_iter: int,
+        fig_size: tuple[float, float],
         x_xstar: RealArray,
         obj_min: float | None = None,
         obj_max: float | None = None,
@@ -324,8 +309,8 @@ class OptHistoryView(OptPostProcessor):
         # Remove nans
         n_iterations = len(obj_history)
         x_absc = arange(n_iterations)
-        x_absc_nan = None
         idx_nan = isnan(obj_history)
+        assert idx_nan is not None
 
         if idx_nan.size > 0:
             obj_history = obj_history[~idx_nan]
@@ -335,7 +320,7 @@ class OptHistoryView(OptPostProcessor):
         fmin = np_min(obj_history)
         fmax = np_max(obj_history)
 
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         # objective function
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("Objective value", fontsize=self.__AXIS_LABEL_SIZE)
@@ -352,9 +337,9 @@ class OptHistoryView(OptPostProcessor):
         if obj_max is not None and obj_max > fmax:
             fmax = obj_max
 
-        margin = (fmax - fmin) * self._Y_MARGIN
+        margin = (fmax - fmin) * self.__Y_MARGIN
         plt.ylim([fmin - margin, fmax + margin])
-        plt.xlim([0 - self._X_MARGIN, n_iter - 1 + self._X_MARGIN])
+        plt.xlim([0 - self.__X_MARGIN, n_iter - 1 + self.__X_MARGIN])
         ax1 = fig.gca()
         ax1.set_xticks(x_absc)
         ax1.set_xticklabels((x_absc + 1).tolist())
@@ -364,21 +349,24 @@ class OptHistoryView(OptPostProcessor):
 
         # Set window size
         mng = plt.get_current_fig_manager()
+        assert mng is not None
         mng.resize(700, 1000)
 
         self._add_figure(fig, "objective")
 
     def _create_x_star_plot(
-        self, x_history: ndarray, n_iter: int, x_xstar: RealArray
+        self,
+        x_history: RealArray,
+        n_iter: int,
+        fig_size: tuple[float, float],
     ) -> None:
         """Create the design variables plot.
 
         Args:
             x_history: The history of the design variables.
             n_iter: The number of iterations.
-            x_xstar: The distance between the designs and the optimum design.
         """
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
         normalize = self.optimization_problem.design_space.normalize_vect
@@ -389,7 +377,7 @@ class OptHistoryView(OptPostProcessor):
 
         # Draw a vertical line at the optimum
         n_iterations = len(x_history)
-        plt.axvline(x=argmin(x_xstar), color="r", label="Optimum")
+        plt.axvline(x=float(argmin(x_xstar)), color="r", label="Optimum")
         plt.legend()
         plt.semilogy(arange(n_iterations), x_xstar)
         plt.legend()
@@ -402,20 +390,21 @@ class OptHistoryView(OptPostProcessor):
         # ======================================================================
         ax1 = fig.gca()
         ax1.set_xticks(range(n_iterations))
-        ax1.set_xticklabels(range(1, n_iterations + 1))
+        ax1.set_xticklabels(map(str, range(1, n_iterations + 1)))
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         plt.grid(True)
         plt.title("Evolution of the distance to the optimum")
-        plt.xlim([0 - self._X_MARGIN, n_iter - 1 + self._X_MARGIN])
+        plt.xlim([0 - self.__X_MARGIN, n_iter - 1 + self.__X_MARGIN])
 
         # Set window size
         mng = plt.get_current_fig_manager()
+        assert mng is not None
         mng.resize(700, 1000)
 
         self._add_figure(fig, "x_xstar")
 
     @staticmethod
-    def _cstr_number(constraint_history: Iterable[ndarray]) -> int:
+    def _cstr_number(constraint_history: Iterable[RealArray]) -> int:
         """Compute the total scalar constraints number.
 
         Args:
@@ -435,16 +424,17 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_cstr_plot(
         self,
-        cstr_history: Iterable[ndarray],
-        cstr_type: str,
+        cstr_history: Iterable[RealArray],
+        cstr_type: MDOFunction.ConstraintType,
         cstr_names: Sequence[str],
+        fig_size: tuple[float, float],
         x_xstar: RealArray,
     ) -> None:
         """Create the constraints plot: 1 line per constraint component.
 
         Args:
             cstr_history: The history of the constraints.
-            cstr_type: The type of the constraints, either 'eq' or 'ineq'.
+            cstr_type: The type of the constraints.
             cstr_names: The names of the constraints.
             x_xstar: The distance between the designs and the optimum design.
         """
@@ -496,18 +486,19 @@ class OptHistoryView(OptPostProcessor):
                         cstr_matrix = vstack((cstr_matrix, history_i_j))
 
         fig = self._build_cstr_fig(
-            cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels, x_xstar
+            cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels, fig_size, x_xstar
         )
 
         self._add_figure(fig, f"{cstr_type}_constraints")
 
     def _build_cstr_fig(
         self,
-        cstr_matrix: ndarray,
+        cstr_matrix: NumberArray,
         cstr_type: MDOFunction.ConstraintType,
         vmax: float,
         n_cstr: int,
         cstr_labels: Sequence[str],
+        fig_size: tuple[float, float],
         x_xstar: RealArray,
     ) -> Figure:
         """Build the constraints figure.
@@ -524,11 +515,12 @@ class OptHistoryView(OptPostProcessor):
         Returns:
             The constraints figure.
         """
+        cmap: str | ListedColormap
         if cstr_type == MDOFunction.ConstraintType.EQ:
-            cmap = self.eq_cstr_cmap
+            cmap = self.__EQ_CSTR_CMAP
             constraint_type = "equality"
         else:
-            cmap = self.ineq_cstr_cmap
+            cmap = self.__INEQ_CSTR_CMAP
             constraint_type = "inequality"
 
         idx_nan = isnan(cstr_matrix)
@@ -537,7 +529,7 @@ class OptHistoryView(OptPostProcessor):
             cstr_matrix[idx_nan] = 0.0
 
         # generation of the image
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=fig_size)
         grid = self._get_grid_layout()
         ax1 = fig.add_subplot(grid[0, 0])
         im1 = ax1.imshow(
@@ -561,7 +553,7 @@ class OptHistoryView(OptPostProcessor):
         ax1.set_title(f"Evolution of the {constraint_type} constraints")
         n_iterations = len(self.database)
         ax1.set_xticks(range(n_iterations))
-        ax1.set_xticklabels(range(1, n_iterations + 1))
+        ax1.set_xticklabels(map(str, range(1, n_iterations + 1)))
 
         ax1.hlines(
             list(range(len(cstr_matrix))),
@@ -590,5 +582,6 @@ class OptHistoryView(OptPostProcessor):
 
         mng = plt.get_current_fig_manager()
         # mng.full_screen_toggle()
+        assert mng is not None
         mng.resize(700, 1000)
         return fig

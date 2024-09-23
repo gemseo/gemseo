@@ -28,7 +28,7 @@ import pytest
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
-from gemseo.post.factory import OptPostProcessorFactory
+from gemseo.post.factory import PostFactory
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -39,7 +39,7 @@ MOD_SELLAR_HDF5_PATH = PARENT_PATH / "modified_sellar_opt_pb.h5"
 
 @pytest.fixture(scope="module")
 def factory():
-    return OptPostProcessorFactory()
+    return PostFactory()
 
 
 def test_correlations(tmp_wd, factory) -> None:
@@ -61,8 +61,8 @@ def test_correlations(tmp_wd, factory) -> None:
         coeff_limit=0.95,
         file_path="correlations_1",
     )
-    assert len(post.output_files) == 2
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 2
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
@@ -83,8 +83,8 @@ def test_correlations_import(tmp_wd, factory) -> None:
         coeff_limit=0.999,
         file_path="correlations_2",
     )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 

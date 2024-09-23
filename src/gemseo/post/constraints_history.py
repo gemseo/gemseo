@@ -21,9 +21,10 @@
 from __future__ import annotations
 
 from math import ceil
-from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from matplotlib import pyplot
+from matplotlib.colors import ListedColormap
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
@@ -37,17 +38,12 @@ from numpy import interp
 from numpy import max as np_max
 from numpy import sign
 
-from gemseo.post.core.colormaps import PARULA
+from gemseo.post.base_post import BasePost
+from gemseo.post.constraints_history_settings import ConstraintsHistorySettings
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.opt_post_processor import OptPostProcessor
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
-class ConstraintsHistory(OptPostProcessor):
+class ConstraintsHistory(BasePost[ConstraintsHistorySettings]):
     r"""A matrix of constraint history plots.
 
     A blue line represents the values of a constraint w.r.t. the iterations.
@@ -55,8 +51,8 @@ class ConstraintsHistory(OptPostProcessor):
     A background color indicates whether the constraint is satisfied (green), active
     (white) or violated (red).
 
-    An horizontal black line indicates the value for which an inequality constraint is
-    active or an equality constraint is satisfied, namely :math:`0`. An horizontal black
+    A horizontal black line indicates the value for which an inequality constraint is
+    active or an equality constraint is satisfied, namely :math:`0`. A horizontal black
     dashed line indicates the value below which an inequality constraint is satisfied
     *with a tolerance level*, namely :math:`\varepsilon`.
 
@@ -68,28 +64,16 @@ class ConstraintsHistory(OptPostProcessor):
     constraint is (or should be) active.
     """
 
-    def __init__(self, opt_problem: OptimizationProblem) -> None:  # noqa:D107
-        super().__init__(opt_problem)
-        self.cmap = PARULA
-        self.ineq_cstr_cmap = RG_SEISMIC
-        self.eq_cstr_cmap = "seismic"
+    Settings: ClassVar[type[ConstraintsHistorySettings]] = ConstraintsHistorySettings
 
-    def _plot(
-        self,
-        constraint_names: Sequence[str],
-        line_style: str = "--",
-        add_points: bool = True,
-    ) -> None:
+    def _plot(self, settings: ConstraintsHistorySettings) -> None:
         """
-        Args:
-            constraint_names: The names of the constraints.
-            line_style: The style of the line, e.g. ``"-"`` or ``"--"``.
-                If ``""``, do not plot the line.
-            add_points: Whether to add one point per iteration on the line.
-
         Raises:
             ValueError: When an item of ``constraint_names`` is not a constraint name.
         """  # noqa: D205, D212, D415
+        constraint_names = settings.constraint_names
+        line_style = settings.line_style
+        add_points = settings.add_points
         all_constraint_names = (
             self.optimization_problem.constraints.original_to_current_names.keys()
         )
@@ -121,7 +105,7 @@ class ConstraintsHistory(OptPostProcessor):
             nrows=ceil(len(constraint_names) / 2),
             ncols=2,
             sharex=True,
-            figsize=self.DEFAULT_FIG_SIZE,
+            figsize=settings.fig_size,
         )
 
         fig.suptitle("Evolution of the constraints w.r.t. iterations", fontsize=14)
@@ -136,14 +120,15 @@ class ConstraintsHistory(OptPostProcessor):
         for constraint_history, constraint_name, axe in zip(
             constraint_histories.T, constraint_names, axes.ravel()
         ):
+            cmap: str | ListedColormap
             f_name = constraint_name.split("[")[0]
             is_eq_constraint = f_name in eq_constraint_names
             if is_eq_constraint:
-                cmap = self.eq_cstr_cmap
+                cmap = "seismic"
                 constraint_type = "equality"
                 tolerance = self.optimization_problem.tolerances.equality
             else:
-                cmap = self.ineq_cstr_cmap
+                cmap = RG_SEISMIC
                 constraint_type = "inequality"
                 tolerance = self.optimization_problem.tolerances.inequality
 

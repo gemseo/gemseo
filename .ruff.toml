@@ -102,7 +102,10 @@ select = [
 ]
 
 [lint.flake8-type-checking]
-runtime-evaluated-base-classes = ["pydantic.BaseModel"]
+runtime-evaluated-base-classes = [
+  "pydantic.BaseModel",
+  "gemseo.post.base_post_settings.BasePostSettings",
+]
 
 [lint.isort]
 force-single-line = true

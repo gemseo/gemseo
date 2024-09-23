@@ -23,18 +23,20 @@ from __future__ import annotations
 
 import itertools
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from matplotlib import pyplot
 from numpy import absolute
 from numpy import argsort
 from numpy import array
 from numpy import atleast_2d
-from numpy import ndarray
 from numpy import savetxt
 from numpy import stack
 
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.base_post import BasePost
+from gemseo.post.variable_influence_settings import VariableInfluenceSettings
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
@@ -43,10 +45,13 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
+    from gemseo.typing import RealArray
+
+
 LOGGER = logging.getLogger(__name__)
 
 
-class VariableInfluence(OptPostProcessor):
+class VariableInfluence(BasePost[VariableInfluenceSettings]):
     r"""First order variable influence analysis.
 
     This post-processing computes
@@ -63,24 +68,14 @@ class VariableInfluence(OptPostProcessor):
       in a NumPy file.
     """
 
-    DEFAULT_FIG_SIZE = (20.0, 5.0)
+    Settings: ClassVar[type[VariableInfluenceSettings]] = VariableInfluenceSettings
 
-    def _plot(
-        self,
-        level: float = 0.99,
-        absolute_value: bool = False,
-        log_scale: bool = False,
-        save_var_files: bool = False,
-    ) -> None:
-        """
-        Args:
-            level: The proportion of the total sensitivity
-                to use as a threshold to filter the variables.
-            absolute_value: Whether to plot the absolute value of the influence.
-            log_scale: Whether to set the y-axis as log scale.
-            save_var_files: Whether to save the influential variables indices
-                to a NumPy file.
-        """  # noqa: D205, D212, D415
+    def _plot(self, settings: VariableInfluenceSettings) -> None:
+        level = settings.level
+        absolute_value = settings.absolute_value
+        log_scale = settings.log_scale
+        save_var_files = settings.save_var_files
+
         function_names = self.optimization_problem.function_names
         _, x_opt, _, _, _ = self.optimization_problem.optimum
         x_0 = self.database.get_x_vect(1)
@@ -118,15 +113,16 @@ class VariableInfluence(OptPostProcessor):
         self._add_figure(
             self.__generate_subplots(
                 names_to_sensitivities,
-                level=level,
-                log_scale=log_scale,
-                save=save_var_files,
+                level,
+                log_scale,
+                save_var_files,
+                settings.fig_size,
             )
         )
 
     def __get_quantile(
         self,
-        sensitivity: ndarray,
+        sensitivity: RealArray,
         func: str,
         level: float = 0.99,
         save: bool = False,
@@ -174,16 +170,17 @@ class VariableInfluence(OptPostProcessor):
                 delimiter=" ; ",
                 header="name ; index",
             )
-            self.output_files.append(file_name)
+            self._output_file_paths.append(Path(file_name))
 
         return n_variables, absolute_sensitivity[n_variables - 1]
 
     def __generate_subplots(
         self,
-        names_to_sensitivities: Mapping[str, ndarray],
-        level: float = 0.99,
-        log_scale: bool = False,
-        save: bool = False,
+        names_to_sensitivities: Mapping[str, RealArray],
+        level: float,
+        log_scale: bool,
+        save: bool,
+        fig_size: tuple[float, float],
     ) -> Figure:
         """Generate the gradients subplots from the data.
 
@@ -212,7 +209,7 @@ class VariableInfluence(OptPostProcessor):
             n_cols = 1
 
         fig, axes = pyplot.subplots(
-            nrows=n_rows, ncols=n_cols, sharex=True, figsize=self.DEFAULT_FIG_SIZE
+            nrows=n_rows, ncols=n_cols, sharex=True, figsize=fig_size
         )
 
         axes = atleast_2d(axes)

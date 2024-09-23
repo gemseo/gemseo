@@ -23,13 +23,13 @@ from typing import ClassVar
 from typing import Final
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import OptPostProcessorFactory
+from gemseo.post.factory import PostFactory
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
+    from gemseo import BasePost
     from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.post.opt_post_processor import OptPostProcessor
     from gemseo.scenarios.scenario import Scenario
 
 
@@ -48,8 +48,8 @@ class ScenarioResult:
     __obj_to_be_post_processed: Scenario | OptimizationProblem
     """The object to be post-processed."""
 
-    _POST_FACTORY: ClassVar[OptPostProcessorFactory | None] = None
-    """The factory of :class:`.OptPostProcessor`, if created."""
+    _POST_FACTORY: ClassVar[PostFactory | None] = None
+    """The factory of :class:`.BasePost`, if created."""
 
     def __init__(self, scenario: Scenario | str | Path) -> None:
         """
@@ -75,12 +75,13 @@ class ScenarioResult:
             self._MAIN_PROBLEM_LABEL: optimization_result
         }
 
+    # TODO: API: the factory is a global object, remove this property.
     @classmethod
     @property
-    def POST_FACTORY(cls) -> OptPostProcessorFactory:  # noqa: N802
+    def POST_FACTORY(cls) -> PostFactory:  # noqa: N802
         """The factory of post-processors."""
         if cls._POST_FACTORY is None:
-            cls._POST_FACTORY = OptPostProcessorFactory()
+            cls._POST_FACTORY = PostFactory()
         return cls._POST_FACTORY
 
     @property
@@ -96,7 +97,7 @@ class ScenarioResult:
         """
         return self.optimization_problems_to_results[self._MAIN_PROBLEM_LABEL]
 
-    def plot(self, name: str, **options: Any) -> OptPostProcessor:
+    def plot(self, name: str, **options: Any) -> BasePost:
         """Visualize the result.
 
         Args:

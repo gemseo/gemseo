@@ -102,6 +102,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from gemseo.typing import IntegerArray
     from gemseo.typing import RealOrComplexArrayT
 
 LOGGER = logging.getLogger(__name__)
@@ -1229,14 +1230,14 @@ class DesignSpace(collections.abc.MutableMapping):
         self,
         variable_names: Iterable[str],
         use_design_space_order: bool = True,
-    ) -> NDArray[int]:
+    ) -> IntegerArray:
         """Return the indexes of a design array corresponding to variables names.
 
         Args:
             variable_names: The names of the variables.
             use_design_space_order: Whether to order the indexes according to
                 the order of the variables names in the design space.
-                Otherwise the indexes will be ordered in the same order as
+                Otherwise, the indexes will be ordered in the same order as
                 the variables names were required.
 
         Returns:
@@ -1698,20 +1699,20 @@ class DesignSpace(collections.abc.MutableMapping):
     @overload
     def get_lower_bounds(
         self,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Iterable[str] = (),
         as_dict: Literal[False] = False,
     ) -> ndarray: ...
 
     @overload
     def get_lower_bounds(
         self,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Iterable[str] = (),
         as_dict: Literal[True] = False,
     ) -> dict[str, ndarray]: ...
 
     def get_lower_bounds(
         self,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Iterable[str] = (),
         as_dict: bool = False,
     ) -> ndarray | dict[str, ndarray]:
         """Return the lower bounds of design variables.
@@ -1732,20 +1733,20 @@ class DesignSpace(collections.abc.MutableMapping):
     @overload
     def get_upper_bounds(
         self,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Iterable[str] = (),
         as_dict: Literal[False] = False,
     ) -> ndarray: ...
 
     @overload
     def get_upper_bounds(
         self,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Iterable[str] = (),
         as_dict: Literal[True] = False,
     ) -> dict[str, ndarray]: ...
 
     def get_upper_bounds(
         self,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Iterable[str] = (),
         as_dict: bool = False,
     ) -> ndarray | dict[str, ndarray]:
         """Return the upper bounds of design variables.
@@ -1766,7 +1767,7 @@ class DesignSpace(collections.abc.MutableMapping):
     @overload
     def __get_values(
         self,
-        variable_names: Sequence[str] | None,
+        variable_names: Iterable[str],
         as_dict: Literal[False],
         value_as_dict: dict[str, ndarray],
         value_as_array: ndarray,
@@ -1775,7 +1776,7 @@ class DesignSpace(collections.abc.MutableMapping):
     @overload
     def __get_values(
         self,
-        variable_names: Sequence[str] | None,
+        variable_names: Iterable[str],
         as_dict: Literal[True],
         value_as_dict: dict[str, ndarray],
         value_as_array: ndarray,
@@ -1783,7 +1784,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
     def __get_values(
         self,
-        variable_names: Sequence[str] | None,
+        variable_names: Iterable[str],
         as_dict: bool,
         value_as_dict: dict[str, ndarray],
         value_as_array: ndarray,
@@ -1792,7 +1793,7 @@ class DesignSpace(collections.abc.MutableMapping):
 
         Args:
             variable_names: The names of the design variables.
-                If ``None``, then the values of all the design variables are returned.
+                If empty, then the values of all the design variables are returned.
             as_dict: Whether to return the value
                 as a dictionary of the form ``{variable_name: variable_value}``.
             value_as_dict: A dictionary of the values of all the design variables.
@@ -1802,7 +1803,7 @@ class DesignSpace(collections.abc.MutableMapping):
             The bounds of the design variables.
         """
         if self.__norm_data_is_computed and not variable_names and not as_dict:
-            # The array of all the bounds is up to date
+            # The array of all the bounds is up-to-date.
             return value_as_array
 
         if not as_dict:
@@ -1919,14 +1920,14 @@ class DesignSpace(collections.abc.MutableMapping):
     def dict_to_array(
         self,
         design_values: Mapping[str, ndarray],
-        variable_names: Iterable[str] | None = None,
+        variable_names: Iterable[str] = (),
     ) -> ndarray:
         """Convert a mapping of design values into a NumPy array.
 
         Args:
             design_values: The mapping of design values.
             variable_names: The design variables to be considered.
-                If ``None``, consider all the design variables.
+                If empty, consider all the design variables.
 
         Returns:
             The design values as a NumPy array.

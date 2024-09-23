@@ -30,7 +30,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import OptPostProcessorFactory
+from gemseo.post.factory import PostFactory
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
@@ -45,7 +45,7 @@ SOBIESKI_GRADIENT_VALUES = Path(__file__).parent / "sobieski_gradient.pkl"
 
 @pytest.fixture(scope="module")
 def factory():
-    return OptPostProcessorFactory()
+    return PostFactory()
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
@@ -65,8 +65,8 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
         file_path="grad_sens1",
         save=True,
     )
-    assert len(post.output_files) == 1
-    assert Path(post.output_files[0]).exists()
+    assert len(post.output_file_paths) == 1
+    assert Path(post.output_file_paths[0]).exists()
 
     x_0 = problem.database.get_x_vect(1)
     problem.database[x_0].pop("@eq")
@@ -78,8 +78,8 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
         save=True,
         iteration=1,
     )
-    assert len(post.output_files) == 1
-    assert Path(post.output_files[0]).exists()
+    assert len(post.output_file_paths) == 1
+    assert Path(post.output_file_paths[0]).exists()
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])

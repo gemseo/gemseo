@@ -320,6 +320,7 @@ class DisciplineJacApprox:
         analytic_jacobian: dict[str, dict[str, ndarray]],
         outputs: Iterable[str],
         inputs: Iterable[str],
+        # TODO: API: remove disc since it was already pass to __init__.
         discipline: MDODiscipline,
         threshold: float = 1e-8,
         plot_result: bool = False,

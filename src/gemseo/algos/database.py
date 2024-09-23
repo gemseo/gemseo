@@ -60,12 +60,10 @@ from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
-    from numbers import Number
     from pathlib import Path
 
-    from numpy.typing import NDArray
-
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
 DatabaseKeyType = Union[ndarray, HashableNdarray]
@@ -97,7 +95,7 @@ class Database(Mapping):
 
     .. seealso:: :class:`.NormDBFunction`
 
-    It can also be post-processed by an :class:`.OptPostProcessor`
+    It can also be post-processed by an :class:`.BasePost`
     to visualize its content,
     e.g. :class:`.OptHistoryView` generating a series of graphs
     to visualize the histories of the objective, constraints and design variables.
@@ -778,7 +776,7 @@ class Database(Mapping):
         missing_tag: str | float = MISSING_VALUE_TAG,
         input_names: str | Iterable[str] = (),
         with_x_vect: bool = True,
-    ) -> tuple[NDArray[Number | str], list[str], Iterable[str]]:
+    ) -> tuple[NumberArray, list[str], Iterable[str]]:
         """Return the database as a 2D array shaped as ``(n_iterations, n_features)``.
 
         The features are the outputs of interest and possibly the input variables.

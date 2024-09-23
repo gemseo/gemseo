@@ -21,6 +21,8 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Final
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -28,21 +30,20 @@ from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
 from numpy import e
-from numpy import ndarray
 
-from gemseo.post.core.colormaps import PARULA
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.obj_constr_hist_settings import ObjConstrHistSettings
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.typing import NumberArray
 
 
-class ObjConstrHist(OptPostProcessor):
+class ObjConstrHist(BasePost[ObjConstrHistSettings]):
     """History of the maximum constraint and objective value.
 
     The objective history is plotted with a line
@@ -53,32 +54,23 @@ class ObjConstrHist(OptPostProcessor):
     - red: the inequality constraint is violated.
     """
 
-    DEFAULT_FIG_SIZE = (11.0, 6.0)
+    Settings: ClassVar[type[ObjConstrHistSettings]] = ObjConstrHistSettings
 
-    def __init__(  # noqa:D107
-        self,
-        opt_problem: OptimizationProblem,
-    ) -> None:
-        super().__init__(opt_problem)
-        self.optimization_problem = opt_problem
-        self.cmap = PARULA
-        self.ineq_cstr_cmap = RG_SEISMIC
-        self.eq_cstr_cmap = "seismic"
+    __Y_MARGIN: Final[float] = 0.05
+    """The left and right margin for the y-axis."""
 
-    def _plot(self, constraint_names: Sequence[str] = ()) -> None:
-        """
-        Args:
-            constraint_names: The names of the constraints to plot.
-                If empty, use all the constraints.
-        """  # noqa: D205, D212, D415
+    def _plot(self, settings: ObjConstrHistSettings) -> None:
+        constraint_names = settings.constraint_names
+
         # 0. Initialize the figure.
         grid = self._get_grid_layout()
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        fig = plt.figure(figsize=settings.fig_size)
         ax1 = fig.add_subplot(grid[0, 0])
         n_iterations = len(self.database)
         ax1.set_xticks(range(n_iterations))
-        ax1.set_xticklabels(range(1, n_iterations + 1))
+        ax1.set_xticklabels(map(str, range(1, n_iterations + 1)))
         mng = plt.get_current_fig_manager()
+        assert mng is not None
         mng.resize(700, 1000)
 
         # 1. Plot the objective history versus the iterations with a curve.
@@ -98,7 +90,7 @@ class ObjConstrHist(OptPostProcessor):
         plt.plot(obj_history)
         plt.xlabel("Iterations", fontsize=12)
         plt.ylabel(objective_name, fontsize=12)
-        margin = (obj_max - obj_min) * self._Y_MARGIN
+        margin = (obj_max - obj_min) * self.__Y_MARGIN
         plt.ylim([obj_min - margin, obj_max + margin])
         plt.grid(True)
         plt.title("Evolution of the objective and maximum constraint")
@@ -128,11 +120,11 @@ class ObjConstrHist(OptPostProcessor):
             cmap=RG_SEISMIC,
             interpolation="nearest",
             aspect="auto",
-            extent=[-0.5, n_iterations - 0.5, obj_min - margin, obj_max + margin],
+            extent=(-0.5, n_iterations - 0.5, obj_min - margin, obj_max + margin),
             norm=SymLogNorm(vmin=-c_max, vmax=c_max, linthresh=1.0, base=e),
         )
         # 2.c. Add vertical labels with constraint violation information.
-        constraint_names = np.concatenate((ineq_names, eq_names))
+        constraint_names = ineq_names + eq_names
         constraint_values = np.concatenate(
             [values for values in [ineq_history, eq_history] if values.size > 0], axis=1
         )
@@ -171,7 +163,7 @@ class ObjConstrHist(OptPostProcessor):
         self,
         constraints: Iterable[MDOFunction],
         all_constraint_names: Sequence[str],
-    ) -> tuple[ndarray, ndarray]:
+    ) -> tuple[NumberArray, list[str]]:
         """Return the constraints with formatted shape.
 
         Args:
@@ -192,7 +184,7 @@ class ObjConstrHist(OptPostProcessor):
                 function_names=constraint_names, with_x_vect=False
             )
         else:
-            constraint_history, constraint_names = np.array([]), np.array([])
+            constraint_history, constraint_names = np.array([]), []
 
         # harmonization of tables format because constraints can be vectorial
         # or scalars. *vals.shape[0] = iteration, *vals.shape[1] = cstr values

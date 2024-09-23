@@ -17,7 +17,7 @@
 A :class:`.DatasetPlot` is a generic graphical representation of a :class:`.Dataset`
 that can be displayed on screen or saved to a file.
 The different visualization tools
-(:class:`.OptPostProcessor`, :meth:`.BaseSensitivityAnalysis.plot`, ...)
+(:class:`.BasePost`, :meth:`.BaseSensitivityAnalysis.plot`, ...)
 proposed by |g| rely more and more on it
 to factorize the code,
 separate data and graph generation

@@ -23,7 +23,7 @@ from pathlib import Path
 import pytest
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import OptPostProcessorFactory
+from gemseo.post.factory import PostFactory
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
@@ -40,11 +40,11 @@ def test_variable_influence(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = OptPostProcessorFactory()
+    factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = factory.execute(problem, "VariableInfluence", file_path="var_infl")
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
     # THIS CODE SEEMS WRONG: THE SENSITIVITIES ARE NOT COMPUTED WRT DESIGN VARIABLES.
@@ -57,8 +57,8 @@ def test_variable_influence(tmp_wd) -> None:
     #     database[repeat(k.wrapped, 60)] = v
     #
     # post = factory.execute(problem, "VariableInfluence", file_path="var_infl2")
-    # assert len(post.output_files) == 1
-    # for outf in post.output_files:
+    # assert len(post.output_file_paths) == 1
+    # for outf in post.output_file_paths:
     #     assert Path(outf).exists()
 
 
@@ -92,7 +92,7 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = OptPostProcessorFactory()
+    factory = PostFactory()
     problem = OptimizationProblem.from_hdf(SSBJ_HDF5_PATH)
     post = factory.execute(
         problem,
@@ -103,8 +103,8 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
         level=0.98,
         save_var_files=True,
     )
-    assert len(post.output_files) == 14
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 14
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
