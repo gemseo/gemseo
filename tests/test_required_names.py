@@ -12,12 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.grammars.required_names import RequiredNames
+
+if TYPE_CHECKING:
+    from gemseo.core.grammars.base_grammar import BaseGrammar
 
 FACTORY = GrammarFactory()
 

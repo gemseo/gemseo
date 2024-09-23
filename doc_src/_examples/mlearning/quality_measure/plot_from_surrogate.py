@@ -18,6 +18,8 @@ Error from surrogate discipline
 ===============================
 """
 
+from __future__ import annotations
+
 from numpy import array
 from numpy import newaxis
 from numpy import sin

@@ -16,6 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Script to copy reference files from a source to a destination."""
 
+from __future__ import annotations
+
 import argparse
 from pathlib import Path
 from shutil import copy

@@ -102,14 +102,11 @@ select = [
 ]
 
 [lint.flake8-type-checking]
-runtime-evaluated-base-classes = [
-  "pydantic.BaseModel",
-  "gemseo.core.grammars.pydantic_ndarray.BaseModelWithNDArray",
-]
+runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
 [lint.isort]
 force-single-line = true
-#required-imports = ["from __future__ import annotations"]
+required-imports = ["from __future__ import annotations"]
 
 [lint.pydocstyle]
 convention = "google"

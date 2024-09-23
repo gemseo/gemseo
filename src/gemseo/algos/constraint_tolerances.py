@@ -15,6 +15,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """The equality and inequality constraint tolerances."""
 
+from __future__ import annotations
+
 from pydantic import BaseModel
 from pydantic import NonNegativeFloat
 

@@ -18,6 +18,8 @@ Cross-validation
 ================
 """
 
+from __future__ import annotations
+
 from matplotlib import pyplot as plt
 from numpy import array
 from numpy import linspace

@@ -14,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Constants."""
 
+from __future__ import annotations
+
 from types import MappingProxyType
 from typing import Any
 from typing import Final

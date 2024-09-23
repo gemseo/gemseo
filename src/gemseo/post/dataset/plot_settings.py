@@ -14,10 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Data for a plot."""
 
+from __future__ import annotations
+
 from collections.abc import Mapping
 from collections.abc import Sequence
-from typing import Optional
-from typing import Union
 
 from numpy import linspace
 from pydantic import BaseModel
@@ -30,7 +30,7 @@ from gemseo.utils.matplotlib_figure import FigSizeType
 class PlotSettings(BaseModel):
     """The settings of a plot."""
 
-    color: Union[str, list[str]] = ""
+    color: str | list[str] = ""
     """The color.
 
     Either a global one or one per item if ``n_items`` is non-zero.
@@ -50,7 +50,7 @@ class PlotSettings(BaseModel):
     legend_location: str = "best"
     """The location of the legend."""
 
-    linestyle: Union[str, Sequence[str]] = ""
+    linestyle: str | Sequence[str] = ""
     """The line style.
 
     Either a global one or one per item if ``n_items`` is non-zero.
@@ -58,7 +58,7 @@ class PlotSettings(BaseModel):
     If empty, use a default one.
     """
 
-    marker: Union[str, Sequence[str]] = ""
+    marker: str | Sequence[str] = ""
     """The marker.
 
     Either a global one or one per item if ``n_items`` is non-zero.
@@ -74,13 +74,13 @@ class PlotSettings(BaseModel):
     xlabel: str = ""
     """The label for the x-axis."""
 
-    xmin: Optional[float] = None
+    xmin: float | None = None
     """The minimum value on the x-axis.
 
     If ``None``, compute it from data.
     """
 
-    xmax: Optional[float] = None
+    xmax: float | None = None
     """The maximum value on the x-axis.".
 
     If ``None``, compute it from data.
@@ -89,13 +89,13 @@ class PlotSettings(BaseModel):
     ylabel: str = ""
     """The label for the y-axis."""
 
-    ymin: Optional[float] = None
+    ymin: float | None = None
     """The minimum value on the y-axis.
 
     If ``None``, compute it from data.
     """
 
-    ymax: Optional[float] = None
+    ymax: float | None = None
     """The maximum value on the y-axis.
 
     If ``None``, compute it from data.
@@ -104,25 +104,25 @@ class PlotSettings(BaseModel):
     zlabel: str = ""
     """The label for the z-axis."""
 
-    zmin: Optional[float] = None
+    zmin: float | None = None
     """The minimum value on the z-axis.
 
     If ``None``, compute it from data.
     """
 
-    zmax: Optional[float] = None
+    zmax: float | None = None
     """The maximum value on the z-axis.
 
     If ``None``, compute it from data.
     """
 
-    rmin: Optional[float] = None
+    rmin: float | None = None
     """The minimum value on the r-axis.
 
     If ``None``, compute it from data.
     """
 
-    rmax: Optional[float] = None
+    rmax: float | None = None
     """The maximum value on the r-axis.
 
     If ``None``, compute it from data.
@@ -145,7 +145,7 @@ class PlotSettings(BaseModel):
     grid: bool = True
     """Whether to add a grid."""
 
-    def set_colors(self, color: Union[str, list[str]]) -> None:
+    def set_colors(self, color: str | list[str]) -> None:
         """Set one color per item if ``n_items`` is non-zero or a unique one.
 
         Args:
@@ -162,7 +162,7 @@ class PlotSettings(BaseModel):
         if isinstance(self.color, str):
             self.color = [self.color] * self.n_items
 
-    def set_linestyles(self, linestyle: Union[str, Sequence[str]]) -> None:
+    def set_linestyles(self, linestyle: str | Sequence[str]) -> None:
         """Set the line style(s) if ``n_items`` is non-zero or a unique one.
 
         Args:
@@ -175,7 +175,7 @@ class PlotSettings(BaseModel):
         if isinstance(self.linestyle, str):
             self.linestyle = [self.linestyle] * self.n_items
 
-    def set_markers(self, marker: Union[str, Sequence[str]]) -> None:
+    def set_markers(self, marker: str | Sequence[str]) -> None:
         """Set the marker(s) if ``n_items`` is non-zero or a unique one.
 
         Args:

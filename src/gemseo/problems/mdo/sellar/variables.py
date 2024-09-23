@@ -14,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """The variable names of the customizable Sellar MDO problem."""
 
+from __future__ import annotations
+
 from typing import Final
 
 Y_1: Final[str] = "y_1"

@@ -14,14 +14,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test models creators."""
 
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from numpy import array
 from pydantic import BaseModel
 from pydantic import Field
 
-from gemseo.core.grammars.pydantic_grammar import ModelType
 from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
+
+if TYPE_CHECKING:
+    from gemseo.core.grammars.pydantic_grammar import ModelType
 
 
 def get_model1() -> ModelType:
@@ -39,7 +43,7 @@ def get_model2() -> ModelType:
 
     class Model(BaseModel):
         name1: int
-        name2: Union[int, str] = 0
+        name2: int | str = 0
 
     return Model
 
