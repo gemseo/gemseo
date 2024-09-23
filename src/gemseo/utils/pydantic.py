@@ -14,10 +14,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Tools for pydantic."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Any
 
-from pydantic import BaseModel
 from pydantic.fields import FieldInfo
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
 
 
 def update_field(

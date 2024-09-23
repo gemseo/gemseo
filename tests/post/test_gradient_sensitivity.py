@@ -65,8 +65,8 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
         file_path="grad_sens1",
         save=True,
     )
-    assert len(post.output_files) == 1
-    assert Path(post.output_files[0]).exists()
+    assert len(post.output_file_paths) == 1
+    assert Path(post.output_file_paths[0]).exists()
 
     x_0 = problem.database.get_x_vect(1)
     problem.database[x_0].pop("@eq")
@@ -78,8 +78,8 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
         save=True,
         iteration=1,
     )
-    assert len(post.output_files) == 1
-    assert Path(post.output_files[0]).exists()
+    assert len(post.output_file_paths) == 1
+    assert Path(post.output_file_paths[0]).exists()
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])

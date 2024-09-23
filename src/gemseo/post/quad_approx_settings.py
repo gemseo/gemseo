@@ -14,7 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Settings for post-processing."""
 
-from typing import Optional
+from __future__ import annotations
 
 from pydantic import Field
 from pydantic import NonNegativeInt
@@ -28,7 +28,7 @@ class QuadApproxSettings(BasePostSettings):  # noqa: D101
         ...,
         description="The function name to build the quadratic approximation.",
     )
-    func_index: Optional[NonNegativeInt] = Field(
+    func_index: NonNegativeInt | None = Field(
         None,
         description="The index of the output of interest to be defined if the "
         "function has a multidimensional output. If ``None`` and if the "

@@ -14,15 +14,20 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Settings for post-processing."""
 
-from collections.abc import Sequence
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import model_validator
-from typing_extensions import Self
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from typing_extensions import Self
 
 
 class OptHistoryViewSettings(BasePostSettings):  # noqa: D101
@@ -36,14 +41,14 @@ class OptHistoryViewSettings(BasePostSettings):  # noqa: D101
         description="Whether the difference between the objective and its initial "
         "value is plotted instead of the objective.",
     )
-    obj_min: Optional[float] = Field(
+    obj_min: float | None = Field(
         None,
         description="The lower limit of the *y*-axis on which the objective is "
         "plotted. This limit must be less than or equal to the minimum "
         "value of the objective history. If ``None``, use the minimum "
         "value of the objective history.",
     )
-    obj_max: Optional[float] = Field(
+    obj_max: float | None = Field(
         None,
         description="The upper limit of the *y*-axis on which the objective is "
         "plotted. This limit must be greater than or equal to the maximum "

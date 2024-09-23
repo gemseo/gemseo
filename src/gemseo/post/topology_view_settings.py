@@ -14,14 +14,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Settings for post-processing."""
 
-from collections.abc import Sequence
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import PositiveInt
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class TopologyViewSettings(BasePostSettings):  # noqa: D101
@@ -38,7 +42,7 @@ class TopologyViewSettings(BasePostSettings):  # noqa: D101
         description="The name of the observable to be plotted. It should be of size "
         "``n_x*n_y``.",
     )
-    iterations: Union[int, Sequence[int]] = Field(
+    iterations: int | Sequence[int] = Field(
         (),
         description="The iterations of the optimization history. If empty, "
         "the last iteration is taken.",

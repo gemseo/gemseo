@@ -14,17 +14,21 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Settings for post-processing."""
 
-from collections.abc import Sequence
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
 
 class RadarChartSettings(BasePostSettings):  # noqa: D101
-    iteration: Optional[int] = Field(
+    iteration: int | None = Field(
         None,
         description="Either an iteration in :math:`-N,\\\\ldots,-1,1,`ldots,N` or "
         "``None`` for the iteration at which the optimum is located, where :math:`N` "

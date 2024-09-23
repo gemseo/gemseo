@@ -14,8 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Settings for post-processing."""
 
-from typing import Optional
-from typing import Union
+from __future__ import annotations
 
 from pydantic import Field
 from pydantic import NegativeInt
@@ -26,7 +25,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class GradientSensitivitySettings(BasePostSettings):  # noqa: D101
-    iteration: Optional[Union[NegativeInt, PositiveInt]] = Field(
+    iteration: NegativeInt | PositiveInt | None = Field(
         None,
         description="The iteration to plot the sensitivities. "
         "Can use either positive or negative indexing, "

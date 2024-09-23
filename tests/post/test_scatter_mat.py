@@ -59,8 +59,8 @@ def test_scatter(tmp_wd) -> None:
         file_path="scatter1",
         variable_names=problem.function_names,
     )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
@@ -78,12 +78,12 @@ def test_scatter_load(tmp_wd) -> None:
         file_path="scatter2",
         variable_names=problem.function_names,
     )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
     post = factory.execute(problem, "ScatterPlotMatrix", variable_names=[])
-    for outf in post.output_files:
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
@@ -165,8 +165,8 @@ def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
         file_extension="png",
         variable_names=["obj", "x_1", "x_shared"],
     )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert outf.exists()
 
 

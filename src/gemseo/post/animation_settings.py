@@ -14,9 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Settings for post-processing."""
 
-from pathlib import Path
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Union
 
 from pydantic import ConfigDict
 from pydantic import Field
@@ -24,8 +25,12 @@ from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 
-from gemseo.post.base_post import BasePost
 from gemseo.post.base_post_settings import BasePostSettings
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gemseo.post.base_post import BasePost
 
 
 class AnimationSettings(BasePostSettings):  # noqa: D101
@@ -47,12 +52,12 @@ class AnimationSettings(BasePostSettings):  # noqa: D101
         description="The number of times the animation is played. "
         "If ``0``, play infinitely.",
     )
-    temporary_database_path: Union[str, Path] = Field(
+    temporary_database_path: str | Path = Field(
         "",
         description="The path to a temporary database to avoid deepcopy memory errors."
         "If empty, deepcopy is used instead.",
     )
-    gif_file_path: Union[str, Path] = Field(
+    gif_file_path: str | Path = Field(
         "animated_gif",
         description="The path to the GIF file.",
     )

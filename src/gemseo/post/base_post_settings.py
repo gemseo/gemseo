@@ -14,8 +14,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Settings for post-processing."""
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Union
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -33,14 +34,14 @@ class BasePostSettings(BaseModel):
         False,
         description="Whether to display the figure.",
     )
-    file_path: Union[Path, str] = Field(
+    file_path: Path | str = Field(
         "",
         description="The path of the file to save the figures. If the extension is "
         "missing, use ``file_extension``. "
         "If empty, create a file path from ``directory_path``, ``file_name`` and "
         "``file_extension``.",
     )
-    directory_path: Union[Path, str] = Field(
+    directory_path: Path | str = Field(
         "",
         description="The path of the directory to save the figures. "
         "If empty, use the current working directory.",

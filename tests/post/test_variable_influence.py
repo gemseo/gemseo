@@ -43,8 +43,8 @@ def test_variable_influence(tmp_wd) -> None:
     factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = factory.execute(problem, "VariableInfluence", file_path="var_infl")
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
     # THIS CODE SEEMS WRONG: THE SENSITIVITIES ARE NOT COMPUTED WRT DESIGN VARIABLES.
@@ -57,8 +57,8 @@ def test_variable_influence(tmp_wd) -> None:
     #     database[repeat(k.wrapped, 60)] = v
     #
     # post = factory.execute(problem, "VariableInfluence", file_path="var_infl2")
-    # assert len(post.output_files) == 1
-    # for outf in post.output_files:
+    # assert len(post.output_file_paths) == 1
+    # for outf in post.output_file_paths:
     #     assert Path(outf).exists()
 
 
@@ -103,8 +103,8 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
         level=0.98,
         save_var_files=True,
     )
-    assert len(post.output_files) == 14
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 14
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 

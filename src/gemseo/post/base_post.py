@@ -126,7 +126,7 @@ class BasePost(Generic[T]):
         return self.__figures
 
     @property
-    def output_files(self) -> list[Path]:
+    def output_file_paths(self) -> list[Path]:
         """The paths to the output files."""
         return self._output_file_paths
 

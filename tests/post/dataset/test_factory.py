@@ -38,4 +38,4 @@ def test_create() -> None:
     factory = DatasetPlotFactory()
     dataset = create_rosenbrock_dataset()
     dataset = factory.create("ScatterMatrix", dataset=dataset)
-    assert not dataset.output_files
+    assert not dataset.output_file_paths

@@ -2,6 +2,7 @@
 - API changes:
     - Renamed the class ``OptPostProcessor`` to ``BasePost``.
     - Removed the method ``OptPostProcessor.check_options``.
+    - Renamed the attribute ``OptPostProcessor.output_files`` to ``BasePost.output_file_paths``.
     - Removed the attribute ``OptPostProcessor.opt_grammar``.
     - Removed the attribute ``DEFAULT_FIG_SIZE`` for all post processing classes, use the ``fig_size`` field of the ``Pydantic`` model instead.
     - The arguments of the method ``OptPostProcessor.execute`` are all keyword arguments.

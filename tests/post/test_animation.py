@@ -127,6 +127,6 @@ def test_l_shape(tmp_wd) -> None:
         "Animation",
         post_processing=post_processing,
         post_processing_settings=pp_settings,
-    ).output_files
+    ).output_file_paths
     for output_file in output_files:
         assert output_file.exists()

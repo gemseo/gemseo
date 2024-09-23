@@ -61,8 +61,8 @@ def test_correlations(tmp_wd, factory) -> None:
         coeff_limit=0.95,
         file_path="correlations_1",
     )
-    assert len(post.output_files) == 2
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 2
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
@@ -83,8 +83,8 @@ def test_correlations_import(tmp_wd, factory) -> None:
         coeff_limit=0.999,
         file_path="correlations_2",
     )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 

@@ -14,12 +14,17 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Settings for post-processing."""
 
-from collections.abc import Sequence
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class ObjConstrHistSettings(BasePostSettings):  # noqa: D101

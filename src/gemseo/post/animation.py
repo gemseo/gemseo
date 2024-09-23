@@ -88,9 +88,9 @@ class Animation(BasePost[AnimationSettings]):
                 **settings.post_processing_settings.model_dump(),
             )
             steps_to_frame_file_paths.append(
-                settings.post_processing.output_files[output_files_count:],
+                settings.post_processing.output_file_paths[output_files_count:],
             )
-            output_files_count = len(settings.post_processing.output_files)
+            output_files_count = len(settings.post_processing.output_file_paths)
 
         if temporary_database:
             opt_problem.database = Database().from_hdf(temporary_database)
