@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
@@ -23,7 +25,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class HessianHistorySettings(BasePostSettings):  # noqa: D101
-    variable_names: list[str] = Field(
+    variable_names: Sequence[str] = Field(
         (),
         description="The names of the variables.",
     )

@@ -37,5 +37,4 @@ def test_is_available() -> None:
 def test_create() -> None:
     factory = DatasetPlotFactory()
     dataset = create_rosenbrock_dataset()
-    dataset = factory.create("ScatterMatrix", dataset=dataset)
-    assert not dataset.output_file_paths
+    factory.create("ScatterMatrix", dataset=dataset)

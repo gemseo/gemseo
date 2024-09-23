@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from pydantic import Field
@@ -25,8 +26,6 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from typing_extensions import Self
 
 

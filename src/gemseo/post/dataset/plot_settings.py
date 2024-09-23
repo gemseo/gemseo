@@ -30,7 +30,7 @@ from gemseo.utils.matplotlib_figure import FigSizeType
 class PlotSettings(BaseModel):
     """The settings of a plot."""
 
-    color: str | list[str] = ""
+    color: str | Sequence[str] = ""
     """The color.
 
     Either a global one or one per item if ``n_items`` is non-zero.

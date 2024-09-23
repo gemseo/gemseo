@@ -16,16 +16,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Sequence
 
 from pydantic import Field
 from pydantic import PositiveInt
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 
 
 class CorrelationsSettings(BasePostSettings):  # noqa: D101

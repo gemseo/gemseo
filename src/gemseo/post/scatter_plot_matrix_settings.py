@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
@@ -27,7 +29,7 @@ class ScatterPlotMatrixSettings(BasePostSettings):  # noqa: D101
         False,
         description="Whether to remove the non-feasible points from the data.",
     )
-    variable_names: list[str] = Field(
+    variable_names: Sequence[str] = Field(
         (),
         description="The functions names or design variables to plot. If empty, "
         "plot all design variables.",

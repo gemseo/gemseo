@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 from typing import Any
 
 from pydantic import ConfigDict
@@ -25,12 +25,8 @@ from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 
+from gemseo.post.base_post import BasePost
 from gemseo.post.base_post_settings import BasePostSettings
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from gemseo.post.base_post import BasePost
 
 
 class AnimationSettings(BasePostSettings):  # noqa: D101
