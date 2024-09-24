@@ -1,0 +1,1 @@
+``ArrayBasedFunctionDiscipline`` wraps a function whose both the unique argument and the return value are NumPy arrays.

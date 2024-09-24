@@ -17,7 +17,7 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A discipline interfacing a Python function."""
+"""A discipline interfacing a Python function automatically."""
 
 from __future__ import annotations
 
