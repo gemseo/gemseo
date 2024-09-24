@@ -190,16 +190,16 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         design_space = problem.design_space
         samples = design_space.untransform_vect(self.unit_samples, no_check=True)
         variable_types = design_space.variable_types
-        unique_variable_types = {t[0] for t in variable_types.values()}
+        unique_variable_types = set(variable_types.values())
         if len(unique_variable_types) > 1:
             # When the design space have both float and integer variables,
             # the samples array has the float dtype.
             # We record the integer variables types to later be able to restore the
             # proper data type.
             python_var_types = {
-                name: self.__DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE[type_[0]]
+                name: self.__DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE[type_]
                 for name, type_ in variable_types.items()
-                if type_[0] != DesignSpace.DesignVariableType.FLOAT
+                if type_ != DesignSpace.DesignVariableType.FLOAT
             }
             samples.dtype = dtype(samples.dtype, metadata=python_var_types)
 
@@ -447,5 +447,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             and lower and upper bounds are 0 and 1 respectively.
         """
         design_space_ = DesignSpace()
-        design_space_.add_variable("x", size=design_space, l_b=0.0, u_b=1.0)
+        design_space_.add_variable(
+            "x", size=design_space, lower_bound=0.0, upper_bound=1.0
+        )
         return design_space_

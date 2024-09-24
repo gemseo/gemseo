@@ -177,9 +177,13 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
     disciplines = [sellar_1, sellar_2_xls, sellar_system]
 
     design_space = create_design_space()
-    design_space.add_variable("x_1", l_b=0.0, u_b=10.0, value=ones(1))
-    design_space.add_variable("x_shared_1", l_b=-10.0, u_b=10.0, value=array([4]))
-    design_space.add_variable("x_shared_2", l_b=0.0, u_b=10.0, value=array([3]))
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=ones(1))
+    design_space.add_variable(
+        "x_shared_1", lower_bound=-10.0, upper_bound=10.0, value=array([4])
+    )
+    design_space.add_variable(
+        "x_shared_2", lower_bound=0.0, upper_bound=10.0, value=array([3])
+    )
 
     scenario = create_scenario(
         disciplines,

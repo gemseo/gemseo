@@ -74,6 +74,6 @@ def get_value_and_bounds(
 
     return (
         current_value,
-        design_space.array_to_dict(lower_bounds),
-        design_space.array_to_dict(upper_bounds),
+        design_space.convert_array_to_dict(lower_bounds),
+        design_space.convert_array_to_dict(upper_bounds),
     )

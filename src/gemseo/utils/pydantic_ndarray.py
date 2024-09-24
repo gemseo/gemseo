@@ -103,16 +103,14 @@ class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):
             """
             # if shape and shape is not Any and array.shape != shape:
             #     msg = f"Input shape should be {shape}: got the shape {array.shape}"
-            #     # TODO: use ValidationError
             #     raise ValueError(msg)
 
             # First check that the source dtype is not catch-all then the actual dtype.
             if dtype_ not in {Any, _ScalarType_co} and data.dtype != dtype_:
                 msg = (
-                    f"Input dtype should be {dtype_}: "
-                    f"got the dtype {data.dtype.type}"
+                    f"The expected dtype is {dtype_}: "
+                    f"the actual dtype is {data.dtype.type}"
                 )
-                # TODO: use ValidationError
                 raise ValueError(msg)
 
             return cast(NDArray[Any], data)

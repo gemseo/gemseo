@@ -168,7 +168,7 @@ def test_execute_without_current_value() -> None:
     problem.objective = MDOFunction(lambda x: (x - 1) ** 2, "obj")
     driver = OptimizationLibraryFactory().create("NLOPT_COBYLA")
     driver.execute(problem, max_iter=1)
-    assert design_space["x"].value == 0.0
+    assert design_space.get_current_value(["x"]) == 0.0
 
 
 @pytest.mark.parametrize(

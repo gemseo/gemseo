@@ -140,12 +140,20 @@ def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
         tmp_wd : Fixture to move into a temporary directory.
     """
     design_space = create_design_space()
-    design_space.add_variable("x_1", l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=ones(1))
     design_space.add_variable(
-        "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
+        "x_shared",
+        2,
+        lower_bound=(-10, 0.0),
+        upper_bound=(10.0, 10.0),
+        value=array([4.0, 3.0]),
     )
-    design_space.add_variable("y_0", l_b=-100.0, u_b=100.0, value=ones(1))
-    design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
+    design_space.add_variable(
+        "y_0", lower_bound=-100.0, upper_bound=100.0, value=ones(1)
+    )
+    design_space.add_variable(
+        "y_1", lower_bound=-100.0, upper_bound=100.0, value=ones(1)
+    )
     scenario = create_scenario(
         sellar_disciplines,
         "MDF",

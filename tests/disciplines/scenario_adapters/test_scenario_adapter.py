@@ -152,7 +152,7 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
     inputs = ["x_shared"]
     outputs = ["y_4"]
     design_space = scenario.design_space
-    initial_design = design_space.dict_to_array(
+    initial_design = design_space.convert_dict_to_array(
         design_space.get_current_value(as_dict=True)
     )
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=True)
@@ -167,7 +167,7 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
 
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
     adapter.execute()
-    new_initial_design = design_space.dict_to_array(
+    new_initial_design = design_space.convert_dict_to_array(
         design_space.get_current_value(as_dict=True)
     )
     adapter.default_inputs["x_shared"] = x_shared
@@ -192,9 +192,9 @@ def test_adapter_set_bounds(scenario) -> None:
 
     # Execute the adapter with passed bounds
     input_data = {}
-    lower_bounds = ds.array_to_dict(zeros(4))
+    lower_bounds = ds.convert_array_to_dict(zeros(4))
     lower_suffix = MDOScenarioAdapter.LOWER_BND_SUFFIX
-    upper_bounds = ds.array_to_dict(ones(4))
+    upper_bounds = ds.convert_array_to_dict(ones(4))
     upper_suffix = MDOScenarioAdapter.UPPER_BND_SUFFIX
     for bounds, suffix in [
         (lower_bounds, lower_suffix),
@@ -605,7 +605,9 @@ def scenario_fixture(disciplines_fixture):
     This discipline is linerarized in the _run.
     """
     design_space = create_design_space()
-    design_space.add_variable("x", l_b=-1.5, u_b=1.5, value=array([1.0]), size=1)
+    design_space.add_variable(
+        "x", lower_bound=-1.5, upper_bound=1.5, value=array([1.0]), size=1
+    )
     scenario = create_scenario(
         disciplines_fixture,
         formulation="DisciplinaryOpt",
@@ -621,7 +623,9 @@ def scenario_fixture(disciplines_fixture):
 def test_scenario_adapter(scenario_fixture) -> None:
     """Test the scenario execution."""
     design_space = create_design_space()
-    design_space.add_variable("alpha", l_b=-1.5, u_b=1.5, value=array([1.0]), size=1)
+    design_space.add_variable(
+        "alpha", lower_bound=-1.5, upper_bound=1.5, value=array([1.0]), size=1
+    )
     scenario = create_scenario(
         [scenario_fixture],
         formulation="DisciplinaryOpt",

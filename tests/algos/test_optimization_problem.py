@@ -80,7 +80,7 @@ FAIL_HDF = DIRNAME / "fail2.hdf5"
 def problem_executed_twice() -> OptimizationProblem:
     """A problem executed twice."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x, "obj")
@@ -96,7 +96,7 @@ def problem_executed_twice() -> OptimizationProblem:
 @pytest.fixture
 def pow2_problem() -> OptimizationProblem:
     design_space = DesignSpace()
-    design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
+    design_space.add_variable("x", 3, lower_bound=-1.0, upper_bound=1.0)
     x_0 = np.ones(3)
     design_space.set_current_value(x_0)
 
@@ -142,7 +142,7 @@ def test_callback() -> None:
     """Test the execution of a callback."""
     n = 3
     design_space = DesignSpace()
-    design_space.add_variable("x", n, l_b=-1.0, u_b=1.0)
+    design_space.add_variable("x", n, lower_bound=-1.0, upper_bound=1.0)
     design_space.set_current_value(np.zeros(n))
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(rosen, name="rosen", f_type="obj", jac=rosen_der)
@@ -201,7 +201,7 @@ def test_add_constraints(pow2_problem) -> None:
 def test_linear_problem_type_switch() -> None:
     n = 3
     design_space = DesignSpace()
-    design_space.add_variable("x", n, l_b=-1.0, u_b=1.0)
+    design_space.add_variable("x", n, lower_bound=-1.0, upper_bound=1.0)
     design_space.set_current_value(np.zeros(n))
     problem = OptimizationProblem(design_space)
     f = MDOFunction(Power2.ineq_constraint1, name="f")
@@ -364,7 +364,7 @@ def test_constraints_dim(pow2_problem) -> None:
 def test_check() -> None:
     # Objective is missing!
     design_space = DesignSpace()
-    design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
+    design_space.add_variable("x", 3, lower_bound=-1.0, upper_bound=1.0)
     design_space.set_current_value(np.array([1.0, 1.0, 1.0]))
     problem = OptimizationProblem(design_space)
     with pytest.raises(ValueError):
@@ -564,7 +564,9 @@ def test_normalize_linear_function() -> None:
     lower_bounds = array([-5.0, -7.0])
     upper_bounds = array([11.0, 13.0])
     x_0 = 0.2 * lower_bounds + 0.8 * upper_bounds
-    design_space.add_variable("x", 2, l_b=lower_bounds, u_b=upper_bounds, value=x_0)
+    design_space.add_variable(
+        "x", 2, lower_bound=lower_bounds, upper_bound=upper_bounds, value=x_0
+    )
     objective = MDOLinearFunction(
         array([[2.0, 0.0], [0.0, 3.0]]), "affine", "obj", "x", array([5.0, 7.0])
     )
@@ -1090,7 +1092,7 @@ def test_is_mono_objective() -> None:
 def problem() -> OptimizationProblem:
     """A simple optimization problem :math:`max_x x`."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0, u_b=1, value=0.5)
+    design_space.add_variable("x", lower_bound=0, upper_bound=1, value=0.5)
     opt_problem = OptimizationProblem(design_space)
     opt_problem.objective = MDOFunction(lambda x: x, name="func", f_type="obj")
     return opt_problem
@@ -1170,7 +1172,9 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
     """
     f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=1, u_b=3, value=array([1]), var_type="integer")
+    design_space.add_variable(
+        "x", lower_bound=1, upper_bound=3, value=array([1]), type_="integer"
+    )
     problem = OptimizationProblem(design_space)
     problem.objective = -f_1
 
@@ -1415,8 +1419,8 @@ def test_function_string_representation_from_hdf() -> None:
     The commented code is the one used for creating the HDF5 file.
     """
     # design_space = DesignSpace()
-    # design_space.add_variable("x0", l_b=0.0, u_b=1.0, value=0.5)
-    # design_space.add_variable("x1", l_b=0.0, u_b=1.0, value=0.5)
+    # design_space.add_variable("x0", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    # design_space.add_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
     # problem = OptimizationProblem(design_space)
     # problem.objective = MDOFunction(
     #     lambda x: x[0] + x[1], "f", input_names=["x0", "x1"]
@@ -1488,7 +1492,7 @@ def test_get_function_dimension_no_dim(
 def test_get_function_dimension_unavailable(function, design_space) -> None:
     """Check the unavailable output dimension of a problem function."""
     function.dim = 0
-    design_space.has_current_value = mock.Mock(return_value=False)
+    design_space.has_current_value = False
     problem = OptimizationProblem(design_space)
     problem.objective = function
     with pytest.raises(
@@ -1578,7 +1582,7 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
 def problem_for_eval_obs_jac() -> OptimizationProblem:
     """An optimization problem to check the option eval_obs_jac."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: 1 - x, "f", jac=lambda x: array([[-1.0]]))
@@ -1794,9 +1798,13 @@ def test_original_to_current_names_with_aggregation() -> None:
 def test_observables_normalization(sellar_disciplines) -> None:
     """Test that the observables are called at each iteration."""
     design_space = DesignSpace()
-    design_space.add_variable("x_1", l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=ones(1))
     design_space.add_variable(
-        "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
+        "x_shared",
+        2,
+        lower_bound=(-10, 0.0),
+        upper_bound=(10.0, 10.0),
+        value=array([4.0, 3.0]),
     )
     scenario = create_scenario(
         sellar_disciplines,
@@ -1892,7 +1900,7 @@ def test_execute_twice(problem_executed_twice, name) -> None:
 def test_avoid_complex_in_dataset() -> None:
     """Check that exporting database to dataset casts complex numbers to real."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(
@@ -1929,7 +1937,7 @@ def test_check_design_point_is_feasible(
 ) -> None:
     """Test check_design_point_is_feasible."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.tolerances.inequality = 1
@@ -2099,7 +2107,7 @@ def test_reformulate_with_slack_variables(constrained_problem) -> None:
 def test_no_initial_value_with_approximated_gradient(value, differentiation_method):
     """Check that gradient approximation works with and without current value."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=value)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=value)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x**2, "f")
     problem.differentiation_method = differentiation_method
@@ -2156,7 +2164,7 @@ def test_observables_setters():
 def test_evaluation_problem_to_dataset():
     """Check EvaluationProblem.to_dataset."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=2.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
     problem = EvaluationProblem(design_space)
     problem.add_observable(MDOFunction(lambda x: 2 * x, "f"))
     problem.preprocess_functions()
@@ -2183,7 +2191,7 @@ def test_evaluation_problem_to_dataset():
 def evaluation_problem() -> EvaluationProblem:
     """An evaluation problem."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = EvaluationProblem(design_space)
     problem.add_observable(
         MDOFunction(lambda x: 2 * x, "f", jac=lambda x: array([2.0]))

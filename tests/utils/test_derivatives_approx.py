@@ -21,11 +21,13 @@ from __future__ import annotations
 from copy import deepcopy
 from math import cos
 from math import exp
+from math import isinf
 from math import log10
 from math import sin
 
 import pytest
 from numpy import array
+from numpy import inf
 from numpy import ndarray
 from numpy import zeros
 from numpy.linalg import norm
@@ -359,10 +361,10 @@ def test_factory() -> None:
     [
         (False, -2, 2),
         (True, -2, 2),
-        (False, -2, None),
-        (True, -2, None),
-        (False, None, 2),
-        (True, None, 2),
+        (False, -2, inf),
+        (True, -2, inf),
+        (False, -inf, 2),
+        (True, -inf, 2),
     ],
 )
 @pytest.mark.parametrize(
@@ -374,7 +376,9 @@ def test_derivatives_on_design_boundaries(
 ) -> None:
     """Check that finite differences on the design boundaries use a backward step."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=lower_bound, u_b=upper_bound, value=2.0)
+    design_space.add_variable(
+        "x", lower_bound=lower_bound, upper_bound=upper_bound, value=2.0
+    )
 
     problem = OptimizationProblem(design_space, differentiation_method=method)
     problem.objective = MDOFunction(lambda x: x**2, "my_objective")
@@ -384,7 +388,7 @@ def test_derivatives_on_design_boundaries(
     )
 
     grad = problem.database.get_gradient_history("my_objective")[0, 0]
-    if upper_bound is None and (method != ApproximationMode.CENTERED_DIFFERENCES):
+    if isinf(upper_bound) and (method != ApproximationMode.CENTERED_DIFFERENCES):
         assert grad > 4.0
     else:
         assert grad < 4.0

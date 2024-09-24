@@ -49,7 +49,11 @@ X_DIM = 4
 def design_space():
     design_space = create_design_space()
     design_space.add_variable(
-        "x", X_DIM, l_b=-2 * ones(X_DIM), u_b=2 * ones(X_DIM), value=zeros(X_DIM)
+        "x",
+        X_DIM,
+        lower_bound=-2 * ones(X_DIM),
+        upper_bound=2 * ones(X_DIM),
+        value=zeros(X_DIM),
     )
     return design_space
 

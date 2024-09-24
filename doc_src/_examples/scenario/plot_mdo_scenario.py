@@ -81,7 +81,7 @@ discipline, discipline.default_inputs
 # by using its :meth:`.DesignSpace.add_variable` method.
 
 design_space = create_design_space()
-design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
+design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-0.5 * ones(1))
 
 # %%
 # Define the MDO scenario

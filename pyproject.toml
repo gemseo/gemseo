@@ -14,12 +14,13 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.12",
 ]
 dynamic = ["version"]
 requires-python = ">=3.9, <3.13"
 dependencies = [
   "docstring-inheritance >=1.0.0,<=2.2.1",
+  # For supporting new type annotations in pydantic models.
   "eval-type-backport==0.2.0 ; python_version<'3.10'",
   "fastjsonschema >=2.14.5,<=2.20.0",
   "genson >=1.2.2,<=1.3.0",

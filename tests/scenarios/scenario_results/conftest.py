@@ -36,8 +36,8 @@ def scenario() -> DOEScenario:
       - y = 1 => z = 2
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    design_space.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = DOEScenario(
         [AnalyticDiscipline({"z": "x+y"})],
         "DisciplinaryOpt",

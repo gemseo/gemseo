@@ -279,7 +279,7 @@ def test_parallel_execution(tmp_wd) -> None:
     )
 
     design_space = DesignSpace()
-    design_space.add_variable("a", 1, l_b=1, u_b=2, value=1.02)
+    design_space.add_variable("a", 1, lower_bound=1, upper_bound=2, value=1.02)
 
     scenario = create_scenario(
         disc, "DisciplinaryOpt", "out", design_space, scenario_type="DOE"

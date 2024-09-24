@@ -52,7 +52,7 @@ def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": 20})
     return MODEL.cache.to_dataset()
@@ -63,7 +63,7 @@ def dataset_test() -> IODataset:
     """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
     scenario.execute({"algo": "fullfact", "n_samples": 5})
     return MODEL.cache.to_dataset()

@@ -981,14 +981,13 @@ class Database(Mapping):
         dataset_name = name or self.name
 
         # Add database inputs
-        input_names = design_space.variable_names
         names_to_sizes = design_space.variable_sizes
         names_to_types = {
             (input_group, name, component): dtype(
-                design_space.VARIABLE_TYPES_TO_DTYPES[_type]
+                design_space.VARIABLE_TYPES_TO_DTYPES[type_]
             )
-            for name, types in design_space.variable_types.items()
-            for component, _type in enumerate(types)
+            for name, type_ in design_space.variable_types.items()
+            for component in range(design_space.get_size(name))
         }
         input_history = array(self.get_x_vect_history())
         n_samples = len(input_history)
@@ -1001,13 +1000,13 @@ class Database(Mapping):
         data = [input_history.real]
         columns = [
             (input_group, name, index)
-            for name in input_names
+            for name in design_space
             for index in range(names_to_sizes[name])
         ]
 
         # Add database outputs
         variable_names = self.get_function_names()
-        output_names = [name for name in variable_names if name not in input_names]
+        output_names = [name for name in variable_names if name not in design_space]
 
         self.__update_data_and_columns_for_dataset(
             data,

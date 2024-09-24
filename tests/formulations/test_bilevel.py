@@ -32,12 +32,14 @@ from gemseo.formulations.bilevel import BiLevel
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
+from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_bilevel_scenario
+from gemseo.utils.testing.bilevel_test_helper import create_sobieski_sub_scenarios
 from tests.core.test_dependency_graph import create_disciplines_from_desc
 
 
@@ -348,8 +350,8 @@ def test_bilevel_warm_start_no_mda1(dummy_bilevel_scenario) -> None:
 def test_scenario_log_level(caplog, options) -> None:
     """Check scenario_log_level."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    design_space.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2"})],
         "DisciplinaryOpt",
@@ -367,3 +369,20 @@ def test_scenario_log_level(caplog, options) -> None:
         assert "Start FooScenario execution" not in caplog.text
     else:
         assert "Start FooScenario execution" in caplog.text
+
+
+@pytest.fixture
+def sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenario]:
+    """Fixture from an existing function."""
+    return create_sobieski_sub_scenarios()
+
+
+def test_remove_couplings_from_ds(sobieski_sub_scenarios) -> None:
+    """Check the removal of strong couplings for the design space."""
+    formulation = BiLevel(
+        [*sobieski_sub_scenarios, SobieskiMission()],
+        "y_4",
+        SobieskiProblem().design_space,
+    )
+    for strong_coupling in ["y_12", "y_21", "y_23", "y_31", "y_32"]:
+        assert strong_coupling not in formulation.design_space

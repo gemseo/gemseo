@@ -68,8 +68,8 @@ def test_parallel_doe_execution(linear_combination) -> None:
     """Test parallel execution."""
     custom_doe = CustomDOE()
     design_space = DesignSpace()
-    design_space.add_variable("alpha", l_b=-1.0, u_b=1.0, value=0.0)
-    design_space.add_variable("beta", l_b=-1.0, u_b=1.0, value=0.0)
+    design_space.add_variable("alpha", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    design_space.add_variable("beta", lower_bound=-1.0, upper_bound=1.0, value=0.0)
     opt_problem = OptimizationProblem(design_space)
     opt_problem.objective = MDODisciplineAdapterGenerator(
         linear_combination

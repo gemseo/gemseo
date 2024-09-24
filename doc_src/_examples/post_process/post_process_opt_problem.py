@@ -38,7 +38,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 objective = MDOFunction(lambda x: x**2, "f", input_names=["x"], output_names=["y"])
 
 design_space = create_design_space()
-design_space.add_variable("x", l_b=0.0, u_b=1.0)
+design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 optimization_problem = OptimizationProblem(design_space)
 optimization_problem.objective = objective

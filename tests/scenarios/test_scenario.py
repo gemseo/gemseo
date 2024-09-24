@@ -575,7 +575,7 @@ def test_export_to_dataset(mdf_scenario) -> None:
 def complex_step_scenario() -> MDOScenario:
     """The scenario to be used by test_complex_step."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     class MyDiscipline(MDODiscipline):
         """The identity discipline f computing y = f(x) = x."""
@@ -610,7 +610,7 @@ def sinus_use_case() -> tuple[AnalyticDiscipline, DesignSpace]:
     """The sinus discipline and its design space."""
     discipline = AnalyticDiscipline({"y": "sin(2*pi*x)"})
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     return discipline, design_space
 
 
@@ -680,7 +680,7 @@ def scenario_with_non_float_variables() -> MDOScenario:
         The MDOScenario.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     discipline = AnalyticDiscipline({"y": "x"})
     discipline.input_grammar.update_from_names(["z"])
@@ -734,7 +734,7 @@ def test_complex_casting_with_non_float_variables(
 def test_check_disciplines() -> None:
     """Test that an exception is raised when two disciplines compute the same output."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     discipline_1 = AnalyticDiscipline({"y": "x"}, name="foo")
     discipline_2 = AnalyticDiscipline({"y": "x + 1"}, name="bar")
@@ -750,7 +750,7 @@ def test_check_disciplines() -> None:
 @pytest.fixture
 def identity_scenario() -> MDOScenario:
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     return MDOScenario(
         [AnalyticDiscipline({"y": "x"})], "DisciplinaryOpt", "y", design_space
     )
@@ -941,9 +941,9 @@ def scenario_for_linear_check(full_linear):
     my_disc.default_inputs = {"x1": array([0.5]), "x2": array([0.5])}
     my_disc.set_linear_relationships(["f"], ["x1"])
     ds = DesignSpace()
-    ds.add_variable("x1", 1, l_b=0.0, u_b=1.0, value=0.5)
+    ds.add_variable("x1", 1, lower_bound=0.0, upper_bound=1.0, value=0.5)
     if not full_linear:
-        ds.add_variable("x2", 1, l_b=0.0, u_b=1.0, value=0.5)
+        ds.add_variable("x2", 1, lower_bound=0.0, upper_bound=1.0, value=0.5)
     return create_scenario(my_disc, "DisciplinaryOpt", "f", ds)
 
 
@@ -987,7 +987,7 @@ def test_scenario_to_dataset(tmp_wd):
     """Test to_dataset method when there are different data types."""
     design_space = DesignSpace()
     design_space.add_variable("x_float", size=2)
-    design_space.add_variable("x_int", var_type=DesignSpace.DesignVariableType.INTEGER)
+    design_space.add_variable("x_int", type_=DesignSpace.DesignVariableType.INTEGER)
 
     scenario = DOEScenario([MyDisc()], "DisciplinaryOpt", "y1", design_space)
     scenario.add_observable("y2")

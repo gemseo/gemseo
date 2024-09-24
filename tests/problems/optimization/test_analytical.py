@@ -65,8 +65,8 @@ def test_rosen() -> None:
     run_and_test_problem(problem, "L-BFGS-B")
     Rosenbrock(initial_guess=zeros(2))
     problem = Rosenbrock(scalar_var=True)
-    assert "x1" in problem.design_space.variable_names
-    assert "x" not in problem.design_space.variable_names
+    assert "x1" in problem.design_space
+    assert "x" not in problem.design_space
 
 
 def test_power2() -> None:

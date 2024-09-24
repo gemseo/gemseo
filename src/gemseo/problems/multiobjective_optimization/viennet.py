@@ -71,8 +71,8 @@ class Viennet(OptimizationProblem):
             initial_guess: The initial guess for the optimal solution.
         """  # noqa: D205 D212
         design_space = DesignSpace()
-        design_space.add_variable("x", l_b=l_b, u_b=u_b)
-        design_space.add_variable("y", l_b=l_b, u_b=u_b)
+        design_space.add_variable("x", lower_bound=l_b, upper_bound=u_b)
+        design_space.add_variable("y", lower_bound=l_b, upper_bound=u_b)
         design_space.set_current_value(array(initial_guess))
         super().__init__(design_space)
 

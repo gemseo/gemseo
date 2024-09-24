@@ -33,8 +33,6 @@ from openturns import NormalCopula
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.algos.parameter_space import RandomVariable
-from gemseo.algos.parameter_space import RandomVector
 from gemseo.datasets.io_dataset import IODataset
 
 
@@ -72,7 +70,7 @@ def mixed_space():
     """A parameter space containing both deterministic and uncertain variables."""
     space = ParameterSpace()
     space.add_variable("x1")
-    space.add_variable("x2", value=0.0, l_b=0.0, u_b=1.0)
+    space.add_variable("x2", value=0.0, lower_bound=0.0, upper_bound=1.0)
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
     return space
 
@@ -334,20 +332,20 @@ def test_init_from_dataset_default(io_dataset) -> None:
     parameter_space = ParameterSpace.init_from_dataset(io_dataset)
     for name in ["in_1", "in_2", "out_1"]:
         assert name in parameter_space
-        assert (parameter_space[name].var_type == "float").all()
+        assert parameter_space.get_type(name) == "float"
         assert name in parameter_space.deterministic_variables
-    assert parameter_space["in_1"].size == 2
+    assert parameter_space.get_size("in_1") == 2
     ref = io_dataset.get_view(variable_names="in_1").to_numpy().min(0)
-    assert (parameter_space["in_1"].l_b == ref).all()
+    assert (parameter_space.get_lower_bound("in_1") == ref).all()
     ref = io_dataset.get_view(variable_names="in_1").to_numpy().max(0)
-    assert (parameter_space["in_1"].u_b == ref).all()
+    assert (parameter_space.get_upper_bound("in_1") == ref).all()
     ref = (
         io_dataset.get_view(variable_names="in_1").to_numpy().max(0)
         + io_dataset.get_view(variable_names="in_1").to_numpy().min(0)
     ) / 2.0
-    assert (parameter_space["in_1"].value == ref).all()
-    assert parameter_space["in_2"].size == 3
-    assert parameter_space["out_1"].size == 2
+    assert (parameter_space.get_current_value(["in_1"]) == ref).all()
+    assert parameter_space.get_size("in_2") == 3
+    assert parameter_space.get_size("out_1") == 2
 
 
 def test_init_from_dataset_uncertain(io_dataset) -> None:
@@ -387,7 +385,7 @@ def test_init_from_dataset_group(io_dataset) -> None:
 
 def test_gradient_normalization() -> None:
     parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", l_b=-1.0, u_b=2.0)
+    parameter_space.add_variable("x", lower_bound=-1.0, upper_bound=2.0)
     parameter_space.add_random_variable(
         "y", "OTUniformDistribution", minimum=1.0, maximum=3
     )
@@ -400,8 +398,8 @@ def test_gradient_normalization() -> None:
 
 def test_gradient_unnormalization() -> None:
     parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", l_b=-1.0, u_b=2.0)
-    parameter_space.add_variable("y", l_b=1.0, u_b=3.0)
+    parameter_space.add_variable("x", lower_bound=-1.0, upper_bound=2.0)
+    parameter_space.add_variable("y", lower_bound=1.0, upper_bound=3.0)
     x_vect = array([0.5, 1.5])
     assert array_equal(
         parameter_space.normalize_vect(x_vect, minus_lb=False, use_dist=True),
@@ -413,38 +411,6 @@ def test_parameter_space_name() -> None:
     """Check the naming of a parameter space."""
     assert ParameterSpace().name == ""
     assert ParameterSpace(name="my_name").name == "my_name"
-
-
-def test_getitem_keyerror() -> None:
-    """Check that getting an unknown item raises a KeyError."""
-    parameter_space = ParameterSpace()
-    with pytest.raises(KeyError, match="Variable 'x' is not known."):
-        parameter_space["x"]
-
-
-def test_getitem() -> None:
-    """Check that an item can be correctly get from a ParameterSpace."""
-    parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", l_b=0, u_b=1)
-    parameter_space.add_random_variable("u", "SPNormalDistribution", mu=1.0, sigma=2.0)
-    assert parameter_space["x"].l_b[0] == 0.0
-    assert parameter_space["u"].parameters["mu"] == 1.0
-
-
-def test_setitem() -> None:
-    """Check that an item can be correctly passed to a ParameterSpace."""
-    parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", l_b=0, u_b=1)
-    parameter_space.add_random_variable("u", "SPNormalDistribution", mu=1.0, sigma=2.0)
-
-    new_parameter_space = ParameterSpace()
-    new_parameter_space["x"] = parameter_space["x"]
-    new_parameter_space["u"] = parameter_space["u"]
-
-    assert new_parameter_space["x"].l_b[0] == 0.0
-    assert new_parameter_space["u"].parameters["mu"] == 1.0
-
-    assert new_parameter_space == parameter_space
 
 
 def test_transform() -> None:
@@ -460,27 +426,25 @@ def test_transform() -> None:
 
 def test_rename_variable() -> None:
     """Check the renaming of a variable."""
-    design_variable = DesignSpace.DesignVariable(
-        2, "integer", 0.0, 2.0, array([1.0, 2.0])
-    )
-    random_variable = RandomVariable(
-        "SPNormalDistribution", 2, {"mu": 0.5, "sigma": 2.0}
-    )
-    random_vector = RandomVector(
-        "SPNormalDistribution", 2, {"mu": [0.5, 1], "sigma": [2.0]}
-    )
-
     parameter_space = ParameterSpace()
-    parameter_space["x"] = design_variable
-    parameter_space["u"] = random_variable
-    parameter_space["z"] = random_vector
+    parameter_space.add_variable("x", 2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+    parameter_space.add_random_variable(
+        "u", "SPNormalDistribution", 2, mu=0.5, sigma=2.0
+    )
+    parameter_space.add_random_vector(
+        "z", "SPNormalDistribution", 2, mu=[0.5, 1], sigma=[2.0]
+    )
     parameter_space.rename_variable("x", "y")
     parameter_space.rename_variable("u", "v")
 
     expected_space = ParameterSpace()
-    expected_space["y"] = design_variable
-    expected_space["v"] = random_variable
-    expected_space["z"] = random_vector
+    expected_space.add_variable("y", 2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+    expected_space.add_random_variable(
+        "v", "SPNormalDistribution", 2, mu=0.5, sigma=2.0
+    )
+    expected_space.add_random_vector(
+        "z", "SPNormalDistribution", 2, mu=[0.5, 1], sigma=[2.0]
+    )
 
     assert parameter_space == expected_space
     assert "u" not in parameter_space.distributions
@@ -626,23 +590,6 @@ def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound) -> None:
     assert_array_equal(
         parameter_space.distribution.math_upper_bound, array(upper_bound)
     )
-
-
-@pytest.mark.parametrize(
-    ("obj", "args", "expected"),
-    [
-        ("variable", (2,), RandomVector),
-        ("variable", (), RandomVariable),
-        ("vector", (2,), RandomVector),
-        ("vector", (), RandomVariable),
-    ],
-)
-def test_random_vector_getitem(obj, args, expected) -> None:
-    """Check the type object returned by __getitem__ depending on the size."""
-    parameter_space = ParameterSpace()
-    add_random_obj = getattr(parameter_space, f"add_random_{obj}")
-    add_random_obj("x", "SPUniformDistribution", *args)
-    assert isinstance(parameter_space["x"], expected)
 
 
 @pytest.mark.parametrize(

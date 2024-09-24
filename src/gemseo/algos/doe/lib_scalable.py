@@ -120,13 +120,14 @@ class DiagonalDOE(BaseDOELibrary):
         if reverse is None:
             reverse = []
 
-        sizes = design_space.variable_sizes
         name_by_index = {}
         start = 0
-        for name in design_space.variable_names:
-            for index in range(start, start + sizes[name]):
+        for name in design_space:
+            size = design_space.get_size(name)
+            for index in range(start, start + size):
                 name_by_index[index] = name
-            start += sizes[name]
+
+            start += size
 
         samples = []
         for index in range(design_space.dimension):

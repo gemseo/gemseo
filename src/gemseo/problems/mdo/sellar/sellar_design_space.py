@@ -65,19 +65,31 @@ class SellarDesignSpace(DesignSpace):
             add_couplings: Whether to add the coupling variables to the design space.
         """  # noqa: D205 D212
         super().__init__()
-        self.add_variable(X_1, l_b=0.0, u_b=10.0, value=ones(n, dtype=dtype), size=n)
-        self.add_variable(X_2, l_b=0.0, u_b=10.0, value=ones(n, dtype=dtype), size=n)
+        self.add_variable(
+            X_1, lower_bound=0.0, upper_bound=10.0, value=ones(n, dtype=dtype), size=n
+        )
+        self.add_variable(
+            X_2, lower_bound=0.0, upper_bound=10.0, value=ones(n, dtype=dtype), size=n
+        )
         self.add_variable(
             X_SHARED,
             2,
-            l_b=(-10, 0.0),
-            u_b=(10.0, 10.0),
+            lower_bound=(-10, 0.0),
+            upper_bound=(10.0, 10.0),
             value=array([4.0, 3.0], dtype=dtype),
         )
         if add_couplings:
             self.add_variable(
-                Y_1, l_b=-100.0, u_b=100.0, value=ones(n, dtype=dtype), size=n
+                Y_1,
+                lower_bound=-100.0,
+                upper_bound=100.0,
+                value=ones(n, dtype=dtype),
+                size=n,
             )
             self.add_variable(
-                Y_2, l_b=-100.0, u_b=100.0, value=ones(n, dtype=dtype), size=n
+                Y_2,
+                lower_bound=-100.0,
+                upper_bound=100.0,
+                value=ones(n, dtype=dtype),
+                size=n,
             )

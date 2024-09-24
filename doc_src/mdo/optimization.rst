@@ -39,7 +39,7 @@ The :class:`.OptimizationProblem` class is composed of at least a
     from gemseo. api import create_design_space
     from numpy import ones
     design_space = create_design_space()
-    design_space.add_variable("x", 1, l_b=-2., u_b=2.,
+    design_space.add_variable("x", 1, lower_bound=-2., upper_bound=2.,
                               value=-0.5 * np.ones(1))
 
 and an objective function, of type :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction`. The :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction` is callable and requires at least

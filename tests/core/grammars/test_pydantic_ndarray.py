@@ -24,8 +24,8 @@ from numpy import array
 from pydantic import ValidationError
 from pydantic import create_model
 
-from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
-from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 
 
 class Data(NamedTuple):
@@ -35,11 +35,13 @@ class Data(NamedTuple):
     invalid: tuple
 
 
+INVALID_DATA = ([0], [0.0], 0, 0.0, "0", False)
+
 # Test data with type annotations bound to valid and invalid data.
 TYPES_TO_VALUES = {
-    _NDArrayPydantic: Data(array([0]), (0, 0.0, "0", False)),
-    NDArrayPydantic: Data(array([0]), (0, 0.0, "0", False)),
-    NDArrayPydantic[Any]: Data(array([0]), (0, 0.0, "0", False)),
+    _NDArrayPydantic: Data(array([0]), INVALID_DATA),
+    NDArrayPydantic: Data(array([0]), INVALID_DATA),
+    NDArrayPydantic[Any]: Data(array([0]), INVALID_DATA),
     NDArrayPydantic[int]: Data(
         array([0]),
         (
@@ -55,9 +57,9 @@ TYPES_TO_VALUES = {
         ),
     ),
     # The following verifies Unions, Callable is just not a type of the data item.
-    Union[_NDArrayPydantic, Callable]: Data(array([0]), (0, 0.0, "0", False)),
-    Union[NDArrayPydantic, Callable]: Data(array([0]), (0, 0.0, "0", False)),
-    Union[NDArrayPydantic[Any], Callable]: Data(array([0]), (0, 0.0, "0", False)),
+    Union[_NDArrayPydantic, Callable]: Data(array([0]), INVALID_DATA),
+    Union[NDArrayPydantic, Callable]: Data(array([0]), INVALID_DATA),
+    Union[NDArrayPydantic[Any], Callable]: Data(array([0]), INVALID_DATA),
     Union[NDArrayPydantic[int], Callable]: Data(
         array([0]),
         (
@@ -71,6 +73,10 @@ TYPES_TO_VALUES = {
             array([0]),
             array([False]),
         ),
+    ),
+    Union[NDArrayPydantic[float], NDArrayPydantic[int]]: Data(
+        array([0], dtype=int),
+        (array([False]),),
     ),
 }
 

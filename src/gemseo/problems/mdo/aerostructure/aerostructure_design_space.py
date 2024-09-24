@@ -54,16 +54,26 @@ class AerostructureDesignSpace(DesignSpace):
         reserve_fact = np.array([0.0], dtype=np.complex128)
 
         # design variables
-        self.add_variable("thick_airfoils", l_b=5.0, u_b=25.0, value=thick_airfoils)
-        self.add_variable("thick_panels", l_b=1.0, u_b=20.0, value=thick_panels)
+        self.add_variable(
+            "thick_airfoils", lower_bound=5.0, upper_bound=25.0, value=thick_airfoils
+        )
+        self.add_variable(
+            "thick_panels", lower_bound=1.0, upper_bound=20.0, value=thick_panels
+        )
 
         # shared design variables
-        self.add_variable("sweep", l_b=10.0, u_b=35.0, value=sweep)
+        self.add_variable("sweep", lower_bound=10.0, upper_bound=35.0, value=sweep)
 
         # target coupling variables
-        self.add_variable("drag", l_b=100.0, u_b=1000.0, value=drag)
-        self.add_variable("forces", l_b=-1000.0, u_b=1000.0, value=forces)
-        self.add_variable("lift", l_b=0.1, u_b=1.0, value=lift)
-        self.add_variable("mass", l_b=100000.0, u_b=500000.0, value=mass)
-        self.add_variable("displ", l_b=-1000.0, u_b=1000.0, value=displ)
-        self.add_variable("reserve_fact", l_b=-1000.0, u_b=1000.0, value=reserve_fact)
+        self.add_variable("drag", lower_bound=100.0, upper_bound=1000.0, value=drag)
+        self.add_variable(
+            "forces", lower_bound=-1000.0, upper_bound=1000.0, value=forces
+        )
+        self.add_variable("lift", lower_bound=0.1, upper_bound=1.0, value=lift)
+        self.add_variable(
+            "mass", lower_bound=100000.0, upper_bound=500000.0, value=mass
+        )
+        self.add_variable("displ", lower_bound=-1000.0, upper_bound=1000.0, value=displ)
+        self.add_variable(
+            "reserve_fact", lower_bound=-1000.0, upper_bound=1000.0, value=reserve_fact
+        )

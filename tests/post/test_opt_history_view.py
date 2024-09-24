@@ -200,9 +200,9 @@ def test_461(case, baseline_images) -> None:
     2. Design space of dimension > 1 and vector output.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=-2, u_b=2.0, value=-2.0)
+    design_space.add_variable("x", lower_bound=-2, upper_bound=2.0, value=-2.0)
     if case == 2:
-        design_space.add_variable("y", l_b=-2, u_b=2.0, value=-2.0)
+        design_space.add_variable("y", lower_bound=-2, upper_bound=2.0, value=-2.0)
 
     problem = OptimizationProblem(design_space)
     if case == 1:
@@ -238,7 +238,7 @@ def test_variable_names() -> None:
 def test_no_gradient_history(caplog) -> None:
     """Check that OptHistoryView works without gradient history."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=-1, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x**2, "f")

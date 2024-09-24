@@ -62,7 +62,7 @@ discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x**2"})
 # %%
 # This function is defined over the interval :math:`[-1,1]`:
 design_space = create_design_space()
-design_space.add_variable("x", l_b=-1, u_b=1)
+design_space.add_variable("x", lower_bound=-1, upper_bound=1)
 
 # %%
 # We want to sample this discipline over this design space.
@@ -116,7 +116,7 @@ function = MDOFunction(lambda x: x**2, "f", input_names=["x"], output_names=["y"
 # %%
 # and defined over the unit interval :math:`x\in[0,1]`:
 design_space = create_design_space()
-design_space.add_variable("x", l_b=-1, u_b=1)
+design_space.add_variable("x", lower_bound=-1, upper_bound=1)
 
 # %%
 # We want to sample this function over this design space.

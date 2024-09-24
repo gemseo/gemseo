@@ -229,9 +229,9 @@ def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
         The linear optimization problem.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=1.0)
-    design_space.add_variable("y", l_b=0.0, u_b=5.0, value=5)
-    design_space.add_variable("z", l_b=0.0, u_b=5.0, value=0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=5.0, value=5)
+    design_space.add_variable("z", lower_bound=0.0, upper_bound=5.0, value=0)
 
     problem = OptimizationProblem(design_space)
 

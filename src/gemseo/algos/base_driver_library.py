@@ -332,7 +332,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 design space includes at least one integer variable.
         """
         if (
-            design_space.has_integer_variables()
+            design_space.has_integer_variables
             and not self.ALGORITHM_INFOS[self._algo_name].handle_integer_variables
         ):
             if not force_execution:

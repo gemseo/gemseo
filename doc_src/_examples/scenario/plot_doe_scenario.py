@@ -74,8 +74,8 @@ discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 # by using its :meth:`.DesignSpace.add_variable` method.
 
 design_space = create_design_space()
-design_space.add_variable("x1", l_b=-5, u_b=5, var_type="integer")
-design_space.add_variable("x2", l_b=-5, u_b=5, var_type="integer")
+design_space.add_variable("x1", lower_bound=-5, upper_bound=5, type_="integer")
+design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 
 # %%
 # Define the DOE scenario

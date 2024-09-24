@@ -379,9 +379,9 @@ class ScalableProblem:
             design_space.add_variable(
                 name,
                 size=size,
-                var_type="float",
-                l_b=zeros(size),
-                u_b=ones(size),
+                type_="float",
+                lower_bound=zeros(size),
+                upper_bound=ones(size),
                 value=full(size, 0.5),
             )
 
@@ -393,9 +393,9 @@ class ScalableProblem:
                 design_space.add_variable(
                     name,
                     size=size,
-                    var_type="float",
-                    l_b=zeros(size),
-                    u_b=ones(size),
+                    type_="float",
+                    lower_bound=zeros(size),
+                    upper_bound=ones(size),
                     value=full(size, 0.5),
                 )
 

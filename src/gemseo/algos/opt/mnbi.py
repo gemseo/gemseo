@@ -982,7 +982,7 @@ class MNBI(BaseOptimizationLibrary):
                 library = DOELibraryFactory().create(options["doe_algo"])
                 beta_design_space = DesignSpace()
                 beta_design_space.add_variable(
-                    "beta", size=self.__n_obj - 1, l_b=0.0, u_b=1.0
+                    "beta", size=self.__n_obj - 1, lower_bound=0.0, upper_bound=1.0
                 )
                 betas = library.compute_doe(
                     beta_design_space,

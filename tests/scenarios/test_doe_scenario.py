@@ -169,7 +169,7 @@ def test_doe_scenario(mdf_variable_grammar_doe_scenario) -> None:
 def unit_design_space():
     """A unit design space with x as variable."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     return design_space
 
 
@@ -260,7 +260,7 @@ def test_other_exceptions_caught(caplog) -> None:
     """
     discipline = AnalyticDiscipline({"y": "1/x"}, name="func")
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     scenario = DOEScenario(
         [discipline], "MDF", "y", design_space, main_mda_name="MDAJacobi"
     )
@@ -291,7 +291,7 @@ def test_export_to_dataset_normalized_integers() -> None:
     """Check the export of the database with normalized integers."""
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
-    design_space.add_variable("dv", var_type="integer", l_b=1, u_b=10)
+    design_space.add_variable("dv", type_="integer", lower_bound=1, upper_bound=10)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
     samples = array([[1], [2], [10]])
     scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
@@ -397,7 +397,7 @@ def test_partial_execution_from_backup(
 def test_scenario_without_initial_design_value() -> None:
     """Check that a DOEScenario can work without initial design value."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     discipline = AnalyticDiscipline({"y": "x"})
     discipline.default_inputs = {}
     scenario = DOEScenario([discipline], "MDF", "y", design_space)

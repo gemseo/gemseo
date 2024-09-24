@@ -406,7 +406,7 @@ class OptimizationProblem(EvaluationProblem):
                 name=self._SLACK_VARIABLE.format(inequality_constraint.name),
                 size=inequality_constraint.dim,
                 value=0,
-                u_b=0,
+                upper_bound=0,
             )
 
         # Compute a restriction operator that goes from the new design space to the old
@@ -627,7 +627,7 @@ class OptimizationProblem(EvaluationProblem):
             mls.add(" " * len(optimize_verb) + line)
 
         # variables representation
-        mls.add("with respect to {}", pretty_str(self.design_space.variable_names))
+        mls.add("with respect to {}", pretty_str(self.design_space))
         if self.__constraints:
             mls.add("subject to constraints:")
             mls.indent()
@@ -944,7 +944,7 @@ class OptimizationProblem(EvaluationProblem):
         if function.dim:
             return function.dim
 
-        if self.design_space.has_current_value():
+        if self.design_space.has_current_value:
             get_current_value = self.design_space.get_current_value
             if function.expects_normalized_inputs:
                 current_variables = get_current_value(normalize=True)

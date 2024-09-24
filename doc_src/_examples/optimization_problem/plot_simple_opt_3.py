@@ -57,7 +57,7 @@ objective = MDOFunction(np_sum, name="f", expr="sum(x)")
 # -----------------------
 # Then, we define the :class:`.DesignSpace` with |g|.
 design_space = DesignSpace()
-design_space.add_variable("x", 2, l_b=-5, u_b=5, var_type="integer")
+design_space.add_variable("x", 2, lower_bound=-5, upper_bound=5, type_="integer")
 
 # %%
 # Define the optimization problem

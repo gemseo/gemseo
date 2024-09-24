@@ -171,5 +171,5 @@ class MDF(BaseMDOFormulation):
         """Remove the coupling variables from the design space."""
         design_space = self.optimization_problem.design_space
         for coupling in self.mda.all_couplings:
-            if coupling in design_space.variable_names:
+            if coupling in design_space:
                 design_space.remove_variable(coupling)

@@ -191,7 +191,7 @@ class ParameterSpace(DesignSpace):
         Returns:
             True is the variable is deterministic.
         """
-        deterministic = set(self.variable_names) - set(self.uncertain_variables)
+        deterministic = self._variables.keys() - set(self.uncertain_variables)
         return variable in deterministic
 
     def add_random_vector(
@@ -636,7 +636,7 @@ class ParameterSpace(DesignSpace):
                 if not isinstance(value, ndarray):
                     raise TypeError(error_msg)
 
-                if value.shape[-1] != self.variable_sizes[variable]:
+                if value.shape[-1] != self._variables[variable].size:
                     raise ValueError(error_msg)
 
                 if (value > 1.0).any() or (value < 0.0).any():
@@ -656,24 +656,23 @@ class ParameterSpace(DesignSpace):
         else:
             table = PrettyTable(["Name" if capitalize else "name"])
             table.float_format = "%.16g"
-            for name in self.variable_names:
-                size = self.variable_sizes[name]
+            for name, variable in self._variables.items():
                 name_template = f"{name}"
-                if with_index and size > 1:
+                if with_index and variable.size > 1:
                     name_template += "[{index}]"
 
-                for i in range(size):
+                for i in range(variable.size):
                     table.add_row([name_template.format(name=name, index=i)])
 
         distributions = []
         transformations = []
-        for variable in self.variable_names:
+        for variable in self:
             if variable in self.uncertain_variables:
                 for marginal in self.distributions[variable].marginals:
                     distributions.append(repr(marginal))
                     transformations.append(marginal.transformation)
             else:
-                empty = [self._BLANK] * self.variable_sizes[variable]
+                empty = [self._BLANK] * self._variables[variable].size
                 distributions.extend(empty)
                 transformations.extend(empty)
 
@@ -730,7 +729,7 @@ class ParameterSpace(DesignSpace):
         mean = []
         std = []
         rnge = []
-        for variable in self.variable_names:
+        for variable in self:
             if variable in self.uncertain_variables:
                 dist = self.distributions[variable]
                 tmp_mean = dist.mean
@@ -807,14 +806,14 @@ class ParameterSpace(DesignSpace):
         return self.__unnormalize_vect(x_vect, no_check)
 
     def __unnormalize_vect(self, x_vect, no_check):
-        data_names = self.variable_names
+        data_names = self._variables.keys()
         data_sizes = self.variable_sizes
         x_u_geom = super().unnormalize_vect(x_vect, no_check=no_check)
         x_u = self.evaluate_cdf(
             split_array_to_dict_of_arrays(x_vect, data_sizes, data_names), inverse=True
         )
         x_u_geom = split_array_to_dict_of_arrays(x_u_geom, data_sizes, data_names)
-        missing_names = [name for name in data_names if name not in x_u]
+        missing_names = [name for name in self if name not in x_u]
         for name in missing_names:
             x_u[name] = x_u_geom[name]
 
@@ -876,7 +875,7 @@ class ParameterSpace(DesignSpace):
         return self.__normalize_vect(x_vect)
 
     def __normalize_vect(self, x_vect):
-        data_names = self.variable_names
+        data_names = self._variables.keys()
         data_sizes = self.variable_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_n_geom = super().normalize_vect(x_vect)
@@ -892,9 +891,7 @@ class ParameterSpace(DesignSpace):
     def deterministic_variables(self) -> list[str]:
         """The deterministic variables."""
         return [
-            variable
-            for variable in self.variable_names
-            if variable not in self.uncertain_variables
+            variable for variable in self if variable not in self.uncertain_variables
         ]
 
     def extract_uncertain_space(
@@ -1005,68 +1002,12 @@ class ParameterSpace(DesignSpace):
             design_space.add_variable(
                 name,
                 size=self.get_size(name),
-                var_type=self.get_type(name),
-                l_b=self.get_lower_bound(name),
-                u_b=self.get_upper_bound(name),
+                type_=self.get_type(name),
+                lower_bound=self.get_lower_bound(name),
+                upper_bound=self.get_upper_bound(name),
                 value=self.get_current_value([name]),
             )
         return design_space
-
-    def __getitem__(
-        self,
-        name: str,
-    ) -> DesignSpace.DesignVariable | RandomVariable | RandomVector:
-        if name not in self.variable_names:
-            msg = f"Variable '{name}' is not known."
-            raise KeyError(msg)
-
-        if self.is_uncertain(name):
-            if self.__uncertain_variables_to_definitions[name][2]:
-                cls = RandomVariable
-            else:
-                cls = RandomVector
-
-            return cls(
-                distribution=self.__uncertain_variables_to_definitions[name][0],
-                size=self.get_size(name),
-                parameters=self.__uncertain_variables_to_definitions[name][1],
-            )
-
-        try:
-            value = self.get_current_value([name])
-        except KeyError:
-            value = None
-
-        return DesignSpace.DesignVariable(
-            size=self.get_size(name),
-            var_type=self.get_type(name),
-            l_b=self.get_lower_bound(name),
-            u_b=self.get_upper_bound(name),
-            value=value,
-        )
-
-    def __setitem__(
-        self,
-        name: str,
-        item: DesignSpace.DesignVariable | RandomVariable | RandomVector,
-    ) -> None:
-        if isinstance(item, RandomVariable):
-            self.add_random_variable(
-                name, item.distribution, size=item.size, **item.parameters
-            )
-        elif isinstance(item, RandomVector):
-            self.add_random_vector(
-                name, item.distribution, size=item.size, **item.parameters
-            )
-        else:
-            self.add_variable(
-                name,
-                size=item.size,
-                var_type=item.var_type,
-                l_b=item.l_b,
-                u_b=item.u_b,
-                value=item.value,
-            )
 
     def rename_variable(  # noqa:D102
         self,

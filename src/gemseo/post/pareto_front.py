@@ -200,7 +200,7 @@ class ParetoFront(BasePost[ParetoFrontSettings]):
              func: The function name.
              objectives: The objectives names.
         """
-        if func in self.optimization_problem.design_space.variable_names:
+        if func in self.optimization_problem.design_space:
             objectives.remove(func)
             design_variables.append(func)
 

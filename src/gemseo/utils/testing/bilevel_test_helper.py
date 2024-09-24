@@ -48,56 +48,54 @@ def create_sobieski_bilevel_scenario(
         Returns:
             A Sobieski BiLevel Scenario.
         """
-        propulsion = SobieskiPropulsion()
-        aerodynamics = SobieskiAerodynamics()
-        struct = SobieskiStructure()
-        mission = SobieskiMission()
+        sub_scenarios = create_sobieski_sub_scenarios()
+        for scenario in sub_scenarios:
+            scenario.default_inputs = {"max_iter": 5, "algo": "SLSQP"}
 
-        ds = SobieskiProblem().design_space
-        sc_prop = MDOScenario(
-            [propulsion],
-            "DisciplinaryOpt",
-            "y_34",
-            ds.filter("x_3", copy=True),
-            name="PropulsionScenario",
-        )
-
-        # Maximize L/D
-        sc_aero = MDOScenario(
-            [aerodynamics],
-            "DisciplinaryOpt",
-            "y_24",
-            ds.filter("x_2", copy=True),
-            name="AerodynamicsScenario",
-            maximize_objective=True,
-        )
-
-        # Maximize log(aircraft total weight / (aircraft total weight - fuel
-        # weight))
-        sc_str = MDOScenario(
-            [struct],
-            "DisciplinaryOpt",
-            "y_11",
-            ds.filter("x_1", copy=True),
-            name="StructureScenario",
-            maximize_objective=True,
-        )
-
-        sub_scenarios = [sc_str, sc_aero, sc_prop]
-        sub_disciplines = [*sub_scenarios, mission]
-        for sc in sub_scenarios:
-            sc.default_inputs = {"max_iter": 5, "algo": "SLSQP"}
-
-        ds = SobieskiProblem().design_space
-        sc_system = MDOScenario(
-            sub_disciplines,
+        system = MDOScenario(
+            [*sub_scenarios, SobieskiMission()],
             scenario_formulation,
             "y_4",
-            ds.filter(["x_shared", "y_14"]),
+            SobieskiProblem().design_space.filter(["x_shared", "y_14"]),
             maximize_objective=True,
             **options,
         )
-        sc_system.set_differentiation_method("finite_differences")
-        return sc_system
+        system.set_differentiation_method("finite_differences")
+        return system
 
     return func
+
+
+def create_sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenario]:
+    """Return the sub-scenarios of Sobieski's SuperSonic Business Jet."""
+    design_space = SobieskiProblem().design_space
+    propulsion = MDOScenario(
+        [SobieskiPropulsion()],
+        "DisciplinaryOpt",
+        "y_34",
+        design_space.filter("x_3", copy=True),
+        "PropulsionScenario",
+    )
+
+    # Maximize L/D
+    aerodynamics = MDOScenario(
+        [SobieskiAerodynamics()],
+        "DisciplinaryOpt",
+        "y_24",
+        design_space.filter("x_2", copy=True),
+        "AerodynamicsScenario",
+        maximize_objective=True,
+    )
+
+    # Maximize log(aircraft total weight / (aircraft total weight - fuel
+    # weight))
+    structure = MDOScenario(
+        [SobieskiStructure()],
+        "DisciplinaryOpt",
+        "y_11",
+        design_space.filter("x_1"),
+        "StructureScenario",
+        maximize_objective=True,
+    )
+
+    return structure, aerodynamics, propulsion

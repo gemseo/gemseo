@@ -39,6 +39,7 @@ from numpy import zeros
 from numpy.linalg import norm
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
+from pydantic import ValidationError
 from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
@@ -66,29 +67,33 @@ def design_space():
     Feel free to add new variables.
     """
     ds = DesignSpace()
-    ds.add_variable("x1", l_b=0.0, u_b=2.0)
-    ds.add_variable("x2", l_b=-2.0, u_b=2.0)
-    ds.add_variable("x3", var_type=INTEGER, l_b=0, u_b=2)
-    ds.add_variable("x4", var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
-    ds.add_variable("x5", size=3, var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
-    ds.add_variable("x6", u_b=2.0)
-    ds.add_variable("x7", l_b=0.0)
-    ds.add_variable("x8", var_type=INTEGER, l_b=1, u_b=1)
-    ds.add_variable("x9", size=3, l_b=-1.0, u_b=2.0)
+    ds.add_variable("x1", lower_bound=0.0, upper_bound=2.0)
+    ds.add_variable("x2", lower_bound=-2.0, upper_bound=2.0)
+    ds.add_variable("x3", type_=INTEGER, lower_bound=0, upper_bound=2)
+    ds.add_variable("x4", type_="float", lower_bound=-1.0, upper_bound=0.0, value=-0.5)
+    ds.add_variable(
+        "x5", size=3, type_="float", lower_bound=-1.0, upper_bound=0.0, value=-0.5
+    )
+    ds.add_variable("x6", upper_bound=2.0)
+    ds.add_variable("x7", lower_bound=0.0)
+    ds.add_variable("x8", type_=INTEGER, lower_bound=1, upper_bound=1)
+    ds.add_variable("x9", size=3, lower_bound=-1.0, upper_bound=2.0)
     ds.add_variable("x10", size=3)
     ds.add_variable("x11", size=2)
     ds.add_variable("x12")
     ds.add_variable("x13", value=array([0.5]))
-    ds.add_variable("x14", var_type=INTEGER, value=array([2.0]))
+    ds.add_variable("x14", type_=INTEGER, value=array([2.0]))
     ds.add_variable("x15")
-    ds.add_variable("x16", size=2, var_type=[FLOAT] * 2, value=array([1.0, 2.0]))
-    ds.add_variable("x17", size=2, var_type=[INTEGER] * 2, value=array([1, 2]))
-    ds.add_variable("x18", l_b=-1.0, u_b=2.0)
-    ds.add_variable("x19", l_b=1.0, u_b=3.0)
-    ds.add_variable("x20", var_type=b"float")
+    ds.add_variable("x16", size=2, type_=FLOAT, value=array([1.0, 2.0]))
+    ds.add_variable("x17", size=2, type_=INTEGER, value=array([1, 2]))
+    ds.add_variable("x18", lower_bound=-1.0, upper_bound=2.0)
+    ds.add_variable("x19", lower_bound=1.0, upper_bound=3.0)
+    ds.add_variable("x20", type_=b"float")
     ds.add_variable("x21", value=0.5)
     ds.add_variable("x22", size=2)
-    ds.add_variable("x23", l_b=0.0, u_b=1.0, value=array([1]), var_type="float")
+    ds.add_variable(
+        "x23", lower_bound=0.0, upper_bound=1.0, value=array([1]), type_="float"
+    )
     return ds
 
 
@@ -99,87 +104,100 @@ def test_add_variable_when_already_exists(design_space) -> None:
         design_space.add_variable(name="varname")
 
 
-@pytest.mark.parametrize("size", [-1, 0, 0.4])
-def test_add_variable_with_wrong_size(design_space, size) -> None:
+nonpositivity_message = "Input should be greater than 0"
+
+
+@pytest.mark.parametrize(
+    ("size", "message"),
+    [
+        (-1, nonpositivity_message),
+        (0, nonpositivity_message),
+        (0.4, "Input should be a valid integer, got a number with a fractional part"),
+    ],
+)
+def test_add_variable_with_wrong_size(design_space, size, message) -> None:
     """Check that adding a variable with a wrong size raises an error."""
-    with pytest.raises(
-        ValueError, match="The size of 'varname' should be a positive integer."
-    ):
+    with pytest.raises(ValidationError, match=message):
         design_space.add_variable(name="varname", size=size)
-
-
-def test_add_variable_with_inconsistent_types_list(design_space) -> None:
-    """Check that adding a variable with wrong number of types raises an error."""
-    with pytest.raises(
-        ValueError,
-        match="The list of types for variable 'varname' should be of size 3.",
-    ):
-        design_space.add_variable(name="varname", size=3, var_type=[FLOAT] * 2)
 
 
 def test_add_variable_with_unkown_type(design_space) -> None:
     """Check that adding a variable with unknown type raises an error."""
-    with pytest.raises(ValueError, match='The type "a" of varname is not known.'):
-        design_space.add_variable(name="varname", var_type="a")
-
-
-def test_add_variable_with_unkown_type_from_list(design_space) -> None:
-    """Check that adding a variable with unknown type raises an error."""
-    with pytest.raises(ValueError, match='The type "a" of varname is not known.'):
-        design_space.add_variable(
-            name="varname",
-            size=2,
-            var_type=[FLOAT, "a"],
-        )
+    with pytest.raises(ValidationError, match="Input should be 'float' or 'integer'"):
+        design_space.add_variable(name="varname", type_="a")
 
 
 def test_add_variable_with_unnumerizable_value(design_space) -> None:
     """Check that adding a variable with unnumerizable value raises an error."""
     expected = re.escape(
-        "Value <built-in function len> of variable 'varname' is not numerizable."
+        "The following value of variable 'varname' is neither None nor complex "
+        "and cannot be cast to float: <built-in function len> (index 0).",
     )
     with pytest.raises(ValueError, match=expected):
         design_space.add_variable(name="varname", value=len)
 
 
-@pytest.mark.parametrize("arg", ["l_b", "u_b", "value"])
-def test_add_variable_with_nan_value(design_space, arg) -> None:
+@pytest.mark.parametrize(
+    ("arg", "message"),
+    [
+        (
+            "lower_bound",
+            "The following lower bound component is not a number: nan (index 0).",
+        ),
+        (
+            "upper_bound",
+            "The following upper bound component is not a number: nan (index 0).",
+        ),
+        (
+            "value",
+            "The following value of variable 'varname' is neither None nor a number: "
+            "nan (index 0).",
+        ),
+    ],
+)
+def test_add_variable_with_nan_value(design_space, arg, message) -> None:
     """Check that adding a variable with nan value raises an error."""
-    with pytest.raises(ValueError, match="Value nan of variable 'varname' is NaN."):
+    with pytest.raises(ValueError, match=re.escape(message)):
         design_space.add_variable(name="varname", **{arg: float("nan")})
 
 
-@pytest.mark.parametrize(("arg", "side"), [("l_b", "lower"), ("u_b", "upper")])
+@pytest.mark.parametrize(
+    ("arg", "side"), [("lower_bound", "lower"), ("upper_bound", "upper")]
+)
 def test_add_variable_with_inconsistent_bound_size(design_space, arg, side) -> None:
     """Check that using bounds with inconsistent size raises an error."""
-    with pytest.raises(
-        ValueError, match=f"The {side} bounds of 'varname' should be of size 3."
-    ):
+    with pytest.raises(ValidationError, match=f"The {side} bound should be of size 3."):
         design_space.add_variable(name="varname", size=3, **{arg: [0.0, 0.0]})
 
 
 def test_add_variable_with_upper_bounds_lower_than_lower_ones(design_space) -> None:
     """Check that using upper bounds lower than lower ones raises an error."""
     with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The bounds of variable 'varname'[1] are not valid: [1.]!<[0.]."
-        ),
+        ValidationError,
+        match="The upper bounds must be greater than or equal to the lower bounds.",
     ):
         design_space.add_variable(
-            name="varname", size=3, l_b=[0, 1.0, 0], u_b=[1, 0.0, 1]
+            name="varname",
+            size=3,
+            lower_bound=[0, 1.0, 0],
+            upper_bound=[1, 0.0, 1],
         )
 
 
-@pytest.mark.parametrize("arg", ["l_b", "u_b", "value"])
+@pytest.mark.parametrize("arg", ["lower_bound", "upper_bound", "value"])
 def test_add_variable_with_2d_object(design_space, arg) -> None:
     """Check that using a 2d iterable object raises an error."""
-    expected = (
-        "Value [[1.]] of variable 'varname' has dimension greater than 1 "
-        "while a float or a 1d iterable object (array, list, tuple, ...) "
-        "while a scalar was expected."
+    variable_name = " of variable 'varname'" if arg == "value" else ""
+    message = (
+        (
+            f"The value [[1.]]{variable_name} has a dimension greater than 1 "
+            "while a scalar or a 1D iterable object (array, list, tuple, ...) "
+            "was expected."
+        )
+        if arg == "value"
+        else "validation errors for Variable"
     )
-    with pytest.raises(ValueError, match=re.escape(expected)):
+    with pytest.raises(ValueError, match=re.escape(message)):
         design_space.add_variable("varname", **{arg: [[1.0]]})
 
 
@@ -204,13 +222,13 @@ def test_add_variable_with_value_out_of_bounds(design_space, l_b, u_b, value) ->
         design_space.add_variable(
             name="varname",
             size=1,
-            var_type=FLOAT,
-            l_b=l_b,
-            u_b=u_b,
+            type_=FLOAT,
+            lower_bound=l_b,
+            upper_bound=u_b,
             value=value,
         )
 
-    assert "varname" not in design_space.variable_names
+    assert "varname" not in design_space
 
 
 def test_creation_4() -> None:
@@ -227,9 +245,9 @@ def test_add_variable_value(design_space) -> None:
     design_space.add_variable(
         "varname",
         size=3,
-        var_type=FLOAT,
-        l_b=0.0,
-        u_b=1.0,
+        type_=FLOAT,
+        lower_bound=0.0,
+        upper_bound=1.0,
         value=[None, None, None],
     )
 
@@ -292,7 +310,9 @@ def test_integer_variable_set_current_x(design_space) -> None:
     design_space.filter("x3")
     x_i = array([0], dtype=int32)
     design_space.set_current_value(x_i)
-    x_i_conv = design_space.dict_to_array(design_space.array_to_dict(x_i))
+    x_i_conv = design_space.convert_dict_to_array(
+        design_space.convert_array_to_dict(x_i)
+    )
     assert x_i_conv.dtype == x_i.dtype
     assert x_i_conv == x_i
 
@@ -345,11 +365,7 @@ def test_filter_dimensions(current_value) -> None:
     space.filter_dimensions("x", [0])
     assert space.dimension == 3
     assert space.variable_sizes == {"z": 1, "x": 1, "y": 1}
-    assert space.variable_types == {
-        "z": array(["float"]),
-        "x": array(["float"]),
-        "y": array(["integer"]),
-    }
+    assert space.variable_types == {"z": "float", "x": "float", "y": "integer"}
     assert_array_equal(space.get_lower_bounds(), [-0.6, 0.1, 7])
     assert_array_equal(space.get_upper_bounds(), [-0.4, 0.3, 9])
     if current_value is not None:
@@ -371,30 +387,56 @@ def test_filter_dimensions_nonexistent(design_space, indices, message) -> None:
         design_space.filter_dimensions("x5", indices)
 
 
+def check_variable(
+    space: DesignSpace,
+    name: str,
+    reference_space: DesignSpace,
+    check_value: bool,
+) -> None:
+    """Check a variable of a design space.
+
+    Args:
+        space: The design space.
+        name: The name of the variable.
+        reference_space: The design space of reference.
+        check_value: Whether to check the value of the variable.
+
+    Returns:
+        Whether the variable is valid.
+    """
+    assert name in space
+    assert space.get_size(name) == reference_space.get_size(name)
+    assert space.get_type(name) == reference_space.get_type(name)
+    assert_equal(space.get_lower_bound(name), reference_space.get_lower_bound(name))
+    assert_equal(space.get_upper_bound(name), reference_space.get_upper_bound(name))
+    if check_value:
+        assert_equal(
+            space.get_current_value([name]),
+            reference_space.get_current_value([name]),
+        )
+
+
 def test_extend() -> None:
     """Test the extension of a design space with another."""
     design_space = DesignSpace()
-    design_space.add_variable("x1", var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
+    design_space.add_variable(
+        "x1", type_="float", lower_bound=-1.0, upper_bound=0.0, value=-0.5
+    )
     other = DesignSpace()
-    other.add_variable("x2", size=3, var_type="float", l_b=-1.0, u_b=0.0, value=-0.5)
+    other.add_variable(
+        "x2", size=3, type_="float", lower_bound=-1.0, upper_bound=0.0, value=-0.5
+    )
     other.add_variable("x3")
     design_space.extend(other)
-    assert "x2" in design_space
-    assert design_space.get_size("x2") == other.get_size("x2")
-    assert (design_space.get_type("x2") == other.get_type("x2")).all()
-    assert (design_space.get_lower_bound("x2") == other.get_lower_bound("x2")).all()
-    assert (design_space.get_upper_bound("x2") == other.get_upper_bound("x2")).all()
-    assert (
-        design_space.get_current_value(["x2"]) == other.get_current_value(["x2"])
-    ).all()
-    assert other["x3"] == design_space["x3"]
+    check_variable(design_space, "x2", other, True)
+    check_variable(design_space, "x3", other, False)
 
 
 def test_active_bounds() -> None:
     """Check whether active bounds are correctly identified."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=2.0)
-    design_space.add_variable("y", l_b=-2.0, u_b=2.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
+    design_space.add_variable("y", lower_bound=-2.0, upper_bound=2.0)
     design_space.add_variable("z")
     lb_1, ub_1 = design_space.get_active_bounds({
         "x": array([0.0]),
@@ -414,7 +456,8 @@ def test_active_bounds() -> None:
     assert not ub_1["z"][0]
 
     with pytest.raises(
-        TypeError, match="Expected dict or array for x_vec argument; got <class 'str'>."
+        TypeError,
+        match="Expected dict or array for x_vec argument; got <class 'str'>.",
     ):
         design_space.get_active_bounds("test")
 
@@ -612,46 +655,49 @@ def test_get_upper_bounds(design_space, variable_names, as_dict, upper_bounds) -
 
 def test_bounds_set_lower_bound_with_nan(design_space) -> None:
     """Check that setting lower bound with nan raises an error."""
-    with pytest.raises(ValueError, match="Value nan of variable 'x6' is NaN."):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The following lower bound component is not a number: nan (index 0)."
+        ),
+    ):
         design_space.set_lower_bound("x6", float("nan"))
 
 
 def test_bounds_set_lower_bound_with_inconsistent_size(design_space) -> None:
     """Check that setting lower bound with inconsistent sized value raises an error."""
-    with pytest.raises(
-        ValueError, match="The lower bounds of 'x6' should be of size 1."
-    ):
+    with pytest.raises(ValueError, match="The lower bound should be of size 1."):
         design_space.set_lower_bound("x6", ones(2))
 
 
 def test_bounds_set_upper_bound_with_nan(design_space) -> None:
     """Check that setting upper bound with nan raises an error."""
-    with pytest.raises(ValueError, match="Value nan of variable 'x6' is NaN."):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The following upper bound component is not a number: nan (index 0)."
+        ),
+    ):
         design_space.set_upper_bound("x6", float("nan"))
 
 
 def test_bounds_set_upper_bound_with_inconsistent_size(design_space) -> None:
     """Check that setting upper bound with inconsistent sized value raises an error."""
-    with pytest.raises(
-        ValueError, match="The upper bounds of 'x6' should be of size 1."
-    ):
+    with pytest.raises(ValueError, match="The upper bound should be of size 1."):
         design_space.set_upper_bound("x6", ones(2))
-
-
-def test_bounds_check_value(design_space) -> None:
-    """Check that a nan value is correctly handled as a nan and raises an error."""
-    with pytest.raises(ValueError, match="Value nan of variable 'x6' is NaN."):
-        design_space._check_value(array([float("nan")]), "x6")
 
 
 def test_normalization() -> None:
     """Check the normalization of design variables."""
     design_space = DesignSpace()
     design_space.add_variable(
-        "x_1", size=2, l_b=array([None, 0.0]), u_b=array([0.0, None])
+        "x_1",
+        size=2,
+        lower_bound=array([-inf, 0.0]),
+        upper_bound=array([0.0, inf]),
     )
-    design_space.add_variable("x_2", l_b=0.0, u_b=10.0)
-    design_space.add_variable("x_3", var_type=INTEGER, l_b=0.0, u_b=10.0)
+    design_space.add_variable("x_2", lower_bound=0.0, upper_bound=10.0)
+    design_space.add_variable("x_3", type_=INTEGER, lower_bound=0.0, upper_bound=10.0)
     # Test the normalization policies:
     assert not design_space.normalize["x_1"][0]
     assert not design_space.normalize["x_1"][1]
@@ -699,45 +745,24 @@ def test_norm_policy() -> None:
     """Check the normalization policy."""
     design_space = DesignSpace()
     design_space.add_variable(
-        "x_1", size=2, l_b=array([None, 0.0]), u_b=array([0.0, None])
+        "x_1",
+        size=2,
+        lower_bound=array([-inf, 0.0]),
+        upper_bound=array([0.0, inf]),
     )
 
     with pytest.raises(ValueError, match="Variable 'foo' is not known."):
         design_space._add_norm_policy("foo")
 
-    size = design_space.variable_sizes.pop("x_1")
-    with pytest.raises(ValueError, match="The size of variable 'x_1' is not set."):
-        design_space._add_norm_policy("x_1")
-
-    design_space.variable_sizes["x_1"] = size
-    design_space.variable_types.pop("x_1")
-    with pytest.raises(
-        ValueError, match="The components types of variable 'x_1' are not set."
-    ):
-        design_space._add_norm_policy("x_1")
-
-    design_space.add_variable("x_c", l_b=array([0.0]), u_b=array([0.0]))
+    design_space.add_variable("x_c", lower_bound=array([0.0]), upper_bound=array([0.0]))
     assert not design_space.normalize["x_c"]
-
-    design_space.add_variable("x_e", l_b=array([0.0]), u_b=array([0.0]))
-    design_space.variable_types["x_e"] = array(["toto"])
-    with pytest.raises(
-        ValueError, match="The normalization policy for type toto is not implemented."
-    ):
-        design_space._add_norm_policy("x_e")
-
-    design_space.variable_types.pop("x_e")
-    with pytest.raises(
-        ValueError, match="The components types of variable 'x_e' are not set."
-    ):
-        design_space._add_norm_policy("x_e")
 
 
 def test_current_x() -> None:
     names = ["x_1", "x_2"]
     sizes = {"x_1": 1, "x_2": 2}
-    l_b = {"x_1": 0.5, "x_2": (None, 2.0)}
-    u_b = {"x_1": None, "x_2": (4.0, 5.0)}
+    l_b = {"x_1": 0.5, "x_2": (-inf, 2.0)}
+    u_b = {"x_1": inf, "x_2": (4.0, 5.0)}
     var_types = {
         "x_1": FLOAT,
         "x_2": INTEGER,
@@ -751,15 +776,15 @@ def test_current_x() -> None:
         design_space.add_variable(
             name,
             size=sizes[name],
-            var_type=var_types[name],
-            l_b=l_b[name],
-            u_b=u_b[name],
+            type_=var_types[name],
+            lower_bound=l_b[name],
+            upper_bound=u_b[name],
         )
 
     design_space.set_current_value(x_0)
     design_space.check()
 
-    expected = re.escape("Expected current_x variables: ['x_1', 'x_2']; got ['x_1'].")
+    expected = re.escape("Expected current_x variables: x_1 and x_2; got x_1.")
     with pytest.raises(ValueError, match=expected):
         design_space.set_current_value({"x_1": array([0.0])})
 
@@ -767,7 +792,7 @@ def test_current_x() -> None:
         ValueError,
         match=re.escape(
             "The component x_1[0] of the given array (-999.5) is lower "
-            "than the lower bound (0.5) by 1.0e+03."
+            "than the lower bound (0.5) by 1.0e+03.",
         ),
     ):
         design_space.set_current_value(x_0 - 1000.0)
@@ -781,7 +806,10 @@ def test_current_x() -> None:
     """
 
     assert design_space.get_type("x_1") == np.array([FLOAT])
-    assert design_space.get_type("x_3") is None
+    with pytest.raises(ValueError, match="Variable 'x_3' is not known."):
+        assert design_space.get_type("x_3")
+    with pytest.raises(ValueError, match="Variable 'x_3' is not known."):
+        assert design_space.get_size("x_3")
 
     design_space.set_current_variable("x_1", np.array([5.0]))
     assert design_space.get_current_value(as_dict=True)["x_1"][0] == 5.0
@@ -791,14 +819,14 @@ def test_current_x() -> None:
 
     with pytest.raises(
         ValueError,
-        match=re.escape("The bounds of variable 'error'[0] are not valid: [1.]!<[0.]."),
+        match="The upper bounds must be greater than or equal to the lower bounds.",
     ):
-        design_space.add_variable("error", l_b=1.0, u_b=0.0)
+        design_space.add_variable("error", lower_bound=1.0, upper_bound=0.0)
 
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=2.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
     design_space.set_current_value({"x": None})
-    assert not design_space.has_current_value()
+    assert not design_space.has_current_value
 
 
 def get_sobieski_design_space():
@@ -826,7 +854,12 @@ def get_sobieski_design_space():
         l_b, u_b = problem.get_bounds_by_name([name])
         size = value.size
         ref_ds.add_variable(
-            name, size=size, var_type="float", l_b=l_b, u_b=u_b, value=value
+            name,
+            size=size,
+            type_="float",
+            lower_bound=l_b,
+            upper_bound=u_b,
+            value=value,
         )
 
     return ref_ds
@@ -842,7 +875,7 @@ def test_read_write(tmp_wd) -> None:
     check_ds(ref_ds, read_ds, f_path)
 
     ds = DesignSpace.from_csv(TEST_INFILE)
-    assert not ds.has_current_value()
+    assert not ds.has_current_value
     for i in range(1, 9):
         testfile = CURRENT_DIR / f"design_space_fail_{i}.csv"
         with pytest.raises(ValueError):
@@ -856,31 +889,42 @@ def test_read_write(tmp_wd) -> None:
         DesignSpace.from_csv(testfile, header=header)
 
     ds = DesignSpace.from_csv(TEST_INFILE)
-    ds.set_lower_bound("x_shared", None)
-    ds.set_upper_bound("x_shared", None)
+    ds.set_lower_bound("x_shared", -inf)
+    ds.set_upper_bound("x_shared", inf)
 
     out_f = Path("table.csv")
     ds.to_csv(out_f, sortby="upper_bound")
     assert out_f.exists()
 
 
+@pytest.mark.parametrize("index", [1, 2, 3, 4, 5, 6, 7, 8])
+def test_read_write_failure(tmp_wd, index) -> None:
+    """Check that from_csv and to_csv work correctly."""
+    testfile = CURRENT_DIR / f"design_space_fail_{index}.csv"
+    with pytest.raises(ValueError):
+        DesignSpace.from_csv(testfile)
+
+
 def test_dict_to_array() -> None:
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=2.0)
-    design_space.add_variable("y", l_b=-2.0, u_b=2.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
+    design_space.add_variable("y", lower_bound=-2.0, upper_bound=2.0)
 
     with pytest.raises(TypeError, match="x_dict values must be ndarray."):
-        design_space.dict_to_array({"x": 1.0}, variable_names=["x"])
+        design_space.convert_dict_to_array({"x": 1.0}, variable_names=["x"])
 
     with pytest.raises(KeyError, match="'y'"):
-        design_space.dict_to_array({"x": array([1.0])})
+        design_space.convert_dict_to_array({"x": array([1.0])})
 
 
 @pytest.mark.parametrize(("name", "dtype"), [("x1", float64), ("x3", int32)])
 def test_dict_to_array_dtype(design_space, name, dtype) -> None:
-    """Check the data type of the array returned by ``DesignSpace.dict_to_array``."""
+    """Check the data type of the array returned by
+    ``DesignSpace.convert_dict_to_array``."""
     assert (
-        design_space.dict_to_array({"x1": array([1.0]), "x3": array([1])}, [name]).dtype
+        design_space.convert_dict_to_array(
+            {"x1": array([1.0]), "x3": array([1])}, [name]
+        ).dtype
         == dtype
     )
 
@@ -903,14 +947,14 @@ def check_ds(ref_ds, read_ds, f_path) -> None:
     err = read_ds.get_current_value() - ref_ds.get_current_value()
     assert norm(err) == pytest.approx(0.0)
 
-    type_read = [t for name in read_ds.variable_names for t in read_ds.get_type(name)]
+    type_read = [t for name in read_ds for t in read_ds.get_type(name)]
 
-    type_ref = [t for name in read_ds.variable_names for t in ref_ds.get_type(name)]
+    type_ref = [t for name in read_ds for t in ref_ds.get_type(name)]
 
     assert type_read == type_ref
 
-    for name in ref_ds.variable_names:
-        assert name in read_ds.variable_names
+    for name in ref_ds:
+        assert name in read_ds
 
     ref_str = str(ref_ds)
     assert ref_str == str(read_ds)
@@ -1007,10 +1051,14 @@ def design_space_2() -> DesignSpace:
 
 
 @pytest.mark.parametrize(
-    ("with_index", "indexes"), [(True, ("[0]", "[1]")), (False, ("   ", "   "))]
+    ("with_index", "indexes"),
+    [(True, ("[0]", "[1]")), (False, ("   ", "   "))],
 )
 def test_get_pretty_table(
-    table_template_2, design_space_2, with_index, indexes
+    table_template_2,
+    design_space_2,
+    with_index,
+    indexes,
 ) -> None:
     """Check that a design space is correctly rendered."""
     assert (
@@ -1033,7 +1081,8 @@ def test_str(table_template, design_space_2, name) -> None:
 
 
 @pytest.mark.parametrize(
-    ("normalized", "expected"), [(False, [-1, 0.5, 2]), (True, [0, 0.5, 1])]
+    ("normalized", "expected"),
+    [(False, [-1, 0.5, 2]), (True, [0, 0.5, 1])],
 )
 def test_project_into_bounds(design_space, normalized, expected) -> None:
     """Tests the projection onto the design space bounds."""
@@ -1051,25 +1100,6 @@ def test_contains(design_space) -> None:
 def test_len(design_space) -> None:
     """Check the length of a design space."""
     assert len(design_space) == len(design_space.variable_names)
-
-
-def test_getitem(design_space) -> None:
-    assert design_space["x21"] == DesignSpace.DesignVariable(
-        var_type=FLOAT,
-        value=array([0.5]),
-        size=1,
-        l_b=array([-inf]),
-        u_b=array([inf]),
-    )
-
-    assert design_space["x22"].value is None
-
-
-def test_getitem_with_name_out_of_design_space(design_space) -> None:
-    """Check that getitem with an unknown variable name raises an error."""
-    expected = "Variable 'foo' is not known."
-    with pytest.raises(KeyError, match=expected):
-        design_space["foo"]
 
 
 @pytest.mark.parametrize(
@@ -1094,13 +1124,16 @@ def test_get_variables_indexes(design_space, names, expected) -> None:
     [(True, array([0, 1, 2, 3, 4, 5])), (False, array([3, 4, 0, 1, 2, 5]))],
 )
 def test_get_variables_indexes_in_user_order(
-    design_space, use_design_space_order, expected
+    design_space,
+    use_design_space_order,
+    expected,
 ) -> None:
     """Test the variables indexes getter in user order."""
     design_space.filter(["x10", "x11", "x12"])
     assert_equal(
         design_space.get_variables_indexes(
-            ["x11", "x10", "x12"], use_design_space_order
+            ["x11", "x10", "x12"],
+            use_design_space_order,
         ),
         expected,
     )
@@ -1130,7 +1163,7 @@ def test_sparse_normalization() -> None:
     """Tests (de)normalization of sparse Jacobians."""
     design_space = DesignSpace()
     design_space.add_variable("x")
-    design_space.add_variable("y", l_b=1.0, u_b=3.0)
+    design_space.add_variable("y", lower_bound=1.0, upper_bound=3.0)
 
     jac = array([[1.0, 1.0], [1.0, 2.0]])
     sparse_jac = csr_array(jac)
@@ -1151,7 +1184,8 @@ def test_vartype_passed_as_bytes(design_space) -> None:
 
 
 @pytest.mark.parametrize(
-    ("name", "kind"), [("x13", "f"), ("x14", "i"), ("x16", "f"), ("x17", "i")]
+    ("name", "kind"),
+    [("x13", "f"), ("x14", "i"), ("x16", "f"), ("x17", "i")],
 )
 def test_current_x_various_types(design_space, name, kind) -> None:
     """Check that set_current_value handles various types of data."""
@@ -1188,7 +1222,7 @@ def test_design_space_name() -> None:
 def design_space_for_normalize_vect() -> DesignSpace:
     """A design space to check normalize_vect."""
     design_space = DesignSpace()
-    design_space.add_variable("x_1", 2, FLOAT, array([None, 0.0]), array([0.0, None]))
+    design_space.add_variable("x_1", 2, FLOAT, array([-inf, 0.0]), array([0.0, inf]))
     design_space.add_variable("x_2", 1, FLOAT, 0.0, 10.0)
     design_space.add_variable("x_3", 1, INTEGER, 0.0, 10.0)
     return design_space
@@ -1203,7 +1237,10 @@ def design_space_for_normalize_vect() -> DesignSpace:
     ],
 )
 def test_normalize_vect(
-    design_space_for_normalize_vect, input_vec, ref, use_out
+    design_space_for_normalize_vect,
+    input_vec,
+    ref,
+    use_out,
 ) -> None:
     """Test that the normalization is correctly computed whether the input values are
     floats or integers."""
@@ -1228,8 +1265,8 @@ def test_unnormalize_vect(input_vec, ref) -> None:
         "x_1",
         2,
         FLOAT,
-        array([None, 0.0]),
-        array([0.0, None]),
+        array([-inf, 0.0]),
+        array([0.0, inf]),
     )
     design_space.add_variable("x_2", 1, FLOAT, 0.0, 10.0)
     design_space.add_variable("x_3", 1, INTEGER, 0.0, 10.0)
@@ -1241,7 +1278,9 @@ def test_unnormalize_vect_logging(caplog) -> None:
     """Check the warning logged when unnormalizing a vector."""
     design_space = DesignSpace()
     design_space.add_variable("x")  # unbounded variable
-    design_space.add_variable("y", 2, l_b=-3.0, u_b=4.0)  # bounded variable
+    design_space.add_variable(
+        "y", 2, lower_bound=-3.0, upper_bound=4.0
+    )  # bounded variable
     design_space.unnormalize_vect(array([2.0, -5.0, 6.0]))
     msg = "All components of the normalized vector should be between 0 and 1; "
     msg += f"lower bounds violated: {array([-5.0])}; "
@@ -1257,47 +1296,16 @@ def test_iter() -> None:
     assert list(design_space) == ["x1", "x2"]
 
 
-def test_delitem() -> None:
-    """Check that an item can be deleted with DesignSpace.__del__."""
-    design_space = DesignSpace()
-    design_space.add_variable("x1")
-    assert design_space
-    del design_space["x1"]
-    assert not design_space
-
-
 def test_ineq() -> None:
     """Check that DesignSpace cannot be equal to any object other than a DesignSpace."""
     design_space = DesignSpace()
     assert design_space != 1
 
 
-def test_setitem() -> None:
-    """Check that DesignSpace.__setitem__ works."""
-    design_space = DesignSpace()
-    design_space.add_variable("x1", size=2, var_type=INTEGER, l_b=-1, u_b=1, value=0)
-
-    new_design_space = DesignSpace()
-    new_design_space["x1"] = design_space["x1"]
-    assert design_space == new_design_space
-
-    new_design_space.set_lower_bound("x1", array([0, 0]))
-    assert design_space != new_design_space
-
-    design_space.set_lower_bound("x1", array([0, 0]))
-    assert design_space == new_design_space
-
-    design_space.add_variable("x2")
-    assert design_space != new_design_space
-
-    new_design_space.add_variable("x3")
-    assert design_space != new_design_space
-
-
 def test_transform() -> None:
     """Check that transformation and inverse transformation works correctly."""
     parameter_space = DesignSpace()
-    parameter_space.add_variable("x", l_b=0.0, u_b=2.0)
+    parameter_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
     vector = array([1.0])
     transformed_vector = parameter_space.transform_vect(vector)
     assert transformed_vector == array([0.5])
@@ -1305,24 +1313,24 @@ def test_transform() -> None:
     assert vector == untransformed_vector
 
 
-def test_setitem_from_dict() -> None:
-    """Check that DesignSpace.__setitem__ works from an user dictionary."""
-    design_space = DesignSpace()
-    design_space["x"] = DesignSpace.DesignVariable(l_b=2.0)
-    assert design_space["x"].l_b == array([2.0])
-
-
 @pytest.mark.parametrize("value", [array([1.0, 2.0]), None])
 def test_rename_variable(value) -> None:
     """Check the renaming of a variable."""
-    design_variable = DesignSpace.DesignVariable(2, "integer", 0.0, 2.0, value)
-
     design_space = DesignSpace()
-    design_space["x"] = design_variable
+    design_space.add_variable("x", 2, "integer", 0.0, 2.0, value)
     design_space.rename_variable("x", "y")
-
     assert "x" not in design_space
-    assert_equal(design_space["y"], design_variable)
+    assert "y" in design_space
+    variable = design_space._variables["y"]
+    assert variable.size == 2
+    assert variable.type == "integer"
+    assert_equal(variable.lower_bound, [0, 0])
+    assert_equal(variable.upper_bound, [2, 2])
+    assert "x" not in design_space._current_value
+    if value is None:
+        assert "y" not in design_space._current_value
+    else:
+        assert_array_equal(design_space._current_value["y"], value)
 
 
 def test_rename_unknown_variable() -> None:
@@ -1339,7 +1347,7 @@ def test_rename_unknown_variable() -> None:
             {
                 "int": {
                     "size": 2,
-                    "var_type": [INTEGER] * 2,
+                    "var_type": INTEGER,
                     "value": array([1, 2]),
                 },
                 "float": {
@@ -1354,7 +1362,7 @@ def test_rename_unknown_variable() -> None:
             {
                 "float_1": {
                     "size": 2,
-                    "var_type": [FLOAT] * 2,
+                    "var_type": FLOAT,
                     "value": array([1, 2]),
                 },
                 "float_2": {
@@ -1369,7 +1377,7 @@ def test_rename_unknown_variable() -> None:
             {
                 "int_1": {
                     "size": 2,
-                    "var_type": [INTEGER] * 2,
+                    "var_type": INTEGER,
                     "value": array([1, 2]),
                 },
                 "int_2": {
@@ -1387,10 +1395,13 @@ def test_has_integer_variables(variables, expected) -> None:
     design_space = DesignSpace()
     for key, val in variables.items():
         design_space.add_variable(
-            key, size=val["size"], var_type=val["var_type"], value=val["value"]
+            key,
+            size=val["size"],
+            type_=val["var_type"],
+            value=val["value"],
         )
 
-    assert design_space.has_integer_variables() == expected
+    assert design_space.has_integer_variables == expected
 
 
 @pytest.fixture(scope="module")
@@ -1434,8 +1445,8 @@ def test_normalization_casting(design_space: DesignSpace, normalize: bool) -> No
 def design_space_to_check_membership() -> DesignSpace:
     """A design space to test the method check_membership."""
     design_space = DesignSpace()
-    design_space.add_variable("x", var_type=INTEGER, l_b=-2, u_b=-1)
-    design_space.add_variable("y", size=2, l_b=1.0, u_b=2.0)
+    design_space.add_variable("x", type_=INTEGER, lower_bound=-2, upper_bound=-1)
+    design_space.add_variable("y", size=2, lower_bound=1.0, upper_bound=2.0)
     return design_space
 
 
@@ -1506,13 +1517,17 @@ def design_space_to_check_membership() -> DesignSpace:
             ValueError,
             (
                 "The component y[1] of the given array (3) is greater "
-                "than the upper bound (1.0) by 1.0e+00."
+                "than the upper bound (2.0) by 1.0e+00."
             ),
         ),
     ],
 )
 def test_check_membership(
-    design_space_to_check_membership, x_vect, variable_names, error, error_msg
+    design_space_to_check_membership,
+    x_vect,
+    variable_names,
+    error,
+    error_msg,
 ) -> None:
     """Check the method check_membership."""
     ds = design_space_to_check_membership
@@ -1532,7 +1547,8 @@ def test_check_membership(
     [(-5, array([-5, -5])), (array([-5, -inf]), array([-5, -inf]))],
 )
 @pytest.mark.parametrize(
-    ("u_b", "expected_ub"), [(5, array([5, 5])), (array([5, inf]), array([5, inf]))]
+    ("u_b", "expected_ub"),
+    [(5, array([5, 5])), (array([5, inf]), array([5, inf]))],
 )
 def test_infinity_bounds_for_int(l_b, u_b, expected_lb, expected_ub) -> None:
     """Check that integer variables can handle -/+ infinity bounds.
@@ -1544,7 +1560,7 @@ def test_infinity_bounds_for_int(l_b, u_b, expected_lb, expected_ub) -> None:
         expected_lb: The expected lower bounds.
     """
     ds = DesignSpace()
-    ds.add_variable("x", 2, l_b=l_b, u_b=u_b, var_type=INTEGER)
+    ds.add_variable("x", 2, lower_bound=l_b, upper_bound=u_b, type_=INTEGER)
     assert array_equal(ds._lower_bounds["x"], expected_lb)
     assert array_equal(ds._upper_bounds["x"], expected_ub)
 
@@ -1553,9 +1569,11 @@ def test_infinity_bounds_for_int(l_b, u_b, expected_lb, expected_ub) -> None:
 def fbb_design_space() -> DesignSpace:
     """Foo-bar-baz (fbb) design space for test_get_current_value()."""
     design_space = DesignSpace()
-    design_space.add_variable("foo", l_b=1.0, value=1.0)
-    design_space.add_variable("bar", size=2, l_b=1.0, u_b=3.0, value=2.0)
-    design_space.add_variable("baz", l_b=1.0, u_b=3.0, value=3.0)
+    design_space.add_variable("foo", lower_bound=1.0, value=1.0)
+    design_space.add_variable(
+        "bar", size=2, lower_bound=1.0, upper_bound=3.0, value=2.0
+    )
+    design_space.add_variable("baz", lower_bound=1.0, upper_bound=3.0, value=3.0)
     design_space.set_current_variable("baz", array([3.0 + 0.5j]))
     return design_space
 
@@ -1592,7 +1610,9 @@ def test_get_current_value(fbb_design_space, names, cast, normalize, as_dict) ->
         expected = {k: v.real for k, v in expected.items()}
 
     if not as_dict:
-        expected = fbb_design_space.dict_to_array(expected, variable_names=names)
+        expected = fbb_design_space.convert_dict_to_array(
+            expected, variable_names=names
+        )
 
     assert_equal(result, expected)
 
@@ -1613,18 +1633,20 @@ def test_get_current_value_bad_names() -> None:
 @pytest.mark.parametrize(
     ("l_b", "u_b", "value"),
     [
-        (None, None, array([0, 0])),
-        (array([1, 2]), None, array([1, 2])),
+        (-inf, inf, array([0, 0])),
+        (array([1, 2]), inf, array([1, 2])),
         (array([1, 2]), array([2, 4]), array([1, 3])),
-        (None, array([1, 2]), array([1, 2])),
+        (-inf, array([1, 2]), array([1, 2])),
     ],
 )
 def test_initialize_missing_current_values(l_b, u_b, value) -> None:
     """Check the initialization of the missing current values."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=2, var_type=INTEGER, l_b=l_b, u_b=u_b)
+    design_space.add_variable(
+        "x", size=2, type_=INTEGER, lower_bound=l_b, upper_bound=u_b
+    )
     design_space.initialize_missing_current_values()
-    assert_equal(design_space["x"].value, value)
+    assert_equal(design_space.get_current_value("x"), value)
 
 
 def test_get_current_value_order() -> None:
@@ -1684,15 +1706,15 @@ def test_repr_html(design_space_2) -> None:
         <td>inf</td>
         <td>float</td>
     </tr>
-</table>"""
+</table>""",
     )
 
 
 def test_normalization_runtimewarning() -> None:
     """Check that normalization does no longer print a RuntimeWarning."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0, u_b=2)
-    design_space.add_variable("y", l_b=1, u_b=1)
+    design_space.add_variable("x", lower_bound=0, upper_bound=2)
+    design_space.add_variable("y", lower_bound=1, upper_bound=1)
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         design_space.normalize_vect(array([1.0, 1.0]))

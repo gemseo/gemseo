@@ -27,7 +27,7 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 def __common_problem():  # noqa: PT005
     """A dummy optimization problem to check post-processors."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=2, l_b=0, u_b=1, value=0.5)
+    design_space.add_variable("x", size=2, lower_bound=0, upper_bound=1, value=0.5)
     problem = OptimizationProblem(design_space)
     func = MDOFunction(sum, "obj")
     func.has_default_name = True

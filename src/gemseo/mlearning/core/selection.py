@@ -178,7 +178,7 @@ class MLAlgoSelection:
                 ml_algo_calibration = MLAlgoCalibration(
                     name,
                     self.dataset,
-                    calib_space.variable_names,
+                    calib_space,
                     calib_space,
                     self.measure,
                     measure_evaluation_method_name=self.__measure_evaluation_method_name,

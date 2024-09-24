@@ -35,7 +35,7 @@ from gemseo.utils.testing.helpers import concretize_classes
 @pytest.fixture
 def doe_problem_dim_2():
     design_space = DesignSpace()
-    design_space.add_variable("x", size=2, l_b=-2.0, u_b=2.0)
+    design_space.add_variable("x", size=2, lower_bound=-2.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(sum, "func")
     return problem
@@ -60,7 +60,7 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
     n_samples, size = atleast_2d(expected).shape
     n_samples = int(n_samples)
     design_space = DesignSpace()
-    design_space.add_variable("x", size=size, l_b=0.0, u_b=2.0)
+    design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(sum, "func")
     doe_library_class(algo_name).execute(problem, n_samples=n_samples)
@@ -79,7 +79,7 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
 def test_fullfact_properties(doe_library_class, algo_name, n_samples, size) -> None:
     """Check fullfactorial DOEs in terms of properties (bounds and dimensions)."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=size, l_b=0.0, u_b=2.0)
+    design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(sum, "func")
     doe_library_class(algo_name).execute(problem, n_samples=n_samples)

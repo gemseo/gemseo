@@ -60,9 +60,7 @@ def sellar_use_case(tmp_wd, sellar_disciplines):
         discipline_names.append(discipline.name)
         objective_name = next(iter(discipline.output_grammar.keys()))
         design_space = SellarDesignSpace()
-        input_names = set(design_space.variable_names).intersection(
-            set(discipline.input_grammar.keys())
-        )
+        input_names = set(design_space) & discipline.input_grammar.keys()
         design_space = design_space.filter(input_names)
         scenario = DOEScenario(
             [discipline], "DisciplinaryOpt", objective_name, design_space

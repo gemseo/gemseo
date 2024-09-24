@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from numpy.core.multiarray import ndarray
 
     from gemseo.algos.database import Database
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.core.execution_sequence import LoopExecSequence
     from gemseo.scenarios.scenario import Scenario
 
@@ -150,16 +151,17 @@ class MDOScenarioAdapter(MDODiscipline):
         self._update_grammars()
         self._dv_in_names = None
         if set_x0_before_opt:
-            dv_names = set(self.scenario.formulation.design_space.variable_names)
-            self._dv_in_names = list(dv_names & set(self._input_names))
+            self._dv_in_names = list(
+                set(self._input_names).intersection(self.scenario.design_space)
+            )
 
         # Set the initial bounds as default bounds
         self._bound_names = []
         if set_bounds_before_opt:
             dspace = scenario.design_space
-            lower_bounds = dspace.array_to_dict(dspace.get_lower_bounds())
+            lower_bounds = dspace.convert_array_to_dict(dspace.get_lower_bounds())
             lower_suffix = MDOScenarioAdapter.LOWER_BND_SUFFIX
-            upper_bounds = dspace.array_to_dict(dspace.get_upper_bounds())
+            upper_bounds = dspace.convert_array_to_dict(dspace.get_upper_bounds())
             upper_suffix = MDOScenarioAdapter.UPPER_BND_SUFFIX
             for bounds, suffix in [
                 (lower_bounds, lower_suffix),
@@ -229,8 +231,7 @@ class MDOScenarioAdapter(MDODiscipline):
         missing_outputs = set(self._output_names) - set(self.output_grammar.keys())
 
         if missing_outputs:
-            dv_names = opt_problem.design_space.variable_names
-            miss_dvs = set(dv_names) & set(missing_outputs)
+            miss_dvs = set(missing_outputs).intersection(opt_problem.design_space)
             if miss_dvs:
                 dv_gram = JSONGrammar("dvs")
                 dv_gram.update_from_names(miss_dvs)
@@ -320,7 +321,7 @@ class MDOScenarioAdapter(MDODiscipline):
     def _pre_run(self) -> None:
         """Pre-run the scenario."""
         formulation = self.scenario.formulation
-        design_space = formulation.optimization_problem.design_space
+        design_space: DesignSpace = formulation.optimization_problem.design_space
         top_leveld = formulation.get_top_level_disc()
 
         # Update the top level discipline default inputs with adapter inputs
@@ -345,7 +346,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
         # Set the bounds of the sub-scenario
         if self._set_bounds_before_opt:
-            for name in design_space.variable_names:
+            for name in design_space:
                 # Set the lower bound
                 lower_suffix = MDOScenarioAdapter.LOWER_BND_SUFFIX
                 lower_bound = self.local_data[name + lower_suffix]

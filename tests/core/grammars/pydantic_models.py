@@ -22,7 +22,7 @@ from numpy import array
 from pydantic import BaseModel
 from pydantic import Field
 
-from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.pydantic_grammar import ModelType

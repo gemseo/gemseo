@@ -68,10 +68,10 @@ class Rosenbrock(OptimizationProblem):
         if scalar_var:
             args = [f"x{i}" for i in range(1, n_x + 1)]
             for arg in args:
-                design_space.add_variable(arg, l_b=l_b, u_b=u_b)
+                design_space.add_variable(arg, lower_bound=l_b, upper_bound=u_b)
         else:
             args = ["x"]
-            design_space.add_variable("x", size=n_x, l_b=l_b, u_b=u_b)
+            design_space.add_variable("x", size=n_x, lower_bound=l_b, upper_bound=u_b)
         if initial_guess is None:
             design_space.set_current_value(zeros(n_x))
         else:

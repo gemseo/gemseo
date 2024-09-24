@@ -148,8 +148,8 @@ def test_scale_gradients(tmp_wd, scale_gradients) -> None:
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
     design_sp = create_design_space()
-    design_sp.add_variable("x1", l_b=-2.0, u_b=2.0, value=array(2.0))
-    design_sp.add_variable("x2", l_b=-2.0, u_b=2.0, value=array(2.0))
+    design_sp.add_variable("x1", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
+    design_sp.add_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
 
     scenario = create_scenario(disc, "DisciplinaryOpt", "y", design_sp)
     scenario.execute(input_data={"max_iter": 10, "algo": "L-BFGS-B"})
@@ -187,8 +187,8 @@ def test_plot(tmp_wd, baseline_images, scale_gradients) -> None:
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
     design_sp = create_design_space()
-    design_sp.add_variable("x1", l_b=-2.0, u_b=2.0, value=array(2.0))
-    design_sp.add_variable("x2", l_b=-2.0, u_b=2.0, value=array(2.0))
+    design_sp.add_variable("x1", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
+    design_sp.add_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
 
     scenario = create_scenario(disc, "DisciplinaryOpt", "y", design_sp)
 

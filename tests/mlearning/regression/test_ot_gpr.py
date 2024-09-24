@@ -292,8 +292,8 @@ def test_custom_optimization_space(dataset, optimization_space_type):
         optimization_space.add_variable(
             "x",
             size=4,
-            l_b=array(lower_bound),
-            u_b=array(upper_bound),
+            lower_bound=array(lower_bound),
+            upper_bound=array(upper_bound),
         )
 
     model = OTGaussianProcessRegressor(
@@ -342,8 +342,8 @@ def test_multi_start_optimization(dataset):
     design_space.add_variable(
         "x",
         ot_interval.getDimension(),
-        l_b=ot_interval.getLowerBound(),
-        u_b=ot_interval.getUpperBound(),
+        lower_bound=ot_interval.getLowerBound(),
+        upper_bound=ot_interval.getUpperBound(),
     )
     doe_algo = DOELibraryFactory().create("LHS")
     assert_equal(doe, doe_algo.compute_doe(design_space, 9, strength=2))

@@ -212,9 +212,11 @@ class CustomDOE(BaseDOELibrary):
             raise ValueError(error_message)
 
         if isinstance(samples, Mapping):
-            samples = design_space.dict_to_array(samples)
+            samples = design_space.convert_dict_to_array(samples)
         elif not isinstance(samples, ndarray):
-            samples = vstack([design_space.dict_to_array(sample) for sample in samples])
+            samples = vstack([
+                design_space.convert_dict_to_array(sample) for sample in samples
+            ])
 
         if samples.shape[1] != dimension:
             msg = (

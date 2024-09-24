@@ -51,12 +51,20 @@ def milp_problem(
     array_ = csr_array if jacobians_are_sparse else array
 
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
     design_space.add_variable(
-        "y", l_b=0.0, u_b=5.0, value=5, var_type=design_space.DesignVariableType.INTEGER
+        "y",
+        lower_bound=0.0,
+        upper_bound=5.0,
+        value=5,
+        type_=design_space.DesignVariableType.INTEGER,
     )
     design_space.add_variable(
-        "z", l_b=0.0, u_b=5.0, value=0, var_type=design_space.DesignVariableType.INTEGER
+        "z",
+        lower_bound=0.0,
+        upper_bound=5.0,
+        value=0,
+        type_=design_space.DesignVariableType.INTEGER,
     )
 
     args = ["x", "y", "z"]

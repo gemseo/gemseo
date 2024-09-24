@@ -66,7 +66,9 @@ def test_aggregation_discipline(disc_constr) -> None:
     )
     disciplines = [disc_constr, obj_disc]
     design_space = create_design_space()
-    design_space.add_variable("x", 3, l_b=-10, u_b=10, value=2 * ones(3))
+    design_space.add_variable(
+        "x", 3, lower_bound=-10, upper_bound=10, value=2 * ones(3)
+    )
     scenario = create_scenario(disciplines, "DisciplinaryOpt", "obj_f", design_space)
     scenario.add_constraint("constr", constraint_type="ineq")
 
@@ -83,7 +85,9 @@ def test_aggregation_discipline(disc_constr) -> None:
 
     disciplines = [disc_constr, disc_agg, obj_disc]
     design_space = create_design_space()
-    design_space.add_variable("x", 3, l_b=-10, u_b=10, value=2 * ones(3))
+    design_space.add_variable(
+        "x", 3, lower_bound=-10, upper_bound=10, value=2 * ones(3)
+    )
     scenario_agg = create_scenario(
         disciplines, "DisciplinaryOpt", "obj_f", design_space
     )
