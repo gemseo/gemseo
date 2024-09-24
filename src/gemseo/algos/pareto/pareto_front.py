@@ -315,7 +315,7 @@ class ParetoFront:
     def __str__(self) -> str:
         obj_names = [self._problem.standardized_objective_name]
         c_names = self._problem.constraints.get_names()
-        dv_names = self._problem.design_space.variable_names
+        dv_names = self._problem.design_space
 
         msg = MultiLineString()
         msg.add(
@@ -347,9 +347,11 @@ class ParetoFront:
         # Prepare DataFrame for design space.
         ds = self._problem.design_space
         cols = MultiIndex.from_tuples([
-            (n, str(d + 1)) for n in dv_names for d in range(ds.get_size(n))
+            (n, str(d + 1)) for n in ds for d in range(ds.get_size(n))
         ])
-        types = np_concat([ds.get_type(var) for var in dv_names])
+
+        types = np_concat([[ds.get_type(var)] * ds.get_size(var) for var in ds])
+
         df_lb = DataFrame(
             ds.get_lower_bounds().reshape(1, -1), columns=cols, index=["lower_bound"]
         )

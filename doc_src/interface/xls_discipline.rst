@@ -87,8 +87,8 @@ The scenario requires a :class:`.DesignSpace` defining the design variables ``a`
 .. code-block:: python
 
    design_space = create_design_space()
-   design_space.add_variable("a", 1, l_b=0.0, u_b=10.0, value=array([1]))
-   design_space.add_variable("b", 1, l_b=-10.0, u_b=10.0, value=array([2]))
+   design_space.add_variable("a", 1, lower_bound=0.0, upper_bound=10.0, value=array([1]))
+   design_space.add_variable("b", 1, lower_bound=-10.0, upper_bound=10.0, value=array([2]))
 
 Create the :class:`.DOEScenario` with the :class:`.XLSDiscipline`, the :class:`.DesignSpace` and an :class:`.MDF` formulation:
 

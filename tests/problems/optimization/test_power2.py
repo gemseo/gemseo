@@ -63,7 +63,7 @@ def equality(problem) -> MDOFunction:
 def test_design_space(problem) -> None:
     """Check the design space of the problem."""
     design_space = DesignSpace()
-    design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0, value=1.0)
+    design_space.add_variable("x", 3, lower_bound=-1.0, upper_bound=1.0, value=1.0)
     assert problem.design_space == design_space
 
 

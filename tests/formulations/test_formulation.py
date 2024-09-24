@@ -164,7 +164,7 @@ class TestMDOFormulation(unittest.TestCase):
         ff = f.mask_x_swap_order(
             ["x_shared"],
             x_vect=np.zeros(19),
-            all_data_names=design_space.variable_names,
+            all_data_names=design_space,
         )
         assert (ff == np.zeros(4)).all()
 
@@ -182,9 +182,9 @@ class TestMDOFormulation(unittest.TestCase):
         s1 = MDOScenario([sm], "IDF", "y_4", ds1)
         with concretize_classes(BaseMDOFormulation):
             f2 = BaseMDOFormulation([sm, s1], "y_4", ds2)
-        assert "x" in f2.design_space.variable_names
+        assert "x" in f2.design_space
         f2._remove_sub_scenario_dv_from_ds()
-        assert "x" not in f2.design_space.variable_names
+        assert "x" not in f2.design_space
 
     def test_get_obj(self) -> None:
         """"""

@@ -66,7 +66,7 @@ class Rastrigin(OptimizationProblem):
 
     def __init__(self) -> None:  # noqa: D107
         design_space = DesignSpace()
-        design_space.add_variable("x", 2, l_b=-0.1, u_b=0.1)
+        design_space.add_variable("x", 2, lower_bound=-0.1, upper_bound=0.1)
         design_space.set_current_value(full(2, 0.01))
         super().__init__(design_space)
         self.objective = MDOFunction(

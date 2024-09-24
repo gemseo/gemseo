@@ -47,9 +47,9 @@ disciplines = [
 # Then,
 # create the input space:
 input_space = DesignSpace()
-input_space.add_variable("x0", l_b=0.0, u_b=1.0)
-input_space.add_variable("x1", l_b=0.0, u_b=1.0)
-input_space.add_variable("x2", l_b=0.0, u_b=1.0)
+input_space.add_variable("x0", lower_bound=0.0, upper_bound=1.0)
+input_space.add_variable("x1", lower_bound=0.0, upper_bound=1.0)
+input_space.add_variable("x2", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # Lastly,

@@ -127,7 +127,7 @@ class TestNLOPT(TestCase):
 def test_cast_to_float() -> None:
     """Test that the NLopt library handles functions that return an `ndarray`."""
     space = DesignSpace()
-    space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     problem = OptimizationProblem(space)
     problem.objective = MDOFunction(
         lambda x: x, "my_function", jac=lambda x: array([[1.0]])

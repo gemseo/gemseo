@@ -77,10 +77,16 @@ def test_diagonal_doe_on_rosenbrock(dimension) -> None:
 @pytest.fixture(scope="module")
 def variables_space():
     """A mock design space."""
-    design_space = mock.Mock()
+    design_space = mock.MagicMock()
     design_space.dimension = 2
     design_space.variable_names = ["x", "y"]
     design_space.variable_sizes = {"x": 1, "y": 1}
+    design_space.__iter__.return_value = ["x", "y"]
+
+    def side_effect(name: str) -> int:
+        return {"x": 1, "y": 1}[name]
+
+    design_space.get_size = mock.Mock(side_effect=side_effect)
     return design_space
 
 

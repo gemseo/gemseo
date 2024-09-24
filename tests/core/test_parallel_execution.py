@@ -135,7 +135,7 @@ def test_callable_exception() -> None:
 def test_disc_parallel_doe_scenario() -> None:
     s_1 = Sellar1()
     design_space = create_design_space()
-    design_space.add_variable("x_1", l_b=0.0, value=1.0, u_b=10.0)
+    design_space.add_variable("x_1", lower_bound=0.0, value=1.0, upper_bound=10.0)
     scenario = create_scenario(
         s_1, "DisciplinaryOpt", Y_1, design_space, scenario_type="DOE"
     )

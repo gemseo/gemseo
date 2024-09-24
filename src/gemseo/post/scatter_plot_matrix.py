@@ -89,7 +89,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrixSettings]):
                     )
                     raise ValueError(msg)
 
-                if variable_name in problem.design_space.variable_names:
+                if variable_name in problem.design_space:
                     add_design_variables = True
                     design_names.append(variable_name)
                 elif variable_name in problem.constraints.original_to_current_names:

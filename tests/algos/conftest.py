@@ -37,8 +37,8 @@ def analytical_test_2d_ineq(x0, y0):
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline({"f": "(x-1)**2+(y-1)**2", "g": "x+y-1"}, name="2D_test")
     ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=1.0, value=x0)
-    ds.add_variable("y", l_b=0.0, u_b=1.0, value=y0)
+    ds.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=x0)
+    ds.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=y0)
     scenario = create_scenario(
         [disc],
         "DisciplinaryOpt",
@@ -54,8 +54,8 @@ def analytical_test_2d_eq(x0, y0):
     """Test for lagrange multiplier."""
     disc = AnalyticDiscipline({"f": "(x)**2+(y)**2", "g": "x+y-1"}, name="2D_test")
     ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=1.0, value=x0)
-    ds.add_variable("y", l_b=0.0, u_b=1.0, value=y0)
+    ds.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=x0)
+    ds.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=y0)
     scenario = create_scenario(
         [disc],
         "DisciplinaryOpt",
@@ -75,9 +75,9 @@ def analytical_test_2d__multiple_eq():
         name="2D_test",
     )
     ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=4.0, value=x0)
-    ds.add_variable("y", l_b=1.0, u_b=4.0, value=x0)
-    ds.add_variable("z", l_b=2.0, u_b=4.0, value=x0)
+    ds.add_variable("x", lower_bound=0.0, upper_bound=4.0, value=x0)
+    ds.add_variable("y", lower_bound=1.0, upper_bound=4.0, value=x0)
+    ds.add_variable("z", lower_bound=2.0, upper_bound=4.0, value=x0)
     scenario = create_scenario(
         [disc],
         "DisciplinaryOpt",
@@ -101,9 +101,9 @@ def analytical_test_2d_mixed_rank_deficient():
         name="2D_test",
     )
     ds = DesignSpace()
-    ds.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    ds.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
-    ds.add_variable("z", l_b=0.0, u_b=1.0, value=0.5)
+    ds.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    ds.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    ds.add_variable("z", lower_bound=0.0, upper_bound=1.0, value=0.5)
     scenario = create_scenario(
         [disc],
         "DisciplinaryOpt",

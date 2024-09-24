@@ -65,8 +65,8 @@ def test_from_dict() -> None:
 def optimization_result() -> OptimizationResult:
     """An optimization result."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    design_space.add_variable("z", size=2, l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("z", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5)
     disc = AnalyticDiscipline({
         "y": "x",
         "eq_1": "x",
@@ -198,7 +198,7 @@ def test_from_optimization_problem(
 ) -> None:
     """Check from_optimization_problem with empty database."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x, "f")
     problem.add_constraint(

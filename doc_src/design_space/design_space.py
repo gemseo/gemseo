@@ -33,13 +33,18 @@ print(design_space)
 
 design_space = create_design_space()
 design_space.add_variable("x1")
-design_space.add_variable("x2", var_type="integer")
+design_space.add_variable("x2", type_="integer")
 design_space.add_variable("x3", size=2)
-design_space.add_variable("x4", l_b=ones(1))
-design_space.add_variable("x5", u_b=ones(1))
+design_space.add_variable("x4", lower_bound=ones(1))
+design_space.add_variable("x5", upper_bound=ones(1))
 design_space.add_variable("x6", value=ones(1))
 design_space.add_variable(
-    "x7", size=2, var_type="integer", value=array([0, 1]), l_b=-ones(2), u_b=ones(2)
+    "x7",
+    size=2,
+    type_="integer",
+    value=array([0, 1]),
+    lower_bound=-ones(2),
+    upper_bound=ones(2),
 )
 print(design_space.get_indexed_variable_names())
 print(design_space)
@@ -65,7 +70,7 @@ design_space.set_upper_bound("x3", array([10.0]))
 design_space.set_upper_bound("x6", array([10.0]))
 print(design_space)
 
-tmp = design_space.array_to_dict(array([1.0, 2.0, 3.0, 4.0]))
+tmp = design_space.convert_array_to_dict(array([1.0, 2.0, 3.0, 4.0]))
 
 print(design_space.get_size("x3"))
 print(design_space.get_type("x3"))
@@ -75,7 +80,7 @@ print(design_space.get_lower_bounds(["x1", "x3"]))
 print(design_space.get_upper_bounds(["x1", "x3"]))
 
 
-print(design_space.has_current_value())
+print(design_space.has_current_value)
 
 print(design_space.check())
 
@@ -111,7 +116,7 @@ print(design_space.round_vect(array([1.3, 3.4, 3.6, -1.4])))
 # print design_space.pretty_table(['name', 'value'])
 
 array_point = array([1, 2, 3, 4])
-dict_point = design_space.array_to_dict(array_point)
+dict_point = design_space.convert_array_to_dict(array_point)
 print(dict_point)
-new_array_point = design_space.dict_to_array(dict_point)
+new_array_point = design_space.convert_dict_to_array(dict_point)
 print(new_array_point)

@@ -90,8 +90,8 @@ class ScalableDesignSpace(ParameterSpace):
             self.add_variable(
                 name=variable.name,
                 size=variable.size,
-                l_b=variable.lower_bound,
-                u_b=variable.upper_bound,
+                lower_bound=variable.lower_bound,
+                upper_bound=variable.upper_bound,
                 value=variable.default_value,
             )
 

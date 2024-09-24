@@ -70,8 +70,8 @@ class FonsecaFleming(OptimizationProblem):
         design_space.add_variable(
             "x",
             size=dimension,
-            l_b=full(dimension, -4.0),
-            u_b=full(dimension, 4.0),
+            lower_bound=full(dimension, -4.0),
+            upper_bound=full(dimension, 4.0),
             value=zeros(dimension),
         )
         super().__init__(design_space)

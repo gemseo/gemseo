@@ -24,8 +24,8 @@ from typing_extensions import get_args
 from typing_extensions import get_origin
 
 from gemseo.core.data_converters.base import BaseDataConverter
-from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
-from gemseo.core.grammars.pydantic_ndarray import _ScalarType_co
+from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import _ScalarType_co
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.pydantic_grammar import PydanticGrammar  # noqa: F401

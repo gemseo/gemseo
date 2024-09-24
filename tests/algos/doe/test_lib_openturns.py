@@ -49,7 +49,7 @@ DOE_LIB_NAME = "OpenTURNS"
 def identity_problem() -> OptimizationProblem:
     """A problem whose objective is the identity function defined over [0,1]."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x, "f")

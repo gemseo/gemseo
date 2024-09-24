@@ -62,8 +62,8 @@ class Poloni(OptimizationProblem):
 
     def __init__(self) -> None:  # noqa: D205 D212 D107
         design_space = create_design_space()
-        design_space.add_variable("x", l_b=-pi, u_b=pi, value=0)
-        design_space.add_variable("y", l_b=-pi, u_b=pi, value=0)
+        design_space.add_variable("x", lower_bound=-pi, upper_bound=pi, value=0)
+        design_space.add_variable("y", lower_bound=-pi, upper_bound=pi, value=0)
         super().__init__(design_space)
         self.objective = MDOFunction(
             self._compute_output, self.__class__.__name__, jac=self._compute_jacobian

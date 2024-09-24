@@ -252,9 +252,9 @@ class ScipyLinprog(BaseOptimizationLibrary):
         is_feasible = problem.constraints.is_point_feasible(val_opt)
         return OptimizationResult(
             x_0=x_0,
-            x_0_as_dict=problem.design_space.array_to_dict(x_0),
+            x_0_as_dict=problem.design_space.convert_array_to_dict(x_0),
             x_opt=x_opt,
-            x_opt_as_dict=problem.design_space.array_to_dict(x_opt),
+            x_opt_as_dict=problem.design_space.convert_array_to_dict(x_opt),
             f_opt=f_opt,
             objective_name=problem.objective.name,
             status=linprog_result.status,

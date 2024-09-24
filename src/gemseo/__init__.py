@@ -1524,7 +1524,9 @@ def read_design_space(
         >>> from gemseo import (create_design_space, write_design_space,
         >>>     read_design_space)
         >>> original_design_space = create_design_space()
-        >>> original_design_space.add_variable("x", l_b=-1, value=0.0, u_b=1.0)
+        >>> original_design_space.add_variable(
+        ...     "x", lower_bound=-1, value=0.0, upper_bound=1.0
+        ... )
         >>> write_design_space(original_design_space, "file.csv")
         >>> design_space = read_design_space("file.csv")
         >>> print(design_space)
@@ -1566,7 +1568,7 @@ def write_design_space(
     Examples:
         >>> from gemseo import create_design_space, write_design_space
         >>> design_space = create_design_space()
-        >>> design_space.add_variable("x", l_b=-1, u_b=1, value=0.0)
+        >>> design_space.add_variable("x", lower_bound=-1, upper_bound=1, value=0.0)
         >>> write_design_space(design_space, "file.csv")
 
     See Also:
@@ -1587,7 +1589,7 @@ def create_design_space() -> DesignSpace:
     Examples:
         >>> from gemseo import create_design_space
         >>> design_space = create_design_space()
-        >>> design_space.add_variable("x", l_b=-1, u_b=1, value=0.0)
+        >>> design_space.add_variable("x", lower_bound=-1, upper_bound=1, value=0.0)
         >>> print(design_space)
         Design Space:
         +------+-------------+-------+-------------+-------+
@@ -1832,7 +1834,7 @@ def compute_doe(
     Examples:
         >>> from gemseo import compute_doe, create_design_space
         >>> variables_space = create_design_space()
-        >>> variables_space.add_variable("x", 2, l_b=-1.0, u_b=1.0)
+        >>> variables_space.add_variable("x", 2, lower_bound=-1.0, upper_bound=1.0)
         >>> doe = compute_doe(variables_space, algo_name="lhs", n_samples=5)
 
     See Also:

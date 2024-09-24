@@ -226,7 +226,7 @@ class LagrangeMultipliers:
         dim_act = sum(len(bnd.nonzero()[0]) for bnd in act_bounds.values())
         if dim_act == 0:
             return None, []
-        act_array = concatenate([act_bounds[var] for var in dspace.variable_names])
+        act_array = concatenate([act_bounds[var] for var in dspace])
 
         bnd_jac = zeros((dim_act, x_dim))
 
@@ -519,7 +519,7 @@ class LagrangeMultipliers:
         # Bound-constraints multipliers
         mult_arrays[self.LOWER_BOUNDS] = {}
         mult_arrays[self.UPPER_BOUNDS] = {}
-        for name in design_space.variable_names:
+        for name in design_space:
             indexed_varnames = design_space.get_indexed_variable_names()
             var_low_mult = array([
                 multipliers_init[self.LOWER_BOUNDS][comp_name]

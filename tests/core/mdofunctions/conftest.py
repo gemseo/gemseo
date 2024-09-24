@@ -27,7 +27,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 def problem_with_identity() -> OptimizationProblem:
     """An optimization problem whose objective is the identity function."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x, "f", special_repr="Identity")
     return problem

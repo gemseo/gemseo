@@ -410,7 +410,7 @@ def test_xdsmize_disciplinary_opt_with_adapter(options) -> None:
     is generated correctly."""
 
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0)
+    design_space.add_variable("x", lower_bound=0)
 
     disciplines = create_disciplines_from_desc([
         ("D1", ["x", "n"], ["y"]),
@@ -432,7 +432,7 @@ def test_xdsmize_disciplinary_opt_with_adapter(options) -> None:
     )
 
     design_space_discrete = DesignSpace()
-    design_space_discrete.add_variable("n", var_type="integer")
+    design_space_discrete.add_variable("n", type_="integer")
 
     top_scenario = create_scenario(
         [adapter],

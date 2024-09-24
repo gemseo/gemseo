@@ -37,8 +37,8 @@ from typing_extensions import Self
 from typing_extensions import get_origin
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
-from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
-from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes

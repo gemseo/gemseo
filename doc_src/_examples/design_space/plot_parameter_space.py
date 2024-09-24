@@ -47,7 +47,7 @@ parameter_space = ParameterSpace()
 # Then, we can add either deterministic variables
 # from their lower and upper bounds
 # (use :meth:`.ParameterSpace.add_variable`):
-parameter_space.add_variable("x", l_b=-2.0, u_b=2.0)
+parameter_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0)
 
 # %%
 # or uncertain variables from their distribution names and parameters

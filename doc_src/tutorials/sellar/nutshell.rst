@@ -420,10 +420,10 @@ with their bounds and values:
     from gemseo import create_design_space
 
     design_space = create_design_space()
-    design_space.add_variable('x_local', 1, l_b=0., u_b=10., value=ones(1))
-    design_space.add_variable('x_shared', 2, l_b=(-10, 0.), u_b=(10., 10.), value=array([4., 3.]))
-    design_space.add_variable('y_1', 1, l_b=-100., u_b=100., value=ones(1))
-    design_space.add_variable('y_2', 1, l_b=-100., u_b=100., value=ones(1))
+    design_space.add_variable('x_local', 1, lower_bound=0., upper_bound=10., value=ones(1))
+    design_space.add_variable('x_shared', 2, lower_bound=(-10, 0.), upper_bound=(10., 10.), value=array([4., 3.]))
+    design_space.add_variable('y_1', 1, lower_bound=-100., upper_bound=100., value=ones(1))
+    design_space.add_variable('y_2', 1, lower_bound=-100., upper_bound=100., value=ones(1))
 
 
 .. warning::
@@ -607,10 +607,10 @@ Synthetic Python code
    disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
    # Step 2: create the design space
    design_space = create_design_space()
-   design_space.add_variable('x_local', 1, l_b=0., u_b=10., value=ones(1))
-   design_space.add_variable('x_shared', 2, l_b=(-10, 0.), u_b=(10., 10.), value=array([4., 3.]))
-   design_space.add_variable('y_1', 1, l_b=-100., u_b=100., value=ones(1))
-   design_space.add_variable('y_2', 1, l_b=-100., u_b=100., value=ones(1))
+   design_space.add_variable('x_local', 1, lower_bound=0., upper_bound=10., value=ones(1))
+   design_space.add_variable('x_shared', 2, lower_bound=(-10, 0.), upper_bound=(10., 10.), value=array([4., 3.]))
+   design_space.add_variable('y_1', 1, lower_bound=-100., upper_bound=100., value=ones(1))
+   design_space.add_variable('y_2', 1, lower_bound=-100., upper_bound=100., value=ones(1))
    # Step 3: create and solve the MDO scenario
    scenario = create_scenario(disciplines, 'MDF', objective_name='obj', design_space=design_space)
    scenario.set_differentiation_method('finite_differences', 1e-6)

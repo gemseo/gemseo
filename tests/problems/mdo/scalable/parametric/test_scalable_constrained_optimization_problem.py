@@ -89,7 +89,7 @@ def algo(request):
 def scalable_optimization_problem_scenario(request, n, constraint_kind):
     disc = ScalableDiscipline(request.param)
     ds = DesignSpace()
-    ds.add_variable("x", size=n, l_b=0.1, u_b=n, value=n)
+    ds.add_variable("x", size=n, lower_bound=0.1, upper_bound=n, value=n)
     scenario = create_scenario(
         [disc],
         "DisciplinaryOpt",

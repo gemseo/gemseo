@@ -28,7 +28,7 @@ from pydantic import Field
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
-from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 
 # %%
 # Create the pydantic model

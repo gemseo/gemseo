@@ -152,9 +152,9 @@ class IDF(BaseMDOFormulation):
     def _update_design_space(self) -> None:
         """Update the design space with the required variables."""
         strong_couplings = set(self.all_couplings)
-        variable_names = set(self.optimization_problem.design_space.variable_names)
+        variable_names = self.optimization_problem.design_space
         if not strong_couplings.issubset(variable_names):
-            missing = strong_couplings - variable_names
+            missing = strong_couplings.difference(variable_names)
             msg = (
                 "IDF formulation needs coupling variables as design variables, "
                 f"missing variables: {missing}."

@@ -57,8 +57,8 @@ discipline = create_discipline(
 # Then, we create a :class:`.DesignSpace`
 # where :math:`x` and :math:`y` vary between 0 and 1.
 design_space = create_design_space()
-design_space.add_variable("x", l_b=0.0, u_b=1.0)
-design_space.add_variable("y", l_b=0.0, u_b=1.0)
+design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # Sample with the default mode

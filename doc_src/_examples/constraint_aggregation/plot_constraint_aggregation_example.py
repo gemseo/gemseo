@@ -50,13 +50,17 @@ concat = Concatenater(constraint_names, "g")
 ds = DesignSpace()
 ds.add_variable(
     "x",
-    l_b=0.0,
-    u_b=1,
+    lower_bound=0.0,
+    upper_bound=1,
     value=1.0 / N / 2.0,
-    var_type=DesignSpace.DesignVariableType.FLOAT,
+    type_=DesignSpace.DesignVariableType.FLOAT,
 )
 ds.add_variable(
-    "y", l_b=0.0, u_b=1, value=1, var_type=DesignSpace.DesignVariableType.FLOAT
+    "y",
+    lower_bound=0.0,
+    upper_bound=1,
+    value=1,
+    type_=DesignSpace.DesignVariableType.FLOAT,
 )
 
 ds_new = deepcopy(ds)

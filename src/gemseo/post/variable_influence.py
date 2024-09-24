@@ -158,8 +158,13 @@ class VariableInfluence(BasePost[VariableInfluenceSettings]):
         )
         if save:
             names = [
-                [f"{name}${i}" for i in range(size)]
-                for name, size in self.optimization_problem.design_space.variable_sizes.items()  # noqa: E501
+                [
+                    f"{name}${i}"
+                    for i in range(
+                        self.optimization_problem.design_space.get_size(name)
+                    )
+                ]
+                for name in self.optimization_problem.design_space  # noqa: E501
             ]
             names = array(list(itertools.chain(*names)))
             file_name = f"{func}_influ_vars.csv"

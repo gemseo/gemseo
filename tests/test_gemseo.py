@@ -615,7 +615,9 @@ def test_get_available_scenario_types() -> None:
 def test_create_parameter_space() -> None:
     """Test the creation of a parameter space."""
     parameter_space = create_parameter_space()
-    parameter_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
+    parameter_space.add_variable(
+        "name", type_="float", lower_bound=-1, upper_bound=1, value=0
+    )
     parameter_space.add_random_variable("other_name", "OTNormalDistribution")
     parameter_space.check()
 
@@ -623,7 +625,9 @@ def test_create_parameter_space() -> None:
 def test_create_design_space() -> None:
     """Test the creation of a design space."""
     design_space = create_design_space()
-    design_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
+    design_space.add_variable(
+        "name", type_="float", lower_bound=-1, upper_bound=1, value=0
+    )
     design_space.check()
 
 
@@ -634,7 +638,9 @@ def test_write_design_space(tmp_wd) -> None:
         tmp_wd: Fixture to move into a temporary directory.
     """
     design_space = create_design_space()
-    design_space.add_variable("name", var_type="float", l_b=-1, u_b=1, value=0)
+    design_space.add_variable(
+        "name", type_="float", lower_bound=-1, upper_bound=1, value=0
+    )
     write_design_space(design_space, "design_space.csv")
     write_design_space(design_space, "design_space.h5")
 
@@ -720,8 +726,8 @@ def test_print_configuration(capfd) -> None:
 def variables_space():
     """A mock design space."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=2.0, value=1.0)
-    design_space.add_variable("y", l_b=-1.0, u_b=1.0, value=0.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0, value=1.0)
+    design_space.add_variable("y", lower_bound=-1.0, upper_bound=1.0, value=0.0)
     return design_space
 
 
@@ -933,7 +939,7 @@ def disciplines() -> list[AnalyticDiscipline]:
 def input_space() -> DesignSpace:
     """The input space on which to sample the discipline."""
     design_space = DesignSpace()
-    design_space.add_variable("inpt", l_b=1.0, u_b=2.0)
+    design_space.add_variable("inpt", lower_bound=1.0, upper_bound=2.0)
     return design_space
 
 

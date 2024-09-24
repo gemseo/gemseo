@@ -33,6 +33,7 @@ from scipy.optimize import Bounds
 from scipy.optimize import LinearConstraint
 from scipy.optimize import milp
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
@@ -178,9 +179,12 @@ class ScipyMILP(BaseOptimizationLibrary):
             constraints=lq_constraints,
             options=options,
             integrality=concatenate([
-                problem.design_space.variable_types[variable_name]
-                == problem.design_space.DesignVariableType.INTEGER
-                for variable_name in problem.design_space.variable_names
+                [
+                    self.problem.design_space.get_type(variable_name)
+                    == DesignSpace.DesignVariableType.INTEGER
+                ]
+                * self.problem.design_space.get_size(variable_name)
+                for variable_name in self.problem.design_space
             ]),
         )
         # Gather the optimization results

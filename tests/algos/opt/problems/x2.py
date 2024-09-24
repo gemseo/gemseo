@@ -50,14 +50,24 @@ class X2(OptimizationProblem):
             initial_value: The initial design value of the problem.
         """
         design_space = DesignSpace()
-        design_space.add_variable("x", l_b=-1.0, u_b=1.0, value=initial_value)
+        design_space.add_variable(
+            "x", lower_bound=-1.0, upper_bound=1.0, value=initial_value
+        )
         # The latter design variables are not used in the function
         # This is done on purpose to check that they do not trigger an early
         # termination of the tested optimization algorithm.
-        design_space.add_variable("a", l_b=-1.0, u_b=1.0, value=initial_value)
-        design_space.add_variable("b", l_b=-1.0, u_b=1.0, value=initial_value)
-        design_space.add_variable("c", l_b=-1.0, u_b=1.0, value=initial_value)
-        design_space.add_variable("d", l_b=-1.0, u_b=1.0, value=initial_value)
+        design_space.add_variable(
+            "a", lower_bound=-1.0, upper_bound=1.0, value=initial_value
+        )
+        design_space.add_variable(
+            "b", lower_bound=-1.0, upper_bound=1.0, value=initial_value
+        )
+        design_space.add_variable(
+            "c", lower_bound=-1.0, upper_bound=1.0, value=initial_value
+        )
+        design_space.add_variable(
+            "d", lower_bound=-1.0, upper_bound=1.0, value=initial_value
+        )
 
         super().__init__(design_space)
         self.objective = MDOFunction(

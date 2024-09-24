@@ -189,7 +189,7 @@ name2
             """
 1 validation error for Model
 name2
-  Value error, Input dtype should be <class 'int'>: got the dtype <class 'numpy.float64'>
+  Value error, The expected dtype is <class 'int'>: the actual dtype is <class 'numpy.float64'>
 """,  # noqa:E501
         ),
     ],
@@ -244,9 +244,12 @@ def test_convert_to_simple_grammar_warnings(model2, caplog) -> None:
     grammar = PydanticGrammar("g", model=model2)
     grammar.to_simple_grammar()
     assert caplog.records[0].levelname == "WARNING"
-    assert caplog.messages[0] == (
-        "Unsupported type 'typing.Union' in PydanticGrammar 'g' for field 'name2' in "
-        "conversion to SimpleGrammar."
+    assert caplog.messages[0] in (
+        "Unsupported type '<class 'types.UnionType'>' in PydanticGrammar 'g' for "
+        "field 'name2' in conversion to SimpleGrammar.",
+        # For python 3.9.
+        "Unsupported type 'typing.Union' in PydanticGrammar 'g' for "
+        "field 'name2' in conversion to SimpleGrammar.",
     )
 
 

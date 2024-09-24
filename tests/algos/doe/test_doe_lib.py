@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import inf
 from numpy import ndarray
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
@@ -130,7 +131,7 @@ def test_evaluate_samples_multiproc_with_observables() -> None:
     disc = create_discipline("AutoPyDiscipline", py_func=compute_obj_and_obs)
     disc.cache = None
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=3.0, value=2.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=3.0, value=2.0)
 
     scenario = create_scenario(
         [disc],
@@ -169,8 +170,8 @@ def test_evaluate_samples_multiproc_with_observables() -> None:
 def variables_space():
     """A mock design space."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=2.0, value=1.0)
-    design_space.add_variable("y", l_b=-1.0, u_b=1.0, value=0.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0, value=1.0)
+    design_space.add_variable("y", lower_bound=-1.0, upper_bound=1.0, value=0.0)
     return design_space
 
 
@@ -194,7 +195,7 @@ def doe_database(request) -> Database:
         space.add_random_variable("var", "OTNormalDistribution")
     else:
         space = DesignSpace()
-        space.add_variable("var", l_b=-3.0, u_b=4.0, value=1.0)
+        space.add_variable("var", lower_bound=-3.0, upper_bound=4.0, value=1.0)
 
     problem = OptimizationProblem(space)
     problem.objective = MDOFunction(lambda x: x, "func")
@@ -318,8 +319,12 @@ def test_variable_types(var_type1, var_type2) -> None:
             return {"z": 0.0}
 
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0, u_b=1, value=0, var_type=var_type1)
-    design_space.add_variable("y", l_b=0, u_b=1, value=0, var_type=var_type2)
+    design_space.add_variable(
+        "x", lower_bound=0, upper_bound=1, value=0, type_=var_type1
+    )
+    design_space.add_variable(
+        "y", lower_bound=0, upper_bound=1, value=0, type_=var_type2
+    )
 
     scenario = create_scenario(
         [Disc()],
@@ -332,13 +337,13 @@ def test_variable_types(var_type1, var_type2) -> None:
     scenario.execute({"algo": "lhs", "n_samples": 1})
 
 
-@pytest.mark.parametrize(("l_b", "u_b"), [(None, None), (1, None), (None, 1)])
+@pytest.mark.parametrize(("l_b", "u_b"), [(-inf, inf), (1, inf), (-inf, 1)])
 def test_uunormalized_components(mc, l_b, u_b) -> None:
     """Check that an error is raised when the design space is unbounded."""
     design_space = DesignSpace()
-    design_space.add_variable("x", 2, l_b=1, u_b=3)
-    design_space.add_variable("y", 3, l_b=l_b, u_b=u_b)
-    design_space.add_variable("z", l_b=0, u_b=1)
+    design_space.add_variable("x", 2, lower_bound=1, upper_bound=3)
+    design_space.add_variable("y", 3, lower_bound=l_b, upper_bound=u_b)
+    design_space.add_variable("z", lower_bound=0, upper_bound=1)
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(sum, "f")
@@ -457,7 +462,7 @@ def test_parallel_doe_db(tmp_wd):
 
     def _create_scn() -> DOEScenario:
         design_space = DesignSpace()
-        design_space.add_variable("x", l_b=0, u_b=1, size=2)
+        design_space.add_variable("x", lower_bound=0, upper_bound=1, size=2)
 
         scenario = create_scenario(
             [_DummyDisc()],

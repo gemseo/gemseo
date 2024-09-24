@@ -85,8 +85,12 @@ discipline_cstr_obj1 = create_discipline(
 # ------------------------------------------
 
 design_space = create_design_space()
-design_space.add_variable("x1", l_b=array([0.0]), u_b=array([5.0]), value=array([2.0]))
-design_space.add_variable("x2", l_b=array([-5.0]), u_b=array([3.0]), value=array([2.0]))
+design_space.add_variable(
+    "x1", lower_bound=array([0.0]), upper_bound=array([5.0]), value=array([2.0])
+)
+design_space.add_variable(
+    "x2", lower_bound=array([-5.0]), upper_bound=array([3.0]), value=array([2.0])
+)
 
 disciplines = [
     discipline_binh_korn,
@@ -119,7 +123,10 @@ sub_scenario.add_constraint("cstr2", constraint_type="ineq")
 # the lower-level scenario.
 system_design_space = create_design_space()
 system_design_space.add_variable(
-    "obj1_target", l_b=array([0.1]), u_b=array([100.0]), value=array([1.0])
+    "obj1_target",
+    lower_bound=array([0.1]),
+    upper_bound=array([100.0]),
+    value=array([1.0]),
 )
 
 # %%

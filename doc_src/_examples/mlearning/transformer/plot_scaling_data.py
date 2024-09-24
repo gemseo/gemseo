@@ -101,8 +101,8 @@ r2.compute_test_measure(dataset_test)
 # we rewrite the Rosenbrock function as :math:`f(x)=(1-x_1)^2+100(0.01x_2-x_1^2)^2`
 # and its domain as :math:`[-2,2]\times[-200,200]`:
 design_space = DesignSpace()
-design_space.add_variable("x1", l_b=-2, u_b=2)
-design_space.add_variable("x2", l_b=-200, u_b=200)
+design_space.add_variable("x1", lower_bound=-2, upper_bound=2)
+design_space.add_variable("x2", lower_bound=-200, upper_bound=200)
 
 # %%
 # in order to have inputs with different orders of magnitude.

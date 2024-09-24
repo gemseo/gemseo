@@ -33,9 +33,15 @@ if TYPE_CHECKING:
 def scenario(request) -> Scenario:
     """Optimization scenario involving MDOFunctions with sparse Jacobians."""
     design_space = DesignSpace()
-    design_space.add_variable("alpha", size=2, l_b=0.0, u_b=1.0, value=0.5)
-    design_space.add_variable("beta", size=2, l_b=0.0, u_b=1.0, value=0.5)
-    design_space.add_variable("gamma", size=2, l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable(
+        "alpha", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
+    )
+    design_space.add_variable(
+        "beta", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
+    )
+    design_space.add_variable(
+        "gamma", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
+    )
 
     disciplines = [
         LinearCombination(

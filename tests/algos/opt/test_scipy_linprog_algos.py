@@ -67,8 +67,8 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
         sparse_jacobian: Whether the objective and constraints Jacobians are sparse.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    design_space.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     input_names = ["x", "y"]
     array_ = csr_array if sparse_jacobian else array

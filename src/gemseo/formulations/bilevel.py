@@ -130,7 +130,7 @@ class BiLevel(BaseMDOFormulation):
             grammar_type=grammar_type,
             differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
-        self._shared_dv = list(design_space.variable_names)
+        self._shared_dv = design_space.variable_names
         self._mda1 = None
         self._mda2 = None
         self.reset_x0_before_opt = reset_x0_before_opt
@@ -267,9 +267,9 @@ class BiLevel(BaseMDOFormulation):
             set(top_inputs) & (set(couplings) | shared_dv | set(mda1_outputs))
         )
         if use_non_shared_vars:
-            nonshared_var = scenario.design_space.variable_names
             adapter_inputs = list(
-                set(adapter_inputs) | set(top_inputs) & set(nonshared_var)
+                set(adapter_inputs)
+                | set(top_inputs).intersection(scenario.design_space)
             )
         return adapter_inputs
 
@@ -451,7 +451,7 @@ class BiLevel(BaseMDOFormulation):
             couplings = self.mda2.strong_couplings
             design_space = self.optimization_problem.design_space
             for coupling in couplings:
-                if coupling in design_space.variable_names:
+                if coupling in design_space:
                     design_space.remove_variable(coupling)
 
     def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102

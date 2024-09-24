@@ -28,7 +28,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 def constraints(problem) -> Constraints:
     """A set of constraints."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=-1.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)
     constraints = Constraints(design_space, ConstraintTolerances())
     constraints.append(
         MDOFunction(lambda x: x, "c1", f_type=MDOFunction.FunctionType.EQ)

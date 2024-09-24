@@ -264,9 +264,9 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return cls(
             x_0=x_0,
-            x_0_as_dict=problem.design_space.array_to_dict(x_0),
+            x_0_as_dict=problem.design_space.convert_array_to_dict(x_0),
             x_opt=x_opt,
-            x_opt_as_dict=problem.design_space.array_to_dict(x_opt),
+            x_opt_as_dict=problem.design_space.convert_array_to_dict(x_opt),
             f_opt=f_opt,
             n_obj_call=problem.objective.n_calls,
             is_feasible=is_feas,

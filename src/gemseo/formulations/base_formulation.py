@@ -396,9 +396,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         design_space = self.optimization_problem.design_space
         if not all_data_names:
-            all_data_names = design_space.variable_names
+            all_data_names = design_space
 
-        variable_sizes = design_space.variable_sizes
+        variable_sizes = {var: design_space.get_size(var) for var in design_space}
         total_size = sum(variable_sizes[var] for var in masking_data_names)
         indices = self._get_dv_indices(all_data_names)
         x_mask = empty(total_size, dtype="int")
@@ -426,7 +426,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         all_inputs = {
             var for disc in disciplines for var in disc.get_input_data_names()
         }
-        for name in set(design_space.variable_names):
+        for name in design_space.variable_names:
             if name not in all_inputs:
                 design_space.remove_variable(name)
                 LOGGER.info(
@@ -438,9 +438,8 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _remove_sub_scenario_dv_from_ds(self) -> None:
         """Remove the sub scenarios design variables from the design space."""
         for scenario in self.get_sub_scenarios():
-            loc_vars = scenario.design_space.variable_names
-            for var in loc_vars:
-                if var in self.design_space.variable_names:
+            for var in scenario.design_space:
+                if var in self.design_space:
                     self.design_space.remove_variable(var)
 
     def _build_objective_from_disc(
@@ -531,7 +530,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _set_default_input_values_from_design_space(self) -> None:
         """Initialize the top level disciplines from the design space."""
-        if not self.optimization_problem.design_space.has_current_value():
+        if not self.optimization_problem.design_space.has_current_value:
             return
 
         current_x = self.optimization_problem.design_space.get_current_value(

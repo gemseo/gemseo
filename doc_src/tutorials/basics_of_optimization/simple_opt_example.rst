@@ -67,8 +67,8 @@ by using its :meth:`~.DesignSpace.add_variable` method.
    from gemseo import create_design_space
 
    design_space = create_design_space()
-   design_space.add_variable("x1", 1, l_b=-5, u_b=5, var_type="integer")
-   design_space.add_variable("x2", 1, l_b=-5, u_b=5, var_type="integer")
+   design_space.add_variable("x1", 1, lower_bound=-5, upper_bound=5, var_type="integer")
+   design_space.add_variable("x2", 1, lower_bound=-5, upper_bound=5, var_type="integer")
 
 1.c. Define the DOE scenario
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -238,7 +238,7 @@ by using its :meth:`~.DesignSpace.add_variable` method.
    from gemseo import create_design_space
 
    design_space = create_design_space()
-   design_space.add_variable("x", 1, l_b=-2., u_b=2., value=-0.5 * np.ones(1))
+   design_space.add_variable("x", 1, lower_bound=-2., upper_bound=2., value=-0.5 * np.ones(1))
 
 3.c. Define the optimization problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

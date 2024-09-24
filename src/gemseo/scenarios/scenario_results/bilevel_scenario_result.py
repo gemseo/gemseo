@@ -57,7 +57,7 @@ class BiLevelScenarioResult(ScenarioResult):
             label = self.__SUB_LABEL_FORMATTER.format(index)
             self.optimization_problems_to_results[label] = result
             self.design_variable_names_to_values.update(
-                sub_problem.design_space.array_to_dict(x_local_opt)
+                sub_problem.design_space.convert_array_to_dict(x_local_opt)
             )
             sub_problem.database = database
 

@@ -74,8 +74,8 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         # Create the design space
         design_space = DesignSpace()
         sol = self.get_solution(p)[0]
-        design_space.add_variable("x", l_b=0.0, u_b=1.0, value=sol[0])
-        design_space.add_variable("y", l_b=0.0, u_b=1.0, value=sol[1])
+        design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=sol[0])
+        design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=sol[1])
 
         # Create the optimization problem
         opt_problem = OptimizationProblem(design_space)

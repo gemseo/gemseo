@@ -178,7 +178,11 @@ class ScalableProblem(unittest.TestCase):
         for name in dv_names:
             value = 0.5 * np.ones(ScalableProblem.sizes[name])
             design_space.add_variable(
-                name, ScalableProblem.sizes[name], l_b=0.0, u_b=1.0, value=value
+                name,
+                ScalableProblem.sizes[name],
+                lower_bound=0.0,
+                upper_bound=1.0,
+                value=value,
             )
         # add target coupling variables for IDF
         if formulation == "IDFFormulation":
@@ -190,8 +194,8 @@ class ScalableProblem(unittest.TestCase):
                 design_space.add_variable(
                     coupling,
                     ScalableProblem.sizes[coupling],
-                    l_b=0.0,
-                    u_b=1.0,
+                    lower_bound=0.0,
+                    upper_bound=1.0,
                     value=value,
                 )
 

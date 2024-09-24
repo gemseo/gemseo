@@ -180,12 +180,12 @@ disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 # if we aimed to select an MDF formulation.
 
 design_space = DesignSpace()
-design_space.add_variable("x", l_b=0.0, u_b=10.0, value=ones(1))
+design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=ones(1))
 design_space.add_variable(
-    "z", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
+    "z", 2, lower_bound=(-10, 0.0), upper_bound=(10.0, 10.0), value=array([4.0, 3.0])
 )
-design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
-design_space.add_variable("y_2", l_b=-100.0, u_b=100.0, value=ones(1))
+design_space.add_variable("y_1", lower_bound=-100.0, upper_bound=100.0, value=ones(1))
+design_space.add_variable("y_2", lower_bound=-100.0, upper_bound=100.0, value=ones(1))
 
 # %%
 # Create the scenario

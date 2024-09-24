@@ -67,7 +67,7 @@ def create_dataset(
     discipline = AnalyticDiscipline(expressions)
     discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
-    design_space.add_variable("x_1", l_b=-3.0, u_b=3.0)
+    design_space.add_variable("x_1", lower_bound=-3.0, upper_bound=3.0)
     for name, bounds in design_space_variables.items():
         design_space.add_variable(name, **bounds)
     scenario = DOEScenario(
@@ -92,14 +92,14 @@ DATASETS_DESCRIPTIONS = (
     (
         "vector_scalar",
         {"y_1": "1+2*x_1+3*x_2"},
-        {"x_2": {"l_b": -3.0, "u_b": 3.0}},
+        {"x_2": {"lower_bound": -3.0, "upper_bound": 3.0}},
         "y_1",
     ),
     # Dataset from a R^2 -> R^3 function sampled over [0,1]^2
     (
         "linear",
         {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2", "y_3": "3"},
-        {"x_2": {"l_b": -3.0, "u_b": 3.0}},
+        {"x_2": {"lower_bound": -3.0, "upper_bound": 3.0}},
         "y_1",
     ),
     # Dataset from a R^3 -> R^3 function sampled over [0,1]^2
@@ -110,7 +110,10 @@ DATASETS_DESCRIPTIONS = (
             "y_2": "-1-2*x_1-3*x_2 - 0.5*x_2**4+ 7*x_1**3*x_3**2",
             "y_3": "3-9*x_3**2",
         },
-        {"x_2": {"l_b": -3.0, "u_b": 3.0}, "x_3": {"l_b": -4.0, "u_b": 4.0}},
+        {
+            "x_2": {"lower_bound": -3.0, "upper_bound": 3.0},
+            "x_3": {"lower_bound": -4.0, "upper_bound": 4.0},
+        },
         "y_1",
     ),
 )

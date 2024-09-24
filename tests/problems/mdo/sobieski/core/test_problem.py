@@ -73,8 +73,8 @@ def test_normalize(problem) -> None:
 )
 def test_design_space(dtype, expected) -> None:
     design_space = SobieskiProblem(dtype).design_space
-    for variable in design_space.values():
-        assert variable.value.dtype == expected
+    for name in design_space:
+        assert design_space.get_current_value([name]).dtype == expected
 
 
 def test_constants(problem) -> None:
