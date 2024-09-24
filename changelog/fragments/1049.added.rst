@@ -1,0 +1,1 @@
+``compare_dict_of_arrays`` returns ``False`` in the case of variables with arrays of different sizes.
