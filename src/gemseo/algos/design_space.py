@@ -113,12 +113,6 @@ class DesignSpace:
     In addition,
     it provides the current values of these variables
     that can be used as the initial solution of an :class:`.OptimizationProblem`.
-
-    A :class:`.DesignSpace` has the same API as a dictionary,
-    e.g. ``variable = design_space["x"]``,
-    ``other_design_space["x"] = design_space["x"]``,
-    ``del design_space["x"]``,
-    ``for name, value in design_space["x"].items()``, ...
     """
 
     name: str | None
