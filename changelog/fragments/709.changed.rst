@@ -8,7 +8,7 @@ API changes:
     - ``DesignSpace.add_variable`` no longer accepts ``None`` for its arguments ``l_b`` and ``u_b``. These two arguments now default to ``-numpy.inf`` and ``numpy.inf`` respectively.
     - ``DesignSpace.set_lower_bound`` and ``DesignSpace.set_upper_bound`` no longer accept ``None`` arguments, but rather infinities.
     - The return values of ``DesignSpace.get_lower_bound`` and ``DesignSpace.get_upper_bound`` can no longer be ``None``, but rather NumPy arrays of infinite values.
-- Arguments ``var_type``, ``l_b`` and ``u_b`` are respectively renamed ``type``, ``lower_bound`` and ``upper_bound``.
+- Arguments ``var_type``, ``l_b`` and ``u_b`` are respectively renamed ``type_``, ``lower_bound`` and ``upper_bound``.
 - The method ``array_to_dict`` is renamed ``convert_array_to_dict``.
 - The method ``dict_to_array`` is renamed ``convert_dict_to_array``.
 - The method ``has_current_value`` is now a property.
