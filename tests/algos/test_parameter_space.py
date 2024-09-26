@@ -27,13 +27,16 @@ from numpy import arange
 from numpy import array
 from numpy import array_equal
 from numpy import concatenate
+from numpy import inf
 from numpy import ndarray
 from numpy.testing import assert_array_equal
+from numpy.testing import assert_equal
 from openturns import NormalCopula
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
+from tests.algos.test_design_space import DesignVariableType
 
 
 def test_constructor() -> None:
@@ -715,3 +718,46 @@ def test_existing_variable() -> None:
     parameter_space.add_random_variable("a", "OTUniformDistribution")
     with pytest.raises(ValueError, match=re.escape("The variable 'a' already exists.")):
         parameter_space.add_random_variable("a", "OTUniformDistribution")
+
+
+def test_add_variable_from():
+    """Check add_variable_from can add variables from different parameter spaces."""
+    ds1 = DesignSpace()
+    ds1.add_variable(
+        "x", 2, type_=DesignVariableType.INTEGER, lower_bound=1, upper_bound=3, value=2
+    )
+    ds2 = ParameterSpace()
+    ds2.add_variable(
+        "y", 3, type_=DesignVariableType.INTEGER, lower_bound=3, upper_bound=5, value=4
+    )
+    ds2.add_random_vector("z", "SPNormalDistribution", 2, mu=[0.5, 1], sigma=[2.0])
+
+    ps = ParameterSpace()
+    ps.add_variables_from(ds2, "z", "y")
+    ps.add_variables_from(ds1, "x")
+
+    assert ps.variable_names == ["z", "y", "x"]
+
+    assert "x" in ps.deterministic_variables
+    assert "y" in ps.deterministic_variables
+    assert "z" in ps.uncertain_variables
+
+    assert ps.get_size("x") == 2
+    assert ps.get_size("y") == 3
+    assert ps.get_size("z") == 2
+
+    assert ps.get_type("x") == DesignVariableType.INTEGER
+    assert ps.get_type("y") == DesignVariableType.INTEGER
+    assert ps.get_type("z") == DesignVariableType.FLOAT
+
+    assert_equal(ps.get_lower_bound("x"), array([1, 1]))
+    assert_equal(ps.get_lower_bound("y"), array([3, 3, 3]))
+    assert_equal(ps.get_lower_bound("z"), array([-inf, -inf]))
+
+    assert_equal(ps.get_upper_bound("x"), array([3, 3]))
+    assert_equal(ps.get_upper_bound("y"), array([5, 5, 5]))
+    assert_equal(ps.get_upper_bound("z"), array([inf, inf]))
+
+    assert_equal(ps.get_current_value(["x"]), array([2, 2]))
+    assert_equal(ps.get_current_value(["y"]), array([4, 4, 4]))
+    assert_equal(ps.get_current_value(["z"]), array([0.5, 1.0]))
