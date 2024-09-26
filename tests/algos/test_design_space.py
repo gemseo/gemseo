@@ -930,8 +930,7 @@ def test_dict_to_array_dtype(design_space, name, dtype) -> None:
 
 
 def check_ds(ref_ds, read_ds, f_path) -> None:
-    """
-    :param ref_ds: param read_ds:
+    """:param ref_ds: param read_ds:
     :param f_path:
     :param read_ds:
     """
@@ -1718,3 +1717,42 @@ def test_normalization_runtimewarning() -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         design_space.normalize_vect(array([1.0, 1.0]))
+
+
+def test_add_variable_from():
+    """Check that add_variable_from can add variables from different design spaces."""
+    ds1 = DesignSpace()
+    ds1.add_variable(
+        "x", 2, type_=DesignVariableType.INTEGER, lower_bound=1, upper_bound=3, value=2
+    )
+    ds2 = DesignSpace()
+    ds2.add_variable(
+        "y", 3, type_=DesignVariableType.INTEGER, lower_bound=3, upper_bound=5, value=4
+    )
+    ds2.add_variable("z")
+
+    ds = DesignSpace()
+    ds.add_variables_from(ds1, "x")
+    ds.add_variables_from(ds2, "z", "y")
+
+    assert ds.variable_names == ["x", "z", "y"]
+
+    assert ds.get_size("x") == 2
+    assert ds.get_size("y") == 3
+    assert ds.get_size("z") == 1
+
+    assert ds.get_type("x") == DesignVariableType.INTEGER
+    assert ds.get_type("y") == DesignVariableType.INTEGER
+    assert ds.get_type("z") == DesignVariableType.FLOAT
+
+    assert_equal(ds.get_lower_bound("x"), array([1, 1]))
+    assert_equal(ds.get_lower_bound("y"), array([3, 3, 3]))
+    assert_equal(ds.get_lower_bound("z"), array([-inf]))
+
+    assert_equal(ds.get_upper_bound("x"), array([3, 3]))
+    assert_equal(ds.get_upper_bound("y"), array([5, 5, 5]))
+    assert_equal(ds.get_upper_bound("z"), array([inf]))
+
+    assert_equal(ds.get_current_value(["x"]), array([2, 2]))
+    assert_equal(ds.get_current_value(["y"]), array([4, 4, 4]))
+    assert "z" not in ds._current_value

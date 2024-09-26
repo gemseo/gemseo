@@ -2313,3 +2313,30 @@ class DesignSpace:
                     dtype=self.VARIABLE_TYPES_TO_DTYPES[var_type],
                 ),
             )
+
+    def add_variables_from(self, space: DesignSpace, *names: str) -> None:
+        """Add variables from another variable space.
+
+        Args:
+            space: The other variable space.
+            *names: The names of the variables.
+        """
+        for name in names:
+            self._add_variable_from(space, name)
+
+    def _add_variable_from(self, space: DesignSpace, name: str) -> None:
+        """Add a variable from another variable space.
+
+        Args:
+            space: The other variable space.
+            name: The name of the variable.
+        """
+        variable = space._variables[name]
+        self.add_variable(
+            name,
+            size=variable.size,
+            type_=variable.type,
+            lower_bound=variable.lower_bound,
+            upper_bound=variable.upper_bound,
+            value=space._current_value.get(name),
+        )

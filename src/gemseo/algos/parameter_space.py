@@ -129,13 +129,12 @@ class ParameterSpace(DesignSpace):
     _BLANK = ""
     _PARAMETER_SPACE = "Parameter space"
 
-    __uncertain_variables_to_definitions: dict[str, tuple[str, dict[str, Any], bool]]
-    """The uncertain variable names bound to their defining.
+    __uncertain_variables_to_definitions: dict[str, tuple[str, dict[str, Any]]]
+    """The uncertain variable names bound to their definition.
 
-    The definition is a triplet. The first component is the name of the class of the
-    probability distribution, the second component is the dictionary of parameters of
-    the probability distribution and the third one is to indicate if the random variable
-    is one-sized.
+    The definition is a 2-tuple. The first component is the name of the class of the
+    probability distribution and the second one is the dictionary of the keywords
+    arguments of the add_random_vector method.
     """
 
     def __init__(self, name: str = "") -> None:  # noqa:D107
@@ -307,8 +306,12 @@ class ParameterSpace(DesignSpace):
             data["parameters"] = idp_data
         self.__uncertain_variables_to_definitions[name] = (
             distribution,
-            data,
-            is_random_variable,
+            {
+                "size": size,
+                "interfaced_distribution": interfaced_distribution,
+                "interfaced_distribution_parameters": interfaced_distribution_parameters,  # noqa: E501
+                **parameters,
+            },
         )
 
         # Define the marginal distributions
@@ -1022,3 +1025,16 @@ class ParameterSpace(DesignSpace):
             _dict[new_name] = _dict.pop(current_name)
             _dict = self.distributions
             _dict[new_name] = _dict.pop(current_name)
+
+    def add_variables_from(self, space: DesignSpace, *names: str) -> None:  # noqa: D102
+        if not isinstance(space, ParameterSpace):
+            super().add_variables_from(space, *names)
+            return
+
+        for name in names:
+            if name in space.uncertain_variables:
+                definition = space.__uncertain_variables_to_definitions[name]
+                self.add_random_vector(name, definition[0], **definition[1])
+                self.set_current_variable(name, space._current_value[name])
+            else:
+                self._add_variable_from(space, name)

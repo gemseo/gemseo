@@ -1,5 +1,6 @@
 API changes:
 - ``DesignSpace`` and ``ParameterSpace`` no longer provide a dictionary-like interface to manipulate its items with square brackets [].
+- The ``DesignSpace.add_variables_from`` method can be used to add variables from existing variable spaces.
 - The class ``DesignSpace.DesignVariable`` no longer exists.
 - A variable of a ``DesignSpace`` can no longer have one type (float or integer) per component, but rather a single type, shared by all its components.
     - ``DesignSpace.add_variable`` no longer accepts a sequence of variable types for its ``var_type`` argument.
