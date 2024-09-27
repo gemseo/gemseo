@@ -2271,7 +2271,7 @@ class DesignSpace:
             msg = f"The variable {current_name} is not in the design space."
             raise ValueError(msg)
 
-        for dictionary in [self.normalize, self._variables]:
+        for dictionary in [self.normalize, self._variables, self.__names_to_indices]:
             dictionary[new_name] = dictionary.pop(current_name)
 
         current_value = self._current_value.pop(current_name, None)
