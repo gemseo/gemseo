@@ -22,7 +22,6 @@ from unittest.mock import Mock
 import openturns
 import pytest
 from numpy import array
-from numpy import array_equal
 from numpy import hstack
 from numpy import ndarray
 from numpy import zeros
@@ -402,30 +401,58 @@ def test_covariance_kernel_type(dataset, kernel_type):
         assert name in covariance_model_str
 
 
-def test_compute_samples(dataset):
+@pytest.mark.parametrize(
+    ("compute_options", "init_options", "expected_samples"),
+    [
+        (
+            {},
+            {},
+            array([
+                [
+                    [1.47647972e03, 2.21396378e00],
+                    [1.20973761e03, 1.18612131e00],
+                    [1.25126291e03, 2.18171156e00],
+                ],
+                [
+                    [1.49048507e03, -1.51470882e00],
+                    [1.55715040e03, 1.20897280e00],
+                    [1.49389310e03, -3.14649015e00],
+                ],
+            ]),
+        ),
+        (
+            {"seed": 2},
+            {},
+            array([
+                [
+                    [1.39052263e03, 1.44782222e-01],
+                    [1.25298244e03, -2.72898984e00],
+                    [1.41856634e03, 4.59435414e-01],
+                ],
+                [
+                    [1.53954913e03, 4.42708465e00],
+                    [1.45285976e03, 6.24822690e-01],
+                    [1.50965565e03, -3.20010056e00],
+                ],
+            ]),
+        ),
+        (
+            {},
+            {"output_names": ["sum"]},
+            array([
+                [[0.42115111], [1.42419408], [1.02099548]],
+                [[0.420637], [1.42092809], [1.02177389]],
+            ]),
+        ),
+    ],
+)
+@pytest.mark.parametrize("transformer", [{}, {"inputs": "Scaler", "outputs": "Scaler"}])
+def test_compute_samples(
+    dataset, compute_options, init_options, expected_samples, transformer
+):
     """Check the method compute_samples."""
-    model = OTGaussianProcessRegressor(dataset)
+    model = OTGaussianProcessRegressor(dataset, transformer=transformer, **init_options)
     model.learn()
-    input_data = array([[0.23, 0.59], [-0.45, 1.2]])
-    output_data = model.compute_samples(input_data, 3)
-    assert_allclose(
-        (output_data_0 := output_data[0]),
-        array([
-            [1476.479722, 1256.439278, 1543.093856],
-            [1209.737606, 1474.013075, 1481.73877],
-        ]),
-        rtol=1e-3,
-    )
-    assert_allclose(
-        output_data[1],
-        array([[2.213964, 1.812411, 1.42207], [1.186121, -1.261375, -2.94392]]),
-        rtol=1e-3,
-    )
-    assert not array_equal(model.compute_samples(input_data, 3)[0], output_data_0)
-    assert not array_equal(
-        model.compute_samples(input_data, 3, seed=123)[0], output_data_0
-    )
-    assert_equal(
-        model.compute_samples(input_data, 3, seed=model._seeder.default_seed - 2)[0],
-        output_data_0,
-    )
+    input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
+    samples = model.compute_samples(input_data, 2, **compute_options)
+    assert_allclose(samples, expected_samples, rtol=1e-4)

@@ -31,24 +31,30 @@ from openturns import AbsoluteExponential
 from openturns import ConstantBasisFactory
 from openturns import CovarianceModelImplementation
 from openturns import ExponentialModel
+from openturns import GaussianProcess
 from openturns import Interval
 from openturns import KrigingAlgorithm
-from openturns import KrigingRandomVector
 from openturns import LinearBasisFactory
 from openturns import Log
 from openturns import MaternModel
+from openturns import Mesh
 from openturns import MultiStart
 from openturns import OptimizationAlgorithmImplementation
 from openturns import Point
 from openturns import QuadraticBasisFactory
 from openturns import RandomGenerator
 from openturns import ResourceMap
+from openturns import Sample
 from openturns import SquaredExponential
 from openturns import TensorizedCovarianceModel
+from openturns import UserDefinedCovarianceModel
 from strenum import StrEnum
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.mlearning.data_formatters.regression_data_formatters import (
+    RegressionDataFormatters,
+)
 from gemseo.mlearning.regression.algos.base_random_process_regressor import (
     BaseRandomProcessRegressor,
 )
@@ -396,10 +402,15 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         gradient = self.algo.getMetaModel().gradient
         return array([array(gradient(Point(data))).T for data in input_data])
 
+    @RegressionDataFormatters.format_input_output
     def compute_samples(  # noqa: D102
         self, input_data: NumberArray, n_samples: int, seed: int | None = None
-    ) -> list[NumberArray]:
+    ) -> NumberArray:
         RandomGenerator.SetSeed(self._seeder.get_seed(seed))
-        data = array(KrigingRandomVector(self.algo, input_data).getSample(n_samples))
-        output_dimension = self.output_dimension
-        return [data[:, i::output_dimension].T for i in range(output_dimension)]
+        input_data = Sample(input_data)
+        trend_vector = array(self.algo.getConditionalMean(input_data))
+        covariance_matrix = self.algo.getConditionalCovariance(input_data)
+        mesh = Mesh(input_data)
+        covariance_model = UserDefinedCovarianceModel(mesh, covariance_matrix)
+        process = GaussianProcess(covariance_model, mesh)
+        return array(process.getSample(n_samples)) + trend_vector

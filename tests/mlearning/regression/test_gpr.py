@@ -176,57 +176,55 @@ def test_kernel(dataset) -> None:
         (
             {},
             {},
-            (
-                array([
-                    [1.8501639, 1.9520872],
-                    [4.7274068, 4.5766031],
-                    [4.0061854, 3.8260905],
-                ]),
-                array([
-                    [-2.0070295, -1.9755459],
-                    [-4.5062906, -4.6318621],
-                    [-3.8772014, -4.0628162],
-                ]),
-            ),
+            array([
+                [
+                    [1.85016387, -2.00702945],
+                    [4.72740681, -4.50629058],
+                    [4.00618543, -3.87720141],
+                ],
+                [
+                    [1.95208716, -1.97554591],
+                    [4.57660313, -4.63186214],
+                    [3.8260905, -4.06281621],
+                ],
+            ]),
         ),
         (
             {"seed": 2},
             {},
-            (
-                array([
-                    [1.9445679, 1.8869145],
-                    [4.6358505, 4.7708454],
-                    [3.866145, 4.0080552],
-                ]),
-                array([
-                    [-1.9243842, -1.880916],
-                    [-4.5288311, -4.7229072],
-                    [-3.9682647, -3.9136432],
-                ]),
-            ),
+            array([
+                [
+                    [1.94456792, -1.92438423],
+                    [4.63585051, -4.52883111],
+                    [3.86614502, -3.96826468],
+                ],
+                [
+                    [1.88691454, -1.88091603],
+                    [4.77084545, -4.72290722],
+                    [4.00805521, -3.91364315],
+                ],
+            ]),
         ),
         (
             {},
             {"output_names": ["y_1"]},
-            (
-                array([
-                    [1.8501639, 1.9520872],
-                    [4.7274068, 4.5766031],
-                    [4.0061854, 3.8260905],
-                ]),
-            ),
+            array([
+                [[1.85016387], [4.72740681], [4.00618543]],
+                [[1.95208716], [4.57660313], [3.8260905]],
+            ]),
         ),
     ],
 )
-def test_compute_samples(dataset, compute_options, init_options, expected_samples):
+@pytest.mark.parametrize("transformer", [{}, {"inputs": "Scaler", "outputs": "Scaler"}])
+def test_compute_samples(
+    dataset, compute_options, init_options, expected_samples, transformer
+):
     """Test the method compute_samples."""
-    model = GaussianProcessRegressor(dataset, **init_options)
+    model = GaussianProcessRegressor(dataset, transformer=transformer, **init_options)
     model.learn()
     input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
     samples = model.compute_samples(input_data, 2, **compute_options)
-    assert_almost_equal(samples[0], expected_samples[0])
-    if not init_options:
-        assert_almost_equal(samples[1], expected_samples[1])
+    assert_almost_equal(samples, expected_samples)
 
 
 def test_std_multiple_output():
