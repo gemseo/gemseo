@@ -41,6 +41,7 @@ from typing import ClassVar
 from typing import NoReturn
 from typing import Union
 
+from numpy import atleast_2d
 from numpy import ndarray
 from numpy import newaxis
 
@@ -189,17 +190,26 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _use_2d_array(
         f: Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any],
     ) -> Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any]:
-        """Force the NumPy array passed to a function as first argument to be a 2D one.
+        """Force the NumPy array passed to a function as 1st argument to be at least 2D.
 
         Args:
             f: The function.
         """
 
         def g(self, data: ndarray, *args: Any, **kwargs: Any) -> Any:
-            """Force a NumPy array to be 2D and evaluate the function ``f`` with it.
+            """Force a NumPy array to be at least 2D and evaluate the function ``f``.
+
+            ``f`` expects a 2D array shaped as ``(n_points, input_dimension)``
+            and returns a nD arrays shaped as ``(..., n_points, output_dimension)``
+            or ``(..., n_points, output_dimension, input_dimension)``.
+
+            If the original ``data`` is a 1D array shaped as ``(input_dimension,)``,
+            then
+            this wrapper returns a (n-1)D array shaped as ``(..., output_dimension)``
+            or ``(..., output_dimension, intput_dimension)``.
 
             Args:
-                data: A 1D or 2D NumPy array.
+                data: A NumPy array.
                 *args: The positional arguments.
                 **kwargs: The optional arguments.
 
@@ -208,14 +218,21 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
                 if a NumPy array,
                 its dimension is made consistent with the shape of ``data``.
             """
-            if data.ndim == 2:
+            if data.ndim >= 2:
+                # data has already at least 2 dimensions.
                 return f(self, data, *args, **kwargs)
 
-            out = f(self, data[newaxis, :], *args, **kwargs)
-            if isinstance(out, ndarray):
-                return out[0]
+            # Force data to have at least 2 dimensions.
+            out = f(self, atleast_2d(data), *args, **kwargs)
+            if not isinstance(out, ndarray):
+                return out
 
-            return out
+            if f.__name__ in ["compute_jacobian", "compute_jacobian_inverse"]:
+                # Case (..., n_points, output_dimension, input_dimension)
+                return out[..., 0, :, :]
+
+            # Case (..., n_points, output_dimension, input_dimension)
+            return out[..., 0, :]
 
         return g
 

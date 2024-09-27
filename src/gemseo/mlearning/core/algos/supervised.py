@@ -77,6 +77,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Union
 
+from numpy import concatenate
 from numpy import hstack
 from numpy import ndarray
 
@@ -289,7 +290,7 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
             else:
                 transformed_data.append(data[name])
 
-        return hstack(transformed_data)
+        return concatenate(transformed_data, axis=-1)
 
     def _learn(
         self,

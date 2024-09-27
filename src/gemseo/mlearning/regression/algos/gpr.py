@@ -109,7 +109,11 @@ import sklearn.gaussian_process
 from numpy import atleast_2d
 from numpy import newaxis
 from numpy import repeat
+from numpy import swapaxes
 
+from gemseo.mlearning.data_formatters.regression_data_formatters import (
+    RegressionDataFormatters,
+)
 from gemseo.mlearning.regression.algos.base_random_process_regressor import (
     BaseRandomProcessRegressor,
 )
@@ -266,13 +270,20 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
 
         return output_data
 
+    @RegressionDataFormatters.format_input_output
     def compute_samples(  # noqa: D102
         self, input_data: RealArray, n_samples: int, seed: int | None = None
-    ) -> list[RealArray]:
+    ) -> RealArray:
         samples = self.algo.sample_y(
             input_data, n_samples=n_samples, random_state=self._seeder.get_seed(seed)
         )
+        # sklearn.gaussian_process.GaussianProcessRegressor.sample_y
+        # returns an array of shape
+        # - (len(input_data), n_samples) when the output dimension is 1
+        # - (len(input_data), output_dimension, n_samples) otherwise,
+        # while gemseo....GaussianProcessRegressor.compute_samples
+        # returns an array of shape (n_samples, len(input_data), output_dimension).
         if samples.ndim == 2:
-            return [samples]
+            samples = samples[:, newaxis, :]
 
-        return [samples[:, i, :] for i in range(self._reduced_output_dimension)]
+        return swapaxes(swapaxes(samples, 0, 2), 1, 2)

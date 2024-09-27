@@ -97,7 +97,7 @@ class BaseRandomProcessRegressor(BaseRegressor):
     @abstractmethod
     def compute_samples(
         self, input_data: RealArray, n_samples: int, seed: int | None = None
-    ) -> list[RealArray]:
+    ) -> RealArray:
         """Sample a random vector from the conditioned Gaussian process.
 
         Args:
@@ -108,5 +108,6 @@ class BaseRandomProcessRegressor(BaseRegressor):
             seed: The seed for reproducible results.
 
         Returns:
-            The output samples per output dimension shaped as ``(N, M)``.
+            The output samples shaped as ``(M, N, p)``
+            where ``p`` is the output dimension.
         """

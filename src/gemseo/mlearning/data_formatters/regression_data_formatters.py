@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from typing import Callable
 
     from gemseo.mlearning.core.algos.ml_algo import DataType
-    from gemseo.mlearning.regression.base_regressor import BaseRegressor
+    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
     from gemseo.typing import RealArray
 
 from gemseo.mlearning.data_formatters.supervised_data_formatters import (
