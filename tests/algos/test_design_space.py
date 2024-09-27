@@ -1317,7 +1317,11 @@ def test_rename_variable(value) -> None:
     """Check the renaming of a variable."""
     design_space = DesignSpace()
     design_space.add_variable("x", 2, "integer", 0.0, 2.0, value)
+    names_to_indices = design_space._DesignSpace__names_to_indices
+    indices = names_to_indices["x"]
     design_space.rename_variable("x", "y")
+    assert "x" not in names_to_indices
+    assert names_to_indices["y"] == indices
     assert "x" not in design_space
     assert "y" in design_space
     variable = design_space._variables["y"]
