@@ -16,7 +16,7 @@ cycler==0.12.1
     # via matplotlib
 decorator==5.1.1
     # via networkx
-dill==0.3.8
+dill==0.3.9
     # via openturns
 docstring-inheritance==1.0.0
     # via gemseo (pyproject.toml)
