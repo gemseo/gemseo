@@ -83,7 +83,7 @@ class BaseClassifier(BaseMLSupervisedAlgo):
         self.n_classes = unique(output_data).shape[0]
         super()._learn(indices, fit_transformers=fit_transformers)
 
-    @BaseMLSupervisedAlgo.DataFormatters.format_input_output
+    @BaseMLSupervisedAlgo.DataFormatters.format_input_output()
     def predict_proba(
         self,
         input_data: DataType,

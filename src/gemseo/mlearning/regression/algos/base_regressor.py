@@ -84,7 +84,7 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         return self._predict(input_data)
 
     @DataFormatters.format_dict_jacobian
-    @DataFormatters.format_samples
+    @DataFormatters.format_samples()
     @DataFormatters.transform_jacobian
     def predict_jacobian(
         self,

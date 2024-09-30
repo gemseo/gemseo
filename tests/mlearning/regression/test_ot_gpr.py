@@ -402,7 +402,7 @@ def test_covariance_kernel_type(dataset, kernel_type):
 
 
 @pytest.mark.parametrize(
-    ("compute_options", "init_options", "expected_samples"),
+    ("compute_options", "init_options", "expected_samples", "expected_samples_1pt"),
     [
         (
             {},
@@ -419,6 +419,7 @@ def test_covariance_kernel_type(dataset, kernel_type):
                     [1.49389310e03, -3.14649015e00],
                 ],
             ]),
+            array([[1.39052263e03, 1.44782222e-01], [1.24957800e03, -2.77257687e00]]),
         ),
         (
             {"seed": 2},
@@ -435,6 +436,7 @@ def test_covariance_kernel_type(dataset, kernel_type):
                     [1.50965565e03, -3.20010056e00],
                 ],
             ]),
+            array([[1.39052263e03, 1.44782222e-01], [1.24957800e03, -2.77257687e00]]),
         ),
         (
             {},
@@ -443,12 +445,18 @@ def test_covariance_kernel_type(dataset, kernel_type):
                 [[0.42115111], [1.42419408], [1.02099548]],
                 [[0.420637], [1.42092809], [1.02177389]],
             ]),
+            array([[0.42043643], [0.42034654]]),
         ),
     ],
 )
 @pytest.mark.parametrize("transformer", [{}, {"inputs": "Scaler", "outputs": "Scaler"}])
 def test_compute_samples(
-    dataset, compute_options, init_options, expected_samples, transformer
+    dataset,
+    compute_options,
+    init_options,
+    expected_samples,
+    expected_samples_1pt,
+    transformer,
 ):
     """Check the method compute_samples."""
     model = OTGaussianProcessRegressor(dataset, transformer=transformer, **init_options)
@@ -456,3 +464,6 @@ def test_compute_samples(
     input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
     samples = model.compute_samples(input_data, 2, **compute_options)
     assert_allclose(samples, expected_samples, rtol=1e-4)
+
+    samples = model.compute_samples(input_data[0], 2, **compute_options)
+    assert_allclose(samples, expected_samples_1pt, rtol=1e-4)

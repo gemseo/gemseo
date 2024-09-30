@@ -397,7 +397,7 @@ class MOERegressor(BaseRegressor):
         )
 
     @DataFormatters.format_predict_class_dict
-    @DataFormatters.format_samples
+    @DataFormatters.format_samples()
     @DataFormatters.format_transform(transform_outputs=False)
     def predict_class(
         self,
@@ -420,7 +420,7 @@ class MOERegressor(BaseRegressor):
         """
         return self.classifier.predict(input_data)
 
-    @DataFormatters.format_input_output
+    @DataFormatters.format_input_output()
     def predict_local_model(
         self,
         input_data: DataType,
