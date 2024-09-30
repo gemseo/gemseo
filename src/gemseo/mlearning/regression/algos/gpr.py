@@ -270,7 +270,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
 
         return output_data
 
-    @RegressionDataFormatters.format_input_output
+    @RegressionDataFormatters.format_input_output(input_axis=1)
     def compute_samples(  # noqa: D102
         self, input_data: RealArray, n_samples: int, seed: int | None = None
     ) -> RealArray:

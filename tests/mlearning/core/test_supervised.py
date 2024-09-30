@@ -184,7 +184,7 @@ def test_format_sample(io_dataset) -> None:
     with concretize_classes(BaseMLSupervisedAlgo):
         ml_algo = BaseMLSupervisedAlgo(io_dataset)
 
-    @BaseMLSupervisedAlgo.DataFormatters.format_samples
+    @BaseMLSupervisedAlgo.DataFormatters.format_samples()
     def predict_sample(self, input_data):
         """Predict (identity function)."""
         assert self == ml_algo

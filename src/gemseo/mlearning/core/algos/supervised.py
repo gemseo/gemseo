@@ -490,7 +490,7 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
             output_data: The output data with shape (n_samples, n_outputs).
         """
 
-    @DataFormatters.format_input_output
+    @DataFormatters.format_input_output()
     def predict(
         self,
         input_data: DataType,

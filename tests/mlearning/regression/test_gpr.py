@@ -171,7 +171,7 @@ def test_kernel(dataset) -> None:
 
 
 @pytest.mark.parametrize(
-    ("compute_options", "init_options", "expected_samples"),
+    ("compute_options", "init_options", "expected_samples", "expected_samples_1pt"),
     [
         (
             {},
@@ -188,6 +188,7 @@ def test_kernel(dataset) -> None:
                     [3.8260905, -4.06281621],
                 ],
             ]),
+            array([[1.90124246, -2.07677922], [1.9260292, -1.81711579]]),
         ),
         (
             {"seed": 2},
@@ -204,6 +205,7 @@ def test_kernel(dataset) -> None:
                     [4.00805521, -3.91364315],
                 ],
             ]),
+            array([[1.90124246, -2.07677922], [1.9260292, -1.81711579]]),
         ),
         (
             {},
@@ -212,12 +214,18 @@ def test_kernel(dataset) -> None:
                 [[1.85016387], [4.72740681], [4.00618543]],
                 [[1.95208716], [4.57660313], [3.8260905]],
             ]),
+            array([[1.90124246], [1.92602921]]),
         ),
     ],
 )
 @pytest.mark.parametrize("transformer", [{}, {"inputs": "Scaler", "outputs": "Scaler"}])
 def test_compute_samples(
-    dataset, compute_options, init_options, expected_samples, transformer
+    dataset,
+    compute_options,
+    init_options,
+    expected_samples,
+    expected_samples_1pt,
+    transformer,
 ):
     """Test the method compute_samples."""
     model = GaussianProcessRegressor(dataset, transformer=transformer, **init_options)
@@ -225,6 +233,9 @@ def test_compute_samples(
     input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
     samples = model.compute_samples(input_data, 2, **compute_options)
     assert_almost_equal(samples, expected_samples)
+
+    samples = model.compute_samples(input_data[0], 2, **compute_options)
+    assert_almost_equal(samples, expected_samples_1pt)
 
 
 def test_std_multiple_output():
