@@ -1,0 +1,1 @@
+Removed the ``n_processes`` attribute and argument of ``MDAChain``. When the inner MDA class has this argument, it can be set through the ``**inner_mda_options`` options of the ``MDAChain``

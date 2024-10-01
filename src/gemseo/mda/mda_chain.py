@@ -24,7 +24,6 @@
 from __future__ import annotations
 
 import logging
-from inspect import getfullargspec
 from itertools import repeat
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -38,7 +37,6 @@ from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.factory import MDAFactory
 from gemseo.mda.initialization_chain import MDOInitializationChain
-from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -72,7 +70,6 @@ class MDAChain(BaseMDA):
         inner_mda_name: str = "MDAJacobi",
         max_mda_iter: int = 20,
         name: str = "",
-        n_processes: int = N_CPUS,
         chain_linearize: bool = False,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
@@ -91,8 +88,6 @@ class MDAChain(BaseMDA):
         """
         Args:
             inner_mda_name: The class name of the inner-MDA.
-            n_processes: The maximum simultaneous number of threads if ``use_threading``
-                is set to True, otherwise processes, used to parallelize the execution.
             chain_linearize: Whether to linearize the chain of execution. Otherwise,
                 linearize the overall MDA with base class method. This last option is
                 preferred to minimize computations in adjoint mode, while in direct
@@ -108,7 +103,6 @@ class MDAChain(BaseMDA):
                 execution.
             **inner_mda_options: The options of the inner-MDAs.
         """  # noqa:D205 D212 D415
-        self.n_processes = n_processes
         self.mdo_chain = None
         self._chain_linearize = chain_linearize
         self.inner_mdas = []
@@ -353,14 +347,8 @@ class MDAChain(BaseMDA):
         inner_mda_disciplines = self.__get_coupled_disciplines_initial_order(
             coupled_disciplines, disciplines
         )
-        mda_factory = MDAFactory()
-        mda_class = mda_factory.get_class(inner_mda_name)
-        option = "n_processes"
-        if option in getfullargspec(mda_class)[0] and option not in inner_mda_options:
-            inner_mda_options = dict(inner_mda_options)
-            inner_mda_options.pop(option, self.n_processes)
-
-        return mda_class(
+        return MDAFactory().create(
+            inner_mda_name,
             inner_mda_disciplines,
             max_mda_iter=self.max_mda_iter,
             tolerance=self.tolerance,
