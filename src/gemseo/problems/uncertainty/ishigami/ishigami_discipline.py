@@ -29,14 +29,7 @@ if TYPE_CHECKING:
 
 
 class IshigamiDiscipline(MDODiscipline):
-    r"""The Ishigami function as a discipline.
-
-    .. math::
-
-       f(x_1,_2,x_3) = \sin(x_1)+ 7\sin(x_2)^2 + 0.1x_3^4\sin(X_1)
-
-    See :cite:`ishigami1990`.
-    """
+    r"""The Ishigami function as a discipline."""
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()

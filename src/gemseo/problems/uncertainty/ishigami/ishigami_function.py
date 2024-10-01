@@ -22,14 +22,7 @@ from gemseo.problems.uncertainty.ishigami.functions import compute_output
 
 
 class IshigamiFunction(MDOFunction):
-    r"""The Ishigami function.
-
-    .. math::
-
-       f(x_1,_2,x_3) = \sin(x_1)+ 7\sin(x_2)^2 + 0.1x_3^4\sin(X_1)
-
-    See :cite:`ishigami1990`.
-    """
+    """The Ishigami function."""
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__(compute_output, "Ishigami", jac=compute_gradient)
