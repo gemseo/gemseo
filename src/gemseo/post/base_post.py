@@ -39,6 +39,7 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -56,8 +57,8 @@ PlotOutputType = list[
 T = TypeVar("T", bound=BasePostSettings)
 
 
-class BasePost(Generic[T]):
-    """Abstract class for optimization post-processing methods."""
+class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
+    """Base class for optimization post-processing."""
 
     # Silencing mypy since the root cause does not seem legit,
     # and may be changed.
