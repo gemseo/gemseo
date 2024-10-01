@@ -17,21 +17,23 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The OpenTURNS-based triangular distribution."""
+"""The OpenTURNS-based log-normal distribution."""
 
 from __future__ import annotations
 
+from gemseo.uncertainty.distributions._log_normal_utils import compute_mu_l_and_sigma_l
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 
-class OTTriangularDistribution(OTDistribution):
-    """The OpenTURNS-based triangular distribution."""
+class OTLogNormalDistribution(OTDistribution):
+    """The OpenTURNS-based log-normal distribution."""
 
     def __init__(
         self,
-        minimum: float = 0.0,
-        mode: float = 0.5,
-        maximum: float = 1.0,
+        mu: float = 1.0,
+        sigma: float = 1.0,
+        location: float = 0.0,
+        set_log: bool = False,
         transformation: str = "",
         lower_bound: float | None = None,
         upper_bound: float | None = None,
@@ -39,18 +41,25 @@ class OTTriangularDistribution(OTDistribution):
     ) -> None:
         """
         Args:
-            minimum: The minimum of the triangular random variable.
-            mode: The mode of the triangular random variable.
-            maximum: The maximum of the random variable.
+            mu: Either the mean of the log-normal random variable
+                or that of its logarithm when ``set_log`` is ``True``.
+            sigma: Either the standard deviation of the log-normal random variable
+                or that of its logarithm when ``set_log`` is ``True``.
+            location: The location of the log-normal random variable.
+            set_log: Whether ``mu`` and ``sigma`` apply
+                to the logarithm of the log-normal random variable.
+                Otherwise,
+                ``mu`` and ``sigma`` apply to the log-normal random variable directly.
         """  # noqa: D205,D212,D415
+        if set_log:
+            log_mu, log_sigma = mu, sigma
+        else:
+            log_mu, log_sigma = compute_mu_l_and_sigma_l(mu, sigma, location)
+
         super().__init__(
-            interfaced_distribution="Triangular",
-            parameters=(minimum, mode, maximum),
-            standard_parameters={
-                self._LOWER: minimum,
-                self._MODE: mode,
-                self._UPPER: maximum,
-            },
+            interfaced_distribution="LogNormal",
+            parameters=(log_mu, log_sigma, location),
+            standard_parameters={self._MU: mu, self._SIGMA: sigma, self._LOC: location},
             transformation=transformation,
             lower_bound=lower_bound,
             upper_bound=upper_bound,

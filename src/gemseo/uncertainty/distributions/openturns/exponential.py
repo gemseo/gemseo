@@ -25,16 +25,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 
 
 class OTExponentialDistribution(OTDistribution):
-    """The OpenTURNS-based exponential distribution.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.openturns.exponential import (
-        ...     OTExponentialDistribution,
-        ... )
-        >>> distribution = OTExponentialDistribution(2, 3)
-        >>> print(distribution)
-        Exponential(rate=2, loc=3)
-    """
+    """The OpenTURNS-based exponential distribution."""
 
     def __init__(
         self,

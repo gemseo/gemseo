@@ -25,16 +25,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 
 
 class OTUniformDistribution(OTDistribution):
-    """The OpenTURNS-based uniform distribution.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.openturns.uniform import (
-        ...     OTUniformDistribution
-        >>> )
-        >>> distribution = OTUniformDistribution(-1, 1)
-        >>> print(distribution)
-        Uniform(lower=-1, upper=1)
-    """
+    """The OpenTURNS-based uniform distribution."""
 
     def __init__(
         self,

@@ -17,38 +17,42 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The SciPy-based triangular distribution."""
+"""The SciPy-based Beta distribution."""
 
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
-class SPTriangularDistribution(SPDistribution):
-    """The SciPy-based triangular distribution."""
+class SPBetaDistribution(SPDistribution):
+    """The SciPy-based Beta distribution."""
 
     def __init__(
         self,
+        alpha: float = 2.0,
+        beta: float = 2.0,
         minimum: float = 0.0,
-        mode: float = 0.5,
         maximum: float = 1.0,
     ) -> None:
         """
         Args:
-            minimum: The minimum of the triangular random variable.
-            mode: The mode of the triangular random variable.
-            maximum: The maximum of the triangular random variable.
+            alpha: The first shape parameter of the beta random variable.
+            beta: The second shape parameter of the beta random variable.
+            minimum: The minimum of the beta random variable.
+            maximum: The maximum of the beta random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            interfaced_distribution="triang",
+            interfaced_distribution="beta",
             parameters={
+                "a": alpha,
+                "b": beta,
                 "loc": minimum,
                 "scale": maximum - minimum,
-                "c": (mode - minimum) / float(maximum - minimum),
             },
             standard_parameters={
                 self._LOWER: minimum,
-                self._MODE: mode,
                 self._UPPER: maximum,
+                self._ALPHA: alpha,
+                self._BETA: beta,
             },
         )

@@ -32,20 +32,36 @@ from numpy import ndarray
 from numpy.random import RandomState
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
+from openturns import Beta
+from openturns import Dirac
+from openturns import Exponential
+from openturns import LogNormal
+from openturns import Normal
 from openturns import RandomGenerator
+from openturns import Triangular
+from openturns import Uniform
+from openturns import WeibullMax
+from openturns import WeibullMin
 
 from gemseo.uncertainty.distributions import scalar_distribution_mixin
+from gemseo.uncertainty.distributions._log_normal_utils import compute_mu_l_and_sigma_l
+from gemseo.uncertainty.distributions.openturns.beta import OTBetaDistribution
+from gemseo.uncertainty.distributions.openturns.dirac import OTDiracDistribution
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.exponential import (
     OTExponentialDistribution,
 )
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
+from gemseo.uncertainty.distributions.openturns.log_normal import (
+    OTLogNormalDistribution,
+)
 from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 from gemseo.uncertainty.distributions.openturns.triangular import (
     OTTriangularDistribution,
 )
 from gemseo.uncertainty.distributions.openturns.uniform import OTUniformDistribution
+from gemseo.uncertainty.distributions.openturns.weibull import OTWeibullDistribution
 
 
 def test_joint_distribution() -> None:
@@ -175,26 +191,6 @@ def test_transformation() -> None:
     assert_almost_equal(distribution.support, array([0.0, 4.0]), decimal=5)
 
 
-def test_normal() -> None:
-    distribution = OTNormalDistribution()
-    assert str(distribution) == "Normal(mu=0.0, sigma=1.0)"
-
-
-def test_uniform() -> None:
-    distribution = OTUniformDistribution()
-    assert str(distribution) == "Uniform(lower=0.0, upper=1.0)"
-
-
-def test_exponential() -> None:
-    distribution = OTExponentialDistribution()
-    assert str(distribution) == "Exponential(rate=1.0, loc=0.0)"
-
-
-def test_triangular() -> None:
-    distribution = OTTriangularDistribution()
-    assert str(distribution) == "Triangular(lower=0.0, mode=0.5, upper=1.0)"
-
-
 @pytest.mark.parametrize(
     (
         "dimension",
@@ -301,3 +297,159 @@ def test_compute_cdf_int32():
     x = int32(1)
     assert OTNormalDistribution().compute_cdf(x) == expected
     assert OTJointDistribution([OTNormalDistribution()]).compute_cdf([x]) == expected
+
+
+@pytest.mark.parametrize(
+    ("ot_cls", "cls", "ot_args", "kwargs", "str_"),
+    [
+        (
+            Beta,
+            OTBetaDistribution,
+            (2.0, 2.0, 0.0, 1.0),
+            {},
+            "Beta(lower=0.0, upper=1.0, alpha=2.0, beta=2.0)",
+        ),
+        (
+            Beta,
+            OTBetaDistribution,
+            (0.1, 0.2, 0.3, 0.4),
+            {"alpha": 0.1, "beta": 0.2, "minimum": 0.3, "maximum": 0.4},
+            "Beta(lower=0.3, upper=0.4, alpha=0.1, beta=0.2)",
+        ),
+        (
+            Dirac,
+            OTDiracDistribution,
+            (),
+            {},
+            "Dirac(loc=0.0)",
+        ),
+        (Dirac, OTDiracDistribution, (1.0,), {"variable_value": 1.0}, "Dirac(loc=1.0)"),
+        (
+            Exponential,
+            OTExponentialDistribution,
+            (),
+            {},
+            "Exponential(rate=1.0, loc=0.0)",
+        ),
+        (
+            Exponential,
+            OTExponentialDistribution,
+            (0.1, 0.2),
+            {"rate": 0.1, "loc": 0.2},
+            "Exponential(rate=0.1, loc=0.2)",
+        ),
+        (
+            LogNormal,
+            OTLogNormalDistribution,
+            (*compute_mu_l_and_sigma_l(1.0, 1.0, 0.0), 0.0),
+            {},
+            "LogNormal(mu=1.0, sigma=1.0, loc=0.0)",
+        ),
+        (
+            LogNormal,
+            OTLogNormalDistribution,
+            (1.5, 2.5, 0.0),
+            {"mu": 1.5, "sigma": 2.5, "set_log": True},
+            "LogNormal(mu=1.5, sigma=2.5, loc=0.0)",
+        ),
+        (
+            LogNormal,
+            OTLogNormalDistribution,
+            (*compute_mu_l_and_sigma_l(1.2, 1.3, 0.4), 0.4),
+            {"mu": 1.2, "sigma": 1.3, "location": 0.4},
+            "LogNormal(mu=1.2, sigma=1.3, loc=0.4)",
+        ),
+        (Normal, OTNormalDistribution, (), {}, "Normal(mu=0.0, sigma=1.0)"),
+        (
+            Normal,
+            OTNormalDistribution,
+            (0.1, 0.2),
+            {"mu": 0.1, "sigma": 0.2},
+            "Normal(mu=0.1, sigma=0.2)",
+        ),
+        (
+            Triangular,
+            OTTriangularDistribution,
+            (0.0, 0.5, 1.0),
+            {},
+            "Triangular(lower=0.0, mode=0.5, upper=1.0)",
+        ),
+        (
+            Triangular,
+            OTTriangularDistribution,
+            (0.1, 0.2, 0.3),
+            {"minimum": 0.1, "mode": 0.2, "maximum": 0.3},
+            "Triangular(lower=0.1, mode=0.2, upper=0.3)",
+        ),
+        (
+            Uniform,
+            OTUniformDistribution,
+            (0.0, 1.0),
+            {},
+            "Uniform(lower=0.0, upper=1.0)",
+        ),
+        (
+            Uniform,
+            OTUniformDistribution,
+            (0.1, 0.2),
+            {"minimum": 0.1, "maximum": 0.2},
+            "Uniform(lower=0.1, upper=0.2)",
+        ),
+        (
+            WeibullMin,
+            OTWeibullDistribution,
+            (1.0, 1.0, 0.0),
+            {},
+            "WeibullMin(location=0.0, scale=1.0, shape=1.0)",
+        ),
+        (
+            WeibullMin,
+            OTWeibullDistribution,
+            (0.2, 0.3, 0.1),
+            {"location": 0.1, "scale": 0.2, "shape": 0.3},
+            "WeibullMin(location=0.1, scale=0.2, shape=0.3)",
+        ),
+        (
+            WeibullMax,
+            OTWeibullDistribution,
+            (1.0, 1.0, 0.0),
+            {"use_weibull_min": False},
+            "WeibullMax(location=0.0, scale=1.0, shape=1.0)",
+        ),
+        (
+            WeibullMax,
+            OTWeibullDistribution,
+            (0.2, 0.3, 0.1),
+            {"use_weibull_min": False, "location": 0.1, "scale": 0.2, "shape": 0.3},
+            "WeibullMax(location=0.1, scale=0.2, shape=0.3)",
+        ),
+    ],
+)
+def test_specific_ot_distributions(ot_cls, cls, ot_args, kwargs, str_) -> None:
+    """Check the specific OpenTURNS-based distributions.
+
+    Args:
+        ot_cls: The OpenTURNS class.
+        cls: The class deriving from OTDistribution.
+        ot_args: The positional arguments to instantiate the OpenTURNS class.
+        kwargs: The keyword arguments to instantiate ``cls``.
+        str_: The expected string representation of the ``cls`` instance.
+    """
+    ot_distribution = cls(**kwargs)
+    distribution = ot_distribution.distribution
+    expected_distribution = ot_cls(*ot_args)
+    assert distribution.getName() == expected_distribution.getName()
+    assert distribution.getParameter() == expected_distribution.getParameter()
+    assert str(ot_distribution) == str_
+
+
+def test_lognormal_distribution():
+    """Check that (mu,sigma)=(1,1) for the default log-normal distribution.
+
+    We do this test because we transform the (mu, sigma) into (mu_l, sigma_l) and
+    instantiate the wrapped distribution with it. This is a way to test this
+    transformation.
+    """
+    distribution = OTLogNormalDistribution()
+    assert distribution.mean == pytest.approx(1.0)
+    assert distribution.standard_deviation == pytest.approx(1.0)

@@ -12,43 +12,50 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The SciPy-based triangular distribution."""
+"""The OpenTURNS-based Beta distribution."""
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 
-class SPTriangularDistribution(SPDistribution):
-    """The SciPy-based triangular distribution."""
+class OTBetaDistribution(OTDistribution):
+    """The OpenTURNS-based Beta distribution."""
 
     def __init__(
         self,
+        alpha: float = 2.0,
+        beta: float = 2.0,
         minimum: float = 0.0,
-        mode: float = 0.5,
         maximum: float = 1.0,
+        transformation: str = "",
+        lower_bound: float | None = None,
+        upper_bound: float | None = None,
+        threshold: float = 0.5,
     ) -> None:
         """
         Args:
-            minimum: The minimum of the triangular random variable.
-            mode: The mode of the triangular random variable.
-            maximum: The maximum of the triangular random variable.
+            alpha: The first shape parameter of the beta random variable.
+            beta: The second shape parameter of the beta random variable.
+            minimum: The minimum of the beta random variable.
+            maximum: The maximum of the beta random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            interfaced_distribution="triang",
-            parameters={
-                "loc": minimum,
-                "scale": maximum - minimum,
-                "c": (mode - minimum) / float(maximum - minimum),
-            },
+            interfaced_distribution="Beta",
+            parameters=(
+                alpha,
+                beta,
+                minimum,
+                maximum,
+            ),
             standard_parameters={
                 self._LOWER: minimum,
-                self._MODE: mode,
                 self._UPPER: maximum,
+                self._ALPHA: alpha,
+                self._BETA: beta,
             },
+            transformation=transformation,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            threshold=threshold,
         )
