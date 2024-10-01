@@ -23,15 +23,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 
 
 class IshigamiSpace(ParameterSpace):
-    r"""The uncertain space used in the Ishigami use case.
-
-    :math:`X_1,X_2,X_3` are independent random variables
-    uniformly distributed between :math:`-\pi` and :math:`\pi`.
-
-    This uncertain space uses the class :class:`.SPUniformDistribution`.
-
-    See :cite:`ishigami1990`.
-    """
+    r"""The uncertain space used in the Ishigami use case."""
 
     class UniformDistribution(StrEnum):
         """The name of the class implementing the uniform distribution."""
