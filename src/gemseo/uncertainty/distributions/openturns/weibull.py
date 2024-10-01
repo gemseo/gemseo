@@ -20,16 +20,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 
 
 class OTWeibullDistribution(OTDistribution):
-    """The OpenTURNS-based Weibull distribution.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.openturns.weibull import (
-        ...     OTWeibullDistribution
-        >>> )
-        >>> distribution = OTWeibullDistribution(0.5, 1.0, 2.0)
-        >>> print(distribution)
-        WeibullMin(location=0.5, scale=1, shape=2)
-    """
+    """The OpenTURNS-based Weibull distribution."""
 
     def __init__(
         self,

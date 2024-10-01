@@ -25,16 +25,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 class SPNormalDistribution(SPDistribution):
-    """The SciPy-based normal distribution.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.scipy.normal import (
-        ...     SPNormalDistribution,
-        ... )
-        >>> distribution = SPNormalDistribution(-1, 2)
-        >>> print(distribution)
-        norm(mu=-1, sigma=2)
-    """
+    """The SciPy-based normal distribution."""
 
     def __init__(
         self,

@@ -124,6 +124,8 @@ class BaseDistribution(
     E.g. ``"sin(x)"``.
     """
 
+    _ALPHA: Final[str] = "alpha"
+    _BETA: Final[str] = "beta"
     _LOC: Final[str] = "loc"
     _LOWER: Final[str] = "lower"
     _MODE: Final[str] = "mode"

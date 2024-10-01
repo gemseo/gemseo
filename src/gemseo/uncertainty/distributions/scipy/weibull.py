@@ -20,16 +20,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 class SPWeibullDistribution(SPDistribution):
-    """The SciPy-based Weibull distribution.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.scipy.weibull import (
-        ...     SPWeibullDistribution,
-        ... )
-        >>> distribution = SPWeibullDistribution(0.5, 1.0, 2.0)
-        >>> print(distribution)
-        weibull_min(location=1, scale=2, shape=0.5)
-    """
+    """The SciPy-based Weibull distribution."""
 
     def __init__(
         self,

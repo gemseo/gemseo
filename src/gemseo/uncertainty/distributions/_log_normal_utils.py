@@ -17,28 +17,30 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The SciPy-based uniform distribution."""
+"""Utils for the log-normal distribution."""
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from numpy import log
 
 
-class SPUniformDistribution(SPDistribution):
-    """The SciPy-based uniform distribution."""
+def compute_mu_l_and_sigma_l(
+    mu: float,
+    sigma: float,
+    location: float,
+) -> tuple[float, float]:
+    """Compute the mean and standard deviation of the random variable's logarithm.
 
-    def __init__(
-        self,
-        minimum: float = 0.0,
-        maximum: float = 1.0,
-    ) -> None:
-        """
-        Args:
-            minimum: The minimum of the uniform random variable.
-            maximum: The maximum of the uniform random variable.
-        """  # noqa: D205,D212,D415
-        super().__init__(
-            interfaced_distribution="uniform",
-            parameters={"loc": minimum, "scale": maximum - minimum},
-            standard_parameters={self._LOWER: minimum, self._UPPER: maximum},
-        )
+    Args:
+        mu: The mean of the log-normal random variable.
+        sigma: The standard deviation of the log-normal random variable.
+        location: The location of the log-normal random variable.
+
+    Returns:
+        The mean and standard deviation of
+        the logarithm of the log-normal random variable.
+    """
+    mu_location = mu - location
+    mu_l = log(mu_location / ((sigma / mu_location) ** 2 + 1) ** 0.5)
+    sigma_l = (2 * (log(mu_location) - mu_l)) ** 0.5
+    return mu_l, sigma_l

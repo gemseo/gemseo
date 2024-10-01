@@ -25,16 +25,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 
 
 class OTNormalDistribution(OTDistribution):
-    """The OpenTURNS-based normal distribution.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.openturns.normal import (
-        ...     OTNormalDistribution
-        >>> )
-        >>> distribution = OTNormalDistribution(-1, 2)
-        >>> print(distribution)
-        Normal(mu=-1, sigma=2)
-    """
+    """The OpenTURNS-based normal distribution."""
 
     def __init__(
         self,
