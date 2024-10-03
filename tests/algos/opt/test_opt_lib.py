@@ -26,7 +26,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.lib_scipy import ScipyOpt
+from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -121,15 +121,6 @@ def test_is_algorithm_suited_pbm_type() -> None:
     )
 
 
-def test_pre_run_fail(power) -> None:
-    """Check that pre_run raises an exception if maxiter cannot be determined."""
-    slsqp = ScipyOpt("SLSQP")
-    with pytest.raises(
-        ValueError, match="Could not determine the maximum number of iterations."
-    ):
-        slsqp._pre_run(power)
-
-
 def test_check_constraints_handling_fail(power) -> None:
     """Test that check_constraints_handling can raise an exception."""
     lbfgsb = ScipyOpt("L-BFGS-B")
@@ -180,7 +171,11 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
     library = ScipyOpt("SLSQP")
     library.problem = power
     library.problem.preprocess_functions()
-    library._pre_run(power, max_iter=2, scaling_threshold=scaling_threshold)
+    settings = library._validate_settings({
+        "max_iter": 2,
+        "scaling_threshold": scaling_threshold,
+    })
+    library._pre_run(power, **settings)
     current_value = power.design_space.get_current_value()
     assert library.problem.objective.evaluate(current_value) == pow2
     assert library.problem.constraints[0].evaluate(current_value) == ineq1

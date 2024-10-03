@@ -89,6 +89,11 @@ def test_2d_ineq(
     analytical_test_2d_ineq, options, algo, reformulate_constraints_with_slack_var
 ) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
+    if (
+        algo == "Augmented_Lagrangian_order_0"
+        and "kkt_tol_abs" in options["algo_options"]
+    ):
+        options["algo_options"].pop("kkt_tol_abs")
     opt = options.copy()
     problem = analytical_test_2d_ineq.formulation.optimization_problem
     if reformulate_constraints_with_slack_var:

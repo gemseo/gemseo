@@ -23,7 +23,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
+from matplotlib.pyplot import plot
 from numpy.linalg import norm
 from scipy.sparse.linalg import LinearOperator
 
@@ -31,10 +32,10 @@ from gemseo.algos.base_problem import BaseProblem
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
-    from numpy import ndarray
+    from numpy import floating
 
+    from gemseo.typing import NumberArray
     from gemseo.typing import SparseOrDenseRealArray
-    from gemseo.utils.compatibility.scipy import SparseArrayType
 
 
 class LinearProblem(BaseProblem):
@@ -44,20 +45,23 @@ class LinearProblem(BaseProblem):
     symmetry or positive definiteness.
     """
 
-    rhs: ndarray
+    rhs: NumberArray | None
     """The right-hand side of the equation."""
 
-    lhs: LinearOperator | SparseArrayType
+    lhs: LinearOperator | SparseOrDenseRealArray
     """The left-hand side of the equation.
 
     If ``None``, the problem can't be solved and the user has to set it after init.
     """
 
-    solution: ndarray
+    solution: NumberArray | None
     """The current solution of the problem."""
 
-    is_converged: bool
-    """If the solution is_converged."""
+    is_converged: bool | None
+    """Whether the solution satisfies the specified tolerance.
+
+    If ``None``, no run was performed.
+    """
 
     convergence_info: int | str
     """The information provided by the solver if convergence occurred or not."""
@@ -69,22 +73,19 @@ class LinearProblem(BaseProblem):
     """Whether the LHS is positive definite."""
 
     is_lhs_linear_operator: bool
-    """Whether the LHS is symmetric."""
-
-    solver_options: dict[str, Any]
-    """The options passed to the solver."""
+    """Whether the LHS is a linear operator."""
 
     solver_name: str
     """The solver name."""
 
-    residuals_history: list[float]
+    residuals_history: list[floating[Any]]
     """The convergence history of residuals."""
 
     def __init__(
         self,
         lhs: SparseOrDenseRealArray | LinearOperator,
-        rhs: ndarray | None = None,
-        solution: ndarray | None = None,
+        rhs: NumberArray | None = None,
+        solution: NumberArray | None = None,
         is_symmetric: bool = False,
         is_positive_def: bool = False,
         is_converged: bool | None = None,
@@ -94,8 +95,8 @@ class LinearProblem(BaseProblem):
             lhs: The left-hand side (matrix or linear operator) of the problem.
             rhs: The right-hand side (vector) of the problem.
             solution: The current solution.
-            is_symmetric: Whether to assume that the LHS is symmetric.
-            is_positive_def: Whether to assume that the LHS is positive definite.
+            is_symmetric: Whether the left-hand side is symmetric.
+            is_positive_def: Whether the left-hand side is positive definite.
             is_converged: Whether the solution is converged to the specified tolerance.
                 If ``False``, the algorithm stopped before convergence.
                 If ``None``, no run was performed.
@@ -103,63 +104,57 @@ class LinearProblem(BaseProblem):
         self.rhs = rhs
         self.lhs = lhs
         self.solution = solution
+
         self.is_converged = is_converged
-        self.convergence_info = None
+        self.convergence_info = ""
+
         self.is_symmetric = is_symmetric
         self.is_positive_def = is_positive_def
+        self.is_lhs_linear_operator = isinstance(lhs, LinearOperator)
 
-        if isinstance(lhs, LinearOperator):
-            self.is_lhs_linear_operator = True
-        else:
-            self.is_lhs_linear_operator = False
-
-        self.solver_options = None
         self.solver_name = None
-        self.residuals_history = None
+        self.residuals_history = []
 
     def compute_residuals(
         self,
         relative_residuals: bool = True,
         store: bool = False,
-        current_x=None,
-    ) -> ndarray:
-        """Compute the L2 norm of the residuals of the problem.
+        current_x: NumberArray | None = None,
+    ) -> floating[Any]:
+        r"""Compute the Euclidean norm of the residual.
 
         Args:
-            relative_residuals: If ``True``, return norm(lhs.solution-rhs)/norm(rhs),
-                else return norm(lhs.solution-rhs).
-            store: Whether to store the residuals value in the residuals_history
-                attribute.
+            relative_residuals: If ``True``, one computes
+                :math:` \|A x_k - b\|_2 /  \|b\|_2`, else :math:` \|A x_k - b\|_2`.
+            store: Whether to store the residual norm in the history.
             current_x: Compute the residuals associated with current_x,
                 If ``None``, compute then from the solution attribute.
 
         Returns:
-            The residuals value.
+            The residual norm.
 
         Raises:
+            ValueError: If :attr:`.rhd` is ``None``.
             ValueError: If :attr:`.solution` is ``None`` and ``current_x`` is ``None``.
         """
         if self.rhs is None:
-            msg = "Missing RHS."
+            msg = "No right-hand side available to compute residual."
             raise ValueError(msg)
 
-        if current_x is None:
-            current_x = self.solution
-            if self.solution is None:
-                msg = "Missing solution."
-                raise ValueError(msg)
+        if current_x is None and self.solution is None:
+            msg = "Neither solution or current iterate available to compute residual."
+            raise ValueError(msg)
 
-        res = norm(self.lhs.dot(current_x) - self.rhs)
+        x = self.solution if current_x is None else current_x
+        residual_norm = norm(self.lhs.dot(x) - self.rhs)
 
         if relative_residuals:
-            res /= norm(self.rhs)
+            residual_norm /= norm(self.rhs)
 
         if store:
-            if self.residuals_history is None:
-                self.residuals_history = []
-            self.residuals_history.append(res)
+            self.residuals_history.append(residual_norm)
 
-        return res
+        return residual_norm
 
     def plot_residuals(self) -> Figure:
         """Plot the residuals' convergence in log scale.
@@ -168,17 +163,17 @@ class LinearProblem(BaseProblem):
             The matplotlib figure.
 
         Raises:
-            ValueError: When the residuals' history is empty.
+            ValueError: When the residual norm history is empty.
         """
-        if self.residuals_history is None or len(self.residuals_history) == 0:
+        if len(self.residuals_history) == 0:
             msg = (
                 "Residuals history is empty. "
-                " Use the 'store_residuals' option for the solver."
+                "Consider setting the 'store' attribute to `True`."
             )
             raise ValueError(msg)
 
-        fig = plt.figure(figsize=(11.0, 6.0))
-        plt.plot(self.residuals_history, color="black", lw=2)
+        fig = figure(figsize=(11.0, 6.0))
+        plot(self.residuals_history, color="black", lw=2)
         ax1 = fig.gca()
         ax1.set_yscale("log")
         ax1.set_title(f"Linear solver '{self.solver_name}' convergence")
@@ -197,15 +192,11 @@ class LinearProblem(BaseProblem):
 
         if (
             (len(lhs_shape) != 2)
-            or (lhs_shape[0] != rhs_shape[0])
+            or (lhs_shape[1] != rhs_shape[0])
             or (len(rhs_shape) != 1 and rhs_shape[-1] != 1)
         ):
             msg = (
-                "Incompatible dimensions in linear system Ax=b,"
-                " A shape is %s and b shape is %s"
+                "Incompatible dimensions in linear system Ax=b. "
+                f"A shape is {lhs_shape} and b shape is {rhs_shape}"
             )
-            raise ValueError(
-                msg,
-                self.lhs.shape,
-                self.rhs.shape,
-            )
+            raise ValueError(msg)

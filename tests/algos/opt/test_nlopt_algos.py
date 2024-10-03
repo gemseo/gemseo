@@ -32,7 +32,7 @@ from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary as OptLib
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.lib_nlopt import Nlopt
+from gemseo.algos.opt.nlopt.nlopt import Nlopt
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -165,7 +165,12 @@ def get_options(algo_name):
         return {"max_iter": 10000, Nlopt._X_TOL_REL: 1e-8, Nlopt._F_TOL_REL: 1e-8}
     if algo_name == "NLOPT_BOBYQA":
         return {"max_iter": 2200}
-    return {"max_iter": 100, Nlopt._CTOL_ABS: 1e-10, Nlopt._STOPVAL: 0.0}
+    return {
+        "max_iter": 100,
+        Nlopt._EQ_TOLERANCE: 1e-10,
+        Nlopt._INEQ_TOLERANCE: 1e-10,
+        Nlopt._STOPVAL: 0.0,
+    }
 
 
 suite_tests = OptLibraryTestBase()

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import logging
 import pickle
+import re
 from os import remove
 from pathlib import Path
 
@@ -30,12 +31,12 @@ from numpy import zeros
 from numpy.random import default_rng
 from scipy.linalg import norm
 from scipy.sparse.linalg import LinearOperator
-from scipy.sparse.linalg import aslinearoperator
 from scipy.sparse.linalg import spilu
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.algos.linear_solvers.lib_scipy_linalg import ScipyLinalgAlgos
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+from gemseo.algos.linear_solvers.scipy_linalg.scipy_linalg import ScipyLinalgAlgos
+from gemseo.utils.seeder import SEED
 
 RESIDUALS_TOL = 1e-12
 
@@ -111,7 +112,7 @@ def test_common_dtype_cplx() -> None:
 def test_not_converged(caplog) -> None:
     """Tests the cases when convergence fails and save_when_fail option."""
     factory = LinearSolverLibraryFactory()
-    rng = default_rng(1)
+    rng = default_rng(SEED)
     n = 100
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     lib = factory.create("BICGSTAB")
@@ -150,54 +151,27 @@ def test_hard_conv(tmp_wd, seed) -> None:
 def test_inconsistent_options() -> None:
     problem = LinearProblem(ones((2, 2)), ones(2))
 
-    with pytest.raises(ValueError, match="Inconsistent Preconditioner shape"):
+    with pytest.raises(
+        ValueError, match=re.escape("matrix and preconditioner have different shapes")
+    ):
         LinearSolverLibraryFactory().execute(
             problem, "DEFAULT", preconditioner=ones((3, 3))
         )
 
-    with pytest.raises(ValueError, match="Inconsistent initial guess shape"):
+    with pytest.raises(
+        ValueError, match=re.escape("shapes of A (2, 2) and x0 (3,) are incompatible")
+    ):
         LinearSolverLibraryFactory().execute(problem, "DEFAULT", x0=ones(3))
 
     with pytest.raises(
         ValueError,
-        match="Use either 'use_ilu_precond' or provide 'preconditioner', but not both.",
+        match=re.escape(
+            "Use either 'use_ilu_precond' or provide 'preconditioner', but not both."
+        ),
     ):
         LinearSolverLibraryFactory().execute(
             problem, "DEFAULT", preconditioner=ones((2, 2)), use_ilu_precond=True
         )
-
-
-def test_runtime_error() -> None:
-    problem = LinearProblem(zeros((2, 2)), ones(2))
-    with pytest.raises(RuntimeError, match="Factor is exactly singular"):
-        LinearSolverLibraryFactory().execute(problem, "DEFAULT", use_ilu_precond=False)
-
-
-def test_default_solver() -> None:
-    """Tests the default linear solver sequence.
-
-    Consider the default solver when the matrix A is either a NumPy array or a SciPy
-    LinearOperator. In the latter case, the final step using direct method cannot be
-    used leading to an unconverged problem.
-    """
-    rng = default_rng(123456789)
-
-    lhs, rhs = rng.normal(size=(30, 30)), ones(30)
-    options = {"rtol": 1e-12, "max_iter": 1, "inner_m": 1}
-
-    # Linear system eventually solved using direct method and considered converged
-    problem = LinearProblem(lhs, rhs)
-    LinearSolverLibraryFactory().execute(
-        problem, "DEFAULT", use_ilu_precond=False, **options
-    )
-    assert problem.is_converged
-
-    # Linear system left unsolved since no direct method applied
-    problem = LinearProblem(aslinearoperator(lhs), rhs)
-    LinearSolverLibraryFactory().execute(
-        problem, "DEFAULT", use_ilu_precond=False, **options
-    )
-    assert not problem.is_converged
 
 
 def test_check_info() -> None:

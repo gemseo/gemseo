@@ -40,7 +40,6 @@ import logging
 from collections.abc import Iterable
 from contextlib import nullcontext
 from dataclasses import dataclass
-from pathlib import Path
 from time import time
 from typing import TYPE_CHECKING
 from typing import Any
@@ -49,7 +48,6 @@ from typing import Final
 from typing import Union
 
 from numpy import ndarray
-from strenum import StrEnum
 
 from gemseo.algos._progress_bars.custom_tqdm_progress_bar import LOGGER as TQDM_LOGGER
 from gemseo.algos._progress_bars.dummy_progress_bar import DummyProgressBar
@@ -58,7 +56,8 @@ from gemseo.algos._progress_bars.unsuffixed_progress_bar import UnsuffixedProgre
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
-from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
+from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FtolReached
@@ -68,11 +67,9 @@ from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
-from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 from gemseo.typing import StrKeyMapping
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.logging_tools import OneLineLogging
 from gemseo.utils.string_tools import MultiLineString
 
@@ -80,8 +77,9 @@ if TYPE_CHECKING:
     from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
     from gemseo.algos.database import ListenerType
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
-DriverLibraryOptionType = Union[
+DriverLibrarySettingType = Union[
     str, float, int, bool, list[str], ndarray, Iterable[CallbackType], StrKeyMapping
 ]
 LOGGER = logging.getLogger(__name__)
@@ -94,8 +92,8 @@ class DriverDescription(AlgorithmDescription):
     handle_integer_variables: bool = False
     """Whether the optimization algorithm handles integer variables."""
 
-    require_gradient: bool = False
-    """Whether the optimization algorithm requires the gradient."""
+    settings: type[BaseDriverLibrarySettings] = BaseDriverLibrarySettings
+    """The pydantic model for the driver library settings."""
 
 
 class BaseDriverLibrary(BaseAlgorithmLibrary):
@@ -109,31 +107,10 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
 
     ApproximationMode = ApproximationMode
 
-    class _DifferentiationMethod(StrEnum):
-        """The additional differentiation methods."""
+    DifferentiationMethod = EvaluationProblem.DifferentiationMethod
 
-        USER_GRAD = OptimizationProblem.DifferentiationMethod.USER_GRAD
-
-    DifferentiationMethod = merge_enums(
-        "DifferentiationMethod",
-        StrEnum,
-        ApproximationMode,
-        _DifferentiationMethod,
-        doc="The differentiation methods.",
-    )
-
-    # Option names
-    _ACTIVATE_PROGRESS_BAR_OPTION_NAME = "activate_progress_bar"
-    _EQ_TOLERANCE: Final[str] = "eq_tolerance"
-    _EVAL_OBS_JAC_OPTION: Final[str] = "eval_obs_jac"
-    _INEQ_TOLERANCE: Final[str] = "ineq_tolerance"
-    _MAX_TIME: Final[str] = "max_time"
-    _NORMALIZE_DESIGN_SPACE_OPTION: Final[str] = "normalize_design_space"
-    _ROUND_INTS_OPTION: Final[str] = "round_ints"
-    _STORE_JACOBIAN_OPTION: Final[str] = "store_jacobian"
-    _USE_DATABASE_OPTION: Final[str] = "use_database"
-
-    _NORMALIZE_DS: ClassVar[bool] = True
+    ALGORITHM_INFOS: ClassVar[dict[str, DriverDescription]] = {}
+    """The description of the algorithms contained in the library."""
 
     _RESULT_CLASS: ClassVar[type[OptimizationResult]] = OptimizationResult
     """The class used to present the result of the optimization."""
@@ -141,22 +118,35 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
     _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = False
     """Whether the library support sparse Jacobians."""
 
-    _COMMON_OPTIONS_GRAMMAR: ClassVar[JSONGrammar] = JSONGrammar(
-        "DriverLibOptions",
-        file_path=Path(__file__).parent / "driver_lib_options.json",
-    )
+    # Settings names.
+    _ACTIVATE_PROGRESS_BAR: Final[str] = "activate_progress_bar"
+    _EQ_TOLERANCE: Final[str] = "eq_tolerance"
+    _INEQ_TOLERANCE: Final[str] = "ineq_tolerance"
+    _MAX_TIME: Final[str] = "max_time"
+    _NORMALIZE_DESIGN_SPACE: Final[str] = "normalize_design_space"
+    __LOG_PROBLEM: Final[str] = "log_problem"
+    __RESET_ITERATION_COUNTERS: Final[str] = "reset_iteration_counters"
+    __ROUND_INTS: Final[str] = "round_ints"
+    __USE_DATABASE: Final[str] = "use_database"
+    __USE_ONLINE_PROGRESS_BAR: Final[str] = "use_one_line_progress_bar"
 
     activate_progress_bar: bool = True
     """Whether to activate the progress bar in the optimization log."""
 
-    _max_time: float
-    """The maximum duration of the execution."""
+    _problem: EvaluationProblem | None
+    """The optimization problem the driver library is bonded to."""
 
-    _start_time: float
-    """The time at which the execution begins."""
+    _normalize_ds: bool = True
+    """Whether to normalize the design space variables between 0 and 1."""
 
     __log_problem: bool
     """Whether to log the definition and result of the problem."""
+
+    __max_time: float
+    """The maximum duration of the execution."""
+
+    __new_iter_listeners: set[ListenerType]
+    """The functions to be called when a new iteration is stored to the database."""
 
     __one_line_progress_bar: bool
     """Whether to log the progress bar on a single line."""
@@ -165,20 +155,16 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
     """The progress bar used during the execution."""
 
     __reset_iteration_counters: bool
-    """Whether to reset the iteration counters of the OptimizationProblem before each
-    execution."""
+    """Whether to reset the iteration counters before each execution."""
 
-    _problem: OptimizationProblem
-    """The optimization problem the driver library is bonded to."""
-
-    __new_iter_listeners: set[ListenerType]
-    """The functions to be called when a new iteration is stored to the database."""
+    __start_time: float
+    """The time at which the execution begins."""
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
         self._deactivate_progress_bar()
-        self._start_time = 0.0
-        self._max_time = 0.0
+        self.__start_time = 0.0
+        self.__max_time = 0.0
         self.__reset_iteration_counters = True
         self.__log_problem = True
         self.__one_line_progress_bar = False
@@ -211,13 +197,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         Args:
             max_iter: The maximum number of iterations.
             message: The message to display at the beginning of the progress bar status.
-
-        Raises:
-            ValueError: If ``max_iter`` is lower than one.
         """
-        if max_iter < 1:
-            msg = f"max_iter must be >=1, got {max_iter}"
-            raise ValueError(msg)
         problem.evaluation_counter.maximum = max_iter
         problem.evaluation_counter.current = (
             0 if self.__reset_iteration_counters else problem.evaluation_counter.current
@@ -232,7 +212,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         else:
             self._deactivate_progress_bar()
 
-        self._start_time = time()
+        self.__start_time = time()
 
     def _new_iteration_callback(self, x_vect: ndarray) -> None:
         """Iterate the progress bar, implement the stop criteria.
@@ -246,24 +226,17 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         """
         self.__progress_bar.set_objective_value(None, True)
         self.problem.evaluation_counter.current += 1
-        if 0 < self._max_time < time() - self._start_time:
+        if 0 < self.__max_time < time() - self.__start_time:
             raise MaxTimeReached
 
         self.__progress_bar.set_objective_value(x_vect)
-
-    def _pre_run(
-        self,
-        problem: OptimizationProblem,
-        **options: DriverLibraryOptionType,
-    ) -> None:
-        self._max_time = options.get(self._MAX_TIME, 0.0)
 
     def _post_run(
         self,
         problem: OptimizationProblem,
         result: OptimizationResult,
         max_design_space_dimension_to_log: int,
-        **options: Any,
+        **settings: Any,
     ) -> None:
         """
         Args:
@@ -356,7 +329,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         skip_int_check: bool = False,
         max_design_space_dimension_to_log: int = 40,
         store_jacobian: bool = True,
-        **settings: DriverLibraryOptionType,
+        **settings: Any,
     ) -> OptimizationResult:
         """
         Args:
@@ -373,25 +346,27 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         self.problem = problem
         self._check_algorithm(problem)
         self._check_integer_handling(problem.design_space, skip_int_check)
-        activate_progress_bar = settings.pop(
-            self._ACTIVATE_PROGRESS_BAR_OPTION_NAME, None
-        )
+
+        # Validation of the settings
+        settings = self._validate_settings(settings)
+
+        problem.tolerances.equality = settings[self._EQ_TOLERANCE]
+        problem.tolerances.inequality = settings[self._INEQ_TOLERANCE]
+
+        activate_progress_bar = settings[self._ACTIVATE_PROGRESS_BAR]
         if activate_progress_bar is not None:
             self.activate_progress_bar = activate_progress_bar
+        self.__max_time = settings[self._MAX_TIME]
+        self._normalize_ds = settings[self._NORMALIZE_DESIGN_SPACE]
+        self.__log_problem = settings[self.__LOG_PROBLEM]
+        self.__one_line_progress_bar = settings[self.__USE_ONLINE_PROGRESS_BAR]
+        self.__reset_iteration_counters = settings[self.__RESET_ITERATION_COUNTERS]
 
-        use_one_line_progress_bar = settings.pop("use_one_line_progress_bar", False)
-
-        self.__reset_iteration_counters = settings.pop("reset_iteration_counters", True)
-        self.__log_problem = settings.pop("log_problem", True)
-
-        options = self._update_algorithm_options(**settings)
         problem.check()
         problem.preprocess_functions(
-            is_function_input_normalized=options.get(
-                self._NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
-            ),
-            use_database=options.get(self._USE_DATABASE_OPTION, True),
-            round_ints=options.get(self._ROUND_INTS_OPTION, True),
+            is_function_input_normalized=self._normalize_ds,
+            use_database=settings[self.__USE_DATABASE],
+            round_ints=settings[self.__ROUND_INTS],
             eval_obs_jac=eval_obs_jac,
             support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
             store_jacobian=store_jacobian,
@@ -431,12 +406,14 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             LOGGER.info(progress_bar_title, self._algo_name)
 
         with (
-            OneLineLogging(TQDM_LOGGER) if use_one_line_progress_bar else nullcontext()
+            OneLineLogging(TQDM_LOGGER)
+            if self.__one_line_progress_bar
+            else nullcontext()
         ):
             # Term criteria such as max iter or max_time can be triggered in pre_run
             try:
-                self._pre_run(problem, **options)
-                result = self._run(problem, **options)
+                self._pre_run(problem, **settings)
+                result = self._run(problem, **settings)
             except TerminationCriterion as termination_criterion:
                 result = self._get_early_stopping_result(problem, termination_criterion)
 
@@ -448,7 +425,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             problem,
             result,
             max_design_space_dimension_to_log,
-            **options,
+            **settings,
         )
         # Clear the state of _problem; the cache of the AlgoFactory can be used.
         self._problem = None
@@ -464,14 +441,6 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             new_iter_listeners=self.__new_iter_listeners or None, store_listeners=None
         )
         self.__new_iter_listeners.clear()
-
-    def _process_specific_option(self, options, option_key: str) -> None:
-        if option_key == self._INEQ_TOLERANCE:
-            self.problem.tolerances.inequality = options[option_key]
-            del options[option_key]
-        elif option_key == self._EQ_TOLERANCE:
-            self.problem.tolerances.equality = options[option_key]
-            del options[option_key]
 
     def _get_early_stopping_result(
         self, problem: OptimizationProblem, termination_criterion: TerminationCriterion
@@ -505,7 +474,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 "are closer than ftol_rel or ftol_abs. "
             )
         elif isinstance(termination_criterion, MaxTimeReached):
-            message = f"Maximum time reached: {self._max_time} seconds. "
+            message = f"Maximum time reached: {self.__max_time} seconds. "
         elif isinstance(termination_criterion, KKTReached):
             message = (
                 "The KKT residual norm is smaller than the tolerance "

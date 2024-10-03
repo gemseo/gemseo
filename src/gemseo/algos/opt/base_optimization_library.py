@@ -25,13 +25,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Final
 
 import numpy
+from numpy import isinf
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
+from gemseo.algos.opt.base_optimization_library_settings import (
+    BaseOptimizationLibrarySettings,
+)
 from gemseo.algos.stop_criteria import DesignToleranceTester
 from gemseo.algos.stop_criteria import KKTConditionsTester
 from gemseo.algos.stop_criteria import ObjectiveToleranceTester
@@ -63,6 +68,12 @@ class OptimizationAlgorithmDescription(DriverDescription):
     for_linear_problems: bool = False
     """Whether the optimization algorithm is dedicated to linear problems."""
 
+    require_gradient: bool = False
+    """Whether the optimization algorithm requires the gradient."""
+
+    settings: type[BaseOptimizationLibrarySettings] = BaseOptimizationLibrarySettings
+    """The settings validation model."""
+
 
 class BaseOptimizationLibrary(BaseDriverLibrary):
     """Base class for libraries of optimizers.
@@ -80,29 +91,28 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         with the method :meth:`.DesignSpace.initialize_missing_current_values`.
     """
 
-    _MAX_ITER: Final[str] = "max_iter"
+    # Option names
     _F_TOL_REL: Final[str] = "ftol_rel"
     _F_TOL_ABS: Final[str] = "ftol_abs"
-    _X_TOL_REL: Final[str] = "xtol_rel"
-    _X_TOL_ABS: Final[str] = "xtol_abs"
     _KKT_TOL_ABS: Final[str] = "kkt_tol_abs"
     _KKT_TOL_REL: Final[str] = "kkt_tol_rel"
-    _STOP_CRIT_NX: Final[str] = "stop_crit_n_x"
-    _LS_STEP_SIZE_MAX: Final[str] = "max_ls_step_size"
-    _LS_STEP_NB_MAX: Final[str] = "max_ls_step_nb"
-    _MAX_FUN_EVAL: Final[str] = "max_fun_eval"
-    _PG_TOL: Final[str] = "pg_tol"
+    _MAX_ITER: Final[str] = "max_iter"
     _SCALING_THRESHOLD: Final[str] = "scaling_threshold"
-    _VERBOSE: Final[str] = "verbose"
+    _STOP_CRIT_NX: Final[str] = "stop_crit_n_x"
+    _X_TOL_REL: Final[str] = "xtol_rel"
+    _X_TOL_ABS: Final[str] = "xtol_abs"
 
     _f_tol_tester: ObjectiveToleranceTester
-    """A tester for the termination criterion associated the objective."""
+    """A tester for the termination criterion associated to the objective function."""
 
     _x_tol_tester: DesignToleranceTester
-    """A tester for the termination criterion associated the design variables."""
+    """A tester for the termination criterion associated to the design variables."""
 
     __kkt_tester: KKTConditionsTester
-    """A tester for the termination criterion associated the KKT conditions."""
+    """A tester for the termination criterion associated to the KKT conditions."""
+
+    ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {}
+    """The description of the algorithms contained in the library."""
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
@@ -150,52 +160,48 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
             return [-constraint for constraint in problem.constraints]
         return problem.constraints
 
-    def _pre_run(self, problem: OptimizationProblem, **options: Any) -> None:
-        super()._pre_run(problem, **options)
+    def _pre_run(self, problem: OptimizationProblem, **settings: Any) -> None:
+        super()._pre_run(problem, **settings)
+
         self._check_constraints_handling(problem)
 
-        if self._MAX_ITER in options:
-            max_iter = options[self._MAX_ITER]
-        elif (
-            self._MAX_ITER in self._OPTIONS_MAP
-            and self._OPTIONS_MAP[self._MAX_ITER] in options
-        ):
-            max_iter = options[self._OPTIONS_MAP[self._MAX_ITER]]
-        else:
-            msg = "Could not determine the maximum number of iterations."
-            raise ValueError(msg)
+        n_points = settings[self._STOP_CRIT_NX]
 
-        n_points = options.get(self._STOP_CRIT_NX, 3)
         self._f_tol_tester = ObjectiveToleranceTester(
-            absolute=options.get(self._F_TOL_ABS, 0.0),
-            relative=options.get(self._F_TOL_REL, 0.0),
+            absolute=settings[self._F_TOL_ABS],
+            relative=settings[self._F_TOL_REL],
             n_last_iterations=n_points,
         )
+
         self._x_tol_tester = DesignToleranceTester(
-            absolute=options.get(self._X_TOL_ABS, 0.0),
-            relative=options.get(self._X_TOL_REL, 0.0),
+            absolute=settings[self._X_TOL_ABS],
+            relative=settings[self._X_TOL_REL],
             n_last_iterations=n_points,
         )
-        kkt_abs_tol = options.get(self._KKT_TOL_ABS)
-        kkt_rel_tol = options.get(self._KKT_TOL_REL)
-        self._init_iter_observer(problem, max_iter)
+
+        self._init_iter_observer(problem, settings[self._MAX_ITER])
+
         require_gradient = self.ALGORITHM_INFOS[self._algo_name].require_gradient
-        if require_gradient and (kkt_abs_tol is not None or kkt_rel_tol is not None):
-            self.__kkt_tester = KKTConditionsTester(
-                absolute=kkt_abs_tol or 0.0,
-                relative=kkt_rel_tol or 0.0,
-                ineq_tolerance=options.get(
-                    self._INEQ_TOLERANCE, problem.tolerances.inequality
-                ),
-            )
-            problem.add_listener(
-                self._check_kkt_from_database,
-                at_each_iteration=False,
-                at_each_function_call=True,
-            )
+        if require_gradient:
+            kkt_abs_tol = settings[self._KKT_TOL_ABS]
+            kkt_rel_tol = settings[self._KKT_TOL_REL]
+
+            if not isinf(kkt_abs_tol) or not isinf(kkt_rel_tol):
+                self.__kkt_tester = KKTConditionsTester(
+                    absolute=0.0 if isinf(kkt_abs_tol) else kkt_abs_tol,
+                    relative=0.0 if isinf(kkt_rel_tol) else kkt_rel_tol,
+                    ineq_tolerance=settings[self._INEQ_TOLERANCE],
+                )
+                problem.add_listener(
+                    self._check_kkt_from_database,
+                    at_each_iteration=False,
+                    at_each_function_call=True,
+                )
+
         problem.design_space.initialize_missing_current_values()
         if problem.differentiation_method == self.DifferentiationMethod.COMPLEX_STEP:
             problem.design_space.to_complex()
+
         # First, evaluate all functions at x_0. Some algorithms don't do this
         output_functions, jacobian_functions = problem.get_functions(
             jacobian_names=() if require_gradient else None,
@@ -204,14 +210,12 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         )
 
         function_values, _ = problem.evaluate_functions(
-            design_vector_is_normalized=options.get(
-                self._NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
-            ),
+            design_vector_is_normalized=self._normalize_ds,
             output_functions=output_functions,
             jacobian_functions=jacobian_functions,
         )
 
-        scaling_threshold = options.get(self._SCALING_THRESHOLD)
+        scaling_threshold = settings[self._SCALING_THRESHOLD]
         if scaling_threshold is not None:
             self.problem.objective = self.__scale(
                 self.problem.objective,

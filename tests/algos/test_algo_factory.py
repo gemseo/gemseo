@@ -33,7 +33,7 @@ def test_create_ok() -> None:
     """Verify that an existing algorithm can be created."""
     algo = OptimizationLibraryFactory().create("L-BFGS-B")
     assert algo._algo_name == "L-BFGS-B"
-    assert "max_iter" in algo._option_grammar
+    assert "max_iter" in algo._validate_settings({})
 
 
 def test_create_ko() -> None:

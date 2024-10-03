@@ -1,0 +1,4 @@
+``BaseAlgorithmLibrary`` and its derived classes no longer allow users to pass settings that are not included in the
+validation model. In the past, unknown settings were allowed to pass up to the wrapped algorithm level, which was error
+prone.
+The ``ineq_tolerance`` was not used for the ``Scipy_MILP`` algorithm, it is now done.

@@ -51,6 +51,9 @@ def problem_2obj() -> OptimizationProblem:
         max_iter=100,
         n_sub_optim=5,
         sub_optim_algo="SLSQP",
+        sub_optim_algo_settings={
+            "normalize_design_space": False,
+        },
         normalize_design_space=False,
     )
     return problem

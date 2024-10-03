@@ -120,7 +120,7 @@ def test_ks_aggreg(method) -> None:
     """Tests KS and IKS aggregation methods compared to no aggregation."""
     algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
     problem_ref = create_problem()
-    execute_algo(problem_ref, algo_name="SLSQP", algo_options=algo_options)
+    execute_algo(problem_ref, algo_name="SLSQP", **algo_options)
     ref_sol = problem_ref.solution
 
     problem = create_problem()
@@ -131,7 +131,7 @@ def test_ks_aggreg(method) -> None:
     execute_algo(
         problem,
         algo_name="SLSQP",
-        algo_options=algo_options,
+        **algo_options,
     )
     sol2 = problem.solution
 

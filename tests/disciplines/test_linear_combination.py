@@ -20,7 +20,7 @@ from numpy import array
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.lib_custom import CustomDOE
+from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
     MDODisciplineAdapterGenerator,

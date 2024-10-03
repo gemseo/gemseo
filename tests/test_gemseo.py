@@ -166,7 +166,7 @@ def test_get_algorithm_options_schema() -> None:
     """Test that all available options are printed."""
     schema_dict = get_algorithm_options_schema("SLSQP")
     assert "properties" in schema_dict
-    assert len(schema_dict["properties"]) == 18
+    assert len(schema_dict["properties"]) == 23
 
     schema_json = get_algorithm_options_schema("SLSQP", output_json=True)
     out_dict = json.loads(schema_json)
@@ -824,7 +824,7 @@ def test_configure_default() -> None:
 def test_algo_features() -> None:
     """Check that get_algorithm_features returns the features of an optimizer."""
     expected = AlgorithmFeatures(
-        library_name="SciPy",
+        library_name="SciPy Local",
         algorithm_name="SLSQP",
         root_package_name="gemseo",
         handle_equality_constraints=True,

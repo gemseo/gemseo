@@ -78,6 +78,9 @@ def test_n_stop_crit_x(n_stop_crit_x) -> None:
     pb = Constant()
     pb.preprocess_functions()
     res = execute_algo(
-        pb, algo_name="NLOPT_COBYLA", max_iter=100, stop_crit_n_x=n_stop_crit_x
+        pb,
+        algo_name="NLOPT_COBYLA",
+        max_iter=100,
+        stop_crit_n_x=n_stop_crit_x,
     )
     assert res.n_obj_call == n_stop_crit_x + 1

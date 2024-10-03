@@ -187,19 +187,19 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         self,
         problem: BaseProblem,
         algo_name: str,
-        **options: Any,
+        **settings: Any,
     ) -> OptimizationResult:
         """Execute a problem with an algorithm.
 
         Args:
             problem: The problem to execute.
             algo_name: The name of the algorithm.
-            **options: The options of the algorithm.
+            **settings: The settings of the algorithm.
 
         Returns:
             The optimization result.
         """
-        return self.create(algo_name).execute(problem, **options)
+        return self.create(algo_name).execute(problem, **settings)
 
     def clear_lib_cache(self) -> None:
         """Clear the library cache."""

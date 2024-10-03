@@ -25,6 +25,20 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
 
+def copy_field(name: str, model: type[BaseModel], **kwargs: Any) -> FieldInfo:
+    """Copy a Pydantic model ``Field``, eventually overriden.
+
+    Args:
+        name: The name of the field.
+        model: The model to copy the field from.
+        **kwargs: The arguments of the field to be overriden.
+
+    Returns:
+        The copied field.
+    """
+    return FieldInfo.merge_field_infos(model.model_fields[name], **kwargs)
+
+
 def update_field(
     model: type[BaseModel],
     field_name: str,

@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import array
 from numpy import ndarray
+from pydantic import ValidationError
 
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -136,7 +137,9 @@ def test_parallel_doe_hdf_cache(caplog) -> None:
         "algo_options": {"n_processes": 2, "n_samples": n_samples},
     }
     scenario.execute(input_data)
-    expected_log = "Double definition of algorithm option n_samples, keeping value: {}."
+    expected_log = (
+        "Double definition of algorithm setting n_samples, keeping value: {}."
+    )
     assert expected_log.format(n_samples) in caplog.text
 
 
@@ -197,19 +200,17 @@ def doe_scenario(unit_design_space, double_discipline) -> DOEScenario:
     )
 
 
-def test_warning_when_missing_option(caplog, doe_scenario) -> None:
-    """Check that a warning is correctly logged when an option is unknown.
+def test_validation_exception(doe_scenario) -> None:
+    """Check that an exception is raised when a setting is unknown.
 
     Args:
         doe_scenario: A simple DOE scenario.
     """
-    doe_scenario.execute({
-        "algo": "CustomDOE",
-        "algo_options": {"samples": array([[1.0]]), "unknown_option": 1},
-    })
-    expected_log = "Driver CustomDOE has no option {}, option is ignored."
-    assert expected_log.format("n_samples") not in caplog.text
-    assert expected_log.format("unknown_option") in caplog.text
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        doe_scenario.execute({
+            "algo": "CustomDOE",
+            "algo_options": {"samples": array([[1.0]]), "unknown_setting": 1},
+        })
 
 
 def f_sellar_1(x_1: ndarray, y_2: ndarray, x_shared: ndarray) -> ndarray:

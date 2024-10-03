@@ -134,8 +134,8 @@ High-level functions
 
 from __future__ import annotations
 
+import json
 import logging
-import re
 from collections.abc import Collection
 from collections.abc import Iterable
 from collections.abc import Mapping
@@ -160,7 +160,10 @@ from gemseo.utils.logging_tools import LOGGING_SETTINGS
 if TYPE_CHECKING:
     from logging import Logger
 
-    from gemseo.algos.base_driver_library import DriverLibraryOptionType
+    from gemseo.algos.base_algorithm_library_settings import (
+        BaseAlgorithmLibrarySettings,
+    )
+    from gemseo.algos.base_driver_library import DriverLibrarySettingType
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
@@ -457,10 +460,39 @@ def get_algorithm_options_schema(
     for factory in (DOELibraryFactory(), OptimizationLibraryFactory()):
         if factory.is_available(algorithm_name):
             algo_lib = factory.create(algorithm_name)
-            opts_gram = algo_lib._init_options_grammar()
-            return _get_schema(opts_gram, output_json, pretty_print)
+            settings = algo_lib.ALGORITHM_INFOS[algorithm_name].settings()
+            return _get_json_schema_from_settings(
+                settings,
+                output_json,
+                pretty_print,
+            )
     msg = f"Algorithm named {algorithm_name} is not available."
     raise ValueError(msg)
+
+
+def _get_json_schema_from_settings(
+    settings: BaseAlgorithmLibrarySettings,
+    output_json: bool,
+    pretty_print: bool,
+) -> str | dict[str, Any]:
+    """Return the schema of a JSON grammar.
+
+    Args:
+        settings: The algorithm settings.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the JSON grammar.
+    """
+    schema = settings.model_json_schema()
+    if pretty_print:
+        _pretty_print_schema(schema)
+
+    if output_json:
+        return json.dumps(settings.model_json_schema(), indent=4)
+
+    return schema
 
 
 def get_discipline_inputs_schema(
@@ -914,40 +946,43 @@ def _get_schema(
 
     dict_schema = json_grammar.schema
 
-    from gemseo.third_party.prettytable import PrettyTable
-
     if pretty_print:
-        title = dict_schema["name"].replace("_", " ") if "name" in dict_schema else None
-        table = PrettyTable(title=title, max_table_width=150)
-        names = []
-        descriptions = []
-        types = []
-        for name, value in dict_schema["properties"].items():
-            names.append(name)
-            descriptions.append(value.get("description"))
-            description = descriptions[-1]
-            tmp = []
-            if descriptions[-1] is not None:
-                descriptions[-1] = descriptions[-1].split(":type")[0]
-                descriptions[-1] = descriptions[-1].capitalize()
-                descriptions[-1] = descriptions[-1].replace("\n", " ")
-                tmp = re.split(r":type ([*\w]+): (.*?)", description)
-            if len(tmp) == 4:
-                types.append(tmp[3].strip())
-            else:
-                types.append(value.get("type"))
-        table.add_column("Name", names)
-        table.add_column("Description", descriptions)
-        table.add_column("Type", types)
-        table.sortby = "Name"
-        table.min_width = 25
-        print(table)  # noqa: T201
-        LOGGER.info("%s", table)
+        _pretty_print_schema(dict_schema)
 
     if output_json:
         return json_grammar.to_json()
 
     return dict_schema
+
+
+def _pretty_print_schema(schema: dict[str, Any]):
+    """Pretty print a json schema.
+
+    Args:
+        schema: The json schema to pretty print.
+    """
+    from gemseo.third_party.prettytable import PrettyTable
+
+    title = schema["name"].replace("_", " ") if "name" in schema else None
+    table = PrettyTable(title=title, max_table_width=150)
+    names = []
+    descriptions = []
+    types = []
+    for name, value in schema["properties"].items():
+        names.append(name)
+        descriptions.append(value.get("description"))
+        if descriptions[-1] is not None:
+            descriptions[-1] = descriptions[-1].split(":type")[0]
+            descriptions[-1] = descriptions[-1].capitalize()
+            descriptions[-1] = descriptions[-1].replace("\n", " ")
+        types.append(value.get("type"))
+    table.add_column("Name", names)
+    table.add_column("Description", descriptions)
+    table.add_column("Type", types)
+    table.sortby = "Name"
+    table.min_width = 25
+    print(table)  # noqa: T201
+    LOGGER.info("%s", table)
 
 
 def get_available_mdas() -> list[str]:
@@ -1391,7 +1426,7 @@ def execute_algo(
     opt_problem: OptimizationProblem,
     algo_name: str,
     algo_type: str = "opt",
-    **options: Any,
+    **settings: Any,
 ) -> OptimizationResult:
     """Solve an optimization problem.
 
@@ -1401,7 +1436,7 @@ def execute_algo(
         algo_type: The type of algorithm,
             either "opt" for optimization
             or "doe" for design of experiments.
-        **options: The options of the algorithm.
+        **settings: The settings of the algorithm.
 
     Examples:
         >>> from gemseo import execute_algo
@@ -1432,7 +1467,7 @@ def execute_algo(
         msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
         raise ValueError(msg)
 
-    return factory.execute(opt_problem, algo_name, **options)
+    return factory.execute(opt_problem, algo_name, **settings)
 
 
 def monitor_scenario(
@@ -1810,7 +1845,7 @@ def compute_doe(
     algo_name: str,
     n_samples: int | None = None,
     unit_sampling: bool = False,
-    **options: DriverLibraryOptionType,
+    **settings: DriverLibrarySettingType,
 ) -> ndarray:
     """Compute a design of experiments (DOE) in a variables space.
 
@@ -1825,7 +1860,7 @@ def compute_doe(
             If the value provided in ``variables_space`` is the dimension,
             the samples will be generated in the unit hypercube
             whatever the value of ``unit_sampling``.
-        **options: The options of the DOE algorithm.
+        **settings: The settings of the DOE algorithm.
 
     Returns:
           The design of experiments
@@ -1846,7 +1881,7 @@ def compute_doe(
 
     library = DOELibraryFactory().create(algo_name)
     return library.compute_doe(
-        variables_space, n_samples=n_samples, unit_sampling=unit_sampling, **options
+        variables_space, n_samples=n_samples, unit_sampling=unit_sampling, **settings
     )
 
 

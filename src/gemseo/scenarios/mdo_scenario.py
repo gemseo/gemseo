@@ -87,15 +87,15 @@ class MDOScenario(Scenario):
         problem = self.formulation.optimization_problem
         algo_name = self.local_data[self.ALGO]
         max_iter = self.local_data[self.MAX_ITER]
-        options = self.local_data.get(self.ALGO_OPTIONS)
-        if options is None:
-            options = {}
-        if self.MAX_ITER in options:
+        settings = self.local_data.get(self.ALGO_OPTIONS)
+        if settings is None:
+            settings = {}
+        if self.MAX_ITER in settings:
             LOGGER.warning(
-                "Double definition of algorithm option max_iter, keeping value: %s",
+                "Double definition of algorithm setting max_iter, keeping value: %s",
                 max_iter,
             )
-            options.pop(self.MAX_ITER)
+            settings.pop(self.MAX_ITER)
 
         # Store the lib in case we rerun the same algorithm,
         # for multilevel scenarios for instance
@@ -107,7 +107,7 @@ class MDOScenario(Scenario):
             lib = self._algo_factory.create(algo_name)
             self._lib = lib
 
-        self.optimization_result = lib.execute(problem, max_iter=max_iter, **options)
+        self.optimization_result = lib.execute(problem, max_iter=max_iter, **settings)
         return self.optimization_result
 
     def _init_algo_factory(self) -> None:

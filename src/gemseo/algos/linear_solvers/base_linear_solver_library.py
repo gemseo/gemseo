@@ -35,11 +35,15 @@ from scipy.sparse.linalg import spilu
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
+from gemseo.algos.linear_solvers.base_linear_solver_settings import (
+    LinearSolverLibrarySettings,
+)
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+    from gemseo.typing import SparseOrDenseRealArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,6 +61,9 @@ class LinearSolverDescription(AlgorithmDescription):
     lhs_must_be_linear_operator: bool = False
     """Whether the left-hand side matrix must be a linear operator."""
 
+    settings: type[LinearSolverLibrarySettings] = LinearSolverLibrarySettings
+    """The linear solver libraries settings."""
+
 
 class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
     """Base class for libraries of linear solvers."""
@@ -64,27 +71,27 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
     file_path: Path
     """The file path to save the linear problem after an execution."""
 
+    _problem: LinearProblem
+    """The linear problem to solve."""
+
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
         self.file_path = Path("linear_system.pck")
 
     @staticmethod
     def _build_ilu_preconditioner(
-        lhs: ndarray,
-        dtype: str | None = None,
+        lhs: SparseOrDenseRealArray,
     ) -> LinearOperator:
         """Construct a preconditioner using an incomplete LU factorization.
 
         Args:
             lhs: The linear system matrix.
-            dtype: The numpy dtype of the resulting linear operator.
-                If ``None``, XXX.
 
         Returns:
             The preconditioner operator.
         """
         ilu = spilu(csc_matrix(lhs))
-        return LinearOperator(lhs.shape, ilu.solve, dtype=dtype)
+        return LinearOperator(shape=lhs.shape, dtype=lhs.dtype, matvec=ilu.solve)
 
     @classmethod
     def _get_unsuitability_reason(
@@ -118,7 +125,6 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
         problem: LinearProblem,
         **options: Any,
     ) -> None:
-        problem.solver_options = options
         problem.solver_name = self._algo_name
 
     def _post_run(
@@ -127,19 +133,21 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
         result: ndarray,
         **options: Any,
     ) -> None:
-        # If the save_when_fail option is True, save the LinearProblem to the disk when
-        # the system failed and print the file name in the warnings.
         if not problem.is_converged:
             LOGGER.warning(
                 "The linear solver %s did not converge.", problem.solver_name
             )
 
-        if options.get("save_when_fail", False) and not problem.is_converged:
+        # If the save_when_fail option is True, save the LinearProblem to the disk when
+        # the system failed and print the file name in the warnings.
+        if options["save_when_fail"] and not problem.is_converged:
             file_path = Path(f"linear_system_{uuid4()}.pck")
+
             with file_path.open("wb") as stream:
                 pickle.dump(problem, stream)
 
             LOGGER.warning(
                 "Linear solver failed, saving problem to file: %s", file_path
             )
+
             self.file_path = file_path

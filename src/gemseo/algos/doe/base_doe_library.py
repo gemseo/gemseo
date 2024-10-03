@@ -41,8 +41,9 @@ from numpy import where
 
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
-from gemseo.algos.base_driver_library import DriverLibraryOptionType
+from gemseo.algos.base_driver_library import DriverLibrarySettingType
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
 from gemseo.algos.evaluation_problem import EvaluationType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
@@ -73,9 +74,13 @@ class DOEAlgorithmDescription(DriverDescription):
     """The description of a DOE algorithm."""
 
     handle_integer_variables: bool = True
+    """Whether the optimization algorithm handles integer variables."""
 
     minimum_dimension: int = 1
     """The minimum dimension of the parameter space."""
+
+    settings: type[BaseDOELibrarySettings] = BaseDOELibrarySettings
+    """The pydantic model for the DOE library settings."""
 
 
 class BaseDOELibrary(BaseDriverLibrary, Serializable):
@@ -111,8 +116,6 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
     """Whether the algorithms use a unit hypercube to generate the design samples."""
-
-    _NORMALIZE_DS = False
 
     __compute_jacobians: bool
     """Whether to compute the Jacobians."""
@@ -155,13 +158,18 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     def _pre_run(
         self,
         problem: OptimizationProblem,
-        **options: DriverLibraryOptionType,
+        **options: DriverLibrarySettingType,
     ) -> None:
-        design_space = problem.design_space
-        self.__check_unnormalization_capability(design_space)
         super()._pre_run(problem, **options)
         problem.stop_if_nan = False
-        self.unit_samples = self._generate_unit_samples(design_space, **options)
+
+        design_space = problem.design_space
+        self.__check_unnormalization_capability(design_space)
+
+        # Filter settings to get only the ones of the global optimizer
+        settings = self._filter_settings(options, BaseDOELibrarySettings)
+
+        self.unit_samples = self._generate_unit_samples(design_space, **settings)
         LOGGER.debug(
             (
                 "The DOE algorithm %s of %s has generated %s samples "
@@ -207,13 +215,13 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
     @abstractmethod
     def _generate_unit_samples(
-        self, design_space: DesignSpace, **options: Any
+        self, design_space: DesignSpace, **settings: Any
     ) -> RealArray:
         """Generate the samples of the design vector in the unit hypercube.
 
         Args:
             design_space: The design space to be sampled.
-            **options: The options of the DOE algorithm.
+            **settings: The settings of the DOE algorithm.
 
         Returns:
             The samples of the design vector in the unit hypercube.
@@ -369,22 +377,22 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     def compute_doe(
         self,
         variables_space: DesignSpace | int,
-        n_samples: int | None = None,
+        n_samples: int = 0,
         unit_sampling: bool = False,
-        **options: DriverLibraryOptionType,
+        **settings: DriverLibrarySettingType,
     ) -> RealArray:
         """Compute a design of experiments (DOE) in a variables space.
 
         Args:
             variables_space: Either the variables space to be sampled or its dimension.
             n_samples: The number of samples.
-                If ``None``,
-                it is deduced from the ``variables_spaces`` and the ``options``.
+                If 0,
+                it is deduced from the ``variables_spaces`` and the ``settings``.
             unit_sampling: Whether to sample in the unit hypercube.
                 If the value provided in ``variables_space`` is the dimension,
                 the samples will be generated in the unit hypercube
                 whatever the value of ``unit_sampling``.
-            **options: The options of the DOE algorithm.
+            **settings: The settings of the DOE algorithm.
 
         Returns:
             The design of experiments
@@ -394,16 +402,16 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         if not unit_sampling:
             self.__check_unnormalization_capability(design_space)
 
-        self._init_options_grammar()
-        if self._N_SAMPLES in self._option_grammar:
-            options[self._N_SAMPLES] = n_samples
+        if n_samples > 0:
+            settings[self._N_SAMPLES] = n_samples
 
-        unit_samples = self._generate_unit_samples(
-            design_space,
-            **self._update_algorithm_options(
-                initialize_options_grammar=False, **options
-            ),
+        # Validate and filter the settings
+        settings = self._filter_settings(
+            settings=self._validate_settings(settings),
+            model_to_exclude=BaseDOELibrarySettings,
         )
+
+        unit_samples = self._generate_unit_samples(design_space, **settings)
         if unit_sampling:
             return unit_samples
 

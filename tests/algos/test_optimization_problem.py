@@ -49,9 +49,9 @@ from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.algos.doe.lib_custom import CustomDOE
-from gemseo.algos.doe.lib_pydoe import PyDOE
+from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
@@ -1060,7 +1060,7 @@ def test_gradient_with_random_variables() -> None:
 
     problem = OptimizationProblem(parameter_space)
     problem.objective = MDOFunction(lambda x: 3 * x**2, "func", jac=lambda x: 6 * x)
-    PyDOE("fullfact").execute(problem, n_samples=3, eval_jac=True)
+    PyDOELibrary("fullfact").execute(problem, n_samples=3, eval_jac=True)
 
     data = problem.database.get_gradient_history("func")
 
@@ -2018,7 +2018,7 @@ def test_hdf_node_path(pow2_problem, tmp_wd):
         problem,
         "Augmented_Lagrangian_order_0",
         sub_solver_algorithm="SLSQP",
-        algo_options=algo_opts,
+        **algo_opts,
     )
     problem.to_hdf(file_name, hdf_node_path=node)
 

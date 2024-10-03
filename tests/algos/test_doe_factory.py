@@ -23,7 +23,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.algos.doe.lib_pydoe import PyDOE
+from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 
 
 @pytest.fixture
@@ -45,18 +45,18 @@ def test_algorithms(factory) -> None:
 
 def test_algo_names_to_libraries(factory) -> None:
     """Check that the property algo_names_to_libraries works."""
-    assert factory.algo_names_to_libraries["fullfact"] == "PyDOE"
+    assert factory.algo_names_to_libraries["fullfact"] == "PyDOELibrary"
 
 
 def test_libraries(factory) -> None:
     """Check that the property libraries works."""
-    assert {"CustomDOE", "DiagonalDOE", "PyDOE"} <= set(factory.libraries)
+    assert {"CustomDOE", "DiagonalDOE", "PyDOELibrary"} <= set(factory.libraries)
 
 
 def test_create_from_algo_name(factory) -> None:
     """Check that the method create works algorithm name."""
     lib = factory.create("fullfact")
-    assert isinstance(lib, PyDOE)
+    assert isinstance(lib, PyDOELibrary)
     assert lib._algo_name == "fullfact"
 
 
