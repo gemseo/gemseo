@@ -293,9 +293,9 @@ class OptimizationHistory:
             ValueError: When the database is empty.
         """
         self.__raise_when_database_is_empty()
-        data = self.__database.to_dataset(
-            self.__design_space, name="OptimizationProblem"
-        ).get_view(variable_names=names)
+        data = self.__database.to_dataset(name="OptimizationProblem").get_view(
+            variable_names=names
+        )
         data = data.to_dict(orient="list") if as_dict else data.to_numpy()
         if not filter_non_feasible:
             return data

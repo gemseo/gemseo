@@ -1,0 +1,2 @@
+- The function ``import_database`` can create either a ``Dataset`` or a ``Database`` from the HDF5 file storing the ``Database`` associated to an ``EvaluationProblem``.
+- ``Database`` has an optional argument called ``input_space`` to define the input space to which the input vectors belong; by default, this input space includes a unique variable called ``Database.DEFAULT_INPUT_NAME``.

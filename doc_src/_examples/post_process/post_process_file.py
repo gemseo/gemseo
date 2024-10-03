@@ -18,27 +18,41 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Post-process an HDF5 file
+"""Post-process an HDF5 file.
 =========================
 """
 
 from __future__ import annotations
 
 from gemseo import execute_post
+from gemseo import import_database
 
 # %%
-# We can post-process an HDF5 file
-# generated from an :class:`.OptimizationProblem` or a :class:`.Scenario`
-# with the function :func:`.execute_post`:
-execute_post("my_results.hdf", "BasicHistory", variable_names=["y"])
+# Given an HDF5 file
+# generated from an :class:`.EvaluationProblem`,
+# an :class:`.OptimizationProblem`
+# or a :class:`.Scenario`,
+# we can visualize the evaluation history using the function :func:`.execute_post`
+# and a specific visualization tool such as ``"BasicHistory"``:
+execute_post("my_results.hdf5", "BasicHistory", variable_names=["y_4"])
 
 # %%
 # .. note::
 #    By default, |g| saves the images on the disk.
-#    Use ``save=False`` to not save figures and ``show=True`` to display them on the screen.
+#    Use ``save=False`` to not save figures and ``show=True``
+#    to display them on the screen.
 #
+# We can also get the raw data as a :class:`.Database` from this HDF5 file:
+database = import_database("my_results.hdf5")
+
+# %%
+# and convert it into a :class:`.Dataset`` to handle it more easily
+# (see :ref:`this example <sphx_glr_examples_dataset_creation_plot_dataset.py>`):
+dataset = database.to_dataset()
+
+# %%
 # .. seealso::
 #
 #    - :ref:`sphx_glr_examples_post_process_save_from_scenario.py`,
-#    - :ref:`sphx_glr_examples_post_process_save_from_opt_problem.py`.
+#    - :ref:`sphx_glr_examples_post_process_save_from_opt_problem.py`,
+#    - :ref:`sphx_glr_examples_dataset_creation_plot_optimization_dataset.py`.

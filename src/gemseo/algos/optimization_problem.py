@@ -84,7 +84,6 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_squ
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.constraint_tolerances import ConstraintTolerances
 from gemseo.algos.database import Database
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.multiobjective_optimization_result import (
     MultiObjectiveOptimizationResult,
@@ -110,6 +109,8 @@ from gemseo.utils.string_tools import pretty_str
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from pathlib import Path
+
+    from gemseo.algos.design_space import DesignSpace
 
 
 LOGGER = logging.getLogger(__name__)
@@ -675,7 +676,6 @@ class OptimizationProblem(EvaluationProblem):
             if hdf_node_path:
                 h5file = h5file.require_group(hdf_node_path)
 
-            no_design_space = DesignSpace.DESIGN_SPACE_GROUP not in h5file
             if not append or self._OPT_DESCR_GROUP not in h5file:
                 opt_group = h5file.require_group(self._OPT_DESCR_GROUP)
                 for attr_name in self._OPTIM_DESCRIPTION:
@@ -711,12 +711,6 @@ class OptimizationProblem(EvaluationProblem):
 
         self.database.to_hdf(file_path, append=True, hdf_node_path=hdf_node_path)
 
-        # Design space shall remain the same in append mode
-        if not append or no_design_space:
-            self.design_space.to_hdf(
-                file_path, append=True, hdf_node_path=hdf_node_path
-            )
-
     @classmethod
     def from_hdf(
         cls,
@@ -742,8 +736,8 @@ class OptimizationProblem(EvaluationProblem):
             hdf_node_path,
         )
 
-        design_space = DesignSpace.from_file(file_path, hdf_node_path=hdf_node_path)
-        database = Database.from_hdf(file_path, hdf_node_path=hdf_node_path)
+        database = Database.from_hdf(file_path, hdf_node_path=hdf_node_path, log=False)
+        design_space = database.input_space
         problem = OptimizationProblem(design_space, database=database)
 
         with h5py.File(file_path) as h5file:
@@ -874,7 +868,6 @@ class OptimizationProblem(EvaluationProblem):
             input_group = output_group = gradient_group = Dataset.DEFAULT_GROUP
 
         return self.database.to_dataset(
-            self.design_space,
             name=name,
             export_gradients=export_gradients,
             input_values=input_values,

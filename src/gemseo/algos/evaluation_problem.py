@@ -152,7 +152,9 @@ class EvaluationProblem(BaseProblem):
         self.differentiation_step = differentiation_step
         self.__differentiation_method = None
         self.differentiation_method = differentiation_method
-        self.database = Database() if database is None else database
+        self.database = (
+            Database(input_space=design_space) if database is None else database
+        )
         self.design_space = design_space
         self.__initial_current_x = deepcopy(
             design_space.get_current_value(as_dict=True)
@@ -776,7 +778,6 @@ class EvaluationProblem(BaseProblem):
             input_group = output_group = gradient_group = Dataset.DEFAULT_GROUP
 
         return self.database.to_dataset(
-            self.design_space,
             name=name,
             export_gradients=export_gradients,
             input_values=input_values,

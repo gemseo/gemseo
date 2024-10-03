@@ -78,6 +78,7 @@ from gemseo import get_scenario_differentiation_modes
 from gemseo import get_scenario_inputs_schema
 from gemseo import get_scenario_options_schema
 from gemseo import get_surrogate_options_schema
+from gemseo import import_database
 from gemseo import import_discipline
 from gemseo import monitor_scenario
 from gemseo import print_configuration
@@ -1066,3 +1067,23 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
         "erase": True,
         "load": True,
     }
+
+
+@pytest.mark.parametrize(
+    ("file_path", "names", "size"),
+    [
+        ("database_from_database_default.hdf5", ["input"], 2),
+        ("database_from_database_custom.hdf5", ["a", "b"], 1),
+        ("database_from_problem.hdf5", ["x"], 2),
+    ],
+)
+def test_import_database(file_path, names, size, caplog):
+    """Check import_database."""
+    database = import_database(Path(__file__).parent / file_path)
+    assert isinstance(database, Database)
+    input_space = database.input_space
+    assert database.input_space.variable_names == names
+    for name in names:
+        assert input_space.get_size(name) == size
+
+    assert ("Importing the database" in caplog.text) is ("from_database" in file_path)

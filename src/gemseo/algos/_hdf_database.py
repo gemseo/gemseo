@@ -424,6 +424,12 @@ class HDFDatabase:
                     )
                     index_dataset += 1
 
+            input_space = database.input_space
+            if input_space and (
+                not append or input_space.DESIGN_SPACE_GROUP not in h5file
+            ):
+                input_space.to_hdf(file_path, append=True, hdf_node_path=hdf_node_path)
+
         self.__pending_arrays.clear()
 
     @staticmethod

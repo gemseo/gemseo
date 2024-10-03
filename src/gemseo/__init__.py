@@ -164,6 +164,7 @@ if TYPE_CHECKING:
         BaseAlgorithmLibrarySettings,
     )
     from gemseo.algos.base_driver_library import DriverLibrarySettingType
+    from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
@@ -172,6 +173,9 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.datasets.optimization_dataset import (
+        OptimizationDataset as OptimizationDataset,
+    )
     from gemseo.disciplines.surrogate import SurrogateDiscipline
     from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
         JobSchedulerDisciplineWrapper,
@@ -1838,6 +1842,37 @@ def create_benchmark_dataset(
         DatasetType.IRIS: create_iris_dataset,
         DatasetType.ROSENBROCK: create_rosenbrock_dataset,
     }[dataset_type](**options)
+
+
+def import_database(
+    file_path: str | Path,
+    hdf_node_path: str = "",
+) -> Database:
+    """Load a database from an HDF file path.
+
+    This file could be generated using
+    :meth:`.Database.to_hdf`,
+    :meth:`.OptimizationProblem.to_hdf`
+    or :meth:`.Scenario.save_optimization_history`.
+
+    Args:
+        file_path: The path of the HDF file.
+        hdf_node_path: The path of the HDF node from which
+            the database should be exported.
+            If empty, the root node is considered.
+
+    Returns:
+        The database.
+    """
+    from gemseo.algos.database import Database
+    from gemseo.algos.optimization_problem import OptimizationProblem
+
+    try:
+        return OptimizationProblem.from_hdf(
+            file_path, hdf_node_path=hdf_node_path
+        ).database
+    except KeyError:
+        return Database.from_hdf(file_path, hdf_node_path=hdf_node_path)
 
 
 def compute_doe(
