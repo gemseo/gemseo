@@ -142,7 +142,7 @@ tenacity==9.0.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
-tomli==2.0.1
+tomli==2.0.2
     # via
     #   coverage
     #   pytest
