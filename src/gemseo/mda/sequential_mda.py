@@ -153,7 +153,9 @@ class MDAGSNewton(MDASequential):
             grammar_type=grammar_type,
             use_lu_fact=use_lu_fact,
             coupling_structure=coupling_structure,
+            tolerance=tolerance,
             log_convergence=log_convergence,
+            linear_solver_tolerance=linear_solver_tolerance,
             linear_solver_options=linear_solver_options,
             **newton_mda_options,
         )
@@ -164,6 +166,7 @@ class MDAGSNewton(MDASequential):
             max_mda_iter=max_mda_iter,
             name=name,
             grammar_type=grammar_type,
+            tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             linear_solver=linear_solver,

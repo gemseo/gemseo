@@ -110,3 +110,20 @@ def test_sequential_mda_scaling_method() -> None:
     assert mda.scaling == BaseMDA.ResidualScaling.NO_SCALING
     assert mda1.scaling == BaseMDA.ResidualScaling.NO_SCALING
     assert mda2.scaling == BaseMDA.ResidualScaling.NO_SCALING
+
+
+def test_mda_gs_newton_tolerances() -> None:
+    """Check that the `tolerance` arguments are correctly propagated to the sub-MDAs."""
+    disciplines = [Sellar1(), Sellar2()]
+    tolerance = 1e-10
+    linear_solver_tolerance = 1e-15
+    mda = MDAGSNewton(
+        disciplines,
+        tolerance=tolerance,
+        linear_solver_tolerance=linear_solver_tolerance,
+    )
+    assert mda.tolerance == tolerance
+    assert mda.linear_solver_tolerance == linear_solver_tolerance
+    assert mda.mda_sequence[0].tolerance == tolerance
+    assert mda.mda_sequence[1].tolerance == tolerance
+    assert mda.mda_sequence[1].linear_solver_tolerance == linear_solver_tolerance
