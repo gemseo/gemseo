@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+import logging
 import sys
 from ast import literal_eval
 from collections.abc import Iterable
@@ -51,6 +52,7 @@ from numpy.linalg import norm
 from pandas import MultiIndex
 
 from gemseo.algos._hdf_database import HDFDatabase
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
@@ -62,7 +64,6 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.algos.design_space import DesignSpace
     from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
@@ -77,6 +78,8 @@ DatabaseValueType = Mapping[str, FunctionOutputValueType]
 
 ListenerType = Callable[[DatabaseKeyType], None]
 """The type of a listener attached to an :class:`.Database`."""
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Database(Mapping):
@@ -119,6 +122,10 @@ class Database(Mapping):
           if the types of the input variables are different,
           then they are promoted to the unique type that can represent all them,
           for instance integer would be promoted to float;
+          if the user does not provide any input space at instantiation,
+          after the first call to the :meth:`.store` method,
+          the :attr:`.input_space` will include a single variable
+          called :attr:`.DEFAULT_INPUT_NAME`, with the right dimension;
         * ``output_name``: either the name of the function
           that has been evaluated at ``x_vect``,
           the name of its gradient
@@ -132,6 +139,9 @@ class Database(Mapping):
 
     name: str
     """The name of the database."""
+
+    DEFAULT_INPUT_NAME: ClassVar[str] = "input"
+    """The default input name."""
 
     MISSING_VALUE_TAG: ClassVar[str] = "NA"
     """The tag for a missing value."""
@@ -154,20 +164,34 @@ class Database(Mapping):
     __hdf_database: HDFDatabase
     """The handler to export the database to a HDF file."""
 
-    def __init__(
-        self,
-        name: str = "",
-    ) -> None:
+    __input_space: DesignSpace
+    """The input space."""
+
+    def __init__(self, name: str = "", input_space: DesignSpace | None = None) -> None:
         """
         Args:
             name: The name to be given to the database.
                 If empty, use the class name.
+            input_space: The input space associated with this database.
+                If ``None``,
+                create a default ``DesignSpace``.
         """  # noqa: D205, D212, D415
         self.name = name or self.__class__.__name__
         self.__data = {}
         self.__store_listeners = []
         self.__new_iter_listeners = []
         self.__hdf_database = HDFDatabase()
+        self.__input_space = DesignSpace() if input_space is None else input_space
+
+    @property
+    def input_space(self) -> DesignSpace:
+        """The input space."""
+        if self and not self.__input_space:
+            self.__input_space.add_variable(
+                self.DEFAULT_INPUT_NAME, size=self.get_last_n_x_vect(1)[0].size
+            )
+
+        return self.__input_space
 
     @property
     def last_item(self) -> DatabaseValueType:
@@ -735,6 +759,7 @@ class Database(Mapping):
         file_path: str | Path = "optimization_history.h5",
         name: str = "",
         hdf_node_path: str = "",
+        log: bool = True,
     ) -> Database:
         """Create a database from an HDF file.
 
@@ -744,11 +769,22 @@ class Database(Mapping):
             hdf_node_path: The path of the HDF node from which
                 the database should be exported.
                 If empty, the root node is considered.
+            log: Whether to log the import of the database.
 
         Returns:
             The database defined in the file.
         """
-        database = cls(name)
+        if log:
+            LOGGER.info(
+                "Importing the database from the file %s at node %s",
+                file_path,
+                hdf_node_path,
+            )
+        try:
+            input_space = DesignSpace.from_file(file_path, hdf_node_path=hdf_node_path)
+        except KeyError:
+            input_space = None
+        database = cls(name, input_space=input_space)
         database.update_from_hdf(file_path, hdf_node_path=hdf_node_path)
         return database
 
@@ -950,7 +986,6 @@ class Database(Mapping):
 
     def to_dataset(
         self,
-        design_space: DesignSpace,
         name: str = "",
         export_gradients: bool = False,
         input_values: Iterable[RealArray] = (),
@@ -962,7 +997,6 @@ class Database(Mapping):
         """Export the database to a :class:`.Dataset`.
 
         Args:
-            design_space: The design space to which the input vector belongs.
             name: The name to be given to the dataset.
                 If empty,
                 use the name of the database.
@@ -981,15 +1015,16 @@ class Database(Mapping):
         dataset_name = name or self.name
 
         # Add database inputs
-        names_to_sizes = design_space.variable_sizes
+        input_history = array(self.get_x_vect_history())
+        input_space = self.input_space
+        names_to_sizes = input_space.variable_sizes
         names_to_types = {
             (input_group, name, component): dtype(
-                design_space.VARIABLE_TYPES_TO_DTYPES[type_]
+                input_space.VARIABLE_TYPES_TO_DTYPES[type_]
             )
-            for name, type_ in design_space.variable_types.items()
-            for component in range(design_space.get_size(name))
+            for name, type_ in input_space.variable_types.items()
+            for component in range(input_space.get_size(name))
         }
-        input_history = array(self.get_x_vect_history())
         n_samples = len(input_history)
         positions = []
         offset = 1 if issubclass(dataset_class, OptimizationDataset) else 0
@@ -1000,13 +1035,13 @@ class Database(Mapping):
         data = [input_history.real]
         columns = [
             (input_group, name, index)
-            for name in design_space
+            for name in input_space
             for index in range(names_to_sizes[name])
         ]
 
         # Add database outputs
         variable_names = self.get_function_names()
-        output_names = [name for name in variable_names if name not in design_space]
+        output_names = [name for name in variable_names if name not in input_space]
 
         self.__update_data_and_columns_for_dataset(
             data,
