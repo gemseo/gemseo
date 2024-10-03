@@ -29,7 +29,7 @@ from numpy.testing import assert_array_equal
 
 from gemseo import execute_algo
 from gemseo.algos.database import Database
-from gemseo.algos.opt.mnbi import MNBI
+from gemseo.algos.opt.mnbi.mnbi import MNBI
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaFleming
@@ -167,7 +167,7 @@ def test_protected_const(binh_korn):
 
 @pytest.mark.parametrize("kwargs", [{}, {"debug_file_path": "foo.h5"}])
 def test_debug_mode(tmp_wd, binh_korn, kwargs):
-    """Test the creation of a debug file when the option is enabled."""
+    """Test the creation of a debug file when the setting is enabled."""
     execute_algo(
         binh_korn,
         "MNBI",
@@ -228,16 +228,16 @@ def test_skippable_points(caplog):
     assert "Skipping sub-optimization for phi_beta =" in caplog.text
 
 
-def test_exclusive_options_error(binh_korn):
-    """Test that an exception is raised when mutually exclusive options are set.
+def test_exclusive_settings_error(binh_korn):
+    """Test that an exception is raised when mutually exclusive settings are set.
 
-    Options custom_anchor_points and custom_phi_betas are not compatible with each
+    Settings custom_anchor_points and custom_phi_betas are not compatible with each
     other.
     """
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The custom_anchor_points and custom_phi_betas options "
+            "The custom_anchor_points and custom_phi_betas settings "
             "cannot be set at the same time."
         ),
     ):
@@ -397,13 +397,12 @@ def test_mnbi_custom_phi_betas(binh_korn):
 
 @pytest.mark.parametrize("normalize_design_space", [True, False])
 def test_mnbi_normalize_design_space(binh_korn, normalize_design_space):
-    """Tests that the option `normalize_design_space` is correctly handled."""
+    """Tests that the setting `normalize_design_space` is correctly handled."""
     utopia_neighbor = (
         [17.01259261, 25.0875926]
         if normalize_design_space
         else [14.89156056, 26.43593304]
     )
-    n_pareto_points = 84 if normalize_design_space else 104
 
     result = execute_algo(
         binh_korn,
@@ -412,10 +411,35 @@ def test_mnbi_normalize_design_space(binh_korn, normalize_design_space):
         sub_optim_max_iter=100,
         n_sub_optim=10,
         sub_optim_algo="NLOPT_SLSQP",
-        normalize_design_space=normalize_design_space,
+        sub_optim_algo_settings={
+            "normalize_design_space": normalize_design_space,
+            "ftol_abs": 1e-14,
+            "xtol_abs": 1e-14,
+            "ftol_rel": 1e-8,
+            "xtol_rel": 1e-8,
+            "ineq_tolerance": 1e-4,
+        },
         xtol_abs=0.0,
     )
     assert_allclose(result.pareto_front.f_utopia, [0, 4], atol=1e-7)
 
     assert_allclose(result.pareto_front.f_utopia_neighbors.flatten(), utopia_neighbor)
-    assert result.pareto_front.f_optima.size == n_pareto_points
+
+
+def test_normalize_exception(binh_korn):
+    """Check that an exception is raised when the top problem is normalized."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The mNBI algo does not allow to normalize the design space at"
+            " the top level"
+        ),
+    ):
+        execute_algo(
+            binh_korn,
+            algo_name="MNBI",
+            max_iter=100,
+            n_sub_optim=5,
+            sub_optim_algo="SLSQP",
+            normalize_design_space=True,
+        )

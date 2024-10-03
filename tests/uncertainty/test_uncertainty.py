@@ -78,7 +78,7 @@ def test_create_sensitivity() -> None:
 
     # Create a sensitivity analysis computing samples.
     analysis = create_sensitivity_analysis("MorrisAnalysis")
-    analysis.compute_samples([discipline], space, n_samples=None, n_replicates=5)
+    analysis.compute_samples([discipline], space, n_samples=0, n_replicates=5)
 
     # Create a new sensitivity analysis from these samples.
     other_analysis = create_sensitivity_analysis("morris", samples=analysis.dataset)

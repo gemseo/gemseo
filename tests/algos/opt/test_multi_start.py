@@ -24,7 +24,7 @@ from numpy import vstack
 from numpy.testing import assert_almost_equal
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.multi_start import MultiStart
+from gemseo.algos.opt.multi_start.multi_start import MultiStart
 from gemseo.problems.optimization.power_2 import Power2
 
 if TYPE_CHECKING:

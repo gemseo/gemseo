@@ -26,17 +26,22 @@ from typing import Any
 
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
+from gemseo.algos.ode.base_ode_solver_library_settings import (
+    BaseODESolverLibrarySettings,
+)
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from gemseo.algos.ode.ode_problem import ODEProblem
+    from gemseo.algos.ode.ode_result import ODEResult
 
 LOGGER = logging.getLogger(__name__)
 
 
 class ODESolverDescription(AlgorithmDescription):
     """Description for the ODE solver."""
+
+    settings: type[BaseODESolverLibrarySettings] = BaseODESolverLibrarySettings
+    """The settings validation model."""
 
 
 class BaseODESolverLibrary(BaseAlgorithmLibrary):
@@ -45,18 +50,16 @@ class BaseODESolverLibrary(BaseAlgorithmLibrary):
     def _pre_run(
         self,
         problem: ODEProblem,
-        **options: Any,
+        **settings: Any,
     ) -> None:
-        problem.result.solver_options = options
+        problem.result.solver_options = settings
         problem.result.solver_name = self._algo_name
 
     def _post_run(
         self,
         problem: ODEProblem,
-        result: NDArray[float],
-        **options: Any,
+        result: ODEResult,
+        **settings: Any,
     ) -> None:  # noqa: D107
-        if not problem.result.is_converged:
-            LOGGER.warning(
-                "The ODE solver %s did not converge.", problem.result.solver_name
-            )
+        if not result.is_converged:
+            LOGGER.warning("The ODE solver %s did not converge.", result.solver_name)

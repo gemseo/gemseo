@@ -17,7 +17,7 @@ from __future__ import annotations
 from numpy import array
 from numpy.testing import assert_almost_equal
 
-from gemseo.algos.doe.oat_doe import OATDOE
+from gemseo.algos.doe.oat_doe.oat_doe import OATDOE
 
 
 def test_oat_doe():

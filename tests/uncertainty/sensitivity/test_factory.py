@@ -45,7 +45,7 @@ def test_create() -> None:
     factory = SensitivityAnalysisFactory()
     analysis = factory.create("MorrisAnalysis")
     samples = analysis.compute_samples(
-        (discipline,), space, n_replicates=5, n_samples=None
+        (discipline,), space, n_replicates=5, n_samples=0
     )
     other_analysis = factory.create("MorrisAnalysis", samples=samples)
     assert id(analysis.dataset) == id(other_analysis.dataset) == id(samples)

@@ -83,9 +83,9 @@ class DOEScenario(Scenario):
 
     def _run_algorithm(self) -> OptimizationResult:
         algo_name = self.local_data[self.ALGO]
-        options = self.local_data.get(self.ALGO_OPTIONS)
-        if options is None:
-            options = {}
+        settings = self.local_data.get(self.ALGO_OPTIONS)
+        if settings is None:
+            settings = {}
 
         # Store the lib in case we rerun the same algorithm,
         # for multilevel scenarios for instance
@@ -95,22 +95,20 @@ class DOEScenario(Scenario):
             lib = self._lib
         else:
             lib = self._algo_factory.create(algo_name)
-            lib._init_options_grammar()
             self._lib = lib
 
-        options = dict(options)
-        if self.N_SAMPLES in lib._option_grammar:
+        if self.N_SAMPLES in lib.ALGORITHM_INFOS[algo_name].settings.model_fields:
             n_samples = self.local_data.get(self.N_SAMPLES)
-            if self.N_SAMPLES in options:
+            if self.N_SAMPLES in settings:
                 LOGGER.warning(
-                    "Double definition of algorithm option n_samples, "
+                    "Double definition of algorithm setting n_samples, "
                     "keeping value: %s.",
                     n_samples,
                 )
-            options[self.N_SAMPLES] = n_samples
+            settings[self.N_SAMPLES] = n_samples
 
         self.optimization_result = lib.execute(
-            self.formulation.optimization_problem, **options
+            self.formulation.optimization_problem, **settings
         )
         self.__samples = lib.samples
         return self.optimization_result

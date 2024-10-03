@@ -17,7 +17,7 @@ from __future__ import annotations
 from numpy import array
 from numpy.testing import assert_almost_equal
 
-from gemseo.algos.doe.morris_doe import MorrisDOE
+from gemseo.algos.doe.morris_doe.morris_doe import MorrisDOE
 
 
 def test_doe_morris():

@@ -45,7 +45,7 @@ def test_exterior_penalty() -> None:
     """Tests exterior penalty compared to no aggregation."""
     algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
     problem_ref = create_problem()
-    execute_algo(problem_ref, algo_name="SLSQP", algo_options=algo_options)
+    execute_algo(problem_ref, algo_name="SLSQP", **algo_options)
     ref_sol = problem_ref.solution
 
     problem = create_problem()

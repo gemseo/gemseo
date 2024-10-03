@@ -75,7 +75,7 @@ def parameter_space() -> ParameterSpace:
 def morris(discipline, parameter_space):
     """Morris analysis for the Ishigami function."""
     analysis = MorrisAnalysis()
-    analysis.compute_samples([discipline], parameter_space, n_samples=None)
+    analysis.compute_samples([discipline], parameter_space, n_samples=0)
     analysis.compute_indices()
     return analysis
 
@@ -212,7 +212,7 @@ def test_normalize(morris) -> None:
         space.add_random_variable(**FUNCTION["distributions"][variable])
 
     analysis = MorrisAnalysis()
-    analysis.compute_samples([discipline], space, n_samples=None)
+    analysis.compute_samples([discipline], space, n_samples=0)
     analysis.compute_indices(normalize=True)
     for output_name, output_value in morris.indices.mu.items():
         lower = analysis.outputs_bounds[output_name][0]
@@ -264,9 +264,7 @@ def test_morris_multiple_disciplines() -> None:
     assert morris.dataset.n_samples == 1 + 3
 
 
-@pytest.mark.parametrize(
-    ("n_samples", "expected_n_samples"), [(None, 20), (8, 8), (9, 8)]
-)
+@pytest.mark.parametrize(("n_samples", "expected_n_samples"), [(0, 20), (8, 8), (9, 8)])
 def test_n_samples(discipline, parameter_space, n_samples, expected_n_samples) -> None:
     """Check the effect of n_samples."""
     n_calls = discipline.n_calls
@@ -307,7 +305,7 @@ def test_output_names() -> None:
     sensitivity_analysis.compute_samples(
         disciplines=[discipline],
         parameter_space=parameter_space,
-        n_samples=None,
+        n_samples=0,
         output_names=["y"],
     )
     sensitivity_analysis.compute_indices()

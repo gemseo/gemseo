@@ -34,9 +34,9 @@ from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space_utils import get_value_and_bounds
-from gemseo.algos.doe.lib_custom import CustomDOE
+from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.lib_scipy import ScipyOpt
+from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import concretize_classes
@@ -86,34 +86,6 @@ def test_empty_design_space() -> None:
         driver._check_algorithm(OptimizationProblem(DesignSpace()))
 
 
-def test_max_iter_fail(optimization_problem) -> None:
-    """Check that a ValueError is raised for an invalid `max_iter` input."""
-    with concretize_classes(MyDriver):
-        MyDriver()._pre_run(optimization_problem)
-    with pytest.raises(ValueError, match="max_iter must be >=1, got -1"):  # noqa: SIM117
-        with concretize_classes(MyDriver):
-            MyDriver()._init_iter_observer(optimization_problem, max_iter=-1)
-
-
-def test_grammar_fail() -> None:
-    """Check that a ValueError is raised when the grammar file is not found."""
-    BaseDriverLibrary.ALGORITHM_INFOS = {"unknown": None}
-    with (
-        concretize_classes(BaseDriverLibrary),
-        pytest.raises(
-            ValueError,
-            match=(
-                "Neither the options grammar file .+ for the algorithm 'unknown' "
-                "nor the options grammar file .+ for the library 'BaseDriverLibrary' "
-                "has been found."
-            ),
-        ),
-    ):
-        BaseDriverLibrary("unknown")
-
-    BaseDriverLibrary.ALGORITHM_INFOS = {}
-
-
 @pytest.mark.parametrize(
     ("kwargs", "expected"), [({}, "    50%|"), ({"message": "foo"}, "foo  50%|")]
 )
@@ -121,7 +93,7 @@ def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected) -> None
     """Test the new iteration callback."""
     test_driver = ScipyOpt("SLSQP")
     test_driver.problem = power_2
-    test_driver._max_time = 0
+    test_driver.__max_time = 0
     test_driver._init_iter_observer(power_2, max_iter=2, **kwargs)
     test_driver._new_iteration_callback(array([0, 0]))
     test_driver._new_iteration_callback(array([0, 0]))
@@ -141,22 +113,6 @@ def test_progress_bar(activate_progress_bar, caplog) -> None:
     assert (
         "Solving optimization problem with algorithm SLSQP" in caplog.text
     ) is activate_progress_bar
-
-
-def test_common_options() -> None:
-    """Check that the options common to all the drivers are in the option grammar."""
-    with concretize_classes(MyDriver):
-        driver = MyDriver()
-    driver._algo_name = "AlgoName"
-    driver._init_options_grammar()
-    assert driver._option_grammar.names == {
-        BaseDriverLibrary._ROUND_INTS_OPTION,
-        BaseDriverLibrary._NORMALIZE_DESIGN_SPACE_OPTION,
-        BaseDriverLibrary._USE_DATABASE_OPTION,
-        BaseDriverLibrary._STORE_JACOBIAN_OPTION,
-        "reset_iteration_counters",
-    }
-    assert not driver._option_grammar.required_names
 
 
 @pytest.fixture

@@ -384,7 +384,7 @@ def test_derivatives_on_design_boundaries(
     problem.objective = MDOFunction(lambda x: x**2, "my_objective")
 
     OptimizationLibraryFactory().execute(
-        problem, "SLSQP", max_iter=1, eval_jac=True, normalize_design_space=normalize
+        problem, "SLSQP", max_iter=1, normalize_design_space=normalize
     )
 
     grad = problem.database.get_gradient_history("my_objective")[0, 0]

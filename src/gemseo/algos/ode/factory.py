@@ -42,7 +42,7 @@ class ODESolverLibraryFactory(BaseAlgoFactory):
         self,
         problem: ODEProblem,
         algo_name: str = "RK45",
-        **options: Any,
+        **settings: Any,
     ) -> OptimizationResult:
         """Execute the solver.
 
@@ -52,10 +52,9 @@ class ODESolverLibraryFactory(BaseAlgoFactory):
         Args:
             problem: The ordinary differential equation that defines the problem
             algo_name: The algorithm name.
-            **options: The options for the algorithm,
-                see associated JSON file.
+            **settings: The settings for the algorithm.
 
         Returns:
             The solution.
         """
-        return super().execute(problem, algo_name, **options)
+        return super().execute(problem, algo_name, **settings)

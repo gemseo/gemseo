@@ -152,7 +152,7 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.base_driver_library import DriverLibraryOptionType
+    from gemseo.algos.base_driver_library import DriverLibrarySettingType
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import MDODiscipline
     from gemseo.datasets.io_dataset import IODataset
@@ -301,7 +301,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         n_samples: int,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DriverLibraryOptionType] = READ_ONLY_EMPTY_DICT,
+        algo_options: Mapping[str, DriverLibrarySettingType] = READ_ONLY_EMPTY_DICT,
         backup_settings: BackupSettings | None = None,
         formulation: str = "MDF",
         compute_second_order: bool = True,

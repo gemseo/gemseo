@@ -42,7 +42,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
-from gemseo.algos.doe.lib_openturns import OpenTURNS
+from gemseo.algos.doe.openturns.openturns import OpenTURNS
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 

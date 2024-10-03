@@ -38,10 +38,10 @@ from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.algos.doe.lib_custom import CustomDOE
-from gemseo.algos.doe.lib_pydoe import PyDOE
-from gemseo.algos.doe.lib_scipy import SciPyDOE
+from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
+from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
@@ -57,13 +57,13 @@ FACTORY = DOELibraryFactory()
 @pytest.fixture(scope="module")
 def lhs():
     """A PyDOE-based LHS."""
-    return PyDOE("lhs")
+    return PyDOELibrary("lhs")
 
 
 @pytest.fixture(scope="module")
 def fullfact():
     """A PyDOE-based full-factorial DOE."""
-    return PyDOE("fullfact")
+    return PyDOELibrary("fullfact")
 
 
 @pytest.fixture(scope="module")
@@ -225,7 +225,7 @@ def test_pre_run_debug(lhs, caplog) -> None:
     problem = Power2()
     lhs.execute(problem, n_samples=2)
     message = (
-        "The DOE algorithm lhs of PyDOE has generated 2 samples "
+        "The DOE algorithm lhs of PyDOELibrary has generated 2 samples "
         "in the input unit hypercube of dimension 3."
     )
     message_is_logged = False
@@ -247,10 +247,7 @@ def test_seed(algo_name) -> None:
     # The BaseDOELibrary has a seed and increments it
     # at the beginning of each execution.
     assert library.seed == 0
-    library.execute(
-        problem,
-        n_samples=2,
-    )
+    library.execute(problem, n_samples=2)
     assert library.seed == 1
     assert len(problem.database) == 2
 
@@ -261,10 +258,7 @@ def test_seed(algo_name) -> None:
     problem.reset(
         database=False, design_space=False, function_calls=False, preprocessing=False
     )
-    library.execute(
-        problem,
-        n_samples=2,
-    )
+    library.execute(problem, n_samples=2)
     assert library.seed == 2
     assert len(problem.database) == 4
 
@@ -276,7 +270,11 @@ def test_seed(algo_name) -> None:
     problem.reset(
         database=False, design_space=False, function_calls=False, preprocessing=False
     )
-    library.execute(problem, n_samples=2, seed=2)
+    if algo_name == "lhs":
+        library.execute(problem, n_samples=2, random_state=2)
+    else:
+        library.execute(problem, n_samples=2, seed=2)
+
     assert library.seed == 3
     # There is no new evaluation in the database:
     assert len(problem.database) == 4

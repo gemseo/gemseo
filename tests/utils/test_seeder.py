@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.doe.lib_pydoe import PyDOE
+from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.utils.seeder import SEED
 from gemseo.utils.seeder import Seeder
 
@@ -41,6 +41,6 @@ def test_setter():
     seeder = Seeder()
     seeder.default_seed = default_seed
     assert seeder.default_seed == default_seed
-    doe_library = PyDOE("lhs")
+    doe_library = PyDOELibrary("lhs")
     doe_library.seed = default_seed
     assert doe_library._seeder.default_seed == default_seed
