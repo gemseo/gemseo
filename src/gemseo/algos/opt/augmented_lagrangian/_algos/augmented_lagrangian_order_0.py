@@ -21,11 +21,11 @@ from typing import ClassVar
 
 from numpy import heaviside
 
+from gemseo.algos.opt.augmented_lagrangian._settings.augmented_lagrangian_order_0_settings import (  # noqa: E501
+    AugmentedLagrangianOrder0Settings,
+)
 from gemseo.algos.opt.augmented_lagrangian.penalty_heuristic import (
     AugmentedLagrangianPenaltyHeuristic,
-)
-from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings import (  # noqa: E501
-    AugmentedLagrangianOrder0Settings,
 )
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 

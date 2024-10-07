@@ -20,7 +20,7 @@ from numpy import inf
 from pydantic import Field
 from pydantic import PositiveFloat  # noqa: TCH002
 
-from gemseo.algos.ode.base_ode_solver_library_settings import (
+from gemseo.algos.ode._base_ode_solver_library_settings import (
     BaseODESolverLibrarySettings,
 )
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001

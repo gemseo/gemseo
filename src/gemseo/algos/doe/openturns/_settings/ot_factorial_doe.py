@@ -12,28 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the NLopt MMA algorithm."""
+"""Settings for the factorial DOE of the OpenTURNS library."""
 
 from __future__ import annotations
 
-from pydantic import Field  # noqa: TCH002
-from pydantic import NonNegativeInt  # noqa: TCH002
-
-from gemseo.algos.opt.gradient_based_algorithm_settings import (
-    GradientBasedAlgorithmSettings,
+from gemseo.algos.doe.openturns._settings.base_ot_stratified_doe import (
+    BaseOTStratifiedDOESettings,
 )
-from gemseo.algos.opt.nlopt._base_nlopt_settings import BaseNLoptSettings
 
 
-class MMASettings(BaseNLoptSettings, GradientBasedAlgorithmSettings):
-    """The settings for the NLopt MMA algorithm."""
-
-    inner_maxeval: NonNegativeInt = Field(
-        default=0,
-        description=(
-            """The maximum number of inner iterations of the algorithm.
-
-            The value 0 means that there is no limit.
-            """
-        ),
-    )
+class OTFactorialDOESettings(BaseOTStratifiedDOESettings):
+    """The settings for the factorial DOE of the OpenTURNS library."""

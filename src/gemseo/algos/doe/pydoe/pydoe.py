@@ -39,13 +39,13 @@ from pyDOE3.doe_plackett_burman import pbdesign
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
+from gemseo.algos.doe.pydoe._settings.bbdesign import BoxBehnkenDesignSettings
+from gemseo.algos.doe.pydoe._settings.ccdesign import CentralCompositeDesignSettings
+from gemseo.algos.doe.pydoe._settings.ff2n import TwoLevelFullFactorialSettings
+from gemseo.algos.doe.pydoe._settings.fullfact import FullFactorialSettings
+from gemseo.algos.doe.pydoe._settings.lhs import LHSSettings
+from gemseo.algos.doe.pydoe._settings.pbdesign import PlackettBurmanDesignSettings
 from gemseo.algos.doe.pydoe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
-from gemseo.algos.doe.pydoe.settings.bbdesign import BoxBehnkenDesignSettings
-from gemseo.algos.doe.pydoe.settings.ccdesign import CentralCompositeDesignSettings
-from gemseo.algos.doe.pydoe.settings.ff2n import TwoLevelFullFactorialSettings
-from gemseo.algos.doe.pydoe.settings.fullfact import FullFactorialSettings
-from gemseo.algos.doe.pydoe.settings.lhs import LHSSettings
-from gemseo.algos.doe.pydoe.settings.pbdesign import PlackettBurmanDesignSettings
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:

@@ -27,7 +27,7 @@ from pydantic import PositiveInt
 from scipy.sparse import sparray  # noqa: TCH002
 from scipy.sparse.linalg import LinearOperator  # noqa: TCH002
 
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (
+from gemseo.algos.linear_solvers._base_linear_solver_settings import (
     LinearSolverLibrarySettings,
 )
 from gemseo.utils.compatibility.scipy import SCIPY_LOWER_THAN_1_12

@@ -21,7 +21,7 @@ from functools import partial
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TCH002
 
-from gemseo.algos.opt.base_optimization_library_settings import (
+from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
 )
 from gemseo.utils.pydantic import copy_field

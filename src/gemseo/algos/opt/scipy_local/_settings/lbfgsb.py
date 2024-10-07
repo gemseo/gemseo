@@ -21,7 +21,7 @@ from pydantic import NonNegativeFloat  # noqa: TCH002
 from pydantic import NonNegativeInt  # noqa: TCH002
 from pydantic import PositiveInt  # noqa: TCH002
 
-from gemseo.algos.opt.gradient_based_algorithm_settings import (
+from gemseo.algos.opt._gradient_based_algorithm_settings import (
     GradientBasedAlgorithmSettings,
 )
 from gemseo.algos.opt.scipy_local._base_scipy_local_settings import (

@@ -20,7 +20,7 @@ from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
 
-from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
+from gemseo.algos._base_driver_library_settings import BaseDriverLibrarySettings
 
 
 class BaseOptimizationLibrarySettings(BaseDriverLibrarySettings):

@@ -63,12 +63,12 @@ from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.nlopt._base_nlopt_settings import BaseNLoptSettings
-from gemseo.algos.opt.nlopt.settings.bfgs_settings import BFGSSettings
-from gemseo.algos.opt.nlopt.settings.bobyqa_settings import BOBYQASettings
-from gemseo.algos.opt.nlopt.settings.cobyla_settings import COBYLASettings
-from gemseo.algos.opt.nlopt.settings.mma_settings import MMASettings
-from gemseo.algos.opt.nlopt.settings.newuoa_settings import NEWUOASettings
-from gemseo.algos.opt.nlopt.settings.slsqp_settings import SLSQPSettings
+from gemseo.algos.opt.nlopt._settings.bfgs_settings import BFGSSettings
+from gemseo.algos.opt.nlopt._settings.bobyqa_settings import BOBYQASettings
+from gemseo.algos.opt.nlopt._settings.cobyla_settings import COBYLASettings
+from gemseo.algos.opt.nlopt._settings.mma_settings import MMASettings
+from gemseo.algos.opt.nlopt._settings.newuoa_settings import NEWUOASettings
+from gemseo.algos.opt.nlopt._settings.slsqp_settings import SLSQPSettings
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 

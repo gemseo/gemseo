@@ -33,19 +33,19 @@ from numpy import real
 from scipy.optimize import minimize
 
 from gemseo.algos.design_space_utils import get_value_and_bounds
-from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
-from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimization_library_settings import (
+from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
 )
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.scipy_local._base_scipy_local_settings import (
     BaseScipyLocalSettings,
 )
-from gemseo.algos.opt.scipy_local.settings.cobyqa import COBYQASettings
-from gemseo.algos.opt.scipy_local.settings.lbfgsb import LBFGSBSettings
-from gemseo.algos.opt.scipy_local.settings.nelder_mead import NelderMeadSettings
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
-from gemseo.algos.opt.scipy_local.settings.tnc import TNCSettings
+from gemseo.algos.opt.scipy_local._settings.cobyqa import COBYQASettings
+from gemseo.algos.opt.scipy_local._settings.lbfgsb import LBFGSBSettings
+from gemseo.algos.opt.scipy_local._settings.nelder_mead import NelderMeadSettings
+from gemseo.algos.opt.scipy_local._settings.slsqp import SLSQPSettings
+from gemseo.algos.opt.scipy_local._settings.tnc import TNCSettings
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
 
 if TYPE_CHECKING:

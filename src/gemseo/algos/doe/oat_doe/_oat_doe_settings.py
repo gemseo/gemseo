@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from pydantic.types import PositiveFloat  # noqa: TCH002
 
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.doe._base_doe_library_settings import BaseDOELibrarySettings
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
 

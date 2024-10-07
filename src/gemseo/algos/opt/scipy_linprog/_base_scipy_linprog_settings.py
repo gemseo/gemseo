@@ -21,7 +21,7 @@ from pydantic import NonNegativeFloat  # noqa:TCH002
 from pydantic import PositiveInt  # noqa:TCH002
 from pydantic import model_validator
 
-from gemseo.algos.opt.base_optimization_library_settings import (
+from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
 )
 

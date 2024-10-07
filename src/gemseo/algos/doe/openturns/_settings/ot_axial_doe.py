@@ -12,12 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the ODE Solver library."""
+"""Settings for the axial DOE of the OpenTURNS library."""
 
 from __future__ import annotations
 
-from gemseo.algos.base_algorithm_library_settings import BaseAlgorithmLibrarySettings
+from gemseo.algos.doe.openturns._settings.base_ot_stratified_doe import (
+    BaseOTStratifiedDOESettings,
+)
 
 
-class BaseODESolverLibrarySettings(BaseAlgorithmLibrarySettings):
-    """Settings for the ODE Solver library."""
+class OTAxialDOESettings(BaseOTStratifiedDOESettings):
+    """The settings for the axial DOE of the OpenTURNS library."""

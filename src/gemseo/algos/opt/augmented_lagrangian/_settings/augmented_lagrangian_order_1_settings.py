@@ -12,17 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for DOE algorithms that require the definition of the number of samples."""
+"""Settings for the augmented Lagrangian of order 1 algorithm."""
 
 from __future__ import annotations
 
-from pydantic import Field
-from pydantic import PositiveInt  # noqa:TCH002
+from gemseo.algos.opt._gradient_based_algorithm_settings import (
+    GradientBasedAlgorithmSettings,
+)
+from gemseo.algos.opt.augmented_lagrangian._settings.penalty_heuristic_settings import (
+    PenaltyHeuristicSettings,
+)
 
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
 
-
-class NSamplesBasedDOESettings(BaseDOELibrarySettings):
-    """The settings for DOE algorithms that require a defined number of samples."""
-
-    n_samples: PositiveInt = Field(description="""The number of samples.""")
+class AugmentedLagrangianOrder1Settings(
+    PenaltyHeuristicSettings, GradientBasedAlgorithmSettings
+):
+    """The augmented Lagrangian of order 0 settings."""

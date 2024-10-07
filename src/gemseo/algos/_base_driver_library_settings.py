@@ -19,7 +19,7 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic.types import NonNegativeFloat  # noqa: TCH002
 
-from gemseo.algos.base_algorithm_library_settings import BaseAlgorithmLibrarySettings
+from gemseo.algos._base_algorithm_library_settings import BaseAlgorithmLibrarySettings
 
 
 class BaseDriverLibrarySettings(BaseAlgorithmLibrarySettings):

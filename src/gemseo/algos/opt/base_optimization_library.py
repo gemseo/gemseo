@@ -34,7 +34,7 @@ from numpy import isinf
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
-from gemseo.algos.opt.base_optimization_library_settings import (
+from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
 )
 from gemseo.algos.stop_criteria import DesignToleranceTester

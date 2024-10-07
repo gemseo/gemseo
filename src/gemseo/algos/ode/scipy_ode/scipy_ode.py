@@ -31,17 +31,17 @@ from typing import Final
 
 from scipy.integrate import solve_ivp
 
-from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
-from gemseo.algos.ode.base_ode_solver_library import ODESolverDescription
-from gemseo.algos.ode.base_ode_solver_library_settings import (
+from gemseo.algos.ode._base_ode_solver_library_settings import (
     BaseODESolverLibrarySettings,
 )
-from gemseo.algos.ode.scipy_ode.settings.bdf import BDFSettings
-from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853Settings
-from gemseo.algos.ode.scipy_ode.settings.lsoda import LSODASettings
-from gemseo.algos.ode.scipy_ode.settings.radau import RadauSettings
-from gemseo.algos.ode.scipy_ode.settings.rk23 import RK23Settings
-from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45Settings
+from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
+from gemseo.algos.ode.base_ode_solver_library import ODESolverDescription
+from gemseo.algos.ode.scipy_ode._settings.bdf import BDFSettings
+from gemseo.algos.ode.scipy_ode._settings.dop853 import DOP853Settings
+from gemseo.algos.ode.scipy_ode._settings.lsoda import LSODASettings
+from gemseo.algos.ode.scipy_ode._settings.radau import RadauSettings
+from gemseo.algos.ode.scipy_ode._settings.rk23 import RK23Settings
+from gemseo.algos.ode.scipy_ode._settings.rk45 import RK45Settings
 
 if TYPE_CHECKING:
     from gemseo.algos.ode.ode_problem import ODEProblem
