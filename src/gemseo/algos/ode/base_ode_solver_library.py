@@ -26,7 +26,7 @@ from typing import Any
 
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
-from gemseo.algos.ode.base_ode_solver_library_settings import (
+from gemseo.algos.ode._base_ode_solver_library_settings import (
     BaseODESolverLibrarySettings,
 )
 

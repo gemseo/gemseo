@@ -12,14 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the augmented Lagrangian of order 0 algorithm."""
+"""Settings for the composite DOE from the OpenTURNS library."""
 
 from __future__ import annotations
 
-from gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings import (
-    PenaltyHeuristicSettings,
+from gemseo.algos.doe.openturns._settings.base_ot_stratified_doe import (
+    BaseOTStratifiedDOESettings,
 )
 
 
-class AugmentedLagrangianOrder0Settings(PenaltyHeuristicSettings):
-    """The augmented Lagrangian of order 0 settings."""
+class OTCompositeDOESettings(BaseOTStratifiedDOESettings):
+    """The settings for the composite DOE from the OpenTURNS library."""

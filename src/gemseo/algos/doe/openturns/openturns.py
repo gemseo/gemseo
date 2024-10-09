@@ -52,30 +52,30 @@ from gemseo.algos.doe.openturns._algos.ot_reverse_halton_sequence import (
 from gemseo.algos.doe.openturns._algos.ot_sobol_doe import OTSobolDOE
 from gemseo.algos.doe.openturns._algos.ot_sobol_sequence import OTSobolSequence
 from gemseo.algos.doe.openturns._algos.ot_standard_lhs import OTStandardLHS
-from gemseo.algos.doe.openturns.settings.ot_axial_doe import OTAxialDOESettings
-from gemseo.algos.doe.openturns.settings.ot_centered_lhs import OTCenteredLHSSettings
-from gemseo.algos.doe.openturns.settings.ot_composite_doe import OTCompositeDOESettings
-from gemseo.algos.doe.openturns.settings.ot_factorial_doe import OTFactorialDOESettings
-from gemseo.algos.doe.openturns.settings.ot_faure import OTFaureSequenceSettings
-from gemseo.algos.doe.openturns.settings.ot_full_factorial_doe import (
+from gemseo.algos.doe.openturns._settings.ot_axial_doe import OTAxialDOESettings
+from gemseo.algos.doe.openturns._settings.ot_centered_lhs import OTCenteredLHSSettings
+from gemseo.algos.doe.openturns._settings.ot_composite_doe import OTCompositeDOESettings
+from gemseo.algos.doe.openturns._settings.ot_factorial_doe import OTFactorialDOESettings
+from gemseo.algos.doe.openturns._settings.ot_faure import OTFaureSequenceSettings
+from gemseo.algos.doe.openturns._settings.ot_full_factorial_doe import (
     OTFullFactorialDOESettings,
 )
-from gemseo.algos.doe.openturns.settings.ot_halton_sequence import (
+from gemseo.algos.doe.openturns._settings.ot_halton_sequence import (
     OTHaltonSequenceSettings,
 )
-from gemseo.algos.doe.openturns.settings.ot_haselgrove_sequence import (
+from gemseo.algos.doe.openturns._settings.ot_haselgrove_sequence import (
     OTHaselgroveSequenceSettings,
 )
-from gemseo.algos.doe.openturns.settings.ot_monte_carlo import OTMonteCarloSettings
-from gemseo.algos.doe.openturns.settings.ot_optimal_lhs import OTOptimalLHSSettings
-from gemseo.algos.doe.openturns.settings.ot_reverse_halton_sequence import (
+from gemseo.algos.doe.openturns._settings.ot_monte_carlo import OTMonteCarloSettings
+from gemseo.algos.doe.openturns._settings.ot_optimal_lhs import OTOptimalLHSSettings
+from gemseo.algos.doe.openturns._settings.ot_reverse_halton_sequence import (
     OTReverseHaltonSequenceSettings,
 )
-from gemseo.algos.doe.openturns.settings.ot_sobol_doe import OTSobolDOESettings
-from gemseo.algos.doe.openturns.settings.ot_sobol_sequence import (
+from gemseo.algos.doe.openturns._settings.ot_sobol_doe import OTSobolDOESettings
+from gemseo.algos.doe.openturns._settings.ot_sobol_sequence import (
     OTSobolSequenceSettings,
 )
-from gemseo.algos.doe.openturns.settings.ot_standard_lhs import OTStandardLHSSettings
+from gemseo.algos.doe.openturns._settings.ot_standard_lhs import OTStandardLHSSettings
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:

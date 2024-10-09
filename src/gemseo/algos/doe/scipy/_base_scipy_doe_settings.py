@@ -21,7 +21,7 @@ from enum import IntEnum
 from pydantic import Field
 from strenum import StrEnum
 
-from gemseo.algos.doe.n_samples_based_doe_settings import NSamplesBasedDOESettings
+from gemseo.algos.doe._n_samples_based_doe_settings import NSamplesBasedDOESettings
 
 
 class Hypersphere(StrEnum):

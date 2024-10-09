@@ -21,7 +21,7 @@ from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
 
-from gemseo.algos.opt.base_optimization_library_settings import (
+from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
 )
 

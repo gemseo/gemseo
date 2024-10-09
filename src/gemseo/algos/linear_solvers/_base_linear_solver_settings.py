@@ -12,14 +12,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the axial DOE of the OpenTURNS library."""
+"""Settings for the linear solvers."""
 
 from __future__ import annotations
 
-from gemseo.algos.doe.openturns.settings.base_ot_stratified_doe import (
-    BaseOTStratifiedDOESettings,
-)
+from pydantic import Field
+
+from gemseo.algos._base_algorithm_library_settings import BaseAlgorithmLibrarySettings
 
 
-class OTAxialDOESettings(BaseOTStratifiedDOESettings):
-    """The settings for the axial DOE of the OpenTURNS library."""
+class LinearSolverLibrarySettings(BaseAlgorithmLibrarySettings):
+    """The settings common to all the linear solver libraries."""
+
+    store_residuals: bool = Field(
+        default=False,
+        description="""Whether to store the residual norms at each iterations.""",
+    )
+
+    use_ilu_precond: bool = Field(
+        default=False,
+        description="Whether to use an incomplete LU factorization as preconditioner.",
+    )
+
+    save_when_fail: bool = Field(
+        default=False,
+        description="Whether to use an incomplete LU factorization as preconditioner.",
+    )

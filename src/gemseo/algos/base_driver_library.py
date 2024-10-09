@@ -49,6 +49,7 @@ from typing import Union
 
 from numpy import ndarray
 
+from gemseo.algos._base_driver_library_settings import BaseDriverLibrarySettings
 from gemseo.algos._progress_bars.custom_tqdm_progress_bar import LOGGER as TQDM_LOGGER
 from gemseo.algos._progress_bars.dummy_progress_bar import DummyProgressBar
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
@@ -56,7 +57,6 @@ from gemseo.algos._progress_bars.unsuffixed_progress_bar import UnsuffixedProgre
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
-from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.algos.stop_criteria import DesvarIsNan

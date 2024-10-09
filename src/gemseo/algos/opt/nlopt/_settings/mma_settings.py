@@ -12,15 +12,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the NLopt BFGS algorithm."""
+"""Settings for the NLopt MMA algorithm."""
 
 from __future__ import annotations
 
-from gemseo.algos.opt.gradient_based_algorithm_settings import (
+from pydantic import Field  # noqa: TCH002
+from pydantic import NonNegativeInt  # noqa: TCH002
+
+from gemseo.algos.opt._gradient_based_algorithm_settings import (
     GradientBasedAlgorithmSettings,
 )
 from gemseo.algos.opt.nlopt._base_nlopt_settings import BaseNLoptSettings
 
 
-class BFGSSettings(BaseNLoptSettings, GradientBasedAlgorithmSettings):
-    """The settings for the NLopt BFGS algorithm."""
+class MMASettings(BaseNLoptSettings, GradientBasedAlgorithmSettings):
+    """The settings for the NLopt MMA algorithm."""
+
+    inner_maxeval: NonNegativeInt = Field(
+        default=0,
+        description=(
+            """The maximum number of inner iterations of the algorithm.
+
+            The value 0 means that there is no limit.
+            """
+        ),
+    )

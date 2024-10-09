@@ -30,9 +30,9 @@ from typing import ClassVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
+from gemseo.algos._base_algorithm_library_settings import BaseAlgorithmLibrarySettings
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.base_algorithm_library_settings import BaseAlgorithmLibrarySettings
-from gemseo.algos.opt.gradient_based_algorithm_settings import (
+from gemseo.algos.opt._gradient_based_algorithm_settings import (
     GradientBasedAlgorithmSettings,
 )
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta

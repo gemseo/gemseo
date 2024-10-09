@@ -35,7 +35,7 @@ from scipy.sparse.linalg import spilu
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (
+from gemseo.algos.linear_solvers._base_linear_solver_settings import (
     LinearSolverLibrarySettings,
 )
 

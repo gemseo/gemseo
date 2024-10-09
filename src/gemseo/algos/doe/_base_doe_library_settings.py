@@ -24,7 +24,7 @@ from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TCH002
 from pydantic import PositiveInt  # noqa:TCH002
 
-from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
+from gemseo.algos._base_driver_library_settings import BaseDriverLibrarySettings
 from gemseo.algos.evaluation_problem import EvaluationType  # noqa:TCH001
 
 

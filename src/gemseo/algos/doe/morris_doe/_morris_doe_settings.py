@@ -21,7 +21,7 @@ from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.doe._base_doe_library_settings import BaseDOELibrarySettings
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
 

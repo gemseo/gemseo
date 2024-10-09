@@ -26,7 +26,7 @@ from pydantic import PositiveInt
 from pydantic import field_validator
 from pydantic import model_validator
 
-from gemseo.algos.opt.base_optimization_library_settings import (
+from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
 )
 from gemseo.typing import StrKeyMapping  # noqa: TCH001

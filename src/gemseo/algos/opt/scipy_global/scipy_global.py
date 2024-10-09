@@ -40,19 +40,19 @@ from scipy.optimize import dual_annealing
 from scipy.optimize import shgo
 
 from gemseo.algos.design_space_utils import get_value_and_bounds
-from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
-from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimization_library_settings import (
+from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
 )
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.scipy_global._base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
 )
-from gemseo.algos.opt.scipy_global.settings.differential_evolution import (
+from gemseo.algos.opt.scipy_global._settings.differential_evolution import (
     DifferentialEvolutionSettings,
 )
-from gemseo.algos.opt.scipy_global.settings.dual_annealing import DualAnnealingSettings
-from gemseo.algos.opt.scipy_global.settings.shgo import SHGOSettings
+from gemseo.algos.opt.scipy_global._settings.dual_annealing import DualAnnealingSettings
+from gemseo.algos.opt.scipy_global._settings.shgo import SHGOSettings
 
 if TYPE_CHECKING:
     from collections.abc import Callable

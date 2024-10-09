@@ -43,7 +43,7 @@ from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
 from gemseo.algos.base_driver_library import DriverLibrarySettingType
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.doe._base_doe_library_settings import BaseDOELibrarySettings
 from gemseo.algos.evaluation_problem import EvaluationType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME

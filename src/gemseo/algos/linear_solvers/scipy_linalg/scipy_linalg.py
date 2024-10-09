@@ -41,25 +41,25 @@ from scipy.sparse.linalg import lgmres
 from scipy.sparse.linalg import splu
 from scipy.sparse.linalg import tfqmr
 
+from gemseo.algos.linear_solvers._base_linear_solver_settings import (
+    LinearSolverLibrarySettings,
+)
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     BaseLinearSolverLibrary,
 )
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     LinearSolverDescription,
 )
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (
-    LinearSolverLibrarySettings,
-)
 from gemseo.algos.linear_solvers.scipy_linalg._base_scipy_linalg_settings import (
     BaseSciPyLinalgSettings,
 )
-from gemseo.algos.linear_solvers.scipy_linalg.settings.bicg import BICGSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.bicgstab import BICGStabSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.cg import CGSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.cgs import CGSSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot import GCROTSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.gmres import GMRESSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRESSettings
+from gemseo.algos.linear_solvers.scipy_linalg._settings.bicg import BICGSettings
+from gemseo.algos.linear_solvers.scipy_linalg._settings.bicgstab import BICGStabSettings
+from gemseo.algos.linear_solvers.scipy_linalg._settings.cg import CGSettings
+from gemseo.algos.linear_solvers.scipy_linalg._settings.cgs import CGSSettings
+from gemseo.algos.linear_solvers.scipy_linalg._settings.gcrot import GCROTSettings
+from gemseo.algos.linear_solvers.scipy_linalg._settings.gmres import GMRESSettings
+from gemseo.algos.linear_solvers.scipy_linalg._settings.lgmres import LGMRESSettings
 from gemseo.utils.compatibility.scipy import TOL_OPTION
 from gemseo.utils.compatibility.scipy import array_classes
 

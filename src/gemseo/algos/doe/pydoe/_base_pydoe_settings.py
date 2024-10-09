@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.doe._base_doe_library_settings import BaseDOELibrarySettings
 
 
 class BasePyDOESettings(BaseDOELibrarySettings):

@@ -12,29 +12,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the linear solvers."""
+"""Settings for the NLopt SLSQP algorithm."""
 
 from __future__ import annotations
 
-from pydantic import Field
+from gemseo.algos.opt._gradient_based_algorithm_settings import (
+    GradientBasedAlgorithmSettings,
+)
+from gemseo.algos.opt.nlopt._base_nlopt_settings import BaseNLoptSettings
 
-from gemseo.algos.base_algorithm_library_settings import BaseAlgorithmLibrarySettings
 
-
-class LinearSolverLibrarySettings(BaseAlgorithmLibrarySettings):
-    """The settings common to all the linear solver libraries."""
-
-    store_residuals: bool = Field(
-        default=False,
-        description="""Whether to store the residual norms at each iterations.""",
-    )
-
-    use_ilu_precond: bool = Field(
-        default=False,
-        description="Whether to use an incomplete LU factorization as preconditioner.",
-    )
-
-    save_when_fail: bool = Field(
-        default=False,
-        description="Whether to use an incomplete LU factorization as preconditioner.",
-    )
+class SLSQPSettings(BaseNLoptSettings, GradientBasedAlgorithmSettings):
+    """The settings for the NLopt SLSQP algorithm."""

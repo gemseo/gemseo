@@ -35,11 +35,11 @@ from scipy.optimize import milp
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space_utils import get_value_and_bounds
-from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
-from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimization_library_settings import (
+from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
 )
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.scipy_milp._scipy_milp_settings import SciPyMILPSettings
 from gemseo.algos.optimization_result import OptimizationResult
