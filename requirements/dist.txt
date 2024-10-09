@@ -4,7 +4,7 @@ annotated-types==0.7.0
     # via pydantic
 attrs==24.2.0
     # via check-wheel-contents
-build==1.2.2
+build==1.2.2.post1
     # via -r requirements/dist.in
 certifi==2024.8.30
     # via requests

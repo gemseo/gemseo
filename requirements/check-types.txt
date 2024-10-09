@@ -6,11 +6,11 @@ mypy==1.11.2
     # via -r requirements/check-types.in
 mypy-extensions==1.0.0
     # via mypy
-numpy==2.1.1
+numpy==2.1.2
     # via pandas-stubs
 pandas-stubs==2.2.2.240909
     # via -r requirements/check-types.in
-types-pytz==2024.2.0.20240913
+types-pytz==2024.2.0.20241003
     # via pandas-stubs
 typing-extensions==4.12.2
     # via mypy
