@@ -813,7 +813,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         if not isinstance(self.cache, SimpleCache):
             to_value = self.input_grammar.data_converter.convert_array_to_value
             for input_name, input_value in self.__get_cached_outputs(cached_outputs):
-                self.local_data[input_name] = to_value(input_name, input_value)
+                self.store_local_data(**{input_name: to_value(input_name, input_value)})
         else:
             self.local_data.update(dict(self.__get_cached_outputs(cached_outputs)))
 
