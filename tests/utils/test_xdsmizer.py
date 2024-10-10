@@ -37,18 +37,25 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
+from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDODiscipline
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.scenario import Scenario
+from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.utils.xdsm_to_pdf import XDSM
 from gemseo.utils.xdsmizer import EdgeType
 from gemseo.utils.xdsmizer import NodeType
 from gemseo.utils.xdsmizer import XDSMizer
@@ -59,7 +66,6 @@ from ..mda.test_mda import analytic_disciplines_from_desc
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from gemseo.scenarios.scenario import Scenario
     from gemseo.typing import StrKeyMapping
 
 
@@ -551,19 +557,20 @@ def test_xdsmized_parallel_chain_of_mda(options) -> None:
     assert_xdsm(sce, **options("xdsmized_parallel_chain_of_mda"))
 
 
-def assert_xdsm(scenario: Scenario, **options: StrKeyMapping) -> None:
+def assert_xdsm(discipline: MDODiscipline, **options: StrKeyMapping) -> None:
     """Build and check the XDSM representation generated from a scenario.
 
     Check both html and tikz generation.
 
     Args:
-        scenario: The scenario from which the XDSM is generated.
+        discipline: The discipline from which the XDSM is generated.
         **options: The options for the XDSMizer.
     """
     fname = options["file_name"]
     tmp_path = options["directory_path"]
+    options["pdf_cleanup"] = False
 
-    xdsmizer = XDSMizer(scenario)
+    xdsmizer = XDSMizer(discipline)
     xdsmizer.run(**options)
 
     assert_xdsm_json_file_ok(str(tmp_path / fname), fname)
@@ -713,6 +720,7 @@ def test_xdsmize_mdf_mdoparallelchain(options) -> None:
 @pytest.mark.parametrize("save_html", [False, True])
 def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
     """Check the object returned by XDSMizer.run()."""
+
     directory_path = tmp_wd / directory_path
 
     design_space = DesignSpace()
@@ -743,3 +751,80 @@ def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
         html_file_path = xdsm.html_file_path
         assert html_file_path.exists()
         assert html_file_path.name == html_file_name
+
+
+def test_mda_chain(options) -> None:
+    """Test the XDSM representation of an MDAChain."""
+    mda_chain = MDAChain([Sellar1(), Sellar2(), SellarSystem()])
+    assert_xdsm(mda_chain, **options("xdsmized_mda_chain"))
+
+
+def test_discipline(options) -> None:
+    """Test the XDSM representation of a simple discipline."""
+    assert_xdsm(Sellar1(), **options("xdsmized_sellar_1"))
+
+
+class NewScenario(Scenario):
+    """This is neither an MDOScenario nor a DOE Scenario.
+
+    To be used by test_initial_node_title.
+    """
+
+    def auto_get_grammar_file(
+        self,
+        is_input: bool = True,
+        name: str | None = None,
+        comp_dir: str | Path | None = None,
+    ) -> Path: ...
+
+    def _init_algo_factory(self) -> None: ...
+
+    def _update_input_grammar(self) -> None: ...
+
+
+@pytest.mark.parametrize(
+    ("cls", "expected"),
+    [(MDOScenario, "Optimizer"), (DOEScenario, "DOE"), (NewScenario, "foo")],
+)
+def test_initial_node_title(cls, expected):
+    """Check the title of the initial node."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    discipline = AnalyticDiscipline({"y": "x"})
+    with concretize_classes(cls):
+        scenario = cls([discipline], "DisciplinaryOpt", "y", design_space, name="foo")
+
+    xdsmizer = XDSMizer(scenario)
+    assert xdsmizer._scenario_node_title == expected
+
+
+def write(self, file_name, build=True, cleanup=True, quiet=False, outdir="."):
+    """Mocks the method pyxdsm.XDSM.write so as not to depend on pdflatex."""
+    extensions = {"tex", "tikz"}
+    if build:
+        extensions.update({"pdf"})
+        if not cleanup:
+            extensions.update({"aux"})
+
+    for extension in extensions:
+        with (Path(outdir) / f"{file_name}.{extension}").open("w") as f:
+            f.write("foo")
+
+
+@pytest.mark.parametrize("pdf_cleanup", [False, True])
+@pytest.mark.parametrize("pdf_build", [False, True])
+def test_cleanup(tmp_wd, pdf_cleanup, pdf_build, monkeypatch):
+    """Check the pdf_cleanup and pdf_build options."""
+    xdsmizer = XDSMizer(Sellar1())
+    monkeypatch.setattr(XDSM, "write", write)
+    xdsmizer.run(
+        save_pdf=True,
+        pdf_cleanup=pdf_cleanup,
+        pdf_build=pdf_build,
+        directory_path=tmp_wd,
+    )
+
+    assert Path("xdsm.pdf").exists() is pdf_build
+    assert Path("xdsm.tikz").exists() is (not pdf_cleanup or pdf_build)
+    assert Path("xdsm.tex").exists() is (not pdf_cleanup or pdf_build)
+    assert Path("xdsm.aux").exists() is (pdf_build and not pdf_cleanup)

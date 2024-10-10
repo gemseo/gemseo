@@ -54,6 +54,7 @@ from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
+from gemseo import generate_xdsm
 from gemseo import get_algorithm_features
 from gemseo import get_algorithm_options_schema
 from gemseo import get_available_caches
@@ -96,6 +97,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -104,6 +106,8 @@ from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import MultiLineStreamHandler
+from gemseo.utils.xdsm import XDSM
+from gemseo.utils.xdsmizer import XDSMizer
 
 if TYPE_CHECKING:
     from gemseo.scenarios.mdo_scenario import MDOScenario
@@ -1067,6 +1071,55 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
         "erase": True,
         "load": True,
     }
+
+
+def test_generate_xdsm():
+    """Verify that generate_xdsm works correctly."""
+    with mock.patch.object(XDSMizer, "run") as run:
+        generate_xdsm(Sellar1())
+
+    assert run.call_args.kwargs == {
+        "directory_path": ".",
+        "file_name": "xdsm",
+        "pdf_batchmode": True,
+        "pdf_build": True,
+        "pdf_cleanup": True,
+        "save_html": True,
+        "save_json": False,
+        "save_pdf": False,
+        "show_html": False,
+    }
+
+    with mock.patch.object(XDSMizer, "run") as run:
+        generate_xdsm(
+            Sellar1(),
+            directory_path="a",
+            file_name="b",
+            show_html="c",
+            save_html="d",
+            save_json="e",
+            save_pdf="f",
+            pdf_build="g",
+            pdf_cleanup="h",
+            pdf_batchmode="i",
+        )
+
+    assert run.call_args.kwargs == {
+        "directory_path": "a",
+        "file_name": "b",
+        "pdf_batchmode": "i",
+        "pdf_build": "g",
+        "pdf_cleanup": "h",
+        "save_html": "d",
+        "save_json": "e",
+        "save_pdf": "f",
+        "show_html": "c",
+    }
+
+
+def test_generate_xdsm_return():
+    """Verify that generate_xdsm returns an XDSM."""
+    assert isinstance(generate_xdsm(Sellar1()), XDSM)
 
 
 @pytest.mark.parametrize(

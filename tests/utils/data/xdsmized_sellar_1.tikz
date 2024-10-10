@@ -13,30 +13,16 @@
 
 %%% End Preamble Requirements %%%
 
-\input{"C:/Users/nicolas.roussouly/Code/GEMSEO/gemseo_fork/.tox/py39/lib/site-packages/pyxdsm/diagram_styles"}
+\input{"C:/Users/matthias.delozzo/workspace/GEMSEO/gemseo/.tox/py39/.venv/lib/site-packages/pyxdsm/diagram_styles"}
 \begin{tikzpicture}
 
 \matrix[MatrixSetup]{
 %Row 0
-&
-\node [DataIO] (output_Opt) {$n^{(0)}$};&
-&
-\\
+\node [Optimization] (Opt) {$\text{1,3-2:Caller}$};&
+\node [DataInter] (Opt-Dis1) {$gamma,  x\_1..., (4)$};\\
 %Row 1
-\node [DataIO] (left_output_Opt) {$z^*$};&
-\node [Optimization] (Opt) {$\text{1,3-2:DOE}$};&
-&
-\\
-%Row 2
-&
-&
-\node [SubOptimization] (Dis1) {$\text{2:MDOScenario\_scn-1-1}$};&
-\\
-%Row 3
-&
-&
-&
-\\
+\node [DataInter] (Dis1-Opt) {$y\_1$};&
+\node [Function] (Dis1) {$\text{2:Sellar1}$};\\
 };
 
 % XDSM process chains
@@ -55,9 +41,13 @@
 \begin{pgfonlayer}{data}
 \path
 % Horizontal edges
-(Opt) edge [DataLine] (left_output_Opt)
+(Opt) edge [DataLine] (Opt-Dis1)
+(Dis1) edge [DataLine] (Dis1-Opt)
+(Dis1) edge [DataLine] (Dis1-Opt)
 % Vertical edges
-(Opt) edge [DataLine] (output_Opt);
+(Opt-Dis1) edge [DataLine] (Dis1)
+(Dis1-Opt) edge [DataLine] (Opt)
+(Dis1-Opt) edge [DataLine] (Opt);
 \end{pgfonlayer}
 
 \end{tikzpicture}

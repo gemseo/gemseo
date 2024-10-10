@@ -39,7 +39,7 @@ class XDSMToPDFConverter:
     def convert(
         self,
         xdsm_data: dict[str, Any],
-        directory_path: str | Path,
+        directory_path: Path,
         file_name: str,
         scenario: str,
         build: bool = True,
@@ -54,8 +54,9 @@ class XDSMToPDFConverter:
             file_name: The name of the output file.
             scenario: The name of the scenario.
             build: Whether the standalone pdf of the XDSM will be built.
-            cleanup: Whether pdflatex built files will be cleaned up
-                after build is complete.
+            cleanup: Whether the intermediate files
+                (``file_name.tex``, ``file_name.tikz`` and built files)
+                will be cleaned up after the PDF is created.
             batchmode: Whether pdflatex is run in `batchmode`.
         """
         workflow = xdsm_data[scenario]["workflow"][1]
@@ -73,6 +74,9 @@ class XDSMToPDFConverter:
             cleanup=cleanup,
             quiet=batchmode,
         )
+        if cleanup and not build:
+            (directory_path / f"{file_name}.tex").unlink()
+            (directory_path / f"{file_name}.tikz").unlink()
 
         if build and (
             not (Path(directory_path) / file_name).with_suffix(".pdf").exists()
@@ -271,7 +275,7 @@ class XDSMToPDFConverter:
 
 def xdsm_data_to_pdf(
     xdsm_data: dict[str, Any],
-    directory_path: Path | str,
+    directory_path: Path,
     file_name: str = "xdsm",
     scenario: str = "root",
     pdf_build: bool = True,
@@ -285,15 +289,16 @@ def xdsm_data_to_pdf(
         directory_path: The output directory where the pdf is generated.
         file_name: The output file name (without extension).
         scenario: The name of the scenario name.
-        pdf_build: Whether the standalone pdf of the XDSM will be built.
-        pdf_cleanup: Whether pdflatex built files will be cleaned up
-            after build is complete.
+        pdf_build: Whether the standalone PDF of the XDSM will be built.
+        pdf_cleanup: Whether intermediate files
+            (``file_name.tex``, ``file_name.tikz`` and built files)
+            will be cleaned up after build is complete.
         pdf_batchmode: Whether pdflatex is run in `batchmode`.
     """
     converter = XDSMToPDFConverter()
     converter.convert(
         xdsm_data,
-        str(directory_path),
+        directory_path,
         file_name,
         scenario,
         pdf_build,

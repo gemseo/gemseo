@@ -1,0 +1,132 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Caller",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDAJacobi",
+        "type": "mda"
+      },
+      {
+        "id": "Dis2",
+        "name": "Sellar1",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis3",
+        "name": "Sellar2",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis4",
+        "name": "SellarSystem",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "gamma, x_1, x_2, x_shared, y_1, y_2"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "MDA residuals norm, y_1, y_2"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "gamma, x_1, x_shared, y_2"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "y_1"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis3",
+        "name": "x_2, x_shared, y_1"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "y_2"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis4",
+        "name": "alpha, beta, x_1, x_2, x_shared, y_1, y_2"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "c_1, c_2, obj"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "y_1"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "y_2"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "obj, c_1, c_2"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis4",
+        "name": "y_1, y_2"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis2",
+        "name": "y_2"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis1",
+        "name": "y_1"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis3",
+        "name": "y_1"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis1",
+        "name": "y_2"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          [
+            {
+              "parallel": [
+                "Dis2",
+                "Dis3"
+              ]
+            }
+          ],
+          "Dis4"
+        ]
+      ]
+    ],
+    "optpb": ""
+  }
+}

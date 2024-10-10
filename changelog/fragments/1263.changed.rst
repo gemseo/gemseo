@@ -1,0 +1,1 @@
+XDSM: the ``pdf_cleanup`` option removes all intermediate files, including .tikz and .tex files.

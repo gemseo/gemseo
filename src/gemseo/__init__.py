@@ -191,6 +191,7 @@ if TYPE_CHECKING:
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
+    from gemseo.utils.xdsm import XDSM
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from this root module.
@@ -2261,6 +2262,54 @@ def sample_disciplines(
     })
     return scenario.formulation.optimization_problem.to_dataset(
         name=name, opt_naming=False, export_gradients=True
+    )
+
+
+def generate_xdsm(
+    discipline: MDODiscipline,
+    directory_path: str | Path = ".",
+    file_name: str = "xdsm",
+    show_html: bool = False,
+    save_html: bool = True,
+    save_json: bool = False,
+    save_pdf: bool = False,
+    pdf_build: bool = True,
+    pdf_cleanup: bool = True,
+    pdf_batchmode: bool = True,
+) -> XDSM:
+    """Create the XDSM diagram of a discipline.
+
+    Args:
+        directory_path: The path of the directory to save the files.
+        file_name: The file name without the file extension.
+        show_html: Whether to open the web browser and display the XDSM.
+        save_html: Whether to save the XDSM as a HTML file.
+        save_json: Whether to save the XDSM as a JSON file.
+        save_pdf: Whether to save the XDSM as a PDF file;
+            use ``save_pdf=True`` and ``pdf_build=False``
+            to generate the ``file_name.tex`` and ``file_name.tikz`` files
+            without building the PDF file.
+        pdf_build: Whether to generate the PDF file when ``save_pdf`` is ``True``.
+        pdf_cleanup: Whether to clean up the intermediate files
+            (``file_name.tex``, ``file_name.tikz`` and built files)
+            used to build the PDF file.
+        pdf_batchmode: Whether pdflatex is run in `batchmode`.
+
+    Returns:
+        The XDSM diagram of the discipline.
+    """
+    from gemseo.utils.xdsmizer import XDSMizer
+
+    return XDSMizer(discipline).run(
+        directory_path=directory_path,
+        save_pdf=save_pdf,
+        show_html=show_html,
+        save_html=save_html,
+        save_json=save_json,
+        file_name=file_name,
+        pdf_build=pdf_build,
+        pdf_cleanup=pdf_cleanup,
+        pdf_batchmode=pdf_batchmode,
     )
 
 
