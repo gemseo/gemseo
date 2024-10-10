@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from pathlib import Path
 from unittest.mock import patch
 
@@ -230,3 +231,24 @@ def test_no_graphviz(caplog, graph_with_self_coupling) -> None:
             "Cannot write graph: "
             "GraphView cannot be imported because graphviz is not installed."
         )
+
+
+def test_homonymous_disciplines(tmp_wd) -> None:
+    """Check the rendering of the coupling graph with homonymous disciplines."""
+    regex = r"""^digraph {
+\t\d+ \[label=AnalyticDiscipline color=black fillcolor=white fontcolor=black penwidth=1\.0 style=filled\]
+\t\d+ \[label=foo color=black fillcolor=white fontcolor=black penwidth=1\.0 style=filled\]
+\t\d+ \[label=AnalyticDiscipline color=black fillcolor=white fontcolor=black penwidth=1\.0 style=filled\]
+\t\d+ -> \d+ \[label=b color=black dir=forward fontcolor=black penwidth=1\.0\]
+\t\d+ -> \d+ \[label=c color=black dir=forward fontcolor=black penwidth=1\.0\]
+\t\d+ -> _AnalyticDiscipline \[label=d color=black dir=forward fontcolor=black penwidth=1\.0\]
+\t_AnalyticDiscipline \[style=invis\]
+}$"""  # noqa: E501
+    graph = DependencyGraph([
+        AnalyticDiscipline({"b": "a"}),
+        AnalyticDiscipline({"c": "b"}, name="foo"),
+        AnalyticDiscipline({"d": "c"}),
+    ])
+    file_path = Path("homonymous_disciplines.pdf")
+    graph.write_full_graph(file_path)
+    assert re.match(regex, file_path.with_suffix(".dot").read_text().strip())

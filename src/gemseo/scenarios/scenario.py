@@ -566,8 +566,6 @@ class Scenario(MDODiscipline):
                 at each discipline status change.
             log_workflow_status: Whether to log the evolution of the workflow's status.
             directory_path: The path of the directory to save the files.
-                If ``show_html=True`` and ``output_directory_path=None``,
-                the HTML file is stored in a temporary directory.
             file_name: The file name without the file extension.
             show_html: Whether to open the web browser and display the XDSM.
             save_html: Whether to save the XDSM as a HTML file.

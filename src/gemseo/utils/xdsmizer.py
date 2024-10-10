@@ -43,6 +43,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Union
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import AtomicExecSequence
 from gemseo.core.execution_sequence import CompositeExecSequence
@@ -54,6 +55,7 @@ from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenari
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.locks import synchronized
 from gemseo.utils.show_utils import generate_xdsm_html
 from gemseo.utils.xdsm import XDSM
@@ -62,7 +64,6 @@ from gemseo.utils.xdsm_to_pdf import xdsm_data_to_pdf
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from gemseo.scenarios.scenario import Scenario
 
 LOGGER = logging.getLogger(__name__)
 
@@ -75,18 +76,24 @@ IdsType = Any
 
 
 class XDSMizer:
-    """Build the XDSM diagram of a scenario as a JSON structure."""
+    """Build the XDSM diagram of a discipline as a JSON structure."""
+
+    _is_scenario: bool
+    """Whether the object to XDSMize is a scenario."""
+
+    _scenario_node_title: str
+    """The title of the node representing the scenario."""
 
     def __init__(
         self,
-        scenario: Scenario,
+        discipline: MDODiscipline,
         hashref: str = "root",
         level: int = 0,
         expected_workflow: CompositeExecSequence | None = None,
     ) -> None:
         """
         Args:
-            scenario: The scenario to be represented as an XDSM diagram.
+            discipline: The discipline to be represented as an XDSM diagram.
             hashref: The keyword used in the JSON structure
                 to reference the dictionary data structure
                 whose keys are "nodes", "edges", "workflow" and "optpb".
@@ -95,7 +102,32 @@ class XDSMizer:
                 describing the sequence of execution of the different disciplines
                 (:class:`.MDODiscipline`, :class:`.Scenario`, :class:`.BaseMDA`, etc.)
         """  # noqa:D205 D212 D415
-        self.scenario = scenario
+        if isinstance(discipline, Scenario):
+            self._is_scenario = True
+            if isinstance(discipline, MDOScenario):
+                self._scenario_node_title = "Optimizer"
+            elif isinstance(discipline, DOEScenario):
+                self._scenario_node_title = "DOE"
+            else:
+                self._scenario_node_title = discipline.name
+        else:
+            self._is_scenario = False
+            design_space = DesignSpace()
+            for name in discipline.input_grammar.names:
+                design_space.add_variable(name)
+            output_names = iter(discipline.output_grammar.names)
+            discipline = MDOScenario(
+                [discipline],
+                "DisciplinaryOpt",
+                next(output_names),
+                design_space,
+            )
+            for output_name in output_names:
+                discipline.add_observable(output_name)
+
+            self._scenario_node_title = "Caller"
+
+        self.scenario = discipline
         self.level = level
         self.hashref = hashref
         self.lock = RLock()
@@ -212,16 +244,20 @@ class XDSMizer:
             show_html: Whether to open the web browser and display the XDSM.
             save_html: Whether to save the XDSM as a HTML file.
             save_json: Whether to save the XDSM as a JSON file.
-            save_pdf: Whether to save the XDSM as a PDF file.
-            pdf_build: Whether the standalone pdf of the XDSM will be built.
-            pdf_cleanup: Whether pdflatex built files will be cleaned up
-                after build is complete.
+            save_pdf: Whether to save the XDSM as a PDF file;
+                use ``save_pdf=True`` and ``pdf_build=False``
+                to generate the ``file_name.tex`` and ``file_name.tikz`` files
+                without building the PDF file.
+            pdf_build: Whether to generate the PDF file when ``save_pdf`` is ``True``.
+            pdf_cleanup: Whether to clean up the intermediate files
+                (``file_name.tex``, ``file_name.tikz`` and built files)
+                used to build the PDF file.
             pdf_batchmode: Whether pdflatex is run in `batchmode`.
 
         Returns:
             A XDSM diagram.
         """
-        xdsm = self.xdsmize()
+        xdsm = self.xdsmize(self._scenario_node_title)
         xdsm_json = dumps(xdsm, indent=2, ensure_ascii=False)
 
         directory_path = Path(directory_path)
@@ -287,7 +323,11 @@ class XDSMizer:
         nodes = self._create_nodes(algoname)
         edges = self._create_edges()
         workflow = self._create_workflow()
-        optpb = str(self.scenario.formulation.optimization_problem)
+        optpb = (
+            str(self.scenario.formulation.optimization_problem)
+            if not self._is_scenario
+            else ""
+        )
 
         if self.level == 0:
             res = {
@@ -299,18 +339,8 @@ class XDSMizer:
                 }
             }
             for sub_xdsmizer in self.get_all_sub_xdsmizers():
-                if sub_xdsmizer.scenario.name.endswith("ing"):
-                    name = f"{sub_xdsmizer.scenario.name[:-3]}er"
-                elif sub_xdsmizer.scenario.name.endswith("Scenario"):
-                    if isinstance(sub_xdsmizer.scenario, DOEScenario):
-                        name = "Trade-Off"
-                    elif isinstance(sub_xdsmizer.scenario, MDOScenario):
-                        name = "Optimizer"
-                    else:
-                        name = sub_xdsmizer.scenario.name
-                else:
-                    name = sub_xdsmizer.scenario.name
-                res[sub_xdsmizer.hashref] = sub_xdsmizer.xdsmize(name)
+                scenario_block_title = sub_xdsmizer._scenario_node_title
+                res[sub_xdsmizer.hashref] = sub_xdsmizer.xdsmize(scenario_block_title)
             return res
         return {"nodes": nodes, "edges": edges, "workflow": workflow, "optpb": optpb}
 
@@ -423,10 +453,11 @@ class XDSMizer:
         to_user = function_name
         to_opt = self.scenario.get_optim_variable_names()
 
-        user_pattern = "L({})" if self.scenario.name == "Sampling" else "{}^(0)"
-        opt_pattern = "{}^(1:N)" if self.scenario.name == "Sampling" else "{}^*"
-        add_edge(USER_ID, OPT_ID, [user_pattern.format(x) for x in to_opt])
-        add_edge(OPT_ID, USER_ID, [opt_pattern.format(x) for x in to_user])
+        if self._is_scenario:
+            user_pattern = "L({})" if self.scenario.name == "Sampling" else "{}^(0)"
+            opt_pattern = "{}^(1:N)" if self.scenario.name == "Sampling" else "{}^*"
+            add_edge(USER_ID, OPT_ID, [user_pattern.format(x) for x in to_opt])
+            add_edge(OPT_ID, USER_ID, [opt_pattern.format(x) for x in to_user])
 
         # Disciplines to/from optimization
         for atom in self.atoms:

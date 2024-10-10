@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
     from collections.abc import Sequence
+    from pathlib import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -77,6 +78,34 @@ class DependencyGraph:
             disciplines: The disciplines to build the graph with.
         """  # noqa: D205, D212, D415
         self.__graph = self.__create_graph(disciplines)
+        if len({d.name for d in disciplines}) == len(disciplines):
+            self.__get_node_name_from_discipline = self._get_node_name_from_disc_name
+        else:
+            self.__get_node_name_from_discipline = self._get_node_name_from_disc_id
+
+    @staticmethod
+    def _get_node_name_from_disc_name(discipline: MDODiscipline) -> str:
+        """Return the name of a node from the name of the associated discipline.
+
+        Args:
+            discipline: The discipline.
+
+        Returns:
+            The name of the node.
+        """
+        return discipline.name
+
+    @staticmethod
+    def _get_node_name_from_disc_id(discipline: MDODiscipline) -> str:
+        """Return the name of a node from the id of the associated discipline.
+
+        Args:
+            discipline: The discipline.
+
+        Returns:
+            The name of the node.
+        """
+        return str(id(discipline))
 
     @property
     def disciplines(self) -> Iterator[MDODiscipline]:
@@ -201,8 +230,7 @@ class DependencyGraph:
 
         return graph
 
-    @staticmethod
-    def __get_node_name(graph: DiGraph, node: int | MDODiscipline) -> str:
+    def __get_node_name(self, graph: DiGraph, node: int | MDODiscipline) -> str:
         """Return the name of a node for the representation of a graph.
 
         Args:
@@ -214,7 +242,7 @@ class DependencyGraph:
         """
         if isinstance(node, MDODiscipline):
             # not a scc node
-            return str(node)
+            return self.__get_node_name_from_discipline(node)
 
         # networkx stores the scc nodes under the members node attribute
         condensed_discs = graph.nodes[node]["members"]
@@ -257,7 +285,7 @@ class DependencyGraph:
     def __write_graph(
         self,
         graph: DiGraph,
-        file_path: str,
+        file_path: str | Path,
         is_full: bool,
     ) -> GraphView | None:
         """Write the representation of a graph.
@@ -275,6 +303,12 @@ class DependencyGraph:
             return None
 
         graph_view = GraphView()
+        get_node_name_from_discipline = self.__get_node_name_from_discipline
+        if get_node_name_from_discipline == self._get_node_name_from_disc_id:
+            for discipline in graph.nodes:
+                graph_view.node(
+                    get_node_name_from_discipline(discipline), discipline.name
+                )
 
         # 1. Add the edges with different head and tail nodes
         #    (case: some outputs of a discipline are inputs of another one)
@@ -295,7 +329,7 @@ class DependencyGraph:
                     discipline.get_output_data_names()
                 )
                 if coupling_names:
-                    name = discipline.name
+                    name = get_node_name_from_discipline(discipline)
                     graph_view.edge(name, name, pretty_str(coupling_names, ","))
 
         # 3. Add the edges without head node
@@ -303,7 +337,7 @@ class DependencyGraph:
         for leaf_node in self.__get_leaves(graph):
             if isinstance(leaf_node, MDODiscipline):
                 output_names = leaf_node.get_output_data_names()
-                node_name = str(leaf_node)
+                node_name = get_node_name_from_discipline(leaf_node)
             else:
                 # a scc edge
                 output_names = list(self.__get_scc_edge_names(graph, leaf_node))
@@ -320,11 +354,11 @@ class DependencyGraph:
         graph_view.visualize(show=False, file_path=file_path, clean_up=False)
         return graph_view
 
-    def write_full_graph(self, file_path: str) -> GraphView | None:
+    def write_full_graph(self, file_path: str | Path) -> GraphView | None:
         """Write a representation of the full graph.
 
         Args:
-            file_path: A path to the file.
+            file_path: The path to the file.
 
         Returns:
             The full graph or ``None`` otherwise.
@@ -334,11 +368,11 @@ class DependencyGraph:
     # TODO: API: remove.
     export_initial_graph = write_full_graph
 
-    def write_condensed_graph(self, file_path: str) -> GraphView | None:
+    def write_condensed_graph(self, file_path: str | Path) -> GraphView | None:
         """Write a representation of the condensed graph.
 
         Args:
-            file_path: A path to the file.
+            file_path: The path to the file.
 
         Returns:
             The condensed graph or ``None`` otherwise.

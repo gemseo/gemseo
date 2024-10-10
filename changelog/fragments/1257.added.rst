@@ -1,0 +1,2 @@
+- ``XDSMizer`` can be applied to any discipline, and not just the scenarios. This is useful for seeing the dataflow and workflow of a multidisciplinary process, e.g. ``MDAJacobi``.
+- ``generate_xdsm`` can generate the XDSM of any discipline.
