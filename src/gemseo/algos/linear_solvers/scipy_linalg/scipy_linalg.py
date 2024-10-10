@@ -177,8 +177,8 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
         ),
     }
 
-    def _pre_run(self, problem: LinearProblem, **options: Any) -> None:
-        if options["use_ilu_precond"] and options["M"] is not None:
+    def _pre_run(self, problem: LinearProblem, **settings: Any) -> None:
+        if settings["use_ilu_precond"] and settings["M"] is not None:
             msg = (
                 "Use either 'use_ilu_precond' or "
                 "provide 'preconditioner', but not both."
@@ -190,8 +190,6 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
 
         rhs = problem.rhs
         lhs = problem.lhs
-
-        c_dtype = None
         if rhs.dtype != lhs.dtype and not isinstance(lhs, LinearOperator):
             c_dtype = promote_types(rhs.dtype, lhs.dtype)
             if lhs.dtype != c_dtype:
@@ -199,22 +197,22 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             if rhs.dtype != c_dtype:
                 problem.rhs = rhs.astype(c_dtype)
 
-        super()._pre_run(problem, **options)
+        super()._pre_run(problem, **settings)
 
-    def _run(self, problem: LinearProblem, **options: Any) -> NumberArray:
-        if options["use_ilu_precond"] and not isinstance(problem.lhs, LinearOperator):
-            options["M"] = self._build_ilu_preconditioner(problem.lhs)
+    def _run(self, problem: LinearProblem, **settings: Any) -> NumberArray:
+        if settings["use_ilu_precond"] and not isinstance(problem.lhs, LinearOperator):
+            settings["M"] = self._build_ilu_preconditioner(problem.lhs)
 
-        if options["store_residuals"]:
-            options["callback"] = self.__store_residuals
+        if settings["store_residuals"]:
+            settings["callback"] = self.__store_residuals
 
-        options_ = self._filter_settings(
-            options, model_to_exclude=LinearSolverLibrarySettings
+        settings_ = self._filter_settings(
+            settings, model_to_exclude=LinearSolverLibrarySettings
         )
 
         linear_solver = self.__NAMES_TO_FUNCTIONS[self._algo_name]
-        problem.solution, info = linear_solver(problem.lhs, problem.rhs, **options_)
-        self._check_solver_info(info, options_)
+        problem.solution, info = linear_solver(problem.lhs, problem.rhs, **settings_)
+        self._check_solver_info(info, settings_)
 
         return problem.solution
 
@@ -270,7 +268,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
         self,
         lhs: SparseOrDenseRealArray | LinearOperator,
         rhs: NumberArray,
-        **options: Any,
+        **settings: Any,
     ) -> tuple[NumberArray, int]:
         """Run the default solver.
 
@@ -280,36 +278,36 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
         Args:
             lhs: The left hand side of the equation (matrix).
             rhs: The right hand side of the equation.
-            **options: The user options.
+            **settings: The user options.
 
         Returns:
             The last solution found and the info.
         """
         # Try LGMRES first
-        best_sol, info = lgmres(A=lhs, b=rhs, **options)
+        best_sol, info = lgmres(A=lhs, b=rhs, **settings)
         best_res = self._problem.compute_residuals(True, current_x=best_sol)
 
-        if self._check_solver_info(info, options):
+        if self._check_solver_info(info, settings):
             return best_sol, info
 
         # If not converged, try GMRES
 
         # Adapt options
         for k in self._LGMRES_SPEC_OPTS:
-            if k in options:
-                del options[k]
+            if k in settings:
+                del settings[k]
 
         if best_res < 1.0:
-            options["x0"] = best_sol
+            settings["x0"] = best_sol
 
-        sol, info = gmres(A=lhs, b=rhs, **options)
+        sol, info = gmres(A=lhs, b=rhs, **settings)
         res = self._problem.compute_residuals(True, current_x=sol)
 
         if res < best_res:
             best_sol = sol
-            options["x0"] = best_sol
+            settings["x0"] = best_sol
 
-        if self._check_solver_info(info, options):  # pragma: no cover
+        if self._check_solver_info(info, settings):  # pragma: no cover
             return best_sol, info
 
         info = 1
@@ -321,7 +319,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             sol = a_fact.solve(rhs)
             res = self._problem.compute_residuals(True, current_x=sol)
 
-            if res < options[TOL_OPTION]:  # pragma: no cover
+            if res < settings[TOL_OPTION]:  # pragma: no cover
                 best_sol = sol
                 info = 0
                 self._problem.is_converged = True

@@ -141,7 +141,7 @@ class ScipyLinprog(BaseOptimizationLibrary):
         ),
     }
 
-    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
+    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
         # Get the starting point and bounds
         x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
         # Replace infinite bounds with None
@@ -167,7 +167,7 @@ class ScipyLinprog(BaseOptimizationLibrary):
         )
 
         # Filter settings to get only the scipy.optimize.linprog ones
-        options_ = self._filter_settings(options, BaseOptimizationLibrarySettings)
+        settings_ = self._filter_settings(settings, BaseOptimizationLibrarySettings)
 
         linprog_result = linprog(
             c=obj_coeff.real,
@@ -177,7 +177,7 @@ class ScipyLinprog(BaseOptimizationLibrary):
             b_eq=eq_rhs,
             bounds=bounds,
             method=self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name,
-            options=options_,
+            options=settings_,
             integrality=concatenate([
                 [
                     problem.design_space.variable_types[variable_name]

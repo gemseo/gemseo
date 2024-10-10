@@ -113,23 +113,23 @@ class ScipyODEAlgos(BaseODESolverLibrary):
         ),
     }
 
-    def _run(self, problem: ODEProblem, **options: Any) -> ODEResult:
-        options_ = self._filter_settings(
-            options, model_to_exclude=BaseODESolverLibrarySettings
+    def _run(self, problem: ODEProblem, **settings: Any) -> ODEResult:
+        settings_ = self._filter_settings(
+            settings, model_to_exclude=BaseODESolverLibrarySettings
         )
 
         if problem.time_vector is not None:
-            options_["t_eval"] = problem.time_vector
+            settings_["t_eval"] = problem.time_vector
 
         if problem.jac is not None:
-            options_["jac"] = problem.jac
+            settings_["jac"] = problem.jac
 
         solution = solve_ivp(
             fun=problem.rhs_function,
             y0=problem.initial_state,
             method=self._algo_name,
             t_span=problem.integration_interval,
-            **options_,
+            **settings_,
         )
 
         problem.result.is_converged = solution.status == 0

@@ -49,6 +49,6 @@ class LinearSolverLibraryFactory(BaseAlgoFactory):
         self,
         problem: LinearProblem,
         algo_name: str,
-        **options: Any,
+        **settings: Any,
     ) -> ndarray:
-        return super().execute(problem, algo_name, **options)
+        return super().execute(problem, algo_name, **settings)

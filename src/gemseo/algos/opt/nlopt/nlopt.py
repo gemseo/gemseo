@@ -332,7 +332,7 @@ class Nlopt(BaseOptimizationLibrary):
     def _pre_run(
         self,
         problem: OptimizationProblem,
-        **options: NLoptOptionsType,
+        **settings: NLoptOptionsType,
     ) -> None:
         """Set ``"stop_crit_n_x"`` depending on the algorithm.
 
@@ -348,14 +348,14 @@ class Nlopt(BaseOptimizationLibrary):
         preliminary Design of Experiment phase of the algorithm.
         """
         algo_name = self._algo_name
-        if algo_name == "NLOPT_COBYLA" and not options[self._STOP_CRIT_NX]:
-            options[self._STOP_CRIT_NX] = problem.design_space.dimension + 1
-        elif algo_name == "NLOPT_BOBYQA" and not options[self._STOP_CRIT_NX]:
-            options[self._STOP_CRIT_NX] = 2 * problem.design_space.dimension + 1
+        if algo_name == "NLOPT_COBYLA" and not settings[self._STOP_CRIT_NX]:
+            settings[self._STOP_CRIT_NX] = problem.design_space.dimension + 1
+        elif algo_name == "NLOPT_BOBYQA" and not settings[self._STOP_CRIT_NX]:
+            settings[self._STOP_CRIT_NX] = 2 * problem.design_space.dimension + 1
         else:
-            options[self._STOP_CRIT_NX] = options[self._STOP_CRIT_NX] or 3
+            settings[self._STOP_CRIT_NX] = settings[self._STOP_CRIT_NX] or 3
 
-        super()._pre_run(problem, **options)
+        super()._pre_run(problem, **settings)
 
     def _run(
         self, problem: OptimizationProblem, **options: NLoptOptionsType
