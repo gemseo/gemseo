@@ -599,7 +599,7 @@ class MDOWarmStartedChain(MDOChain):
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
-        variable_names_to_warm_start: Sequence[str],
+        variable_names_to_warm_start: Iterable[str],
         name: str | None = None,
         grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
