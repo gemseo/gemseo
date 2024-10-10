@@ -2,7 +2,7 @@
 #    uv pip compile requirements/check.in -o requirements/check.txt
 cfgv==3.4.0
     # via pre-commit
-distlib==0.3.8
+distlib==0.3.9
     # via virtualenv
 filelock==3.16.1
     # via virtualenv
