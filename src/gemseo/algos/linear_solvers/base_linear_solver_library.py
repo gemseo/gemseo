@@ -123,7 +123,7 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
     def _pre_run(
         self,
         problem: LinearProblem,
-        **options: Any,
+        **settings: Any,
     ) -> None:
         problem.solver_name = self._algo_name
 
@@ -131,7 +131,7 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
         self,
         problem: LinearProblem,
         result: ndarray,
-        **options: Any,
+        **settings: Any,
     ) -> None:
         if not problem.is_converged:
             LOGGER.warning(
@@ -140,7 +140,7 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
 
         # If the save_when_fail option is True, save the LinearProblem to the disk when
         # the system failed and print the file name in the warnings.
-        if options["save_when_fail"] and not problem.is_converged:
+        if settings["save_when_fail"] and not problem.is_converged:
             file_path = Path(f"linear_system_{uuid4()}.pck")
 
             with file_path.open("wb") as stream:

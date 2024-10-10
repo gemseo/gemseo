@@ -126,22 +126,22 @@ class PyDOELibrary(BaseDOELibrary):
     }
 
     def _generate_unit_samples(
-        self, design_space: DesignSpace, **options: OptionType
+        self, design_space: DesignSpace, **settings: OptionType
     ) -> RealArray:
         n = design_space.dimension
         if self._algo_name == "fullfact":
-            return PyDOEFullFactorialDOE().generate_samples(dimension=n, **options)
+            return PyDOEFullFactorialDOE().generate_samples(dimension=n, **settings)
 
         doe_algorithm = self.__NAMES_TO_FUNCTIONS[self._algo_name]
         if self._algo_name == "lhs":
-            options["random_state"] = RandomState(
-                self._seeder.get_seed(options["random_state"])
+            settings["random_state"] = RandomState(
+                self._seeder.get_seed(settings["random_state"])
             )
-            options["samples"] = options["n_samples"]
-            del options["n_samples"]
-            return doe_algorithm(n, **options)
+            settings["samples"] = settings["n_samples"]
+            del settings["n_samples"]
+            return doe_algorithm(n, **settings)
 
-        return self.__scale(doe_algorithm(n, **options))
+        return self.__scale(doe_algorithm(n, **settings))
 
     @staticmethod
     def __scale(result: RealArray) -> RealArray:

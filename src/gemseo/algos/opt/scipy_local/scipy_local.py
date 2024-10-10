@@ -128,7 +128,7 @@ class ScipyOpt(BaseOptimizationLibrary):
             settings=COBYQASettings,
         )
 
-    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
+    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
         # Get the normalized bounds:
         x_0, l_b, u_b = get_value_and_bounds(problem.design_space, self._normalize_ds)
         # Replace infinite values with None:
@@ -147,7 +147,7 @@ class ScipyOpt(BaseOptimizationLibrary):
         ]
 
         # Filter settings to get only the scipy.optimize.minimize ones
-        options_ = self._filter_settings(options, BaseOptimizationLibrarySettings)
+        options_ = self._filter_settings(settings, BaseOptimizationLibrarySettings)
 
         opt_result = minimize(
             fun=lambda x: real(problem.objective.evaluate(x)),

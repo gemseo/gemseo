@@ -172,7 +172,7 @@ class SciPyDOE(BaseDOELibrary):
         NONE = ""
 
     def _generate_unit_samples(
-        self, design_space: DesignSpace, **options: OptionType
+        self, design_space: DesignSpace, **settings: OptionType
     ) -> RealArray:
         option_names = self.__SCIPY_OPTION_NAMES.copy()
         if self._algo_name == self.__SOBOL:
@@ -191,10 +191,10 @@ class SciPyDOE(BaseDOELibrary):
 
         algo = self.__NAMES_TO_CLASSES[self._algo_name](
             design_space.dimension,
-            seed=self._seeder.get_seed(options[self._SEED]),
-            **{k: v for k, v in options.items() if k in option_names},
+            seed=self._seeder.get_seed(settings[self._SEED]),
+            **{k: v for k, v in settings.items() if k in option_names},
         )
-        return algo.random(options[self._N_SAMPLES])
+        return algo.random(settings[self._N_SAMPLES])
 
     @staticmethod
     def __remove_recent_scipy_options(

@@ -158,16 +158,16 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     def _pre_run(
         self,
         problem: OptimizationProblem,
-        **options: DriverLibrarySettingType,
+        **settings: DriverLibrarySettingType,
     ) -> None:
-        super()._pre_run(problem, **options)
+        super()._pre_run(problem, **settings)
         problem.stop_if_nan = False
 
         design_space = problem.design_space
         self.__check_unnormalization_capability(design_space)
 
         # Filter settings to get only the ones of the global optimizer
-        settings = self._filter_settings(options, BaseDOELibrarySettings)
+        settings = self._filter_settings(settings, BaseDOELibrarySettings)
 
         self.unit_samples = self._generate_unit_samples(design_space, **settings)
         LOGGER.debug(
@@ -235,7 +235,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         wait_time_between_samples: float = 0.0,
         use_database: bool = True,
         callbacks: Iterable[CallbackType] = (),
-        **options: Any,
+        **settings: Any,
     ) -> OptimizationResult:
         """
         Args:
@@ -248,7 +248,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             callbacks: The functions to be evaluated
                 after each call to :meth:`.OptimizationProblem.evaluate_functions`;
                 to be called as ``callback(index, (output, jacobian))``.
-            **options: These options are not used.
+            **settings: These options are not used.
 
         Warnings:
             This class relies on multiprocessing features when ``n_processes > 1``,

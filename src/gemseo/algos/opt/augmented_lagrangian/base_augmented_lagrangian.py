@@ -81,18 +81,18 @@ class BaseAugmentedLagrangian(
         self.__n_obj_func_calls = 0
         self._function_outputs = {}
 
-    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
-        self._rho = options[self.__INITIAL_RHO]
+    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
+        self._rho = settings[self.__INITIAL_RHO]
 
         problem_ineq_constraints = [
             constr
             for constr in problem.constraints.get_inequality_constraints()
-            if constr.name not in options[self.__SUB_PROBLEM_CONSTRAINTS]
+            if constr.name not in settings[self.__SUB_PROBLEM_CONSTRAINTS]
         ]
         problem_eq_constraints = [
             constr
             for constr in problem.constraints.get_equality_constraints()
-            if constr.name not in options[self.__SUB_PROBLEM_CONSTRAINTS]
+            if constr.name not in settings[self.__SUB_PROBLEM_CONSTRAINTS]
         ]
 
         current_value = self.problem.design_space.get_current_value(
@@ -109,7 +109,7 @@ class BaseAugmentedLagrangian(
 
         active_constraint_residual = inf
         x = problem.design_space.get_current_value()
-        for iteration in range(options[self._MAX_ITER]):
+        for iteration in range(settings[self._MAX_ITER]):
             LOGGER.debug("iteration: %s", iteration)
             LOGGER.debug(
                 "inequality Lagrange multiplier approximations:  %s", ineq_multipliers
@@ -125,9 +125,9 @@ class BaseAugmentedLagrangian(
                 eq_multipliers,
                 ineq_multipliers,
                 self._normalize_ds,
-                options[self.__SUB_PROBLEM_CONSTRAINTS],
-                options[self.__SUB_SOLVER_ALGORITHM],
-                options[self.__SUB_PROBLEM_OPTIONS],
+                settings[self.__SUB_PROBLEM_CONSTRAINTS],
+                settings[self.__SUB_SOLVER_ALGORITHM],
+                settings[self.__SUB_PROBLEM_OPTIONS],
                 x,
             )
 
@@ -150,7 +150,7 @@ class BaseAugmentedLagrangian(
                 constraint_violation_previous_iteration=active_constraint_residual,
                 current_penalty=self._rho,
                 iteration=iteration,
-                **options,
+                **settings,
             )
             # Update the active constraint residual.
             active_constraint_residual = max(norm(vk), norm(hv))
@@ -171,10 +171,12 @@ class BaseAugmentedLagrangian(
         problem: OptimizationProblem,
         result: OptimizationResult,
         max_design_space_dimension_to_log: int,
-        **options: Any,
+        **settings: Any,
     ) -> None:
         result.n_obj_call = self.__n_obj_func_calls
-        super()._post_run(problem, result, max_design_space_dimension_to_log, **options)
+        super()._post_run(
+            problem, result, max_design_space_dimension_to_log, **settings
+        )
 
     @staticmethod
     def _check_termination_criteria(

@@ -97,7 +97,7 @@ class ScipyMILP(BaseOptimizationLibrary):
     def __init__(self, algo_name: str = "Scipy_MILP") -> None:  # noqa:D107
         super().__init__(algo_name)
 
-    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
+    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
         # Get the starting point and bounds
         x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
         # Replace infinite bounds with None
@@ -140,14 +140,14 @@ class ScipyMILP(BaseOptimizationLibrary):
             )
 
         # Filter settings to get only the scipy.optimize.milp ones
-        options_ = self._filter_settings(options, BaseOptimizationLibrarySettings)
+        settings_ = self._filter_settings(settings, BaseOptimizationLibrarySettings)
 
         # Pass the MILP to Scipy
         milp_result = milp(
             c=obj_coeff.real,
             bounds=bounds,
             constraints=lq_constraints,
-            options=options_,
+            options=settings_,
             integrality=concatenate([
                 [
                     self.problem.design_space.get_type(variable_name)
