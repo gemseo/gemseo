@@ -338,6 +338,37 @@ def test_bilevel_warm_start_no_mda1(dummy_bilevel_scenario) -> None:
     assert isinstance(dummy_bilevel_scenario.formulation.chain, MDOWarmStartedChain)
 
 
+def test_bilevel_get_variable_names_to_warm_start_without_mdas(
+    dummy_bilevel_scenario, monkeypatch
+) -> None:
+    """ " Check that the warm start properly considers the adapter variables when there
+    are no MDAs."""
+
+    def _no_mda2(*args, **kwargs):
+        return None
+
+    scenario = dummy_bilevel_scenario
+    monkeypatch.setattr(scenario.formulation, "_mda2", _no_mda2())
+    variables = []
+    for adapter in scenario.formulation.scenario_adapters:
+        variables.extend(adapter.get_output_data_names())
+    assert sorted(set(variables)) == sorted(
+        scenario.formulation._get_variable_names_to_warm_start()
+    )
+
+
+def test_test_bilevel_get_variable_names_to_warm_start_from_mdas(
+    sobieski_bilevel_scenario,
+) -> None:
+    """ " Check that the variables from both MDAs are being considered in the warm
+    start."""
+    scenario = sobieski_bilevel_scenario()
+    for variable in scenario.formulation._mda1.get_output_data_names():
+        assert variable in scenario.formulation._get_variable_names_to_warm_start()
+    for variable in scenario.formulation._mda2.get_output_data_names():
+        assert variable in scenario.formulation._get_variable_names_to_warm_start()
+
+
 @pytest.mark.parametrize(
     "options",
     [

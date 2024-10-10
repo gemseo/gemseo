@@ -430,11 +430,21 @@ class BiLevel(BaseMDOFormulation):
         Returns:
             The names of the variables to warm start.
         """
-        return [
+        variable_names = [
             name
             for adapter in self.scenario_adapters
             for name in adapter.get_output_data_names()
         ]
+        if self._mda1:
+            for variable_name in self._mda1.get_output_data_names():
+                if variable_name not in variable_names:
+                    variable_names.append(variable_name)
+        if self._mda2:
+            for variable_name in self._mda2.get_output_data_names():
+                if variable_name not in variable_names:
+                    variable_names.append(variable_name)
+
+        return variable_names
 
     def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""
