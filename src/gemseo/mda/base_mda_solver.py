@@ -400,7 +400,9 @@ class BaseMDASolver(BaseMDA):
             self.residual_history.append(self.normed_residual)
             self._current_iter += 1
 
-        self.local_data[self.NORMALIZED_RESIDUAL_NORM] = array([self.normed_residual])
+        self.store_local_data(**{
+            self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual])
+        })
 
         return self.normed_residual
 

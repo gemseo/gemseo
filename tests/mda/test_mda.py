@@ -615,3 +615,9 @@ def test_scaling_method() -> None:
         mda = BaseMDA([sellar1, sellar2])
         mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
         assert mda.scaling == BaseMDA.ResidualScaling.NO_SCALING
+
+
+def test_namespaces(sellar_mda) -> None:
+    """Test the well functionning with namespaces."""
+    sellar_mda.add_namespace_to_output(sellar_mda.NORMALIZED_RESIDUAL_NORM, "foo")
+    sellar_mda.execute()

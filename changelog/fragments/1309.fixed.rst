@@ -1,0 +1,1 @@
+Local data in MDA are no longer modified via ``self.local_data[key] = value`` but rather using the ``store_local_data`` method to ensure proper handling of namespaces.
