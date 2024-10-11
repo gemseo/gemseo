@@ -61,5 +61,7 @@ class BaseODESolverLibrary(BaseAlgorithmLibrary):
         result: ODEResult,
         **settings: Any,
     ) -> None:  # noqa: D107
-        if not result.is_converged:
-            LOGGER.warning("The ODE solver %s did not converge.", result.solver_name)
+        if not problem.result.algorithm_has_converged:
+            LOGGER.warning(
+                "The ODE solver %s did not converge.", problem.result.solver_name
+            )

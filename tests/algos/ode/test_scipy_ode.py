@@ -20,23 +20,29 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
-import numpy as np
 import pytest
+from numpy import allclose
 from numpy import arange
+from numpy import arctan
 from numpy import array
+from numpy import concatenate
+from numpy import cos
 from numpy import exp
+from numpy import isclose
+from numpy import linspace
+from numpy import sin
 from numpy import sqrt
 from numpy import sum as np_sum
 from numpy import zeros
-from numpy.linalg import norm
 
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
+from gemseo.algos.ode.ode_problem import ODEResult
+from gemseo.algos.ode.rhs_jacobian_checking import RHSJacobianChecking
 from gemseo.algos.ode.scipy_ode.scipy_ode import ScipyODEAlgos
-from gemseo.problems.ode.orbital_dynamics import OrbitalDynamics
-from gemseo.problems.ode.van_der_pol import VanDerPol
 
 if TYPE_CHECKING:
     from gemseo.typing import NumberArray
@@ -66,8 +72,8 @@ def test_scipy_ode_algos(algo_name) -> None:
     assert algo_name in ScipyODEAlgos.ALGORITHM_INFOS
 
 
-@pytest.mark.parametrize("time_vector", [None, arange(0, 1, 0.1)])
-def test_ode_problem_1d(time_vector) -> None:
+@pytest.mark.parametrize("times", [None, arange(0, 1, 0.1)])
+def test_ode_problem_1d(times) -> None:
     r"""Test the definition and resolution of an ODE problem.
 
     Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
@@ -79,48 +85,48 @@ def test_ode_problem_1d(time_vector) -> None:
     def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return array(state)
 
-    def _jac(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def _jac_wrt_state(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return array(1)
 
-    _initial_state = [1]
+    _initial_state = array([1])
     _initial_time = 0
     _final_time = 1
 
     problem = ODEProblem(
         _func,
-        jac=_jac,
+        jac_wrt_state=_jac_wrt_state,
         initial_state=_initial_state,
-        initial_time=_initial_time,
-        final_time=_final_time,
-        time_vector=time_vector,
+        times=array([_initial_time, _final_time]),
     )
-    assert not problem.result.is_converged
+    assert not problem.result.algorithm_has_converged
     assert problem.result.n_func_evaluations == 0
     assert problem.result.n_jac_evaluations == 0
-    assert problem.result.state_vector.size == 0
-    assert problem.result.time_vector.size == 0
+    assert problem.result.state_trajectories.size == 0
+    assert problem.result.times.size == 0
 
     algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    assert isinstance(
+        ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6),
+        ODEResult,
+    )
 
-    analytical_solution = exp(problem.result.time_vector)
-    assert sqrt(np_sum((problem.result.state_vector - analytical_solution) ** 2)) < 1e-6
-
-    problem.check()
+    analytical_solution = exp(problem.result.times)
+    difference = problem.result.state_trajectories - analytical_solution
+    assert sqrt(np_sum(difference**2)) < 1e-6
 
     assert problem.rhs_function == _func
-    assert problem.jac == _jac
+    assert problem.jac.state == _jac_wrt_state
     assert len(problem.initial_state) == 1
     assert problem.initial_state == _initial_state
-    assert problem.result.state_vector.size != 0
-    assert problem.result.state_vector.size == problem.result.time_vector.size
-    assert problem.result.solver_name == algo_name
+    assert problem.result.state_trajectories.size != 0
+    assert problem.result.state_trajectories.size == problem.result.times.size
+    assert problem.result.algorithm_name == algo_name
     assert (
-        problem.result.solver_message
+        problem.result.algorithm_termination_message
         == "The solver successfully reached the end of the integration interval."
     )
-    assert problem.result.is_converged
-    assert problem.integration_interval == (_initial_time, _final_time)
+    assert problem.result.algorithm_has_converged
+    assert problem.time_interval == (_initial_time, _final_time)
     assert problem.result.n_func_evaluations > 0
 
 
@@ -131,60 +137,135 @@ def test_ode_problem_2d() -> None:
     :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
     """
 
-    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return state
 
-    def _jac(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def jac_wrt_state(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return array([[1, 0], [0, 1]])
 
     problem = ODEProblem(
-        _func,
-        jac=_jac,
-        initial_state=[1, 1],
-        initial_time=0,
-        final_time=1,
-        time_vector=arange(0, 1, 0.1),
+        func,
+        jac_wrt_state=jac_wrt_state,
+        initial_state=array([1, 1]),
+        times=arange(0, 1, 0.1),
     )
+    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
+    checking.function_of_state.check_grad(array([0.0, 1.0]))
     algo_name = "DOP853"
     ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
-    state_vect = [0.0, 1.0]
-    problem.check_jacobian(state_vect)
-    assert problem.result.is_converged
-    assert problem.result.solver_name == algo_name
-    assert problem.result.state_vector is not None
+    assert problem.result.algorithm_has_converged
+    assert problem.result.algorithm_name == algo_name
+    assert problem.result.state_trajectories is not None
 
-    analytical_solution = exp(problem.result.time_vector)
+    analytical_solution = exp(problem.result.times)
     assert (
-        sqrt(np_sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+        sqrt(sum((problem.result.state_trajectories[0] - analytical_solution) ** 2))
+        < 1e-6
     )
 
 
-def test_ode_problem_jacobian_as_array() -> None:
-    """Test the resolution of an ODE problem when the Jacobian is defined with an array.
+def test_ode_problem_2d_array_jacobian() -> None:
+    r"""Test the definition and resolution of an ODE problem.
 
     Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
-    :math:`f(0, 0) = 1`. The Jacobian of this problem is the identity matrix.
+    :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
     """
 
-    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return state
 
     problem = ODEProblem(
-        _func,
-        jac=array([[1, 0], [0, 1]]),
-        initial_state=[1, 1],
-        initial_time=0,
-        final_time=1,
-        time_vector=arange(0, 1, 0.1),
-    )
-    ODESolverLibraryFactory().execute(
-        problem, "BDF", first_step=1e-6, atol=1e-12, rtol=1e-12
+        func,
+        jac_wrt_time_state=array([[0, 1, 0], [0, 0, 1]]),
+        jac_wrt_state=array([[1, 0], [0, 1]]),
+        initial_state=array([1, 1]),
+        times=arange(0, 1, 0.1),
     )
 
-    analytical_solution = exp(problem.result.time_vector)
+    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
+    checking.function_of_time_and_state.check_grad(array([0.0, 0.0, 1.0]))
+    checking.function_of_state.check_grad(array([0.0, 1.0]))
+    algo_name = "DOP853"
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    assert problem.result.algorithm_has_converged
+    assert problem.result.algorithm_name == algo_name
+    assert problem.result.state_trajectories is not None
+
+    analytical_solution = exp(problem.result.times)
     assert (
-        sqrt(np_sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+        sqrt(sum((problem.result.state_trajectories[0] - analytical_solution) ** 2))
+        < 1e-6
     )
+
+
+def test_ode_problem_2d_array_time_state_jacobian() -> None:
+    r"""Test the definition and resolution of an ODE problem.
+
+    Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
+    :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
+    """
+
+    def func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+        return state
+
+    problem = ODEProblem(
+        func,
+        jac_wrt_time_state=array([[0, 1, 0], [0, 0, 1]]),
+        initial_state=array([1, 1]),
+        times=arange(0, 1, 0.1),
+    )
+
+    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
+    checking.function_of_state.check_grad(array([0.0, 1.0]))
+    checking.function_of_time_and_state.check_grad(array([0.0, 0.0, 1.0]))
+    algo_name = "DOP853"
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    assert problem.result.algorithm_has_converged
+    assert problem.result.algorithm_name == algo_name
+    assert problem.result.state_trajectories is not None
+
+    analytical_solution = exp(problem.result.times)
+    assert (
+        sqrt(sum((problem.result.state_trajectories[0] - analytical_solution) ** 2))
+        < 1e-6
+    )
+
+
+def test_ode_problem_2d_array_time_state_callable_jacobian() -> None:
+    r"""Test the definition and resolution of an ODE problem.
+
+    Define and solve the problem :math:`f(t, s(t)) = cos^2 (s(t))` with the initial
+    state :math:`f(0, 0) = 1`.
+    The Jacobian of this problem with respect to time and state is:
+
+    .. math:: Jac_t[f](t, s) = [0, 2 \sin(2 s)]`
+        .
+    """
+
+    def func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+        return cos(state) ** 2
+
+    def jacobian_wrt_time_state(time: float, state: NumberArray) -> NumberArray:
+        return concatenate((zeros(state.shape), -sin(2 * state))).reshape((2, -1)).T
+
+    problem = ODEProblem(
+        func,
+        jac_wrt_time_state=jacobian_wrt_time_state,
+        initial_state=array([0]),
+        times=arange(0, 1, 0.1),
+    )
+
+    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
+    checking.function_of_state.check_grad(array([1.0]), error_max=1e-6)
+    checking.function_of_time_and_state.check_grad(array([0.0, 1.0]), error_max=1e-6)
+    algo_name = "DOP853"
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    assert problem.result.algorithm_has_converged
+    assert problem.result.algorithm_name == algo_name
+    assert problem.result.state_trajectories is not None
+
+    analytical_solution = arctan(problem.result.times)
+    assert allclose(problem.result.state_trajectories, analytical_solution, atol=1e-5)
 
 
 def test_ode_problem_2d_wrong_jacobian() -> None:
@@ -202,17 +283,15 @@ def test_ode_problem_2d_wrong_jacobian() -> None:
 
     problem = ODEProblem(
         _func,
-        jac=_jac,
-        initial_state=[1, 1],
-        initial_time=0,
-        final_time=1,
-        time_vector=arange(0, 1, 0.1),
+        jac_wrt_state=_jac,
+        initial_state=array([1, 1]),
+        times=arange(0, 1, 0.1),
     )
     algo_name = "DOP853"
     ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
-    state_vect = [0.0, 1.0]
+    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
     try:
-        problem.check_jacobian(state_vect)
+        checking.function_of_state.check_grad(array([0.0, 1.0]))
     except ValueError:
         pass
     else:
@@ -220,70 +299,30 @@ def test_ode_problem_2d_wrong_jacobian() -> None:
         raise ValueError(msg)
 
 
-@parametrized_algo_names
-def test_van_der_pol(algo_name) -> None:
-    """Solve Van der Pol with the jacobian analytical expression."""
-    problem = VanDerPol()
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=10e-6)
-    assert problem.result.is_converged
-    assert norm(problem.result.state_vector) > 0
-    assert (
-        problem.result.solver_message == "The solver successfully reached the "
-        "end of the integration interval."
+def test_ode_problem_without_jacobian() -> None:
+    r"""Test that check_jacobian raises an error when the jacobian is not given, but it
+    asked to be tested."""
+
+    def _func(time, state):  # noqa:U100
+        return array(state)
+
+    problem = ODEProblem(
+        _func,
+        initial_state=array([1, 1]),
+        times=arange(0, 1, 0.1),
     )
-    problem.check()
+    algo_name = "DOP853"
+    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
+    with pytest.raises(
+        ValueError, match=re.escape("The function jac.time_state is not available.")
+    ):
+        checking.function_of_time_and_state.check_grad(array([0.0, 0.0, 1.0]))
 
-
-@parametrized_algo_names
-def test_van_der_pol_finite_differences(algo_name) -> None:
-    """Solve Van der Pol using finite differences for the jacobian."""
-    problem = VanDerPol(use_jacobian=False)
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=10e-6)
-    assert problem.result.is_converged
-    assert norm(problem.result.state_vector) > 0
-    assert (
-        problem.result.solver_message == "The solver successfully reached the "
-        "end of the integration interval."
-    )
-
-
-def test_van_der_pol_jacobian_explicit_expression() -> None:
-    """Validate the analytical expression of the jacobian."""
-    problem = VanDerPol()
-    state_vect = [0.0, 0.0]
-    problem.check_jacobian(state_vect)
-    assert not problem.result.is_converged
-
-
-@pytest.mark.parametrize(
-    ("algo_name", "eccentricity"),
-    [
-        ("RK45", 0.5),
-        ("RK23", 0.5),
-        ("DOP853", 0.5),
-        ("Radau", 0.5),
-        ("BDF", 0.5),
-        ("LSODA", 0.5),
-        ("RK45", 0),
-        ("RK45", 0.1),
-        ("RK45", 0.8),
-    ],
-)
-@pytest.mark.parametrize("use_jacobian", [True, False])
-def test_orbital(algo_name, eccentricity, use_jacobian) -> None:
-    """Solve the orbital problem."""
-    problem = OrbitalDynamics(eccentricity=eccentricity, use_jacobian=use_jacobian)
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=10e-6)
-    assert problem.result.is_converged
-
-
-def test_orbital_jacobian_explicit_expression() -> None:
-    """Validate the analytical expression of the jacobian."""
-    problem = OrbitalDynamics()
-    problem.time_vect = array([0.0, 1.0])
-    state_vect = [0.0, 0.0, 0.0, 0.0]
-    problem.check_jacobian(state_vect)
-    assert not problem.result.is_converged
+    with pytest.raises(
+        ValueError, match=re.escape("The function jac.state is not available.")
+    ):
+        checking.function_of_state.check_grad(array([0.0, 1.0]))
 
 
 def test_unconverged(caplog) -> None:
@@ -299,89 +338,199 @@ def test_unconverged(caplog) -> None:
     def _func(time, state):
         return state**2
 
-    problem = ODEProblem(_func, initial_state=[1], initial_time=0, final_time=1)
+    problem = ODEProblem(_func, array([1]), array([0.0, 1.0]))
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
 
-    assert not problem.result.is_converged
+    assert not problem.result.algorithm_has_converged
     assert f"The ODE solver {algo_name} did not converge." in caplog.records[1].message
 
 
-@pytest.mark.parametrize("problem", [OrbitalDynamics, VanDerPol])
-def test_check_ode_problem(problem) -> None:
-    """Ensure the check method of ODEProblem behaves as expected."""
-    problem = problem()
-    assert problem.result.state_vector.size == 0
-    problem.check()
+def test_problem_without_given_time_interval():
+    r"""Test for when the time interval is not provided.
 
-    ODESolverLibraryFactory().execute(problem)
-    assert problem.result.state_vector is not None
-    problem.check()
-
-    problem.result.time_vector = zeros(0)
-    try:
-        problem.check()
-    except ValueError:
-        pass
-    else:
-        raise ValueError
-
-
-def test_ode_problem_with_adjoint_attributes():
-    """Test the declaration of a problem with the attributes for using the adjoint."""
-
-    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
-        return array(state)
-
-    def _jac(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
-        return array([[1, 0], [0, 1]])
-
-    def _jac_desvar(time: float, state: NumberArray) -> NumberArray:
-        return array([[0, 0], [0, 0]])
-
-    problem = ODEProblem(
-        _func,
-        jac=_jac,
-        initial_state=[1],
-        initial_time=0,
-        final_time=1,
-        time_vector=np.linspace(0, 1, 30),
-        jac_desvar=_jac_desvar,
-        adjoint_wrt_state=array([[1, 0], [0, 1]]),
-        adjoint_wrt_desvar=array([0, 0]),
-    )
-
-    ODESolverLibraryFactory().execute(problem)
-
-    assert problem.result.is_converged
-
-
-def test_ode_problem_2d_empty_params() -> None:
-    r"""Test the definition and resolution of an ODE problem.
-
-    Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
-    :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
+    Consider the equation :math:`s' = s`, the initial condition :math:`s(0) = 1`. This
+    initial value problem should not converge on the interval :math:`[0, 1]`.
     """
 
-    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    algo_name = "RK45"
+
+    def _func(time, state):
         return state
+
+    problem = ODEProblem(_func, array([1]), array([0.0, 1.0]))
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+
+    reference_sol = exp(problem.result.times)
+    assert problem.result.algorithm_has_converged
+    assert allclose(problem.result.state_trajectories, reference_sol, atol=1e-3)
+
+
+def test_inconsistent_space_and_time_shapes():
+    algo_name = "RK45"
+
+    def _func(time, state):
+        return state
+
+    problem = ODEProblem(_func, initial_state=array([1]), times=linspace(0.0, 0.5, 10))
+    _times_2 = linspace(0.0, 0.5, 3)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+
+    problem.result.times = _times_2
+
+    with pytest.raises(ValueError) as error_info:
+        problem.check()
+
+    msg = "Inconsistent state and time shapes."
+    assert msg in str(error_info.value)
+
+
+def test_terminating_event() -> None:
+    algo_name = "RK45"
+    gravity_acceleration = -9.81
+    initial_height = 10
+    t_max = 4
+    _times = linspace(0.0, t_max, 30)
+
+    def _func(time, state):
+        return array([state[1], gravity_acceleration])
+
+    def terminating_impact(time, state):
+        return state[0]
+
+    def exact_solution(times):
+        return initial_height + times * times * gravity_acceleration / 2
+
+    jac_wrt_state = array([[0, 1], [0, 0]])
 
     problem = ODEProblem(
         _func,
-        jac=None,
-        initial_state=[1, 1],
-        initial_time=0,
-        final_time=1,
-        time_vector=None,
+        initial_state=array([initial_height, 0]),
+        times=_times,
+        jac_wrt_state=jac_wrt_state,
+        event_functions=(terminating_impact,),
     )
-    algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
-    state_vect = [0.0, 1.0]
-    problem.check_jacobian(state_vect)
-    assert problem.result.is_converged
-    assert problem.result.solver_name == algo_name
-    assert problem.result.state_vector is not None
 
-    analytical_solution = exp(problem.result.time_vector)
-    assert (
-        sqrt(np_sum((problem.result.state_vector[0] - analytical_solution) ** 2)) < 1e-6
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, atol=1e-8)
+
+    reference_sol = exact_solution(problem.result.times)
+    assert allclose(reference_sol, problem.result.state_trajectories[0, :], atol=1e-6)
+    assert isclose(problem.result.state_trajectories[0, -1], 0.0, atol=1e-3)
+
+
+def test_terminating_event_fixed_times() -> None:
+    algo_name = "RK45"
+    gravity_acceleration = -9.81
+    initial_height = 10
+    t_max = 4
+    _times = linspace(0.0, t_max, 30)
+
+    def _func(time, state):
+        return array([state[1], gravity_acceleration])
+
+    def terminating_impact(
+        time: float | NumberArray, state: NumberArray
+    ) -> NumberArray:
+        return state[0]
+
+    def exact_solution(times):
+        return initial_height + times * times * gravity_acceleration / 2
+
+    jac_wrt_state = array([[0, 1], [0, 0]])
+
+    problem = ODEProblem(
+        _func,
+        initial_state=array([initial_height, 0]),
+        times=_times,
+        jac_wrt_state=jac_wrt_state,
+        event_functions=(terminating_impact,),
+        solve_at_algorithm_times=False,
     )
+
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, atol=1e-8)
+
+    reference_sol = exact_solution(problem.result.times)
+    impact_instant = sqrt(-2 * initial_height / gravity_acceleration)
+    assert allclose(reference_sol, problem.result.state_trajectories[0, :], atol=1e-6)
+    assert isclose(impact_instant, problem.result.terminal_event_time, atol=1e-6)
+
+
+def test_terminating_event_outside_time_interval() -> None:
+    algo_name = "RK45"
+    gravity_acceleration = -9.81
+    initial_height = 500
+    t_max = 4
+    _times = linspace(0.0, t_max, 30)
+
+    def _func(time, state):
+        return array([state[1], gravity_acceleration])
+
+    def terminating_impact(time, state):
+        return state[0]
+
+    def exact_solution(times):
+        return initial_height + times * times * gravity_acceleration / 2
+
+    jac_wrt_state = array([[0, 1], [0, 0]])
+
+    problem = ODEProblem(
+        _func,
+        initial_state=array([initial_height, 0]),
+        times=_times,
+        jac_wrt_state=jac_wrt_state,
+        event_functions=(terminating_impact,),
+        solve_at_algorithm_times=False,
+    )
+
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, atol=1e-8)
+
+    reference_sol = exact_solution(problem.result.times)
+    assert allclose(reference_sol, problem.result.state_trajectories[0, :], atol=1e-6)
+    assert problem.result.terminal_event_index is None
+
+
+def test_multiple_terminating_events() -> None:
+    algo_name = "RK45"
+    gravity_acceleration = -9.81
+    initial_height = 10
+    t_max = 4
+    _times = linspace(0.0, t_max, 30)
+
+    def _func(time, state):
+        return array([state[1], gravity_acceleration])
+
+    def terminating_impact_floor(time, state):
+        return state[0]
+
+    def terminating_impact_ceiling(time, state):
+        return 20.0 - state[0]
+
+    def exact_solution(times):
+        return initial_height + times * times * gravity_acceleration / 2
+
+    jac_wrt_state = array([[0, 1], [0, 0]])
+
+    problem_1 = ODEProblem(
+        _func,
+        initial_state=array([initial_height, 0]),
+        times=_times,
+        jac_wrt_state=jac_wrt_state,
+        event_functions=(terminating_impact_floor, terminating_impact_ceiling),
+    )
+
+    problem_2 = ODEProblem(
+        _func,
+        initial_state=array([initial_height, 0]),
+        times=_times,
+        jac_wrt_state=jac_wrt_state,
+        event_functions=(terminating_impact_ceiling, terminating_impact_floor),
+    )
+
+    ODESolverLibraryFactory().execute(problem_1, algo_name=algo_name, atol=1e-8)
+    ODESolverLibraryFactory().execute(problem_2, algo_name=algo_name, atol=1e-8)
+
+    reference_sol = exact_solution(problem_1.result.times)
+
+    assert allclose(reference_sol, problem_1.result.state_trajectories[0, :], atol=1e-6)
+    assert allclose(reference_sol, problem_2.result.state_trajectories[0, :], atol=1e-6)
+    assert isclose(problem_1.result.state_trajectories[0, -1], 0.0, atol=1e-3)
+    assert isclose(problem_2.result.state_trajectories[0, -1], 0.0, atol=1e-3)

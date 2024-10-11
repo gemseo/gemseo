@@ -13,8 +13,6 @@
 Ordinary Differential Equations (ODE)
 -------------------------------------
 
-ODE stands for Ordinary Differential Equation.
-
 
 .. seealso::
 
