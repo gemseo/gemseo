@@ -27,4 +27,4 @@ from gemseo.algos.opt.augmented_lagrangian._settings.penalty_heuristic_settings 
 class AugmentedLagrangianOrder1Settings(
     PenaltyHeuristicSettings, GradientBasedAlgorithmSettings
 ):
-    """The augmented Lagrangian of order 0 settings."""
+    """The augmented Lagrangian of order 1 settings."""

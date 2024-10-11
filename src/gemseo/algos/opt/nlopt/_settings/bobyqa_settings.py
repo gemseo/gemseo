@@ -16,8 +16,10 @@
 
 from __future__ import annotations
 
-from gemseo.algos.opt.nlopt._base_nlopt_settings import BaseNLoptSettings
+from gemseo.algos.opt.nlopt._base_gradient_free_nlopt_settings import (
+    BaseGradientFreeNLoptSettings,
+)
 
 
-class BOBYQASettings(BaseNLoptSettings):
+class BOBYQASettings(BaseGradientFreeNLoptSettings):
     """The settings for the NLopt BOBYQA algorithm."""

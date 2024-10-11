@@ -34,13 +34,6 @@ class DifferentialEvolutionSettings(BaseSciPyGlobalSettings):
         description="""The differential evolution strategy to use.""",
     )
 
-    maxiter: PositiveInt = Field(
-        default=1000,
-        description=(
-            """The maximum number of generations over which the population evolves."""
-        ),
-    )
-
     popsize: PositiveInt = Field(
         default=15,
         description="""The multiplier for setting the total population size.""",

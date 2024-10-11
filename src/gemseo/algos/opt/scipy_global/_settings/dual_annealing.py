@@ -16,11 +16,8 @@
 
 from __future__ import annotations
 
-from sys import maxsize
-
 from pydantic import Field
 from pydantic import PositiveFloat  # noqa:TCH002
-from pydantic import PositiveInt  # noqa:TCH002
 
 from gemseo.algos.opt.scipy_global._base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
@@ -75,11 +72,6 @@ class DualAnnealingSettings(BaseSciPyGlobalSettings):
             acceptance.
             """
         ),
-    )
-
-    maxfun: PositiveInt = Field(
-        default=maxsize,
-        description="""The soft limit for the number of objective function calls.""",
     )
 
     seed: int = Field(

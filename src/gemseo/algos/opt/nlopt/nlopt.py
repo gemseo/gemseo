@@ -317,7 +317,10 @@ class Nlopt(BaseOptimizationLibrary):
             nlopt_options: The NLopt optimization options.
         """
         nlopt_problem.set_maxtime(nlopt_options[self._MAX_TIME])
-        nlopt_problem.set_initial_step(nlopt_options[self._INIT_STEP])
+
+        # Only set an initial step size for derivative-free optimization algorithms.
+        if not self.ALGORITHM_INFOS[self.algo_name].require_gradient:
+            nlopt_problem.set_initial_step(nlopt_options[self._INIT_STEP])
 
         max_eval = int(1.5 * nlopt_options[self._MAX_ITER])  # anti-cycling
         nlopt_problem.set_maxeval(max_eval)

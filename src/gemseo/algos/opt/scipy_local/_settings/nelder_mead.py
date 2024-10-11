@@ -21,7 +21,6 @@ from typing import Any
 
 from numpy import asarray
 from pydantic import Field
-from pydantic import NonNegativeInt  # noqa:TCH002
 from pydantic import model_validator
 
 from gemseo.algos.opt.scipy_local._base_scipy_local_settings import (
@@ -32,16 +31,6 @@ from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
 class NelderMeadSettings(BaseScipyLocalSettings):
     """Settings for the SciPy Nelder-Mead algorithm."""
-
-    maxiter: NonNegativeInt = Field(
-        default=1_000,
-        description="""The maximum number of algorithm iterations.""",
-    )
-
-    maxfev: NonNegativeInt = Field(
-        default=1_000,
-        description="""The maximum number of function evaluations.""",
-    )
 
     return_all: bool = Field(
         default=False,

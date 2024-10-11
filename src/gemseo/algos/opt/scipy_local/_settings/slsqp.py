@@ -17,8 +17,6 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa: TCH002
-from pydantic import NonNegativeInt  # noqa: TCH002
 
 from gemseo.algos.opt._gradient_based_algorithm_settings import (
     GradientBasedAlgorithmSettings,
@@ -31,27 +29,12 @@ from gemseo.algos.opt.scipy_local._base_scipy_local_settings import (
 class SLSQPSettings(BaseScipyLocalSettings, GradientBasedAlgorithmSettings):
     """Settings for the SciPy SLSQP algorithm."""
 
-    maxiter: NonNegativeInt = Field(
-        default=1_000,
-        description="""The maximum number of algrotihm iterations.""",
-    )
-
     iprint: int = Field(
         default=-1,
         description=(
             """The flag to control the frequency of output.
 
             Default is no output.
-            """
-        ),
-    )
-
-    eps: NonNegativeFloat = Field(
-        default=1e-8,
-        description=(
-            """The absolute step size forforward differences.
-
-            The forward differences is used to approximate the Jacobian if not provided.
             """
         ),
     )

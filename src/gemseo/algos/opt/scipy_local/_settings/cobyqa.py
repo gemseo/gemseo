@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from numpy import inf
 from pydantic import Field
-from pydantic import NonNegativeInt  # noqa:TCH002
 from pydantic import PositiveFloat  # noqa:TCH002
 
 from gemseo.algos.opt.scipy_local._base_scipy_local_settings import (
@@ -28,16 +27,6 @@ from gemseo.algos.opt.scipy_local._base_scipy_local_settings import (
 
 class COBYQASettings(BaseScipyLocalSettings):
     """Settings for the SciPy COBYQA algorithm."""
-
-    maxfev: NonNegativeInt = Field(
-        default=1_000,
-        description="""The maximum number of function evaluations.""",
-    )
-
-    maxiter: NonNegativeInt = Field(
-        default=1_000,
-        description="""The maximum number of algrotihm iterations.""",
-    )
 
     f_target: float = Field(
         default=-inf,
@@ -58,9 +47,4 @@ class COBYQASettings(BaseScipyLocalSettings):
     final_tr_radius: PositiveFloat = Field(
         default=1e-6,
         description="""The final trust-region radius.""",
-    )
-
-    scale: bool = Field(
-        default=False,
-        description="""Whether to scale the variables according to the bounds.""",
     )

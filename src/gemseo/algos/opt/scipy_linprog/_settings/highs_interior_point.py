@@ -29,9 +29,7 @@ class HiGHSInteriorPointSettings(BaseSciPyLinProgSettings):
 
     dual_feasibility_tolerance: NonNegativeFloat = Field(
         default=1e-7,
-        description=(
-            """The tolerance under which constraints are considered satisfied."""
-        ),
+        description=("""The tolerance on the feasibility of the dual problem."""),
     )
 
     ipm_optimality_tolerance: NonNegativeFloat = Field(
@@ -42,7 +40,5 @@ class HiGHSInteriorPointSettings(BaseSciPyLinProgSettings):
 
     primal_feasibility_tolerance: NonNegativeFloat = Field(
         default=1e-7,
-        description=(
-            """The tolerance under which constraints are considered satisfied."""
-        ),
+        description="""The tolerance on the feasibility of the primal problem.""",
     )
