@@ -128,7 +128,7 @@ def generate_pareto_plots(
 
     pareto_opt_all = compute_pareto_optimal_points(obj_values, is_feasible)
 
-    fig, axes = plt.subplots(n_obj - 1, n_obj - 1, figsize=fig_size, squeeze=False)
+    fig, axs = plt.subplots(n_obj - 1, n_obj - 1, figsize=fig_size, squeeze=False)
     fig.suptitle("Pareto front")
 
     # 0 vs 1   0 vs 2    0 vs 3
@@ -142,10 +142,10 @@ def generate_pareto_plots(
         obj_loc = vstack((obj_values[:, i], obj_values[:, j])).T
         pareto_opt_loc = compute_pareto_optimal_points(obj_loc, is_feasible)
 
-        axe = axes[i, j - 1]
+        ax = axs[i, j - 1]
         bi_obj = n_obj == 2
         plot_pareto_bi_obj = ParetoPlotBiObjective(
-            axe,
+            ax,
             obj_loc,
             pareto_opt_loc,
             [obj_names[i], obj_names[j]],
@@ -157,13 +157,13 @@ def generate_pareto_plots(
         plot_pareto_bi_obj.plot_on_axes()
 
         if i != j - 1:
-            axes[j - 1, i].remove()
+            axs[j - 1, i].remove()
 
     # Ensure the unicity of the labels in the legend
     new_handles = []
     new_labels = []
-    for axe in axes.flatten():
-        handles, labels = axe.get_legend_handles_labels()
+    for ax in axs.flatten():
+        handles, labels = ax.get_legend_handles_labels()
         for label, handle in zip(labels, handles):
             if label not in new_labels:
                 new_labels.append(label)

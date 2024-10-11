@@ -19,7 +19,6 @@ from __future__ import annotations
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
 
 
 class VariableInfluenceSettings(BasePostSettings):  # noqa: D101
@@ -41,6 +40,3 @@ class VariableInfluenceSettings(BasePostSettings):  # noqa: D101
         description="Whether to save the influential variables indices to a NumPy "
         "file.",
     )
-
-
-update_field(VariableInfluenceSettings, "fig_size", default=(20.0, 5.0))

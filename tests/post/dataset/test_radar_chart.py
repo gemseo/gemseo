@@ -76,17 +76,17 @@ TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@pytest.mark.parametrize("fig_and_axes", [False, True])
+@pytest.mark.parametrize("fig_and_ax", [False, True])
 @image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_axes) -> None:
+def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
     """Test images created by RadarChart._plot against references."""
     plot = RadarChart(dataset, **kwargs)
-    if fig_and_axes:
+    if fig_and_ax:
         fig = plt.figure(figsize=plot.fig_size)
-        axes = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
+        ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
     else:
-        fig, axes = (None, None)
+        fig, ax = (None, None)
 
     for k, v in properties.items():
         setattr(plot, k, v)
-    plot.execute(save=False, fig=fig, axes=axes)
+    plot.execute(save=False, fig=fig, ax=ax)

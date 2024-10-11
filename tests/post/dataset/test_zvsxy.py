@@ -59,6 +59,7 @@ other_dataset = Dataset.from_array(
     variable_names=["x", "y", "z"],
     variable_names_to_n_components=variable_names_to_n_components,
 )
+other_dataset.name = "foo"
 
 
 # the test parameters, it maps a test name to the inputs and references outputs:
@@ -105,7 +106,7 @@ TEST_PARAMETERS = {
     ),
     "with_other_datasets": (
         {"x": "x", "y": "y", "z": "z", "other_datasets": [other_dataset]},
-        {"color": "white"},
+        {"color": "white", "grid": True},
         ["ZvsXY_other_datasets"],
     ),
     "with_isolines": (
@@ -136,14 +137,12 @@ TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@pytest.mark.parametrize("fig_and_axes", [False, True])
+@pytest.mark.parametrize("fig_and_ax", [False, True])
 @image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_axes) -> None:
+def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
     """Test images created by ZvsXY._plot against references."""
     plot = ZvsXY(dataset, **kwargs)
-    fig, axes = (
-        (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
-    )
+    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
     for k, v in properties.items():
         setattr(plot, k, v)
-    plot.execute(save=False, fig=fig, axes=axes)
+    plot.execute(save=False, fig=fig, ax=ax)

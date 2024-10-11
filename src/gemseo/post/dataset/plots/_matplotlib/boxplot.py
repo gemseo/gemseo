@@ -35,7 +35,7 @@ class Boxplot(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         variable_names: Iterable[str],
         positions: Iterable[float],
         n_datasets: int,
@@ -52,11 +52,11 @@ class Boxplot(MatplotlibPlot):
             names: The names of the columns.
             opacity_level: The level of opacity.
         """  # noqa: D205, D212, D415
-        fig, axes = self._get_figure_and_axes(fig, axes)
+        fig, ax = self._get_figure_and_axes(fig, ax)
         self._common_settings.set_colors(self._common_settings.color)
         self.__draw_boxplot(
             self._common_dataset,
-            axes,
+            ax,
             variable_names,
             self._common_settings.color[0],
             n_datasets,
@@ -66,7 +66,7 @@ class Boxplot(MatplotlibPlot):
         for index, dataset in enumerate(self._specific_settings.datasets):
             self.__draw_boxplot(
                 dataset,
-                axes,
+                ax,
                 variable_names,
                 self._common_settings.color[index + 1],
                 n_datasets,
@@ -75,15 +75,15 @@ class Boxplot(MatplotlibPlot):
             )
 
         if self._specific_settings.use_vertical_bars:
-            axes.set_xticks(positions)
-            axes.set_xticklabels(names)
+            ax.set_xticks(positions)
+            ax.set_xticklabels(names)
         else:
-            axes.set_yticks(positions)
-            axes.set_yticklabels(names)
+            ax.set_yticks(positions)
+            ax.set_yticklabels(names)
 
-        axes.set_xlabel(self._common_settings.xlabel)
-        axes.set_ylabel(self._common_settings.ylabel)
-        axes.set_title(self._common_settings.title)
+        ax.set_xlabel(self._common_settings.xlabel)
+        ax.set_ylabel(self._common_settings.ylabel)
+        ax.set_title(self._common_settings.title)
 
         if n_datasets > 1:
             plt.plot(
@@ -100,14 +100,14 @@ class Boxplot(MatplotlibPlot):
         return [fig]
 
     def __draw_boxplot(self, *args) -> None:
-        dataset, axes, variables, color, n_datasets, origin, names = args
+        dataset, ax, variables, color, n_datasets, origin, names = args
         if self._specific_settings.center or self._specific_settings.scale:
             dataset = dataset.get_normalized(
                 use_min_max=False,
                 center=self._specific_settings.center,
                 scale=self._specific_settings.scale,
             )
-        boxplot = axes.boxplot(
+        boxplot = ax.boxplot(
             dataset.get_view(variable_names=variables).to_numpy(),
             vert=self._specific_settings.use_vertical_bars,
             notch=self._specific_settings.add_confidence_interval,
@@ -119,10 +119,10 @@ class Boxplot(MatplotlibPlot):
             **self._specific_settings.boxplot_options,
         )
         if self._common_settings.grid:
-            axes.xaxis.grid(
+            ax.xaxis.grid(
                 visible=True, linestyle="-", which="major", color="lightgrey", alpha=0.5
             )
-            axes.yaxis.grid(
+            ax.yaxis.grid(
                 visible=True, linestyle="-", which="major", color="lightgrey", alpha=0.5
             )
 

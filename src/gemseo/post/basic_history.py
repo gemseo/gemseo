@@ -24,7 +24,6 @@ import operator
 from typing import ClassVar
 from typing import Final
 
-from matplotlib.ticker import MaxNLocator
 from numpy import arange
 from numpy import newaxis
 
@@ -71,13 +70,11 @@ class BasicHistory(BasePost[BasicHistorySettings]):
             dataset,
             abscissa_variable=self.__ITERATION_NAME,
             variables=problem.get_function_names(variable_names),
+            use_integer_xticks=True,
         )
         plot.font_size = 12
         plot.xlabel = "Iterations"
         plot.fig_size_x = settings.fig_size[0]
         plot.fig_size_y = settings.fig_size[1]
         plot.title = "History plot"
-        figures = plot.execute(save=False)
-        figures[-1].gca().get_xaxis().set_major_locator(MaxNLocator(integer=True))
-        for figure in figures:
-            self._add_figure(figure)
+        self._add_figure(plot)

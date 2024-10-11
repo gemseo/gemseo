@@ -64,18 +64,15 @@ def dataset() -> Dataset:
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@pytest.mark.parametrize("fig_and_axes", [False, True])
+@pytest.mark.parametrize("fig_and_ax", [False, True])
 @image_comparison(None)
-def test_plot(dataset, kwargs, properties, baseline_images, fig_and_axes) -> None:
+def test_plot(dataset, kwargs, properties, baseline_images, fig_and_ax) -> None:
     """Test images created by Radar._plot against references."""
-
     plot = Radar(dataset, classifier="specy")
-    fig, axes = (
-        (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
-    )
+    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
     for k, v in properties.items():
         setattr(plot, k, v)
-    plot.execute(save=False, fig=fig, axes=axes)
+    plot.execute(save=False, fig=fig, ax=ax)
 
 
 def test_classifier_error(dataset) -> None:

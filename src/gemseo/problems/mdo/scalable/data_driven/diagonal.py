@@ -277,24 +277,24 @@ class ScalableDiagonalModel(ScalableModel):
             dp_sum = dependency_matrix.sum(0)
             dependency_matrix /= dp_sum
 
-        fig, axes = plt.subplots()
-        axes.matshow(dependency_matrix, cmap="Greys", vmin=0)
-        axes.set_yticks(inputs_positions)
-        axes.set_yticklabels(self.input_names)
-        axes.set_xticks(outputs_positions)
-        axes.set_xticklabels(self.output_names, ha="left", rotation="vertical")
-        axes.tick_params(axis="both", which="both", length=0)
+        fig, ax = plt.subplots()
+        ax.matshow(dependency_matrix, cmap="Greys", vmin=0)
+        ax.set_yticks(inputs_positions)
+        ax.set_yticklabels(self.input_names)
+        ax.set_xticks(outputs_positions)
+        ax.set_xticklabels(self.output_names, ha="left", rotation="vertical")
+        ax.tick_params(axis="both", which="both", length=0)
         for pos in inputs_positions[1:]:
-            axes.axhline(y=pos - 0.5, color="r", linewidth=0.5)
+            ax.axhline(y=pos - 0.5, color="r", linewidth=0.5)
         for pos in outputs_positions[1:]:
-            axes.axvline(x=pos - 0.5, color="r", linewidth=0.5)
+            ax.axvline(x=pos - 0.5, color="r", linewidth=0.5)
         if add_levels and not is_binary_matrix:
             for i in range(dependency_matrix.shape[0]):
                 for j in range(dependency_matrix.shape[1]):
                     val = int(round(dependency_matrix[i, j] * 100))
                     med = median(dependency_matrix[:, j] * 100)
                     col = "white" if val > med else "black"
-                    axes.text(j, i, val, ha="center", va="center", color=col)
+                    ax.text(j, i, val, ha="center", va="center", color=col)
         if save:
             extension = "png" if png else "pdf"
             file_path = Path(directory) / f"{self.name}_dependency.{extension}"

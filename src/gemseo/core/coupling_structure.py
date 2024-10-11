@@ -360,17 +360,17 @@ class CouplingStructure:
         """
         fig = plt.figure(figsize=fig_size)
         plt.grid(True)
-        axe = plt.gca()
-        axe.grid(True, linestyle="-", color="black", lw=1)
+        ax = plt.gca()
+        ax.grid(True, linestyle="-", color="black", lw=1)
         n_disciplines = len(self.disciplines)
         ax_ticks = list(range(n_disciplines + 1))
-        axe.xaxis.set_ticks(ax_ticks)
-        axe.yaxis.set_ticks(ax_ticks)
-        axe.xaxis.set_ticklabels([])
-        axe.yaxis.set_ticklabels([])
-        axe.set(xlim=(0, ax_ticks[-1]), ylim=(0, ax_ticks[-1]))
-        axe.tick_params(axis="x", direction="in")
-        axe.tick_params(axis="y", direction="in")
+        ax.xaxis.set_ticks(ax_ticks)
+        ax.yaxis.set_ticks(ax_ticks)
+        ax.xaxis.set_ticklabels([])
+        ax.yaxis.set_ticklabels([])
+        ax.set(xlim=(0, ax_ticks[-1]), ylim=(0, ax_ticks[-1]))
+        ax.tick_params(axis="x", direction="in")
+        ax.tick_params(axis="y", direction="in")
         fig.tight_layout()
 
         self_coupling = {}
@@ -407,7 +407,7 @@ class CouplingStructure:
         couplings = self.graph.get_disciplines_couplings()
 
         if couplings:
-            self.__add_couplings(couplings, show_data_names, n_disciplines, fig, axe)
+            self.__add_couplings(couplings, show_data_names, n_disciplines, fig, ax)
 
         if save:
             plt.savefig(str(file_path))
@@ -509,7 +509,7 @@ class CouplingStructure:
         show_data_names: bool,
         n_disciplines: int,
         fig: Figure,
-        axe: Axes,
+        ax: Axes,
     ) -> None:
         """Add the existing couplings to the N2 chart.
 
@@ -520,8 +520,9 @@ class CouplingStructure:
                 circles are drawn,
                 whose size depends on the number of coupling names.
             n_disciplines: The number of disciplines being considered.
-            fig: The figure where the couplings will be added.
-            axe: The axes of the figure.
+            fig: The figure on which to plot.
+            ax: The :class:`~matplotlib.axes.Axes` object associated with ``fig``
+                on which to plot.
         """
         max_coupling_size = max(len(variables) for _, _, variables in couplings)
 
@@ -546,4 +547,4 @@ class CouplingStructure:
                     len(variables) / (3.0 * max_coupling_size),
                     color="royalblue",
                 )
-                axe.add_artist(circle)
+                ax.add_artist(circle)

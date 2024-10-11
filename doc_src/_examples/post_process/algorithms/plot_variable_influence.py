@@ -107,4 +107,4 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 
-scenario.post_process("VariableInfluence", fig_size=(20, 20), save=False, show=True)
+scenario.post_process("VariableInfluence", save=False, show=True)

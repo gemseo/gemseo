@@ -87,4 +87,12 @@ class Lines(PlotlyPlot):
         fig.update_yaxes(showgrid=self._common_settings.grid)
         if self._specific_settings.set_xticks_from_data:
             fig.update_layout(xaxis={"tickvals": x_values})
+
+        if self._specific_settings.use_integer_xticks:
+            msg = (
+                "The use_integer_xticks option of plotly-based Lines "
+                "is not implemented."
+            )
+            raise NotImplementedError(msg)
+
         return fig

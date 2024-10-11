@@ -36,7 +36,7 @@ class BarPlot(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         data: NDArray,
         feature_names: Iterable[str],
     ) -> list[Figure]:
@@ -45,10 +45,10 @@ class BarPlot(MatplotlibPlot):
             data: The data to be plotted.
             feature_names: The names of the features.
         """  # noqa: D205, D212, D415
-        fig, axes = self._get_figure_and_axes(fig, axes)
+        fig, ax = self._get_figure_and_axes(fig, ax)
         self._common_settings.set_colors(self._common_settings.color)
         n_series, n_features = data.shape
-        axes.tick_params(labelsize=self._common_settings.font_size)
+        ax.tick_params(labelsize=self._common_settings.font_size)
         first_series_positions = arange(n_features)
         width = 0.75 / n_series
         subplots = []
@@ -63,7 +63,7 @@ class BarPlot(MatplotlibPlot):
             self._common_settings.color,
         ):
             subplots.append(
-                axes.bar(
+                ax.bar(
                     feature_positions,
                     series_data.tolist(),
                     width,
@@ -77,7 +77,7 @@ class BarPlot(MatplotlibPlot):
                 for rect in rects:
                     height = rect.get_height()
                     pos = 3 if height > 0 else -12
-                    axes.annotate(
+                    ax.annotate(
                         f"{round(height, self._specific_settings.n_digits)}",
                         xy=(rect.get_x() + rect.get_width() / 2, height),
                         xytext=(0, pos),  # 3 points vertical offset
@@ -88,14 +88,14 @@ class BarPlot(MatplotlibPlot):
                         rotation_mode="anchor",
                     )
 
-        axes.set_xticks([position + 0.375 for position in first_series_positions])
-        axes.set_xticklabels(feature_names)
-        axes.set_xlabel(self._common_settings.xlabel)
-        axes.set_ylabel(self._common_settings.ylabel)
-        axes.set_title(
+        ax.set_xticks([position + 0.375 for position in first_series_positions])
+        ax.set_xticklabels(feature_names)
+        ax.set_xlabel(self._common_settings.xlabel)
+        ax.set_ylabel(self._common_settings.ylabel)
+        ax.set_title(
             self._common_settings.title, fontsize=self._common_settings.font_size * 1.2
         )
-        axes.legend(fontsize=self._common_settings.font_size)
-        axes.set_axisbelow(True)
-        axes.grid(visible=self._common_settings.grid)
+        ax.legend(fontsize=self._common_settings.font_size)
+        ax.set_axisbelow(True)
+        ax.grid(visible=self._common_settings.grid)
         return [fig]

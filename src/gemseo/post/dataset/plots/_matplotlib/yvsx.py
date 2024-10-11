@@ -32,7 +32,7 @@ class YvsX(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         x_values: ArrayLike,
         y_values: ArrayLike,
     ) -> list[Figure]:
@@ -41,15 +41,15 @@ class YvsX(MatplotlibPlot):
             x_values: The values of the points on the x-axis.
             y_values: The values of the points on the y-axis.
         """  # noqa: D205, D212, D415
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        axes.plot(
+        fig, ax = self._get_figure_and_axes(fig, ax)
+        ax.plot(
             x_values,
             y_values,
             self._common_settings.linestyle,
             color=self._common_settings.color,
         )
-        axes.grid(visible=self._common_settings.grid)
-        axes.set_xlabel(self._common_settings.xlabel)
-        axes.set_ylabel(self._common_settings.ylabel)
-        axes.set_title(self._common_settings.title)
+        ax.grid(visible=self._common_settings.grid)
+        ax.set_xlabel(self._common_settings.xlabel)
+        ax.set_ylabel(self._common_settings.ylabel)
+        ax.set_title(self._common_settings.title)
         return [fig]

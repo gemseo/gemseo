@@ -31,9 +31,8 @@ from matplotlib import pyplot
 from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
+from matplotlib.ticker import SymmetricalLogLocator
 from numpy import arange
-from numpy import array
-from numpy import e
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
@@ -125,40 +124,30 @@ class QuadApprox(BasePost[QuadApproxSettings]):
         Returns:
             The plot of the Hessian of the function.
         """
-        fig = plt.figure(figsize=fig_size)
-        grid = self._get_grid_layout()
-        ax1 = fig.add_subplot(grid[0, 0])
+        fig, ax = plt.subplots(1, 1, figsize=fig_size)
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
         linear_threshold = 10 ** (np.log10(vmax) - 5.0)
 
         # SymLog is a symmetric log scale adapted to negative values
-        img = ax1.imshow(
+        img = ax.imshow(
             hessian,
             cmap=PARULA,
             interpolation="nearest",
-            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold, base=e),
+            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold),
         )
         ticks = arange(self.optimization_problem.design_space.dimension)
         design_variable_names = self._get_design_variable_names(simplify=True)
-        ax1.set_xticks(ticks)
-        ax1.set_xticklabels(design_variable_names, rotation=45)
-        ax1.set_yticks(ticks)
-        ax1.set_yticklabels(design_variable_names)
-        thick_min, thick_max = int(np.log10(linear_threshold)), int(np.log10(vmax))
-        positive_levels = np.logspace(
-            thick_min, thick_max, num=thick_max - thick_min + 1
-        )
+        ax.set_xticks(ticks)
+        ax.set_xticklabels(design_variable_names, rotation=45)
+        ax.set_yticks(ticks)
+        ax.set_yticklabels(design_variable_names)
         fig.colorbar(
             img,
-            cax=fig.add_subplot(grid[0, 1]),
-            ticks=np.concatenate((
-                np.sort(-positive_levels),
-                array([0]),
-                positive_levels,
-            )),
+            ticks=SymmetricalLogLocator(linthresh=linear_threshold, base=10),
             format=LogFormatterSciNotation(),
         )
         fig.suptitle(f"Hessian matrix SR1 approximation of {function}")
+        fig.tight_layout()
         return fig
 
     @staticmethod
@@ -219,5 +208,6 @@ class QuadApprox(BasePost[QuadApproxSettings]):
             start, stop = ax_i.get_ylim()
             ax_i.yaxis.set_ticks(np.arange(start, stop, 0.24999999 * (stop - start)))
             ax_i.set_xlabel(design_variable_name)
+
         pyplot.tight_layout()
         return fig

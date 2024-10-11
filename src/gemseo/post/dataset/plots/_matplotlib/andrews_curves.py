@@ -32,14 +32,14 @@ class AndrewsCurves(MatplotlibPlot):
     """The Andrews curves based on matplotlib."""
 
     def _create_figures(
-        self, fig: Figure | None, axes: Axes | None, column: tuple[str, str, int]
+        self, fig: Figure | None, ax: Axes | None, column: tuple[str, str, int]
     ) -> list[Figure]:
         """
         Args:
             column: The column of the dataset containing the group names.
         """  # noqa: D205 D212 D415
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        andrews_curves(self._common_dataset, column, ax=axes)
+        fig, ax = self._get_figure_and_axes(fig, ax)
+        andrews_curves(self._common_dataset, column, ax=ax)
         if not self._common_settings.grid:
             plt.grid(visible=False)
         plt.xlabel(self._common_settings.xlabel)

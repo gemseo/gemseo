@@ -34,7 +34,7 @@ class Surfaces(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
     ) -> list[Figure]:
         mesh = self._specific_settings.mesh
         variable = self._specific_settings.variable
@@ -53,18 +53,18 @@ class Surfaces(MatplotlibPlot):
         figs = []
         for sample, sample_name in zip(samples, self._common_dataset.index):
             fig = plt.figure(figsize=self._common_settings.fig_size)
-            axes = fig.add_subplot(1, 1, 1)
-            func = axes.tricontourf if self._specific_settings.fill else axes.tricontour
+            ax = fig.add_subplot(1, 1, 1)
+            func = ax.tricontourf if self._specific_settings.fill else ax.tricontour
             tcf = func(mtri.Triangulation(x_data, y_data), sample, **options)
             if self._specific_settings.add_points:
-                axes.scatter(x_data, y_data, color=self._common_settings.color or None)
+                ax.scatter(x_data, y_data, color=self._common_settings.color or None)
 
-            axes.set_xlabel(self._common_settings.xlabel)
-            axes.set_ylabel(self._common_settings.ylabel)
+            ax.set_xlabel(self._common_settings.xlabel)
+            ax.set_ylabel(self._common_settings.ylabel)
             main_title = (
                 self._common_settings.title or self._common_settings.zlabel or variable
             )
-            axes.set_title(f"{main_title} - {sample_name}")
+            ax.set_title(f"{main_title} - {sample_name}")
             fig.colorbar(tcf)
             figs.append(fig)
 

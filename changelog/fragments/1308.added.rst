@@ -1,0 +1,5 @@
+The ``execute`` method of post-processing tools (see ``BasePost``) returns a dictionary of matplotlib figures of ``DatasetPlot``,
+depending on whether or not it is based on a ``DatasetPlot``.
+This allows interactive visualization in a web page when the HTML format is supported by the ``DatasetPlot``.
+This is the case of ``BasicHistory`` whose HTML version is based on the plotly library.
+When available, set ``file_extension`` to ``"html"``.

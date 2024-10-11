@@ -27,12 +27,8 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Generic
-from typing import Optional
 from typing import TypeVar
 from typing import Union
-
-from matplotlib.figure import Figure
-from matplotlib.gridspec import GridSpec
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.post.dataset.dataset_plot import DatasetPlot
@@ -46,13 +42,12 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from matplotlib.figure import Figure
+
     from gemseo.algos.database import Database
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 BasePostOptionType = Union[int, float, str, bool, Sequence[str], FigSizeType]
-PlotOutputType = list[
-    tuple[Optional[str], Union[Figure, DatasetPlot], Optional[dict[str, Sequence[str]]]]
-]
 
 
 T = TypeVar("T", bound=BasePostSettings)
@@ -88,7 +83,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     _output_file_paths: list[Path]
     """Paths to the output files."""
 
-    __figures: dict[str, Figure]
+    __figures: dict[str, Figure | DatasetPlot]
     """The mapping from figure names or nameless figure counters to figures."""
 
     def __init__(
@@ -113,6 +108,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         self._output_file_paths = []
         self.__figures = {}
         self.__nameless_figure_counter = 0
+        self._dataset_plots = []
 
     @property
     def _change_obj(self) -> bool:
@@ -123,8 +119,8 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         )
 
     @property
-    def figures(self) -> dict[str, Figure]:
-        """The Matplotlib figures indexed by a name, or the nameless figure counter."""
+    def figures(self) -> dict[str, Figure | DatasetPlot]:
+        """The figures indexed by a name, or the nameless figure counter."""
         return self.__figures
 
     @property
@@ -134,7 +130,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _add_figure(
         self,
-        figure: Figure,
+        figure: Figure | DatasetPlot,
         file_name: str = "",
     ) -> None:
         """Add a figure.
@@ -150,7 +146,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
         self.__figures[file_name] = figure
 
-    def execute(self, **settings: Any) -> dict[str, Figure]:
+    def execute(self, **settings: Any) -> dict[str, Figure | DatasetPlot]:
         """Post-process the optimization problem.
 
         Args:
@@ -161,7 +157,8 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
                 and ``"settings"`` is a special argument name.
 
         Returns:
-            The figures, to be customized if not closed.
+            The figures, to be customized;
+            in the case of a matplotlib ``Figure``, it must not be closed.
 
         Raises:
             ValueError: If the ``opt_problem.database`` is empty.
@@ -187,13 +184,14 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             settings: The rendering settings.
         """
+        file_extension = settings.file_extension
         file_path = self.__file_path_manager.create_file_path(
             file_path=settings.file_path,
             directory_path=settings.directory_path,
             file_name=settings.file_name,
-            file_extension=settings.file_extension,
+            file_extension=file_extension,
         )
-
+        file_extension = file_path.suffix[1:]
         for figure_name, figure in self.__figures.items():
             fig_file_path: str | Path
             if settings.save:
@@ -208,7 +206,18 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             else:
                 fig_file_path = ""
 
-            save_show_figure(figure, settings.show, fig_file_path, settings.fig_size)
+            if isinstance(figure, DatasetPlot):
+                figure.fig_size = settings.fig_size
+                figure.execute(
+                    save=settings.save,
+                    show=settings.show,
+                    file_format=file_extension,
+                    file_path=fig_file_path,
+                )
+            else:
+                save_show_figure(
+                    figure, settings.show, fig_file_path, settings.fig_size
+                )
 
     @abstractmethod
     def _plot(self, settings: T) -> None:
@@ -248,12 +257,3 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             ])
 
         return design_variable_names
-
-    @staticmethod
-    def _get_grid_layout() -> GridSpec:
-        """Return a grid layout to place subplots within a figure.
-
-        Returns:
-            A grid layout to place subplots within a figure.
-        """
-        return GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)

@@ -29,7 +29,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
-from numpy import e
+from matplotlib.ticker import SymmetricalLogLocator
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import RG_SEISMIC
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import NumberArray
 
 
@@ -63,9 +63,7 @@ class ObjConstrHist(BasePost[ObjConstrHistSettings]):
         constraint_names = settings.constraint_names
 
         # 0. Initialize the figure.
-        grid = self._get_grid_layout()
-        fig = plt.figure(figsize=settings.fig_size)
-        ax1 = fig.add_subplot(grid[0, 0])
+        fig, ax1 = plt.subplots(1, 1, figsize=settings.fig_size)
         n_iterations = len(self.database)
         ax1.set_xticks(range(n_iterations))
         ax1.set_xticklabels(map(str, range(1, n_iterations + 1)))
@@ -121,7 +119,7 @@ class ObjConstrHist(BasePost[ObjConstrHistSettings]):
             interpolation="nearest",
             aspect="auto",
             extent=(-0.5, n_iterations - 0.5, obj_min - margin, obj_max + margin),
-            norm=SymLogNorm(vmin=-c_max, vmax=c_max, linthresh=1.0, base=e),
+            norm=SymLogNorm(vmin=-c_max, vmax=c_max, linthresh=1.0),
         )
         # 2.c. Add vertical labels with constraint violation information.
         constraint_names = ineq_names + eq_names
@@ -144,19 +142,13 @@ class ObjConstrHist(BasePost[ObjConstrHistSettings]):
 
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         # 2.d. Add color map.
-        thick_max = int(np.log10(np.abs(c_max)))
-        levels_pos = np.append(
-            np.logspace(0, thick_max, num=thick_max + 1),
-            c_max,
-        )
-        cax = fig.add_subplot(grid[0, 1])
         col_bar = fig.colorbar(
             im1,
-            cax=cax,
-            ticks=np.concatenate((np.append(np.sort(-levels_pos), 0), levels_pos)),
+            ticks=SymmetricalLogLocator(linthresh=1.0, base=10),
             format=LogFormatterSciNotation(),
         )
         col_bar.ax.tick_params(labelsize=9)
+        fig.tight_layout()
         self._add_figure(fig)
 
     def __get_constraints(

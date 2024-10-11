@@ -116,35 +116,35 @@ def test_setters(dataset_plot, attribute, value) -> None:
     assert getattr(dataset_plot, attribute) == value
 
 
-def test_get_figure_and_axes_from_existing_fig_and_axes(dataset_plot, dataset) -> None:
+def test_get_figure_and_ax_from_existing_fig_and_ax(dataset_plot, dataset) -> None:
     """Check that get_figure_and_axes using fig and axes returns fig and axes."""
-    fig, axes = plt.subplots()
+    fig, ax = plt.subplots()
     plot = Lines(dataset)
     plot.xlabel = "foo"
-    figures = plot.execute(show=False, save=False, fig=fig, axes=axes)
+    figures = plot.execute(show=False, save=False, fig=fig, ax=ax)
     assert figures == [fig]
-    assert axes.get_figure() == fig
-    assert axes.get_xlabel() == "foo"
+    assert ax.get_figure() == fig
+    assert ax.get_xlabel() == "foo"
 
 
-def test_get_figure_and_axes_from_scratch(dataset, dataset_plot) -> None:
+def test_get_figure_and_ax_from_scratch(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes without fig and axes returns new fig and axes."""
     with concretize_classes(MatplotlibPlot):
         plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, None)
-    fig, axes = plot._get_figure_and_axes(None, None)
+    fig, ax = plot._get_figure_and_axes(None, None)
     assert isinstance(fig, MatplotlibFigure)
-    assert isinstance(axes, Axes)
+    assert isinstance(ax, Axes)
 
 
 def test_get_figure_and_axes_from_axes_only(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes with axes and without fig raises a ValueError."""
-    _, axes = plt.subplots()
+    _, ax = plt.subplots()
     with concretize_classes(MatplotlibPlot):
-        plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, axes)
+        plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, ax)
     with pytest.raises(
         ValueError, match="The figure associated with the given axes is missing."
     ):
-        plot._get_figure_and_axes(None, axes)
+        plot._get_figure_and_axes(None, ax)
 
 
 def test_get_figure_and_axes_from_figure_only(dataset, dataset_plot) -> None:

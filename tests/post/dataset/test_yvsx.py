@@ -95,14 +95,12 @@ TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@pytest.mark.parametrize("fig_and_axes", [False, True])
+@pytest.mark.parametrize("fig_and_ax", [False, True])
 @image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_axes) -> None:
+def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
     """Test images created by YvsX._plot against references."""
     plot = YvsX(dataset, **kwargs)
-    fig, axes = (
-        (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
-    )
+    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
     for k, v in properties.items():
         setattr(plot, k, v)
-    plot.execute(save=False, fig=fig, axes=axes)
+    plot.execute(save=False, fig=fig, ax=ax)
