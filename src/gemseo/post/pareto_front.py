@@ -99,6 +99,7 @@ class ParetoFront(BasePost[ParetoFrontSettings]):
             show_non_feasible=settings.show_non_feasible,
         )
 
+        fig.tight_layout()
         self._add_figure(fig)
 
     def __compute_names_and_values(

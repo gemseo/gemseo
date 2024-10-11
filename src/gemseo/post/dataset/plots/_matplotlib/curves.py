@@ -32,7 +32,7 @@ class Curves(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         y_values: ArrayLike,
         labels: list[str],
     ) -> list[Figure]:
@@ -42,7 +42,7 @@ class Curves(MatplotlibPlot):
                 (one curve per row).
             labels: The labels of the curves.
         """  # noqa: D205 D212 D415
-        fig, axes = self._get_figure_and_axes(fig, axes)
+        fig, ax = self._get_figure_and_axes(fig, ax)
         self._common_settings.set_colors(self._common_settings.color)
         self._common_settings.set_linestyles(
             self._common_settings.linestyle
@@ -57,16 +57,14 @@ class Curves(MatplotlibPlot):
             self._common_settings.color,
             labels,
         ):
-            axes.plot(
-                mesh, sub_y_values, linestyle=line_style, color=color, label=label
-            )
+            ax.plot(mesh, sub_y_values, linestyle=line_style, color=color, label=label)
 
-        axes.grid(visible=self._common_settings.grid)
-        axes.set_xlabel(self._common_settings.xlabel or mesh_name)
-        axes.set_ylabel(
+        ax.grid(visible=self._common_settings.grid)
+        ax.set_xlabel(self._common_settings.xlabel or mesh_name)
+        ax.set_ylabel(
             self._common_settings.ylabel
             or f"{self._specific_settings.variable}({mesh_name})"
         )
-        axes.set_title(self._common_settings.title)
-        axes.legend(loc=self._common_settings.legend_location)
+        ax.set_title(self._common_settings.title)
+        ax.legend(loc=self._common_settings.legend_location)
         return [fig]

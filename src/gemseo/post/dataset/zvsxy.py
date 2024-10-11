@@ -111,6 +111,7 @@ class ZvsXY(DatasetPlot):
             z, z_comp, self.dataset.variable_names_to_n_components
         )
         self.title = self.title or self.zlabel
+        self.grid = False
         get_view = self.dataset.get_view
         return (
             get_view(variable_names=x, components=x_comp).to_numpy().ravel(),

@@ -69,4 +69,5 @@ class TopologyView(BasePost[TopologyViewSettings]):
             )
             im.set_array(data)
             plt.axis("off")
+            fig.tight_layout()
             self._add_figure(fig, f"configuration_{iteration}")

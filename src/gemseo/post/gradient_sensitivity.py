@@ -72,6 +72,7 @@ class GradientSensitivity(BasePost[GradientSensitivitySettings]):
             settings.scale_gradients,
             settings.fig_size,
         )
+        fig.tight_layout()
         self._add_figure(fig)
 
     def __get_output_gradients(
@@ -179,11 +180,10 @@ class GradientSensitivity(BasePost[GradientSensitivitySettings]):
         n_cols = 2
         n_rows = sum(divmod(n_gradients, n_cols))
 
-        fig, axes = pyplot.subplots(
-            nrows=n_rows, ncols=n_cols, sharex=True, figsize=fig_size
+        fig, axs = pyplot.subplots(
+            nrows=n_rows, ncols=n_cols, sharex=True, figsize=fig_size, squeeze=False
         )
 
-        axes = atleast_2d(axes)
         abscissa = arange(len(design_value))
         if self._change_obj:
             gradients[self._obj_name] = -gradients.pop(self._standardized_obj_name)
@@ -192,21 +192,21 @@ class GradientSensitivity(BasePost[GradientSensitivitySettings]):
         font_size = 12
         rotation = 90
         for output_name, gradient_value in sorted(gradients.items()):
-            axe = axes[i][j]
-            axe.bar(
+            ax = axs[i][j]
+            ax.bar(
                 abscissa,
                 gradient_value,
                 color=where(gradient_value < 0, "blue", "red"),
                 align="center",
             )
-            axe.grid()
-            axe.set_axisbelow(True)
-            axe.set_title(output_name)
-            axe.set_xticks(abscissa)
-            axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
+            ax.grid()
+            ax.set_axisbelow(True)
+            ax.set_title(output_name)
+            ax.set_xticks(abscissa)
+            ax.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
             # Update y labels spacing
             vis_labels = [
-                label for label in axe.get_yticklabels() if label.get_visible() is True
+                label for label in ax.get_yticklabels() if label.get_visible() is True
             ]
             pyplot.setp(vis_labels[::2], visible=False)
             if j == n_cols - 1:
@@ -216,9 +216,9 @@ class GradientSensitivity(BasePost[GradientSensitivitySettings]):
                 j += 1
 
         if j == n_cols - 1:
-            axe = axes[i][j]
-            axe.set_xticks(abscissa)
-            axe.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
+            ax = axs[i][j]
+            ax.set_xticks(abscissa)
+            ax.set_xticklabels(design_names, fontsize=font_size, rotation=rotation)
 
         title = (
             "Derivatives of objective and constraints with respect to design variables"

@@ -95,3 +95,4 @@ class Robustness(BasePost[RobustnessSettings]):
             f"with normalized stddev {standard_deviation}"
         )
         plt.boxplot(function_samples, showfliers=False, labels=function_names)
+        fig.tight_layout()

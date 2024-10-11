@@ -50,41 +50,61 @@ class MatplotlibPlot(BasePlot):
         specific_settings: NamedTuple,
         *specific_data: Any,
         fig: Figure | None = None,
-        axes: Axes | None = None,
+        ax: Axes | None = None,
     ) -> None:
         """
         Args:
             fig: The figure.
                 If ``None``, create a new one.
-            axes: The axes.
-                If ``None``, create new ones.
+            ax: The :class:`~matplotlib.axes.Axes` object.
+                If ``None``, create a new one.
         """  # noqa: D205 D212 D415
-        super().__init__(
-            dataset, common_settings, specific_settings, fig=fig, axes=axes
-        )
-        self.__figures = self._create_figures(fig, axes, *specific_data)
+        super().__init__(dataset, common_settings, specific_settings, fig=fig, ax=ax)
+        self.__figures = self.__create_figures(fig, ax, *specific_data)
         xtick_rotation = self._common_settings.xtick_rotation
         if xtick_rotation:
             for figure in self.__figures:
                 for ax in figure.axes:
                     ax.tick_params(axis="x", labelrotation=xtick_rotation)
 
-    @abstractmethod
-    def _create_figures(
-        self, fig: Figure | None, axes: Axes | None, *specific_data: Any
+    def __create_figures(
+        self, fig: Figure | None, ax: Axes | None, *specific_data: Any
     ) -> list[Figure]:
         """Create the matplotlib figures.
 
         Args:
             fig: The figure.
                 If ``None``, create a new one.
-            axes: The axes.
-                If ``None``, create new ones.
+            ax: The :class:`~matplotlib.axes.Axes` object.
+                If ``None``, create a new one.
             *specific_data: The data specific to this plot class.
 
         Returns:
             The matplotlib figures.
         """
+        figures = self._create_figures(fig, ax, *specific_data)
+        for figure in figures:
+            figure.tight_layout()
+
+        return figures
+
+    @abstractmethod
+    def _create_figures(
+        self, fig: Figure | None, ax: Axes | None, *specific_data: Any
+    ) -> list[Figure]:
+        """Create the matplotlib figures.
+
+        Args:
+            fig: The figure.
+                If ``None``, create a new one.
+            ax: The :class:`~matplotlib.axes.Axes` object.
+                If ``None``, create a new one.
+            *specific_data: The data specific to this plot class.
+
+        Returns:
+            The matplotlib figures.
+        """
+        return []
 
     def show(self) -> None:  # noqa: D102
         for sub_figure in self.__figures:
@@ -106,7 +126,7 @@ class MatplotlibPlot(BasePlot):
     def _get_figure_and_axes(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         fig_size: FigSizeType = (),
         n_rows: int = 1,
         n_cols: int = 1,
@@ -114,10 +134,10 @@ class MatplotlibPlot(BasePlot):
         """Return the figure and axes to plot the data.
 
         Args:
-            fig: The figure to plot the data.
+            fig: The figure.
                 If ``None``, create a new one.
-            axes: The axes to plot the data.
-                If ``None``, create new ones.
+            ax: The :class:`~matplotlib.axes.Axes` object.
+                If ``None``, create a new one.
             fig_size: The width and height of the figure in inches.
                 If empty, use the default ``fig_size``.
             n_rows: The number of rows of the subplot grid.
@@ -127,7 +147,7 @@ class MatplotlibPlot(BasePlot):
             The figure and axis to plot the data.
         """
         if fig is None:
-            if axes is not None:
+            if ax is not None:
                 msg = "The figure associated with the given axes is missing."
                 raise ValueError(msg)
 
@@ -137,11 +157,11 @@ class MatplotlibPlot(BasePlot):
                 figsize=fig_size or self._common_settings.fig_size,
             )
 
-        if axes is None:
+        if ax is None:
             msg = "The axes associated with the given figure are missing."
             raise ValueError(msg)
 
-        return fig, axes
+        return fig, ax
 
     @property
     def figures(self) -> list[Figure]:  # noqa: D102

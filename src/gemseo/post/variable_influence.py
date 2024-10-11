@@ -31,7 +31,6 @@ from matplotlib import pyplot
 from numpy import absolute
 from numpy import argsort
 from numpy import array
-from numpy import atleast_2d
 from numpy import savetxt
 from numpy import stack
 
@@ -208,16 +207,11 @@ class VariableInfluence(BasePost[VariableInfluenceSettings]):
             msg = "No gradients to plot at current iteration."
             raise ValueError(msg)
 
-        n_cols = 2
-        n_rows = sum(divmod(n_funcs, n_cols))
-        if n_funcs == 1:
-            n_cols = 1
-
-        fig, axes = pyplot.subplots(
+        n_rows, n_cols = self.__compute_optimal_grid(n_funcs)
+        fig, axs = pyplot.subplots(
             nrows=n_rows, ncols=n_cols, sharex=True, figsize=fig_size
         )
 
-        axes = atleast_2d(axes)
         x_labels = self._get_design_variable_names()
         # This variable determines the number of variables to plot in the
         # x-axis. Since the data history can be edited by the user after the
@@ -225,58 +219,85 @@ class VariableInfluence(BasePost[VariableInfluenceSettings]):
         # because the problem dimension is not updated when the history is filtered.
         abscissas = range(len(next(iter(names_to_sensitivities.values()))))
 
-        font_size = 12
-        rotation = 90
-        i = j = 0
         LOGGER.info(
             "Output name; "
             "most influential variables to explain %s%% of the output variation ",
             level,
         )
-        for name, sensitivity in sorted(names_to_sensitivities.items()):
-            axe = axes[i][j]
-            axe.bar(abscissas, sensitivity, color="blue", align="center")
+        for index, (name, sensitivity) in enumerate(
+            sorted(names_to_sensitivities.items())
+        ):
+            i = index // n_cols
+            j = index % n_cols
+            ax = axs[i][j]
             quantile, threshold = self.__get_quantile(
                 sensitivity, name, level=level, save=save
             )
-            axe.set_title(
-                f"{quantile} variables required "
-                f"to explain {round(level * 100)}% of {name} variations"
+            ax.fill_between(
+                [-1, len(sensitivity) + 1],
+                -threshold,
+                threshold,
+                color="gray",
+                facecolor="none",
+                hatch="///",
+                label="Non-influential domain",
             )
-            axe.set_xticks(abscissas)
-            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
-            axe.set_xlim(-1, len(sensitivity) + 1)
-            axe.axhline(threshold, color="r")
-            axe.axhline(-threshold, color="r")
+            ax.axhline(y=0.0, color="black")
+            ax.bar(
+                abscissas,
+                sensitivity,
+                color="blue",
+                align="center",
+                label="Partial derivatives",
+            )
+            ax.set_title(
+                f"{quantile} variables explain {round(level * 100)}% of {name}"
+            )
+            ax.set_xticks(abscissas)
+            ax.set_xticklabels(x_labels, rotation=90)
+            ax.set_xlim(-1, len(sensitivity) + 1)
+            ax.grid()
+            ax.set_axisbelow(True)
             if log_scale:
-                axe.set_yscale("log")
+                ax.set_yscale("log")
 
             # Update y labels spacing
             vis_labels = [
-                label for label in axe.get_yticklabels() if label.get_visible() is True
+                label for label in ax.get_yticklabels() if label.get_visible() is True
             ]
             pyplot.setp(vis_labels, visible=False)
             pyplot.setp(vis_labels[::2], visible=True)
 
             vis_xlabels = [
-                label for label in axe.get_xticklabels() if label.get_visible() is True
+                label for label in ax.get_xticklabels() if label.get_visible() is True
             ]
             if len(vis_xlabels) > 20:
                 pyplot.setp(vis_xlabels, visible=False)
                 pyplot.setp(vis_xlabels[:: int(len(vis_xlabels) / 10.0)], visible=True)
 
-            if j == n_cols - 1:
-                j = 0
-                i += 1
-            else:
-                j += 1
-
-        if len(names_to_sensitivities) < n_rows * n_cols:
-            axe = axes[i][j]
-            axe.set_xticks(abscissas)
-            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
-
-        fig.suptitle(
-            "Partial variation of the functions wrt design variables", fontsize=14
-        )
+        axs[0, 0].legend()
+        fig.tight_layout()
         return fig
+
+    @staticmethod
+    def __compute_optimal_grid(n_items: int) -> tuple[int, int]:
+        """Compute the optimal grid given a number of items.
+
+        Args:
+            n_items: The number of items.
+
+        Returns:
+            The optimal number of rows and columns.
+        """
+        optimal_n_rows, optimal_n_cols = 1, 1
+        smallest_difference = float("inf")
+        for n_rows in range(1, n_items + 1):
+            for n_cols in range(1, n_items + 1):
+                d1 = n_rows - n_cols
+                d2 = n_rows * n_cols - n_items
+                difference = (d1 + 1) * (d2 + 1)
+                if d1 > 0 and d2 > 0 and difference < smallest_difference:
+                    smallest_difference = difference
+                    optimal_n_rows, optimal_n_cols = n_rows, n_cols
+
+        return optimal_n_rows, optimal_n_cols

@@ -37,7 +37,7 @@ class ScatterMatrix(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         classifier_column: tuple[str, str, int],
     ) -> list[Figure]:
         """
@@ -63,17 +63,21 @@ class ScatterMatrix(MatplotlibPlot):
             dataframe = dataframe.drop(labels=classifier_column, axis=1)
 
         dataframe.columns = self._get_variable_names(dataframe)
-        n_cols = n_rows = dataframe.shape[1] if axes is None else 1
-        fig, axes = self._get_figure_and_axes(
-            fig, axes, self._common_settings.fig_size, n_rows=n_rows, n_cols=n_cols
+        n_cols = n_rows = dataframe.shape[1] if ax is None else 1
+        fig, ax = self._get_figure_and_axes(
+            fig,
+            ax,
+            fig_size=self._common_settings.fig_size,
+            n_rows=n_rows,
+            n_cols=n_cols,
         )
-        sub_axes = scatter_matrix(
+        axs = scatter_matrix(
             dataframe,
             diagonal="kde" if kde else "hist",
             s=size,
             marker=marker,
             figsize=self._common_settings.fig_size,
-            ax=axes,
+            ax=ax,
             # The grid argument is ignored because the subplots do not have axes.
             # See the issue https://github.com/pandas-dev/pandas/issues/50818.
             grid=self._common_settings.grid,
@@ -86,7 +90,7 @@ class ScatterMatrix(MatplotlibPlot):
             if not isinstance(trend_function_creator, Callable):
                 trend_function_creator = TREND_FUNCTIONS[trend_function_creator]
 
-            for i_row, row in enumerate(sub_axes):
+            for i_row, row in enumerate(axs):
                 for i_col, ax in enumerate(row):
                     if i_col == i_row:
                         continue
@@ -104,32 +108,32 @@ class ScatterMatrix(MatplotlibPlot):
                         linestyle="--",
                     )
 
-        n_cols = sub_axes.shape[0]
+        n_cols = axs.shape[0]
         if not (
             self._specific_settings.plot_lower and self._specific_settings.plot_upper
         ):
             for i in range(n_cols):
                 for j in range(n_cols):
-                    sub_axes[i, j].get_xaxis().set_visible(False)
-                    sub_axes[i, j].get_yaxis().set_visible(False)
+                    axs[i, j].get_xaxis().set_visible(False)
+                    axs[i, j].get_yaxis().set_visible(False)
 
         if not self._specific_settings.plot_lower:
             for i in range(n_cols):
                 for j in range(i):
-                    sub_axes[i, j].set_visible(False)
+                    axs[i, j].set_visible(False)
 
             for i in range(n_cols):
-                sub_axes[i, i].get_xaxis().set_visible(True)
-                sub_axes[i, i].get_yaxis().set_visible(True)
+                axs[i, i].get_xaxis().set_visible(True)
+                axs[i, i].get_yaxis().set_visible(True)
 
         if not self._specific_settings.plot_upper:
             for i in range(n_cols):
                 for j in range(i + 1, n_cols):
-                    sub_axes[i, j].set_visible(False)
+                    axs[i, j].set_visible(False)
 
             for i in range(n_cols):
-                sub_axes[-1, i].get_xaxis().set_visible(True)
-                sub_axes[i, 0].get_yaxis().set_visible(True)
+                axs[-1, i].get_xaxis().set_visible(True)
+                axs[i, 0].get_yaxis().set_visible(True)
 
         plt.suptitle(self._common_settings.title)
         return [fig]

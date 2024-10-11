@@ -42,6 +42,7 @@ class Lines(DatasetPlot):
         abscissa_variable: str = "",
         add_markers: bool = False,
         set_xticks_from_data: bool = False,
+        use_integer_xticks: bool = False,
         plot_abscissa_variable: bool = False,
     ) -> None:
         """
@@ -57,6 +58,7 @@ class Lines(DatasetPlot):
             add_markers: Whether to mark the observations with dots.
             set_xticks_from_data: Whether to use the values of ``abscissa_variable``
                 as locations of abscissa ticks.
+            use_integer_xticks: Whether to use integer xticks.
             plot_abscissa_variable: Whether to plot the abscissa variable.
         """  # noqa: D205, D212, D415
         super().__init__(
@@ -65,6 +67,7 @@ class Lines(DatasetPlot):
             abscissa_variable=abscissa_variable,
             add_markers=add_markers,
             set_xticks_from_data=set_xticks_from_data,
+            use_integer_xticks=use_integer_xticks,
             plot_abscissa_variable=plot_abscissa_variable,
         )
 

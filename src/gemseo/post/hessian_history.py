@@ -28,18 +28,13 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
-from numpy import append
+from matplotlib.ticker import SymmetricalLogLocator
 from numpy import arange
 from numpy import array
-from numpy import concatenate
-from numpy import e
 from numpy import isnan
-from numpy import log10 as np_log10
-from numpy import logspace
 from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ones_like
-from numpy import sort as np_sort
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
@@ -87,44 +82,35 @@ class HessianHistory(BasePost):
                 :,
             ]
 
-        fig = plt.figure(figsize=settings.fig_size)
-        grid_spec = self._get_grid_layout()
-        axes = fig.add_subplot(grid_spec[0, 0])
-        axes.set_title("Hessian diagonal approximation")
-        axes.set_xlabel("Iterations", fontsize=12)
-        axes.set_yticks(arange(len(diag)))
-        axes.set_yticklabels(
+        fig, ax = plt.subplots(1, 1, figsize=settings.fig_size)
+        ax.set_title("Hessian diagonal approximation")
+        ax.set_xlabel("Iterations", fontsize=12)
+        ax.set_yticks(arange(len(diag)))
+        ax.set_yticklabels(
             self._get_design_variable_names(variable_names, simplify=True)
         )
         n_iterations = len(self.database)
-        axes.set_xticks(range(n_iterations))
-        axes.set_xticklabels(range(1, n_iterations + 1))
-        axes.get_xaxis().set_major_locator(MaxNLocator(integer=True))
+        ax.set_xticks(range(n_iterations))
+        ax.set_xticklabels(range(1, n_iterations + 1))
+        ax.get_xaxis().set_major_locator(MaxNLocator(integer=True))
 
         vmax = max(abs(np_max(diag)), abs(np_min(diag)))
-        linthresh = 10 ** (np_log10(vmax) - 5.0)
 
-        img = axes.imshow(
+        img = ax.imshow(
             diag.real,
             cmap=PARULA,
             interpolation="nearest",
             aspect="auto",
-            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linthresh, base=e),
+            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0),
         )
 
-        thick_min = int(np_log10(linthresh))
-        thick_max = int(np_log10(vmax))
-        thick_num = thick_max - thick_min + 1
-        levels_pos = append(logspace(thick_min, thick_max, num=thick_num), vmax)
-        levels_neg = append(np_sort(-levels_pos), 0)
-        levels = concatenate((levels_neg, levels_pos))
         color_bar = fig.colorbar(
             img,
-            cax=fig.add_subplot(grid_spec[0, 1]),
-            ticks=levels,
+            ticks=SymmetricalLogLocator(linthresh=1.0, base=10),
             format=LogFormatterSciNotation(),
         )
         color_bar.ax.tick_params(labelsize=9)
 
         plt.get_current_fig_manager().resize(700, 1000)
+        fig.tight_layout()
         self._add_figure(fig, "hessian_approximation")

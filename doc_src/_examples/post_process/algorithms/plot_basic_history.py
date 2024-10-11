@@ -18,8 +18,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Basic history
+"""Basic history.
 =============
 
 In this example, we illustrate the use of the :class:`.BasicHistory` plot
@@ -103,10 +102,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 scenario.post_process(
-    "BasicHistory",
-    variable_names=["g_1", "g_2", "g_3"],
-    save=False,
-    show=True,
+    "BasicHistory", variable_names=["g_1", "g_2", "g_3"], save=False, show=True
 )
 scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=True)
 # %%

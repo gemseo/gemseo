@@ -34,23 +34,23 @@ class RadarChart(MatplotlibPlot):
     """Radar chart based on matplotlib."""
 
     def _create_figures(
-        self, fig: Figure | None, axes: Axes | None, y_values: ArrayLike, theta: float
+        self, fig: Figure | None, ax: Axes | None, y_values: ArrayLike, theta: float
     ) -> list[Figure]:
         """
         Args:
             y_values: The values of the series on the y-axis (one series per row).
             theta: The values of the series on the r-axis.
         """  # noqa: D205 D212 D415
-        if not fig or not axes:
+        if not fig or not ax:
             fig = plt.figure(figsize=self._common_settings.fig_size)
-            axes = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
+            ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
 
         if self._common_settings.grid:
-            axes.grid(visible=True, color="k", linewidth=0.3, linestyle=":")
+            ax.grid(visible=True, color="k", linewidth=0.3, linestyle=":")
         else:
-            axes.grid(visible=False)
+            ax.grid(visible=False)
 
-        axes.tick_params(labelsize=self._common_settings.font_size)
+        ax.tick_params(labelsize=self._common_settings.font_size)
 
         variable_names = self._common_dataset.get_columns()
         series_names = self._common_dataset.index
@@ -63,7 +63,7 @@ class RadarChart(MatplotlibPlot):
         ):
             data = data.tolist()
             data.append(data[0])
-            axes.plot(
+            ax.plot(
                 theta,
                 data,
                 linestyle,
@@ -76,7 +76,7 @@ class RadarChart(MatplotlibPlot):
             circle = plt.Circle(
                 (0, 0),
                 abs(self._common_settings.rmin),
-                transform=axes.transData._b,
+                transform=ax.transData._b,
                 fill=False,
                 edgecolor="black",
                 linewidth=1,
@@ -85,12 +85,12 @@ class RadarChart(MatplotlibPlot):
             plt.gca().add_artist(circle)
 
         theta_degree = rad2deg(theta[:-1])
-        axes.set_thetagrids(theta_degree, variable_names)
+        ax.set_thetagrids(theta_degree, variable_names)
         if self._specific_settings.radial_ticks:
             labels = []
-            for label, angle in zip(axes.get_xticklabels(), theta_degree):
+            for label, angle in zip(ax.get_xticklabels(), theta_degree):
                 x, y = label.get_position()
-                lab = axes.text(
+                lab = ax.text(
                     x,
                     y,
                     label.get_text(),
@@ -107,9 +107,9 @@ class RadarChart(MatplotlibPlot):
                 lab.set_rotation(angle)
                 labels.append(lab)
 
-            axes.set_xticklabels([])
+            ax.set_xticklabels([])
 
-        axes.set_rlim([self._common_settings.rmin, self._common_settings.rmax])
+        ax.set_rlim([self._common_settings.rmin, self._common_settings.rmax])
         rticks = linspace(
             self._common_settings.rmin,
             self._common_settings.rmax,
@@ -120,24 +120,24 @@ class RadarChart(MatplotlibPlot):
         else:
             rticks_labels = rticks
 
-        axes.set_rticks(rticks)
-        axes.set_yticklabels(rticks_labels)
-        axes.legend(
+        ax.set_rticks(rticks)
+        ax.set_yticklabels(rticks_labels)
+        ax.legend(
             loc="upper left",
             fontsize=self._common_settings.font_size,
             bbox_to_anchor=(1.05, 1.0),
         )
-        axes.set_title(
+        ax.set_title(
             self._common_settings.title, fontsize=self._common_settings.font_size * 1.2
         )
-        box = axes.get_position()
-        axes.set_position([
+        box = ax.get_position()
+        ax.set_position([
             box.x0,
             box.y0 + box.height * 0.1,
             box.width,
             box.height * 0.9,
         ])
-        axes.legend(
+        ax.legend(
             loc="upper center",
             bbox_to_anchor=(0.5, -0.05),
             ncol=5,

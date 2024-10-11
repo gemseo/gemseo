@@ -637,14 +637,17 @@ class DisciplineJacApprox:
         if 2 * nrows < n_funcs:
             nrows += 1
         ncols = 2
-        fig, axes = plt.subplots(
-            nrows=nrows, ncols=2, sharex=True, figsize=(fig_size_x, fig_size_y)
+        fig, axs = plt.subplots(
+            nrows=nrows,
+            ncols=2,
+            sharex=True,
+            figsize=(fig_size_x, fig_size_y),
+            squeeze=False,
         )
         i = 0
         j = -1
 
-        axes = atleast_2d(axes)
-        n_subplots = len(axes) * len(axes[0])
+        n_subplots = 2 * nrows
         abscissa = arange(len(x_labels))
         for func, grad in sorted(comp_grad.items()):
             if isinstance(grad, sparse_classes):
@@ -653,18 +656,18 @@ class DisciplineJacApprox:
             if j == ncols:
                 j = 0
                 i += 1
-            axe = axes[i][j]
-            axe.plot(abscissa, grad, "bo")
-            axe.plot(abscissa, app_grad[func], "ro")
-            axe.set_title(func)
-            axe.set_xticklabels(x_labels, fontsize=14)
-            axe.set_xticks(abscissa)
-            for tick in axe.get_xticklabels():
+            ax = axs[i][j]
+            ax.plot(abscissa, grad, "bo")
+            ax.plot(abscissa, app_grad[func], "ro")
+            ax.set_title(func)
+            ax.set_xticklabels(x_labels, fontsize=14)
+            ax.set_xticks(abscissa)
+            for tick in ax.get_xticklabels():
                 tick.set_rotation(90)
 
             # Update y labels spacing
             vis_labels = [
-                label for label in axe.get_yticklabels() if label.get_visible() is True
+                label for label in ax.get_yticklabels() if label.get_visible() is True
             ]
             plt.setp(vis_labels[::2], visible=False)
         #             plt.xticks(rotation=90)
@@ -672,10 +675,10 @@ class DisciplineJacApprox:
         if len(comp_grad.items()) < n_subplots:
             # xlabel must be written with the same fontsize on the 2 columns
             j += 1
-            axe = axes[i][j]
-            axe.set_xticklabels(x_labels, fontsize=14)
-            axe.set_xticks(abscissa)
-            for tick in axe.get_xticklabels():
+            ax = axs[i][j]
+            ax.set_xticklabels(x_labels, fontsize=14)
+            ax.set_xticks(abscissa)
+            for tick in ax.get_xticklabels():
                 tick.set_rotation(90)
 
         fig.suptitle(

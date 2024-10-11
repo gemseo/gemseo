@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 
-import matplotlib
 from matplotlib import pyplot as plt
 from numpy import array
 from numpy import bincount
@@ -170,6 +169,7 @@ class SOM(BasePost[SOMSettings]):
                 )
                 index += 1
 
+        figure.tight_layout()
         self._add_figure(figure)
 
     def __plot_som_from_scalar_data(
@@ -207,11 +207,11 @@ class SOM(BasePost[SOMSettings]):
             mat_ij[int(i) - 1, int(j) - 1] = average[somindx]
         empty = isnan(mat_ij)
         non_empty = logical_not(empty)
-        axe = plt.subplot(grid_size_y, grid_size_x, fig_indx)
+        ax = plt.subplot(grid_size_y, grid_size_x, fig_indx)
         minv = np_min(mat_ij[non_empty])
         maxv = np_max(mat_ij[non_empty])
         self.materials_for_plotting[fig_indx] = mat_ij
-        im1 = axe.imshow(
+        im1 = ax.imshow(
             mat_ij,
             vmin=minv - 0.01 * abs(minv),
             vmax=maxv + 0.01 * abs(maxv),
@@ -224,7 +224,7 @@ class SOM(BasePost[SOMSettings]):
             crit_format = "%1.2g"
             for i in range(mat_ij.shape[0]):
                 for j in range(mat_ij.shape[0]):
-                    _ = axe.text(
+                    _ = ax.text(
                         j,
                         i,
                         crit_format % mat_ij[i, j],
@@ -234,12 +234,11 @@ class SOM(BasePost[SOMSettings]):
                         fontsize=7,
                     )
 
-        axe.set_title(criteria, fontsize=12)
-        cax, kwa = matplotlib.colorbar.make_axes([axe])
-        plt.colorbar(im1, cax=cax, **kwa)
+        ax.set_title(criteria, fontsize=12)
+        plt.colorbar(im1)
         im1.axes.get_xaxis().set_visible(False)
         im1.axes.get_yaxis().set_visible(False)
-        return axe
+        return ax
 
     def __compute(
         self,

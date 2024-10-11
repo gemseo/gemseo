@@ -32,7 +32,6 @@ from numpy import arange
 from numpy import atleast_2d
 from numpy import atleast_3d
 from numpy import diff
-from numpy import e
 from numpy import flip
 from numpy import interp
 from numpy import max as np_max
@@ -101,7 +100,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistorySettings]):
         ))
 
         # prepare the main window
-        fig, axes = pyplot.subplots(
+        fig, axs = pyplot.subplots(
             nrows=ceil(len(constraint_names) / 2),
             ncols=2,
             sharex=True,
@@ -117,8 +116,8 @@ class ConstraintsHistory(BasePost[ConstraintsHistorySettings]):
             for f in self.optimization_problem.constraints.get_equality_constraints()
         ]
         # for each subplot
-        for constraint_history, constraint_name, axe in zip(
-            constraint_histories.T, constraint_names, axes.ravel()
+        for constraint_history, constraint_name, ax in zip(
+            constraint_histories.T, constraint_names, axs.ravel()
         ):
             cmap: str | ListedColormap
             f_name = constraint_name.split("[")[0]
@@ -133,30 +132,30 @@ class ConstraintsHistory(BasePost[ConstraintsHistorySettings]):
                 tolerance = self.optimization_problem.tolerances.inequality
 
             # prepare the graph
-            axe.grid(True)
-            axe.set_title(f"{constraint_name} ({constraint_type})")
-            axe.set_xticks(range(n_iterations))
-            axe.set_xticklabels(range(1, n_iterations + 1))
-            axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
-            axe.axhline(tolerance, color="k", linestyle="--")
-            axe.axhline(0.0, color="k")
+            ax.grid(True)
+            ax.set_title(f"{constraint_name} ({constraint_type})")
+            ax.set_xticks(range(n_iterations))
+            ax.set_xticklabels(range(1, n_iterations + 1))
+            ax.get_xaxis().set_major_locator(MaxNLocator(integer=True))
+            ax.axhline(tolerance, color="k", linestyle="--")
+            ax.axhline(0.0, color="k")
             if is_eq_constraint:
-                axe.axhline(-tolerance, color="k", linestyle="--")
+                ax.axhline(-tolerance, color="k", linestyle="--")
 
             # Add line and points
-            axe.plot(iterations, constraint_history, linestyle=line_style)
+            ax.plot(iterations, constraint_history, linestyle=line_style)
             if add_points:
-                axe.scatter(iterations, constraint_history)
+                ax.scatter(iterations, constraint_history)
 
             # Plot color bars
             maximum = np_max(np_abs(constraint_history))
             margin = 2 * maximum * 0.05
-            axe.imshow(
+            ax.imshow(
                 atleast_2d(constraint_history),
                 cmap=cmap,
                 interpolation="nearest",
                 aspect="auto",
-                norm=SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0, base=e),
+                norm=SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0),
                 extent=[-0.5, n_iterations - 0.5, -maximum - margin, maximum + margin],
                 alpha=0.6,
             )
@@ -176,5 +175,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistorySettings]):
                     constraint_values = flip(constraint_values)
                     iteration_values = flip(iteration_values)
 
-                axe.axvline(interp(0.0, constraint_values, iteration_values), color="k")
+                ax.axvline(interp(0.0, constraint_values, iteration_values), color="k")
+
+        fig.tight_layout()
         self._add_figure(fig)

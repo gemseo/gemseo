@@ -32,21 +32,16 @@ from matplotlib.colors import ListedColormap
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import SymmetricalLogLocator
 from numpy import abs as np_abs
-from numpy import append
 from numpy import arange
 from numpy import argmin
 from numpy import array
 from numpy import atleast_2d
-from numpy import concatenate
-from numpy import e
 from numpy import isnan
-from numpy import log10 as np_log10
-from numpy import logspace
 from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ndarray
-from numpy import sort as np_sort
 from numpy import vstack
 from numpy.linalg import norm
 
@@ -235,11 +230,9 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
         upper_bounds = design_space.get_upper_bounds(variable_names)
         norm_x_history = (x_history - lower_bounds) / (upper_bounds - lower_bounds)
 
-        fig = plt.figure(figsize=fig_size)
-        grid = self._get_grid_layout()
+        fig, ax1 = plt.subplots(1, 1, figsize=fig_size)
 
         # design variables
-        ax1 = fig.add_subplot(grid[0, 0])
         im1 = ax1.imshow(
             norm_x_history.T,
             cmap=self.__CMAP,
@@ -261,8 +254,7 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
 
         # colorbar
-        ax2 = fig.add_subplot(grid[0, 1])
-        fig.colorbar(im1, cax=ax2)
+        fig.colorbar(im1)
 
         # Set window size
         mng = plt.get_current_fig_manager()
@@ -529,15 +521,13 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
             cstr_matrix[idx_nan] = 0.0
 
         # generation of the image
-        fig = plt.figure(figsize=fig_size)
-        grid = self._get_grid_layout()
-        ax1 = fig.add_subplot(grid[0, 0])
+        fig, ax1 = plt.subplots(1, 1, figsize=fig_size)
         im1 = ax1.imshow(
             cstr_matrix,
             cmap=cmap,
             interpolation="nearest",
             aspect="auto",
-            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0, base=e),
+            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0),
         )
         ax1.axvline(x=argmin(x_xstar), color="r", label="Optimum")
         if hasnan > 0:
@@ -564,22 +554,14 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
         )
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
 
-        # color map
-        cax = fig.add_subplot(grid[0, 1])
-        thick_min = int(np_log10(vmax)) if 0.0 < vmax < 1.0 else 0
-        thick_max = int(np_log10(vmax)) if vmax > 1.0 else 0
-        thick_num = thick_max - thick_min + 1
-        levels_pos = logspace(thick_min, thick_max, num=thick_num)
-        if vmax != 0.0:
-            levels_pos = np_sort(append(levels_pos, vmax))
-        levels_neg = np_sort(-levels_pos)
-        levels_neg = append(levels_neg, 0)
-        levels = concatenate((levels_neg, levels_pos))
         col_bar = fig.colorbar(
-            im1, cax=cax, ticks=levels, format=LogFormatterSciNotation()
+            im1,
+            ticks=SymmetricalLogLocator(linthresh=1.0, base=10),
+            format=LogFormatterSciNotation(),
         )
         col_bar.ax.tick_params(labelsize=self.__TICK_LABEL_SIZE)
 
+        fig.tight_layout()
         mng = plt.get_current_fig_manager()
         # mng.full_screen_toggle()
         assert mng is not None

@@ -36,7 +36,7 @@ class ZvsXY(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         x_values: ArrayLike,
         y_values: ArrayLike,
         z_values: ArrayLike,
@@ -49,19 +49,19 @@ class ZvsXY(MatplotlibPlot):
             z_values: The values of the points on the z-axis.
             other_datasets: Other datasets.
         """  # noqa: D205, D212, D415
-        fig, axes = self._get_figure_and_axes(fig, axes)
+        fig, ax = self._get_figure_and_axes(fig, ax)
         self._common_settings.set_colors(self._common_settings.color)
         grid = mtri.Triangulation(x_values, y_values)
         options = {"cmap": self._common_settings.colormap}
         if self._specific_settings.levels:
             options["levels"] = self._specific_settings.levels
 
-        plot_contour = (
-            axes.tricontourf if self._specific_settings.fill else axes.tricontour
-        )
+        plot_contour = ax.tricontourf if self._specific_settings.fill else ax.tricontour
         tcf = plot_contour(grid, z_values, **options)
         if self._specific_settings.add_points:
-            axes.scatter(x_values, y_values, color=self._common_settings.color[0])
+            ax.scatter(
+                x_values, y_values, color=self._common_settings.color[0], label="Data"
+            )
 
         if other_datasets:
             x, x_comp = self._specific_settings.x
@@ -73,12 +73,21 @@ class ZvsXY(MatplotlibPlot):
                 y_data = dataset.get_view(
                     variable_names=y, components=y_comp
                 ).to_numpy()
-                axes.scatter(
-                    x_data, y_data, color=self._common_settings.color[index + 1]
+                ax.scatter(
+                    x_data,
+                    y_data,
+                    color=self._common_settings.color[index + 1],
+                    label=dataset.name,
                 )
 
-        axes.set_xlabel(self._common_settings.xlabel)
-        axes.set_ylabel(self._common_settings.ylabel)
-        axes.set_title(self._common_settings.title)
-        fig.colorbar(tcf, ax=axes)
+        if self._specific_settings.add_points or other_datasets:
+            ax.legend()
+
+        ax.set_xlabel(self._common_settings.xlabel)
+        ax.set_ylabel(self._common_settings.ylabel)
+        ax.set_title(self._common_settings.title)
+        if self._common_settings.grid:
+            ax.grid()
+
+        fig.colorbar(tcf, ax=ax)
         return [fig]

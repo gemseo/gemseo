@@ -35,7 +35,7 @@ class Radar(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         dataset: Dataset,
         classifier_name: str,
     ) -> list[Figure]:
@@ -44,11 +44,11 @@ class Radar(MatplotlibPlot):
             dataset: The dataset.
             classifier_name: The name of the classifier.
         """  # noqa: D205, D212, D415
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        radviz(dataset, classifier_name, ax=axes)
-        axes.set_axisbelow(True)
-        axes.grid(visible=self._common_settings.grid)
-        axes.set_xlabel(self._common_settings.xlabel)
-        axes.set_ylabel(self._common_settings.ylabel)
-        axes.set_title(self._common_settings.title)
+        fig, ax = self._get_figure_and_axes(fig, ax)
+        radviz(dataset, classifier_name, ax=ax)
+        ax.set_axisbelow(True)
+        ax.grid(visible=self._common_settings.grid)
+        ax.set_xlabel(self._common_settings.xlabel)
+        ax.set_ylabel(self._common_settings.ylabel)
+        ax.set_title(self._common_settings.title)
         return [fig]

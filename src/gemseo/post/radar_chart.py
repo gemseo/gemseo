@@ -106,7 +106,4 @@ class RadarChart(BasePost[RadarChartSettings]):
         radar.color = ["k", "r"]
         title_suffix = " (optimum)" if is_optimum else ""
         radar.title = f"Constraints at iteration {iteration}{title_suffix}"
-
-        figures = radar.execute(save=False)
-        for figure in figures:
-            self._add_figure(figure)
+        self._add_figure(radar)

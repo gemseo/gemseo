@@ -122,7 +122,7 @@ class ParallelCoordinates(BasePost[ParallelCoordinatesSettings]):
 
         x_values = list(range(n_cols))
         fig = plt.figure(figsize=fig_size)
-        axes = plt.gca()
+        ax = plt.gca()
         c_min, c_max = color_criteria.min(), color_criteria.max()
         s_m = matplotlib.cm.ScalarMappable(
             cmap=PARULA, norm=mpl.colors.Normalize(vmin=c_min, vmax=c_max)
@@ -130,13 +130,13 @@ class ParallelCoordinates(BasePost[ParallelCoordinatesSettings]):
         s_m.set_array([])
         color_criteria = (color_criteria - c_min) / (c_max - c_min)
         for i, y_values in enumerate(y_data):
-            axes.plot(x_values, y_values, c=array(PARULA(color_criteria[i])))
+            ax.plot(x_values, y_values, c=array(PARULA(color_criteria[i])))
 
         for x_value in x_values:
-            axes.axvline(x_value, linewidth=1, color="black")
+            ax.axvline(x_value, linewidth=1, color="black")
 
-        axes.set_xticks(x_values)
-        axes.set_xticklabels(x_names, rotation=90)
-        axes.grid()
-        fig.colorbar(s_m, ax=axes)
+        ax.set_xticks(x_values)
+        ax.set_xticklabels(x_names, rotation=90)
+        ax.grid()
+        fig.colorbar(s_m, ax=ax)
         return fig

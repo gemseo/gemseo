@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
-from numpy import e
 
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
 
@@ -39,7 +38,7 @@ class ColorEvolution(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         data: ArrayLike,
         variable_names: Iterable[str],
     ) -> list[Figure]:
@@ -48,13 +47,13 @@ class ColorEvolution(MatplotlibPlot):
             data: The data to be plotted.
             variable_names: The names of the variables.
         """  # noqa: D205, D212, D415
-        fig, axes = self._get_figure_and_axes(fig, axes)
+        fig, ax = self._get_figure_and_axes(fig, ax)
         norm = None
         if self._specific_settings.use_log:
             maximum = abs(data).max()
-            norm = SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0, base=e)
+            norm = SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0)
 
-        img_ = axes.imshow(
+        img_ = ax.imshow(
             data,
             cmap=self._common_settings.colormap,
             norm=norm,
@@ -62,14 +61,14 @@ class ColorEvolution(MatplotlibPlot):
             **self._specific_settings.options,
         )
         names = self._common_dataset.get_columns(variable_names)
-        axes.set_yticks(arange(len(names)))
-        axes.set_yticklabels(names)
-        axes.set_xlabel(self._common_settings.xlabel)
-        axes.set_ylabel(self._common_settings.ylabel)
-        axes.set_title(self._common_settings.title)
+        ax.set_yticks(arange(len(names)))
+        ax.set_yticklabels(names)
+        ax.set_xlabel(self._common_settings.xlabel)
+        ax.set_ylabel(self._common_settings.ylabel)
+        ax.set_title(self._common_settings.title)
         fig.colorbar(
             img_,
-            ax=axes,
+            ax=ax,
             format=LogFormatterSciNotation()
             if self._specific_settings.use_log
             else None,

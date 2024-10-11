@@ -34,7 +34,7 @@ class ParetoPlotBiObjective:
 
     def __init__(
         self,
-        axes: Axes,
+        ax: Axes,
         obj_values: ndarray,
         pareto_optimal_loc: BooleanArray,
         obj_names: Sequence[str],
@@ -45,7 +45,7 @@ class ParetoPlotBiObjective:
     ) -> None:
         """
         Args:
-            axes: A matplotlib axes on which to be plotted.
+            ax: The :class:`~matplotlib.axes.Axes` on which to plot.
             obj_values: The objective function array, of size (n_samples, n_objs).
             pareto_optimal_loc: A vector of booleans of size n_samples,
                 True if the point is Pareto optimal.
@@ -58,7 +58,7 @@ class ParetoPlotBiObjective:
             show_non_feasible: True to show the non-feasible points.
         """  # noqa: D205, D212, D415
         self.__nb_pareto_pts = obj_values.shape[0]
-        self.__axes = axes
+        self.__ax = ax
         self.__obj_values = obj_values
         self.__pareto_optimal_loc = pareto_optimal_loc
         self.__obj_names = obj_names
@@ -77,8 +77,8 @@ class ParetoPlotBiObjective:
         self.__plot_non_feasible_points()
         self.__plot_globally_pareto_optimal_points()
         self.__plot_locally_pareto_optimal_points()
-        self.__axes.set_xlabel(self.__obj_names[0])
-        self.__axes.set_ylabel(self.__obj_names[1])
+        self.__ax.set_xlabel(self.__obj_names[0])
+        self.__ax.set_ylabel(self.__obj_names[1])
 
     def __compute_pareto_dominated_indexes(self) -> None:
         """Compute the Pareto dominated indexes.
@@ -97,7 +97,7 @@ class ParetoPlotBiObjective:
     def __plot_pareto_dominated_points(self) -> None:
         """Plot the Pareto-dominated points on the scatter plot."""
         if True in self.__pareto_dominated_indexes:
-            self.__axes.scatter(
+            self.__ax.scatter(
                 self.__obj_values[self.__pareto_dominated_indexes, 0],
                 self.__obj_values[self.__pareto_dominated_indexes, 1],
                 color="b",
@@ -107,7 +107,7 @@ class ParetoPlotBiObjective:
     def __plot_non_feasible_points(self) -> None:
         """Plot the non-feasible points on the scatter plot."""
         if True in self.__is_non_feasible and self.__show_non_feasible:
-            self.__axes.scatter(
+            self.__ax.scatter(
                 self.__obj_values[self.__is_non_feasible, 0],
                 self.__obj_values[self.__is_non_feasible, 1],
                 color="r",
@@ -122,7 +122,7 @@ class ParetoPlotBiObjective:
                 label = "Pareto optimal"
             else:
                 label = "Globally Pareto optimal"
-            self.__axes.scatter(
+            self.__ax.scatter(
                 self.__obj_values[self.__pareto_optimal_all, 0],
                 self.__obj_values[self.__pareto_optimal_all, 1],
                 color="g",
@@ -132,7 +132,7 @@ class ParetoPlotBiObjective:
     def __plot_locally_pareto_optimal_points(self) -> None:
         """Plot the locally optimal Pareto points on the scatter plot."""
         if True in self.__pareto_optimal_loc and not self.__bi_objective:
-            self.__axes.scatter(
+            self.__ax.scatter(
                 self.__obj_values[self.__pareto_optimal_loc, 0],
                 self.__obj_values[self.__pareto_optimal_loc, 1],
                 color="r",

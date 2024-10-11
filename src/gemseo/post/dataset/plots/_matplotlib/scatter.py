@@ -35,7 +35,7 @@ class Scatter(MatplotlibPlot):
     def _create_figures(
         self,
         fig: Figure | None,
-        axes: Axes | None,
+        ax: Axes | None,
         x_values: ArrayLike,
         y_values: ArrayLike,
     ) -> list[Figure]:
@@ -44,8 +44,8 @@ class Scatter(MatplotlibPlot):
             x_values: The values of the points on the x-axis.
             y_values: The values of the points on the y-axis.
         """  # noqa: D205, D212, D415
-        fig, axes = self._get_figure_and_axes(fig, axes)
-        scatter = axes.scatter(x_values, y_values, color=self._common_settings.color)
+        fig, ax = self._get_figure_and_axes(fig, ax)
+        scatter = ax.scatter(x_values, y_values, color=self._common_settings.color)
         scatter.set_zorder(3)
         trend_function_creator = self._specific_settings.trend
         if trend_function_creator != Trend.NONE:
@@ -56,15 +56,15 @@ class Scatter(MatplotlibPlot):
             x_values = x_values[indices]
             y_values = y_values[indices]
             trend_function = trend_function_creator(x_values[:, 0], y_values[:, 0])
-            axes.plot(
+            ax.plot(
                 x_values,
                 trend_function(x_values),
                 color="gray",
                 linestyle="--",
             )
 
-        axes.grid(visible=self._common_settings.grid)
-        axes.set_xlabel(self._common_settings.xlabel)
-        axes.set_ylabel(self._common_settings.ylabel)
-        axes.set_title(self._common_settings.title)
+        ax.grid(visible=self._common_settings.grid)
+        ax.set_xlabel(self._common_settings.xlabel)
+        ax.set_ylabel(self._common_settings.ylabel)
+        ax.set_title(self._common_settings.title)
         return [fig]

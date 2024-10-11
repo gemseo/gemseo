@@ -120,6 +120,7 @@ class Correlations(BasePost[CorrelationsSettings]):
                     mng.resize(1200, 900)
                 ticker.MaxNLocator(nbins=3)
 
+                fig.tight_layout()
                 self._add_figure(fig)
 
             self.__create_sub_correlation_plot(
