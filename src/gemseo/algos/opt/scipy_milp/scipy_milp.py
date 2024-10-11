@@ -67,7 +67,7 @@ class ScipyMILPAlgorithmDescription(OptimizationAlgorithmDescription):
     handle_integer_variables: bool = True
     """Whether the optimization algorithm handles integer variables."""
 
-    settings: type[SciPyMILPSettings] = SciPyMILPSettings
+    Settings: type[SciPyMILPSettings] = SciPyMILPSettings
     """The option validation model for SciPy linear programming library."""
 
 

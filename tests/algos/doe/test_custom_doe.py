@@ -30,8 +30,10 @@ from pandas.errors import ParserError
 from pydantic import ValidationError
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.custom_doe._custom_doe_settings import CustomDOESettings
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.utils.constants import SETTINGS
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -186,13 +188,19 @@ def test_use_custom_doe_directly():
     assert len(problem.database) == 1
 
 
-def test_compute_doe():
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"samples": array([[1.0, 2.0]])},
+        {SETTINGS: CustomDOESettings(samples=array([[1.0, 2.0]]))},
+    ],
+)
+def test_compute_doe(kwargs):
     """Check that CustomDOE.compute_doe works."""
     variables_space = DesignSpace()
     variables_space.add_variable("x", size=2)
     assert_equal(
-        CustomDOE().compute_doe(variables_space, samples=array([[1.0, 2.0]])),
-        array([[1.0, 2.0]]),
+        CustomDOE().compute_doe(variables_space, **kwargs), array([[1.0, 2.0]])
     )
 
 

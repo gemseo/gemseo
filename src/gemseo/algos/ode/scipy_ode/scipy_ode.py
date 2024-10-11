@@ -71,28 +71,28 @@ class ScipyODEAlgos(BaseODESolverLibrary):
             internal_algorithm_name="RK45",
             description="Explicit Runge-Kutta method of order 5(4)",
             website=f"{__DOC}scipy.integrate.RK45.html",
-            settings=RK45Settings,
+            Settings=RK45Settings,
         ),
         "RK23": ScipyODESolverDescription(
             algorithm_name="RK23",
             internal_algorithm_name="RK23",
             description="Explicit Runge-Kutta method of order 3(2)",
             website=f"{__DOC}scipy.integrate.RK23.html",
-            settings=RK23Settings,
+            Settings=RK23Settings,
         ),
         "DOP853": ScipyODESolverDescription(
             algorithm_name="DOP853",
             internal_algorithm_name="DOP853",
             description="Explicit Runge-Kutta method of order 8",
             website=f"{__DOC}scipy.integrate.DOP853.html",
-            settings=DOP853Settings,
+            Settings=DOP853Settings,
         ),
         "Radau": ScipyODESolverDescription(
             algorithm_name="Radau",
             internal_algorithm_name="Radau",
             description="Implicit Runge-Kutta method of the Radau IIA type of order 5",
             website=f"{__DOC}scipy.integrate.Radau.html",
-            settings=RadauSettings,
+            Settings=RadauSettings,
         ),
         "BDF": ScipyODESolverDescription(
             algorithm_name="BDF",
@@ -102,14 +102,14 @@ class ScipyODEAlgos(BaseODESolverLibrary):
                 " differentiation formula for the derivative approximation"
             ),
             website=f"{__DOC}scipy.integrate.BDF.html",
-            settings=BDFSettings,
+            Settings=BDFSettings,
         ),
         "LSODA": ScipyODESolverDescription(
             algorithm_name="LSODA",
             internal_algorithm_name="LSODA",
             description="Adams/BDF method with automatic stiffness detection/switching",
             website=f"{__DOC}scipy.integrate.LSODA.html",
-            settings=LSODASettings,
+            Settings=LSODASettings,
         ),
     }
 

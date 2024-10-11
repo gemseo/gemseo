@@ -84,7 +84,7 @@ class PyDOELibrary(BaseDOELibrary):
             description="Box-Behnken design",
             internal_algorithm_name="bbdesign",
             website=f"{__DOC}rsm.html#box-behnken",
-            settings=BoxBehnkenDesignSettings,
+            Settings=BoxBehnkenDesignSettings,
             minimum_dimension=3,
         ),
         "ccdesign": PyDOEAlgorithmDescription(
@@ -92,7 +92,7 @@ class PyDOELibrary(BaseDOELibrary):
             description="Central Composite",
             internal_algorithm_name="ccdesign",
             website=f"{__DOC}rsm.html#central-composite",
-            settings=CentralCompositeDesignSettings,
+            Settings=CentralCompositeDesignSettings,
             minimum_dimension=2,
         ),
         "ff2n": PyDOEAlgorithmDescription(
@@ -100,28 +100,28 @@ class PyDOELibrary(BaseDOELibrary):
             description="2-Level Full-Factorial",
             internal_algorithm_name="ff2n",
             website=f"{__DOC}factorial.html#level-full-factorial",
-            settings=TwoLevelFullFactorialSettings,
+            Settings=TwoLevelFullFactorialSettings,
         ),
         "fullfact": PyDOEAlgorithmDescription(
             algorithm_name="fullfact",
             description="Full-Factorial",
             internal_algorithm_name="fullfact",
             website=f"{__DOC}factorial.html#general-full-factorial",
-            settings=FullFactorialSettings,
+            Settings=FullFactorialSettings,
         ),
         "lhs": PyDOEAlgorithmDescription(
             algorithm_name="lhs",
             description="Latin Hypercube Sampling",
             internal_algorithm_name="lhs",
             website=f"{__DOC}randomized.html#latin-hypercube",
-            settings=LHSSettings,
+            Settings=LHSSettings,
         ),
         "pbdesign": PyDOEAlgorithmDescription(
             algorithm_name="pbdesign",
             description="Plackett-Burman design",
             internal_algorithm_name="pbdesign",
             website=f"{__DOC}factorial.html#plackett-burman",
-            settings=PlackettBurmanDesignSettings,
+            Settings=PlackettBurmanDesignSettings,
         ),
     }
 

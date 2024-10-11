@@ -48,13 +48,5 @@ class ODESolverLibraryFactory(BaseAlgoFactory):
 
         Find the appropriate library and execute the solver on the problem to
         solve the ordinary differential equation ``s(t)' = f(t, s(t))``
-
-        Args:
-            problem: The ordinary differential equation that defines the problem
-            algo_name: The algorithm name.
-            **settings: The settings for the algorithm.
-
-        Returns:
-            The solution.
         """
         return super().execute(problem, algo_name, **settings)

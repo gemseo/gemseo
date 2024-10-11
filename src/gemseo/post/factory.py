@@ -41,18 +41,22 @@ class PostFactory(BaseFactory[BasePost[Any]]):
         self,
         opt_problem: OptimizationProblem,
         post_name: str,
-        **options: Any,
+        **settings: Any,
     ) -> BasePost[Any]:
         """Post-process an optimization problem.
 
         Args:
             opt_problem: The optimization problem to be post-processed.
             post_name: The name of the post-processor.
-            **options: The options of the post-processor.
+            **settings: The options of the post-processor,
+                either as ``name_1: value_1, name_2: value_2, ...``
+                or as ``settings: Settings(name_1=value_1, name_2=value_2, ...)``
+                where ``Settings`` is a Pydantic model
+                and ``"settings"`` is a special argument name.
 
         Returns:
             The post-processor.
         """
         post = self.create(post_name, opt_problem)
-        post.execute(**options)
+        post.execute(**settings)
         return post

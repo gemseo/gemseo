@@ -79,8 +79,8 @@ class DOEAlgorithmDescription(DriverDescription):
     minimum_dimension: int = 1
     """The minimum dimension of the parameter space."""
 
-    settings: type[BaseDOELibrarySettings] = BaseDOELibrarySettings
-    """The pydantic model for the DOE library settings."""
+    Settings: type[BaseDOELibrarySettings] = BaseDOELibrarySettings
+    """The Pydantic model for the DOE library settings."""
 
 
 class BaseDOELibrary(BaseDriverLibrary, Serializable):

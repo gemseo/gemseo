@@ -60,7 +60,7 @@ class SciPyAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "SciPy Local"
     """The library name."""
 
-    settings: type[BaseScipyLocalSettings] = BaseScipyLocalSettings
+    Settings: type[BaseScipyLocalSettings] = BaseScipyLocalSettings
     """The option validation model for SciPy local optimization library."""
 
 
@@ -82,7 +82,7 @@ class ScipyOpt(BaseOptimizationLibrary):
             require_gradient=True,
             positive_constraints=True,
             website=f"{__DOC}optimize.minimize-slsqp.html",
-            settings=SLSQPSettings,
+            Settings=SLSQPSettings,
         ),
         "L-BFGS-B": SciPyAlgorithmDescription(
             algorithm_name="L-BFGS-B",
@@ -92,7 +92,7 @@ class ScipyOpt(BaseOptimizationLibrary):
             internal_algorithm_name="L-BFGS-B",
             require_gradient=True,
             website=f"{__DOC}optimize.minimize-lbfgsb.html",
-            settings=LBFGSBSettings,
+            Settings=LBFGSBSettings,
         ),
         "TNC": SciPyAlgorithmDescription(
             algorithm_name="TNC",
@@ -102,14 +102,14 @@ class ScipyOpt(BaseOptimizationLibrary):
             internal_algorithm_name="TNC",
             require_gradient=True,
             website=f"{__DOC}optimize.minimize-tnc.html",
-            settings=TNCSettings,
+            Settings=TNCSettings,
         ),
         "NELDER-MEAD": SciPyAlgorithmDescription(
             algorithm_name="NELDER-MEAD",
             description="Nelder-Mead algorithm implemented in the SciPy library",
             internal_algorithm_name="Nelder-Mead",
             website=f"{__DOC}optimize.minimize-neldermead.html",
-            settings=NelderMeadSettings,
+            Settings=NelderMeadSettings,
         ),
     }
 
@@ -125,7 +125,7 @@ class ScipyOpt(BaseOptimizationLibrary):
             handle_inequality_constraints=True,
             positive_constraints=True,
             website=f"{__DOC}optimize.minimize-cobyqa.html",
-            settings=COBYQASettings,
+            Settings=COBYQASettings,
         )
 
     def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:

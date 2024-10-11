@@ -97,7 +97,7 @@ class DOEScenario(Scenario):
             lib = self._algo_factory.create(algo_name)
             self._lib = lib
 
-        if self.N_SAMPLES in lib.ALGORITHM_INFOS[algo_name].settings.model_fields:
+        if self.N_SAMPLES in lib.ALGORITHM_INFOS[algo_name].Settings.model_fields:
             n_samples = self.local_data.get(self.N_SAMPLES)
             if self.N_SAMPLES in settings:
                 LOGGER.warning(

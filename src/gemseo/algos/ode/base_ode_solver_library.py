@@ -40,7 +40,7 @@ LOGGER = logging.getLogger(__name__)
 class ODESolverDescription(AlgorithmDescription):
     """Description for the ODE solver."""
 
-    settings: type[BaseODESolverLibrarySettings] = BaseODESolverLibrarySettings
+    Settings: type[BaseODESolverLibrarySettings] = BaseODESolverLibrarySettings
     """The settings validation model."""
 
 

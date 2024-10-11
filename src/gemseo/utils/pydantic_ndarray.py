@@ -48,9 +48,9 @@ if TYPE_CHECKING:
 
 
 class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):
-    """A ndarray that can be used with pydantic.
+    """A ndarray that can be used with Pydantic.
 
-    See pydantic docs for more information.
+    See Pydantic docs for more information.
     """
 
     @classmethod

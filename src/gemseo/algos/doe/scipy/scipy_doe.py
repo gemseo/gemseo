@@ -130,31 +130,31 @@ class SciPyDOE(BaseDOELibrary):
             algorithm_name=__HALTON,
             description=__NAMES_TO_CLASSES[__HALTON].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__HALTON].__name__,
-            settings=HaltonSettings,
+            Settings=HaltonSettings,
         ),
         __LHS: SciPyDOEAlgorithmDescription(
             algorithm_name=__LHS,
             description=__NAMES_TO_CLASSES[__LHS].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__LHS].__name__,
-            settings=LHSSettings,
+            Settings=LHSSettings,
         ),
         __MONTE_CARLO: SciPyDOEAlgorithmDescription(
             algorithm_name=__MONTE_CARLO,
             description=__NAMES_TO_CLASSES[__MONTE_CARLO].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__MONTE_CARLO].__name__,
-            settings=MCSettings,
+            Settings=MCSettings,
         ),
         __POISSON_DISK: SciPyDOEAlgorithmDescription(
             algorithm_name=__POISSON_DISK,
             description=__NAMES_TO_CLASSES[__POISSON_DISK].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__POISSON_DISK].__name__,
-            settings=PoissonDiskSettings,
+            Settings=PoissonDiskSettings,
         ),
         __SOBOL: SciPyDOEAlgorithmDescription(
             algorithm_name=__SOBOL,
             description=__NAMES_TO_CLASSES[__SOBOL].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__SOBOL].__name__,
-            settings=SobolSettings,
+            Settings=SobolSettings,
         ),
     }
 

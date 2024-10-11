@@ -423,7 +423,7 @@ Changed
   or an ``n_samples``-length list shaped as ``[{variable_name: variable_sample, ...}, ...]``
   where ``variable_sample`` is a 1D-array shaped as ``(variable_size, )``.
   `#999 <https://gitlab.com/gemseo/dev/gemseo/-/issues/999>`_
-- ``PydanticGrammar`` have been updated to support pydantic v2.
+- ``PydanticGrammar`` have been updated to support Pydantic v2.
   For such grammars, NumPy ndarrays shall be typed with ``gemseo.core.grammars.pydantic_ndarray.NDArrayPydantic``
   instead of the standard ``ndarray`` or ``NDArray`` based of annotations.
   `#1017 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1017>`_

@@ -465,7 +465,7 @@ def get_algorithm_options_schema(
     for factory in (DOELibraryFactory(), OptimizationLibraryFactory()):
         if factory.is_available(algorithm_name):
             algo_lib = factory.create(algorithm_name)
-            settings = algo_lib.ALGORITHM_INFOS[algorithm_name].settings()
+            settings = algo_lib.ALGORITHM_INFOS[algorithm_name].Settings()
             return _get_json_schema_from_settings(
                 settings,
                 output_json,

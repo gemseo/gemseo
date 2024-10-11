@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Tools for pydantic."""
+"""Tools for Pydantic."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def update_field(
     field_name: str,
     **kwargs: Any,
 ) -> None:
-    """Update a :class:`.Field` of a pydantic model.
+    """Update a :class:`.Field` of a Pydantic model.
 
     Args:
         model: The model.

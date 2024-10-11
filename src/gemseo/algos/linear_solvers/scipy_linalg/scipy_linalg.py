@@ -79,7 +79,7 @@ class ScipyLinAlgAlgorithmDescription(LinearSolverDescription):
     library_name: str = "SciPy Linear Algebra"
     """The library name."""
 
-    settings: type[BaseSciPyLinalgSettings] = BaseSciPyLinalgSettings
+    Settings: type[BaseSciPyLinalgSettings] = BaseSciPyLinalgSettings
     """The option validation model for SciPy linear algebra library."""
 
 
@@ -115,14 +115,14 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             description="BI-Conjugate Gradient",
             internal_algorithm_name="bicg",
             website=f"{__DOC}generated/scipy.sparse.linalg.bicg.html",
-            settings=BICGSettings,
+            Settings=BICGSettings,
         ),
         "BICGSTAB": LinearSolverDescription(
             algorithm_name="BICGSTAB",
             description="Bi-Conjugate Gradient STABilized",
             internal_algorithm_name="bicgstab",
             website=f"{__DOC}generated/scipy.sparse.linalg.bicgstab.html",
-            settings=BICGStabSettings,
+            Settings=BICGStabSettings,
         ),
         "CG": LinearSolverDescription(
             algorithm_name="CG",
@@ -131,49 +131,49 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             lhs_must_be_symmetric=True,
             lhs_must_be_positive_definite=True,
             website=f"{__DOC}generated/scipy.sparse.linalg.cg.html",
-            settings=CGSettings,
+            Settings=CGSettings,
         ),
         "CGS": LinearSolverDescription(
             algorithm_name="CGS",
             description="Conjugate Gradient Squared",
             internal_algorithm_name="cgs",
             website=f"{__DOC}generated/scipy.sparse.linalg.cgs.html",
-            settings=CGSSettings,
+            Settings=CGSSettings,
         ),
         "GCROT": LinearSolverDescription(
             algorithm_name="GCROT",
             description="Generalized Conjugate Residual with Optimal Truncation",
             internal_algorithm_name="gcrotmk",
             website=f"{__DOC}generated/scipy.sparse.linalg.gcrotmk.html",
-            settings=GCROTSettings,
+            Settings=GCROTSettings,
         ),
         "GMRES": LinearSolverDescription(
             algorithm_name="GMRES",
             description="Generalized Minimum RESidual",
             internal_algorithm_name="gmres",
             website=f"{__DOC}generated/scipy.sparse.linalg.gmres.html",
-            settings=GMRESSettings,
+            Settings=GMRESSettings,
         ),
         "LGMRES": LinearSolverDescription(
             algorithm_name="LGMRES",
             description="Loose Generalized Minimum RESidual",
             internal_algorithm_name="lgmres",
             website=f"{__DOC}generated/scipy.sparse.linalg.lgmres.html",
-            settings=LGMRESSettings,
+            Settings=LGMRESSettings,
         ),
         "TFQMR": LinearSolverDescription(
             algorithm_name="TFQMR",
             description="Transpose-Free Quasi-Minimal Residual",
             internal_algorithm_name="tfqmr",
             website=f"{__DOC}generated/scipy.sparse.linalg.tfqmr.html",
-            settings=BaseSciPyLinalgSettings,
+            Settings=BaseSciPyLinalgSettings,
         ),
         "DEFAULT": LinearSolverDescription(
             algorithm_name="DEFAULT",
             description="Default solver (LGMRES)",
             internal_algorithm_name="lgmres",
             website=f"{__DOC}generated/scipy.sparse.linalg.lgmres.html",
-            settings=LGMRESSettings,
+            Settings=LGMRESSettings,
         ),
     }
 

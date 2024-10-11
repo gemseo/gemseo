@@ -36,6 +36,7 @@ from matplotlib.gridspec import GridSpec
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.utils.constants import SETTINGS
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -64,7 +65,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     # and may be changed.
     # See https://github.com/python/mypy/issues/5144.
     Settings: ClassVar[type[T]]
-    """The pydantic model for the settings."""
+    """The Pydantic model for the settings."""
 
     optimization_problem: OptimizationProblem
     """The optimization problem."""
@@ -149,11 +150,15 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
         self.__figures[file_name] = figure
 
-    def execute(self, **options: Any) -> dict[str, Figure]:
+    def execute(self, **settings: Any) -> dict[str, Figure]:
         """Post-process the optimization problem.
 
         Args:
-            **options: The options of the post-processor.
+            **settings: The settings of the post-processor,
+                either as ``name_1: value_1, name_2: value_2, ...``
+                or as ``settings: Settings(name_1=value_1, name_2=value_2, ...)``
+                where ``Settings`` is a Pydantic model
+                and ``"settings"`` is a special argument name.
 
         Returns:
             The figures, to be customized if not closed.
@@ -168,7 +173,10 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             )
             raise ValueError(msg)
 
-        _settings = self.Settings(**options)
+        _settings = settings.get(SETTINGS)
+        if _settings is None:
+            _settings = self.Settings(**settings)
+
         self._plot(_settings)
         self.__render(_settings)
         return self.__figures

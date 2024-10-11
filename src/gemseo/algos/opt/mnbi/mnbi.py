@@ -288,7 +288,7 @@ class MNBI(BaseOptimizationLibrary):
             algorithm_name="mNBI",
             internal_algorithm_name="mNBI",
             description="Modified Normal Boundary Intersection (mNBI) method",
-            settings=MNBISettings,
+            Settings=MNBISettings,
         )
     }
 
