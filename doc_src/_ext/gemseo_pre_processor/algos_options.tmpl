@@ -18,6 +18,21 @@
 .. note::
    All the features of the wrapped libraries may not be exposed through |g|.
 
+.. note::
+   The algorithm settings can be passed to a function of the form ``function(..., **settings: Any)``,
+   either one by one:
+
+   .. code-block:: python
+
+      function(..., setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
+
+   or using the argument name ``"settings"`` and the Pydantic model associated with the algorithm:
+
+   .. code-block:: python
+
+      settings = AlgorithmSettings(setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
+      function(..., settings=settings)
+
 {% if user_guide_anchor %}
 .. seealso::
    You can find more information about this family of algorithms in :ref:`the user guide <{{user_guide_anchor}}>`.
@@ -132,7 +147,7 @@ Module: :class:`{{modules[algo]}}`
 {% endif %}
 
 {% if websites[algo] %}
-More details about the algorithm and its options on {{websites[algo]}}.
+More details about the algorithm and its settings on {{websites[algo]}}.
 {% endif %}
 
 .. raw:: html
@@ -166,7 +181,7 @@ More details about the algorithm and its options on {{websites[algo]}}.
 
 {% if required_parameters %}
     <dl class="field-list simple">
-    <dt class="field-odd">Required parameters</dt>
+    <dt class="field-odd">Required settings</dt>
     <dd class="field-odd"><ul class="simple">
 {% for arg in required_parameters %}
     <li>
@@ -186,7 +201,7 @@ More details about the algorithm and its options on {{websites[algo]}}.
 
 {% if optional_parameters %}
     <dl class="field-list simple">
-    <dt class="field-odd">Optional parameters</dt>
+    <dt class="field-odd">Optional settings</dt>
     <dd class="field-odd"><ul class="simple">
 
 {% for arg in optional_parameters %}

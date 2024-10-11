@@ -51,7 +51,7 @@ class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
             require_gradient=True,
-            settings=AugmentedLagrangianOrder1Settings,
+            Settings=AugmentedLagrangianOrder1Settings,
         ),
     }
 

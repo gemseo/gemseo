@@ -87,7 +87,7 @@ class NLoptAlgorithmDescription(OptimizationAlgorithmDescription):
 
     library_name: str = "NLopt"
 
-    settings: type[BaseNLoptSettings] = BaseNLoptSettings
+    Settings: type[BaseNLoptSettings] = BaseNLoptSettings
     """The option validation model for NLopt optimization library."""
 
 
@@ -154,7 +154,7 @@ class Nlopt(BaseOptimizationLibrary):
             internal_algorithm_name=LD_MMA,
             require_gradient=True,
             website=f"{__NLOPT_DOC}#mma-method-of-moving-asymptotes-and-ccsa",
-            settings=MMASettings,
+            Settings=MMASettings,
         ),
         "NLOPT_COBYLA": NLoptAlgorithmDescription(
             algorithm_name="COBYLA",
@@ -170,7 +170,7 @@ class Nlopt(BaseOptimizationLibrary):
                 f"{__NLOPT_DOC}#cobyla-constrained-optimization-by-linear-"
                 "approximations"
             ),
-            settings=COBYLASettings,
+            Settings=COBYLASettings,
         ),
         "NLOPT_SLSQP": NLoptAlgorithmDescription(
             algorithm_name="SLSQP",
@@ -184,7 +184,7 @@ class Nlopt(BaseOptimizationLibrary):
             internal_algorithm_name=LD_SLSQP,
             require_gradient=True,
             website=f"{__NLOPT_DOC}#slsqp",
-            settings=SLSQPSettings,
+            Settings=SLSQPSettings,
         ),
         "NLOPT_BOBYQA": NLoptAlgorithmDescription(
             algorithm_name="BOBYQA",
@@ -195,7 +195,7 @@ class Nlopt(BaseOptimizationLibrary):
             ),
             internal_algorithm_name=LN_BOBYQA,
             website=f"{__NLOPT_DOC}#bobyqa",
-            settings=BOBYQASettings,
+            Settings=BOBYQASettings,
         ),
         "NLOPT_BFGS": NLoptAlgorithmDescription(
             algorithm_name="BFGS",
@@ -206,14 +206,14 @@ class Nlopt(BaseOptimizationLibrary):
             internal_algorithm_name=LD_LBFGS,
             require_gradient=True,
             website=f"{__NLOPT_DOC}#low-storage-bfgs",
-            settings=BFGSSettings,
+            Settings=BFGSSettings,
         ),
         "NLOPT_NEWUOA": NLoptAlgorithmDescription(
             algorithm_name="NEWUOA",
             description=("NEWUOA + bound constraints implemented in the NLOPT library"),
             internal_algorithm_name=LN_NEWUOA_BOUND,
             website=f"{__NLOPT_DOC}#newuoa-bound-constraints",
-            settings=NEWUOASettings,
+            Settings=NEWUOASettings,
         ),
     }
 

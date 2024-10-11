@@ -50,7 +50,7 @@ class DiagonalDOE(BaseDOELibrary):
             description="Diagonal design of experiments",
             internal_algorithm_name="DiagonalDOE",
             library_name="GEMSEO",
-            settings=DiagonalDOESettings,
+            Settings=DiagonalDOESettings,
         )
     }
 

@@ -35,7 +35,9 @@ from scipy.sparse.linalg import spilu
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+from gemseo.algos.linear_solvers.scipy_linalg._settings.lgmres import LGMRESSettings
 from gemseo.algos.linear_solvers.scipy_linalg.scipy_linalg import ScipyLinalgAlgos
+from gemseo.utils.constants import SETTINGS
 from gemseo.utils.seeder import SEED
 
 RESIDUALS_TOL = 1e-12
@@ -49,13 +51,20 @@ def test_algo_list() -> None:
         factory.is_available(algo)
 
 
-def test_default() -> None:
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"max_iter": 1000},
+        {SETTINGS: LGMRESSettings(max_iter=1000)},
+    ],
+)
+def test_default(kwargs) -> None:
     """Tests the DEFAULT solver."""
     factory = LinearSolverLibraryFactory()
     rng = default_rng(1)
     n = 5
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
-    factory.execute(problem, "DEFAULT", max_iter=1000)
+    factory.execute(problem, "DEFAULT", **kwargs)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
 

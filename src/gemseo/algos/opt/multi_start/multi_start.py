@@ -57,7 +57,7 @@ class MultiStart(BaseOptimizationLibrary):
             handle_integer_variables=True,
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
-            settings=MultiStartSettings,
+            Settings=MultiStartSettings,
         )
     }
 
@@ -123,7 +123,7 @@ class MultiStart(BaseOptimizationLibrary):
         doe_algo = DOELibraryFactory().create(settings["doe_algo_name"])
         if (
             "n_samples"
-            in doe_algo.ALGORITHM_INFOS[settings["doe_algo_name"]].settings.model_fields
+            in doe_algo.ALGORITHM_INFOS[settings["doe_algo_name"]].Settings.model_fields
         ):
             settings["doe_algo_options"]["n_samples"] = n_start
         samples = doe_algo.compute_doe(design_space, **settings["doe_algo_options"])

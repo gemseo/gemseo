@@ -194,10 +194,14 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         Args:
             problem: The problem to execute.
             algo_name: The name of the algorithm.
-            **settings: The settings of the algorithm.
+            **settings: The algorithm settings,
+                either as ``name_1: value_1, name_2: value_2, ...``
+                or as ``settings: Settings(name_1=value_1, name_2=value_2, ...)``
+                where ``Settings`` is a Pydantic model
+                and ``"settings"`` is a special argument name.
 
         Returns:
-            The optimization result.
+            The result.
         """
         return self.create(algo_name).execute(problem, **settings)
 

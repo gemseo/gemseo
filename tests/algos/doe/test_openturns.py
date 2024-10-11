@@ -286,7 +286,7 @@ def test_optimized_lhs_size_1():
     with pytest.raises(
         ValidationError, match="Input should be greater than or equal to 2"
     ):
-        library.ALGORITHM_INFOS["OT_OPT_LHS"].settings(n_samples=1)
+        library.ALGORITHM_INFOS["OT_OPT_LHS"].Settings(n_samples=1)
 
 
 @pytest.mark.parametrize(

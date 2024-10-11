@@ -27,3 +27,6 @@ N_CPUS: Final[int] = cpu_count()
 
 READ_ONLY_EMPTY_DICT: Final[MappingProxyType[Any, Any]] = MappingProxyType({})
 """A read-only empty dictionary."""
+
+SETTINGS: Final[str] = "settings"
+"""The name of the argument to pass a Pydantic model."""

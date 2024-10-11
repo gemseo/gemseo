@@ -92,8 +92,8 @@ class DriverDescription(AlgorithmDescription):
     handle_integer_variables: bool = False
     """Whether the optimization algorithm handles integer variables."""
 
-    settings: type[BaseDriverLibrarySettings] = BaseDriverLibrarySettings
-    """The pydantic model for the driver library settings."""
+    Settings: type[BaseDriverLibrarySettings] = BaseDriverLibrarySettings
+    """The Pydantic model for the driver library settings."""
 
 
 class BaseDriverLibrary(BaseAlgorithmLibrary):

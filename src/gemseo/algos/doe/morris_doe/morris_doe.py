@@ -52,7 +52,7 @@ class MorrisDOE(BaseDOELibrary):
             description="The DOE used by the Morris sensitivity analysis.",
             internal_algorithm_name="MorrisDOE",
             library_name="MorrisDOE",
-            settings=MorrisDOESettings,
+            Settings=MorrisDOESettings,
         )
     }
 
@@ -97,7 +97,7 @@ class MorrisDOE(BaseDOELibrary):
 
         # If possible, set the number of samples of the DOE algorithm
         n_samples_available = set(
-            doe_algo.ALGORITHM_INFOS[doe_algo_name].settings.model_fields
+            doe_algo.ALGORITHM_INFOS[doe_algo_name].Settings.model_fields
         ).intersection(["n_samples", "samples"])
         if n_samples_available and doe_algo_name != "CustomDOE":
             doe_algo_options[n_samples_available.pop()] = n_replicates

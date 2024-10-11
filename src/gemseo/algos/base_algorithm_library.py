@@ -35,6 +35,7 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.opt._gradient_based_algorithm_settings import (
     GradientBasedAlgorithmSettings,
 )
+from gemseo.utils.constants import SETTINGS
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import pretty_str
 
@@ -70,8 +71,8 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     #  in modules for which one library class handles many different algorithms. In the
     #  future we should have one algorithm per module and use the Settings class
     #  variable to validate the settings in _validate_settings.
-    settings: type[BaseAlgorithmLibrarySettings] = BaseAlgorithmLibrarySettings
-    """The pydantic model for the settings."""
+    Settings: type[BaseAlgorithmLibrarySettings] = BaseAlgorithmLibrarySettings
+    """The Pydantic model for the settings."""
 
 
 class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -127,10 +128,15 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The validated settings.
         """
-        return self.ALGORITHM_INFOS[self.algo_name].settings(**settings).model_dump()
+        _settings = settings.get(SETTINGS)
+        if _settings is None:
+            _settings = self.ALGORITHM_INFOS[self.algo_name].Settings(**settings)
 
+        settings: BaseAlgorithmLibrarySettings
+        return _settings.model_dump()
+
+    @staticmethod
     def _filter_settings(
-        self,
         settings: StrKeyMapping,
         model_to_exclude: type[BaseAlgorithmLibrarySettings],
     ) -> dict[str, Any]:
@@ -188,7 +194,11 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             problem: The problem to be solved.
-            **settings: The algorithm settings.
+            **settings: The algorithm settings,
+                either as ``name_1: value_1, name_2: value_2, ...``
+                or as ``settings: Settings(name_1=value_1, name_2=value_2, ...)``
+                where ``Settings`` is a Pydantic model
+                and ``"settings"`` is a special argument name.
 
         Returns:
             The solution found by the algorithm.
