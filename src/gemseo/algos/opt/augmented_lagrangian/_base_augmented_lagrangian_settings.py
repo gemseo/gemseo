@@ -40,7 +40,9 @@ class BaseAugmentedLagragianSettings(BaseOptimizationLibrarySettings):
     )
 
     sub_solver_algorithm: str = Field(
-        description="""The optimization algorithm name used to solve each sub-poblem."""
+        description=(
+            """The optimization algorithm name used to solve each sub-problem."""
+        )
     )
 
     sub_problem_options: StrKeyMapping = Field(

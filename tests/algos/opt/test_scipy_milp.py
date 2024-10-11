@@ -106,7 +106,7 @@ def test_init() -> None:
     [
         {"node_limit": 1},
         {"presolve": False, "node_limit": 1},
-        {"time_limit": 0, "node_limit": 1},
+        {"max_time": 0, "node_limit": 1},
         {"mip_rel_gap": 100, "node_limit": 1},
         {"disp": True, "node_limit": 1},
         {"disp": True},

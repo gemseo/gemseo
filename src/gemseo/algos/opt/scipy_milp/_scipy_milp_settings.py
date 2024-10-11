@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from numpy import inf
 from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
@@ -60,9 +59,4 @@ class SciPyMILPSettings(BaseOptimizationLibrarySettings):
             simplifications.
             """
         ),
-    )
-
-    time_limit: NonNegativeFloat = Field(
-        default=inf,
-        description="""The maximum number of seconds allotted to solve the problem.""",
     )

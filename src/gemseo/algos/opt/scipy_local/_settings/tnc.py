@@ -30,26 +30,6 @@ from gemseo.algos.opt.scipy_local._base_scipy_local_settings import (
 class TNCSettings(BaseScipyLocalSettings, GradientBasedAlgorithmSettings):
     """Settings for the SciPy TNC algorithm."""
 
-    eps: NonNegativeFloat = Field(
-        default=1e-8,
-        description=(
-            """The absolute step size forforward differences.
-
-            The forward differences is used to approximate the Jacobian if not provided.
-            """
-        ),
-    )
-
-    scale: list[float] | None = Field(
-        default=None,
-        description=(
-            """The scaling factors to apply to each variable.
-            If ``None``, the factors are up-low for interval bounded variables and
-            1+|x] for the others.
-            """
-        ),
-    )
-
     offset: float | None = Field(
         default=None,
         description=(

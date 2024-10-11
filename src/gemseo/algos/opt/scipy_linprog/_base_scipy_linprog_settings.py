@@ -16,14 +16,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa:TCH002
-from pydantic import PositiveInt  # noqa:TCH002
 from pydantic import model_validator
 
 from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
 )
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class BaseSciPyLinProgSettings(BaseOptimizationLibrarySettings):
@@ -37,11 +40,6 @@ class BaseSciPyLinProgSettings(BaseOptimizationLibrarySettings):
     disp: bool = Field(
         default=False,
         description="""Whether to print convergence messages.""",
-    )
-
-    maxiter: PositiveInt = Field(
-        default=1_000_000,
-        description="""Maximum number of iterations to perform.""",
     )
 
     presolve: bool = Field(
@@ -72,22 +70,14 @@ class BaseSciPyLinProgSettings(BaseOptimizationLibrarySettings):
         ),
     )
 
-    tol: NonNegativeFloat | None = Field(
-        default=None,
-        description=(
-            """The tolerance below which a residual is considered to be exactly zero.
-            If ``None``, a default value specific to each algorithm will be used.
-            """
-        ),
-    )
-
     @model_validator(mode="after")
-    def use_algorithm_default_tol(self):
-        """Remove the ``tol`` attribute if ``None``.
+    def __check_scaling(self) -> Self:
+        """Use ``autoscale`` when ``scaling_threshold`` is set.
 
-        If the option is not provided, a default value specific to each algorithm will
-        be used.
+        The scaling of outputs by GEMSEO has no effect on ``ScipyLinprog`` because
+        it does not scale the coefficients of linear functions. This validation ensures
+        the ``autoscale`` setting is used instead.
         """
-        if self.tol is None:
-            del self.tol
+        if self.scaling_threshold is not None:
+            self.autoscale = True
         return self

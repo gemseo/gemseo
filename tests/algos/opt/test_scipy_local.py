@@ -128,7 +128,6 @@ class TestScipy(TestCase):
             disp=True,
             maxcor=12,
             gtol=1e-8,
-            maxfun=20,
         )
         self.assertRaises(
             ValidationError,
@@ -139,7 +138,6 @@ class TestScipy(TestCase):
             disp=True,
             maxcor=12,
             gtol=1e-8,
-            maxfun=1000,
             unknown_option="foo",
         )
 

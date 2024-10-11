@@ -21,7 +21,6 @@ from functools import partial
 from numpy import inf
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TCH002
-from pydantic import PositiveFloat  # noqa: TCH002
 
 from gemseo.algos.opt._base_optimization_library_settings import (
     BaseOptimizationLibrarySettings,
@@ -33,20 +32,6 @@ copy_field_opt = partial(copy_field, model=BaseOptimizationLibrarySettings)
 
 class BaseNLoptSettings(BaseOptimizationLibrarySettings):
     """The NLopt optimization library setting."""
-
-    init_step: PositiveFloat = Field(
-        default=0.25,
-        description=(
-            """The initial step size for derivative-free algorithms.
-
-            For derivative-free local-optimization algorithms, the optimizer must
-            somehow decide on some initial step size to perturb `x` by when it begins
-            the optimization. This step size should be big enough so that the value of
-            the objective significantly changes, but not too big if you want to find the
-            local optimum nearest to x.
-            """
-        ),
-    )
 
     stopval: float = Field(
         default=-inf,

@@ -70,7 +70,6 @@ def get_settings(algo_name):
     if algo_name == "DIFFERENTIAL_EVOLUTION":
         settings["normalize_design_space"] = False
         settings["popsize"] = 5
-        settings["tol"] = 0.1
         settings["mutation"] = (0.6, 1)
     elif algo_name == "SHGO":
         settings["n"] = 100

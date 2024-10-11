@@ -27,6 +27,9 @@ from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.scipy_linprog._settings.highs_dual_simplex import (
+    HiGHSDualSimplexSettings,
+)
 from gemseo.algos.opt.scipy_linprog.scipy_linprog import ScipyLinprog
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -57,7 +60,7 @@ def test_nonlinear_optimization_problem(library_cls) -> None:
                 "does not handle non-linear problems."
             ),
         ):
-            library_cls(algo_name).execute(problem, algo_name)
+            library_cls(algo_name).execute(problem)
 
 
 def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
@@ -112,7 +115,7 @@ def test_linprog_algorithms(minimization, x_opt, f_opt, library_cls) -> None:
         if not minimization:
             linprog_problem.minimize_objective = False
 
-        optimization_result = library_cls(algo_name).execute(linprog_problem, algo_name)
+        optimization_result = library_cls(algo_name).execute(linprog_problem)
 
         assert allclose(optimization_result.x_opt, x_opt)
         assert allclose(optimization_result.f_opt, f_opt)
@@ -133,6 +136,13 @@ def test_sparse_linprog_algorithms(
     if not minimization:
         linprog_problem.minimize_objective = False
 
-    optimization_result = library_cls(algo_name).execute(linprog_problem, algo_name)
+    optimization_result = library_cls(algo_name).execute(linprog_problem)
     assert allclose(optimization_result.x_opt, x_opt)
     assert allclose(optimization_result.f_opt, f_opt)
+
+
+@pytest.mark.parametrize("scaling_threshold", [None, 0.1])
+def test_autoscale_setting(scaling_threshold):
+    """Check that the ``scale_threshold`` setting enables the ``autoscale`` setting."""
+    settings = HiGHSDualSimplexSettings(scaling_threshold=scaling_threshold)
+    assert settings.autoscale if scaling_threshold else not settings.autoscale

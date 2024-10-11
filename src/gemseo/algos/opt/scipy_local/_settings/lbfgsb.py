@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TCH002
-from pydantic import NonNegativeInt  # noqa: TCH002
 from pydantic import PositiveInt  # noqa: TCH002
 
 from gemseo.algos.opt._gradient_based_algorithm_settings import (
@@ -44,26 +43,6 @@ class LBFGSBSettings(BaseScipyLocalSettings, GradientBasedAlgorithmSettings):
         description=(
             "The precision goal for the projected gradient value to stop the algorithm."
         ),
-    )
-
-    eps: NonNegativeFloat = Field(
-        default=1e-8,
-        description=(
-            """The absolute step size forforward differences.
-
-            The forward differences is used to approximate the Jacobian if not provided.
-            """
-        ),
-    )
-
-    maxfun: NonNegativeInt = Field(
-        default=1_000,
-        description="""The maximum number of function evaluations.""",
-    )
-
-    maxiter: NonNegativeInt = Field(
-        default=1_000,
-        description="""The maximum number of algrotihm iterations.""",
     )
 
     iprint: int = Field(
