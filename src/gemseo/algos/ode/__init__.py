@@ -16,6 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Isabelle Santos
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The ODE solvers."""
+"""Algorithms to solve ordinary differential equations (ODEs)."""
 
 from __future__ import annotations

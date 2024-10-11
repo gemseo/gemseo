@@ -29,7 +29,7 @@ from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
 
 if TYPE_CHECKING:
     from gemseo.algos.ode.ode_problem import ODEProblem
-    from gemseo.algos.optimization_result import OptimizationResult
+    from gemseo.algos.ode.ode_problem import ODEResult
 
 
 class ODESolverLibraryFactory(BaseAlgoFactory):
@@ -43,7 +43,7 @@ class ODESolverLibraryFactory(BaseAlgoFactory):
         problem: ODEProblem,
         algo_name: str = "RK45",
         **settings: Any,
-    ) -> OptimizationResult:
+    ) -> ODEResult:
         """Execute the solver.
 
         Find the appropriate library and execute the solver on the problem to

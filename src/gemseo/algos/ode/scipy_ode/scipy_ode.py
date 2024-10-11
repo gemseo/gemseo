@@ -29,6 +29,7 @@ from typing import Any
 from typing import ClassVar
 from typing import Final
 
+from numpy import newaxis
 from scipy.integrate import solve_ivp
 
 from gemseo.algos.ode._base_ode_solver_library_settings import (
@@ -117,29 +118,47 @@ class ScipyODEAlgos(BaseODESolverLibrary):
         settings_ = self._filter_settings(
             settings, model_to_exclude=BaseODESolverLibrarySettings
         )
+        settings_["jac"] = problem.jac.state
 
-        if problem.time_vector is not None:
-            settings_["t_eval"] = problem.time_vector
-
-        if problem.jac is not None:
-            settings_["jac"] = problem.jac
+        if problem.solve_at_algorithm_times:
+            settings_["t_eval"] = problem.times
 
         solution = solve_ivp(
             fun=problem.rhs_function,
             y0=problem.initial_state,
             method=self._algo_name,
-            t_span=problem.integration_interval,
+            t_span=problem.time_interval,
+            events=problem.event_functions,
             **settings_,
         )
 
-        problem.result.is_converged = solution.status == 0
-        problem.result.solver_message = solution.message
-        if not problem.result.is_converged:
-            LOGGER.warning(solution.message)
-
-        problem.result.state_vector = solution.y
-        problem.result.time_vector = solution.t
+        problem.result.algorithm_name = self._algo_name
+        problem.result.algorithms_options = settings_
+        problem.result.algorithm_has_converged = solution.status >= 0
+        problem.result.algorithm_termination_message = solution.message
+        problem.result.state_trajectories = solution.y
+        problem.result.times = solution.t
         problem.result.n_func_evaluations = solution.nfev
         problem.result.n_jac_evaluations = solution.njev
+
+        if not problem.result.algorithm_has_converged:
+            LOGGER.warning(solution.message)
+
+        index = None
+        if solution.t_events:
+            for i, t_event in enumerate(solution.t_events):
+                if len(t_event):
+                    index = i
+                break
+
+        problem.result.terminal_event_index = index
+        if problem.event_functions and index is not None:
+            problem.result.terminal_event_time = solution.t_events[index]
+            problem.result.terminal_event_state = solution.y_events[index][0][
+                :, newaxis
+            ]
+        else:
+            problem.result.terminal_event_time = solution.t[-1:]
+            problem.result.terminal_event_state = solution.y[:, -1][:, newaxis]
 
         return problem.result
