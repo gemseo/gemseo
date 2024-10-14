@@ -307,7 +307,7 @@ class CallableParallelExecution(
             task_submitted_callback()
 
         # Sort the outputs with the same order as functions.
-        ordered_outputs: list[None | ReturnT] = [None] * n_tasks
+        ordered_outputs: list[ReturnT | None] = [None] * n_tasks
         n_outputs = 0
         # Retrieve outputs on the fly to call the callbacks, typically
         # iterates progress bar and stores the data in database or cache.

@@ -35,7 +35,6 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -46,9 +45,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class BaseAugmentedLagrangian(
-    BaseOptimizationLibrary, metaclass=ABCGoogleDocstringInheritanceMeta
-):
+class BaseAugmentedLagrangian(BaseOptimizationLibrary):
     """This is an abstract base class for augmented lagrangian optimization algorithms.
 
     The abstract methods :func:`_update_penalty` and

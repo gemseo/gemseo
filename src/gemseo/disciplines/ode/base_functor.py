@@ -28,7 +28,7 @@ from numpy import array
 from numpy import concatenate
 
 from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
+    DisciplineAdapterGenerator,
 )
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -77,16 +77,16 @@ class BaseFunctor:
         self.__ode_discipline = ode_discipline
         excluded_names = [time_name, *state_names]
         self.__parameter_names = tuple(
-            name for name in discipline.default_inputs if name not in excluded_names
+            name for name in discipline.default_input_data if name not in excluded_names
         )
-        generator = MDODisciplineAdapterGenerator(discipline=discipline)
+        generator = DisciplineAdapterGenerator(discipline=discipline)
         self._adapter = generator.get_function(
             input_names=[
                 time_name,
                 *state_names,
                 *self.__parameter_names,
             ],
-            output_names=discipline.get_output_data_names(),
+            output_names=discipline.io.output_grammar.names,
         )
 
     def _compute_input_vector(self, time: RealArray, state: RealArray) -> RealArray:

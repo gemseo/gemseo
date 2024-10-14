@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -25,6 +26,8 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+    from typing_extensions import Self
 
     from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.typing import StrKeyMapping
@@ -84,3 +87,12 @@ class Defaults(
 
     def __repr__(self) -> str:
         return repr(self.__data)
+
+    def __copy__(self) -> Self:
+        # Bypass the checking done in update since it has already been done.
+        obj = self.__class__(self.__grammar, {})
+        obj.__data = copy(self.__data)
+        return obj
+
+    def copy(self) -> Self:  # noqa: D102
+        return self.__copy__()

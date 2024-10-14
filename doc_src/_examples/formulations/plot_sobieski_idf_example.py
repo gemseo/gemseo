@@ -50,10 +50,10 @@ disciplines = create_discipline([
 # %%
 # We can quickly access the most relevant information of any discipline (name, inputs,
 # and outputs) with Python's ``print()`` function. Moreover, we can get the default
-# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
+# input values of a discipline with the attribute :attr:`.Discipline.default_input_data`
 for discipline in disciplines:
     print(discipline)
-    print(f"Default inputs: {discipline.default_inputs}")
+    print(f"Default inputs: {discipline.default_input_data}")
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.

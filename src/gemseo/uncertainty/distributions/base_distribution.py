@@ -187,7 +187,7 @@ class BaseDistribution(
             FilePathManager.FileType.FIGURE,
             default_name="distribution",
         )
-        self._string_representation = (
+        self._get_string_representation = (
             f"{interfaced_distribution}"
             f"({pretty_str(standard_parameters or parameters, sort=False)})"
         )
@@ -244,13 +244,13 @@ class BaseDistribution(
             return create_distribution(*parameters)
         except BaseException:  # noqa: BLE001
             msg = (
-                f"The arguments of {self._string_representation} are wrong; "
+                f"The arguments of {self._get_string_representation} are wrong; "
                 f"more details on {self._WEBSITE}."
             )
             raise ValueError(msg) from None
 
     def __repr__(self) -> str:
-        return self._string_representation
+        return self._get_string_representation
 
     @abstractmethod
     def compute_samples(

@@ -258,7 +258,7 @@ class MultiLineString:
     INDENTATION: ClassVar[str] = " " * 3
     """The indentation increment of each indentation level."""
 
-    DEFAULT_LEVEL: ClassVar[str] = 0
+    DEFAULT_LEVEL: ClassVar[int] = 0
     """The default indentation level."""
 
     __level: int

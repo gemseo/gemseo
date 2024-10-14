@@ -24,7 +24,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 
-from gemseo.core.discipline import MDODiscipline
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.mda.factory import MDAFactory
 
@@ -32,7 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.execution_sequence import ExecutionSequence
+    from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.mda.base_mda import BaseMDA
     from gemseo.typing import StrKeyMapping
@@ -69,11 +68,10 @@ class MDF(BaseMDOFormulation):
 
     def __init__(
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: list[Discipline],
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         main_mda_name: str = DEFAULT_MAIN_MDA_NAME,
         inner_mda_name: str = DEFAULT_INNER_MDA_NAME,
         differentiated_input_names_substitute: Iterable[str] = (),
@@ -94,7 +92,6 @@ class MDF(BaseMDOFormulation):
             objective_name,
             design_space,
             maximize_objective=maximize_objective,
-            grammar_type=grammar_type,
             differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
         self._main_mda_name = main_mda_name
@@ -103,7 +100,7 @@ class MDF(BaseMDOFormulation):
         self._update_design_space()
         self._build_objective()
 
-    def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
+    def get_top_level_disciplines(self) -> tuple[Discipline]:  # noqa:D102
         return [self.mda]
 
     def _instantiate_mda(
@@ -125,7 +122,6 @@ class MDF(BaseMDOFormulation):
         self.mda = self._mda_factory.create(
             main_mda_name,
             self.disciplines,
-            grammar_type=self._grammar_type,
             **mda_options,
         )
 
@@ -148,16 +144,6 @@ class MDF(BaseMDOFormulation):
     def _build_objective(self) -> None:
         """Build the objective function from the MDA and the objective name."""
         self._build_objective_from_disc(self._objective_name, discipline=self.mda)
-
-    def get_expected_workflow(  # noqa:D102
-        self,
-    ) -> ExecutionSequence | tuple[ExecutionSequence]:
-        return self.mda.get_expected_workflow()
-
-    def get_expected_dataflow(  # noqa:D102
-        self,
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        return self.mda.get_expected_dataflow()
 
     def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""

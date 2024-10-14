@@ -29,7 +29,7 @@ from numpy import array
 from gemseo import create_discipline
 from gemseo.core import coupling_structure
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
@@ -112,8 +112,8 @@ class TestCouplingStructure(unittest.TestCase):
             coupling_structure.plot_n2_chart("n2_3.png", False)
 
     def test_n2_many_io(self) -> None:
-        a = MDODiscipline("a")
-        b = MDODiscipline("b")
+        a = Discipline("a")
+        b = Discipline("b")
         a.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
         a.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
         b.output_grammar.update_from_names(["i" + str(i) for i in range(30)])
@@ -134,15 +134,15 @@ class TestCouplingStructure(unittest.TestCase):
         assert coupl.strong_couplings == ["y"]
 
 
-class SelfCoupledDisc(MDODiscipline):
+class SelfCoupledDisc(Discipline):
     def __init__(self) -> None:
-        MDODiscipline.__init__(self)
+        Discipline.__init__(self)
         self.input_grammar.update_from_names(["y"])
         self.output_grammar.update_from_names(["y"])
-        self.default_inputs["y"] = array([0.2])
+        self.default_input_data["y"] = array([0.2])
 
     def _run(self) -> None:
-        self.local_data["y"] = 1.0 - self.local_data["y"]
+        self.io.data["y"] = 1.0 - self.io.data["y"]
 
 
 def get_strong_couplings(analytic_expressions):

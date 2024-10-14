@@ -26,17 +26,21 @@ from __future__ import annotations
 from copy import copy
 from copy import deepcopy
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from numpy import zeros
 from numpy.linalg import norm
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
+from gemseo.core.discipline import Discipline
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
+from gemseo.core.process_discipline import ProcessDiscipline
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import LoggingContext
 
@@ -48,17 +52,39 @@ if TYPE_CHECKING:
 
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.execution_sequence import LoopExecSequence
+    from gemseo.core._process_flow.execution_sequences import LoopExecSequence
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.scenarios.scenario import Scenario
 
 
-class MDOScenarioAdapter(MDODiscipline):
+class _ProcessFlow(BaseProcessFlow):
+    """The process data and execution flow."""
+
+    def get_execution_flow(self) -> LoopExecSequence:  # noqa: D102
+        return self._node.scenario.get_process_flow().get_execution_flow()
+
+    def get_disciplines_in_data_flow(self) -> list[BaseDiscipline]:
+        """Return the disciplines that must be shown as blocks in the XDSM.
+
+        By default, only the discipline itself is shown.
+        This function can be differently implemented for any type of inherited
+        discipline.
+
+        Returns:
+            The disciplines shown in the XDSM chain.
+        """
+        return [self._node]
+
+
+class MDOScenarioAdapter(ProcessDiscipline):
     """An adapter class for MDO Scenario.
 
     The specified input variables update the default input data of the top level
     discipline while the output ones filter the output data from the top level
     discipline outputs.
     """
+
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
 
     scenario: Scenario
     """The scenario to be adapted."""
@@ -90,9 +116,7 @@ class MDOScenarioAdapter(MDODiscipline):
         reset_x0_before_opt: bool = False,
         set_x0_before_opt: bool = False,
         set_bounds_before_opt: bool = False,
-        cache_type: MDODiscipline.CacheType = MDODiscipline.CacheType.SIMPLE,
         output_multipliers: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         name: str = "",
         keep_opt_history: bool = False,
         opt_history_file_prefix: str = "",
@@ -109,7 +133,6 @@ class MDOScenarioAdapter(MDODiscipline):
                 This is useful for multi-start optimization.
             set_bounds_before_opt: If ``True``, set the bounds of the design space.
                 This is useful for trust regions.
-            cache_type: The type of cache policy.
             output_multipliers: If ``True``,
                 the Lagrange multipliers of the scenario optimal solution are computed
                 and added to the outputs.
@@ -146,7 +169,7 @@ class MDOScenarioAdapter(MDODiscipline):
         self.__opt_history_file_prefix = opt_history_file_prefix
 
         name = name or f"{scenario.name}_adapter"
-        super().__init__(name, cache_type=cache_type, grammar_type=grammar_type)
+        super().__init__((), name=name)
 
         self._update_grammars()
         self._dv_in_names = None
@@ -168,7 +191,7 @@ class MDOScenarioAdapter(MDODiscipline):
                 (upper_bounds, upper_suffix),
             ]:
                 bounds = {name + suffix: val for name, val in bounds.items()}
-                self.default_inputs.update(bounds)
+                self.default_input_data.update(bounds)
                 self._bound_names.extend(bounds.keys())
 
         # Optimization functions are redefined at each run
@@ -176,7 +199,7 @@ class MDOScenarioAdapter(MDODiscipline):
         # level discipline change
         # History must be erased otherwise the wrong values are retrieved
         # between two runs
-        scenario.clear_history_before_run = True
+        scenario.clear_history_before_execute = True
         self._initial_x = deepcopy(
             scenario.design_space.get_current_value(as_dict=True)
         )
@@ -192,7 +215,7 @@ class MDOScenarioAdapter(MDODiscipline):
         """
         formulation = self.scenario.formulation
         opt_problem = formulation.optimization_problem
-        top_leveld = formulation.get_top_level_disc()
+        top_leveld = formulation.get_top_level_disciplines()
         for disc in top_leveld:
             self.input_grammar.update(disc.input_grammar)
             self.output_grammar.update(disc.output_grammar)
@@ -201,7 +224,7 @@ class MDOScenarioAdapter(MDODiscipline):
             # of the disciplines. All grammars are filtered just after
             # this loop
             self.output_grammar.update(disc.input_grammar)
-            self.default_inputs.update(disc.default_inputs)
+            self.default_input_data.update(disc.default_input_data)
 
         try:
             self.input_grammar.restrict_to(self._input_names)
@@ -322,26 +345,22 @@ class MDOScenarioAdapter(MDODiscipline):
         """Pre-run the scenario."""
         formulation = self.scenario.formulation
         design_space: DesignSpace = formulation.optimization_problem.design_space
-        top_leveld = formulation.get_top_level_disc()
+        top_leveld = formulation.get_top_level_disciplines()
 
         # Update the top level discipline default inputs with adapter inputs
         # This is the key role of the adapter
         for indata in self._input_names:
             for disc in top_leveld:
-                if disc.is_input_existing(indata):
-                    disc.default_inputs[indata] = self.local_data[indata]
+                if indata in disc.io.input_grammar:
+                    disc.default_input_data[indata] = self.io.data[indata]
 
-        if self.scenario.cache is not None:
-            # Default inputs have changed, therefore caches shall be cleared
-            self.scenario.cache.clear()
-
-        self.scenario.reset_statuses_for_run()
+        self.scenario.execution_status.value = ExecutionStatus.Status.PENDING
 
         self._reset_optimization_problem()
 
         # Set the starting point of the sub scenario with current dv names
         if self._set_x0_before_opt:
-            dv_values = {dv_n: self.local_data[dv_n] for dv_n in self._dv_in_names}
+            dv_values = {dv_n: self.io.data[dv_n] for dv_n in self._dv_in_names}
             self.scenario.formulation.design_space.set_current_value(dv_values)
 
         # Set the bounds of the sub-scenario
@@ -349,11 +368,11 @@ class MDOScenarioAdapter(MDODiscipline):
             for name in design_space:
                 # Set the lower bound
                 lower_suffix = MDOScenarioAdapter.LOWER_BND_SUFFIX
-                lower_bound = self.local_data[name + lower_suffix]
+                lower_bound = self.io.data[name + lower_suffix]
                 design_space.set_lower_bound(name, lower_bound)
                 # Set the upper bound
                 upper_suffix = MDOScenarioAdapter.UPPER_BND_SUFFIX
-                upper_bound = self.local_data[name + upper_suffix]
+                upper_bound = self.io.data[name + upper_suffix]
                 design_space.set_upper_bound(name, upper_bound)
 
     def _reset_optimization_problem(self) -> None:
@@ -406,18 +425,18 @@ class MDOScenarioAdapter(MDODiscipline):
         and the optimal design parameters.
         """
         formulation = self.scenario.formulation
-        top_level_disciplines = formulation.get_top_level_disc()
+        top_level_disciplines = formulation.get_top_level_disciplines()
         current_x = formulation.optimization_problem.design_space.get_current_value(
             as_dict=True
         )
         for name in self._output_names:
             for discipline in top_level_disciplines:
-                if discipline.is_output_existing(name) and name not in current_x:
-                    self.local_data[name] = discipline.local_data[name]
+                if name in discipline.io.output_grammar and name not in current_x:
+                    self.io.data[name] = discipline.io.data[name]
 
             output_value_in_current_x = current_x.get(name)
             if output_value_in_current_x is not None:
-                self.local_data[name] = output_value_in_current_x
+                self.io.data[name] = output_value_in_current_x
 
     def _compute_lagrange_multipliers(self) -> None:
         """Compute the Lagrange multipliers for the optimal solution of the scenario.
@@ -432,35 +451,27 @@ class MDOScenarioAdapter(MDODiscipline):
 
         # Store the Lagrange multipliers in the local data
         multipliers = lagrange.get_multipliers_arrays()
-        self.local_data.update({
+        self.io.data.update({
             self.get_bnd_mult_name(name, False): mult
             for name, mult in multipliers[lagrange.LOWER_BOUNDS].items()
         })
-        self.local_data.update({
+        self.io.data.update({
             self.get_bnd_mult_name(name, True): mult
             for name, mult in multipliers[lagrange.UPPER_BOUNDS].items()
         })
-        self.local_data.update({
+        self.io.data.update({
             self.get_cstr_mult_name(name): mult
             for name, mult in multipliers[lagrange.EQUALITY].items()
         })
-        self.local_data.update({
+        self.io.data.update({
             self.get_cstr_mult_name(name): mult
             for name, mult in multipliers[lagrange.INEQUALITY].items()
         })
 
-    def get_expected_workflow(self) -> LoopExecSequence:  # noqa: D102
-        return self.scenario.get_expected_workflow()
-
-    def get_expected_dataflow(  # noqa: D102
-        self,
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        return []
-
     def _compute_jacobian(
         self,
-        inputs: Sequence[str] | None = None,
-        outputs: Sequence[str] | None = None,
+        input_names: Sequence[str] = (),
+        output_names: Sequence[str] = (),
     ) -> None:
         """Compute the Jacobian of the adapted scenario outputs.
 
@@ -469,12 +480,6 @@ class MDOScenarioAdapter(MDODiscipline):
 
         The bound-constraints on the scenario optimization variables
         are assumed independent of the other scenario inputs.
-
-        Args:
-            inputs: The linearization should be performed with respect to these inputs.
-                If ``None``, the linearization should be performed w.r.t. all inputs.
-            outputs: The linearization should be performed on these outputs.
-                If ``None``, the linearization should be performed on all outputs.
 
         Raises:
             ValueError: Either
@@ -492,30 +497,32 @@ class MDOScenarioAdapter(MDODiscipline):
             raise ValueError(msg)
 
         # Check the required inputs
-        if inputs is None:
-            inputs = set(self._input_names + self._bound_names)
+        if not input_names:
+            input_names = set(self._input_names + self._bound_names)
         else:
-            not_inputs = set(inputs) - set(self._input_names) - set(self._bound_names)
+            not_inputs = (
+                set(input_names) - set(self._input_names) - set(self._bound_names)
+            )
             if not_inputs:
                 msg = "The following are not inputs of the adapter: {}.".format(
                     ", ".join(sorted(not_inputs))
                 )
                 raise ValueError(msg)
         # N.B the adapter is assumed constant w.r.t. bounds
-        bound_inputs = set(inputs) & set(self._bound_names)
+        bound_inputs = set(input_names) & set(self._bound_names)
 
         # Check the required outputs
-        if outputs is None:
-            outputs = objective_names
+        if not output_names:
+            output_names = objective_names
         else:
-            not_outputs = sorted(set(outputs) - set(self._output_names))
+            not_outputs = sorted(set(output_names) - set(self._output_names))
             if not_outputs:
                 msg = "The following are not outputs of the adapter: {}.".format(
                     ", ".join(not_outputs)
                 )
                 raise ValueError(msg)
 
-        non_differentiable_outputs = sorted(set(outputs) - set(objective_names))
+        non_differentiable_outputs = sorted(set(output_names) - set(objective_names))
         if non_differentiable_outputs:
             msg = "Post-optimal Jacobians of {} cannot be computed.".format(
                 ", ".join(non_differentiable_outputs)
@@ -523,10 +530,10 @@ class MDOScenarioAdapter(MDODiscipline):
             raise ValueError(msg)
 
         # Initialize the Jacobian
-        diff_inputs = [name for name in inputs if name not in bound_inputs]
+        diff_inputs = [name for name in input_names if name not in bound_inputs]
         # N.B. there may be only bound inputs
         self._init_jacobian(
-            diff_inputs, outputs, init_type=MDODiscipline.InitJacobianType.EMPTY
+            diff_inputs, output_names, init_type=Discipline.InitJacobianType.EMPTY
         )
 
         # Compute the Jacobians of the optimization functions
@@ -536,26 +543,26 @@ class MDOScenarioAdapter(MDODiscipline):
         ineq_tolerance = opt_problem.tolerances.inequality
         self.post_optimal_analysis = PostOptimalAnalysis(opt_problem, ineq_tolerance)
         post_opt_jac = self.post_optimal_analysis.execute(
-            outputs, diff_inputs, jacobians
+            output_names, diff_inputs, jacobians
         )
         self.jac.update(post_opt_jac)
 
         # Fill the Jacobian blocks w.r.t. bounds with zeros
         for output_derivatives in self.jac.values():
             for bound_input_name in bound_inputs:
-                bound_input_size = self.default_inputs[bound_input_name].size
+                bound_input_size = self.default_input_data[bound_input_name].size
                 output_derivatives[bound_input_name] = zeros((1, bound_input_size))
 
     def _compute_auxiliary_jacobians(
         self,
-        inputs: Iterable[str],
+        input_names: Iterable[str],
         func_names: Iterable[str] | None = None,
         use_threading: bool = True,
     ) -> dict[str, dict[str, ndarray]]:
         """Compute the Jacobians of the optimization functions.
 
         Args:
-            inputs: The names of the inputs w.r.t. which differentiate.
+            input_names: The names of the inputs w.r.t. which differentiate.
             func_names: The names of the functions to differentiate
                 If ``None``, then all the optimizations functions are differentiated.
             use_threading: Whether to use threads instead of processes
@@ -581,16 +588,16 @@ class MDOScenarioAdapter(MDODiscipline):
         # Identify the disciplines that compute the functions
         disciplines = {}
         for func_name in func_names:
-            for discipline in self.scenario.formulation.get_top_level_disc():
-                if discipline.is_all_outputs_existing([func_name]):
+            for discipline in self.scenario.formulation.get_top_level_disciplines():
+                if func_name in discipline.io.output_grammar:
                     disciplines[func_name] = discipline
                     break
 
         # Linearize the required disciplines
         unique_disciplines = list(set(disciplines.values()))
         for discipline in unique_disciplines:
-            diff_inputs = set(discipline.get_input_data_names()) & set(inputs)
-            diff_outputs = set(discipline.get_output_data_names()) & set(func_names)
+            diff_inputs = set(discipline.io.input_grammar.names) & set(input_names)
+            diff_outputs = set(discipline.io.output_grammar.names) & set(func_names)
             if diff_inputs and diff_outputs:
                 discipline.add_differentiated_inputs(list(diff_inputs))
                 discipline.add_differentiated_outputs(list(diff_outputs))
@@ -600,7 +607,7 @@ class MDOScenarioAdapter(MDODiscipline):
         )
         # Update the local data with the optimal design parameters
         # [The adapted scenario is assumed to have been run beforehand.]
-        post_opt_data = copy(self.local_data)
+        post_opt_data = copy(self.io.data)
         post_opt_data.update(opt_problem.design_space.get_current_value(as_dict=True))
         parallel_linearization.execute([post_opt_data] * len(unique_disciplines))
 
@@ -609,7 +616,7 @@ class MDOScenarioAdapter(MDODiscipline):
         for func_name in func_names:
             jacobians[func_name] = {}
             func_jacobian = disciplines[func_name].jac[func_name]
-            for input_name in inputs:
+            for input_name in input_names:
                 jacobians[func_name][input_name] = func_jacobian[input_name]
 
         return jacobians

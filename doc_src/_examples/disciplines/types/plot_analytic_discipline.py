@@ -39,7 +39,7 @@ configure_logger()
 # %%
 # Introduction
 # ------------
-# A simple :class:`.MDODiscipline` can be created
+# A simple :class:`.Discipline` can be created
 # using analytic formulas, e.g. :math:`y_1=2x^2` and :math:`y_2=5+3x^2z^3`,
 # thanks to the :class:`.AnalyticDiscipline` class
 # which is a quick alternative to model a simple analytic MDO problem.
@@ -58,7 +58,7 @@ expressions = {"y_1": "2*x**2", "y_2": "5+3*x**2+z**3"}
 # ---------------------
 # Then, we create and instantiate the corresponding
 # :class:`.AnalyticDiscipline`,
-# which is a particular :class:`.MDODiscipline`.
+# which is a particular :class:`.Discipline`.
 # For that, we use the API function :func:`.create_discipline` with:
 #
 # - ``discipline_name="AnalyticDiscipline"``,
@@ -72,7 +72,7 @@ disc = create_discipline("AnalyticDiscipline", expressions=expressions)
 # .. note::
 #
 #    |g| takes care of the grammars and
-#    :meth:`!MDODiscipline._run` method generation
+#    :meth:`!Discipline._run` method generation
 #    from the ``expressions`` argument.
 #    In the background, |g| considers that ``x`` is a monodimensional
 #    float input parameter and ``y_1`` and ``y_2`` are
@@ -92,7 +92,7 @@ disc.execute(input_data)
 # using the `sympy library <https://www.sympy.org/fr/>`_.
 #
 # This can be checked easily using
-# :meth:`.MDODiscipline.check_jacobian`:
+# :meth:`.Discipline.check_jacobian`:
 disc.check_jacobian(
     input_data,
     derr_approx=disc.ApproximationMode.FINITE_DIFFERENCES,

@@ -40,7 +40,8 @@ from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base_mda import BaseMDA
@@ -79,11 +80,11 @@ def test_reset(sellar_mda, sellar_inputs) -> None:
     disciplines = sellar_mda.disciplines
     for discipline in disciplines:
         discipline.execute(sellar_inputs)
-        assert discipline.status == MDODiscipline.ExecutionStatus.DONE
+        assert discipline.execution_status.value == ExecutionStatus.Status.DONE
 
-    sellar_mda.reset_statuses_for_run()
+    sellar_mda.execution_status.value = ExecutionStatus.Status.PENDING
     for discipline in disciplines:
-        assert discipline.status == MDODiscipline.ExecutionStatus.PENDING
+        assert discipline.execution_status.value == ExecutionStatus.Status.PENDING
 
 
 def test_input_couplings() -> None:
@@ -143,8 +144,8 @@ def test_jacobian(sellar_mda, sellar_inputs) -> None:
     sellar_mda.linearize(sellar_inputs)
     assert sellar_mda.jac == {}
 
-    sellar_mda._differentiated_inputs = []
-    sellar_mda._differentiated_outputs = []
+    sellar_mda._differentiated_input_names = []
+    sellar_mda._differentiated_output_names = []
 
     sellar_mda.linearize(sellar_inputs)
 
@@ -152,10 +153,10 @@ def test_jacobian(sellar_mda, sellar_inputs) -> None:
 def test_expected_workflow(sellar_mda) -> None:
     """"""
     expected = (
-        "{MDAGaussSeidel(None), [Sellar1(None), Sellar2(None), "
-        "SellarSystem(None), ], }"
+        "{MDAGaussSeidel(PENDING), [Sellar1(PENDING), Sellar2(PENDING), "
+        "SellarSystem(PENDING)]}"
     )
-    assert str(sellar_mda.get_expected_workflow()) == expected
+    assert str(sellar_mda.get_process_flow().get_execution_flow()) == expected
 
 
 def test_warm_start() -> None:
@@ -176,7 +177,7 @@ def test_weak_strong_coupling_mda_jac() -> None:
     ))
     mda = MDAGaussSeidel(disciplines)
 
-    assert mda.check_jacobian(inputs=["x"], outputs=["obj"])
+    assert mda.check_jacobian(input_names=["x"], output_names=["obj"])
 
 
 def analytic_disciplines_from_desc(descriptions):
@@ -217,7 +218,7 @@ def test_consistency_fail(desc, log_message, caplog) -> None:
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel])
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
+    "grammar_type", [Discipline.GrammarType.JSON, Discipline.GrammarType.SIMPLE]
 )
 def test_array_couplings(mda_class, grammar_type) -> None:
     disciplines = create_disciplines_from_desc(
@@ -249,7 +250,7 @@ def test_convergence_warning(caplog) -> None:
     mda.scaling = BaseMDASolver.ResidualScaling.NO_SCALING
 
     mda._set_resolved_variables(mda.strong_couplings)
-    mda.local_data.update({"y_1": array([1.0]), "y_2": array([1.0])})
+    mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
     mda._compute_residuals({"y_1": array([2.0]), "y_2": array([2.0])})
 
     mda._compute_normalized_residual_norm()
@@ -286,7 +287,7 @@ def test_log_convergence(caplog) -> None:
     caplog.set_level(logging.INFO)
 
     mda._set_resolved_variables(mda.strong_couplings)
-    mda.local_data.update({"y_1": array([1.0]), "y_2": array([1.0])})
+    mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
     mda._compute_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
 
     mda._log_convergence = False
@@ -322,20 +323,6 @@ def test_not_numeric_couplings(caplog) -> None:
         BaseMDA([sellar1, sellar2])
         msg = "The coupling variable(s) {'y_1'} is/are not an array of numeric values."
         assert msg in caplog.text
-
-
-@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
-def test_get_sub_disciplines(
-    mda_class,
-) -> None:
-    """Test the get_sub_disciplines method.
-
-    Args:
-        mda_class: The specific MDA to be tested.
-    """
-    disciplines = [Sellar1(), Sellar2()]
-    mda = mda_class(disciplines)
-    assert mda.get_sub_disciplines() == mda.disciplines == disciplines
 
 
 def test_sequence_transformers_setters(sellar_mda) -> None:
@@ -402,7 +389,7 @@ def test_matrix_free_linearization(
     assert allclose(reference_mda_jacobian["y"]["x"], mda.jac["y"]["x"], atol=1e-12)
 
 
-class LinearImplicitDiscipline(MDODiscipline):
+class LinearImplicitDiscipline(Discipline):
     def __init__(self, name, input_names, output_names, size=1) -> None:
         super().__init__(name=name)
         self.size = size
@@ -410,18 +397,18 @@ class LinearImplicitDiscipline(MDODiscipline):
         self.input_grammar.update_from_names(input_names)
         self.output_grammar.update_from_names(output_names)
 
-        self.residual_variables = {"r": "w"}
+        self.io.residual_to_state_variable = {"r": "w"}
 
-        self.run_solves_residuals = False
+        self.io.state_equations_are_solved = False
         self.mat = default_rng(SEED).standard_normal((size, size))
 
-        self.default_inputs = {k: 0.5 * ones(size) for k in input_names}
+        self.default_input_data = {k: 0.5 * ones(size) for k in input_names}
 
     def _run(self) -> None:
-        if self.run_solves_residuals:
-            self.local_data["w"] = solve(self.mat, self.local_data["a"])
+        if self.io.state_equations_are_solved:
+            self.io.data["w"] = solve(self.mat, self.io.data["a"])
 
-        self.local_data["r"] = self.mat.dot(self.local_data["w"]) - self.local_data["a"]
+        self.io.data["r"] = self.mat.dot(self.io.data["w"]) - self.io.data["a"]
 
     def _compute_jacobian(self, inputs, outputs) -> None:
         self._init_jacobian(inputs, outputs, fill_missing_keys=True)
@@ -441,7 +428,7 @@ def coupled_disciplines():
 
 
 def test_mda_with_residuals(coupled_disciplines) -> None:
-    coupled_disciplines[1].run_solves_residuals = True
+    coupled_disciplines[1].io.state_equations_are_solved = True
     mda = MDANewtonRaphson(
         coupled_disciplines,
         tolerance=1e-14,
@@ -451,7 +438,7 @@ def test_mda_with_residuals(coupled_disciplines) -> None:
     )
     output = mda.execute()
 
-    coupled_disciplines[1].run_solves_residuals = False
+    coupled_disciplines[1].io.state_equations_are_solved = False
     mda = MDANewtonRaphson(
         coupled_disciplines,
         tolerance=1e-14,
@@ -464,7 +451,7 @@ def test_mda_with_residuals(coupled_disciplines) -> None:
     assert compare_dict_of_arrays(output, output_ref, tolerance=1e-12)
 
 
-class DiscWithNonNumericInputs1(MDODiscipline):
+class DiscWithNonNumericInputs1(Discipline):
     def __init__(self):
         super().__init__()
         self.input_grammar.update_from_data({"x": zeros(1)})
@@ -475,21 +462,21 @@ class DiscWithNonNumericInputs1(MDODiscipline):
         self.output_grammar.update_from_data({"b": zeros(1)})
         self.output_grammar.update_from_data({"a_file": "my_a_file"})
 
-        self.default_inputs["x"] = array([0.5])
-        self.default_inputs["a"] = array([0.5])
-        self.default_inputs["b_file"] = array(["my_b_file"])
+        self.default_input_data["x"] = array([0.5])
+        self.default_input_data["a"] = array([0.5])
+        self.default_input_data["b_file"] = array(["my_b_file"])
 
     def _run(self) -> None:
-        x = self.local_data["x"]
-        a = self.local_data["a"]
+        x = self.io.data["x"]
+        a = self.io.data["a"]
         y = x
         b = 2 * a
-        self.local_data.update({"y": y, "a_file": "my_a_file", "b": b})
+        self.io.data.update({"y": y, "a_file": "my_a_file", "b": b})
 
     def _compute_jacobian(
         self,
-        inputs,
-        outputs,
+        input_names,
+        output_names,
     ) -> None:
         self.jac = {}
         self.jac["y"] = {}
@@ -500,32 +487,32 @@ class DiscWithNonNumericInputs1(MDODiscipline):
         self.jac["b"]["a"] = array([[2.0]])
 
 
-class DiscWithNonNumericInputs2(MDODiscipline):
+class DiscWithNonNumericInputs2(Discipline):
     def __init__(self):
         super().__init__()
         self.input_grammar.update_from_data({"y": zeros(1)})
         self.input_grammar.update_from_data({"a_file": "my_a_file"})
         self.output_grammar.update_from_data({"x": zeros(1)})
         self.output_grammar.update_from_data({"b_file": array(["my_b_file"])})
-        self.default_inputs["y"] = array([0.5])
-        self.default_inputs["a_file"] = "my_a_file"
+        self.default_input_data["y"] = array([0.5])
+        self.default_input_data["a_file"] = "my_a_file"
 
     def _run(self) -> None:
-        y = self.local_data["y"]
+        y = self.io.data["y"]
         x = 1.0 - 0.3 * y
-        self.local_data.update({"x": x, "b_file": array(["my_b_file"])})
+        self.io.data.update({"x": x, "b_file": array(["my_b_file"])})
 
     def _compute_jacobian(
         self,
-        inputs,
-        outputs,
+        input_names,
+        output_names,
     ) -> None:
         self.jac = {}
         self.jac["x"] = {}
         self.jac["x"]["y"] = array([[-0.3]])
 
 
-class DiscWithNonNumericInputs3(MDODiscipline):
+class DiscWithNonNumericInputs3(Discipline):
     def __init__(self):
         super().__init__()
         self.input_grammar.update_from_data({"x": zeros(1)})
@@ -535,24 +522,24 @@ class DiscWithNonNumericInputs3(MDODiscipline):
 
         self.output_grammar.update_from_data({"obj": zeros(1)})
         self.output_grammar.update_from_data({"out_file_2": "my_a_file"})
-        self.default_inputs["x"] = array([0.5])
-        self.default_inputs["y"] = array([0.5])
-        self.default_inputs["b"] = array([0.5])
-        self.default_inputs["a_file"] = "my_a_file"
+        self.default_input_data["x"] = array([0.5])
+        self.default_input_data["y"] = array([0.5])
+        self.default_input_data["b"] = array([0.5])
+        self.default_input_data["a_file"] = "my_a_file"
 
     def _run(self) -> None:
-        x = self.local_data["x"]
-        y = self.local_data["y"]
+        x = self.io.data["x"]
+        y = self.io.data["y"]
         obj = x - y
-        self.local_data.update({"obj": obj, "out_file_2": "my_out_file"})
+        self.io.data.update({"obj": obj, "out_file_2": "my_out_file"})
 
     def _compute_jacobian(
         self,
-        inputs,
-        outputs,
+        input_names,
+        output_names,
     ) -> None:
-        x = self.local_data["x"][0]
-        y = self.local_data["y"][0]
+        x = self.io.data["x"][0]
+        y = self.io.data["y"][0]
         self.jac = {}
         self.jac["obj"] = {}
         self.jac["obj"]["x"] = array([[1.0]])
@@ -599,8 +586,8 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
 
     assert mda.check_jacobian(
         input_data=inputs,
-        inputs=["a"],
-        outputs=["obj"] if include_weak_couplings else ["b"],
+        input_names=["a"],
+        output_names=["obj"] if include_weak_couplings else ["b"],
         linearization_mode="adjoint",
         threshold=1e-3,
     )

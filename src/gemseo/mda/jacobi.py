@@ -21,11 +21,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
+from gemseo.mda.base_mda import BaseProcessFlow
+from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_solver import BaseMDASolver
 from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -35,8 +36,34 @@ if TYPE_CHECKING:
 
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.coupling_structure import DependencyGraph
-    from gemseo.core.execution_sequence import LoopExecSequence
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
+
+
+class _ProcessFlow(_BaseMDAProcessFlow):
+    """The process data and execution flow."""
+
+    def _get_disciplines_couplings(
+        self, graph: DependencyGraph
+    ) -> list[tuple[str, str, list[str]]]:
+        couplings_results = []
+        for disc in self._node.disciplines:
+            in_data = graph.graph.get_edge_data(self._node, disc)
+            if in_data:
+                couplings_results.append((
+                    self._node,
+                    disc,
+                    sorted(in_data["io"]),
+                ))
+            out_data = graph.graph.get_edge_data(disc, self._node)
+            if out_data:
+                couplings_results.append((
+                    disc,
+                    self._node,
+                    sorted(out_data["io"]),
+                ))
+
+        return couplings_results
 
 
 class MDAJacobi(BaseMDASolver):
@@ -74,6 +101,8 @@ class MDAJacobi(BaseMDASolver):
         \right.
     """
 
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
+
     __n_processes: int
     """The maximum number of threads or processes for parallel execution."""
 
@@ -82,7 +111,7 @@ class MDAJacobi(BaseMDASolver):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         max_mda_iter: int = 10,
         name: str = "",
         n_processes: int = N_CPUS,
@@ -91,7 +120,6 @@ class MDAJacobi(BaseMDASolver):
         use_threading: bool = True,
         warm_start: bool = False,
         use_lu_fact: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         coupling_structure: CouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
@@ -113,7 +141,6 @@ class MDAJacobi(BaseMDASolver):
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
-            grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
@@ -140,6 +167,11 @@ class MDAJacobi(BaseMDASolver):
                 exceptions_to_re_raise=(ValueError,),
             )
 
+    def get_process_flow(self) -> BaseProcessFlow:  # noqa: D102
+        process_flow = super().get_process_flow()
+        process_flow.is_parallel = self.__n_processes > 1
+        return process_flow
+
     def _compute_input_coupling_names(self) -> None:
         """Compute the coupling variables that are inputs of the MDA.
 
@@ -155,7 +187,7 @@ class MDAJacobi(BaseMDASolver):
 
         self._input_couplings = sorted(
             set(self.coupling_structure.all_couplings).intersection(
-                self.get_input_data_names()
+                self.io.input_grammar.names
             )
         )
 
@@ -167,54 +199,25 @@ class MDAJacobi(BaseMDASolver):
 
     def _execute_disciplines_in_parallel(self) -> None:
         """Execute the disciplines in parallel."""
-        self.parallel_execution.execute([self.local_data] * len(self.disciplines))
+        self.parallel_execution.execute([self.io.data] * len(self.disciplines))
 
     def _execute_disciplines_sequentially(self) -> None:
         """Execute the disciplines sequentially."""
         for discipline in self.disciplines:
-            discipline.execute(self.local_data)
+            discipline.execute(self.io.data)
 
     def _execute_disciplines_and_update_local_data(
         self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
     ) -> None:
-        self.reset_disciplines_statuses()
         self._execute_disciplines()
         for discipline in self.disciplines:
-            self.local_data.update(discipline.get_output_data())
-
-    def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
-        if self.parallel_execution is None:
-            sub_workflow = ExecutionSequenceFactory.serial()
-        else:
-            sub_workflow = ExecutionSequenceFactory.parallel()
-
-        for discipline in self.disciplines:
-            sub_workflow.extend(discipline.get_expected_workflow())
-
-        return ExecutionSequenceFactory.loop(self, sub_workflow)
-
-    def _get_disciplines_couplings(
-        self, graph: DependencyGraph
-    ) -> list[tuple[MDODiscipline, MDAJacobi, list[str]]]:
-        disciplines_couplings = []
-        get_edge_data = graph.graph.get_edge_data
-        for discipline in self.disciplines:
-            for source, target in ((self, discipline), (discipline, self)):
-                edge_data = get_edge_data(source, target)
-                if edge_data:
-                    disciplines_couplings.append((
-                        source,
-                        target,
-                        sorted(edge_data.get(graph.IO)),
-                    ))
-
-        return disciplines_couplings
+            self.io.data.update(discipline.io.get_output_data())
 
     def _run(self) -> None:
         super()._run()
 
         while True:
-            local_data_before_execution = self.local_data.copy()
+            local_data_before_execution = self.io.data.copy()
             self._execute_disciplines_and_update_local_data()
             self._compute_residuals(local_data_before_execution)
 

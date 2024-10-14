@@ -21,7 +21,7 @@ from __future__ import annotations
 import unittest
 from typing import ClassVar
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -31,22 +31,11 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
-class FakeDiscipline(MDODiscipline):
+class FakeDiscipline(Discipline):
     """"""
 
-    def _instantiate_grammars(
-        self,
-        input_grammar_file,
-        output_grammar_file,
-        grammar_type=MDODiscipline.GrammarType.JSON,
-    ) -> None:
-        """
-
-        :param input_grammar_file: param output_grammar_file:
-        :param grammar_type: Default value = MDODiscipline.GrammarType.JSON)
-        :param output_grammar_file:
-
-        """
+    def __init__(self, name: str):
+        super().__init__(name)
         self.input_grammar = JSONGrammar("inputs")
         self.input_grammar.update_from_data({self.name + "_x": 0.0})
         self.output_grammar = JSONGrammar("outputs")

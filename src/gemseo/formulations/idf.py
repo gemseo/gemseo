@@ -29,11 +29,9 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy import zeros
 
-from gemseo.core.chain import MDOParallelChain
+from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
 from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
@@ -44,6 +42,7 @@ if TYPE_CHECKING:
     from typing import Any
 
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.discipline import Discipline
 
 LOGGER = logging.getLogger(__name__)
 
@@ -62,7 +61,7 @@ class IDF(BaseMDOFormulation):
 
     def __init__(
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Iterable[Discipline],
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
@@ -70,14 +69,13 @@ class IDF(BaseMDOFormulation):
         n_processes: int = 1,
         use_threading: bool = True,
         start_at_equilibrium: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         differentiated_input_names_substitute: Iterable[str] = (),
         **mda_options_for_start_at_equilibrium: Any,
     ) -> None:
         """
         Args:
-            normalize_constraints: If ``True``,
-                the outputs of the coupling consistency constraints are scaled.
+            normalize_constraints: Whether the outputs of the coupling consistency
+                constraints are scaled.
             n_processes: The maximum simultaneous number of threads,
                 if ``use_threading`` is True, or processes otherwise,
                 used to parallelize the execution.
@@ -88,8 +86,8 @@ class IDF(BaseMDOFormulation):
                 This is important to note
                 if you want to execute the same discipline multiple times,
                 you shall use multiprocessing.
-            start_at_equilibrium: If ``True``,
-                an MDA is used to initialize the coupling variables.
+            start_at_equilibrium: Whether an MDA is used to initialize the coupling
+                variables.
             **mda_options_for_start_at_equilibrium: The options for the MDA when
                 ``start_at_equilibrium=True``.
                 See detailed options in :class:`.MDAChain`.
@@ -99,7 +97,6 @@ class IDF(BaseMDOFormulation):
             objective_name,
             design_space,
             maximize_objective=maximize_objective,
-            grammar_type=grammar_type,
             differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
         if n_processes > 1:
@@ -110,7 +107,6 @@ class IDF(BaseMDOFormulation):
             self._parallel_exec = MDOParallelChain(
                 self.disciplines,
                 use_threading=use_threading,
-                grammar_type=grammar_type,
                 n_processes=n_processes,
             )
         else:
@@ -162,7 +158,7 @@ class IDF(BaseMDOFormulation):
             raise ValueError(msg)
         self._set_default_input_values_from_design_space()
 
-    def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
+    def get_top_level_disciplines(self) -> tuple[Discipline]:  # noqa:D102
         # All functions and constraints are built from the top level disc
         # If we are in parallel mode: return the parallel execution
         if self._parallel_exec is not None:
@@ -210,13 +206,3 @@ class IDF(BaseMDOFormulation):
                         f_type=constraint.ConstraintType.EQ,
                     )
                 self.optimization_problem.add_constraint(constraint)
-
-    def get_expected_workflow(  # noqa:D102
-        self,
-    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
-        return ExecutionSequenceFactory.parallel(self.disciplines)
-
-    def get_expected_dataflow(  # noqa:D102
-        self,
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        return []

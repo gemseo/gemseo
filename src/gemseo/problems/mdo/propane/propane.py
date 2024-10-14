@@ -103,7 +103,7 @@ from numpy import ones
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 
 def get_design_space(to_complex: bool = True) -> DesignSpace:
@@ -118,7 +118,7 @@ def get_design_space(to_complex: bool = True) -> DesignSpace:
     return ds_read
 
 
-class PropaneReaction(MDODiscipline):
+class PropaneReaction(Discipline):
     """Propane's objective and constraints discipline.
 
     This discipline's outputs are
@@ -131,19 +131,23 @@ class PropaneReaction(MDODiscipline):
         for which discipline analyses are not computable.
     """
 
+    auto_detect_grammar_files = True
+
     def __init__(self) -> None:  # noqa: D107
-        super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = {
+        super().__init__()
+        self.default_input_data = {
             "x_shared": ones(4, dtype=complex128),
             "y_1": ones(2, dtype=complex128),
             "y_2": ones(2, dtype=complex128),
             "y_3": ones(3, dtype=complex128),
         }
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _run(self) -> None:
-        inputs = ["y_1", "y_2", "y_3", "x_shared"]
-        y_1, y_2, y_3, x_shared = self.get_inputs_by_name(inputs)
+        local_data = self.io.data
+        x_shared = local_data["x_shared"]
+        y_1 = local_data["y_1"]
+        y_2 = local_data["y_2"]
+        y_3 = local_data["y_3"]
         f_2 = array([self.f_2(x_shared, y_1, y_2, y_3)], dtype=complex128)
         f_6 = array([self.f_6(x_shared, y_1, y_3)], dtype=complex128)
         f_7 = array([self.f_7(x_shared, y_1, y_3)], dtype=complex128)
@@ -151,7 +155,13 @@ class PropaneReaction(MDODiscipline):
         obj = f_2 + f_7 + f_6 + f_9
         # constraints on f_2, f_6, f_7, f_9 must be nonnegative
         # in original problem don't forget to take the opposite
-        self.store_local_data(f_2=-f_2, f_6=-f_6, f_7=-f_7, f_9=-f_9, obj=obj)
+        self.io.update_output_data({
+            "f_2": -f_2,
+            "f_6": -f_6,
+            "f_7": -f_7,
+            "f_9": -f_9,
+            "obj": obj,
+        })
 
     @classmethod
     def f_2(
@@ -230,23 +240,24 @@ class PropaneReaction(MDODiscipline):
         return x_shared[0] * sqrt(x_shared[1]) - y_1[1] * y_3[0] * sqrt(40.0 / y_3[2])
 
 
-class PropaneComb1(MDODiscipline):
+class PropaneComb1(Discipline):
     """The first set of equations of the propane combustion.
 
     This discipline is characterized by two coupling equations in functional form.
     """
 
+    auto_detect_grammar_files = True
+
     def __init__(self) -> None:  # noqa: D107
-        super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
+        super().__init__()
+        self.default_input_data = {"x_shared": ones(4, dtype=complex128)}
 
     def _run(self) -> None:
-        x_shared = self.get_inputs_by_name("x_shared")
+        x_shared = self.io.data["x_shared"]
         y_1_out = zeros(2, dtype=complex128)
         y_1_out[0] = self.compute_y0(x_shared)
         y_1_out[1] = self.compute_y1(x_shared)
-        self.store_local_data(y_1=y_1_out)
+        self.io.update_output_data({"y_1": y_1_out})
 
     @classmethod
     def compute_y0(cls, x_shared: ndarray) -> ndarray:
@@ -273,23 +284,24 @@ class PropaneComb1(MDODiscipline):
         return 3.0 - x_shared[0]
 
 
-class PropaneComb2(MDODiscipline):
+class PropaneComb2(Discipline):
     """The second set of equations of the propane combustion.
 
     This discipline is characterized by two coupling equations in functional form.
     """
 
+    auto_detect_grammar_files = True
+
     def __init__(self) -> None:  # noqa: D107
-        super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
+        super().__init__()
+        self.default_input_data = {"x_shared": ones(4, dtype=complex128)}
 
     def _run(self) -> None:
-        x_shared = self.get_inputs_by_name("x_shared")
+        x_shared = self.io.data["x_shared"]
         y_2_out = zeros(2, dtype=complex128)
         y_2_out[0] = self.compute_y2(x_shared)
         y_2_out[1] = self.compute_y3(x_shared)
-        self.store_local_data(y_2=y_2_out)
+        self.io.update_output_data({"y_2": y_2_out})
 
     @classmethod
     def compute_y2(cls, x_shared: ndarray) -> ndarray:
@@ -319,24 +331,25 @@ class PropaneComb2(MDODiscipline):
         return y_3
 
 
-class PropaneComb3(MDODiscipline):
+class PropaneComb3(Discipline):
     """The third set of equations of the propane combustion.
 
     This discipline is characterized by three coupling equations in functional form.
     """
 
+    auto_detect_grammar_files = True
+
     def __init__(self) -> None:  # noqa: D107
-        super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
+        super().__init__()
+        self.default_input_data = {"x_shared": ones(4, dtype=complex128)}
 
     def _run(self) -> None:
-        x_shared = self.get_inputs_by_name("x_shared")
+        x_shared = self.io.data["x_shared"]
         y_3_out = zeros(3, dtype=complex128)
         y_3_out[0] = self.compute_y4(x_shared)
         y_3_out[1] = self.compute_y5(x_shared)
         y_3_out[2] = self.compute_y6(x_shared)
-        self.store_local_data(y_3=y_3_out)
+        self.io.update_output_data({"y_3": y_3_out})
 
     @classmethod
     def compute_y4(cls, x_shared) -> float:

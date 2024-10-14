@@ -123,7 +123,7 @@ def test_create_quadratic_optimization_problem(scalable_problem) -> None:
     )
 
     scenario = scalable_problem.create_scenario()
-    scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
+    scenario.execute(algo="NLOPT_SLSQP", max_iter=100)
 
     assert_almost_equal(
         execute_algo(qp_problem, algo_name="NLOPT_SLSQP", max_iter=100).x_opt,

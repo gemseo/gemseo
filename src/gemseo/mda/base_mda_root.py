@@ -23,7 +23,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
@@ -36,6 +35,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.coupling_structure import CouplingStructure
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
 
 
@@ -59,10 +59,9 @@ class BaseMDARoot(BaseMDASolver):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         max_mda_iter: int = 10,
         name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
@@ -119,7 +118,6 @@ class BaseMDARoot(BaseMDASolver):
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
-            grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
@@ -157,10 +155,10 @@ class BaseMDARoot(BaseMDASolver):
     def _execute_disciplines_and_update_local_data(
         self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
     ) -> None:
-        input_data = input_data or self.local_data
+        input_data = input_data or self.io.data
         self._execute_disciplines(input_data)
         for discipline in self.disciplines:
-            self.local_data.update(discipline.get_output_data())
+            self.io.data.update(discipline.get_output_data())
 
     def _execute_disciplines_in_parallel(self, input_data: StrKeyMapping) -> None:
         """Execute the discipline in parallel.

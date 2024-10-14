@@ -51,7 +51,7 @@ def test_broyden_sellar(method) -> None:
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
 
     mda.warm_start = True
-    mda.execute({X_SHARED: mda.default_inputs[X_SHARED] + 0.1})
+    mda.execute({X_SHARED: mda.default_input_data[X_SHARED] + 0.1})
 
 
 def test_hybrid_sellar() -> None:
@@ -94,7 +94,7 @@ def test_broyden_sellar2() -> None:
     mda.reset_history_each_run = True
     mda.execute()
 
-    assert mda.local_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
+    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
 
 
 def test_self_coupled() -> None:

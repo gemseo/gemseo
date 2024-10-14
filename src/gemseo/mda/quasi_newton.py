@@ -33,7 +33,6 @@ from numpy import ndarray
 from scipy.optimize import root
 from strenum import StrEnum
 
-from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda_root import BaseMDARoot
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -42,7 +41,8 @@ if TYPE_CHECKING:
     from typing import Any
 
     from gemseo.core.coupling_structure import CouplingStructure
-    from gemseo.core.discipline_data import DisciplineData
+    from gemseo.core.discipline import Discipline
+    from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
@@ -95,10 +95,9 @@ class MDAQuasiNewton(BaseMDARoot):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         max_mda_iter: int = 10,
         name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         method: QuasiNewtonMethod = QuasiNewtonMethod.HYBRID,
         use_gradient: bool = False,
         tolerance: float = 1e-6,
@@ -122,7 +121,6 @@ class MDAQuasiNewton(BaseMDARoot):
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
-            grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
@@ -188,9 +186,8 @@ class MDAQuasiNewton(BaseMDARoot):
             """
             self._update_local_data_from_array(x_vect)
 
-            self.reset_disciplines_statuses()
             for discipline in self.disciplines:
-                discipline.linearize(self._local_data)
+                discipline.linearize(self.io.data)
 
             self.assembly.compute_sizes(
                 self._resolved_variable_names,
@@ -244,11 +241,10 @@ class MDAQuasiNewton(BaseMDARoot):
         """
         self.current_iter += 1
         # Work on a temporary copy so _update_local_data can be called.
-        local_data_copy = self._local_data.copy()
+        local_data_copy = self.io.data.copy()
         self._update_local_data_from_array(x_vect)
-        local_data_before_execution = self._local_data
-        self._local_data = local_data_copy
-        self.reset_disciplines_statuses()
+        local_data_before_execution = self.io.data
+        self.io.data = local_data_copy
         self._execute_disciplines_and_update_local_data(local_data_before_execution)
         self._compute_residuals(local_data_before_execution)
         return self.assembly.residuals(
@@ -258,7 +254,6 @@ class MDAQuasiNewton(BaseMDARoot):
     def _run(self) -> DisciplineData:
         super()._run()
 
-        self.reset_disciplines_statuses()
         self._execute_disciplines_and_update_local_data()
 
         if not self.strong_couplings:
@@ -267,8 +262,8 @@ class MDAQuasiNewton(BaseMDARoot):
                 "disciplines once."
             )
             LOGGER.warning(msg)
-            self._local_data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
-            return self._local_data
+            self.io.data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
+            return self.io.data
 
         self.current_iter = 0
 
@@ -294,8 +289,6 @@ class MDAQuasiNewton(BaseMDARoot):
         self._update_local_data_from_array(y_opt.x)
 
         if self.method in self._METHODS_SUPPORTING_CALLBACKS:
-            self._local_data[self.NORMALIZED_RESIDUAL_NORM] = array([
-                self.normed_residual
-            ])
+            self.io.data[self.NORMALIZED_RESIDUAL_NORM] = array([self.normed_residual])
 
-        return self._local_data
+        return self.io.data

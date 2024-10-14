@@ -30,7 +30,7 @@ A from scratch example on the Sellar problem
 # we will create an MDO scenario based on the Sellar's problem from scratch.
 # Contrary to the :ref:`sphx_glr_examples_mdo_plot_gemseo_in_10_minutes.py`,
 # all the disciplines will be implemented from scratch
-# by sub-classing the :class:`.MDODiscipline` class
+# by sub-classing the :class:`.Discipline` class
 # for each discipline of the Sellar problem.
 #
 # The Sellar problem
@@ -52,7 +52,7 @@ from numpy import ones
 from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 configure_logger()
 
@@ -61,7 +61,7 @@ configure_logger()
 # Create the disciplinary classes
 # -------------------------------
 # In this section,
-# we define the Sellar disciplines by sub-classing the :class:`.MDODiscipline` class.
+# we define the Sellar disciplines by sub-classing the :class:`.Discipline` class.
 # For each class,
 # the constructor and the _run method are overriden:
 #
@@ -72,10 +72,8 @@ configure_logger()
 #   The default inputs are also defined,
 #   in case of the user does not provide them at the discipline execution.
 # - In the _run method is implemented the concrete computation of the discipline.
-#   The inputs data are fetch
-#   by using the :meth:`.MDODiscipline.get_inputs_by_name` method.
 #   The returned NumPy arrays can then be used to compute the output values.
-#   They can then be stored in the :attr:`!MDODiscipline.local_data` dictionary.
+#   They can then be stored in the :attr:`!Discipline.data` dictionary.
 #   If the discipline execution is successful.
 #
 # Note that we do not define the Jacobians in the disciplines.
@@ -86,7 +84,7 @@ configure_logger()
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-class SellarSystem(MDODiscipline):
+class SellarSystem(Discipline):
     def __init__(self) -> None:
         super().__init__()
         # Initialize the grammars to define inputs and outputs
@@ -94,7 +92,7 @@ class SellarSystem(MDODiscipline):
         self.output_grammar.update_from_names(["obj", "c_1", "c_2"])
         # Default inputs define what data to use when the inputs are not
         # provided to the execute method
-        self.default_inputs = {
+        self.default_input_data = {
             "x": ones(1),
             "z": array([4.0, 3.0]),
             "y_1": ones(1),
@@ -104,7 +102,11 @@ class SellarSystem(MDODiscipline):
     def _run(self) -> None:
         # The run method defines what happens at execution
         # ie how outputs are computed from inputs
-        x, z, y_1, y_2 = self.get_inputs_by_name(["x", "z", "y_1", "y_2"])
+        local_data = self.io.data
+        x = local_data["x"]
+        z = local_data["z"]
+        y_1 = local_data["y_1"]
+        y_2 = local_data["y_2"]
         # The ouputs are stored here
         self.local_data["obj"] = array([x[0] ** 2 + z[1] + y_1[0] ** 2 + exp(-y_2[0])])
         self.local_data["c_1"] = array([3.16 - y_1[0] ** 2])
@@ -116,19 +118,22 @@ class SellarSystem(MDODiscipline):
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-class Sellar1(MDODiscipline):
+class Sellar1(Discipline):
     def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x", "z", "y_2"])
         self.output_grammar.update_from_names(["y_1"])
-        self.default_inputs = {
+        self.default_input_data = {
             "x": ones(1),
             "z": array([4.0, 3.0]),
             "y_2": ones(1),
         }
 
     def _run(self) -> None:
-        x, z, y_2 = self.get_inputs_by_name(["x", "z", "y_2"])
+        local_data = self.io.data
+        x = local_data["x"]
+        z = local_data["z"]
+        y_2 = local_data["y_2"]
         self.local_data["y_1"] = array([
             (z[0] ** 2 + z[1] + x[0] - 0.2 * y_2[0]) ** 0.5
         ])
@@ -139,18 +144,20 @@ class Sellar1(MDODiscipline):
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-class Sellar2(MDODiscipline):
+class Sellar2(Discipline):
     def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["z", "y_1"])
         self.output_grammar.update_from_names(["y_2"])
-        self.default_inputs = {
+        self.default_input_data = {
             "z": array([4.0, 3.0]),
             "y_1": ones(1),
         }
 
     def _run(self) -> None:
-        z, y_1 = self.get_inputs_by_name(["z", "y_1"])
+        local_data = self.io.data
+        z = local_data["z"]
+        y_1 = local_data["y_1"]
         self.local_data["y_2"] = array([abs(y_1[0]) + z[0] + z[1]])
 
 

@@ -47,14 +47,14 @@ def _get_class(fully_qualified_name: str) -> type:
 class ClassInjector(ABCGoogleDocstringInheritanceMeta):
     """A metaclass globally modifying the class hierarchy of a discipline.
 
-    This enables to swap the original discipline base class (MDODiscipline) for a new
+    This enables to swap the original discipline base class (Discipline) for a new
     one without having to introduce complex and apparently useless abstractions.
 
     The environment variable :env:`GEMSEO_BASE_DISCIPLINE_CLASS` shall be set to the
     fully qualified name of the new base class, i.e. `package.sub_package.Class`.
     """
 
-    __ORIGINAL_BASE_DISCIPLINE_CLASS_NAME: Final[str] = "MDODiscipline"
+    __ORIGINAL_BASE_DISCIPLINE_CLASS_NAME: Final[str] = "Discipline"
     """The name of the original discipline class that should be changed in the class
     hierarchy of a derived class."""
 

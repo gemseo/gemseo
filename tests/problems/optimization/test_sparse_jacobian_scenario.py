@@ -20,7 +20,7 @@ import pytest
 
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.chain import MDOChain
+from gemseo.core.chains.chain import MDOChain
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.disciplines.splitter import Splitter
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture(scope="module", params=["DisciplinaryOpt", "IDF"])
 def scenario(request) -> Scenario:
-    """Optimization scenario involving MDOFunctions with sparse Jacobians."""
+    """Optimization scenario involving mdo_functions with sparse Jacobians."""
     design_space = DesignSpace()
     design_space.add_variable(
         "alpha", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
@@ -71,7 +71,7 @@ def scenario(request) -> Scenario:
     ]
 
     discipline = MDOChain(disciplines)
-    discipline.set_linear_relationships()
+    discipline.io.set_linear_relationships()
 
     scenario = create_scenario(
         [discipline],
@@ -92,6 +92,6 @@ def test_problem_is_linear(scenario) -> None:
 
 def test_execution(scenario) -> None:
     """Tests the execution of scenario with sparse Jacobians."""
-    scenario.execute({"algo": "LINEAR_INTERIOR_POINT", "max_iter": 1000})
+    scenario.execute(algo="LINEAR_INTERIOR_POINT", max_iter=1000)
     out = scenario.formulation.optimization_problem.solution
     assert pytest.approx(out.f_opt) == -8.0

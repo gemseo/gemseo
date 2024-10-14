@@ -44,12 +44,16 @@ from typing import Any
 from typing import Union
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import AtomicExecSequence
-from gemseo.core.execution_sequence import CompositeExecSequence
-from gemseo.core.execution_sequence import LoopExecSequence
-from gemseo.core.execution_sequence import ParallelExecSequence
-from gemseo.core.execution_sequence import SerialExecSequence
+from gemseo.core._process_flow.execution_sequences.execution_sequence import (
+    ExecutionSequence,
+)
+from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
+from gemseo.core._process_flow.execution_sequences.parallel import ParallelExecSequence
+from gemseo.core._process_flow.execution_sequences.sequential import (
+    SequentialExecSequence,
+)
+from gemseo.core.discipline import Discipline
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.monitoring import Monitoring
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.base_mda import BaseMDA
@@ -64,13 +68,15 @@ from gemseo.utils.xdsm_to_pdf import xdsm_data_to_pdf
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from gemseo.core._process_flow.execution_sequences import BaseCompositeExecSequence
+
 
 LOGGER = logging.getLogger(__name__)
 
 OPT_NAME = OPT_ID = "Opt"
 USER_NAME = USER_ID = "_U_"
 
-EdgeType = dict[str, Union[MDODiscipline, list[str]]]
+EdgeType = dict[str, Union[Discipline, list[str]]]
 NodeType = dict[str, str]
 IdsType = Any
 
@@ -86,10 +92,10 @@ class XDSMizer:
 
     def __init__(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         hashref: str = "root",
         level: int = 0,
-        expected_workflow: CompositeExecSequence | None = None,
+        expected_workflow: BaseCompositeExecSequence | None = None,
     ) -> None:
         """
         Args:
@@ -100,7 +106,7 @@ class XDSMizer:
             level: The depth of the scenario. Root scenario is level 0.
             expected_workflow: The expected workflow,
                 describing the sequence of execution of the different disciplines
-                (:class:`.MDODiscipline`, :class:`.Scenario`, :class:`.BaseMDA`, etc.)
+                (:class:`.Discipline`, :class:`.Scenario`, :class:`.BaseMDA`, etc.)
         """  # noqa:D205 D212 D415
         if isinstance(discipline, Scenario):
             self._is_scenario = True
@@ -135,14 +141,14 @@ class XDSMizer:
         self.directory_path = "."
         self.json_file_name = "xdsm.json"
         self.to_hashref = {}
-        self.to_id = {}  # dictionary to map AtomicExecSequence to XDSM id
+        self.to_id = {}  # dictionary to map ExecutionSequence to XDSM id
         self.initialize(expected_workflow)
         self.log_workflow_status = False
         self.save_pdf = False
 
     def initialize(
         self,
-        workflow: CompositeExecSequence | None = None,
+        workflow: BaseCompositeExecSequence | None = None,
     ) -> None:
         """Initialize the XDSM from a workflow.
 
@@ -157,24 +163,24 @@ class XDSMizer:
         if workflow:
             self.workflow = workflow
         else:
-            self.workflow = self.scenario.get_expected_workflow()
-        self.atoms = XDSMizer._get_single_level_atoms(self.workflow)
+            self.workflow = self.scenario.get_process_flow().get_execution_flow()
+        self.atoms = self._get_single_level_atoms(self.workflow)
 
         self.to_hashref = {}
         level = self.level + 1
         num = 1
         for atom in self.atoms:
-            if atom.discipline.is_scenario():
-                if atom.discipline == self.scenario:
+            if isinstance(atom.process, Scenario):
+                if atom.process == self.scenario:
                     self.to_hashref[atom] = "root"
                     self.root_atom = atom
                 else:  # sub-scenario
-                    name = atom.discipline.name
+                    name = atom.process.name
                     self.to_hashref[atom] = f"{name}_scn-{level}-{num}"
-                    sub_workflow = XDSMizer._find_sub_workflow(self.workflow, atom)
+                    sub_workflow = self._find_sub_workflow(self.workflow, atom)
                     self.sub_xdsmizers.append(
                         XDSMizer(
-                            atom.discipline, self.to_hashref[atom], level, sub_workflow
+                            atom.process, self.to_hashref[atom], level, sub_workflow
                         )
                     )
                     num += 1
@@ -186,7 +192,7 @@ class XDSMizer:
         log_workflow_status: bool = False,
         save_pdf: bool = False,
     ) -> None:
-        """Generate XDSM json file on discipline status update.
+        """Generate XDSM json file on process status update.
 
         Args:
             directory_path: The path of the directory to save the files.
@@ -205,12 +211,12 @@ class XDSMizer:
 
     def update(
         self,
-        atom: AtomicExecSequence,
+        atom: ExecutionSequence,
     ) -> None:  # pylint: disable=unused-argument
         """Generate a new XDSM regarding the atom status update.
 
         Args:
-            atom: The discipline which status is monitored.
+            atom: The process which status is monitored.
         """
         self.run(
             directory_path=self.directory_path,
@@ -368,15 +374,15 @@ class XDSMizer:
 
         # Disciplines
         for atom_id, atom in enumerate(self.atoms):  # pylint: disable=too-many-nested-blocks
-            # if a node already created from an atom with same discipline
+            # if a node already created from an atom with same process
             # at one level just reference the same node
             for ref_atom in tuple(self.to_id):
-                if atom.discipline == ref_atom.discipline:
+                if atom.process == ref_atom.process:
                     self.to_id[atom] = self.to_id[ref_atom]
 
                     if (
                         atom.status
-                        and atom.parent.status is MDODiscipline.ExecutionStatus.RUNNING
+                        and atom.parent.status is ExecutionStatus.Status.RUNNING
                     ):
                         node = None
                         for a_node in nodes:
@@ -398,12 +404,12 @@ class XDSMizer:
                 continue
 
             self.to_id[atom] = "Dis" + str(atom_id)
-            node = {"id": self.to_id[atom], "name": atom.discipline.name}
+            node = {"id": self.to_id[atom], "name": atom.process.name}
 
             # node type
-            if isinstance(atom.discipline, BaseMDA):
+            if isinstance(atom.process, BaseMDA):
                 node["type"] = "mda"
-            elif atom.discipline.is_scenario():
+            elif isinstance(atom.process, Scenario):
                 node["type"] = "mdo"
                 node["subxdsm"] = self.to_hashref[atom]
                 node["name"] = self.to_hashref[atom]
@@ -423,17 +429,17 @@ class XDSMizer:
         # convenient method to factorize code for creating and appending edges
 
         def add_edge(
-            from_edge: MDODiscipline,
-            to_edge: MDODiscipline,
+            from_edge: Discipline,
+            to_edge: Discipline,
             varnames: list[str],
         ) -> None:
-            """Add an edge from a discipline to another with variables names as label.
+            """Add an edge from a process to another with variables names as label.
 
             Args:
-                from_edge: The starting discipline.
-                to_edge: The end discipline.
+                from_edge: The starting process.
+                to_edge: The end process.
                 varnames: The names of the variables
-                    going from the starting discipline to the end one.
+                    going from the starting process to the end one.
             """
             edge = {"from": from_edge, "to": to_edge, "name": ", ".join(varnames)}
             edges.append(edge)
@@ -462,8 +468,10 @@ class XDSMizer:
         # Disciplines to/from optimization
         for atom in self.atoms:
             if atom is not self.root_atom:
+                if isinstance(atom.process, Scenario):
+                    continue
                 varnames = sorted(
-                    set(atom.discipline.get_input_data_names())
+                    set(atom.process.io.input_grammar.names)
                     & set(self.scenario.get_optim_variable_names())
                 )
 
@@ -471,8 +479,7 @@ class XDSMizer:
                     add_edge(OPT_ID, self.to_id[atom], varnames)
 
                 varnames = sorted(
-                    set(atom.discipline.get_output_data_names())
-                    & set(function_varnames)
+                    set(atom.process.io.output_grammar.names) & set(function_varnames)
                 )
                 if varnames:
                     add_edge(self.to_id[atom], OPT_ID, varnames)
@@ -483,17 +490,15 @@ class XDSMizer:
         for atom in self.atoms:
             if atom is not self.root_atom:
                 # special case MDA : skipped
-                if isinstance(atom.discipline, BaseMDA):
+                if isinstance(atom.process, (BaseMDA, Scenario)):
                     continue
                 out_to_user = [
                     o
-                    for o in atom.discipline.get_output_data_names()
+                    for o in atom.process.io.output_grammar.names
                     if o not in disc_to_opt
                 ]
                 out_to_opt = [
-                    o
-                    for o in atom.discipline.get_output_data_names()
-                    if o in disc_to_opt
+                    o for o in atom.process.io.output_grammar.names if o in disc_to_opt
                 ]
                 if out_to_user:
                     add_edge(self.to_id[atom], USER_ID, [x + "^*" for x in out_to_user])
@@ -501,7 +506,7 @@ class XDSMizer:
                     add_edge(self.to_id[atom], OPT_ID, out_to_opt)
 
         # Disciplines to/from disciplines
-        for coupling in self.scenario.get_expected_dataflow():
+        for coupling in self.scenario.get_process_flow().get_data_flow():
             (disc1, disc2, varnames) = coupling
             add_edge(
                 self.to_id[self._find_atom(disc1)],
@@ -511,10 +516,11 @@ class XDSMizer:
 
         return edges
 
-    @staticmethod
+    @classmethod
     def _get_single_level_atoms(
-        workflow: CompositeExecSequence,
-    ) -> list[AtomicExecSequence]:
+        cls,
+        workflow: BaseCompositeExecSequence,
+    ) -> list[ExecutionSequence]:
         """Retrieve the list of atoms of the given workflow.
 
         This method does not look into the loop execution sequences
@@ -531,48 +537,47 @@ class XDSMizer:
         for sequence in workflow.sequences:
             if isinstance(sequence, LoopExecSequence):
                 atoms.append(sequence.atom_controller)
-                if not sequence.atom_controller.discipline.is_scenario():
-                    atoms += XDSMizer._get_single_level_atoms(
-                        sequence.iteration_sequence
-                    )
-            elif isinstance(sequence, AtomicExecSequence):
+                if not isinstance(sequence.atom_controller.process, Scenario):
+                    atoms += cls._get_single_level_atoms(sequence.iteration_sequence)
+            elif isinstance(sequence, ExecutionSequence):
                 atoms.append(sequence)
             else:
-                atoms += XDSMizer._get_single_level_atoms(sequence)
+                atoms += cls._get_single_level_atoms(sequence)
         return atoms
 
     def _find_atom(
         self,
-        discipline: MDODiscipline,
-    ) -> AtomicExecSequence:
-        """Find the atomic sequence corresponding to a given discipline.
+        process: Discipline,
+    ) -> ExecutionSequence:
+        """Find the atomic sequence corresponding to a given process.
 
         Args:
-            discipline: A discipline.
+            process: A process.
 
         Returns:
-            The atomic sequence corresponding to the given discipline.
+            The atomic sequence corresponding to the given process.
 
         Raises:
             ValueError: If the atomic sequence is not found.
         """
         atom = None
-        if isinstance(discipline, MDOScenarioAdapter):
-            atom = self._find_atom(discipline.scenario)
+        if isinstance(process, MDOScenarioAdapter):
+            atom = self._find_atom(process.scenario)
         else:
             for atom_i in self.atoms:
-                if discipline == atom_i.discipline:
+                if process == atom_i.process:
                     atom = atom_i
         if atom is None:
-            disciplines = [a.discipline for a in self.atoms]
-            msg = f"Discipline {discipline} not found in {disciplines}"
+            disciplines = [a.process for a in self.atoms]
+            msg = f"Discipline {process} not found in {disciplines}"
             raise ValueError(msg)
         return atom
 
-    @staticmethod
+    @classmethod
     def _find_sub_workflow(
-        workflow: CompositeExecSequence,
-        atom_controller: AtomicExecSequence,
+        cls,
+        workflow: BaseCompositeExecSequence,
+        atom_controller: ExecutionSequence,
     ) -> LoopExecSequence | None:
         """Find the sub-workflow from a workflow and controller atom in it.
 
@@ -585,21 +590,12 @@ class XDSMizer:
             The sub-workflow.
             None if the list of execution sequences of the original workflow is empty.
         """
-        sub_workflow = None
         for sequence in workflow.sequences:
-            if isinstance(sequence, LoopExecSequence):
-                if sequence.atom_controller.uuid == atom_controller.uuid:
-                    return sequence
-
-                sub_workflow = sub_workflow or XDSMizer._find_sub_workflow(
-                    sequence.iteration_sequence, atom_controller
-                )
-            elif not isinstance(sequence, AtomicExecSequence):
-                sub_workflow = sub_workflow or XDSMizer._find_sub_workflow(
-                    sequence, atom_controller
-                )
-
-        return sub_workflow
+            if not isinstance(sequence, ExecutionSequence):
+                sub = cls._find_sub_workflow(sequence, atom_controller)
+                if sub is not None:
+                    return sub
+        return None
 
     def _create_workflow(self) -> list[str, IdsType]:
         """Manage the creation of the XDSM workflow creation from a formulation one."""
@@ -607,7 +603,7 @@ class XDSMizer:
 
 
 def expand(
-    wks: CompositeExecSequence,
+    wks: BaseCompositeExecSequence,
     to_id: Mapping[str, str],
 ) -> IdsType:
     """Expand the workflow structure as an ids structure using to_id mapping.
@@ -624,7 +620,7 @@ def expand(
     Returns:
         The ids structure valid to be used as XDSM json chains.
     """
-    if isinstance(wks, SerialExecSequence):
+    if isinstance(wks, SequentialExecSequence):
         res = []
         for sequence in wks.sequences:
             res += expand(sequence, to_id)
@@ -632,21 +628,21 @@ def expand(
     elif isinstance(wks, ParallelExecSequence):
         res = []
         for sequence in wks.sequences:
-            if isinstance(sequence, AtomicExecSequence):
+            if isinstance(sequence, ExecutionSequence):
                 res += expand(sequence, to_id)
             else:
                 res.append(expand(sequence, to_id))
         ids = [{"parallel": res}]
     elif isinstance(wks, LoopExecSequence):
         if (
-            wks.atom_controller.discipline.is_scenario()
+            isinstance(wks.atom_controller.process, Scenario)
             and to_id[wks.atom_controller] != OPT_ID
         ):
             # sub-scnario consider only the controller
             ids = [to_id[wks.atom_controller]]
         else:
             ids = [to_id[wks.atom_controller], expand(wks.iteration_sequence, to_id)]
-    elif isinstance(wks, AtomicExecSequence):
+    elif isinstance(wks, ExecutionSequence):
         ids = [to_id[wks]]
     else:
         msg = f"Bad execution sequence: found {wks}"

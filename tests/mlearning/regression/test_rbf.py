@@ -54,12 +54,12 @@ def dataset() -> Dataset:
         "y_2": "-1-2*x_1-3*x_2",
         "y_3": "3",
     })
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
+    scenario.execute(algo="fullfact", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 
 

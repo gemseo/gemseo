@@ -59,7 +59,7 @@ class TestPropaneScenario(unittest.TestCase):
 
         """
         data_names = scenario.get_optim_variable_names()
-        data = self.get_inputs_by_names(data_names)
+        data = [self.io_data.data[name] for name in data_names]
         return concatenate(data)
 
     def build_mdo_scenario(self, formulation="MDF"):
@@ -99,7 +99,7 @@ class TestPropaneScenario(unittest.TestCase):
 
         run_inputs = {"max_iter": 50, "algo": algo}
         # run the optimizer
-        scenario.execute(run_inputs)
+        scenario.execute(**run_inputs)
         obj_opt = scenario.optimization_result.f_opt
 
         x_opt = scenario.design_space.get_current_value()
@@ -170,7 +170,7 @@ class TestPropaneCombustion(unittest.TestCase):
         """"""
         pc = PropaneComb1()
         pc.execute(self.get_current_x())
-        y_1 = pc.get_outputs_by_name("y_1")
+        y_1 = pc.io.data["y_1"]
         self.assertAlmostEqual(y_1[0], 1.0, 10)
         self.assertAlmostEqual(y_1[1], 2.0, 10)
 
@@ -178,7 +178,7 @@ class TestPropaneCombustion(unittest.TestCase):
         """"""
         pc = PropaneComb2()
         pc.execute(self.get_current_x())
-        y_2 = pc.get_outputs_by_name("y_2")
+        y_2 = pc.io.data["y_2"]
         self.assertAlmostEqual(y_2[0], 2.0, 10)
         self.assertAlmostEqual(y_2[1], 0.058860363180964305, 10)
 
@@ -186,7 +186,7 @@ class TestPropaneCombustion(unittest.TestCase):
         """"""
         pc = PropaneComb3()
         pc.execute(self.get_current_x())
-        y_3 = pc.get_outputs_by_name("y_3")
+        y_3 = pc.io.data["y_3"]
         self.assertAlmostEqual(y_3[0], 38.0, 10)
         self.assertAlmostEqual(y_3[1], 0.029430181590482152, 10)
         self.assertAlmostEqual(y_3[2], 47.088290544771446, 10)
@@ -199,5 +199,5 @@ class TestPropaneCombustion(unittest.TestCase):
         indata["y_2"] = ones([2])
         indata["y_3"] = ones([3])
         pc.execute(indata)
-        f = pc.get_outputs_by_name("obj")
+        f = pc.io.data["obj"]
         self.assertAlmostEqual(f, -16.973665961010276, 10)

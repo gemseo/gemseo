@@ -21,10 +21,10 @@
 
 from __future__ import annotations
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 
-class DummyDisciplineIMP(MDODiscipline):
+class DummyDisciplineIMP(Discipline):
     """Dummy."""
 
     def __init__(self, opts1=0, jac_approx_n_processes=1) -> None:

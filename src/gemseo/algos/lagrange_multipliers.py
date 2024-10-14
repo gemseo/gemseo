@@ -40,7 +40,7 @@ from scipy.optimize import lsq_linear
 from scipy.optimize import nnls
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.third_party.prettytable import PrettyTable
+from gemseo.third_party.prettytable.prettytable import PrettyTable
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem

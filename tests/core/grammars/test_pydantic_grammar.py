@@ -25,7 +25,7 @@ from numpy import array
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
-from gemseo.core.discipline_data import DisciplineData
+from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.utils.testing.helpers import do_not_raise

@@ -6,10 +6,6 @@
       "description": "Whether to maximize the objective.",
       "type": "boolean"
     },
-    "grammar_type": {
-      "description": "The type of the input and output grammars.",
-      "type": "string"
-    },
     "main_mda_name": {
       "description": "The name of the class used for the main MDA, typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance.",
       "type": "string"

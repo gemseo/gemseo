@@ -334,7 +334,7 @@ Monitor a scenario
 To monitor a scenario execution programmatically, ie get a notification when a discipline status is changed,
 use :meth:`~gemseo.monitor_scenario`. The first argument is the scenario to monitor, and the second is an
 observer object, that is notified by its update(atom) method, which takes an
-:class:`.AtomicExecSequence` as argument. This method will be called every time
+:class:`.ExecutionSequence` as argument. This method will be called every time
 a discipline status changes. The atom represents a discipline's position in the process. One discipline can
 have multiple atoms, since one discipline can be used in multiple positions in the MDO formulation.
 

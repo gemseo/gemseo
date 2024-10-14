@@ -29,7 +29,7 @@ from typing import Final
 
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline.discipline import Discipline
 from gemseo.disciplines.ode.functor import Functor
 from gemseo.disciplines.ode.jactor import Jactor
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class ODEDiscipline(MDODiscipline):
+class ODEDiscipline(Discipline):
     """A discipline for solving ordinary differential equations (ODE)."""
 
     output_trajectory: bool
@@ -83,7 +83,7 @@ class ODEDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         times: ArrayLike,
         time_name: str = "time",
         state_names: Iterable[str] = (),
@@ -91,7 +91,7 @@ class ODEDiscipline(MDODiscipline):
         state_trajectory_names: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
         return_trajectories: bool = False,
         name: str = "",
-        termination_event_disciplines: Iterable[MDODiscipline] = (),
+        termination_event_disciplines: Iterable[Discipline] = (),
         solve_at_algorithm_times: bool | None = None,
         ode_solver_name: str = "RK45",
         **ode_solver_options: Any,
@@ -139,12 +139,12 @@ class ODEDiscipline(MDODiscipline):
         # Define the names of the state variables
         if not state_names:
             state_names = self.__state_names = [
-                name for name in discipline.input_grammar.names if name != time_name
+                name for name in discipline.io.input_grammar.names if name != time_name
             ]
         else:
             self.__state_names = state_names
 
-        missing_names = set(state_names) - set(discipline.default_inputs)
+        missing_names = set(state_names) - set(discipline.default_input_data)
         if missing_names:
             msg = f"Missing default inputs in discipline for {missing_names}."
             raise ValueError(msg)
@@ -157,7 +157,7 @@ class ODEDiscipline(MDODiscipline):
         self.__ode_solver_options = ode_solver_options
 
         # Create ODE problem
-        initial_state = self.__get_state_vector(discipline.default_inputs)
+        initial_state = self.__get_state_vector(discipline.default_input_data)
         event_functions = tuple(
             Functor(self, discipline, state_names, time_name)
             for discipline in termination_event_disciplines
@@ -184,16 +184,16 @@ class ODEDiscipline(MDODiscipline):
         else:
             self.__trajectory_state_names = ()
 
-        super().__init__(name=name, grammar_type=discipline.grammar_type)
-        self.input_grammar.update(discipline.input_grammar)
+        super().__init__(name=name)
+        self.io.input_grammar = discipline.io.input_grammar
         output_names = [
             *self.__final_state_names,
             self.__TIMES,
             self.__TERMINATION_TIME,
         ]
         output_names.extend(self.__trajectory_state_names)
-        self.output_grammar.update_from_names(output_names)
-        self.default_inputs = copy(discipline.default_inputs)
+        self.io.output_grammar.update_from_names(output_names)
+        self.default_input_data = copy(discipline.default_input_data)
 
     def __get_state_vector(self, input_data: Mapping[str, RealArray]) -> RealArray:
         """Return the state vector from a dictionary.
@@ -207,7 +207,7 @@ class ODEDiscipline(MDODiscipline):
         return concatenate_dict_of_arrays_to_array(input_data, names=self.__state_names)
 
     def _run(self) -> None:
-        self._ode_problem.initial_state = self.__get_state_vector(self.local_data)
+        self._ode_problem.initial_state = self.__get_state_vector(self.io.data)
         self.__ode_solver.execute(self._ode_problem, **self.__ode_solver_options)
         result = self._ode_problem.result
         if not result.algorithm_has_converged:
@@ -217,13 +217,13 @@ class ODEDiscipline(MDODiscipline):
             )
             raise RuntimeError(msg)
 
-        self.local_data.update(
+        self.io.data.update(
             dict(zip(self.__final_state_names, result.terminal_event_state))
         )
         if self.output_trajectory:
-            self.local_data.update(
+            self.io.data.update(
                 dict(zip(self.__trajectory_state_names, result.state_trajectories))
             )
 
-        self.local_data.update({self.__TERMINATION_TIME: result.terminal_event_time})
-        self.local_data[self.__TIMES] = result.times
+        self.io.data.update({self.__TERMINATION_TIME: result.terminal_event_time})
+        self.io.data[self.__TIMES] = result.times

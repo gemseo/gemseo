@@ -19,7 +19,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-class TaylorDiscipline(MDODiscipline):
+class TaylorDiscipline(Discipline):
     r"""The first-order polynomial of a discipline.
 
     The first-order polynomial
@@ -42,7 +42,7 @@ class TaylorDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         input_data: Mapping[str, NDArray[float]] = READ_ONLY_EMPTY_DICT,
         name: str = "",
     ) -> None:
@@ -53,37 +53,37 @@ class TaylorDiscipline(MDODiscipline):
                 If empty, use the default inputs of ``discipline``.
 
         Raises:
-            ValueError: If neither ``input_data`` nor ``discipline.default_inputs``
+            ValueError: If neither ``input_data`` nor ``discipline.default_input_data``
                 is specified.
         """  # noqa: D205 D212
-        input_names = set(discipline.get_input_data_names())
+        input_names = set(discipline.io.input_grammar.names)
         if (input_data and (input_data.keys() < input_names)) or (
-            not input_data and discipline.default_inputs.keys() < input_names
+            not input_data and discipline.default_input_data.keys() < input_names
         ):
             msg = (
                 "All the discipline input values must be "
-                "specified either in input_data or in discipline.default_inputs."
+                "specified either in input_data or in discipline.default_input_data."
             )
             raise ValueError(msg)
 
         discipline.linearize(compute_all_jacobians=True, input_data=input_data)
         super().__init__(name=name)
         self.input_grammar.update_from_names(input_names)
-        self.output_grammar.update_from_names(discipline.get_output_data_names())
-        self.default_inputs = input_data or discipline.default_inputs
+        self.output_grammar.update_from_names(discipline.io.output_grammar.names)
+        self.default_input_data = input_data or discipline.default_input_data
         self.__offset = {}
-        for output_name in self.get_output_data_names():
-            self.__offset[output_name] = discipline.local_data[output_name] - sum(
+        for output_name in self.io.output_grammar.names:
+            self.__offset[output_name] = discipline.io.data[output_name] - sum(
                 discipline.jac[output_name][input_name] @ input_value
-                for input_name, input_value in self.default_inputs.items()
+                for input_name, input_value in self.default_input_data.items()
             )
         self.jac = deepcopy(discipline.jac)
-        self._is_linearized = True
+        self._has_jacobian = True
 
     def _run(self) -> None:
-        input_data = self.get_input_data()
-        for output_name in self.get_output_data_names():
-            self.local_data[output_name] = self.__offset[output_name] + sum(
+        input_data = self.io.get_input_data()
+        for output_name in self.io.output_grammar.names:
+            self.io.data[output_name] = self.__offset[output_name] + sum(
                 self.jac[output_name][input_name] @ input_value
                 for input_name, input_value in input_data.items()
             )

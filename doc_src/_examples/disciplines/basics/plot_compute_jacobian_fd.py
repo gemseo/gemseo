@@ -23,7 +23,7 @@ Compute the Jacobian of a discipline with finite differences
 ============================================================
 
 In this example,
-we will compute the Jacobians of some outputs of an :class:`.MDODiscipline`
+we will compute the Jacobians of some outputs of an :class:`.Discipline`
 with respect to some inputs using the finite difference method.
 """
 
@@ -57,7 +57,7 @@ discipline.local_data
 
 # %%
 # Then,
-# we use the method :meth:`.MDODiscipline.linearize` to compute the derivatives:
+# we use the method :meth:`.Discipline.linearize` to compute the derivatives:
 jacobian_data = discipline.linearize()
 jacobian_data
 
@@ -66,9 +66,9 @@ jacobian_data
 # because we need to set the input variables
 # against which to compute the Jacobian of the output ones.
 # For that,
-# we use the method :meth:`~.MDODiscipline.add_differentiated_inputs`.
+# we use the method :meth:`~.Discipline.add_differentiated_inputs`.
 # We also need to set these output variables:
-# with the method :meth:`~.MDODiscipline.add_differentiated_outputs`.
+# with the method :meth:`~.Discipline.add_differentiated_outputs`.
 # For instance,
 # we may want to compute the derivative of ``"z"`` with respect to ``"a"`` only:
 discipline.add_differentiated_inputs(["a"])
@@ -82,7 +82,7 @@ jacobian_data
 # up to the numerical precision.
 #
 # By default,
-# |g| uses :attr:`.MDODiscipline.default_inputs` as input data
+# |g| uses :attr:`.Discipline.default_input_data` as input data
 # for which to compute the Jacobian one.
 # We can change them with ``input_data``:
 jacobian_data = discipline.linearize({"a": array([1.0])})

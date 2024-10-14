@@ -40,7 +40,7 @@ from gemseo.problems.topology_optimization.material_model_interpolation_disc imp
 from gemseo.problems.topology_optimization.volume_fraction_disc import VolumeFraction
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 
 def initialize_design_space_and_discipline_to(
@@ -52,7 +52,7 @@ def initialize_design_space_and_discipline_to(
     penalty: float,
     min_member_size: float,
     vf0: float,
-) -> tuple[DesignSpace, list[MDODiscipline]]:
+) -> tuple[DesignSpace, list[Discipline]]:
     """Initialize design space and disciplines for 2D topology optimization problems.
 
     Args:

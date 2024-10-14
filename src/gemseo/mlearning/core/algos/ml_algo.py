@@ -324,8 +324,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
                 Otherwise, use them as they are.
         """
 
-    @property
-    def _string_representation(self) -> MultiLineString:
+    def _get_string_representation(self) -> MultiLineString:
         """The string representation of the algorithm."""
         mls = MultiLineString()
         mls.add("{}({})", self.__class__.__name__, pretty_str(self.parameters))
@@ -339,10 +338,10 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         return mls
 
     def __repr__(self) -> str:
-        return str(self._string_representation)
+        return str(self._get_string_representation())
 
     def _repr_html_(self) -> str:
-        return self._string_representation._repr_html_()
+        return self._get_string_representation()._repr_html_()
 
     def to_pickle(
         self,

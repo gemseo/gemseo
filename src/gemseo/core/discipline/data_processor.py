@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from copy import copy
 from typing import TYPE_CHECKING
 
 from numpy import array
@@ -34,6 +33,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.typing import MutableStrKeyMapping
+    from gemseo.typing import StrKeyMapping
 
 
 class DataProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -45,7 +45,7 @@ class DataProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
     """
 
     @abstractmethod
-    def pre_process_data(self, data: MutableStrKeyMapping) -> MutableStrKeyMapping:
+    def pre_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:
         """Pre-process data.
 
         Args:
@@ -55,8 +55,10 @@ class DataProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
             The processed data.
         """
 
+    # TODO: post_process shall only take care of the output data, the input data
+    # shall be restored from the original data passed to pre_process.
     @abstractmethod
-    def post_process_data(self, data: MutableStrKeyMapping) -> MutableStrKeyMapping:
+    def post_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:
         """Execute a post-processing of the output data.
 
         Args:
@@ -73,8 +75,8 @@ class FloatDataProcessor(DataProcessor):
     It converts all discipline output data to numpy arrays
     """
 
-    def pre_process_data(self, data: MutableStrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
-        processed_data = copy(data)
+    def pre_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
+        processed_data = dict(data)
         for key, val in data.items():
             if len(val) == 1:
                 processed_data[key] = float(val[0])
@@ -82,8 +84,8 @@ class FloatDataProcessor(DataProcessor):
                 processed_data[key] = [float(val_i) for val_i in val]
         return processed_data
 
-    def post_process_data(self, data: MutableStrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
-        processed_data = copy(data)
+    def post_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
+        processed_data = dict(data)
         for key, val in data.items():
             if not hasattr(val, "__len__"):
                 processed_data[key] = array([val])
@@ -95,14 +97,14 @@ class FloatDataProcessor(DataProcessor):
 class ComplexDataProcessor(DataProcessor):
     """Data preprocessor to convert complex arrays to float arrays back and forth."""
 
-    def pre_process_data(self, data: MutableStrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
-        processed_data = copy(data)
+    def pre_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
+        processed_data = dict(data)
         for key, val in data.items():
             processed_data[key] = array(val.real)
         return processed_data
 
-    def post_process_data(self, data: MutableStrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
-        processed_data = copy(data)
+    def post_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
+        processed_data = dict(data)
         for key, val in data.items():
             processed_data[key] = array(val, dtype=complex128)
         return processed_data
@@ -118,7 +120,7 @@ class NameMapping(DataProcessor):
                 where ``global_name`` must be consistent
                 with the grammar of the discipline.
                 The local name is the data provided
-                to the :meth:`.MDODiscipline._run` method.
+                to the :meth:`.Discipline._run` method.
         """  # noqa: D205, D212, D415
         super().__init__()
         # TODO: API: make those private.
@@ -127,10 +129,10 @@ class NameMapping(DataProcessor):
             local_key: global_key for global_key, local_key in mapping.items()
         }
 
-    def pre_process_data(self, data: MutableStrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
+    def pre_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
         mapping = self.mapping
         return {mapping[global_key]: value for global_key, value in data.items()}
 
-    def post_process_data(self, data: MutableStrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
+    def post_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
         reverse_mapping = self.reverse_mapping
         return {reverse_mapping[local_key]: value for local_key, value in data.items()}

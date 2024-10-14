@@ -14,10 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 
-class NewBaseDiscipline(MDODiscipline):
+class NewBaseDiscipline(Discipline):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.hi_there = None

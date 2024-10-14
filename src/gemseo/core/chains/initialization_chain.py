@@ -22,24 +22,25 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.chain import MDOChain
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.chains.chain import MDOChain
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
+    from gemseo.core.discipline import Discipline
+
 
 def order_disciplines_from_default_inputs(
-    disciplines: Sequence[MDODiscipline],
+    disciplines: Sequence[Discipline],
     raise_error: bool = True,
     available_data_names: Iterable[str] = (),
-) -> list[MDODiscipline] | list[str]:
+) -> list[Discipline] | list[str]:
     """Order disciplines such that all their input values are defined.
 
     It is particularly useful in the case of MDAs when not all
-    default_inputs are available, and the execution order is not obvious to compute
+    default_input_data are available, and the execution order is not obvious to compute
     initial values for all couplings.
 
     From the default inputs of the disciplines, use a greedy algorithm to detect
@@ -52,7 +53,7 @@ def order_disciplines_from_default_inputs(
         disciplines: The disciplines to compute the initialization of.
         raise_error: Whether to raise an exception when the algorithm fails.
         available_data_names: The data names that are assumed to be available
-            at runtime, in addition to the default_inputs.
+            at runtime, in addition to the default_input_data.
 
     Returns:
         The ordered disciplines when the algorithm succeeds, or, if raise_error=False,
@@ -64,11 +65,11 @@ def order_disciplines_from_default_inputs(
     while remaining_discs:
         removed_discs = []
         for disc in remaining_discs:
-            required_inputs = set(disc.get_input_data_names())
-            if not required_inputs.difference(disc.default_inputs).difference(
+            required_inputs = set(disc.io.input_grammar.names)
+            if not required_inputs.difference(disc.default_input_data).difference(
                 available_data_names
             ):
-                available_data_names.extend(disc.get_output_data_names())
+                available_data_names.extend(disc.io.output_grammar.names)
                 removed_discs.append(disc)
 
         if not removed_discs:
@@ -77,7 +78,7 @@ def order_disciplines_from_default_inputs(
                 {
                     in_name
                     for disc in remaining_discs
-                    for in_name in disc.get_input_data_names()
+                    for in_name in disc.io.input_grammar.names
                 }.difference(available_data_names)
             )
 
@@ -103,7 +104,7 @@ class MDOInitializationChain(MDOChain):
 
     This MDOChain subclass computes the initialization for the computation of a set of
     disciplines. It is particularly useful in the case of MDAs when not all
-    default_inputs are available, and the execution order is not obvious to compute
+    default_input_data are available, and the execution order is not obvious to compute
     initial values for all couplings.
 
     From the default inputs of the disciplines, use a greedy algorithm to detect
@@ -115,17 +116,16 @@ class MDOInitializationChain(MDOChain):
 
     def __init__(  # noqa:D107
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         available_data_names: Iterable[str] = (),
     ) -> None:
         """
         Args:
             available_data_names: The data names that are assumed to be available
-                at runtime, in addition to the default_inputs.
+                at runtime, in addition to the default_input_data.
         """  # noqa:D205 D212 D415
         disc_ordered = order_disciplines_from_default_inputs(
             disciplines, available_data_names=available_data_names
         )
-        super().__init__(disciplines=disc_ordered, name=name, grammar_type=grammar_type)
+        super().__init__(disciplines=disc_ordered, name=name)

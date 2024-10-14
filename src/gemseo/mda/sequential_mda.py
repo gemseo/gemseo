@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.newton_raphson import MDANewtonRaphson
@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.coupling_structure import CouplingStructure
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
 
 
@@ -42,10 +43,9 @@ class MDASequential(BaseMDA):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         mda_sequence: Sequence[BaseMDA],
         name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         max_mda_iter: int = 10,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
@@ -63,7 +63,6 @@ class MDASequential(BaseMDA):
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
-            grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
@@ -99,10 +98,10 @@ class MDASequential(BaseMDA):
 
         # Execute the MDAs in sequence
         for mda in self.mda_sequence:
-            mda.reset_statuses_for_run()
+            mda.execution_status.value = ExecutionStatus.Status.PENDING
 
             # Execute the i-th MDA
-            self.local_data = mda.execute(self.local_data)
+            self.io.data = mda.execute(self.io.data)
 
             # Extend the residual history
             self.residual_history += mda.residual_history
@@ -116,9 +115,8 @@ class MDAGSNewton(MDASequential):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         max_mda_iter: int = 10,
         linear_solver: str = "DEFAULT",
@@ -127,15 +125,15 @@ class MDAGSNewton(MDASequential):
         warm_start: bool = False,
         use_lu_fact: bool = False,
         coupling_structure: CouplingStructure | None = None,
-        linear_solver_options: StrKeyMapping | None = None,
+        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
         log_convergence: bool = False,
         **newton_mda_options: float | str | None,
     ) -> None:
         """
         Args:
             max_mda_iter_gs: The maximum number of iterations of the Gauss-Seidel MDA.
-            newton_linear_solver: The name of the linear solver for the Newton method.
-            newton_linear_solver_options: The options for the Newton linear solver.
+            linear_solver: The name of the linear solver for the Newton method.
+            linear_solver_options: The options for the Newton linear solver.
             log_convergence: Whether to log the MDA convergence,
                 expressed in terms of normed residuals.
             **newton_mda_options: The options for the Newton MDA.
@@ -150,7 +148,6 @@ class MDAGSNewton(MDASequential):
         mda_newton = MDANewtonRaphson(
             disciplines,
             max_mda_iter=max_mda_iter,
-            grammar_type=grammar_type,
             use_lu_fact=use_lu_fact,
             coupling_structure=coupling_structure,
             tolerance=tolerance,
@@ -165,7 +162,6 @@ class MDAGSNewton(MDASequential):
             [mda_gauss_seidel, mda_newton],
             max_mda_iter=max_mda_iter,
             name=name,
-            grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,

@@ -26,13 +26,13 @@ from typing import TYPE_CHECKING
 from numpy import concatenate
 from scipy.sparse import csr_array
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class Concatenater(MDODiscipline):
+class Concatenater(Discipline):
     """Concatenate input variables into a single output variable.
 
     These input variables can be scaled before concatenation.
@@ -76,31 +76,34 @@ class Concatenater(MDODiscipline):
 
     def _run(self) -> None:
         """Run the discipline."""
-        input_data = self.get_input_data()
-        self.local_data[self.__output_name] = concatenate([
+        input_data = self.io.get_input_data()
+        self.io.data[self.__output_name] = concatenate([
             self.__coefficients[input_name] * input_data[input_name]
-            for input_name in self.get_input_data_names()
+            for input_name in self.io.input_grammar.names
         ])
 
     def _compute_jacobian(
         self,
-        inputs: Sequence[str] | None = None,
-        outputs: Sequence[str] | None = None,
+        input_names: Sequence[str] = (),
+        output_names: Sequence[str] = (),
     ) -> None:
         """Compute the jacobian matrix.
 
         Args:
-            inputs: The linearization should be performed with respect
+            input_names: The linearization should be performed with respect
                 to inputs list. If ``None``, linearization should
                 be performed wrt all inputs (Default value = None)
-            outputs: The linearization should be performed on outputs list.
+            output_names: The linearization should be performed on outputs list.
                 If ``None``, linearization should be performed
                 on all outputs (Default value = None)
         """
-        self._init_jacobian(inputs, outputs, init_type=self.InitJacobianType.SPARSE)
+        self._init_jacobian(
+            input_names, output_names, init_type=self.InitJacobianType.SPARSE
+        )
 
-        input_names = self.get_input_data_names()
-        input_sizes = [input_.size for input_ in self.get_all_inputs()]
+        input_names = self.io.input_grammar.names
+        local_data = self.io.data
+        input_sizes = [local_data[name].size for name in self.io.input_grammar]
         total_size = sum(input_sizes)
 
         # Instead of manually accumulating, we use the accumulate() iterator.

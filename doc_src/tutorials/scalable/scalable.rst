@@ -36,7 +36,7 @@ Here, we take 5 for the dimension of all outputs (here "y\_1", which is of dimen
 2. Creation of the discipline
 -----------------------------
 
-First of all, we create the reference :class:`.MDODiscipline`: with the help of the :class:`~gemseo.create_discipline` API function and the argument ``"Sellar1"``. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.MDODisciplineFactory`.
+First of all, we create the reference :class:`.MDODiscipline`: with the help of the :class:`~gemseo.create_discipline` API function and the argument ``"Sellar1"``. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.DisciplineFactory`.
 
 .. code::
 
@@ -95,7 +95,7 @@ The DOE algorithm is ``'DiagonalDOE'`` and use a sampling of size ``n_samples=30
 
    from gemseo import create_scenario
 
-   sellar.set_cache_policy(cache_type='HDF5_cache', cache_tolerance=1e-6, cache_hdf_file='sellar.hdf5')
+   sellar.set_cache(cache_type='HDF5_cache', cache_tolerance=1e-6, cache_hdf_file='sellar.hdf5')
    output = sellar.get_output_data_names()[0]
    scenario = create_scenario([sellar], 'DisciplinaryOpt', output,
                               design_space, scenario_type='DOE')

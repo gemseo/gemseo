@@ -96,12 +96,12 @@ def dataset_from_cache() -> IODataset:
         "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
         "y_3": "10*x_1*x_2**2 + 7*x_2**5",
     })
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_2", lower_bound=-1, upper_bound=2)
     design_space.add_variable("x_1", lower_bound=-1, upper_bound=2)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
+    scenario.execute(algo="fullfact", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 
 

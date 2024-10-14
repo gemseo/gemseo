@@ -46,8 +46,7 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
-
+    from gemseo.core.discipline import Discipline
 
 StatisticsType = tuple[
     dict[str, NDArray[float]],
@@ -115,7 +114,7 @@ def uncertain_space() -> ParameterSpace:
 
 
 @pytest.fixture
-def sobol(discipline: MDODiscipline, uncertain_space: ParameterSpace) -> SobolAnalysis:
+def sobol(discipline: Discipline, uncertain_space: ParameterSpace) -> SobolAnalysis:
     """A Sobol' analysis."""
     analysis = SobolAnalysis()
     analysis.compute_samples([discipline], uncertain_space, 100)
@@ -137,7 +136,7 @@ def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
 
 @pytest.fixture(scope="module")
 def cv1_stat(
-    discipline_cv1: MDODiscipline,
+    discipline_cv1: Discipline,
     uncertain_space: ParameterSpace,
 ) -> StatisticsType:
     """The estimated output variance and Sobol' indices.
@@ -151,7 +150,7 @@ def cv1_stat(
 
 @pytest.fixture(scope="module")
 def cv2_stat(
-    discipline_cv2: MDODiscipline,
+    discipline_cv2: Discipline,
     uncertain_space: ParameterSpace,
 ) -> StatisticsType:
     """The estimated output variance and Sobol' indices.
@@ -165,9 +164,9 @@ def cv2_stat(
 
 @pytest.fixture(scope="module")
 def sobol_cv(
-    discipline: MDODiscipline,
+    discipline: Discipline,
     uncertain_space: ParameterSpace,
-    discipline_cv1: MDODiscipline,
+    discipline_cv1: Discipline,
     cv1_stat: StatisticsType,
 ) -> SobolAnalysis:
     """A Sobol' analysis when a control variate is used."""

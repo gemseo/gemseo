@@ -15,7 +15,7 @@
 How to create a discipline from scratch?
 ****************************************
 
-Creating a discipline from scratch implies to implement a new class inheriting from :class:`.MDODiscipline`.
+Creating a discipline from scratch implies to implement a new class inheriting from :class:`.Discipline`.
 
 For example, let's consider a discipline called ``NewDiscipline``,
 with two outputs,
@@ -24,18 +24,18 @@ and two inputs,
 ``x`` and ``z``,
 where ``f=x*z`` and ``f=x*(z+1)^2``.
 
-Overloading the :class:`.MDODiscipline`'s constructor
+Overloading the :class:`.Discipline`'s constructor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First of all, we overload the :class:`.MDODiscipline` constructor.
+First of all, we overload the :class:`.Discipline` constructor.
 For that,
-we call the :class:`.MDODiscipline` superconstructor:
+we call the :class:`.Discipline` superconstructor:
 
 .. code::
 
-    from gemseo import MDODiscipline
+    from gemseo import Discipline
 
-    class NewDiscipline(MDODiscipline):
+    class NewDiscipline(Discipline):
 
         def __init__(self):
             super(NewDiscipline, self).__init__()
@@ -44,8 +44,8 @@ we call the :class:`.MDODiscipline` superconstructor:
 Setting the input and output grammars
 -------------------------------------
 
-Then, we define the :attr:`!MDODiscipline.input_grammar`
-and :attr:`!MDODiscipline.output_grammar` created by the superconstructor with ``None`` value.
+Then, we define the :attr:`!Discipline.input_grammar`
+and :attr:`!Discipline.output_grammar` created by the superconstructor with ``None`` value.
 We have different ways to do that.
 
 Setting the grammars from data names
@@ -56,9 +56,9 @@ the simplest approach is to apply the :meth:`.JSONGrammar.update_from_names` met
 
 .. code::
 
-    from gemseo import MDODiscipline
+    from gemseo import Discipline
 
-    class NewDiscipline(MDODiscipline):
+    class NewDiscipline(Discipline):
 
         def __init__(self):
             super(NewDiscipline, self).__init__()
@@ -76,9 +76,9 @@ pass an optional argument to the superconstructor:
 
 .. code::
 
-    from gemseo import MDODiscipline
+    from gemseo import Discipline
 
-    class NewDiscipline(MDODiscipline):
+    class NewDiscipline(Discipline):
 
         def __init__(self):
             super(NewDiscipline, self).__init__(auto_detect_grammar_files=True)
@@ -144,9 +144,9 @@ with a ``dict`` data example:
 
 .. code::
 
-    from gemseo import MDODiscipline
+    from gemseo import Discipline
 
-    class NewDiscipline(MDODiscipline):
+    class NewDiscipline(Discipline):
 
         def __init__(self):
             super(NewDiscipline, self).__init__()
@@ -188,51 +188,51 @@ or raise an error if outputs are invalid, which happens sometimes with simulatio
 Setting the default inputs
 --------------------------
 
-We also define the default inputs by means of the :attr:`!MDODiscipline.default_inputs` attribute:
+We also define the default inputs by means of the :attr:`!Discipline.default_input_data` attribute:
 
 .. code::
 
-    from gemseo import MDODiscipline
+    from gemseo import Discipline
     from numpy import array
 
-    class NewDiscipline(MDODiscipline):
+    class NewDiscipline(Discipline):
 
         def __init__(self):
             super(NewDiscipline, self).__init__()
             self.input_grammar.update_from_names(['x', 'z'])
             self.output_grammar.update_from_names(['f', 'g'])
-            self.default_inputs = {'x': array([0.]), 'z': array([0.])}
+            self.default_input_data = {'x': array([0.]), 'z': array([0.])}
 
 .. warning::
 
-    An :class:`.MDODiscipline` that will be placed inside an :class:`.MDF`, a :class:`.BiLevel`
+    An :class:`.Discipline` that will be placed inside an :class:`.MDF`, a :class:`.BiLevel`
     formulation or a :class:`.BaseMDA` with strong couplings **must** define its default inputs.
     Otherwise, the execution will fail.
 
-Overloading the :meth:`!MDODiscipline._run` method
+Overloading the :meth:`!Discipline._run` method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once the input and output have been declared in the constructor of the discipline,
-the abstract :meth:`!MDODiscipline._run` method of :class:`.MDODiscipline` shall be overloaded by
+the abstract :meth:`!Discipline._run` method of :class:`.Discipline` shall be overloaded by
 the discipline to define how outputs are computed from inputs.
 
 .. seealso::
 
    The method is protected (starts with "_") because it shall not be called from outside the discipline.
-   External calls that trigger the discipline execution use the :meth:`.MDODiscipline.execute` public method from the base class,
-   which provides additional services before and after calling :meth:`!MDODiscipline._run`. These services, such as data checks by the grammars,
+   External calls that trigger the discipline execution use the :meth:`.Discipline.execute` public method from the base class,
+   which provides additional services before and after calling :meth:`!Discipline._run`. These services, such as data checks by the grammars,
    are provided by |g| and the integrator of the discipline does not need to implement them.
 
-Getting the input values from :attr:`!MDODiscipline.local_data` of the discipline
+Getting the input values from :attr:`!Discipline.local_data` of the discipline
 ---------------------------------------------------------------------------------
 
 First, the data values shall be retrieved.
 For each input declared in the input grammar,
-|g| will pass the values as arrays to the :class:`.MDODiscipline` during the execution of the process.
-There are different methods to get these values within the :meth:`!MDODiscipline._run` method of the discipline:
+|g| will pass the values as arrays to the :class:`.Discipline` during the execution of the process.
+There are different methods to get these values within the :meth:`!Discipline._run` method of the discipline:
 
-- as a dictionary through the :meth:`.MDODiscipline.get_input_data` method, which is also already accessible in the :attr:`!MDODiscipline.local_data` attribute of the :class:`.MDODiscipline`
-- or here as a list of values using :meth:`.MDODiscipline.get_inputs_by_name` with the data names passed as a list.
+- as a dictionary through the :meth:`.Discipline.get_input_data` method, which is also already accessible in the :attr:`!Discipline.local_data` attribute of the :class:`.Discipline`
+- or here as a list of values using :meth:`.Discipline.get_inputs_by_name` with the data names passed as a list.
 
 .. code::
 
@@ -254,10 +254,10 @@ Then, we compute the output values from these input ones:
             # TO BE COMPLETED
 
 
-Storing the output values into :attr:`!MDODiscipline.local_data` of the discipline
+Storing the output values into :attr:`!Discipline.local_data` of the discipline
 ----------------------------------------------------------------------------------
 
-Lastly, the computed outputs shall be stored in the :attr:`!MDODiscipline.local_data`,
+Lastly, the computed outputs shall be stored in the :attr:`!Discipline.local_data`,
 either directly:
 
 .. code::
@@ -269,7 +269,7 @@ either directly:
             self.local_data['f'] = f
             self.local_data['g'] = g
 
-or by means of the :meth:`.MDODiscipline.store_local_data` method:
+or by means of the :meth:`.Discipline._update_output_data` method:
 
 .. code::
 
@@ -277,28 +277,27 @@ or by means of the :meth:`.MDODiscipline.store_local_data` method:
             x, z = self.get_inputs_by_name(['x', 'z'])
             f = array([x[0]*z[0]])
             g = array([x[0]*(z[0]+1.)^2])
-            self.store_local_data(f=f)
-            self.store_local_data(g=g)
+            self._update_output_data({"f": f, "g":g})
 
 .. _discipline_compute_jacobian:
 
-Overloading the :meth:`!MDODiscipline._compute_jacobian` method
+Overloading the :meth:`!Discipline._compute_jacobian` method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :class:`.MDODiscipline` may also provide the derivatives of their outputs with respect to their inputs, i.e. their Jacobians.
+The :class:`.Discipline` may also provide the derivatives of their outputs with respect to their inputs, i.e. their Jacobians.
 This is useful for :term:`gradient-based optimization` or :ref:`mda` based on the :term:`Newton method`.
 For a vector of inputs :math:`x` and a vector of outputs :math:`y`, the Jacobian of the discipline is
 :math:`\frac{\partial y}{\partial x}`.
 
 The discipline shall provide a method to compute the Jacobian for a given set of inputs.
-This is made by overloading the abstract :meth:`!MDODiscipline._compute_jacobian` method of :class:`.MDODiscipline`.
+This is made by overloading the abstract :meth:`!Discipline._compute_jacobian` method of :class:`.Discipline`.
 The discipline may have multiple inputs and multiple outputs.
 To store the multiple Jacobian matrices associated to all the inputs and outputs,
 |g| uses a dictionary of dictionaries structure.
 This data structure is sparse and makes easy the access and the iteration over the elements
 of the Jacobian.
 
-The method :meth:`!MDODiscipline._init_jacobian` fills the ``dict`` of ``dict`` structure
+The method :meth:`!Discipline._init_jacobian` fills the ``dict`` of ``dict`` structure
 with dense null matrices of the right sizes.
 Note that all Jacobians must be 2D matrices, which avoids
 ambiguity.

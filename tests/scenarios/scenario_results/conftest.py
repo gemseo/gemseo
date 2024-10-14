@@ -49,7 +49,7 @@ def scenario() -> DOEScenario:
         "algo": "CustomDOE",
         "algo_options": {"samples": array([[0.0], [1.0]])},
     }
-    sub_scenario.default_inputs = input_data
+    sub_scenario.default_input_data = input_data
     scenario = DOEScenario([sub_scenario], "BiLevel", "z", design_space.filter(["x"]))
-    scenario.default_inputs = input_data
+    scenario.default_input_data = input_data
     return scenario

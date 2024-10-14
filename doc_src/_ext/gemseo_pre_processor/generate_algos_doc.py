@@ -34,7 +34,7 @@ from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.disciplines.factory import MDODisciplineFactory
+from gemseo.disciplines.factory import DisciplineFactory
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.mda.factory import MDAFactory
 from gemseo.mlearning.classification.algos.factory import ClassifierFactory
@@ -510,7 +510,7 @@ def main(gen_opts_path: str | Path) -> None:
         InitOptionsDoc(
             "discipline",
             "Disciplines",
-            MDODisciplineFactory(),
+            DisciplineFactory(),
         ),
     ]
     for algos_options_doc in algos_options_docs:

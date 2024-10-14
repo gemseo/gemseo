@@ -28,17 +28,17 @@ from typing import Any
 
 from gemseo.core import discipline
 from gemseo.core.base_factory import BaseFactory
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class MDODisciplineFactory(BaseFactory):
+class DisciplineFactory(BaseFactory):
     """A factory of disciplines."""
 
-    _CLASS = MDODiscipline
+    _CLASS = Discipline
     _MODULE_NAMES = (
         "gemseo.problems",
         "gemseo.core",
@@ -49,13 +49,13 @@ class MDODisciplineFactory(BaseFactory):
     def __init__(self) -> None:  # noqa: D107
         # Defines the benchmark problems to be imported
         super().__init__()
-        self.__base_grammar = JSONGrammar("MDODiscipline_options")
-        base_gram_path = Path(discipline.__file__).parent / "MDODiscipline_options.json"
+        self.__base_grammar = JSONGrammar("Discipline_options")
+        base_gram_path = Path(discipline.__file__).parent / "Discipline_options.json"
         self.__base_grammar.update_from_file(base_gram_path)
         self.__base_grammar_names = self.__base_grammar.keys()
 
     def create(self, discipline_name: str, **options):
-        """Create an :class:`.MDODiscipline` from its name.
+        """Create an :class:`.Discipline` from its name.
 
         Args:
             discipline_name: The name of the discipline
@@ -68,13 +68,23 @@ class MDODisciplineFactory(BaseFactory):
         """
         common_options, specific_options = self.__filter_common_options(options)
         self.__base_grammar.validate(common_options)
+
+        grammar_type = specific_options.pop("grammar_type", None)
+        if grammar_type is not None:
+            cls = self.get_class(discipline_name)
+            old_grammar_type = cls.default_grammar_type
+
         discipline = super().create(discipline_name, **specific_options)
+
+        if grammar_type is not None:
+            cls.default_grammar_type = old_grammar_type
+
         if "linearization_mode" in common_options:
             discipline.linearization_mode = common_options["linearization_mode"]
 
         cache_options = self.__filter_options_with_prefix(common_options, "cache")
         if cache_options:
-            discipline.set_cache_policy(**cache_options)
+            discipline.set_cache(**cache_options)
 
         jacobian_options = self.__filter_options_with_prefix(common_options, "jac")
         if jacobian_options:

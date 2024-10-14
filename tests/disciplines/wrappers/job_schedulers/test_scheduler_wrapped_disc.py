@@ -162,7 +162,7 @@ def test_create_current_workdir(discipline) -> None:
 def test_execution(discipline_mocked_js) -> None:
     """Test the execution of the wrapped discipline."""
     orig_disc = discipline_mocked_js._discipline
-    ref_data = orig_disc.default_inputs
+    ref_data = orig_disc.default_input_data
     ref_data["x_shared"] += 1.0
     out = discipline_mocked_js.execute(ref_data)
     assert "y_4" in out
@@ -176,7 +176,7 @@ def test_execution(discipline_mocked_js) -> None:
 def test_linearize(discipline_mocked_js, compute_all_jacobians, execute) -> None:
     """Test the linearization of the wrapped discipline."""
     orig_disc = discipline_mocked_js._discipline
-    ref_data = orig_disc.default_inputs
+    ref_data = orig_disc.default_input_data
     ref_data["x_shared"] += 1.0
     if not compute_all_jacobians:
         discipline_mocked_js.add_differentiated_inputs(["x_shared"])
@@ -193,9 +193,7 @@ def test_linearize(discipline_mocked_js, compute_all_jacobians, execute) -> None
         ref_data, compute_all_jacobians=compute_all_jacobians, execute=execute
     )
     assert compare_dict_of_arrays(out, out_ref)
-    assert compare_dict_of_arrays(
-        discipline_mocked_js.local_data, mission_local.local_data
-    )
+    assert compare_dict_of_arrays(discipline_mocked_js.io.data, mission_local.io.data)
 
 
 @pytest.fixture
@@ -218,7 +216,7 @@ def discipline_diff_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
 def test_linearize_at_exec(discipline_diff_mocked_js) -> None:
     """Test the linearization of the wrapped discipline during execute."""
     orig_disc = discipline_diff_mocked_js._discipline
-    ref_data = orig_disc.default_inputs
+    ref_data = orig_disc.default_input_data
     discipline_diff_mocked_js.add_differentiated_inputs(["rho"])
     discipline_diff_mocked_js.add_differentiated_outputs(["volume fraction"])
     discipline_diff_mocked_js.execute(ref_data)
@@ -230,9 +228,7 @@ def test_linearize_at_exec(discipline_diff_mocked_js) -> None:
     disc_local.execute(ref_data)
     out_ref = disc_local.jac
     assert compare_dict_of_arrays(out, out_ref)
-    assert compare_dict_of_arrays(
-        discipline_diff_mocked_js.local_data, disc_local.local_data
-    )
+    assert compare_dict_of_arrays(discipline_diff_mocked_js.io.data, disc_local.io.data)
 
 
 def test_api_fail(tmp_wd) -> None:

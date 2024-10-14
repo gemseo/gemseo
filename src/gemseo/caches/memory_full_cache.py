@@ -79,7 +79,7 @@ class MemoryFullCache(BaseFullCache):
             self.__data = {}
 
     def _copy_empty_cache(self) -> MemoryFullCache:
-        return MemoryFullCache(self.tolerance, self.name, self.__is_memory_shared)
+        return MemoryFullCache(self._tolerance, self.name, self.__is_memory_shared)
 
     def _initialize_entry(
         self,

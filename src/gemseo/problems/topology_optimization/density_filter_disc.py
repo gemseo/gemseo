@@ -29,10 +29,10 @@ from numpy.linalg import norm
 from scipy.sparse import csr_array
 from scipy.sparse import diags
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 
-class DensityFilter(MDODiscipline):
+class DensityFilter(Discipline):
     """Apply density filter to the design variables of a topology optimization problem.
 
     This helps to avoid checkerboard patterns in density based topology optimization.
@@ -63,12 +63,12 @@ class DensityFilter(MDODiscipline):
         self._create_filter_matrix()
         self.input_grammar.update_from_names(["x"])
         self.output_grammar.update_from_names(["xPhys"])
-        self.default_inputs = {"x": ones((n_x * n_y,))}
+        self.default_input_data = {"x": ones((n_x * n_y,))}
 
     def _run(self) -> None:
-        x = self.get_inputs_by_name("x")[:, newaxis]
-        self.local_data["xPhys"] = (self.filter_matrix @ x).flatten()
-        self._is_linearized = True
+        x = self.io.data["x"][:, newaxis]
+        self.io.data["xPhys"] = (self.filter_matrix @ x).flatten()
+        self._has_jacobian = True
         self._init_jacobian()
         self.jac["xPhys"] = {"x": self.filter_matrix}
 

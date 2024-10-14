@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
-MODEL.set_cache_policy(MODEL.CacheType.MEMORY_FULL)
+MODEL.set_cache(MODEL.CacheType.MEMORY_FULL)
 
 TOL_DEG_1 = 0.03
 TOL_DEG_2 = 0.001
@@ -54,7 +54,7 @@ def dataset() -> Dataset:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": 20})
+    scenario.execute(algo="fullfact", n_samples=20)
     return MODEL.cache.to_dataset()
 
 
@@ -65,7 +65,7 @@ def dataset_test() -> Dataset:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": 5})
+    scenario.execute(algo="fullfact", n_samples=5)
     return MODEL.cache.to_dataset()
 
 

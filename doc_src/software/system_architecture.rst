@@ -240,7 +240,7 @@ Two low-level classes at the core of |g| are crucial for the understanding of it
    constraints may be generated as well (*e.g.* consistency constraints in
    :term:`IDF`).
 
--  :class:`~gemseo.core.mdofunctions.mdo_discipline_adapter_generator.MDODisciplineAdapterGenerator` is a utility class that handles the
+-  :class:`~gemseo.core.mdofunctions.mdo_discipline_adapter_generator.DisciplineAdapterGenerator` is a utility class that handles the
    :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction` generation for a given :class:`~gemseo.core.discipline.MDODiscipline`.
    It is a key class for the :term:`MDO formulations designer`.
 
@@ -263,7 +263,7 @@ contains the full classes description in the different sections as well as the f
    }
    class DesignSpace {
    }
-   class MDODisciplineAdapterGenerator {
+   class DisciplineAdapterGenerator {
    }
    class MDOFunction {
    }
@@ -274,12 +274,12 @@ contains the full classes description in the different sections as well as the f
    Scenario "1" *-> "n" MDODiscipline
    Scenario "1" *-> "1" BaseMDOFormulation
    BaseMDOFormulation "1" --> "n" OptimizationProblem
-   MDODisciplineAdapterGenerator "1" --> "n" MDOFunction
-   MDODisciplineAdapterGenerator "1" *-> "1" MDODiscipline
+   DisciplineAdapterGenerator "1" --> "n" MDOFunction
+   DisciplineAdapterGenerator "1" *-> "1" MDODiscipline
    Scenario "1" *-> "1" BaseDriverLibrary
    OptimizationProblem "1" *-> "1" DesignSpace
    OptimizationProblem "1" *-> "n" MDOFunction
-   BaseMDOFormulation "1" *-> "n" MDODisciplineAdapterGenerator
+   BaseMDOFormulation "1" *-> "n" DisciplineAdapterGenerator
    @end uml
 
 

@@ -109,7 +109,7 @@ sub_scenario = create_scenario(
     design_space,
 )
 
-sub_scenario.default_inputs = {"algo": "NLOPT_SLSQP", "max_iter": 100}
+sub_scenario.default_input_data = {"algo": "NLOPT_SLSQP", "max_iter": 100}
 
 # %%
 # We add the Binh and Korn problem constraints.

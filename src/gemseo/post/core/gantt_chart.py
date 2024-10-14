@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -53,8 +53,8 @@ def create_gantt_chart(
 
     Both executions and linearizations times are plotted.
 
-    Warnings:
-        ``MDODiscipline.activate_time_stamps()`` must be called first.
+    .. warning::
+        ``ExecutionStatistics.is_time_stamps_enabled = True`` must be done first.
 
     Args:
         file_path: The path to save the figure.
@@ -71,12 +71,12 @@ def create_gantt_chart(
         The matplotlib figure.
 
     Raises:
-        ValueError: If the time stamps is not activated or if a discipline has no
+        ValueError: If the time stamps is not enabled or if a discipline has no
             time stamps.
     """
-    time_stamps = MDODiscipline.time_stamps
+    time_stamps = ExecutionStatistics.time_stamps
     if time_stamps is None:
-        msg = "Time stamps are not activated in MDODiscipline"
+        msg = "Time stamps are not enabled in Discipline"
         raise ValueError(msg)
 
     fig, ax = plt.subplots(figsize=fig_size)

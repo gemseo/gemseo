@@ -36,11 +36,11 @@ def discipline():
 
 def test_standard(discipline) -> None:
     fdisc = FilteringDiscipline(discipline)
-    assert set(fdisc.get_input_data_names()) == set(discipline.get_input_data_names())
-    assert set(fdisc.get_output_data_names()) == set(discipline.get_output_data_names())
+    assert set(fdisc.io.input_grammar.names) == set(discipline.io.input_grammar.names)
+    assert set(fdisc.io.output_grammar.names) == set(discipline.io.output_grammar.names)
     fdisc.execute()
     for name in ["x1", "x2", "x3", "y1", "y2"]:
-        assert name in fdisc.local_data
+        assert name in fdisc.io.data
     fdisc.linearize()
     for output_name in ["y1", "y2"]:
         assert output_name in fdisc.jac
@@ -50,11 +50,11 @@ def test_standard(discipline) -> None:
 
 def test_keep_in_keep_out(discipline) -> None:
     fdisc = FilteringDiscipline(discipline, input_names=["x1"], output_names=["y1"])
-    assert set(fdisc.get_input_data_names()) == {"x1"}
-    assert set(fdisc.get_output_data_names()) == {"y1"}
+    assert set(fdisc.io.input_grammar.names) == {"x1"}
+    assert set(fdisc.io.output_grammar.names) == {"y1"}
     fdisc.execute()
     for name in ["x2", "x3", "y2"]:
-        assert name not in fdisc.local_data
+        assert name not in fdisc.io.data
     fdisc.linearize()
     assert "y2" not in fdisc.jac
     for input_name in ["x2", "x3"]:
@@ -65,11 +65,11 @@ def test_remove_in_keep_out(discipline) -> None:
     fdisc = FilteringDiscipline(
         discipline, input_names=["x1"], output_names=["y1"], keep_in=False
     )
-    assert set(fdisc.get_input_data_names()) == {"x2", "x3"}
-    assert set(fdisc.get_output_data_names()) == {"y1"}
+    assert set(fdisc.io.input_grammar.names) == {"x2", "x3"}
+    assert set(fdisc.io.output_grammar.names) == {"y1"}
     fdisc.execute()
     for name in ["x1", "y2"]:
-        assert name not in fdisc.local_data
+        assert name not in fdisc.io.data
     fdisc.linearize()
     assert "y2" not in fdisc.jac
     assert "x1" not in fdisc.jac["y1"]
@@ -79,11 +79,11 @@ def test_keep_in_remove_out(discipline) -> None:
     fdisc = FilteringDiscipline(
         discipline, input_names=["x1"], output_names=["y1"], keep_out=False
     )
-    assert set(fdisc.get_input_data_names()) == {"x1"}
-    assert set(fdisc.get_output_data_names()) == {"y2"}
+    assert set(fdisc.io.input_grammar.names) == {"x1"}
+    assert set(fdisc.io.output_grammar.names) == {"y2"}
     fdisc.execute()
     for name in ["x2", "x3", "y1"]:
-        assert name not in fdisc.local_data
+        assert name not in fdisc.io.data
     fdisc.linearize()
     assert "y1" not in fdisc.jac
     for input_name in ["x2", "x3"]:

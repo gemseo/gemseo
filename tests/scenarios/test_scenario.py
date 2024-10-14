@@ -36,10 +36,11 @@ from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
+    DisciplineAdapterGenerator,
 )
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
@@ -64,7 +65,7 @@ SOBIESKI_HDF5_PATH = PARENT_PATH / "mdf_backup.h5"
 
 def build_mdo_scenario(
     formulation: str,
-    grammar_type: MDODiscipline.GrammarType = MDOScenario.GrammarType.JSON,
+    grammar_type: Discipline.GrammarType = Discipline.GrammarType.JSON,
 ) -> MDOScenario:
     """Build the scenario for SSBJ.
 
@@ -75,14 +76,14 @@ def build_mdo_scenario(
     Returns:
         The MDOScenario.
     """
-    if grammar_type == MDOScenario.GrammarType.JSON:
+    if grammar_type == Discipline.GrammarType.JSON:
         disciplines = [
             SobieskiPropulsion(),
             SobieskiAerodynamics(),
             SobieskiMission(),
             SobieskiStructure(),
         ]
-    elif grammar_type == MDOScenario.GrammarType.SIMPLE:
+    elif grammar_type == Discipline.GrammarType.SIMPLE:
         disciplines = [
             SobieskiPropulsionSG(),
             SobieskiAerodynamicsSG(),
@@ -96,7 +97,6 @@ def build_mdo_scenario(
         formulation,
         "y_4",
         design_space,
-        grammar_type=grammar_type,
         maximize_objective=True,
     )
     for c_name in ["g_1", "g_2", "g_3"]:
@@ -138,16 +138,6 @@ def idf_scenario():
     return build_mdo_scenario("IDF")
 
 
-def test_scenario_state(mdf_scenario) -> None:
-    stats = mdf_scenario.get_disciplines_statuses()
-
-    assert len(stats) == len(mdf_scenario.disciplines)
-
-    for disc in mdf_scenario.disciplines:
-        assert disc.name in stats
-        assert stats[disc.name] == "PENDING"
-
-
 def test_add_user_defined_constraint_error(mdf_scenario) -> None:
     # Set the design constraints
     mdf_scenario.set_differentiation_method(
@@ -163,7 +153,7 @@ def test_add_user_defined_constraint_error(mdf_scenario) -> None:
 @pytest.mark.parametrize("file_format", OptimizationProblem.HistoryFileFormat)
 def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd) -> None:
     file_path = Path("file_name")
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+    mdf_scenario.execute(algo="SLSQP", max_iter=2)
     mdf_scenario.save_optimization_history(str(file_path), file_format=file_format)
     assert file_path.exists()
 
@@ -268,7 +258,7 @@ def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, plot) -> None:
     """
     file_path = Path("opt_history.h5")
     mdf_scenario.set_optimization_history_backup(file_path, plot=plot)
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 4})
+    mdf_scenario.execute(algo="SLSQP", max_iter=4)
     for suffix in [
         "ineq_constraints",
         "objective",
@@ -281,7 +271,7 @@ def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, plot) -> None:
 
 @pytest.mark.parametrize(
     "mdf_variable_grammar_scenario",
-    [MDOScenario.GrammarType.SIMPLE, MDOScenario.GrammarType.JSON],
+    [Discipline.GrammarType.SIMPLE, Discipline.GrammarType.JSON],
     indirect=True,
 )
 def test_backup_1(tmp_wd, mdf_variable_grammar_scenario) -> None:
@@ -291,7 +281,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario) -> None:
     """
     filename = "opt_history.h5"
     mdf_variable_grammar_scenario.set_optimization_history_backup(filename, load=True)
-    mdf_variable_grammar_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+    mdf_variable_grammar_scenario.execute(algo="SLSQP", max_iter=2)
     opt_read = OptimizationProblem.from_hdf(filename)
 
     assert len(opt_read.database) == len(
@@ -311,21 +301,9 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario) -> None:
     )
 
 
-def test_typeerror_formulation() -> None:
-    disciplines = [SobieskiPropulsion()]
-    design_space = SobieskiDesignSpace()
-
-    expected_message = (
-        "Formulation must be specified by its name; "
-        "please use GEMSEO_PATH to specify custom formulations."
-    )
-    with pytest.raises(TypeError, match=expected_message):
-        MDOScenario(disciplines, 1, "y_4", design_space)
-
-
 @pytest.mark.parametrize(
     "mdf_variable_grammar_scenario",
-    [MDOScenario.GrammarType.SIMPLE, MDOScenario.GrammarType.JSON],
+    [Discipline.GrammarType.SIMPLE, Discipline.GrammarType.JSON],
     indirect=True,
 )
 def test_get_optimization_results(mdf_variable_grammar_scenario) -> None:
@@ -371,16 +349,16 @@ def test_adapter(tmp_wd, idf_scenario) -> None:
     # Monitor in the console
     idf_scenario.xdsmize(True, log_workflow_status=True, save_json=True)
 
-    idf_scenario.default_inputs = {
+    idf_scenario.default_input_data = {
         "max_iter": 1,
         "algo": "SLSQP",
-        idf_scenario.ALGO_OPTIONS: {"max_iter": 1},
+        "algo_options": {"max_iter": 1},
     }
 
     inputs = ["x_shared"]
     outputs = ["y_4"]
     adapter = MDOScenarioAdapter(idf_scenario, inputs, outputs)
-    gen = MDODisciplineAdapterGenerator(adapter)
+    gen = DisciplineAdapterGenerator(adapter)
     func = gen.get_function(inputs, outputs)
     x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
     f_x1 = func.evaluate(x_shared)
@@ -468,9 +446,9 @@ def test_database_name(mdf_scenario) -> None:
 @patch("timeit.default_timer", new=lambda: 1)
 def test_run_log(mdf_scenario, caplog) -> None:
     """Check the log message of Scenario._run."""
-    mdf_scenario._run_algorithm = lambda: None
+    mdf_scenario._execute = lambda: None
     mdf_scenario.name = "ABC Scenario"
-    mdf_scenario._run()
+    mdf_scenario.execute(max_iter=1, algo="SLSQP")
     strings = [
         "*** Start ABC Scenario execution ***",
         "*** End ABC Scenario execution (time: 0:00:00) ***",
@@ -480,19 +458,19 @@ def test_run_log(mdf_scenario, caplog) -> None:
 
 
 def test_clear_history_before_run(mdf_scenario) -> None:
-    """Check that clear_history_before_run is correctly used in Scenario._run."""
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    """Check that clear_history_before_execute is correctly used in Scenario._run."""
+    mdf_scenario.execute(algo="SLSQP", max_iter=1)
     assert len(mdf_scenario.formulation.optimization_problem.database) == 1
 
     def run_algorithm_mock() -> None:
         pass
 
-    mdf_scenario._run_algorithm = run_algorithm_mock
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario._run = run_algorithm_mock
+    mdf_scenario.execute(algo="SLSQP", max_iter=1)
     assert len(mdf_scenario.formulation.optimization_problem.database) == 1
 
-    mdf_scenario.clear_history_before_run = True
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.clear_history_before_execute = True
+    mdf_scenario.execute(algo="SLSQP", max_iter=1)
     assert len(mdf_scenario.formulation.optimization_problem.database) == 0
 
 
@@ -504,21 +482,18 @@ def test_clear_history_before_run(mdf_scenario) -> None:
     ],
 )
 def test_print_execution_metrics(mdf_scenario, caplog, activate, text) -> None:
-    """Check the print of the execution metrics w.r.t.
-
-    activate_counters.
-    """
-    activate_counters = MDODiscipline.activate_counters
-    MDODiscipline.activate_counters = activate
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    """Check the print of the execution metrics w.r.t."""
+    activate_counters = ExecutionStatistics.is_enabled
+    ExecutionStatistics.is_enabled = activate
+    mdf_scenario.execute(algo="SLSQP", max_iter=1)
     mdf_scenario.print_execution_metrics()
     assert text in caplog.text
-    MDODiscipline.activate_counters = activate_counters
+    ExecutionStatistics.is_enabled = activate_counters
 
 
 def test_get_execution_metrics(mdf_scenario) -> None:
     """Check the string returned byecution_metrics."""
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.execute(algo="SLSQP", max_iter=1)
     expected = re.compile(
         "Scenario Execution Statistics\n"
         "   Discipline: SobieskiPropulsion\n"
@@ -563,7 +538,7 @@ def mocked_export_to_dataset(
 
 def test_export_to_dataset(mdf_scenario) -> None:
     """Check that to_dataset calls OptimizationProblem.to_dataset."""
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.execute(algo="SLSQP", max_iter=1)
     mdf_scenario.to_dataset = mocked_export_to_dataset
     dataset = mdf_scenario.to_dataset(
         name=1, by_group=2, categorize=3, opt_naming=4, export_gradients=5
@@ -577,7 +552,7 @@ def complex_step_scenario() -> MDOScenario:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
-    class MyDiscipline(MDODiscipline):
+    class MyDiscipline(Discipline):
         """The identity discipline f computing y = f(x) = x."""
 
         def __init__(self) -> None:
@@ -586,21 +561,21 @@ def complex_step_scenario() -> MDOScenario:
             self.output_grammar.update_from_names(["y"])
 
         def _run(self) -> None:
-            self.local_data["y"] = self.local_data["x"]
+            self.io.data["y"] = self.io.data["x"]
 
     scenario = MDOScenario([MyDiscipline()], "DisciplinaryOpt", "y", design_space)
-    scenario.set_differentiation_method(scenario.ApproximationMode.COMPLEX_STEP)
+    scenario.set_differentiation_method(scenario.DifferentiationMethod.COMPLEX_STEP)
     return scenario
 
 
 @pytest.mark.parametrize("normalize_design_space", [False, True])
 def test_complex_step(complex_step_scenario, normalize_design_space) -> None:
     """Check that complex step approximation works correctly."""
-    complex_step_scenario.execute({
-        "algo": "SLSQP",
-        "max_iter": 10,
-        "algo_options": {"normalize_design_space": normalize_design_space},
-    })
+    complex_step_scenario.execute(
+        algo="SLSQP",
+        max_iter=10,
+        algo_options={"normalize_design_space": normalize_design_space},
+    )
 
     assert complex_step_scenario.optimization_result.x_opt[0] == 0.0
 
@@ -638,7 +613,7 @@ def test_use_standardized_objective(
     assert scenario.use_standardized_objective
     scenario.use_standardized_objective = standardize
     assert scenario.use_standardized_objective is standardize
-    scenario.execute({"algo": "SLSQP", "max_iter": 10})
+    scenario.execute(algo="SLSQP", max_iter=10)
     assert expr in caplog.text
     assert f"Objective: {val}" in caplog.text
     assert f"obj={int(val)}" in caplog.text
@@ -660,15 +635,15 @@ def test_complex_casting(
         mdf_scenario: A fixture for the MDOScenario.
     """
     for discipline in mdf_scenario.disciplines:
-        for value in discipline.default_inputs.values():
+        for value in discipline.default_input_data.values():
             assert value.dtype == float64
 
     mdf_scenario.set_differentiation_method(
-        mdf_scenario.ApproximationMode.COMPLEX_STEP,
+        mdf_scenario.DifferentiationMethod.COMPLEX_STEP,
         cast_default_inputs_to_complex=cast_default_inputs_to_complex,
     )
     for discipline in mdf_scenario.disciplines:
-        for value in discipline.default_inputs.values():
+        for value in discipline.default_input_data.values():
             assert value.dtype == expected_dtype
 
 
@@ -685,8 +660,8 @@ def scenario_with_non_float_variables() -> MDOScenario:
     discipline = AnalyticDiscipline({"y": "x"})
     discipline.input_grammar.update_from_names(["z"])
     discipline.input_grammar.update_from_names(["w"])
-    discipline.default_inputs["z"] = "some_str"
-    discipline.default_inputs["w"] = array(1, dtype=int64)
+    discipline.default_input_data["z"] = "some_str"
+    discipline.default_input_data["w"] = array(1, dtype=int64)
 
     return MDOScenario([discipline], "DisciplinaryOpt", "y", design_space)
 
@@ -708,7 +683,7 @@ def test_complex_casting_with_non_float_variables(
             an AnalyticDiscipline that has integer and string inputs.
     """
     scenario_with_non_float_variables.set_differentiation_method(
-        scenario_with_non_float_variables.ApproximationMode.COMPLEX_STEP,
+        scenario_with_non_float_variables.DifferentiationMethod.COMPLEX_STEP,
         cast_default_inputs_to_complex=cast_default_inputs_to_complex,
     )
 
@@ -719,14 +694,14 @@ def test_complex_casting_with_non_float_variables(
         == complex128
     )
     assert (
-        scenario_with_non_float_variables.disciplines[0].default_inputs["x"].dtype
+        scenario_with_non_float_variables.disciplines[0].default_input_data["x"].dtype
         == expected_dtype
     )
     assert isinstance(
-        scenario_with_non_float_variables.disciplines[0].default_inputs["z"], str
+        scenario_with_non_float_variables.disciplines[0].default_input_data["z"], str
     )
     assert (
-        scenario_with_non_float_variables.disciplines[0].default_inputs["w"].dtype
+        scenario_with_non_float_variables.disciplines[0].default_input_data["w"].dtype
         == int64
     )
 
@@ -741,7 +716,7 @@ def test_check_disciplines() -> None:
     with pytest.raises(
         ValueError,
         match="Two disciplines, among "
-        f"which {discipline_2.name}, "
+        f"which ({discipline_1.name}|({discipline_2.name})), "
         "compute the same outputs: {'y'}",
     ):
         MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)
@@ -893,7 +868,7 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
     Args:
         mdf_scenario: A fixture for the MDOScenario.
     """
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.execute(algo="SLSQP", max_iter=1)
     mdf_scenario.formulation.optimization_problem.reset(
         database=False, design_space=False
     )
@@ -904,21 +879,14 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
     with open("scenario.pkl", "rb") as file:
         pickled_scenario = pickle.load(file)
 
-    assert pickled_scenario._lib is None
-
-    pickled_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-
-    assert (
-        pickled_scenario._lib.ALGORITHM_INFOS["SLSQP"].internal_algorithm_name
-        == "SLSQP"
-    )
+    pickled_scenario.execute(algo="SLSQP", max_iter=1)
 
 
 def test_get_result(mdf_scenario) -> None:
     """Check get_result."""
     assert mdf_scenario.get_result() is None
 
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.execute(algo="SLSQP", max_iter=1)
     assert mdf_scenario.get_result().design_variable_names_to_values
 
     with pytest.raises(
@@ -938,8 +906,8 @@ def full_linear(request):
 def scenario_for_linear_check(full_linear):
     """MDOScenario for linear check."""
     my_disc = AnalyticDiscipline({"f": "x1+ x2**2"})
-    my_disc.default_inputs = {"x1": array([0.5]), "x2": array([0.5])}
-    my_disc.set_linear_relationships(["f"], ["x1"])
+    my_disc.default_input_data = {"x1": array([0.5]), "x2": array([0.5])}
+    my_disc.io.set_linear_relationships(["x1"], ["f"])
     ds = DesignSpace()
     ds.add_variable("x1", 1, lower_bound=0.0, upper_bound=1.0, value=0.5)
     if not full_linear:
@@ -961,14 +929,14 @@ def test_function_problem_type(scenario_for_linear_check, full_linear) -> None:
         assert scenario_for_linear_check.formulation.optimization_problem.is_linear
 
 
-class MyDisc(MDODiscipline):
+class MyDisc(Discipline):
     """A discipline to manage different type of data."""
 
+    default_cache_type = Discipline.CacheType.NONE
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
     def __init__(self):
-        super().__init__(
-            grammar_type=MDODiscipline.GrammarType.SIMPLE,
-            cache_type=MDODiscipline.CacheType.NONE,
-        )
+        super().__init__()
         self.input_grammar.update_from_data({"x_float": array([0.0, 0.0])})
         self.input_grammar.update_from_data({"x_int": array([0])})
         self.output_grammar.update_from_data({"y1": array([0.0])})
@@ -976,11 +944,11 @@ class MyDisc(MDODiscipline):
         self.output_grammar.update_from_data({"name": array(["foo"])})
 
     def _run(self):
-        self.store_local_data(
-            y1=self.get_input_data()["x_int"],
-            y2=self.get_input_data()["x_float"],
-            name=array(["foo"]),
-        )
+        self.io.update_output_data({
+            "y1": self.io.get_input_data()["x_int"],
+            "y2": self.io.get_input_data()["x_float"],
+            "name": array(["foo"]),
+        })
 
 
 def test_scenario_to_dataset(tmp_wd):
@@ -993,10 +961,10 @@ def test_scenario_to_dataset(tmp_wd):
     scenario.add_observable("y2")
     scenario.add_observable("name")
 
-    scenario.execute({
-        "algo": "CustomDOE",
-        "algo_options": {"samples": array([[0.0, 0.0, 1], [3.0, 3.0, 5]])},
-    })
+    scenario.execute(
+        algo="CustomDOE",
+        algo_options={"samples": array([[0.0, 0.0, 1], [3.0, 3.0, 5]])},
+    )
     dataset = scenario.to_dataset(name="foo", opt_naming=False)
 
     reference_dataset = Dataset()

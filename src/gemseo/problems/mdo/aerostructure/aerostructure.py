@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""The aerostructure MDO problem.
 
-The **aerostructure** module implements all :class:`.MDODiscipline`
+The **aerostructure** module implements all :class:`.Discipline`
 included in the Aerostructure problem:
 
 .. math::
@@ -77,7 +77,7 @@ from numpy import atleast_2d
 from numpy import complex128
 from numpy import ones
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -108,11 +108,13 @@ def get_inputs(*names: str):
     return {name: inputs.get(name) for name in names}
 
 
-class Mission(MDODiscipline):
+class Mission(Discipline):
     """The mission discipline of the aerostructure use case.
 
     Compute the objective and the constraints.
     """
+
+    auto_detect_grammar_files = True
 
     def __init__(self, r_val: float = 0.5, lift_val: float = 0.5) -> None:
         """
@@ -120,23 +122,26 @@ class Mission(MDODiscipline):
             r_val: The threshold to compute the reserve factor constraint.
             lift_val: The threshold to compute the lift constraint.
         """  # noqa: D205 D212
-        super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = get_inputs("lift", "mass", "drag", "reserve_fact")
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
+        super().__init__()
+        self.default_input_data = get_inputs("lift", "mass", "drag", "reserve_fact")
         self.r_val = r_val
         self.lift_val = lift_val
 
     def _run(self) -> None:
-        lift, mass, drag, reserve_fact = self.get_inputs_by_name([
-            "lift",
-            "mass",
-            "drag",
-            "reserve_fact",
-        ])
-        obj = array([self.compute_range(lift, mass, drag)], dtype=complex128)
-        c_lift = array([self.c_lift(lift, self.lift_val)], dtype=complex128)
-        c_rf = array([self.c_rf(reserve_fact)], dtype=complex128)
-        self.store_local_data(range=obj, c_lift=c_lift, c_rf=c_rf)
+        local_data = self.io.data
+        obj = array(
+            [
+                self.compute_range(
+                    local_data["lift"], local_data["mass"], local_data["drag"]
+                )
+            ],
+            dtype=complex128,
+        )
+        c_lift = array(
+            [self.c_lift(local_data["lift"], self.lift_val)], dtype=complex128
+        )
+        c_rf = array([self.c_rf(local_data["reserve_fact"])], dtype=complex128)
+        self.io.update_output_data({"range": obj, "c_lift": c_lift, "c_rf": c_rf})
 
     @staticmethod
     def compute_range(lift, mass, drag) -> float:
@@ -179,11 +184,16 @@ class Mission(MDODiscipline):
         return reserve_fact[0] - rf_val
 
     def _compute_jacobian(
-        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         # Initialize all matrices to zeros
-        self._init_jacobian(inputs, outputs)
-        drag, lift, mass = self.get_inputs_by_name(["drag", "lift", "mass"])
+        self._init_jacobian(input_names, output_names)
+        local_data = self.io.data
+        drag = local_data["drag"]
+        lift = local_data["lift"]
+        mass = local_data["mass"]
         self.jac["c_lift"]["lift"] = ones((1, 1))
         self.jac["c_rf"]["reserve_fact"] = ones((1, 1))
         self.jac["range"]["lift"] = atleast_2d(array([8e11 / (mass[0] * drag[0])]))
@@ -195,27 +205,31 @@ class Mission(MDODiscipline):
         )
 
 
-class Aerodynamics(MDODiscipline):
+class Aerodynamics(Discipline):
     """The aerodynamics discipline of the aerostructure use case.
 
     Evaluate: ``[drag, forces, lift] = f(sweep, thick_airfoils, displ)``.
     """
 
+    auto_detect_grammar_files = True
+
     def __init__(self) -> None:  # noqa: D107
-        super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = get_inputs("sweep", "thick_airfoils", "displ")
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
+        super().__init__()
+        self.default_input_data = get_inputs("sweep", "thick_airfoils", "displ")
 
     def _run(self) -> None:
-        sweep, thick_airfoils, displ = self.get_inputs_by_name([
-            "sweep",
-            "thick_airfoils",
-            "displ",
-        ])
+        local_data = self.io.data
+        sweep = local_data["sweep"]
+        thick_airfoils = local_data["thick_airfoils"]
+        displ = local_data["displ"]
         drag_out = array([self.compute_drag(sweep, thick_airfoils, displ)])
         lift_out = array([self.compute_lift(sweep, thick_airfoils, displ)])
         forces_out = array([self.compute_forces(sweep, thick_airfoils, displ)])
-        self.store_local_data(drag=drag_out, forces=forces_out, lift=lift_out)
+        self.io.update_output_data({
+            "drag": drag_out,
+            "forces": forces_out,
+            "lift": lift_out,
+        })
 
     @staticmethod
     def compute_drag(sweep, thick_airfoils, displ) -> float:
@@ -273,16 +287,18 @@ class Aerodynamics(MDODiscipline):
         return (sweep[0] + 0.2 * thick_airfoils[0] - 2.0 * displ[0]) / 3000.0
 
     def _compute_jacobian(
-        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         # Initialize all matrices to zeros
-        self._init_jacobian(inputs, outputs)
-        sweep, thick_airfoils = self.get_inputs_by_name(["sweep", "thick_airfoils"])
+        self._init_jacobian(input_names, output_names)
+        local_data = self.io.data
         self.jac["drag"]["sweep"] = atleast_2d(
-            array([0.1 * 2.0 * sweep[0] / 360.0**2.0])
+            array([0.1 * 2.0 * local_data["sweep"][0] / 360.0**2.0])
         )
         self.jac["drag"]["thick_airfoils"] = atleast_2d(
-            array([0.1 * (2.0 * thick_airfoils[0] - 1.0)])
+            array([0.1 * (2.0 * local_data["thick_airfoils"][0] - 1.0)])
         )
         self.jac["drag"]["displ"] = atleast_2d(0.1 * array([-4.0]))
         self.jac["forces"]["sweep"] = atleast_2d(array([10.0]))
@@ -293,27 +309,31 @@ class Aerodynamics(MDODiscipline):
         self.jac["lift"]["displ"] = atleast_2d(array([-2.0 / 3000.0]))
 
 
-class Structure(MDODiscipline):
+class Structure(Discipline):
     """The structure discipline of the aerostructure use case.
 
     Evaluate: ``[mass, rf, displ] = f(sweep, thick_panels, forces)``.
     """
 
+    auto_detect_grammar_files = True
+
     def __init__(self) -> None:  # noqa: D107
-        super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = get_inputs("sweep", "forces", "thick_panels")
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
+        super().__init__()
+        self.default_input_data = get_inputs("sweep", "forces", "thick_panels")
 
     def _run(self) -> None:
-        sweep, thick_panels, forces = self.get_inputs_by_name([
-            "sweep",
-            "thick_panels",
-            "forces",
-        ])
+        local_data = self.io.data
+        sweep = local_data["sweep"]
+        thick_panels = local_data["thick_panels"]
+        forces = local_data["forces"]
         mass_out = array([self.compute_mass(sweep, thick_panels, forces)])
         rf_out = array([self.compute_rf(sweep, thick_panels, forces)])
         displ_out = array([self.compute_displ(sweep, thick_panels, forces)])
-        self.store_local_data(mass=mass_out, reserve_fact=rf_out, displ=displ_out)
+        self.io.update_output_data({
+            "mass": mass_out,
+            "reserve_fact": rf_out,
+            "displ": displ_out,
+        })
 
     @staticmethod
     def compute_mass(sweep, thick_panels, forces):
@@ -369,13 +389,16 @@ class Structure(MDODiscipline):
         return 2 * sweep[0] + 3 * thick_panels[0] - 2.0 * forces[0]
 
     def _compute_jacobian(
-        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         # Initialize all matrices to zeros
-        self._init_jacobian(inputs, outputs)
-        sweep = self.get_inputs_by_name("sweep")
+        self._init_jacobian(input_names, output_names)
         jac = self.jac["mass"]
-        jac["sweep"] = atleast_2d(array([4000.0 * 3.0 * sweep[0] ** 2 / 360.0**3]))
+        jac["sweep"] = atleast_2d(
+            array([4000.0 * 3.0 * self.io.data["sweep"][0] ** 2 / 360.0**3])
+        )
         jac["thick_panels"] = atleast_2d(array([100.0]))
         jac["forces"] = atleast_2d(array([200.0]))
 

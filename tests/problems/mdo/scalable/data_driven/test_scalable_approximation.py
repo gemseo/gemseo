@@ -25,12 +25,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.mdo.scalable.data_driven.diagonal import (
     ScalableDiagonalApproximation,
 )
 from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.utils.pickle import from_pickle
+from gemseo.utils.pickle import to_pickle
 
 
 @pytest.fixture
@@ -46,7 +47,7 @@ def sobieski_aerodynamics():
 def test_build_model(sobieski_aerodynamics) -> None:
     """Test the build a 1D interpolation of Sobieski's drag wrt z."""
     sizes = {}
-    for k, value in sobieski_aerodynamics.default_inputs.items():
+    for k, value in sobieski_aerodynamics.default_input_data.items():
         sizes[k] = len(value)
 
     with (Path(__file__).parent / "SobieskiAerodynamics.pkl").open("rb") as f:
@@ -96,6 +97,6 @@ def test_build_model(sobieski_aerodynamics) -> None:
 def test_serialize(tmp_wd, sobieski_aerodynamics) -> None:
     """Test the serialization of a SobieskiAerodynamics instance."""
     s_file = "aero.o"
-    sobieski_aerodynamics.to_pickle(s_file)
-    aero2 = MDODiscipline.from_pickle(s_file)
+    to_pickle(sobieski_aerodynamics, s_file)
+    aero2 = from_pickle(s_file)
     aero2.execute()

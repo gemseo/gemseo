@@ -91,7 +91,7 @@ scenario = create_scenario(
 )
 scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 scenario.add_constraint("lift", value=0.5)
-scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 10, "algo_options": algo_options})
+scenario.execute(algo="NLOPT_SLSQP", max_iter=10, algo_options=algo_options)
 scenario.post_process("OptHistoryView", save=False, show=True)
 
 # %%
@@ -117,7 +117,7 @@ aero_scenario = create_scenario(
     design_space_ref.filter(["thick_airfoils"], copy=True),
     maximize_objective=True,
 )
-aero_scenario.default_inputs = sub_scenario_options
+aero_scenario.default_input_data = sub_scenario_options
 
 # %%
 # Create the structure sub-scenario
@@ -131,7 +131,7 @@ struct_scenario = create_scenario(
     design_space_ref.filter(["thick_panels"], copy=True),
     maximize_objective=True,
 )
-struct_scenario.default_inputs = sub_scenario_options
+struct_scenario.default_input_data = sub_scenario_options
 
 # %%
 # Create the system scenario
@@ -150,9 +150,5 @@ system_scenario = create_scenario(
 )
 system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 system_scenario.add_constraint("lift", value=0.5)
-system_scenario.execute({
-    "algo": "NLOPT_COBYLA",
-    "max_iter": 7,
-    "algo_options": algo_options,
-})
+system_scenario.execute(algo="NLOPT_COBYLA", max_iter=7, algo_options=algo_options)
 system_scenario.post_process("OptHistoryView", save=False, show=True)

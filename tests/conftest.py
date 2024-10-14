@@ -28,7 +28,7 @@ from gemseo.problems.mdo.sellar.utils import set_data_converter
 from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
 
 if TYPE_CHECKING:
-    from gemseo import MDODiscipline
+    from gemseo import Discipline
 
 MARK = "doc_examples"
 
@@ -47,9 +47,9 @@ def pytest_collection_modifyitems(
 
 
 class SellarDisciplines(NamedTuple):
-    sellar1: MDODiscipline
-    sellar2: MDODiscipline
-    sellar_system: MDODiscipline
+    sellar1: Discipline
+    sellar2: Discipline
+    sellar_system: Discipline
 
 
 @pytest.fixture

@@ -29,7 +29,7 @@ class ShellExecutableDiscipline(_BaseDiscFromExe):
         self.output_grammar.update_from_names(["c"])
 
         # Initialize the default inputs
-        self.default_inputs = {"a": np.array([1.0]), "b": np.array([2.0])}
+        self.default_input_data = {"a": np.array([1.0]), "b": np.array([2.0])}
 
     def _create_inputs(self) -> None:
         # Write inputs.txt file

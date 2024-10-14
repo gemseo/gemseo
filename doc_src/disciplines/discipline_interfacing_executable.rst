@@ -71,7 +71,7 @@ Now you can implement the discipline in the following way:
             self.input_grammar.update_from_names(['a','b'])
             self.output_grammar.update_from_names(['c'])
             # Initialize the default inputs
-            self.default_inputs=parse_file("inputs.txt")
+            self.default_input_data=parse_file("inputs.txt")
 
         def _run(self):
             # Write inputs.txt file

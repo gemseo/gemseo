@@ -222,7 +222,7 @@ def jacobian_function(x):
 def complex_real_mdo_func_aggregation(
     request,
 ) -> tuple[MDOFunction, MDOFunction, callable]:
-    """Returns two MDOFunctions and a consistent aggregation callable for tests."""
+    """Returns two mdo_functions and a consistent aggregation callable for tests."""
     return (
         MDOFunction(
             lambda x: array([sum(x**2), sum(sin(x)), sum(cos(x))], complex128),

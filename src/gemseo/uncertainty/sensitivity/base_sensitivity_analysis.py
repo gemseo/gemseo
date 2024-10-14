@@ -67,7 +67,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.base_driver_library import DriverLibrarySettingType
     from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.post.dataset.dataset_plot import DatasetPlot
     from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
     from gemseo.scenarios.backup_settings import BackupSettings
@@ -88,7 +88,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     A :class:`.BaseSensitivityAnalysis` can be created from such samples
     (passed as an :class:`.IODataset`)
     or use its :meth:`.compute_samples` method to generate them,
-    using a :class:`.MDODiscipline` representing the model,
+    using a :class:`.Discipline` representing the model,
     a :class:`.ParameterSpace` describing the uncertain input variables
     and a set of options.
     In the second case,
@@ -177,7 +177,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def compute_samples(
         self,
-        disciplines: Collection[MDODiscipline],
+        disciplines: Collection[Discipline],
         parameter_space: ParameterSpace,
         n_samples: int | None,
         output_names: Iterable[str] = (),

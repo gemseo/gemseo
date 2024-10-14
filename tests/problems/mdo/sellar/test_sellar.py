@@ -47,6 +47,7 @@ from gemseo.problems.mdo.sellar.variables import X_SHARED
 from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.problems.mdo.sellar.variables import Y_2
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.utils.pickle import to_pickle
 
 
 @pytest.fixture(params=[1, 2])
@@ -108,7 +109,7 @@ def test_execution(discipline, output_data, n) -> None:
     """Check the output data of the Sellar disciplines with default input values."""
     discipline.execute()
     for output_name, output_value in output_data.items():
-        assert_allclose(discipline.local_data[output_name], output_value, rtol=1e-8)
+        assert_allclose(discipline.io.data[output_name], output_value, rtol=1e-8)
 
 
 def test_linearization(discipline, input_data) -> None:
@@ -121,7 +122,7 @@ def test_linearization(discipline, input_data) -> None:
 def test_serialize(discipline, tmp_wd) -> None:
     """Verify the serialization."""
     file_path = Path("discipline.pkl")
-    discipline.to_pickle(file_path)
+    to_pickle(discipline, file_path)
     assert file_path.exists()
 
 
@@ -174,7 +175,7 @@ def test_exec(formulation, algo, differentiation_method, disciplines, x_opt, n) 
     scenario.set_differentiation_method(differentiation_method)
     scenario.add_constraint(C_1, constraint_type=MDOFunction.ConstraintType.INEQ)
     scenario.add_constraint(C_2, constraint_type=MDOFunction.ConstraintType.INEQ)
-    scenario.execute({"max_iter": 20, "algo": algo})
+    scenario.execute(max_iter=20, algo=algo)
 
     x_opt = scenario.design_space.get_current_value(as_dict=True)
     x_opt = concatenate((x_opt[X_1], x_opt[X_SHARED]))

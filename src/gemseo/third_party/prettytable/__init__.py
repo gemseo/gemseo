@@ -36,6 +36,3 @@
 """
 A pretty table in the shell or in a file
 """
-
-# TODO: API: remove this
-from gemseo.third_party.prettytable.prettytable import PrettyTable

@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import pickle
+from copy import deepcopy
 from itertools import chain
 from itertools import combinations
 from typing import TYPE_CHECKING
@@ -142,6 +143,17 @@ def test_names(grammar, names_to_types) -> None:
     """Verify names getter."""
     grammar.update_from_types(names_to_types)
     assert grammar.names == names_to_types.keys()
+
+
+@parametrized_names_to_types
+def test_names_without_namespace(grammar, names_to_types) -> None:
+    """Verify names_without_namespace."""
+    grammar.update_from_types(names_to_types)
+    assert tuple(grammar.names_without_namespace) == tuple(names_to_types.keys())
+
+    if names_to_types:
+        grammar.add_namespace("name", "n")
+        assert tuple(grammar.names_without_namespace) == tuple(names_to_types.keys())
 
 
 def create_defaults(names_to_types: Mapping[str, type]) -> dict[str, Any]:
@@ -505,6 +517,13 @@ def powerset(iterable) -> Iterator[tuple[Any, ...]]:
 def test_update(grammar, merge, excluded_names) -> None:
     """Verify update."""
     prepare_grammar(grammar)
+
+    # Update from empty.
+    names_before = grammar.names
+    grammar.update({}, merge=merge, excluded_names=excluded_names)
+    assert grammar.names == names_before
+
+    # Update from non-empty.
     other_grammar = grammar.__class__("g")
     other_grammar.update_from_names(UPDATE_DATA.keys())
     with check_update_raise(grammar, merge):
@@ -512,10 +531,28 @@ def test_update(grammar, merge, excluded_names) -> None:
         assert_updated(grammar, merge=merge, excluded_names=set(excluded_names))
 
 
+def test_update_with_namespace(grammar) -> None:
+    """Check update with namespace."""
+    grammar.update_from_names(["x"])
+    other_grammar = deepcopy(grammar)
+    grammar.add_namespace("x", "n")
+    other_grammar.add_namespace("x", "other_n")
+    grammar.update(other_grammar)
+    assert grammar.to_namespaced == {"x": ["n:x", "other_n:x"]}
+    assert grammar.from_namespaced == {"n:x": "x", "other_n:x": "x"}
+
+
 @parametrized_merge
 def test_update_from_names(grammar, merge) -> None:
     """Verify update_from_names."""
     prepare_grammar(grammar)
+
+    # Update from empty.
+    names_before = grammar.names
+    grammar.update_from_names((), merge=merge)
+    assert grammar.names == names_before
+
+    # Update from non-empty.
     with check_update_raise(grammar, merge):
         grammar.update_from_names(UPDATE_DATA.keys(), merge=merge)
         assert_updated(grammar, merge=merge)
@@ -525,6 +562,13 @@ def test_update_from_names(grammar, merge) -> None:
 def test_update_from_types(grammar, merge) -> None:
     """Verify update_from_types."""
     prepare_grammar(grammar)
+
+    # Update from empty.
+    names_before = grammar.names
+    grammar.update_from_types({}, merge=merge)
+    assert grammar.names == names_before
+
+    # Update from non-empty.
     with check_update_raise(grammar, merge):
         grammar.update_from_types(UPDATE_TYPES, merge=merge)
         assert_updated(grammar, merge=merge)
@@ -534,6 +578,13 @@ def test_update_from_types(grammar, merge) -> None:
 def test_update_from_data(grammar, merge) -> None:
     """Verify update_from_data."""
     prepare_grammar(grammar)
+
+    # Update from empty.
+    names_before = grammar.names
+    grammar.update_from_data({}, merge=merge)
+    assert grammar.names == names_before
+
+    # Update from non-empty.
     with check_update_raise(grammar, merge):
         grammar.update_from_data(UPDATE_DATA, merge=merge)
         assert_updated(grammar, merge=merge)
@@ -581,3 +632,34 @@ def test_validate_empty(grammar) -> None:
     # It validates everything.
     data = {"name": 0}
     grammar.validate(data)
+
+
+def test_add_namespace(grammar) -> None:
+    """Check add_namespace."""
+    grammar.update_from_types({"x": int, "y": bool})
+    grammar.add_namespace("x", "n")
+
+    assert grammar.to_namespaced == {"x": "n:x"}
+    assert grammar.from_namespaced == {"n:x": "x"}
+    assert "x" not in grammar
+    assert "x" not in grammar.required_names
+    assert "n:x" in grammar
+    assert "n:x" in grammar.required_names
+
+    match = "The name dummy is not in the grammar."
+    with pytest.raises(KeyError, match=match):
+        grammar.add_namespace("dummy", "n")
+
+    match = "The variable n:x already has a namespace."
+    with pytest.raises(ValueError, match=match):
+        grammar.add_namespace("n:x", "")
+
+
+def test_has_names(grammar):
+    """Check has_names."""
+    assert not grammar.has_names(("name",))
+    grammar.update_from_types({"name": str})
+    assert not grammar.has_names(("dummy",))
+    assert not grammar.has_names(("dummy", "name"))
+    assert grammar.has_names(("name",))
+    assert grammar.has_names(())

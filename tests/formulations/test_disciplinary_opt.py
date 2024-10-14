@@ -26,39 +26,6 @@ from numpy.testing import assert_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-
-
-def test_multiple_disc() -> None:
-    """"""
-    ds = SobieskiDesignSpace()
-    dopt = DisciplinaryOpt([SobieskiStructure(), SobieskiMission()], "y_4", ds)
-    dopt.get_expected_dataflow()
-    dopt.get_expected_workflow()
-
-
-def test_init() -> None:
-    """"""
-    sm = SobieskiMission()
-    ds = SobieskiDesignSpace()
-    dopt = DisciplinaryOpt([sm], "y_4", ds)
-    assert dopt.get_expected_dataflow() == []
-    assert dopt.get_expected_workflow().sequences[0].discipline == sm
-    assert len(dopt.get_expected_workflow().sequences) == 1
-
-
-def test_grammar_type() -> None:
-    """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline({"y": "x"})
-    design_space = DesignSpace()
-    design_space.add_variable("x")
-    grammar_type = discipline.GrammarType.SIMPLE
-    formulation = DisciplinaryOpt(
-        [discipline] * 2, "y", design_space, grammar_type=grammar_type
-    )
-    assert formulation.chain.grammar_type == grammar_type
 
 
 @pytest.mark.parametrize(

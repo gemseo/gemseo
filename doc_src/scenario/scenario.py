@@ -62,7 +62,7 @@ scenario.xdsmize(monitor=True, log_workflow_status=True)
 
 ###
 
-scenario.execute({"algo": "SLSQP", "max_iter": 100})
+scenario.execute(algo="SLSQP", max_iter=100)
 
 ###
 

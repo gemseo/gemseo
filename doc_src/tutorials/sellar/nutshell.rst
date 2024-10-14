@@ -26,21 +26,21 @@ we need first to model this set of equations as a **multidisciplinary problem**.
 
 For that, the problem is decomposed into three :term:`disciplines <discipline>`.
 
-What defines an :class:`.MDODiscipline`
+What defines an :class:`.Discipline`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A discipline is a set of calculations that produces a set of
 vector outputs from a set of vector inputs, using either equations or an external software,
 or a :term:`workflow engine`.
 
-Programmatically speaking, in |g|, an :class:`.MDODiscipline` is defined by three elements :
+Programmatically speaking, in |g|, an :class:`.Discipline` is defined by three elements :
 
 - the **input grammar** : the set of rules that defines valid input data,
 - the **output grammar** : the set of rules that defines valid output data,
 - the **method to compute the output data from the input data**,
-  here the :meth:`!MDODiscipline._run` method.
+  here the :meth:`!Discipline._run` method.
 
-The disciplines are all subclasses of :class:`.MDODiscipline`, from which they must inherit.
+The disciplines are all subclasses of :class:`.Discipline`, from which they must inherit.
 
 .. seealso::
 
@@ -62,11 +62,11 @@ The disciplines are all subclasses of :class:`.MDODiscipline`, from which they m
 1.1. Define the input and output grammars of the discipline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We create a class for each discipline inheriting from :class:`.MDODiscipline`.
-After having called the superconstructor :meth:`!MDODiscipline.__init__`,
+We create a class for each discipline inheriting from :class:`.Discipline`.
+After having called the superconstructor :meth:`!Discipline.__init__`,
 we complete the constructor of the new discipline
-by declaring the :ref:`Sellar <sellar_problem>` discipline input data names :attr:`!MDODiscipline.input_grammar`
-and discipline output data names :attr:`!MDODiscipline.output_grammar`
+by declaring the :ref:`Sellar <sellar_problem>` discipline input data names :attr:`!Discipline.input_grammar`
+and discipline output data names :attr:`!Discipline.output_grammar`
 in a straightforward way with :meth:`.JSONGrammar.update_from_names` .
 
 .. warning::
@@ -81,10 +81,10 @@ For example, in the case of Sellar 1, we build:
 
 .. code::
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from numpy import array, ones
 
-    class Sellar1(MDODiscipline):
+    class Sellar1(Discipline):
 
         def __init__(self, residual_form=False):
             super(Sellar1, self).__init__()
@@ -148,7 +148,7 @@ For example, in the case of Sellar 1, we build:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once the inputs and outputs have been declared in the constructor of the discipline,
-the abstract :meth:`!MDODiscipline._run` method of :class:`.MDODiscipline`
+the abstract :meth:`!Discipline._run` method of :class:`.Discipline`
 shall be overloaded by the discipline to define how outputs are computed from inputs.
 
 .. seealso::
@@ -156,8 +156,8 @@ shall be overloaded by the discipline to define how outputs are computed from in
    The method is protected (starts with "_")
    because it shall not be called from outside the discipline.
    External calls that trigger the discipline execution
-   use the :meth:`.MDODiscipline.execute` public method from the base class,
-   which provides additional services before and after calling :meth:`!MDODiscipline._run`.
+   use the :meth:`.Discipline.execute` public method from the base class,
+   which provides additional services before and after calling :meth:`!Discipline._run`.
    These services,
    such as data checks by the grammars,
    are provided by |g|
@@ -165,21 +165,21 @@ shall be overloaded by the discipline to define how outputs are computed from in
 
 First,
 the data values shall be retrieved. For each input declared in the input grammar,
-|g| will pass the values as arrays to the :class:`.MDODiscipline`
+|g| will pass the values as arrays to the :class:`.Discipline`
 during the execution of the process.
 There are different methods to get these values
-within the :meth:`!MDODiscipline._run` method of the discipline:
+within the :meth:`!Discipline._run` method of the discipline:
 
-- as a dictionary through the :meth:`.MDODiscipline.get_input_data` method,
-  which are also already accessible in the :attr:`!MDODiscipline.local_data` attribute
-  of the :class:`.MDODiscipline`
-- or here as a list of values using :meth:`.MDODiscipline.get_inputs_by_name`
+- as a dictionary through the :meth:`.Discipline.get_input_data` method,
+  which are also already accessible in the :attr:`!Discipline.local_data` attribute
+  of the :class:`.Discipline`
+- or here as a list of values using :meth:`.Discipline.get_inputs_by_name`
   with the data names passed as a list.
 
 .. tip::
 
    The list of all inputs names can also be retrieved
-   using the method :meth:`.MDODiscipline.get_input_data_names`:
+   using the method :meth:`.Discipline.get_input_data_names`:
 
    .. code::
 
@@ -187,7 +187,7 @@ within the :meth:`!MDODiscipline._run` method of the discipline:
       print(sellar1.get_input_data_names())
       # ['x_shared', 'y_2', 'x_local']
 
-Then, the computed outputs shall be stored in the :attr:`!MDODiscipline.local_data`:
+Then, the computed outputs shall be stored in the :attr:`!Discipline.local_data`:
 
 .. code::
 
@@ -196,22 +196,22 @@ Then, the computed outputs shall be stored in the :attr:`!MDODiscipline.local_da
         y_1 = array([(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])**0.5])
         self.local_data['y_1'] = y_1
 
-The :meth:`.MDODiscipline.store_local_data` method can also be used to this aim:
+The :meth:`.Discipline._update_output_data` method can also be used to this aim:
 
 .. code::
 
     def _run(self):
         x_local, x_shared, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_2'])
         y_1 = array([(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])**0.5])
-        self.store_local_data(y_1=y_1)
+        self._update_output_data(y_1=y_1)
 
-The other Sellar :class:`.MDODiscipline` are created in a similar way.
+The other Sellar :class:`.Discipline` are created in a similar way.
 
 
 1.3. How to define derivatives (optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :class:`.MDODiscipline` may also provide the derivatives of their outputs
+The :class:`.Discipline` may also provide the derivatives of their outputs
 with respect to their inputs, i.e. their Jacobians.
 This is useful for :term:`gradient-based optimization`
 or :ref:`mda` based on the :term:`Newton method`.
@@ -219,8 +219,8 @@ For a vector of inputs :math:`x` and a vector of outputs :math:`y`,
 the Jacobian of the discipline is :math:`\frac{\partial y}{\partial x}`.
 
 The discipline shall provide a method to compute the Jacobian for a given set of inputs.
-This is made by overloading the abstract :meth:`!MDODiscipline._compute_jacobian` method
-of :class:`.MDODiscipline`.
+This is made by overloading the abstract :meth:`!Discipline._compute_jacobian` method
+of :class:`.Discipline`.
 The discipline may have multiple inputs and multiple outputs.
 To store the multiple Jacobian matrices associated to all the inputs and outputs,
 |g| uses a dictionary of dictionaries structure.
@@ -228,7 +228,7 @@ This data structure is sparse and makes easy the access and the iteration
 over the elements of the Jacobian.
 
 Here is an example of a jacobian definition for the Sellar1 discipline.
-The method :meth:`!MDODiscipline._init_jacobian` fills the dict of dict structure
+The method :meth:`!Discipline._init_jacobian` fills the dict of dict structure
 with dense null matrices of the right sizes.
 Note that all Jacobians must be 2D matrices,
 which avoids ambiguity.
@@ -269,9 +269,9 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
 .. code::
 
     from math import exp, sqrt
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
-    class Sellar1(MDODiscipline):
+    class Sellar1(Discipline):
 
         def __init__(self, residual_form=False):
             super(Sellar1, self).__init__()
@@ -296,7 +296,7 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
                 [x_shared[0] * inv_denom, 0.5 * inv_denom]))
             self.jac['y_1']['y_2'] = atleast_2d(array([-0.1 * inv_denom]))
 
-    class Sellar2(MDODiscipline):
+    class Sellar2(Discipline):
 
         def __init__(self, residual_form=False):
             super(Sellar2, self).__init__()
@@ -320,7 +320,7 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
             else:
                 self.jac['y_2']['y_1'] = ones((1, 1))
 
-    class SellarSystem(MDODiscipline):
+    class SellarSystem(Discipline):
 
         def __init__(self):
             super(SellarSystem, self).__init__()
@@ -379,7 +379,7 @@ please see :ref:`software_connection`.
 Step 2: Creation and execution of the MDO scenario
 --------------------------------------------------
 
-From the :class:`.MDODiscipline`, we build the :term:`scenario`.
+From the :class:`.Discipline`, we build the :term:`scenario`.
 The scenario is responsible for the creation and execution of the whole :term:`process`.
 It will:
 
@@ -390,13 +390,13 @@ It will:
 
 For that,
 we use the class :class:`.MDOScenario`
-which is defined by different :class:`.MDODiscipline` and a common :class:`.DesignSpace`.
+which is defined by different :class:`.Discipline` and a common :class:`.DesignSpace`.
 
-2.1. Create the :class:`.MDODiscipline`
+2.1. Create the :class:`.Discipline`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To instantiate the :class:`.MDOScenario`,
-we need first the :class:`.MDODiscipline` instances.
+we need first the :class:`.Discipline` instances.
 
 .. code::
 
@@ -435,7 +435,7 @@ with their bounds and values:
    - The formulation will by itself remove the coupling variables
      from the optimization unknowns,
      but will use the values as default values
-     for the inputs of the :class:`.MDODiscipline`.
+     for the inputs of the :class:`.Discipline`.
    - This will also be convenient
      when we will switch to the :ref:`IDF <idf_formulation>`,
      which uses the coupling variables as optimization unknowns.
@@ -443,13 +443,13 @@ with their bounds and values:
    Alternatively, one can perform :ref:`MDF <mdf_formulation>`
    without coupling variables in the :class:`.DesignSpace`,
    but set the default values of the inputs
-   using the :attr:`.MDODiscipline.default_inputs` attribute to the three disciplines:
+   using the :attr:`.Discipline.default_input_data` attribute to the three disciplines:
 
    .. code::
 
-      discipline[0].default_inputs = {'y_2': ones(1)}
-      discipline[1].default_inputs = {'y_1': ones(1)}
-      discipline[2].default_inputs = {'y_1': ones(1), 'y_2': ones(1)}
+      discipline[0].default_input_data = {'y_2': ones(1)}
+      discipline[1].default_input_data = {'y_1': ones(1)}
+      discipline[2].default_input_data = {'y_1': ones(1), 'y_2': ones(1)}
 
 .. _sellar_mdo_create_scenario:
 
@@ -504,7 +504,7 @@ to compute the derivatives using :meth:`.Scenario.set_differentiation_method`.
 2.4. Solve the :class:`.OptimizationProblem`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Then, we can run the scenario by calling the :meth:`.MDODiscipline.execute` method of the scenario.
+Then, we can run the scenario by calling the :meth:`.Discipline.execute` method of the scenario.
 
 .. code::
 
@@ -614,7 +614,7 @@ Synthetic Python code
    # Step 3: create and solve the MDO scenario
    scenario = create_scenario(disciplines, 'MDF', objective_name='obj', design_space=design_space)
    scenario.set_differentiation_method('finite_differences', 1e-6)
-   scenario.default_inputs = {'max_iter': 15, 'algo': 'SLSQP'})
+   scenario.default_input_data = {'max_iter': 15, 'algo': 'SLSQP'})
    scenario.execute()
    # Step 4: analyze the results
    scenario.post_process("OptHistoryView", save=True)

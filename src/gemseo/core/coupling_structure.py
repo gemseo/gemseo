@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from matplotlib.text import Text
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 NodeType = tuple[list[str], list[str]]
@@ -58,7 +58,7 @@ class CouplingStructure:
     The methods of this class include the computation of weak, strong or all couplings.
     """
 
-    disciplines: Sequence[MDODiscipline]
+    disciplines: Sequence[Discipline]
     """The disciplines."""
 
     graph: DependencyGraph
@@ -67,15 +67,15 @@ class CouplingStructure:
     sequence: ExecutionSequence
     """The sequence of execution of the disciplines."""
 
-    _strongly_coupled_disc: list[MDODiscipline] | None
-    _weakly_coupled_disc: list[MDODiscipline] | None
+    _strongly_coupled_disc: list[Discipline] | None
+    _weakly_coupled_disc: list[Discipline] | None
     _all_couplings: list[str] | None
     _weak_couplings: list[str] | None
     _strong_couplings: list[str] | None
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
     ) -> None:
         """
         Args:
@@ -95,7 +95,7 @@ class CouplingStructure:
 
     @staticmethod
     def is_self_coupled(
-        discipline: MDODiscipline,
+        discipline: Discipline,
     ) -> bool:
         """Test if the discipline is self-coupled.
 
@@ -107,17 +107,17 @@ class CouplingStructure:
         Returns:
             Whether the discipline is self-coupled.
         """
-        self_c_vars = set(discipline.get_input_data_names()) & set(
-            discipline.get_output_data_names()
+        self_c_vars = set(discipline.io.input_grammar.names) & set(
+            discipline.io.output_grammar.names
         )
 
-        if discipline.residual_variables:
-            states = discipline.residual_variables.values()
+        if discipline.io.residual_to_state_variable:
+            states = discipline.io.residual_to_state_variable.values()
             self_c_vars -= set(states)
         return len(self_c_vars) > 0
 
     @property
-    def strongly_coupled_disciplines(self) -> list[MDODiscipline]:
+    def strongly_coupled_disciplines(self) -> list[Discipline]:
         """The disciplines that are strongly coupled.
 
         The disciplines that lie in cycles in the coupling graphs.
@@ -127,32 +127,32 @@ class CouplingStructure:
         return self._strongly_coupled_disc
 
     @overload
-    def get_strongly_coupled_disciplines(  # type: ignore[overload-overlap] # because of the kwargs.
+    def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = ...,
         by_group: Literal[False] = ...,
-    ) -> list[MDODiscipline]: ...
+    ) -> list[Discipline]: ...
 
     @overload
     def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = ...,
         by_group: Literal[True] = ...,
-    ) -> list[tuple[MDODiscipline, ...]]: ...
+    ) -> list[tuple[Discipline, ...]]: ...
 
     @overload
     def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = ...,
         by_group: bool = ...,
-    ) -> list[MDODiscipline] | list[tuple[MDODiscipline, ...]]: ...
+    ) -> list[Discipline] | list[tuple[Discipline, ...]]: ...
 
     # TODO: API: this method is rarely used, remove the kwargs and fix the overloads.
     def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = True,
         by_group: bool = False,
-    ) -> list[MDODiscipline] | list[tuple[MDODiscipline, ...]]:
+    ) -> list[Discipline] | list[tuple[Discipline, ...]]:
         """Determines the strongly coupled disciplines.
 
         That is the disciplines that occur in (possibly different) MDAs.
@@ -169,7 +169,7 @@ class CouplingStructure:
         Returns:
             The coupled disciplines.
         """
-        strong_disciplines: list[tuple[MDODiscipline, ...]] | list[MDODiscipline] = []
+        strong_disciplines: list[tuple[Discipline, ...]] | list[Discipline] = []
         if by_group:
             strong_disc_update = strong_disciplines.append
         else:
@@ -188,7 +188,7 @@ class CouplingStructure:
         return strong_disciplines
 
     @property
-    def weakly_coupled_disciplines(self) -> list[MDODiscipline]:
+    def weakly_coupled_disciplines(self) -> list[Discipline]:
         """The disciplines that do not appear in cycles in the coupling graph."""
         if self._weakly_coupled_disc is None:
             self._compute_weakly_coupled()
@@ -231,8 +231,8 @@ class CouplingStructure:
         strong_couplings = set()
 
         for group in self.get_strongly_coupled_disciplines(by_group=True):
-            inputs = itertools.chain(*(disc.get_input_data_names() for disc in group))
-            outputs = itertools.chain(*(disc.get_output_data_names() for disc in group))
+            inputs = itertools.chain(*(disc.io.input_grammar.names for disc in group))
+            outputs = itertools.chain(*(disc.io.output_grammar.names for disc in group))
             strong_couplings.update(set(inputs) & set(outputs))
 
         self._strong_couplings = sorted(strong_couplings)
@@ -247,9 +247,9 @@ class CouplingStructure:
         """
         # determine strong couplings = the outputs of the weakly coupled
         # disciplines that are inputs of any other discipline
-        weak_couplings = set()
+        weak_couplings: set[str] = set()
         for weak_discipline in self.weakly_coupled_disciplines:
-            weak_couplings.update(weak_discipline.get_output_data_names())
+            weak_couplings.update(weak_discipline.io.output_grammar.names)
         self._weak_couplings = sorted(weak_couplings)
 
     @property
@@ -274,13 +274,13 @@ class CouplingStructure:
         inputs: set[str] = set()
         outputs: set[str] = set()
         for discipline in self.disciplines:
-            inputs.update(discipline.get_input_data_names())
-            outputs.update(discipline.get_output_data_names())
+            inputs.update(discipline.io.input_grammar.names)
+            outputs.update(discipline.io.output_grammar.names)
         self._all_couplings = sorted(inputs & outputs)
 
     def get_output_couplings(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         strong: bool = True,
     ) -> list[str]:
         """Compute the output coupling variables of a discipline, either strong or weak.
@@ -293,13 +293,13 @@ class CouplingStructure:
         Returns:
             The names of the output coupling variables.
         """
-        output_names = discipline.get_output_data_names()
+        output_names = discipline.io.output_grammar.names
         couplings = self.strong_couplings if strong else self.all_couplings
         return sorted(name for name in output_names if name in couplings)
 
     def get_input_couplings(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         strong: bool = True,
     ) -> list[str]:
         """Compute all the input coupling variables of a discipline.
@@ -312,14 +312,14 @@ class CouplingStructure:
         Returns:
             The names of the input coupling variables.
         """
-        input_names = discipline.get_input_data_names()
+        input_names = discipline.io.input_grammar.names
         couplings = self.strong_couplings if strong else self.all_couplings
         return sorted(name for name in input_names if name in couplings)
 
     def find_discipline(
         self,
         output: str,
-    ) -> MDODiscipline:
+    ) -> Discipline:
         """Find which discipline produces a given output.
 
         Args:
@@ -332,7 +332,7 @@ class CouplingStructure:
             ValueError: If the output is not an output of the discipline.
         """
         for discipline in self.disciplines:
-            if discipline.is_output_existing(output):
+            if output in discipline.io.output_grammar:
                 return discipline
 
         msg = f"{output} is not the output of a discipline."
@@ -505,7 +505,7 @@ class CouplingStructure:
 
     def __add_couplings(
         self,
-        couplings: Sequence[tuple[MDODiscipline, MDODiscipline, list[str]]],
+        couplings: Sequence[tuple[Discipline, Discipline, list[str]]],
         show_data_names: bool,
         n_disciplines: int,
         fig: Figure,

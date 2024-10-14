@@ -18,11 +18,11 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 
 
-class BaseSellar(MDODiscipline):
+class BaseSellar(Discipline):
     """A base class for the disciplines of the customizable Sellar MDO problem."""
 
     _INPUT_NAMES: ClassVar[tuple[str]]
@@ -37,7 +37,7 @@ class BaseSellar(MDODiscipline):
             n: The size of the local design variables and coupling variables.
         """  # noqa: D107 D205 D205 D212 D415
         super().__init__()
-        default_inputs = get_initial_data(self._INPUT_NAMES, n)
-        self.input_grammar.update_from_data(default_inputs)
+        default_input_data = get_initial_data(self._INPUT_NAMES, n)
+        self.input_grammar.update_from_data(default_input_data)
         self.output_grammar.update_from_data(get_initial_data(self._OUTPUT_NAMES, n))
-        self.default_inputs = default_inputs
+        self.default_input_data = default_input_data

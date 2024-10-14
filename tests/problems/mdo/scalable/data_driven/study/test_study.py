@@ -56,7 +56,10 @@ def sellar_use_case(tmp_wd, sellar_disciplines):
     file_name = "data/sellar.h5"
     discipline_names = []
     for discipline in sellar_disciplines:
-        discipline.set_cache_policy(discipline.CacheType.HDF5, cache_hdf_file=file_name)
+        discipline.set_cache(
+            discipline.CacheType.HDF5,
+            hdf_file_path=file_name,
+        )
         discipline_names.append(discipline.name)
         objective_name = next(iter(discipline.output_grammar.keys()))
         design_space = SellarDesignSpace()
@@ -65,7 +68,7 @@ def sellar_use_case(tmp_wd, sellar_disciplines):
         scenario = DOEScenario(
             [discipline], "DisciplinaryOpt", objective_name, design_space
         )
-        scenario.execute({"algo": "DiagonalDOE", "n_samples": n_samples})
+        scenario.execute(algo="DiagonalDOE", n_samples=n_samples)
     design_variables = [X_SHARED, X_1]
     objective_name = OBJ
     os.mkdir("study_1")
@@ -91,7 +94,7 @@ def test_scalabilitystudy1(sellar_use_case) -> None:
         )
     assert discipline_names == study.discipline_names
     study.set_input_output_dependency("SellarSystem", OBJ, [Y_1])
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         study.set_input_output_dependency("SellarSystem", OBJ, Y_1)
     with pytest.raises(ValueError):
         study.set_input_output_dependency("SellarSystem", OBJ, ["dummy"])

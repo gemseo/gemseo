@@ -29,7 +29,7 @@ import pytest
 from numpy import ones
 
 from gemseo.core.dependency_graph import DependencyGraph
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
@@ -106,7 +106,7 @@ def create_disciplines_from_desc(disc_desc):
     disc_desc_items = disc_desc.items()
 
     for name, io_names in disc_desc_items:
-        disc = MDODiscipline(name)
+        disc = Discipline(name)
         input_d = dict.fromkeys(io_names[0], data)
         disc.input_grammar.update_from_data(input_d)
         output_d = dict.fromkeys(io_names[1], data)
@@ -187,11 +187,11 @@ def test_couplings(tmp_wd, name_and_graph) -> None:
 class DisciplineEncoder(json.JSONEncoder):
     """JSON encoder that handles discipline objects.
 
-    MDODiscipline objects are stringyfied.
+    Discipline objects are stringyfied.
     """
 
     def default(self, o):
-        if isinstance(o, MDODiscipline):
+        if isinstance(o, Discipline):
             return str(o)
         return super().default(o)
 

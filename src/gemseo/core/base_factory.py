@@ -137,6 +137,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     def _CLASS(self) -> type[T]:  # noqa: N802
         """The base class that the factory can build."""
 
+    # TODO: API: rename to _PACKAGE_NAMES.
     @property
     @abstractmethod
     def _MODULE_NAMES(self) -> tuple[str, ...]:  # noqa: N802

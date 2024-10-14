@@ -20,7 +20,7 @@ class NewDiscipline(MDODiscipline):
         super(NewDiscipline, self).__init__()
         self.input_grammar.update_from_names(['x', 'z'])
         self.output_grammar.update_from_names(['f'])
-        self.default_inputs = {'x': array([0.]), 'z': array([0.])}
+        self.default_input_data = {'x': array([0.]), 'z': array([0.])}
 
     def _run(self):
         x, z = self.get_inputs_by_name(['x', 'z'])

@@ -41,7 +41,7 @@ configure_logger()
 #
 #    f(x_1,x_2,x_3)=\sin(x_1)+7\sin(x_2)^2+0.1x_3^4\sin(x_1)
 #
-# implemented as an :class:`.MDODiscipline` by the :class:`.IshigamiDiscipline`.
+# implemented as an :class:`.Discipline` by the :class:`.IshigamiDiscipline`.
 # It is commonly used
 # with the independent random variables :math:`X_1`, :math:`X_2` and :math:`X_3`
 # uniformly distributed between :math:`-\pi` and :math:`\pi`

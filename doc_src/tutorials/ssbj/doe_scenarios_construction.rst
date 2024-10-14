@@ -316,7 +316,7 @@ The range computation is added as a fourth discipline of the system scenario, wh
     sub_disciplines.append(mission)
 
     for sub_sc in sub_disciplines[0:3]:
-       sub_sc.default_inputs = {"max_iter": 20, "algo": "L-BFGS-B"}
+       sub_sc.default_input_data = {"max_iter": 20, "algo": "L-BFGS-B"}
 
 Please also note that it is compulsory to set the default inputs of the first three disciplines, which are MDO scenarios. Thus, we have to set the optimization algorithm and the maximum number of iterations for each of them.
 

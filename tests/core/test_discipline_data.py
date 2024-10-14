@@ -23,7 +23,7 @@ from pathlib import PureWindowsPath
 
 import pytest
 
-from gemseo.core.discipline_data import DisciplineData
+from gemseo.core.discipline.discipline_data import DisciplineData
 
 
 @pytest.mark.parametrize("path", [PurePosixPath("dummy"), PureWindowsPath("dummy")])

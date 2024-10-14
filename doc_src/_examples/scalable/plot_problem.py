@@ -63,8 +63,8 @@ disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
 datasets = []
 for discipline in disciplines:
     design_space = AerostructureDesignSpace()
-    design_space.filter(discipline.get_input_data_names())
-    output_names = iter(discipline.get_output_data_names())
+    design_space.filter(discipline.io.input_grammar.names)
+    output_names = iter(discipline.io.output_grammar.names)
     scenario = create_scenario(
         discipline,
         "DisciplinaryOpt",
@@ -74,7 +74,7 @@ for discipline in disciplines:
     )
     for output_name in output_names:
         scenario.add_observable(output_name)
-    scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
+    scenario.execute(algo="DiagonalDOE", n_samples=10)
     datasets.append(scenario.to_dataset(name=discipline.name, opt_naming=False))
 
 # %%
@@ -128,7 +128,7 @@ scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
 # Once the scenario is created, we can execute it as any scenario.
 # Here, we use the ``NLOPT_SLSQP`` optimization algorithm
 # with no more than 100 iterations.
-scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
+scenario.execute(algo="NLOPT_SLSQP", max_iter=100)
 
 # %%
 # We can post-process the results.

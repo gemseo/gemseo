@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -37,8 +36,6 @@ if TYPE_CHECKING:
 
     from gemseo.typing import BoolArray
     from gemseo.typing import NumberArray
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ParetoFront(BasePost[ParetoFrontSettings]):

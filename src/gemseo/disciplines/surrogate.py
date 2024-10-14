@@ -24,7 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.algos.factory import RegressorFactory
 from gemseo.mlearning.regression.quality.factory import RegressorQualityFactory
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     )
 
 
-class SurrogateDiscipline(MDODiscipline):
+class SurrogateDiscipline(Discipline):
     """A discipline wrapping a regression model built from a dataset.
 
     Examples:
@@ -84,7 +84,7 @@ class SurrogateDiscipline(MDODiscipline):
         data: IODataset | None = None,
         transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
         disc_name: str = "",
-        default_inputs: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        default_input_data: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
         **parameters: MLAlgoParameterType,
@@ -117,7 +117,7 @@ class SurrogateDiscipline(MDODiscipline):
             disc_name: The name to be given to the surrogate discipline.
                 If empty,
                 the name will be ``f"{surrogate.SHORT_ALGO_NAME}_{data.name}``.
-            default_inputs: The default values of the input variables.
+            default_input_data: The default values of the input variables.
                 If empty,
                 use the center of the learning input space.
             input_names: The names of the input variables.
@@ -159,17 +159,16 @@ class SurrogateDiscipline(MDODiscipline):
 
         super().__init__(disc_name)
         self._initialize_grammars(input_names, output_names)
-        self._set_default_inputs(default_inputs)
+        self._set_default_inputs(default_input_data)
         self.add_differentiated_inputs()
         self.add_differentiated_outputs()
         try:
-            self.regression_model.predict_jacobian(self.default_inputs)
+            self.regression_model.predict_jacobian(self.default_input_data)
             self.linearization_mode = self.LinearizationMode.AUTO
         except NotImplementedError:
             self.linearization_mode = self.LinearizationMode.FINITE_DIFFERENCES
 
-    @property
-    def _string_representation(self) -> MultiLineString:
+    def _get_string_representation(self) -> MultiLineString:
         """The string representation of the object."""
         mls = MultiLineString()
         mls.add("Surrogate discipline: {}", self.name)
@@ -183,10 +182,10 @@ class SurrogateDiscipline(MDODiscipline):
         return mls
 
     def __repr__(self) -> str:
-        return str(self._string_representation)
+        return str(self._get_string_representation())
 
     def _repr_html_(self) -> str:
-        return self._string_representation._repr_html_()
+        return self._get_string_representation()._repr_html_()
 
     def _initialize_grammars(
         self, input_names: Iterable[str] = (), output_names: Iterable[str] = ()
@@ -208,30 +207,32 @@ class SurrogateDiscipline(MDODiscipline):
 
     def _set_default_inputs(
         self,
-        default_inputs: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        default_input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """Set the default values of the inputs.
 
         Args:
-           default_inputs: The default values of the inputs.
+           default_input_data: The default values of the inputs.
                If empty, use the center of the learning input space.
         """
-        if default_inputs:
-            self.default_inputs = default_inputs
+        if default_input_data:
+            self.default_input_data = default_input_data
         else:
-            self.default_inputs = self.regression_model.input_space_center
+            self.default_input_data = self.regression_model.input_space_center
 
     def _run(self) -> None:
-        for name, value in self.regression_model.predict(self.get_input_data()).items():
-            self.local_data[name] = value.flatten()
+        for name, value in self.regression_model.predict(
+            self.io.get_input_data()
+        ).items():
+            self.io.data[name] = value.flatten()
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        self._init_jacobian(inputs, outputs, MDODiscipline.InitJacobianType.EMPTY)
-        self.jac = self.regression_model.predict_jacobian(self.get_input_data())
+        self._init_jacobian(input_names, output_names, self.InitJacobianType.EMPTY)
+        self.jac = self.regression_model.predict_jacobian(self.io.get_input_data())
 
     def get_quality_viewer(self) -> MLRegressorQualityViewer:
         """Return a viewer of the quality of the underlying regressor.

@@ -90,7 +90,8 @@ from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.problem_function import ProblemFunction
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -106,6 +107,7 @@ from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import MultiLineStreamHandler
+from gemseo.utils.pickle import to_pickle
 from gemseo.utils.xdsm import XDSM
 from gemseo.utils.xdsmizer import XDSMizer
 
@@ -130,7 +132,7 @@ def scenario() -> MDOScenario:
         "y_4",
         SobieskiDesignSpace(),
     )
-    scenario.execute({"algo": "SLSQP", "max_iter": 10})
+    scenario.execute(algo="SLSQP", max_iter=10)
     return scenario
 
 
@@ -224,7 +226,7 @@ def test_monitor_scenario() -> None:
     observer = Observer()
     monitor_scenario(scenario, observer)
 
-    scenario.execute({"algo": "SLSQP", "max_iter": 10})
+    scenario.execute(algo="SLSQP", max_iter=10)
     assert (
         observer.status_changes
         >= 2 * scenario.formulation.optimization_problem.objective.n_calls
@@ -449,12 +451,12 @@ def test_create_discipline() -> None:
     }
     miss = create_discipline("SobieskiMission", **options)
     miss.execute()
-    assert isinstance(miss, MDODiscipline)
+    assert isinstance(miss, Discipline)
 
     options_fail = {
         "dtype": "float64",
         "linearization_mode": "finite_differences",
-        "cache_type": MDODiscipline.CacheType.SIMPLE,
+        "cache_type": Discipline.CacheType.SIMPLE,
     }
 
     msg = (
@@ -469,11 +471,11 @@ def test_create_surrogate() -> None:
     """Test the creation of a surrogate discipline."""
     disc = SobieskiMission()
     input_names = ["y_24", "y_34"]
-    disc.set_cache_policy(disc.CacheType.MEMORY_FULL)
+    disc.set_cache(disc.CacheType.MEMORY_FULL)
     design_space = SobieskiDesignSpace()
     design_space.filter(input_names)
     doe = DOEScenario([disc], "DisciplinaryOpt", "y_4", design_space)
-    doe.execute({"algo": "fullfact", "n_samples": 10})
+    doe.execute(algo="fullfact", n_samples=10)
     surr = create_surrogate(
         "RBFRegressor",
         disc.cache.to_dataset(),
@@ -527,7 +529,7 @@ def test_get_discipline_inputs_schema() -> None:
     """Test that the discipline input schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_inputs_schema(mission)
-    for key in mission.get_input_data_names():
+    for key in mission.io.input_grammar.names:
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_inputs_schema(mission, True)
@@ -539,7 +541,7 @@ def test_get_discipline_outputs_schema() -> None:
     """Test that the discipline output schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_outputs_schema(mission)
-    for key in mission.get_output_data_names():
+    for key in mission.io.output_grammar.names:
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_outputs_schema(mission, True)
@@ -692,7 +694,7 @@ def test_print_configuration(capfd) -> None:
     assert not err
 
     expected = """Settings
-   MDODiscipline
+   Discipline
       The caches are activated.
       The counters are activated.
       The input data are checked before running the discipline.
@@ -705,7 +707,6 @@ def test_print_configuration(capfd) -> None:
     assert expected in out
 
     gemseo_modules = [
-        "MDODiscipline",
         "BaseOptimizationLibrary",
         "BaseDOELibrary",
         "BaseRegressor",
@@ -755,14 +756,14 @@ def test_import_analytic_discipline(tmp_wd) -> None:
     file_path = "saved_discipline.pkl"
 
     discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
-    discipline.to_pickle(file_path)
+    to_pickle(discipline, file_path)
     discipline.execute()
 
     loaded_discipline = import_discipline(file_path, AnalyticDiscipline)
     loaded_discipline.execute()
 
-    assert loaded_discipline.local_data["x"] == discipline.local_data["x"]
-    assert loaded_discipline.local_data["y"] == discipline.local_data["y"]
+    assert loaded_discipline.io.data["x"] == discipline.io.data["x"]
+    assert loaded_discipline.io.data["y"] == discipline.io.data["y"]
 
 
 def test_import_discipline(tmp_wd) -> None:
@@ -770,48 +771,50 @@ def test_import_discipline(tmp_wd) -> None:
     file_path = "saved_discipline.pkl"
 
     discipline = create_discipline("Sellar1")
-    discipline.to_pickle(file_path)
+    to_pickle(discipline, file_path)
     discipline.execute()
 
     loaded_discipline = import_discipline(file_path)
     loaded_discipline.execute()
 
-    assert loaded_discipline.local_data["x_1"] == discipline.local_data["x_1"]
-    assert loaded_discipline.local_data["y_1"] == discipline.local_data["y_1"]
+    assert loaded_discipline.io.data["x_1"] == discipline.io.data["x_1"]
+    assert loaded_discipline.io.data["y_1"] == discipline.io.data["y_1"]
 
 
-@pytest.mark.parametrize("activate_discipline_counters", [False, True])
+@pytest.mark.parametrize("enable_discipline_statistics", [False, True])
 @pytest.mark.parametrize("activate_function_counters", [False, True])
 @pytest.mark.parametrize("activate_progress_bar", [False, True])
 @pytest.mark.parametrize("activate_discipline_cache", [False, True])
-@pytest.mark.parametrize("check_input_data", [False, True])
-@pytest.mark.parametrize("check_output_data", [False, True])
+@pytest.mark.parametrize("validate_input_data", [False, True])
+@pytest.mark.parametrize("validate_output_data", [False, True])
 def test_configure(
-    activate_discipline_counters,
+    enable_discipline_statistics,
     activate_function_counters,
     activate_progress_bar,
     activate_discipline_cache,
-    check_input_data,
-    check_output_data,
+    validate_input_data,
+    validate_output_data,
 ) -> None:
     """Check that the configuration of GEMSEO works correctly."""
     configure(
-        activate_discipline_counters=activate_discipline_counters,
+        enable_discipline_statistics=enable_discipline_statistics,
         activate_function_counters=activate_function_counters,
         activate_progress_bar=activate_progress_bar,
         activate_discipline_cache=activate_discipline_cache,
-        check_input_data=check_input_data,
-        check_output_data=check_output_data,
+        validate_input_data=validate_input_data,
+        validate_output_data=validate_output_data,
     )
     assert ProblemFunction.enable_statistics == activate_function_counters
-    assert MDODiscipline.activate_counters == activate_discipline_counters
-    assert MDODiscipline.activate_input_data_check == check_input_data
-    assert MDODiscipline.activate_output_data_check == check_output_data
-    assert MDODiscipline.activate_cache == activate_discipline_cache
+    assert ExecutionStatistics.is_enabled == enable_discipline_statistics
+    assert Discipline.validate_input_data == validate_input_data
+    assert Discipline.validate_output_data == validate_output_data
+    assert Discipline.default_cache_type == (
+        Discipline.CacheType.SIMPLE
+        if activate_discipline_cache
+        else Discipline.CacheType.NONE
+    )
     assert BaseDriverLibrary.activate_progress_bar == activate_progress_bar
-    assert Scenario.activate_input_data_check
-    assert Scenario.activate_output_data_check
-    assert BaseMDA.activate_cache
+    assert BaseMDA.default_cache_type == Discipline.CacheType.SIMPLE
     configure()
 
 
@@ -819,10 +822,10 @@ def test_configure_default() -> None:
     """Check the default use of configure."""
     configure()
     assert ProblemFunction.enable_statistics is True
-    assert MDODiscipline.activate_counters is True
-    assert MDODiscipline.activate_input_data_check is True
-    assert MDODiscipline.activate_output_data_check is True
-    assert MDODiscipline.activate_cache is True
+    assert ExecutionStatistics.is_enabled is True
+    assert Discipline.validate_input_data is True
+    assert Discipline.validate_output_data is True
+    assert Discipline.default_cache_type == Discipline.CacheType.SIMPLE
     assert BaseDriverLibrary.activate_progress_bar is True
 
 

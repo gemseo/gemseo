@@ -74,7 +74,7 @@ It is used to check whether an input data has been cached in.
 class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
     """A base class for caches with a dictionary-like interface.
 
-    Caches are mainly used to store the :class:`.MDODiscipline` evaluations.
+    Caches are mainly used to store the :class:`.Discipline` evaluations.
 
     A cache entry is defined by:
 
@@ -140,7 +140,7 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
     name: str
     """The name of the cache."""
 
-    tolerance: float
+    _tolerance: float
     """The tolerance below which two input arrays are considered equal."""
 
     class Group(StrEnum):
@@ -178,14 +178,34 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
                 rather than re-evaluating the discipline.
                 This tolerance could be useful to optimize CPU time.
                 It could be something like ``2 * numpy.finfo(float).eps``.
-            name: A name for the cache.
-                If empty, use the class name.
+            name: A name for the cache. If empty, use the class name.
         """  # noqa: D205, D212, D415
-        self.tolerance = tolerance
+        self._tolerance = tolerance
         self.name = name or self.__class__.__name__
         self.__names_to_sizes = {}
         self.__input_names = []
         self._output_names = []
+
+    @property
+    def tolerance(self) -> float:
+        """The tolerance below which two input arrays are considered equal.
+
+        Raises:
+            ValueError: If the tolerance is not positive.
+        """
+        return self._tolerance
+
+    @tolerance.setter
+    def tolerance(self, value: float) -> None:
+        if value < 0.0:
+            msg = f"The tolerance shall be positive: {value}"
+            raise ValueError(msg)
+        self._tolerance = value
+        self._post_set_tolerance()
+
+    @staticmethod
+    def _post_set_tolerance() -> None:
+        """Process after setting the tolerance, to be used by disciplines processes."""
 
     @property
     def input_names(self) -> list[str]:
@@ -223,24 +243,23 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
 
         return self.__names_to_sizes
 
-    @property
-    def _string_representation(self) -> MultiLineString:
+    def _get_string_representation(self) -> MultiLineString:
         """The string representation of the cache."""
         mls = MultiLineString()
         mls.add("Name: {}", self.name)
         mls.indent()
         mls.add("Type: {}", self.__class__.__name__)
-        mls.add("Tolerance: {}", self.tolerance)
+        mls.add("Tolerance: {}", self._tolerance)
         mls.add("Input names: {}", self.input_names)
         mls.add("Output names: {}", self.output_names)
         mls.add("Length: {}", len(self))
         return mls
 
     def __repr__(self) -> str:
-        return str(self._string_representation)
+        return str(self._get_string_representation())
 
     def _repr_html_(self) -> str:
-        return self._string_representation._repr_html_()
+        return self._get_string_representation()._repr_html_()
 
     def __setitem__(
         self,

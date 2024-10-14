@@ -259,14 +259,14 @@ as well as the rules.
     ERROR - 15:15:19 : JSON Grammar schema = {u'name': u'SobieskiMission_input', 'required': [u'x_shared', u'y_14', u'y_24', u'y_34'], u'id': u'#SobieskiMission_input', u'$schema': u'http://json-schema.org/draft-04/schema', 'type': u'object', 'properties': {u'y_24': {'items': {'type': u'number'}, 'type': u'array'}, u'x_shared': {'items': {'type': u'number'}, 'type': u'array'}, u'y_34': {'items': {'type': u'number'}, 'type': u'array'}, u'y_14': {'items': {'type': u'number'}, 'type': u'array'}}}
 
 The existence of required inputs is also checked before running.
-The wrapper :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission` has :attr:`!MDODiscipline.default_inputs` set for all its inputs, so
+The wrapper :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission` has :attr:`!MDODiscipline.default_input_data` set for all its inputs, so
 we need first to erase them to show that.
 
 .. code-block:: python
 
     from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
     misssion = SobieskiMission()
-    misssion.default_inputs = {}
+    misssion.default_input_data = {}
     misssion.execute(input_data={"y_14": [2.0, "a"]})
 
 Note that all errors are displayed before raising the exception.
@@ -337,7 +337,7 @@ it will call the public ``execute`` method,
 that will:
 
 #. Add default inputs to the input_data if some inputs are not defined
-   in ``input_data`` but exist in :attr:`!MDODiscipline.default_inputs`.
+   in ``input_data`` but exist in :attr:`!MDODiscipline.default_input_data`.
 #. Check if the last execution of the discipline was called with
    identical inputs,
    buffered in :attr:`!MDODiscipline._in_buffered`,
@@ -358,6 +358,6 @@ that will:
 #. Store the outputs,
    *i.e.* stores  :meth:`!MDODiscipline.local_data` in :attr:`!MDODiscipline.cache`.
 #. Update the :attr:`!MDODiscipline.status` to DONE or FAILED.
-#. Update accumulated execution time :attr:`!MDODiscipline.exec_time`.
+#. Update accumulated execution time :attr:`!ExecutionStatistics.execution_time`.
 
 A complete example of discipline integration is given in :ref:`sellar_mdo`.

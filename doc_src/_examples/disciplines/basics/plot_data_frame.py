@@ -30,7 +30,7 @@ from pydantic import BaseModel
 
 from gemseo import configure_logger
 from gemseo.core.data_converters.pydantic import PydanticGrammarDataConverter
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 
 # %%
@@ -102,12 +102,12 @@ class DataConverter(PydanticGrammarDataConverter):
 PydanticGrammar.DATA_CONVERTER_CLASS = DataConverter
 
 
-class DataFrameDiscipline(MDODiscipline):
+class DataFrameDiscipline(Discipline):
     def __init__(self) -> None:
-        super().__init__(grammar_type=MDODiscipline.GrammarType.PYDANTIC)
+        super().__init__(grammar_type=Discipline.GrammarType.PYDANTIC)
         self.input_grammar = PydanticGrammar("inputs", model=InputGrammarModel)
         self.output_grammar = PydanticGrammar("outputs", model=OutputGrammarModel)
-        self.default_inputs = {"df": DataFrame(data={"x": [0.0]})}
+        self.default_input_data = {"df": DataFrame(data={"x": [0.0]})}
 
     def _run(self) -> None:
         df = self.local_data["df"]

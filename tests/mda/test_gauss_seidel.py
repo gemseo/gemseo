@@ -30,7 +30,7 @@ from numpy.testing import assert_almost_equal
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -41,6 +41,7 @@ from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGau
 from gemseo.utils.testing.helpers import image_comparison
 
 from ..core.test_chain import two_virtual_disciplines  # noqa: F401
+from .utils import generate_parallel_doe
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -102,9 +103,9 @@ def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
 def test_sobieski(tmp_wd) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
     mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
-    mda.default_inputs["x_shared"] += 0.1
+    mda.default_input_data["x_shared"] += 0.1
     mda.execute()
-    mda.default_inputs["x_shared"] += 0.1
+    mda.default_input_data["x_shared"] += 0.1
     mda.warm_start = True
     mda.execute()
 
@@ -114,18 +115,18 @@ def test_sobieski(tmp_wd) -> None:
 
 
 def test_expected_workflow() -> None:
-    """Test MDA GaussSeidel workflow should be disciplines sequence."""
-    disc1 = MDODiscipline()
-    disc2 = MDODiscipline()
-    disc3 = MDODiscipline()
+    """Test MDA GaussSeidel process_flow should be disciplines sequence."""
+    disc1 = Discipline()
+    disc2 = Discipline()
+    disc3 = Discipline()
     disciplines = [disc1, disc2, disc3]
 
     mda = MDAGaussSeidel(disciplines)
     expected = (
-        "{MDAGaussSeidel(None), [MDODiscipline(None), "
-        "MDODiscipline(None), MDODiscipline(None), ], }"
+        "{MDAGaussSeidel(PENDING), [Discipline(PENDING), "
+        "Discipline(PENDING), Discipline(PENDING)]}"
     )
-    assert str(mda.get_expected_workflow()) == expected
+    assert str(mda.get_process_flow().get_execution_flow()) == expected
 
 
 def test_expected_workflow_with_adapter() -> None:
@@ -165,19 +166,18 @@ def test_expected_workflow_with_adapter() -> None:
     mda = MDAGaussSeidel(adapters)
 
     expected = (
-        "{MDAGaussSeidel(None), ["
-        "{PropulsionScenario(None), [SobieskiPropulsion(None), "
-        "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        "SobieskiMission(None), ], }, "
-        "{AeroScenario(None), [SobieskiPropulsion(None), "
-        "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        "SobieskiMission(None), ], }, "
-        "{StructureScenario(None), [SobieskiPropulsion(None), "
-        "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        "SobieskiMission(None), ], }, "
-        "], }"
+        "{MDAGaussSeidel(PENDING), ["
+        "{PropulsionScenario(PENDING), [SobieskiPropulsion(PENDING), "
+        "SobieskiStructure(PENDING), SobieskiAerodynamics(PENDING), "
+        "SobieskiMission(PENDING)]}, "
+        "{AeroScenario(PENDING), [SobieskiPropulsion(PENDING), "
+        "SobieskiStructure(PENDING), SobieskiAerodynamics(PENDING), "
+        "SobieskiMission(PENDING)]}, "
+        "{StructureScenario(PENDING), [SobieskiPropulsion(PENDING), "
+        "SobieskiStructure(PENDING), SobieskiAerodynamics(PENDING), "
+        "SobieskiMission(PENDING)]}]}"
     )
-    assert str(mda.get_expected_workflow()) == expected
+    assert str(mda.get_process_flow().get_execution_flow()) == expected
 
 
 def test_self_coupled() -> None:
@@ -197,24 +197,24 @@ def test_self_coupled() -> None:
         assert abs(jac1["o"]["x"][0, 0] - jac2["o"]["x"][0, 0]) < 1e-3
 
 
-class SelfCoupledDisc(MDODiscipline):
+class SelfCoupledDisc(Discipline):
     def __init__(self, plus_y=False) -> None:
-        MDODiscipline.__init__(self)
+        super().__init__()
         self.input_grammar.update_from_names(["y", "x"])
         self.output_grammar.update_from_names(["y", "o"])
-        self.default_inputs["y"] = array([0.25])
-        self.default_inputs["x"] = array([0.0])
+        self.default_input_data["y"] = array([0.25])
+        self.default_input_data["x"] = array([0.0])
         self.coeff = 1.0
         if not plus_y:
             self.coeff = -1.0
 
     def _run(self) -> None:
-        self.local_data["y"] = (
-            1.0 + self.coeff * 0.5 * self.local_data["y"] + self.local_data["x"]
+        self.io.data["y"] = (
+            1.0 + self.coeff * 0.5 * self.io.data["y"] + self.io.data["x"]
         )
-        self.local_data["o"] = self.local_data["y"] + self.local_data["x"]
+        self.io.data["o"] = self.io.data["y"] + self.io.data["x"]
 
-    def _compute_jacobian(self, inputs=None, outputs=None) -> None:
+    def _compute_jacobian(self, input_names=(), output_names=()) -> None:
         self.jac = {
             "y": {"y": self.coeff * array([[0.5]]), "x": array([[1.0]])},
             "o": {"y": array([[1.0]]), "x": array([[1.0]])},
@@ -230,14 +230,9 @@ def test_log_convergence() -> None:
     assert mda.log_convergence
 
 
-def test_parallel_doe(generate_parallel_doe_data) -> None:
-    """Test the execution of GaussSeidel in parallel.
-
-    Args:
-        generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_name`.
-    """
-    obj = generate_parallel_doe_data("MDAGaussSeidel")
+def test_parallel_doe() -> None:
+    """Test the execution of GaussSeidel in parallel."""
+    obj = generate_parallel_doe("MDAGaussSeidel")
     assert isclose(array([-obj]), array([608.185]), atol=1e-3)
 
 
@@ -263,7 +258,7 @@ def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) 
     """
     mda = SobieskiMDAGaussSeidel(max_mda_iter=15)
     mda.execute()
-    mda.default_inputs["x_shared"] += 0.1
+    mda.default_input_data["x_shared"] += 0.1
     mda.execute()
     mda.plot_residual_history(save=False, n_iterations=n_iterations, logscale=logscale)
 
@@ -279,8 +274,8 @@ def test_virtual_exe_mda(two_virtual_disciplines):  # noqa: F811
     """Test an MDA with disciplines in virtual execution mode."""
     chain = MDAGaussSeidel(two_virtual_disciplines)
     chain.execute()
-    assert chain.local_data["x"] == 1.0
-    assert chain.local_data["y"] == 2.0
+    assert chain.io.data["x"] == 1.0
+    assert chain.io.data["y"] == 2.0
 
 
 def test_max_mda_iter_0():
@@ -291,12 +286,12 @@ def test_max_mda_iter_0():
     mda.execute()
 
     for discipline in mda.disciplines:
-        assert discipline.n_calls == 1
+        assert discipline.execution_statistics.n_calls == 1
 
-    output_data = mda.get_output_data()
+    output_data = mda.io.get_output_data()
 
     expected_output_data = {}
-    local_data = dict(mda.default_inputs)
+    local_data = dict(mda.input_grammar.defaults)
     for discipline in mda.disciplines:
         discipline.cache.clear()
         discipline.execute(local_data)

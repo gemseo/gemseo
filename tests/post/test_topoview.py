@@ -46,7 +46,7 @@ def scenario_and_dimensions():
     )
     scenario.add_observable("xPhys")
     scenario.add_constraint("volume fraction", constraint_type="ineq", value=vf0)
-    scenario.execute({"max_iter": 1, "algo": "NLOPT_MMA"})
+    scenario.execute(max_iter=1, algo="NLOPT_MMA")
     return scenario, n_el, n_el
 
 

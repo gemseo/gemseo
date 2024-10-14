@@ -81,7 +81,7 @@ class SimpleCache(BaseCache):
             Whether the input data is cached.
         """
         return len(self.__inputs) != 0 and DATA_COMPARATOR(
-            input_data, self.__inputs, self.tolerance
+            input_data, self.__inputs, self._tolerance
         )
 
     def cache_outputs(  # noqa:D102

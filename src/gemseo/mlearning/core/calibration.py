@@ -33,7 +33,7 @@ phenomenon is called the curse of dimensionality.
 In this module, the :class:`.MLAlgoCalibration` class aims to calibrate the hyper-
 parameters in order to minimize this measure of the generalization quality over a
 calibration parameter space. This class relies on the :class:`.MLAlgoAssessor` class
-which is a discipline (:class:`.MDODiscipline`) built from a machine learning algorithm
+which is a discipline (:class:`.Discipline`) built from a machine learning algorithm
 (:class:`.BaseMLAlgo`), a dataset (:class:`.Dataset`), a quality measure
 (:class:`.BaseMLAlgoQuality`) and various options for the data scaling, the quality
 measure and the machine learning algorithm. The inputs of this discipline are hyper-
@@ -49,7 +49,7 @@ from numpy import array
 from numpy import ndarray
 
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from gemseo.scenarios.scenario import ScenarioInputDataType
 
 
-class MLAlgoAssessor(MDODiscipline):
+class MLAlgoAssessor(Discipline):
     """Discipline assessing the quality of a machine learning algorithm.
 
     This quality depends on the values of parameters to calibrate with the
@@ -164,11 +164,11 @@ class MLAlgoAssessor(MDODiscipline):
         """Run method.
 
         This method creates a new instance of the machine learning algorithm, from the
-        hyper-parameters stored in the local_data attribute of the
+        hyper-parameters stored in the data attribute of the
         :class:`.MLAlgoAssessor`. It trains it on the learning dataset and measures its
         quality with the :class:`.BaseMLAlgoQuality`.
         """
-        inputs = self.get_input_data()
+        inputs = self.io.get_input_data()
         for index in inputs:
             if len(inputs[index]) == 1:
                 inputs[index] = inputs[index][0]
@@ -182,10 +182,10 @@ class MLAlgoAssessor(MDODiscipline):
             measure,
             measure.EvaluationFunctionName[self.__measure_evaluation_method_name],
         )
-        self.store_local_data(
-            criterion=array([compute_criterion(**self.measure_options)]),
-            learning=array([measure.compute_learning_measure(multioutput=False)]),
-        )
+        self.io.update_output_data({
+            "criterion": array([compute_criterion(**self.measure_options)]),
+            "learning": array([measure.compute_learning_measure(multioutput=False)]),
+        })
         self.algos.append(algo)
 
 
@@ -298,7 +298,7 @@ class MLAlgoCalibration:
             maximize_objective=self.maximize_objective,
         )
         self.scenario.add_observable(self.algo_assessor.LEARNING)
-        self.scenario.execute(input_data)
+        self.scenario.execute(**input_data)
         self.dataset = self.scenario.to_dataset(opt_naming=False)
         self.optimal_parameters = self.scenario.optimization_result.x_opt_as_dict
         self.optimal_criterion = self.scenario.optimization_result.f_opt

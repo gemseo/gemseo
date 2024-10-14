@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test analytical Jacobian expressions against finite difference approximations.
 
-This is done using the built in check method of MDODiscipline. The regression models are
+This is done using the built in check method of Discipline. The regression models are
 thus converted to surrogate disciplines. The Jacobians are checked over different
 combinations of datasets (scalar and vector inputs and outputs), transformers and
 parameters.
@@ -65,7 +65,7 @@ def create_dataset(
         objective_name (str): The name of the objective variable.
     """
     discipline = AnalyticDiscipline(expressions)
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
     design_space.add_variable("x_1", lower_bound=-3.0, upper_bound=3.0)
     for name, bounds in design_space_variables.items():
@@ -73,7 +73,7 @@ def create_dataset(
     scenario = DOEScenario(
         [discipline], "DisciplinaryOpt", objective_name, design_space
     )
-    scenario.execute({"algo": "lhs", "n_samples": LEARNING_SIZE})
+    scenario.execute(algo="lhs", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset(dataset_name)
 
 

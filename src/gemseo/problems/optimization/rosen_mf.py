@@ -28,37 +28,41 @@ from numpy import zeros
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
-from gemseo import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
-class RosenMF(MDODiscipline):
+class RosenMF(Discipline):
     r"""A multi-fidelity Rosenbrock discipline.
 
     Its expression is :math:`\mathrm{fidelity} * \mathrm{Rosenbrock}(x)`
     where both :math:`\mathrm{fidelity}` and :math:`x` are provided as input data.
     """
 
+    auto_detect_grammar_files = True
+
     def __init__(self, dimension: int = 2) -> None:
         """
         Args:
             dimension: The dimension of the design space.
         """  # noqa: D205 D212
-        super().__init__(auto_detect_grammar_files=True)
-        self.default_inputs = {"x": zeros(dimension), "fidelity": 1.0}
+        super().__init__()
+        self.default_input_data = {"x": zeros(dimension), "fidelity": 1.0}
 
     def _run(self) -> None:
-        fidelity = self.local_data["fidelity"]
-        x_val = self.local_data["x"]
-        self.local_data["rosen"] = fidelity * rosen(x_val)
+        fidelity = self.io.data["fidelity"]
+        x_val = self.io.data["x"]
+        self.io.data["rosen"] = fidelity * rosen(x_val)
 
     def _compute_jacobian(
-        self, inputs: Iterable[str] | None = None, outputs: Iterable[str] | None = None
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        x_val = self.local_data["x"]
-        fidelity = self.local_data["fidelity"]
+        x_val = self.io.data["x"]
+        fidelity = self.io.data["fidelity"]
         self.jac = {
             "rosen": {
                 "x": atleast_2d(fidelity * rosen_der(x_val)),

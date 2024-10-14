@@ -212,7 +212,7 @@ where:
         sizes = design_space.variable_sizes
         disciplines_scal = []
         for discipline in disciplines:
-            discipline.set_cache_policy(cache_type=discipline.CacheType.MEMORY_FULL)
+            discipline.set_cache(cache_type=discipline.CacheType.MEMORY_FULL)
             output = discipline.get_output_data_names()[0]
             disc_design_space = deepcopy(design_space)
             disc_design_space.filter(discipline.get_input_data_names())

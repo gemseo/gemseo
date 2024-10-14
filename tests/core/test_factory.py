@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import logging
 import re
 import shutil
 import subprocess
@@ -212,18 +211,5 @@ def test_str() -> None:
 
 def test_positional_arguments() -> None:
     """Check that BaseFactory supports the positional arguments."""
-    cache = CacheFactory().create("SimpleCache", 0.1)
+    cache = CacheFactory().create("SimpleCache", tolerance=0.1)
     assert cache.tolerance == 0.1
-
-
-def test_creation_error(caplog) -> None:
-    """Check that BaseFactory logs a message in the case of a creation error."""
-    with pytest.raises(TypeError):
-        CacheFactory().create("SimpleCache", 1, 2, 3, a=2)
-
-    record_tuple = caplog.record_tuples[0]
-    assert record_tuple[1] == logging.ERROR
-    assert record_tuple[2] == (
-        "Failed to create class SimpleCache with positional arguments (1, 2, 3) "
-        "and keyword arguments {'a': 2}."
-    )

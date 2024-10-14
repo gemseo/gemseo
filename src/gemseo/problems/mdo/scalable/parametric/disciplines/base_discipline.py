@@ -24,7 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from gemseo.problems.mdo.scalable.parametric.core.disciplines.base_discipline import (  # noqa: E501
@@ -32,10 +32,10 @@ if TYPE_CHECKING:
     )
 
 
-class BaseDiscipline(MDODiscipline):
+class BaseDiscipline(Discipline):
     """Base class for the disciplines of the scalable problem.
 
-    This :class:`.MDODiscipline` relies on a |g|-free core discipline.
+    This :class:`.Discipline` relies on a |g|-free core discipline.
     """
 
     _CORE_DISCIPLINE_CLASS: type[_BaseDiscipline]
@@ -62,4 +62,4 @@ class BaseDiscipline(MDODiscipline):
         super().__init__(self._discipline.name)
         self.input_grammar.update_from_names(self._discipline.input_names)
         self.output_grammar.update_from_names(self._discipline.output_names)
-        self.default_inputs = default_input_values
+        self.default_input_data = default_input_values

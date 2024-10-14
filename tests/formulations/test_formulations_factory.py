@@ -28,9 +28,7 @@ from gemseo.formulations.mdf import MDF
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.utils.testing.helpers import concretize_classes
 from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulationFactory
-from tests.formulations.not_mdo_formulations.formulation_a import ANotMDOFormulation
 
 
 @pytest.fixture
@@ -39,9 +37,13 @@ def factory(reset_factory) -> MDOFormulationFactory:
     return MDOFormulationFactory()
 
 
-def test_is_available(monkeypatch, factory) -> None:
-    """Check the method is_available."""
+@pytest.fixture
+def non_mdo_formulations(monkeypatch):
     monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "not_mdo_formulations")
+
+
+def test_is_available(non_mdo_formulations, factory) -> None:
+    """Check the method is_available."""
     assert factory.is_available("MDF")
     assert not factory.is_available("ANotMDOFormulation")
 
@@ -74,10 +76,8 @@ def test_create(factory) -> None:
     ]
 
 
-def test_not_mdo_formulation() -> None:
-    """Check the use of a factory of _BaseFormulation that is not a
-    BaseMDOFormulation."""
-    with concretize_classes(ANotMDOFormulation):
-        factory = NotMDOFormulationFactory()
-        assert factory.is_available("ANotMDOFormulation")
-        assert not factory.is_available("MDF")
+def test_not_mdo_formulation(non_mdo_formulations, reset_factory) -> None:
+    """Check the use of a BaseFormulation factory that is not a BaseMDOFormulation."""
+    factory = NotMDOFormulationFactory()
+    assert factory.is_available("ANotMDOFormulation")
+    assert not factory.is_available("MDF")

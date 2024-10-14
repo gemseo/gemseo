@@ -30,6 +30,8 @@ from typing import ClassVar
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.discipline import Discipline
+from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 
@@ -38,7 +40,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
-    from gemseo.core.discipline import MDODiscipline
     from gemseo.scenarios.mdo_scenario import MDOScenario
     from gemseo.utils.xdsm import XDSM
 
@@ -151,7 +152,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     @staticmethod
     def _create_scenario(
-        disciplines: Iterable[MDODiscipline],
+        disciplines: Iterable[Discipline],
         scenario_description: Mapping[str, Iterable[str]],
     ) -> MDOScenario:
         """Create an MDO scenario.
@@ -164,7 +165,10 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
             An MDO scenario.
         """
         design_space = create_design_space()
-        coupling_variables = set(CouplingStructure(disciplines).all_couplings)
+        real_disciplines = tuple(
+            disc for disc in disciplines if isinstance(disc, Discipline)
+        )
+        coupling_variables = set(CouplingStructure(real_disciplines).all_couplings)
         design_variables = set(scenario_description[XLSStudyParser.DESIGN_VARIABLES])
         for name in sorted(coupling_variables | design_variables):
             design_space.add_variable(name)
@@ -194,7 +198,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     def _get_disciplines_instances(
         self, scenario_description: Mapping[str, Iterable[str]]
-    ) -> list[MDODiscipline]:
+    ) -> list[Discipline]:
         """Return the disciplines from a scenario.
 
         Args:
@@ -230,7 +234,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
                 disciplines = self._get_disciplines_instances(scenario_description)
                 if disciplines:  # All dependencies resolved
                     for discipline in disciplines:
-                        if not discipline.is_scenario():
+                        if not isinstance(discipline, Scenario):
                             non_scenario_disciplines[discipline.name] = discipline
 
                     scenario = self._create_scenario(disciplines, scenario_description)

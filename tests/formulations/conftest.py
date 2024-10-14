@@ -107,7 +107,7 @@ def build_and_run_idf_scenario_with_constraints(
         },
     }
 
-    scenario.execute(run_inputs)
+    scenario.execute(**run_inputs)
 
     obj_opt = scenario.optimization_result.f_opt
     is_feasible = scenario.optimization_result.is_feasible

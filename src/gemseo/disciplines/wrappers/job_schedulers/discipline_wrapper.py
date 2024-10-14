@@ -27,7 +27,7 @@ from typing import Any
 from typing import ClassVar
 from uuid import uuid1
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 LOGGER = getLogger(__name__)
 
 
-class JobSchedulerDisciplineWrapper(MDODiscipline):
+class JobSchedulerDisciplineWrapper(Discipline):
     """A discipline that wraps the execution with job schedulers.
 
     The discipline is serialized to the disk, its inputs too, then a job file is created
@@ -53,7 +53,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
     DISC_OUTPUT_FILE_NAME: ClassVar[str] = "output_data.pckl"
     TEMPLATES_DIR_PATH: ClassVar[Path] = Path(__file__).parent / "templates"
 
-    _discipline: MDODiscipline
+    _discipline: Discipline
     """The discipline to wrap in the job scheduler."""
     _job_template_path: Path
     """The path to the template to be used to make a submission to the job scheduler
@@ -73,7 +73,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
 
     def __init__(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         workdir_path: Path,
         scheduler_run_command: str = "sbatch --wait",
         job_out_filename: str = "batch.srun",
@@ -98,7 +98,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
         Raises:
             OSError: If ``job_template_path`` does not exist.
         """  # noqa:D205 D212 D415
-        super().__init__(discipline.name, grammar_type=discipline.grammar_type)
+        super().__init__(discipline.name)
         self._discipline = discipline
         self._use_template = use_template
         self._job_template_path = job_template_path
@@ -112,7 +112,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
 
         self.input_grammar = self._discipline.input_grammar
         self.output_grammar = self._discipline.output_grammar
-        self.default_inputs = self._discipline.default_inputs
+        self.default_input_data = self._discipline.default_input_data
         self._workdir_path = workdir_path
         self.pickled_discipline = pickle.dumps(self._discipline)
         self.job_file_template = None
@@ -252,7 +252,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
 
         If an exception is contained inside, raises it.
 
-        If the outputs contain data, it updates self.local_data with it.
+        If the outputs contain data, it updates self.io.data with it.
 
         Args:
             current_workdir: The current working directory.
@@ -288,7 +288,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
                 current_workdir,
             )
 
-            self.local_data.update(output[0])
+            self.io.data.update(output[0])
             if output[1]:
                 self.jac = output[1]
 
@@ -328,7 +328,7 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
         discipline_path.write_bytes(self.pickled_discipline)
         inputs_path = current_workdir / self.DISC_INPUT_FILE_NAME
         serialized_data = pickle.dumps((
-            self.local_data,
+            self.io.data,
             differentiated_inputs,
             differentiated_outputs,
         ))
@@ -400,9 +400,9 @@ class JobSchedulerDisciplineWrapper(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         self._run_or_compute_jacobian(
-            True, differentiated_inputs=inputs, differentiated_outputs=outputs
+            True, differentiated_inputs=input_names, differentiated_outputs=output_names
         )

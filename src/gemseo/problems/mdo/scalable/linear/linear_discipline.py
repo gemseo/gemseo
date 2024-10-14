@@ -26,7 +26,7 @@ from scipy.sparse import rand as sp_rand
 from strenum import LowercaseStrEnum
 
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.seeder import SEED
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class LinearDiscipline(MDODiscipline):
+class LinearDiscipline(Discipline):
     """A discipline that computes random outputs from inputs.
 
     The output are computed by a product with a random matrix and the inputs. The inputs
@@ -65,7 +65,6 @@ class LinearDiscipline(MDODiscipline):
         output_names: Sequence[str],
         inputs_size: int = 1,
         outputs_size: int = 1,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         matrix_format: MatrixFormat = MatrixFormat.DENSE,
         matrix_density: float = DEFAULT_MATRIX_DENSITY,
         matrix_free_jacobian: bool = False,
@@ -79,7 +78,6 @@ class LinearDiscipline(MDODiscipline):
                 each input data is of shape (inputs_size,).
             outputs_size: The size of output data vectors,
                 each output data is of shape (outputs_size,).
-            grammar_type: The type of grammars.
             matrix_format: The format of the Jacobian matrix.
             matrix_density: The percentage of non-zero elements when the matrix is
                 sparse.
@@ -94,7 +92,7 @@ class LinearDiscipline(MDODiscipline):
         if not output_names:
             msg = "output_names must not be empty."
             raise ValueError(msg)
-        super().__init__(name, grammar_type=grammar_type)
+        super().__init__(name)
         self.input_names = input_names
         self.output_names = output_names
 
@@ -127,14 +125,12 @@ class LinearDiscipline(MDODiscipline):
         self.__sizes_d = dict.fromkeys(self.input_names, self.inputs_size)
         self.__sizes_d.update(dict.fromkeys(self.output_names, self.outputs_size))
 
-        self.default_inputs = {k: 0.5 * ones(inputs_size) for k in input_names}
+        self.default_input_data = {k: 0.5 * ones(inputs_size) for k in input_names}
 
     def _run(self) -> None:
-        input_data = concatenate_dict_of_arrays_to_array(
-            self.local_data, self.input_names
-        )
+        input_data = concatenate_dict_of_arrays_to_array(self.io.data, self.input_names)
         output_data = self.mat.dot(input_data)
-        self.local_data.update(
+        self.io.data.update(
             split_array_to_dict_of_arrays(
                 output_data, self.__sizes_d, self.output_names
             )
@@ -142,8 +138,8 @@ class LinearDiscipline(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs: Sequence[str] | None = None,
-        outputs: Sequence[str] | None = None,
+        input_names: Sequence[str] = (),
+        output_names: Sequence[str] = (),
     ) -> None:
         self.jac = split_array_to_dict_of_arrays(
             self.mat, self.__sizes_d, self.output_names, self.input_names

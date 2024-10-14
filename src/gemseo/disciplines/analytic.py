@@ -37,7 +37,7 @@ from sympy import lambdify
 from sympy import symbols
 from sympy.parsing.sympy_parser import parse_expr
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class AnalyticDiscipline(MDODiscipline):
+class AnalyticDiscipline(Discipline):
     """A discipline based on analytic expressions.
 
     Use `SymPy <https://www.sympy.org/>`_, a symbolic calculation engine.
@@ -70,7 +70,7 @@ class AnalyticDiscipline(MDODiscipline):
     input_names: list[str]
     """The names of the inputs."""
 
-    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union([
+    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union([
         "_sympy_funcs",
         "_sympy_jac_funcs",
     ])
@@ -79,7 +79,6 @@ class AnalyticDiscipline(MDODiscipline):
         self,
         expressions: Mapping[str, str | Expr],
         name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:
@@ -87,7 +86,7 @@ class AnalyticDiscipline(MDODiscipline):
             name: The name of the discipline.
                 If ``None``, use the class name.
         """  # noqa: D205, D212, D415
-        super().__init__(name, grammar_type=grammar_type)
+        super().__init__(name)
         self.expressions = expressions
         self.output_names_to_symbols = {}
         self.input_names = []
@@ -98,7 +97,6 @@ class AnalyticDiscipline(MDODiscipline):
         self._init_expressions()
         self._init_grammars()
         self._init_default_inputs()
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def _init_grammars(self) -> None:
         """Initialize the input an output grammars from the expressions' dictionary."""
@@ -182,8 +180,8 @@ class AnalyticDiscipline(MDODiscipline):
 
     def _init_default_inputs(self) -> None:
         """Initialize the default inputs of the discipline with zeros."""
-        self.default_inputs = {
-            input_name: zeros(1) for input_name in self.get_input_data_names()
+        self.default_input_data = {
+            input_name: zeros(1) for input_name in self.io.input_grammar.names
         }
 
     @staticmethod
@@ -217,7 +215,7 @@ class AnalyticDiscipline(MDODiscipline):
                 *(input_data[input_symbol] for input_symbol in input_symbols)
             )
             output_data[output_name] = expand_dims(output_value, 0)
-        self.store_local_data(**output_data)
+        self.io.update_output_data(output_data)
 
     def __get_local_data_without_namespace(self) -> dict[str, numpy.number]:
         """Return the local data without namespace prefixes.
@@ -226,18 +224,18 @@ class AnalyticDiscipline(MDODiscipline):
             The local data without namespace prefixes.
         """
         return {
-            input_name: self.local_data[input_name].item()
-            for input_name in self.get_input_data_names(with_namespaces=False)
+            input_name: self.io.data[input_name].item()
+            for input_name in self.io.input_grammar.names_without_namespace
         }
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         # otherwise there may be missing terms
         # if some formula have no dependency
-        input_names, output_names = self._init_jacobian(inputs, outputs)
+        input_names, output_names = self._init_jacobian(input_names, output_names)
         input_values = self.__get_local_data_without_namespace()
         for output_name in output_names:
             gradient_function = self._sympy_jac_funcs[output_name]

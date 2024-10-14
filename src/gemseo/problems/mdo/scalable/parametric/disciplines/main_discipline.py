@@ -74,26 +74,23 @@ class MainDiscipline(BaseDiscipline):
         super().__init__(*t_i, **default_input_values)
 
     def _run(self) -> None:
-        self.store_local_data(
-            **self._discipline(
-                self._local_data[SHARED_DESIGN_VARIABLE_NAME],
-                **{
-                    y_i_name: self._local_data[y_i_name]
-                    for y_i_name in self.__y_i_names
-                },
+        self.io.update_output_data(
+            self._discipline(
+                self.io.data[SHARED_DESIGN_VARIABLE_NAME],
+                **{y_i_name: self.io.data[y_i_name] for y_i_name in self.__y_i_names},
             )
         )
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        self._init_jacobian(inputs, outputs)
+        self._init_jacobian(input_names, output_names)
         jac = self._discipline(
-            self.local_data[SHARED_DESIGN_VARIABLE_NAME],
+            self.io.data[SHARED_DESIGN_VARIABLE_NAME],
             compute_jacobian=True,
-            **{y_i_name: self.local_data[y_i_name] for y_i_name in self.__y_i_names},
+            **{y_i_name: self.io.data[y_i_name] for y_i_name in self.__y_i_names},
         )
         for output_name in jac:
             self_sub_jac = self.jac[output_name]

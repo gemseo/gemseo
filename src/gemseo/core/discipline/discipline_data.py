@@ -26,10 +26,10 @@ from typing import Any
 from gemseo.utils.portable_path import to_os_specific
 
 if TYPE_CHECKING:
-    from gemseo import StrKeyMapping
+    from gemseo.typing import StrKeyMapping
 
 
-class DisciplineData(dict):
+class DisciplineData(dict[str, Any]):
     """A dict-like class for handling disciplines data."""
 
     def __getstate__(self) -> dict[str, Any]:

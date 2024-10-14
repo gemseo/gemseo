@@ -33,7 +33,7 @@ from numpy.testing import assert_array_equal
 
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
@@ -67,7 +67,7 @@ def parameter_space() -> ParameterSpace:
     return space
 
 
-class Ishigami1D(MDODiscipline):
+class Ishigami1D(Discipline):
     """A version of the Ishigami function indexed by a 1D variable."""
 
     def __init__(self) -> None:
@@ -76,10 +76,13 @@ class Ishigami1D(MDODiscipline):
         self.output_grammar.update_from_names(["out"])
 
     def _run(self) -> None:
-        x_1, x_2, x_3 = self.get_local_data_by_name(["x1", "x2", "x3"])
+        local_data = self.io.data
+        x_1 = local_data["x1"]
+        x_2 = local_data["x2"]
+        x_3 = local_data["x3"]
         time = linspace(0, 1, 100)
         output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3**4 * sin(x_1) * time
-        self.store_local_data(out=output)
+        self.io.update_output_data({"out": output})
 
 
 class MockSensitivityAnalysis(BaseSensitivityAnalysis):

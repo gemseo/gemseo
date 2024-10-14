@@ -42,7 +42,7 @@ Scalable models
 
    class ScalableDiscipline {
     +scalable_model
-    +initialize_grammars()
+    +_initialize_grammars()
 	#compute_jacobian()
 	#run()
 	#set_default_inputs()

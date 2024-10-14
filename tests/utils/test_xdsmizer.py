@@ -30,9 +30,17 @@ import pytest
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.chain import MDOChain
-from gemseo.core.chain import MDOParallelChain
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core._process_flow.execution_sequences.execution_sequence import (
+    ExecutionSequence,
+)
+from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
+from gemseo.core._process_flow.execution_sequences.parallel import ParallelExecSequence
+from gemseo.core._process_flow.execution_sequences.sequential import (
+    SequentialExecSequence,
+)
+from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -51,9 +59,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.scenarios.mdo_scenario import MDODiscipline
 from gemseo.scenarios.mdo_scenario import MDOScenario
-from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.xdsm_to_pdf import XDSM
 from gemseo.utils.xdsmizer import EdgeType
@@ -87,16 +93,14 @@ def build_sobieski_scenario(
         SobieskiMission(),
         SobieskiStructure(),
     ]
-    sc = MDOScenario(
+    return MDOScenario(
         disciplines,
         formulation=formulation,
         objective_name="y_4",
         design_space=SobieskiDesignSpace(),
         **options,
+        maximize_objective=False,
     )
-
-    sc.formulation.minimize_objective = False
-    return sc
 
 
 @pytest.fixture
@@ -131,23 +135,25 @@ def elementary_discipline(input_name, output_name):
 
 
 def test_expand(tmp_path) -> None:
-    """Test the workflow expand."""
-    mda = ExecutionSequenceFactory.atom(MDODiscipline("mda"))
-    d1 = ExecutionSequenceFactory.atom(MDODiscipline("d1"))
-    d2 = ExecutionSequenceFactory.atom(MDODiscipline("d2"))
+    """Test the process_flow expand."""
+    mda = ExecutionSequence(Discipline("mda"))
+    d1 = ExecutionSequence(Discipline("d1"))
+    d2 = ExecutionSequence(Discipline("d2"))
     to_id = {mda: "mda", d1: "d1", d2: "d2"}
 
-    serial_seq = ExecutionSequenceFactory.serial([]).extend(d1)
-    loop_seq = ExecutionSequenceFactory.loop(mda, serial_seq)
+    serial_seq = SequentialExecSequence([])
+    serial_seq.extend(d1)
+    loop_seq = LoopExecSequence(mda, serial_seq)
 
     assert expand(loop_seq, to_id) == ["mda", ["d1"]]
-    assert expand(ExecutionSequenceFactory.serial([]), to_id) == []
+    assert expand(SequentialExecSequence([]), to_id) == []
     assert expand(serial_seq, to_id) == ["d1"]
 
-    parallel_seq = ExecutionSequenceFactory.parallel([]).extend(d1)
+    parallel_seq = ParallelExecSequence([])
+    parallel_seq.extend(d1)
     parallel_seq.extend(d2)
 
-    loop_seq = ExecutionSequenceFactory.loop(mda, parallel_seq)
+    loop_seq = LoopExecSequence(mda, parallel_seq)
     assert expand(loop_seq, to_id) == ["mda", [{"parallel": ["d1", "d2"]}]]
 
     with pytest.raises(TypeError):
@@ -207,7 +213,7 @@ def test_xdsmize_bilevel(options) -> None:
         design_space=deepcopy(design_space).filter("x_3"),
         name="PropulsionScenario",
     )
-    sc_prop.default_inputs = sub_sc_opts
+    sc_prop.default_input_data = sub_sc_opts
     sc_prop.add_constraint("g_3", constraint_type="ineq")
 
     sc_aero = MDOScenario(
@@ -218,7 +224,7 @@ def test_xdsmize_bilevel(options) -> None:
         name="AerodynamicsScenario",
         maximize_objective=True,
     )
-    sc_aero.default_inputs = sub_sc_opts
+    sc_aero.default_input_data = sub_sc_opts
     sc_aero.add_constraint("g_2", constraint_type="ineq")
 
     sc_str = MDOScenario(
@@ -230,7 +236,7 @@ def test_xdsmize_bilevel(options) -> None:
         maximize_objective=True,
     )
     sc_str.add_constraint("g_1", constraint_type="ineq")
-    sc_str.default_inputs = sub_sc_opts
+    sc_str.default_input_data = sub_sc_opts
 
     sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 
@@ -557,7 +563,7 @@ def test_xdsmized_parallel_chain_of_mda(options) -> None:
     assert_xdsm(sce, **options("xdsmized_parallel_chain_of_mda"))
 
 
-def assert_xdsm(discipline: MDODiscipline, **options: StrKeyMapping) -> None:
+def assert_xdsm(discipline: Discipline, **options: StrKeyMapping) -> None:
     """Build and check the XDSM representation generated from a scenario.
 
     Check both html and tikz generation.
@@ -764,27 +770,9 @@ def test_discipline(options) -> None:
     assert_xdsm(Sellar1(), **options("xdsmized_sellar_1"))
 
 
-class NewScenario(Scenario):
-    """This is neither an MDOScenario nor a DOE Scenario.
-
-    To be used by test_initial_node_title.
-    """
-
-    def auto_get_grammar_file(
-        self,
-        is_input: bool = True,
-        name: str | None = None,
-        comp_dir: str | Path | None = None,
-    ) -> Path: ...
-
-    def _init_algo_factory(self) -> None: ...
-
-    def _update_input_grammar(self) -> None: ...
-
-
 @pytest.mark.parametrize(
     ("cls", "expected"),
-    [(MDOScenario, "Optimizer"), (DOEScenario, "DOE"), (NewScenario, "foo")],
+    [(MDOScenario, "Optimizer"), (DOEScenario, "DOE")],
 )
 def test_initial_node_title(cls, expected):
     """Check the title of the initial node."""

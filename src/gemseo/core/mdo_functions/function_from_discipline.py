@@ -19,7 +19,7 @@
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
-"""The MDOFunction subclass to create a function from an MDODiscipline."""
+"""The MDOFunction subclass to create a function from a Discipline."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from typing import Callable
 from typing import ClassVar
 
 from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
+    DisciplineAdapterGenerator,
 )
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.mdo_functions.mdo_discipline_adapter import MDODisciplineAdapter
+    from gemseo.core.discipline import Discipline
+    from gemseo.core.mdo_functions.mdo_discipline_adapter import DisciplineAdapter
     from gemseo.formulations.base_formulation import BaseFormulation
     from gemseo.typing import BooleanArray
     from gemseo.typing import NumberArray
@@ -87,19 +87,19 @@ class FunctionFromDiscipline(MDOFunction):
     ]
     """Mask a vector from a subset of names, with respect to a set of names."""
 
-    __discipline_adapter: MDODisciplineAdapter
+    __discipline_adapter: DisciplineAdapter
     """The discipline adapter."""
 
-    generator_class: ClassVar[type[MDODisciplineAdapterGenerator]] = (
-        MDODisciplineAdapterGenerator
+    generator_class: ClassVar[type[DisciplineAdapterGenerator]] = (
+        DisciplineAdapterGenerator
     )
-    """The class used to generator the :class:`MDODisciplineAdapter`."""
+    """The class used to generator the :class:`DisciplineAdapter`."""
 
     def __init__(
         self,
-        output_names: Sequence[str],
+        output_names: Iterable[str],
         formulation: BaseFormulation,
-        discipline: MDODiscipline | None = None,
+        discipline: Discipline | None = None,
         top_level_disc: bool = True,
         input_names: Sequence[str] = (),
         all_input_names: Iterable[str] = (),
@@ -163,7 +163,7 @@ class FunctionFromDiscipline(MDOFunction):
         )
 
     @property
-    def discipline_adapter(self) -> MDODisciplineAdapter:
+    def discipline_adapter(self) -> DisciplineAdapter:
         """The discipline adapter."""
         return self.__discipline_adapter
 
@@ -211,9 +211,9 @@ class FunctionFromDiscipline(MDOFunction):
         cls,
         formulation: BaseFormulation,
         output_names: Iterable[str],
-        discipline: MDODiscipline | None,
+        discipline: Discipline | None,
         use_top_level_disciplines: bool,
-    ) -> MDODisciplineAdapterGenerator:
+    ) -> DisciplineAdapterGenerator:
         """Create the generator of discipline adapters.
 
         Args:
@@ -237,11 +237,11 @@ class FunctionFromDiscipline(MDOFunction):
             return cls.generator_class(discipline, formulation.variable_sizes)
 
         for discipline in (
-            formulation.get_top_level_disc()
+            formulation.get_top_level_disciplines()
             if use_top_level_disciplines
             else formulation.disciplines
         ):
-            if discipline.is_all_outputs_existing(output_names):
+            if discipline.io.output_grammar.has_names(output_names):
                 return cls.generator_class(discipline, formulation.variable_sizes)
 
         msg = (

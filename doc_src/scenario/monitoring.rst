@@ -176,7 +176,7 @@ please enable the time stamps before executing the scenario.
 .. code::
 
    from gemseo.core.discipline import MDODiscipline
-   MDODiscipline.activate_time_stamps()
+   ExecutionStatistics.is_time_stamps_enabled = True
 
 Then, after the scenario execution,
 the Gantt chart can be created easily.

@@ -26,11 +26,11 @@ In this section we describe the usage of surrogate model in |g|,
 which is implemented in the :class:`.SurrogateDiscipline` class.
 
 A :class:`.SurrogateDiscipline` can be used to substitute a
-:class:`.MDODiscipline` within a :class:`.Scenario`. This
-:class:`.SurrogateDiscipline` is an evaluation of the :class:`.MDODiscipline`
+:class:`.Discipline` within a :class:`.Scenario`. This
+:class:`.SurrogateDiscipline` is an evaluation of the :class:`.Discipline`
 and is faster to compute than the original discipline. It relies on a
 :class:`.BaseRegressor`. This comes at the price of computing a :term:`DOE`
-on the original :class:`.MDODiscipline`, and validating the approximation. The
+on the original :class:`.Discipline`, and validating the approximation. The
 computations from which the approximation is built can be available, or can be
 built using |g|' :term:`DOE` capabilities. See :ref:`sobieski_doe` and
 :ref:`sellar_mdo`.
@@ -92,7 +92,7 @@ synthetic_dataset = IODataset.from_array(data, variables, sizes, groups)
 # Here, we illustrate the generation of the training data using a :class:`.DOEScenario`,
 # similarly to :ref:`sobieski_doe`, where more details are given.
 #
-# In this basic example, an :class:`.MDODiscipline` computing the mission
+# In this basic example, an :class:`.Discipline` computing the mission
 # performance (range) in the :ref:`SSBJ test case <sobieski_problem>` is
 # sampled with a :class:`.DOEScenario`. Then, the generated database is used to
 # build a :class:`.SurrogateDiscipline`.
@@ -103,7 +103,7 @@ synthetic_dataset = IODataset.from_array(data, variables, sizes, groups)
 # :class:`.SurrogateDiscipline`, but the main logic won't differ from this
 # example.
 #
-# Firstly, we create the :class:`.MDODiscipline` by means of the API function
+# Firstly, we create the :class:`.Discipline` by means of the API function
 # :func:`.create_discipline`:
 #
 
@@ -123,7 +123,7 @@ design_space = design_space.filter(["x_shared", "y_24", "y_34"])
 
 # %%
 #
-# From this :class:`.MDODiscipline` and this :class:`.DesignSpace`,
+# From this :class:`.Discipline` and this :class:`.DesignSpace`,
 # we build a :class:`.DOEScenario`
 # by means of the API function :func:`.create_scenario`:
 #
@@ -156,7 +156,7 @@ mission_dataset = scenario.to_dataset(opt_naming=False)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # From this :class:`.Dataset`, we can build a :class:`.SurrogateDiscipline`
-# of the :class:`.MDODiscipline`.
+# of the :class:`.Discipline`.
 #
 # Indeed, by means of the API function :class:`~gemseo.create_surrogate`,
 # we create the :class:`.SurrogateDiscipline` from the dataset,
@@ -165,7 +165,7 @@ mission_dataset = scenario.to_dataset(opt_naming=False)
 # Precisely,
 # by means of the API function :func:`.create_surrogate`,
 # we create a :class:`.SurrogateDiscipline` relying on a :class:`.LinearRegressor`
-# and inheriting from :class:`.MDODiscipline`:
+# and inheriting from :class:`.Discipline`:
 
 synthetic_surrogate = create_surrogate("LinearRegressor", synthetic_dataset)
 
@@ -176,7 +176,7 @@ synthetic_surrogate = create_surrogate("LinearRegressor", synthetic_dataset)
 #    :class:`.SurrogateDiscipline` may be specified by the user if needed,
 #    mainly to avoid unnecessary computations.
 #
-# Then, we execute it as any :class:`.MDODiscipline`:
+# Then, we execute it as any :class:`.Discipline`:
 input_data = {"x": array([2.0])}
 out = synthetic_surrogate.execute(input_data)
 out["y"]
@@ -193,7 +193,7 @@ range_surrogate = create_surrogate("RBFRegressor", mission_dataset)
 #
 # The obtained :class:`.SurrogateDiscipline` can be used in any
 # :class:`.Scenario`, such as a :class:`.DOEScenario` or :class:`.MDOScenario`.
-# We see here that the :meth:`.MDODiscipline.execute` method can be used as in
+# We see here that the :meth:`.Discipline.execute` method can be used as in
 # any other discipline to compute the outputs for given inputs:
 
 for i in range(5):

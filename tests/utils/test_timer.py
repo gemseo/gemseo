@@ -30,8 +30,8 @@
 
 from __future__ import annotations
 
+import logging
 import re
-from logging import getLevelName
 from time import sleep
 
 import pytest
@@ -66,7 +66,7 @@ def test_no_log(caplog) -> None:
     assert not caplog.records
 
 
-@pytest.mark.parametrize("level", ["INFO", "DEBUG"])
+@pytest.mark.parametrize("level", [logging.INFO, logging.DEBUG])
 def test_log(caplog, level) -> None:
     """Check the logs."""
     caplog.set_level(level)
@@ -74,5 +74,5 @@ def test_log(caplog, level) -> None:
         sleep(0.1)
 
     log = caplog.record_tuples[0]
-    assert log[1] == getLevelName(level)
+    assert log[1] == level
     assert re.compile(r"Elapsed time: .* s\.").match(log[2])

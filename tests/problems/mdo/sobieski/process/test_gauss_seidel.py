@@ -26,4 +26,4 @@ from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGau
 def test() -> None:
     mda = SobieskiMDAGaussSeidel()
     mda.execute()
-    assert mda.get_outputs_by_name("y_4")[0] == pytest.approx(535.78213193, abs=1e-4)
+    assert mda.io.data["y_4"][0] == pytest.approx(535.78213193, abs=1e-4)

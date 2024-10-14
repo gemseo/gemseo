@@ -27,41 +27,38 @@ from abc import abstractmethod
 from enum import auto
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Final
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from strenum import LowercaseStrEnum
 
+from gemseo import READ_ONLY_EMPTY_DICT
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import (
     RelaxationAcceleration,
 )
 from gemseo.caches.simple_cache import SimpleCache
+from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
+from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.utils.constants import N_CPUS
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.core.discipline import Discipline
+from gemseo.core.process_discipline import ProcessDiscipline
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
     from collections.abc import Iterable
     from collections.abc import Iterator
-    from collections.abc import Mapping
     from collections.abc import Sequence
     from pathlib import Path
 
     from matplotlib.figure import Figure
-    from numpy import ndarray
     from numpy.typing import NDArray
 
-    from gemseo.core.discipline_data import DisciplineData
-    from gemseo.core.execution_sequence import LoopExecSequence
+    from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
 
@@ -69,12 +66,53 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
+class _BaseMDAProcessFlow(BaseProcessFlow):
+    """The process data and execution flow."""
+
+    def get_disciplines_in_data_flow(self) -> list[Discipline]:
+        return [self._node]
+
+    def get_execution_flow(self) -> LoopExecSequence:  # noqa:D102
+        return LoopExecSequence(self._node, super().get_execution_flow())
+
+    def get_data_flow(  # noqa:D102
+        self,
+    ) -> list[tuple[Discipline, Discipline, list[str]]]:
+        disciplines = super().get_disciplines_in_data_flow()
+        graph = DependencyGraph([self._node, *disciplines])
+        res = self._get_disciplines_couplings(graph)
+        for discipline in self._node.disciplines:
+            res.extend(discipline.get_process_flow().get_data_flow())
+        return res
+
+    def _get_disciplines_couplings(
+        self, graph: DependencyGraph
+    ) -> list[tuple[str, str, list[str]]]:
+        """Return the couplings between disciplines.
+
+        Args:
+            graph: The dependency graph of the disciplines.
+
+        Returns:
+            The couplings between disciplines associated to the edges of the graph.
+            For each edge,
+            the first component corresponds to the *from* discipline,
+            the second component corresponds to the *to* discipline,
+            the third component corresponds to the list of coupling variables.
+        """
+        return graph.get_disciplines_couplings()
+
+
+class BaseMDA(ProcessDiscipline):
     """A base class for multidisciplinary analysis (MDA)."""
 
     NORMALIZED_RESIDUAL_NORM: Final[str] = "MDA residuals norm"
 
-    activate_cache = True
+    default_cache_type: ClassVar[ProcessDiscipline.CacheType] = (
+        ProcessDiscipline.CacheType.SIMPLE
+    )
+
+    _linearize_on_last_state: ClassVar[bool] = True
 
     tolerance: float
     """The tolerance of the iterative direct coupling solver."""
@@ -205,10 +243,9 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         max_mda_iter: int = 10,
         name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
@@ -229,7 +266,6 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 without trying to solve the coupling equations.
             name: The name to be given to the MDA.
                 If empty, use the name of the class.
-            grammar_type: The type of the input and output grammars.
             tolerance: The tolerance of the iterative direct coupling solver;
                 the norm of the current residuals divided by initial residuals norm
                 shall be lower than the tolerance to stop iterating.
@@ -250,13 +286,12 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 convergence rate of the fixed point iteration method.
             over_relaxation_factor: The over-relaxation factor.
         """  # noqa:D205 D212 D415
-        super().__init__(name, grammar_type=grammar_type)
+        super().__init__(disciplines, name=name)
         self.tolerance = tolerance
         self.linear_solver = linear_solver
         self.linear_solver_tolerance = linear_solver_tolerance
         self.linear_solver_options = linear_solver_options or {}
         self.max_mda_iter = max_mda_iter
-        self._disciplines = disciplines
         if coupling_structure is None:
             self.coupling_structure = CouplingStructure(disciplines)
         else:
@@ -276,7 +311,6 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
 
         # Don't erase coupling values before calling _compute_jacobian
 
-        self._linearize_on_last_state = True
         self.norm0 = None
         self._current_iter = 0
         self.normed_residual = 1.0
@@ -387,7 +421,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         if also_strong:
             for disc in also_strong:
                 in_outs = sorted(
-                    set(disc.get_input_data_names()) & set(disc.get_output_data_names())
+                    set(disc.io.input_grammar.names) & set(disc.io.output_grammar.names)
                 )
                 LOGGER.warning(
                     "Self coupling variables in discipline %s are: %s.",
@@ -406,7 +440,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         all_outs = {}
         multiple_outs = []
         for disc in self.disciplines:
-            for out in disc.get_output_data_names():
+            for out in disc.io.output_grammar.names:
                 if out in all_outs:
                     multiple_outs.append(out)
                 all_outs[out] = disc
@@ -420,23 +454,24 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
     def _compute_input_coupling_names(self) -> None:
         """Compute the strong couplings that are inputs of the MDA."""
         self._input_couplings = sorted(
-            set(self.strong_couplings).intersection(self.get_input_data_names())
+            set(self.strong_couplings).intersection(self.io.input_grammar.names)
         )
 
-    def _retrieve_diff_inouts(
-        self, compute_all_jacobians: bool = False
+    def _get_differentiated_io(
+        self,
+        compute_all_jacobians: bool = False,
     ) -> tuple[set[str] | list[str], set[str] | list[str]]:
         if compute_all_jacobians:
             strong_cpl = set(self.strong_couplings)
-            inputs = set(self.get_input_data_names())
-            outputs = self.get_output_data_names()
+            inputs = set(self.io.input_grammar.names)
+            outputs = self.io.output_grammar.names
             # Don't linearize wrt
             inputs -= strong_cpl & inputs
             # Don't do this with output couplings because
             # their derivatives wrt design variables may be needed
             # outputs = outputs - (strong_cpl & outputs)
         else:
-            inputs, outputs = MDODiscipline._retrieve_diff_inouts(self)
+            inputs, outputs = Discipline._get_differentiated_io(self)
 
         if self.NORMALIZED_RESIDUAL_NORM in outputs:
             outputs = list(outputs)
@@ -482,54 +517,10 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
                 not_arrays,
             )
 
-    def reset_disciplines_statuses(self) -> None:
-        """Reset all the statuses of the disciplines."""
-        for discipline in self.disciplines:
-            discipline.reset_statuses_for_run()
-
-    def reset_statuses_for_run(self) -> None:  # noqa:D102
-        super().reset_statuses_for_run()
-        self.reset_disciplines_statuses()
-
-    def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
-        disc_exec_seq = ExecutionSequenceFactory.serial()
-        for disc in self.disciplines:
-            disc_exec_seq.extend(disc.get_expected_workflow())
-        return ExecutionSequenceFactory.loop(self, disc_exec_seq)
-
-    def get_expected_dataflow(  # noqa:D102
-        self,
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        all_disc = [self]
-        for disc in self.disciplines:
-            all_disc.extend(disc.get_disciplines_in_dataflow_chain())
-        graph = DependencyGraph(all_disc)
-        res = self._get_disciplines_couplings(graph)
-        for discipline in self.disciplines:
-            res.extend(discipline.get_expected_dataflow())
-        return res
-
-    def _get_disciplines_couplings(
-        self, graph: DependencyGraph
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        """Return the couplings between disciplines.
-
-        Args:
-            graph: The dependency graph of the disciplines.
-
-        Returns:
-            The couplings between disciplines associated to the edges of the graph.
-            For each edge,
-            the first component corresponds to the *from* discipline,
-            the second component corresponds to the *to* discipline,
-            the third component corresponds to the list of coupling variables.
-        """
-        return graph.get_disciplines_couplings()
-
     def _compute_jacobian(
         self,
-        inputs: Collection[str] = (),
-        outputs: Collection[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         # Do not re-execute disciplines if inputs error is beyond self tol
         # Apply a safety factor on this (mda is a loop, inputs
@@ -540,7 +531,7 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__check_linear_solver_options()
         residual_variables = {}
         for disc in self.disciplines:
-            residual_variables.update(disc.residual_variables)
+            residual_variables.update(disc.io.residual_to_state_variable)
 
         couplings_adjoint = sorted(
             set(self.all_couplings).difference(self._non_numeric_array_variables)
@@ -548,13 +539,17 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             - set(residual_variables.values())
         )
 
-        outputs = list(set(outputs).difference(self._non_numeric_array_variables))
-        inputs = list(set(inputs).difference(self._non_numeric_array_variables))
+        output_names = list(
+            set(output_names).difference(self._non_numeric_array_variables)
+        )
+        input_names = list(
+            set(input_names).difference(self._non_numeric_array_variables)
+        )
 
         self.jac = self.assembly.total_derivatives(
-            self.local_data,
-            outputs,
-            inputs,
+            self.io.data,
+            output_names,
+            input_names,
             couplings_adjoint,
             rtol=self.linear_solver_tolerance,
             mode=self.linearization_mode,
@@ -567,165 +562,48 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
             **self.linear_solver_options,
         )
 
-    def check_jacobian(
+    def _prepare_io_for_check_jacobian(
         self,
-        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
-        derr_approx: MDODiscipline.ApproximationMode = MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,  # noqa:E501
-        step: float = 1e-7,
-        threshold: float = 1e-8,
-        linearization_mode: str = "auto",
-        inputs: Iterable[str] = (),
-        outputs: Iterable[str] = (),
-        parallel: bool = False,
-        n_processes: int = N_CPUS,
-        use_threading: bool = False,
-        wait_time_between_fork: int = 0,
-        auto_set_step: bool = False,
-        plot_result: bool = False,
-        file_path: str | Path = "jacobian_errors.pdf",
-        show: bool = False,
-        fig_size_x: float = 10,
-        fig_size_y: float = 10,
-        reference_jacobian_path: Path | str = "",
-        save_reference_jacobian: bool = False,
-        indices: Iterable[int] | None = None,
-    ) -> bool:
-        """Check if the analytical Jacobian is correct with respect to a reference one.
+        input_names: Iterable[str],
+        output_names: Iterable[str],
+    ) -> tuple[Iterable[str], Iterable[str]]:
+        # Strong couplings are not linearized.
+        input_names, output_names = super()._prepare_io_for_check_jacobian(
+            input_names, output_names
+        )
 
-        If `reference_jacobian_path` is not `None`
-        and `save_reference_jacobian` is `True`,
-        compute the reference Jacobian with the approximation method
-        and save it in `reference_jacobian_path`.
-
-        If `reference_jacobian_path` is not `None`
-        and `save_reference_jacobian` is `False`,
-        do not compute the reference Jacobian
-        but read it from `reference_jacobian_path`.
-
-        If `reference_jacobian_path` is `None`,
-        compute the reference Jacobian without saving it.
-
-        Args:
-            input_data: The input values.
-                If empty, use the default input values.
-            derr_approx: The derivative approximation method.
-            threshold: The acceptance threshold for the Jacobian error.
-            linearization_mode: The mode of linearization,
-                either "direct", "adjoint" or "auto" switch
-                depending on dimensions of inputs and outputs.
-            inputs: The names of the inputs with respect to which to differentiate.
-                If empty, use the inputs of the MDA.
-            outputs: The outputs to differentiate.
-                If empty, use all the outputs of the MDA.
-            step: The step
-                for finite differences or complex step differentiation methods.
-            parallel: Whether to execute the MDA in parallel.
-            n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
-                used to parallelize the execution.
-            use_threading: Whether to use threads instead of processes
-                to parallelize the execution;
-                multiprocessing will copy (serialize) the disciplines,
-                while threading will share the memory.
-                This is important to note
-                if you want to execute the same discipline multiple times,
-                you shall use multiprocessing.
-            wait_time_between_fork: The time waited between two forks
-                of the process / thread.
-            auto_set_step: Whether to compute the optimal step
-                for a forward first order finite differences gradient approximation.
-            plot_result: Whether to plot the result of the validation
-                comparing the exact and approximated Jacobians.
-            file_path: The path to the output file if `plot_result` is `True`.
-            show: Whether to open the figure.
-            fig_size_x: The *x* size of the figure in inches.
-            fig_size_y: The *y* size of the figure in inches.
-            reference_jacobian_path: The path of the reference Jacobian file.
-            save_reference_jacobian: Whether to save the reference Jacobian.
-            indices: The indices of the inputs and outputs
-                for the different sub-Jacobian matrices,
-                formatted as ``{variable_name: variable_components}``
-                where ``variable_components`` can be either
-                an integer, e.g. `2`
-                a sequence of integers, e.g. `[0, 3]`,
-                a slice, e.g. `slice(0,3)`,
-                the ellipsis symbol (`...`)
-                or `None`, which is the same as ellipsis.
-                If a variable name is missing, consider all its components.
-                If ``None``,
-                consider all the components of all the ``inputs`` and ``outputs``.
-
-        Returns:
-            Whether the passed Jacobian is correct.
-        """
-        # Strong couplings are not linearized
-        inputs = list(inputs or self.get_input_data_names())
-        outputs = list(outputs or self.get_output_data_names())
+        input_names = list(input_names)
+        output_names = list(output_names)
 
         for coupling in self.all_couplings:
-            if coupling in outputs:
-                outputs.remove(coupling)
-            if coupling in inputs:
-                inputs.remove(coupling)
+            if coupling in output_names:
+                output_names.remove(coupling)
+            if coupling in input_names:
+                input_names.remove(coupling)
 
-        if self.NORMALIZED_RESIDUAL_NORM in outputs:
-            outputs.remove(self.NORMALIZED_RESIDUAL_NORM)
+        if self.NORMALIZED_RESIDUAL_NORM in output_names:
+            output_names.remove(self.NORMALIZED_RESIDUAL_NORM)
 
-        # Remove non-numeric arrays that cannot be differentiated
-        inputs = [
+        # Remove non-numeric arrays that cannot be differentiated.
+        # TODO: use self._non_numeric_array_variables,
+        #       also factorize with _compute_jacobian?
+        input_names = [
             input_
-            for input_ in inputs
+            for input_ in input_names
             if self.input_grammar.data_converter.is_numeric(input_)
         ]
-        outputs = [
+        output_names = [
             output
-            for output in outputs
+            for output in output_names
             if self.output_grammar.data_converter.is_numeric(output)
         ]
-
-        return super().check_jacobian(
-            input_data=input_data,
-            derr_approx=derr_approx,
-            step=step,
-            threshold=threshold,
-            linearization_mode=linearization_mode,
-            inputs=inputs,
-            outputs=outputs,
-            parallel=parallel,
-            n_processes=n_processes,
-            use_threading=use_threading,
-            wait_time_between_fork=wait_time_between_fork,
-            auto_set_step=auto_set_step,
-            plot_result=plot_result,
-            file_path=file_path,
-            show=show,
-            fig_size_x=fig_size_x,
-            fig_size_y=fig_size_y,
-            reference_jacobian_path=reference_jacobian_path,
-            save_reference_jacobian=save_reference_jacobian,
-            indices=indices,
-        )
+        return input_names, output_names
 
     def execute(  # noqa:D102
         self, input_data: StrKeyMapping | None = None
     ) -> DisciplineData:
         self._current_iter = 0
         return super().execute(input_data=input_data)
-
-    def _set_cache_tol(
-        self,
-        cache_tol: float,
-    ) -> None:
-        """Set to the cache input tolerance.
-
-        To be overloaded by subclasses.
-
-        Args:
-            cache_tol: The cache tolerance.
-        """
-        super()._set_cache_tol(cache_tol)
-        for disc in self.disciplines:
-            disc.cache_tol = cache_tol or 0.0
 
     def plot_residual_history(
         self,
@@ -813,9 +691,11 @@ class BaseMDA(MDODiscipline, metaclass=ABCGoogleDocstringInheritanceMeta):
         if not isinstance(self.cache, SimpleCache):
             to_value = self.input_grammar.data_converter.convert_array_to_value
             for input_name, input_value in self.__get_cached_outputs(cached_outputs):
-                self.store_local_data(**{input_name: to_value(input_name, input_value)})
+                self.io.update_output_data({
+                    input_name: to_value(input_name, input_value)
+                })
         else:
-            self.local_data.update(dict(self.__get_cached_outputs(cached_outputs)))
+            self.io.data.update(dict(self.__get_cached_outputs(cached_outputs)))
 
     def __get_cached_outputs(self, cached_outputs) -> Iterator[Any]:
         """Return an iterator over the input couplings names and value in cache.

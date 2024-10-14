@@ -34,6 +34,8 @@ from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.utils import get_y_opt
 
+from .utils import generate_parallel_doe
+
 
 def test_sequential_mda_sellar(tmp_wd) -> None:
     disciplines = [Sellar1(), Sellar2()]
@@ -56,7 +58,7 @@ def test_sequential_mda_sellar(tmp_wd) -> None:
     assert Path(filename).exists
     assert np.linalg.norm(y_ref - get_y_opt(mda3)) / np.linalg.norm(y_ref) < 1e-4
 
-    assert mda.local_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
+    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
 
 
 def test_log_convergence() -> None:
@@ -84,14 +86,9 @@ def test_log_convergence() -> None:
         assert not sub_mda.log_convergence
 
 
-def test_parallel_doe(generate_parallel_doe_data) -> None:
-    """Test the execution of GaussSeidel in parallel.
-
-    Args:
-        generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_name`.
-    """
-    obj = generate_parallel_doe_data(inner_mda_name="MDAGSNewton")
+def test_parallel_doe() -> None:
+    """Test the execution of GaussSeidel in parallel."""
+    obj = generate_parallel_doe(inner_mda_name="MDAGSNewton")
     assert np.isclose(np.array([-obj]), np.array([608.175]), atol=1e-3)
 
 

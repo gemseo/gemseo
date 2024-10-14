@@ -35,6 +35,7 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.core.namespaces import MutableNamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
+from gemseo.core.namespaces import remove_prefix_from_names
 from gemseo.core.namespaces import update_namespaces
 from gemseo.typing import StrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -43,6 +44,7 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Iterator
     from collections.abc import KeysView
     from collections.abc import Mapping
 
@@ -207,6 +209,22 @@ class BaseGrammar(
         return self.keys()
 
     @property
+    def names_without_namespace(self) -> Iterator[str]:
+        """The names of the elements without namespace prefixes."""
+        return remove_prefix_from_names(self.keys())
+
+    def has_names(self, names: Iterable[str]) -> bool:
+        """Return whether names are all element names.
+
+        Args:
+            names: The names to check.
+
+        Returns:
+            Whether the names are all element names.
+        """
+        return set(self.keys()).issuperset(names)
+
+    @property
     def defaults(self) -> Defaults:
         """The mapping from the names to the default values, if any."""
         return self._defaults
@@ -242,6 +260,8 @@ class BaseGrammar(
     ) -> None:
         """Update the grammar from another grammar.
 
+        If ``grammar`` has namespaces, they will be added to the current grammar.
+
         Args:
             grammar: The grammar to update from.
             excluded_names: The names of the elements that shall not be updated.
@@ -250,7 +270,7 @@ class BaseGrammar(
         if not grammar:
             return
         self._update(grammar, excluded_names, merge)
-        self._update_namespaces_from_grammar(grammar)
+        self.__update_namespaces_from_grammar(grammar)
         self._defaults.update({
             k: v for k, v in grammar._defaults.items() if k not in excluded_names
         })
@@ -538,8 +558,7 @@ class BaseGrammar(
             KeyError: If a name is not valid.
         """
 
-    # TODO: make private
-    def _update_namespaces_from_grammar(self, grammar: Self) -> None:
+    def __update_namespaces_from_grammar(self, grammar: Self) -> None:
         """Update the namespaces according to another grammar namespaces.
 
         Args:
@@ -566,7 +585,7 @@ class BaseGrammar(
         self._check_name(name)
 
         if namespaces_separator in name:
-            msg = f"Variable {name} has already a namespace."
+            msg = f"The variable {name} already has a namespace."
             raise ValueError(msg)
 
         new_name = namespace + namespaces_separator + name

@@ -20,11 +20,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 
-class PathDiscipline(MDODiscipline):
+class PathDiscipline(Discipline):
     """A toy discipline that takes Path as input and stores a Path attribute."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
 
     def __init__(self, tmp_path: Path) -> None:
         """Constructor.
@@ -32,11 +34,11 @@ class PathDiscipline(MDODiscipline):
         Args:
             tmp_path: any path.
         """
-        super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
+        super().__init__()
         self.input_grammar.update_from_types({"x": Path})
         self.output_grammar.update_from_types({"y": int})
-        self.default_inputs["x"] = tmp_path
+        self.default_input_data["x"] = tmp_path
         self.local_path = tmp_path
 
     def _run(self) -> None:
-        self.local_data["y"] = 1
+        self.io.data["y"] = 1

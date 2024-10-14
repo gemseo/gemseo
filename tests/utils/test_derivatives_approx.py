@@ -38,7 +38,7 @@ from scipy.optimize import rosen_der
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
@@ -131,12 +131,12 @@ def test_abs_der() -> None:
     discipline.linearize()
     discipline.jac["z"]["x"] = array([[2.0]])
 
-    assert not apprx.check_jacobian(discipline.jac, ["z"], ["x"], discipline)
+    assert not apprx.check_jacobian(["z"], ["x"])
 
     discipline.linearize()
     discipline.jac["z"]["x"] = array([[2.0, 3.0]])
 
-    assert not apprx.check_jacobian(discipline.jac, ["z"], ["x"], discipline)
+    assert not apprx.check_jacobian(["z"], ["x"])
 
 
 def test_complex_fail() -> None:
@@ -145,7 +145,7 @@ def test_complex_fail() -> None:
         derr_approx=discipline.ApproximationMode.COMPLEX_STEP
     )
 
-    data = deepcopy(discipline.default_inputs)
+    data = deepcopy(discipline.default_input_data)
     data["x_shared"] += 0.1j
     with pytest.raises(ValueError):
         discipline.check_jacobian(
@@ -233,46 +233,42 @@ def test_load_and_dump(tmp_wd, method) -> None:
     discipline.jac["z"]["x"] = array([[2.0]])
     file_name = "reference_jacobian.pkl"
     assert not apprx.check_jacobian(
-        discipline.jac,
         ["z"],
         ["x"],
-        discipline,
         reference_jacobian_path=file_name,
         save_reference_jacobian=True,
     )
 
     assert not apprx.check_jacobian(
-        discipline.jac,
         ["z"],
         ["x"],
-        discipline,
         reference_jacobian_path=file_name,
     )
 
 
-class ToyDiscipline(MDODiscipline):
+class ToyDiscipline(Discipline):
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
     def __init__(self, dtype) -> None:
-        super().__init__(grammar_type=MDODiscipline.GrammarType.SIMPLE)
+        super().__init__()
         self.input_grammar.update_from_types({"x1": dtype, "x2": ndarray})
         self.output_grammar.update_from_types({"y1": dtype, "y2": ndarray})
-        self.default_inputs = {
+        self.default_input_data = {
             "x1": dtype(1.0),
             "x2": array([1.0, 1.0], dtype=dtype),
         }
         self.dtype = dtype
 
     def _run(self) -> None:
-        self.local_data["y1"] = self.local_data["x1"] + 2 * self.local_data["x2"][0]
-        self.local_data["y2"] = array([
-            self.local_data["x1"]
-            + 2 * self.local_data["x2"][0]
-            + 3 * self.local_data["x2"][1],
-            2 * self.local_data["x1"]
-            + 4 * self.local_data["x2"][0]
-            + 6 * self.local_data["x2"][1],
+        self.io.data["y1"] = self.io.data["x1"] + 2 * self.io.data["x2"][0]
+        self.io.data["y2"] = array([
+            self.io.data["x1"] + 2 * self.io.data["x2"][0] + 3 * self.io.data["x2"][1],
+            2 * self.io.data["x1"]
+            + 4 * self.io.data["x2"][0]
+            + 6 * self.io.data["x2"][1],
         ])
 
-    def _compute_jacobian(self, inputs=None, outputs=None) -> None:
+    def _compute_jacobian(self, input_names=(), output_names=()) -> None:
         self.jac = {
             "y1": {
                 "x1": array([[1.0]], dtype=self.dtype),
@@ -314,9 +310,7 @@ def test_indices(inputs, outputs, indices, dtype, method) -> None:
     discipline = ToyDiscipline(dtype)
     discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline, approx_method=method)
-    assert apprx.check_jacobian(
-        discipline.jac, outputs, inputs, discipline, indices=indices
-    )
+    assert apprx.check_jacobian(outputs, inputs, indices=indices)
 
 
 @pytest.mark.parametrize("dtype", [float, complex])
@@ -334,7 +328,7 @@ def test_wrong_step(dtype, method) -> None:
     discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7], approx_method=method)
     with pytest.raises(ValueError, match="Inconsistent step size, expected 3 got 2."):
-        apprx.compute_approx_jac(outputs=["y1", "y2"], inputs=["x1", "x2"])
+        apprx.compute_approx_jac(output_names=["y1", "y2"], input_names=["x1", "x2"])
 
 
 def test_factory() -> None:
@@ -407,7 +401,7 @@ def test_derivatives_with_sparse_jacobians(tmp_wd, output_size) -> None:
     discipline.linearize(compute_all_jacobians=True)
 
     assert DisciplineJacApprox(discipline).check_jacobian(
-        {"y": {"x": discipline.mat}}, ["y"], ["x"], discipline, plot_result=True
+        ["y"], ["x"], plot_result=True
     )
 
 

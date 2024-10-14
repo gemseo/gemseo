@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -31,12 +31,12 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class FilteringDiscipline(MDODiscipline):
-    """A class to wrap another MDODiscipline for a subset of inputs and outputs."""
+class FilteringDiscipline(Discipline):
+    """A class to wrap another Discipline for a subset of inputs and outputs."""
 
     def __init__(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
         keep_in: bool = True,
@@ -56,8 +56,8 @@ class FilteringDiscipline(MDODiscipline):
         """  # noqa:D205 D212 D415
         self.discipline = discipline
         super().__init__(name=discipline.name)
-        original_input_names = discipline.get_input_data_names()
-        original_output_names = discipline.get_output_data_names()
+        original_input_names = discipline.io.input_grammar.names
+        original_output_names = discipline.io.output_grammar.names
         if not input_names:
             input_names = original_input_names
         elif not keep_in:
@@ -70,29 +70,33 @@ class FilteringDiscipline(MDODiscipline):
 
         self.input_grammar.update_from_names(input_names)
         self.output_grammar.update_from_names(output_names)
-        self.default_inputs = self.__filter_inputs(self.discipline.default_inputs)
+        self.default_input_data = self.__filter_inputs(
+            self.discipline.default_input_data
+        )
         removed_inputs = set(original_input_names) - set(input_names)
-        diff_inputs = set(self.discipline._differentiated_inputs) - removed_inputs
+        diff_inputs = set(self.discipline._differentiated_input_names) - removed_inputs
         self.add_differentiated_inputs(list(diff_inputs))
         removed_outputs = set(original_output_names) - set(output_names)
-        diff_outputs = set(self.discipline._differentiated_outputs) - removed_outputs
+        diff_outputs = (
+            set(self.discipline._differentiated_output_names) - removed_outputs
+        )
         self.add_differentiated_outputs(list(diff_outputs))
 
     def _run(self) -> None:
-        self.discipline.execute(self.get_input_data())
-        self.store_local_data(**self.__filter_inputs(self.discipline.local_data))
-        self.store_local_data(**self.__filter_outputs(self.discipline.local_data))
+        self.discipline.execute(self.io.get_input_data())
+        self.io.update_output_data(self.__filter_inputs(self.discipline.io.data))
+        self.io.update_output_data(self.__filter_outputs(self.discipline.io.data))
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        self.discipline._compute_jacobian(inputs, outputs)
-        self._init_jacobian(inputs, outputs)
+        self.discipline._compute_jacobian(input_names, output_names)
+        self._init_jacobian(input_names, output_names)
         jac = self.discipline.jac
-        for output_name in self.get_output_data_names():
-            for input_name in self.get_input_data_names():
+        for output_name in self.io.output_grammar.names:
+            for input_name in self.io.input_grammar.names:
                 self.jac[output_name][input_name] = jac[output_name][input_name]
 
     def __filter_inputs(self, data: StrKeyMapping):
@@ -104,7 +108,7 @@ class FilteringDiscipline(MDODiscipline):
         Returns:
             The mapping filtered by input names.
         """
-        return {name: data[name] for name in self.get_input_data_names()}
+        return {name: data[name] for name in self.io.input_grammar.names}
 
     def __filter_outputs(self, data):
         """Filter a mapping by output names.
@@ -115,4 +119,4 @@ class FilteringDiscipline(MDODiscipline):
         Returns:
             The mapping filtered by output names.
         """
-        return {name: data[name] for name in self.get_output_data_names()}
+        return {name: data[name] for name in self.io.output_grammar.names}

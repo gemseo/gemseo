@@ -4,6 +4,7 @@
 /htmlcov
 /doc
 /sandbox
+/build
 
 *.pyc
 .project
@@ -39,3 +40,4 @@ doc_src/_examples/**/*.*
 coverage.xml
 .coverage*
 !.coveragerc
+asv-gemseo

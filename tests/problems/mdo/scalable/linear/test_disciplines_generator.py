@@ -24,7 +24,7 @@ import pytest
 from numpy import ndarray
 
 from gemseo import create_mda
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import DESC_3_DISC_WEAK
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import DESC_4_DISC_WEAK
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import DESC_16_DISC
@@ -88,7 +88,7 @@ def test_lin_disc_jac() -> None:
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
+    "grammar_type", [Discipline.GrammarType.JSON, Discipline.GrammarType.SIMPLE]
 )
 def test_create_disciplines_from_sizes(grammar_type) -> None:
     """Test that the disciplines are well created according to the specifications."""
@@ -112,13 +112,13 @@ def test_create_disciplines_from_sizes(grammar_type) -> None:
     assert len(disciplines) == nb_of_disc
 
     for disc in disciplines:
-        assert len(disc.get_input_data_names()) == nb_of_disc_inputs
-        assert len(disc.get_output_data_names()) == nb_of_disc_outputs
-        for d in disc.default_inputs.values():
+        assert len(disc.io.input_grammar.names) == nb_of_disc_inputs
+        assert len(disc.io.output_grammar.names) == nb_of_disc_outputs
+        for d in disc.default_input_data.values():
             assert d.size == inputs_size
 
         out = disc.execute()
-        for output_name in disc.get_output_data_names():
+        for output_name in disc.io.output_grammar.names:
             assert out[output_name].size == outputs_size
 
 

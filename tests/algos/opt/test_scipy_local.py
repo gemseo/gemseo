@@ -267,8 +267,8 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
     """Test that sparse Jacobians are recasted as dense arrays.
 
     The SLSQP algorithm from SciPy does not support sparse Jacobians. The fact that the
-    optimizer can be executed and converges implies that the MDOFunctions' Jacobians are
-    indeed recast as dense NumPy arrays before being sent to SciPy.
+    optimizer can be executed and converges implies that the mdo_functions' Jacobians
+    are indeed recast as dense NumPy arrays before being sent to SciPy.
     """
     optimization_result = OptimizationLibraryFactory().execute(
         opt_problem,

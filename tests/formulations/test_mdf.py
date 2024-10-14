@@ -20,17 +20,11 @@ from __future__ import annotations
 
 from numpy.testing import assert_allclose
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.mdf import MDF
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.xdsmizer import XDSMizer
 
@@ -63,11 +57,11 @@ class TestMDFFormulation(FormulationsBaseTest):
         scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
-        scenario.execute({
-            "max_iter": 100,
-            "algo": algo,
-            "algo_options": {"ftol_rel": 1e-10, "ineq_tolerance": 1e-3},
-        })
+        scenario.execute(
+            max_iter=100,
+            algo=algo,
+            algo_options={"ftol_rel": 1e-10, "ineq_tolerance": 1e-3},
+        )
         scenario.print_execution_metrics()
         return scenario.optimization_result.f_opt
 
@@ -89,35 +83,9 @@ class TestMDFFormulation(FormulationsBaseTest):
 
         assert_allclose(-obj, 3964.0, atol=1.0, rtol=0)
 
-    def test_expected_workflow(self) -> None:
-        """"""
-        disc1 = SobieskiStructure()
-        disc2 = SobieskiPropulsion()
-        disc3 = SobieskiAerodynamics()
-        disc4 = SobieskiMission()
-        disciplines = [disc1, disc2, disc3, disc4]
-        mdf = MDF(disciplines, "y_4", DesignSpace(), inner_mda_name="MDAGaussSeidel")
-        wkf = mdf.get_expected_workflow()
-        assert (
-            str(wkf) == "[{MDAGaussSeidel(None), [SobieskiStructure(None), "
-            "SobieskiPropulsion(None), SobieskiAerodynamics(None), ], }, "
-            "SobieskiMission(None), ]"
-        )
-        mdf.get_expected_dataflow()
-
     def test_getsuboptions(self) -> None:
         self.assertRaises(ValueError, MDF.get_sub_options_grammar)
         self.assertRaises(ValueError, MDF.get_default_sub_option_values)
-
-
-def test_grammar_type() -> None:
-    """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline({"y1": "x+y2", "y2": "x+2*y1"})
-    design_space = DesignSpace()
-    design_space.add_variable("x")
-    grammar_type = discipline.GrammarType.SIMPLE
-    formulation = MDF([discipline], "y1", design_space, grammar_type=grammar_type)
-    assert formulation.mda.grammar_type == grammar_type
 
 
 def test_reset():
@@ -136,11 +104,11 @@ def test_reset():
     initial_current_value = design_space.get_current_value()
     scenario.add_constraint("c_1", constraint_type="ineq")
     scenario.add_constraint("c_2", constraint_type="ineq")
-    scenario.execute({"algo": "SLSQP", "max_iter": 5})
+    scenario.execute(algo="SLSQP", max_iter=5)
     final_current_value = design_space.get_current_value()
 
     scenario.formulation.optimization_problem.reset(design_space=True)
     assert_allclose(design_space.get_current_value(), initial_current_value)
 
-    scenario.execute({"algo": "SLSQP", "max_iter": 5})
+    scenario.execute(algo="SLSQP", max_iter=5)
     assert_allclose(design_space.get_current_value(), final_current_value)

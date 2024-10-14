@@ -89,7 +89,6 @@ from numpy import sin
 from numpy import sqrt
 from scipy.interpolate import interp1d
 
-from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.disciplines.remapping import RemappingDiscipline
@@ -97,6 +96,7 @@ from gemseo.disciplines.remapping import RemappingDiscipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import RealArray
 
 POSITION: Final[str] = "position"
@@ -181,8 +181,8 @@ def create_mass_mdo_discipline(
     is_left_pos_fixed=False,
     is_right_pos_fixed=False,
     times: ndarray | None = None,
-) -> MDODiscipline:
-    """Create an MDODiscipline representing the dynamic of a single mass in the chain.
+) -> Discipline:
+    """Create a Discipline representing the dynamic of a single mass in the chain.
 
     Args:
         mass: The value of the mass.
@@ -195,7 +195,7 @@ def create_mass_mdo_discipline(
         times: the time vector for the evaluation of the left and right positions.
 
     Returns:
-        The MDODiscipline describing a single point mass.
+        The Discipline describing a single point mass.
     """
 
     def _mass_rhs_generic(
@@ -309,7 +309,7 @@ def create_mass_mdo_discipline(
             )
             return position_dot, velocity_dot
 
-    return AutoPyDiscipline(_mass_rhs, grammar_type=MDODiscipline.GrammarType.SIMPLE)
+    return AutoPyDiscipline(_mass_rhs)
 
 
 def create_mass_ode_discipline(
@@ -348,7 +348,7 @@ def create_mass_ode_discipline(
         **ode_solver_options: The options of the ODE solver.
 
     Returns:
-        The MDODiscipline describing a single point mass.
+        The Discipline describing a single point mass.
     """
     mass_discipline = create_mass_mdo_discipline(
         mass,

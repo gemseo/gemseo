@@ -38,7 +38,7 @@ def test_create_disciplines(dtype) -> None:
     assert [discipline.name for discipline in disciplines] == DISCIPLINES
 
     for discipline in disciplines:
-        assert str(discipline.default_inputs["x_shared"].dtype) == dtype
+        assert str(discipline.default_input_data["x_shared"].dtype) == dtype
 
 
 @pytest.mark.parametrize("dtype", ["float64", "complex128"])

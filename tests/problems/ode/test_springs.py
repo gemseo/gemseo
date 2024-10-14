@@ -32,11 +32,10 @@ from numpy import ndarray
 from numpy import repeat
 from numpy import sin
 
-from gemseo import MDODiscipline
 from gemseo import create_discipline
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
-from gemseo.core.chain import MDOChain
+from gemseo.core.chains.chain import MDOChain
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.ode._springs import Mass
@@ -264,7 +263,6 @@ def test_2_chained_masses(
     mdo_discipline_0 = create_discipline(
         "AutoPyDiscipline",
         py_func=mass_0_rhs,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
     ode_discipline_0 = ODEDiscipline(
         discipline=mdo_discipline_0,
@@ -278,7 +276,6 @@ def test_2_chained_masses(
     mdo_discipline1 = create_discipline(
         "AutoPyDiscipline",
         py_func=mass_1_rhs,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
     ode_discipline1 = ODEDiscipline(
         discipline=mdo_discipline1,
@@ -290,9 +287,7 @@ def test_2_chained_masses(
     )
 
     disciplines = [ode_discipline_0, ode_discipline1]
-    mda = MDAGaussSeidel(
-        disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE, tolerance=1e-6
-    )
+    mda = MDAGaussSeidel(disciplines, tolerance=1e-6)
 
     discipline_result = mda.execute({
         "position_0": position_0_init,
@@ -402,16 +397,13 @@ def test_2_chained_masses_linear_coupling():
     mdo_discipline_1 = create_discipline(
         "AutoPyDiscipline",
         py_func=mass_1_rhs,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
     mdo_discipline_2 = create_discipline(
         "AutoPyDiscipline",
         py_func=mass_2_rhs,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
     mda = MDOChain(
         [mdo_discipline_1, mdo_discipline_2],
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
     ode_discipline = ODEDiscipline(
         discipline=mda,
@@ -454,7 +446,7 @@ def test_create_chained_masses():
         Mass(mass=2.0, position=0.0, left_stiffness=1.0),
         Mass(mass=3.0, position=0.0, left_stiffness=1.0),
     )
-    mda = MDOChain(chain, grammar_type=MDODiscipline.GrammarType.SIMPLE)
+    mda = MDOChain(chain)
     mda.execute()
 
 
@@ -485,9 +477,7 @@ def test_create_two_chained_masses(stiff_1, stiff_2, mass_value_1):
         atol=1e-8,
     )
 
-    mda = MDAGaussSeidel(
-        chain, grammar_type=MDODiscipline.GrammarType.SIMPLE, tolerance=1e-8
-    )
+    mda = MDAGaussSeidel(chain, tolerance=1e-8)
 
     discipline_result = mda.execute({
         "position0": array([positions[0]]),

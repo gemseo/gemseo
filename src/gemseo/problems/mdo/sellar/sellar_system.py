@@ -88,7 +88,6 @@ class SellarSystem(BaseSellar):
         """  # noqa: D107 D205 D205 D212 D415
         super().__init__(n)
         self.output_grammar.update_from_names(self._OUTPUT_NAMES)
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
         self.__n = n
         self.__inv_n = 1.0 / n
         self.__inv_n_double = self.__inv_n * 2.0
@@ -96,13 +95,13 @@ class SellarSystem(BaseSellar):
         self.__ones_n = ones((n, 1))
 
     def _run(self) -> None:
-        x_1 = self._local_data[X_1]
-        x_2 = self._local_data[X_2]
-        x_shared = self._local_data[X_SHARED]
-        y_1 = self._local_data[Y_1]
-        y_2 = self._local_data[Y_2]
-        alpha = self._local_data[ALPHA]
-        beta = self._local_data[BETA]
+        x_1 = self.io.data[X_1]
+        x_2 = self.io.data[X_2]
+        x_shared = self.io.data[X_SHARED]
+        y_1 = self.io.data[Y_1]
+        y_2 = self.io.data[Y_2]
+        alpha = self.io.data[ALPHA]
+        beta = self.io.data[BETA]
         if WITH_2D_ARRAY:  # pragma: no cover
             x_shared = x_shared[0]
 
@@ -111,22 +110,22 @@ class SellarSystem(BaseSellar):
             + x_shared[1]
             + exp(-y_2.mean())
         ])
-        self.store_local_data(
-            obj=obj,
-            c_1=alpha - y_1**2,
-            c_2=y_2 - beta,
-        )
+        self.io.update_output_data({
+            "obj": obj,
+            "c_1": alpha - y_1**2,
+            "c_2": y_2 - beta,
+        })
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] = (),
-        outputs: Iterable[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        self._init_jacobian(inputs, outputs)
-        x_1 = self._local_data[X_1]
-        x_2 = self._local_data[X_2]
-        y_1 = self._local_data[Y_1]
-        y_2 = self._local_data[Y_2]
+        self._init_jacobian(input_names, output_names)
+        x_1 = self.io.data[X_1]
+        x_2 = self.io.data[X_2]
+        y_1 = self.io.data[Y_1]
+        y_2 = self.io.data[Y_2]
         jac = self.jac[C_1]
         jac[Y_1] = diags(-2.0 * y_1)
         jac[ALPHA] = self.__ones_n

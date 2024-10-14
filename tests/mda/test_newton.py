@@ -23,18 +23,18 @@ import pytest
 from numpy import array
 from numpy import isclose
 
+from .utils import generate_parallel_doe
+
 
 @pytest.mark.parametrize(
     "mda_class",
     ["MDAQuasiNewton", "MDANewtonRaphson", "MDAGaussSeidel"],
 )
-def test_parallel_doe(mda_class, generate_parallel_doe_data) -> None:
+def test_parallel_doe(mda_class) -> None:
     """Test the execution of Newton methods in parallel.
 
     Args:
         mda_class: The specific Newton MDA to test.
-        generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_name`.
     """
-    obj = generate_parallel_doe_data("MDAChain", inner_mda_name=mda_class)
+    obj = generate_parallel_doe("MDAChain", inner_mda_name=mda_class)
     assert isclose(array([obj]), array([-608.17]), atol=1e-3, rtol=1e-3)

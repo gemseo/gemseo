@@ -20,18 +20,16 @@ from abc import abstractmethod
 from shutil import rmtree
 from typing import TYPE_CHECKING
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from gemseo.disciplines.wrappers._base_executable_runner import (
         _BaseExecutableRunner,
     )
     from gemseo.typing import StrKeyMapping
 
 
-class _BaseDiscFromExe(MDODiscipline):
+class _BaseDiscFromExe(Discipline):
     """Base class for wrapping an executable in a discipline."""
 
     _executable_runner: _BaseExecutableRunner
@@ -44,12 +42,6 @@ class _BaseDiscFromExe(MDODiscipline):
         self,
         executable_runner: _BaseExecutableRunner,
         name: str = "",
-        input_grammar_file: str | Path | None = None,
-        output_grammar_file: str | Path | None = None,
-        auto_detect_grammar_files: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        cache_type: MDODiscipline.CacheType = MDODiscipline.CacheType.SIMPLE,
-        cache_file_path: str | Path | None = None,
         clean_after_execution: bool = False,
     ) -> None:
         """
@@ -58,15 +50,7 @@ class _BaseDiscFromExe(MDODiscipline):
             clean_after_execution: Whether to clean the last created directory after
                 execution.
         """  # noqa: D205, D212, D415
-        super().__init__(
-            name,
-            input_grammar_file,
-            output_grammar_file,
-            auto_detect_grammar_files,
-            grammar_type,
-            cache_type,
-            cache_file_path,
-        )
+        super().__init__(name)
         self._executable_runner = executable_runner
         self.__clean_after_execution = clean_after_execution
 
@@ -79,14 +63,14 @@ class _BaseDiscFromExe(MDODiscipline):
         """Parse the output files.
 
         Returns:
-            The output data for updating the discipline's ``local_data``.
+            The output data for updating the discipline's ``data``.
         """
 
     def _run(self) -> None:
         self._executable_runner.directory_creator.create()
         self._create_inputs()
         self._executable_runner.execute()
-        self.store_local_data(**self._parse_outputs())
+        self.io.update_output_data(self._parse_outputs())
 
         if self.__clean_after_execution:
             rmtree(self._executable_runner.directory_creator.last_directory)

@@ -27,7 +27,7 @@ import pytest
 from numpy import allclose as allclose_
 from numpy import array
 from numpy import linalg
-from pandas._testing import assert_dict_equal
+from numpy.testing import assert_equal
 
 from gemseo import create_mda
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
@@ -46,13 +46,13 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
@@ -69,7 +69,7 @@ def mda_setting() -> StrKeyMapping:
 
 
 @pytest.fixture(scope="module")
-def sobieski_disciplines() -> Sequence[MDODiscipline]:
+def sobieski_disciplines() -> Sequence[Discipline]:
     """Returns the Sobieski's disciplines."""
     return [SobieskiAerodynamics(), SobieskiStructure(), SobieskiPropulsion()]
 
@@ -141,7 +141,7 @@ def test_raphson_sobieski(coupl_scaling) -> None:
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
     mda.warm_start = True
-    mda.execute({"x_1": mda.default_inputs["x_1"] + 1.0e-2})
+    mda.execute({"x_1": mda.default_input_data["x_1"] + 1.0e-2})
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
@@ -183,8 +183,8 @@ def test_raphson_sellar_without_cache(use_cache) -> None:
 
     residual_length = len(mda.residual_history)
     assert mda.residual_history[-1] < tolerance
-    assert disciplines[0].n_calls == residual_length
-    assert disciplines[0].n_calls_linearize == residual_length - 1
+    assert disciplines[0].execution_statistics.n_calls == residual_length
+    assert disciplines[0].execution_statistics.n_calls_linearize == residual_length - 1
 
 
 @pytest.mark.parametrize("parallel", [False, True])
@@ -234,8 +234,8 @@ def test_weak_and_strong_couplings() -> None:
         "x": array([0.0]),
     })
     assert mda.inner_mdas[0].residual_history[-1] < TRESHOLD_MDA_TOL
-    assert mda.local_data[mda.NORMALIZED_RESIDUAL_NORM][0] < TRESHOLD_MDA_TOL
-    assert mda.local_data["obj"] == pytest.approx(array([2.0 / 1.3]))
+    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < TRESHOLD_MDA_TOL
+    assert mda.io.data["obj"] == pytest.approx(array([2.0 / 1.3]))
 
 
 def test_weak_and_strong_couplings_two_cycles() -> None:
@@ -269,15 +269,15 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
     mda_ref = MDAChain(disciplines)
     out_ref = mda_ref.execute(mda_input)
 
-    for output_name in mda.get_output_data_names():
+    for output_name in mda.io.output_grammar.names:
         if output_name == mda.NORMALIZED_RESIDUAL_NORM:
             continue
         assert out[output_name] == pytest.approx(out_ref[output_name], rel=1e-5)
 
     assert mda.check_jacobian(
         input_data=mda_input,
-        inputs=["x"],
-        outputs=["obj"],
+        input_names=["x"],
+        output_names=["obj"],
         linearization_mode="adjoint",
         threshold=1e-3,
         step=1e-4,
@@ -391,7 +391,7 @@ def test_mda_newton_serialization(tmp_wd) -> None:
     with open(out_file, "rb") as file:
         mda_d = pickle.load(file)
 
-    assert_dict_equal(mda_d.local_data, out)
+    assert_equal(mda_d.io.data, out)
 
 
 def test_mda_newton_weak_couplings() -> None:

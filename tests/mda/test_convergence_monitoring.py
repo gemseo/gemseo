@@ -21,7 +21,7 @@ from numpy import concatenate
 from numpy.linalg import norm
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
@@ -58,13 +58,13 @@ def disciplines() -> Sequence[LinearDiscipline]:
     disciplines[2].mat *= 100.0
 
     for discipline in disciplines:
-        discipline.set_cache_policy(MDODiscipline.CacheType.MEMORY_FULL)
+        discipline.set_cache(Discipline.CacheType.MEMORY_FULL)
 
     return disciplines
 
 
 def get_jacobi_reference_residuals(
-    disciplines: list[MDODiscipline],
+    disciplines: list[Discipline],
 ) -> tuple[Mapping, Mapping]:
     """Compute the initial and final residual without scaling for MDAJacobi."""
     mda = MDAJacobi(
@@ -79,8 +79,8 @@ def get_jacobi_reference_residuals(
     # Compute the initial residual
     input_, output = {}, {}
     for discipline in disciplines:
-        input_.update(discipline.get_input_data())
-        output.update(discipline.get_output_data())
+        input_.update(discipline.io.get_input_data())
+        output.update(discipline.io.get_output_data())
 
     initial_residual = {}
     for coupling in ["a", "b", "y"]:
@@ -92,8 +92,8 @@ def get_jacobi_reference_residuals(
     # Compute the final residual
     input_, output = {}, {}
     for discipline in disciplines:
-        input_.update(discipline.get_input_data())
-        output.update(discipline.get_output_data())
+        input_.update(discipline.io.get_input_data())
+        output.update(discipline.io.get_output_data())
 
     final_residual = {}
     for coupling in ["a", "b", "y"]:
@@ -104,7 +104,7 @@ def get_jacobi_reference_residuals(
 
 @pytest.mark.parametrize("scaling_strategy", BaseMDA.ResidualScaling)
 def test_scaling_strategy_jacobi(
-    disciplines: list[MDODiscipline], scaling_strategy
+    disciplines: list[Discipline], scaling_strategy
 ) -> None:
     """Tests the different scaling strategies for MDAJacobi."""
     initial_residual, final_residual = get_jacobi_reference_residuals(disciplines)
@@ -171,7 +171,7 @@ def test_scaling_strategy_jacobi(
 
 
 def get_gauss_seidel_reference_residuals(
-    disciplines: list[MDODiscipline],
+    disciplines: list[Discipline],
 ) -> tuple[Mapping, Mapping]:
     """Compute the initial and final residual without scaling for MDAGaussSeidel."""
     mda = MDAGaussSeidel(
@@ -196,7 +196,7 @@ def get_gauss_seidel_reference_residuals(
 
 @pytest.mark.parametrize("scaling_strategy", BaseMDA.ResidualScaling)
 def test_scaling_strategy_gauss_seidel(
-    disciplines: list[MDODiscipline], scaling_strategy
+    disciplines: list[Discipline], scaling_strategy
 ) -> None:
     """Tests the different scaling strategies for MDAGaussSeidel."""
     initial_residual, final_residual = get_gauss_seidel_reference_residuals(disciplines)

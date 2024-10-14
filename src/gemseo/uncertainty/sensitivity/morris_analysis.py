@@ -106,7 +106,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.base_driver_library import DriverLibrarySettingType
     from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.utils.string_tools import VariableType
@@ -179,7 +179,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
 
     def compute_samples(
         self,
-        disciplines: Collection[MDODiscipline],
+        disciplines: Collection[Discipline],
         parameter_space: ParameterSpace,
         n_samples: int | None,
         output_names: Iterable[str] = (),
