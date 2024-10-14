@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from openturns import ComposedDistribution
 from openturns import Distribution
@@ -55,9 +54,15 @@ class OTJointDistribution(BaseJointDistribution):
         self,
         distribution_name: str,
         parameters: StrKeyMapping,
-        copula: Any,
+        copula: Distribution | None,
         distributions: Sequence[OTDistribution],
     ) -> None:
+        """
+        Args:
+            copula: The copula modelling the dependency structure.
+                If empty, use an independent copula.
+            distributions: The marginal distributions.
+        """  # noqa: D205 D212
         if copula is None:
             copula = IndependentCopula(len(distributions))
         self.distribution = ComposedDistribution(
@@ -73,20 +78,20 @@ class OTJointDistribution(BaseJointDistribution):
 
     def compute_cdf(  # noqa: D102
         self,
-        vector: Iterable[float],
+        value: Iterable[float],
     ) -> RealArray:
         # We cast the values to float
         # because computeCDF does not support numpy.int32.
         return array([
-            marginal.distribution.computeCDF(float(value))
-            for value, marginal in zip(vector, self.marginals)
+            marginal.distribution.computeCDF(float(value_))
+            for value_, marginal in zip(value, self.marginals)
         ])
 
     def compute_inverse_cdf(  # noqa: D102
         self,
-        vector: Iterable[float],
+        value: Iterable[float],
     ) -> RealArray:
         return array([
-            marginal.distribution.computeQuantile(value)[0]
-            for value, marginal in zip(vector, self.marginals)
+            marginal.distribution.computeQuantile(value_)[0]
+            for value_, marginal in zip(value, self.marginals)
         ])
