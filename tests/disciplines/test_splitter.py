@@ -38,7 +38,7 @@ def test_splitting_discipline_execution(splitting_discipline_for_test) -> None:
 
 def test_check_gradient(splitting_discipline_for_test) -> None:
     """Test Splitter jacobian computation by finite differences."""
-    splitting_discipline_for_test.default_inputs = {
+    splitting_discipline_for_test.default_input_data = {
         "E": array([1.0, 2.0, 3.0, 4.0, 5.0])
     }
     assert splitting_discipline_for_test.check_jacobian(

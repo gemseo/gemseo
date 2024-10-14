@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 from numpy import allclose
 
-from gemseo.core.chain import MDOChain
+from gemseo.core.chains.chain import MDOChain
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
@@ -83,39 +83,39 @@ def test_traverse_add_diff_io_basic() -> None:
     traverse_add_diff_io(graph, ["x"], ["o"])
 
     # A
-    assert disciplines[0]._differentiated_inputs == ["x"]
-    assert disciplines[0]._differentiated_outputs == ["q"]
+    assert disciplines[0]._differentiated_input_names == ["x"]
+    assert disciplines[0]._differentiated_output_names == ["q"]
 
     # B
-    assert disciplines[1]._differentiated_inputs == ["x"]
-    assert disciplines[1]._differentiated_outputs == ["r"]
+    assert disciplines[1]._differentiated_input_names == ["x"]
+    assert disciplines[1]._differentiated_output_names == ["r"]
 
     # C
-    assert disciplines[2]._differentiated_inputs == []
-    assert disciplines[2]._differentiated_outputs == []
+    assert disciplines[2]._differentiated_input_names == []
+    assert disciplines[2]._differentiated_output_names == []
 
     # D
-    assert sorted(disciplines[3]._differentiated_inputs) == ["q", "r"]
-    assert disciplines[3]._differentiated_outputs == ["s"]
+    assert sorted(disciplines[3]._differentiated_input_names) == ["q", "r"]
+    assert disciplines[3]._differentiated_output_names == ["s"]
 
     # E
-    assert disciplines[4]._differentiated_inputs == ["s"]
-    assert disciplines[4]._differentiated_outputs == ["o"]
+    assert disciplines[4]._differentiated_input_names == ["s"]
+    assert disciplines[4]._differentiated_output_names == ["o"]
 
     # H
-    assert disciplines[5]._differentiated_inputs == []
-    assert disciplines[5]._differentiated_outputs == []
+    assert disciplines[5]._differentiated_input_names == []
+    assert disciplines[5]._differentiated_output_names == []
 
     # I
-    assert disciplines[6]._differentiated_inputs == []
-    assert disciplines[6]._differentiated_outputs == []
+    assert disciplines[6]._differentiated_input_names == []
+    assert disciplines[6]._differentiated_output_names == []
 
 
 def test_chain_jac_basic() -> None:
     """Test the jacobian from the MDOChain on a basic case."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1)
     chain = MDOChain(disciplines)
-    assert chain.check_jacobian(inputs=["x"], outputs=["o"])
+    assert chain.check_jacobian(input_names=["x"], output_names=["o"])
 
 
 @pytest.mark.parametrize("nb_of_disc", [1, 5, 10, 20])
@@ -137,9 +137,7 @@ def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios) -> No
         no_self_coupled=True,
         grammar_type=MDOChain.GrammarType.SIMPLE,
     )
-    assert MDOChain(
-        disciplines, grammar_type=MDOChain.GrammarType.SIMPLE
-    ).check_jacobian()
+    assert MDOChain(disciplines).check_jacobian()
 
 
 @pytest.mark.parametrize("inputs_size", [1, 2])
@@ -158,9 +156,7 @@ def test_chain_jac_io_sizes(inputs_size, outputs_size, unique_disc_per_output) -
         no_self_coupled=True,
         grammar_type=MDOChain.GrammarType.SIMPLE,
     )
-    assert MDOChain(
-        disciplines, grammar_type=MDOChain.GrammarType.SIMPLE
-    ).check_jacobian()
+    assert MDOChain(disciplines).check_jacobian()
 
 
 @pytest.mark.parametrize("nb_of_disc", [5, 10])
@@ -183,9 +179,7 @@ def test_chain_jac_random_with_couplings(
         no_self_coupled=no_self_coupled,
         grammar_type=MDOChain.GrammarType.SIMPLE,
     )
-    assert MDOChain(
-        disciplines, grammar_type=MDOChain.GrammarType.SIMPLE
-    ).check_jacobian()
+    assert MDOChain(disciplines).check_jacobian()
 
 
 # def test_chain_fail_multiple_io(
@@ -219,7 +213,7 @@ def test_chain_jac_random_with_couplings(
 #     from time import time
 #     t0=time()
 #     traverse_add_diff_io(coupling_structure.graph.graph,
-#     disciplines[0].get_input_data_names(),
-#         disciplines[-1].get_output_data_names())
+#     disciplines[0].io.input_grammar.names,
+#         disciplines[-1].io.output_grammar.names)
 #
 #     raise ValueError(str(len(disciplines))+ " time = "+str(time()-t0))

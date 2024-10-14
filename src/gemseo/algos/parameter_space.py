@@ -72,6 +72,8 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
+from gemseo.third_party.prettytable.prettytable import PrettyTable
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
@@ -85,7 +87,6 @@ from numpy import array
 from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.third_party.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays

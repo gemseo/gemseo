@@ -145,7 +145,7 @@ system_scenario.formulation.mda2.warm_start = False
 #    process whatever the execution order and process dispatch.
 
 for sub_sc in sub_disciplines[0:3]:
-    sub_sc.default_inputs = {"max_iter": 20, "algo": "L-BFGS-B"}
+    sub_sc.default_input_data = {"max_iter": 20, "algo": "L-BFGS-B"}
 
 # %%
 # Visualize the XDSM

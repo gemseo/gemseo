@@ -130,10 +130,10 @@ class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
         # TODO: API: set parameters to (distributions, copula) instead of (copula,).
         super().__init__("Joint", (copula,), distributions=distributions, copula=copula)
         if self.__dimension == 1:
-            self._string_representation = repr(distributions[0])
+            self._get_string_representation = repr(distributions[0])
         else:
             name = "IndependentCopula" if copula is None else copula.__class__.__name__
-            self._string_representation = (
+            self._get_string_representation = (
                 f"{self.__class__.__name__}({pretty_repr(distributions, sort=False)}; "
                 f"{name})"
             )

@@ -101,7 +101,7 @@ def test_execution(scalable_discipline, core_scalable_discipline) -> None:
         "x_1": array([1.0, 2.0, 1.0]),
         "y_2": array([1.0, 2.0, 3.0]),
     })
-    assert_equal(dict(scalable_discipline.get_output_data()), core_output_data)
+    assert_equal(dict(scalable_discipline.io.get_output_data()), core_output_data)
 
 
 def test_differentiation(scalable_discipline, core_scalable_discipline) -> None:

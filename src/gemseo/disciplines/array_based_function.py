@@ -21,7 +21,7 @@ from typing import Callable
 
 from numpy import zeros
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline.discipline import Discipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class ArrayBasedFunctionDiscipline(MDODiscipline):
+class ArrayBasedFunctionDiscipline(Discipline):
     """A discipline wrapping an array-based function.
 
     Both the unique argument of this Python function and its return value are NumPy
@@ -74,7 +74,7 @@ class ArrayBasedFunctionDiscipline(MDODiscipline):
         self.__function = function
         self.input_grammar.update_from_names(input_names_to_sizes)
         self.output_grammar.update_from_names(output_names_to_sizes)
-        self.default_inputs = {
+        self.default_input_data = {
             name: zeros(size) for name, size in input_names_to_sizes.items()
         }
         self.__output_names_to_sizes = output_names_to_sizes.copy()
@@ -83,18 +83,20 @@ class ArrayBasedFunctionDiscipline(MDODiscipline):
         self.__jac_function = jac_function
 
     def _run(self) -> None:
-        input_data = self.get_input_data()
+        input_data = self.io.get_input_data()
         input_vector = concatenate_dict_of_arrays_to_array(
-            input_data, self.input_grammar.names
+            input_data, self.io.input_grammar.names
         )
         output_vector = self.__function(input_vector)
         output_data = split_array_to_dict_of_arrays(
-            output_vector, self.__output_names_to_sizes, self.output_grammar.names
+            output_vector, self.__output_names_to_sizes, self.io.output_grammar.names
         )
-        self.store_local_data(**output_data)
+        self.io.data.update(output_data)
 
     def _compute_jacobian(
-        self, inputs: Iterable[str] = (), outputs: Iterable[str] = ()
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         """
         Raises:
@@ -104,13 +106,13 @@ class ArrayBasedFunctionDiscipline(MDODiscipline):
             msg = f"The discipline {self.name} cannot compute the analytic derivatives."
             raise RuntimeError(msg)
 
-        input_data = self.get_input_data()
+        input_data = self.io.get_input_data()
         input_vector = concatenate_dict_of_arrays_to_array(
-            input_data, self.input_grammar.names
+            input_data, self.io.input_grammar.names
         )
         self.jac = split_array_to_dict_of_arrays(
             self.__jac_function(input_vector),
             self.__variable_names_to_sizes,
-            self.output_grammar.names,
-            self.input_grammar.names,
+            self.io.output_grammar.names,
+            self.io.input_grammar.names,
         )

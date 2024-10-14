@@ -26,7 +26,7 @@ from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (  # n
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 
 class LSF(JobSchedulerDisciplineWrapper):
@@ -41,7 +41,7 @@ class LSF(JobSchedulerDisciplineWrapper):
 
     def __init__(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         workdir_path: Path,
         scheduler_run_command: str = "bsub -K",
         job_out_filename: str = "batch.sh",

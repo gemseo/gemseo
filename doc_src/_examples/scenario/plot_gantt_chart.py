@@ -36,7 +36,8 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.post.core.gantt_chart import create_gantt_chart
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
@@ -85,9 +86,9 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # --------------------
 # In order to record all time stamps recording, we have to call this method
 # before the execution of the scenarios
-MDODiscipline.activate_time_stamps()
+ExecutionStatistics.is_time_stamps_enabled = True
 
-scenario.execute({"algo": "SLSQP", "max_iter": 10})
+scenario.execute(algo="SLSQP", max_iter=10)
 
 # %%
 # Post-process scenario
@@ -96,4 +97,4 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 create_gantt_chart(save=False, show=True)
 
 # Finally, we deactivate the time stamps for other executions
-MDODiscipline.deactivate_time_stamps()
+Discipline.deactivate_time_stamps()

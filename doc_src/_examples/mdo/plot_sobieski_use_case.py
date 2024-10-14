@@ -70,7 +70,7 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 configure_logger()
 
 # %%
-# Step 1: Creation of :class:`.MDODiscipline`
+# Step 1: Creation of :class:`.Discipline`
 # -------------------------------------------
 #
 # To build the scenario, we first instantiate the disciplines. Here, the
@@ -154,7 +154,7 @@ get_available_formulations()
 get_all_outputs(disciplines)
 get_all_inputs(disciplines)
 # %%
-# From these :class:`~gemseo.core.discipline.MDODiscipline`, design space filename,
+# From these :class:`~gemseo.core.discipline.Discipline`, design space filename,
 # :ref:`MDO formulation <mdo_formulations>` name and objective function name,
 # we build the scenario:
 scenario = create_scenario(

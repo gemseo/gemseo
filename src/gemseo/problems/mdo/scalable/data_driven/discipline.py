@@ -32,7 +32,7 @@ applying to disciplines with respect to the problem dimension,
 e.g. optimization algorithm, surrogate model, MDO formulation, MDA, ...
 
 The :class:`.ScalableDiscipline` class implements this concept.
-It inherits from the :class:`.MDODiscipline` class
+It inherits from the :class:`.Discipline` class
 in such a way that it can easily be used in a :class:`.Scenario`.
 It is composed of a :class:`.ScalableModel`.
 
@@ -54,7 +54,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.problems.mdo.scalable.data_driven.factory import ScalableModelFactory
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -66,12 +66,10 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
 
 
-class ScalableDiscipline(MDODiscipline):
+class ScalableDiscipline(Discipline):
     """A scalable discipline."""
 
-    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union([
-        "scalable_model"
-    ])
+    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union(["scalable_model"])
 
     def __init__(
         self,
@@ -92,13 +90,12 @@ class ScalableDiscipline(MDODiscipline):
             name, data=data, sizes=sizes, **parameters
         )
         super().__init__(self.scalable_model.name)
-        self.initialize_grammars(data)
-        self.default_inputs = self.scalable_model.default_inputs
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
-        self.add_differentiated_inputs(self.get_input_data_names())
-        self.add_differentiated_outputs(self.get_output_data_names())
+        self._initialize_grammars(data)
+        self.default_input_data = self.scalable_model.default_input_data
+        self.add_differentiated_inputs(self.io.input_grammar.names)
+        self.add_differentiated_outputs(self.io.output_grammar.names)
 
-    def initialize_grammars(self, data: IODataset) -> None:
+    def _initialize_grammars(self, data: IODataset) -> None:
         """Initialize input and output grammars from data names.
 
         Args:
@@ -110,26 +107,28 @@ class ScalableDiscipline(MDODiscipline):
         )
 
     def _run(self) -> None:
-        self.local_data.update(self.scalable_model.scalable_function(self.local_data))
+        self.io.data.update(self.scalable_model.scalable_function(self.io.data))
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         """Compute the Jacobian of outputs wrt inputs and store the values.
 
         Args:
-            inputs: The name of the input variables.
-            outputs: The names of the output functions.
+            input_names: The name of the input variables.
+            output_names: The names of the output functions.
         """
-        self._init_jacobian(inputs, outputs, MDODiscipline.InitJacobianType.EMPTY)
-        jac = self.scalable_model.scalable_derivatives(self.local_data)
+        self._init_jacobian(
+            input_names, output_names, Discipline.InitJacobianType.EMPTY
+        )
+        jac = self.scalable_model.scalable_derivatives(self.io.data)
         input_names = self.scalable_model.input_names
         jac = {
             fname: split_array_to_dict_of_arrays(
                 jac[fname], self.scalable_model.sizes, input_names
             )
-            for fname in self.get_output_data_names()
+            for fname in self.io.output_grammar.names
         }
         self.jac = jac

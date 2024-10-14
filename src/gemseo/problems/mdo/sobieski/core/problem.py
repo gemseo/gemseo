@@ -54,14 +54,14 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo import MDODiscipline
+    from gemseo import Discipline
 
 
 class _Disciplines(NamedTuple):
-    aerodynamics: MDODiscipline
-    structure: MDODiscipline
-    propulsion: MDODiscipline
-    mission: MDODiscipline
+    aerodynamics: Discipline
+    structure: Discipline
+    propulsion: Discipline
+    mission: Discipline
 
 
 class SobieskiProblem:

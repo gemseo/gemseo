@@ -22,7 +22,7 @@
 Create a surrogate discipline
 =============================
 
-We want to build an :class:`.MDODiscipline`
+We want to build an :class:`.Discipline`
 based on a regression model approximating the following discipline
 with two inputs and two outputs:
 
@@ -78,7 +78,7 @@ design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
 )
-scenario.execute({"algo": "fullfact", "n_samples": 9})
+scenario.execute(algo="fullfact", n_samples=9)
 
 # %%
 # Create the surrogate discipline

@@ -69,7 +69,7 @@ def test_execution(main_discipline, core_main_discipline) -> None:
         "y_2": array([1.0, 2.0]),
     })
     assert_equal(
-        dict(main_discipline.get_output_data()),
+        dict(main_discipline.io.get_output_data()),
         core_main_discipline(x_0=array([1.0, 2.0, 1.0, 2.0]), y_2=array([1.0, 2.0])),
     )
 

@@ -31,7 +31,7 @@ from uuid import uuid4
 
 from numpy import array
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -50,7 +50,7 @@ if xlwings is not None:
     import pythoncom
 
 
-class XLSDiscipline(MDODiscipline):
+class XLSDiscipline(Discipline):
     """Wraps an Excel workbook into a discipline.
 
     .. warning::
@@ -60,7 +60,7 @@ class XLSDiscipline(MDODiscipline):
         is only working under Windows and macOS.
     """
 
-    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union([
+    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union([
         "_xls_app",
         "_book",
     ])
@@ -153,7 +153,6 @@ class XLSDiscipline(MDODiscipline):
         self.__create_book(quit_xls_at_exit=quit_xls_at_exit)
         self._init_grammars()
         self._init_defaults()
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
         if recreate_book_at_run or copy_xls_at_setstate:
             self.__reset_xls_objects()
 
@@ -269,7 +268,9 @@ class XLSDiscipline(MDODiscipline):
             )
             raise ValueError(msg)
 
-        self.default_inputs = {k: array([v]) for k, v in zip(self.input_names, inputs)}
+        self.default_input_data = {
+            k: array([v]) for k, v in zip(self.input_names, inputs)
+        }
 
     def __write_inputs(self, input_data: Mapping[str, float]) -> None:
         """Write the inputs values to the Inputs sheet."""
@@ -298,7 +299,7 @@ class XLSDiscipline(MDODiscipline):
             pythoncom.CoInitialize()
             self.__create_book(quit_xls_at_exit=False)
 
-        self.__write_inputs(self.local_data)
+        self.__write_inputs(self.io.data)
 
         if self._xls_file_path.match("*.xlsm") and self.macro_name is not None:
             try:
@@ -317,7 +318,7 @@ class XLSDiscipline(MDODiscipline):
             raise ValueError(msg) from None
 
         outputs = {k: array([v]) for k, v in zip(self.output_names, out_vals)}
-        self.store_local_data(**outputs)
+        self.io.update_output_data(outputs)
 
         # When using threads, each computation is made with a unique `_xls_app`.
         # If we do not quit at this point, we loose the reference and

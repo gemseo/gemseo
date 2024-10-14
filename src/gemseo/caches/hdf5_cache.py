@@ -90,9 +90,8 @@ class HDF5Cache(BaseFullCache):
         """The path to the HDF node."""
         return self.__hdf_node_path
 
-    @property
-    def _string_representation(self) -> MultiLineString:
-        mls = super()._string_representation
+    def _get_string_representation(self) -> MultiLineString:
+        mls = super()._get_string_representation()
         mls.add("HDF file path: {}", self.__hdf_file.hdf_file_path)
         mls.add("HDF node path: {}", self.__hdf_node_path)
         return mls
@@ -100,7 +99,7 @@ class HDF5Cache(BaseFullCache):
     def __getstate__(self) -> dict[str, float | str]:
         # Pickle __init__ arguments so to call it when unpickling.
         return {
-            "tolerance": self.tolerance,
+            "tolerance": self._tolerance,
             "hdf_file_path": self.__hdf_file.hdf_file_path,
             "hdf_node_path": self.__hdf_node_path,
             "name": self.name,
@@ -114,7 +113,7 @@ class HDF5Cache(BaseFullCache):
         return self.__class__(
             hdf_file_path=file_path.parent / ("new_" + file_path.name),
             hdf_node_path=self.__hdf_node_path,
-            tolerance=self.tolerance,
+            tolerance=self._tolerance,
             name=self.name,
         )
 

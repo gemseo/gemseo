@@ -17,7 +17,7 @@
 #                   initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Tests for analytic MDODiscipline based on symbolic expressions."""
+"""Tests for analytic Discipline based on symbolic expressions."""
 
 from __future__ import annotations
 
@@ -29,6 +29,8 @@ from numpy.testing import assert_equal
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.pickle import from_pickle
+from gemseo.utils.pickle import to_pickle
 
 
 @pytest.fixture
@@ -53,8 +55,8 @@ def test_independent_default_inputs() -> None:
     expr = {"obj": "x1 + x2 + x3"}
     disc = AnalyticDiscipline(expr)
     disc.execute()
-    disc.local_data["x1"] += 1.0
-    assert disc.local_data["x2"] == pytest.approx(0.0)
+    disc.io.data["x1"] += 1.0
+    assert disc.io.data["x2"] == pytest.approx(0.0)
 
 
 def test_fast_expression_evaluation(expressions) -> None:
@@ -96,13 +98,13 @@ def test_serialize(tmp_wd) -> None:
     file_path = "discipline.h5"
 
     discipline = AnalyticDiscipline({"y": "2*x"})
-    discipline.to_pickle(file_path)
+    to_pickle(discipline, file_path)
     discipline.execute(input_data)
 
-    saved_discipline = AnalyticDiscipline.from_pickle(file_path)
+    saved_discipline = from_pickle(file_path)
     saved_discipline.execute(input_data)
 
-    assert_equal(saved_discipline.get_output_data(), discipline.get_output_data())
+    assert_equal(saved_discipline.io.get_output_data(), discipline.io.get_output_data())
 
 
 @pytest.mark.parametrize("add_differentiated_inputs", [False, True])
@@ -140,7 +142,7 @@ def test_complex_outputs() -> None:
     """Check that complex outputs are supported."""
     discipline = AnalyticDiscipline({"y": "x*I"})
     discipline.execute({"x": array([1.0])})
-    assert discipline.local_data["y"] == 1j
+    assert discipline.io.data["y"] == 1j
 
 
 @pytest.mark.parametrize("linearization_mode", ApproximationMode)

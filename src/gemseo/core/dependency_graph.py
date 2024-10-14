@@ -24,7 +24,7 @@ import logging
 from typing import Final
 from typing import cast
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.utils.string_tools import pretty_str
 
 try:
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-ExecutionSequence = list[list[tuple[MDODiscipline, ...]]]
+ExecutionSequence = list[list[tuple[Discipline, ...]]]
 
 
 class DependencyGraph:
@@ -72,7 +72,7 @@ class DependencyGraph:
     IO: Final[str] = "io"
     """The argument name for the coupling variables associated with an edge."""
 
-    def __init__(self, disciplines: Sequence[MDODiscipline]) -> None:
+    def __init__(self, disciplines: Sequence[Discipline]) -> None:
         """
         Args:
             disciplines: The disciplines to build the graph with.
@@ -84,7 +84,7 @@ class DependencyGraph:
             self.__get_node_name_from_discipline = self._get_node_name_from_disc_id
 
     @staticmethod
-    def _get_node_name_from_disc_name(discipline: MDODiscipline) -> str:
+    def _get_node_name_from_disc_name(discipline: Discipline) -> str:
         """Return the name of a node from the name of the associated discipline.
 
         Args:
@@ -96,7 +96,7 @@ class DependencyGraph:
         return discipline.name
 
     @staticmethod
-    def _get_node_name_from_disc_id(discipline: MDODiscipline) -> str:
+    def _get_node_name_from_disc_id(discipline: Discipline) -> str:
         """Return the name of a node from the id of the associated discipline.
 
         Args:
@@ -108,7 +108,7 @@ class DependencyGraph:
         return str(id(discipline))
 
     @property
-    def disciplines(self) -> Iterator[MDODiscipline]:
+    def disciplines(self) -> Iterator[Discipline]:
         """The disciplines used to build the graph."""
         return iter(self.__graph.nodes)
 
@@ -117,7 +117,7 @@ class DependencyGraph:
         """The disciplines data graph."""
         return self.__graph
 
-    def get_execution_sequence(self) -> list[list[tuple[MDODiscipline, ...]]]:
+    def get_execution_sequence(self) -> list[list[tuple[Discipline, ...]]]:
         """Compute the execution sequence of the disciplines.
 
         Returns:
@@ -135,7 +135,7 @@ class DependencyGraph:
             parallel_tasks = [
                 tuple(
                     cast(
-                        list[MDODiscipline],
+                        list[Discipline],
                         condensed_graph.nodes[node_id]["members"],
                     )
                 )
@@ -157,8 +157,8 @@ class DependencyGraph:
         )
 
     def __get_ordered_scc(
-        self, scc: Iterator[set[MDODiscipline]]
-    ) -> Iterator[list[MDODiscipline]]:
+        self, scc: Iterator[set[Discipline]]
+    ) -> Iterator[list[Discipline]]:
         """Return the scc nodes ordered by the initial disciplines.
 
         Args:
@@ -184,7 +184,7 @@ class DependencyGraph:
 
     def get_disciplines_couplings(
         self,
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
+    ) -> list[tuple[Discipline, Discipline, list[str]]]:
         """Return the couplings between the disciplines.
 
         Returns:
@@ -198,7 +198,7 @@ class DependencyGraph:
         return couplings
 
     @staticmethod
-    def __create_graph(disciplines: Iterable[MDODiscipline]) -> DiGraph:
+    def __create_graph(disciplines: Iterable[Discipline]) -> DiGraph:
         """Create the full graph.
 
         The coupled inputs and outputs names are stored as an edge attributes named io.
@@ -213,8 +213,8 @@ class DependencyGraph:
 
         for disc in disciplines:
             nodes_to_ios[disc] = (
-                set(disc.get_input_data_names()),
-                set(disc.get_output_data_names()),
+                set(disc.io.input_grammar.names),
+                set(disc.io.output_grammar.names),
             )
 
         graph = DiGraph()
@@ -230,7 +230,7 @@ class DependencyGraph:
 
         return graph
 
-    def __get_node_name(self, graph: DiGraph, node: int | MDODiscipline) -> str:
+    def __get_node_name(self, graph: DiGraph, node: int | Discipline) -> str:
         """Return the name of a node for the representation of a graph.
 
         Args:
@@ -240,7 +240,7 @@ class DependencyGraph:
         Returns:
             The name of the node.
         """
-        if isinstance(node, MDODiscipline):
+        if isinstance(node, Discipline):
             # not a scc node
             return self.__get_node_name_from_discipline(node)
 
@@ -272,14 +272,14 @@ class DependencyGraph:
         """
         output_names = set()
         for disc in graph.nodes[node_from]["members"]:
-            output_names.update(disc.get_output_data_names())
+            output_names.update(disc.io.output_grammar.names)
 
         if node_to is None:
             return output_names
 
         input_names = set()
         for disc in graph.nodes[node_to]["members"]:
-            input_names.update(disc.get_input_data_names())
+            input_names.update(disc.io.input_grammar.names)
         return output_names & input_names
 
     def __write_graph(
@@ -315,7 +315,7 @@ class DependencyGraph:
         for head_node, tail_node, coupling_names in graph.edges(data=self.IO):
             head_name = self.__get_node_name(graph, head_node)
             tail_name = self.__get_node_name(graph, tail_node)
-            if not isinstance(tail_node, MDODiscipline):
+            if not isinstance(tail_node, Discipline):
                 # a scc edge
                 coupling_names = self.__get_scc_edge_names(graph, head_node, tail_node)
 
@@ -325,8 +325,8 @@ class DependencyGraph:
         #    (case: some outputs of a discipline are inputs of itself)
         if is_full:
             for discipline in self.__graph.nodes:
-                coupling_names = set(discipline.get_input_data_names()).intersection(
-                    discipline.get_output_data_names()
+                coupling_names = set(discipline.io.input_grammar.names).intersection(
+                    discipline.io.output_grammar.names
                 )
                 if coupling_names:
                     name = get_node_name_from_discipline(discipline)
@@ -335,12 +335,12 @@ class DependencyGraph:
         # 3. Add the edges without head node
         #    (case: some output variables of discipline are not coupling variables).
         for leaf_node in self.__get_leaves(graph):
-            if isinstance(leaf_node, MDODiscipline):
-                output_names = leaf_node.get_output_data_names()
+            if isinstance(leaf_node, Discipline):
+                output_names = tuple(leaf_node.io.output_grammar.names)
                 node_name = get_node_name_from_discipline(leaf_node)
             else:
                 # a scc edge
-                output_names = list(self.__get_scc_edge_names(graph, leaf_node))
+                output_names = tuple(self.__get_scc_edge_names(graph, leaf_node))
                 node_name = self.__get_node_name(graph, leaf_node)
 
             if not output_names:
@@ -383,7 +383,7 @@ class DependencyGraph:
     export_reduced_graph = write_condensed_graph
 
     @staticmethod
-    def __get_leaves(graph: DiGraph) -> list[MDODiscipline] | list[int]:
+    def __get_leaves(graph: DiGraph) -> list[Discipline] | list[int]:
         """Return the leaf nodes of a graph.
 
         Args:

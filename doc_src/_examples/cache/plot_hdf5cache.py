@@ -69,7 +69,7 @@ cache
 # -----
 # In this example, we manually add data in the cache from the data dictionary
 # to illustrate its use.  Yet, it has to be noted that a cache can be attached
-# to an :class:`.MDODiscipline` instance, and the user does not have to feed the
+# to an :class:`.Discipline` instance, and the user does not have to feed the
 # cache manually.
 # Here, we provide to the cache the data dictionary, and we set `x` as input
 # and `y` as output.

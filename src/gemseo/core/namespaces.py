@@ -26,6 +26,7 @@ The namespaces implementation itself is mainly in :mod:`~gemseo.core.grammars` a
 from __future__ import annotations
 
 from collections.abc import Iterable
+from collections.abc import Iterator
 from collections.abc import Mapping
 from collections.abc import MutableMapping
 from typing import Union
@@ -69,7 +70,8 @@ def remove_prefix_from_name(name: str) -> str:
     return name.rsplit(namespaces_separator, 1)[-1]
 
 
-def remove_prefix_from_list(names: Iterable[str]) -> list[str]:
+# TODO: API: rename to simply remove_prefixes, same above?
+def remove_prefix_from_names(names: Iterable[str]) -> Iterator[str]:
     """Remove namespaces prefixes from names, if any.
 
     Args:
@@ -78,14 +80,15 @@ def remove_prefix_from_list(names: Iterable[str]) -> list[str]:
     Returns:
         The names without prefixes in its keys.
     """
-    return [d.rsplit(namespaces_separator, 1)[-1] for d in names]
+    return (d.rsplit(namespaces_separator, 1)[-1] for d in names)
 
 
 # TODO: API: create a specific update_namespace for process disciplines,
 # that are the only namespaces allowed to use nested namespaces.
 # This will also fix the mypy ignore.
 def update_namespaces(
-    namespaces: MutableNamespacesMapping, other_namespaces: MutableNamespacesMapping
+    namespaces: MutableNamespacesMapping,
+    other_namespaces: MutableNamespacesMapping,
 ) -> None:
     """Update namespaces with the key/value pairs from other, overwriting existing keys.
 

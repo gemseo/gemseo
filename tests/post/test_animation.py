@@ -118,7 +118,7 @@ def test_l_shape(tmp_wd) -> None:
     scenario.add_constraint(
         "volume fraction", constraint_type="ineq", value=volume_fraction
     )
-    scenario.execute({"max_iter": 10, "algo": "NLOPT_MMA"})
+    scenario.execute(max_iter=10, algo="NLOPT_MMA")
     post_processing = PostFactory().create(
         "TopologyView", scenario.formulation.optimization_problem
     )

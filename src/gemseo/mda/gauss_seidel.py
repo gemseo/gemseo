@@ -21,9 +21,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
+from gemseo.mda.base_mda import BaseProcessFlow
+from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_solver import BaseMDASolver
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -32,7 +34,52 @@ if TYPE_CHECKING:
 
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.coupling_structure import DependencyGraph
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
+
+
+class _ProcessFlow(_BaseMDAProcessFlow):
+    """The process data and execution flow."""
+
+    def _get_disciplines_couplings(
+        self, graph: DependencyGraph
+    ) -> list[tuple[str, str, list[str]]]:
+        couplings_results = []
+        disc_already_seen = set()
+
+        disciplines = BaseProcessFlow.get_disciplines_in_data_flow(self)
+
+        for disc in disciplines:
+            couplings_with_mda_to_be_removed = set()
+            predecessors = (
+                set(graph.graph.predecessors(disc)) - {self._node} & disc_already_seen
+            )
+            for predecessor in sorted(predecessors, key=lambda p: p.name):
+                current_couplings = graph.graph.get_edge_data(predecessor, disc)["io"]
+                couplings_results.append((predecessor, disc, sorted(current_couplings)))
+                couplings_with_mda_to_be_removed.update(current_couplings)
+
+            in_data = graph.graph.get_edge_data(self._node, disc)
+            if in_data:
+                couplings_with_mda = in_data["io"] - couplings_with_mda_to_be_removed
+                if couplings_with_mda:
+                    couplings_results.append((
+                        self._node,
+                        disc,
+                        sorted(couplings_with_mda),
+                    ))
+
+            out_data = graph.graph.get_edge_data(disc, self._node)
+            if out_data:
+                couplings_results.append((
+                    disc,
+                    self._node,
+                    sorted(out_data["io"]),
+                ))
+
+            disc_already_seen.add(disc)
+
+        return couplings_results
 
 
 class MDAGaussSeidel(BaseMDASolver):
@@ -75,12 +122,13 @@ class MDAGaussSeidel(BaseMDASolver):
     These :math:`n` steps account for one iteration of the Gauss-Seidel method.
     """
 
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
+
     def __init__(  # noqa: D107
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         name: str = "",
         max_mda_iter: int = 10,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
@@ -96,7 +144,6 @@ class MDAGaussSeidel(BaseMDASolver):
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
-            grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
@@ -124,10 +171,10 @@ class MDAGaussSeidel(BaseMDASolver):
     def _execute_disciplines_and_update_local_data(
         self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
     ) -> None:
-        input_data = input_data or self.local_data
+        input_data = input_data or self.io.data
         for discipline in self.disciplines:
             discipline.execute(input_data)
-            self.local_data.update(discipline.get_output_data())
+            self.io.data.update(discipline.io.get_output_data())
 
     def _run(self) -> None:
         super()._run()
@@ -136,7 +183,7 @@ class MDAGaussSeidel(BaseMDASolver):
             return
 
         while True:
-            local_data_before_execution = self.local_data.copy()
+            local_data_before_execution = self.io.data.copy()
             self._execute_disciplines_and_update_local_data()
             self._compute_residuals(local_data_before_execution)
 
@@ -147,43 +194,4 @@ class MDAGaussSeidel(BaseMDASolver):
                 self.get_current_resolved_variables_vector(),
                 self.get_current_resolved_residual_vector(),
             )
-
             self._update_local_data_from_array(updated_couplings)
-
-    def _get_disciplines_couplings(
-        self, graph: DependencyGraph
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        couplings_results = []
-        disc_already_seen = set()
-
-        disciplines = []
-        for disc in self.disciplines:
-            disciplines.extend(disc.get_disciplines_in_dataflow_chain())
-
-        for disc in disciplines:
-            couplings_with_mda_to_be_removed = set()
-            predecessors = (
-                set(graph.graph.predecessors(disc)) - {self} & disc_already_seen
-            )
-            for predecessor in sorted(predecessors, key=lambda p: p.name):
-                current_couplings = graph.graph.get_edge_data(predecessor, disc)[
-                    graph.IO
-                ]
-                couplings_results.append((predecessor, disc, sorted(current_couplings)))
-                couplings_with_mda_to_be_removed.update(current_couplings)
-
-            in_data = graph.graph.get_edge_data(self, disc)
-            if in_data:
-                couplings_with_mda = (
-                    in_data[graph.IO] - couplings_with_mda_to_be_removed
-                )
-                if couplings_with_mda:
-                    couplings_results.append((self, disc, sorted(couplings_with_mda)))
-
-            out_data = graph.graph.get_edge_data(disc, self)
-            if out_data:
-                couplings_results.append((disc, self, sorted(out_data[graph.IO])))
-
-            disc_already_seen.add(disc)
-
-        return couplings_results

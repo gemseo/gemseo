@@ -31,16 +31,16 @@ from gemseo.core.dependency_graph import DependencyGraph
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
-    DisciplineIOMapping = dict[MDODiscipline, tuple[list[str], list[str]]]
+    DisciplineIOMapping = dict[Discipline, tuple[list[str], list[str]]]
 
 
 def _initialize_add_diff_io(
     graph: DiGraph,
-    inputs: Iterable[str],
-    outputs: Iterable[str],
-) -> tuple[list[MDODiscipline], list[MDODiscipline], DisciplineIOMapping]:
+    input_names: Iterable[str],
+    output_names: Iterable[str],
+) -> tuple[list[Discipline], list[Discipline], DisciplineIOMapping]:
     """Initialize the graph traversal algorithm.
 
     Detects the disciplines that have inputs and outputs to be differentiated
@@ -48,8 +48,8 @@ def _initialize_add_diff_io(
 
     Args:
         graph: The data graph of the process, built from :class:`.DependencyGraph`.
-        inputs: The inputs with respect to which the chain is differentiated.
-        outputs: The chain outputs to be differentiated.
+        input_names: The inputs with respect to which the chain is differentiated.
+        output_names: The chain outputs to be differentiated.
 
     Returns:
         The disciplines that have inputs with respect to which the
@@ -57,21 +57,21 @@ def _initialize_add_diff_io(
         The disciplines containing outputs to be differentiated.
         The input and output data names to differentiate.
     """
-    input_sources: list[MDODiscipline] = []
-    output_sources: list[MDODiscipline] = []
+    input_sources: list[Discipline] = []
+    output_sources: list[Discipline] = []
     diff_ios: DisciplineIOMapping = {}
 
     for disc in graph.nodes:
         input_grammar = disc.input_grammar
         output_grammar = disc.output_grammar
 
-        common_data = set(inputs).intersection(input_grammar.names)
+        common_data = set(input_names).intersection(input_grammar.names)
 
         if common_data:
             diff_ios[disc] = (list(common_data), [])
             input_sources.append(disc)
 
-        common_data = set(outputs).intersection(output_grammar.names)
+        common_data = set(output_names).intersection(output_grammar.names)
 
         if common_data:
             output_sources.append(disc)
@@ -87,7 +87,7 @@ def _initialize_add_diff_io(
 
 def _bfs_one_way_diff_io(
     graph: DiGraph,
-    source_disciplines: list[MDODiscipline],
+    source_disciplines: list[Discipline],
     reverse: bool,
 ) -> DisciplineIOMapping:
     """Traverse the graph using a BFS algorithm to set the differentiated IOs.
@@ -203,8 +203,8 @@ def _merge_diff_ios(
 
 
 def _merge_diff_io_special(
-    source_input_disc: Iterable[MDODiscipline],
-    source_output_disc: Iterable[MDODiscipline],
+    source_input_disc: Iterable[Discipline],
+    source_output_disc: Iterable[Discipline],
     init_diff_ios: DisciplineIOMapping,
     diff_ios_merged: DisciplineIOMapping,
 ) -> None:
@@ -251,8 +251,8 @@ def apply_diff_ios(diff_ios: DisciplineIOMapping) -> None:
 
 def traverse_add_diff_io(
     graph: DiGraph,
-    inputs: Iterable[str],
-    outputs: Iterable[str],
+    input_names: Iterable[str],
+    output_names: Iterable[str],
     add_differentiated_ios: bool = True,
 ) -> DisciplineIOMapping:
     """Set the required differentiated IOs for the disciplines in a chain.
@@ -271,17 +271,17 @@ def traverse_add_diff_io(
     Args:
         graph: The data graph of the process, built from
             :class:`.DependencyGraph`.
-        inputs: The inputs with respect to which the chain is differentiated.
-        outputs: The chain outputs to be differentiated.
+        input_names: The inputs with respect to which the chain is differentiated.
+        output_names: The chain outputs to be differentiated.
         add_differentiated_ios: Whether to add the differentiated inputs and outputs
-            to the discipline by calling `~.MDODiscipline.add_differentiated_inputs`
-            and `~.MDODiscipline.add_differentiated_outputs`
+            to the discipline by calling `~.Discipline.add_differentiated_inputs`
+            and `~.Discipline.add_differentiated_outputs`
 
     Returns:
         The merged differentiated inputs and outputs.
     """
     source_input_disc, source_output_disc, init_diff_ios = _initialize_add_diff_io(
-        graph, inputs, outputs
+        graph, input_names, output_names
     )
 
     # Traverse the graph from the inputs to the bottom.

@@ -41,8 +41,6 @@ from numpy.linalg import norm
 from numpy.testing import assert_array_equal
 from scipy.sparse import csr_array
 
-from gemseo import from_pickle
-from gemseo import to_pickle
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.evaluation_counter import EvaluationCounter
 from gemseo.algos.problem_function import ProblemFunction
@@ -55,6 +53,8 @@ from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approxim
 from gemseo.core.mdo_functions.taylor_polynomials import compute_quadratic_approximation
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.pickle import from_pickle
+from gemseo.utils.pickle import to_pickle
 
 
 @pytest.fixture(scope="module")
@@ -140,8 +140,8 @@ def test_func_error(sinus) -> None:
 
 @pytest.mark.parametrize("jacobian_type_1", ["dense", "sparse"])
 @pytest.mark.parametrize("jacobian_type_2", ["dense", "sparse"])
-def test_mdofunctions_algebra(jacobian_type_1, jacobian_type_2) -> None:
-    """Test algebraic operations with MDOFunctions."""
+def test_mdo_functions_algebra(jacobian_type_1, jacobian_type_2) -> None:
+    """Test algebraic operations with mdo_functions."""
     array_ = array if jacobian_type_1 == "dense" else csr_array
     f = MDOFunction(
         lambda x: norm(x) ** 2,

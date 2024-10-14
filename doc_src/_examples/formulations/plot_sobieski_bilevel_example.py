@@ -84,7 +84,7 @@ sc_prop = create_scenario(
     design_space.filter("x_3", copy=True),
     name="PropulsionScenario",
 )
-sc_prop.default_inputs = sub_sc_opts
+sc_prop.default_input_data = sub_sc_opts
 sc_prop.add_constraint("g_3", constraint_type="ineq")
 
 # %%
@@ -99,7 +99,7 @@ sc_aero = create_scenario(
     name="AerodynamicsScenario",
     maximize_objective=True,
 )
-sc_aero.default_inputs = sub_sc_opts
+sc_aero.default_input_data = sub_sc_opts
 sc_aero.add_constraint("g_2", constraint_type="ineq")
 
 # %%
@@ -116,7 +116,7 @@ sc_str = create_scenario(
     maximize_objective=True,
 )
 sc_str.add_constraint("g_1", constraint_type="ineq")
-sc_str.default_inputs = sub_sc_opts
+sc_str.default_input_data = sub_sc_opts
 
 # %%
 # Build a scenario for Mission
@@ -181,4 +181,4 @@ for database in struct_databases[:2]:
     execute_post(opt_problem, "OptHistoryView", save=False, show=True)
 
 for disc in [propu, aero, mission, struct]:
-    print(f"{disc.name}: {disc.n_calls} calls.")
+    print(f"{disc.name}: {disc.execution_statistics.n_calls} calls.")

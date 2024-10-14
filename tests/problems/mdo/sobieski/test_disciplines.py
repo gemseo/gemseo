@@ -48,28 +48,24 @@ def test_init_power() -> None:
 def test_execute_range() -> None:
     sr = SobieskiMission("complex128")
     sr.execute()
-    sr.get_local_data_by_name(sr.get_output_data_names())
     sr.check_jacobian(derr_approx="complex_step", step=1e-30)
 
 
 def test_execute_weight() -> None:
     sr = SobieskiStructure("complex128")
     sr.execute()
-    _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
     sr.check_jacobian(derr_approx="complex_step", step=1e-30)
 
 
 def test_execute_power() -> None:
     sr = SobieskiPropulsion("complex128")
     sr.execute()
-    _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
     sr.check_jacobian(derr_approx="complex_step", step=1e-30)
 
 
 def test_execute_aerodynamics() -> None:
     sr = SobieskiAerodynamics("complex128")
     sr.execute()
-    _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
     sr.check_jacobian(derr_approx="complex_step", step=1e-30)
 
 
@@ -95,38 +91,34 @@ def test_init_power_sg() -> None:
 def test_execute_range_sg() -> None:
     sr = SobieskiMissionSG("complex128")
     indata = SobieskiProblem("complex128").get_default_inputs(
-        names=sr.get_input_data_names()
+        names=sr.io.input_grammar.names
     )
     sr.execute(indata)
-    sr.get_local_data_by_name(sr.get_output_data_names())
     sr.linearize(indata, compute_all_jacobians=True)
 
 
 def test_execute_weight_sg() -> None:
     sr = SobieskiStructureSG("float64")
     indata = SobieskiProblem("float64").get_default_inputs(
-        names=sr.get_input_data_names()
+        names=sr.io.input_grammar.names
     )
     sr.execute(indata)
-    _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
     sr.linearize(indata, compute_all_jacobians=True)
 
 
 def test_execute_power_sg() -> None:
     sr = SobieskiPropulsionSG("float64")
     indata = SobieskiProblem("float64").get_default_inputs(
-        names=sr.get_input_data_names()
+        names=sr.io.input_grammar.names
     )
     sr.execute(indata)
-    _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
     sr.linearize(indata, compute_all_jacobians=True)
 
 
 def test_execute_aerodynamics_sg() -> None:
     sr = SobieskiAerodynamicsSG("float64")
     indata = SobieskiProblem("float64").get_default_inputs(
-        names=sr.get_input_data_names()
+        names=sr.io.input_grammar.names
     )
     sr.execute(indata)
-    _, _, _, _, _ = sr.get_local_data_by_name(sr.get_output_data_names())
     sr.linearize(indata, compute_all_jacobians=True)

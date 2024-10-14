@@ -27,23 +27,24 @@ from numpy import array
 from numpy import empty
 from numpy import ndarray
 
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import MutableMapping
     from collections.abc import Sequence
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
+    from gemseo.core.grammars.defaults import Defaults
     from gemseo.typing import JacobianData
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
 
 
-class MDODisciplineAdapter(MDOFunction):
+class DisciplineAdapter(MDOFunction):
     """An :class:`.MDOFunction` executing a discipline for some inputs and outputs."""
 
     __is_linear: bool
@@ -62,8 +63,8 @@ class MDODisciplineAdapter(MDOFunction):
         self,
         input_names: Sequence[str],
         output_names: Sequence[str],
-        default_inputs: Mapping[str, ndarray],
-        discipline: MDODiscipline,
+        default_input_data: Defaults,
+        discipline: Discipline,
         names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
         differentiated_input_names_substitute: Sequence[str] = (),
     ) -> None:
@@ -71,7 +72,7 @@ class MDODisciplineAdapter(MDOFunction):
         Args:
             input_names: The names of the inputs.
             output_names: The names of the outputs.
-            default_inputs: The default input values
+            default_input_data: The default input values
                 to overload the ones of the discipline
                 at each evaluation of the outputs with :meth:`._fun`
                 or their derivatives with :meth:`._jac`.
@@ -79,17 +80,22 @@ class MDODisciplineAdapter(MDOFunction):
             discipline: The discipline to be adapted.
             names_to_sizes: The sizes of the input variables.
                 If empty, determine them from the default inputs and local data
-                of the discipline :class:`.MDODiscipline`.
+                of the discipline :class:`.Discipline`.
             differentiated_input_names_substitute: The names of the inputs
                 against which to differentiate the functions.
                 If empty, consider the variables of their input space.
         """  # noqa: D205, D212, D415
-        self.__input_names = input_names
+        super().__init__(
+            self._func_to_wrap,
+            jac=self._jac_to_wrap,
+            name="_".join(output_names),
+            input_names=input_names,
+            output_names=output_names,
+        )
         self.differentiated_input_names_substitute = (
             differentiated_input_names_substitute or input_names
         )
-        self.__output_names = output_names
-        self.__default_inputs = default_inputs
+        self.__default_inputs = default_input_data
         self.__input_size = 0
         self.__differentiated_input_size = 0
         self.__output_names_to_slices = {}
@@ -98,26 +104,13 @@ class MDODisciplineAdapter(MDOFunction):
         self.__input_names_to_slices = {}
         self.__input_names_to_sizes = names_to_sizes or {}
         self.__differentiated_input_names_to_slices = {}
-        input_names = set(self.__input_names)
-        self.__is_linear = True
-        for output_name in self.__output_names:
-            if not input_names.issubset(
-                self.__discipline.linear_relationships.get(output_name, {})
-            ):
-                self.__is_linear = False
-                break
-        self.__input_dimension = self.__compute_input_dimension(
-            default_inputs, input_names
+        input_names = set(self.input_names)
+        self.__is_linear = self.__discipline.io.have_linear_relationships(
+            input_names, output_names
         )
+        self.__input_dimension = self.__compute_input_dimension(default_input_data)
         self.__convert_array_to_data = (
             discipline.input_grammar.data_converter.convert_array_to_data
-        )
-        super().__init__(
-            self._func_to_wrap,
-            jac=self._jac_to_wrap,
-            name="_".join(self.__output_names),
-            input_names=self.__input_names,
-            output_names=self.__output_names,
         )
 
     @property
@@ -130,39 +123,39 @@ class MDODisciplineAdapter(MDOFunction):
 
     def __compute_input_dimension(
         self,
-        default_inputs: Mapping[str, ndarray],
-        input_names: Sequence[str],
+        default_input_data: Defaults,
     ) -> int | None:
         """Compute the input dimension.
 
         Args:
-            default_inputs: : The default input values
+            default_input_data: : The default input values
                 to overload the ones of the discipline
                 at each evaluation of the outputs with :meth:`._fun`
                 or their derivatives with :meth:`._jac`.
                 If ``None``, do not overload them.
-            input_names: The names of the inputs.
 
         Returns:
             The input dimension.
         """
         get_value_size = self.__discipline.input_grammar.data_converter.get_value_size
 
-        if default_inputs and all(name in default_inputs for name in input_names):
+        if default_input_data and all(
+            name in default_input_data for name in self.input_names
+        ):
             return sum(
-                get_value_size(input_name, default_inputs[input_name])
-                for input_name in input_names
+                get_value_size(input_name, default_input_data[input_name])
+                for input_name in self.input_names
             )
 
         if len(self.__input_names_to_sizes) > 0:
             return sum(self.__input_names_to_sizes.values())
 
-        default_inputs = self.__discipline.default_inputs
+        default_input_data = self.__discipline.default_input_data
 
-        if all(name in default_inputs for name in input_names):
+        if all(name in default_input_data for name in self.input_names):
             return sum(
-                get_value_size(input_name, default_inputs[input_name])
-                for input_name in input_names
+                get_value_size(input_name, default_input_data[input_name])
+                for input_name in self.input_names
             )
 
         # TODO: document what None means. We could use 0 instead.
@@ -181,7 +174,7 @@ class MDODisciplineAdapter(MDOFunction):
         start = 0
         output_size = 0
         jac_row_id = self.differentiated_input_names_substitute[0]
-        for name in self.__output_names:
+        for name in self.output_names:
             output_size += jacobians[name][jac_row_id].shape[0]
             output_names_to_slices[name] = slice(start, output_size)
             start = output_size
@@ -196,7 +189,7 @@ class MDODisciplineAdapter(MDOFunction):
         Returns:
             The output vector or a scalar if the vector has only one component.
         """
-        self.__discipline.reset_statuses_for_run()
+        self.__discipline.execution_status.value = ExecutionStatus.Status.PENDING
 
         input_data = self.__create_discipline_input_data(x_vect)
         output_data = self.__discipline.execute(input_data)
@@ -216,7 +209,7 @@ class MDODisciplineAdapter(MDOFunction):
         """
         output_vector = (
             self.__discipline.output_grammar.data_converter.convert_data_to_array(
-                self.__output_names, output_data
+                self.output_names, output_data
             )
         )
 
@@ -258,7 +251,7 @@ class MDODisciplineAdapter(MDOFunction):
             self.__jacobian = empty(shape)
 
         if self.__jacobian.ndim == 1 or self.__jacobian.shape[0] == 1:
-            output_name = self.__output_names[0]
+            output_name = self.output_names[0]
             jac_output = jacobians[output_name]
             for input_name in self.differentiated_input_names_substitute:
                 input_slice = self.__differentiated_input_names_to_slices[input_name]
@@ -273,7 +266,7 @@ class MDODisciplineAdapter(MDOFunction):
 
                 self.__jacobian[input_slice] = first_row
         else:
-            for output_name in self.__output_names:
+            for output_name in self.output_names:
                 output_slice = self.__output_names_to_slices[output_name]
                 jac_output = jacobians[output_name]
                 for input_name in self.differentiated_input_names_substitute:
@@ -297,8 +290,8 @@ class MDODisciplineAdapter(MDOFunction):
         Raises:
             ValueError: When a discipline input has no default value.
         """
-        input_data = self.__discipline.get_input_data()
-        input_data.update(self.__discipline.default_inputs)
+        input_data = self.__discipline.io.get_input_data()
+        input_data.update(self.__discipline.default_input_data)
         self.__input_names_to_sizes.update(
             self.__discipline.input_grammar.data_converter.compute_names_to_sizes(
                 input_data.keys(), input_data
@@ -306,7 +299,7 @@ class MDODisciplineAdapter(MDOFunction):
         )
 
         missing_names = (
-            set(self.__input_names)
+            set(self.input_names)
             .difference(self.__input_names_to_sizes.keys())
             .difference(input_data.keys())
         )
@@ -323,7 +316,7 @@ class MDODisciplineAdapter(MDOFunction):
             self.__input_names_to_slices,
             self.__input_size,
         ) = self.__discipline.input_grammar.data_converter.compute_names_to_slices(
-            self.__input_names, input_data, self.__input_names_to_sizes
+            self.input_names, input_data, self.__input_names_to_sizes
         )
         (
             self.__differentiated_input_names_to_slices,
@@ -350,7 +343,7 @@ class MDODisciplineAdapter(MDOFunction):
             The input data of the discipline.
         """
         if self.__default_inputs:
-            self.__discipline.default_inputs.update(self.__default_inputs)
+            self.__discipline.default_input_data.update(self.__default_inputs)
 
         if not self.__input_names_to_slices:
             self.__create_input_names_to_slices()

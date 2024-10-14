@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from copy import deepcopy
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
 from typing import NoReturn
@@ -28,19 +27,18 @@ from typing import Union
 from numpy import empty
 from numpy import ndarray
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.base_grammar import BaseGrammar
-    from gemseo.core.grammars.defaults import Defaults
 
 Data = dict[str, ndarray]
 Indices = tuple[str, Union[int, Iterable[int]]]
 NameMapping = dict[str, Union[str, Indices]]
 
 
-class RemappingDiscipline(MDODiscipline):
+class RemappingDiscipline(Discipline):
     """A discipline whose inputs and outputs map to those of another.
 
     An input or output name mapping looks like
@@ -55,9 +53,11 @@ class RemappingDiscipline(MDODiscipline):
     (from the ``i``-th to the ``j``-th components of ``y``).
     """
 
+    default_grammar_type = Discipline.GrammarType.SIMPLER
+
     def __init__(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         input_mapping: NameMapping = READ_ONLY_EMPTY_DICT,
         output_mapping: NameMapping = READ_ONLY_EMPTY_DICT,
     ) -> None:
@@ -70,14 +70,14 @@ class RemappingDiscipline(MDODiscipline):
         Raises:
             ValueError: When the original discipline has no default input values.
         """  # noqa: D205, D212, D415
-        if not discipline.default_inputs:
+        if not discipline.default_input_data:
             msg = "The original discipline has no default input values."
             raise ValueError(msg)
 
         self._discipline = discipline
         self._empty_original_input_data = {
             k: empty(v.shape, dtype=v.dtype)
-            for k, v in discipline.default_inputs.items()
+            for k, v in discipline.default_input_data.items()
         }
         original_input_grammar = discipline.input_grammar
         original_output_grammar = discipline.output_grammar
@@ -89,61 +89,26 @@ class RemappingDiscipline(MDODiscipline):
         self._output_mapping = self.__format_mapping(
             output_mapping, discipline.output_grammar
         )
-        super().__init__(
-            name=self._discipline.name, grammar_type=discipline.grammar_type
-        )
-        self.input_grammar = self.__get_grammar(
-            original_input_grammar, input_mapping, discipline.default_inputs
-        )
-        self.output_grammar = self.__get_grammar(
-            original_output_grammar, output_mapping, discipline.default_outputs
-        )
-        self.default_inputs = self.__convert_from_origin(
-            discipline.default_inputs, self._input_mapping
+        super().__init__(name=self._discipline.name)
+        self.input_grammar.update_from_names(input_mapping.keys())
+        self.output_grammar.update_from_names(output_mapping.keys())
+        self.default_input_data = self.__convert_from_origin(
+            discipline.default_input_data, self._input_mapping
         )
         self.add_differentiated_inputs(
             self.__get_new_data_names(
-                discipline._differentiated_inputs, self._input_mapping
+                discipline._differentiated_input_names, self._input_mapping
             )
         )
         self.add_differentiated_outputs(
             self.__get_new_data_names(
-                discipline._differentiated_outputs, self._output_mapping
+                discipline._differentiated_output_names, self._output_mapping
             )
         )
         self.linearization_mode = discipline.linearization_mode
 
-    @staticmethod
-    def __get_grammar(
-        grammar: BaseGrammar, name_mapping: NameMapping, default_values: Defaults
-    ) -> BaseGrammar:
-        """Return a grammar with new names.
-
-        Args:
-            grammar: The initial grammar.
-            name_mapping: The name mapping to apply to the initial grammar.
-            default_values: The initial default values.
-
-        Returns:
-            The grammar with new names.
-        """
-        new_grammar = deepcopy(grammar)
-        for new_name, name in name_mapping.items():
-            if isinstance(name, tuple):
-                if name[0] in default_values:
-                    new_grammar.update_from_data(
-                        {new_name: default_values[name[0]]}, True
-                    )
-                else:
-                    new_grammar.update_from_names([new_name], True)
-            else:
-                new_grammar.rename_element(name, new_name)
-
-        new_grammar.restrict_to(name_mapping.keys())
-        return new_grammar
-
     @property
-    def original_discipline(self) -> MDODiscipline:
+    def original_discipline(self) -> Discipline:
         """The original discipline."""
         return self._discipline
 
@@ -198,19 +163,21 @@ class RemappingDiscipline(MDODiscipline):
         return {k: cls.__cast_mapping_value(v) for k, v in mapping.items()}
 
     def _run(self) -> None:
-        self._discipline.execute(self.__convert_to_origin(self.get_input_data()))
-        self.local_data.update(
+        self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
+        self.io.data.update(
             self.__convert_from_origin(
-                self._discipline.get_output_data(), self._output_mapping
+                self._discipline.io.get_output_data(), self._output_mapping
             )
         )
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        self._discipline._compute_jacobian(inputs=inputs, outputs=outputs)
+        self._discipline._compute_jacobian(
+            input_names=input_names, output_names=output_names
+        )
         original_jac = self._discipline.jac
         self.jac = {}
         for new_o_name, (o_name, o_args) in self._output_mapping.items():

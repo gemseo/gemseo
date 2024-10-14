@@ -156,7 +156,7 @@ def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
     scenario.add_constraint("c_1", constraint_type)
     scenario.add_constraint("c_2", constraint_type)
 
-    scenario.execute({"max_iter": 50, "algo": "SLSQP"})
+    scenario.execute(max_iter=50, algo="SLSQP")
     problem = scenario.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
 
@@ -252,7 +252,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
-    analytical_test_2d_eq.execute(opt)
+    analytical_test_2d_eq.execute(**opt)
     problem = analytical_test_2d_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -269,7 +269,7 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq) -> No
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo_eq
-    analytical_test_2d__multiple_eq.execute(opt)
+    analytical_test_2d__multiple_eq.execute(**opt)
     problem = analytical_test_2d__multiple_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3

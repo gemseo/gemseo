@@ -28,13 +28,13 @@ from numpy import ones
 from numpy import ones_like
 from numpy import size
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class VolumeFraction(MDODiscipline):
+class VolumeFraction(Discipline):
     """Compute the volume fraction from the density.
 
     Volume fraction is computed as the average of the density value (rho) on each finite
@@ -63,11 +63,11 @@ class VolumeFraction(MDODiscipline):
         self.n_y = n_y
         self.input_grammar.update_from_names(["rho"])
         self.output_grammar.update_from_names(["volume fraction"])
-        self.default_inputs = {"rho": ones(n_x * n_y)}
+        self.default_input_data = {"rho": ones(n_x * n_y)}
 
     def _run(self) -> None:
-        rho = self.get_inputs_by_name("rho")
-        self.local_data["volume fraction"] = array([mean(rho.ravel())])
-        self._is_linearized = True
+        rho = self.io.data["rho"]
+        self.io.data["volume fraction"] = array([mean(rho.ravel())])
+        self._has_jacobian = True
         self._init_jacobian()
         self.jac["volume fraction"] = {"rho": atleast_2d(ones_like(rho).T / size(rho))}

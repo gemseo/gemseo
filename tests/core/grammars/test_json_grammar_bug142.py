@@ -23,13 +23,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from gemseo.core.chain import MDOChain
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.chains.chain import MDOChain
+from gemseo.core.discipline import Discipline
 
 TEST_PATH = Path(__file__).parent / "data"
 
 
-class _MyDisciplineA(MDODiscipline):
+class _MyDisciplineA(Discipline):
     """A test class."""
 
     def __init__(self) -> None:
@@ -38,7 +38,7 @@ class _MyDisciplineA(MDODiscipline):
         self.output_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
 
 
-class _MyDisciplineB(MDODiscipline):
+class _MyDisciplineB(Discipline):
     """A test class."""
 
     def __init__(self) -> None:

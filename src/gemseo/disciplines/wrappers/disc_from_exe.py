@@ -37,8 +37,8 @@ from numpy import array
 from numpy import ndarray
 from strenum import StrEnum
 
-from gemseo.core.data_processor import DataProcessor
-from gemseo.core.data_processor import FloatDataProcessor
+from gemseo.core.discipline.data_processor import DataProcessor
+from gemseo.core.discipline.data_processor import FloatDataProcessor
 from gemseo.disciplines.wrappers._base_disc_from_exe import _BaseDiscFromExe
 from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableRunner
 from gemseo.utils.directory_creator import DirectoryNamingMethod
@@ -92,7 +92,7 @@ InputWriter = Callable[
 class DiscFromExe(_BaseDiscFromExe):
     """Specific wrapper for executables.
 
-    This :class:`.MDODiscipline` uses template files
+    This :class:`.Discipline` uses template files
     describing the input and output variables.
 
     The templates can be generated with a graphical user interface (GUI).
@@ -238,7 +238,7 @@ class DiscFromExe(_BaseDiscFromExe):
         self._input_data = None
         self._in_lines = None
         self._out_lines = None
-        self.data_processor = FloatDataProcessor()
+        self.io.data_processor = FloatDataProcessor()
         self.__parse_templates_and_set_grammars()
 
     @property
@@ -266,7 +266,7 @@ class DiscFromExe(_BaseDiscFromExe):
         LOGGER.debug(
             "Initialize discipline from template. Output grammar: %s", output_names
         )
-        self.default_inputs = {
+        self.default_input_data = {
             k: array([literal_eval(v)]) for k, v in self._input_data.items()
         }
 
@@ -274,7 +274,7 @@ class DiscFromExe(_BaseDiscFromExe):
         """Write the input file."""
         self.write_input_file(
             self._executable_runner.working_directory / self.input_filename,
-            self.local_data,
+            self.io.data,
             self._in_pos,
             self._in_lines,
         )
@@ -391,7 +391,7 @@ def parse_key_value_file(
         separator: The separating characters of the key=value format.
 
     Returns:
-        The output data in `.MDODiscipline` friendly data structure.
+        The output data in `.Discipline` friendly data structure.
 
     Raises:
         ValueError: If the amount of separators in the lines are not consistent with the

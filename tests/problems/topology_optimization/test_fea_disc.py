@@ -74,7 +74,7 @@ def test_run_default(default_finite_element_analysis) -> None:
 
 def test_jacobian(finite_element_analysis) -> None:
     """Check the analytic Jacobian by finite differences."""
-    indata = finite_element_analysis.get_input_data()
+    indata = finite_element_analysis.io.get_input_data()
     assert finite_element_analysis.check_jacobian(
         indata, threshold=1e-5, auto_set_step=True
     )

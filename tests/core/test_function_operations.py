@@ -27,7 +27,7 @@ from scipy.optimize import rosen
 
 from gemseo.core.mdo_functions.linear_composite_function import LinearCompositeFunction
 from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
+    DisciplineAdapterGenerator,
 )
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.restricted_function import RestrictedFunction
@@ -48,9 +48,9 @@ def test_linear_composition_expr(input_names, expected_expr):
 
 
 def test_linear_composition():
-    fg = MDODisciplineAdapterGenerator(RosenMF(3))
-    f1 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": 0})
-    f2 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": 1})
+    fg = DisciplineAdapterGenerator(RosenMF(3))
+    f1 = fg.get_function(["x"], ["rosen"], default_input_data={"fidelity": 0})
+    f2 = fg.get_function(["x"], ["rosen"], default_input_data={"fidelity": 1})
 
     x = zeros(3)
     assert f1.evaluate(x) == 0.0
@@ -64,7 +64,7 @@ def test_linear_composition():
 
 
 def test_restricted_function():
-    fg = MDODisciplineAdapterGenerator(RosenMF(3))
+    fg = DisciplineAdapterGenerator(RosenMF(3))
     x = zeros(3)
     f_ref = fg.get_function(["fidelity", "x"], ["rosen"])
 

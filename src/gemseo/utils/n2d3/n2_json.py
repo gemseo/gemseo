@@ -29,7 +29,7 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import DependencyGraph
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 
 class N2JSON:
@@ -163,7 +163,7 @@ class N2JSON:
     @classmethod
     def _create_discipline_html(
         cls,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         variable_sizes: Mapping[str, int],
     ) -> str:
         """Generate the HTML representation of a discipline.
@@ -176,20 +176,20 @@ class N2JSON:
             The HTML block describing the discipline.
         """
         html_input_names = cls._create_variables_html(
-            discipline.get_input_data_names(), variable_sizes
+            discipline.io.input_grammar.names, variable_sizes
         )
         html_output_names = cls._create_variables_html(
-            discipline.get_output_data_names(), variable_sizes
+            discipline.io.output_grammar.names, variable_sizes
         )
         return Template(
             "The inputs of <b>{{ discipline }}</b>:"
-            "{{ inputs }}"
+            "{{ input_names }}"
             "The outputs of <b>{{ discipline }}</b>:"
-            "{{ outputs }}"
+            "{{ output_names }}"
         ).render(
             discipline=discipline.name,
-            inputs=html_input_names,
-            outputs=html_output_names,
+            input_names=html_input_names,
+            output_names=html_output_names,
         )
 
     @classmethod
@@ -289,7 +289,7 @@ class N2JSON:
 
     def _create_links(
         self,
-        couplings: Iterable[tuple[MDODiscipline, MDODiscipline, Sequence[str]]],
+        couplings: Iterable[tuple[Discipline, Discipline, Sequence[str]]],
         n_nodes: int,
         variable_sizes: Mapping[str, int],
         disciplines: Sequence[str],
@@ -448,9 +448,9 @@ class N2JSON:
         """
         variable_sizes = {}
         for discipline in self.__disciplines:
-            for name in discipline.get_input_data_names():
+            for name in discipline.io.input_grammar.names:
                 if name not in variable_sizes or variable_sizes[name] == self.__NA:
-                    default_value = discipline.default_inputs.get(name)
+                    default_value = discipline.default_input_data.get(name)
                     if hasattr(default_value, "size"):
                         size = default_value.size
                     elif isinstance(default_value, Sized):

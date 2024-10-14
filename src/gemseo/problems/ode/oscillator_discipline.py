@@ -59,7 +59,6 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import ndarray
 
-from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -93,9 +92,7 @@ class OscillatorDiscipline(ODEDiscipline):
             omega: The positive angular velocity of the oscillator.
         """  # noqa: D205, D212, D415
         self.__omega_squared = omega**2
-        rhs_discipline = AutoPyDiscipline(
-            py_func=self._compute_rhs, grammar_type=MDODiscipline.GrammarType.SIMPLE
-        )
+        rhs_discipline = AutoPyDiscipline(py_func=self._compute_rhs)
 
         super().__init__(
             times=times,

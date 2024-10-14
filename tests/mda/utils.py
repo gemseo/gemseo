@@ -16,10 +16,6 @@
 
 from __future__ import annotations  # noqa: I001
 
-from functools import partial
-
-import pytest
-
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -59,20 +55,9 @@ def generate_parallel_doe(
         main_mda_name=main_mda_name,
         inner_mda_name=inner_mda_name,
     )
-    scenario.execute({
-        "algo": "DiagonalDOE",
-        "n_samples": n_samples,
-        "algo_options": {"n_processes": 2},
-    })
+    scenario.execute(
+        algo="DiagonalDOE",
+        n_samples=n_samples,
+        algo_options={"n_processes": 2},
+    )
     return scenario.optimization_result.f_opt
-
-
-@pytest.fixture
-def generate_parallel_doe_data():
-    """Wrap a parallel DOE scenario to be used in the MDA tests.
-
-    Returns:
-        A wrapped parallel doe scenario for which the `main_mda_name` can be
-            given as an argument.
-    """
-    return partial(generate_parallel_doe)

@@ -149,13 +149,17 @@ from typing import NamedTuple
 from numpy import ndarray
 from strenum import StrEnum
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
 from gemseo.datasets.factory import DatasetFactory as __DatasetFactory
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
+from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
+from gemseo.utils.pickle import from_pickle  # noqa: F401
+from gemseo.utils.pickle import to_pickle  # noqa: F401
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -170,6 +174,7 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.caches.base_cache import BaseCache
+    from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
@@ -187,8 +192,9 @@ if TYPE_CHECKING:
     from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.scenarios.doe_scenario import DOEScenario as DOEScenario
-    from gemseo.scenarios.scenario import Scenario
-    from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
+    from gemseo.scenarios.scenario_results.scenario_result import (
+        ScenarioResult as ScenarioResult,
+    )
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
     from gemseo.utils.xdsm import XDSM
@@ -204,7 +210,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 
 def generate_n2_plot(
-    disciplines: Sequence[MDODiscipline],
+    disciplines: Sequence[Discipline],
     file_path: str | Path = "n2.pdf",
     show_data_names: bool = True,
     save: bool = True,
@@ -255,7 +261,7 @@ def generate_n2_plot(
 
 
 def generate_coupling_graph(
-    disciplines: Sequence[MDODiscipline],
+    disciplines: Sequence[Discipline],
     file_path: str | Path = "coupling_graph.pdf",
     full: bool = True,
 ) -> GraphView:
@@ -396,9 +402,9 @@ def get_available_disciplines() -> list[str]:
         get_discipline_options_schema
         get_discipline_options_defaults
     """
-    from gemseo.disciplines.factory import MDODisciplineFactory
+    from gemseo.disciplines.factory import DisciplineFactory
 
-    return MDODisciplineFactory().class_names
+    return DisciplineFactory().class_names
 
 
 def get_surrogate_options_schema(
@@ -501,7 +507,7 @@ def _get_json_schema_from_settings(
 
 
 def get_discipline_inputs_schema(
-    discipline: MDODiscipline,
+    discipline: Discipline,
     output_json: bool = False,
     pretty_print: bool = False,
 ) -> str | dict[str, Any]:
@@ -532,7 +538,7 @@ def get_discipline_inputs_schema(
 
 
 def get_discipline_outputs_schema(
-    discipline: MDODiscipline,
+    discipline: Discipline,
     output_json: bool = False,
     pretty_print: bool = False,
 ) -> str | dict[str, Any]:
@@ -781,9 +787,9 @@ def get_discipline_options_schema(
         get_discipline_outputs_schema
         get_discipline_options_defaults
     """
-    from gemseo.disciplines.factory import MDODisciplineFactory
+    from gemseo.disciplines.factory import DisciplineFactory
 
-    disc_fact = MDODisciplineFactory()
+    disc_fact = DisciplineFactory()
     grammar = disc_fact.get_options_grammar(discipline_name)
     return _get_schema(grammar, output_json, pretty_print)
 
@@ -819,7 +825,8 @@ def get_scenario_options_schema(
         msg = f"Unknown scenario type {scenario_type}"
         raise ValueError(msg)
     scenario_class = {"MDO": "MDOScenario", "DOE": "DOEScenario"}[scenario_type]
-    return get_discipline_options_schema(scenario_class, output_json, pretty_print)
+    grammar = ScenarioFactory().get_options_grammar(scenario_class)
+    return _get_schema(grammar, output_json, pretty_print)
 
 
 def get_scenario_inputs_schema(
@@ -856,7 +863,7 @@ def get_scenario_inputs_schema(
         get_scenario_options_schema
         get_scenario_differentiation_modes
     """
-    return get_discipline_inputs_schema(scenario, output_json, pretty_print)
+    return scenario.Settings.model_json_schema()
 
 
 def get_discipline_options_defaults(
@@ -882,9 +889,9 @@ def get_discipline_options_defaults(
         get_discipline_outputs_schema
         get_discipline_options_schema
     """
-    from gemseo.disciplines.factory import MDODisciplineFactory
+    from gemseo.disciplines.factory import DisciplineFactory
 
-    return MDODisciplineFactory().get_default_option_values(discipline_name)
+    return DisciplineFactory().get_default_option_values(discipline_name)
 
 
 def get_scenario_differentiation_modes() -> tuple[
@@ -966,7 +973,7 @@ def _pretty_print_schema(schema: dict[str, Any]):
     Args:
         schema: The json schema to pretty print.
     """
-    from gemseo.third_party.prettytable import PrettyTable
+    from gemseo.third_party.prettytable.prettytable import PrettyTable
 
     title = schema["name"].replace("_", " ") if "name" in schema else None
     table = PrettyTable(title=title, max_table_width=150)
@@ -1039,13 +1046,12 @@ def get_mda_options_schema(
 
 
 def create_scenario(
-    disciplines: Sequence[MDODiscipline] | MDODiscipline,
+    disciplines: Sequence[Discipline] | Discipline,
     formulation: str,
     objective_name: str,
     design_space: DesignSpace | str | Path,
     name: str = "",
     scenario_type: str = "MDO",
-    grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     maximize_objective: bool = False,
     **formulation_options: Any,
 ) -> Scenario:
@@ -1065,7 +1071,6 @@ def create_scenario(
         name: The name to be given to this scenario.
             If empty, use the name of the class.
         scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
-        grammar_type: The grammar for the scenario and the MDO formulation.
         maximize_objective: Whether to maximize the objective.
         **formulation_options: The options of the :class:`.BaseMDOFormulation`.
 
@@ -1110,7 +1115,6 @@ def create_scenario(
         objective_name,
         design_space,
         name=name,
-        grammar_type=grammar_type,
         maximize_objective=maximize_objective,
         **formulation_options,
     )
@@ -1183,7 +1187,7 @@ def configure_logger(
 def create_discipline(
     discipline_name: str | Iterable[str],
     **options: Any,
-) -> MDODiscipline | list[MDODiscipline]:
+) -> Discipline | list[Discipline]:
     """Instantiate one or more disciplines.
 
     Args:
@@ -1211,9 +1215,9 @@ def create_discipline(
         get_discipline_options_schema
         get_discipline_options_defaults
     """
-    from gemseo.disciplines.factory import MDODisciplineFactory
+    from gemseo.disciplines.factory import DisciplineFactory
 
-    factory = MDODisciplineFactory()
+    factory = DisciplineFactory()
     if isinstance(discipline_name, str):
         return factory.create(discipline_name, **options)
 
@@ -1221,15 +1225,15 @@ def create_discipline(
 
 
 def import_discipline(
-    file_path: str | Path, cls: type[MDODiscipline] | None = None
-) -> MDODiscipline:
+    file_path: str | Path, cls: type[Discipline] | None = None
+) -> Discipline:
     """Import a discipline from a pickle file.
 
     Args:
         file_path: The path to the file containing the discipline
-            saved with the method :meth:`.MDODiscipline.to_pickle`.
+            saved with the method :meth:`.Discipline.to_pickle`.
         cls: A class of discipline.
-            If ``None``, use ``MDODiscipline``.
+            If ``None``, use ``Discipline``.
 
     Returns:
         The discipline.
@@ -1242,12 +1246,7 @@ def import_discipline(
         get_discipline_options_schema
         get_discipline_options_defaults
     """
-    if cls is None:
-        from gemseo.core.discipline import MDODiscipline
-
-        cls = MDODiscipline
-
-    return cls.from_pickle(file_path)
+    return from_pickle(file_path)
 
 
 def create_scalable(
@@ -1279,7 +1278,7 @@ def create_surrogate(
     data: IODataset | None = None,
     transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
     disc_name: str = "",
-    default_inputs: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
+    default_input_data: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
     input_names: Iterable[str] = (),
     output_names: Iterable[str] = (),
     **parameters: Any,
@@ -1313,7 +1312,7 @@ def create_surrogate(
             disc_name: The name to be given to the surrogate discipline.
                 If empty,
                 the name will be ``f"{surrogate.SHORT_ALGO_NAME}_{data.name}``.
-            default_inputs: The default values of the input variables.
+            default_input_data: The default values of the input variables.
                 If empty,
                 use the center of the learning input space.
             input_names: The names of the input variables.
@@ -1335,7 +1334,7 @@ def create_surrogate(
         data=data,
         transformer=transformer,
         disc_name=disc_name,
-        default_inputs=default_inputs,
+        default_input_data=default_input_data,
         input_names=input_names,
         output_names=output_names,
         **parameters,
@@ -1344,7 +1343,7 @@ def create_surrogate(
 
 def create_mda(
     mda_name: str,
-    disciplines: Sequence[MDODiscipline],
+    disciplines: Sequence[Discipline],
     **options: Any,
 ) -> BaseMDA:
     """Create a multidisciplinary analysis (MDA).
@@ -1405,7 +1404,7 @@ def execute_post(
         >>> design_space = SellarDesignSpace()
         >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
         'SellarMDFScenario')
-        >>> scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
+        >>> scenario.execute(**{"algo": "NLOPT_SLSQP", "max_iter": 100})
         >>> execute_post(scenario, "OptHistoryView", show=False, save=True)
 
     See Also:
@@ -1415,7 +1414,7 @@ def execute_post(
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.post.factory import PostFactory
 
-    if hasattr(to_post_proc, "is_scenario") and to_post_proc.is_scenario():
+    if isinstance(to_post_proc, Scenario):
         opt_problem = to_post_proc.formulation.optimization_problem
     elif isinstance(to_post_proc, OptimizationProblem):
         opt_problem = to_post_proc
@@ -1515,7 +1514,7 @@ def print_configuration() -> None:
     """
     from gemseo.algos.doe.factory import DOELibraryFactory
     from gemseo.algos.opt.factory import OptimizationLibraryFactory
-    from gemseo.disciplines.factory import MDODisciplineFactory
+    from gemseo.disciplines.factory import DisciplineFactory
     from gemseo.formulations.factory import MDOFormulationFactory
     from gemseo.mda.factory import MDAFactory
     from gemseo.mlearning.regression.algos.factory import RegressorFactory
@@ -1525,7 +1524,7 @@ def print_configuration() -> None:
     LOGGER.info("%s", settings)
     print(settings)  # noqa: T201
     for factory in (
-        MDODisciplineFactory,
+        DisciplineFactory,
         OptimizationLibraryFactory,
         DOELibraryFactory,
         RegressorFactory,
@@ -1673,7 +1672,7 @@ def get_available_caches() -> list[str]:
 
     See Also:
         get_available_caches
-        gemseo.core.discipline.MDODiscipline.set_cache_policy
+        gemseo.core.discipline.Discipline.create_cache
     """
     from gemseo.caches.factory import CacheFactory
 
@@ -1714,7 +1713,7 @@ def create_cache(
 
     See Also:
         get_available_caches
-        gemseo.core.discipline.MDODiscipline.set_cache_policy
+        gemseo.core.discipline.Discipline.create_cache
     """
     from gemseo.caches.factory import CacheFactory
 
@@ -1924,7 +1923,7 @@ def compute_doe(
 def _log_settings() -> str:
     from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.algos.problem_function import ProblemFunction
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.utils.string_tools import MultiLineString
 
     add_de_prefix = lambda x: "" if x else "de"  # noqa: E731
@@ -1932,23 +1931,23 @@ def _log_settings() -> str:
     text = MultiLineString()
     text.add("Settings")
     text.indent()
-    text.add("MDODiscipline")
+    text.add("Discipline")
     text.indent()
     text.add(
         "The caches are {}activated.",
-        add_de_prefix(MDODiscipline.activate_cache),
+        add_de_prefix(Discipline.default_cache_type is not Discipline.CacheType.NONE),
     )
     text.add(
         "The counters are {}activated.",
-        add_de_prefix(MDODiscipline.activate_counters),
+        add_de_prefix(_ExecutionStatistics.is_enabled),
     )
     text.add(
         "The input data are{} checked before running the discipline.",
-        add_not_prefix(MDODiscipline.activate_input_data_check),
+        add_not_prefix(Discipline.validate_input_data),
     )
     text.add(
         "The output data are{} checked after running the discipline.",
-        add_not_prefix(MDODiscipline.activate_output_data_check),
+        add_not_prefix(Discipline.validate_output_data),
     )
     text.dedent()
     text.add("ProblemFunction")
@@ -2017,13 +2016,14 @@ def get_algorithm_features(
     )
 
 
+# TODO: API: better name the arguments.
 def configure(
-    activate_discipline_counters: bool = True,
+    enable_discipline_statistics: bool = True,
     activate_function_counters: bool = True,
     activate_progress_bar: bool = True,
     activate_discipline_cache: bool = True,
-    check_input_data: bool = True,
-    check_output_data: bool = True,
+    validate_input_data: bool = True,
+    validate_output_data: bool = True,
     check_desvars_bounds: bool = True,
 ) -> None:
     """Update the configuration of |g| if needed.
@@ -2035,11 +2035,9 @@ def configure(
         This function should be called before calling anything from |g|.
 
     Args:
-        activate_discipline_counters: Whether to activate the counters
-            attached to the disciplines,
-            in charge of counting their execution time,
-            number of evaluations
-            and number of linearizations.
+        enable_discipline_statistics: Whether to record execution statistics of the
+            disciplines such as the execution time,
+            the number of executions and the number of linearizations.
         activate_function_counters: Whether to activate the counters
             attached to the functions,
             in charge of counting their number of evaluations.
@@ -2048,29 +2046,33 @@ def configure(
             in charge to log the execution of the process:
             iteration, execution time and objective value.
         activate_discipline_cache: Whether to activate the discipline cache.
-        check_input_data: Whether to check the input data of a discipline
+        validate_input_data: Whether to validate the input data of a discipline
             before execution.
-        check_output_data: Whether to check the output data of a discipline
-            before execution.
+        validate_output_data: Whether to validate the output data of a discipline
+            after execution.
         check_desvars_bounds: Whether to check the membership of design variables
             in the bounds when evaluating the functions in OptimizationProblem.
     """
     from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.problem_function import ProblemFunction
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
-    MDODiscipline.activate_counters = activate_discipline_counters
+    _ExecutionStatistics.is_enabled = enable_discipline_statistics
     ProblemFunction.enable_statistics = activate_function_counters
     BaseDriverLibrary.activate_progress_bar = activate_progress_bar
-    MDODiscipline.activate_input_data_check = check_input_data
-    MDODiscipline.activate_output_data_check = check_output_data
-    MDODiscipline.activate_cache = activate_discipline_cache
+    Discipline.validate_input_data = validate_input_data
+    Discipline.validate_output_data = validate_output_data
+    Discipline.default_cache_type = (
+        Discipline.CacheType.SIMPLE
+        if activate_discipline_cache
+        else Discipline.CacheType.NONE
+    )
     OptimizationProblem.check_bounds = check_desvars_bounds
 
 
 def wrap_discipline_in_job_scheduler(
-    discipline: MDODiscipline,
+    discipline: Discipline,
     scheduler_name: str,
     workdir_path: Path,
     **options: Any,
@@ -2086,7 +2088,7 @@ def wrap_discipline_in_job_scheduler(
 
     All process classes :class:`.MDOScenario`,
     or :class:`.BaseMDA`, inherit from
-    :class:`.MDODiscipline` so can be sent to HPCs in this way.
+    :class:`.Discipline` so can be sent to HPCs in this way.
 
     The job scheduler template script can be provided directly or the predefined
     templates file names in gemseo.wrappers.job_schedulers.template can be used.
@@ -2138,7 +2140,7 @@ def wrap_discipline_in_job_scheduler(
         A HDF5 cache is attached to the MDA, so all executions will be recorded.
         Each wrapped discipline can also be cached using a HDF cache.
 
-        >>> from gemseo.core.discipline import MDODiscipline
+        >>> from gemseo.core.discipline import Discipline
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> wrapped_discs=[wrap_discipline_in_job_scheduler(disc,
         >>>                                                 workdir_path="workdir",
@@ -2147,8 +2149,8 @@ def wrap_discipline_in_job_scheduler(
         >>>                for disc in disciplines]
         >>> scn=create_scenario(wrapped_discs, "MDF", "obj", SellarDesignSpace(),
         >>>                     scenario_type="DOE")
-        >>> scn.formulation.mda.set_cache_policy(MDODiscipline.HDF5_CACHE,
-        >>>                                      cache_hdf_file="mda_cache.h5")
+        >>> scn.formulation.mda.set_cache(Discipline.HDF5_CACHE,
+        >>>                                      hdf_file_path="mda_cache.h5")
         >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes": 10})
     """  # noqa:D205 D212 D415 E501
     from gemseo.disciplines.wrappers.job_schedulers.factory import (
@@ -2181,6 +2183,7 @@ def create_scenario_result(
     Returns:
         The result of a scenario execution or ``None`` if not yet executed`.
     """
+    # TODO: use Scenario.get_result
     if scenario.optimization_result is None:
         return None
 
@@ -2194,7 +2197,7 @@ def create_scenario_result(
 
 
 def sample_disciplines(
-    disciplines: Sequence[MDODiscipline],
+    disciplines: Sequence[Discipline],
     input_space: DesignSpace,
     output_names: str | Iterable[str],
     n_samples: int,
@@ -2255,18 +2258,14 @@ def sample_disciplines(
             erase=backup_settings.erase,
             load=backup_settings.load,
         )
-    scenario.execute({
-        "algo": algo_name,
-        "n_samples": n_samples,
-        "algo_options": algo_options,
-    })
+    scenario.execute(algo=algo_name, n_samples=n_samples, algo_options=algo_options)
     return scenario.formulation.optimization_problem.to_dataset(
         name=name, opt_naming=False, export_gradients=True
     )
 
 
 def generate_xdsm(
-    discipline: MDODiscipline,
+    discipline: Discipline,
     directory_path: str | Path = ".",
     file_name: str = "xdsm",
     show_html: bool = False,
@@ -2311,31 +2310,3 @@ def generate_xdsm(
         pdf_cleanup=pdf_cleanup,
         pdf_batchmode=pdf_batchmode,
     )
-
-
-def to_pickle(obj: Any, file_path: str | Path) -> None:
-    """Save the pickled representation of an object on the disk.
-
-    Args:
-        file_path: The path to the file to store the pickled representation.
-    """
-    import pickle
-
-    with Path(file_path).open("wb") as f:
-        pickler = pickle.Pickler(f, protocol=2)
-        pickler.dump(obj)
-
-
-def from_pickle(file_path: str | Path) -> Any:
-    """Load an object from its pickled representation stored on the disk.
-
-    Args:
-        file_path: The path to the file containing the pickled representation.
-
-    Returns:
-        The object.
-    """
-    import pickle
-
-    with Path(file_path).open("rb") as f:
-        return pickle.Unpickler(f).load()

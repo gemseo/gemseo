@@ -39,7 +39,7 @@ We can repeat this tasks for different sizes of variables
 and compare the scalability, which is the dependence of the scenario results
 on the problem dimension.
 
-.. seealso:: :class:`.MDODiscipline`, :class:`.ScalableDiscipline`
+.. seealso:: :class:`.Discipline`, :class:`.ScalableDiscipline`
    and :class:`.Scenario`
 """
 
@@ -77,7 +77,7 @@ if TYPE_CHECKING:
 
     from numpy._typing import NDArray
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.scenarios.scenario import Scenario
 
@@ -299,7 +299,7 @@ class ScalableProblem:
         return self.scenario
 
     def _create_bilevel_scenario(
-        self, disciplines: Iterable[MDODiscipline], **sub_scenario_options
+        self, disciplines: Iterable[Discipline], **sub_scenario_options
     ) -> Scenario:
         """Create a bi-level scenario from disciplines.
 
@@ -340,7 +340,7 @@ class ScalableProblem:
                     maximize_objective=max_obj,
                 )
             )
-            sub_scenarios[-1].default_inputs = sub_scenario_options
+            sub_scenarios[-1].default_input_data = sub_scenario_options
 
         # Construction of the system scenario
         all_inputs = get_all_inputs(disciplines)
@@ -362,7 +362,7 @@ class ScalableProblem:
         )
 
     def _create_design_space(
-        self, disciplines: Sequence[MDODiscipline], formulation: str = "DisciplinaryOpt"
+        self, disciplines: Sequence[Discipline], formulation: str = "DisciplinaryOpt"
     ) -> DesignSpace:
         """Create a design space into the unit hypercube.
 
@@ -458,6 +458,7 @@ class ScalableProblem:
                 constraint, value=equilibrium.get(constraint, array([0.0]))[0]
             )
 
+    # TODO: API: use ExecutionStatistics attribute.
     def exec_time(self, do_sum: bool = True) -> float | list[float]:
         """Get the total execution time.
 
@@ -468,7 +469,10 @@ class ScalableProblem:
             Either the total execution time
             or the total execution times per disciplines.
         """
-        exec_time = [discipline.exec_time for discipline in self.scenario.disciplines]
+        exec_time = [
+            discipline.execution_statistics.duration
+            for discipline in self.scenario.disciplines
+        ]
         if do_sum:
             exec_time = sum(exec_time)
         return exec_time
@@ -476,22 +480,26 @@ class ScalableProblem:
     @property
     def n_calls_top_level(self) -> dict[str, int]:
         """The number of top-level disciplinary calls per discipline."""
-        disciplines = self.scenario.formulation.get_top_level_disc()
-        return {discipline.name: discipline.n_calls for discipline in disciplines}
+        disciplines = self.scenario.formulation.get_top_level_disciplines()
+        return {
+            discipline.name: discipline.execution_statistics.n_calls
+            for discipline in disciplines
+        }
 
     @property
     def n_calls_linearize_top_level(self) -> dict[str, int]:
         """The number of top-level disciplinary linearizations per discipline."""
-        disciplines = self.scenario.formulation.get_top_level_disc()
+        disciplines = self.scenario.formulation.get_top_level_disciplines()
         return {
-            discipline.name: discipline.n_calls_linearize for discipline in disciplines
+            discipline.name: discipline.execution_statistics.n_calls_linearize
+            for discipline in disciplines
         }
 
     @property
     def n_calls(self) -> dict[str, int]:
         """The number of disciplinary calls per discipline."""
         return {
-            discipline.name: discipline.n_calls
+            discipline.name: discipline.execution_statistics.n_calls
             for discipline in self.scenario.disciplines
         }
 
@@ -499,7 +507,7 @@ class ScalableProblem:
     def n_calls_linearize(self) -> dict[str, int]:
         """The number of disciplinary linearizations per discipline."""
         return {
-            discipline.name: discipline.n_calls_linearize
+            discipline.name: discipline.execution_statistics.n_calls_linearize
             for discipline in self.scenario.disciplines
         }
 

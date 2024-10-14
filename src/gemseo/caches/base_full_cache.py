@@ -351,7 +351,7 @@ class BaseFullCache(BaseCache):
         self,
         input_data: StrKeyMapping,
     ) -> CacheEntry:
-        if self.tolerance == 0.0:
+        if self._tolerance == 0.0:
             data_hash = hash_data(input_data)
             indices = self.__has_hash(data_hash)
             if indices is None:
@@ -362,7 +362,7 @@ class BaseFullCache(BaseCache):
         for indices in self._hashes_to_indices.values():
             for index in indices:
                 cached_input_data = self._read_data(index, self.Group.INPUTS)
-                if DATA_COMPARATOR(input_data, cached_input_data, self.tolerance):
+                if DATA_COMPARATOR(input_data, cached_input_data, self._tolerance):
                     output_data = self._read_data(index, self.Group.OUTPUTS)
                     jacobian_data = self._read_data(index, self.Group.JACOBIAN)
                     return CacheEntry(input_data, output_data, jacobian_data)

@@ -19,7 +19,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Callable
 
-from gemseo.core.discipline_data import DisciplineData
+from gemseo.core.discipline.discipline_data import DisciplineData
+from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
@@ -31,18 +32,18 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 
 class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineData]):
     """Execute disciplines in parallel."""
 
-    _disciplines: Sequence[MDODiscipline]
+    _disciplines: Sequence[Discipline]
     """The disciplines to execute."""
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         n_processes: int = N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
@@ -81,15 +82,15 @@ class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineD
                 not self.use_threading
                 and self.MULTI_PROCESSING_START_METHOD
                 == self.MultiProcessingStartMethod.SPAWN
-                and self._disciplines[0].activate_counters
+                and ExecutionStatistics.is_enabled
             ):
-                self._disciplines[0].n_calls += len(inputs)  # type: ignore[operator] # checked with activate_counter
+                self._disciplines[0].execution_statistics.n_calls += len(inputs)  # type: ignore[operator] # checked with activate_counter
         else:
             for disc, output in zip(self._disciplines, ordered_outputs):
                 # When the discipline in the worker failed, output is None.
                 # We do not update the local_data such that the issue is caught by the
                 # output grammar.
                 if output is not None:
-                    disc.local_data = output
+                    disc.io.data = output
 
         return ordered_outputs

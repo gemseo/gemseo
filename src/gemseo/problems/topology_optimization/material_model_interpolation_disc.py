@@ -25,13 +25,13 @@ from numpy import ones
 from numpy import ones_like
 from scipy.sparse import diags
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class MaterialModelInterpolation(MDODiscipline):
+class MaterialModelInterpolation(Discipline):
     """Material Model Interpolation class for topology optimization problems.
 
     Compute the Young's modulus (E) and the material local density (rho) from filtered
@@ -71,18 +71,18 @@ class MaterialModelInterpolation(MDODiscipline):
         self.N_elements = n_x * n_y
         self.input_grammar.update_from_names(["xPhys"])
         self.output_grammar.update_from_names(["rho", "E"])
-        self.default_inputs = {"xPhys": ones(n_x * n_y)}
+        self.default_input_data = {"xPhys": ones(n_x * n_y)}
 
     def _run(self) -> None:
-        xphys = self.get_inputs_by_name("xPhys")
+        xphys = self.io.data["xPhys"]
         xphys[self.empty_elements] = 0
         xphys[self.full_elements] = 1
         xphys = xphys.flatten()
         rho = xphys[:]
         young_modulus = self.Emin + (self.E0 - self.Emin) * xphys**self.penalty
-        self.local_data["E"] = young_modulus
-        self.local_data["rho"] = rho
-        self._is_linearized = True
+        self.io.data["E"] = young_modulus
+        self.io.data["rho"] = rho
+        self._has_jacobian = True
         self._init_jacobian()
         dyoung_modulus_dxphys = (
             self.penalty * xphys.ravel() ** (self.penalty - 1) * (self.E0 - self.Emin)

@@ -28,13 +28,13 @@ from numpy import ones
 
 from gemseo import configure_logger
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.scenarios.mdo_scenario import MDOScenario
 
 configure_logger()
 
 
-class SellarSystem(MDODiscipline):
+class SellarSystem(Discipline):
     def __init__(self) -> None:
         super().__init__()
         # Initialize the grammars to define inputs and outputs
@@ -43,46 +43,55 @@ class SellarSystem(MDODiscipline):
         # Default inputs define what data to use when the inputs are not
         # provided to the execute method
 
-    #         self.default_inputs = {"x": ones(1), "z": array([4., 3.]),
+    #         self.default_input_data = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
 
     def _run(self) -> None:
         # The run method defines what happens at execution
         # ie how outputs are computed from inputs
-        x, z, y_0, y_1 = self.get_inputs_by_name(["x", "z", "y_0", "y_1"])
+        local_data = self.io.data
+        x = local_data["x"]
+        z = local_data["z"]
+        y_0 = local_data["y_0"]
+        y_1 = local_data["y_1"]
         # The ouputs are stored here
         self.local_data["obj"] = array([x[0] ** 2 + z[1] + y_0[0] ** 2 + exp(-y_1[0])])
         self.local_data["c_1"] = array([3.16 - y_0[0] ** 2])
         self.local_data["c_2"] = array([y_1[0] - 24.0])
 
 
-class Sellar1(MDODiscipline):
+class Sellar1(Discipline):
     def __init__(self, residual_form=False) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x", "z", "y_1"])
         self.output_grammar.update_from_names(["y_0"])
 
-    #         self.default_inputs = {"x": ones(1), "z": array([4., 3.]),
+    #         self.default_input_data = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
 
     def _run(self) -> None:
-        x, z, y_1 = self.get_inputs_by_name(["x", "z", "y_1"])
+        local_data = self.io.data
+        x = local_data["x"]
+        z = local_data["z"]
+        y_1 = local_data["y_1"]
         self.local_data["y_0"] = array([
             (z[0] ** 2 + z[1] + x[0] - 0.2 * y_1[0]) ** 0.5
         ])
 
 
-class Sellar2(MDODiscipline):
+class Sellar2(Discipline):
     def __init__(self, residual_form=False) -> None:
         super().__init__()
         self.input_grammar.update_from_names_from_names(["z", "y_0"])
         self.output_grammar.update_from_names_from_names(["y_1"])
 
-    #         self.default_inputs = {"x": ones(1), "z": array([4., 3.]),
+    #         self.default_input_data = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
 
     def _run(self) -> None:
-        z, y_0 = self.get_inputs_by_name(["z", "y_0"])
+        local_data = self.io.data
+        z = local_data["z"]
+        y_0 = local_data["y_0"]
         self.local_data["y_1"] = array([abs(y_0[0]) + z[0] + z[1]])
 
 

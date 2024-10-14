@@ -23,7 +23,7 @@ for probability distributions, as well as interfaces to the OpenTURNS and SciPy 
 It is also possible to fit a probability distribution from data
 or select the most likely one from a list of candidates.
 These distributions can be used to define random variables in a :class:`.ParameterSpace`
-before propagating these uncertainties through a system of :class:`.MDODiscipline`,
+before propagating these uncertainties through a system of :class:`.Discipline`,
 by means of a :class:`.DOEScenario`.
 
 .. seealso::
@@ -61,13 +61,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from gemseo.utils.pickle import from_pickle as from_pickle
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
     from pathlib import Path
 
+    from gemseo.algos.parameter_space import ParameterSpace as ParameterSpace
+    from gemseo.core.discipline import Discipline as Discipline
     from gemseo.datasets.dataset import Dataset
-    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.datasets.io_dataset import IODataset as IODataset
     from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
     from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
         BaseSensitivityAnalysis,
@@ -202,7 +206,7 @@ def create_statistics(
         ...     parameter_space,
         ...     scenario_type="DOE",
         ... )
-        >>> scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
+        >>> scenario.execute(**{"algo": "OT_MONTE_CARLO", "n_samples": 100})
         >>>
         >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>
@@ -254,3 +258,15 @@ def create_sensitivity_analysis(
     name = name[0].upper() + name[1:]
 
     return factory.create(name, samples=samples)
+
+
+def load_sensitivity_analysis(file_path: str | Path) -> BaseSensitivityAnalysis:
+    """Load a sensitivity analysis from the disk.
+
+    Args:
+        file_path: The path to the file.
+
+    Returns:
+        The sensitivity analysis.
+    """
+    return from_pickle(file_path)

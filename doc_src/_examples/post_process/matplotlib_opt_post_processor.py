@@ -43,7 +43,7 @@ scenario = create_scenario([discipline], "DisciplinaryOpt", "y", design_space)
 
 # %%
 # We solve this optimization problem with the gradient-free algorithm COBYLA:
-scenario.execute({"algo": "NLOPT_COBYLA", "max_iter": 10})
+scenario.execute(algo="NLOPT_COBYLA", max_iter=10)
 
 # %%
 # Then,

@@ -59,7 +59,7 @@ discipline = create_discipline("SobieskiMission")
 # and :meth:`.DesignSpace.filter` the inputs of the
 # discipline :class:`~gems.problems.sobieski.disciplines.SobieskiMission`.
 parameter_space = SobieskiDesignSpace()
-parameter_space.filter(discipline.get_input_data_names())
+parameter_space.filter(discipline.io.input_grammar.names)
 
 # %%
 # Then,
@@ -69,7 +69,7 @@ parameter_space.filter(discipline.get_input_data_names())
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "y_4", parameter_space, scenario_type="DOE"
 )
-scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
+scenario.execute(algo="OT_MONTE_CARLO", n_samples=100)
 
 # %%
 # Create an :class:`.EmpiricalStatistics` object for all variables

@@ -154,7 +154,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.base_driver_library import DriverLibrarySettingType
     from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.typing import RealArray
@@ -241,7 +241,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         both are estimated from ``n_samples`` evaluations of ``discipline``.
         """
 
-        discipline: MDODiscipline
+        discipline: Discipline
         """A cheap discipline, e.g. a surrogate discipline.
 
         It must have as inputs the input variables and the output variables
@@ -296,7 +296,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
     def compute_samples(
         self,
-        disciplines: Collection[MDODiscipline],
+        disciplines: Collection[Discipline],
         parameter_space: ParameterSpace,
         n_samples: int,
         output_names: Iterable[str] = (),
@@ -385,7 +385,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     def __execute_cv(
         self,
         sample: Series,
-        cv_d: MDODiscipline,
+        cv_d: Discipline,
     ) -> Series:
         """Execute a control variate on a sample.
 

@@ -27,6 +27,8 @@ from typing import Protocol
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 
 if TYPE_CHECKING:
+    from gemseo.core._process_flow.execution_sequences.base import BaseExecutionSequence
+    from gemseo.core.execution_status import ExecutionStatus
     from gemseo.scenarios.scenario import Scenario
 
     class Observer(Protocol):
@@ -51,6 +53,9 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
     _observers: list[Observer]
     """The observers."""
 
+    workflow: BaseExecutionSequence
+    """The execution sequence."""
+
     # TODO: API: pass the workflow instead of the scenario since this is only what
     # matters.
     # TODO: API: make attr private.
@@ -60,7 +65,7 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
             scenario: The scenario to be monitored.
         """  # noqa: D205, D212, D415
         self._observers = []
-        self.workflow = scenario.get_expected_workflow()
+        self.workflow = scenario.get_process_flow().get_execution_flow()
         self.workflow.set_observer(self)
         self.workflow.enable()
 
@@ -97,7 +102,7 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
         for obs in self._observers:
             obs.update(atom)
 
-    def get_statuses(self) -> dict[str, str]:
+    def get_statuses(self) -> dict[str, ExecutionStatus.Status]:
         """Get the statuses of all disciplines.
 
         Returns:

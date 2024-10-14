@@ -333,8 +333,8 @@ def test_compute_newton_step(compute_residuals, size) -> None:
         disc.linearize(inputs, compute_all_jacobians=True)
     if compute_residuals:
         residuals = concatenate([
-            disciplines[0].local_data["a"] - inputs["a"],
-            disciplines[1].local_data["b"] - inputs["b"],
+            disciplines[0].io.data["a"] - inputs["a"],
+            disciplines[1].io.data["b"] - inputs["b"],
         ])
     else:
         residuals = None
@@ -351,5 +351,5 @@ def test_compute_newton_step(compute_residuals, size) -> None:
         disc.execute(inputs_up)
 
     # 1 iteration is enough to solve the coupling for linear problems.
-    assert allclose(inputs_up["a"], disciplines[0].local_data["a"])
-    assert allclose(inputs_up["b"], disciplines[1].local_data["b"])
+    assert allclose(inputs_up["a"], disciplines[0].io.data["a"])
+    assert allclose(inputs_up["b"], disciplines[1].io.data["b"])

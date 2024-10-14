@@ -25,11 +25,12 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from strenum import StrEnum
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
+from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_root import BaseMDARoot
 from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -40,12 +41,18 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
     from gemseo.core.coupling_structure import CouplingStructure
-    from gemseo.core.discipline_data import DisciplineData
+    from gemseo.core.discipline import Discipline
+    from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import StrKeyMapping
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+class _ProcessFlow(_BaseMDAProcessFlow):
+    """The process data and execution flow."""
 
 
 class MDANewtonRaphson(BaseMDARoot):
@@ -67,6 +74,8 @@ class MDANewtonRaphson(BaseMDARoot):
     where :math:`J_f(x_k)` denotes the Jacobian of :math:`f` at :math:`x_k`.
     """
 
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
+
     class NewtonLinearSolver(StrEnum):
         """A linear solver for the Newton method."""
 
@@ -82,10 +91,9 @@ class MDANewtonRaphson(BaseMDARoot):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         max_mda_iter: int = 10,
         name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         linear_solver: str = "DEFAULT",
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
@@ -116,7 +124,6 @@ class MDANewtonRaphson(BaseMDARoot):
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
-            grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
@@ -163,19 +170,19 @@ class MDANewtonRaphson(BaseMDARoot):
         the coupling sizes needed for Newton.
         """
         for discipline in self.disciplines:
-            inputs_to_linearize = set(discipline.get_input_data_names()).intersection(
+            inputs_to_linearize = set(discipline.io.input_grammar.names).intersection(
                 self._resolved_variable_names
             )
-            outputs_to_linearize = set(discipline.get_output_data_names()).intersection(
+            outputs_to_linearize = set(discipline.io.output_grammar.names).intersection(
                 self._resolved_variable_names
             )
 
             if (
-                set(discipline.residual_variables.values())
+                set(discipline.io.residual_to_state_variable.values())
                 & set(self._resolved_variable_names)
                 != set()
             ):
-                outputs_to_linearize |= discipline.residual_variables.keys()
+                outputs_to_linearize |= discipline.io.residual_to_state_variable.keys()
 
             # If outputs and inputs to linearize not empty, then linearize
             if inputs_to_linearize and outputs_to_linearize:
@@ -222,7 +229,7 @@ class MDANewtonRaphson(BaseMDARoot):
         super()._run()
 
         while True:
-            local_data_before_execution = self.local_data.copy()
+            local_data_before_execution = self.io.data.copy()
             input_couplings = self.get_current_resolved_variables_vector()
 
             self._execute_disciplines_and_update_local_data()

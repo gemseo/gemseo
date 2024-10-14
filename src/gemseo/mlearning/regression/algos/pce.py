@@ -123,7 +123,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.mlearning.core.algos.supervised import SavedObjectType
     from gemseo.typing import RealArray
@@ -164,7 +164,7 @@ class PCERegressor(BaseRegressor):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
         degree: int = 2,
-        discipline: MDODiscipline | None = None,
+        discipline: Discipline | None = None,
         use_quadrature: bool = False,
         use_lars: bool = False,
         use_cleaning: bool = False,
@@ -556,7 +556,7 @@ class PCERegressor(BaseRegressor):
         return array(self._prediction_function(input_data))
 
     def _get_quadrature_points(
-        self, n_quadrature_points: int, discipline: MDODiscipline
+        self, n_quadrature_points: int, discipline: Discipline
     ) -> tuple[RealArray, RealArray]:
         """Return the quadrature points for PCE construction.
 
@@ -586,8 +586,8 @@ class PCERegressor(BaseRegressor):
         )
         self.learning_set.add_variable(self.__WEIGHT, weights[:, None])
 
-        output_names = list(discipline.get_output_data_names())
-        input_names = list(discipline.get_input_data_names())
+        output_names = list(discipline.io.output_grammar.names)
+        input_names = list(discipline.io.input_grammar.names)
         outputs = [[] for _ in output_names]
         for input_data in self.learning_set.get_view(
             group_names=self.learning_set.INPUT_GROUP, variable_names=input_names
@@ -606,7 +606,7 @@ class PCERegressor(BaseRegressor):
                 [vstack(outputs[index]) for index, _ in enumerate(output_names)], axis=1
             ),
             output_names,
-            {k: v.size for k, v in discipline.get_output_data().items()},
+            {k: v.size for k, v in discipline.io.get_output_data().items()},
         )
         self.output_names = output_names
         return quadrature_points, weights

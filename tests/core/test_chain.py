@@ -29,12 +29,12 @@ from numpy import allclose
 from numpy import array
 from numpy import ones
 
-from gemseo.core.chain import MDOAdditiveChain
-from gemseo.core.chain import MDOChain
-from gemseo.core.chain import MDOParallelChain
-from gemseo.core.chain import MDOWarmStartedChain
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ParallelExecSequence
+from gemseo.core._process_flow.execution_sequences.parallel import ParallelExecSequence
+from gemseo.core.chains.additive_chain import MDOAdditiveChain
+from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.splitter import Splitter
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -89,7 +89,7 @@ class Testmdochain(unittest.TestCase):
                 )
                 chain.linearize(compute_all_jacobians=True)
                 ok = chain.check_jacobian(
-                    chain.default_inputs,
+                    chain.default_input_data,
                     derr_approx="complex_step",
                     step=1e-30,
                     threshold=1e-6,
@@ -104,7 +104,7 @@ class Testmdochain(unittest.TestCase):
             disciplines = self.get_disciplines_list(perm)
             chain = MDOParallelChain(disciplines, use_threading=False)
             ok = chain.check_jacobian(
-                chain.default_inputs,
+                chain.default_input_data,
                 derr_approx="complex_step",
                 step=1e-30,
                 threshold=1e-6,
@@ -114,8 +114,10 @@ class Testmdochain(unittest.TestCase):
     def test_workflow_dataflow(self) -> None:
         disciplines = self.get_disciplines_list(range(4))
         chain = MDOParallelChain(disciplines)
-        assert isinstance(chain.get_expected_workflow(), ParallelExecSequence)
-        assert chain.get_expected_dataflow() == []
+        assert isinstance(
+            chain.get_process_flow().get_execution_flow(), ParallelExecSequence
+        )
+        assert chain.get_process_flow().get_data_flow() == []
 
     def test_common_in_out(self) -> None:
         # Check that the linearization works with a discipline
@@ -140,27 +142,10 @@ class Testmdochain(unittest.TestCase):
         chain.execute()
         mission = SobieskiMission()
         mission.execute()
-        assert allclose(chain.local_data["y_4"], mission.local_data["y_4"] * 2.0)
+        assert allclose(chain.io.data["y_4"], mission.io.data["y_4"] * 2.0)
 
         # Check the output Jacobian
         chain.check_jacobian(threshold=1e-5)
-
-
-def test_get_sub_disciplines() -> None:
-    """Test the get_sub_disciplines method."""
-    chain = SobieskiChain()
-    assert chain.get_sub_disciplines() == chain.disciplines
-
-
-def test_get_sub_disciplines_parallel() -> None:
-    """Test the get_sub_disciplines method with an MDOParallelChain."""
-    parallel_chain = MDOParallelChain([
-        SobieskiStructure(),
-        SobieskiMission(),
-        SobieskiAerodynamics(),
-        SobieskiPropulsion(),
-    ])
-    assert parallel_chain.get_sub_disciplines() == parallel_chain.disciplines
 
 
 def test_mdo_chain_serialization(tmp_wd) -> None:
@@ -226,25 +211,25 @@ def test_warm_started_mdo_chain_variables(variable_names) -> None:
 
 
 @pytest.fixture
-def two_virtual_disciplines() -> list[MDODiscipline]:
+def two_virtual_disciplines() -> list[Discipline]:
     """Create two dummy disciplines that have no _run method and can only be executed in
     virtual mode.
 
     Returns:
         The two disciplines.
     """
-    disc_1 = MDODiscipline("d1")
+    disc_1 = Discipline("d1")
     disc_1.input_grammar.update_from_names(["x"])
     disc_1.output_grammar.update_from_names(["y"])
-    disc_1.default_inputs = {"x": array([1.0])}
-    disc_1.default_outputs = {"y": array([2.0])}
+    disc_1.default_input_data = {"x": array([1.0])}
+    disc_1.default_output_data = {"y": array([2.0])}
     disc_1.virtual_execution = True
 
-    disc_2 = MDODiscipline("d2")
+    disc_2 = Discipline("d2")
     disc_2.input_grammar.update_from_names(["y"])
     disc_2.output_grammar.update_from_names(["z"])
-    disc_2.default_inputs = {"y": array([3.0])}
-    disc_2.default_outputs = {"z": array([4.0])}
+    disc_2.default_input_data = {"y": array([3.0])}
+    disc_2.default_output_data = {"z": array([4.0])}
     disc_2.virtual_execution = True
 
     return [disc_1, disc_2]
@@ -254,8 +239,8 @@ def test_virtual_exe_chain(two_virtual_disciplines) -> None:
     """Test a chain with disciplines in virtual execution mode."""
     chain = MDOChain(two_virtual_disciplines)
     chain.execute()
-    assert chain.local_data["z"] == 4.0
-    assert chain.local_data["y"] == 2.0
+    assert chain.io.data["z"] == 4.0
+    assert chain.io.data["y"] == 2.0
 
 
 def test_jacobian_of_chain_including_splitter() -> None:
@@ -271,20 +256,20 @@ def test_jacobian_of_chain_including_splitter() -> None:
 def test_non_ndarray_inputs():
     """Check that MDOParallelChain handles inputs that are not NumPy arrays."""
 
-    class StringDuplicator(MDODiscipline):
+    class StringDuplicator(Discipline):
         """A discipline duplicating an input string, e.g. "foo" -> "foofoo"."""
 
         def __init__(self):  # noqa: D107
             super().__init__()
             self.input_grammar.update_from_types({"in": str})
             self.output_grammar.update_from_types({"out": str})
-            self.default_inputs["in"] = "foo"
+            self.default_input_data["in"] = "foo"
 
         def _run(self) -> None:
-            self.local_data["out"] = self.local_data["in"] * 2
+            self.io.data["out"] = self.io.data["in"] * 2
 
     mdo_parallel_chain = MDOParallelChain([StringDuplicator()])
     mdo_parallel_chain.execute()
-    assert mdo_parallel_chain.local_data["out"] == "foofoo"
+    assert mdo_parallel_chain.io.data["out"] == "foofoo"
     mdo_parallel_chain.execute({"in": "bar"})
-    assert mdo_parallel_chain.local_data["out"] == "barbar"
+    assert mdo_parallel_chain.io.data["out"] == "barbar"

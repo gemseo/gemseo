@@ -30,7 +30,7 @@ from numpy.testing import assert_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
+    DisciplineAdapterGenerator,
 )
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
@@ -51,7 +51,7 @@ def test_get_values_array_from_dict() -> None:
 def test_get_function() -> None:
     """"""
     sr = SobieskiMission()
-    gen = MDODisciplineAdapterGenerator(sr)
+    gen = DisciplineAdapterGenerator(sr)
     gen.get_function(None, None)
     args = [["x_shared"], ["y_4"]]
     gen.get_function(*args)
@@ -77,15 +77,15 @@ def test_get_function() -> None:
 
 def test_instanciation() -> None:
     """"""
-    MDODisciplineAdapterGenerator(None)
+    DisciplineAdapterGenerator(None)
 
 
 def test_range_discipline() -> None:
     """"""
     sr = SobieskiMission()
-    gen = MDODisciplineAdapterGenerator(sr)
+    gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
-    x_shared = sr.default_inputs["x_shared"]
+    x_shared = sr.default_input_data["x_shared"]
     range_ = range_f_z.evaluate(x_shared).real
     range_f_z2 = gen.get_function(["x_shared"], ["y_4"])
     range2 = range_f_z2.evaluate(x_shared).real
@@ -96,9 +96,9 @@ def test_range_discipline() -> None:
 def test_grad_ko() -> None:
     """"""
     sr = SobieskiMission()
-    gen = MDODisciplineAdapterGenerator(sr)
+    gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
-    x_shared = sr.default_inputs["x_shared"]
+    x_shared = sr.default_input_data["x_shared"]
     range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-4)
     with pytest.raises(ValueError):
         range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-20)
@@ -108,39 +108,37 @@ def test_grad_ko() -> None:
 
 def test_wrong_default_inputs() -> None:
     sr = SobieskiMission()
-    sr.default_inputs = {"y_34": array([1])}
-    gen = MDODisciplineAdapterGenerator(sr)
+    sr.default_input_data = {"y_34": array([1])}
+    gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
         range_f_z.evaluate(array([1.0]))
 
 
 def test_wrong_jac() -> None:
-    sr = SobieskiMission()
+    class SM(SobieskiMission):
+        def _compute_jacobian(self, inputs, outputs) -> None:
+            super()._compute_jacobian(inputs, outputs)
+            self.jac["y_4"]["x_shared"] = self.jac["y_4"]["x_shared"][:, :1]
 
-    def _compute_jacobian_short(inputs, outputs) -> None:
-        SobieskiMission._compute_jacobian(sr, inputs, outputs)
-        sr.jac["y_4"]["x_shared"] = sr.jac["y_4"]["x_shared"][:, :1]
-
-    sr._compute_jacobian = _compute_jacobian_short
-    gen = MDODisciplineAdapterGenerator(sr)
+    sr = SM()
+    gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
-        range_f_z.jac(sr.default_inputs["x_shared"])
+        range_f_z.jac(sr.default_input_data["x_shared"])
 
 
 def test_wrong_jac2() -> None:
-    sr = SobieskiMission()
+    class SM(SobieskiMission):
+        def _compute_jacobian(self, inputs, outputs) -> None:
+            super()._compute_jacobian(inputs, outputs)
+            self.jac["y_4"]["x_shared"] = ones((1, 20))
 
-    def _compute_jacobian_long(inputs, outputs) -> None:
-        SobieskiMission._compute_jacobian(sr, inputs, outputs)
-        sr.jac["y_4"]["x_shared"] = ones((1, 20))
-
-    sr._compute_jacobian = _compute_jacobian_long
-    gen = MDODisciplineAdapterGenerator(sr)
+    sr = SM()
+    gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
-        range_f_z.jac(sr.default_inputs["x_shared"])
+        range_f_z.jac(sr.default_input_data["x_shared"])
 
 
 @pytest.mark.parametrize(

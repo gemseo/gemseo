@@ -175,7 +175,7 @@ def test_disc_from_exe_fail_exe(tmp_wd) -> None:
     with pytest.raises(ValueError):
         disc.execute(indata)
 
-    disc.reset_statuses_for_run()
+    disc.execution_status.value = disc.execution_status.Status.PENDING
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f err_code"
     disc._executable_runner.command_line = exec_cmd
     with pytest.raises(CalledProcessError):
@@ -285,11 +285,7 @@ def test_parallel_execution(tmp_wd) -> None:
         disc, "DisciplinaryOpt", "out", design_space, scenario_type="DOE"
     )
 
-    scenario.execute({
-        "algo": "OT_LHS",
-        "n_samples": 2,
-        "n_processes": nb_process,
-    })
+    scenario.execute(algo="OT_LHS", n_samples=2, n_processes=nb_process)
 
     for i in range(nb_process):
         assert Path(f"{i + 1}").is_dir()

@@ -79,23 +79,23 @@ class Sellar2(BaseSellar):
         self.__zeros_n = csr_array((n, n))
 
     def _run(self) -> None:
-        x_2 = self._local_data[X_2]
-        x_shared = self._local_data[X_SHARED]
-        y_1 = self._local_data[Y_1]
+        x_2 = self.io.data[X_2]
+        x_shared = self.io.data[X_SHARED]
+        y_1 = self.io.data[Y_1]
         if WITH_2D_ARRAY:  # pragma: no cover
             x_shared = x_shared[0]
         out = x_shared[0] + x_shared[1] - x_2
         y_2 = where(y_1.real > 0, self.__k * y_1 + out, -self.__k * y_1 + out)
         inds_where = y_1.real == 0
         y_2[inds_where] = out[inds_where]
-        self.local_data[Y_2] = y_2
+        self.io.data[Y_2] = y_2
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] = (),
-        outputs: Iterable[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        y_1 = self._local_data[Y_1]
+        y_1 = self.io.data[Y_1]
         self.jac = {Y_2: {}}
         jac = self.jac[Y_2]
         jac[X_1] = self.__zeros_n

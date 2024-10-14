@@ -26,5 +26,5 @@ def test_design_space_copy():
     design_space.add_variable("a")
     formulation = DisciplinaryOpt([AnalyticDiscipline({"f": "a"})], "f", design_space)
     function = FunctionFromDiscipline(["f"], formulation)
-    function.discipline_adapter._MDODisciplineAdapter__input_names_to_sizes["b"] = 1
+    function.discipline_adapter._DisciplineAdapter__input_names_to_sizes["b"] = 1
     assert "b" not in design_space.variable_sizes

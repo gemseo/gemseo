@@ -124,7 +124,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo
-    analytical_test_2d_eq.execute(opt)
+    analytical_test_2d_eq.execute(**opt)
     problem = analytical_test_2d_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -141,7 +141,7 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
     opt["algo"] = algo
-    analytical_test_2d__multiple_eq.execute(opt)
+    analytical_test_2d__multiple_eq.execute(**opt)
     problem = analytical_test_2d__multiple_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3

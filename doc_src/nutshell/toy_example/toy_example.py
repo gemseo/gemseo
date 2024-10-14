@@ -60,5 +60,5 @@ design_space = create_design_space()
 design_space.add_variable("inpt", 1, "float", array([-1.0]), array([1.0]), array([0.0]))
 
 scenario = create_scenario(disciplines, "MDF", "obj", design_space)
-scenario.execute({"algo": "SLSQP", "max_iter": 100})
+scenario.execute(algo="SLSQP", max_iter=100)
 scenario.post_process("OptHistoryView", save=True, show=False)

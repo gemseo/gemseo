@@ -680,7 +680,7 @@ class MOERegressor(BaseRegressor):
 
     @property
     def __string_representation(self) -> MultiLineString:
-        mls = super()._string_representation
+        mls = super()._get_string_representation()
         mls.add("Clustering")
         mls.indent()
         mls.add(str(self.clusterer).split("\n")[0])

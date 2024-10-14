@@ -18,7 +18,7 @@ Namespaces
 What are namespaces?
 --------------------
 
-Namespaces are prefixes to input or output names of the :class:`.MDODiscipline` subclasses.
+Namespaces are prefixes to input or output names of the :class:`.Discipline` subclasses.
 The name of the variable is replaced by the namespace, a separator, ':' by default,
 and the original variable name.
 
@@ -85,13 +85,13 @@ This may change the coupling structure graph, as illustrated in the next figure.
    Controlling the couplings using namespaces.
 
 
-Impact on the MDODiscipline wrappers
+Impact on the Discipline wrappers
 ------------------------------------
 
 The discipline that wraps a simulation code,
 such as :class:`.AutoPyDiscipline`, declares its input
 and output names without the namespace prefix,
-in :meth:`.MDODiscipline.__init__`.
+in :meth:`.Discipline.__init__`.
 
 After instantiation,
 a namespace may be added to the discipline,
@@ -99,13 +99,13 @@ which may make the names of the
 grammar elements inconsistent with the names of the local variables in the discipline wrapper.
 The wrappers must be adapted to handle input names changes due to namespaces.
 To this aim, the :class:`.DisciplineData` values may be accessed from keys with or without
-namespaces. Also :meth:`.MDODiscipline.get_input_data_names` has an argument "input_prefix" that
+namespaces. Also :meth:`.Discipline.get_input_data_names` has an argument "input_prefix" that
 allows to define whether to return namespace prefixes or not.
 
 Besides, :class:`.BaseGrammar` has the attributes :attr:`.BaseGrammar.to_namespaced` and
 :attr:`.BaseGrammar.from_namespaced` that map the names with and without namespace prefixes.
 
-Finally, :meth:`.MDODiscipline.store_local_data` allows to pass variables names without namespace prefixes.
+Finally, :meth:`.Discipline._update_output_data` allows to pass variables names without namespace prefixes.
 This allows to adapt wrappers to support namespaces with only minor modifications.
 
 For instance, the :meth:`.AutoPyDiscipline._run` method is as follows, and supports namespaces:
@@ -114,4 +114,4 @@ For instance, the :meth:`.AutoPyDiscipline._run` method is as follows, and suppo
 
     def _run(self):
         output_values = self.py_func(**self.get_input_data(namespaces_prefix=False))
-        self.store_local_data(**output_values)
+        self._update_output_data(**output_values)

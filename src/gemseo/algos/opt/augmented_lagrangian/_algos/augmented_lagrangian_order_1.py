@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 
 from gemseo.algos.design_space import DesignSpace
@@ -30,6 +31,8 @@ from gemseo.algos.opt.augmented_lagrangian.penalty_heuristic import (
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 
 if TYPE_CHECKING:
+    from gemseo import OptimizationProblem
+    from gemseo import OptimizationResult
     from gemseo.typing import NumberArray
 
 
@@ -57,6 +60,18 @@ class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
 
     def __init__(self, algo_name: str = "Augmented_Lagrangian_order_1") -> None:  # noqa:D107
         super().__init__(algo_name)
+        self.__lagrange_multiplier_calculator = None
+
+    def _post_run(
+        self,
+        problem: OptimizationProblem,
+        result: OptimizationResult,
+        max_design_space_dimension_to_log: int,
+        **options: Any,
+    ) -> None:
+        super()._post_run(problem, result, max_design_space_dimension_to_log, **options)
+        # Reset this cached attribute since an algorithm shall be stateless to take
+        # full advantage of the algorithm factory cache.
         self.__lagrange_multiplier_calculator = None
 
     def _update_lagrange_multipliers(

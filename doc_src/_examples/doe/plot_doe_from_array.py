@@ -53,7 +53,7 @@ samples = np.array([sample_1, sample_2])
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
 )
-scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
+scenario.execute(algo="CustomDOE", algo_options={"samples": samples})
 
 # %%
 # Then,

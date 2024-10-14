@@ -89,7 +89,7 @@ scenario.set_differentiation_method()
 all_constraints = ["g_1", "g_2", "g_3"]
 for constraint in all_constraints:
     scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute({"algo": "SLSQP", "max_iter": 10})
+scenario.execute(algo="SLSQP", max_iter=10)
 
 # %%
 # Post-process scenario

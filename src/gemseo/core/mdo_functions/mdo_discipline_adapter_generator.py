@@ -17,13 +17,13 @@
 #                        documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A class to create :class:`.MDOFunction` objects from an :class:`.MDODiscipline`."""
+"""A class to create :class:`.MDOFunction` objects from an :class:`.Discipline`."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.mdo_functions.mdo_discipline_adapter import MDODisciplineAdapter
+from gemseo.core.mdo_functions.mdo_discipline_adapter import DisciplineAdapter
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -33,18 +33,18 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.base_grammar import BaseGrammar
 
 
-class MDODisciplineAdapterGenerator:
+class DisciplineAdapterGenerator:
     """A generator of discipline adapter.
 
     Given a discipline,
-    an :class:`.MDODisciplineAdapter` computes specific outputs from specific inputs.
+    an :class:`.DisciplineAdapter` computes specific outputs from specific inputs.
     """
 
-    discipline: MDODiscipline
+    discipline: Discipline
     """The discipline from which to generate discipline adapters."""
 
     _names_to_sizes: MutableMapping[str, int]
@@ -52,7 +52,7 @@ class MDODisciplineAdapterGenerator:
 
     def __init__(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
@@ -69,10 +69,10 @@ class MDODisciplineAdapterGenerator:
         self,
         input_names: Sequence[str],
         output_names: Sequence[str],
-        default_inputs: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        default_input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
         is_differentiable: bool = True,
         differentiated_input_names_substitute: Sequence[str] = (),
-    ) -> MDODisciplineAdapter:
+    ) -> DisciplineAdapter:
         """Build a function executing a discipline for some inputs and outputs.
 
         Args:
@@ -83,7 +83,7 @@ class MDODisciplineAdapterGenerator:
                 defining the function output vector.
                 If empty,
                 use all the discipline outputs.
-            default_inputs: The default values of the input variables.
+            default_input_data: The default values of the input variables.
                 If empty,
                 use the default input values of the discipline.
             is_differentiable: Whether the function is differentiable.
@@ -127,10 +127,10 @@ class MDODisciplineAdapterGenerator:
             )
             self.discipline.add_differentiated_outputs(output_names)
 
-        return MDODisciplineAdapter(
+        return DisciplineAdapter(
             input_names,
             output_names,
-            default_inputs or {},
+            default_input_data or {},
             self.discipline,
             self._names_to_sizes,
             differentiated_input_names_substitute=differentiated_input_names_substitute,

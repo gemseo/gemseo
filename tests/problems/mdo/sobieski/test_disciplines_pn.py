@@ -36,7 +36,7 @@ from gemseo.problems.mdo.sobieski.disciplines import (
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 FACTORS = [0.5, 1.0, 1.5]
 DECIMAL = 5
@@ -75,7 +75,7 @@ def compute_input_data(
     return {k: v * factor for k, v in input_data.items()}
 
 
-def compute_output_data(discipline: MDODiscipline, factor: float) -> dict[str, ndarray]:
+def compute_output_data(discipline: Discipline, factor: float) -> dict[str, ndarray]:
     """Compute the output data of a discipline from default inputs.
 
     Args:
@@ -85,8 +85,8 @@ def compute_output_data(discipline: MDODiscipline, factor: float) -> dict[str, n
     Returns:
         The output data.
     """
-    discipline.execute(compute_input_data(discipline.default_inputs, factor))
-    return discipline.get_output_data()
+    discipline.execute(compute_input_data(discipline.default_input_data, factor))
+    return discipline.io.get_output_data()
 
 
 @pytest.mark.parametrize("factor", FACTORS)
@@ -153,7 +153,7 @@ def test_propulsion_execute(factor) -> None:
 def test_mission_linearize(discipline_class, factor) -> None:
     """Check the Jacobian data of the different disciplines."""
     discipline = discipline_class.create_with_physical_naming()
-    input_data = compute_input_data(discipline.default_inputs, factor)
+    input_data = compute_input_data(discipline.default_input_data, factor)
     discipline.check_jacobian(input_data=input_data)
 
 
@@ -171,10 +171,10 @@ def test_coupling(factor, mda) -> None:
         design_space.get_current_value(as_dict=True), factor
     )
     mda.execute(input_data)
-    y_1 = mda.local_data["y_1"]
-    y_2 = mda.local_data["y_2"]
-    y_3 = mda.local_data["y_3"]
-    y_4 = mda.local_data["range"]
+    y_1 = mda.io.data["y_1"]
+    y_2 = mda.io.data["y_2"]
+    y_3 = mda.io.data["y_3"]
+    y_4 = mda.io.data["range"]
     design_space = create_design_space()
     input_data = compute_input_data(
         design_space.get_current_value(as_dict=True), factor
@@ -186,10 +186,10 @@ def test_coupling(factor, mda) -> None:
         SobieskiMission(),
     ])
     original_mda.execute(input_data)
-    assert_allclose(original_mda.local_data["y_1"], y_1, rtol=1e-2)
-    assert_allclose(original_mda.local_data["y_2"], y_2, rtol=1e-2)
-    assert_allclose(original_mda.local_data["y_3"], y_3, rtol=1e-2)
-    assert_allclose(original_mda.local_data["y_4"], y_4, rtol=1e-2)
+    assert_allclose(original_mda.io.data["y_1"], y_1, rtol=1e-2)
+    assert_allclose(original_mda.io.data["y_2"], y_2, rtol=1e-2)
+    assert_allclose(original_mda.io.data["y_3"], y_3, rtol=1e-2)
+    assert_allclose(original_mda.io.data["y_4"], y_4, rtol=1e-2)
 
 
 @pytest.fixture
@@ -240,9 +240,9 @@ def scenario() -> DOEScenario:
 
 def test_scenario(scenario_pn, scenario) -> None:
     """Check the MDA results of the four disciplines."""
-    scenario_pn.execute({"algo": "OT_HALTON", "n_samples": 10})
+    scenario_pn.execute(algo="OT_HALTON", n_samples=10)
     dataset_pn = scenario_pn.to_dataset(opt_naming=False)
-    scenario.execute({"algo": "OT_HALTON", "n_samples": 10})
+    scenario.execute(algo="OT_HALTON", n_samples=10)
     dataset = scenario.to_dataset(opt_naming=False)
     data_pn = dataset_pn.get_view(
         variable_names=[
@@ -297,4 +297,4 @@ def test_solution(mda) -> None:
     }
     mda.execute({k: array([v]) for k, v in input_data.items()})
     optimum_range = problem.optimum_range
-    assert_allclose(mda.local_data["range"], optimum_range, rtol=1e0)
+    assert_allclose(mda.io.data["range"], optimum_range, rtol=1e0)

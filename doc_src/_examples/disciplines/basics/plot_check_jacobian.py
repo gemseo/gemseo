@@ -18,7 +18,7 @@ Check the Jacobian of a discipline
 ==================================
 
 In this example,
-the Jacobian of an :class:`.MDODiscipline` is checked by derivative approximation.
+the Jacobian of an :class:`.Discipline` is checked by derivative approximation.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ from numpy import array
 from numpy import exp
 
 from gemseo import configure_logger
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -45,24 +45,26 @@ configure_logger()
 # :math:`g(x,y)=x^2+y^2-1`
 # and introduce an error in the implementation of
 # :math:`\frac{\partial f(x,y)}{\partial x}`.
-class BuggedDiscipline(MDODiscipline):
+class BuggedDiscipline(Discipline):
     def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x", "y"])
         self.output_grammar.update_from_names(["f", "g"])
-        self.default_inputs = {"x": array([0.0]), "y": array([0.0])}
+        self.default_input_data = {"x": array([0.0]), "y": array([0.0])}
 
     def _run(self) -> None:
-        x, y = self.get_inputs_by_name(["x", "y"])
+        x = self.io.data["x"]
+        y = self.io.data["y"]
         self.local_data["f"] = exp(-((1 - x) ** 2) - (1 - y) ** 2)
         self.local_data["g"] = x**2 + y**2 - 1
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        x, y = self.get_inputs_by_name(["x", "y"])
+        x = self.io.data["x"]
+        y = self.io.data["y"]
         self._init_jacobian()
         g_jac = self.jac["g"]
         g_jac["x"][:] = 2 * x
@@ -76,7 +78,7 @@ class BuggedDiscipline(MDODiscipline):
 # %%
 # We want to check if the implemented Jacobian is correct.
 # For practical applications where Jacobians are needed, this is not a simple task.
-# GEMSEO automates such tests thanks to the :meth:`.MDODiscipline.check_jacobian` method.
+# GEMSEO automates such tests thanks to the :meth:`.Discipline.check_jacobian` method.
 #
 # Finite differences (default)
 # ----------------------------

@@ -34,21 +34,20 @@ from numpy import ndarray
 from numpy import zeros
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
-from gemseo.disciplines.utils import get_sub_disciplines
+from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
-from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.execution_sequence import ExecutionSequence
+    from gemseo.core.discipline import Discipline
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.scenarios.scenario import Scenario
     from gemseo.typing import StrKeyMapping
@@ -73,10 +72,10 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     - the type of a constraint is equality,
     - the activation value of a constraint is 0.
 
-    The link between the instances of :class:`.MDODiscipline`,
+    The link between the instances of :class:`.Discipline`,
     the design variables and
     the names of the discipline outputs used as constraints, objective and observables
-    is made with the :class:`.MDODisciplineAdapterGenerator`,
+    is made with the :class:`.DisciplineAdapterGenerator`,
     which generates instances of :class:`.MDOFunction` from the disciplines.
     """
 
@@ -101,13 +100,15 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     variable_sizes: dict[str, int]
     """The sizes of the design variables and differentiated inputs substitutes."""
 
+    __disciplines: tuple[BaseDiscipline, ...]
+    """The disciplines."""
+
     def __init__(
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Iterable[Discipline],
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
         maximize_objective: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         differentiated_input_names_substitute: Iterable[str] = (),
         **options: Any,
     ) -> None:
@@ -118,7 +119,6 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If multiple names are passed, the objective will be a vector.
             design_space: The design space.
             maximize_objective: Whether to maximize the objective.
-            grammar_type: The type of the input and output grammars.
             differentiated_input_names_substitute: The names of the discipline inputs
                 against which to differentiate the discipline outputs
                 used as objective, constraints and observables.
@@ -147,15 +147,20 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
                 is no longer a Jacobian.
             **options: The options of the formulation.
         """  # noqa: D205, D212, D415
+        self.__disciplines = tuple(disciplines)
+        self.__check_disciplines()
         self.__differentiated_input_names_substitute = tuple(
             differentiated_input_names_substitute
         )
-        self._disciplines = disciplines
         self._objective_name = objective_name
         self.optimization_problem = OptimizationProblem(design_space)
         self._maximize_objective = maximize_objective
-        self.__grammar_type = grammar_type
         self.variable_sizes = design_space.variable_sizes.copy()
+
+    @property
+    def disciplines(self) -> tuple[BaseDiscipline, ...]:
+        """The disciplines."""
+        return self.__disciplines
 
     @property
     def differentiated_input_names_substitute(self) -> tuple[str, ...]:
@@ -165,21 +170,18 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         return self.__differentiated_input_names_substitute
 
-    @property
-    def _grammar_type(self) -> MDODiscipline.GrammarType:
-        """The type of the input and output grammars."""
-        return self.__grammar_type
+    def __check_disciplines(self) -> None:
+        """Check that two disciplines do not compute the same output."""
+        disciplines = set(self.disciplines).difference(self.get_sub_scenarios())
+        if disciplines:
+            check_disciplines_consistency(disciplines, False, True)
 
     @property
     def design_space(self) -> DesignSpace:
         """The design space on which the formulation is applied."""
         return self.optimization_problem.design_space
 
-    @property
-    def disciplines(self) -> list[MDODiscipline]:
-        """The disciplines of the MDO process."""
-        return self._disciplines
-
+    @abstractmethod
     def add_constraint(
         self,
         output_name: str | Sequence[str],
@@ -211,27 +213,13 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             value: The value :math:`a`.
             positive: Whether the inequality constraint is positive.
         """
-        output_names = convert_strings_to_iterable(output_name)
-        constraint = FunctionFromDiscipline(output_names, self)
-        if constraint.discipline_adapter.is_linear:
-            constraint = compute_linear_approximation(
-                constraint, zeros(constraint.discipline_adapter.input_dimension)
-            )
-        constraint.f_type = constraint_type
-        if constraint_name:
-            constraint.name = constraint_name
-            constraint.has_default_name = False
-        else:
-            constraint.has_default_name = True
-        self.optimization_problem.add_constraint(
-            constraint, value=value, positive=positive
-        )
 
+    @abstractmethod
     def add_observable(
         self,
         output_names: str | Sequence[str],
         observable_name: str = "",
-        discipline: MDODiscipline | None = None,
+        discipline: Discipline | None = None,
     ) -> None:
         """Add an observable to the optimization problem.
 
@@ -244,14 +232,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             discipline: The discipline computing the observed outputs.
                 If ``None``, the discipline is detected from inner disciplines.
         """
-        if isinstance(output_names, str):
-            output_names = [output_names]
-        obs_fun = FunctionFromDiscipline(output_names, self, discipline=discipline)
-        if observable_name:
-            obs_fun.name = observable_name
-        self.optimization_problem.add_observable(obs_fun)
 
-    def get_top_level_disc(self) -> list[MDODiscipline]:
+    @abstractmethod
+    def get_top_level_disciplines(self) -> tuple[BaseDiscipline, ...]:
         """Return the disciplines which inputs are required to run the scenario.
 
         A formulation seeks to
@@ -266,7 +249,6 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The top level disciplines.
         """
-        return self.disciplines
 
     def _get_dv_indices(
         self,
@@ -422,9 +404,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _remove_unused_variables(self) -> None:
         """Remove variables in the design space that are not discipline inputs."""
         design_space = self.optimization_problem.design_space
-        disciplines = self.get_top_level_disc()
+        disciplines = self.get_top_level_disciplines()
         all_inputs = {
-            var for disc in disciplines for var in disc.get_input_data_names()
+            var for disc in disciplines for var in disc.io.input_grammar.names
         }
         for name in design_space.variable_names:
             if name not in all_inputs:
@@ -445,7 +427,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _build_objective_from_disc(
         self,
         objective_name: str | Sequence[str],
-        discipline: MDODiscipline | None = None,
+        discipline: Discipline | None = None,
         top_level_disc: bool = True,
     ) -> None:
         """Build the objective function from the discipline able to compute it.
@@ -485,7 +467,7 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def get_x_names_of_disc(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
     ) -> list[str]:
         """Get the design variables names of a given discipline.
 
@@ -496,29 +478,8 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
              The names of the design variables.
         """
         optim_variable_names = self.get_optim_variable_names()
-        input_names = discipline.get_input_data_names()
+        input_names = discipline.io.input_grammar.names
         return [name for name in optim_variable_names if name in input_names]
-
-    def get_sub_disciplines(self, recursive: bool = False) -> list[MDODiscipline]:
-        """Accessor to the sub-disciplines.
-
-        This method lists the sub scenarios' disciplines. It will list up to one level
-        of disciplines contained inside another one unless the ``recursive`` argument is
-        set to ``True``.
-
-        Args:
-            recursive: If ``True``, the method will look inside any discipline that has
-                other disciplines inside until it reaches a discipline without
-                sub-disciplines, in this case the return value will not include any
-                discipline that has sub-disciplines. If ``False``, the method will list
-                up to one level of disciplines contained inside another one, in this
-                case the return value may include disciplines that contain
-                sub-disciplines.
-
-        Returns:
-            The sub-disciplines.
-        """
-        return get_sub_disciplines(self._disciplines, recursive)
 
     def get_sub_scenarios(self) -> list[Scenario]:
         """List the disciplines that are actually scenarios.
@@ -526,7 +487,9 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The scenarios.
         """
-        return [disc for disc in self.disciplines if disc.is_scenario()]
+        from gemseo.scenarios.scenario import Scenario
+
+        return [disc for disc in self.disciplines if isinstance(disc, Scenario)]
 
     def _set_default_input_values_from_design_space(self) -> None:
         """Initialize the top level disciplines from the design space."""
@@ -537,53 +500,14 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
             as_dict=True
         )
 
-        for discipline in self.get_top_level_disc():
-            input_names = discipline.get_input_data_names()
+        for discipline in self.get_top_level_disciplines():
+            input_names = discipline.io.input_grammar.names
             to_value = discipline.input_grammar.data_converter.convert_array_to_value
-            discipline.default_inputs.update({
+            discipline.default_input_data.update({
                 name: to_value(name, value)
                 for name, value in current_x.items()
                 if name in input_names
             })
-
-    @abstractmethod
-    def get_expected_workflow(
-        self,
-    ) -> ExecutionSequence | tuple[ExecutionSequence]:
-        """Get the expected sequence of execution of the disciplines.
-
-        This method is used for the XDSM representation
-        and can be overloaded by subclasses.
-
-        For instance:
-
-        * [A, B] denotes the execution of A,
-          then the execution of B
-        * (A, B) denotes the concurrent execution of A and B
-        * [A, (B, C), D] denotes the execution of A,
-          then the concurrent execution of B and C,
-          then the execution of D.
-
-        Returns:
-            A sequence of elements which are either
-            an :class:`.ExecutionSequence`
-            or a tuple of :class:`.ExecutionSequence` for concurrent execution.
-        """
-
-    @abstractmethod
-    def get_expected_dataflow(
-        self,
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        """Get the expected data exchange sequence.
-
-        This method is used for the XDSM representation
-        and can be overloaded by subclasses.
-
-        Returns:
-            The expected sequence of data exchange
-            where the i-th item is described by the starting discipline,
-            the ending discipline and the coupling variables.
-        """
 
     @classmethod
     def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:

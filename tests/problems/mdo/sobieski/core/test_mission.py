@@ -36,7 +36,7 @@ def test_dweightratio_dwt(problem) -> None:
     h = 1e-30
     sr = problem.mission
     indata = problem.get_default_inputs_equilibrium(
-        names=SobieskiMission().get_input_data_names()
+        names=SobieskiMission().io.input_grammar.names
     )
     y_14 = indata["y_14"]
     lin_weightratio = sr._SobieskiMission__compute_dweightratio_dwt(y_14[0], y_14[1])
@@ -51,7 +51,7 @@ def test_dlnweightratio_dwt(problem) -> None:
     h = 1e-30
     sr = problem.mission
     indata = problem.get_default_inputs_equilibrium(
-        names=SobieskiMission().get_input_data_names()
+        names=SobieskiMission().io.input_grammar.names
     )
     y_14 = indata["y_14"]
     lin_weightratio = sr._SobieskiMission__compute_dlnweightratio_dwt(y_14[0], y_14[1])
@@ -68,7 +68,7 @@ def test_d_range_d_wt(problem) -> None:
     h = 1e-30
     sr = problem.mission
     indata = problem.get_default_inputs_equilibrium(
-        names=SobieskiMission().get_input_data_names()
+        names=SobieskiMission().io.input_grammar.names
     )
     y_14 = indata["y_14"]
     y_24 = indata["y_24"]
@@ -92,7 +92,7 @@ def test_d_range_d_wf(problem) -> None:
     h = 1e-30
     sr = problem.mission
     indata = problem.get_default_inputs_equilibrium(
-        names=SobieskiMission().get_input_data_names()
+        names=SobieskiMission().io.input_grammar.names
     )
     y_14 = indata["y_14"]
     y_24 = indata["y_24"]

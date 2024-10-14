@@ -166,7 +166,7 @@ class ScalableDiagonalModel(ScalableModel):
         Returns:
             The values of the outputs.
         """
-        input_value = input_value or self.default_inputs
+        input_value = input_value or self.default_input_data
         input_value = concatenate_dict_of_arrays_to_array(input_value, self.input_names)
         scal_func = self.model.get_scalable_function
         return {fname: scal_func(fname)(input_value) for fname in self.output_names}
@@ -182,7 +182,7 @@ class ScalableDiagonalModel(ScalableModel):
         Returns:
             The values of the derivatives.
         """
-        input_value = input_value or self.default_inputs
+        input_value = input_value or self.default_input_data
         input_value = concatenate_dict_of_arrays_to_array(input_value, self.input_names)
         scal_der = self.model.get_scalable_derivative
         return {fname: scal_der(fname)(input_value) for fname in self.output_names}

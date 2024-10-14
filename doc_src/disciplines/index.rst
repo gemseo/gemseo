@@ -32,18 +32,18 @@ A discipline is a set of calculations that:
 How is a discipline implemented in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Programmatically speaking, disciplines are implemented in |g| through the :class:`.MDODiscipline` class.
+Programmatically speaking, disciplines are implemented in |g| through the :class:`.Discipline` class.
 They are defined by three elements:
 
-- the :attr:`.MDODiscipline.input_grammar` attribute: the set of rules that defines valid input data,
-- the :attr:`.MDODiscipline.output_grammar` attribute: the set of rules that defines valid output data,
-- the :meth:`.MDODiscipline._run` method: the method to compute the output data from the input data.
+- the :attr:`.Discipline.input_grammar` attribute: the set of rules that defines valid input data,
+- the :attr:`.Discipline.output_grammar` attribute: the set of rules that defines valid output data,
+- the :meth:`.Discipline._run` method: the method to compute the output data from the input data.
 
 Grammar
 -------
 
 The input and output specifications are defined in a grammar,
-through the :attr:`!MDODiscipline.input_grammar` and :attr:`!MDODiscipline.output_grammar` attributes,
+through the :attr:`!Discipline.input_grammar` and :attr:`!Discipline.output_grammar` attributes,
 which can be either a :class:`.SimpleGrammar` or a :class:`.JSONGrammar` (default grammar), or your own which
 derives from the :class:`.BaseGrammar` class.
 
@@ -63,18 +63,18 @@ derives from the :class:`.BaseGrammar` class.
 Inheritance
 -----------
 
-The disciplines are all subclasses of :class:`.MDODiscipline`, from which they must inherit.
+The disciplines are all subclasses of :class:`.Discipline`, from which they must inherit.
 
-To be used, if your :class:`.MDODiscipline` of interest does not exist, you must:
+To be used, if your :class:`.Discipline` of interest does not exist, you must:
 
-- define a class inheriting from :class:`.MDODiscipline`,
+- define a class inheriting from :class:`.Discipline`,
 - define the input and output grammars in the constructor,
-- implement the :meth:`!MDODiscipline._run` method which defines the way in which the output set values are obtained from the input set values.
+- implement the :meth:`!Discipline._run` method which defines the way in which the output set values are obtained from the input set values.
 
 .. note::
 
     Typically, when we deal with an interfaced software,
-    the :meth:`!MDODiscipline._run` method gets the inputs from the
+    the :meth:`!Discipline._run` method gets the inputs from the
     input grammar, calls a software, and writes the outputs to the output grammar.
 
 .. note::
@@ -86,9 +86,9 @@ To be used, if your :class:`.MDODiscipline` of interest does not exist, you must
 What are the API functions in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once a sub-class of :class:`.MDODiscipline` is defined, an instance of this discipline can be created from the :func:`.create_discipline` API function.
+Once a sub-class of :class:`.Discipline` is defined, an instance of this discipline can be created from the :func:`.create_discipline` API function.
 
-Furthermore, many disciplines inheriting from :class:`.MDODiscipline` are already implemented in |g|.
+Furthermore, many disciplines inheriting from :class:`.Discipline` are already implemented in |g|.
 Use the :func:`.get_available_disciplines` API function to discover them:
 
 .. code::
@@ -105,7 +105,7 @@ which results in:
 
 .. note::
 
-   These available :class:`.MDODiscipline` can be classified into different categories:
+   These available :class:`.Discipline` can be classified into different categories:
 
    - classes implementing scenario, a key concept in |g|: :class:`.Scenario` and :class:`.DOEScenario`, :class:`.MDOScenario`,
    - classes implementing MDO problem disciplines:
@@ -118,7 +118,7 @@ which results in:
    - classes implementing special disciplines: :class:`.MDOParallelChain`, :class:`.MDOChain`, :class:`.ScalableDiscipline` and :class:`.MDOScenarioAdapter`.
    - classes implementing optimization discipline: :class:`.RosenMF`.
 
-How to instantiate an existing :class:`.MDODiscipline`?
+How to instantiate an existing :class:`.Discipline`?
 ***************************************************************************
 
 We can easily instantiate an internal discipline by means of the :func:`.create_discipline`, e.g.:
@@ -138,7 +138,7 @@ using a list of discipline names rather than a single discipline name, e.g.:
 
     disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
 
-In this case, ``disciplines`` is a list of :class:`.MDODiscipline`,
+In this case, ``disciplines`` is a list of :class:`.Discipline`,
 where the first one is an instance of :class:`.Sellar1`,
 the second one is an instance of :class:`.Sellar2` and
 the third one is an instance of :class:`.SellarSystem`.
@@ -170,24 +170,24 @@ the third one is an instance of :class:`.SellarSystem`.
 How to set the cache policy?
 ****************************
 
-We can set the cache policy of a discipline by means of the :meth:`.MDODiscipline.set_cache_policy` method,
+We can set the cache policy of a discipline by means of the :meth:`.Discipline.set_cache` method,
 either using the default cache strategy, e.g.:
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.SIMPLE)
+   sellar_system.set_cache(cache_type=sellar_system.CacheType.SIMPLE)
 
 or the HDF5 cache strategy with the discipline name as node name (here ``SellarSystem``), e.g.:
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5')
+   sellar_system.set_cache(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5')
 
 or the HDF5 cache strategy with a user-defined name as node name (here ``node``), e.g.:
 
 .. code::
 
-   sellar_system.set_cache_policy(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5', cache_hdf_node_path='node')
+   sellar_system.set_cache(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5', cache_hdf_node_path='node')
 
 .. note::
 
@@ -195,16 +195,16 @@ or the HDF5 cache strategy with a user-defined name as node name (here ``node``)
 
 .. note::
 
-   The :meth:`.MDODiscipline.set_cache_policy` method takes an additional argument, named ``cache_tolerance``,
+   The :meth:`.Discipline.set_cache` method takes an additional argument, named ``cache_tolerance``,
    which represents the tolerance for the approximate cache maximal relative norm difference to consider that two input arrays are equal.
 
-   By default, ``cache_tolerance`` is equal to zero. We can get its value by means of the :attr:`.MDODiscipline.cache_tol` getter
-   and change its value by means of the :attr:`.MDODiscipline.cache_tol` setter.
+   By default, ``cache_tolerance`` is equal to zero. We can get its value by means of the :attr:`.Discipline.cache_tol` getter
+   and change its value by means of the :attr:`.Discipline.cache_tol` setter.
 
-How to execute an :class:`.MDODiscipline`?
+How to execute an :class:`.Discipline`?
 ******************************************
 
-We can execute an :class:`.MDODiscipline`,
+We can execute an :class:`.Discipline`,
 either with its default input values, e.g.:
 
 .. code::
@@ -233,13 +233,13 @@ which results in:
 
    {'obj': array([ 4.36787944+0.j]), 'y_2': array([ 1.]), 'y_1': array([ 2.]), 'c_1': array([-0.84+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.,  0.]), 'x_local': array([ 0.])}
 
-How to get information about an instantiated :class:`.MDODiscipline`?
+How to get information about an instantiated :class:`.Discipline`?
 *********************************************************************
 
 5.a. How to get input and output data names?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can get the input and output data names by means of the :meth:`.MDODiscipline.get_input_data_names` and :meth:`.MDODiscipline.get_output_data_names` methods, e.g.:
+We can get the input and output data names by means of the :meth:`.Discipline.get_input_data_names` and :meth:`.Discipline.get_output_data_names` methods, e.g.:
 
 .. code::
 
@@ -254,18 +254,18 @@ which results in:
 5.b. How to check the validity of input or output data?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can check the validity of a ``dict`` of input data (resp. output data) by means of the :meth:`.MDODiscipline.check_input_data`
-(resp. :meth:`.MDODiscipline.check_output_data`) methods, e.g.:
+We can check the validity of a ``dict`` of input data (resp. output data) by means of the :meth:`.Discipline.io_data.input_grammar.validate`
+(resp. :meth:`.Discipline.io_data.output_grammar.validate`) methods, e.g.:
 
 .. code::
 
-   sellar_system.check_input_data(sellar_system.default_inputs)
+   sellar_system.io_data.input_grammar.validate(sellar_system.default_input_data)
 
 does not raise any error while:
 
 .. code::
 
-   sellar_system.check_input_data({'a': array([1.]), 'b': array([1., -6.2])})
+   sellar_system.io_data.input_grammar.validate({'a': array([1.]), 'b': array([1., -6.2])})
 
 raises the error:
 
@@ -276,11 +276,11 @@ raises the error:
 How to get the default input values?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can get the default input data by means of the :attr:`!MDODiscipline.default_inputs` attribute, e.g.:
+We can get the default input data by means of the :attr:`!Discipline.default_input_data` attribute, e.g.:
 
 .. code::
 
-   print(sellar_system.default_inputs)
+   print(sellar_system.default_input_data)
 
 which results in:
 
@@ -294,7 +294,7 @@ How to get input and output data values?
 All input or output data values as a list of arrays
 ---------------------------------------------------
 
-Once the discipline has been executed, we can get all the input data values (resp. output data values) of the last execution by means of the :meth:`.MDODiscipline.get_all_inputs` method (resp. :meth:`.MDODiscipline.get_all_outputs` method), e.g.
+Once the discipline has been executed, we can get all the input data values (resp. output data values) of the last execution by means of the :meth:`.Discipline.get_all_inputs` method (resp. :meth:`.Discipline.get_all_outputs` method), e.g.
 
 .. code::
 
@@ -314,7 +314,7 @@ The ``list`` returned by ``sellar_system.get_all_inputs()`` (resp. ``sellar_syst
 All input or output data values as a large array
 ------------------------------------------------
 
-This ``list`` of NumPy arrays can be converted into a large NumPy array by means of :meth:`.MDODiscipline.get_inputs_asarray` method (resp. :meth:`.MDODiscipline.get_outputs_asarray`), e.g.
+This ``list`` of NumPy arrays can be converted into a large NumPy array by means of :meth:`.Discipline.get_inputs_asarray` method (resp. :meth:`.Discipline.get_outputs_asarray`), e.g.
 
 .. code::
 
@@ -332,7 +332,7 @@ which results in:
 All input or output data values as a dictionary
 -----------------------------------------------
 
-The same result can be obtained with a ``dict`` format by means of the :meth:`.MDODiscipline.get_input_data` and :meth:`.MDODiscipline.get_output_data` methods:
+The same result can be obtained with a ``dict`` format by means of the :meth:`.Discipline.get_input_data` and :meth:`.Discipline.get_output_data` methods:
 
 .. code::
 
@@ -350,14 +350,14 @@ which results in:
 Some input or output data values as a list
 ------------------------------------------
 
-We can also get the data value for a given variable name or a given ``list`` of variable names by means of the  :meth:`.MDODiscipline.get_inputs_by_name` or :meth:`.MDODiscipline.get_outputs_by_name` method.
+We can also get the data value for a given variable name or a given ``list`` of variable names by means of the  :meth:`.Discipline.get_inputs_by_name` or :meth:`.Discipline.get_outputs_by_name` method.
 
 How to get any local data value?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once the discipline has been executed, we can get the value of any variable or ``list`` of variables (inputs, outputs and others)
-stored in the :attr:`!MDODiscipline.local_data` attribute
-by means of the :meth:`.MDODiscipline.get_local_data_by_name` method, e.g.
+stored in the :attr:`!Discipline.local_data` attribute
+by means of the :meth:`.Discipline.get_local_data_by_name` method, e.g.
 
 .. code::
 
@@ -372,11 +372,11 @@ which results in:
    array([ 1.36787944+0.j])
    [array([ 1.36787944+0.j]), array([ 1.+0.j,  0.+0.j])]
 
-How to store data in the :attr:`!MDODiscipline.local_data` attribute?
+How to store data in the :attr:`!Discipline.local_data` attribute?
 *********************************************************************
 
-We can store data in the :attr:`!MDODiscipline.local_data` attribute
-by means of the :meth:`.MDODiscipline.store_local_data` method
+We can store data in the :attr:`!Discipline.local_data` attribute
+by means of the :meth:`.Discipline._update_output_data` method
 whose arguments are the names of the variables to store. We can store either data for variables
 from input or output grammars, or data for other variables, e.g.:
 
@@ -384,5 +384,5 @@ from input or output grammars, or data for other variables, e.g.:
 
    print(sellar_system.local_data)
    {'obj': array([ 1.36787944+0.j]), 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
-   sellar_system.store_local_data(**{'obj': array([1.]), 'new_variable': 'value'})
+   sellar_system._update_output_data({'obj': array([1.]), 'new_variable': 'value'})
    {'obj': array([ 1.]), 'new_variable': 'value', 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}

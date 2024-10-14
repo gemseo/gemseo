@@ -58,7 +58,7 @@ def test_basic(skip_if_xlwings_is_not_usable) -> None:
     """
     xlsd = XLSDiscipline(DIR_PATH / "test_excel.xlsx")
     xlsd.execute(INPUT_DATA)
-    assert xlsd.local_data["c"] == 23.5
+    assert xlsd.io.data["c"] == 23.5
 
 
 @pytest.mark.parametrize("file_id", range(1, 4))
@@ -105,8 +105,8 @@ def test_multiprocessing(skip_if_xlwings_is_not_usable) -> None:
         {"a": array([2.0]), "b": array([1.0])},
         {"a": array([5.0]), "b": array([3.0])},
     ])
-    assert xlsd.get_output_data() == {"c": array([3.0])}
-    assert xlsd_2.get_output_data() == {"c": array([8.0])}
+    assert xlsd.io.get_output_data() == {"c": array([3.0])}
+    assert xlsd_2.io.get_output_data() == {"c": array([8.0])}
 
 
 def test_multithreading(skip_if_xlwings_is_not_usable) -> None:
@@ -131,8 +131,8 @@ def test_multithreading(skip_if_xlwings_is_not_usable) -> None:
         {"a": array([5.0]), "b": array([3.0])},
     ])
 
-    assert xlsd.get_output_data() == {"c": array([3.0])}
-    assert xlsd_2.get_output_data() == {"c": array([8.0])}
+    assert xlsd.io.get_output_data() == {"c": array([3.0])}
+    assert xlsd_2.io.get_output_data() == {"c": array([8.0])}
 
 
 def f_sellar_system(
@@ -212,7 +212,7 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
 #                                                         "test_excel.xlsm"))
 #             input_data = {"a": array([2.25]), "b": array([30.25])}
 #             xlsd.execute(input_data)
-#             assert xlsd.local_data["d"] == 10 * 2.25 + 20 * 30.25
+#             assert xlsd.io.data["d"] == 10 * 2.25 + 20 * 30.25
 #             xlsd.close()
 
 

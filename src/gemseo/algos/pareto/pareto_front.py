@@ -38,7 +38,7 @@ from pandas import MultiIndex
 from pandas import concat as pd_concat
 
 from gemseo.algos.pareto.utils import compute_pareto_optimal_points
-from gemseo.third_party.prettytable import PrettyTable
+from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 

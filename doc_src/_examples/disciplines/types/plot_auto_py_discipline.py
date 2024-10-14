@@ -53,7 +53,7 @@ def f(x=0.0, y=0.0):
 # -------------------------------------
 # Then, we can consider the
 # :class:`.AutoPyDiscipline` class
-# to convert it into an :class:`.MDODiscipline`.
+# to convert it into an :class:`.Discipline`.
 # For that, we can use the :func:`.create_discipline` API function
 # with ``'AutoPyDiscipline'`` as first argument:
 disc = create_discipline("AutoPyDiscipline", py_func=f)

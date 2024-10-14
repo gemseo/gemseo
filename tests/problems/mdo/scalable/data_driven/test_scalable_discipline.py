@@ -36,6 +36,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.utils.pickle import to_pickle
 
 N_SAMPLES = 10
 
@@ -71,7 +72,7 @@ class ScalableProblem(unittest.TestCase):
     def test_serialize(self) -> None:
         disc = ScalableProblem.scalable_disciplines[0]
         outf = "scalable.o"
-        disc.to_pickle(outf)
+        to_pickle(disc, outf)
         assert exists(outf)
 
     def _determine_size(self, name, original_sizes=False):
@@ -108,8 +109,8 @@ class ScalableProblem(unittest.TestCase):
         sizes = {}
 
         for disc in ScalableProblem.original_disciplines:
-            input_names = disc.get_input_data_names()
-            output_names = disc.get_output_data_names()
+            input_names = disc.io.input_grammar.names
+            output_names = disc.io.output_grammar.names
             for name in list(set(input_names) | set(output_names)):
                 value = self._determine_size(name)
                 sizes[name] = value.size
@@ -124,7 +125,7 @@ class ScalableProblem(unittest.TestCase):
             for discipline in ScalableProblem.original_disciplines:
                 input_names = [
                     name
-                    for name in discipline.get_input_data_names()
+                    for name in discipline.io.input_grammar.names
                     if not name.startswith("c_")
                 ]
                 for input_name in input_names:

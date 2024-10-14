@@ -27,8 +27,8 @@ from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
 sellar = create_discipline("Sellar1")
 design_space = SellarDesignSpace()
-input_names = sellar.get_input_data_names()
-output_names = sellar.get_output_data_names()
+input_names = sellar.io.input_grammar.names
+output_names = sellar.io.output_grammar.names
 var_lb = {name: design_space.get_lower_bound(name) for name in input_names}
 var_ub = {name: design_space.get_upper_bound(name) for name in input_names}
 

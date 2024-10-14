@@ -21,23 +21,25 @@ from pathlib import Path
 import pytest
 
 from gemseo import create_discipline
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.deserialize_and_run import _parse_inputs
 from gemseo.utils.deserialize_and_run import _run_discipline_save_outputs
 from gemseo.utils.deserialize_and_run import main
 from gemseo.utils.path_discipline import PathDiscipline
+from gemseo.utils.pickle import to_pickle
 
 
 @pytest.fixture
 def discipline_and_data(tmp_wd):
     path_to_discipline = tmp_wd / "discipline.pckl"
     discipline = create_discipline("SobieskiMission")
-    discipline.to_pickle(path_to_discipline)
+    to_pickle(discipline, path_to_discipline)
     path_to_outputs = tmp_wd / "outputs.pckl"
     path_to_input_data = tmp_wd / "inputs.pckl"
     with path_to_input_data.open("wb") as outf:
         pickler = pickle.Pickler(outf, protocol=2)
-        pickler.dump((discipline.default_inputs, (), ()))
+        pickler.dump((discipline.default_input_data, (), ()))
     return path_to_discipline, path_to_outputs, path_to_input_data, discipline
 
 
@@ -113,7 +115,7 @@ def test_run_discipline_save_outputs(discipline_and_data) -> None:
     outputs_path = Path("outputs.pckl")
     _run_discipline_save_outputs(
         discipline,
-        discipline.default_inputs,
+        discipline.default_input_data,
         outputs_path,
         False,
         False,
@@ -130,8 +132,9 @@ def test_run_discipline_save_outputs_errors(discipline_and_data) -> None:
     """Test the outputs saving error handling."""
     error_message = "I failed"
 
-    def _run_and_fail() -> None:
-        raise ValueError(error_message)
+    class SM(SobieskiMission):
+        def _run(self) -> None:
+            raise ValueError(error_message)
 
     (
         _path_to_discipline,
@@ -139,12 +142,12 @@ def test_run_discipline_save_outputs_errors(discipline_and_data) -> None:
         _,
         discipline,
     ) = discipline_and_data
-    discipline._run = _run_and_fail
+    discipline = SM()
 
     outputs_path = Path("outputs.pckl")
     return_code = _run_discipline_save_outputs(
         discipline,
-        discipline.default_inputs,
+        discipline.default_input_data,
         outputs_path,
         False,
         False,
@@ -182,13 +185,13 @@ def test_path_serialization(tmp_wd) -> None:
     """Test the execution of a serialized discipline that contains Paths."""
     path_to_discipline = "discipline.pckl"
     discipline = PathDiscipline(tmp_wd)
-    discipline.to_pickle(path_to_discipline)
+    to_pickle(discipline, path_to_discipline)
     path_to_outputs = "outputs.pckl"
     path_to_input_data = "inputs.pckl"
 
     with open(path_to_input_data, "wb") as outf:
         pickler = pickle.Pickler(outf, protocol=2)
-        pickler.dump((discipline.default_inputs, (), ()))
+        pickler.dump((discipline.default_input_data, (), ()))
 
     completed = subprocess.run(
         f"gemseo-deserialize-run {path_to_discipline} "

@@ -103,10 +103,10 @@ def f_sellar_2(y_1=1.0, x_shared_1=1.0, x_shared_2=3.0):
 
 # %%
 # These Python functions can be easily converted into |g|
-# :class:`.MDODiscipline` objects by using the :class:`.AutoPyDiscipline`
+# :class:`.Discipline` objects by using the :class:`.AutoPyDiscipline`
 # discipline. It enables the automatic wrapping of a Python function into a
 # |g|
-# :class:`.MDODiscipline` by only passing a reference to the function to be
+# :class:`.Discipline` by only passing a reference to the function to be
 # wrapped. |g| handles the wrapping and the grammar creation under the
 # hood. The :class:`.AutoPyDiscipline` discipline can be instantiated using the
 # :func:`.create_discipline` function from the |g| :term:`API`:
@@ -119,7 +119,7 @@ disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
 
 # %%
 # Note that it is possible to define the Sellar disciplines by subclassing the
-# :class:`.MDODiscipline` class and implementing the constuctor and the _run
+# :class:`.Discipline` class and implementing the constuctor and the _run
 # method by hand. Although it would take more time, it may also provide more
 # flexibility and more options. This method is illustrated in the :ref:`Sellar
 # from scratch tutorial <sellar_from_scratch>`.
@@ -137,8 +137,8 @@ disc_sellar_1
 # %%
 # Moreover,
 # we can get the default input values of a discipline
-# with the attribute :attr:`.MDODiscipline.default_inputs`:
-disc_sellar_1.default_inputs
+# with the attribute :attr:`.Discipline.default_input_data`:
+disc_sellar_1.default_input_data
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.

@@ -86,16 +86,16 @@ class ScalableDiscipline(BaseDiscipline):
 
     def _run(self) -> None:
         if self.__u_i_name in self.input_grammar:
-            u_i = self.get_inputs_by_name(self.__u_i_name)
+            u_i = self.io.data[self.__u_i_name]
         else:
             u_i = 0
-        self.store_local_data(
-            **self._discipline(
-                self._local_data[SHARED_DESIGN_VARIABLE_NAME],
-                self._local_data[self.__x_i_name],
+        self.io.update_output_data(
+            self._discipline(
+                self.io.data[SHARED_DESIGN_VARIABLE_NAME],
+                self.io.data[self.__x_i_name],
                 u_i,
                 **{
-                    y_j_name: self._local_data[y_j_name]
+                    y_j_name: self.io.data[y_j_name]
                     for y_j_name in self._discipline.coefficients.C_ij
                 },
             )
@@ -103,15 +103,15 @@ class ScalableDiscipline(BaseDiscipline):
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        self._init_jacobian(inputs, outputs)
+        self._init_jacobian(input_names, output_names)
         jac = self._discipline(
-            self._local_data[SHARED_DESIGN_VARIABLE_NAME],
-            self._local_data[self.__x_i_name],
+            self.io.data[SHARED_DESIGN_VARIABLE_NAME],
+            self.io.data[self.__x_i_name],
             {
-                y_j_name: self._local_data[y_j_name]
+                y_j_name: self.io.data[y_j_name]
                 for y_j_name in self._discipline.coefficients.C_ij
             },
             compute_jacobian=True,

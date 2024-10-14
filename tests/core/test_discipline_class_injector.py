@@ -23,7 +23,7 @@ import gemseo.core.discipline
 
 # The reload done in the fixture breaks other test where discipline pickles are done.
 # The error
-# E       _pickle.PicklingError: Can't pickle <enum 'LinearizationMode'>: it's not the same object as gemseo.core.discipline.MDODiscipline.LinearizationMode #noqa: E501
+# E       _pickle.PicklingError: Can't pickle <enum 'LinearizationMode'>: it's not the same object as gemseo.core.discipline.Discipline.LinearizationMode #noqa: E501
 # does not seem to be avoidable.
 # A workaround is to execute those tests last with pytest-order but this plugin is not
 # compatible with pytest-xdist.
@@ -66,9 +66,9 @@ def prepare_error(monkeypatch):
 
 def test_class_injector_with_nothing():
     """Verify that nothing is injected by default."""
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
-    class Disc(MDODiscipline):
+    class Disc(Discipline):
         def _run(self):
             pass
 
@@ -78,9 +78,9 @@ def test_class_injector_with_nothing():
 def test_class_injector(prepare):
     """Verify the injection of a new base class."""
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
-    class Disc(MDODiscipline):
+    class Disc(Discipline):
         def _run(self):
             pass
 
@@ -89,11 +89,11 @@ def test_class_injector(prepare):
 
 def test_class_injector_error(prepare_error):
     """Verify the error handling when injecting a bad class."""
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
     match = "The class Dummy cannot be imported from the package dummy."
     with pytest.raises(ImportError, match=match):
 
-        class Disc(MDODiscipline):
+        class Disc(Discipline):
             def _run(self):
                 pass

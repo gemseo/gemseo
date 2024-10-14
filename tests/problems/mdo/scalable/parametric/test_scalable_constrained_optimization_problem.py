@@ -27,14 +27,14 @@ from numpy import ones_like
 
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
-class ScalableDiscipline(MDODiscipline):
+class ScalableDiscipline(Discipline):
     def __init__(self, p: float) -> None:
         self.p = p
         super().__init__()
@@ -42,16 +42,16 @@ class ScalableDiscipline(MDODiscipline):
         self.output_grammar.update_from_names(["f", "g"])
 
     def _run(self) -> None:
-        x = self.local_data["x"]
-        self.local_data["f"] = array([np_mean(x)]) / (len(x) + 1) * 2 * 100
-        self.local_data["g"] = ((arange(len(x)) + 1) / x) ** self.p - 1.0
+        x = self.io.data["x"]
+        self.io.data["f"] = array([np_mean(x)]) / (len(x) + 1) * 2 * 100
+        self.io.data["g"] = ((arange(len(x)) + 1) / x) ** self.p - 1.0
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        x = self.local_data["x"]
+        x = self.io.data["x"]
         self._init_jacobian()
         self.jac["f"]["x"] = atleast_2d(ones_like(x)) / len(x) / (len(x) + 1) * 2 * 100
         self.jac["g"]["x"] = atleast_2d(
@@ -117,7 +117,7 @@ def test_resolution(
     if "Augmented_Lagrangian" in algo:
         options["algo_options"]["sub_solver_algorithm"] = "L-BFGS-B"
         options["algo_options"]["sub_problem_options"] = {"max_iter": 300}
-    scalable_optimization_problem_scenario.execute(options)
+    scalable_optimization_problem_scenario.execute(**options)
     assert pytest.approx(
         scalable_optimization_problem_scenario.formulation.optimization_problem.solution.x_opt,
         rel=1e-2,

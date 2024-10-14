@@ -26,8 +26,10 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.chain import MDOWarmStartedChain
+from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
@@ -105,7 +107,6 @@ def test_execute(sobieski_bilevel_scenario) -> None:
 
     for i in range(1, 4):
         scenario.add_constraint(["g_" + str(i)], constraint_type="ineq")
-    scenario.formulation.get_expected_workflow()
 
     for i in range(3):
         cstrs = scenario.disciplines[i].formulation.optimization_problem.constraints
@@ -182,7 +183,7 @@ def test_bilevel_aerostructure() -> None:
         design_space_aero,
         maximize_objective=True,
     )
-    aero_scenario.default_inputs = sub_scenario_options
+    aero_scenario.default_input_data = sub_scenario_options
 
     design_space_struct = design_space_ref.filter(["thick_panels"], copy=True)
     struct_scenario = create_scenario(
@@ -192,7 +193,7 @@ def test_bilevel_aerostructure() -> None:
         design_space_struct,
         maximize_objective=True,
     )
-    struct_scenario.default_inputs = sub_scenario_options
+    struct_scenario.default_input_data = sub_scenario_options
 
     design_space_system = design_space_ref.filter(["sweep"], copy=True)
     system_scenario = create_scenario(
@@ -206,43 +207,7 @@ def test_bilevel_aerostructure() -> None:
     )
     system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
     system_scenario.add_constraint("lift", value=0.5)
-    system_scenario.execute({
-        "algo": "NLOPT_COBYLA",
-        "max_iter": 5,
-        "algo_options": algo_options,
-    })
-
-
-def test_grammar_type() -> None:
-    """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline({"y1": "z+x1+y2", "y2": "z+x2+2*y1"})
-    design_space = DesignSpace()
-    design_space.add_variable("x1")
-    design_space.add_variable("x2")
-    design_space.add_variable("z")
-    scn1 = MDOScenario(
-        [discipline], "DisciplinaryOpt", "y1", design_space.filter(["x1"], copy=True)
-    )
-    scn2 = MDOScenario(
-        [discipline], "DisciplinaryOpt", "y2", design_space.filter(["x2"], copy=True)
-    )
-    grammar_type = discipline.GrammarType.SIMPLE
-    formulation = BiLevel(
-        [scn1, scn2],
-        "y1",
-        design_space.filter(["z"], copy=True),
-        grammar_type=grammar_type,
-    )
-    assert formulation.chain.grammar_type == grammar_type
-
-    for discipline in formulation.chain.disciplines:
-        assert discipline.grammar_type == grammar_type
-
-    for scenario_adapter in formulation.scenario_adapters:
-        assert scenario_adapter.grammar_type == grammar_type
-
-    assert formulation.mda1.grammar_type == grammar_type
-    assert formulation.mda2.grammar_type == grammar_type
+    system_scenario.execute(algo="NLOPT_COBYLA", max_iter=5, algo_options=algo_options)
 
 
 def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
@@ -256,23 +221,23 @@ def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
     # a and b are weak couplings of all the disciplines,
     # and they are in the top-level outputs of the first adapter
     disciplines = dummy_bilevel_scenario.formulation.chain.disciplines
-    assert "b" in disciplines[0].get_input_data_names()
-    assert "a" in disciplines[0].get_output_data_names()
+    assert "b" in disciplines[0].io.input_grammar.names
+    assert "a" in disciplines[0].io.output_grammar.names
 
     # a is a weak coupling of all the disciplines,
     # and it is in the top-level inputs of the second adapter
-    assert "a" in disciplines[1].get_input_data_names()
+    assert "a" in disciplines[1].io.input_grammar.names
 
     # a is a weak coupling of all the disciplines,
     # and is in the top-level inputs of the second adapter
-    assert "b" in disciplines[1].get_output_data_names()
+    assert "b" in disciplines[1].io.output_grammar.names
 
 
 def test_bilevel_mda_getter(dummy_bilevel_scenario) -> None:
     """Test that the user can access the MDA1 and MDA2."""
     # In the Dummy scenario, there's not strongly coupled disciplines -> No MDA1
     assert dummy_bilevel_scenario.formulation.mda1 is None
-    assert "obj" in dummy_bilevel_scenario.formulation.mda2.get_output_data_names()
+    assert "obj" in dummy_bilevel_scenario.formulation.mda2.io.output_grammar.names
 
 
 def test_bilevel_mda_setter(dummy_bilevel_scenario) -> None:
@@ -293,7 +258,7 @@ def test_get_sub_disciplines(sobieski_bilevel_scenario) -> None:
     scenario = sobieski_bilevel_scenario()
     classes = [
         discipline.__class__
-        for discipline in scenario.formulation.get_sub_disciplines()
+        for discipline in get_sub_disciplines(scenario.formulation.disciplines)
     ]
 
     assert set(classes) == {
@@ -311,13 +276,13 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario) -> None:
         sobieski_bilevel_scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
     """
     scenario = sobieski_bilevel_scenario()
-    scenario.formulation.chain.set_cache_policy(scenario.CacheType.MEMORY_FULL)
+    scenario.formulation.chain.set_cache(Discipline.CacheType.MEMORY_FULL)
     bilevel_chain_cache = scenario.formulation.chain.cache
-    scenario.formulation.chain.disciplines[0].set_cache_policy(
-        scenario.CacheType.MEMORY_FULL
+    scenario.formulation.chain.disciplines[0].set_cache(
+        Discipline.CacheType.MEMORY_FULL
     )
     mda1_cache = scenario.formulation.chain.disciplines[0].cache
-    scenario.execute({"algo": "NLOPT_COBYLA", "max_iter": 3})
+    scenario.execute(algo="NLOPT_COBYLA", max_iter=3)
     mda1_inputs = [entry.inputs for entry in mda1_cache.get_all_entries()]
     chain_outputs = [entry.outputs for entry in bilevel_chain_cache.get_all_entries()]
 
@@ -351,7 +316,7 @@ def test_bilevel_get_variable_names_to_warm_start_without_mdas(
     monkeypatch.setattr(scenario.formulation, "_mda2", _no_mda2())
     variables = []
     for adapter in scenario.formulation.scenario_adapters:
-        variables.extend(adapter.get_output_data_names())
+        variables.extend(adapter.io.output_grammar.names)
     assert sorted(set(variables)) == sorted(
         scenario.formulation._get_variable_names_to_warm_start()
     )
@@ -363,9 +328,9 @@ def test_test_bilevel_get_variable_names_to_warm_start_from_mdas(
     """ " Check that the variables from both MDAs are being considered in the warm
     start."""
     scenario = sobieski_bilevel_scenario()
-    for variable in scenario.formulation._mda1.get_output_data_names():
+    for variable in scenario.formulation._mda1.io.output_grammar.names:
         assert variable in scenario.formulation._get_variable_names_to_warm_start()
-    for variable in scenario.formulation._mda2.get_output_data_names():
+    for variable in scenario.formulation._mda2.io.output_grammar.names:
         assert variable in scenario.formulation._get_variable_names_to_warm_start()
 
 
@@ -390,11 +355,11 @@ def test_scenario_log_level(caplog, options) -> None:
         design_space.filter(["y"], copy=True),
         name="FooScenario",
     )
-    sub_scenario.default_inputs = {"algo": "NLOPT_COBYLA", "max_iter": 2}
+    sub_scenario.default_input_data = {"algo": "NLOPT_COBYLA", "max_iter": 2}
     scenario = MDOScenario(
         [sub_scenario], "BiLevel", "z", design_space.filter(["x"]), **options
     )
-    scenario.execute({"algo": "NLOPT_COBYLA", "max_iter": 2})
+    scenario.execute(algo="NLOPT_COBYLA", max_iter=2)
     sub_scenarios_log_level = options.get("sub_scenarios_log_level")
     if sub_scenarios_log_level == logging.WARNING:
         assert "Start FooScenario execution" not in caplog.text

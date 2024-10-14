@@ -34,10 +34,6 @@
       "description": "Whether to restart the sub optimizations from the initial guesses, otherwise warm start them.",
       "type": "boolean"
     },
-    "grammar_type": {
-      "description": "The type of the input and output grammars.",
-      "type": "string"
-    },
     "sub_scenarios_log_level": {
       "description": "The level of the root logger during the sub-scenarios executions. If ``None``, do not change the level of the root logger.",
       "type": "null"

@@ -26,8 +26,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.discipline_data import DisciplineData
+    from gemseo.core.discipline import Discipline
+    from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import JacobianData
 
 
@@ -93,7 +93,7 @@ def _parse_inputs(
 
 
 def _run_discipline_save_outputs(
-    discipline: MDODiscipline,
+    discipline: Discipline,
     input_data: DisciplineData,
     outputs_path: Path,
     linearize: bool,
@@ -124,10 +124,10 @@ def _run_discipline_save_outputs(
             discipline.add_differentiated_inputs(differentiated_inputs)
             discipline.add_differentiated_outputs(differentiated_outputs)
             discipline.linearize(input_data, execute=execute_at_linearize)
-            outputs = discipline.local_data, discipline.jac
+            outputs = discipline.io.data, discipline.jac
         else:
             outputs = (discipline.execute(input_data), {})
-            if discipline._is_linearized:
+            if discipline._has_jacobian:
                 outputs = (outputs[0], discipline.jac)
     except BaseException as error:  # noqa: BLE001
         trace = traceback.format_exc()

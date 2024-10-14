@@ -136,7 +136,7 @@ discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
 )
-scenario.execute({"algo": "lhs", "n_samples": 100})
+scenario.execute(algo="lhs", n_samples=100)
 
 # %%
 # We can visualize the result by encapsulating the database in
@@ -164,7 +164,7 @@ parameter_space.filter(parameter_space.uncertain_variables)
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
 )
-scenario.execute({"algo": "lhs", "n_samples": 100})
+scenario.execute(algo="lhs", n_samples=100)
 
 # %%
 # Finally, we build a dataset from the disciplinary cache and visualize it.

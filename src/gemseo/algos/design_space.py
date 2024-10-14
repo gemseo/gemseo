@@ -84,7 +84,7 @@ from numpy import zeros_like
 from gemseo.algos._variable import DataType
 from gemseo.algos._variable import Variable
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.third_party.prettytable import PrettyTable
+from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group

@@ -22,14 +22,16 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.mda.initialization_chain import MDOInitializationChain
-from gemseo.mda.initialization_chain import order_disciplines_from_default_inputs
+from gemseo.core.chains.initialization_chain import MDOInitializationChain
+from gemseo.core.chains.initialization_chain import (
+    order_disciplines_from_default_inputs,
+)
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 DISC_DESCR_1 = [
     ("B", ["d", "c"], ["e"]),
@@ -39,7 +41,7 @@ DISC_DESCR_1 = [
 
 
 @pytest.fixture
-def disciplines1() -> list[MDODiscipline]:
+def disciplines1() -> list[Discipline]:
     """Return the disciplines for test case 1.
 
     Returns:
@@ -47,9 +49,9 @@ def disciplines1() -> list[MDODiscipline]:
     """
     disciplines = create_disciplines_from_desc(DISC_DESCR_1)
     # Delete c default input of B
-    disciplines[0].default_inputs.pop("c")
+    disciplines[0].default_input_data.pop("c")
     # Delete e default input of E
-    disciplines[1].default_inputs.pop("e")
+    disciplines[1].default_input_data.pop("e")
     return disciplines
 
 
@@ -64,7 +66,7 @@ def test_get_initialization_disciplines(disciplines1) -> None:
 
 def test_fail_get_initialization_disciplines(disciplines1) -> None:
     """Tests that the algorithm fails when not enough default inputs are present."""
-    disciplines1[1].default_inputs.pop("g")
+    disciplines1[1].default_input_data.pop("g")
     missing_inputs = order_disciplines_from_default_inputs(disciplines1, False)
     assert missing_inputs == ["g"]
     with pytest.raises(

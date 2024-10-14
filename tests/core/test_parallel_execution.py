@@ -33,7 +33,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
+    DisciplineAdapterGenerator,
 )
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
@@ -140,11 +140,11 @@ def test_disc_parallel_doe_scenario() -> None:
         s_1, "DisciplinaryOpt", Y_1, design_space, scenario_type="DOE"
     )
     n_samples = 20
-    scenario.execute({
-        "algo": "lhs",
-        "n_samples": n_samples,
-        "algo_options": {"eval_jac": True, "n_processes": 2},
-    })
+    scenario.execute(
+        algo="lhs",
+        n_samples=n_samples,
+        algo_options={"eval_jac": True, "n_processes": 2},
+    )
     assert (
         len(
             scenario.formulation.optimization_problem.database.get_function_history(Y_1)
@@ -176,9 +176,9 @@ def test_disc_parallel_doe(sellar_disciplines) -> None:
     elapsed_time = t_f - t_0
     assert elapsed_time > 0.1 * (n - 1)
 
-    assert s_1.n_calls == n
+    assert s_1.execution_statistics.n_calls == n
 
-    func_gen = MDODisciplineAdapterGenerator(s_1)
+    func_gen = DisciplineAdapterGenerator(s_1)
     y_0_func = func_gen.get_function([X_SHARED], [Y_1])
 
     parallel_execution = CallableParallelExecution([y_0_func.evaluate])
@@ -192,8 +192,8 @@ def test_disc_parallel_doe(sellar_disciplines) -> None:
         else:
             inputs[X_SHARED][0] = i
         s_1.execute(inputs)
-        assert s_1.local_data[Y_1] == outs[i][Y_1]
-        assert s_1.local_data[Y_1] == output_list[i]
+        assert s_1.io.data[Y_1] == outs[i][Y_1]
+        assert s_1.io.data[Y_1] == output_list[i]
 
 
 def test_parallel_lin() -> None:
@@ -248,7 +248,7 @@ def test_disc_parallel_threading_proc(sellar_disciplines) -> None:
 
 def test_async_call() -> None:
     disc = create_discipline("SobieskiMission")
-    func = MDODisciplineAdapterGenerator(disc).get_function([X_SHARED], ["y_4"])
+    func = DisciplineAdapterGenerator(disc).get_function([X_SHARED], ["y_4"])
 
     x_list = [i * ones(6) for i in range(4)]
 
@@ -313,7 +313,7 @@ def test_re_raise_exceptions(exceptions, raises_exception) -> None:
 
 @pytest.fixture
 def reset_default_multiproc_method():
-    """Reset the global multiproccessing method to the FORK method."""
+    """Reset the global multiprocessing method to the FORK method."""
     yield
     CallableParallelExecution.MULTI_PROCESSING_START_METHOD = (
         (CallableParallelExecution.MultiProcessingStartMethod.FORK)
@@ -352,7 +352,7 @@ def test_multiprocessing_context(
     the definition of differentiated I/O.
     """
 
-    # Just for the test purpose, we consider multithreading as an mp_method
+    # Just for the test purpose, we consider multithreading as a mp_method
     # and set the boolean ``use_threading`` from this.
     use_threading = mp_method == "threading"
     if not use_threading:
@@ -381,4 +381,4 @@ def test_multiprocessing_context(
             parallel_execution.execute(input_list)
     else:
         parallel_execution.execute(input_list)
-        assert getattr(sellar, n_calls_attr) == expected_n_calls
+        assert getattr(sellar.execution_statistics, n_calls_attr) == expected_n_calls

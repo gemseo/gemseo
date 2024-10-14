@@ -28,7 +28,6 @@ from numpy import ndarray
 from numpy.linalg import norm
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.data_converters.base import BaseDataConverter
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
 
@@ -82,10 +82,9 @@ class BaseMDASolver(BaseMDA):
 
     def __init__(  # noqa: D107
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         max_mda_iter: int = 10,
         name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         warm_start: bool = False,
@@ -101,7 +100,6 @@ class BaseMDASolver(BaseMDA):
             disciplines,
             max_mda_iter,
             name,
-            grammar_type,
             tolerance,
             linear_solver_tolerance,
             warm_start,
@@ -148,7 +146,7 @@ class BaseMDASolver(BaseMDA):
                 arrays += [
                     converter.convert_data_to_array(
                         couplings_names_to_slices,
-                        self.local_data,
+                        self.io.data,
                     )
                 ]
 
@@ -215,11 +213,11 @@ class BaseMDASolver(BaseMDA):
         """
         # Aggregate the residual variables from disciplines
         residual_variables = {}
-        for discipline in self._disciplines:
-            if discipline.run_solves_residuals:
+        for discipline in self.disciplines:
+            if discipline.io.state_equations_are_solved:
                 continue
 
-            residual_variables.update(discipline.residual_variables)
+            residual_variables.update(discipline.io.residual_to_state_variable)
 
         state_variables = residual_variables.values()
         resolved_variables = set(resolved_couplings).union(state_variables)
@@ -267,9 +265,7 @@ class BaseMDASolver(BaseMDA):
         if input_coupling_names:
             converter = self.input_grammar.data_converter
             self.__resolved_variable_names_to_slices[converter] = (
-                converter.compute_names_to_slices(
-                    input_coupling_names, self._local_data
-                )[0]
+                converter.compute_names_to_slices(input_coupling_names, self.io.data)[0]
             )
 
         if output_coupling_names:
@@ -277,7 +273,7 @@ class BaseMDASolver(BaseMDA):
             self.__resolved_variable_names_to_slices[converter] = (
                 converter.compute_names_to_slices(
                     output_coupling_names,
-                    self._local_data,
+                    self.io.data,
                 )[0]
             )
 
@@ -309,7 +305,7 @@ class BaseMDASolver(BaseMDA):
             converter,
             couplings_names_to_slices,
         ) in self.__resolved_variable_names_to_slices.items():
-            self._local_data.update(
+            self.io.data.update(
                 converter.convert_array_to_data(array_, couplings_names_to_slices)
             )
 
@@ -400,7 +396,7 @@ class BaseMDASolver(BaseMDA):
             self.residual_history.append(self.normed_residual)
             self._current_iter += 1
 
-        self.store_local_data(**{
+        self.io.update_output_data({
             self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual])
         })
 
@@ -431,9 +427,7 @@ class BaseMDASolver(BaseMDA):
             couplings_names_to_slices,
         ) in self.__resolved_residual_names_to_slices.items():
             for name in couplings_names_to_slices:
-                local_data_array = converter.convert_data_to_array(
-                    [name], self.local_data
-                )
+                local_data_array = converter.convert_data_to_array([name], self.io.data)
                 if name in self._resolved_variable_names:
                     input_data_array = converter.convert_data_to_array(
                         [name], input_data

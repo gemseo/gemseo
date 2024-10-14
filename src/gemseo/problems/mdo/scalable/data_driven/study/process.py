@@ -264,19 +264,19 @@ class ScalabilityStudy:
         return [discipline.name for discipline in self.datasets]
 
     def set_input_output_dependency(
-        self, discipline: str, output: str, inputs: Iterable[str]
+        self, discipline: str, output: str, input_names: Iterable[str]
     ) -> None:
         """Set the dependency between an output and inputs for a given discipline.
 
         Args:
             discipline: The name of the discipline.
             output: The name of the output.
-            inputs: The names of the inputs.
+            input_names: The names of the inputs.
         """
         self.__check_discipline(discipline)
         self.__check_output(discipline, output)
-        self.__check_inputs(discipline, inputs)
-        self._group_dep[discipline][output] = inputs
+        self.__check_inputs(discipline, input_names)
+        self._group_dep[discipline][output] = input_names
 
     def set_fill_factor(self, discipline: str, output: str, fill_factor: float) -> None:
         """Set the fill factor.
@@ -342,34 +342,31 @@ class ScalabilityStudy:
             )
             raise ValueError(msg)
 
-    def __check_inputs(self, discipline: str, inputs: list[str]) -> None:
+    def __check_inputs(self, discipline: str, input_names: list[str]) -> None:
         """Check if inputs is a list of inputs of discipline.
 
         Args:
             discipline: The name of the discipline.
-            inputs: The names of the inputs.
+            input_names: The names of the inputs.
 
         Raises:
             TypeError: When an input is not a string.
             ValueError: When an input is not available.
         """
         self.__check_discipline(discipline)
-        if not isinstance(inputs, list):
-            msg = "The argument 'inputs' must be a list of string."
-            raise TypeError(msg)
-        input_names = next(
+        _input_names = next(
             dataset.get_variable_names(dataset.INPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
         )
-        for inpt in inputs:
+        for inpt in input_names:
             if not isinstance(inpt, str):
                 msg = f"{inpt} is not a string."
                 raise TypeError(msg)
-            if inpt not in input_names:
+            if inpt not in _input_names:
                 msg = (
                     f"'{inpt}' is not a discipline input; available inputs are: "
-                    f"{input_names}"
+                    f"{_input_names}"
                 )
                 raise ValueError(msg)
 
@@ -830,17 +827,15 @@ class ScalabilityStudy:
             algo: The name of the optimization algorithm.
             opt_index: The optimization strategy index.
         """
-        top_level_disciplines = problem.scenario.formulation.get_top_level_disc()
+        top_level_disciplines = problem.scenario.formulation.get_top_level_disciplines()
         for disc in top_level_disciplines:
             disc.linearization_mode = self.top_level_diff[opt_index]
         algo_options = deepcopy(self.algorithms_options[opt_index])
         max_iter = algo_options["max_iter"]
         del algo_options["max_iter"]
-        problem.scenario.execute({
-            "algo": algo,
-            "max_iter": max_iter,
-            "algo_options": algo_options,
-        })
+        problem.scenario.execute(
+            algo=algo, max_iter=max_iter, algo_options=algo_options
+        )
         return algo_options
 
     def __get_stop_index(self, problem: ScalableProblem) -> tuple[int, int]:

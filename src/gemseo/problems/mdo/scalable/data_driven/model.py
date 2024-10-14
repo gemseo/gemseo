@@ -89,7 +89,7 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
         self.lower_bounds, self.upper_bounds = self.compute_bounds()
         self.normalize_data()
         self.lower_bounds, self.upper_bounds = self.compute_bounds()
-        self.default_inputs = self._set_default_inputs()
+        self.default_input_data = self._set_default_inputs()
         self.model = self.build_model()
 
     def _set_default_inputs(self) -> dict[str, ndarray]:

@@ -89,13 +89,13 @@ This package implements three disciplines
 to compute the different coupling variables, constraints and objective:
 
 - :class:`.Sellar1`:
-  this :class:`.MDODiscipline` computes :math:`y_1`
+  this :class:`.Discipline` computes :math:`y_1`
   from :math:`y_2`, :math:`x_{shared,1}`, :math:`x_{shared,2}` and :math:`x_1`.
 - :class:`.Sellar2`:
-  this :class:`.MDODiscipline` computes :math:`y_2`
+  this :class:`.Discipline` computes :math:`y_2`
   from :math:`y_1`, :math:`x_{shared,1}`, :math:`x_{shared,2}` and :math:`x_2`.
 - :class:`.SellarSystem`:
-  this :class:`.MDODiscipline` computes both objective and constraints
+  this :class:`.Discipline` computes both objective and constraints
   from :math:`y_1`, :math:`y_2`, :math:`x_1`, :math:`x_2` and :math:`x_{shared,2}`,
 
 as well as a design space called :class:`.SellarDesignSpace`.

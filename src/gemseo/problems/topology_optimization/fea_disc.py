@@ -32,13 +32,13 @@ from numpy import setdiff1d
 from numpy import tile
 from numpy import zeros
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class FiniteElementAnalysis(MDODiscipline):
+class FiniteElementAnalysis(Discipline):
     """Finite Element Analysis for 2D topology optimization problems.
 
     Take in input the Young Modulus vector E and computes in output the compliance, i.e.
@@ -96,10 +96,10 @@ class FiniteElementAnalysis(MDODiscipline):
         self.prepare_fea()
         self.input_grammar.update_from_names(["E"])
         self.output_grammar.update_from_names(["compliance"])
-        self.default_inputs = {"E": ones(self.N_elements)}
+        self.default_input_data = {"E": ones(self.N_elements)}
 
     def _run(self) -> None:
-        em = self.get_inputs_by_name("E")
+        em = self.io.data["E"]
         sk = ((self.KE.flatten()[newaxis]).T * em).flatten(order="F")
         k_mat = scipy.sparse.coo_matrix(
             (sk, (self.iK, self.jK)), shape=(self.N_DOFs, self.N_DOFs)
@@ -117,8 +117,8 @@ class FiniteElementAnalysis(MDODiscipline):
             (u_vec[self.edofMat].reshape(self.N_elements, 8) @ self.KE)
             * u_vec[self.edofMat].reshape(self.N_elements, 8)
         ).sum(1)
-        self.local_data["compliance"] = array([(em * ce).sum()])
-        self._is_linearized = True
+        self.io.data["compliance"] = array([(em * ce).sum()])
+        self._has_jacobian = True
         self._init_jacobian()
         self.jac["compliance"] = {}
         self.jac["compliance"]["E"] = atleast_2d(-ce)

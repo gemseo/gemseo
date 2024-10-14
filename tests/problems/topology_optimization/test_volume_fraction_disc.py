@@ -44,5 +44,5 @@ def test_run(volume_fraction) -> None:
 def test_jacobian(volume_fraction) -> None:
     """Check the analytic Jacobian by finite differences."""
     assert volume_fraction.check_jacobian(
-        volume_fraction.get_input_data(), threshold=THRESHOLD, step=1e-5
+        volume_fraction.io.get_input_data(), threshold=THRESHOLD, step=1e-5
     )

@@ -22,24 +22,30 @@
 from __future__ import annotations
 
 import logging
+from types import MappingProxyType
 from typing import TYPE_CHECKING
-from typing import Any
+from typing import ClassVar
+from typing import Final
+
+from pydantic import Field
+from pydantic import model_validator
 
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.core.discipline import MDODiscipline
 from gemseo.scenarios.scenario import Scenario
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from typing_extensions import Self
 
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.datasets.dataset import Dataset
-    from gemseo.typing import StrKeyMapping
 
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name
 LOGGER = logging.getLogger(__name__)
+
+_ALGO_FACTORY_CLASS = DOELibraryFactory
+
+# This is only used for validation in the settings model.
+_SETTINGS_ALGO_FACTORY: Final[_ALGO_FACTORY_CLASS] = _ALGO_FACTORY_CLASS(use_cache=True)
 
 
 class DOEScenario(Scenario):
@@ -49,80 +55,34 @@ class DOEScenario(Scenario):
     This DOE must be implemented in a :class:`.BaseDOELibrary`.
     """
 
-    # Constants for input variables in json schema
-    N_SAMPLES = "n_samples"
-    EVAL_JAC = "eval_jac"
+    _ALGO_FACTORY_CLASS: ClassVar[type[DOELibraryFactory]] = _ALGO_FACTORY_CLASS
 
-    def __init__(  # noqa: D107
-        self,
-        disciplines: Sequence[MDODiscipline],
-        formulation: str,
-        objective_name: str | Sequence[str],
-        design_space: DesignSpace,
-        name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        maximize_objective: bool = False,
-        **formulation_options: Any,
-    ) -> None:
-        # This loads the right json grammars from class name
-        super().__init__(
-            disciplines,
-            formulation,
-            objective_name,
-            design_space,
-            name=name,
-            grammar_type=grammar_type,
-            maximize_objective=maximize_objective,
-            **formulation_options,
+    class _BaseSettings(Scenario._BaseSettings):
+        n_samples: int = Field(0, ge=0, description="The number of samples.")
+
+        @model_validator(mode="after")
+        def check_max_iter(self) -> Self:
+            n_samples = self.n_samples
+            if n_samples > 0:
+                algo = _SETTINGS_ALGO_FACTORY.create(self.algo)
+                if "n_samples" in algo.ALGORITHM_INFOS[self.algo].Settings.model_fields:
+                    if "n_samples" in self.algo_options:
+                        LOGGER.warning(
+                            "Double definition of the algorithm setting n_samples, "
+                            "keeping value: %s.",
+                            n_samples,
+                        )
+                    self.algo_options["n_samples"] = n_samples
+            return self
+
+    default_input_data = MappingProxyType({"algo": "lhs"})
+
+    def _run(self) -> None:
+        algo = self._algo_factory.create(self._settings.algo)
+        self.optimization_result = algo.execute(
+            self.formulation.optimization_problem,
+            **self._settings.algo_options,
         )
-        self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
-        self.__samples = ()
-
-    def _init_algo_factory(self) -> None:
-        self._algo_factory = DOELibraryFactory(use_cache=True)
-
-    def _run_algorithm(self) -> OptimizationResult:
-        algo_name = self.local_data[self.ALGO]
-        settings = self.local_data.get(self.ALGO_OPTIONS)
-        if settings is None:
-            settings = {}
-
-        # Store the lib in case we rerun the same algorithm,
-        # for multilevel scenarios for instance
-        # This significantly speedups the process
-        # also because of the option grammar that is long to create
-        if self._algo_name is not None and self._algo_name == algo_name:
-            lib = self._lib
-        else:
-            lib = self._algo_factory.create(algo_name)
-            self._lib = lib
-
-        if self.N_SAMPLES in lib.ALGORITHM_INFOS[algo_name].Settings.model_fields:
-            n_samples = self.local_data.get(self.N_SAMPLES)
-            if self.N_SAMPLES in settings:
-                LOGGER.warning(
-                    "Double definition of algorithm setting n_samples, "
-                    "keeping value: %s.",
-                    n_samples,
-                )
-            settings[self.N_SAMPLES] = n_samples
-
-        self.optimization_result = lib.execute(
-            self.formulation.optimization_problem, **settings
-        )
-        self.__samples = lib.samples
-        return self.optimization_result
-
-    def _update_input_grammar(self) -> None:  # noqa: D102
-        super()._update_input_grammar()
-        if self.grammar_type != self.GrammarType.JSON:
-            self.input_grammar.update_from_types({
-                self.EVAL_JAC: bool,
-                "n_samples": int,
-                "algo_options": dict,
-            })
-            for name in ("n_samples", "algo_options"):
-                self.input_grammar.required_names.remove(name)
 
     def to_dataset(  # noqa: D102
         self,
@@ -131,18 +91,12 @@ class DOEScenario(Scenario):
         opt_naming: bool = True,
         export_gradients: bool = False,
     ) -> Dataset:
+        # The algo is not instantiated again since it is in the factory cache.
+        algo = self._algo_factory.create(self._settings.algo)
         return self.formulation.optimization_problem.to_dataset(
             name=name,
             categorize=categorize,
             opt_naming=opt_naming,
             export_gradients=export_gradients,
-            input_values=self.__samples,
+            input_values=algo.samples,
         )
-
-    def __setstate__(self, state: StrKeyMapping) -> None:
-        super().__setstate__(state)
-        # BaseDOELibrary objects cannot be serialized,
-        # _algo_name and _lib are set to None
-        # to force the lib creation in _run_algorithm.
-        self._algo_name = None
-        self._lib = None

@@ -64,9 +64,6 @@ class Timer:
             log_level: The level of the logger.
                 If ``None``, do not log the elapsed time.
         """  # noqa:D205 D212 D415
-        if log_level is not None:
-            log_level = logging.getLevelName(log_level)
-
         self.__log_level = log_level
         self.__elapsed_time = 0.0
 
@@ -90,4 +87,4 @@ class Timer:
             LOGGER.log(self.__log_level, str(self))
 
     def __str__(self) -> str:
-        return f"Elapsed time: {self.elapsed_time} s."
+        return f"Elapsed time: {self.__elapsed_time} s."

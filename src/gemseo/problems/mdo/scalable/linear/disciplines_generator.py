@@ -31,6 +31,7 @@ from __future__ import annotations
 import string
 from itertools import islice
 from itertools import permutations
+from typing import TYPE_CHECKING
 
 from numpy import arange
 from numpy import array
@@ -39,9 +40,12 @@ from numpy import setdiff1d
 from numpy import unique
 from numpy.random import default_rng
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.utils.seeder import SEED
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 DESC_5_DISC = [
     ("A", ["b"], ["a", "c"]),
@@ -120,7 +124,7 @@ def create_disciplines_from_sizes(
     nb_of_disc_outputs: int = 1,
     inputs_size: int = 1,
     outputs_size: int = 1,
-    grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+    grammar_type: Discipline.GrammarType = Discipline.GrammarType.JSON,
     unique_disc_per_output: bool = False,
     no_self_coupled: bool = False,
     no_strong_couplings: bool = False,
@@ -238,10 +242,10 @@ def create_disciplines_from_sizes(
 
 
 def create_disciplines_from_desc(
-    disc_descriptions,  # Sequence[Tuple[str,Sequence[str],Sequence[str]]]
+    disc_descriptions: Sequence[tuple[str, Sequence[str], Sequence[str]]],
     inputs_size: int = 1,
     outputs_size: int = 1,
-    grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+    grammar_type: Discipline.GrammarType = Discipline.GrammarType.JSON,
     matrix_format: LinearDiscipline.MatrixFormat = LinearDiscipline.MatrixFormat.DENSE,
     matrix_density: float = LinearDiscipline.DEFAULT_MATRIX_DENSITY,
 ) -> list[LinearDiscipline]:
@@ -276,16 +280,20 @@ def create_disciplines_from_desc(
     Returns:
         The :class:`.LinearDiscipline`.
     """
-    return [
+    # TODO: use factory instead of managing the grammar type.
+    old_grammar_type = LinearDiscipline.default_grammar_type
+    LinearDiscipline.default_grammar_type = grammar_type
+    disciplines = [
         LinearDiscipline(
             name,
             input_names,
             output_names,
             inputs_size,
             outputs_size,
-            grammar_type,
             matrix_format,
             matrix_density,
         )
         for name, input_names, output_names in disc_descriptions
     ]
+    LinearDiscipline.default_grammar_type = old_grammar_type
+    return disciplines

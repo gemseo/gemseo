@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from gemseo.core.chain import MDOChain
+from gemseo.core.chains.chain import MDOChain
 from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 from gemseo.problems.mdo.sobieski.disciplines import create_disciplines
 

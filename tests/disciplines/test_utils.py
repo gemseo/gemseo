@@ -20,7 +20,7 @@ import re
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.disciplines.utils import get_all_inputs
@@ -28,7 +28,7 @@ from gemseo.disciplines.utils import get_all_outputs
 from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
-class Discipline(MDODiscipline):
+class Discipline(Discipline):
     def __init__(self, input_name: str, output_name: str, discipline_name: str) -> None:
         super().__init__(discipline_name)
         self.input_grammar.update_from_names([input_name])
@@ -48,7 +48,7 @@ def inconsistent_disciplines() -> tuple[Discipline, Discipline]:
 
 
 @pytest.fixture(scope="module")
-def disciplines_and_scenario() -> list[MDODiscipline]:
+def disciplines_and_scenario() -> list[Discipline]:
     """Disciplines with a scenario."""
     disciplines = [
         AnalyticDiscipline({"y1": "x1"}, name="f1"),

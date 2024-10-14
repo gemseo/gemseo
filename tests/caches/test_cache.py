@@ -42,7 +42,7 @@ from gemseo.caches.factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.utils import hash_data
 from gemseo.caches.utils import to_real
-from gemseo.core.chain import MDOParallelChain
+from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.comparisons import compare_dict_of_arrays
@@ -54,32 +54,40 @@ if TYPE_CHECKING:
 
 DIR_PATH = Path(__file__).parent
 
-
-@pytest.fixture(scope="module")
-def factory():
-    return CacheFactory()
+FACTORY = CacheFactory()
 
 
 @pytest.fixture
-def simple_cache(factory):
-    return factory.create("SimpleCache", tolerance=0.0)
+def simple_cache():
+    return FACTORY.create("SimpleCache")
 
 
 @pytest.fixture
-def memory_full_cache(factory):
-    return factory.create("MemoryFullCache")
+def memory_full_cache():
+    return FACTORY.create("MemoryFullCache")
 
 
 @pytest.fixture
-def memory_full_cache_loc(factory):
-    return factory.create("MemoryFullCache", is_memory_shared=False)
+def memory_full_cache_loc():
+    return FACTORY.create("MemoryFullCache", is_memory_shared=False)
 
 
 @pytest.fixture
-def hdf5_cache(factory, tmp_wd):
-    return factory.create(
+def hdf5_cache(tmp_wd):
+    return FACTORY.create(
         "HDF5Cache", hdf_file_path="dummy.h5", hdf_node_path="DummyCache"
     )
+
+
+@pytest.mark.parametrize("cache", map(FACTORY.create, FACTORY.class_names))
+def test_tolerance(cache):
+    """Verify tolerance property."""
+    assert cache.tolerance == 0.0
+    cache.tolerance = 1.0
+    assert cache.tolerance == 1.0
+    match = "The tolerance shall be positive: -1.0"
+    with pytest.raises(ValueError, match=match):
+        cache.tolerance = -1.0
 
 
 def test_jac_and_outputs_caching(
@@ -269,10 +277,10 @@ def test_det_hash(tmp_wd, hdf_name, inputs, expected) -> None:
     # Use a temporary copy of the file in case the test fails.
     shutil.copy(str(DIR_PATH / hdf_name), tmp_wd)
     disc = create_discipline("AutoPyDiscipline", py_func=func)
-    disc.set_cache_policy("HDF5Cache", cache_hdf_file=hdf_name)
+    disc.set_cache("HDF5Cache", hdf_file_path=hdf_name)
     out = disc.execute({"x": inputs})
 
-    assert disc.n_calls == 0
+    assert disc.execution_statistics.n_calls == 0
     assert out["y"].all() == expected.all()
 
 
@@ -409,16 +417,16 @@ def test_multithreading(memory_cache, sellar_disciplines) -> None:
     scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
 
     options = {"algo": "fullfact", "n_samples": 10, "n_processes": 4}
-    scen.execute(options)
+    scen.execute(**options)
 
-    nexec_1 = s_1.n_calls
-    nexec_2 = s_s.n_calls
+    nexec_1 = s_1.execution_statistics.n_calls
+    nexec_2 = s_s.execution_statistics.n_calls
 
     scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
-    scen.execute(options)
+    scen.execute(**options)
 
-    assert nexec_1 == s_1.n_calls
-    assert nexec_2 == s_s.n_calls
+    assert nexec_1 == s_1.execution_statistics.n_calls
+    assert nexec_2 == s_s.execution_statistics.n_calls
 
 
 def test_copy(memory_full_cache) -> None:

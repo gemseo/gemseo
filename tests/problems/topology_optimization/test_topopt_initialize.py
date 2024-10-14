@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
@@ -42,7 +42,7 @@ def test_initialize_design_space_and_discipline_to(problem) -> None:
     )
     assert isinstance(ds, DesignSpace)
     assert isinstance(disciplines, list)
-    assert all(isinstance(disc, MDODiscipline) for disc in disciplines)
+    assert all(isinstance(disc, Discipline) for disc in disciplines)
 
 
 def test_not_implemented() -> None:

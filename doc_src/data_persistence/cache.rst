@@ -87,13 +87,13 @@ The data can be cached either:
   - the :class:`.HDF5Cache` stores in a node of an HDF file
     the data associated with all the calls to :meth:`.MDODiscipline.execute`.
 
-The cache strategy of an :class:`.MDODiscipline` can be changed with the method :meth:`.MDODiscipline.set_cache_policy`
+The cache strategy of an :class:`.MDODiscipline` can be changed with the method :meth:`.MDODiscipline.set_cache`
 by passing as first argument the name of the cache class, e.g. ``"MemoryFullCache"``.
 
 .. note::
 
     The types of cache can be extended by subclassing :class:`.BaseFullCache` or :class:`.MemoryFullCache`.
-    :meth:`~.MDODiscipline.set_cache_policy` will find the new types automatically
+    :meth:`~.MDODiscipline.set_cache` will find the new types automatically
     because it is based on a :class:`.CacheFactory`.
 
 Advanced use

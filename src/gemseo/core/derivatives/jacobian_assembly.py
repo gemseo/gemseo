@@ -53,6 +53,7 @@ from gemseo.core.derivatives import derivation_modes
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
@@ -64,7 +65,7 @@ if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
     from gemseo.core.coupling_structure import CouplingStructure
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import RealArray
     from gemseo.typing import RealOrComplexArray
     from gemseo.typing import RealOrComplexArrayT
@@ -189,8 +190,8 @@ class JacobianAssembly:
     sizes: dict[str, int]
     """The number of elements of a given str."""
 
-    disciplines: dict[str, MDODiscipline]
-    """The MDODisciplines, stored using their name."""
+    disciplines: dict[str, Discipline]
+    """The disciplines, stored using their name."""
 
     __last_diff_inouts: tuple[set[str], set[str]]
     """The last diff in-outs stored."""
@@ -274,14 +275,14 @@ class JacobianAssembly:
         unknown_outs = set(functions)
 
         for discipline in self.coupling_structure.disciplines:
-            inputs = set(discipline.get_input_data_names())
-            outputs = set(discipline.get_output_data_names())
+            inputs = set(discipline.io.input_grammar.names)
+            outputs = set(discipline.io.output_grammar.names)
             unknown_outs -= outputs
             unknown_dvars -= inputs
 
         if unknown_dvars:
             possible_inputs = [
-                disc.get_input_data_names()
+                list(disc.io.input_grammar.names)
                 for disc in self.coupling_structure.disciplines
             ]
             msg = (
@@ -299,7 +300,7 @@ class JacobianAssembly:
                 + str(unknown_outs)
                 + " available outputs are: "
                 + str([
-                    disc.get_output_data_names()
+                    list(disc.io.output_grammar.names)
                     for disc in self.coupling_structure.disciplines
                 ])
             )
@@ -326,7 +327,7 @@ class JacobianAssembly:
         functions: Iterable[str],
         variables: Iterable[str],
         couplings: Iterable[str],
-        residual_variables: Mapping[str, str] | None = None,
+        residual_variables: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """Compute the number of scalar functions, variables and couplings.
 
@@ -358,7 +359,7 @@ class JacobianAssembly:
             # get an arbitrary Jacobian and compute the number of rows
             self.sizes[output] = (
                 discipline.output_grammar.data_converter.get_value_size(
-                    output, discipline.local_data[output]
+                    output, discipline.io.data[output]
                 )
             )
 
@@ -627,7 +628,7 @@ class JacobianAssembly:
         use_lu_fact: bool = False,
         exec_cache_tol: float | None = None,
         execute: bool = True,
-        residual_variables: Mapping[str, str] | None = None,
+        residual_variables: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
         **linear_solver_options: Any,
     ) -> dict[str, dict[str, RealOrComplexArray]] | dict[Any, dict[Any, None]]:
         """Compute the Jacobian of total derivatives of the coupled system.
@@ -651,7 +652,7 @@ class JacobianAssembly:
                 this allows to ensure that the discipline was executed
                 with the right input data;
                 it can be almost free if the corresponding output data
-                have been stored in the :attr:`.MDODiscipline.cache`.
+                have been stored in the :attr:`.Discipline.cache`.
             linear_solver_options: The options passed to the linear solver factory.
             residual_variables: a mapping of residuals of disciplines to
                 their respective state variables.
@@ -681,7 +682,7 @@ class JacobianAssembly:
         # Exclude the non-numeric couplings from the coupling minimal list
         for discipline in self.coupling_structure.disciplines:
             inputs_couplings = couplings_minimal.intersection(
-                discipline.get_input_data_names()
+                discipline.io.input_grammar.names
             )
             couplings_minimal.difference_update(
                 itertools.filterfalse(
@@ -699,7 +700,7 @@ class JacobianAssembly:
 
         for disc in self.coupling_structure.disciplines:
             if disc.cache is not None and exec_cache_tol is not None:
-                disc.cache_tol = exec_cache_tol
+                disc.cache.tolerance = exec_cache_tol
 
             disc.linearize(in_data, execute=execute)
 
@@ -809,10 +810,10 @@ class JacobianAssembly:
             couplings: The coupling variables.
         """
         for disc in self.coupling_structure.disciplines:
-            inputs_to_linearize = set(disc.get_input_data_names()).intersection(
+            inputs_to_linearize = set(disc.io.input_grammar.names).intersection(
                 couplings
             )
-            outputs_to_linearize = set(disc.get_output_data_names()).intersection(
+            outputs_to_linearize = set(disc.io.output_grammar.names).intersection(
                 couplings
             )
 
@@ -901,7 +902,7 @@ class JacobianAssembly:
                     to_array = (
                         discipline.output_grammar.data_converter.convert_value_to_array
                     )
-                    local_data_array = to_array(name, discipline.local_data[name])
+                    local_data_array = to_array(name, discipline.io.data[name])
                     in_data_array = to_array(name, in_data[name])
                     residuals.append(local_data_array - in_data_array)
 

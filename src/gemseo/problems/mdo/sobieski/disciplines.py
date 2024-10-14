@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 
 from numpy import array
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.remapping import RemappingDiscipline
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class SobieskiDiscipline(MDODiscipline):
+class SobieskiDiscipline(Discipline):
     """Abstract base discipline for the Sobieski's SSBJ use case."""
 
     dtype: SobieskiBase.DataType
@@ -50,8 +50,9 @@ class SobieskiDiscipline(MDODiscipline):
     constraints, design space and reference optimum."""
 
     GRAMMAR_DIRECTORY = Path(__file__).parent / "grammars"
+    auto_detect_grammar_files = True
 
-    _ATTR_NOT_TO_SERIALIZE = MDODiscipline._ATTR_NOT_TO_SERIALIZE.union(
+    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union(
         [
             "sobieski_problem",
         ],
@@ -65,13 +66,12 @@ class SobieskiDiscipline(MDODiscipline):
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
         """  # noqa: D205 D212
-        super().__init__(auto_detect_grammar_files=True)
+        super().__init__()
         self.dtype = dtype
         self.sobieski_problem = SobieskiProblem(dtype=dtype)
-        self.default_inputs = self.sobieski_problem.get_default_inputs(
-            self.get_input_data_names()
+        self.default_input_data = self.sobieski_problem.get_default_inputs(
+            self.io.input_grammar.names
         )
-        self.re_exec_policy = self.ReExecutionPolicy.DONE
 
     def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
@@ -95,6 +95,7 @@ class SobieskiMission(SobieskiDiscipline):
     Compute the range with the Breguet formula.
     """
 
+    # TODO: API: move enable_delay to a derived class.
     enable_delay: bool | float
     """If ``True``, wait one second before computation.
 
@@ -123,19 +124,33 @@ class SobieskiMission(SobieskiDiscipline):
             else:
                 time.sleep(1.0)
 
-        data_names = ["y_14", "y_24", "y_34", "x_shared"]
-        y_14, y_24, y_34, x_shared = self.get_inputs_by_name(data_names)
-        y_4 = self.sobieski_problem.mission.execute(x_shared, y_14, y_24, y_34)
-        self.store_local_data(y_4=y_4)
+        local_data = self.io.data
+        y_4 = self.sobieski_problem.mission.execute(
+            local_data["x_shared"],
+            local_data["y_14"],
+            local_data["y_24"],
+            local_data["y_34"],
+        )
+        self.io.update_output_data({"y_4": y_4})
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        data_names = ["y_14", "y_24", "y_34", "x_shared"]
-        y_14, y_24, y_34, x_shared = self.get_inputs_by_name(data_names)
-        self.jac = self.sobieski_problem.mission.linearize(x_shared, y_14, y_24, y_34)
+        if self.enable_delay:
+            if isinstance(self.enable_delay, Number):
+                time.sleep(self.enable_delay)
+            else:
+                time.sleep(1.0)
+
+        local_data = self.io.data
+        self.jac = self.sobieski_problem.mission.linearize(
+            local_data["x_shared"],
+            local_data["y_14"],
+            local_data["y_24"],
+            local_data["y_34"],
+        )
 
     @classmethod
     def create_with_physical_naming(
@@ -171,27 +186,41 @@ class SobieskiStructure(SobieskiDiscipline):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.default_inputs["c_0"] = array([self.sobieski_problem.constants[0]])
-        self.default_inputs["c_1"] = array([self.sobieski_problem.constants[1]])
-        self.default_inputs["c_2"] = array([self.sobieski_problem.constants[2]])
+        self.default_input_data["c_0"] = array([self.sobieski_problem.constants[0]])
+        self.default_input_data["c_1"] = array([self.sobieski_problem.constants[1]])
+        self.default_input_data["c_2"] = array([self.sobieski_problem.constants[2]])
 
     def _run(self) -> None:
-        data_names = ["x_1", "y_21", "y_31", "x_shared", "c_0", "c_1", "c_2"]
-        x_1, y_21, y_31, x_shared, c_0, c_1, c_2 = self.get_inputs_by_name(data_names)
+        local_data = self.io.data
         y_1, y_11, y_12, y_14, g_1 = self.sobieski_problem.structure.execute(
-            x_shared, y_21, y_31, x_1, c_0=c_0[0], c_1=c_1[0], c_2=c_2[0]
+            local_data["x_shared"],
+            local_data["y_21"],
+            local_data["y_31"],
+            local_data["x_1"],
+            c_0=local_data["c_0"][0],
+            c_1=local_data["c_1"][0],
+            c_2=local_data["c_2"][0],
         )
-        self.store_local_data(y_1=y_1, y_11=y_11, y_12=y_12, y_14=y_14, g_1=g_1)
+        self.io.update_output_data({
+            "y_1": y_1,
+            "y_11": y_11,
+            "y_12": y_12,
+            "y_14": y_14,
+            "g_1": g_1,
+        })
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        data_names = ["x_1", "y_21", "y_31", "x_shared", "c_2"]
-        x_1, y_21, y_31, x_shared, c_2 = self.get_inputs_by_name(data_names)
+        local_data = self.io.data
         self.jac = self.sobieski_problem.structure.linearize(
-            x_shared, y_21, y_31, x_1, c_2=c_2[0]
+            local_data["x_shared"],
+            local_data["y_21"],
+            local_data["y_31"],
+            local_data["x_1"],
+            c_2=local_data["c_2"][0],
         )
 
     @classmethod
@@ -234,25 +263,37 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.default_inputs["c_4"] = array([self.sobieski_problem.constants[4]])
+        self.default_input_data["c_4"] = array([self.sobieski_problem.constants[4]])
 
     def _run(self) -> None:
-        data_names = ["x_2", "y_12", "y_32", "x_shared", "c_4"]
-        x_2, y_12, y_32, x_shared, c_4 = self.get_inputs_by_name(data_names)
+        local_data = self.io.data
         y_2, y_21, y_23, y_24, g_2 = self.sobieski_problem.aerodynamics.execute(
-            x_shared, y_12, y_32, x_2, c_4=c_4[0]
+            local_data["x_shared"],
+            local_data["y_12"],
+            local_data["y_32"],
+            local_data["x_2"],
+            c_4=local_data["c_4"][0],
         )
-        self.store_local_data(y_2=y_2, y_21=y_21, y_23=y_23, y_24=y_24, g_2=g_2)
+        self.io.update_output_data({
+            "y_2": y_2,
+            "y_21": y_21,
+            "y_23": y_23,
+            "y_24": y_24,
+            "g_2": g_2,
+        })
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        data_names = ["x_2", "y_12", "y_32", "x_shared", "c_4"]
-        x_2, y_12, y_32, x_shared, c_4 = self.get_inputs_by_name(data_names)
+        local_data = self.io.data
         self.jac = self.sobieski_problem.aerodynamics.linearize(
-            x_shared, y_12, y_32, x_2, c_4=c_4[0]
+            local_data["x_shared"],
+            local_data["y_12"],
+            local_data["y_32"],
+            local_data["x_2"],
+            c_4=local_data["c_4"][0],
         )
 
     @classmethod
@@ -292,26 +333,35 @@ class SobieskiPropulsion(SobieskiDiscipline):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.default_inputs["c_3"] = array([self.sobieski_problem.constants[3]])
+        self.default_input_data["c_3"] = array([self.sobieski_problem.constants[3]])
 
     def _run(self) -> None:
-        data_names = ["x_3", "y_23", "x_shared", "c_3"]
-
-        x_3, y_23, x_shared, c_3 = self.get_inputs_by_name(data_names)
+        local_data = self.io.data
         y_3, y_34, y_31, y_32, g_3 = self.sobieski_problem.propulsion.execute(
-            x_shared, y_23, x_3, c_3=c_3[0]
+            local_data["x_shared"],
+            local_data["y_23"],
+            local_data["x_3"],
+            c_3=local_data["c_3"][0],
         )
-        self.store_local_data(y_3=y_3, y_34=y_34, y_31=y_31, y_32=y_32, g_3=g_3)
+        self.io.update_output_data({
+            "y_3": y_3,
+            "y_34": y_34,
+            "y_31": y_31,
+            "y_32": y_32,
+            "g_3": g_3,
+        })
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        data_names = ["x_3", "y_23", "x_shared", "c_3"]
-        x_3, y_23, x_shared, c_3 = self.get_inputs_by_name(data_names)
+        local_data = self.io.data
         self.jac = self.sobieski_problem.propulsion.linearize(
-            x_shared, y_23, x_3, c_3=c_3[0]
+            local_data["x_shared"],
+            local_data["y_23"],
+            local_data["x_3"],
+            c_3=local_data["c_3"][0],
         )
 
     @classmethod

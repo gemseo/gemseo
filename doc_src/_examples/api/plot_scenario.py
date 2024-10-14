@@ -70,8 +70,8 @@ get_scenario_options_schema("MDO")
 #
 # - The four first arguments are mandatory:
 #
-#   - ``disciplines``: the list of :class:`.MDODiscipline`
-#     (or possibly, a single :class:`.MDODiscipline`),
+#   - ``disciplines``: the list of :class:`.Discipline`
+#     (or possibly, a single :class:`.Discipline`),
 #   - ``formulation``: the formulation name,
 #   - ``objective_name``: the name of the objective function
 #     (one of the discipline outputs)
@@ -96,7 +96,7 @@ design_space.add_variable("x2", 1, "float", 0.0, 1.0)
 scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
 )
-scenario.execute({"algo": "fullfact", "n_samples": 25})
+scenario.execute(algo="fullfact", n_samples=25)
 scenario.post_process(
     "ScatterPlotMatrix",
     variable_names=["x1", "x2", "y"],
@@ -124,7 +124,7 @@ get_scenario_differentiation_modes()
 # use :func:`.monitor_scenario`.
 # The first argument is the scenario to monitor, and the second is an
 # observer object, that is notified by its update(atom) method, which takes an
-# :class:`~gemseo.core.execution_sequence.AtomicExecSequence` as argument.
+# :class:`~gemseo.core.execution_sequence.ExecutionSequence` as argument.
 # This method will be called every time a discipline status changes.
 # The atom represents a discipline's position in the process. One discipline
 # can have multiple atoms, since one discipline can be used in multiple
@@ -137,7 +137,7 @@ class Observer:
     def update(self, atom) -> None:
         """Update method.
 
-        :param AtomicExecSequence atom: atomic execution sequence.
+        :param ExecutionSequence atom: atomic execution sequence.
         """
         print(atom)
 
@@ -146,4 +146,4 @@ scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
 )
 monitor_scenario(scenario, Observer())
-scenario.execute({"algo": "fullfact", "n_samples": 25})
+scenario.execute(algo="fullfact", n_samples=25)

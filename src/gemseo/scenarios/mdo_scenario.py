@@ -25,22 +25,16 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Any
+from typing import ClassVar
+
+from pydantic import Field
+from pydantic import model_validator
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.core.discipline import MDODiscipline
 from gemseo.scenarios.scenario import Scenario
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.typing import StrKeyMapping
-
-# The detection of formulations requires to import them,
-# before calling get_formulation_from_name
-
+    from typing_extensions import Self
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,78 +47,27 @@ class MDOScenario(Scenario):
     :class:`.BaseOptimizationLibrary`.
     """
 
-    clear_history_before_run: bool
-    """If ``True``, clear history before run."""
+    _ALGO_FACTORY_CLASS: ClassVar[type[OptimizationLibraryFactory]] = (
+        OptimizationLibraryFactory
+    )
 
-    # Constants for input variables in json schema
-    MAX_ITER = "max_iter"
-    X_OPT = "x_opt"
+    class _BaseSettings(Scenario._BaseSettings):
+        max_iter: int = Field(..., gt=0, description="The maximum number of iterations")
 
-    def __init__(  # noqa:D107
-        self,
-        disciplines: Sequence[MDODiscipline],
-        formulation: str,
-        objective_name: str | Sequence[str],
-        design_space: DesignSpace,
-        name: str = "",
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        maximize_objective: bool = False,
-        **formulation_options: Any,
-    ) -> None:
-        # This loads the right json grammars from class name
-        super().__init__(
-            disciplines,
-            formulation,
-            objective_name,
-            design_space,
-            name=name,
-            grammar_type=grammar_type,
-            maximize_objective=maximize_objective,
-            **formulation_options,
+        @model_validator(mode="after")
+        def check_max_iter(self) -> Self:
+            if "max_iter" in self.algo_options:
+                LOGGER.warning(
+                    "Double definition of algorithm option max_iter, keeping value: %s",
+                    self.max_iter,
+                )
+                self.algo_options.pop("max_iter")
+            return self
+
+    def _run(self) -> None:
+        algo = self._algo_factory.create(self._settings.algo)
+        self.optimization_result = algo.execute(
+            self.formulation.optimization_problem,
+            max_iter=self._settings.max_iter,
+            **self._settings.algo_options,
         )
-
-    def _run_algorithm(self) -> OptimizationResult:
-        problem = self.formulation.optimization_problem
-        algo_name = self.local_data[self.ALGO]
-        max_iter = self.local_data[self.MAX_ITER]
-        settings = self.local_data.get(self.ALGO_OPTIONS)
-        if settings is None:
-            settings = {}
-        if self.MAX_ITER in settings:
-            LOGGER.warning(
-                "Double definition of algorithm setting max_iter, keeping value: %s",
-                max_iter,
-            )
-            settings.pop(self.MAX_ITER)
-
-        # Store the lib in case we rerun the same algorithm,
-        # for multilevel scenarios for instance
-        # This significantly speedups the process also because
-        # of the option grammar that is long to create
-        if self._algo_name is not None and self._algo_name == algo_name:
-            lib = self._lib
-        else:
-            lib = self._algo_factory.create(algo_name)
-            self._lib = lib
-
-        self.optimization_result = lib.execute(problem, max_iter=max_iter, **settings)
-        return self.optimization_result
-
-    def _init_algo_factory(self) -> None:
-        self._algo_factory = OptimizationLibraryFactory(use_cache=True)
-
-    def _update_input_grammar(self) -> None:
-        super()._update_input_grammar()
-        if self.grammar_type != self.GrammarType.JSON:
-            self.input_grammar.update_from_types({
-                "max_iter": int,
-                "algo_options": dict,
-            })
-            self.input_grammar.required_names.remove("algo_options")
-
-    def __setstate__(self, state: StrKeyMapping) -> None:
-        super().__setstate__(state)
-        # BaseOptimizationLibrary objects cannot be serialized, _algo_name and _lib are
-        # set to None to force the lib creation in _run_algorithm.
-        self._algo_name = None
-        self._lib = None

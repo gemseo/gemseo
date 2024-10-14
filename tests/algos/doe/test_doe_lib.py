@@ -44,7 +44,7 @@ from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 
@@ -143,10 +143,9 @@ def test_evaluate_samples_multiproc_with_observables() -> None:
 
     samples = array([[float(i)] for i in range(4)])
     scenario.add_observable("obs")
-    scenario.execute({
-        "algo": "CustomDOE",
-        "algo_options": {"n_processes": 2, "samples": samples},
-    })
+    scenario.execute(
+        algo="CustomDOE", algo_options={"n_processes": 2, "samples": samples}
+    )
 
     database = scenario.formulation.optimization_problem.database
     for i, (x, data) in enumerate(database.items()):
@@ -161,9 +160,9 @@ def test_evaluate_samples_multiproc_with_observables() -> None:
     # Without leveraging the cache mechanism,
     # the discipline shall be called 8 times.
     if platform == "win32":
-        assert disc.n_calls == 0
+        assert disc.execution_statistics.n_calls == 0
     else:
-        assert disc.n_calls == 8
+        assert disc.execution_statistics.n_calls == 8
 
 
 @pytest.fixture(scope="module")
@@ -301,7 +300,7 @@ def test_variable_types(var_type1, var_type2) -> None:
     """Verify that input data provided to a discipline match the design space types."""
     design_variable_type_to_python_type = DesignSpace.VARIABLE_TYPES_TO_DTYPES
 
-    class Disc(MDODiscipline):
+    class Disc(Discipline):
         def __init__(self) -> None:
             super().__init__("foo")
             self.input_grammar.update_from_names(("x", "y"))
@@ -332,7 +331,7 @@ def test_variable_types(var_type1, var_type2) -> None:
         scenario_type="DOE",
     )
 
-    scenario.execute({"algo": "lhs", "n_samples": 1})
+    scenario.execute(algo="lhs", n_samples=1)
 
 
 @pytest.mark.parametrize(("l_b", "u_b"), [(-inf, inf), (1, inf), (-inf, 1)])
@@ -435,9 +434,11 @@ def test_serialize(custom_doe, tmp_wd):
         pickle.load(outf)
 
 
-class _DummyDisc(MDODiscipline):
+class _DummyDisc(Discipline):
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
     def __init__(self) -> None:
-        super().__init__("foo", grammar_type=MDODiscipline.GrammarType.SIMPLE)
+        super().__init__("foo")
         self.input_grammar.update_from_names("x")
         self.output_grammar.update_from_names(("z", "t"))
         self.output_grammar.update_from_types({
@@ -448,11 +449,11 @@ class _DummyDisc(MDODiscipline):
         })
 
     def _run(self):
-        x = self.local_data["x"]
-        self.local_data["z"] = array([sum(x)])
-        self.local_data["t"] = 2 * x + 3
-        self.local_data["s1"] = x[0]
-        self.local_data["s2"] = x[1]
+        x = self.io.data["x"]
+        self.io.data["z"] = array([sum(x)])
+        self.io.data["t"] = 2 * x + 3
+        self.io.data["s1"] = x[0]
+        self.io.data["s2"] = x[1]
 
 
 def test_parallel_doe_db(tmp_wd):
@@ -481,7 +482,7 @@ def test_parallel_doe_db(tmp_wd):
     )
     algo_options = {"n_processes": 1}
     opts = {"algo": "fullfact", "n_samples": 4, "algo_options": algo_options}
-    scenario_ser.execute(opts)
+    scenario_ser.execute(**opts)
 
     scenario_par = _create_scn()
     bk_file_par = Path("par_out.h5")
@@ -489,7 +490,7 @@ def test_parallel_doe_db(tmp_wd):
         bk_file_par, at_each_function_call=True, at_each_iteration=True
     )
     algo_options["n_processes"] = 2
-    scenario_par.execute(opts)
+    scenario_par.execute(**opts)
 
     db_ser = Database.from_hdf(bk_file_ser)
     db_par = Database.from_hdf(bk_file_par)

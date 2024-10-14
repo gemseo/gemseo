@@ -19,19 +19,21 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from gemseo.core.process_discipline import ProcessDiscipline
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import MutableSequence
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 LOGGER = logging.getLogger(__name__)
 
 
 def __get_all_disciplines(
-    disciplines: Iterable[MDODiscipline],
+    disciplines: Iterable[Discipline],
     skip_scenarios: bool,
-) -> list[MDODiscipline]:
+) -> list[Discipline]:
     """Return the non-scenario disciplines or also the disciplines of the scenario ones.
 
     Args:
@@ -43,8 +45,10 @@ def __get_all_disciplines(
         The non-scenario disciplines
         or also the disciplines of the scenario ones if any and ``skip_scenario=False``.
     """
-    non_scenarios = [disc for disc in disciplines if not disc.is_scenario()]
-    scenarios = [disc for disc in disciplines if disc.is_scenario()]
+    from gemseo.scenarios.scenario import Scenario
+
+    non_scenarios = [disc for disc in disciplines if not isinstance(disc, Scenario)]
+    scenarios = [disc for disc in disciplines if isinstance(disc, Scenario)]
 
     if skip_scenarios:
         return non_scenarios
@@ -56,7 +60,7 @@ def __get_all_disciplines(
 
 
 def get_all_inputs(
-    disciplines: Iterable[MDODiscipline],
+    disciplines: Iterable[Discipline],
     skip_scenarios: bool = True,
 ) -> list[str]:
     """Return all the input names of the disciplines.
@@ -72,7 +76,7 @@ def get_all_inputs(
     return sorted(
         set.union(
             *(
-                set(discipline.get_input_data_names())
+                set(discipline.io.input_grammar.names)
                 for discipline in __get_all_disciplines(
                     disciplines, skip_scenarios=skip_scenarios
                 )
@@ -82,7 +86,7 @@ def get_all_inputs(
 
 
 def get_all_outputs(
-    disciplines: Iterable[MDODiscipline],
+    disciplines: Iterable[Discipline],
     skip_scenarios: bool = True,
 ) -> list[str]:
     """Return all the output names of the disciplines.
@@ -98,7 +102,7 @@ def get_all_outputs(
     return sorted(
         set.union(
             *(
-                set(discipline.get_output_data_names())
+                set(discipline.io.output_grammar.names)
                 for discipline in __get_all_disciplines(
                     disciplines, skip_scenarios=skip_scenarios
                 )
@@ -108,9 +112,8 @@ def get_all_outputs(
 
 
 def get_sub_disciplines(
-    disciplines: Iterable[MDODiscipline],
-    recursive: bool = False,
-) -> list[MDODiscipline]:
+    disciplines: Iterable[Discipline], recursive: bool = False
+) -> Iterable[Discipline]:
     """Determine the sub-disciplines.
 
     This method lists the sub-disciplines' disciplines. It will list up to one level
@@ -130,13 +133,22 @@ def get_sub_disciplines(
     Returns:
         The sub-disciplines.
     """
+    from gemseo.formulations.base_formulation import BaseFormulation
+    from gemseo.scenarios.scenario import Scenario
+
     sub_disciplines = []
 
     for discipline in disciplines:
-        if not discipline.disciplines:
+        if (
+            not isinstance(discipline, (Scenario, BaseFormulation, ProcessDiscipline))
+            or not discipline.disciplines
+        ):
             _add_to_sub([discipline], sub_disciplines)
         elif recursive:
-            _add_to_sub(discipline.get_sub_disciplines(recursive=True), sub_disciplines)
+            _add_to_sub(
+                get_sub_disciplines(discipline.disciplines, recursive=True),
+                sub_disciplines,
+            )
         else:
             _add_to_sub(discipline.disciplines, sub_disciplines)
 
@@ -144,8 +156,8 @@ def get_sub_disciplines(
 
 
 def _add_to_sub(
-    disciplines: Iterable[MDODiscipline],
-    sub_disciplines: MutableSequence[MDODiscipline],
+    disciplines: Iterable[Discipline],
+    sub_disciplines: MutableSequence[Discipline],
 ) -> None:
     """Add the disciplines of the sub-scenarios to the sub-disciplines.
 
@@ -158,8 +170,13 @@ def _add_to_sub(
     sub_disciplines.extend(disc for disc in disciplines if disc not in sub_disciplines)
 
 
+_MESSAGE = "Two disciplines, among which {}, compute the same outputs: {}"
+
+
 def check_disciplines_consistency(
-    disciplines: Iterable[MDODiscipline], log_message: bool, raise_error: bool
+    disciplines: Iterable[Discipline],
+    log_message: bool,
+    raise_error: bool,
 ) -> bool:
     """Check if disciplines are consistent.
 
@@ -179,19 +196,18 @@ def check_disciplines_consistency(
             and ``raise_error`` is ``True``.
     """
     output_names_until_now = set()
-    message = "Two disciplines, among which {}, compute the same outputs: {}"
     for discipline in disciplines:
-        new_output_names = set(discipline.get_output_data_names())
+        new_output_names = set(discipline.io.output_grammar.names)
         already_existing_output_names = new_output_names & output_names_until_now
         if already_existing_output_names:
             if raise_error:
                 raise ValueError(
-                    message.format(discipline.name, already_existing_output_names)
+                    _MESSAGE.format(discipline.name, already_existing_output_names)
                 )
 
             if log_message:
                 LOGGER.warning(
-                    message.replace("{}", "%s"),
+                    _MESSAGE.replace("{}", "%s"),
                     discipline.name,
                     already_existing_output_names,
                 )

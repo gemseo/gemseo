@@ -19,8 +19,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import NamedTuple
-from typing import Union
 
+from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
@@ -32,26 +32,26 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.discipline_data import DisciplineData
+    from gemseo.core.discipline import Discipline
+    from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import JacobianData
 
 
 class _WorkerData(NamedTuple):
     """The computed data of a worker (discipline)."""
 
-    local_data: DisciplineData
+    io_data: DisciplineData
     jacobian: JacobianData
 
 
 class _Functor:
     """A functor to call a discipline linearization.
 
-    When called, the :attr:`.MDODiscipline.local_data` and :attr:`.MDODiscipline.jac`
+    When called, the :attr:`.Discipline.io.data` and :attr:`.Discipline.jac`
     are returned.
     """
 
-    def __init__(self, discipline: MDODiscipline, execute: bool = True) -> None:
+    def __init__(self, discipline: Discipline, execute: bool = True) -> None:
         """
         Args:
             discipline: The discipline to get a callable from.
@@ -65,29 +65,27 @@ class _Functor:
         self.__disc = discipline
         self.__execute = execute
 
-    def __call__(self, inputs: StrKeyMapping | None) -> _WorkerData:
+    def __call__(self, inputs: StrKeyMapping) -> _WorkerData:
         """
         Args:
             inputs: The inputs of the discipline.
 
         Returns:
-            The discipline :attr:`.MDODiscipline.local_data` and its jacobian.
+            The discipline :attr:`.Discipline.io.data` and its jacobian.
         """  # noqa:D205 D212 D415
         jacobian = self.__disc.linearize(inputs, execute=self.__execute)
-        return _WorkerData(self.__disc.local_data, jacobian)
+        return _WorkerData(self.__disc.io.data, jacobian)
 
 
-class DiscParallelLinearization(
-    CallableParallelExecution[Union[StrKeyMapping, None], _WorkerData]
-):
+class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _WorkerData]):
     """Linearize disciplines in parallel."""
 
-    _disciplines: Sequence[MDODiscipline]
+    _disciplines: Sequence[Discipline]
     """The disciplines to linearize."""
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         n_processes: int = N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
@@ -119,7 +117,7 @@ class DiscParallelLinearization(
     # TODO: API: fix return type or return None and use the disc attributes updated?
     def execute(  # type: ignore[override] # noqa: D102
         self,
-        inputs: Sequence[StrKeyMapping | None],
+        inputs: Sequence[StrKeyMapping],
         exec_callback: CallbackType | Iterable[CallbackType] = (),
         task_submitted_callback: Callable[[], None] | None = None,
     ) -> list[JacobianData | None]:
@@ -134,25 +132,25 @@ class DiscParallelLinearization(
             if output_0 is not None:
                 disc_0 = self._disciplines[0]
                 if len(self._disciplines) == 1:
-                    disc_0.local_data = output_0.local_data
+                    disc_0.io.data = output_0.io_data
                     disc_0.jac = output_0.jacobian
                 if (
                     not self.use_threading
                     and self.MULTI_PROCESSING_START_METHOD
                     == self.MultiProcessingStartMethod.SPAWN
-                    and disc_0.activate_counters
-                    and output_0.local_data
+                    and ExecutionStatistics.is_enabled
+                    and output_0.io_data
                 ):
                     # Only increase the number of calls if the Jacobian was computed.
-                    disc_0.n_calls += len(inputs)  # type: ignore[operator] # checked with activate_counter
-                    disc_0.n_calls_linearize += len(inputs)  # type: ignore[operator] # checked with activate_counter
+                    disc_0.execution_statistics.n_calls += len(inputs)  # type: ignore[operator] # checked with activate_counter
+                    disc_0.execution_statistics.n_calls_linearize += len(inputs)  # type: ignore[operator] # checked with activate_counter
         else:
             for disc, output in zip(self._disciplines, ordered_outputs):
                 # When the discipline in the worker failed, output is None.
-                # We do not update the local_data such that the issue is caught by the
+                # We do not update the data such that the issue is caught by the
                 # output grammar.
                 if output is not None:
-                    disc.local_data = output.local_data
+                    disc.io.data = output.io_data
                     disc.jac = output.jacobian
 
         return [out.jacobian for out in ordered_outputs if out is not None or None]

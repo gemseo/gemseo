@@ -57,14 +57,14 @@ configure_logger()
 # Define the discipline
 # ---------------------
 # Firstly, by means of the :func:`.create_discipline` API function,
-# we create an :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
+# we create an :class:`.Discipline` of :class:`.AnalyticDiscipline` type
 # from a Python function:
 
 expressions = {"y": "x1+x2"}
 discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 
 # %%
-# Now, we want to minimize this :class:`.MDODiscipline`
+# Now, we want to minimize this :class:`.Discipline`
 # over a design of experiments (DOE).
 #
 # Define the design space
@@ -81,7 +81,7 @@ design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 # Define the DOE scenario
 # -----------------------
 # Then, by means of the :func:`.create_scenario` API function,
-# we define a :class:`.DOEScenario` from the :class:`.MDODiscipline`
+# we define a :class:`.DOEScenario` from the :class:`.Discipline`
 # and the :class:`.DesignSpace` defined above:
 
 scenario = create_scenario(
@@ -97,7 +97,7 @@ scenario = create_scenario(
 # Precisely, we choose a `full factorial design
 # <https://en.wikipedia.org/wiki/Factorial_experiment>`_ of size :math:`11^2`:
 
-scenario.execute({"algo": "fullfact", "n_samples": 11**2})
+scenario.execute(algo="fullfact", n_samples=11**2)
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to

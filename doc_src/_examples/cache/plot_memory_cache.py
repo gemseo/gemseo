@@ -61,7 +61,7 @@ cache
 # -----
 #
 # We can manually add data into the cache. However, it has to be noted that
-# most of the time a cache is attached to an :class:`.MDODiscipline`. Then, the
+# most of the time a cache is attached to an :class:`.Discipline`. Then, the
 # cache feeding has not to be performed explicitly by the user.
 
 cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)

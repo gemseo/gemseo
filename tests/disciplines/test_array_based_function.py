@@ -47,19 +47,19 @@ def test_output_grammar(discipline):
 def test_default_input_values(discipline):
     """Check the ArrayBasedFunctionDiscipline with default input values."""
     discipline.execute()
-    assert_equal(discipline.local_data["x1"], array([0.0]))
-    assert_equal(discipline.local_data["x2"], array([0.0, 0.0, 0.0, 0.0]))
-    assert_equal(discipline.local_data["y1"], array([0.0, 0.0, 0.0]))
-    assert_equal(discipline.local_data["y2"], array([0.0, 0.0]))
+    assert_equal(discipline.io.data["x1"], array([0.0]))
+    assert_equal(discipline.io.data["x2"], array([0.0, 0.0, 0.0, 0.0]))
+    assert_equal(discipline.io.data["y1"], array([0.0, 0.0, 0.0]))
+    assert_equal(discipline.io.data["y2"], array([0.0, 0.0]))
 
 
 def test_custom_input_values(discipline):
     """Check the ArrayBasedFunctionDiscipline with custom input values."""
     discipline.execute({"x1": array([1.0]), "x2": array([2.0, 3.0, 4.0, 5.0])})
-    assert_equal(discipline.local_data["x1"], array([1.0]))
-    assert_equal(discipline.local_data["x2"], array([2.0, 3.0, 4.0, 5.0]))
-    assert_equal(discipline.local_data["y1"], array([1.0, 2.0, 3.0]))
-    assert_equal(discipline.local_data["y2"], array([4.0, 5.0]))
+    assert_equal(discipline.io.data["x1"], array([1.0]))
+    assert_equal(discipline.io.data["x2"], array([2.0, 3.0, 4.0, 5.0]))
+    assert_equal(discipline.io.data["y1"], array([1.0, 2.0, 3.0]))
+    assert_equal(discipline.io.data["y2"], array([4.0, 5.0]))
 
 
 def test_jac_function_none(discipline):

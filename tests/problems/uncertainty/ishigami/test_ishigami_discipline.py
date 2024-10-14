@@ -42,7 +42,7 @@ def test_init(discipline) -> None:
     input_names = ["x1", "x2", "x3"]
     assert list(discipline.input_grammar.names) == input_names
     assert list(discipline.output_grammar.names) == ["y"]
-    assert discipline.default_inputs == {name: array([0.0]) for name in input_names}
+    assert discipline.default_input_data == {name: array([0.0]) for name in input_names}
 
 
 def test_execute(discipline, input_values) -> None:

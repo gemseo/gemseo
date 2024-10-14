@@ -70,31 +70,31 @@ class Sellar1(BaseSellar):
         self.__zeros_n = csr_array((n, n))
 
     def _run(self) -> None:
-        x_1 = self._local_data[X_1]
-        x_shared = self._local_data[X_SHARED]
-        y_2 = self._local_data[Y_2]
-        gamma = self._local_data[GAMMA]
+        x_1 = self.io.data[X_1]
+        x_shared = self.io.data[X_SHARED]
+        y_2 = self.io.data[Y_2]
+        gamma = self.io.data[GAMMA]
         if WITH_2D_ARRAY:  # pragma: no cover
             x_shared = x_shared[0]
 
         y_1_sq = x_shared[0] ** 2 + x_shared[1] + x_1 - gamma * self.__k * y_2
         y_1 = maximum(sqrt(where(y_1_sq.real >= 0, y_1_sq, -y_1_sq)), 1e-16)
-        self.store_local_data(y_1=y_1)
+        self.io.update_output_data({"y_1": y_1})
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] = (),
-        outputs: Iterable[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        x_1 = self._local_data[X_1]
-        x_shared = self._local_data[X_SHARED]
-        y_2 = self._local_data[Y_2]
-        gamma = self._local_data[GAMMA]
+        x_1 = self.io.data[X_1]
+        x_shared = self.io.data[X_SHARED]
+        y_2 = self.io.data[Y_2]
+        gamma = self.io.data[GAMMA]
         if WITH_2D_ARRAY:  # pragma: no cover
             x_shared = x_shared[0]
 
         y_1_sign = sign(x_shared[0] ** 2 + x_shared[1] + x_1 - gamma * self.__k * y_2)
-        inv_denom = y_1_sign / self.local_data[Y_1]
+        inv_denom = y_1_sign / self.io.data[Y_1]
         self.jac = {Y_1: {}}
         jac = self.jac[Y_1]
         jac[X_1] = diags(0.5 * inv_denom)

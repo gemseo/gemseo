@@ -32,7 +32,7 @@ from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 
 class JobSchedulerDisciplineWrapperFactory(BaseFactory):
@@ -43,7 +43,7 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
 
     def wrap_discipline(
         self,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         scheduler_name: str,
         workdir_path: Path,
         **options: dict[str, Any],
@@ -59,7 +59,7 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
 
         All process classes :class:`.MDOScenario`,
         or :class:`.BaseMDA`, inherit from
-        :class:`.MDODiscipline` so can be sent to HPCs this way.
+        :class:`.Discipline` so can be sent to HPCs this way.
 
         The job scheduler template script can be provided directly or the predefined
         templates file names in gemseo.wrappers.job_schedulers.template can be used.

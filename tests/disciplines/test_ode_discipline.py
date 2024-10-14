@@ -27,6 +27,7 @@ from __future__ import annotations
 import re
 from math import atan
 from math import pi
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import allclose
@@ -39,18 +40,20 @@ from numpy import linspace
 from numpy import sin
 from numpy import sqrt
 
-from gemseo import MDODiscipline
 from gemseo import create_discipline
 from gemseo import from_pickle
 from gemseo import to_pickle
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
+    DisciplineAdapterGenerator,
 )
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline.discipline import Discipline
 
 
 def test_create_oscillator_ode_discipline() -> None:
@@ -166,7 +169,6 @@ def test_ode_discipline_bad_grammar() -> None:
     oscillator = create_discipline(
         "AutoPyDiscipline",
         py_func=_rhs_function,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
     with pytest.raises(ValueError) as error_info:
         bad_input_ode_discipline = ODEDiscipline(  # noqa: F841
@@ -196,7 +198,6 @@ def test_ode_discipline_default_state_names() -> None:
     oscillator = create_discipline(
         "AutoPyDiscipline",
         py_func=_rhs_function,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     ode_discipline = ODEDiscipline(  # noqa: F841
@@ -220,7 +221,6 @@ def test_ode_discipline_not_convergent():
 
     mdo_discipline = AutoPyDiscipline(
         py_func=_fct,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     ode_discipline = ODEDiscipline(
@@ -273,7 +273,6 @@ def test_jacobian(omega, init_state_x, init_state_y):
     mdo_discipline = AutoPyDiscipline(
         py_func=fct,
         py_jac=jac_time_state,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     ode_discipline = ODEDiscipline(
@@ -291,8 +290,8 @@ def test_jacobian(omega, init_state_x, init_state_y):
             "x": _init_state_x,
             "y": _init_state_y,
         },
-        inputs=["time", "x", "y"],
-        outputs=["x_dot", "y_dot"],
+        input_names=["time", "x", "y"],
+        output_names=["x_dot", "y_dot"],
     )
     if not check_jacobian1:
         raise ValueError
@@ -349,7 +348,6 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
         "AutoPyDiscipline",
         py_func=fct,
         py_jac=jac,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     def exact_sol(time):
@@ -433,13 +431,11 @@ def test_ode_discipline_termination_event():
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
         py_func=_rhs_function,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     ode_discipline = ODEDiscipline(
@@ -497,35 +493,32 @@ def test_ode_discipline_two_termination_events_1():
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
         py_func=_rhs_function,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_1 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_1,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_2 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_2,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
-    ode_mdo_func = MDODisciplineAdapterGenerator(
+    ode_mdo_func = DisciplineAdapterGenerator(
         discipline=free_fall_discipline
     ).get_function(
         input_names=["time", "position", "velocity"],
         output_names=["position_dot", "velocity_dot"],
     )
 
-    ode_mdo_termination_1 = MDODisciplineAdapterGenerator(
+    ode_mdo_termination_1 = DisciplineAdapterGenerator(
         discipline=termination_discipline_1
     ).get_function(
         input_names=["time", "position", "velocity"], output_names=["termination_1"]
     )
 
-    ode_mdo_termination_2 = MDODisciplineAdapterGenerator(
+    ode_mdo_termination_2 = DisciplineAdapterGenerator(
         discipline=termination_discipline_2
     ).get_function(
         input_names=["time", "position", "velocity"], output_names=["termination_2"]
@@ -599,19 +592,16 @@ def test_ode_discipline_two_termination_events_2():
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
         py_func=_rhs_function,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_1 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_1,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_2 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_2,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     def make_func_from_adapter(adapter):
@@ -620,20 +610,20 @@ def test_ode_discipline_two_termination_events_2():
 
         return func
 
-    ode_mdo_func = MDODisciplineAdapterGenerator(
+    ode_mdo_func = DisciplineAdapterGenerator(
         discipline=free_fall_discipline
     ).get_function(
         input_names=["time", "position", "velocity"],
         output_names=["position_dot", "velocity_dot"],
     )
 
-    ode_mdo_termination_1 = MDODisciplineAdapterGenerator(
+    ode_mdo_termination_1 = DisciplineAdapterGenerator(
         discipline=termination_discipline_1
     ).get_function(
         input_names=["time", "position", "velocity"], output_names=["termination_1"]
     )
 
-    ode_mdo_termination_2 = MDODisciplineAdapterGenerator(
+    ode_mdo_termination_2 = DisciplineAdapterGenerator(
         discipline=termination_discipline_2
     ).get_function(
         input_names=["time", "position", "velocity"], output_names=["termination_2"]
@@ -701,19 +691,16 @@ def test_ode_discipline_two_termination_events_3():
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
         py_func=_rhs_function,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_1 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_1,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_2 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_2,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     def make_func_from_adapter(adapter):
@@ -722,20 +709,20 @@ def test_ode_discipline_two_termination_events_3():
 
         return func
 
-    ode_mdo_func = MDODisciplineAdapterGenerator(
+    ode_mdo_func = DisciplineAdapterGenerator(
         discipline=free_fall_discipline
     ).get_function(
         input_names=["time", "position", "velocity"],
         output_names=["position_dot", "velocity_dot"],
     )
 
-    ode_mdo_termination_1 = MDODisciplineAdapterGenerator(
+    ode_mdo_termination_1 = DisciplineAdapterGenerator(
         discipline=termination_discipline_1
     ).get_function(
         input_names=["time", "position", "velocity"], output_names=["termination_1"]
     )
 
-    ode_mdo_termination_2 = MDODisciplineAdapterGenerator(
+    ode_mdo_termination_2 = DisciplineAdapterGenerator(
         discipline=termination_discipline_2
     ).get_function(
         input_names=["time", "position", "velocity"], output_names=["termination_2"]
@@ -802,25 +789,22 @@ def test_ode_discipline_two_termination_events_4():
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
         py_func=_rhs_function,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_1 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_1,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_2 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_2,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
-    def make_func_from_discipline(disc: MDODiscipline):
-        adapter = MDODisciplineAdapterGenerator(discipline=disc).get_function(
-            input_names=disc.get_input_data_names(),
-            output_names=disc.get_output_data_names(),
+    def make_func_from_discipline(disc: Discipline):
+        adapter = DisciplineAdapterGenerator(discipline=disc).get_function(
+            input_names=disc.io.input_grammar.names,
+            output_names=disc.io.output_grammar.names,
         )
 
         def func(time, state):
@@ -889,19 +873,16 @@ def test_ode_discipline_two_termination_events_6():
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
         py_func=_rhs_function,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_1 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_1,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     termination_discipline_2 = create_discipline(
         "AutoPyDiscipline",
         py_func=_termination_events_function_2,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
     )
 
     ode_discipline = ODEDiscipline(

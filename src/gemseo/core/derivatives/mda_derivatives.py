@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 def _replace_strongly_coupled(
     coupling_structure: CouplingStructure,
-) -> tuple[list[MDODiscipline], list[MDODiscipline]]:
+) -> tuple[list[Discipline], list[Discipline]]:
     """Replace the strongly coupled disciplines by a single one.
 
     The replacing discipline has for inputs the merged inputs of all coupled
@@ -61,7 +61,7 @@ def _replace_strongly_coupled(
             if len(group) > 1 or (
                 len(group) == 1 and coupling_structure.is_self_coupled(group[0])
             ):
-                disc_merged = MDODiscipline(str(uuid.uuid4()))
+                disc_merged = Discipline(str(uuid.uuid4()))
                 for disc in group:
                     disciplines_with_group.remove(disc)
                     # The strong couplings are not real dependencies of the MDA for
@@ -85,8 +85,8 @@ def _replace_strongly_coupled(
 
 def traverse_add_diff_io_mda(
     coupling_structure: CouplingStructure,
-    inputs: Iterable[str],
-    outputs: Iterable[str],
+    input_names: Iterable[str],
+    output_names: Iterable[str],
 ) -> DisciplineIOMapping:
     """Set the required differentiated IOs for the disciplines in a chain.
 
@@ -103,8 +103,8 @@ def traverse_add_diff_io_mda(
 
     Args:
         coupling_structure: The coupling structure of the MDA.
-        inputs: The inputs with respect to which the chain chain is differentiated.
-        outputs: The chain outputs to be differentiated.
+        input_names: The inputs with respect to which the chain chain is differentiated.
+        output_names: The chain outputs to be differentiated.
 
     Returns:
         The merged differentiated inputs and outputs.
@@ -117,7 +117,7 @@ def traverse_add_diff_io_mda(
 
     reduced_coupling_structure = CouplingStructure(all_disc_with_red)
     diff_ios_merged = traverse_add_diff_io(
-        reduced_coupling_structure.graph.graph, inputs, outputs
+        reduced_coupling_structure.graph.graph, input_names, output_names
     )
 
     # The sub MDAs where the strong couplings are handled here.
@@ -150,9 +150,9 @@ def traverse_add_diff_io_mda(
     # The state variables and residuals must be differentiated too, only for the
     # disciplines involved in the computations.
     for disc, diffio_disc in diff_ios_merged.items():
-        if disc.residual_variables:
-            residuals = disc.residual_variables.keys()
-            states = disc.residual_variables.values()
+        if disc.io.residual_to_state_variable:
+            residuals = disc.io.residual_to_state_variable.keys()
+            states = disc.io.residual_to_state_variable.values()
             diffio_disc[0].extend(states)
             diffio_disc[1].extend(residuals)
             disc.add_differentiated_inputs(states)

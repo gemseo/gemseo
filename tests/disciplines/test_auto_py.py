@@ -36,7 +36,6 @@ from gemseo import create_mda
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
@@ -105,33 +104,29 @@ def test_basic() -> None:
     """Test a basic auto-discipline execution."""
     d1 = AutoPyDiscipline(f1)
 
-    assert list(d1.get_input_data_names()) == ["y2", "z"]
+    assert list(d1.io.input_grammar.names) == ["y2", "z"]
     d1.execute()
 
-    assert d1.local_data["y1"] == f1()
+    assert d1.io.data["y1"] == f1()
 
     d2 = AutoPyDiscipline(f2)
-    assert list(d2.get_input_data_names()) == ["y1", "z"]
-    assert list(d2.get_output_data_names()) == ["y2", "y3"]
+    assert list(d2.io.input_grammar.names) == ["y1", "z"]
+    assert list(d2.io.output_grammar.names) == ["y2", "y3"]
 
     d2.execute()
-    assert d2.local_data["y2"] == f2()[0]
+    assert d2.io.data["y2"] == f2()[0]
 
     d3 = AutoPyDiscipline(F().f1)
 
-    assert list(d3.get_input_data_names()) == ["y2", "z"]
+    assert list(d3.io.input_grammar.names) == ["y2", "z"]
     d3.execute()
 
-    assert d3.local_data["y1"] == F().f1()
+    assert d3.io.data["y1"] == F().f1()
 
 
-@pytest.mark.parametrize(
-    "grammar_type",
-    [AutoPyDiscipline.GrammarType.SIMPLE, AutoPyDiscipline.GrammarType.JSON],
-)
-def test_jac(grammar_type) -> None:
+def test_jac() -> None:
     """Test a basic jacobian."""
-    disc = AutoPyDiscipline(py_func=f5, py_jac=df5, grammar_type=grammar_type)
+    disc = AutoPyDiscipline(py_func=f5, py_jac=df5)
     assert disc.check_jacobian()
 
 
@@ -139,9 +134,9 @@ def test_use_arrays() -> None:
     """Test the use of arrays."""
     d1 = AutoPyDiscipline(f1, use_arrays=True)
     d1.execute()
-    assert d1.local_data["y1"] == f1()
+    assert d1.io.data["y1"] == f1()
     d1.execute({"x1": array([1.0]), "z": array([2.0])})
-    assert d1.local_data["y1"] == f1()
+    assert d1.io.data["y1"] == f1()
 
 
 def test_fail_wrongly_formatted_function() -> None:
@@ -173,7 +168,7 @@ def test_jac_pb(design_space) -> None:
         "r",
         design_space,
     )
-    scn.execute({"algo": algo, "max_iter": max_iter})
+    scn.execute(algo=algo, max_iter=max_iter)
 
     assert fopt_ref == scn.optimization_result.f_opt
 
@@ -195,8 +190,8 @@ def test_multiprocessing() -> None:
         {"y1": array([5.0]), "z": array([3.0])},
     ])
 
-    assert d1.local_data["y1"] == f1(2.0, 1.0)
-    assert d2.local_data["y2"] == f2(5.0, 3.0)[0]
+    assert d1.io.data["y1"] == f1(2.0, 1.0)
+    assert d2.io.data["y2"] == f2(5.0, 3.0)[0]
 
 
 @pytest.mark.parametrize(
@@ -371,7 +366,9 @@ def test_type_hints_for_grammars(
     caplog,
 ) -> None:
     """Verify the type hints handling."""
-    d = AutoPyDiscipline(func, grammar_type=MDODiscipline.GrammarType.SIMPLE)
+    AutoPyDiscipline.default_grammar_type = AutoPyDiscipline.GrammarType.SIMPLE
+    d = AutoPyDiscipline(func)
+    AutoPyDiscipline.default_grammar_type = AutoPyDiscipline.GrammarType.JSON
     assert d.input_grammar == input_names_to_types
     assert d.output_grammar == output_names_to_types
     assert caplog.messages == warnings
@@ -475,8 +472,12 @@ def test_mda(x_1, mda_name, sellar_disciplines) -> None:
 
     del input_data["y_1"]
     del input_data["x_2"]
-    mda.default_inputs = {k: v for k, v in input_data.items() if k in mda.input_grammar}
+    mda.default_input_data = {
+        k: v for k, v in input_data.items() if k in mda.input_grammar
+    }
 
     assert mda.check_jacobian(
-        input_data=input_data, inputs=["x_1", "x_shared"], outputs=["y_1", "y_2"]
+        input_data=input_data,
+        input_names=["x_1", "x_shared"],
+        output_names=["y_1", "y_2"],
     )

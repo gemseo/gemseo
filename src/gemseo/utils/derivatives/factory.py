@@ -40,7 +40,7 @@ class GradientApproximatorFactory(BaseFactory):
 
     def create(
         self,
-        name: str | ApproximationMode,
+        name: ApproximationMode,
         *args: Any,
         **kwargs: Any,
     ) -> BaseGradientApproximator:
