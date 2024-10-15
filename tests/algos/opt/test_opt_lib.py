@@ -169,17 +169,17 @@ def test_execute_without_current_value() -> None:
 def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> None:
     """Check the scaling of functions."""
     library = ScipyOpt("SLSQP")
-    library.problem = power
-    library.problem.preprocess_functions()
+    library._problem = power
+    library._problem.preprocess_functions()
     settings = library._validate_settings({
         "max_iter": 2,
         "scaling_threshold": scaling_threshold,
     })
     library._pre_run(power, **settings)
     current_value = power.design_space.get_current_value()
-    assert library.problem.objective.evaluate(current_value) == pow2
-    assert library.problem.constraints[0].evaluate(current_value) == ineq1
-    assert library.problem.constraints[1].evaluate(current_value) == ineq2
-    assert library.problem.constraints[2].evaluate(current_value) == pytest.approx(
+    assert library._problem.objective.evaluate(current_value) == pow2
+    assert library._problem.constraints[0].evaluate(current_value) == ineq1
+    assert library._problem.constraints[1].evaluate(current_value) == ineq2
+    assert library._problem.constraints[2].evaluate(current_value) == pytest.approx(
         eq, 0, 1e-16
     )

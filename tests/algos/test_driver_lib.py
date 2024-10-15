@@ -92,8 +92,8 @@ def test_empty_design_space() -> None:
 def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected) -> None:
     """Test the new iteration callback."""
     test_driver = ScipyOpt("SLSQP")
-    test_driver.problem = power_2
-    test_driver.__max_time = 0
+    test_driver._problem = power_2
+    test_driver._max_time = 0
     test_driver._init_iter_observer(power_2, max_iter=2, **kwargs)
     test_driver._new_iteration_callback(array([0, 0]))
     test_driver._new_iteration_callback(array([0, 0]))
@@ -121,7 +121,7 @@ def driver_library() -> BaseDriverLibrary:
     driver_library = ScipyOpt("SLSQP")
     design_space = DesignSpace()
     design_space.add_variable("x", 1, "float", -2, 3, 1)
-    driver_library.problem = OptimizationProblem(design_space)
+    driver_library._problem = OptimizationProblem(design_space)
     return driver_library
 
 
@@ -134,7 +134,7 @@ def test_get_value_and_bounds_vects_normalized_as_ndarrays(
 ) -> None:
     """Check the getting of the normalized initial values and bounds."""
     assert get_value_and_bounds(
-        driver_library.problem.design_space, True, as_dict=as_dict
+        driver_library._problem.design_space, True, as_dict=as_dict
     ) == (
         pytest.approx(x0),
         lower_bounds,
@@ -151,7 +151,7 @@ def test_get_value_and_bounds_vects_non_normalized(
 ) -> None:
     """Check the getting of the non-normalized initial values and bounds."""
     assert get_value_and_bounds(
-        driver_library.problem.design_space, False, as_dict=as_dict
+        driver_library._problem.design_space, False, as_dict=as_dict
     ) == (
         x0,
         lower_bounds,

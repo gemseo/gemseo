@@ -22,16 +22,17 @@ from numpy import ndarray
 
 from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
 from gemseo.algos._progress_bars.custom_tqdm_progress_bar import CustomTqdmProgressBar
+from gemseo.algos.optimization_problem import OptimizationProblem
 
 if TYPE_CHECKING:
-    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.algos.evaluation_problem import EvaluationProblem
 
 
 class ProgressBar(BaseProgressBar):
     """A progress bar suffixed by metadata."""
 
-    _problem: OptimizationProblem
-    """The optimization problem."""
+    _problem: EvaluationProblem
+    """The evaluation problem."""
 
     _tqdm_progress_bar: CustomTqdmProgressBar
     """The tqdm-based progress bar."""
@@ -39,13 +40,19 @@ class ProgressBar(BaseProgressBar):
     __is_current_iteration_logged: bool
     """Whether the current iteration is logged."""
 
+    __is_optimization_problem: bool
+    """Whether the problem is an optimization problem."""
+
     __change_objective_sign: bool
-    """Whether to change the sign of the objective value before logging it."""
+    """Whether to change the sign of the objective value before logging it.
+
+    Used only when the evaluation problem is an optimization problem.
+    """
 
     def __init__(
         self,
         max_iter: int,
-        problem: OptimizationProblem,
+        problem: EvaluationProblem,
         description: str = "",
     ) -> None:
         """
@@ -62,36 +69,39 @@ class ProgressBar(BaseProgressBar):
         )
         self._tqdm_progress_bar.n = problem.evaluation_counter.current
         self.__is_current_iteration_logged = True
-        self.__change_objective_sign = (
-            not problem.minimize_objective and not problem.use_standardized_objective
-        )
-
-    def set_objective_value(  # noqa: D102
-        self, x_vect: ndarray | None, current_iter_must_not_be_logged: bool = False
-    ) -> None:
-        if current_iter_must_not_be_logged:
-            if not self.__is_current_iteration_logged:
-                self._set_objective_value(
-                    self._problem.database.get_x_vect(
-                        self._problem.evaluation_counter.current or -1
-                    )
-                )
+        if isinstance(problem, OptimizationProblem):
+            self.__is_optimization_problem = True
+            self.__change_objective_sign = (
+                not problem.minimize_objective
+                and not problem.use_standardized_objective
+            )
         else:
-            self._set_objective_value(x_vect)
+            self.__is_optimization_problem = False
 
-    def _set_objective_value(self, x_vect: ndarray | None) -> None:
+    def set_objective_value(self, x_vect: ndarray | None) -> None:  # noqa: D102
+        if x_vect is None:
+            if self.__is_current_iteration_logged:
+                return
+
+            x_vect = self._problem.database.get_x_vect(
+                self._problem.evaluation_counter.current or -1
+            )
+
+        self._set_objective_value(x_vect)
+
+    def _set_objective_value(self, x_vect: ndarray) -> None:
         """Set the objective value.
 
         Args:
             x_vect: The design variable values.
-                If ``None``, consider the objective at the last iteration.
         """
-        if x_vect is None:
-            obj = self._problem.objective.last_eval
-        else:
+        if self.__is_optimization_problem:
+            self._problem: OptimizationProblem
             obj = self._problem.database.get_function_value(
                 self._problem.objective.name, x_vect
             )
+        else:
+            obj = None
 
         if obj is None:
             self.__is_current_iteration_logged = not self.__is_current_iteration_logged
@@ -108,7 +118,8 @@ class ProgressBar(BaseProgressBar):
                 obj = obj[0]
 
         if self.__is_current_iteration_logged:
-            self._tqdm_progress_bar.set_postfix(refresh=True, obj=obj)
+            kwargs = {"obj": obj} if self.__is_optimization_problem else {}
+            self._tqdm_progress_bar.set_postfix(refresh=True, **kwargs)
 
     def finalize_iter_observer(self):  # noqa: D102
         if not self.__is_current_iteration_logged:

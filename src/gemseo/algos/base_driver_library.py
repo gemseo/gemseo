@@ -17,26 +17,23 @@
 #       :author: Damien Guenot - 26 avr. 2016
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Base class for libraries of algorithms handling :class:`.OptimizationProblem`.
+"""Base class for libraries of drivers.
 
-A driver library aims to solve an :class:`.OptimizationProblem`
-using a particular algorithm from a particular family of numerical methods.
-This algorithm will be in charge of evaluating the objective and constraints
-functions at different points of the design space, using the
-:meth:`.BaseDriverLibrary.execute` method.
-The most famous kinds of numerical methods to solve an optimization problem
-are optimization algorithms and design of experiments (DOE). A DOE driver
-browses the design space agnostically, i.e. without taking into
-account the function evaluations. On the contrary, an optimization algorithm
-uses this information to make the journey through design space
-as relevant as possible in order to reach as soon as possible the optimum.
-These families are implemented in :class:`.BaseDOELibrary`
-and :class:`.BaseOptimizationLibrary`.
+A driver is an algorithm evaluating the functions of an :class:`.EvaluationProblem`
+at different points of the design space,
+using the :meth:`~.BaseDriverLibrary.execute` method.
+In the case of an :class:`.OptimizationProblem`,
+this method also returns an :class:`.OptimizationResult`.
+
+There are two main families of drivers:
+the optimizers with the base class :class:`.BaseOptimizationLibrary`
+and the design of experiments (DOE) with the base class :class:`.BaseDOELibrary`.
 """
 
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from collections.abc import Iterable
 from contextlib import nullcontext
 from dataclasses import dataclass
@@ -58,6 +55,7 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
 from gemseo.algos.evaluation_problem import EvaluationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FtolReached
@@ -77,7 +75,6 @@ if TYPE_CHECKING:
     from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
     from gemseo.algos.database import ListenerType
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.optimization_problem import OptimizationProblem
 
 DriverLibrarySettingType = Union[
     str, float, int, bool, list[str], ndarray, Iterable[CallbackType], StrKeyMapping
@@ -90,20 +87,14 @@ class DriverDescription(AlgorithmDescription):
     """The description of a driver."""
 
     handle_integer_variables: bool = False
-    """Whether the optimization algorithm handles integer variables."""
+    """Whether the driver handles integer variables."""
 
     Settings: type[BaseDriverLibrarySettings] = BaseDriverLibrarySettings
     """The Pydantic model for the driver library settings."""
 
 
 class BaseDriverLibrary(BaseAlgorithmLibrary):
-    """Base class for libraries of algorithms handling :class:`.OptimizationProblem`.
-
-    Lists available methods in the library for the proposed problem to be solved.
-
-    To integrate an optimization package, inherit from this class and put your file in
-    gemseo.algos.doe or gemseo.algo.opt packages.
-    """
+    """Base class for libraries of drivers."""
 
     ApproximationMode = ApproximationMode
 
@@ -131,7 +122,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
     __USE_ONLINE_PROGRESS_BAR: Final[str] = "use_one_line_progress_bar"
 
     activate_progress_bar: bool = True
-    """Whether to activate the progress bar in the optimization log."""
+    """Whether to activate the progress bar in the evaluation log."""
 
     _problem: EvaluationProblem | None
     """The optimization problem the driver library is bonded to."""
@@ -186,7 +177,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
 
     def _init_iter_observer(
         self,
-        problem: OptimizationProblem,
+        problem: EvaluationProblem,
         max_iter: int,
         message: str = "",
     ) -> None:
@@ -224,8 +215,8 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             MaxTimeReached: If the elapsed time is greater than the maximum
                 execution time.
         """
-        self.__progress_bar.set_objective_value(None, True)
-        self.problem.evaluation_counter.current += 1
+        self.__progress_bar.set_objective_value(None)
+        self._problem.evaluation_counter.current += 1
         if 0 < self.__max_time < time() - self.__start_time:
             raise MaxTimeReached
 
@@ -245,6 +236,8 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 If this number is higher than the dimension of the design space
                 then the design space will not be logged.
         """  # noqa: D205, D212
+        result.objective_name = problem.objective.name
+        result.design_space = problem.design_space
         problem.solution = result
         if result.x_opt is not None:
             problem.design_space.set_current_value(result)
@@ -324,7 +317,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
 
     def execute(
         self,
-        problem: OptimizationProblem,
+        problem: EvaluationProblem,
         eval_obs_jac: bool = False,
         skip_int_check: bool = False,
         max_design_space_dimension_to_log: int = 40,
@@ -343,15 +336,18 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             store_jacobian: Whether to store the Jacobian matrices in the database.
                 This argument is ignored when the ``use_database`` option is ``False``.
         """  # noqa: D205, D212
-        self.problem = problem
+        is_optimization_problem = isinstance(problem, OptimizationProblem)
+        self._problem = problem
         self._check_algorithm(problem)
         self._check_integer_handling(problem.design_space, skip_int_check)
 
         # Validation of the settings
         settings = self._validate_settings(settings)
 
-        problem.tolerances.equality = settings[self._EQ_TOLERANCE]
-        problem.tolerances.inequality = settings[self._INEQ_TOLERANCE]
+        if is_optimization_problem:
+            problem: OptimizationProblem
+            problem.tolerances.equality = settings[self._EQ_TOLERANCE]
+            problem.tolerances.inequality = settings[self._INEQ_TOLERANCE]
 
         activate_progress_bar = settings[self._ACTIVATE_PROGRESS_BAR]
         if activate_progress_bar is not None:
@@ -398,6 +394,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 log.dedent()
                 LOGGER.info("%s", log)
 
+        if self.__log_problem and is_optimization_problem:
             progress_bar_title = "Solving optimization problem with algorithm %s:"
         else:
             progress_bar_title = "Running the algorithm %s:"
@@ -405,6 +402,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         if self.activate_progress_bar:
             LOGGER.info(progress_bar_title, self._algo_name)
 
+        result = None
         with (
             OneLineLogging(TQDM_LOGGER)
             if self.__one_line_progress_bar
@@ -413,25 +411,37 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             # Term criteria such as max iter or max_time can be triggered in pre_run
             try:
                 self._pre_run(problem, **settings)
-                result = self._run(problem, **settings)
+                args = self._run(problem, **settings) or (None, None)
+                if is_optimization_problem:
+                    result = self._get_result(problem, *args)
             except TerminationCriterion as termination_criterion:
-                result = self._get_early_stopping_result(problem, termination_criterion)
+                if is_optimization_problem:
+                    problem: OptimizationProblem
+                    result = self._get_early_stopping_result(
+                        problem, termination_criterion
+                    )
 
-        result.objective_name = problem.objective.name
-        result.design_space = problem.design_space
         self.__progress_bar.finalize_iter_observer()
         self._clear_listeners(problem)
-        self._post_run(
-            problem,
-            result,
-            max_design_space_dimension_to_log,
-            **settings,
-        )
+        if is_optimization_problem:
+            self._post_run(
+                problem,
+                result,
+                max_design_space_dimension_to_log,
+                **settings,
+            )
         # Clear the state of _problem; the cache of the AlgoFactory can be used.
         self._problem = None
         return result
 
-    def _clear_listeners(self, problem: OptimizationProblem) -> None:
+    @abstractmethod
+    def _run(self, problem: EvaluationProblem, **settings: Any) -> tuple[Any, Any]:
+        """
+        Returns:
+            The message and status of the algorithm if any.
+        """  # noqa: D205 D212
+
+    def _clear_listeners(self, problem: EvaluationProblem) -> None:
         """Remove the listeners from the :attr:`.database`.
 
         Args:
@@ -484,17 +494,21 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             message = ""
 
         message += "GEMSEO stopped the driver."
-        return self._get_optimum_from_database(problem, message)
+        return self._get_result(problem, message, None)
 
-    def _get_optimum_from_database(
-        self, problem: OptimizationProblem, message=None, status=None
+    def _get_result(
+        self,
+        problem: OptimizationProblem,
+        message: Any,
+        status: Any,
+        *args: Any,
     ) -> OptimizationResult:
-        """Return the optimization result from the database.
+        """Return the result of the resolution of the problem.
 
         Args:
-            problem: The problem to be solved.
-            message: The message associated with the termination criterion.
-            status: The status associated with the termination criterion.
+            message: The message associated with the termination criterion if any.
+            status: The status associated with the termination criterion if any.
+            *args: Specific arguments.
         """
         return self._RESULT_CLASS.from_optimization_problem(
             problem, message=message, status=status, optimizer_name=self._algo_name

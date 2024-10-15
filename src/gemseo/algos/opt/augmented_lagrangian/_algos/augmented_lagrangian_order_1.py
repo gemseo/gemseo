@@ -81,9 +81,9 @@ class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
         x_opt: NumberArray,
     ) -> None:  # noqa:D107
         if self.__lagrange_multiplier_calculator is None:
-            self.__lagrange_multiplier_calculator = LagrangeMultipliers(self.problem)
+            self.__lagrange_multiplier_calculator = LagrangeMultipliers(self._problem)
         lag_ms = self.__lagrange_multiplier_calculator.compute(x_opt)
-        for constraint in self.problem.constraints:
+        for constraint in self._problem.constraints:
             if constraint.name in ineq_lag and LagrangeMultipliers.INEQUALITY in lag_ms:
                 for var_compo_name, lag_value in zip(
                     lag_ms[LagrangeMultipliers.INEQUALITY][0],

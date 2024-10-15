@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from unittest import TestCase
 from warnings import warn
 
@@ -73,7 +74,7 @@ class TestScipy(TestCase):
             opt_library.ALGORITHM_INFOS["TNC"], problem
         )
 
-        opt_library.problem._OptimizationProblem__has_linear_functions = False
+        problem._OptimizationProblem__has_linear_functions = False
         opt_library.ALGORITHM_INFOS["SLSQP"].for_linear_problems = True
         assert not opt_library.is_algorithm_suited(
             opt_library.ALGORITHM_INFOS["SLSQP"], problem
@@ -306,7 +307,7 @@ def test_tnc_maxiter(caplog):
 def test_stop_crit_n_x(algorithm_name) -> None:
     """Check that option stop_crit_n_x is supported."""
     library = ScipyOpt(algorithm_name)
-    library.problem = Rosenbrock()
+    library._problem = Rosenbrock()
     assert library._validate_settings({"stop_crit_n_x": 5})["stop_crit_n_x"] == 5
 
 
@@ -330,7 +331,25 @@ def test_cobyqa() -> None:
 def test_initial_tr_radius_cobyqa() -> None:
     """Check that option initial_tr_radius is supported."""
     library = ScipyOpt("COBYQA")
-    library.problem = Rosenbrock()
+    library._problem = Rosenbrock()
     assert (
         library._validate_settings({"initial_tr_radius": 1})["initial_tr_radius"] == 1
     )
+
+
+def test_cannot_handle_inequality_constraints():
+    """Check the error raised when an algo does not handle inequality constraints."""
+    problem = Rosenbrock()
+    problem.add_constraint(
+        MDOFunction(sum, "sum"),
+        value=1.0,
+        constraint_type=MDOFunction.ConstraintType.INEQ,
+    )
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The algorithm TNC is not adapted to the problem "
+            "because it does not handle inequality constraints."
+        ),
+    ):
+        OptimizationLibraryFactory().execute(problem, "TNC")

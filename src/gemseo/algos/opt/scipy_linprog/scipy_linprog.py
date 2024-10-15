@@ -52,7 +52,10 @@ from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.typing import RealArray
 
 
 @dataclass
@@ -104,7 +107,9 @@ class ScipyLinprog(BaseOptimizationLibrary):
         ),
     }
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
+    def _run(
+        self, problem: OptimizationProblem, **settings: Any
+    ) -> tuple[Any, Any, Any, Any, Any, Any, Any]:
         # Get the starting point and bounds
         x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
         # Replace infinite bounds with None
@@ -158,20 +163,38 @@ class ScipyLinprog(BaseOptimizationLibrary):
             evaluate_objective=True,
             no_db_no_norm=True,
         )
-        val_opt, jac_opt = problem.evaluate_functions(
+        output_opt, jac_opt = problem.evaluate_functions(
             design_vector=x_opt,
             design_vector_is_normalized=False,
             output_functions=output_functions,
             jacobian_functions=jacobian_functions,
         )
-        f_opt = val_opt[problem.objective.name]
-        constraint_values = {
-            key: val_opt[key] for key in problem.constraints.get_names()
-        }
-        constraints_grad = {
-            key: jac_opt[key] for key in problem.constraints.get_names()
-        }
-        is_feasible = problem.constraints.is_point_feasible(val_opt)
+        return None, None, output_opt, jac_opt, x_0, x_opt, linprog_result
+
+    def _get_result(
+        self,
+        problem: OptimizationProblem,
+        message: Any,
+        status: Any,
+        output_opt: Mapping[str, RealArray],
+        jac_opt: Mapping[str, RealArray],
+        x_0: RealArray,
+        x_opt: RealArray,
+        result: Any,
+    ) -> OptimizationResult:
+        """
+        Args:
+            output_opt: The output values at optimum.
+            jac_opt: The Jacobian values at optimum.
+            x_0: The initial design value.
+            x_opt: The optimal design value.
+            result: A result specific to this library.
+        """  # noqa: D205 D212
+        f_opt = output_opt[problem.objective.name]
+        constraint_names = problem.constraints.get_names()
+        constraint_values = {name: output_opt[name] for name in constraint_names}
+        constraints_grad = {name: jac_opt[name] for name in constraint_names}
+        is_feasible = problem.constraints.is_point_feasible(output_opt)
         return OptimizationResult(
             x_0=x_0,
             x_0_as_dict=problem.design_space.convert_array_to_dict(x_0),
@@ -179,11 +202,11 @@ class ScipyLinprog(BaseOptimizationLibrary):
             x_opt_as_dict=problem.design_space.convert_array_to_dict(x_opt),
             f_opt=f_opt,
             objective_name=problem.objective.name,
-            status=linprog_result.status,
+            status=result.status,
             constraint_values=constraint_values,
             constraints_grad=constraints_grad,
             optimizer_name=self._algo_name,
-            message=linprog_result.message,
+            message=result.message,
             n_obj_call=None,
             n_grad_call=None,
             n_constr_call=None,

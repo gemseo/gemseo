@@ -50,7 +50,6 @@ from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.algos.optimization_result import OptimizationResult
 
 
 @dataclass
@@ -128,7 +127,7 @@ class ScipyOpt(BaseOptimizationLibrary):
             Settings=COBYQASettings,
         )
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
+    def _run(self, problem: OptimizationProblem, **settings: Any) -> tuple[str, Any]:
         # Get the normalized bounds:
         x_0, l_b, u_b = get_value_and_bounds(problem.design_space, self._normalize_ds)
         # Replace infinite values with None:
@@ -160,6 +159,4 @@ class ScipyOpt(BaseOptimizationLibrary):
             tol=0.0,  # Let GEMSEO monitor the convergence
         )
 
-        return self._get_optimum_from_database(
-            problem, opt_result.message, opt_result.status
-        )
+        return opt_result.message, opt_result.status

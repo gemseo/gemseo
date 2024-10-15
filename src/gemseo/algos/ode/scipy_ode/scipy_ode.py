@@ -161,4 +161,5 @@ class ScipyODEAlgos(BaseODESolverLibrary):
             problem.result.terminal_event_time = solution.t[-1:]
             problem.result.terminal_event_state = solution.y[:, -1][:, newaxis]
 
+    def _get_result(self, problem: ODEProblem) -> ODEResult:
         return problem.result
