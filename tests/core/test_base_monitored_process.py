@@ -21,9 +21,21 @@ import pytest
 
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core.execution_status import ExecutionStatus
+from gemseo.utils.compatibility.python import PYTHON_VERSION
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.utils.testing.helpers import concretize_classes
 
 NAME: Final[str] = "name"
+
+if PLATFORM_IS_WINDOWS and PYTHON_VERSION < (  # noqa: SIM108
+    3,
+    10,
+):  # pragma: >=3.10 no cover
+    # Workaround sleep that can be shorter than expected, see
+    # https://docs.python.org/3.9/library/time.html#time.sleep
+    SLEEP_TIME = 0.11
+else:
+    SLEEP_TIME = 0.1
 
 
 @pytest.fixture
@@ -49,7 +61,7 @@ def test_execute_monitored(process):
     assert process.execution_statistics.duration == 0.0
     assert process.execution_status.value == ExecutionStatus.Status.PENDING
 
-    process._run = lambda: sleep(0.1)
+    process._run = lambda: sleep(SLEEP_TIME)
     process._execute_monitored()
 
     assert process.execution_status.value == ExecutionStatus.Status.DONE

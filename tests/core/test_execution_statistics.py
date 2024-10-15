@@ -26,6 +26,8 @@ import pytest
 
 from gemseo.core.execution_statistics import ExecutionStatistics
 
+from .test_base_monitored_process import SLEEP_TIME
+
 
 @pytest.fixture
 def reset() -> None:
@@ -110,7 +112,7 @@ def test_record(execution_statistics: ExecutionStatistics):
     """Verify record."""
     # Without linearization.
     with execution_statistics.record():
-        sleep(0.1)
+        sleep(SLEEP_TIME)
 
     assert execution_statistics.n_calls == 1
     assert execution_statistics.n_calls_linearize == 0
@@ -118,7 +120,7 @@ def test_record(execution_statistics: ExecutionStatistics):
 
     # With linearization.
     with execution_statistics.record(linearize=True):
-        sleep(0.1)
+        sleep(SLEEP_TIME)
 
     assert execution_statistics.n_calls == 1
     assert execution_statistics.n_calls_linearize == 1
@@ -130,10 +132,10 @@ def test_record(execution_statistics: ExecutionStatistics):
     ExecutionStatistics.is_enabled = False
 
     with execution_statistics.record():
-        sleep(0.1)
+        sleep(SLEEP_TIME)
 
     with execution_statistics.record(linearize=True):
-        sleep(0.1)
+        sleep(SLEEP_TIME)
 
     # Re-enable to access the kept results.
     ExecutionStatistics.is_enabled = True
@@ -152,15 +154,15 @@ def test_time_stamps(execution_statistics: ExecutionStatistics):
     assert ExecutionStatistics.time_stamps is not None
 
     with execution_statistics.record():
-        sleep(0.1)
+        sleep(SLEEP_TIME)
     with execution_statistics.record(linearize=True):
-        sleep(0.1)
+        sleep(SLEEP_TIME)
 
     assert ExecutionStatistics.time_stamps.keys() == ["dummy"]
     all_values = tuple(next(iter(ExecutionStatistics.time_stamps.values())))
 
     for values in all_values:
-        assert values[1] - values[0] == pytest.approx(0.1, abs=0.01)
+        assert values[1] - values[0] == pytest.approx(SLEEP_TIME, rel=0.12)
 
     # Check the linearization flag.
     assert not all_values[0][2]
@@ -169,3 +171,6 @@ def test_time_stamps(execution_statistics: ExecutionStatistics):
     # Check the time stamps' consistency, the start time of second record is higher than
     # end time of the first record.
     assert all_values[1][0] > all_values[0][1]
+
+    # Reset to the default value.
+    ExecutionStatistics.is_time_stamps_enabled = False
