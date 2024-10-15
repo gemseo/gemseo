@@ -27,6 +27,6 @@ if TYPE_CHECKING:
 class UnsuffixedProgressBar(ProgressBar):
     """A progress bar not suffixed by metadata."""
 
-    def _set_objective_value(self, x_vect: ndarray | None) -> None:
+    def _set_objective_value(self, x_vect: ndarray) -> None:
         self._tqdm_progress_bar.n += 1
         self._tqdm_progress_bar.set_postfix()

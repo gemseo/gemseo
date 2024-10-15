@@ -60,7 +60,7 @@ class AugmentedLagrangianOrder0(AugmentedLagrangianPenaltyHeuristic):
         ineq_lag: dict[str, NumberArray],
         x_opt: NumberArray,
     ) -> None:  # noqa:D107
-        for constraint in self.problem.constraints:
+        for constraint in self._problem.constraints:
             if constraint.name in ineq_lag:
                 mu_1 = (
                     ineq_lag[constraint.name]

@@ -199,7 +199,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
 
         super()._pre_run(problem, **settings)
 
-    def _run(self, problem: LinearProblem, **settings: Any) -> NumberArray:
+    def _run(self, problem: LinearProblem, **settings: Any) -> None:
         if settings["use_ilu_precond"] and not isinstance(problem.lhs, LinearOperator):
             settings["M"] = self._build_ilu_preconditioner(problem.lhs)
 
@@ -214,6 +214,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
         problem.solution, info = linear_solver(problem.lhs, problem.rhs, **settings_)
         self._check_solver_info(info, settings_)
 
+    def _get_result(self, problem: LinearProblem) -> NumberArray:
         return problem.solution
 
     def __store_residuals(self, current_x: NumberArray) -> NumberArray:

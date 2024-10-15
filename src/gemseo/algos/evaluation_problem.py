@@ -49,6 +49,7 @@ from gemseo.typing import RealArray
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
+from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
@@ -165,6 +166,24 @@ class EvaluationProblem(BaseProblem):
         self.evaluation_counter = EvaluationCounter()
         self._sequence_of_functions = [self.__observables, self.__new_iter_observables]
         self._function_names = []
+
+    def __repr__(self) -> str:
+        return str(self._get_string_representation())
+
+    def _repr_html_(self) -> str:
+        return self._get_string_representation()._repr_html_()
+
+    def _get_string_representation(self) -> MultiLineString:
+        """Return the string representation of the evaluation problem.
+
+        Returns:
+            The string representation of the evaluation problem.
+        """
+        mls = MultiLineString()
+        mls.add("Evaluation problem:")
+        mls.indent()
+        mls.add("Evaluate the functions: {}", pretty_str(self.function_names))
+        return mls
 
     @property
     def stop_if_nan(self) -> bool:

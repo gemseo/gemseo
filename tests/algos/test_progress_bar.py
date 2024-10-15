@@ -22,7 +22,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from time import sleep
-from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
@@ -39,9 +38,6 @@ from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-
-if TYPE_CHECKING:
-    from gemseo.algos.optimization_result import OptimizationResult
 
 
 @pytest.fixture
@@ -82,7 +78,7 @@ class ProgressOpt(BaseOptimizationLibrary):
     def _get_options(self, **options: Any) -> dict[str, Any]:
         return options
 
-    def _run(self, problem: OptimizationProblem, **options: Any) -> OptimizationResult:
+    def _run(self, problem: OptimizationProblem, **options: Any) -> None:
         x_0 = problem.design_space.get_current_value(
             complex_to_real=True, normalize=True
         )
@@ -90,7 +86,6 @@ class ProgressOpt(BaseOptimizationLibrary):
             if self.constraints_before_obj:
                 problem.constraints[0].evaluate(x_0 + off)
             problem.objective.evaluate(x_0 + off)
-        return self._get_optimum_from_database(problem)
 
 
 def test_progress_bar(

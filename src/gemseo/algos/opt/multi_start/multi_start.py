@@ -33,7 +33,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.algos.base_driver_library import DriverLibrarySettingType
-    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.typing import RealArray
 
 
@@ -67,7 +66,7 @@ class MultiStart(BaseOptimizationLibrary):
     def __init__(self, algo_name: str = "MultiStart") -> None:  # noqa: D107
         super().__init__(algo_name)
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
+    def _run(self, problem: OptimizationProblem, **settings: Any) -> None:
         """
         Raises:
             ValueError: When ``max_iter``, ``n_start`` and ``opt_algo_max_iter``
@@ -110,8 +109,8 @@ class MultiStart(BaseOptimizationLibrary):
             raise ValueError(msg)
 
         self.__opt_algo_settings = settings
-        opt_algo_options[self._EQ_TOLERANCE] = self.problem.tolerances.equality
-        opt_algo_options[self._INEQ_TOLERANCE] = self.problem.tolerances.inequality
+        opt_algo_options[self._EQ_TOLERANCE] = self._problem.tolerances.equality
+        opt_algo_options[self._INEQ_TOLERANCE] = self._problem.tolerances.inequality
         opt_algo_options[self._STOP_CRIT_NX] = self._f_tol_tester.n_last_iterations
         opt_algo_options[self._F_TOL_ABS] = self._f_tol_tester.absolute
         opt_algo_options[self._F_TOL_REL] = self._f_tol_tester.relative
@@ -143,30 +142,28 @@ class MultiStart(BaseOptimizationLibrary):
             for problem in problems:
                 database = problem.database
                 f_hist, x_hist = database.get_function_history(
-                    self.problem.objective.name, with_x_vect=True
+                    self._problem.objective.name, with_x_vect=True
                 )
                 for xi, fi in zip(x_hist, f_hist):
-                    self.problem.database.store(xi, {self.problem.objective.name: fi})
+                    self._problem.database.store(xi, {self._problem.objective.name: fi})
 
-                for functions in [self.problem.constraints, self.problem.observables]:
+                for functions in [self._problem.constraints, self._problem.observables]:
                     for f in functions:
                         f_hist, x_hist = database.get_function_history(
                             f.name, with_x_vect=True
                         )
                         for xi, fi in zip(x_hist, f_hist):
-                            self.problem.database.store(xi, {f.name: fi})
+                            self._problem.database.store(xi, {f.name: fi})
 
         file_path = settings["multistart_file_path"]
         if file_path:
             problem = OptimizationProblem(design_space)
-            problem.objective = self.problem.objective
-            problem.constraints = self.problem.constraints
+            problem.objective = self._problem.objective
+            problem.constraints = self._problem.constraints
             for sub_problem in problems:
-                x_opt = self._get_optimum_from_database(sub_problem).x_opt
+                x_opt = self._get_result(sub_problem, None, None).x_opt
                 problem.database.store(x_opt, sub_problem.database[x_opt])
             problem.to_hdf(file_path)
-
-        return self._get_optimum_from_database(problem)
 
     def _optimize(self, data: tuple[RealArray, int]) -> OptimizationProblem:
         """Solve the sub-optimization problem from an initial design value.
@@ -179,13 +176,13 @@ class MultiStart(BaseOptimizationLibrary):
         """
         initial_point, max_iter = data
 
-        design_space = deepcopy(self.problem.design_space)
+        design_space = deepcopy(self._problem.design_space)
         design_space.set_current_value(initial_point)
 
         problem = OptimizationProblem(design_space)
-        problem.objective = self.problem.objective
-        problem.constraints = self.problem.constraints
-        problem.observables = self.problem.observables
+        problem.objective = self._problem.objective
+        problem.constraints = self._problem.constraints
+        problem.observables = self._problem.observables
 
         factory = OptimizationLibraryFactory()
         opt_algo = factory.create(self.__opt_algo_settings["opt_algo_name"])

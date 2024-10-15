@@ -78,7 +78,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         self.__n_obj_func_calls = 0
         self._function_outputs = {}
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
+    def _run(self, problem: OptimizationProblem, **settings: Any) -> tuple[str, Any]:
         self._rho = settings[self.__INITIAL_RHO]
 
         problem_ineq_constraints = [
@@ -92,7 +92,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
             if constr.name not in settings[self.__SUB_PROBLEM_CONSTRAINTS]
         ]
 
-        current_value = self.problem.design_space.get_current_value(
+        current_value = self._problem.design_space.get_current_value(
             normalize=self._normalize_ds
         )
         eq_multipliers = {
@@ -106,6 +106,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
 
         active_constraint_residual = inf
         x = problem.design_space.get_current_value()
+        message = None
         for iteration in range(settings[self._MAX_ITER]):
             LOGGER.debug("iteration: %s", iteration)
             LOGGER.debug(
@@ -142,7 +143,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
             self._rho = self._update_penalty(
                 constraint_violation_current_iteration=max(norm(vk), norm(hv)),
                 objective_function_current_iteration=self._function_outputs[
-                    self.problem.objective.name
+                    self._problem.objective.name
                 ],
                 constraint_violation_previous_iteration=active_constraint_residual,
                 current_penalty=self._rho,
@@ -161,7 +162,8 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
                 break
 
             x = x_new
-        return self._get_optimum_from_database(problem, message)
+
+        return message, None
 
     def _post_run(
         self,
@@ -221,16 +223,16 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
             the equality constraint violation value,
             the active inequality constraint residuals.
         """
-        self.problem.design_space.set_current_value(x_opt)
+        self._problem.design_space.set_current_value(x_opt)
         require_gradient = self.ALGORITHM_INFOS[self.algo_name].require_gradient
-        output_functions, jacobian_functions = self.problem.get_functions(
+        output_functions, jacobian_functions = self._problem.get_functions(
             jacobian_names=() if require_gradient else None,
             evaluate_objective=True,
         )
-        self._function_outputs, _ = self.problem.evaluate_functions(
+        self._function_outputs, _ = self._problem.evaluate_functions(
             output_functions=output_functions, jacobian_functions=jacobian_functions
         )
-        f_opt = self._function_outputs[self.problem.objective.name]
+        f_opt = self._function_outputs[self._problem.objective.name]
         gv = [
             atleast_1d(self._function_outputs[constr.name])
             for constr in problem_ineq_constraints
@@ -280,11 +282,11 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         """
         # Get the sub problem.
         lagrangian = self.__get_lagrangian_function(lambda0, mu0, self._rho)
-        dspace = deepcopy(self.problem.design_space)
+        dspace = deepcopy(self._problem.design_space)
         dspace.set_current_value(x_init)
         sub_problem = OptimizationProblem(dspace)
         sub_problem.objective = lagrangian
-        for constraint in self.problem.constraints.get_originals():
+        for constraint in self._problem.constraints.get_originals():
             if constraint.name in sub_problem_constraints:
                 sub_problem.constraints.append(constraint)
         sub_problem.preprocess_functions(is_function_input_normalized=normalize)
@@ -363,8 +365,8 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         Returns:
             The lagrangian function.
         """
-        lagrangian = self.problem.objective.original
-        for constr in self.problem.constraints.get_originals():
+        lagrangian = self._problem.objective.original
+        for constr in self._problem.constraints.get_originals():
             if constr.name in ineq_lag:
                 lagrangian += aggregate_positive_sum_square(
                     constr + ineq_lag[constr.name] / rho, scale=rho / 2

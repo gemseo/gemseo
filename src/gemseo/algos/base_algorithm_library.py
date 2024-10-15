@@ -210,7 +210,8 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         settings = self._validate_settings(settings)
 
         self._pre_run(problem, **settings)
-        result = self._run(problem, **settings)
+        self._run(problem, **settings)
+        result = self._get_result(problem)
         self._post_run(problem, result, **settings)
 
         # Clear the state of _problem; the cache of the AlgoFactory can be used.
@@ -218,15 +219,19 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         return result
 
     @abstractmethod
-    def _run(self, problem: BaseProblem, **settings: Any) -> Any:
-        """Run the algorithm.
+    def _run(self, problem: BaseProblem, **settings: Any) -> None:
+        """Solve the problem.
 
         Args:
-            problem: The problem to be solved.
+            problem: The problem.
             **settings: The settings of the algorithm.
+        """
 
-        Returns:
-            The solution of the problem.
+    def _get_result(self, problem: BaseProblem) -> Any:
+        """Return the result of the resolution of the problem.
+
+        Args:
+            problem: The problem.
         """
 
     def _check_algorithm(self, problem: BaseProblem) -> None:

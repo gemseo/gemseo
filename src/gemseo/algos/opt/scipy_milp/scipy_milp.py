@@ -48,7 +48,10 @@ from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.typing import RealArray
 
 
 @dataclass
@@ -97,7 +100,9 @@ class ScipyMILP(BaseOptimizationLibrary):
     def __init__(self, algo_name: str = "Scipy_MILP") -> None:  # noqa:D107
         super().__init__(algo_name)
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
+    def _run(
+        self, problem: OptimizationProblem, **settings: Any
+    ) -> tuple[Any, Any, Any, Any, Any, Any, Any]:
         # Get the starting point and bounds
         x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
         # Replace infinite bounds with None
@@ -150,11 +155,11 @@ class ScipyMILP(BaseOptimizationLibrary):
             options=settings_,
             integrality=concatenate([
                 [
-                    self.problem.design_space.get_type(variable_name)
+                    self._problem.design_space.get_type(variable_name)
                     == DesignSpace.DesignVariableType.INTEGER
                 ]
-                * self.problem.design_space.get_size(variable_name)
-                for variable_name in self.problem.design_space
+                * self._problem.design_space.get_size(variable_name)
+                for variable_name in self._problem.design_space
             ]),
         )
 
@@ -169,28 +174,50 @@ class ScipyMILP(BaseOptimizationLibrary):
             no_db_no_norm=True,
         )
 
-        val_opt, jac_opt = problem.evaluate_functions(
+        output_opt, jac_opt = problem.evaluate_functions(
             design_vector=x_opt,
             design_vector_is_normalized=False,
             output_functions=output_functions,
             jacobian_functions=jacobian_functions,
         )
+        return None, None, output_opt, jac_opt, x_0, x_opt, milp_result
 
-        f_opt = val_opt[problem.objective.name]
+    def _get_result(
+        self,
+        problem: OptimizationProblem,
+        message: Any,
+        status: Any,
+        output_opt: Mapping[str, RealArray],
+        jac_opt: Mapping[str, RealArray],
+        x_0: RealArray,
+        x_opt: RealArray,
+        result: Any,
+    ) -> OptimizationResult:
+        """
+        Args:
+            output_opt: The output values at optimum.
+            jac_opt: The Jacobian values at optimum.
+            x_0: The initial design value.
+            x_opt: The optimal design value.
+            result: A result specific to this library.
+        """  # noqa: D205 D212
+        f_opt = output_opt[problem.objective.name]
         constraint_names = list(problem.constraints.original_to_current_names.keys())
-        constraint_values = {key: val_opt[key] for key in constraint_names}
+        constraint_values = {key: output_opt[key] for key in constraint_names}
         constraints_grad = {key: jac_opt[key] for key in constraint_names}
-        is_feasible = problem.constraints.is_point_feasible(val_opt)
-
+        is_feasible = problem.constraints.is_point_feasible(output_opt)
         return OptimizationResult(
             x_0=x_0,
+            x_0_as_dict=problem.design_space.convert_array_to_dict(x_0),
             x_opt=x_opt,
+            x_opt_as_dict=problem.design_space.convert_array_to_dict(x_opt),
             f_opt=f_opt,
-            status=milp_result.status,
+            objective_name=problem.objective.name,
+            status=result.status,
             constraint_values=constraint_values,
             constraints_grad=constraints_grad,
             optimizer_name=self._algo_name,
-            message=milp_result.message,
+            message=result.message,
             n_obj_call=None,
             n_grad_call=None,
             n_constr_call=None,

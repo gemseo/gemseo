@@ -28,16 +28,15 @@ class BaseProgressBar(ABC):
     """The base progress bar."""
 
     @abstractmethod
-    def set_objective_value(
-        self, x_vect: ndarray | None, current_iter_must_not_be_logged: bool = False
-    ) -> None:
+    def set_objective_value(self, x_vect: ndarray | None) -> None:
         """Set the objective value.
 
         Args:
             x_vect: The design variables values.
-                If ``None``, consider the objective at the last iteration.
-            current_iter_must_not_be_logged: Set the objective value
-                only if the current iteration is not logged.
+                If ``None`` and the iteration has not been logged,
+                use the objective at the last iteration.
+                If ``None`` and the iteration has allready been logged,
+                do nothing.
         """
 
     @abstractmethod

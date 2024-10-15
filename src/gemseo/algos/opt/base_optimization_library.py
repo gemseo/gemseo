@@ -108,9 +108,6 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
     _x_tol_tester: DesignToleranceTester
     """A tester for the termination criterion associated to the design variables."""
 
-    __kkt_tester: KKTConditionsTester
-    """A tester for the termination criterion associated to the KKT conditions."""
-
     ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {}
     """The description of the algorithms contained in the library."""
 
@@ -118,7 +115,6 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         super().__init__(algo_name)
         self._f_tol_tester = ObjectiveToleranceTester()
         self._x_tol_tester = DesignToleranceTester()
-        self.__kkt_tester = KKTConditionsTester()
 
     def _check_constraints_handling(self, problem: OptimizationProblem) -> None:
         """Check if problem and algorithm are consistent for constraints handling."""
@@ -185,15 +181,14 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         if require_gradient:
             kkt_abs_tol = settings[self._KKT_TOL_ABS]
             kkt_rel_tol = settings[self._KKT_TOL_REL]
-
             if not isinf(kkt_abs_tol) or not isinf(kkt_rel_tol):
-                self.__kkt_tester = KKTConditionsTester(
-                    absolute=0.0 if isinf(kkt_abs_tol) else kkt_abs_tol,
-                    relative=0.0 if isinf(kkt_rel_tol) else kkt_rel_tol,
-                    ineq_tolerance=settings[self._INEQ_TOLERANCE],
-                )
                 problem.add_listener(
-                    self._check_kkt_from_database,
+                    _KKTChecker(
+                        problem,
+                        kkt_abs_tol,
+                        kkt_rel_tol,
+                        settings[self._INEQ_TOLERANCE],
+                    ),
                     at_each_iteration=False,
                     at_each_function_call=True,
                 )
@@ -217,26 +212,17 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
 
         scaling_threshold = settings[self._SCALING_THRESHOLD]
         if scaling_threshold is not None:
-            self.problem.objective = self.__scale(
-                self.problem.objective,
-                function_values[self.problem.objective.name],
+            self._problem.objective = self.__scale(
+                self._problem.objective,
+                function_values[self._problem.objective.name],
                 scaling_threshold,
             )
-            self.problem.constraints = [
+            self._problem.constraints = [
                 self.__scale(
                     constraint, function_values[constraint.name], scaling_threshold
                 )
-                for constraint in self.problem.constraints
+                for constraint in self._problem.constraints
             ]
-
-            observables = tuple(self.problem.observables)
-            self.problem.observables.clear()
-            for observable in observables:
-                self.problem.add_observable(
-                    self.__scale(
-                        observable, function_values[observable.name], scaling_threshold
-                    )
-                )
 
     @classmethod
     def _get_unsuitability_reason(
@@ -267,40 +253,8 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
 
     def _new_iteration_callback(self, x_vect: ndarray) -> None:
         super()._new_iteration_callback(x_vect)
-        self._f_tol_tester.check(self.problem, raise_exception=True)
-        self._x_tol_tester.check(self.problem, raise_exception=True)
-
-    def _check_kkt_from_database(self, x_vect: ndarray) -> None:
-        """Verify, if required, KKT norm stopping criterion at each database storage.
-
-        Raises:
-            KKTReached: If the absolute tolerance on the KKT residual is reached.
-        """
-        check_kkt = True
-        function_names = [
-            self.problem.standardized_objective_name,
-            *self.problem.constraints.get_names(),
-        ]
-        database = self.problem.database
-        for function_name in function_names:
-            if (
-                database.get_function_value(
-                    database.get_gradient_name(function_name), x_vect
-                )
-                is None
-            ) or (database.get_function_value(function_name, x_vect) is None):
-                check_kkt = False
-                break
-
-        if check_kkt:
-            if not self.__kkt_tester.kkt_norm:
-                self.__kkt_tester.kkt_norm = kkt_residual_computation(
-                    self.problem, x_vect, self.__kkt_tester.ineq_tolerance
-                )
-
-            self.__kkt_tester.check(
-                self.problem, raise_exception=True, input_vector=x_vect
-            )
+        self._f_tol_tester.check(self._problem, raise_exception=True)
+        self._x_tol_tester.check(self._problem, raise_exception=True)
 
     @staticmethod
     def __scale(
@@ -330,3 +284,63 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         # Use same function name for consistency with name used in database
         scaled_function.name = function.name
         return scaled_function
+
+
+class _KKTChecker:
+    """A functor to verify the KKT norm stopping criterion."""
+
+    def __init__(
+        self,
+        problem: OptimizationProblem,
+        kkt_abs_tol: float,
+        kkt_rel_tol: float,
+        ineq_tolerance: float,
+    ) -> None:
+        """
+        Args:
+            problem: The optimization problem.
+            kkt_abs_tol: The absolute tolerance for the KKT conditions.
+            kkt_rel_tol: The relative tolerance for the KKT conditions.
+            ineq_tolerance: The absolute tolerance for the inequality constraints.
+        """  # noqa: D205, D212
+        self.__problem = problem
+        self.__kkt_tester = KKTConditionsTester(
+            absolute=0.0 if isinf(kkt_abs_tol) else kkt_abs_tol,
+            relative=0.0 if isinf(kkt_rel_tol) else kkt_rel_tol,
+            ineq_tolerance=ineq_tolerance,
+        )
+
+    def __call__(self, input_value: ndarray) -> None:
+        """Verify the KKT norm stopping criterion.
+
+        Args:
+            input_value: The input value.
+
+        Raises:
+            KKTReached: If the absolute tolerance on the KKT residual is reached.
+        """
+        check_kkt = True
+        function_names = [
+            self.__problem.standardized_objective_name,
+            *self.__problem.constraints.get_names(),
+        ]
+        database = self.__problem.database
+        for function_name in function_names:
+            if (
+                database.get_function_value(
+                    database.get_gradient_name(function_name), input_value
+                )
+                is None
+            ) or (database.get_function_value(function_name, input_value) is None):
+                check_kkt = False
+                break
+
+        if check_kkt:
+            if not self.__kkt_tester.kkt_norm:
+                self.__kkt_tester.kkt_norm = kkt_residual_computation(
+                    self.__problem, input_value, self.__kkt_tester.ineq_tolerance
+                )
+
+            self.__kkt_tester.check(
+                self.__problem, raise_exception=True, input_vector=input_value
+            )

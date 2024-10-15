@@ -326,10 +326,10 @@ MorrisAnalysisSamplingPhase
    Disciplines: my_function
    MDO formulation: MDF
 Running the algorithm MorrisDOE:
-    25%|██▌       | 1\/4 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
-    50%|█████     | 2\/4 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
-    75%|███████▌  | 3\/4 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
-   100%|██████████| 4\/4 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+    25%\|██▌       \| 1\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
+    50%\|█████     \| 2\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
+    75%\|███████▌  \| 3\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
+   100%\|██████████\| 4\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
 \*\*\* End MorrisAnalysisSamplingPhase execution \(time: \d+:\d+:\d+\.\d+\) \*\*\*$"""
     assert re.match(pattern, result)
 

@@ -605,9 +605,7 @@ class OptimizationProblem(EvaluationProblem):
         """
         return self.history.optimum
 
-    @property
-    def __string_representation(self) -> MultiLineString:
-        """The string representation of the optimization problem."""
+    def _get_string_representation(self) -> MultiLineString:
         mls = MultiLineString()
         mls.add("Optimization problem:")
         mls.indent()
@@ -642,12 +640,6 @@ class OptimizationProblem(EvaluationProblem):
                         mls.add(constraint_i)
 
         return mls
-
-    def __repr__(self) -> str:
-        return str(self.__string_representation)
-
-    def _repr_html_(self) -> str:
-        return self.__string_representation._repr_html_()
 
     def to_hdf(
         self,

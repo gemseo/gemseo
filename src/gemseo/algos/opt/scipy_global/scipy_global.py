@@ -58,7 +58,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
     from gemseo.core.mdo_functions.mdo_function import WrappedJacobianType
 
@@ -127,13 +126,13 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
             x_vect: The input data with which to call the functions.
         """
         if self._normalize_ds:
-            x_vect = self.problem.design_space.normalize_vect(x_vect)
+            x_vect = self._problem.design_space.normalize_vect(x_vect)
 
-        self.problem.objective.evaluate(x_vect)
-        for constraint in self.problem.constraints:
+        self._problem.objective.evaluate(x_vect)
+        for constraint in self._problem.constraints:
             constraint.evaluate(x_vect)
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> OptimizationResult:
+    def _run(self, problem: OptimizationProblem, **settings: Any) -> tuple[str, Any]:
         # Get the normalized bounds:
         _, l_b, u_b = get_value_and_bounds(problem.design_space, self._normalize_ds)
         # Replace infinite values with None:
@@ -160,14 +159,12 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
 
         global_optimizer = self.__NAMES_TO_FUNCTIONS[self._algo_name]
         opt_result = global_optimizer(
-            func=lambda x: real(self.problem.objective.evaluate(x)),
+            func=lambda x: real(self._problem.objective.evaluate(x)),
             bounds=bounds,
             **settings_,
         )
 
-        return self._get_optimum_from_database(
-            problem, opt_result.message, opt_result.success
-        )
+        return opt_result.message, opt_result.success
 
     @staticmethod
     def __get_non_linear_constraints(

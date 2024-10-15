@@ -44,6 +44,7 @@ from gemseo.algos.base_driver_library import DriverDescription
 from gemseo.algos.base_driver_library import DriverLibrarySettingType
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe._base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.evaluation_problem import EvaluationType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
@@ -57,8 +58,6 @@ from gemseo.utils.seeder import Seeder
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import RealArray
 
@@ -66,7 +65,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 CallbackType = Callable[[int, EvaluationType], Any]
-"""The type of a callback function in the context of a ."""
+"""The type of a callback function."""
 
 
 @dataclass
@@ -157,7 +156,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
     def _pre_run(
         self,
-        problem: OptimizationProblem,
+        problem: EvaluationProblem,
         **settings: DriverLibrarySettingType,
     ) -> None:
         super()._pre_run(problem, **settings)
@@ -183,7 +182,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         self._init_iter_observer(problem, len(self.unit_samples))
 
     def __convert_unit_samples_to_samples(
-        self, problem: OptimizationProblem
+        self, problem: EvaluationProblem
     ) -> RealArray:
         """Convert the unit design vector samples to design vector samples.
 
@@ -229,14 +228,14 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
     def _run(
         self,
-        problem: OptimizationProblem,
+        problem: EvaluationProblem,
         eval_jac: bool = False,
         n_processes: int = 1,
         wait_time_between_samples: float = 0.0,
         use_database: bool = True,
         callbacks: Iterable[CallbackType] = (),
         **settings: Any,
-    ) -> OptimizationResult:
+    ) -> None:
         """
         Args:
             eval_jac: Whether to evaluate the Jacobian function.
@@ -246,7 +245,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
                 evaluation, in seconds.
             use_database: Whether to store the evaluations in the database.
             callbacks: The functions to be evaluated
-                after each call to :meth:`.OptimizationProblem.evaluate_functions`;
+                after each call to :meth:`.EvaluationProblem.evaluate_functions`;
                 to be called as ``callback(index, (output, jacobian))``.
             **settings: These options are not used.
 
@@ -256,9 +255,11 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             ``if __name__ == '__main__':`` statement when working on Windows.
         """  # noqa: D205, D212
         self.__compute_jacobians = eval_jac
-        self.__output_functions, self.__jacobian_functions = self.problem.get_functions(
-            jacobian_names=() if self.__compute_jacobians else None,
-            observable_names=(),
+        self.__output_functions, self.__jacobian_functions = (
+            self._problem.get_functions(
+                jacobian_names=() if self.__compute_jacobians else None,
+                observable_names=(),
+            )
         )
         callbacks = list(callbacks)
         if n_processes > 1:
@@ -296,41 +297,46 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
                 LOGGER.warning(
                     "Wait time between samples option is ignored in sequential run."
                 )
-            for index, input_data in enumerate(self.samples):
+            for index, input_value in enumerate(self.samples):
                 try:
-                    output_data, jacobian_data = problem.evaluate_functions(
-                        design_vector=input_data,
-                        preprocess_design_vector=False,
-                        design_vector_is_normalized=False,
-                        output_functions=self.__output_functions,
-                        jacobian_functions=self.__jacobian_functions,
-                    )
+                    output_value, jacobian_value = self._evaluate_functions(input_value)
                     for callback in callbacks:
-                        callback(index, (output_data, jacobian_data))
+                        callback(index, (output_value, jacobian_value))
                 except ValueError:  # noqa: PERF203
                     LOGGER.exception(
                         "Problem with evaluation of sample:"
                         "%s result is not taken into account in DOE.",
-                        input_data,
+                        input_value,
                     )
 
-        return self._get_optimum_from_database(problem)
+    def _worker(self, input_value: RealArray) -> EvaluationType:
+        """Evaluate the functions at a given input point.
 
-    def _worker(self, sample: RealArray) -> EvaluationType:
-        """Wrap the evaluation of the functions for parallel execution.
+        To be used by :class:`.CallableParallelExecution`.
 
         Args:
-            sample: A point from the design space.
+            input_value: The input point.
 
         Returns:
-            The computed values.
+            The output value and the Jacobian value.
         """
         if current_process().name == SUBPROCESS_NAME:
             self._deactivate_progress_bar()
-            self.problem.database.clear_listeners()
+            self._problem.database.clear_listeners()
 
-        return self.problem.evaluate_functions(
-            design_vector=sample,
+        return self._evaluate_functions(input_value)
+
+    def _evaluate_functions(self, input_value: RealArray) -> EvaluationType:
+        """Evaluate the functions at a given input point.
+
+        Args:
+            input_value: The input point.
+
+        Returns:
+            The output value and the Jacobian value.
+        """
+        return self._problem.evaluate_functions(
+            design_vector=input_value,
             preprocess_design_vector=False,
             design_vector_is_normalized=False,
             output_functions=self.__output_functions,
@@ -352,9 +358,9 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         data, jacobian_data = output_and_jacobian_data
         if jacobian_data:
             for output_name, jacobian in jacobian_data.items():
-                data[self.problem.database.get_gradient_name(output_name)] = jacobian
+                data[self._problem.database.get_gradient_name(output_name)] = jacobian
 
-        self.problem.database.store(self.samples[index], data)
+        self._problem.database.store(self.samples[index], data)
 
     @classmethod
     def __check_unnormalization_capability(cls, design_space) -> None:

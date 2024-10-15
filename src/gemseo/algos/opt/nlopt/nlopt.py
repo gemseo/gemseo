@@ -74,7 +74,6 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.algos.optimization_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)
 
@@ -231,7 +230,7 @@ class Nlopt(BaseOptimizationLibrary):
         Returns:
             The evaluation of the objective function for the given `xn_vect`.
         """
-        obj_func = self.problem.objective
+        obj_func = self._problem.objective
         if grad.size > 0:
             grad[:] = obj_func.jac(xn_vect)
         return array(obj_func.evaluate(xn_vect).real).ravel()[0]
@@ -289,7 +288,7 @@ class Nlopt(BaseOptimizationLibrary):
             nlopt_problem: The optimization problem.
             nlopt_options: The NLopt optimization options.
         """
-        for constraint in self.problem.constraints:
+        for constraint in self._problem.constraints:
             f_type = constraint.f_type
             func = constraint.evaluate
             jac = constraint.jac
@@ -362,7 +361,7 @@ class Nlopt(BaseOptimizationLibrary):
 
     def _run(
         self, problem: OptimizationProblem, **options: NLoptOptionsType
-    ) -> OptimizationResult:
+    ) -> tuple[str, Any]:
         """
         Raises:
             TerminationCriterion: If the driver stops for some reason.
@@ -393,4 +392,4 @@ class Nlopt(BaseOptimizationLibrary):
             raise TerminationCriterion from None
         message = self.__NLOPT_MESSAGES[nlopt_problem.last_optimize_result()]
         status = nlopt_problem.last_optimize_result()
-        return self._get_optimum_from_database(problem, message, status)
+        return message, status
