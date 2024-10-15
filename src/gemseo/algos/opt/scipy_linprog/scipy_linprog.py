@@ -88,56 +88,19 @@ class ScipyLinprog(BaseOptimizationLibrary):
 
     # TODO: Remove legacy methods "interior-point", "revised simplex" and "simplex".
     ALGORITHM_INFOS: ClassVar[dict[str, ScipyLinProgAlgorithmDescription]] = {
-        "LINEAR_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
-            algorithm_name="Linear interior point",
-            description=(
-                "Linear programming by the interior-point"
-                " method implemented in the SciPy library"
-            ),
-            internal_algorithm_name="interior-point",
-            website=f"{__DOC}optimize.linprog-interior-point.html",
-        ),
-        "REVISED_SIMPLEX": ScipyLinProgAlgorithmDescription(
-            algorithm_name="Revised simplex",
-            description=(
-                "Linear programming by a two-phase revised"
-                " simplex algorithm implemented in the SciPy library"
-            ),
-            internal_algorithm_name="revised simplex",
-            website=f"{__DOC}optimize.linprog-revised_simplex.html",
-        ),
-        "SIMPLEX": ScipyLinProgAlgorithmDescription(
-            algorithm_name="Simplex",
-            description=(
-                "Linear programming by the two-phase simplex"
-                " algorithm implemented in the SciPy library"
-            ),
-            internal_algorithm_name="simplex",
-            website=f"{__DOC}optimize.linprog-simplex.html",
-        ),
-        "HIGHS_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
+        "INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
             algorithm_name="Interior point method",
             description=("Linear programming using the HiGHS interior point solver."),
             internal_algorithm_name="highs-ipm",
             website=f"{__DOC}optimize.linprog-highs-ipm.html",
             Settings=HiGHSInteriorPointSettings,
         ),
-        "HIGHS_DUAL_SIMPLEX": ScipyLinProgAlgorithmDescription(
+        "DUAL_SIMPLEX": ScipyLinProgAlgorithmDescription(
             algorithm_name="Dual simplex",
             description=("Linear programming using the HiGHS dual simplex solver."),
             internal_algorithm_name="highs-ds",
             website=f"{__DOC}optimize.linprog-highs-ds.html",
             Settings=HiGHSDualSimplexSettings,
-        ),
-        "HIGHS": ScipyLinProgAlgorithmDescription(
-            algorithm_name="HiGHS",
-            description=(
-                "Linear programming using the HiGHS solvers. "
-                "A choice is automatically made between the dual simplex "
-                "and the interior-point method."
-            ),
-            internal_algorithm_name="highs",
-            website=f"{__DOC}optimize.linprog-highs.html",
         ),
     }
 

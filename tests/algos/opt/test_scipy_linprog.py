@@ -125,9 +125,7 @@ def test_linprog_algorithms(minimization, x_opt, f_opt, library_cls) -> None:
     ("minimization", "x_opt", "f_opt"),
     [(True, array([0.0, 0.0]), -1.0), (False, array([1 / 3, 2 / 3]), 0.0)],
 )
-@pytest.mark.parametrize(
-    "algo_name", ["HIGHS", "HIGHS_DUAL_SIMPLEX", "HIGHS_INTERIOR_POINT"]
-)
+@pytest.mark.parametrize("algo_name", ScipyLinprog.ALGORITHM_INFOS)
 def test_sparse_linprog_algorithms(
     minimization, x_opt, f_opt, algo_name, library_cls
 ) -> None:
